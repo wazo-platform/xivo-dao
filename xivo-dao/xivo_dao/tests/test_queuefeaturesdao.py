@@ -1,7 +1,6 @@
 # vim: set fileencoding=utf-8 :
-# XiVO CTI Server
 
-# Copyright (C) 2007-2012  Avencall
+# Copyright (C) 2012  Avencall
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -9,7 +8,7 @@
 # (at your option) any later version.
 #
 # Alternatively, XiVO CTI Server is available under other licenses directly
-# contracted with Pro-formatique SARL. See the LICENSE file at top of the
+# contracted with Avencall SAS. See the LICENSE file at top of the
 # source tree or delivered in the installable package in which XiVO CTI Server
 # is distributed for more details.
 #
@@ -21,36 +20,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from xivo_dao.tests import test_dao
-from xivo_dao.queue_features_dao import QueueFeaturesDAO
-from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao import queue_features_dao
+from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao.queue_features_dao import QueueFeaturesDAO
 
 
-class TestQueueFeaturesDAO(test_dao.DAOTestCase):
+class TestQueueFeaturesDAO(DAOTestCase):
 
-    required_tables = [QueueFeatures.__table__]
+    tables = [QueueFeatures]
 
     def setUp(self):
-        db_connection_pool = dbconnection.DBConnectionPool(dbconnection.DBConnection)
-        dbconnection.register_db_connection_pool(db_connection_pool)
-
-        uri = 'postgresql://asterisk:asterisk@localhost/asterisktest'
-        dbconnection.add_connection_as(uri, 'asterisk')
-        connection = dbconnection.get_connection('asterisk')
-
-        self.cleanTables()
-
-        self.session = connection.get_session()
-
-        self.session.commit()
-        self.session = connection.get_session()
-
+        self.empty_tables()
         self.dao = QueueFeaturesDAO(self.session)
-
-    def tearDown(self):
-        dbconnection.unregister_db_connection_pool()
 
     def test_id_from_name(self):
         queue = QueueFeatures()

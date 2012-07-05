@@ -21,47 +21,29 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from xivo_dao.tests import test_dao
-from mock import Mock
-from mock import patch
-from xivo_dao.alchemy import dbconnection
+from mock import Mock, patch
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao import linefeaturesdao
-from xivo_dao.linefeaturesdao import LineFeaturesDAO
 from xivo_dao.alchemy.userfeatures import UserFeatures
+from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao.linefeaturesdao import LineFeaturesDAO
 
 get_sip_cid = Mock()
 get_sccp_cid = Mock()
 
 
-class TestLineFeaturesDAO(test_dao.DAOTestCase):
+class TestLineFeaturesDAO(DAOTestCase):
 
     user_id = 5
     line_number = '1666'
 
-    required_tables = [LineFeatures.__table__, SCCPLine.__table__, UserSIP.__table__]
+    tables = [LineFeatures, SCCPLine, UserSIP]
 
     def setUp(self):
-        db_connection_pool = dbconnection.DBConnectionPool(dbconnection.DBConnection)
-        dbconnection.register_db_connection_pool(db_connection_pool)
-
-        uri = 'postgresql://asterisk:asterisk@localhost/asterisktest'
-        dbconnection.add_connection_as(uri, 'asterisk')
-        connection = dbconnection.get_connection('asterisk')
-
-        self.cleanTables()
-
-        self.session = connection.get_session()
-
-        self.session.commit()
-        self.session = connection.get_session()
-
+        self.empty_tables()
         self.dao = LineFeaturesDAO(self.session)
-
-    def tearDown(self):
-        dbconnection.unregister_db_connection_pool()
 
     def test_find_line_id_by_user_id(self):
         user = UserFeatures()

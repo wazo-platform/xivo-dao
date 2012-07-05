@@ -28,6 +28,7 @@ from sqlalchemy.types import Integer, String, Text
 
 
 class MeetmeFeatures(Base):
+
     __tablename__ = 'meetmefeatures'
 
     id = Column(Integer, primary_key=True)

@@ -10,7 +10,7 @@ NO_VALUE = ""
 
 
 def _get_session():
-    return dbconnection.get_connection('queue_stats').get_session()
+    return dbconnection.get_connection('asterisk').get_session()
 
 
 class QueueStatisticDAO(object):

@@ -22,12 +22,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from xivo_dao.alchemy.base import Base
-from sqlalchemy.schema import Column
+from sqlalchemy.schema import Column, ForeignKeyConstraint
 from sqlalchemy.types import Integer, String
 from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION
+from xivo_dao.alchemy.call_on_queue import CallOnQueue
 
 
 class QueueFeatures(Base):
+
     __tablename__ = 'queuefeatures'
 
     id = Column(Integer, primary_key=True)
@@ -51,3 +53,5 @@ class QueueFeatures(Base):
     announce_holdtime = Column(Integer, nullable=False, default=0)
     waittime = Column(Integer)
     waitratio = Column(DOUBLE_PRECISION)
+
+ForeignKeyConstraint(columns=[QueueFeatures.id], refcolumns=[CallOnQueue.queue_id], ondelete="CASCADE")

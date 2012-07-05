@@ -21,34 +21,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from xivo_dao.tests import test_dao
-
 from xivo_dao import meetme_features_dao
-from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
 from xivo_dao.alchemy.staticmeetme import StaticMeetme
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
-class TestMeetmeFeaturesDAO(test_dao.DAOTestCase):
+class TestMeetmeFeaturesDAO(DAOTestCase):
 
-    required_tables = [MeetmeFeatures.__table__, StaticMeetme.__table__]
+    tables = [MeetmeFeatures, StaticMeetme]
 
     def setUp(self):
-        db_connection_pool = dbconnection.DBConnectionPool(dbconnection.DBConnection)
-        dbconnection.register_db_connection_pool(db_connection_pool)
-
-        uri = 'postgresql://asterisk:asterisk@localhost/asterisktest'
-        dbconnection.add_connection_as(uri, 'asterisk')
-        connection = dbconnection.get_connection('asterisk')
-
-        self.cleanTables()
-
-        self.session = connection.get_session()
-
-        self.session.commit()
-
-    def tearDown(self):
-        dbconnection.unregister_db_connection_pool()
+        self.empty_tables()
 
     def _insert_meetme(self, meetmeid, name, confno, pin=None, context=None):
         var_val = confno if pin == None else ','.join([confno, pin])
@@ -158,7 +142,7 @@ class TestMeetmeFeaturesDAO(test_dao.DAOTestCase):
         blue = self._insert_meetme(2, 'blue', '9001', '1234', 'test')
         green = self._insert_meetme(3, 'green', '9002', '5555', 'detault')
 
-        result = meetme_features_dao.get_config(2)
+        result = meetme_features_dao.get_config(blue.id)
 
         expected = ('blue', '9001', True, 'test')
 

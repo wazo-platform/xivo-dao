@@ -1,45 +1,17 @@
 # -*- coding: UTF-8 -*-
 
-import unittest
 from xivo_dao import queue_log_dao
 from xivo_dao.alchemy.queue_log import QueueLog
-from xivo_dao.alchemy import dbconnection
-from xivo_dao.alchemy.base import Base
 import datetime
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
-class TestQueueLogDAO(unittest.TestCase):
+class TestQueueLogDAO(DAOTestCase):
 
     tables = [QueueLog]
 
-    @classmethod
-    def setUpClass(cls):
-        db_connection_pool = dbconnection.DBConnectionPool(dbconnection.DBConnection)
-        dbconnection.register_db_connection_pool(db_connection_pool)
-
-        uri = 'postgresql://asterisk:asterisk@localhost/asterisktest'
-        dbconnection.add_connection_as(uri, 'asterisk')
-        connection = dbconnection.get_connection('asterisk')
-
-        cls.session = connection.get_session()
-
-        engine = connection.get_engine()
-        Base.metadata.drop_all(engine, [table.__table__ for table in cls.tables])
-        Base.metadata.create_all(engine, [table.__table__ for table in cls.tables])
-        engine.dispose()
-
-    @classmethod
-    def tearDownClass(cls):
-        dbconnection.unregister_db_connection_pool()
-
-    def _empty_tables(self):
-        for table in self.tables:
-            entries = self.session.query(table)
-            if entries.count() > 0:
-                map(self.session.delete, entries)
-
     def setUp(self):
-        self._empty_tables()
+        self.empty_tables()
 
     def _insert_entry_queue_full(self, timestamp, callid, queuename):
         queue_log = QueueLog()

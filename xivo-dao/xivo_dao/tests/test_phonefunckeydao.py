@@ -1,34 +1,21 @@
-from xivo_dao.tests import test_dao
-from xivo_dao.alchemy import dbconnection
+# -*- coding: UTF-8 -*-
+
 from xivo_dao.alchemy.phonefunckey import PhoneFunckey
 from xivo_dao.phonefunckeydao import PhoneFunckeyDAO
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
-class TestPhoneFunckey(test_dao.DAOTestCase):
+class TestPhoneFunckey(DAOTestCase):
 
-    required_tables = [PhoneFunckey.__table__]
+    tables = [PhoneFunckey]
 
     def setUp(self):
+        self.empty_tables()
         self._user_id = 19
         self._destination_unc = '123'
         self._destination_rna = '234'
-        db_connection_pool = dbconnection.DBConnectionPool(dbconnection.DBConnection)
-        dbconnection.register_db_connection_pool(db_connection_pool)
-
-        uri = 'postgresql://asterisk:asterisk@localhost/asterisktest'
-        dbconnection.add_connection_as(uri, 'asterisk')
-        connection = dbconnection.get_connection('asterisk')
-
-        self.cleanTables()
-
-        self.session = connection.get_session()
 
         self._insert_funckeys()
-
-        self.session.commit()
-
-    def tearDown(self):
-        dbconnection.unregister_db_connection_pool()
 
     def _insert_funckeys(self):
         fwd_unc = PhoneFunckey()
@@ -52,6 +39,8 @@ class TestPhoneFunckey(test_dao.DAOTestCase):
         fwd_rna.progfunckey = 1
 
         self.session.add(fwd_rna)
+
+        self.session.commit()
 
     def test_get_destination_unc(self):
         dao = PhoneFunckeyDAO(self.session)

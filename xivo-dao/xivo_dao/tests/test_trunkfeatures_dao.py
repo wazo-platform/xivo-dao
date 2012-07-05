@@ -21,41 +21,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from xivo_dao.tests import test_dao
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
 from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.trunkfeaturesdao import TrunkFeaturesDAO
-from xivo_dao.alchemy import dbconnection
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
-class TrunkFeaturesDAOTestCase(test_dao.DAOTestCase):
+class TrunkFeaturesDAOTestCase(DAOTestCase):
 
-    required_tables = [TrunkFeatures.__table__,
-                       UserSIP.__table__,
-                       UserIAX.__table__,
-                       UserCustom.__table__]
+    tables = [TrunkFeatures, UserSIP, UserIAX, UserCustom]
 
     def setUp(self):
-        db_connection_pool = dbconnection.DBConnectionPool(dbconnection.DBConnection)
-        dbconnection.register_db_connection_pool(db_connection_pool)
-
-        uri = 'postgresql://asterisk:asterisk@localhost/asterisktest'
-        dbconnection.add_connection_as(uri, 'asterisk')
-        connection = dbconnection.get_connection('asterisk')
-
-        self.cleanTables()
-
-        self.session = connection.get_session()
-
-        self.session.commit()
-        self.session = connection.get_session()
-
+        self.empty_tables()
         self.dao = TrunkFeaturesDAO(self.session)
-
-    def tearDown(self):
-        dbconnection.unregister_db_connection_pool()
 
     def test_find_by_proto_name_sip(self):
         trunk_name = 'my_trunk'

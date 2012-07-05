@@ -1,34 +1,20 @@
 # -*- coding: utf-8 -*-
 
 import time
-from xivo_dao.tests import test_dao
 from xivo_dao.alchemy.queueinfo import QueueInfo
-from xivo_dao.alchemy import dbconnection
 from xivo_dao.queuestatisticdao import QueueStatisticDAO
+from xivo_dao.tests.test_dao import DAOTestCase
 
 NO_VALUE = ""
 
-class TestQueueStatisticDAO(test_dao.DAOTestCase):
 
-    required_tables = [QueueInfo.__table__]
+class TestQueueStatisticDAO(DAOTestCase):
+
+    tables = [QueueInfo]
 
     def setUp(self):
-        db_connection_pool = dbconnection.DBConnectionPool(dbconnection.DBConnection)
-        dbconnection.register_db_connection_pool(db_connection_pool)
-
-        uri = 'postgresql://asterisk:asterisk@localhost/asterisktest'
-        dbconnection.add_connection_as(uri, 'queue_stats')
-        connection = dbconnection.get_connection('queue_stats')
-
-        self.cleanTables('queue_stats')
-
-        self.session = connection.get_session()
-
-        self.session.commit()
+        self.empty_tables()
         self._queue_statistic_dao = QueueStatisticDAO()
-
-    def tearDown(self):
-        dbconnection.unregister_db_connection_pool()
 
     def _insert_received_calls(self, window, nb_in_window, queue_name):
         out_of_window_delta = window + 30

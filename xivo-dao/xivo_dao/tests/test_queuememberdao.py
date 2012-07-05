@@ -17,30 +17,30 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA..
 
 
-import unittest
-
-from mock import Mock, call, ANY
-from xivo_dao.alchemy import dbconnection
+from mock import Mock
 from xivo_dao.alchemy.queuemember import QueueMember
-from xivo_dao.alchemy.base import Base
 from xivo_dao.queuememberdao import QueueMemberDAO
 from xivo_dao.helpers.queuemember_formatter import QueueMemberFormatter
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
-class TestQueueMemberDAO(unittest.TestCase):
+class TestQueueMemberDAO(DAOTestCase):
+
+    tables = []
 
     def test_get_queuemembers(self):
         session = Mock()
         queuemember_dao = QueueMemberDAO(session)
         old_queuemember_formatter = QueueMemberFormatter.format_queuemembers
         QueueMemberFormatter.format_queuemembers = Mock()
-        expected_session_calls = [call.query(ANY)]
-        expected_formatter_calls = [call.QueueMemberFormatter.format_queuemember]
 
-        result = queuemember_dao.get_queuemembers()
+        queuemember_dao.get_queuemembers()
 
         try:
-            self.assertEqual(session.method_calls, expected_session_calls)
+            method_name = session.method_calls[0][0]
+            method_args = session.method_calls[0][1][0]
+            self.assertEqual(method_name, 'query')
+            self.assertEqual(method_args, QueueMember)
             self.assertTrue(QueueMemberFormatter.format_queuemembers.called)
         finally:
             QueueMemberFormatter.format_queuemembers = old_queuemember_formatter

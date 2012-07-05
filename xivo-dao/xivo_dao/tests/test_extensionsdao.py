@@ -21,34 +21,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from xivo_dao.tests import test_dao
 from xivo_dao.extensionsdao import ExtensionsDAO
-from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.extension import Extension
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
-class TestExtensionsDAO(test_dao.DAOTestCase):
+class TestExtensionsDAO(DAOTestCase):
 
-    required_tables = [Extension.__table__]
+    tables = [Extension]
 
     def setUp(self):
-        db_connection_pool = dbconnection.DBConnectionPool(dbconnection.DBConnection)
-        dbconnection.register_db_connection_pool(db_connection_pool)
-
-        uri = 'postgresql://asterisk:asterisk@localhost/asterisktest'
-        dbconnection.add_connection_as(uri, 'asterisk')
-        connection = dbconnection.get_connection('asterisk')
-
-        self.cleanTables()
-
-        self.session = connection.get_session()
-
+        self.empty_tables()
         self._insert_extens()
-
-        self.session.commit()
-
-    def tearDown(self):
-        dbconnection.unregister_db_connection_pool()
 
     def _insert_extens(self):
         exten = Extension()
@@ -59,6 +43,7 @@ class TestExtensionsDAO(test_dao.DAOTestCase):
         exten.name = 'phoneprogfunckey'
         exten.exten = '_*735'
         self.session.add(exten)
+        self.session.commit()
 
     def test_exten_by_name(self):
         dao = ExtensionsDAO(self.session)

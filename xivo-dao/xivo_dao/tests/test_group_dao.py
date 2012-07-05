@@ -19,40 +19,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import unittest
-
 from xivo_dao.alchemy.groupfeatures import GroupFeatures
 from xivo_dao.alchemy import dbconnection
 from xivo_dao import group_dao
-from xivo_dao.alchemy.base import Base
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
-class TestGroupDAO(unittest.TestCase):
+class TestGroupDAO(DAOTestCase):
 
     tables = [GroupFeatures]
 
-    @classmethod
-    def setUpClass(cls):
-        db_connection_pool = dbconnection.DBConnectionPool(dbconnection.DBConnection)
-        dbconnection.register_db_connection_pool(db_connection_pool)
-
-        uri = 'postgresql://asterisk:asterisk@localhost/asterisktest'
-        dbconnection.add_connection_as(uri, 'asterisk')
-        connection = dbconnection.get_connection('asterisk')
-
-        cls.session = connection.get_session()
-
-    @classmethod
-    def tearDownClass(cls):
-        dbconnection.unregister_db_connection_pool()
-
-    def _empty_tables(self):
-        for table in self.tables:
-            entries = self.session.query(table)
-            map(self.session.delete, entries)
-
     def setUp(self):
-        self._empty_tables()
+        self.empty_tables()
 
     def test_get_name(self):
         session = dbconnection.get_connection('asterisk').get_session()
