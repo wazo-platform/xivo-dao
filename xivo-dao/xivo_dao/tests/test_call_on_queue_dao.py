@@ -26,13 +26,13 @@ class TestCallOnQueueDAO(DAOTestCase):
         self.session.add(queue)
         self.session.commit()
 
-        return queue.id
+        return queue.name
 
     def test_add_full_call(self):
         timestamp = self._build_date(2012, 01, 02, 00, 00, 00)
-        queue_id = self._insert_queue_to_queuefeatures()
+        queue_name = self._insert_queue_to_queuefeatures()
 
-        add_full_call('callid', timestamp, queue_id)
+        add_full_call('callid', timestamp, queue_name)
 
         res = self.session.query(CallOnQueue).filter(CallOnQueue.callid == 'callid')
 
