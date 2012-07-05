@@ -49,9 +49,9 @@ def queue_name(queue_id):
     return res[0].name
 
 
-def is_a_queue(self, name):
+def is_a_queue(name):
     try:
-        self.id_from_name(name)
+        id_from_name(name)
     except LookupError:
         return False
     else:
