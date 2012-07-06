@@ -1,1 +1,14 @@
 XiVO data access object
+
+Dependencies:
+-------------
+lib-python (xivo-skaro)
+sqlalchemy >= 0.6.3
+postgresql
+
+
+Run unittests with:
+-------------------
+PYTHONPATH=</path/to/lib-python> nosetests
+a local database named 'asterisktest' with username and password 'asterisk', 'asterisk' is
+required to run the unittests.
