@@ -22,9 +22,10 @@
 
 from sqlalchemy.schema import Column, ForeignKey
 from sqlalchemy.types import Integer, TIMESTAMP
+from xivo_dao.alchemy.base import Base
 
 
-class QueuePeriodicStat(object):
+class QueuePeriodicStat(Base):
 
     __tablename__ = 'queue_periodic_stat'
 
