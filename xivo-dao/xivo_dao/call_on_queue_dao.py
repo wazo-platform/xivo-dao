@@ -5,6 +5,7 @@ from xivo_dao.alchemy import dbconnection
 from xivo_dao import queue_features_dao
 from sqlalchemy import func
 from sqlalchemy import between
+from sqlalchemy import desc
 
 _DB_NAME = 'asterisk'
 
@@ -39,3 +40,10 @@ def get_periodic_stats(start, end):
         stats['total'] += r[1]
 
     return stats
+
+
+def get_most_recent_time():
+    res = (_session().query(CallOnQueue.time)
+           .order_by(desc(CallOnQueue.time))
+           .limit(1))
+    return res[0].time

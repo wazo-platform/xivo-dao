@@ -82,3 +82,18 @@ class TestCallOnQueueDAO(DAOTestCase):
         stats = call_on_queue_dao.get_periodic_stats(start, end)
 
         self.assertEqual(stats['total'], 5)
+
+    def test_get_most_recent_time(self):
+        start = datetime.datetime(2012, 01, 01, 00, 00, 00)
+
+        queue_name, queue_id = self._insert_queue_to_queuefeatures()
+
+        for minute_increment in [-5, 5, 15, 22, 35, 65, 120]:
+            delta = datetime.timedelta(minutes=minute_increment)
+            time = start + delta
+            call_on_queue_dao.add_full_call('callid%s' % minute_increment, time, queue_name)
+
+        result = call_on_queue_dao.get_most_recent_time()
+        expected = start + datetime.timedelta(minutes=120)
+
+        self.assertEqual(result, expected)
