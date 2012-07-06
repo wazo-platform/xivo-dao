@@ -3,6 +3,8 @@
 from xivo_dao.alchemy.call_on_queue import CallOnQueue
 from xivo_dao.alchemy import dbconnection
 from xivo_dao import queue_features_dao
+from sqlalchemy import func
+from sqlalchemy import between
 
 _DB_NAME = 'asterisk'
 
@@ -22,3 +24,18 @@ def add_full_call(callid, time, queue_name):
 
     _session().add(call_on_queue)
     _session().commit()
+
+
+def get_periodic_stats(start, end):
+    stats = {'total': 0,
+             'full': 0}
+
+    res = (_session().query(CallOnQueue.status, func.count(CallOnQueue.status))
+           .group_by(CallOnQueue.status)
+           .filter(between(CallOnQueue.time, start, end)))
+
+    for r in res:
+        stats[r[0]] = r[1]
+        stats['total'] += r[1]
+
+    return stats
