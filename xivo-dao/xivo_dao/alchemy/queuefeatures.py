@@ -25,8 +25,8 @@ from xivo_dao.alchemy.base import Base
 from sqlalchemy.schema import Column, ForeignKeyConstraint
 from sqlalchemy.types import Integer, String
 from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION
-from xivo_dao.alchemy.call_on_queue import CallOnQueue
-from xivo_dao.alchemy.queue_periodic_stat import QueuePeriodicStat
+from xivo_dao.alchemy.stat_call_on_queue import StatCallOnQueue
+from xivo_dao.alchemy.stat_queue_periodic import StatQueuePeriodic
 
 
 class QueueFeatures(Base):
@@ -55,5 +55,5 @@ class QueueFeatures(Base):
     waittime = Column(Integer)
     waitratio = Column(DOUBLE_PRECISION)
 
-ForeignKeyConstraint(columns=[QueueFeatures.id], refcolumns=[CallOnQueue.queue_id], ondelete="CASCADE")
-ForeignKeyConstraint(columns=[QueueFeatures.id], refcolumns=[QueuePeriodicStat.queue_id], ondelete="CASCADE")
+ForeignKeyConstraint(columns=[QueueFeatures.id], refcolumns=[StatCallOnQueue.queue_id], ondelete="CASCADE")
+ForeignKeyConstraint(columns=[QueueFeatures.id], refcolumns=[StatQueuePeriodic.queue_id], ondelete="CASCADE")

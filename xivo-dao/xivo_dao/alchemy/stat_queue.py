@@ -20,25 +20,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from sqlalchemy.schema import Column, ForeignKey
-from sqlalchemy.types import Integer, TIMESTAMP
+from sqlalchemy.schema import Column
+from sqlalchemy.types import Integer, String
 from xivo_dao.alchemy.base import Base
 
 
-class QueuePeriodicStat(Base):
+class StatQueue(Base):
 
-    __tablename__ = 'queue_periodic_stat'
+    __tablename__ = 'stat_queue'
 
     id = Column(Integer, primary_key=True)
-    time = Column(TIMESTAMP, nullable=False)
-    answered = Column(Integer, nullable=False, default=0)
-    abandoned = Column(Integer, nullable=False, default=0)
-    total = Column(Integer, nullable=False, default=0)
-    full = Column(Integer, nullable=False, default=0)
-    closed = Column(Integer, nullable=False, default=0)
-    joinempty = Column(Integer, nullable=False, default=0)
-    leaveempty = Column(Integer, nullable=False, default=0)
-    reroutedguide = Column(Integer, nullable=False, default=0)
-    retoutednumber = Column(Integer, nullable=False, default=0)
-    timeout = Column(Integer, nullable=False, default=0)
-    queue_id = Column(Integer, ForeignKey("queuefeatures.id"))
+    name = Column(String(128), nullable=False)

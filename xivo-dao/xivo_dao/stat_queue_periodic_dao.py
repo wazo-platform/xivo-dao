@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 from xivo_dao.alchemy import dbconnection
-from xivo_dao.alchemy.queue_periodic_stat import QueuePeriodicStat
+from xivo_dao.alchemy.stat_queue_periodic import StatQueuePeriodic
 
 
 _DB_NAME = 'asterisk'
@@ -12,7 +12,7 @@ def _session():
 
 
 def insert_stats(stats, period_start):
-    entry = QueuePeriodicStat()
+    entry = StatQueuePeriodic()
     entry.time = period_start
     entry.full = stats['full']
     entry.total = stats['total']

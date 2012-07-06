@@ -25,9 +25,9 @@ from sqlalchemy.types import String, TIMESTAMP, Integer, Enum
 from xivo_dao.alchemy.base import Base, Type
 
 
-class CallOnQueue(Base):
+class StatCallOnQueue(Base):
 
-    __tablename__ = 'call_on_queue'
+    __tablename__ = 'stat_call_on_queue'
 
     callid = Column(String(32), nullable=False, primary_key=True)
     time = Column(TIMESTAMP, nullable=False)
@@ -45,4 +45,4 @@ class CallOnQueue(Base):
                          name='call_exit_type',
                          metadata=Type.metadata),
                       nullable=False)
-    queue_id = Column(Integer, ForeignKey("queuefeatures.id"))
+    queue_id = Column(Integer, ForeignKey("stat_queue.id"))
