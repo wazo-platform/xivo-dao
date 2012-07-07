@@ -1,8 +1,8 @@
 # -*- coding: UTF-8 -*-
+import datetime
 
 from xivo_dao import queue_log_dao
 from xivo_dao.alchemy.queue_log import QueueLog
-import datetime
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -57,3 +57,16 @@ class TestQueueLogDAO(DAOTestCase):
         result = queue_log_dao.get_queue_full_call(datetimestart, datetimeend)
 
         self.assertEqual(sorted(result), sorted(expected_result))
+
+    def test_get_first_time(self):
+        queuename = 'q1'
+        for minute in [0, 10, 20, 30, 40, 50]:
+            datetimewithmicro = self._build_date(2012, 01, 01, 00, minute, 59)
+            callid = str(12345678.123 + minute)
+            self._insert_entry_queue_full(datetimewithmicro, callid, queuename)
+
+        expected = datetime.datetime(2012, 01, 01, 0, 0, 59)
+
+        result = queue_log_dao.get_first_time()
+
+        self.assertEqual(result, expected)

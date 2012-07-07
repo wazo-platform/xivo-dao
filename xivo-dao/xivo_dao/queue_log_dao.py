@@ -1,9 +1,11 @@
 # -*- coding: UTF-8 -*-
+import datetime
 
-from xivo_dao.alchemy.queue_log import QueueLog
-from xivo_dao.alchemy import dbconnection
-from sqlalchemy import between
+from sqlalchemy import between, asc
 from sqlalchemy.sql.expression import and_
+from xivo_dao.alchemy import dbconnection
+from xivo_dao.alchemy.queue_log import QueueLog
+
 
 _DB_NAME = 'asterisk'
 
@@ -21,3 +23,9 @@ def get_queue_full_call(start, end):
              'event': 'full',
              'time': r.time,
              'callid': r.callid} for r in res]
+
+
+def get_first_time():
+    return datetime.datetime.strptime(
+        _session().query(QueueLog.time).order_by(asc(QueueLog.time)).limit(1)[0].time,
+        '%Y-%m-%d %H:%M:%S.%f')
