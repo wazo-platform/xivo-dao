@@ -1,7 +1,7 @@
 #!/usr/bin/make -f
 # -*- mode: makefile; coding: utf-8 -*-
 
-DEB_PKG="xivo-dird"
+DEB_PKG="xivo-dao"
 DEB_TB_DEPS=""
 DEB_TAR_EXTRA_OPTIONS="--exclude=*.pyc"
 
