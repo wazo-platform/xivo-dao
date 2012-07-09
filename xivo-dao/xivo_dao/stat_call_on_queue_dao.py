@@ -3,9 +3,7 @@
 from xivo_dao.alchemy.stat_call_on_queue import StatCallOnQueue
 from xivo_dao.alchemy import dbconnection
 from xivo_dao import stat_queue_dao
-from sqlalchemy import func
-from sqlalchemy import between
-from sqlalchemy import desc
+from sqlalchemy import func, between
 
 _DB_NAME = 'asterisk'
 
@@ -28,25 +26,19 @@ def add_full_call(callid, time, queue_name):
 
 
 def get_periodic_stats(start, end):
-    stats = {'total': 0,
-             'full': 0}
+    stats = {}
 
-    res = (_session().query(StatCallOnQueue.status, func.count(StatCallOnQueue.status))
-           .group_by(StatCallOnQueue.status)
+    res = (_session().query(StatCallOnQueue.queue_id, StatCallOnQueue.status, func.count(StatCallOnQueue.status))
+           .group_by(StatCallOnQueue.queue_id, StatCallOnQueue.status)
            .filter(between(StatCallOnQueue.time, start, end)))
 
-    for r in res:
-        stats[r[0]] = r[1]
-        stats['total'] += r[1]
+    for queue_id, status, count in res:
+        if queue_id not in stats:
+            stats[queue_id] = {'total': 0}
+        stats[queue_id][status] = count
+        stats[queue_id]['total'] += count
 
     return stats
-
-
-def get_most_recent_time():
-    res = (_session().query(StatCallOnQueue.time)
-           .order_by(desc(StatCallOnQueue.time))
-           .limit(1))
-    return res[0].time
 
 
 def clean_table():

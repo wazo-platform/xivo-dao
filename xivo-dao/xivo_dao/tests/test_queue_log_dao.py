@@ -70,3 +70,18 @@ class TestQueueLogDAO(DAOTestCase):
         result = queue_log_dao.get_first_time()
 
         self.assertEqual(result, expected)
+
+    def test_time_str_to_datetime(self):
+        s1 = '2012-01-01 01:01:01.456897'
+        expected = datetime.datetime(2012, 01, 01, 01, 01, 01, 456897)
+
+        result = queue_log_dao._time_str_to_datetime(s1)
+
+        self.assertEqual(result, expected)
+
+        s1 = '2012-01-01 01:01:01'
+        expected = datetime.datetime(2012, 01, 01, 01, 01, 01)
+
+        result = queue_log_dao._time_str_to_datetime(s1)
+
+        self.assertEqual(result, expected)

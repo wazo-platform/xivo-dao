@@ -41,11 +41,8 @@ class TestStatCallOnQueueDAO(DAOTestCase):
     def test_get_periodic_stats_full(self):
         start = datetime.datetime(2012, 01, 01, 00, 00, 00)
         end = datetime.datetime(2012, 01, 01, 00, 59, 59, 999999)
-        stats = stat_call_on_queue_dao.get_periodic_stats(start, end)
 
-        self.assertEqual(stats['full'], 0)
-
-        queue_name, _ = self._insert_queue_to_stat_queue()
+        queue_name, queue_id = self._insert_queue_to_stat_queue()
 
         for minute_increment in [-5, 5, 15, 22, 35, 65, 120]:
             delta = datetime.timedelta(minutes=minute_increment)
@@ -54,14 +51,11 @@ class TestStatCallOnQueueDAO(DAOTestCase):
 
         stats = stat_call_on_queue_dao.get_periodic_stats(start, end)
 
-        self.assertEqual(stats['full'], 4)
+        self.assertEqual(stats[queue_id]['full'], 4)
 
     def test_get_periodic_stats_total(self):
         start = datetime.datetime(2012, 01, 01, 00, 00, 00)
         end = datetime.datetime(2012, 01, 01, 00, 59, 59, 999999)
-        stats = stat_call_on_queue_dao.get_periodic_stats(start, end)
-
-        self.assertEqual(stats['total'], 0)
 
         queue_name, queue_id = self._insert_queue_to_stat_queue()
 
@@ -81,22 +75,7 @@ class TestStatCallOnQueueDAO(DAOTestCase):
 
         stats = stat_call_on_queue_dao.get_periodic_stats(start, end)
 
-        self.assertEqual(stats['total'], 5)
-
-    def test_get_most_recent_time(self):
-        start = datetime.datetime(2012, 01, 01, 00, 00, 00)
-
-        queue_name, _ = self._insert_queue_to_stat_queue()
-
-        for minute_increment in [-5, 5, 15, 22, 35, 65, 120]:
-            delta = datetime.timedelta(minutes=minute_increment)
-            time = start + delta
-            stat_call_on_queue_dao.add_full_call('callid%s' % minute_increment, time, queue_name)
-
-        result = stat_call_on_queue_dao.get_most_recent_time()
-        expected = start + datetime.timedelta(minutes=120)
-
-        self.assertEqual(result, expected)
+        self.assertEqual(stats[queue_id]['total'], 5)
 
     def test_clean_table(self):
         start = datetime.datetime(2012, 01, 01, 00, 00, 00)
