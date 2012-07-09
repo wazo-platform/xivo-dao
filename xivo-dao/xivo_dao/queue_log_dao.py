@@ -6,8 +6,8 @@ from sqlalchemy.sql.expression import and_
 from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.queue_log import QueueLog
 
-
 _DB_NAME = 'asterisk'
+_STR_TIME_FMT = "%Y-%m-%d %H:%M:%S.%f"
 
 
 def _session():
@@ -16,9 +16,12 @@ def _session():
 
 
 def get_queue_full_call(start, end):
+    start = start.strftime(_STR_TIME_FMT)
+    end = end.strftime(_STR_TIME_FMT)
     res = (_session()
            .query(QueueLog.queuename, QueueLog.time, QueueLog.callid)
-           .filter(and_(QueueLog.event == 'FULL', between(QueueLog.time, start, end))))
+           .filter(and_(QueueLog.event == 'FULL',
+                        between(QueueLog.time, start, end))))
     return [{'queue_name': r.queuename,
              'event': 'full',
              'time': r.time,

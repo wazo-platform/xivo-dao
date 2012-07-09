@@ -47,3 +47,8 @@ def get_most_recent_time():
            .order_by(desc(StatCallOnQueue.time))
            .limit(1))
     return res[0].time
+
+
+def clean_table():
+    _session().query(StatCallOnQueue).delete()
+    _session().commit()

@@ -5,6 +5,7 @@ from xivo_dao.tests.test_dao import DAOTestCase
 import datetime
 from xivo_dao import stat_call_on_queue_dao
 from xivo_dao.alchemy.stat_queue import StatQueue
+from sqlalchemy import func
 
 
 class TestStatCallOnQueueDAO(DAOTestCase):
@@ -85,7 +86,7 @@ class TestStatCallOnQueueDAO(DAOTestCase):
     def test_get_most_recent_time(self):
         start = datetime.datetime(2012, 01, 01, 00, 00, 00)
 
-        queue_name, queue_id = self._insert_queue_to_stat_queue()
+        queue_name, _ = self._insert_queue_to_stat_queue()
 
         for minute_increment in [-5, 5, 15, 22, 35, 65, 120]:
             delta = datetime.timedelta(minutes=minute_increment)
@@ -96,3 +97,19 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         expected = start + datetime.timedelta(minutes=120)
 
         self.assertEqual(result, expected)
+
+    def test_clean_table(self):
+        start = datetime.datetime(2012, 01, 01, 00, 00, 00)
+
+        queue_name, _ = self._insert_queue_to_stat_queue()
+
+        for minute_increment in [-5, 5, 15, 22, 35, 65, 120]:
+            delta = datetime.timedelta(minutes=minute_increment)
+            time = start + delta
+            stat_call_on_queue_dao.add_full_call('callid%s' % minute_increment, time, queue_name)
+
+        stat_call_on_queue_dao.clean_table()
+
+        total = (self.session.query(func.count(StatCallOnQueue.callid)))[0][0]
+
+        self.assertEqual(total, 0)

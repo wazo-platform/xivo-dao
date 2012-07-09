@@ -19,3 +19,8 @@ def insert_stats(stats, period_start):
 
     _session().add(entry)
     _session().commit()
+
+
+def clean_table():
+    _session().query(StatQueuePeriodic).delete()
+    _session().commit()

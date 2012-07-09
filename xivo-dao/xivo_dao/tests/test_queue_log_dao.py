@@ -51,8 +51,8 @@ class TestQueueLogDAO(DAOTestCase):
         self._insert_entry_queue_full(before, '5555555.123', queuename)
         self._insert_entry_queue_closed(before, '5555555.124', queuename)
 
-        datetimestart = self._build_date(2012, 01, 01, 00, 00, 00)
-        datetimeend = self._build_date(2012, 01, 01, 00, 59, 59)
+        datetimestart = datetime.datetime(2012, 01, 01, 00, 00, 00)
+        datetimeend = datetime.datetime(2012, 01, 01, 00, 59, 59)
 
         result = queue_log_dao.get_queue_full_call(datetimestart, datetimeend)
 
