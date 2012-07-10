@@ -21,3 +21,16 @@ def id_from_name(queue_name):
     if res.count() == 0:
         raise LookupError('No such queue')
     return res[0].id
+
+
+def insert_if_missing(all_queues):
+    all_queues = set(all_queues)
+    old_queues = set([r.name for r in _session().query(StatQueue.name)])
+
+    missing_queues = list(all_queues - old_queues)
+
+    for queue_name in missing_queues:
+        new_queue = StatQueue()
+        new_queue.name = queue_name
+        _session().add(new_queue)
+    _session().commit()

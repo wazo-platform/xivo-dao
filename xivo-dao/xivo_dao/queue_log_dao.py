@@ -3,10 +3,11 @@ import datetime
 import re
 
 from sqlalchemy import between
-from sqlalchemy.sql.functions import min
 from sqlalchemy.sql.expression import and_
+from sqlalchemy.sql.functions import min
 from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.queue_log import QueueLog
+
 
 _DB_NAME = 'asterisk'
 _STR_TIME_FMT = "%Y-%m-%d %H:%M:%S.%f"
@@ -44,3 +45,12 @@ def _time_str_to_datetime(s):
 
 def get_first_time():
     return _time_str_to_datetime(_session().query(min(QueueLog.time))[0][0])
+
+
+def get_queue_names_in_range(start, end):
+    start = start.strftime(_STR_TIME_FMT)
+    end = end.strftime(_STR_TIME_FMT)
+
+    return [r.queuename for r in (_session().query(QueueLog.queuename)
+                                  .filter(between(QueueLog.time, start, end))
+                                  .group_by(QueueLog.queuename))]

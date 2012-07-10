@@ -85,3 +85,15 @@ class TestQueueLogDAO(DAOTestCase):
         result = queue_log_dao._time_str_to_datetime(s1)
 
         self.assertEqual(result, expected)
+
+    def test_get_queue_names_in_range(self):
+        queue_names = sorted(['queue_%s' % x for x in range(10)])
+        t = datetime.datetime(2012, 1, 1, 1, 1, 1)
+        timestamp = self._build_date(t.year, t.month, t.day, t.hour, t.minute, t.second)
+        for queue_name in queue_names:
+            self._insert_entry_queue('FULL', timestamp, queue_name, queue_name)
+
+        one_hour = datetime.timedelta(hours=1)
+        result = sorted(queue_log_dao.get_queue_names_in_range(t - one_hour, t + one_hour))
+
+        self.assertEqual(result, queue_names)
