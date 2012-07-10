@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-
+from sqlalchemy import distinct
 from xivo_dao.alchemy.stat_queue import StatQueue
 from xivo_dao.alchemy import dbconnection
 
@@ -25,7 +25,7 @@ def id_from_name(queue_name):
 
 def insert_if_missing(all_queues):
     all_queues = set(all_queues)
-    old_queues = set([r.name for r in _session().query(StatQueue.name)])
+    old_queues = set(r[0] for r in _session().query(distinct(StatQueue.name)))
 
     missing_queues = list(all_queues - old_queues)
 

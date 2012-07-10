@@ -2,7 +2,7 @@
 import datetime
 import re
 
-from sqlalchemy import between
+from sqlalchemy import between, distinct
 from sqlalchemy.sql.expression import and_
 from sqlalchemy.sql.functions import min
 from xivo_dao.alchemy import dbconnection
@@ -51,6 +51,5 @@ def get_queue_names_in_range(start, end):
     start = start.strftime(_STR_TIME_FMT)
     end = end.strftime(_STR_TIME_FMT)
 
-    return [r.queuename for r in (_session().query(QueueLog.queuename)
-                                  .filter(between(QueueLog.time, start, end))
-                                  .group_by(QueueLog.queuename))]
+    return [r[0] for r in (_session().query(distinct(QueueLog.queuename))
+                                  .filter(between(QueueLog.time, start, end)))]
