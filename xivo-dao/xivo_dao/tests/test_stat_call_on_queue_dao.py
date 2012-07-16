@@ -1,11 +1,12 @@
 # -*- coding: UTF-8 -*-
-
-from xivo_dao.alchemy.stat_call_on_queue import StatCallOnQueue
-from xivo_dao.tests.test_dao import DAOTestCase
 import datetime
-from xivo_dao import stat_call_on_queue_dao
-from xivo_dao.alchemy.stat_queue import StatQueue
+
 from sqlalchemy import func
+
+from xivo_dao import stat_call_on_queue_dao
+from xivo_dao.alchemy.stat_call_on_queue import StatCallOnQueue
+from xivo_dao.alchemy.stat_queue import StatQueue
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestStatCallOnQueueDAO(DAOTestCase):
@@ -44,6 +45,15 @@ class TestStatCallOnQueueDAO(DAOTestCase):
 
         stat_call_on_queue_dao.add_closed_call('callid', timestamp, queue_name)
 
+        res = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid == 'callid')
+
+        self.assertEqual(res[0].callid, 'callid')
+
+    def test_add_answered_call(self):
+        timestamp = self._build_date(2012, 01, 02, 00, 00, 00)
+        queue_name, _ = self._insert_queue_to_stat_queue()
+
+        stat_call_on_queue_dao.add_answered_call('callid', timestamp, queue_name)
         res = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid == 'callid')
 
         self.assertEqual(res[0].callid, 'callid')

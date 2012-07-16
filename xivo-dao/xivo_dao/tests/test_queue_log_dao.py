@@ -28,6 +28,9 @@ class TestQueueLogDAO(DAOTestCase):
     def _insert_entry_queue_closed(self, timestamp, callid, queuename):
         self._insert_entry_queue('CLOSED', timestamp, callid, queuename)
 
+    def _insert_entry_queue_answered(self, timestamp, callid, queuename):
+        self._insert_entry_queue('CONNECT', timestamp, callid, queuename)
+
     @staticmethod
     def _build_date(year, month, day, hour=0, minute=0, second=0, micro=0):
         return datetime.datetime(year, month, day, hour, minute, second, micro).strftime("%Y-%m-%d %H:%M:%S.%f")
@@ -121,5 +124,29 @@ class TestQueueLogDAO(DAOTestCase):
         datetimeend = datetime.datetime(2012, 01, 01, 00, 59, 59)
 
         result = queue_log_dao.get_queue_closed_call(datetimestart, datetimeend)
+
+        self.assertEqual(sorted(result), sorted(expected_result))
+
+    def test_get_queue_answered_call(self):
+        queuename = 'q1'
+        expected_result = []
+        for minute in [0, 10, 20, 30, 40, 50]:
+            datetimewithmicro = self._build_date(2012, 01, 01, 00, minute, 00)
+            callid = str(12345678.123 + minute)
+            self._insert_entry_queue_answered(datetimewithmicro, callid, queuename)
+            expected_result.append({'queue_name': queuename,
+                                    'event': 'answered',
+                                    'time': datetimewithmicro,
+                                    'callid': callid})
+        after = self._build_date(2012, 01, 02, 00, 00, 00)
+        self._insert_entry_queue_answered(after, '1234.123', queuename)
+
+        before = self._build_date(2011, 12, 31, 00, 00, 00)
+        self._insert_entry_queue_answered(before, '5555555.123', queuename)
+
+        datetimestart = datetime.datetime(2012, 01, 01, 00, 00, 00)
+        datetimeend = datetime.datetime(2012, 01, 01, 00, 59, 59)
+
+        result = queue_log_dao.get_queue_answered_call(datetimestart, datetimeend)
 
         self.assertEqual(sorted(result), sorted(expected_result))
