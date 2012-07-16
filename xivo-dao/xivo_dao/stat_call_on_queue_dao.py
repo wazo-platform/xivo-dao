@@ -13,16 +13,24 @@ def _session():
     return connection.get_session()
 
 
-def add_full_call(callid, time, queue_name):
+def _add_call(callid, time, queue_name, event):
     queue_id = int(stat_queue_dao.id_from_name(queue_name))
     call_on_queue = StatCallOnQueue()
     call_on_queue.time = time
     call_on_queue.callid = callid
     call_on_queue.queue_id = queue_id
-    call_on_queue.status = 'full'
+    call_on_queue.status = event
 
     _session().add(call_on_queue)
     _session().commit()
+
+
+def add_full_call(callid, time, queue_name):
+    _add_call(callid, time, queue_name, 'full')
+
+
+def add_closed_call(callid, time, queue_name):
+    _add_call(callid, time, queue_name, 'closed')
 
 
 def get_periodic_stats(start, end):

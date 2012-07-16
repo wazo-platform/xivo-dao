@@ -19,17 +19,25 @@ def _session():
     return connection.get_session()
 
 
-def get_queue_full_call(start, end):
+def _get_queue_event_call(start, end, event_filter, name):
     start = start.strftime(_STR_TIME_FMT)
     end = end.strftime(_STR_TIME_FMT)
     res = (_session()
            .query(QueueLog.queuename, QueueLog.time, QueueLog.callid)
-           .filter(and_(QueueLog.event == 'FULL',
+           .filter(and_(QueueLog.event == event_filter,
                         between(QueueLog.time, start, end))))
     return [{'queue_name': r.queuename,
-             'event': 'full',
+             'event': name,
              'time': r.time,
              'callid': r.callid} for r in res]
+
+
+def get_queue_full_call(start, end):
+    return _get_queue_event_call(start, end, 'FULL', 'full')
+
+
+def get_queue_closed_call(start, end):
+    return _get_queue_event_call(start, end, 'CLOSED', 'closed')
 
 
 def _time_str_to_datetime(s):

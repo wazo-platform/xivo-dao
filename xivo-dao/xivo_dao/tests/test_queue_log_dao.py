@@ -97,3 +97,29 @@ class TestQueueLogDAO(DAOTestCase):
         result = sorted(queue_log_dao.get_queue_names_in_range(t - one_hour, t + one_hour))
 
         self.assertEqual(result, queue_names)
+
+    def test_get_queue_closed_call(self):
+        queuename = 'q1'
+        expected_result = []
+        for minute in [0, 10, 20, 30, 40, 50]:
+            datetimewithmicro = self._build_date(2012, 01, 01, 00, minute, 00)
+            callid = str(12345678.123 + minute)
+            self._insert_entry_queue_closed(datetimewithmicro, callid, queuename)
+            expected_result.append({'queue_name': queuename,
+                                    'event': 'closed',
+                                    'time': datetimewithmicro,
+                                    'callid': callid})
+        after = self._build_date(2012, 01, 02, 00, 00, 00)
+        self._insert_entry_queue_full(after, '1234.123', queuename)
+        self._insert_entry_queue_closed(after, '1234.124', queuename)
+
+        before = self._build_date(2011, 12, 31, 00, 00, 00)
+        self._insert_entry_queue_full(before, '5555555.123', queuename)
+        self._insert_entry_queue_closed(before, '5555555.124', queuename)
+
+        datetimestart = datetime.datetime(2012, 01, 01, 00, 00, 00)
+        datetimeend = datetime.datetime(2012, 01, 01, 00, 59, 59)
+
+        result = queue_log_dao.get_queue_closed_call(datetimestart, datetimeend)
+
+        self.assertEqual(sorted(result), sorted(expected_result))

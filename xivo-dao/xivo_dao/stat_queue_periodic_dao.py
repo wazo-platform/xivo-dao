@@ -16,7 +16,10 @@ def insert_stats(stats, period_start):
     for queue_id, queue_stats in stats.iteritems():
         entry = StatQueuePeriodic()
         entry.time = period_start
-        entry.full = queue_stats['full']
+        if 'full' in queue_stats:
+            entry.full = queue_stats['full']
+        if 'closed' in queue_stats:
+            entry.closed = queue_stats['closed']
         entry.total = queue_stats['total']
         entry.queue_id = queue_id
 

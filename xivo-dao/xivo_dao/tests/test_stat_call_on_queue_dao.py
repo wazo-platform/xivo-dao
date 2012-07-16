@@ -38,6 +38,16 @@ class TestStatCallOnQueueDAO(DAOTestCase):
 
         self.assertEqual(res[0].callid, 'callid')
 
+    def test_add_closed_call(self):
+        timestamp = self._build_date(2012, 01, 02, 00, 00, 00)
+        queue_name, _ = self._insert_queue_to_stat_queue()
+
+        stat_call_on_queue_dao.add_closed_call('callid', timestamp, queue_name)
+
+        res = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid == 'callid')
+
+        self.assertEqual(res[0].callid, 'callid')
+
     def test_get_periodic_stats_full(self):
         start = datetime.datetime(2012, 01, 01, 00, 00, 00)
         end = datetime.datetime(2012, 01, 01, 00, 59, 59, 999999)
@@ -53,6 +63,21 @@ class TestStatCallOnQueueDAO(DAOTestCase):
 
         self.assertEqual(stats[queue_id]['full'], 4)
 
+    def test_get_periodic_stats_closed(self):
+        start = datetime.datetime(2012, 01, 01, 00, 00, 00)
+        end = datetime.datetime(2012, 01, 01, 00, 59, 59, 999999)
+
+        queue_name, queue_id = self._insert_queue_to_stat_queue()
+
+        for minute_increment in [-5, 5, 15, 22, 35, 65, 120]:
+            delta = datetime.timedelta(minutes=minute_increment)
+            time = start + delta
+            stat_call_on_queue_dao.add_closed_call('callid%s' % minute_increment, time, queue_name)
+
+        stats = stat_call_on_queue_dao.get_periodic_stats(start, end)
+
+        self.assertEqual(stats[queue_id]['closed'], 4)
+
     def test_get_periodic_stats_total(self):
         start = datetime.datetime(2012, 01, 01, 00, 00, 00)
         end = datetime.datetime(2012, 01, 01, 00, 59, 59, 999999)
@@ -62,7 +87,12 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         for minute_increment in [-5, 5, 15, 22, 35, 65, 120]:
             delta = datetime.timedelta(minutes=minute_increment)
             time = start + delta
-            stat_call_on_queue_dao.add_full_call('callid%s' % minute_increment, time, queue_name)
+            stat_call_on_queue_dao.add_full_call('callid%s-full' % minute_increment, time, queue_name)
+
+        for minute_increment in [-5, 5, 15, 22, 35, 65, 120]:
+            delta = datetime.timedelta(minutes=minute_increment)
+            time = start + delta
+            stat_call_on_queue_dao.add_closed_call('callid%s-closed' % minute_increment, time, queue_name)
 
         other_call = StatCallOnQueue()
         other_call.time = start
@@ -75,7 +105,7 @@ class TestStatCallOnQueueDAO(DAOTestCase):
 
         stats = stat_call_on_queue_dao.get_periodic_stats(start, end)
 
-        self.assertEqual(stats[queue_id]['total'], 5)
+        self.assertEqual(stats[queue_id]['total'], 9)
 
     def test_clean_table(self):
         start = datetime.datetime(2012, 01, 01, 00, 00, 00)
@@ -89,6 +119,6 @@ class TestStatCallOnQueueDAO(DAOTestCase):
 
         stat_call_on_queue_dao.clean_table()
 
-        total = (self.session.query(func.count(StatCallOnQueue.callid)))[0][0]
+        total = (self.session.query(func.count(StatCallOnQueue.callid))).first()[0]
 
         self.assertEqual(total, 0)

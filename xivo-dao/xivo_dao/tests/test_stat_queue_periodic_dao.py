@@ -28,7 +28,8 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
         queue_name, queue_id = self._insert_queue_to_stat_queue()
         stats = {queue_id: {
                             'full': 4,
-                            'total': 10
+                            'closed': 5,
+                            'total': 9
                             }
                  }
         return stats
@@ -44,7 +45,8 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
                     .filter(StatQueuePeriodic.time == period_start)[0])
 
             self.assertEqual(result.full, 4)
-            self.assertEqual(result.total, 10)
+            self.assertEqual(result.closed, 5)
+            self.assertEqual(result.total, 9)
         except LookupError:
             self.assertTrue(False, 'Should have found a row')
 
