@@ -41,6 +41,10 @@ def add_closed_call(callid, time, queue_name):
     _add_call(callid, time, queue_name, 'closed')
 
 
+def add_timeout_call(callid, time, queue_name):
+    _add_call(callid, time, queue_name, 'timeout')
+
+
 def get_periodic_stats(start, end):
     stats = {}
 

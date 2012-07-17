@@ -24,6 +24,8 @@ def insert_stats(stats, period_start):
             entry.full = queue_stats['full']
         if 'closed' in queue_stats:
             entry.closed = queue_stats['closed']
+        if 'timeout' in queue_stats:
+            entry.timeout = queue_stats['timeout']
         entry.total = queue_stats['total']
         entry.queue_id = queue_id
 

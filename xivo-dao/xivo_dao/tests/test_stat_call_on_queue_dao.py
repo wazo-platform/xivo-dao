@@ -67,6 +67,15 @@ class TestStatCallOnQueueDAO(DAOTestCase):
 
         self.assertEqual(res[0].callid, 'callid')
 
+    def test_add_timeout_call(self):
+        timestamp = self._build_date(2012, 01, 02, 00, 00, 00)
+        queue_name, _ = self._insert_queue_to_stat_queue()
+
+        stat_call_on_queue_dao.add_timeout_call('callid', timestamp, queue_name)
+        res = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid == 'callid')
+
+        self.assertEqual(res[0].callid, 'callid')
+
     def test_get_periodic_stats_full(self):
         start = datetime.datetime(2012, 01, 01, 00, 00, 00)
         end = datetime.datetime(2012, 01, 01, 00, 59, 59, 999999)

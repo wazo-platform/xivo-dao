@@ -39,6 +39,9 @@ class TestQueueLogDAO(DAOTestCase):
     def _insert_entry_queue_abandoned(self, timestamp, callid, queuename):
         self._insert_entry_queue('ABANDON', timestamp, callid, queuename)
 
+    def _insert_entry_queue_timeout(self, timestamp, callid, queuename):
+        self._insert_entry_queue('EXITWITHTIMEOUT', timestamp, callid, queuename)
+
     @staticmethod
     def _build_date(year, month, day, hour=0, minute=0, second=0, micro=0):
         return datetime.datetime(year, month, day, hour, minute, second, micro).strftime(TIMESTAMP_FORMAT)
@@ -119,11 +122,20 @@ class TestQueueLogDAO(DAOTestCase):
 
         self.assertEqual(sorted(result), sorted(expected))
 
+    def test_get_queue_timeout_call(self):
+        start = datetime.datetime(2012, 01, 01, 01, 00, 00)
+        expected = self._insert_event_list('timeout', start, [-1, 0, 10, 30, 59, 60, 120])
+
+        result = queue_log_dao.get_queue_timeout_call(start, start + ONE_HOUR - ONE_MICROSECOND)
+
+        self.assertEqual(sorted(result), sorted(expected))
+
     def _insert_ev_fn(self, event_name):
         return {'abandoned': self._insert_entry_queue_abandoned,
                 'answered': self._insert_entry_queue_answered,
                 'closed': self._insert_entry_queue_closed,
-                'full': self._insert_entry_queue_full}[event_name]
+                'full': self._insert_entry_queue_full,
+                'timeout': self._insert_entry_queue_timeout}[event_name]
 
     def _insert_event_list(self, event_name, start, minutes):
         expected = []

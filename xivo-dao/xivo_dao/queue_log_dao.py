@@ -48,6 +48,10 @@ def get_queue_answered_call(start, end):
     return _get_queue_event_call(start, end, 'CONNECT', 'answered')
 
 
+def get_queue_timeout_call(start, end):
+    return _get_queue_event_call(start, end, 'EXITWITHTIMEOUT', 'timeout')
+
+
 def _time_str_to_datetime(s):
     m = re.match(_TIME_STRING_PATTERN, s)
     return datetime.datetime(int(m.group(1)),
