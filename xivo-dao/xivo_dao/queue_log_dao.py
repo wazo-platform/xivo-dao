@@ -40,6 +40,10 @@ def get_queue_closed_call(start, end):
     return _get_queue_event_call(start, end, 'CLOSED', 'closed')
 
 
+def get_queue_abandoned_call(start, end):
+    return _get_queue_event_call(start, end, 'ABANDON', 'abandoned')
+
+
 def get_queue_answered_call(start, end):
     return _get_queue_event_call(start, end, 'CONNECT', 'answered')
 

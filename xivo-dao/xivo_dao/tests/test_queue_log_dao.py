@@ -5,6 +5,10 @@ from xivo_dao import queue_log_dao
 from xivo_dao.alchemy.queue_log import QueueLog
 from xivo_dao.tests.test_dao import DAOTestCase
 
+ONE_HOUR = datetime.timedelta(hours=1)
+ONE_MICROSECOND = datetime.timedelta(microseconds=1)
+TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
+
 
 class TestQueueLogDAO(DAOTestCase):
 
@@ -12,6 +16,7 @@ class TestQueueLogDAO(DAOTestCase):
 
     def setUp(self):
         self.empty_tables()
+        self.queue_name = 'q1'
 
     def _insert_entry_queue(self, event, timestamp, callid, queuename):
         queue_log = QueueLog()
@@ -31,35 +36,16 @@ class TestQueueLogDAO(DAOTestCase):
     def _insert_entry_queue_answered(self, timestamp, callid, queuename):
         self._insert_entry_queue('CONNECT', timestamp, callid, queuename)
 
+    def _insert_entry_queue_abandoned(self, timestamp, callid, queuename):
+        self._insert_entry_queue('ABANDON', timestamp, callid, queuename)
+
     @staticmethod
     def _build_date(year, month, day, hour=0, minute=0, second=0, micro=0):
-        return datetime.datetime(year, month, day, hour, minute, second, micro).strftime("%Y-%m-%d %H:%M:%S.%f")
+        return datetime.datetime(year, month, day, hour, minute, second, micro).strftime(TIMESTAMP_FORMAT)
 
-    def test_get_queue_full_call(self):
-        queuename = 'q1'
-        expected_result = []
-        for minute in [0, 10, 20, 30, 40, 50]:
-            datetimewithmicro = self._build_date(2012, 01, 01, 00, minute, 00)
-            callid = str(12345678.123 + minute)
-            self._insert_entry_queue_full(datetimewithmicro, callid, queuename)
-            expected_result.append({'queue_name': queuename,
-                                    'event': 'full',
-                                    'time': datetimewithmicro,
-                                    'callid': callid})
-        after = self._build_date(2012, 01, 02, 00, 00, 00)
-        self._insert_entry_queue_full(after, '1234.123', queuename)
-        self._insert_entry_queue_closed(after, '1234.124', queuename)
-
-        before = self._build_date(2011, 12, 31, 00, 00, 00)
-        self._insert_entry_queue_full(before, '5555555.123', queuename)
-        self._insert_entry_queue_closed(before, '5555555.124', queuename)
-
-        datetimestart = datetime.datetime(2012, 01, 01, 00, 00, 00)
-        datetimeend = datetime.datetime(2012, 01, 01, 00, 59, 59)
-
-        result = queue_log_dao.get_queue_full_call(datetimestart, datetimeend)
-
-        self.assertEqual(sorted(result), sorted(expected_result))
+    @staticmethod
+    def _build_timestamp(t):
+        return t.strftime(TIMESTAMP_FORMAT)
 
     def test_get_first_time(self):
         queuename = 'q1'
@@ -101,52 +87,55 @@ class TestQueueLogDAO(DAOTestCase):
 
         self.assertEqual(result, queue_names)
 
+    def test_get_queue_full_call(self):
+        start = datetime.datetime(2012, 01, 01, 01, 00, 00)
+        expected = self._insert_event_list('full', start, [-1, 0, 10, 30, 59, 60, 120])
+
+        result = queue_log_dao.get_queue_full_call(start, start + ONE_HOUR - ONE_MICROSECOND)
+
+        self.assertEqual(sorted(result), sorted(expected))
+
     def test_get_queue_closed_call(self):
-        queuename = 'q1'
-        expected_result = []
-        for minute in [0, 10, 20, 30, 40, 50]:
-            datetimewithmicro = self._build_date(2012, 01, 01, 00, minute, 00)
-            callid = str(12345678.123 + minute)
-            self._insert_entry_queue_closed(datetimewithmicro, callid, queuename)
-            expected_result.append({'queue_name': queuename,
-                                    'event': 'closed',
-                                    'time': datetimewithmicro,
-                                    'callid': callid})
-        after = self._build_date(2012, 01, 02, 00, 00, 00)
-        self._insert_entry_queue_full(after, '1234.123', queuename)
-        self._insert_entry_queue_closed(after, '1234.124', queuename)
+        start = datetime.datetime(2012, 01, 01, 01, 00, 00)
+        expected = self._insert_event_list('closed', start, [-1, 0, 10, 30, 59, 60, 120])
 
-        before = self._build_date(2011, 12, 31, 00, 00, 00)
-        self._insert_entry_queue_full(before, '5555555.123', queuename)
-        self._insert_entry_queue_closed(before, '5555555.124', queuename)
+        result = queue_log_dao.get_queue_closed_call(start, start + ONE_HOUR - ONE_MICROSECOND)
 
-        datetimestart = datetime.datetime(2012, 01, 01, 00, 00, 00)
-        datetimeend = datetime.datetime(2012, 01, 01, 00, 59, 59)
-
-        result = queue_log_dao.get_queue_closed_call(datetimestart, datetimeend)
-
-        self.assertEqual(sorted(result), sorted(expected_result))
+        self.assertEqual(sorted(result), sorted(expected))
 
     def test_get_queue_answered_call(self):
-        queuename = 'q1'
-        expected_result = []
-        for minute in [0, 10, 20, 30, 40, 50]:
-            datetimewithmicro = self._build_date(2012, 01, 01, 00, minute, 00)
-            callid = str(12345678.123 + minute)
-            self._insert_entry_queue_answered(datetimewithmicro, callid, queuename)
-            expected_result.append({'queue_name': queuename,
-                                    'event': 'answered',
-                                    'time': datetimewithmicro,
-                                    'callid': callid})
-        after = self._build_date(2012, 01, 02, 00, 00, 00)
-        self._insert_entry_queue_answered(after, '1234.123', queuename)
+        start = datetime.datetime(2012, 01, 01, 01, 00, 00)
+        expected = self._insert_event_list('answered', start, [-1, 0, 10, 30, 59, 60, 120])
 
-        before = self._build_date(2011, 12, 31, 00, 00, 00)
-        self._insert_entry_queue_answered(before, '5555555.123', queuename)
+        result = queue_log_dao.get_queue_answered_call(start, start + ONE_HOUR - ONE_MICROSECOND)
 
-        datetimestart = datetime.datetime(2012, 01, 01, 00, 00, 00)
-        datetimeend = datetime.datetime(2012, 01, 01, 00, 59, 59)
+        self.assertEqual(sorted(result), sorted(expected))
 
-        result = queue_log_dao.get_queue_answered_call(datetimestart, datetimeend)
+    def test_get_queue_abandoned_call(self):
+        start = datetime.datetime(2012, 01, 01, 01, 00, 00)
+        expected = self._insert_event_list('abandoned', start, [-1, 0, 10, 30, 59, 60, 120])
 
-        self.assertEqual(sorted(result), sorted(expected_result))
+        result = queue_log_dao.get_queue_abandoned_call(start, start + ONE_HOUR - ONE_MICROSECOND)
+
+        self.assertEqual(sorted(result), sorted(expected))
+
+    def _insert_ev_fn(self, event_name):
+        return {'abandoned': self._insert_entry_queue_abandoned,
+                'answered': self._insert_entry_queue_answered,
+                'closed': self._insert_entry_queue_closed,
+                'full': self._insert_entry_queue_full}[event_name]
+
+    def _insert_event_list(self, event_name, start, minutes):
+        expected = []
+        for minute in minutes:
+            delta = datetime.timedelta(minutes=minute)
+            t = self._build_timestamp(start + delta)
+            callid = str(1234567.123 + minute)
+            self._insert_ev_fn(event_name)(t, callid, self.queue_name)
+            if 0 <= minute < 60:
+                expected.append({'queue_name': self.queue_name,
+                                 'event': event_name,
+                                 'time': t,
+                                 'callid': callid})
+
+        return expected

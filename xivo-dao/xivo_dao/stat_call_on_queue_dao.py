@@ -25,6 +25,10 @@ def _add_call(callid, time, queue_name, event):
     _session().commit()
 
 
+def add_abandoned_call(callid, time, queue_name):
+    _add_call(callid, time, queue_name, 'abandoned')
+
+
 def add_answered_call(callid, time, queue_name):
     _add_call(callid, time, queue_name, 'answered')
 

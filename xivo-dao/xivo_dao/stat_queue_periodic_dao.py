@@ -16,6 +16,8 @@ def insert_stats(stats, period_start):
     for queue_id, queue_stats in stats.iteritems():
         entry = StatQueuePeriodic()
         entry.time = period_start
+        if 'abandoned' in queue_stats:
+            entry.abandoned = queue_stats['abandoned']
         if 'answered' in queue_stats:
             entry.answered = queue_stats['answered']
         if 'full' in queue_stats:
