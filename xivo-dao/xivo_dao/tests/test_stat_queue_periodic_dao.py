@@ -31,8 +31,9 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
                       'answered': 27,
                       'closed': 5,
                       'full': 4,
+                      'joinempty': 2,
                       'timeout': 5,
-                      'total': 48
+                      'total': 50
                       }
                  }
         return stats
@@ -51,8 +52,9 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
             self.assertEqual(result.answered, 27)
             self.assertEqual(result.closed, 5)
             self.assertEqual(result.full, 4)
+            self.assertEqual(result.joinempty, 2)
             self.assertEqual(result.timeout, 5)
-            self.assertEqual(result.total, 48)
+            self.assertEqual(result.total, 50)
         except LookupError:
             self.assertTrue(False, 'Should have found a row')
 

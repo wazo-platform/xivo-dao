@@ -48,6 +48,10 @@ def get_queue_answered_call(start, end):
     return _get_queue_event_call(start, end, 'CONNECT', 'answered')
 
 
+def get_queue_joinempty_call(start, end):
+    return _get_queue_event_call(start, end, 'JOINEMPTY', 'joinempty')
+
+
 def get_queue_timeout_call(start, end):
     return _get_queue_event_call(start, end, 'EXITWITHTIMEOUT', 'timeout')
 

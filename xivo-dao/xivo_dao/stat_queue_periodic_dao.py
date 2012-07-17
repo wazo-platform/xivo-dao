@@ -22,6 +22,8 @@ def insert_stats(stats, period_start):
             entry.answered = queue_stats['answered']
         if 'full' in queue_stats:
             entry.full = queue_stats['full']
+        if 'joinempty' in queue_stats:
+            entry.joinempty = queue_stats['joinempty']
         if 'closed' in queue_stats:
             entry.closed = queue_stats['closed']
         if 'timeout' in queue_stats:

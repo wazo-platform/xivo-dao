@@ -37,6 +37,10 @@ def add_full_call(callid, time, queue_name):
     _add_call(callid, time, queue_name, 'full')
 
 
+def add_joinempty_call(callid, time, queue_name):
+    _add_call(callid, time, queue_name, 'joinempty')
+
+
 def add_closed_call(callid, time, queue_name):
     _add_call(callid, time, queue_name, 'closed')
 
