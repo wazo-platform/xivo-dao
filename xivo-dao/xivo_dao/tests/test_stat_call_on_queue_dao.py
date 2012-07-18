@@ -53,19 +53,21 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         timestamp = self._build_date(2012, 01, 02, 00, 00, 00)
         queue_name, _ = self._insert_queue_to_stat_queue()
 
-        stat_call_on_queue_dao.add_answered_call('callid', timestamp, queue_name)
+        stat_call_on_queue_dao.add_answered_call('callid', timestamp, queue_name, 13)
         res = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid == 'callid')
 
         self.assertEqual(res[0].callid, 'callid')
+        self.assertEqual(res[0].waittime, 13)
 
     def test_add_abandoned_call(self):
         timestamp = self._build_date(2012, 01, 02, 00, 00, 00)
         queue_name, _ = self._insert_queue_to_stat_queue()
 
-        stat_call_on_queue_dao.add_abandoned_call('callid', timestamp, queue_name)
+        stat_call_on_queue_dao.add_abandoned_call('callid', timestamp, queue_name, 42)
         res = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid == 'callid')
 
         self.assertEqual(res[0].callid, 'callid')
+        self.assertEqual(res[0].waittime, 42)
 
     def test_add_joinempty_call(self):
         timestamp = self._build_date(2012, 01, 02, 00, 00, 00)
@@ -80,19 +82,21 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         timestamp = self._build_date(2012, 01, 02, 00, 00, 00)
         queue_name, _ = self._insert_queue_to_stat_queue()
 
-        stat_call_on_queue_dao.add_leaveempty_call('callid', timestamp, queue_name)
+        stat_call_on_queue_dao.add_leaveempty_call('callid', timestamp, queue_name, 13)
         res = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid == 'callid')
 
         self.assertEqual(res[0].callid, 'callid')
+        self.assertEqual(res[0].waittime, 13)
 
     def test_add_timeout_call(self):
         timestamp = self._build_date(2012, 01, 02, 00, 00, 00)
         queue_name, _ = self._insert_queue_to_stat_queue()
 
-        stat_call_on_queue_dao.add_timeout_call('callid', timestamp, queue_name)
+        stat_call_on_queue_dao.add_timeout_call('callid', timestamp, queue_name, 27)
         res = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid == 'callid')
 
         self.assertEqual(res[0].callid, 'callid')
+        self.assertEqual(res[0].waittime, 27)
 
     def test_get_periodic_stats_full(self):
         start = datetime.datetime(2012, 01, 01, 00, 00, 00)
