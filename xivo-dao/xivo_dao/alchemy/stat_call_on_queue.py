@@ -31,8 +31,9 @@ class StatCallOnQueue(Base):
 
     callid = Column(String(32), nullable=False, primary_key=True)
     time = Column(TIMESTAMP, nullable=False)
-    ringtime = Column(Integer)
-    talktime = Column(Integer)
+    ringtime = Column(Integer, nullable=False, default=0)
+    talktime = Column(Integer, nullable=False, default=0)
+    waittime = Column(Integer, nullable=False, default=0)
     status = Column(Enum('full',
                          'closed',
                          'joinempty',
