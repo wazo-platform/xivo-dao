@@ -30,7 +30,7 @@ class StatCallOnQueue(Base):
     __tablename__ = 'stat_call_on_queue'
 
     callid = Column(String(32), nullable=False, primary_key=True)
-    time = Column(TIMESTAMP, nullable=False)
+    time = Column(TIMESTAMP, nullable=False, primary_key=True)
     ringtime = Column(Integer, nullable=False, default=0)
     talktime = Column(Integer, nullable=False, default=0)
     waittime = Column(Integer, nullable=False, default=0)

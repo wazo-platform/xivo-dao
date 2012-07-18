@@ -20,14 +20,23 @@ class TestStatCallOnQueueDAO(DAOTestCase):
     def _build_date(year, month, day, hour=0, minute=0, second=0, micro=0):
         return datetime.datetime(year, month, day, hour, minute, second, micro).strftime("%Y-%m-%d %H:%M:%S.%f")
 
-    def _insert_queue_to_stat_queue(self):
+    def _insert_queue_to_stat_queue(self, queue_name=None):
+        queue_name = queue_name if queue_name else 'test_queue'
         queue = StatQueue()
-        queue.name = 'test_queue'
+        queue.name = queue_name
 
         self.session.add(queue)
         self.session.commit()
 
         return queue.name, queue.id
+
+    def test_add_two_queues(self):
+        q1, _ = self._insert_queue_to_stat_queue('q1')
+        q2, _ = self._insert_queue_to_stat_queue('q2')
+        t1 = self._build_date(2012, 01, 01, 01, 01, 01)
+        t2 = self._build_date(2012, 01, 01, 01, 01, 02)
+        stat_call_on_queue_dao.add_full_call('callid', t1, q1)
+        stat_call_on_queue_dao.add_full_call('callid', t2, q2)
 
     def test_add_full_call(self):
         timestamp = self._build_date(2012, 01, 02, 00, 00, 00)
