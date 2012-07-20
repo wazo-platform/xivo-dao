@@ -36,17 +36,19 @@ def _get(queue_id):
 
 
 def id_from_name(queue_name):
-    res = _session().query(QueueFeatures).filter(QueueFeatures.name == queue_name)
-    if res.count() == 0:
+    result = _session().query(QueueFeatures.id).filter(QueueFeatures.name == queue_name).first()
+    if result is None:
         raise LookupError('No such queue')
-    return res[0].id
+    else:
+        return result.id
 
 
 def queue_name(queue_id):
-    res = _session().query(QueueFeatures).filter(QueueFeatures.id == queue_id)
-    if res.count() == 0:
+    result = _session().query(QueueFeatures.name).filter(QueueFeatures.id == queue_id).first()
+    if result is None:
         raise LookupError('No such queue')
-    return res[0].name
+    else:
+        return result.name
 
 
 def is_a_queue(name):
