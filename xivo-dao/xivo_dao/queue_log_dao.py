@@ -12,7 +12,7 @@ from sqlalchemy import literal_column
 
 _DB_NAME = 'asterisk'
 _STR_TIME_FMT = "%Y-%m-%d %H:%M:%S.%f"
-_TIME_STRING_PATTERN = r'(\d+)-(\d+)-(\d+) (\d+):(\d+):(\d+).?(\d+)?'
+_TIME_STRING_PATTERN = re.compile('(\d+)-(\d+)-(\d+) (\d+):(\d+):(\d+).?(\d+)?')
 _MAP_QUEUE_LOG_WAITTIME = {'answered': QueueLog.data1,
                            'abandoned': QueueLog.data3,
                            'timeout': QueueLog.data3}
@@ -107,7 +107,7 @@ def get_queue_timeout_call(start, end):
 
 
 def _time_str_to_datetime(s):
-    m = re.match(_TIME_STRING_PATTERN, s)
+    m = _TIME_STRING_PATTERN.match(s)
     return datetime.datetime(int(m.group(1)),
                              int(m.group(2)),
                              int(m.group(3)),
