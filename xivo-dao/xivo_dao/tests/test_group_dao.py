@@ -19,15 +19,52 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from xivo_dao.alchemy.groupfeatures import GroupFeatures
+import unittest
+
 from xivo_dao.alchemy import dbconnection
+from xivo_dao.alchemy.groupfeatures import GroupFeatures
 from xivo_dao import group_dao
-from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao.alchemy.base import Base
+from sqlalchemy.schema import MetaData
 
 
-class TestGroupDAO(DAOTestCase):
+class TestGroupDAO(unittest.TestCase):
 
     tables = [GroupFeatures]
+
+    @classmethod
+    def setUpClass(cls):
+        db_connection_pool = dbconnection.DBConnectionPool(dbconnection.DBConnection)
+        dbconnection.register_db_connection_pool(db_connection_pool)
+
+        uri = 'postgresql://asterisk:asterisk@localhost/asterisktest'
+        dbconnection.add_connection_as(uri, 'asterisk')
+        cls.connection = dbconnection.get_connection('asterisk')
+
+        cls.cleanTables()
+
+        cls.session = cls.connection.get_session()
+
+    @classmethod
+    def tearDownClass(cls):
+        dbconnection.unregister_db_connection_pool()
+
+    @classmethod
+    def cleanTables(cls):
+        if len(cls.tables):
+            engine = cls.connection.get_engine()
+
+            meta = MetaData(engine)
+            meta.reflect()
+            meta.drop_all()
+
+            table_list = [table.__table__ for table in cls.tables]
+            Base.metadata.create_all(engine, table_list)
+            engine.dispose()
+
+    def empty_tables(self):
+        for table in self.tables:
+            self.session.execute("TRUNCATE %s CASCADE;" % table.__tablename__)
 
     def setUp(self):
         self.empty_tables()
