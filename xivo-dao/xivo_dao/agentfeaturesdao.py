@@ -1,5 +1,4 @@
-# vim: set fileencoding=utf-8 :
-# XiVO CTI Server
+# -*- coding: UTF-8 -*-
 
 # Copyright (C) 2007-2012  Avencall
 #
@@ -21,9 +20,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
-from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy import dbconnection
+from xivo_dao.alchemy.agentfeatures import AgentFeatures
 
 
 class AgentFeaturesDAO(object):
@@ -47,22 +45,21 @@ class AgentFeaturesDAO(object):
             return None
 
     def agent_id(self, agent_number):
-        if agent_number == None:
+        if agent_number is None:
             raise ValueError('Agent number is None')
-        res = self._session.query(AgentFeatures).filter(AgentFeatures.number == agent_number)
-        if res.count() == 0:
+        result = self._session.query(AgentFeatures.id).filter(AgentFeatures.number == agent_number).first()
+        if result is None:
             raise LookupError('No such agent')
-        agent_id = res[0].id
-        return str(agent_id)
+        return str(result.id)
 
     def _get_one(self, agentid):
         # field id != field agentid used only for joining with staticagent table.
-        if agentid == None:
+        if agentid is None:
             raise ValueError('Agent ID is None')
-        res = self._session.query(AgentFeatures).filter(AgentFeatures.id == int(agentid))
-        if res.count() == 0:
+        result = self._session.query(AgentFeatures).filter(AgentFeatures.id == int(agentid)).first()
+        if result is None:
             raise LookupError('No such agent')
-        return res[0]
+        return result
 
     @classmethod
     def new_from_uri(cls, uri):
