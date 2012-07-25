@@ -29,8 +29,9 @@ class StatCallOnQueue(Base):
 
     __tablename__ = 'stat_call_on_queue'
 
-    callid = Column(String(32), nullable=False, primary_key=True)
-    time = Column(TIMESTAMP, nullable=False, primary_key=True)
+    id = Column(Integer, Sequence('stat_call_on_queue_id_seq'), primary_key=True)
+    callid = Column(String(32), nullable=False)
+    time = Column(TIMESTAMP, nullable=False)
     ringtime = Column(Integer, nullable=False, default=0)
     talktime = Column(Integer, nullable=False, default=0)
     waittime = Column(Integer, nullable=False, default=0)
