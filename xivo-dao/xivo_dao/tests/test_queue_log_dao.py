@@ -54,8 +54,8 @@ class TestQueueLogDAO(DAOTestCase):
     def _insert_entry_queue_answered(self, timestamp, callid, queuename, waittime):
         self._insert_entry_queue('CONNECT', timestamp, callid, queuename, d1=waittime)
 
-    def _insert_entry_queue_abandoned(self, timestamp, callid, queuename, waittime):
-        self._insert_entry_queue('ABANDON', timestamp, callid, queuename, d3=waittime)
+    def _insert_entry_queue_abandoned(self, time, callid, queuename, waittime):
+        self._insert_entry_queue('ABANDON', self._build_timestamp(time), callid, queuename, d3=waittime)
 
     def _insert_entry_queue_timeout(self, timestamp, callid, queuename, waittime):
         self._insert_entry_queue('EXITWITHTIMEOUT', timestamp, callid, queuename, d3=waittime)
@@ -153,7 +153,7 @@ class TestQueueLogDAO(DAOTestCase):
 
     def test_get_queue_abandoned_call(self):
         start = datetime.datetime(2012, 01, 01, 01, 00, 00)
-        expected = self._insert_event_list('abandoned', start, [-1, 0, 10, 30, 59, 60, 120])
+        expected = self._insert_abandon(start, [-1, 0, 10, 30, 59, 60, 120])
 
         result = queue_log_dao.get_queue_abandoned_call(start, start + ONE_HOUR - ONE_MICROSECOND)
 
@@ -182,6 +182,23 @@ class TestQueueLogDAO(DAOTestCase):
         result = queue_log_dao.get_queue_leaveempty_call(start, start + ONE_HOUR - ONE_MICROSECOND)
 
         self.assertEqual(sorted(result), sorted(expected))
+
+    def _insert_abandon(self, start, minutes):
+        expected = []
+        for minute in minutes:
+            leave_time = start + datetime.timedelta(minutes=minute)
+            waittime = self._random_wait_time()
+            enter_time = leave_time - datetime.timedelta(seconds=waittime)
+            callid = str(143897234.123 + minute)
+            self._insert_entry_queue_enterqueue(enter_time, callid, self.queue_name)
+            self._insert_entry_queue_abandoned(leave_time, callid, self.queue_name, waittime)
+            if start <= enter_time < start + datetime.timedelta(hours=1):
+                expected.append({'queue_name': self.queue_name,
+                                 'event': 'abandoned',
+                                 'time': enter_time,
+                                 'callid': callid,
+                                 'waittime': waittime})
+        return expected
 
     def _insert_leaveempty(self, start, minutes):
         expected = []
