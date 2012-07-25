@@ -45,12 +45,8 @@ class TestQueueLogDAO(DAOTestCase):
     def _insert_entry_queue_joinempty(self, timestamp, callid, queuename, waittime):
         self._insert_entry_queue('JOINEMPTY', timestamp, callid, queuename)
 
-    def _insert_entry_queue_leaveempty(self, timestamp, callid, queuename, waittime):
-        wait = datetime.timedelta(seconds=waittime, microseconds=1)
-        end = self._time_from_timestamp(timestamp)
-        start = end - wait
-        self._insert_entry_queue('ENTERQUEUE', self._build_timestamp(start), callid, queuename)
-        self._insert_entry_queue('LEAVEEMPTY', timestamp, callid, queuename)
+    def _insert_entry_queue_leaveempty(self, time, callid, queuename, waittime=0):
+        self._insert_entry_queue('LEAVEEMPTY', self._build_timestamp(time), callid, queuename)
 
     def _insert_entry_queue_closed(self, timestamp, callid, queuename, waittime):
         self._insert_entry_queue('CLOSED', timestamp, callid, queuename)
@@ -63,6 +59,9 @@ class TestQueueLogDAO(DAOTestCase):
 
     def _insert_entry_queue_timeout(self, timestamp, callid, queuename, waittime):
         self._insert_entry_queue('EXITWITHTIMEOUT', timestamp, callid, queuename, d3=waittime)
+
+    def _insert_entry_queue_enterqueue(self, time, callid, queuename, waittime=0):
+        self._insert_entry_queue('ENTERQUEUE', self._build_timestamp(time), callid, queuename)
 
     @staticmethod
     def _build_date(year, month, day, hour=0, minute=0, second=0, micro=0):
@@ -178,19 +177,28 @@ class TestQueueLogDAO(DAOTestCase):
 
     def test_get_queue_leaveempty_call(self):
         start = datetime.datetime(2012, 01, 01, 01, 00, 00)
-        expected = self._insert_event_list('leaveempty', start, [-1, 0, 10, 30, 59, 60, 120])
+        expected = self._insert_leaveempty(start, [-1, 0, 10, 30, 59, 60, 120])
 
         result = queue_log_dao.get_queue_leaveempty_call(start, start + ONE_HOUR - ONE_MICROSECOND)
 
         self.assertEqual(sorted(result), sorted(expected))
 
-    def test_get_queue_leaveempty_call_no_enterqueue(self):
-        start = datetime.datetime(2012, 01, 01, 01, 00, 00)
-        timestamp = self._build_timestamp(start)
-        self._insert_entry_queue('LEAVEEMPTY', timestamp, '123456.34', self.queue_name)
-        result = queue_log_dao.get_queue_leaveempty_call(start, start + ONE_HOUR - ONE_MICROSECOND)
-
-        self.assertEqual(result[0]['waittime'], 0)
+    def _insert_leaveempty(self, start, minutes):
+        expected = []
+        for minute in minutes:
+            leave_time = start + datetime.timedelta(minutes=minute)
+            waittime = self._random_wait_time()
+            enter_time = leave_time - datetime.timedelta(seconds=waittime)
+            callid = str(143897234.123 + minute)
+            self._insert_entry_queue_enterqueue(enter_time, callid, self.queue_name)
+            self._insert_entry_queue_leaveempty(leave_time, callid, self.queue_name)
+            if start <= enter_time < start + datetime.timedelta(hours=1):
+                expected.append({'queue_name': self.queue_name,
+                                 'event': 'leaveempty',
+                                 'time': enter_time,
+                                 'callid': callid,
+                                 'waittime': waittime})
+        return expected
 
     def _insert_ev_fn(self, event_name):
         return {'abandoned': self._insert_entry_queue_abandoned,
@@ -203,7 +211,7 @@ class TestQueueLogDAO(DAOTestCase):
 
     @staticmethod
     def _random_wait_time():
-        return int(round(random.random() * 10))
+        return int(round(random.random() * 10)) + 1
 
     def _insert_event_list(self, event_name, start, minutes):
         expected = []

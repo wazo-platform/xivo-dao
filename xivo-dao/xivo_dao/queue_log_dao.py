@@ -65,27 +65,29 @@ def get_queue_leaveempty_call(start, end):
     start = start.strftime(_STR_TIME_FMT)
     end = end.strftime(_STR_TIME_FMT)
 
+    enter_queues = (_session()
+                    .query(QueueLog.callid, QueueLog.time)
+                    .filter(and_(QueueLog.event == 'ENTERQUEUE',
+                                 between(QueueLog.time, start, end))))
+
+    enter_map = {}
+    for enter_queue in enter_queues:
+        enter_map[enter_queue.callid] = _time_str_to_datetime(enter_queue.time)
+
     res = (_session()
            .query(QueueLog.event, QueueLog.queuename, QueueLog.time, QueueLog.callid)
-           .filter(and_
-                   (or_(QueueLog.event == 'LEAVEEMPTY',
-                        QueueLog.event == 'ENTERQUEUE'),
-                    between(QueueLog.time, start, end))))
-
-    time_map = get_enterqueue_time([r.callid for r in res])
+           .filter(and_(QueueLog.event == 'LEAVEEMPTY',
+                        QueueLog.callid.in_(enter_map))))
 
     ret = list()
     for r in res:
-        if r.event == 'LEAVEEMPTY':
-            try:
-                waittime = _time_diff(time_map[r.callid], _time_str_to_datetime(r.time))
-            except KeyError:
-                waittime = 0
-            ret.append({'queue_name': r.queuename,
-                        'event': 'leaveempty',
-                        'time': r.time,
-                        'callid': r.callid,
-                        'waittime': waittime})
+        t = _time_str_to_datetime(r.time)
+        waittime = _time_diff(enter_map[r.callid], t)
+        ret.append({'queue_name': r.queuename,
+                    'event': 'leaveempty',
+                    'time': enter_map[r.callid],
+                    'callid': r.callid,
+                    'waittime': waittime})
 
     return ret
 
