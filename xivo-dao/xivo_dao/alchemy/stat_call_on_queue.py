@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from sqlalchemy.schema import Column, ForeignKey
+from sqlalchemy.schema import Column, ForeignKey, Sequence
 from sqlalchemy.types import String, TIMESTAMP, Integer, Enum
 from xivo_dao.alchemy.base import Base, Type
 
