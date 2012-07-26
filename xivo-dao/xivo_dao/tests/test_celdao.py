@@ -98,6 +98,14 @@ class TestCELDAO(unittest.TestCase):
 
         self.assertEqual('"name2" <num2>', self._celdao.caller_id_by_unique_id('2'))
 
+    def test_caller_id_by_unique_id_when_unique_id_is_present_no_app_start(self):
+        self._insert_cels([
+            _new_cel(eventtype='CHAN_START', cid_name='name1', cid_num='num1',
+                     uniqueid='1'),
+        ])
+
+        self.assertEqual('"name1" <num1>', self._celdao.caller_id_by_unique_id('1'))
+
     def test_caller_id_by_unique_id_when_unique_id_is_missing(self):
         self._insert_cels([
             _new_cel(eventtype='CHAN_START', cid_name='name1', cid_num='num1',

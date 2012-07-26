@@ -26,6 +26,7 @@ from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.cel import CEL
 from xivo_dao.helpers.cel_channel import CELChannel
 from xivo_dao.helpers.cel_exception import CELException
+from sqlalchemy import desc
 
 
 logger = logging.getLogger(__name__)
@@ -37,13 +38,15 @@ class CELDAO(object):
 
     def caller_id_by_unique_id(self, unique_id):
         cel_events = (self._session.query(CEL.cid_name, CEL.cid_num)
-                      .filter(CEL.eventtype == 'APP_START')
+                      .filter(CEL.eventtype.in_(['APP_START', 'CHAN_START']))
                       .filter(CEL.uniqueid == unique_id)
-                      .all())
-        if not cel_events:
+                      .order_by(desc(CEL.id))
+                      .first())
+
+        if cel_events is None:
             raise CELException('no such CEL event with uniqueid %s' % unique_id)
         else:
-            cid_name, cid_num = cel_events[0]
+            cid_name, cid_num = cel_events
             return '"%s" <%s>' % (cid_name, cid_num)
 
     def channel_by_unique_id(self, unique_id):
