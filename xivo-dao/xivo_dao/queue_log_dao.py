@@ -136,12 +136,16 @@ def get_queue_names_in_range(start, end):
                                   .filter(between(QueueLog.time, start, end)))]
 
 
-def get_callids_in_time_range(start, end):
+def get_started_calls(start, end):
     start = start.strftime(_STR_TIME_FMT)
     end = end.strftime(_STR_TIME_FMT)
 
-    rows = (_session().query(QueueLog.callid)
+    rows = (_session().query(QueueLog.callid,
+                             QueueLog.event,
+                             QueueLog.time,
+                             QueueLog.queuename)
             .filter(between(QueueLog.time, start, end))
             .filter(QueueLog.event.in_(FIRST_EVENT)))
 
-    return [r.callid for r in rows]
+    return [(r.callid, r.event,
+             _time_str_to_datetime(r.time), r.queuename) for r in rows]

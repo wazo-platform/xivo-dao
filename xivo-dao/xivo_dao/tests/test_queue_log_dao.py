@@ -283,7 +283,7 @@ class TestQueueLogDAO(DAOTestCase):
 
         return expected
 
-    def test_get_callids_in_time_range(self):
+    def test_get_started_calls(self):
         s = datetime.datetime(2012, 1, 1, 0, 0, 0, 0)
         e = datetime.datetime(2012, 1, 1, 0, 59, 59, 999999)
 
@@ -299,6 +299,11 @@ class TestQueueLogDAO(DAOTestCase):
 
         self._insert_entry_queue_joinempty(s + datetime.timedelta(seconds=10), '5', self.queue_name)
 
-        result = queue_log_dao.get_callids_in_time_range(s, e)
+        result = queue_log_dao.get_started_calls(s, e)
 
-        self.assertEqual(result, ['1', '3', '4', '5'])
+        expected = [('1', 'FULL', s, self.queue_name),
+                    ('3', 'ENTERQUEUE', s, self.queue_name),
+                    ('4', 'CLOSED', s + datetime.timedelta(seconds=5), self.queue_name),
+                    ('5', 'JOINEMPTY', s + datetime.timedelta(seconds=10), self.queue_name)]
+
+        self.assertEqual(result, expected)
