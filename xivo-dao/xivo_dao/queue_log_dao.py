@@ -28,93 +28,50 @@ def _session():
     return connection.get_session()
 
 
-def _get_queue_event_call(start, end, event_filter, name):
-    start = start.strftime(_STR_TIME_FMT)
-    end = end.strftime(_STR_TIME_FMT)
-
-    waittime_column = _MAP_QUEUE_LOG_WAITTIME.get(name, literal_column('0'))
-
-    res = (_session()
-           .query(QueueLog.queuename, QueueLog.time, QueueLog.callid, waittime_column.label('waittime'))
-           .filter(and_(QueueLog.event == event_filter,
-                        between(QueueLog.time, start, end))))
-
-    return [{'queue_name': r.queuename,
-             'event': name,
-             'time': r.time,
-             'callid': r.callid,
-             'waittime': int(r.waittime) if r.waittime else 0} for r in res]
-
-
-def get_queue_full_call(start, end):
-    return _get_queue_event_call(start, end, 'FULL', 'full')
-
-
-def get_queue_closed_call(start, end):
-    return _get_queue_event_call(start, end, 'CLOSED', 'closed')
-
-
-def _get_event_with_enterqueue(start, end, match, event):
-    start = start.strftime(_STR_TIME_FMT)
-    end = end.strftime(_STR_TIME_FMT)
-
-    enter_queues = (_session()
-                    .query(QueueLog.callid, QueueLog.time)
-                    .filter(and_(QueueLog.event == 'ENTERQUEUE',
-                                 between(QueueLog.time, start, end))))
-
+def _get_event_with_enterqueue(started_calls, match, event):
     enter_map = {}
-    for enter_queue in enter_queues:
-        enter_map[enter_queue.callid] = _time_str_to_datetime(enter_queue.time)
+    for c in started_calls:
+        enter_map[c.callid] = c.time
+
+    waittime_column = _MAP_QUEUE_LOG_WAITTIME.get(event, literal_column('0'))
 
     res = (_session()
-           .query(QueueLog.event, QueueLog.queuename, QueueLog.time, QueueLog.callid)
+           .query(QueueLog.event,
+                  QueueLog.queuename,
+                  QueueLog.time,
+                  QueueLog.callid,
+                  waittime_column.label('waittime'))
            .filter(and_(QueueLog.event == match,
                         QueueLog.callid.in_(enter_map))))
 
-    ret = list()
-    for r in res:
-        t = _time_str_to_datetime(r.time)
-        waittime = _time_diff(enter_map[r.callid], t)
-        ret.append({'queue_name': r.queuename,
-                    'event': event,
-                    'time': enter_map[r.callid],
-                    'callid': r.callid,
-                    'waittime': waittime})
-
-    return ret
+    return [
+        {'queue_name': r.queuename,
+         'event': event,
+         'time': enter_map[r.callid],
+         'callid': r.callid,
+         'waittime': int(r.waittime) if r.waittime else _time_diff(enter_map[r.callid], _time_str_to_datetime(r.time))
+         } for r in res]
 
 
-def get_queue_abandoned_call(start, end):
-    return _get_event_with_enterqueue(start, end, 'ABANDON', 'abandoned')
+def get_queue_abandoned_call(started_calls):
+    return _get_event_with_enterqueue(started_calls, 'ABANDON', 'abandoned')
 
 
-def get_queue_answered_call(start, end):
-    return _get_event_with_enterqueue(start, end, 'CONNECT', 'answered')
+def get_queue_answered_call(started_calls):
+    return _get_event_with_enterqueue(started_calls, 'CONNECT', 'answered')
 
 
-def get_queue_timeout_call(start, end):
-    return _get_event_with_enterqueue(start, end, 'EXITWITHTIMEOUT', 'timeout')
+def get_queue_timeout_call(started_calls):
+    return _get_event_with_enterqueue(started_calls, 'EXITWITHTIMEOUT', 'timeout')
 
 
-def get_queue_joinempty_call(start, end):
-    return _get_queue_event_call(start, end, 'JOINEMPTY', 'joinempty')
-
-
-def get_queue_leaveempty_call(start, end):
-    return _get_event_with_enterqueue(start, end, 'LEAVEEMPTY', 'leaveempty')
+def get_queue_leaveempty_call(started_calls):
+    return _get_event_with_enterqueue(started_calls, 'LEAVEEMPTY', 'leaveempty')
 
 
 def _time_diff(start, end):
     delta = end - start
     return delta.seconds + int(round(delta.microseconds / 1000000.0))
-
-
-def get_enterqueue_time(callids):
-    return dict([(r.callid, _time_str_to_datetime(r.time))
-                 for r in (_session().query(QueueLog.callid, QueueLog.time)
-                           .filter(and_(QueueLog.event == 'ENTERQUEUE',
-                                        QueueLog.callid.in_(callids))))])
 
 
 def _time_str_to_datetime(s):
