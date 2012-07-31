@@ -38,8 +38,8 @@ class QueueStatisticDAO(object):
 
     def get_max_hold_time(self, queue_name, window):
         max_hold_time = (self._query(func.max(QueueInfo.hold_time), window, queue_name)
-                .one()[0])
-        if(max_hold_time is None):
+                         .one()[0])
+        if max_hold_time is None:
             return NO_VALUE
         else:
             return max_hold_time
@@ -47,16 +47,16 @@ class QueueStatisticDAO(object):
     def get_mean_hold_time(self, queue_name, window):
         mean_hold_time = (self._query(func.avg(QueueInfo.hold_time), window, queue_name)
                           .one()[0])
-        if(mean_hold_time is None):
+        if mean_hold_time is None:
             return NO_VALUE
         else:
             return int(round(mean_hold_time))
-
-    def _compute_window_time(self, window):
-        return time.time() - window
 
     def _query(self, query_function, window, queue_name):
         in_window = self._compute_window_time(window)
         return (_get_session().query(query_function)
                 .filter(QueueInfo.call_time_t > in_window)
                 .filter(QueueInfo.queue_name == queue_name))
+
+    def _compute_window_time(self, window):
+        return time.time() - window
