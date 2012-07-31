@@ -3,7 +3,7 @@ import datetime
 import re
 
 from sqlalchemy import between, distinct
-from sqlalchemy.sql.expression import and_, or_
+from sqlalchemy.sql.expression import and_
 from sqlalchemy.sql.functions import min
 from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.queue_log import QueueLog
@@ -16,6 +16,7 @@ _TIME_STRING_PATTERN = re.compile('(\d+)-(\d+)-(\d+) (\d+):(\d+):(\d+).?(\d+)?')
 _MAP_QUEUE_LOG_WAITTIME = {'answered': QueueLog.data1,
                            'abandoned': QueueLog.data3,
                            'timeout': QueueLog.data3}
+FIRST_EVENT = ['FULL', 'ENTERQUEUE', 'CLOSED', 'JOINEMPTY']
 
 
 def _session():
@@ -133,3 +134,14 @@ def get_queue_names_in_range(start, end):
 
     return [r[0] for r in (_session().query(distinct(QueueLog.queuename))
                                   .filter(between(QueueLog.time, start, end)))]
+
+
+def get_callids_in_time_range(start, end):
+    start = start.strftime(_STR_TIME_FMT)
+    end = end.strftime(_STR_TIME_FMT)
+
+    rows = (_session().query(QueueLog.callid)
+            .filter(between(QueueLog.time, start, end))
+            .filter(QueueLog.event.in_(FIRST_EVENT)))
+
+    return [r.callid for r in rows]
