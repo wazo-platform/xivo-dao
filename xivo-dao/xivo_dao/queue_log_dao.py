@@ -2,6 +2,8 @@
 import datetime
 import re
 
+from collections import namedtuple
+
 from sqlalchemy import between, distinct
 from sqlalchemy.sql.expression import and_
 from sqlalchemy.sql.functions import min
@@ -17,6 +19,8 @@ _MAP_QUEUE_LOG_WAITTIME = {'answered': QueueLog.data1,
                            'abandoned': QueueLog.data3,
                            'timeout': QueueLog.data3}
 FIRST_EVENT = ['FULL', 'ENTERQUEUE', 'CLOSED', 'JOINEMPTY']
+
+CallStart = namedtuple('CallStart', ['callid', 'event', 'time', 'queuename'])
 
 
 def _session():

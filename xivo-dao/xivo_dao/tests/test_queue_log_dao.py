@@ -3,6 +3,7 @@ import datetime
 import random
 
 from xivo_dao import queue_log_dao
+from xivo_dao.queue_log_dao import CallStart
 from xivo_dao.alchemy.queue_log import QueueLog
 from xivo_dao.tests.test_dao import DAOTestCase
 
@@ -301,9 +302,9 @@ class TestQueueLogDAO(DAOTestCase):
 
         result = queue_log_dao.get_started_calls(s, e)
 
-        expected = [('1', 'FULL', s, self.queue_name),
-                    ('3', 'ENTERQUEUE', s, self.queue_name),
-                    ('4', 'CLOSED', s + datetime.timedelta(seconds=5), self.queue_name),
-                    ('5', 'JOINEMPTY', s + datetime.timedelta(seconds=10), self.queue_name)]
+        expected = [CallStart('1', 'FULL', s, self.queue_name),
+                    CallStart('3', 'ENTERQUEUE', s, self.queue_name),
+                    CallStart('4', 'CLOSED', s + datetime.timedelta(seconds=5), self.queue_name),
+                    CallStart('5', 'JOINEMPTY', s + datetime.timedelta(seconds=10), self.queue_name)]
 
         self.assertEqual(result, expected)
