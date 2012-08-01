@@ -108,5 +108,5 @@ def get_started_calls(start, end):
             .filter(between(QueueLog.time, start, end))
             .filter(QueueLog.event.in_(FIRST_EVENT)))
 
-    return [(r.callid, r.event,
-             _time_str_to_datetime(r.time), r.queuename) for r in rows]
+    return [CallStart(r.callid, r.event,
+                      _time_str_to_datetime(r.time), r.queuename) for r in rows]
