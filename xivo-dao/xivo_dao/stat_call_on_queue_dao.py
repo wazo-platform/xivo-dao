@@ -3,7 +3,7 @@
 from xivo_dao.alchemy.stat_call_on_queue import StatCallOnQueue
 from xivo_dao.alchemy import dbconnection
 from xivo_dao import stat_queue_dao
-from sqlalchemy import func, between
+from sqlalchemy import func, between, literal
 
 _DB_NAME = 'asterisk'
 
@@ -58,15 +58,23 @@ def add_timeout_call(callid, time, queue_name, waittime):
 def get_periodic_stats(start, end):
     stats = {}
 
-    res = (_session().query(StatCallOnQueue.queue_id, StatCallOnQueue.status, func.count(StatCallOnQueue.status))
-           .group_by(StatCallOnQueue.queue_id, StatCallOnQueue.status)
+    rows = (_session()
+           .query(func.date_trunc(literal('hour'), StatCallOnQueue.time),
+                  StatCallOnQueue.queue_id,
+                  StatCallOnQueue.status,
+                  func.count(StatCallOnQueue.status))
+           .group_by(func.date_trunc(literal('hour'), StatCallOnQueue.time),
+                     StatCallOnQueue.queue_id,
+                     StatCallOnQueue.status)
            .filter(between(StatCallOnQueue.time, start, end)))
 
-    for queue_id, status, count in res:
-        if queue_id not in stats:
-            stats[queue_id] = {'total': 0}
-        stats[queue_id][status] = count
-        stats[queue_id]['total'] += count
+    for period, queue_id, status, number in rows:
+        if period not in stats:
+            stats[period] = {}
+        if queue_id not in stats[period]:
+            stats[period][queue_id] = {'total': 0}
+        stats[period][queue_id][status] = number
+        stats[period][queue_id]['total'] += number
 
     return stats
 

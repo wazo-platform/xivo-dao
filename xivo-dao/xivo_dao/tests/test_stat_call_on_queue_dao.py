@@ -109,7 +109,7 @@ class TestStatCallOnQueueDAO(DAOTestCase):
 
     def test_get_periodic_stats_full(self):
         start = datetime.datetime(2012, 01, 01, 00, 00, 00)
-        end = datetime.datetime(2012, 01, 01, 00, 59, 59, 999999)
+        end = datetime.datetime(2012, 01, 01, 3, 0, 0)
 
         queue_name, queue_id = self._insert_queue_to_stat_queue()
 
@@ -120,11 +120,15 @@ class TestStatCallOnQueueDAO(DAOTestCase):
 
         stats = stat_call_on_queue_dao.get_periodic_stats(start, end)
 
-        self.assertEqual(stats[queue_id]['full'], 4)
+        self.assertTrue(datetime.datetime(2012, 1, 1) in stats)
+        self.assertTrue(datetime.datetime(2012, 1, 1, 1) in stats)
+        self.assertTrue(datetime.datetime(2012, 1, 1, 2) in stats)
+
+        self.assertEqual(stats[start][queue_id]['full'], 4)
 
     def test_get_periodic_stats_closed(self):
         start = datetime.datetime(2012, 01, 01, 00, 00, 00)
-        end = datetime.datetime(2012, 01, 01, 00, 59, 59, 999999)
+        end = datetime.datetime(2012, 01, 31, 23, 59, 59, 999999)
 
         queue_name, queue_id = self._insert_queue_to_stat_queue()
 
@@ -135,11 +139,15 @@ class TestStatCallOnQueueDAO(DAOTestCase):
 
         stats = stat_call_on_queue_dao.get_periodic_stats(start, end)
 
-        self.assertEqual(stats[queue_id]['closed'], 4)
+        self.assertTrue(datetime.datetime(2012, 1, 1) in stats)
+        self.assertTrue(datetime.datetime(2012, 1, 1, 1) in stats)
+        self.assertTrue(datetime.datetime(2012, 1, 1, 2) in stats)
+
+        self.assertEqual(stats[start][queue_id]['closed'], 4)
 
     def test_get_periodic_stats_total(self):
         start = datetime.datetime(2012, 01, 01, 00, 00, 00)
-        end = datetime.datetime(2012, 01, 01, 00, 59, 59, 999999)
+        end = datetime.datetime(2012, 01, 31, 23, 59, 59, 999999)
 
         queue_name, queue_id = self._insert_queue_to_stat_queue()
 
@@ -164,7 +172,11 @@ class TestStatCallOnQueueDAO(DAOTestCase):
 
         stats = stat_call_on_queue_dao.get_periodic_stats(start, end)
 
-        self.assertEqual(stats[queue_id]['total'], 9)
+        self.assertTrue(datetime.datetime(2012, 1, 1) in stats)
+        self.assertTrue(datetime.datetime(2012, 1, 1, 1) in stats)
+        self.assertTrue(datetime.datetime(2012, 1, 1, 2) in stats)
+
+        self.assertEqual(stats[start][queue_id]['total'], 9)
 
     def test_clean_table(self):
         start = datetime.datetime(2012, 01, 01, 00, 00, 00)
