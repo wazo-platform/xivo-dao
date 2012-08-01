@@ -6,12 +6,13 @@ from sqlalchemy import func
 from xivo_dao import stat_call_on_queue_dao
 from xivo_dao.alchemy.stat_call_on_queue import StatCallOnQueue
 from xivo_dao.alchemy.stat_queue import StatQueue
+from xivo_dao.alchemy.stat_agent import StatAgent
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestStatCallOnQueueDAO(DAOTestCase):
 
-    tables = [StatCallOnQueue, StatQueue]
+    tables = [StatCallOnQueue, StatQueue, StatAgent]
 
     def setUp(self):
         self.empty_tables()
@@ -29,6 +30,16 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         self.session.commit()
 
         return queue.name, queue.id
+
+    def _insert_agent_to_stat_agent(self, agent_name=None):
+        agent_name = agent_name if agent_name else 'Agent/1234'
+        agent = StatAgent()
+        agent.name = agent_name
+
+        self.session.add(agent)
+        self.session.commit()
+
+        return agent.name, agent.id
 
     def test_add_two_queues(self):
         q1, _ = self._insert_queue_to_stat_queue('q1')
@@ -61,12 +72,16 @@ class TestStatCallOnQueueDAO(DAOTestCase):
     def test_add_answered_call(self):
         timestamp = self._build_date(2012, 01, 02, 00, 00, 00)
         queue_name, _ = self._insert_queue_to_stat_queue()
+        agent_name, agent_id = self._insert_agent_to_stat_agent()
 
-        stat_call_on_queue_dao.add_answered_call('callid', timestamp, queue_name, 13)
-        res = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid == 'callid')
+        stat_call_on_queue_dao.add_answered_call('callid', timestamp, queue_name, agent_name, 13, 22)
 
-        self.assertEqual(res[0].callid, 'callid')
-        self.assertEqual(res[0].waittime, 13)
+        res = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid == 'callid').first()
+
+        self.assertEqual(res.callid, 'callid')
+        self.assertEqual(res.waittime, 13)
+        self.assertEqual(res.talktime, 22)
+        self.assertEqual(res.agent_id, agent_id)
 
     def test_add_abandoned_call(self):
         timestamp = self._build_date(2012, 01, 02, 00, 00, 00)

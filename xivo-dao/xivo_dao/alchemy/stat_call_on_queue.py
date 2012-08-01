@@ -48,3 +48,4 @@ class StatCallOnQueue(Base):
                          metadata=Type.metadata),
                       nullable=False)
     queue_id = Column(Integer, ForeignKey("stat_queue.id"))
+    agent_id = Column(Integer, ForeignKey("stat_agent.id"))

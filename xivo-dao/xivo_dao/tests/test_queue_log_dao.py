@@ -20,13 +20,15 @@ class TestQueueLogDAO(DAOTestCase):
         self.empty_tables()
         self.queue_name = 'q1'
 
-    def _insert_entry_queue(self, event, timestamp, callid, queuename,
+    def _insert_entry_queue(self, event, timestamp, callid, queuename, agent=None,
                             d1=None, d2=None, d3=None, d4=None, d5=None):
         queue_log = QueueLog()
         queue_log.time = timestamp
         queue_log.callid = callid
         queue_log.queuename = queuename
         queue_log.event = event
+        if agent:
+            queue_log.agent = agent
         if d1:
             queue_log.data1 = d1
         if d2:
@@ -37,6 +39,7 @@ class TestQueueLogDAO(DAOTestCase):
             queue_log.data4 = d4
         if d5:
             queue_log.data5 = d5
+
         self.session.add(queue_log)
         self.session.commit()
 
@@ -52,20 +55,34 @@ class TestQueueLogDAO(DAOTestCase):
         t = datetime.datetime(2012, 1, 1, 0, 0, 0)
         t1 = t
         t2 = t + datetime.timedelta(seconds=2)
+        t3 = t + datetime.timedelta(seconds=4)
 
-        w1, w2 = 5, 7
+        w1, w2, w3 = 5, 7, 13
+        talk1, talk2, talk3 = 12, 122, 55
+        a1, a2 = 'Agent/1002', 'Agent/1003'
 
         self._insert_entry_queue_enterqueue(t1, 'answered_1', self.queue_name)
-        self._insert_entry_queue_answered(t1 + datetime.timedelta(seconds=1),
-                                          'answered_1', self.queue_name, w1)
+        self._insert_entry_queue_answered(
+            t1 + datetime.timedelta(seconds=w1), 'answered_1', self.queue_name, a1, w1)
+        self._insert_entry_queue_completeagent(
+            t1 + datetime.timedelta(seconds=w1 + talk1), 'answered_1', self.queue_name, a1, talk1)
 
         self._insert_entry_queue_enterqueue(t2, 'answered_2', self.queue_name)
-        self._insert_entry_queue_answered(t2 + datetime.timedelta(seconds=1),
-                                          'answered_2', self.queue_name, w2)
+        self._insert_entry_queue_answered(
+            t2 + datetime.timedelta(seconds=1), 'answered_2', self.queue_name, a2, w2)
+        self._insert_entry_queue_completecaller(
+            t2 + datetime.timedelta(seconds=w2 + talk2), 'answered_2', self.queue_name, a2, talk2)
+
+        self._insert_entry_queue_enterqueue(t3, 'answered_3', self.queue_name)
+        self._insert_entry_queue_answered(
+            t3 + datetime.timedelta(seconds=w3), 'answered_3', self.queue_name, a2, w3)
+        self._insert_entry_queue_transfer(
+            t3 + datetime.timedelta(seconds=w3 + talk3), 'answered_3', self.queue_name, a2, talk3)
 
         self._started_calls.extend([
             CallStart('answered_1', 'ENTERQUEUE', t1, self.queue_name),
             CallStart('answered_2', 'ENTERQUEUE', t2, self.queue_name),
+            CallStart('answered_3', 'ENTERQUEUE', t3, self.queue_name),
             ])
 
         self._answered = [
@@ -73,12 +90,24 @@ class TestQueueLogDAO(DAOTestCase):
              'callid': u'answered_1',
              'queue_name': self.queue_name,
              'event': 'answered',
-             'time': t1},
+             'time': t1,
+             'talktime': talk1,
+             'agent': a1},
             {'waittime': w2,
              'callid': u'answered_2',
              'queue_name': self.queue_name,
              'event': 'answered',
-             'time': t2}]
+             'time': t2,
+             'talktime': talk2,
+             'agent': a2},
+            {'waittime': w3,
+             'callid': u'answered_3',
+             'queue_name': self.queue_name,
+             'event': 'answered',
+             'time': t3,
+             'talktime': talk3,
+             'agent': a2},
+            ]
 
     def _insert_abandoned_calls(self):
         t1 = datetime.datetime(2012, 1, 1, 0, 1, 0)
@@ -185,8 +214,9 @@ class TestQueueLogDAO(DAOTestCase):
     def _insert_entry_queue_closed(self, t, callid, queuename, waittime=0):
         self._insert_entry_queue('CLOSED', self._build_timestamp(t), callid, queuename)
 
-    def _insert_entry_queue_answered(self, time, callid, queuename, waittime):
-        self._insert_entry_queue('CONNECT', self._build_timestamp(time), callid, queuename, d1=waittime)
+    def _insert_entry_queue_answered(self, time, callid, queuename, agent, waittime):
+        self._insert_entry_queue(
+            'CONNECT', self._build_timestamp(time), callid, queuename, agent=agent, d1=waittime)
 
     def _insert_entry_queue_abandoned(self, time, callid, queuename, waittime):
         self._insert_entry_queue('ABANDON', self._build_timestamp(time), callid, queuename, d3=waittime)
@@ -196,6 +226,18 @@ class TestQueueLogDAO(DAOTestCase):
 
     def _insert_entry_queue_enterqueue(self, time, callid, queuename, waittime=0):
         self._insert_entry_queue('ENTERQUEUE', self._build_timestamp(time), callid, queuename)
+
+    def _insert_entry_queue_completeagent(self, time, callid, queuename, agent, talktime):
+        self._insert_entry_queue('COMPLETEAGENT', self._build_timestamp(time),
+                                 callid, queuename, agent, d2=talktime)
+
+    def _insert_entry_queue_completecaller(self, time, callid, queuename, agent, talktime):
+        self._insert_entry_queue('COMPLETECALLER', self._build_timestamp(time),
+                                 callid, queuename, agent, d2=talktime)
+
+    def _insert_entry_queue_transfer(self, time, callid, queuename, agent, talktime):
+        self._insert_entry_queue('TRANSFER', self._build_timestamp(time),
+                                 callid, queuename, agent, d4=talktime)
 
     @staticmethod
     def _build_date(year, month, day, hour=0, minute=0, second=0, micro=0):
@@ -249,12 +291,24 @@ class TestQueueLogDAO(DAOTestCase):
 
         self.assertEqual(result, queue_names)
 
+    def test_get_agents_after(self):
+        agents = sorted('Agent/%s' % (x + 1000) for x in range(10))
+        t = datetime.datetime(2012, 1, 1, 1, 1, 1)
+        second = t.second
+        for agent in agents:
+            self._insert_entry_queue('CONNECT', t + datetime.timedelta(seconds=second), agent, 'q', agent)
+            second += 1
+
+        result = queue_log_dao.get_agents_after(t)
+
+        self.assertEqual(sorted(result), agents)
+
     def test_get_queue_answered_call(self):
         self._insert_sample()
 
         result = queue_log_dao.get_queue_answered_call(self._started_calls)
 
-        self.assertEqual(result, self._answered)
+        self.assertEqual(sorted(result), sorted(self._answered))
 
     def test_get_queue_abandoned_call(self):
         self._insert_sample()

@@ -49,7 +49,7 @@ def _get_event_with_enterqueue(started_calls, match, event):
          'event': event,
          'time': enter_map[r.callid],
          'callid': r.callid,
-         'waittime': int(r.waittime) if r.waittime else _time_diff(enter_map[r.callid], _time_str_to_datetime(r.time))
+         'waittime': int(r.waittime) if r.waittime else _time_diff(enter_map[r.callid], _time_str_to_datetime(r.time)),
          } for r in res]
 
 
@@ -58,7 +58,45 @@ def get_queue_abandoned_call(started_calls):
 
 
 def get_queue_answered_call(started_calls):
-    return _get_event_with_enterqueue(started_calls, 'CONNECT', 'answered')
+    enter_map = {}
+    for c in started_calls:
+        enter_map[c.callid] = c.time
+
+    result = {}
+
+    rows = (_session()
+            .query(QueueLog.event,
+                   QueueLog.queuename,
+                   QueueLog.agent,
+                   QueueLog.time,
+                   QueueLog.callid,
+                   QueueLog.data1.label('waittime'),
+                   QueueLog.data2,
+                   QueueLog.data4)
+            .filter(and_(QueueLog.callid.in_(enter_map),
+                         QueueLog.event.in_(['CONNECT',
+                                             'COMPLETEAGENT',
+                                             'COMPLETECALLER',
+                                             'TRANSFER']))))
+
+    for row in rows:
+        if row.callid not in result:
+            result[row.callid] = {
+                'callid': row.callid,
+                'event': 'answered',
+                'time': enter_map[row.callid],
+                'queue_name': row.queuename,
+                'agent': row.agent,
+                'talktime': 0,
+                }
+        if row.event == 'CONNECT':
+            result[row.callid]['waittime'] = int(row.waittime) if row.waittime else 0
+        elif row.event in ['COMPLETEAGENT', 'COMPLETECALLER']:
+            result[row.callid]['talktime'] = int(row.data2)
+        elif row.event == 'TRANSFER':
+            result[row.callid]['talktime'] = int(row.data4)
+
+    return result.values()
 
 
 def get_queue_timeout_call(started_calls):
@@ -95,6 +133,14 @@ def get_queue_names_in_range(start, end):
 
     return [r[0] for r in (_session().query(distinct(QueueLog.queuename))
                                   .filter(between(QueueLog.time, start, end)))]
+
+
+def get_agents_after(start):
+    s = start.strftime(_STR_TIME_FMT)
+
+    return [r.agent for r in (_session()
+                              .query(distinct(QueueLog.agent).label('agent'))
+                              .filter(QueueLog.time >= s))]
 
 
 def get_started_calls(start, end):
