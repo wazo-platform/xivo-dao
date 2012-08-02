@@ -26,8 +26,6 @@ from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.cel import CEL
 from xivo_dao.helpers.cel_channel import CELChannel
 from xivo_dao.helpers.cel_exception import CELException
-from sqlalchemy import desc
-
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +38,7 @@ class CELDAO(object):
         cel_events = (self._session.query(CEL.cid_name, CEL.cid_num)
                       .filter(CEL.eventtype.in_(['APP_START', 'CHAN_START']))
                       .filter(CEL.uniqueid == unique_id)
-                      .order_by(desc(CEL.id))
+                      .order_by(CEL.id.desc())
                       .first())
 
         if cel_events is None:
@@ -58,17 +56,20 @@ class CELDAO(object):
         else:
             return CELChannel(cel_events)
 
-    def channels_for_phone(self, phone):
+    def channels_for_phone(self, phone, limit=None):
         channel_pattern = self._channel_pattern_from_phone(phone)
         unique_ids = (self._session.query(CEL.uniqueid)
                       .filter(CEL.channame.like(channel_pattern))
                       .filter(CEL.eventtype == 'CHAN_START')
-                      .order_by(CEL.eventtime.desc()))
+                      .order_by(CEL.id.desc()))
+        if limit is not None:
+            fuzzy_limit = 2 * limit
+            unique_ids = unique_ids.limit(fuzzy_limit)
         ret = []
         for unique_id, in unique_ids:
             try:
                 channel = self.channel_by_unique_id(unique_id)
-            except CELException, e:
+            except CELException as e:
                 # this can happen in the case the channel is alive
                 logger.info('could not create CEL channel %s: %s', unique_id, e)
             else:
