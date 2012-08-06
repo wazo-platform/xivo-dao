@@ -48,3 +48,8 @@ def get_most_recent_time():
 def clean_table():
     _session().query(StatQueuePeriodic).delete()
     _session().commit()
+
+
+def remove_after(date):
+    _session().query(StatQueuePeriodic).filter(StatQueuePeriodic.time >= date).delete()
+    _session().commit()

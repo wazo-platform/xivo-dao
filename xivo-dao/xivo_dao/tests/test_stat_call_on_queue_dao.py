@@ -208,3 +208,18 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         total = (self.session.query(func.count(StatCallOnQueue.callid))).first()[0]
 
         self.assertEqual(total, 0)
+
+    def test_remove_after(self):
+        stat_call_on_queue_dao.remove_after(datetime.datetime(2012, 1, 1))
+
+        queue_name, _ = self._insert_queue_to_stat_queue()
+
+        stat_call_on_queue_dao.add_full_call('callid1', datetime.datetime(2012, 1, 1), queue_name)
+        stat_call_on_queue_dao.add_full_call('callid2', datetime.datetime(2012, 1, 2), queue_name)
+        stat_call_on_queue_dao.add_full_call('callid3', datetime.datetime(2012, 1, 3), queue_name)
+
+        stat_call_on_queue_dao.remove_after(datetime.datetime(2012, 1, 2))
+
+        callids = self.session.query(StatCallOnQueue.callid)
+        self.assertEqual(callids.count(), 1)
+        self.assertEqual(callids[0].callid, 'callid1')

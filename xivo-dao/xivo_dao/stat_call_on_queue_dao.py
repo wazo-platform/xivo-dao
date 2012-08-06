@@ -87,3 +87,8 @@ def get_periodic_stats(start, end):
 def clean_table():
     _session().query(StatCallOnQueue).delete()
     _session().commit()
+
+
+def remove_after(date):
+    _session().query(StatCallOnQueue).filter(StatCallOnQueue.time >= date).delete()
+    _session().commit()

@@ -92,3 +92,21 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
         total = self.session.query(func.count(StatQueuePeriodic.time))[0][0]
 
         self.assertEqual(total, 0)
+
+    def test_remove_after(self):
+        queue_name, queue_id = self._insert_queue_to_stat_queue()
+        stats = {queue_id: {
+                            'full': 4,
+                            'total': 10
+                            }
+                 }
+
+        stat_queue_periodic_dao.insert_stats(stats, datetime.datetime(2012, 1, 1))
+        stat_queue_periodic_dao.insert_stats(stats, datetime.datetime(2012, 1, 2))
+        stat_queue_periodic_dao.insert_stats(stats, datetime.datetime(2012, 1, 3))
+
+        stat_queue_periodic_dao.remove_after(datetime.datetime(2012, 1, 2))
+
+        res = self.session.query(StatQueuePeriodic.time)
+        self.assertEqual(res.count(), 1)
+        self.assertEqual(res[0].time, datetime.datetime(2012, 1, 1))
