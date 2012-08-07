@@ -19,6 +19,7 @@ _MAP_QUEUE_LOG_WAITTIME = {'answered': QueueLog.data1,
                            'abandoned': QueueLog.data3,
                            'timeout': QueueLog.data3}
 FIRST_EVENT = ['FULL', 'ENTERQUEUE', 'CLOSED', 'JOINEMPTY']
+WAIT_TIME_EVENT = ['CONNECT', 'LEAVEEMPTY', 'EXITWITHTIMEOUT', 'ABANDON']
 
 CallStart = namedtuple('CallStart', ['callid', 'event', 'time', 'queuename'])
 
@@ -28,88 +29,121 @@ def _session():
     return connection.get_session()
 
 
-def _get_event_with_enterqueue(started_calls, match, event):
-    enter_map = {}
-    for c in started_calls:
-        enter_map[c.callid] = c.time
+def _get_queue_event_call(start, end, event_filter, name):
+    start = start.strftime(_STR_TIME_FMT)
+    end = end.strftime(_STR_TIME_FMT)
 
-    waittime_column = _MAP_QUEUE_LOG_WAITTIME.get(event, literal_column('0'))
+    waittime_column = _MAP_QUEUE_LOG_WAITTIME.get(name, literal_column('0'))
+
+    res = (_session()
+           .query(QueueLog.queuename, QueueLog.time, QueueLog.callid, waittime_column.label('waittime'))
+           .filter(and_(QueueLog.event == event_filter,
+                        between(QueueLog.time, start, end))))
+
+    return [{'queue_name': r.queuename,
+             'event': name,
+             'time': r.time,
+             'callid': r.callid,
+             'waittime': int(r.waittime) if r.waittime else 0} for r in res]
+
+
+def get_queue_full_call(start, end):
+    return _get_queue_event_call(start, end, 'FULL', 'full')
+
+
+def get_queue_closed_call(start, end):
+    return _get_queue_event_call(start, end, 'CLOSED', 'closed')
+
+
+def _get_event_with_enterqueue(start, end, match, event):
+    start = start.strftime(_STR_TIME_FMT)
+    end = end.strftime(_STR_TIME_FMT)
+
+    enter_queues = (_session()
+                    .query(QueueLog.callid, QueueLog.time)
+                    .filter(and_(QueueLog.event == 'ENTERQUEUE',
+                                 between(QueueLog.time, start, end))))
+
+    enter_map = {}
+    for enter_queue in enter_queues:
+        enter_map[enter_queue.callid] = _time_str_to_datetime(enter_queue.time)
+
+    if match == 'CONNECT':
+        match = ['CONNECT', 'COMPLETECALLER', 'COMPLETEAGENT', 'TRANSFER']
+    else:
+        match = [match]
 
     res = (_session()
            .query(QueueLog.event,
                   QueueLog.queuename,
                   QueueLog.time,
                   QueueLog.callid,
-                  waittime_column.label('waittime'))
-           .filter(and_(QueueLog.event == match,
+                  QueueLog.agent,
+                  QueueLog.data1,
+                  QueueLog.data2,
+                  QueueLog.data3,
+                  QueueLog.data4)
+           .filter(and_(QueueLog.event.in_(match),
                         QueueLog.callid.in_(enter_map))))
 
-    return [
-        {'queue_name': r.queuename,
-         'event': event,
-         'time': enter_map[r.callid],
-         'callid': r.callid,
-         'waittime': int(r.waittime) if r.waittime else _time_diff(enter_map[r.callid], _time_str_to_datetime(r.time)),
-         } for r in res]
-
-
-def get_queue_abandoned_call(started_calls):
-    return _get_event_with_enterqueue(started_calls, 'ABANDON', 'abandoned')
-
-
-def get_queue_answered_call(started_calls):
-    enter_map = {}
-    for c in started_calls:
-        enter_map[c.callid] = c.time
-
-    result = {}
-
-    rows = (_session()
-            .query(QueueLog.event,
-                   QueueLog.queuename,
-                   QueueLog.agent,
-                   QueueLog.time,
-                   QueueLog.callid,
-                   QueueLog.data1.label('waittime'),
-                   QueueLog.data2,
-                   QueueLog.data4)
-            .filter(and_(QueueLog.callid.in_(enter_map),
-                         QueueLog.event.in_(['CONNECT',
-                                             'COMPLETEAGENT',
-                                             'COMPLETECALLER',
-                                             'TRANSFER']))))
-
-    for row in rows:
-        if row.callid not in result:
-            result[row.callid] = {
-                'callid': row.callid,
-                'event': 'answered',
-                'time': enter_map[row.callid],
-                'queue_name': row.queuename,
-                'agent': row.agent,
-                'talktime': 0,
+    ret = {}
+    for r in res:
+        if r.callid not in ret:
+            ret[r.callid] = {
+                'callid': r.callid,
+                'queue_name': r.queuename,
+                'time': enter_map[r.callid],
+                'event': event,
                 }
-        if row.event == 'CONNECT':
-            result[row.callid]['waittime'] = int(row.waittime) if row.waittime else 0
-        elif row.event in ['COMPLETEAGENT', 'COMPLETECALLER']:
-            result[row.callid]['talktime'] = int(row.data2)
-        elif row.event == 'TRANSFER':
-            result[row.callid]['talktime'] = int(row.data4)
+        if r.agent:
+            ret[r.callid]['agent'] = r.agent
+        if r.event in WAIT_TIME_EVENT:
+            if r.event == 'LEAVEEMPTY':
+                t = _time_str_to_datetime(r.time)
+                waittime = _time_diff(enter_map[r.callid], t)
+                ret[r.callid]['waittime'] = waittime
+            elif r.event == 'CONNECT':
+                ret[r.callid]['waittime'] = int(r.data1)
+            else:
+                ret[r.callid]['waittime'] = int(r.data3)
+        elif r.event in ['COMPLETECALLER', 'COMPLETEAGENT']:
+            ret[r.callid]['talktime'] = int(r.data2)
+        elif r.event == 'TRANSFER':
+            ret[r.callid]['talktime'] = int(r.data4)
 
-    return result.values()
+    return ret.values()
 
 
-def get_queue_timeout_call(started_calls):
-    return _get_event_with_enterqueue(started_calls, 'EXITWITHTIMEOUT', 'timeout')
+def get_queue_abandoned_call(start, end):
+    return _get_event_with_enterqueue(start, end, 'ABANDON', 'abandoned')
 
 
-def get_queue_leaveempty_call(started_calls):
-    return _get_event_with_enterqueue(started_calls, 'LEAVEEMPTY', 'leaveempty')
+def get_queue_answered_call(start, end):
+    return _get_event_with_enterqueue(start, end, 'CONNECT', 'answered')
+
+
+def get_queue_timeout_call(start, end):
+    return _get_event_with_enterqueue(start, end, 'EXITWITHTIMEOUT', 'timeout')
+
+
+def get_queue_joinempty_call(start, end):
+    return _get_queue_event_call(start, end, 'JOINEMPTY', 'joinempty')
+
+
+def get_queue_leaveempty_call(start, end):
+    return _get_event_with_enterqueue(start, end, 'LEAVEEMPTY', 'leaveempty')
 
 
 def _time_diff(start, end):
     delta = end - start
     return delta.seconds + int(round(delta.microseconds / 1000000.0))
+
+
+def get_enterqueue_time(callids):
+    return dict([(r.callid, _time_str_to_datetime(r.time))
+                 for r in (_session().query(QueueLog.callid, QueueLog.time)
+                           .filter(and_(QueueLog.event == 'ENTERQUEUE',
+                                        QueueLog.callid.in_(callids))))])
 
 
 def _time_str_to_datetime(s):
