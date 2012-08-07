@@ -94,6 +94,7 @@ def _get_event_with_enterqueue(start, end, match, event):
                 'queue_name': r.queuename,
                 'time': enter_map[r.callid],
                 'event': event,
+                'talktime': 0
                 }
         if r.agent:
             ret[r.callid]['agent'] = r.agent
