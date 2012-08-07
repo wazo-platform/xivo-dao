@@ -148,6 +148,8 @@ def get_enterqueue_time(callids):
 
 
 def _time_str_to_datetime(s):
+    if not s:
+        raise LookupError
     m = _TIME_STRING_PATTERN.match(s)
     return datetime.datetime(int(m.group(1)),
                              int(m.group(2)),
