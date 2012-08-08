@@ -9,7 +9,7 @@ from sqlalchemy.sql.expression import and_
 from sqlalchemy.sql.functions import min
 from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.queue_log import QueueLog
-from sqlalchemy import literal_column
+from sqlalchemy import literal_column, cast, TIMESTAMP
 
 
 _DB_NAME = 'asterisk'
@@ -36,7 +36,10 @@ def _get_queue_event_call(start, end, event_filter, name):
     waittime_column = _MAP_QUEUE_LOG_WAITTIME.get(name, literal_column('0'))
 
     res = (_session()
-           .query(QueueLog.queuename, QueueLog.time, QueueLog.callid, waittime_column.label('waittime'))
+           .query(QueueLog.queuename,
+                  cast(QueueLog.time, TIMESTAMP).label('time'),
+                  QueueLog.callid,
+                  waittime_column.label('waittime'))
            .filter(and_(QueueLog.event == event_filter,
                         between(QueueLog.time, start, end))))
 
@@ -60,13 +63,14 @@ def _get_event_with_enterqueue(start, end, match, event):
     end = end.strftime(_STR_TIME_FMT)
 
     enter_queues = (_session()
-                    .query(QueueLog.callid, QueueLog.time)
+                    .query(QueueLog.callid,
+                           cast(QueueLog.time, TIMESTAMP).label('time'))
                     .filter(and_(QueueLog.event == 'ENTERQUEUE',
                                  between(QueueLog.time, start, end))))
 
     enter_map = {}
     for enter_queue in enter_queues:
-        enter_map[enter_queue.callid] = _time_str_to_datetime(enter_queue.time)
+        enter_map[enter_queue.callid] = enter_queue.time
 
     if match == 'CONNECT':
         match = ['CONNECT', 'COMPLETECALLER', 'COMPLETEAGENT', 'TRANSFER']
@@ -76,7 +80,7 @@ def _get_event_with_enterqueue(start, end, match, event):
     res = (_session()
            .query(QueueLog.event,
                   QueueLog.queuename,
-                  QueueLog.time,
+                  cast(QueueLog.time, TIMESTAMP).label('time'),
                   QueueLog.callid,
                   QueueLog.agent,
                   QueueLog.data1,
@@ -100,8 +104,7 @@ def _get_event_with_enterqueue(start, end, match, event):
             ret[r.callid]['agent'] = r.agent
         if r.event in WAIT_TIME_EVENT:
             if r.event == 'LEAVEEMPTY':
-                t = _time_str_to_datetime(r.time)
-                waittime = _time_diff(enter_map[r.callid], t)
+                waittime = _time_diff(enter_map[r.callid], r.time)
                 ret[r.callid]['waittime'] = waittime
             elif r.event == 'CONNECT':
                 ret[r.callid]['waittime'] = int(r.data1)
@@ -141,8 +144,10 @@ def _time_diff(start, end):
 
 
 def get_enterqueue_time(callids):
-    return dict([(r.callid, _time_str_to_datetime(r.time))
-                 for r in (_session().query(QueueLog.callid, QueueLog.time)
+    return dict([(r.callid, r.time)
+                 for r in (_session()
+                           .query(QueueLog.callid,
+                                  cast(QueueLog.time, TIMESTAMP).label('time'))
                            .filter(and_(QueueLog.event == 'ENTERQUEUE',
                                         QueueLog.callid.in_(callids))))])
 
@@ -161,7 +166,7 @@ def _time_str_to_datetime(s):
 
 
 def get_first_time():
-    return _time_str_to_datetime(_session().query(min(QueueLog.time))[0][0])
+    return _session().query(cast(min(QueueLog.time), TIMESTAMP))[0][0]
 
 
 def get_queue_names_in_range(start, end):
@@ -186,10 +191,9 @@ def get_started_calls(start, end):
 
     rows = (_session().query(QueueLog.callid,
                              QueueLog.event,
-                             QueueLog.time,
+                             cast(QueueLog.time, TIMESTAMP).label('time'),
                              QueueLog.queuename)
-            .filter(between(QueueLog.time, start, end))
-            .filter(QueueLog.event.in_(FIRST_EVENT)))
+            .filter(and_(between(QueueLog.time, start, end),
+                         QueueLog.event.in_(FIRST_EVENT))))
 
-    return [CallStart(r.callid, r.event,
-                      _time_str_to_datetime(r.time), r.queuename) for r in rows]
+    return [CallStart(*row) for row in rows]

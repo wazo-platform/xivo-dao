@@ -242,6 +242,7 @@ class TestQueueLogDAO(DAOTestCase):
                         'time': enter_time,
                         'callid': callid,
                         'waittime': waittime,
+                        'talktime': 0,
                         })
         return expected
 
@@ -261,6 +262,7 @@ class TestQueueLogDAO(DAOTestCase):
                         'time': enter_time,
                         'callid': callid,
                         'waittime': waittime,
+                        'talktime': 0,
                         })
         return expected
 
@@ -280,6 +282,7 @@ class TestQueueLogDAO(DAOTestCase):
                         'time': enter_time,
                         'callid': callid,
                         'waittime': waittime,
+                        'talktime': 0,
                         })
         return expected
 
@@ -309,7 +312,7 @@ class TestQueueLogDAO(DAOTestCase):
             if 0 <= minute < 60:
                 expected.append({'queue_name': self.queue_name,
                                  'event': event_name,
-                                 'time': self._build_timestamp(t),
+                                 'time': t,
                                  'callid': callid,
                                  'waittime': waittime})
 

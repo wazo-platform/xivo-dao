@@ -44,13 +44,13 @@ class TestStatCallOnQueueDAO(DAOTestCase):
     def test_add_two_queues(self):
         q1, _ = self._insert_queue_to_stat_queue('q1')
         q2, _ = self._insert_queue_to_stat_queue('q2')
-        t1 = self._build_date(2012, 01, 01, 01, 01, 01)
-        t2 = self._build_date(2012, 01, 01, 01, 01, 02)
+        t1 = datetime.datetime(2012, 01, 01, 01, 01, 01)
+        t2 = datetime.datetime(2012, 01, 01, 01, 01, 02)
         stat_call_on_queue_dao.add_full_call('callid', t1, q1)
         stat_call_on_queue_dao.add_full_call('callid', t2, q2)
 
     def test_add_full_call(self):
-        timestamp = self._build_date(2012, 01, 02, 00, 00, 00)
+        timestamp = datetime.datetime(2012, 01, 02, 00, 00, 00)
         queue_name, _ = self._insert_queue_to_stat_queue()
 
         stat_call_on_queue_dao.add_full_call('callid', timestamp, queue_name)
@@ -60,7 +60,7 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         self.assertEqual(res[0].callid, 'callid')
 
     def test_add_closed_call(self):
-        timestamp = self._build_date(2012, 01, 02, 00, 00, 00)
+        timestamp = datetime.datetime(2012, 01, 02, 00, 00, 00)
         queue_name, _ = self._insert_queue_to_stat_queue()
 
         stat_call_on_queue_dao.add_closed_call('callid', timestamp, queue_name)
@@ -68,9 +68,10 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         res = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid == 'callid')
 
         self.assertEqual(res[0].callid, 'callid')
+        self.assertEqual(res[0].time, timestamp)
 
     def test_add_answered_call(self):
-        timestamp = self._build_date(2012, 01, 02, 00, 00, 00)
+        timestamp = datetime.datetime(2012, 01, 02, 00, 00, 00)
         queue_name, _ = self._insert_queue_to_stat_queue()
         agent_name, agent_id = self._insert_agent_to_stat_agent()
 
@@ -82,9 +83,10 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         self.assertEqual(res.waittime, 13)
         self.assertEqual(res.talktime, 22)
         self.assertEqual(res.agent_id, agent_id)
+        self.assertEqual(res.time, timestamp)
 
     def test_add_abandoned_call(self):
-        timestamp = self._build_date(2012, 01, 02, 00, 00, 00)
+        timestamp = datetime.datetime(2012, 01, 02, 00, 00, 00)
         queue_name, _ = self._insert_queue_to_stat_queue()
 
         stat_call_on_queue_dao.add_abandoned_call('callid', timestamp, queue_name, 42)
@@ -92,18 +94,20 @@ class TestStatCallOnQueueDAO(DAOTestCase):
 
         self.assertEqual(res[0].callid, 'callid')
         self.assertEqual(res[0].waittime, 42)
+        self.assertEqual(res[0].time, timestamp)
 
     def test_add_joinempty_call(self):
-        timestamp = self._build_date(2012, 01, 02, 00, 00, 00)
+        timestamp = datetime.datetime(2012, 01, 02, 00, 00, 00)
         queue_name, _ = self._insert_queue_to_stat_queue()
 
         stat_call_on_queue_dao.add_joinempty_call('callid', timestamp, queue_name)
         res = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid == 'callid')
 
         self.assertEqual(res[0].callid, 'callid')
+        self.assertEqual(res[0].time, timestamp)
 
     def test_add_leaveempty_call(self):
-        timestamp = self._build_date(2012, 01, 02, 00, 00, 00)
+        timestamp = datetime.datetime(2012, 01, 02, 00, 00, 00)
         queue_name, _ = self._insert_queue_to_stat_queue()
 
         stat_call_on_queue_dao.add_leaveempty_call('callid', timestamp, queue_name, 13)
@@ -113,7 +117,7 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         self.assertEqual(res[0].waittime, 13)
 
     def test_add_timeout_call(self):
-        timestamp = self._build_date(2012, 01, 02, 00, 00, 00)
+        timestamp = datetime.datetime(2012, 01, 02, 00, 00, 00)
         queue_name, _ = self._insert_queue_to_stat_queue()
 
         stat_call_on_queue_dao.add_timeout_call('callid', timestamp, queue_name, 27)
