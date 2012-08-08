@@ -146,7 +146,7 @@ def get_queue_answered_call(start, end):
                              QueueLog.data1,
                              QueueLog.data2,
                              QueueLog.data4)
-                      .filter(QueueLog.callid.in_(call_ids_answered_in_range)))
+                      .filter(QueueLog.callid.in_(call_ids_answered_in_range))).yield_per(100)
 
     res = {}
     for c in answered_calls:
