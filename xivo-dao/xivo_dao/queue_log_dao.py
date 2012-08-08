@@ -162,9 +162,7 @@ def get_queue_answered_call(start, end):
         if c.event == 'ENTERQUEUE':
             res[c.callid]['time'] = c.time
         if c.event in WAIT_TIME_EVENT:
-            if c.event == 'LEAVEEMPTY':
-                res[c.callid]['waittime'] = 0
-            elif c.event == 'CONNECT':
+            if c.event == 'CONNECT':
                 res[c.callid]['waittime'] = int(c.data1) if c.data1 else 0
             else:
                 res[c.callid]['waittime'] = int(c.data3)
