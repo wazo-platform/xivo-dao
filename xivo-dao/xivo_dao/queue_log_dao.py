@@ -123,7 +123,57 @@ def get_queue_abandoned_call(start, end):
 
 
 def get_queue_answered_call(start, end):
-    return _get_event_with_enterqueue(start, end, 'CONNECT', 'answered')
+    start = start.strftime(_STR_TIME_FMT)
+    end = end.strftime(_STR_TIME_FMT)
+
+    entered_in_range = (_session()
+                        .query(QueueLog.callid)
+                        .filter(and_(QueueLog.callid != 'NONE',
+                                     QueueLog.event == 'ENTERQUEUE',
+                                     between(QueueLog.time, start, end)))).subquery()
+
+    call_ids_answered_in_range = (_session()
+                         .query(QueueLog.callid)
+                         .filter(and_(QueueLog.callid.in_(entered_in_range),
+                                      QueueLog.event == 'CONNECT'))).subquery()
+
+    answered_calls = (_session()
+                      .query(QueueLog.callid,
+                             QueueLog.queuename,
+                             QueueLog.event,
+                             cast(QueueLog.time, TIMESTAMP).label('time'),
+                             QueueLog.agent,
+                             QueueLog.data1,
+                             QueueLog.data2,
+                             QueueLog.data4)
+                      .filter(QueueLog.callid.in_(call_ids_answered_in_range)))
+
+    res = {}
+    for c in answered_calls:
+        if c.callid not in res:
+            res[c.callid] = {
+                'callid': c.callid,
+                'queue_name': c.queuename,
+                'event': 'answered',
+                'talktime': 0,
+                }
+        if c.agent:
+            res[c.callid]['agent'] = c.agent
+        if c.event == 'ENTERQUEUE':
+            res[c.callid]['time'] = c.time
+        if c.event in WAIT_TIME_EVENT:
+            if c.event == 'LEAVEEMPTY':
+                res[c.callid]['waittime'] = 0
+            elif c.event == 'CONNECT':
+                res[c.callid]['waittime'] = int(c.data1) if c.data1 else 0
+            else:
+                res[c.callid]['waittime'] = int(c.data3)
+        elif c.event in ['COMPLETEAGENT', 'COMPLETECALLER']:
+            res[c.callid]['talktime'] = int(c.data2) if c.data2 else 0
+        elif c.event == 'TRANSFER':
+            res[c.callid]['talktime'] = int(c.data4) if c.data2 else 0
+
+    return res.values()
 
 
 def get_queue_timeout_call(start, end):
