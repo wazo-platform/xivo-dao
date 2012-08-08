@@ -145,6 +145,7 @@ def get_queue_answered_call(start, end):
                              QueueLog.agent,
                              QueueLog.data1,
                              QueueLog.data2,
+                             QueueLog.data3,
                              QueueLog.data4)
                       .filter(QueueLog.callid.in_(call_ids_answered_in_range))).yield_per(100)
 
@@ -165,7 +166,7 @@ def get_queue_answered_call(start, end):
             if c.event == 'CONNECT':
                 res[c.callid]['waittime'] = int(c.data1) if c.data1 else 0
             else:
-                res[c.callid]['waittime'] = int(c.data3)
+                res[c.callid]['waittime'] = int(c.data3) if c.data3 else 0
         elif c.event in ['COMPLETEAGENT', 'COMPLETECALLER']:
             res[c.callid]['talktime'] = int(c.data2) if c.data2 else 0
         elif c.event == 'TRANSFER':
