@@ -30,6 +30,10 @@ from xivo_dao.helpers.cel_exception import CELException
 logger = logging.getLogger(__name__)
 
 
+class UnsupportedLineProtocolException(Exception):
+    pass
+
+
 class CELDAO(object):
     def __init__(self, session):
         self._session = session
@@ -77,10 +81,13 @@ class CELDAO(object):
         return ret
 
     def _channel_pattern_from_phone(self, phone):
-        if phone['protocol'] == 'sip':
+        protocol = phone['protocol']
+        if protocol == 'sip':
             return self._channel_pattern_from_phone_sip(phone)
-        elif phone['protocol'] == 'sccp':
+        elif protocol == 'sccp':
             return self._channel_pattern_from_phone_sccp(phone)
+        else:
+            raise UnsupportedLineProtocolException()
 
     def _channel_pattern_from_phone_sip(self, phone):
         return "SIP/%s-%%" % phone['name']
