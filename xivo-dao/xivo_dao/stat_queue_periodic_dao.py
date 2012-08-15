@@ -16,20 +16,14 @@ def insert_stats(stats, period_start):
     for queue_id, queue_stats in stats.iteritems():
         entry = StatQueuePeriodic()
         entry.time = period_start
-        if 'abandoned' in queue_stats:
-            entry.abandoned = queue_stats['abandoned']
-        if 'answered' in queue_stats:
-            entry.answered = queue_stats['answered']
-        if 'full' in queue_stats:
-            entry.full = queue_stats['full']
-        if 'joinempty' in queue_stats:
-            entry.joinempty = queue_stats['joinempty']
-        if 'leaveempty' in queue_stats:
-            entry.leaveempty = queue_stats['leaveempty']
-        if 'closed' in queue_stats:
-            entry.closed = queue_stats['closed']
-        if 'timeout' in queue_stats:
-            entry.timeout = queue_stats['timeout']
+        entry.abandoned = queue_stats.get('abandoned', 0)
+        entry.answered = queue_stats.get('answered', 0)
+        entry.full = queue_stats.get('full', 0)
+        entry.joinempty = queue_stats.get('joinempty', 0)
+        entry.leaveempty = queue_stats.get('leaveempty', 0)
+        entry.closed = queue_stats.get('closed', 0)
+        entry.timeout = queue_stats.get('timeout', 0)
+        entry.divert_ca_ratio = queue_stats.get('divert_ca_ratio', 0)
         entry.total = queue_stats['total']
         entry.queue_id = queue_id
 
