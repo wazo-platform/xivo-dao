@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from sqlalchemy.schema import Column, ForeignKey, Sequence
+from sqlalchemy.schema import Column, ForeignKey
 from sqlalchemy.types import String, TIMESTAMP, Integer, Enum
 from xivo_dao.alchemy.base import Base, Type
 
@@ -29,18 +29,18 @@ class StatCallOnQueue(Base):
 
     __tablename__ = 'stat_call_on_queue'
 
-    id = Column(Integer, Sequence('stat_call_on_queue_id_seq'), primary_key=True)
+    id = Column(Integer, primary_key=True)
     callid = Column(String(32), nullable=False)
     time = Column(TIMESTAMP, nullable=False)
-    ringtime = Column(Integer, nullable=False, default=0)
-    talktime = Column(Integer, nullable=False, default=0)
-    waittime = Column(Integer, nullable=False, default=0)
+    ringtime = Column(Integer, nullable=False, server_default='0')
+    talktime = Column(Integer, nullable=False, server_default='0')
+    waittime = Column(Integer, nullable=False, server_default='0')
     status = Column(Enum('full',
                          'closed',
                          'joinempty',
                          'leaveempty',
-                         'reroutedguide',
-                         'reroutednumber',
+                         'divert_ca_ratio',
+                         'divert_waittime',
                          'answered',
                          'abandoned',
                          'timeout',

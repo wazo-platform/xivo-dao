@@ -19,6 +19,8 @@ class DAOTestCase(unittest.TestCase):
 
         cls.session = cls.connection.get_session()
 
+        cls._create_functions()
+
     @classmethod
     def tearDownClass(cls):
         dbconnection.unregister_db_connection_pool()
@@ -35,6 +37,10 @@ class DAOTestCase(unittest.TestCase):
             table_list = [table.__table__ for table in cls.tables]
             Base.metadata.create_all(engine, table_list)
             engine.dispose()
+
+    @classmethod
+    def _create_functions(cls):
+        pass
 
     def empty_tables(self):
         for table in self.tables:
