@@ -175,3 +175,10 @@ def get_agents_after(start):
     return [r.agent for r in (_session()
                               .query(distinct(QueueLog.agent).label('agent'))
                               .filter(QueueLog.time >= s))]
+
+
+def delete_event_by_queue_between(event, qname, start, end):
+    _session().query(QueueLog).filter(
+        and_(QueueLog.event == event,
+             QueueLog.queuename == qname,
+             between(QueueLog.time, start, end))).delete(synchronize_session=False)

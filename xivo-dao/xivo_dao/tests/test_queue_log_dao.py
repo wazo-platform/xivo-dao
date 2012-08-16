@@ -282,3 +282,19 @@ class TestQueueLogDAO(DAOTestCase):
                                  'waittime': waittime})
 
         return expected
+
+    def test_delete_event_by_queue_between(self):
+        self._insert_entry_queue_full(datetime.datetime(2012, 07, 01, 7, 1, 1), 'delete_between_1', 'q1')
+        self._insert_entry_queue_full(datetime.datetime(2012, 07, 01, 8, 1, 1), 'delete_between_2', 'q1')
+        self._insert_entry_queue_full(datetime.datetime(2012, 07, 01, 9, 1, 1), 'delete_between_3', 'q1')
+        self._insert_entry_queue_full(datetime.datetime(2012, 07, 01, 8, 1, 0), 'delete_between_4', 'q2')
+
+        queue_log_dao.delete_event_by_queue_between(
+            'FULL', 'q1', '2012-07-01 08:00:00.000000', '2012-07-01 08:59:59.999999')
+
+        callids = [r.callid for r in self.session.query(QueueLog.callid)\
+                                                 .filter(QueueLog.callid.like('delete_between_%'))]
+
+        expected = ['delete_between_1', 'delete_between_3', 'delete_between_4']
+
+        self.assertEquals(callids, expected)
