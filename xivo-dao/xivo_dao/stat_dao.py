@@ -20,3 +20,16 @@ def fill_saturated_calls(start, end):
             )
      .params(start=start, end=end)
      .first())
+
+
+def fill_answered_calls(start, end):
+    start = start.strftime(_STR_TIME_FMT)
+    end = end.strftime(_STR_TIME_FMT)
+
+    (_get_session()
+     .query('place_holder')
+     .from_statement(
+            'SELECT 1 AS place_holder FROM fill_answered_calls(:start, :end)'
+            )
+     .params(start=start, end=end)
+     .first())
