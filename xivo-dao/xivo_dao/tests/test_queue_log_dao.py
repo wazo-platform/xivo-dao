@@ -159,14 +159,6 @@ class TestQueueLogDAO(DAOTestCase):
 
         self.assertEqual(sorted(result), sorted(expected))
 
-    def test_get_queue_answered_call(self):
-        start = datetime.datetime(2012, 01, 01, 01, 00, 00)
-        expected = self._insert_answered(start, [-1, 0, 10, 30, 59, 60, 120])
-
-        result = queue_log_dao.get_queue_answered_call(start, start + ONE_HOUR - ONE_MICROSECOND)
-
-        self.assertEqual(sorted(result), sorted(expected))
-
     def test_get_queue_abandoned_call(self):
         start = datetime.datetime(2012, 01, 01, 01, 00, 00)
         expected = self._insert_abandon(start, [-1, 0, 10, 30, 59, 60, 120])
@@ -198,32 +190,6 @@ class TestQueueLogDAO(DAOTestCase):
         result = queue_log_dao.get_queue_leaveempty_call(start, start + ONE_HOUR - ONE_MICROSECOND)
 
         self.assertEqual(sorted(result), sorted(expected))
-
-    def _insert_answered(self, start, minutes):
-        expected = []
-        a = 'Agent/1000'
-        for minute in minutes:
-            answer_time = start + datetime.timedelta(minutes=minute)
-            waittime = self._random_time()
-            talktime = self._random_time()
-            enter_time = answer_time - datetime.timedelta(seconds=waittime)
-            leave_time = answer_time + datetime.timedelta(seconds=talktime)
-            callid = str(143897234.123 + minute)
-            self._insert_entry_queue_enterqueue(enter_time, callid, self.queue_name)
-            self._insert_entry_queue_answered(answer_time, callid, self.queue_name, a, waittime)
-            self._insert_entry_queue_completecaller(leave_time, callid, self.queue_name, a, talktime)
-            if start <= enter_time < start + datetime.timedelta(hours=1):
-                expected.append({
-                        'queue_name': self.queue_name,
-                        'event': 'answered',
-                        'time': enter_time,
-                        'callid': callid,
-                        'waittime': waittime,
-                        'agent': a,
-                        'talktime': talktime,
-                        })
-
-        return expected
 
     def _insert_timeout(self, start, minutes):
         expected = []
