@@ -3,7 +3,6 @@ import datetime
 import random
 
 from xivo_dao import queue_log_dao
-from xivo_dao.queue_log_dao import CallStart
 from xivo_dao.alchemy.queue_log import QueueLog
 from xivo_dao.tests.test_dao import DAOTestCase
 
@@ -317,28 +316,3 @@ class TestQueueLogDAO(DAOTestCase):
                                  'waittime': waittime})
 
         return expected
-
-    def test_get_started_calls(self):
-        s = datetime.datetime(2012, 1, 1, 0, 0, 0, 0)
-        e = datetime.datetime(2012, 1, 1, 0, 59, 59, 999999)
-
-        self._insert_entry_queue_full(s, '1', self.queue_name)
-
-        self._insert_entry_queue_enterqueue(s - datetime.timedelta(microseconds=1), '2', self.queue_name)
-        self._insert_entry_queue_abandoned(s + datetime.timedelta(seconds=1), '2', self.queue_name, 10)
-
-        self._insert_entry_queue_enterqueue(s, '3', self.queue_name)
-        self._insert_entry_queue_abandoned(e + datetime.timedelta(seconds=1), '3', self.queue_name, 10)
-
-        self._insert_entry_queue_closed(s + datetime.timedelta(seconds=5), '4', self.queue_name)
-
-        self._insert_entry_queue_joinempty(s + datetime.timedelta(seconds=10), '5', self.queue_name)
-
-        result = queue_log_dao.get_started_calls(s, e)
-
-        expected = [CallStart('1', 'FULL', s, self.queue_name),
-                    CallStart('3', 'ENTERQUEUE', s, self.queue_name),
-                    CallStart('4', 'CLOSED', s + datetime.timedelta(seconds=5), self.queue_name),
-                    CallStart('5', 'JOINEMPTY', s + datetime.timedelta(seconds=10), self.queue_name)]
-
-        self.assertEqual(result, expected)

@@ -2,8 +2,6 @@
 import datetime
 import re
 
-from collections import namedtuple
-
 from sqlalchemy import between, distinct
 from sqlalchemy.sql.expression import and_
 from sqlalchemy.sql.functions import min
@@ -20,8 +18,6 @@ _MAP_QUEUE_LOG_WAITTIME = {'answered': QueueLog.data1,
                            'timeout': QueueLog.data3}
 FIRST_EVENT = ['FULL', 'ENTERQUEUE', 'CLOSED', 'JOINEMPTY']
 WAIT_TIME_EVENT = ['CONNECT', 'LEAVEEMPTY', 'EXITWITHTIMEOUT', 'ABANDON']
-
-CallStart = namedtuple('CallStart', ['callid', 'event', 'time', 'queuename'])
 
 
 def _session():
@@ -232,17 +228,3 @@ def get_agents_after(start):
     return [r.agent for r in (_session()
                               .query(distinct(QueueLog.agent).label('agent'))
                               .filter(QueueLog.time >= s))]
-
-
-def get_started_calls(start, end):
-    start = start.strftime(_STR_TIME_FMT)
-    end = end.strftime(_STR_TIME_FMT)
-
-    rows = (_session().query(QueueLog.callid,
-                             QueueLog.event,
-                             cast(QueueLog.time, TIMESTAMP).label('time'),
-                             QueueLog.queuename)
-            .filter(and_(between(QueueLog.time, start, end),
-                         QueueLog.event.in_(FIRST_EVENT))))
-
-    return [CallStart(*row) for row in rows]
