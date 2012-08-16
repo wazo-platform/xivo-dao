@@ -298,3 +298,18 @@ class TestQueueLogDAO(DAOTestCase):
         expected = ['delete_between_1', 'delete_between_3', 'delete_between_4']
 
         self.assertEquals(callids, expected)
+
+    def test_insert_entry(self):
+        queue_log_dao.insert_entry('time', 'callid', 'queue', 'agent', 'event', '1', '2', '3', '4', '5')
+
+        result = [r for r in self.session.query(QueueLog).all()][0]
+        self.assertEqual(result.time, 'time')
+        self.assertEqual(result.callid, 'callid')
+        self.assertEqual(result.queuename, 'queue')
+        self.assertEqual(result.agent, 'agent')
+        self.assertEqual(result.event, 'event')
+        self.assertEqual(result.data1, '1')
+        self.assertEqual(result.data2, '2')
+        self.assertEqual(result.data3, '3')
+        self.assertEqual(result.data4, '4')
+        self.assertEqual(result.data5, '5')

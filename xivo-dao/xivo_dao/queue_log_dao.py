@@ -182,3 +182,19 @@ def delete_event_by_queue_between(event, qname, start, end):
         and_(QueueLog.event == event,
              QueueLog.queuename == qname,
              between(QueueLog.time, start, end))).delete(synchronize_session=False)
+
+
+def insert_entry(time, callid, queue, agent, event, d1='', d2='', d3='', d4='', d5=''):
+    entry = QueueLog(
+        time=time,
+        callid=callid,
+        queuename=queue,
+        agent=agent,
+        event=event,
+        data1=d1,
+        data2=d2,
+        data3=d3,
+        data4=d4,
+        data5=d5)
+    _session().add(entry)
+    _session().commit()
