@@ -73,7 +73,7 @@ def get_periodic_stats(start, end):
                      StatCallOnQueue.status)
            .filter(between(StatCallOnQueue.time, start, end)))
 
-    for period, queue_id, status, number in rows:
+    for period, queue_id, status, number in rows.all():
         if period not in stats:
             stats[period] = {}
         if queue_id not in stats[period]:

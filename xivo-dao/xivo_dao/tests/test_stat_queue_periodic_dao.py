@@ -35,7 +35,8 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
                       'leaveempty': 11,
                       'timeout': 5,
                       'divert_ca_ratio': 22,
-                      'total': 83
+                      'divert_waittime': 15,
+                      'total': 98
                       }
                  }
         return stats
@@ -58,7 +59,8 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
             self.assertEqual(result.leaveempty, 11)
             self.assertEqual(result.timeout, 5)
             self.assertEqual(result.divert_ca_ratio, 22)
-            self.assertEqual(result.total, 83)
+            self.assertEqual(result.divert_waittime, 15)
+            self.assertEqual(result.total, 98)
         except LookupError:
             self.assertTrue(False, 'Should have found a row')
 

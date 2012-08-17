@@ -24,6 +24,7 @@ def insert_stats(stats, period_start):
         entry.closed = queue_stats.get('closed', 0)
         entry.timeout = queue_stats.get('timeout', 0)
         entry.divert_ca_ratio = queue_stats.get('divert_ca_ratio', 0)
+        entry.divert_waittime = queue_stats.get('divert_waittime', 0)
         entry.total = queue_stats['total']
         entry.queue_id = queue_id
 
