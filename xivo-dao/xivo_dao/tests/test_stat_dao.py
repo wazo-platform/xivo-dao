@@ -144,6 +144,35 @@ class TestStatDAO(DAOTestCase):
             self.assertEqual(qname, expected[2])
             self.assertEqual(r.status, 'divert_ca_ratio')
 
+    def test_fill_saturated_calls_holdtime(self):
+        ca_ratio_calls = [
+            (t(2012, 7, 1, 10, 00, 00), 'ratio_1', self.qname1),
+            (t(2012, 7, 1, 10, 59, 59), 'ratio_2', self.qname2),
+            (t(2012, 7, 1, 10, 00, 01), 'ratio_3', self.qname1),
+            (t(2012, 7, 1, 10, 00, 02), 'ratio_4', self.qname2),
+            (t(2012, 7, 1, 10, 00, 03), 'ratio_5', self.qname1),
+            ]
+
+        self._insert_holdtime_calls(ca_ratio_calls)
+
+        stat_dao.fill_saturated_calls(self.start, self.end)
+
+        result = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid.like('ratio_%'))
+        self.assertEqual(result.count(), len(ca_ratio_calls))
+        for r in result.all():
+            cid = r.callid
+            if r.queue_id == self.qid1:
+                qname = self.qname1
+            elif r.queue_id == self.qid2:
+                qname = self.qname2
+            else:
+                raise AssertionError('%s should be in [%s, %s]' % (r.queue_id, self.qid1, self.qid2))
+            expected = [c for c in ca_ratio_calls if c[1] == cid][0]
+            self.assertEqual(cid, expected[1])
+            self.assertEqual(r.time, expected[0])
+            self.assertEqual(qname, expected[2])
+            self.assertEqual(r.status, 'divert_waittime')
+
     def _insert_transfered_calls(self, transfered_calls):
         map(lambda transfered_call: self._insert_transfered_call(*transfered_call), transfered_calls)
 
@@ -155,6 +184,9 @@ class TestStatDAO(DAOTestCase):
 
     def _insert_ca_ratio_calls(self, ca_ratio_calls):
         map(lambda ca_ratio_call: self._insert_ca_ratio_call(*ca_ratio_call), ca_ratio_calls)
+
+    def _insert_holdtime_calls(self, holdtime_calls):
+        map(lambda holdtime_call: self._insert_holdtime_call(*holdtime_call), holdtime_calls)
 
     def _insert_transfered_call(self, time, callid, qname, aname, waittime, talktime):
         enterqueue = QueueLog(
@@ -251,6 +283,18 @@ class TestStatDAO(DAOTestCase):
             queuename=qname,
             agent='NONE',
             event='DIVERT_CA_RATIO'
+            )
+
+        self.session.add(call)
+        self.session.commit()
+
+    def _insert_holdtime_call(self, t, callid, qname):
+        call = QueueLog(
+            time=t,
+            callid=callid,
+            queuename=qname,
+            agent='NONE',
+            event='DIVERT_HOLDTIME'
             )
 
         self.session.add(call)

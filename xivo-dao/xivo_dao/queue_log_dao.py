@@ -46,10 +46,6 @@ def _get_queue_event_call(start, end, event_filter, name):
              'waittime': int(r.waittime) if r.waittime else 0} for r in res]
 
 
-def get_queue_full_call(start, end):
-    return _get_queue_event_call(start, end, 'FULL', 'full')
-
-
 def get_queue_closed_call(start, end):
     return _get_queue_event_call(start, end, 'CLOSED', 'closed')
 
