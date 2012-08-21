@@ -159,14 +159,6 @@ class TestQueueLogDAO(DAOTestCase):
 
         self.assertEqual(sorted(result), sorted(expected))
 
-    def test_get_queue_joinempty_call(self):
-        start = datetime.datetime(2012, 01, 01, 01, 00, 00)
-        expected = self._insert_event_list('joinempty', start, [-1, 0, 10, 30, 59, 60, 120])
-
-        result = queue_log_dao.get_queue_joinempty_call(start, start + ONE_HOUR - ONE_MICROSECOND)
-
-        self.assertEqual(sorted(result), sorted(expected))
-
     def test_get_queue_leaveempty_call(self):
         start = datetime.datetime(2012, 01, 01, 01, 00, 00)
         expected = self._insert_leaveempty(start, [-1, 0, 10, 30, 59, 60, 120])

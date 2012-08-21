@@ -8,7 +8,7 @@ from sqlalchemy.sql.expression import and_
 from sqlalchemy.sql.functions import min
 from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.queue_log import QueueLog
-from sqlalchemy import literal_column, cast, TIMESTAMP
+from sqlalchemy import cast, TIMESTAMP
 
 
 _DB_NAME = 'asterisk'
@@ -24,27 +24,6 @@ WAIT_TIME_EVENT = ['CONNECT', 'LEAVEEMPTY', 'EXITWITHTIMEOUT', 'ABANDON']
 def _session():
     connection = dbconnection.get_connection(_DB_NAME)
     return connection.get_session()
-
-
-def _get_queue_event_call(start, end, event_filter, name):
-    start = start.strftime(_STR_TIME_FMT)
-    end = end.strftime(_STR_TIME_FMT)
-
-    waittime_column = _MAP_QUEUE_LOG_WAITTIME.get(name, literal_column('0'))
-
-    res = (_session()
-           .query(QueueLog.queuename,
-                  cast(QueueLog.time, TIMESTAMP).label('time'),
-                  QueueLog.callid,
-                  waittime_column.label('waittime'))
-           .filter(and_(QueueLog.event == event_filter,
-                        between(QueueLog.time, start, end))))
-
-    return [{'queue_name': r.queuename,
-             'event': name,
-             'time': r.time,
-             'callid': r.callid,
-             'waittime': int(r.waittime) if r.waittime else 0} for r in res]
 
 
 def _get_event_with_enterqueue(start, end, match, event):
@@ -113,10 +92,6 @@ def get_queue_abandoned_call(start, end):
 
 def get_queue_timeout_call(start, end):
     return _get_event_with_enterqueue(start, end, 'EXITWITHTIMEOUT', 'timeout')
-
-
-def get_queue_joinempty_call(start, end):
-    return _get_queue_event_call(start, end, 'JOINEMPTY', 'joinempty')
 
 
 def get_queue_leaveempty_call(start, end):

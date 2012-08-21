@@ -138,6 +138,29 @@ class TestStatDAO(DAOTestCase):
             self.assertEqual(qname, expected[2])
             self.assertEqual(r.status, 'full')
 
+    def test_fill_simple_calls_joinempty(self):
+        je_calls = [
+            (t(2012, 7, 1, 10, 00, 00), 'je_1', self.qname1),
+            (t(2012, 7, 1, 10, 59, 59), 'je_2', self.qname2),
+            (t(2012, 7, 1, 10, 00, 01), 'je_3', self.qname1),
+            (t(2012, 7, 1, 10, 00, 02), 'je_4', self.qname2),
+            (t(2012, 7, 1, 10, 00, 03), 'je_5', self.qname1),
+            ]
+
+        self._insert_joinempty_calls(je_calls)
+
+        stat_dao.fill_simple_calls(self.start, self.end)
+
+        result = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid.like('je_%'))
+        self.assertEqual(result.count(), len(je_calls))
+        for r in result.all():
+            expected = [c for c in je_calls if c[1] == r.callid][0]
+            qid = self.qid1 if expected[2] == self.qname1 else self.qid2
+            self.assertEqual(r.callid, expected[1])
+            self.assertEqual(r.time, expected[0])
+            self.assertEqual(r.queue_id, qid)
+            self.assertEqual(r.status, 'joinempty')
+
     def test_fill_simple_calls_ca_ratio(self):
         ca_ratio_calls = [
             (t(2012, 7, 1, 10, 00, 00), 'ratio_1', self.qname1),
@@ -207,6 +230,9 @@ class TestStatDAO(DAOTestCase):
 
     def _insert_full_calls(self, full_calls):
         map(lambda full_call: self._insert_full_call(*full_call), full_calls)
+
+    def _insert_joinempty_calls(self, je_calls):
+        map(lambda je_call: self._insert_joinempty_call(*je_call), je_calls)
 
     def _insert_ca_ratio_calls(self, ca_ratio_calls):
         map(lambda ca_ratio_call: self._insert_ca_ratio_call(*ca_ratio_call), ca_ratio_calls)
@@ -302,6 +328,18 @@ class TestStatDAO(DAOTestCase):
         self.session.add(full)
         self.session.commit()
 
+    def _insert_joinempty_call(self, t, callid, qname):
+        je = QueueLog(
+            time=t.strftime(TIMESTAMP_FORMAT),
+            callid=callid,
+            queuename=qname,
+            agent='NONE',
+            event='JOINEMPTY'
+            )
+
+        self.session.add(je)
+        self.session.commit()
+
     def _insert_closed_call(self, t, callid, qname):
         closed = QueueLog(
             time=t.strftime(TIMESTAMP_FORMAT),
@@ -369,9 +407,10 @@ $$
            WHEN event = 'DIVERT_CA_RATIO' THEN 'divert_ca_ratio'
            WHEN event = 'DIVERT_HOLDTIME' THEN 'divert_waittime'
            WHEN event = 'CLOSED' THEN 'closed'
+           WHEN event = 'JOINEMPTY' THEN 'joinempty'
       END as status
     FROM queue_log
-    WHERE (event = 'FULL' OR event = 'CLOSED' OR event LIKE 'DIVERT_%') AND
+    WHERE event IN ('FULL', 'DIVERT_CA_RATIO', 'DIVERT_HOLDTIME', 'CLOSED', 'JOINEMPTY') AND
           "time" BETWEEN $1 AND $2;
 $$
 LANGUAGE SQL;
