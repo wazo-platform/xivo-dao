@@ -45,6 +45,9 @@ def _get_event_with_enterqueue(start, end, match, event):
     else:
         match = [match]
 
+    if not enter_map:
+        return []
+
     res = (_session()
            .query(QueueLog.event,
                   QueueLog.queuename,
