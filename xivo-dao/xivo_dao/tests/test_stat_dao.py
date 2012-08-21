@@ -397,7 +397,6 @@ DROP FUNCTION IF EXISTS "fill_simple_calls" (text, text);
 CREATE FUNCTION "fill_simple_calls"(period_start text, period_end text)
   RETURNS void AS
 $$
-  -- Insert full, divert_ca_ratio, divert_waittime into stat_call_on_queue
   INSERT INTO "stat_call_on_queue" (callid, "time", queue_id, status)
     SELECT
       callid,
