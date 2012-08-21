@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 import datetime
 from datetime import datetime as t
 
@@ -80,13 +81,35 @@ class TestStatDAO(DAOTestCase):
             self.assertEqual(r.waittime, expected[4])
             self.assertEqual(r.talktime, expected[5])
 
-    def test_fill_saturated_calls_empty(self):
+    def test_fill_simple_calls_closed(self):
+        closed_calls = [
+            (t(2012, 7, 1, 10, 00, 00), 'closed_1', self.qname1),
+            (t(2012, 7, 1, 10, 59, 59), 'closed_2', self.qname2),
+            (t(2012, 7, 1, 10, 00, 01), 'closed_3', self.qname1),
+            (t(2012, 7, 1, 10, 00, 02), 'closed_4', self.qname2),
+            (t(2012, 7, 1, 10, 00, 03), 'closed_5', self.qname1),
+            ]
+        self._insert_closed_calls(closed_calls)
+
+        stat_dao.fill_simple_calls(self.start, self.end)
+
+        result = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid.like('closed_%'))
+        self.assertEqual(result.count(), len(closed_calls))
+        for r in result.all():
+            expected = [c for c in closed_calls if c[1] == r.callid][0]
+            qid = self.qid1 if expected[2] == self.qname1 else self.qid2
+            self.assertEqual(r.time, expected[0])
+            self.assertEqual(r.callid, expected[1])
+            self.assertEqual(r.queue_id, qid)
+            self.assertEqual(r.status, 'closed')
+
+    def test_fill_simple_calls_empty(self):
         try:
-            stat_dao.fill_saturated_calls(self.start, self.end)
+            stat_dao.fill_simple_calls(self.start, self.end)
         except:
             self.assertTrue(False, 'Should not happen')
 
-    def test_fill_saturated_calls_fulls(self):
+    def test_fill_simple_calls_fulls(self):
         full_calls = [
             (t(2012, 7, 1, 10, 00, 00), 'full_1', self.qname1),
             (t(2012, 7, 1, 10, 59, 59), 'full_2', self.qname2),
@@ -97,7 +120,7 @@ class TestStatDAO(DAOTestCase):
 
         self._insert_full_calls(full_calls)
 
-        stat_dao.fill_saturated_calls(self.start, self.end)
+        stat_dao.fill_simple_calls(self.start, self.end)
 
         result = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid.like('full_%'))
         self.assertEqual(result.count(), len(full_calls))
@@ -115,7 +138,7 @@ class TestStatDAO(DAOTestCase):
             self.assertEqual(qname, expected[2])
             self.assertEqual(r.status, 'full')
 
-    def test_fill_saturated_calls_ca_ratio(self):
+    def test_fill_simple_calls_ca_ratio(self):
         ca_ratio_calls = [
             (t(2012, 7, 1, 10, 00, 00), 'ratio_1', self.qname1),
             (t(2012, 7, 1, 10, 59, 59), 'ratio_2', self.qname2),
@@ -126,7 +149,7 @@ class TestStatDAO(DAOTestCase):
 
         self._insert_ca_ratio_calls(ca_ratio_calls)
 
-        stat_dao.fill_saturated_calls(self.start, self.end)
+        stat_dao.fill_simple_calls(self.start, self.end)
 
         result = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid.like('ratio_%'))
         self.assertEqual(result.count(), len(ca_ratio_calls))
@@ -144,7 +167,7 @@ class TestStatDAO(DAOTestCase):
             self.assertEqual(qname, expected[2])
             self.assertEqual(r.status, 'divert_ca_ratio')
 
-    def test_fill_saturated_calls_holdtime(self):
+    def test_fill_simple_calls_holdtime(self):
         ca_ratio_calls = [
             (t(2012, 7, 1, 10, 00, 00), 'ratio_1', self.qname1),
             (t(2012, 7, 1, 10, 59, 59), 'ratio_2', self.qname2),
@@ -155,7 +178,7 @@ class TestStatDAO(DAOTestCase):
 
         self._insert_holdtime_calls(ca_ratio_calls)
 
-        stat_dao.fill_saturated_calls(self.start, self.end)
+        stat_dao.fill_simple_calls(self.start, self.end)
 
         result = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid.like('ratio_%'))
         self.assertEqual(result.count(), len(ca_ratio_calls))
@@ -175,6 +198,9 @@ class TestStatDAO(DAOTestCase):
 
     def _insert_transfered_calls(self, transfered_calls):
         map(lambda transfered_call: self._insert_transfered_call(*transfered_call), transfered_calls)
+
+    def _insert_closed_calls(self, closed_calls):
+        map(lambda closed_call: self._insert_closed_call(*closed_call), closed_calls)
 
     def _insert_completed_calls(self, completed_calls):
         map(lambda completed_call: self._insert_completed_call(*completed_call), completed_calls)
@@ -276,6 +302,18 @@ class TestStatDAO(DAOTestCase):
         self.session.add(full)
         self.session.commit()
 
+    def _insert_closed_call(self, t, callid, qname):
+        closed = QueueLog(
+            time=t.strftime(TIMESTAMP_FORMAT),
+            callid=callid,
+            queuename=qname,
+            agent='NONE',
+            event='CLOSED'
+            )
+
+        self.session.add(closed)
+        self.session.commit()
+
     def _insert_ca_ratio_call(self, t, callid, qname):
         call = QueueLog(
             time=t,
@@ -315,9 +353,10 @@ class TestStatDAO(DAOTestCase):
     @classmethod
     def _create_functions(cls):
         ### WARNING: These functions should always be the same as the one in baseconfig
-        fill_saturated_calls_fn = '''\
+        fill_simple_calls_fn = '''\
 DROP FUNCTION IF EXISTS "fill_saturated_calls" (text, text);
-CREATE FUNCTION "fill_saturated_calls"(period_start text, period_end text)
+DROP FUNCTION IF EXISTS "fill_simple_calls" (text, text);
+CREATE FUNCTION "fill_simple_calls"(period_start text, period_end text)
   RETURNS void AS
 $$
   -- Insert full, divert_ca_ratio, divert_waittime into stat_call_on_queue
@@ -329,14 +368,15 @@ $$
       CASE WHEN event = 'FULL' THEN 'full'::call_exit_type
            WHEN event = 'DIVERT_CA_RATIO' THEN 'divert_ca_ratio'
            WHEN event = 'DIVERT_HOLDTIME' THEN 'divert_waittime'
+           WHEN event = 'CLOSED' THEN 'closed'
       END as status
     FROM queue_log
-    WHERE event = 'FULL' OR event LIKE 'DIVERT_%' AND
+    WHERE (event = 'FULL' OR event = 'CLOSED' OR event LIKE 'DIVERT_%') AND
           "time" BETWEEN $1 AND $2;
 $$
 LANGUAGE SQL;
 '''
-        cls.session.execute(fill_saturated_calls_fn)
+        cls.session.execute(fill_simple_calls_fn)
 
         fill_answered_calls_fn = '''\
 DROP FUNCTION IF EXISTS "fill_answered_calls" (text, text);

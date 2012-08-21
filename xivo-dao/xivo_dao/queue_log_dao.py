@@ -1,4 +1,5 @@
 # -*- coding: UTF-8 -*-
+
 import datetime
 import re
 
@@ -44,10 +45,6 @@ def _get_queue_event_call(start, end, event_filter, name):
              'time': r.time,
              'callid': r.callid,
              'waittime': int(r.waittime) if r.waittime else 0} for r in res]
-
-
-def get_queue_closed_call(start, end):
-    return _get_queue_event_call(start, end, 'CLOSED', 'closed')
 
 
 def _get_event_with_enterqueue(start, end, match, event):
