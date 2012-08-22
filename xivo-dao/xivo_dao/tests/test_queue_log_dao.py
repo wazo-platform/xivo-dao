@@ -255,3 +255,27 @@ class TestQueueLogDAO(DAOTestCase):
         self.assertEqual(result.data3, '3')
         self.assertEqual(result.data4, '4')
         self.assertEqual(result.data5, '5')
+
+    def test_hours_with_calls(self):
+        start = datetime.datetime(2012, 01, 01)
+        end = datetime.datetime(2012, 6, 30, 23, 59, 59, 999999)
+        res = [h for h in queue_log_dao.hours_with_calls(start, end)]
+
+        self.assertEqual(res, [])
+
+        def _insert_at(t):
+            queue_log_dao.insert_entry(t, 'hours', 'queue', 'agent', 'event')
+
+        _insert_at('2011-12-31 12:55:22.123123')
+        _insert_at('2012-01-01 08:45:23.2345')
+        _insert_at('2012-06-30 23:59:59.999999')
+        _insert_at('2012-07-01 00:00:00.000000')
+
+        expected = [
+            datetime.datetime(2012, 1, 1, 8),
+            datetime.datetime(2012, 6, 30, 23)
+            ]
+
+        res = [h for h in queue_log_dao.hours_with_calls(start, end)]
+
+        self.assertEqual(res, expected)

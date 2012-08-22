@@ -5,7 +5,7 @@ from sqlalchemy.sql.expression import and_
 from sqlalchemy.sql.functions import min
 from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.queue_log import QueueLog
-from sqlalchemy import cast, TIMESTAMP
+from sqlalchemy import cast, TIMESTAMP, func
 
 
 _DB_NAME = 'asterisk'
@@ -102,3 +102,15 @@ def insert_entry(time, callid, queue, agent, event, d1='', d2='', d3='', d4='', 
         data5=d5)
     _session().add(entry)
     _session().commit()
+
+
+def hours_with_calls(start, end):
+    start = start.strftime(_STR_TIME_FMT)
+    end = end.strftime(_STR_TIME_FMT)
+
+    hours = (_session()
+             .query(distinct(func.date_trunc('hour', cast(QueueLog.time, TIMESTAMP))).label('time'))
+             .filter(between(QueueLog.time, start, end)))
+
+    for hour in hours.all():
+        yield hour.time
