@@ -1,8 +1,5 @@
 # -*- coding: UTF-8 -*-
 
-import datetime
-import re
-
 from sqlalchemy import between, distinct
 from sqlalchemy.sql.expression import and_
 from sqlalchemy.sql.functions import min
@@ -13,12 +10,11 @@ from sqlalchemy import cast, TIMESTAMP
 
 _DB_NAME = 'asterisk'
 _STR_TIME_FMT = "%Y-%m-%d %H:%M:%S.%f"
-_TIME_STRING_PATTERN = re.compile('(\d+)-(\d+)-(\d+) (\d+):(\d+):(\d+).?(\d+)?')
-_MAP_QUEUE_LOG_WAITTIME = {'answered': QueueLog.data1,
-                           'abandoned': QueueLog.data3,
-                           'timeout': QueueLog.data3}
-FIRST_EVENT = ['FULL', 'ENTERQUEUE', 'CLOSED', 'JOINEMPTY']
-WAIT_TIME_EVENT = ['CONNECT', 'LEAVEEMPTY', 'EXITWITHTIMEOUT', 'ABANDON']
+_MAP_QUEUE_LOG_WAITTIME = {
+    'abandoned': QueueLog.data3,
+    'timeout': QueueLog.data3
+    }
+WAIT_TIME_EVENT = ['LEAVEEMPTY', 'EXITWITHTIMEOUT', 'ABANDON']
 
 
 def _session():
@@ -37,13 +33,8 @@ def _get_event_with_enterqueue(start, end, match, event):
                                  between(QueueLog.time, start, end))))
 
     enter_map = {}
-    for enter_queue in enter_queues:
+    for enter_queue in enter_queues.all():
         enter_map[enter_queue.callid] = enter_queue.time
-
-    if match == 'CONNECT':
-        match = ['CONNECT', 'COMPLETECALLER', 'COMPLETEAGENT', 'TRANSFER']
-    else:
-        match = [match]
 
     if not enter_map:
         return []
@@ -54,15 +45,12 @@ def _get_event_with_enterqueue(start, end, match, event):
                   cast(QueueLog.time, TIMESTAMP).label('time'),
                   QueueLog.callid,
                   QueueLog.agent,
-                  QueueLog.data1,
-                  QueueLog.data2,
-                  QueueLog.data3,
-                  QueueLog.data4)
-           .filter(and_(QueueLog.event.in_(match),
+                  QueueLog.data3)
+           .filter(and_(QueueLog.event == match,
                         QueueLog.callid.in_(enter_map))))
 
     ret = {}
-    for r in res:
+    for r in res.all():
         if r.callid not in ret:
             ret[r.callid] = {
                 'callid': r.callid,
@@ -77,14 +65,8 @@ def _get_event_with_enterqueue(start, end, match, event):
             if r.event == 'LEAVEEMPTY':
                 waittime = _time_diff(enter_map[r.callid], r.time)
                 ret[r.callid]['waittime'] = waittime
-            elif r.event == 'CONNECT':
-                ret[r.callid]['waittime'] = int(r.data1)
             else:
                 ret[r.callid]['waittime'] = int(r.data3)
-        elif r.event in ['COMPLETECALLER', 'COMPLETEAGENT']:
-            ret[r.callid]['talktime'] = int(r.data2)
-        elif r.event == 'TRANSFER':
-            ret[r.callid]['talktime'] = int(r.data4)
 
     return ret.values()
 
@@ -113,19 +95,6 @@ def get_enterqueue_time(callids):
                                   cast(QueueLog.time, TIMESTAMP).label('time'))
                            .filter(and_(QueueLog.event == 'ENTERQUEUE',
                                         QueueLog.callid.in_(callids))))])
-
-
-def _time_str_to_datetime(s):
-    if not s:
-        raise LookupError
-    m = _TIME_STRING_PATTERN.match(s)
-    return datetime.datetime(int(m.group(1)),
-                             int(m.group(2)),
-                             int(m.group(3)),
-                             int(m.group(4)),
-                             int(m.group(5)),
-                             int(m.group(6)),
-                             int(m.group(7)) if m.group(7) else 0)
 
 
 def get_first_time():

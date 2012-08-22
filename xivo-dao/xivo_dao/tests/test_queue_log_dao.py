@@ -116,21 +116,6 @@ class TestQueueLogDAO(DAOTestCase):
 
         self.assertEqual(result, expected)
 
-    def test_time_str_to_datetime(self):
-        s1 = '2012-01-01 01:01:01.456897'
-        expected = datetime.datetime(2012, 01, 01, 01, 01, 01, 456897)
-
-        result = queue_log_dao._time_str_to_datetime(s1)
-
-        self.assertEqual(result, expected)
-
-        s1 = '2012-01-01 01:01:01'
-        expected = datetime.datetime(2012, 01, 01, 01, 01, 01)
-
-        result = queue_log_dao._time_str_to_datetime(s1)
-
-        self.assertEqual(result, expected)
-
     def test_get_queue_names_in_range(self):
         queue_names = sorted(['queue_%s' % x for x in range(10)])
         t = datetime.datetime(2012, 1, 1, 1, 1, 1)
