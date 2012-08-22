@@ -10,11 +10,6 @@ from sqlalchemy import cast, TIMESTAMP
 
 _DB_NAME = 'asterisk'
 _STR_TIME_FMT = "%Y-%m-%d %H:%M:%S.%f"
-_MAP_QUEUE_LOG_WAITTIME = {
-    'abandoned': QueueLog.data3,
-    'timeout': QueueLog.data3
-    }
-WAIT_TIME_EVENT = ['LEAVEEMPTY', 'EXITWITHTIMEOUT', 'ABANDON']
 
 
 def _session():
@@ -36,39 +31,25 @@ def _get_event_with_enterqueue(start, end, match, event):
     for enter_queue in enter_queues.all():
         enter_map[enter_queue.callid] = enter_queue.time
 
-    if not enter_map:
-        return []
+    if enter_map:
+        res = (_session()
+               .query(QueueLog.event,
+                      QueueLog.queuename,
+                      cast(QueueLog.time, TIMESTAMP).label('time'),
+                      QueueLog.callid,
+                      QueueLog.data3)
+               .filter(and_(QueueLog.event == match,
+                            QueueLog.callid.in_(enter_map))))
 
-    res = (_session()
-           .query(QueueLog.event,
-                  QueueLog.queuename,
-                  cast(QueueLog.time, TIMESTAMP).label('time'),
-                  QueueLog.callid,
-                  QueueLog.agent,
-                  QueueLog.data3)
-           .filter(and_(QueueLog.event == match,
-                        QueueLog.callid.in_(enter_map))))
-
-    ret = {}
-    for r in res.all():
-        if r.callid not in ret:
-            ret[r.callid] = {
+        for r in res.all():
+            yield {
                 'callid': r.callid,
                 'queue_name': r.queuename,
                 'time': enter_map[r.callid],
                 'event': event,
-                'talktime': 0
+                'talktime': 0,
+                'waittime': int(r.data3)
                 }
-        if r.agent:
-            ret[r.callid]['agent'] = r.agent
-        if r.event in WAIT_TIME_EVENT:
-            if r.event == 'LEAVEEMPTY':
-                waittime = _time_diff(enter_map[r.callid], r.time)
-                ret[r.callid]['waittime'] = waittime
-            else:
-                ret[r.callid]['waittime'] = int(r.data3)
-
-    return ret.values()
 
 
 def get_queue_abandoned_call(start, end):
@@ -77,24 +58,6 @@ def get_queue_abandoned_call(start, end):
 
 def get_queue_timeout_call(start, end):
     return _get_event_with_enterqueue(start, end, 'EXITWITHTIMEOUT', 'timeout')
-
-
-def get_queue_leaveempty_call(start, end):
-    return _get_event_with_enterqueue(start, end, 'LEAVEEMPTY', 'leaveempty')
-
-
-def _time_diff(start, end):
-    delta = end - start
-    return delta.seconds + int(round(delta.microseconds / 1000000.0))
-
-
-def get_enterqueue_time(callids):
-    return dict([(r.callid, r.time)
-                 for r in (_session()
-                           .query(QueueLog.callid,
-                                  cast(QueueLog.time, TIMESTAMP).label('time'))
-                           .filter(and_(QueueLog.event == 'ENTERQUEUE',
-                                        QueueLog.callid.in_(callids))))])
 
 
 def get_first_time():

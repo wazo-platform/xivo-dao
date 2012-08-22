@@ -1,4 +1,5 @@
 # -*- coding: UTF-8 -*-
+
 import datetime
 import random
 
@@ -91,18 +92,6 @@ class TestQueueLogDAO(DAOTestCase):
     def _time_from_timestamp(t):
         return datetime.datetime.strptime(t, TIMESTAMP_FORMAT)
 
-    def test_get_enterqueue_time(self):
-        callid = '1234'
-        t1 = self._build_date(2012, 01, 01, 01, 01)
-        t2 = self._build_date(2012, 01, 01, 01, 23, 43)
-        self._insert_entry_queue('ENTERQUEUE', t1, callid, self.queue_name)
-        self._insert_entry_queue('LEAVEEMPTY', t2, callid, self.queue_name)
-
-        expected = {callid: datetime.datetime(2012, 01, 01, 01, 01)}
-        result = queue_log_dao.get_enterqueue_time([callid])
-
-        self.assertEqual(result, expected)
-
     def test_get_first_time(self):
         queuename = 'q1'
         for minute in [0, 10, 20, 30, 40, 50]:
@@ -141,14 +130,6 @@ class TestQueueLogDAO(DAOTestCase):
         expected = self._insert_timeout(start, [-1, 0, 10, 30, 59, 60, 120])
 
         result = queue_log_dao.get_queue_timeout_call(start, start + ONE_HOUR - ONE_MICROSECOND)
-
-        self.assertEqual(sorted(result), sorted(expected))
-
-    def test_get_queue_leaveempty_call(self):
-        start = datetime.datetime(2012, 01, 01, 01, 00, 00)
-        expected = self._insert_leaveempty(start, [-1, 0, 10, 30, 59, 60, 120])
-
-        result = queue_log_dao.get_queue_leaveempty_call(start, start + ONE_HOUR - ONE_MICROSECOND)
 
         self.assertEqual(sorted(result), sorted(expected))
 

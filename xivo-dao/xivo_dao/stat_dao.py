@@ -10,26 +10,32 @@ def _get_session():
 
 
 def fill_simple_calls(start, end):
-    start = start.strftime(_STR_TIME_FMT)
-    end = end.strftime(_STR_TIME_FMT)
-
-    (_get_session()
-     .query('place_holder')
-     .from_statement(
-            'SELECT 1 AS place_holder FROM fill_simple_calls(:start, :end)'
-            )
-     .params(start=start, end=end)
-     .first())
+    _run_sql_function_returning_void(
+        start, end,
+        'SELECT 1 AS place_holder FROM fill_simple_calls(:start, :end)'
+        )
 
 
 def fill_answered_calls(start, end):
+    _run_sql_function_returning_void(
+        start, end,
+        'SELECT 1 AS place_holder FROM fill_answered_calls(:start, :end)'
+        )
+
+
+def fill_leaveempty_calls(start, end):
+    _run_sql_function_returning_void(
+        start, end,
+        'SELECT 1 AS place_holder FROM fill_leaveempty_calls(:start, :end)'
+        )
+
+
+def _run_sql_function_returning_void(start, end, function):
     start = start.strftime(_STR_TIME_FMT)
     end = end.strftime(_STR_TIME_FMT)
 
     (_get_session()
      .query('place_holder')
-     .from_statement(
-            'SELECT 1 AS place_holder FROM fill_answered_calls(:start, :end)'
-            )
+     .from_statement(function)
      .params(start=start, end=end)
      .first())

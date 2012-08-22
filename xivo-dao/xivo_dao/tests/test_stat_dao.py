@@ -26,6 +26,37 @@ class TestStatDAO(DAOTestCase):
         self.aname1, self.aid1 = self._insert_agent('a1')
         self.aname2, self.aid2 = self._insert_agent('a2')
 
+    def test_fill_leaveempty_calls(self):
+        try:
+            stat_dao.fill_leaveempty_calls(self.start, self.end)
+        except Exception, e:
+            print e
+            self.assertTrue(False, 'Should not happen')
+
+        le_calls = [
+            (t(2012, 7, 1, 10, 00, 00), 'le_1', self.qname1, 5),
+            (t(2012, 7, 1, 10, 00, 01), 'le_2', self.qname2, 7),
+            (t(2012, 7, 1, 10, 59, 59), 'le_3', self.qname1, 10),
+            (t(2012, 7, 1, 11, 00, 00), 'le_4', self.qname1, 3),
+            ]
+        self._insert_leaveempty_calls(le_calls)
+
+        stat_dao.fill_leaveempty_calls(self.start, self.end)
+
+        result = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid.like('le_%'))
+        self.assertEqual(result.count(), len(le_calls))
+        for r in result.all():
+            expected = self._get_expected_call(le_calls, r.callid)
+            qid = self.qid1 if expected[2] == self.qname1 else self.qid2
+            self.assertEqual(r.time, expected[0])
+            self.assertEqual(r.callid, expected[1])
+            self.assertEqual(r.queue_id, qid)
+            self.assertEqual(r.waittime, expected[3])
+
+    @staticmethod
+    def _get_expected_call(call_list, callid):
+        return [c for c in call_list if c[1] == callid][0]
+
     def test_fill_answered_calls_empty(self):
         try:
             stat_dao.fill_answered_calls(self.start, self.end)
@@ -47,7 +78,7 @@ class TestStatDAO(DAOTestCase):
         result = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid.like('transfered_%'))
         self.assertEqual(result.count(), len(transfered_calls))
         for r in result.all():
-            expected = [c for c in transfered_calls if c[1] == r.callid][0]
+            expected = self._get_expected_call(transfered_calls, r.callid)
             self.assertEqual(r.time, expected[0])
             self.assertEqual(r.callid, expected[1])
             qid = self.qid1 if expected[2] == self.qname1 else self.qid2
@@ -71,7 +102,7 @@ class TestStatDAO(DAOTestCase):
         result = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid.like('completed_%'))
         self.assertEqual(result.count(), len(completed_calls))
         for r in result.all():
-            expected = [c for c in completed_calls if c[1] == r.callid][0]
+            expected = self._get_expected_call(completed_calls, r.callid)
             self.assertEqual(r.time, expected[0])
             self.assertEqual(r.callid, expected[1])
             qid = self.qid1 if expected[2] == self.qname1 else self.qid2
@@ -96,7 +127,7 @@ class TestStatDAO(DAOTestCase):
         result = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid.like('closed_%'))
         self.assertEqual(result.count(), len(closed_calls))
         for r in result.all():
-            expected = [c for c in closed_calls if c[1] == r.callid][0]
+            expected = self._get_expected_call(closed_calls, r.callid)
             qid = self.qid1 if expected[2] == self.qname1 else self.qid2
             self.assertEqual(r.time, expected[0])
             self.assertEqual(r.callid, expected[1])
@@ -132,7 +163,7 @@ class TestStatDAO(DAOTestCase):
                 qname = self.qname2
             else:
                 raise AssertionError('%s should be in [%s, %s]' % (r.queue_id, self.qid1, self.qid2))
-            expected = [c for c in full_calls if c[1] == cid][0]
+            expected = self._get_expected_call(full_calls, r.callid)
             self.assertEqual(cid, expected[1])
             self.assertEqual(r.time, expected[0])
             self.assertEqual(qname, expected[2])
@@ -154,7 +185,7 @@ class TestStatDAO(DAOTestCase):
         result = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid.like('je_%'))
         self.assertEqual(result.count(), len(je_calls))
         for r in result.all():
-            expected = [c for c in je_calls if c[1] == r.callid][0]
+            expected = self._get_expected_call(je_calls, r.callid)
             qid = self.qid1 if expected[2] == self.qname1 else self.qid2
             self.assertEqual(r.callid, expected[1])
             self.assertEqual(r.time, expected[0])
@@ -184,7 +215,7 @@ class TestStatDAO(DAOTestCase):
                 qname = self.qname2
             else:
                 raise AssertionError('%s should be in [%s, %s]' % (r.queue_id, self.qid1, self.qid2))
-            expected = [c for c in ca_ratio_calls if c[1] == cid][0]
+            expected = self._get_expected_call(ca_ratio_calls, r.callid)
             self.assertEqual(cid, expected[1])
             self.assertEqual(r.time, expected[0])
             self.assertEqual(qname, expected[2])
@@ -213,7 +244,7 @@ class TestStatDAO(DAOTestCase):
                 qname = self.qname2
             else:
                 raise AssertionError('%s should be in [%s, %s]' % (r.queue_id, self.qid1, self.qid2))
-            expected = [c for c in ca_ratio_calls if c[1] == cid][0]
+            expected = self._get_expected_call(ca_ratio_calls, r.callid)
             self.assertEqual(cid, expected[1])
             self.assertEqual(r.time, expected[0])
             self.assertEqual(qname, expected[2])
@@ -233,6 +264,9 @@ class TestStatDAO(DAOTestCase):
 
     def _insert_joinempty_calls(self, je_calls):
         map(lambda je_call: self._insert_joinempty_call(*je_call), je_calls)
+
+    def _insert_leaveempty_calls(self, le_calls):
+        map(lambda le_call: self._insert_leaveempty_call(*le_call), le_calls)
 
     def _insert_ca_ratio_calls(self, ca_ratio_calls):
         map(lambda ca_ratio_call: self._insert_ca_ratio_call(*ca_ratio_call), ca_ratio_calls)
@@ -340,6 +374,30 @@ class TestStatDAO(DAOTestCase):
         self.session.add(je)
         self.session.commit()
 
+    def _insert_leaveempty_call(self, t, callid, qname, waittime):
+        enterqueue = QueueLog(
+            time=t.strftime(TIMESTAMP_FORMAT),
+            callid=callid,
+            queuename=qname,
+            agent='NONE',
+            event='ENTERQUEUE',
+            data2='1000',
+            data3='1'
+            )
+
+        leave_time = t + datetime.timedelta(seconds=waittime)
+        le = QueueLog(
+            time=leave_time.strftime(TIMESTAMP_FORMAT),
+            callid=callid,
+            queuename=qname,
+            agent='NONE',
+            event='LEAVEEMPTY'
+            )
+
+        self.session.add(enterqueue)
+        self.session.add(le)
+        self.session.commit()
+
     def _insert_closed_call(self, t, callid, qname):
         closed = QueueLog(
             time=t.strftime(TIMESTAMP_FORMAT),
@@ -444,3 +502,29 @@ $$
 LANGUAGE SQL;
 '''
         cls.session.execute(fill_answered_calls_fn)
+
+        fill_leaveempty_calls_fn = '''\
+DROP FUNCTION IF EXISTS "fill_leaveempty_calls" (text, text);
+CREATE OR REPLACE FUNCTION "fill_leaveempty_calls" (period_start text, period_end text)
+  RETURNS void AS
+$$
+INSERT INTO stat_call_on_queue (callid, time, waittime, queue_id, status)
+SELECT
+  callid,
+  enter_time as time,
+  EXTRACT(EPOCH FROM (leave_time - enter_time))::INTEGER as waittime,
+  queue_id,
+  'leaveempty' AS status
+FROM (SELECT
+        CAST (time AS TIMESTAMP) AS enter_time,
+        (select CAST (time AS TIMESTAMP) from queue_log where callid=main.callid AND event='LEAVEEMPTY') AS leave_time,
+        callid,
+        (SELECT id FROM stat_queue WHERE name=queuename) AS queue_id
+      FROM queue_log AS main
+      WHERE callid IN (SELECT callid FROM queue_log WHERE event = 'LEAVEEMPTY')
+            AND event = 'ENTERQUEUE'
+            AND time BETWEEN $1 AND $2) AS first;
+$$
+LANGUAGE SQL;
+'''
+        cls.session.execute(fill_leaveempty_calls_fn)
