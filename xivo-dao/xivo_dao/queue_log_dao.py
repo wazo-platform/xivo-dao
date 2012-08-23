@@ -48,7 +48,7 @@ def _get_event_with_enterqueue(start, end, match, event):
                 'time': enter_map[r.callid],
                 'event': event,
                 'talktime': 0,
-                'waittime': int(r.data3)
+                'waittime': int(r.data3) if r.data3 else 0
                 }
 
 
