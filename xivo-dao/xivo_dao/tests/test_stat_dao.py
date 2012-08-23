@@ -64,6 +64,62 @@ class TestStatDAO(DAOTestCase):
             print e
             self.assertTrue(False, 'Should not happen')
 
+    def test_fill_answered_direct_transfer_to_queue(self):
+        # When doing a direct transfer both calls have the same callid
+        completed_calls = [
+            (t(2012, 7, 1, 10, 00, 00), 'completed_1', self.qname1, self.aname1, 5, 25, True),
+            (t(2012, 7, 1, 10, 15, 01), 'completed_1', self.qname2, self.aname1, 7, 32, False),
+            (t(2012, 7, 1, 10, 59, 59), 'completed_3', self.qname1, self.aname1, 10, 59, True),
+            (t(2012, 7, 1, 11, 00, 00), 'completed_4', self.qname1, self.aname2, 3, 13, False),
+            ]
+        self._insert_completed_calls(completed_calls)
+
+        stat_dao.fill_answered_calls(self.start, self.end)
+
+        result = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid.like('completed_%'))
+        self.assertEqual(result.count(), len(completed_calls))
+        for r in result.all():
+            expected = filter(lambda c: c[1] == r.callid and (self.qname1 if r.queue_id == self.qid1 else self.qname2) == c[2], completed_calls)[0]
+            print self.qid1, self.qid2
+            print r.time, r.callid, r.queue_id, r.waittime, r.talktime, expected
+            self.assertEqual(r.time, expected[0])
+            self.assertEqual(r.callid, expected[1])
+            self.assertEqual(r.waittime, expected[4])
+            self.assertEqual(r.talktime, expected[5])
+
+    def test_fill_answered_two_enterqueue(self):
+        double = QueueLog(
+            callid='completed_1',
+            time='2012-07-01 09:59:55.000000',
+            queuename=self.qname1,
+            agent='NONE',
+            event='ENTERQUEUE'
+            )
+        self.session.add(double)
+        self.session.commit()
+        completed_calls = [
+            (t(2012, 7, 1, 10, 00, 00), 'completed_1', self.qname1, self.aname1, 5, 25, True),
+            (t(2012, 7, 1, 10, 00, 01), 'completed_2', self.qname2, self.aname1, 7, 32, False),
+            (t(2012, 7, 1, 10, 59, 59), 'completed_3', self.qname1, self.aname1, 10, 59, True),
+            (t(2012, 7, 1, 11, 00, 00), 'completed_4', self.qname1, self.aname2, 3, 13, False),
+            ]
+        self._insert_completed_calls(completed_calls)
+
+        stat_dao.fill_answered_calls(self.start, self.end)
+
+        result = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid.like('completed_%'))
+        self.assertEqual(result.count(), len(completed_calls))
+        for r in result.all():
+            expected = self._get_expected_call(completed_calls, r.callid)
+            self.assertEqual(r.time, expected[0])
+            self.assertEqual(r.callid, expected[1])
+            qid = self.qid1 if expected[2] == self.qname1 else self.qid2
+            self.assertEqual(r.queue_id, qid)
+            aid = self.aid1 if expected[3] == self.aname1 else self.aid2
+            self.assertEqual(r.agent_id, aid)
+            self.assertEqual(r.waittime, expected[4])
+            self.assertEqual(r.talktime, expected[5])
+
     def test_fill_answered_transfer(self):
         transfered_calls = [
             (t(2012, 7, 1, 10, 00, 00), 'transfered_1', self.qname1, self.aname1, 5, 25),
@@ -481,14 +537,18 @@ CREATE FUNCTION "fill_answered_calls"(period_start text, period_end text)
 $$
   INSERT INTO stat_call_on_queue (callid, "time", talktime, waittime, queue_id, agent_id, status)
   SELECT
-    callid,
-    CAST ((SELECT "time" FROM queue_log WHERE callid=outer_queue_log.callid and event='ENTERQUEUE') AS TIMESTAMP) AS "time",
+    outer_queue_log.callid,
+    CAST ((SELECT "time"
+           FROM queue_log
+           WHERE callid=outer_queue_log.callid AND
+                 queuename=outer_queue_log.queuename AND
+                 event='ENTERQUEUE' ORDER BY "time" DESC LIMIT 1) AS TIMESTAMP) AS "time",
     CASE WHEN event IN ('COMPLETEAGENT', 'COMPLETECALLER') THEN CAST (data2 AS INTEGER)
          WHEN event = 'TRANSFER' THEN CAST (data4 AS INTEGER) END as talktime,
     CASE WHEN event IN ('COMPLETEAGENT', 'COMPLETECALLER') THEN CAST (data1 AS INTEGER)
          WHEN event = 'TRANSFER' THEN CAST (data3 AS INTEGER) END as waittime,
-    (SELECT id FROM stat_queue WHERE "name"=queuename) AS queue_id,
-    (SELECT id FROM stat_agent WHERE "name"=agent) AS agent_id,
+    (SELECT id FROM stat_queue WHERE "name"=outer_queue_log.queuename) AS queue_id,
+    (SELECT id FROM stat_agent WHERE "name"=outer_queue_log.agent) AS agent_id,
     'answered' AS status
   FROM
     queue_log as outer_queue_log
