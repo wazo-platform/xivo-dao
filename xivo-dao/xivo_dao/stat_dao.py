@@ -127,6 +127,38 @@ WHERE
 
     unique_result = {}
 
+    qry_string = '''\
+SELECT stat_agent.id AS agent
+FROM (
+  SELECT agent FROM (
+    SELECT DISTINCT ON (1) agent,
+           time,
+          event
+     FROM queue_log
+     WHERE
+       event IN ('AGENTLOGIN', 'AGENTCALLBACKLOGIN', 'AGENTLOGOFF', 'AGENTCALLBACKLOGOFF')
+     ORDER BY agent, time DESC) as last_login_logoff
+  WHERE last_login_logoff.event IN ('AGENTLOGIN', 'AGENTCALLBACKLOGIN')
+
+  EXCEPT
+
+  SELECT distinct(agent)
+  FROM queue_log
+  WHERE
+    event IN ('AGENTLOGOFF', 'AGENTCALLBACKLOGOFF') AND
+    data1 <> '' AND
+    (time::TIMESTAMP BETWEEN :start AND :end)) as difference, stat_agent
+WHERE stat_agent.name = difference.agent
+'''
+
+    rows = (_get_session()
+            .query('agent')
+            .from_statement(qry_string)
+            .params(start=start, end=end))
+
+    for row in rows.all():
+        results[row[0]] = [(start, end)]
+
     for agent, logins in results.iteritems():
         unique_result[agent] = sorted(list(set(logins)))
 

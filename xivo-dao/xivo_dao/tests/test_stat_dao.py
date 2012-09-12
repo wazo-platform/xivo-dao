@@ -389,6 +389,43 @@ class TestStatDAO(DAOTestCase):
 
         self.assertEqual(expected, result)
 
+    def test_get_login_intervals_in_range_logins_before_no_logout(self):
+        logintimes = [
+            datetime.timedelta(days=5, minutes=10, seconds=13),
+            datetime.timedelta(days=3, minutes=20),
+            datetime.timedelta(days=6, minutes=7, seconds=21),
+            datetime.timedelta(days=10, hours=2, minutes=3)
+            ]
+
+        cb_logins = [
+            {'time': self.start - datetime.timedelta(seconds=30),
+             'callid': 'login_1',
+             'agent': self.aname1,
+             'chan_name': 'SIP/1234-00001'
+             },
+            ]
+
+        self._insert_agent_callback_logins_logoffs(cb_logins, [])
+
+        logins = [
+            {'time': self.start - datetime.timedelta(seconds=50),
+             'callid': 'login_3',
+             'agent': self.aname2,
+             'chan_name': 'SIP/5555-00001',
+             },
+            ]
+
+        self._insert_agent_logins_logoffs(logins, [])
+
+        result = stat_dao.get_login_intervals_in_range(self.start, self.end)
+
+        expected = {
+            self.aid1: [(self.start, self.end)],
+            self.aid2: [(self.start, self.end)],
+            }
+
+        self.assertEqual(expected, result)
+
     def test_get_login_intervals_in_range_calls_logoffs_only_in_range(self):
         logintimes = [
             datetime.timedelta(minutes=10, seconds=13),
