@@ -306,6 +306,141 @@ class TestStatDAO(DAOTestCase):
             self.assertEqual(qname, expected[2])
             self.assertEqual(r.status, 'divert_waittime')
 
+    def test_get_login_intervals_in_range_calls_empty(self):
+        result = stat_dao.get_login_intervals_in_range(self.start, self.end)
+
+        self.assertEqual(len(result), 0)
+
+    def test_get_login_intervals_in_range_calls_logins_in_range(self):
+        talktimes = [
+            datetime.timedelta(minutes=10, seconds=13),
+            datetime.timedelta(minutes=20),
+            datetime.timedelta(minutes=7, seconds=21),
+            datetime.timedelta(hours=2, minutes=3)
+            ]
+
+        cb_logins = [
+            {'time': self.start + datetime.timedelta(seconds=30),
+             'callid': 'login_1',
+             'agent': self.aname1,
+             'chan_name': 'SIP/1234-00001'
+             },
+            {'time': self.start + datetime.timedelta(minutes=20),
+             'callid': 'login_2',
+             'agent': self.aname1,
+             'chan_name': 'SIP/1234-00002'
+             },
+            ]
+
+        cb_logoffs = [
+            {'time': cb_logins[0]['time'] + talktimes[0],
+             'callid': 'NONE',
+             'agent': self.aname1,
+             'chan_name': cb_logins[0]['chan_name'],
+             'talktime': talktimes[0],
+             },
+            {'time': cb_logins[1]['time'] + talktimes[1],
+             'callid': 'NONE',
+             'agent': self.aname1,
+             'chan_name': cb_logins[1]['chan_name'],
+             'talktime': talktimes[1],
+             },
+            ]
+
+        self._insert_agent_callback_logins_logoffs(cb_logins, cb_logoffs)
+
+        logins = [
+            {'time': self.start + datetime.timedelta(seconds=50),
+             'callid': 'login_3',
+             'agent': self.aname2,
+             'chan_name': 'SIP/5555-00001',
+             },
+            {'time': self.start + datetime.timedelta(seconds=40),
+             'callid': 'login_4',
+             'agent': self.aname2,
+             'chan_name': 'SIP/5555-00002',
+             },
+            ]
+        logoffs = [
+            {'time': logins[0]['time'] + talktimes[2],
+             'callid': logins[0]['callid'],
+             'agent': self.aname2,
+             'chan_name': logins[0]['chan_name'],
+             'talktime': talktimes[2],
+             },
+            {'time': logins[1]['time'] + talktimes[3],
+             'callid': logins[1]['callid'],
+             'agent': self.aname2,
+             'chan_name': logins[1]['chan_name'],
+             'talktime': talktimes[3],
+             }
+            ]
+
+        self._insert_agent_logins_logoffs(logins, logoffs)
+
+        result = stat_dao.get_login_intervals_in_range(self.start, self.end)
+
+        expected = {
+            self.aid1: [(cb_logins[0]['time'], cb_logoffs[0]['time']),
+                        (cb_logins[1]['time'], cb_logoffs[1]['time'])],
+            self.aid2: [(logins[0]['time'], logoffs[0]['time']),
+                        (logins[1]['time'], logoffs[1]['time'])],
+            }
+
+        self.assertEqual(expected, result)
+
+    def _insert_agent_logins_logoffs(self, logins, logoffs):
+        for login in logins:
+            callback_login = QueueLog(
+                time=login['time'],
+                callid=login['callid'],
+                queuename='NONE',
+                agent=login['agent'],
+                event='AGENTLOGIN',
+                data1=login['chan_name']
+                )
+            self.session.add(callback_login)
+
+        for logoff in logoffs:
+            callback_logoff = QueueLog(
+                time=logoff['time'],
+                callid='NONE',
+                queuename='NONE',
+                agent=logoff['agent'],
+                event='AGENTLOGOFF',
+                data1=logoff['chan_name'],
+                data2=logoff['talktime']
+                )
+            self.session.add(callback_logoff)
+
+        self.session.commit()
+
+    def _insert_agent_callback_logins_logoffs(self, logins, logoffs):
+        for login in logins:
+            callback_login = QueueLog(
+                time=login['time'],
+                callid=login['callid'],
+                queuename='NONE',
+                agent=login['agent'],
+                event='AGENTCALLBACKLOGIN',
+                data1=login['chan_name']
+                )
+            self.session.add(callback_login)
+
+        for logoff in logoffs:
+            callback_logoff = QueueLog(
+                time=logoff['time'],
+                callid='NONE',
+                queuename='NONE',
+                agent=logoff['agent'],
+                event='AGENTCALLBACKLOGOFF',
+                data1=logoff['chan_name'],
+                data2=logoff['talktime']
+                )
+            self.session.add(callback_logoff)
+
+        self.session.commit()
+
     def _insert_transfered_calls(self, transfered_calls):
         map(lambda transfered_call: self._insert_transfered_call(*transfered_call), transfered_calls)
 
