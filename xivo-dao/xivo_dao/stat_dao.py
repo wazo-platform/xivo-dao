@@ -42,38 +42,93 @@ def _run_sql_function_returning_void(start, end, function):
 
 
 def get_login_intervals_in_range(start, end):
+    # Logged off during of before range
     qry_string = '''\
-SELECT
-  stat_agent.id AS agent,
-  CAST(time AS TIMESTAMP) AS logout,
-  (
-    SELECT CAST(time AS TIMESTAMP)
-    FROM queue_log
-    WHERE event IN ('AGENTCALLBACKLOGIN', 'AGENTLOGIN') AND
-          agent = out.agent AND
-          data1 = out.data1 AND
-          time < out.time
-    ORDER BY time DESC
-    LIMIT 1
-  ) AS login
-FROM queue_log AS out,
-     stat_agent
-WHERE
-  agent = stat_agent.name AND
-  event IN ('AGENTCALLBACKLOGOFF', 'AGENTLOGOFF') AND
-  data1 <> ''
-ORDER BY time ASC
+  SELECT
+    stat_agent.id AS agent,
+    CAST(time AS TIMESTAMP) AS logout,
+    (
+      SELECT
+        CAST(time AS TIMESTAMP)
+      FROM queue_log
+      WHERE
+        event IN ('AGENTCALLBACKLOGIN', 'AGENTLOGIN') AND
+        agent = out.agent AND
+        data1 = out.data1 AND
+        time < out.time
+      ORDER BY time DESC
+      LIMIT 1
+    ) AS login
+  FROM queue_log AS out,
+       stat_agent
+  WHERE
+    agent = stat_agent.name AND
+    (time::timestamp BETWEEN :start AND :end) AND
+    data1 <> '' AND
+    event IN ('AGENTCALLBACKLOGOFF', 'AGENTLOGOFF')
+  ORDER BY time ASC
 '''
 
     rows = (_get_session()
-              .query('agent', 'login', 'logout')
-              .from_statement(qry_string))
+            .query('agent', 'login', 'logout')
+            .from_statement(qry_string)
+            .params(start=start, end=end))
 
     results = {}
 
     for row in rows.all():
+        print row
         if row[0] not in results:
             results[row[0]] = []
-        results[row[0]].append((row[1], row[2]))
 
-    return results
+        start_time = row[1] if row[1] and row[1] > start else start
+        end_time = row[2] if row[2] and row[2] < end else end
+
+        results[row[0]].append((start_time, end_time))
+
+    qry_string = '''\
+SELECT
+  stat_agent.id AS agent,
+  CAST(time AS TIMESTAMP) AS login,
+  (
+    SELECT
+      CAST(time AS TIMESTAMP)
+    FROM queue_log
+    WHERE
+      event IN ('AGENTCALLBACKLOGOFF', 'AGENTLOGOFF') AND
+      agent = out.agent AND
+      data1 = out.data1 AND
+      time > out.time
+    ORDER BY time ASC
+    LIMIT 1
+  ) AS logout
+FROM
+  queue_log AS out,
+  stat_agent
+WHERE
+  stat_agent.name = out.agent AND
+  (time::TIMESTAMP BETWEEN :start AND :end) AND
+  event IN ('AGENTCALLBACKLOGIN', 'AGENTLOGIN')
+  ORDER BY time ASC
+'''
+
+    rows = (_get_session()
+            .query('agent', 'login', 'logout')
+            .from_statement(qry_string)
+            .params(start=start, end=end))
+
+    for row in rows.all():
+        if row[0] not in results:
+            results[row[0]] = []
+
+        start_time = row[1] if row[1] and row[1] > start else start
+        end_time = row[2] if row[2] and row[2] < end else end
+
+        results[row[0]].append((start_time, end_time))
+
+    unique_result = {}
+
+    for agent, logins in results.iteritems():
+        unique_result[agent] = sorted(list(set(logins)))
+
+    return unique_result

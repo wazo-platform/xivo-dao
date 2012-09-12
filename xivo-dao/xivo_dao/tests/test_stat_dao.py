@@ -312,7 +312,7 @@ class TestStatDAO(DAOTestCase):
         self.assertEqual(len(result), 0)
 
     def test_get_login_intervals_in_range_calls_logins_in_range(self):
-        talktimes = [
+        logintimes = [
             datetime.timedelta(minutes=10, seconds=13),
             datetime.timedelta(minutes=20),
             datetime.timedelta(minutes=7, seconds=21),
@@ -333,17 +333,17 @@ class TestStatDAO(DAOTestCase):
             ]
 
         cb_logoffs = [
-            {'time': cb_logins[0]['time'] + talktimes[0],
+            {'time': cb_logins[0]['time'] + logintimes[0],
              'callid': 'NONE',
              'agent': self.aname1,
              'chan_name': cb_logins[0]['chan_name'],
-             'talktime': talktimes[0],
+             'talktime': logintimes[0],
              },
-            {'time': cb_logins[1]['time'] + talktimes[1],
+            {'time': cb_logins[1]['time'] + logintimes[1],
              'callid': 'NONE',
              'agent': self.aname1,
              'chan_name': cb_logins[1]['chan_name'],
-             'talktime': talktimes[1],
+             'talktime': logintimes[1],
              },
             ]
 
@@ -362,17 +362,17 @@ class TestStatDAO(DAOTestCase):
              },
             ]
         logoffs = [
-            {'time': logins[0]['time'] + talktimes[2],
+            {'time': logins[0]['time'] + logintimes[2],
              'callid': logins[0]['callid'],
              'agent': self.aname2,
              'chan_name': logins[0]['chan_name'],
-             'talktime': talktimes[2],
+             'talktime': logintimes[2],
              },
-            {'time': logins[1]['time'] + talktimes[3],
+            {'time': logins[1]['time'] + logintimes[3],
              'callid': logins[1]['callid'],
              'agent': self.aname2,
              'chan_name': logins[1]['chan_name'],
-             'talktime': talktimes[3],
+             'talktime': logintimes[3],
              }
             ]
 
@@ -381,10 +381,150 @@ class TestStatDAO(DAOTestCase):
         result = stat_dao.get_login_intervals_in_range(self.start, self.end)
 
         expected = {
-            self.aid1: [(cb_logins[0]['time'], cb_logoffs[0]['time']),
-                        (cb_logins[1]['time'], cb_logoffs[1]['time'])],
-            self.aid2: [(logins[0]['time'], logoffs[0]['time']),
-                        (logins[1]['time'], logoffs[1]['time'])],
+            self.aid1: sorted([(cb_logins[0]['time'], cb_logoffs[0]['time']),
+                               (cb_logins[1]['time'], cb_logoffs[1]['time'])]),
+            self.aid2: sorted([(logins[0]['time'], logoffs[0]['time']),
+                               (logins[1]['time'], logoffs[1]['time'])]),
+            }
+
+        self.assertEqual(expected, result)
+
+    def test_get_login_intervals_in_range_calls_logoffs_only_in_range(self):
+        logintimes = [
+            datetime.timedelta(minutes=10, seconds=13),
+            datetime.timedelta(minutes=55),
+            datetime.timedelta(minutes=7, seconds=21),
+            datetime.timedelta(hours=2, minutes=3)
+            ]
+
+        cb_logins = [
+            # No login for the first call
+            {'time': self.start - datetime.timedelta(minutes=20),
+             'callid': 'login_2',
+             'agent': self.aname1,
+             'chan_name': 'SIP/1234-00002'
+             },
+            ]
+
+        cb_logoffs = [
+            {'time': self.start - datetime.timedelta(seconds=30) + logintimes[0],
+             'callid': 'NONE',
+             'agent': self.aname1,
+             'chan_name': 'SIP/1234-00001',
+             'talktime': logintimes[0],
+             },
+            {'time': cb_logins[0]['time'] + logintimes[1],
+             'callid': 'NONE',
+             'agent': self.aname1,
+             'chan_name': cb_logins[0]['chan_name'],
+             'talktime': logintimes[1],
+             },
+            ]
+
+        self._insert_agent_callback_logins_logoffs(cb_logins, cb_logoffs)
+
+        logins = [
+            {'time': self.start - datetime.timedelta(seconds=50),
+             'callid': 'login_3',
+             'agent': self.aname2,
+             'chan_name': 'SIP/5555-00001',
+             },
+            {'time': self.start - datetime.timedelta(seconds=40),
+             'callid': 'login_4',
+             'agent': self.aname2,
+             'chan_name': 'SIP/5555-00002',
+             },
+            ]
+        logoffs = [
+            {'time': logins[0]['time'] + logintimes[2],
+             'callid': logins[0]['callid'],
+             'agent': self.aname2,
+             'chan_name': logins[0]['chan_name'],
+             'talktime': logintimes[2],
+             },
+            {'time': logins[1]['time'] + logintimes[3],
+             'callid': logins[1]['callid'],
+             'agent': self.aname2,
+             'chan_name': logins[1]['chan_name'],
+             'talktime': logintimes[3],
+             }
+            ]
+
+        self._insert_agent_logins_logoffs(logins, logoffs)
+
+        result = stat_dao.get_login_intervals_in_range(self.start, self.end)
+
+        expected = {
+            self.aid1: sorted([(self.start, cb_logoffs[0]['time']),
+                               (self.start, cb_logoffs[1]['time'])]),
+            self.aid2: sorted([(self.start, logoffs[0]['time']),
+                               (self.start, logoffs[1]['time'])]),
+            }
+
+        self.assertEqual(expected, result)
+
+    def test_get_login_intervals_in_range_calls_logins_only_in_range(self):
+        logintimes = [
+            datetime.timedelta(minutes=10, seconds=13),
+            datetime.timedelta(minutes=55),
+            datetime.timedelta(minutes=7, seconds=21),
+            datetime.timedelta(hours=2, minutes=3)
+            ]
+
+        cb_logins = [
+            {'time': self.end - datetime.timedelta(seconds=30),
+             'callid': 'login_1',
+             'agent': self.aname1,
+             'chan_name': 'SIP/1234-00001'
+             },
+            {'time': self.end - datetime.timedelta(minutes=20),
+             'callid': 'login_2',
+             'agent': self.aname1,
+             'chan_name': 'SIP/1234-00002'
+             },
+            ]
+
+        cb_logoffs = [
+            {'time': cb_logins[0]['time'] + logintimes[0],
+             'callid': 'NONE',
+             'agent': self.aname1,
+             'chan_name': cb_logins[0]['chan_name'],
+             'talktime': logintimes[0],
+             },
+            ]
+
+        self._insert_agent_callback_logins_logoffs(cb_logins, cb_logoffs)
+
+        logins = [
+            {'time': self.end - datetime.timedelta(seconds=50),
+             'callid': 'login_3',
+             'agent': self.aname2,
+             'chan_name': 'SIP/5555-00001',
+             },
+            {'time': self.end - datetime.timedelta(seconds=40),
+             'callid': 'login_4',
+             'agent': self.aname2,
+             'chan_name': 'SIP/5555-00002',
+             },
+            ]
+        logoffs = [
+            {'time': logins[1]['time'] + logintimes[3],
+             'callid': logins[1]['callid'],
+             'agent': self.aname2,
+             'chan_name': logins[1]['chan_name'],
+             'talktime': logintimes[3],
+             }
+            ]
+
+        self._insert_agent_logins_logoffs(logins, logoffs)
+
+        result = stat_dao.get_login_intervals_in_range(self.start, self.end)
+
+        expected = {
+            self.aid1: sorted([(cb_logins[0]['time'], self.end),
+                               (cb_logins[1]['time'], self.end)]),
+            self.aid2: sorted([(logins[0]['time'], self.end),
+                               (logins[1]['time'], self.end)]),
             }
 
         self.assertEqual(expected, result)
