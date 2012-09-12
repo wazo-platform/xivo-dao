@@ -77,7 +77,6 @@ def get_login_intervals_in_range(start, end):
     results = {}
 
     for row in rows.all():
-        print row
         if row[0] not in results:
             results[row[0]] = []
 
