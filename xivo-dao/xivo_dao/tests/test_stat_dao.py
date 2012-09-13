@@ -426,6 +426,41 @@ class TestStatDAO(DAOTestCase):
 
         self.assertEqual(expected, result)
 
+    def test_get_login_intervals_in_range_no_login_logout_calls(self):
+        connect1 = QueueLog(
+            time=self.start - datetime.timedelta(minutes=5),
+            callid='answered_1',
+            queuename='queue',
+            agent=self.aname1,
+            event='CONNECT',
+            data1='6',
+            data2='linked_callid',
+            data3='2'
+            )
+        self.session.add(connect1)
+        connect2 = QueueLog(
+            time=self.start + datetime.timedelta(minutes=5),
+            callid='answered_2',
+            queuename='queue',
+            agent=self.aname2,
+            event='CONNECT',
+            data1='6',
+            data2='linked_callid_2',
+            data3='4'
+            )
+        self.session.add(connect2)
+
+        self.session.commit()
+
+        result = stat_dao.get_login_intervals_in_range(self.start, self.end)
+
+        expected = {
+            self.aid1: [(self.start, self.end)],
+            self.aid2: [(self.start, self.end)],
+            }
+
+        self.assertEqual(expected, result)
+
     def test_get_login_intervals_in_range_calls_logoffs_only_in_range(self):
         logintimes = [
             datetime.timedelta(minutes=10, seconds=13),

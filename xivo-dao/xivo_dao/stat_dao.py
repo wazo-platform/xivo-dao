@@ -133,19 +133,29 @@ FROM (
   SELECT agent FROM (
     SELECT DISTINCT ON (1) agent,
            time,
-          event
+           event
      FROM queue_log
      WHERE
-       event IN ('AGENTLOGIN', 'AGENTCALLBACKLOGIN', 'AGENTLOGOFF', 'AGENTCALLBACKLOGOFF')
+       (event IN ('AGENTLOGIN', 'AGENTCALLBACKLOGIN',
+                  'AGENTLOGOFF', 'AGENTCALLBACKLOGOFF',
+                  'CONNECT') AND
+        time::TIMESTAMP <= :start) OR
+       (event = 'CONNECT' AND
+        (time::TIMESTAMP BETWEEN :start AND :end))
      ORDER BY agent, time DESC) as last_login_logoff
-  WHERE last_login_logoff.event IN ('AGENTLOGIN', 'AGENTCALLBACKLOGIN')
+  WHERE last_login_logoff.event IN ('AGENTLOGIN',
+                                    'AGENTCALLBACKLOGIN',
+                                    'CONNECT')
 
   EXCEPT
 
   SELECT distinct(agent)
   FROM queue_log
   WHERE
-    event IN ('AGENTLOGOFF', 'AGENTCALLBACKLOGOFF') AND
+    event IN ('AGENTLOGOFF',
+              'AGENTCALLBACKLOGOFF',
+              'AGENTLOGIN',
+              'AGENTCALLBACKLOGIN') AND
     data1 <> '' AND
     (time::TIMESTAMP BETWEEN :start AND :end)) as difference, stat_agent
 WHERE stat_agent.name = difference.agent
