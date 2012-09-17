@@ -77,13 +77,13 @@ def get_login_intervals_in_range(start, end):
     results = {}
 
     for row in rows.all():
-        if row[0] not in results:
-            results[row[0]] = []
+        if row.agent not in results:
+            results[row.agent] = []
 
-        start_time = row[1] if row[1] and row[1] > start else start
-        end_time = row[2] if row[2] and row[2] < end else end
+        start_time = row.login if row.login and row.login > start else start
+        end_time = row.logout if row.logout and row.logout < end else end
 
-        results[row[0]].append((start_time, end_time))
+        results[row.agent].append((start_time, end_time))
 
     qry_string = '''\
 SELECT
@@ -117,13 +117,13 @@ WHERE
             .params(start=start, end=end))
 
     for row in rows.all():
-        if row[0] not in results:
-            results[row[0]] = []
+        if row.agent not in results:
+            results[row.agent] = []
 
-        start_time = row[1] if row[1] and row[1] > start else start
-        end_time = row[2] if row[2] and row[2] < end else end
+        start_time = row.login if row.login and row.login > start else start
+        end_time = row.logout if row.logout and row.logout < end else end
 
-        results[row[0]].append((start_time, end_time))
+        results[row.agent].append((start_time, end_time))
 
     unique_result = {}
 
@@ -167,7 +167,7 @@ WHERE stat_agent.name = difference.agent
             .params(start=start, end=end))
 
     for row in rows.all():
-        results[row[0]] = [(start, end)]
+        results[row.agent] = [(start, end)]
 
     for agent, logins in results.iteritems():
         unique_result[agent] = sorted(list(set(logins)))
