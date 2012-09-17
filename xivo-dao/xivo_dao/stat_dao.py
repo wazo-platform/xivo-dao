@@ -41,31 +41,31 @@ def _run_sql_function_returning_void(start, end, function):
      .first())
 
 
-def get_login_intervals_in_range(start, end):
+def _get_logout_in_range(start, end):
     logout_in_range = '''\
-  SELECT
-    stat_agent.id AS agent,
-    CAST(time AS TIMESTAMP) AS logout,
-    (
-      SELECT
-        CAST(time AS TIMESTAMP)
-      FROM queue_log
-      WHERE
-        event IN ('AGENTCALLBACKLOGIN', 'AGENTLOGIN') AND
-        agent = out.agent AND
-        data1 = out.data1 AND
-        time < out.time
-      ORDER BY time DESC
-      LIMIT 1
-    ) AS login
-  FROM queue_log AS out,
-       stat_agent
-  WHERE
-    agent = stat_agent.name AND
-    (time::timestamp BETWEEN :start AND :end) AND
-    data1 <> '' AND
-    event IN ('AGENTCALLBACKLOGOFF', 'AGENTLOGOFF')
-  ORDER BY time ASC
+SELECT
+  stat_agent.id AS agent,
+  CAST(time AS TIMESTAMP) AS logout,
+  (
+    SELECT
+      CAST(time AS TIMESTAMP)
+    FROM queue_log
+    WHERE
+      event IN ('AGENTCALLBACKLOGIN', 'AGENTLOGIN') AND
+      agent = out.agent AND
+      data1 = out.data1 AND
+      time < out.time
+    ORDER BY time DESC
+    LIMIT 1
+  ) AS login
+FROM queue_log AS out,
+     stat_agent
+WHERE
+  agent = stat_agent.name AND
+  (time::timestamp BETWEEN :start AND :end) AND
+  data1 <> '' AND
+  event IN ('AGENTCALLBACKLOGOFF', 'AGENTLOGOFF')
+ORDER BY time ASC
 '''
 
     rows = (_get_session()
@@ -84,6 +84,10 @@ def get_login_intervals_in_range(start, end):
 
         results[row.agent].append((start_time, end_time))
 
+    return results
+
+
+def _get_login_in_range(start, end):
     login_in_range = '''\
 SELECT
   stat_agent.id AS agent,
@@ -115,6 +119,8 @@ WHERE
             .from_statement(login_in_range)
             .params(start=start, end=end))
 
+    results = {}
+
     for row in rows.all():
         if row.agent not in results:
             results[row.agent] = []
@@ -124,8 +130,10 @@ WHERE
 
         results[row.agent].append((start_time, end_time))
 
-    unique_result = {}
+    return results
 
+
+def _get_login_around_range(start, end):
     logged_before_start = '''\
 SELECT stat_agent.id AS agent
 FROM (
@@ -165,8 +173,23 @@ WHERE stat_agent.name = difference.agent
             .from_statement(logged_before_start)
             .params(start=start, end=end))
 
+    results = {}
+
     for row in rows.all():
         results[row.agent] = [(start, end)]
+
+    return results
+
+def get_login_intervals_in_range(start, end):
+    logout_in_range = _get_logout_in_range(start, end)
+    login_in_range = _get_login_in_range(start, end)
+    login_arount_range = _get_login_around_range(start, end)
+
+    results = logout_in_range
+    results.update(login_in_range)
+    results.update(login_arount_range)
+
+    unique_result = {}
 
     for agent, logins in results.iteritems():
         unique_result[agent] = sorted(list(set(logins)))
