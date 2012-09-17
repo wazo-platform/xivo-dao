@@ -279,3 +279,32 @@ class TestQueueLogDAO(DAOTestCase):
         res = [h for h in queue_log_dao.hours_with_calls(start, end)]
 
         self.assertEqual(res, expected)
+
+    def test_last_callid_with_event_for_agent(self):
+        t = datetime.datetime(2012, 1, 1)
+        event = 'FULL'
+        agent = 'Agent/1234'
+        queue = 'queue'
+
+        self._insert_entry_queue(
+            event,
+            self._build_timestamp(t),
+            'one',
+            queue,
+            agent,
+            )
+
+        self._insert_entry_queue(
+            event,
+            self._build_timestamp(t + datetime.timedelta(minutes=3)),
+            'two',
+            queue,
+            agent,
+            )
+
+        res = queue_log_dao.get_last_callid_with_event_for_agent(
+            event,
+            agent,
+            )
+
+        self.assertEqual(res, 'two')

@@ -120,3 +120,10 @@ def hours_with_calls(start, end):
 
     for hour in hours.all():
         yield hour.time
+
+def get_last_callid_with_event_for_agent(event, agent):
+    row = _session().query(QueueLog.callid).filter(
+        and_(QueueLog.agent == agent,
+             QueueLog.event == event)).order_by(QueueLog.time.desc()).first()
+
+    return row.callid
