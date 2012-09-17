@@ -42,8 +42,7 @@ def _run_sql_function_returning_void(start, end, function):
 
 
 def get_login_intervals_in_range(start, end):
-    # Logged off during of before range
-    qry_string = '''\
+    logout_in_range = '''\
   SELECT
     stat_agent.id AS agent,
     CAST(time AS TIMESTAMP) AS logout,
@@ -71,7 +70,7 @@ def get_login_intervals_in_range(start, end):
 
     rows = (_get_session()
             .query('agent', 'login', 'logout')
-            .from_statement(qry_string)
+            .from_statement(logout_in_range)
             .params(start=start, end=end))
 
     results = {}
@@ -85,7 +84,7 @@ def get_login_intervals_in_range(start, end):
 
         results[row.agent].append((start_time, end_time))
 
-    qry_string = '''\
+    login_in_range = '''\
 SELECT
   stat_agent.id AS agent,
   CAST(time AS TIMESTAMP) AS login,
@@ -113,7 +112,7 @@ WHERE
 
     rows = (_get_session()
             .query('agent', 'login', 'logout')
-            .from_statement(qry_string)
+            .from_statement(login_in_range)
             .params(start=start, end=end))
 
     for row in rows.all():
@@ -127,7 +126,7 @@ WHERE
 
     unique_result = {}
 
-    qry_string = '''\
+    logged_before_start = '''\
 SELECT stat_agent.id AS agent
 FROM (
   SELECT agent FROM (
@@ -163,7 +162,7 @@ WHERE stat_agent.name = difference.agent
 
     rows = (_get_session()
             .query('agent')
-            .from_statement(qry_string)
+            .from_statement(logged_before_start)
             .params(start=start, end=end))
 
     for row in rows.all():
