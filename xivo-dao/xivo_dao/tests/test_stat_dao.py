@@ -30,7 +30,6 @@ class TestStatDAO(DAOTestCase):
         try:
             stat_dao.fill_leaveempty_calls(self.start, self.end)
         except Exception, e:
-            print e
             self.assertTrue(False, 'Should not happen')
 
         le_calls = [
@@ -61,7 +60,6 @@ class TestStatDAO(DAOTestCase):
         try:
             stat_dao.fill_answered_calls(self.start, self.end)
         except Exception, e:
-            print e
             self.assertTrue(False, 'Should not happen')
 
     def test_fill_answered_direct_transfer_to_queue(self):
@@ -80,8 +78,6 @@ class TestStatDAO(DAOTestCase):
         self.assertEqual(result.count(), len(completed_calls))
         for r in result.all():
             expected = filter(lambda c: c[1] == r.callid and (self.qname1 if r.queue_id == self.qid1 else self.qname2) == c[2], completed_calls)[0]
-            print self.qid1, self.qid2
-            print r.time, r.callid, r.queue_id, r.waittime, r.talktime, expected
             self.assertEqual(r.time, expected[0])
             self.assertEqual(r.callid, expected[1])
             self.assertEqual(r.waittime, expected[4])
