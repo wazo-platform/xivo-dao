@@ -63,7 +63,7 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
             self.assertEqual(result.divert_waittime, 15)
             self.assertEqual(result.total, 98)
         except LookupError:
-            self.assertTrue(False, 'Should have found a row')
+            self.fail('Should have found a row')
 
     def test_get_most_recent_time(self):
         self.assertRaises(LookupError, stat_queue_periodic_dao.get_most_recent_time)
@@ -113,5 +113,6 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
         stat_queue_periodic_dao.remove_after(datetime.datetime(2012, 1, 2))
 
         res = self.session.query(StatQueuePeriodic.time)
+
         self.assertEqual(res.count(), 1)
         self.assertEqual(res[0].time, datetime.datetime(2012, 1, 1))
