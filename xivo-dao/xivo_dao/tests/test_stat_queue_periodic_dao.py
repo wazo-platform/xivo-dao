@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 import datetime
 
 from xivo_dao.alchemy.stat_queue_periodic import StatQueuePeriodic

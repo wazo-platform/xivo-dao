@@ -1,4 +1,5 @@
 # -*- coding: UTF-8 -*-
+
 from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.stat_queue_periodic import StatQueuePeriodic
 from sqlalchemy.sql.functions import max
