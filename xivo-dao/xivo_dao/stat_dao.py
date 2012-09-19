@@ -44,11 +44,11 @@ def _run_sql_function_returning_void(start, end, function):
 def get_login_intervals_in_range(start, end):
     logout_in_range = _get_logout_in_range(start, end)
     login_in_range = _get_login_in_range(start, end)
-    login_arount_range = _get_login_around_range(start, end)
+    login_around_range = _get_login_around_range(start, end)
 
     results = logout_in_range
     results.update(login_in_range)
-    results.update(login_arount_range)
+    results.update(login_around_range)
 
     unique_result = {}
 
