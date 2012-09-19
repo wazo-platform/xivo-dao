@@ -399,6 +399,11 @@ class TestStatDAO(DAOTestCase):
              'agent': self.aname1,
              'chan_name': 'SIP/1234-00001'
              },
+            {'time': self.start - datetime.timedelta(seconds=44),
+             'callid': 'login_5',
+             'agent': self.aname1,
+             'chan_name': 'SIP/1234-00003'
+             },
             ]
 
         self._insert_agent_callback_logins_logoffs(cb_logins, [])
@@ -408,6 +413,11 @@ class TestStatDAO(DAOTestCase):
              'callid': 'login_3',
              'agent': self.aname2,
              'chan_name': 'SIP/5555-00001',
+             },
+            {'time': self.start - datetime.timedelta(seconds=59),
+             'callid': 'login_4',
+             'agent': self.aname1,
+             'chan_name': 'SIP/1234-00002'
              },
             ]
 
@@ -589,10 +599,8 @@ class TestStatDAO(DAOTestCase):
         result = stat_dao.get_login_intervals_in_range(self.start, self.end)
 
         expected = {
-            self.aid1: sorted([(cb_logins[0]['time'], self.end),
-                               (cb_logins[1]['time'], self.end)]),
-            self.aid2: sorted([(logins[0]['time'], self.end),
-                               (logins[1]['time'], self.end)]),
+            self.aid1: sorted([(cb_logins[1]['time'], self.end)]),
+            self.aid2: sorted([(logins[0]['time'], self.end)])
             }
 
         self.assertEqual(expected, result)

@@ -53,9 +53,28 @@ def get_login_intervals_in_range(start, end):
     unique_result = {}
 
     for agent, logins in results.iteritems():
+        logins = _pick_longest_with_same_end(logins)
         unique_result[agent] = sorted(list(set(logins)))
 
     return unique_result
+
+
+def _pick_longest_with_same_end(logins):
+    """
+    Workaround a bug in chan_agent.so where an agent could log multiple times
+    Fixed in XiVO 12.18
+    """
+    end_time_map = {}
+    for start, end in logins:
+        if end not in end_time_map:
+            end_time_map[end] = []
+        end_time_map[end].append(start)
+
+    res = []
+    for end, starts in end_time_map.iteritems():
+        res.append((min(starts), end))
+
+    return res
 
 
 def _get_logout_in_range(start, end):
