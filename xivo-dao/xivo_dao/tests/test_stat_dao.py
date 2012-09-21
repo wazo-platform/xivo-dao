@@ -461,10 +461,7 @@ class TestStatDAO(DAOTestCase):
 
         result = stat_dao.get_login_intervals_in_range(self.start, self.end)
 
-        expected = {
-            self.aid1: [(self.start, self.end)],
-            self.aid2: [(self.start, self.end)],
-            }
+        expected = {}
 
         self.assertEqual(expected, result)
 

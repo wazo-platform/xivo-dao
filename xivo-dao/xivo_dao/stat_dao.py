@@ -195,15 +195,11 @@ FROM (
      FROM queue_log
      WHERE
        (event IN ('AGENTLOGIN', 'AGENTCALLBACKLOGIN',
-                  'AGENTLOGOFF', 'AGENTCALLBACKLOGOFF',
-                  'CONNECT') AND
-        time::TIMESTAMP <= :start) OR
-       (event = 'CONNECT' AND
-        (time::TIMESTAMP BETWEEN :start AND :end))
+                  'AGENTLOGOFF', 'AGENTCALLBACKLOGOFF') AND
+        time::TIMESTAMP <= :start)
      ORDER BY agent, time DESC) as last_login_logoff
   WHERE last_login_logoff.event IN ('AGENTLOGIN',
-                                    'AGENTCALLBACKLOGIN',
-                                    'CONNECT')
+                                    'AGENTCALLBACKLOGIN')
 
   EXCEPT
 
