@@ -46,9 +46,11 @@ def get_login_intervals_in_range(start, end):
     login_in_range = _get_login_in_range(start, end)
     login_around_range = _get_login_around_range(start, end)
 
-    results = logout_in_range
-    results.update(login_in_range)
-    results.update(login_around_range)
+    results = _merge_agent_statistics(
+        logout_in_range,
+        login_in_range,
+        login_around_range
+        )
 
     unique_result = {}
 
@@ -57,6 +59,19 @@ def get_login_intervals_in_range(start, end):
         unique_result[agent] = sorted(list(set(logins)))
 
     return unique_result
+
+
+def _merge_agent_statistics(logout_in_range, login_in_range, login_around):
+    stats = [login_around, login_in_range, logout_in_range]
+    result = {}
+    for stat in stats:
+        for agent, logins in stat.iteritems():
+            if agent not in result:
+                result[agent] = logins
+            else:
+                result[agent].extend(logins)
+
+    return result
 
 
 def _pick_longest_with_same_end(logins):

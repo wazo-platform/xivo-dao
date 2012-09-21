@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+from mock import Mock
 from datetime import datetime as t
 
 from xivo_dao.alchemy.queue_log import QueueLog
@@ -939,3 +940,48 @@ $$
 LANGUAGE SQL;
 '''
         cls.session.execute(fill_leaveempty_calls_fn)
+
+    def test_merge_agent_statistics(self):
+        stat_1 = {1: [(1, 2),
+                      (2, 3)]}
+        stat_2 = {1: [(4, 5)]}
+        stat_3 = {1: [(6, 7)]}
+
+        statistics = stat_dao._merge_agent_statistics(stat_1, stat_2, stat_3)
+
+        expected = {1: [(1, 2),
+                        (2, 3),
+                        (4, 5),
+                        (6, 7)]}
+
+        self.assertEqual(len(statistics), len(expected))
+
+        for agent, statistic in statistics.iteritems():
+            for login in statistic:
+                self.assertTrue(login in expected[agent])
+
+        for agent, statistic in expected.iteritems():
+            for login in statistic:
+                self.assertTrue(login in statistics[agent])
+
+    def test_get_login_intervals_many_login_types(self):
+        stat_dao._get_logout_in_range = Mock()
+        stat_dao._get_login_in_range = Mock()
+        stat_dao._get_login_around_range = Mock()
+
+        stat_dao._get_logout_in_range.return_value = {1: [(1, 2)],
+                                                      2: [(1, 2), (2, 3)]}
+        stat_dao._get_login_in_range.return_value = {1: [(3, 4)]}
+        stat_dao._get_login_around_range.return_value = {1: [(5, 6)],
+                                                         2: [(1, 2), (4, 5)],
+                                                         3: [(1, 2)]
+                                                         }
+
+        statistics = stat_dao.get_login_intervals_in_range(None, None)
+
+        expected = {1: [(1, 2), (3, 4), (5, 6)],
+                    2: [(1, 2), (2, 3), (4, 5)],
+                    3: [(1, 2)]
+                    }
+
+        self.assertEqual(statistics, expected)
