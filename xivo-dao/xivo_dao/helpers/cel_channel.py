@@ -26,8 +26,10 @@ from xivo_dao.helpers.cel_exception import MissingCELEventException
 
 logger = logging.getLogger(__name__)
 
+
 def _timedelta_to_seconds(delta):
     return delta.days * 86400 + delta.seconds + delta.microseconds / 1000000.0
+
 
 class CELChannel(object):
     def __init__(self, cel_events):

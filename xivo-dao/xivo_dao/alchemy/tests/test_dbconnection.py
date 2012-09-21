@@ -63,6 +63,7 @@ class TestDBConnectionPool(unittest.TestCase):
     def test_close_closes_all_connections(self):
         foo_connection = Mock()
         bar_connection = Mock()
+
         def connection_factory(uri):
             return {'foo': foo_connection, 'bar': bar_connection}[uri]
 

@@ -18,7 +18,7 @@ def insert_stats(period_stats, period_start):
             time=period_start,
             login_time=login_time,
             agent_id=agent_id,
-            )
+        )
 
         _session().add(entry)
 

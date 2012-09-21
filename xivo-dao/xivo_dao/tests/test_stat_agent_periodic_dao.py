@@ -28,7 +28,6 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
 
         return agent.name, agent.id
 
-
     def test_insert_periodic_stat(self):
         _, agent_id_1 = self._insert_agent_to_stat_agent()
         _, agent_id_2 = self._insert_agent_to_stat_agent()
@@ -36,18 +35,18 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
             dt(2012, 01, 01, 01, 00, 00): {
                 agent_id_1: timedelta(minutes=50),
                 agent_id_2: ONE_HOUR,
-                },
+            },
             dt(2012, 01, 01, 02, 00, 00): {
                 agent_id_1: timedelta(minutes=20),
                 agent_id_2: ONE_HOUR,
-                },
+            },
             dt(2012, 01, 01, 03, 00, 00): {
                 agent_id_2: ONE_HOUR,
-                },
+            },
             dt(2012, 01, 01, 04, 00, 00): {
                 agent_id_2: ONE_HOUR,
-                }
             }
+        }
 
         for period_start, agents_stats in stats.iteritems():
             stat_agent_periodic_dao.insert_stats(agents_stats, period_start)
@@ -56,8 +55,8 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
 
         try:
             result = (self.session.query(StatAgentPeriodic)
-                    .filter(StatAgentPeriodic.time == period_start)
-                    .filter(StatAgentPeriodic.agent_id == agent_id_1)[0])
+                      .filter(StatAgentPeriodic.time == period_start)
+                      .filter(StatAgentPeriodic.agent_id == agent_id_1)[0])
 
             self.assertEqual(result.login_time, timedelta(minutes=50))
         except LookupError:
@@ -67,7 +66,7 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
         agent_name, agent_id = self._insert_agent_to_stat_agent()
         stats = {
             agent_id: timedelta(minutes=15),
-            }
+        }
 
         stat_agent_periodic_dao.insert_stats(stats, dt(2012, 1, 1))
 
@@ -82,14 +81,14 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
         stats = {
             dt(2012, 1, 1): {
                 agent_id: timedelta(minutes=15),
-                },
+            },
             dt(2012, 1, 2): {
                 agent_id: timedelta(minutes=20),
-                },
+            },
             dt(2012, 1, 3): {
                 agent_id: timedelta(minutes=25),
-                },
-            }
+            },
+        }
 
         for period_start, agents_stats in stats.iteritems():
             stat_agent_periodic_dao.insert_stats(agents_stats, period_start)

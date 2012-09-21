@@ -64,14 +64,14 @@ def get_periodic_stats(start, end):
     stats = {}
 
     rows = (_session()
-           .query(func.date_trunc(literal('hour'), StatCallOnQueue.time),
-                  StatCallOnQueue.queue_id,
-                  StatCallOnQueue.status,
-                  func.count(StatCallOnQueue.status))
-           .group_by(func.date_trunc(literal('hour'), StatCallOnQueue.time),
-                     StatCallOnQueue.queue_id,
-                     StatCallOnQueue.status)
-           .filter(between(StatCallOnQueue.time, start, end)))
+            .query(func.date_trunc(literal('hour'), StatCallOnQueue.time),
+                   StatCallOnQueue.queue_id,
+                   StatCallOnQueue.status,
+                   func.count(StatCallOnQueue.status))
+            .group_by(func.date_trunc(literal('hour'), StatCallOnQueue.time),
+                      StatCallOnQueue.queue_id,
+                      StatCallOnQueue.status)
+            .filter(between(StatCallOnQueue.time, start, end)))
 
     for period, queue_id, status, number in rows.all():
         if period not in stats:

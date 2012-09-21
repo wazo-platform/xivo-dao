@@ -49,7 +49,7 @@ def _get_event_with_enterqueue(start, end, match, event):
                 'event': event,
                 'talktime': 0,
                 'waittime': int(r.data3) if r.data3 else 0
-                }
+            }
 
 
 def get_queue_abandoned_call(start, end):
@@ -69,7 +69,7 @@ def get_queue_names_in_range(start, end):
     end = end.strftime(_STR_TIME_FMT)
 
     return [r[0] for r in (_session().query(distinct(QueueLog.queuename))
-                                  .filter(between(QueueLog.time, start, end)))]
+                           .filter(between(QueueLog.time, start, end)))]
 
 
 def get_agents_after(start):
@@ -120,6 +120,7 @@ def hours_with_calls(start, end):
 
     for hour in hours.all():
         yield hour.time
+
 
 def get_last_callid_with_event_for_agent(event, agent):
     row = _session().query(QueueLog.callid).filter(

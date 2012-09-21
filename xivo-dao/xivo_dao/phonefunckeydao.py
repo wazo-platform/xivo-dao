@@ -32,8 +32,8 @@ class PhoneFunckeyDAO(object):
 
     def _get_dest(self, user_id, fwd_type):
         extens = (self._session.query(PhoneFunckey.exten)
-                    .filter(PhoneFunckey.iduserfeatures == user_id)
-                    .filter(PhoneFunckey.typevalextenumbers == fwd_type))
+                  .filter(PhoneFunckey.iduserfeatures == user_id)
+                  .filter(PhoneFunckey.typevalextenumbers == fwd_type))
         return [exten[0] for exten in extens]
 
     def get_dest_unc(self, user_id):

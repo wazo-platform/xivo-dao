@@ -25,6 +25,7 @@ from xivo_dao.alchemy.base import Base
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String, Text
 
+
 class UserSIP(Base):
 
     __tablename__ = 'usersip'
@@ -49,16 +50,16 @@ class UserSIP(Base):
     callerid = Column(String(160))
     fullname = Column(String(80))
     cid_number = Column(String(80))
-    maxcallbitrate = Column(Integer) 
+    maxcallbitrate = Column(Integer)
     insecure = Column(String(16))
     nat = Column(String(16))
     promiscredir = Column(Integer)
     usereqphone = Column(Integer)
     videosupport = Column(String(16))
     trustrpid = Column(Integer)
-    sendrpid = Column(Integer) 
-    allowsubscribe = Column(Integer) 
-    allowoverlap = Column(Integer) 
+    sendrpid = Column(Integer)
+    allowsubscribe = Column(Integer)
+    allowoverlap = Column(Integer)
     dtmfmode = Column(String(16))
     rfc2833compensate = Column(Integer)
     qualify = Column(String(4))

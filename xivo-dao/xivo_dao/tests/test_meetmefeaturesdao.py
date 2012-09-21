@@ -35,7 +35,7 @@ class TestMeetmeFeaturesDAO(DAOTestCase):
         self.empty_tables()
 
     def _insert_meetme(self, meetmeid, name, confno, pin=None, context=None):
-        var_val = confno if pin == None else ','.join([confno, pin])
+        var_val = confno if pin is None else ','.join([confno, pin])
         static_meetme = StaticMeetme()
         static_meetme.category = 'rooms'
         static_meetme.var_name = 'conf'
@@ -85,8 +85,8 @@ class TestMeetmeFeaturesDAO(DAOTestCase):
         self.assertEqual(meetme_blue.name, 'blue')
 
     def test_find_by_confno(self):
-        red = self._insert_meetme(1, 'red', '9000')
-        blue = self._insert_meetme(2, 'blue', '9001')
+        self._insert_meetme(1, 'red', '9000')
+        self._insert_meetme(2, 'blue', '9001')
 
         red_id = meetme_features_dao.find_by_confno('9000')
         blue_id = meetme_features_dao.find_by_confno('9001')
@@ -122,9 +122,9 @@ class TestMeetmeFeaturesDAO(DAOTestCase):
         self.assertRaises(LookupError, meetme_features_dao.has_pin, 1)
 
     def test_get_configs(self):
-        red = self._insert_meetme(1, 'red', '9000', context='default')
-        blue = self._insert_meetme(2, 'blue', '9001', '1234', context='test')
-        green = self._insert_meetme(3, 'green', '9002', '5555', context='test')
+        self._insert_meetme(1, 'red', '9000', context='default')
+        self._insert_meetme(2, 'blue', '9001', '1234', context='test')
+        self._insert_meetme(3, 'green', '9002', '5555', context='test')
 
         result = meetme_features_dao.get_configs()
 

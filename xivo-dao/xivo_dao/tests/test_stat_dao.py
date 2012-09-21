@@ -31,7 +31,7 @@ class TestStatDAO(DAOTestCase):
         try:
             stat_dao.fill_leaveempty_calls(self.start, self.end)
         except Exception:
-            self.assertTrue(False, 'Should not happen')
+            self.fail('Should not happen')
 
         le_calls = [
             (t(2012, 7, 1, 10, 00, 00), 'le_1', self.qname1, 5),
@@ -61,7 +61,7 @@ class TestStatDAO(DAOTestCase):
         try:
             stat_dao.fill_answered_calls(self.start, self.end)
         except Exception:
-            self.assertTrue(False, 'Should not happen')
+            self.fail('Should not happen')
 
     def test_fill_answered_direct_transfer_to_queue(self):
         # When doing a direct transfer both calls have the same callid

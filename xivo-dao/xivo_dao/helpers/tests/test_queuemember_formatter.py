@@ -207,9 +207,12 @@ class TestQueueMemberFormatter(unittest.TestCase):
 
     def test_format_queuemember_from_ami_remove(self):
         ami_event = self.ami_event
-        expected_result = {'agent1,queue1': {
+        expected_result = {
+            'agent1,queue1': {
                 'queue_name': 'queue1',
-                'interface': 'agent1'}}
+                'interface': 'agent1'
+            }
+        }
 
         result = QueueMemberFormatter.format_queuemember_from_ami_remove(ami_event)
 
@@ -227,10 +230,13 @@ class TestQueueMemberFormatter(unittest.TestCase):
         ami_event = {'Queue': 'queue1',
                      'Location': 'agent1',
                      'Paused': '0'}
-        expected_result = {'agent1,queue1': {
+        expected_result = {
+            'agent1,queue1': {
                 'queue_name': 'queue1',
                 'interface': 'agent1',
-                'paused': '0'}}
+                'paused': '0'
+            }
+        }
 
         result = QueueMemberFormatter.format_queuemember_from_ami_pause(ami_event)
 

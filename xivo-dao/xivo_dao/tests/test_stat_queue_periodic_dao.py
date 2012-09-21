@@ -27,19 +27,20 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
 
     def _get_stats_for_queue(self):
         queue_name, queue_id = self._insert_queue_to_stat_queue()
-        stats = {queue_id:
-                     {'abandoned': 7,
-                      'answered': 27,
-                      'closed': 5,
-                      'full': 4,
-                      'joinempty': 2,
-                      'leaveempty': 11,
-                      'timeout': 5,
-                      'divert_ca_ratio': 22,
-                      'divert_waittime': 15,
-                      'total': 98
-                      }
-                 }
+        stats = {
+            queue_id: {
+                'abandoned': 7,
+                'answered': 27,
+                'closed': 5,
+                'full': 4,
+                'joinempty': 2,
+                'leaveempty': 11,
+                'timeout': 5,
+                'divert_ca_ratio': 22,
+                'divert_waittime': 15,
+                'total': 98
+            }
+        }
         return stats
 
     def test_insert_periodic_stat(self):
@@ -50,7 +51,7 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
 
         try:
             result = (self.session.query(StatQueuePeriodic)
-                    .filter(StatQueuePeriodic.time == period_start)[0])
+                      .filter(StatQueuePeriodic.time == period_start)[0])
 
             self.assertEqual(result.abandoned, 7)
             self.assertEqual(result.answered, 27)
@@ -83,11 +84,12 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
 
     def test_clean_table(self):
         queue_name, queue_id = self._insert_queue_to_stat_queue()
-        stats = {queue_id: {
-                            'full': 4,
-                            'total': 10
-                            }
-                 }
+        stats = {
+            queue_id: {
+                'full': 4,
+                'total': 10
+            }
+        }
         period_start = datetime.datetime(2012, 01, 01, 00, 00, 00)
 
         stat_queue_periodic_dao.insert_stats(stats, period_start)
@@ -100,11 +102,12 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
 
     def test_remove_after(self):
         queue_name, queue_id = self._insert_queue_to_stat_queue()
-        stats = {queue_id: {
-                            'full': 4,
-                            'total': 10
-                            }
-                 }
+        stats = {
+            queue_id: {
+                'full': 4,
+                'total': 10
+            }
+        }
 
         stat_queue_periodic_dao.insert_stats(stats, datetime.datetime(2012, 1, 1))
         stat_queue_periodic_dao.insert_stats(stats, datetime.datetime(2012, 1, 2))

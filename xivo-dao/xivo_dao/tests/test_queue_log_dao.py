@@ -143,14 +143,15 @@ class TestQueueLogDAO(DAOTestCase):
             self._insert_entry_queue_enterqueue(enter_time, callid, self.queue_name)
             self._insert_entry_queue_timeout(leave_time, callid, self.queue_name, waittime)
             if start <= enter_time < start + datetime.timedelta(hours=1):
-                expected.append({
+                expected.append(
+                    {
                         'queue_name': self.queue_name,
                         'event': 'timeout',
                         'time': enter_time,
                         'callid': callid,
                         'waittime': waittime,
                         'talktime': 0,
-                        })
+                    })
         return expected
 
     def _insert_abandon(self, start, minutes):
@@ -163,14 +164,15 @@ class TestQueueLogDAO(DAOTestCase):
             self._insert_entry_queue_enterqueue(enter_time, callid, self.queue_name)
             self._insert_entry_queue_abandoned(leave_time, callid, self.queue_name, waittime)
             if start <= enter_time < start + datetime.timedelta(hours=1):
-                expected.append({
+                expected.append(
+                    {
                         'queue_name': self.queue_name,
                         'event': 'abandoned',
                         'time': enter_time,
                         'callid': callid,
                         'waittime': waittime,
                         'talktime': 0,
-                        })
+                    })
         return expected
 
     def _insert_leaveempty(self, start, minutes):
@@ -183,14 +185,15 @@ class TestQueueLogDAO(DAOTestCase):
             self._insert_entry_queue_enterqueue(enter_time, callid, self.queue_name)
             self._insert_entry_queue_leaveempty(leave_time, callid, self.queue_name)
             if start <= enter_time < start + datetime.timedelta(hours=1):
-                expected.append({
+                expected.append(
+                    {
                         'queue_name': self.queue_name,
                         'event': 'leaveempty',
                         'time': enter_time,
                         'callid': callid,
                         'waittime': waittime,
                         'talktime': 0,
-                        })
+                    })
         return expected
 
     def _insert_ev_fn(self, event_name):
@@ -234,8 +237,8 @@ class TestQueueLogDAO(DAOTestCase):
         queue_log_dao.delete_event_by_queue_between(
             'FULL', 'q1', '2012-07-01 08:00:00.000000', '2012-07-01 08:59:59.999999')
 
-        callids = [r.callid for r in self.session.query(QueueLog.callid)\
-                                                 .filter(QueueLog.callid.like('delete_between_%'))]
+        callids = [r.callid for r in self.session.query(QueueLog.callid)
+                   .filter(QueueLog.callid.like('delete_between_%'))]
 
         expected = ['delete_between_1', 'delete_between_3', 'delete_between_4']
 
@@ -274,7 +277,7 @@ class TestQueueLogDAO(DAOTestCase):
         expected = [
             datetime.datetime(2012, 1, 1, 8),
             datetime.datetime(2012, 6, 30, 23)
-            ]
+        ]
 
         res = [h for h in queue_log_dao.hours_with_calls(start, end)]
 
@@ -292,7 +295,7 @@ class TestQueueLogDAO(DAOTestCase):
             'one',
             queue,
             agent,
-            )
+        )
 
         self._insert_entry_queue(
             event,
@@ -300,11 +303,11 @@ class TestQueueLogDAO(DAOTestCase):
             'two',
             queue,
             agent,
-            )
+        )
 
         res = queue_log_dao.get_last_callid_with_event_for_agent(
             event,
             agent,
-            )
+        )
 
         self.assertEqual(res, 'two')
