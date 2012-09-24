@@ -30,7 +30,7 @@ class TestStatDAO(DAOTestCase):
     def test_fill_leaveempty_calls(self):
         try:
             stat_dao.fill_leaveempty_calls(self.start, self.end)
-        except Exception, e:
+        except Exception:
             self.assertTrue(False, 'Should not happen')
 
         le_calls = [
@@ -38,7 +38,7 @@ class TestStatDAO(DAOTestCase):
             (t(2012, 7, 1, 10, 00, 01), 'le_2', self.qname2, 7),
             (t(2012, 7, 1, 10, 59, 59), 'le_3', self.qname1, 10),
             (t(2012, 7, 1, 11, 00, 00), 'le_4', self.qname1, 3),
-            ]
+        ]
         self._insert_leaveempty_calls(le_calls)
 
         stat_dao.fill_leaveempty_calls(self.start, self.end)
@@ -60,7 +60,7 @@ class TestStatDAO(DAOTestCase):
     def test_fill_answered_calls_empty(self):
         try:
             stat_dao.fill_answered_calls(self.start, self.end)
-        except Exception, e:
+        except Exception:
             self.assertTrue(False, 'Should not happen')
 
     def test_fill_answered_direct_transfer_to_queue(self):
@@ -70,7 +70,7 @@ class TestStatDAO(DAOTestCase):
             (t(2012, 7, 1, 10, 15, 01), 'completed_1', self.qname2, self.aname1, 7, 32, False),
             (t(2012, 7, 1, 10, 59, 59), 'completed_3', self.qname1, self.aname1, 10, 59, True),
             (t(2012, 7, 1, 11, 00, 00), 'completed_4', self.qname1, self.aname2, 3, 13, False),
-            ]
+        ]
         self._insert_completed_calls(completed_calls)
 
         stat_dao.fill_answered_calls(self.start, self.end)
@@ -91,7 +91,7 @@ class TestStatDAO(DAOTestCase):
             queuename=self.qname1,
             agent='NONE',
             event='ENTERQUEUE'
-            )
+        )
         self.session.add(double)
         self.session.commit()
         completed_calls = [
@@ -99,7 +99,7 @@ class TestStatDAO(DAOTestCase):
             (t(2012, 7, 1, 10, 00, 01), 'completed_2', self.qname2, self.aname1, 7, 32, False),
             (t(2012, 7, 1, 10, 59, 59), 'completed_3', self.qname1, self.aname1, 10, 59, True),
             (t(2012, 7, 1, 11, 00, 00), 'completed_4', self.qname1, self.aname2, 3, 13, False),
-            ]
+        ]
         self._insert_completed_calls(completed_calls)
 
         stat_dao.fill_answered_calls(self.start, self.end)
@@ -123,7 +123,7 @@ class TestStatDAO(DAOTestCase):
             (t(2012, 7, 1, 10, 00, 01), 'transfered_2', self.qname2, self.aname1, 7, 32),
             (t(2012, 7, 1, 10, 59, 59), 'transfered_3', self.qname1, self.aname1, 10, 59),
             (t(2012, 7, 1, 11, 00, 00), 'transfered_4', self.qname1, self.aname2, 3, 13),
-            ]
+        ]
         self._insert_transfered_calls(transfered_calls)
 
         stat_dao.fill_answered_calls(self.start, self.end)
@@ -147,7 +147,7 @@ class TestStatDAO(DAOTestCase):
             (t(2012, 7, 1, 10, 00, 01), 'completed_2', self.qname2, self.aname1, 7, 32, False),
             (t(2012, 7, 1, 10, 59, 59), 'completed_3', self.qname1, self.aname1, 10, 59, True),
             (t(2012, 7, 1, 11, 00, 00), 'completed_4', self.qname1, self.aname2, 3, 13, False),
-            ]
+        ]
         self._insert_completed_calls(completed_calls)
 
         stat_dao.fill_answered_calls(self.start, self.end)
@@ -172,7 +172,7 @@ class TestStatDAO(DAOTestCase):
             (t(2012, 7, 1, 10, 00, 01), 'closed_3', self.qname1),
             (t(2012, 7, 1, 10, 00, 02), 'closed_4', self.qname2),
             (t(2012, 7, 1, 10, 00, 03), 'closed_5', self.qname1),
-            ]
+        ]
         self._insert_closed_calls(closed_calls)
 
         stat_dao.fill_simple_calls(self.start, self.end)
@@ -200,7 +200,7 @@ class TestStatDAO(DAOTestCase):
             (t(2012, 7, 1, 10, 00, 01), 'full_3', self.qname1),
             (t(2012, 7, 1, 10, 00, 02), 'full_4', self.qname2),
             (t(2012, 7, 1, 10, 00, 03), 'full_5', self.qname1),
-            ]
+        ]
 
         self._insert_full_calls(full_calls)
 
@@ -229,7 +229,7 @@ class TestStatDAO(DAOTestCase):
             (t(2012, 7, 1, 10, 00, 01), 'je_3', self.qname1),
             (t(2012, 7, 1, 10, 00, 02), 'je_4', self.qname2),
             (t(2012, 7, 1, 10, 00, 03), 'je_5', self.qname1),
-            ]
+        ]
 
         self._insert_joinempty_calls(je_calls)
 
@@ -252,7 +252,7 @@ class TestStatDAO(DAOTestCase):
             (t(2012, 7, 1, 10, 00, 01), 'ratio_3', self.qname1),
             (t(2012, 7, 1, 10, 00, 02), 'ratio_4', self.qname2),
             (t(2012, 7, 1, 10, 00, 03), 'ratio_5', self.qname1),
-            ]
+        ]
 
         self._insert_ca_ratio_calls(ca_ratio_calls)
 
@@ -281,7 +281,7 @@ class TestStatDAO(DAOTestCase):
             (t(2012, 7, 1, 10, 00, 01), 'ratio_3', self.qname1),
             (t(2012, 7, 1, 10, 00, 02), 'ratio_4', self.qname2),
             (t(2012, 7, 1, 10, 00, 03), 'ratio_5', self.qname1),
-            ]
+        ]
 
         self._insert_holdtime_calls(ca_ratio_calls)
 
@@ -314,7 +314,7 @@ class TestStatDAO(DAOTestCase):
             datetime.timedelta(minutes=20),
             datetime.timedelta(minutes=7, seconds=21),
             datetime.timedelta(hours=2, minutes=3)
-            ]
+        ]
 
         cb_logins = [
             {'time': self.start + datetime.timedelta(seconds=30),
@@ -327,7 +327,7 @@ class TestStatDAO(DAOTestCase):
              'agent': self.aname1,
              'chan_name': 'SIP/1234-00002'
              },
-            ]
+        ]
 
         cb_logoffs = [
             {'time': cb_logins[0]['time'] + logintimes[0],
@@ -342,7 +342,7 @@ class TestStatDAO(DAOTestCase):
              'chan_name': cb_logins[1]['chan_name'],
              'talktime': logintimes[1],
              },
-            ]
+        ]
 
         self._insert_agent_callback_logins_logoffs(cb_logins, cb_logoffs)
 
@@ -357,7 +357,7 @@ class TestStatDAO(DAOTestCase):
              'agent': self.aname2,
              'chan_name': 'SIP/5555-00002',
              },
-            ]
+        ]
         logoffs = [
             {'time': logins[0]['time'] + logintimes[2],
              'callid': logins[0]['callid'],
@@ -371,7 +371,7 @@ class TestStatDAO(DAOTestCase):
              'chan_name': logins[1]['chan_name'],
              'talktime': logintimes[3],
              }
-            ]
+        ]
 
         self._insert_agent_logins_logoffs(logins, logoffs)
 
@@ -382,18 +382,11 @@ class TestStatDAO(DAOTestCase):
                                (cb_logins[1]['time'], cb_logoffs[1]['time'])]),
             self.aid2: sorted([(logins[0]['time'], logoffs[0]['time']),
                                (logins[1]['time'], logoffs[1]['time'])]),
-            }
+        }
 
         self.assertEqual(expected, result)
 
     def test_get_login_intervals_in_range_logins_before_no_logout(self):
-        logintimes = [
-            datetime.timedelta(days=5, minutes=10, seconds=13),
-            datetime.timedelta(days=3, minutes=20),
-            datetime.timedelta(days=6, minutes=7, seconds=21),
-            datetime.timedelta(days=10, hours=2, minutes=3)
-            ]
-
         cb_logins = [
             {'time': self.start - datetime.timedelta(seconds=30),
              'callid': 'login_1',
@@ -405,7 +398,7 @@ class TestStatDAO(DAOTestCase):
              'agent': self.aname1,
              'chan_name': 'SIP/1234-00003'
              },
-            ]
+        ]
 
         self._insert_agent_callback_logins_logoffs(cb_logins, [])
 
@@ -420,7 +413,7 @@ class TestStatDAO(DAOTestCase):
              'agent': self.aname1,
              'chan_name': 'SIP/1234-00002'
              },
-            ]
+        ]
 
         self._insert_agent_logins_logoffs(logins, [])
 
@@ -429,7 +422,7 @@ class TestStatDAO(DAOTestCase):
         expected = {
             self.aid1: [(self.start, self.end)],
             self.aid2: [(self.start, self.end)],
-            }
+        }
 
         self.assertEqual(expected, result)
 
@@ -443,7 +436,7 @@ class TestStatDAO(DAOTestCase):
             data1='6',
             data2='linked_callid',
             data3='2'
-            )
+        )
         self.session.add(connect1)
         connect2 = QueueLog(
             time=self.start + datetime.timedelta(minutes=5),
@@ -454,7 +447,7 @@ class TestStatDAO(DAOTestCase):
             data1='6',
             data2='linked_callid_2',
             data3='4'
-            )
+        )
         self.session.add(connect2)
 
         self.session.commit()
@@ -471,7 +464,7 @@ class TestStatDAO(DAOTestCase):
             datetime.timedelta(minutes=55),
             datetime.timedelta(minutes=7, seconds=21),
             datetime.timedelta(hours=2, minutes=3)
-            ]
+        ]
 
         cb_logins = [
             # No login for the first call
@@ -480,7 +473,7 @@ class TestStatDAO(DAOTestCase):
              'agent': self.aname1,
              'chan_name': 'SIP/1234-00002'
              },
-            ]
+        ]
 
         cb_logoffs = [
             {'time': self.start - datetime.timedelta(seconds=30) + logintimes[0],
@@ -495,7 +488,7 @@ class TestStatDAO(DAOTestCase):
              'chan_name': cb_logins[0]['chan_name'],
              'talktime': logintimes[1],
              },
-            ]
+        ]
 
         self._insert_agent_callback_logins_logoffs(cb_logins, cb_logoffs)
 
@@ -510,7 +503,7 @@ class TestStatDAO(DAOTestCase):
              'agent': self.aname2,
              'chan_name': 'SIP/5555-00002',
              },
-            ]
+        ]
         logoffs = [
             {'time': logins[0]['time'] + logintimes[2],
              'callid': logins[0]['callid'],
@@ -524,7 +517,7 @@ class TestStatDAO(DAOTestCase):
              'chan_name': logins[1]['chan_name'],
              'talktime': logintimes[3],
              }
-            ]
+        ]
 
         self._insert_agent_logins_logoffs(logins, logoffs)
 
@@ -535,7 +528,7 @@ class TestStatDAO(DAOTestCase):
                                (self.start, cb_logoffs[1]['time'])]),
             self.aid2: sorted([(self.start, logoffs[0]['time']),
                                (self.start, logoffs[1]['time'])]),
-            }
+        }
 
         self.assertEqual(expected, result)
 
@@ -545,7 +538,7 @@ class TestStatDAO(DAOTestCase):
             datetime.timedelta(minutes=55),
             datetime.timedelta(minutes=7, seconds=21),
             datetime.timedelta(hours=2, minutes=3)
-            ]
+        ]
 
         cb_logins = [
             {'time': self.end - datetime.timedelta(seconds=30),
@@ -558,7 +551,7 @@ class TestStatDAO(DAOTestCase):
              'agent': self.aname1,
              'chan_name': 'SIP/1234-00002'
              },
-            ]
+        ]
 
         cb_logoffs = [
             {'time': cb_logins[0]['time'] + logintimes[0],
@@ -567,7 +560,7 @@ class TestStatDAO(DAOTestCase):
              'chan_name': cb_logins[0]['chan_name'],
              'talktime': logintimes[0],
              },
-            ]
+        ]
 
         self._insert_agent_callback_logins_logoffs(cb_logins, cb_logoffs)
 
@@ -582,7 +575,7 @@ class TestStatDAO(DAOTestCase):
              'agent': self.aname2,
              'chan_name': 'SIP/5555-00002',
              },
-            ]
+        ]
         logoffs = [
             {'time': logins[1]['time'] + logintimes[3],
              'callid': logins[1]['callid'],
@@ -590,7 +583,7 @@ class TestStatDAO(DAOTestCase):
              'chan_name': logins[1]['chan_name'],
              'talktime': logintimes[3],
              }
-            ]
+        ]
 
         self._insert_agent_logins_logoffs(logins, logoffs)
 
@@ -599,7 +592,7 @@ class TestStatDAO(DAOTestCase):
         expected = {
             self.aid1: sorted([(cb_logins[1]['time'], self.end)]),
             self.aid2: sorted([(logins[0]['time'], self.end)])
-            }
+        }
 
         self.assertEqual(expected, result)
 
@@ -612,7 +605,7 @@ class TestStatDAO(DAOTestCase):
                 agent=login['agent'],
                 event='AGENTLOGIN',
                 data1=login['chan_name']
-                )
+            )
             self.session.add(callback_login)
 
         for logoff in logoffs:
@@ -624,7 +617,7 @@ class TestStatDAO(DAOTestCase):
                 event='AGENTLOGOFF',
                 data1=logoff['chan_name'],
                 data2=logoff['talktime']
-                )
+            )
             self.session.add(callback_logoff)
 
         self.session.commit()
@@ -638,7 +631,7 @@ class TestStatDAO(DAOTestCase):
                 agent=login['agent'],
                 event='AGENTCALLBACKLOGIN',
                 data1=login['chan_name']
-                )
+            )
             self.session.add(callback_login)
 
         for logoff in logoffs:
@@ -650,7 +643,7 @@ class TestStatDAO(DAOTestCase):
                 event='AGENTCALLBACKLOGOFF',
                 data1=logoff['chan_name'],
                 data2=logoff['talktime']
-                )
+            )
             self.session.add(callback_logoff)
 
         self.session.commit()
@@ -688,7 +681,7 @@ class TestStatDAO(DAOTestCase):
             event='ENTERQUEUE',
             data2='1001',
             data3='1'
-            )
+        )
 
         connect = QueueLog(
             time=(time + datetime.timedelta(seconds=waittime)).strftime(TIMESTAMP_FORMAT),
@@ -699,7 +692,7 @@ class TestStatDAO(DAOTestCase):
             data1=str(waittime),
             data2='1344965966.141',
             data3='1'
-            )
+        )
 
         transfer = QueueLog(
             time=(time + datetime.timedelta(seconds=waittime + talktime)).strftime(TIMESTAMP_FORMAT),
@@ -711,7 +704,7 @@ class TestStatDAO(DAOTestCase):
             data2='user',
             data3=str(waittime),
             data4=str(talktime)
-            )
+        )
 
         self.session.add(enterqueue)
         self.session.add(connect)
@@ -727,7 +720,7 @@ class TestStatDAO(DAOTestCase):
             event='ENTERQUEUE',
             data2='1001',
             data3='1'
-            )
+        )
 
         connect = QueueLog(
             time=(time + datetime.timedelta(seconds=waittime)).strftime(TIMESTAMP_FORMAT),
@@ -738,7 +731,7 @@ class TestStatDAO(DAOTestCase):
             data1=str(waittime),
             data2='1344965966.141',
             data3='1'
-            )
+        )
 
         complete = QueueLog(
             time=(time + datetime.timedelta(seconds=waittime + talktime)).strftime(TIMESTAMP_FORMAT),
@@ -748,7 +741,7 @@ class TestStatDAO(DAOTestCase):
             event='COMPLETEAGENT' if agent_complete else 'COMPLETECALLER',
             data1=str(waittime),
             data2=str(talktime)
-            )
+        )
 
         self.session.add(enterqueue)
         self.session.add(connect)
@@ -762,7 +755,7 @@ class TestStatDAO(DAOTestCase):
             queuename=qname,
             agent='NONE',
             event='FULL'
-            )
+        )
 
         self.session.add(full)
         self.session.commit()
@@ -774,7 +767,7 @@ class TestStatDAO(DAOTestCase):
             queuename=qname,
             agent='NONE',
             event='JOINEMPTY'
-            )
+        )
 
         self.session.add(je)
         self.session.commit()
@@ -788,7 +781,7 @@ class TestStatDAO(DAOTestCase):
             event='ENTERQUEUE',
             data2='1000',
             data3='1'
-            )
+        )
 
         leave_time = t + datetime.timedelta(seconds=waittime)
         le = QueueLog(
@@ -797,7 +790,7 @@ class TestStatDAO(DAOTestCase):
             queuename=qname,
             agent='NONE',
             event='LEAVEEMPTY'
-            )
+        )
 
         self.session.add(enterqueue)
         self.session.add(le)
@@ -810,7 +803,7 @@ class TestStatDAO(DAOTestCase):
             queuename=qname,
             agent='NONE',
             event='CLOSED'
-            )
+        )
 
         self.session.add(closed)
         self.session.commit()
@@ -822,7 +815,7 @@ class TestStatDAO(DAOTestCase):
             queuename=qname,
             agent='NONE',
             event='DIVERT_CA_RATIO'
-            )
+        )
 
         self.session.add(call)
         self.session.commit()
@@ -834,7 +827,7 @@ class TestStatDAO(DAOTestCase):
             queuename=qname,
             agent='NONE',
             event='DIVERT_HOLDTIME'
-            )
+        )
 
         self.session.add(call)
         self.session.commit()

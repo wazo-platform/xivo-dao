@@ -13,21 +13,21 @@ def fill_simple_calls(start, end):
     _run_sql_function_returning_void(
         start, end,
         'SELECT 1 AS place_holder FROM fill_simple_calls(:start, :end)'
-        )
+    )
 
 
 def fill_answered_calls(start, end):
     _run_sql_function_returning_void(
         start, end,
         'SELECT 1 AS place_holder FROM fill_answered_calls(:start, :end)'
-        )
+    )
 
 
 def fill_leaveempty_calls(start, end):
     _run_sql_function_returning_void(
         start, end,
         'SELECT 1 AS place_holder FROM fill_leaveempty_calls(:start, :end)'
-        )
+    )
 
 
 def _run_sql_function_returning_void(start, end, function):
@@ -50,7 +50,7 @@ def get_login_intervals_in_range(start, end):
         logout_in_range,
         login_in_range,
         login_around_range
-        )
+    )
 
     unique_result = {}
 
