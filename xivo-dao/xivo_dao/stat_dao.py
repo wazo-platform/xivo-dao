@@ -41,6 +41,45 @@ def _run_sql_function_returning_void(start, end, function):
      .first())
 
 
+def get_pause_intervals_in_range(start, end):
+    pause_in_range = '''\
+SELECT stat_agent.id AS agent, 
+       CAST(MIN(pauseall) AS TIMESTAMP) AS pauseall,
+       CAST(unpauseall AS TIMESTAMP) 
+  FROM (
+    SELECT agent, time AS pauseall,
+      (
+        SELECT time
+        FROM queue_log 
+        WHERE event = 'UNPAUSEALL' AND
+          agent = pause_all.agent AND
+          time > pause_all.time
+        ORDER BY time ASC limit 1
+      ) AS unpauseall
+    FROM queue_log AS pause_all
+    WHERE event = 'PAUSEALL' 
+    ORDER BY agent, time DESC
+  ) AS pauseall, stat_agent
+  WHERE stat_agent.name = agent 
+  GROUP BY stat_agent.id, unpauseall
+'''
+
+    rows = (_get_session()
+            .query('agent', 'pauseall', 'unpauseall')
+            .from_statement(pause_in_range)
+            .params(start=start, end=end))
+
+    results = {}
+
+    for row in rows.all():
+        agent_id = row.agent
+        if agent_id not in results:
+            results[agent_id] = []
+
+        results[agent_id].append((row.pauseall, row.unpauseall))
+
+    return results
+
 def get_login_intervals_in_range(start, end):
     logout_in_range = _get_logout_in_range(start, end)
     login_in_range = _get_login_in_range(start, end)
@@ -61,10 +100,9 @@ def get_login_intervals_in_range(start, end):
     return unique_result
 
 
-def _merge_agent_statistics(logout_in_range, login_in_range, login_around):
-    stats = [login_around, login_in_range, logout_in_range]
+def _merge_agent_statistics(*args):
     result = {}
-    for stat in stats:
+    for stat in args:
         for agent, logins in stat.iteritems():
             if agent not in result:
                 result[agent] = logins

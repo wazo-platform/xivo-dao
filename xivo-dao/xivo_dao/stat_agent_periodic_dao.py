@@ -13,10 +13,11 @@ def _session():
 
 
 def insert_stats(period_stats, period_start):
-    for agent_id, login_time in period_stats.iteritems():
+    for agent_id, times in period_stats.iteritems():
         entry = StatAgentPeriodic(
             time=period_start,
-            login_time=login_time,
+            login_time=times['login_time'] if 'login_time' in times else '00:00:00',
+            pause_time=times['pause_time'] if 'pause_time' in times else '00:00:00',
             agent_id=agent_id,
         )
 
