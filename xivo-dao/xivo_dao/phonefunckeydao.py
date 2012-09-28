@@ -1,16 +1,15 @@
-#!/usr/bin/python
-# vim: set fileencoding=utf-8 :
+# -*- coding: UTF-8 -*-
 
-# Copyright (C) 2007-2011  Avencall
+# Copyright (C) 2007-2012  Avencall
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
 #
-# Alternatively, XiVO CTI Server is available under other licenses directly
+# Alternatively, xivo-dao is available under other licenses directly
 # contracted with Pro-formatique SARL. See the LICENSE file at top of the
-# source tree or delivered in the installable package in which XiVO CTI Server
+# source tree or delivered in the installable package in which xivo-dao
 # is distributed for more details.
 #
 # This program is distributed in the hope that it will be useful,
@@ -23,6 +22,7 @@
 
 from xivo_dao.alchemy.phonefunckey import PhoneFunckey
 from xivo_dao.alchemy import dbconnection
+from sqlalchemy import and_
 
 
 class PhoneFunckeyDAO(object):
@@ -31,10 +31,13 @@ class PhoneFunckeyDAO(object):
         self._session = session
 
     def _get_dest(self, user_id, fwd_type):
-        extens = (self._session.query(PhoneFunckey.exten)
-                  .filter(PhoneFunckey.iduserfeatures == user_id)
-                  .filter(PhoneFunckey.typevalextenumbers == fwd_type))
-        return [exten[0] for exten in extens]
+        destinations = (self._session.query(PhoneFunckey.exten)
+                        .filter(and_(PhoneFunckey.iduserfeatures == user_id,
+                                     PhoneFunckey.typevalextenumbers == fwd_type)))
+
+        destinations = [d.exten if d.exten else '' for d in destinations.all()]
+
+        return destinations
 
     def get_dest_unc(self, user_id):
         return self._get_dest(user_id, 'fwdunc')

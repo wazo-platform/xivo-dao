@@ -12,6 +12,7 @@ class TestPhoneFunckey(DAOTestCase):
     def setUp(self):
         self.empty_tables()
         self._user_id = 19
+        self._user_id_no_dest = 21
         self._destination_unc = '123'
         self._destination_rna = '234'
 
@@ -28,6 +29,16 @@ class TestPhoneFunckey(DAOTestCase):
         fwd_unc.progfunckey = 1
 
         self.session.add(fwd_unc)
+
+        fwd_unc_no_dest = PhoneFunckey()
+        fwd_unc_no_dest.iduserfeatures = self._user_id_no_dest
+        fwd_unc_no_dest.fknum = 2
+        fwd_unc_no_dest.typeextenumbers = 'extenfeatures'
+        fwd_unc_no_dest.typevalextenumbers = 'fwdunc'
+        fwd_unc_no_dest.supervision = 1
+        fwd_unc_no_dest.progfunckey = 1
+
+        self.session.add(fwd_unc_no_dest)
 
         fwd_rna = PhoneFunckey()
         fwd_rna.iduserfeatures = self._user_id
@@ -48,6 +59,13 @@ class TestPhoneFunckey(DAOTestCase):
         reply = dao.get_dest_unc(self._user_id)
 
         self.assertEqual(reply, [self._destination_unc])
+
+    def test_get_destination_unc_no_destination(self):
+        dao = PhoneFunckeyDAO(self.session)
+
+        reply = dao.get_dest_unc(self._user_id_no_dest)
+
+        self.assertEqual(reply, [''])
 
     def test_get_destination_rna(self):
         dao = PhoneFunckeyDAO(self.session)
