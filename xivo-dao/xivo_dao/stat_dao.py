@@ -43,24 +43,24 @@ def _run_sql_function_returning_void(start, end, function):
 
 def get_pause_intervals_in_range(start, end):
     pause_in_range = '''\
-SELECT stat_agent.id AS agent, 
+SELECT stat_agent.id AS agent,
        CAST(MIN(pauseall) AS TIMESTAMP) AS pauseall,
-       CAST(unpauseall AS TIMESTAMP) 
+       CAST(unpauseall AS TIMESTAMP)
   FROM (
     SELECT agent, time AS pauseall,
       (
         SELECT time
-        FROM queue_log 
+        FROM queue_log
         WHERE event = 'UNPAUSEALL' AND
           agent = pause_all.agent AND
           time > pause_all.time
         ORDER BY time ASC limit 1
       ) AS unpauseall
     FROM queue_log AS pause_all
-    WHERE event = 'PAUSEALL' 
+    WHERE event = 'PAUSEALL'
     ORDER BY agent, time DESC
   ) AS pauseall, stat_agent
-  WHERE stat_agent.name = agent 
+  WHERE stat_agent.name = agent
   GROUP BY stat_agent.id, unpauseall
 '''
 
@@ -79,6 +79,7 @@ SELECT stat_agent.id AS agent,
         results[agent_id].append((row.pauseall, row.unpauseall))
 
     return results
+
 
 def get_login_intervals_in_range(start, end):
     logout_in_range = _get_logout_in_range(start, end)
