@@ -58,6 +58,7 @@ SELECT stat_agent.id AS agent,
       ) AS unpauseall
     FROM queue_log AS pause_all
     WHERE event = 'PAUSEALL'
+    AND time::TIMESTAMP >= :start
     ORDER BY agent, time DESC
   ) AS pauseall, stat_agent
   WHERE stat_agent.name = agent
