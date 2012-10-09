@@ -17,6 +17,146 @@ class TestStatDAO(DAOTestCase):
     def setUp(self):
         self.empty_tables()
 
+    def test_get_completed_logins(self):
+        _, agent_id_1 = self._insert_agent('Agent/1')
+        _, agent_id_2 = self._insert_agent('Agent/2')
+        start = dt(2012, 6, 1)
+        end = dt(2012, 6, 1, 23, 59, 59, 999999)
+
+        queue_log_data = '''\
+| time                       | callid   | queuename | agent   | event               | data1        | data2 | data3         | data4 | data5 |
+| 2012-05-31 22:00:00.000000 | logout_0 | NONE      | Agent/1 | AGENTCALLBACKLOGOFF | 1001@default | 25200 | CommandLogoff |       |       |
+| 2012-05-31 23:00:00.000000 | login_1  | NONE      | Agent/1 | AGENTCALLBACKLOGIN  | 1001@default |       |               |       |       |
+| 2012-06-01 00:00:00.000000 | agent_2  | NONE      | Agent/2 | AGENTCALLBACKLOGIN  | 1002@default |       |               |       |       |
+| 2012-06-01 06:00:00.000000 | logout_1 | NONE      | Agent/1 | AGENTCALLBACKLOGOFF | 1001@default | 25200 | CommandLogoff |       |       |
+| 2012-06-01 06:05:00.000000 | NONE     | NONE      | Agent/1 | AGENTCALLBACKLOGIN  | 1001@default |       |               |       |       |
+| 2012-06-01 06:30:00.000000 | NONE     | NONE      | Agent/1 | AGENTCALLBACKLOGOFF | 1001@default |  1500 | CommandLogoff |       |       |
+| 2012-06-01 06:30:00.000001 | agent_2  | NONE      | Agent/2 | AGENTCALLBACKLOGOFF | 1002@default | 23400 | CommandLogoff |       |       |
+| 2012-06-01 06:40:00.000000 | login_3  | NONE      | Agent/1 | AGENTLOGIN          | SIP/abc-1234 |       |               |       |       |
+| 2012-06-01 06:45:00.000000 | login_3  | NONE      | Agent/1 | AGENTCALLBACKLOGOFF | SIP/abc-1234 |   300 | CommandLogoff |       |       |
+'''
+
+        self._insert_queue_log_data(queue_log_data)
+
+        result = stat_dao.get_completed_logins(start, end)
+
+        expected = {
+            agent_id_1: [
+                (start, dt(2012, 6, 1, 6)),
+                (dt(2012, 6, 1, 6, 5), dt(2012, 6, 1, 6, 30)),
+                (dt(2012, 6, 1, 6, 40), dt(2012, 6, 1, 6, 45)),
+            ],
+            agent_id_2: [
+                (dt(2012, 6, 1, 0, 0, 0, 1), dt(2012, 6, 1, 6, 30, 0, 1)),
+            ],
+        }
+
+        self.assertEqual(result, expected)
+
+    def test_get_last_logouts(self):
+        _, agent_id_1 = self._insert_agent('Agent/1')
+        _, agent_id_2 = self._insert_agent('Agent/2')
+        _, agent_id_3 = self._insert_agent('Agent/3')
+
+        queue_log_data = '''\
+| time                       | callid   | queuename | agent   | event               | data1        | data2 | data3         | data4 | data5 |
+| 2012-05-31 22:00:00.000000 | logout_0 | NONE      | Agent/1 | AGENTCALLBACKLOGOFF | 1001@default | 25200 | CommandLogoff |       |       |
+| 2012-05-31 23:00:00.000000 | login_1  | NONE      | Agent/1 | AGENTCALLBACKLOGIN  | 1001@default |       |               |       |       |
+| 2012-06-01 00:00:00.000000 | agent_2  | NONE      | Agent/2 | AGENTCALLBACKLOGIN  | 1002@default |       |               |       |       |
+| 2012-06-01 06:00:00.000000 | logout_1 | NONE      | Agent/1 | AGENTCALLBACKLOGOFF | 1001@default | 25200 | CommandLogoff |       |       |
+| 2012-06-01 06:05:00.000000 | NONE     | NONE      | Agent/1 | AGENTCALLBACKLOGIN  | 1001@default |       |               |       |       |
+| 2012-06-01 06:30:00.000000 | NONE     | NONE      | Agent/1 | AGENTCALLBACKLOGOFF | 1001@default |  1500 | CommandLogoff |       |       |
+| 2012-06-01 06:30:00.000001 | agent_2  | NONE      | Agent/2 | AGENTCALLBACKLOGOFF | 1002@default | 23400 | CommandLogoff |       |       |
+| 2012-06-01 06:40:00.000000 | login_3  | NONE      | Agent/1 | AGENTLOGIN          | SIP/abc-1234 |       |               |       |       |
+| 2012-06-01 06:45:00.000000 | login_3  | NONE      | Agent/1 | AGENTCALLBACKLOGOFF | SIP/abc-1234 |   300 | CommandLogoff |       |       |
+'''
+
+        self._insert_queue_log_data(queue_log_data)
+
+        result = stat_dao._get_last_logouts()
+
+        expected = {
+            agent_id_1: dt(2012, 6, 1, 6, 45),
+            agent_id_2: dt(2012, 6, 1, 6, 30, 0, 1),
+            agent_id_3: None,
+        }
+
+        self.assertEqual(result, expected)
+
+    def test_get_last_logins(self):
+        _, agent_id_1 = self._insert_agent('Agent/1')
+        _, agent_id_2 = self._insert_agent('Agent/2')
+        _, agent_id_3 = self._insert_agent('Agent/3')
+        start = dt(2012, 6, 1)
+        end = dt(2012, 6, 1, 23, 59, 59, 999999)
+
+        queue_log_data = '''\
+| time                       | callid     | queuename | agent   | event               | data1        | data2 | data3         | data4 | data5 |
+| 2012-01-01 10:00:00.000000 | agent_3    | NONE      | Agent/3 | AGENTCALLBACKLOGIN  | 1003@default |       |               |       |       |
+| 2012-05-31 20:00:00.000000 | not_logged | NONE      | Agent/1 | AGENTLOGIN          | SIP/abc-1234 |       |               |       |       |
+| 2012-05-31 22:00:00.000000 | logout_0   | NONE      | Agent/1 | AGENTCALLBACKLOGOFF | 1001@default | 25200 | CommandLogoff |       |       |
+| 2012-05-31 23:00:00.000000 | login_1    | NONE      | Agent/1 | AGENTCALLBACKLOGIN  | 1001@default |       |               |       |       |
+| 2012-06-01 00:00:00.000000 | agent_2    | NONE      | Agent/2 | AGENTCALLBACKLOGIN  | 1002@default |       |               |       |       |
+| 2012-06-01 06:00:00.000000 | logout_1   | NONE      | Agent/1 | AGENTCALLBACKLOGOFF | 1001@default | 25200 | CommandLogoff |       |       |
+| 2012-06-01 06:05:00.000000 | NONE       | NONE      | Agent/1 | AGENTCALLBACKLOGIN  | 1001@default |       |               |       |       |
+| 2012-06-01 06:30:00.000000 | NONE       | NONE      | Agent/1 | AGENTCALLBACKLOGOFF | 1001@default |  1500 | CommandLogoff |       |       |
+| 2012-06-01 06:30:00.000001 | agent_2    | NONE      | Agent/2 | AGENTCALLBACKLOGOFF | 1002@default | 23400 | CommandLogoff |       |       |
+| 2012-06-01 06:40:00.000000 | login_3    | NONE      | Agent/1 | AGENTLOGIN          | SIP/abc-1234 |       |               |       |       |
+| 2012-06-01 06:45:00.000000 | login_3    | NONE      | Agent/1 | AGENTCALLBACKLOGOFF | SIP/abc-1234 |   300 | CommandLogoff |       |       |
+| 2012-06-01 09:00:00.000000 | agent_4    | NONE      | Agent/2 | AGENTCALLBACKLOGIN  | 1002@default |       |               |       |       |
+'''
+
+        self._insert_queue_log_data(queue_log_data)
+
+        result = stat_dao._get_last_logins()
+
+        expected = {
+            agent_id_1: dt(2012, 6, 1, 6, 40),
+            agent_id_2: dt(2012, 6, 1, 9),
+            agent_id_3: dt(2012, 1, 1, 10),
+        }
+
+        self.assertEqual(result, expected)
+
+    def test_get_ongoing_logins(self):
+        _, agent_id_1 = self._insert_agent('Agent/1')
+        _, agent_id_2 = self._insert_agent('Agent/2')
+        _, agent_id_3 = self._insert_agent('Agent/3')
+        start = dt(2012, 6, 1)
+        end = dt(2012, 6, 1, 23, 59, 59, 999999)
+
+        queue_log_data = '''\
+| time                       | callid     | queuename | agent   | event               | data1        | data2 | data3         | data4 | data5 |
+| 2012-05-31 20:00:00.000000 | not_logged | NONE      | Agent/1 | AGENTLOGIN          | SIP/abc-1234 |       |               |       |       |
+| 2012-05-31 22:00:00.000000 | logout_0   | NONE      | Agent/1 | AGENTCALLBACKLOGOFF | 1001@default | 25200 | CommandLogoff |       |       |
+| 2012-05-31 23:00:00.000000 | login_1    | NONE      | Agent/1 | AGENTCALLBACKLOGIN  | 1001@default |       |               |       |       |
+| 2012-06-01 00:00:00.000000 | agent_2    | NONE      | Agent/2 | AGENTCALLBACKLOGIN  | 1002@default |       |               |       |       |
+| 2012-06-01 06:00:00.000000 | logout_1   | NONE      | Agent/1 | AGENTCALLBACKLOGOFF | 1001@default | 25200 | CommandLogoff |       |       |
+| 2012-06-01 06:05:00.000000 | NONE       | NONE      | Agent/1 | AGENTCALLBACKLOGIN  | 1001@default |       |               |       |       |
+| 2012-06-01 06:30:00.000000 | NONE       | NONE      | Agent/1 | AGENTCALLBACKLOGOFF | 1001@default |  1500 | CommandLogoff |       |       |
+| 2012-06-01 06:30:00.000001 | agent_2    | NONE      | Agent/2 | AGENTCALLBACKLOGOFF | 1002@default | 23400 | CommandLogoff |       |       |
+| 2012-06-01 06:40:00.000000 | login_3    | NONE      | Agent/1 | AGENTLOGIN          | SIP/abc-1234 |       |               |       |       |
+| 2012-06-01 06:45:00.000000 | login_3    | NONE      | Agent/1 | AGENTCALLBACKLOGOFF | SIP/abc-1234 |   300 | CommandLogoff |       |       |
+| 2012-06-01 09:00:00.000000 | agent_4    | NONE      | Agent/2 | AGENTCALLBACKLOGIN  | 1002@default |       |               |       |       |
+| 2012-01-01 10:00:00.000000 | agent_3    | NONE      | Agent/3 | AGENTCALLBACKLOGIN  | 1003@default |       |               |       |       |
+'''
+
+        self._insert_queue_log_data(queue_log_data)
+
+        result = stat_dao.get_ongoing_logins(start, end)
+
+        expected = {
+	    agent_id_2: [
+                (dt(2012, 6, 1, 9), end),
+	    ],
+	    agent_id_3: [
+                (start, end),
+	    ],
+        }
+
+        self.assertEqual(result, expected)
+
+
     def test_get_pause_intervals_in_range(self):
         _, agent_id_1 = self._insert_agent('Agent/1')
         start = dt(2012, 07, 01)

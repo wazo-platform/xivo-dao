@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import datetime
-from mock import Mock
 from datetime import datetime as t
 
 from xivo_dao.alchemy.queue_log import QueueLog
@@ -380,8 +379,7 @@ class TestStatDAO(DAOTestCase):
         expected = {
             self.aid1: sorted([(cb_logins[0]['time'], cb_logoffs[0]['time']),
                                (cb_logins[1]['time'], cb_logoffs[1]['time'])]),
-            self.aid2: sorted([(logins[0]['time'], logoffs[0]['time']),
-                               (logins[1]['time'], logoffs[1]['time'])]),
+            self.aid2: sorted([(logins[1]['time'], logoffs[1]['time'])]),
         }
 
         self.assertEqual(expected, result)
@@ -458,144 +456,6 @@ class TestStatDAO(DAOTestCase):
 
         self.assertEqual(expected, result)
 
-    def test_get_login_intervals_in_range_calls_logoffs_only_in_range(self):
-        logintimes = [
-            datetime.timedelta(minutes=10, seconds=13),
-            datetime.timedelta(minutes=55),
-            datetime.timedelta(minutes=7, seconds=21),
-            datetime.timedelta(hours=2, minutes=3)
-        ]
-
-        cb_logins = [
-            # No login for the first call
-            {'time': self.start - datetime.timedelta(minutes=20),
-             'callid': 'login_2',
-             'agent': self.aname1,
-             'chan_name': 'SIP/1234-00002'
-             },
-        ]
-
-        cb_logoffs = [
-            {'time': self.start - datetime.timedelta(seconds=30) + logintimes[0],
-             'callid': 'NONE',
-             'agent': self.aname1,
-             'chan_name': 'SIP/1234-00001',
-             'talktime': logintimes[0],
-             },
-            {'time': cb_logins[0]['time'] + logintimes[1],
-             'callid': 'NONE',
-             'agent': self.aname1,
-             'chan_name': cb_logins[0]['chan_name'],
-             'talktime': logintimes[1],
-             },
-        ]
-
-        self._insert_agent_callback_logins_logoffs(cb_logins, cb_logoffs)
-
-        logins = [
-            {'time': self.start - datetime.timedelta(seconds=50),
-             'callid': 'login_3',
-             'agent': self.aname2,
-             'chan_name': 'SIP/5555-00001',
-             },
-            {'time': self.start - datetime.timedelta(seconds=40),
-             'callid': 'login_4',
-             'agent': self.aname2,
-             'chan_name': 'SIP/5555-00002',
-             },
-        ]
-        logoffs = [
-            {'time': logins[0]['time'] + logintimes[2],
-             'callid': logins[0]['callid'],
-             'agent': self.aname2,
-             'chan_name': logins[0]['chan_name'],
-             'talktime': logintimes[2],
-             },
-            {'time': logins[1]['time'] + logintimes[3],
-             'callid': logins[1]['callid'],
-             'agent': self.aname2,
-             'chan_name': logins[1]['chan_name'],
-             'talktime': logintimes[3],
-             }
-        ]
-
-        self._insert_agent_logins_logoffs(logins, logoffs)
-
-        result = stat_dao.get_login_intervals_in_range(self.start, self.end)
-
-        expected = {
-            self.aid1: sorted([(self.start, cb_logoffs[0]['time']),
-                               (self.start, cb_logoffs[1]['time'])]),
-            self.aid2: sorted([(self.start, logoffs[0]['time']),
-                               (self.start, logoffs[1]['time'])]),
-        }
-
-        self.assertEqual(expected, result)
-
-    def test_get_login_intervals_in_range_calls_logins_only_in_range(self):
-        logintimes = [
-            datetime.timedelta(minutes=10, seconds=13),
-            datetime.timedelta(minutes=55),
-            datetime.timedelta(minutes=7, seconds=21),
-            datetime.timedelta(hours=2, minutes=3)
-        ]
-
-        cb_logins = [
-            {'time': self.end - datetime.timedelta(seconds=30),
-             'callid': 'login_1',
-             'agent': self.aname1,
-             'chan_name': 'SIP/1234-00001'
-             },
-            {'time': self.end - datetime.timedelta(minutes=20),
-             'callid': 'login_2',
-             'agent': self.aname1,
-             'chan_name': 'SIP/1234-00002'
-             },
-        ]
-
-        cb_logoffs = [
-            {'time': cb_logins[0]['time'] + logintimes[0],
-             'callid': 'NONE',
-             'agent': self.aname1,
-             'chan_name': cb_logins[0]['chan_name'],
-             'talktime': logintimes[0],
-             },
-        ]
-
-        self._insert_agent_callback_logins_logoffs(cb_logins, cb_logoffs)
-
-        logins = [
-            {'time': self.end - datetime.timedelta(seconds=50),
-             'callid': 'login_3',
-             'agent': self.aname2,
-             'chan_name': 'SIP/5555-00001',
-             },
-            {'time': self.end - datetime.timedelta(seconds=40),
-             'callid': 'login_4',
-             'agent': self.aname2,
-             'chan_name': 'SIP/5555-00002',
-             },
-        ]
-        logoffs = [
-            {'time': logins[1]['time'] + logintimes[3],
-             'callid': logins[1]['callid'],
-             'agent': self.aname2,
-             'chan_name': logins[1]['chan_name'],
-             'talktime': logintimes[3],
-             }
-        ]
-
-        self._insert_agent_logins_logoffs(logins, logoffs)
-
-        result = stat_dao.get_login_intervals_in_range(self.start, self.end)
-
-        expected = {
-            self.aid1: sorted([(cb_logins[1]['time'], self.end)]),
-            self.aid2: sorted([(logins[0]['time'], self.end)])
-        }
-
-        self.assertEqual(expected, result)
-
     def _insert_agent_logins_logoffs(self, logins, logoffs):
         for login in logins:
             callback_login = QueueLog(
@@ -616,7 +476,7 @@ class TestStatDAO(DAOTestCase):
                 agent=logoff['agent'],
                 event='AGENTLOGOFF',
                 data1=logoff['chan_name'],
-                data2=logoff['talktime']
+                data2=logoff['talktime'].seconds,
             )
             self.session.add(callback_logoff)
 
@@ -642,7 +502,7 @@ class TestStatDAO(DAOTestCase):
                 agent=logoff['agent'],
                 event='AGENTCALLBACKLOGOFF',
                 data1=logoff['chan_name'],
-                data2=logoff['talktime']
+                data2=logoff['talktime'].seconds,
             )
             self.session.add(callback_logoff)
 
@@ -936,13 +796,14 @@ LANGUAGE SQL;
                       (2, 3)]}
         stat_2 = {1: [(4, 5)]}
         stat_3 = {1: [(6, 7)]}
+        stat_4 = {1: [(5, 8)]}
 
-        statistics = stat_dao._merge_agent_statistics(stat_1, stat_2, stat_3)
+        statistics = stat_dao._merge_agent_statistics(stat_1, stat_2, stat_3, stat_4)
 
         expected = {1: [(1, 2),
                         (2, 3),
                         (4, 5),
-                        (6, 7)]}
+                        (5, 8)]}
 
         self.assertEqual(len(statistics), len(expected))
 
@@ -954,24 +815,20 @@ LANGUAGE SQL;
             for login in statistic:
                 self.assertTrue(login in statistics[agent])
 
-    def test_get_login_intervals_many_login_types(self):
-        stat_dao._get_logout_in_range = Mock()
-        stat_dao._get_login_in_range = Mock()
-        stat_dao._get_login_around_range = Mock()
+    def test_filter_overlap(self):
+        items = [(1, 2), (2, 3)]
+        result = stat_dao._filter_overlap(items)
 
-        stat_dao._get_logout_in_range.return_value = {1: [(1, 2)],
-                                                      2: [(1, 2), (2, 3)]}
-        stat_dao._get_login_in_range.return_value = {1: [(3, 4)]}
-        stat_dao._get_login_around_range.return_value = {1: [(5, 6)],
-                                                         2: [(1, 2), (4, 5)],
-                                                         3: [(1, 2)]
-                                                         }
+        self.assertEqual(sorted(result), sorted(items))
 
-        statistics = stat_dao.get_login_intervals_in_range(None, None)
+        items = [(1, 2), (2, 3), (2, 4)]
+        expected = [(1, 2), (2, 4)]
+        result = stat_dao._filter_overlap(items)
 
-        expected = {1: [(1, 2), (3, 4), (5, 6)],
-                    2: [(1, 2), (2, 3), (4, 5)],
-                    3: [(1, 2)]
-                    }
+        self.assertEqual(sorted(result), sorted(expected))
 
-        self.assertEqual(statistics, expected)
+        items = [(1, 2), (2, 4), (3, 4)]
+        expected = [(1, 2), (2, 4)]
+        result = stat_dao._filter_overlap(items)
+
+        self.assertEqual(sorted(result), sorted(expected))
