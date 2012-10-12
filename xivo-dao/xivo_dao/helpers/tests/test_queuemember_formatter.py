@@ -55,14 +55,16 @@ class TestQueueMemberFormatter(unittest.TestCase):
             'Membership': 'dynamic',
             'CallsTaken': '0',
             'Penalty': '0',
-            'LastCall': 'none'}
+            'LastCall': '1300000000'}
         self.ami_event_formatted = {'agent1,queue1': {
             'queue_name': 'queue1',
             'interface': 'agent1',
             'membership': 'dynamic',
             'penalty': '0',
             'status': 'status1',
-            'paused': 'yes'}}
+            'paused': 'yes',
+            'lastcall': '03:06:40',
+            'callstaken': '0'}}
 
     def tearDown(self):
         dbconnection.unregister_db_connection_pool()

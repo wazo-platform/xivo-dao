@@ -20,6 +20,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
+
 
 class QueueMemberFormatter(object):
 
@@ -60,7 +62,9 @@ class QueueMemberFormatter(object):
                              'membership',
                              'penalty',
                              'status',
-                             'paused']
+                             'paused',
+                             'lastcall',
+                             'callstaken']
         formatted_queuemembers = cls._extract_ami(fields_to_extract, ami_event)
         return formatted_queuemembers
 
@@ -78,7 +82,9 @@ class QueueMemberFormatter(object):
                              'membership',
                              'penalty',
                              'status',
-                             'paused']
+                             'paused',
+                             'lastcall',
+                             'callstaken']
         formatted_queuemember = cls._extract_ami(fields_to_extract, ami_event)
         return formatted_queuemember
 
@@ -98,11 +104,22 @@ class QueueMemberFormatter(object):
             'membership': 'Membership',
             'penalty': 'Penalty',
             'status': 'Status',
-            'paused': 'Paused'}
+            'paused': 'Paused',
+            'lastcall': 'LastCall',
+            'callstaken': 'CallsTaken'}
         queuemember = {}
         for expected_field in expected_field_list:
             if expected_field in ami_map:
                 ami_field = ami_map[expected_field]
                 queuemember[expected_field] = ami_event[ami_field]
+        if 'lastcall' in expected_field_list:
+            queuemember['lastcall'] = cls._convert_timestamp_to_date(queuemember['lastcall'])
         key = cls._generate_key(queuemember)
         return {key: queuemember}
+
+    @staticmethod
+    def _convert_timestamp_to_date(timestamp):
+        if timestamp == '0':
+            return ''
+        date = datetime.datetime.fromtimestamp(float(timestamp))
+        return date.strftime("%H:%M:%S")
