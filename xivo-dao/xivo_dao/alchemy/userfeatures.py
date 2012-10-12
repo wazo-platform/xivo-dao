@@ -71,8 +71,6 @@ class UserFeatures(Base):
     ringforward = Column(String(64))
     rightcallcode = Column(String(16))
     alarmclock = Column(String(5), nullable=False, server_default='')
-    pitch = Column(String(16))
-    pitchdirection = Column(String(16))
     commented = Column(Integer, nullable=False, default=0)
     description = Column(Text)
 
