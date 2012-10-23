@@ -120,18 +120,15 @@ class TestQueueLogDAO(DAOTestCase):
         result = queue_log_dao.get_wrapup_times(start, end, ONE_HOUR)
 
         expected = {
-            agent_id_1: {
-                datetime(2012, 10, 1, 6): timedelta(seconds=45),
-                datetime(2012, 10, 1, 7): timedelta(seconds=35),
+            datetime(2012, 10, 1, 6): {
+                agent_id_1: {'wrapup_time': timedelta(seconds=45)},
+                agent_id_2: {'wrapup_time': timedelta(seconds=30)},
             },
-            agent_id_2: {
-                datetime(2012, 10, 1, 6): timedelta(seconds=30),
-                datetime(2012, 10, 1, 7): timedelta(seconds=20),
+            datetime(2012, 10, 1, 7): {
+                agent_id_1: {'wrapup_time': timedelta(seconds=35)},
+                agent_id_2: {'wrapup_time': timedelta(seconds=20)},
             },
         }
-
-        from pprint import pprint
-        pprint(result)
 
         self.assertEqual(result, expected)
 

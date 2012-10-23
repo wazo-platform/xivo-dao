@@ -7,7 +7,6 @@ from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.queue_log import QueueLog
 from sqlalchemy import cast, TIMESTAMP, func
 from datetime import timedelta
-from copy import copy
 
 
 _DB_NAME = 'asterisk'
@@ -47,29 +46,36 @@ AND
                                                 end=end)
 
     results = {}
-    BASE_PERIOD = dict.fromkeys(periods, timedelta(seconds=0))
-
-    print periods
-
     for row in rows.all():
         agent_id, wstart, wend = row.agent_id, row.start, row.end
 
-        if agent_id not in results:
-            results[agent_id] = copy(BASE_PERIOD)
-
         starting_period = _find_including_period(periods, wstart)
         ending_period = _find_including_period(periods, wend)
+
+        if starting_period and starting_period not in results:
+            results[starting_period] = {}
+        if ending_period and ending_period not in results:
+            results[ending_period] = {}
+
         if starting_period is not None:
             range_end = starting_period + interval
             wend_in_start = wend if wend < range_end else range_end
             time_in_period = wend_in_start - wstart
-            results[agent_id][starting_period] += time_in_period
+            if agent_id not in results[starting_period]:
+                results[starting_period][agent_id] = {
+                    'wrapup_time': timedelta(seconds=0)
+                }
+            results[starting_period][agent_id]['wrapup_time'] += time_in_period
 
         if ending_period == starting_period:
             continue
 
         time_in_period = wend - ending_period
-        results[agent_id][ending_period] += time_in_period
+        if agent_id not in results[ending_period]:
+            results[ending_period][agent_id] = {
+                'wrapup_time': timedelta(seconds=0)
+            }
+        results[ending_period][agent_id]['wrapup_time'] += time_in_period
 
     return results
 
@@ -79,7 +85,6 @@ def _find_including_period(periods, t):
     for period in periods:
         if t > period:
             match = period
-    print 'Returning', match
     return match
 
 
