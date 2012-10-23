@@ -33,25 +33,36 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
         _, agent_id_2 = self._insert_agent_to_stat_agent()
         stats = {
             dt(2012, 01, 01, 01, 00, 00): {
-                agent_id_1: {'login_time' : timedelta(minutes=50),
-                             'pause_time': timedelta(minutes=13)},
-                agent_id_2: {'login_time' : ONE_HOUR,
-                             'pause_time': timedelta(minutes=13)},
+                agent_id_1: {
+                    'login_time': timedelta(minutes=50),
+                    'pause_time': timedelta(minutes=13)
                 },
+                agent_id_2: {
+                    'login_time': ONE_HOUR,
+                    'pause_time': timedelta(minutes=13)},
+            },
             dt(2012, 01, 01, 02, 00, 00): {
-                agent_id_1: {'login_time' : timedelta(minutes=20),
-                             'pause_time': timedelta(minutes=33)},
-                agent_id_2: {'login_time' : ONE_HOUR,
-                             'pause_time': timedelta(minutes=13)},
+                agent_id_1: {
+                    'login_time': timedelta(minutes=20),
+                    'pause_time': timedelta(minutes=33)
                 },
+                agent_id_2: {
+                    'login_time': ONE_HOUR,
+                    'pause_time': timedelta(minutes=13)
+                },
+            },
             dt(2012, 01, 01, 03, 00, 00): {
-                agent_id_2: {'login_time' : ONE_HOUR,
-                             'pause_time': ONE_HOUR},
+                agent_id_2: {
+                    'login_time': ONE_HOUR,
+                    'pause_time': ONE_HOUR
                 },
+            },
             dt(2012, 01, 01, 04, 00, 00): {
-                agent_id_2: {'login_time' : ONE_HOUR,
-                             'pause_time': ONE_HOUR},
-                }
+                agent_id_2: {
+                    'login_time': ONE_HOUR,
+                    'pause_time': ONE_HOUR
+                },
+            }
         }
 
         for period_start, agents_stats in stats.iteritems():
@@ -71,9 +82,11 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
     def test_clean_table(self):
         _, agent_id = self._insert_agent_to_stat_agent()
         stats = {
-            agent_id: {'login_time' : timedelta(minutes=15),
-                       'pause_time': ONE_HOUR},
-            }
+            agent_id: {
+                'login_time': timedelta(minutes=15),
+                'pause_time': ONE_HOUR
+            },
+        }
 
         stat_agent_periodic_dao.insert_stats(stats, dt(2012, 1, 1))
 
@@ -87,18 +100,24 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
         _, agent_id = self._insert_agent_to_stat_agent()
         stats = {
             dt(2012, 1, 1): {
-                agent_id: {'login_time' : timedelta(minutes=15),
-                           'pause_time': timedelta(minutes=13)},
+                agent_id: {
+                    'login_time': timedelta(minutes=15),
+                    'pause_time': timedelta(minutes=13)
                 },
+            },
             dt(2012, 1, 2): {
-                agent_id: {'login_time' : timedelta(minutes=20),
-                           'pause_time': timedelta(minutes=13)},
+                agent_id: {
+                    'login_time': timedelta(minutes=20),
+                    'pause_time': timedelta(minutes=13)
                 },
+            },
             dt(2012, 1, 3): {
-                agent_id: {'login_time' : timedelta(minutes=25),
-                           'pause_time': timedelta(minutes=13)},
+                agent_id: {
+                    'login_time': timedelta(minutes=25),
+                    'pause_time': timedelta(minutes=13)
                 },
-            }
+            },
+        }
 
         for period_start, agents_stats in stats.iteritems():
             stat_agent_periodic_dao.insert_stats(agents_stats, period_start)
