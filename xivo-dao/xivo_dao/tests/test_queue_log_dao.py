@@ -1,24 +1,32 @@
 # -*- coding: UTF-8 -*-
 
-import datetime
 import random
 
 from xivo_dao import queue_log_dao
+from xivo_dao.alchemy.stat_agent import StatAgent
 from xivo_dao.alchemy.queue_log import QueueLog
 from xivo_dao.tests.test_dao import DAOTestCase
+from datetime import datetime
+from datetime import timedelta
 
-ONE_HOUR = datetime.timedelta(hours=1)
-ONE_MICROSECOND = datetime.timedelta(microseconds=1)
+ONE_HOUR = timedelta(hours=1)
+ONE_MICROSECOND = timedelta(microseconds=1)
 TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 
 
 class TestQueueLogDAO(DAOTestCase):
 
-    tables = [QueueLog]
+    tables = [QueueLog, StatAgent]
 
     def setUp(self):
         self.empty_tables()
         self.queue_name = 'q1'
+
+    def _insert_agent(self, aname):
+        a = StatAgent(name=aname)
+        self.session.add(a)
+        self.session.commit()
+        return a.name, a.id
 
     def _insert_entry_queue(self, event, timestamp, callid, queuename, agent=None,
                             d1=None, d2=None, d3=None, d4=None, d5=None):
@@ -82,7 +90,7 @@ class TestQueueLogDAO(DAOTestCase):
 
     @staticmethod
     def _build_date(year, month, day, hour=0, minute=0, second=0, micro=0):
-        return datetime.datetime(year, month, day, hour, minute, second, micro).strftime(TIMESTAMP_FORMAT)
+        return datetime(year, month, day, hour, minute, second, micro).strftime(TIMESTAMP_FORMAT)
 
     @staticmethod
     def _build_timestamp(t):
@@ -90,16 +98,51 @@ class TestQueueLogDAO(DAOTestCase):
 
     @staticmethod
     def _time_from_timestamp(t):
-        return datetime.datetime.strptime(t, TIMESTAMP_FORMAT)
+        return datetime.strptime(t, TIMESTAMP_FORMAT)
+
+    def test_get_wrapup_time(self):
+        _, agent_id_1 = self._insert_agent('Agent/1')
+        _, agent_id_2 = self._insert_agent('Agent/2')
+        start = datetime(2012, 10, 1, 6)
+        end = datetime(2012, 10, 1, 7, 59, 59, 999999)
+        queue_log_data = '''\
+| time                       | callid | queuename | agent   | event       | data1 | data2 | data3 | data4 | data5 |
+| 2012-10-01 05:59:50.000000 | NONE   | NONE      | Agent/1 | WRAPUPSTART |    30 |       |       |       |       |
+| 2012-10-01 06:00:10.000000 | NONE   | NONE      | Agent/1 | WRAPUPSTART |    15 |       |       |       |       |
+| 2012-10-01 06:00:15.000000 | NONE   | NONE      | Agent/2 | WRAPUPSTART |    30 |       |       |       |       |
+| 2012-10-01 06:59:50.000000 | NONE   | NONE      | Agent/1 | WRAPUPSTART |    15 |       |       |       |       |
+| 2012-10-01 07:00:10.000000 | NONE   | NONE      | Agent/1 | WRAPUPSTART |    30 |       |       |       |       |
+| 2012-10-01 08:00:10.000000 | NONE   | NONE      | Agent/1 | WRAPUPSTART |    30 |       |       |       |       |
+| 2012-10-01 07:59:40.000000 | NONE   | NONE      | Agent/2 | WRAPUPSTART |    30 |       |       |       |       |
+'''
+        self._insert_queue_log_data(queue_log_data)
+
+        result = queue_log_dao.get_wrapup_times(start, end, ONE_HOUR)
+
+        expected = {
+            agent_id_1: {
+                datetime(2012, 10, 1, 6): timedelta(seconds=45),
+                datetime(2012, 10, 1, 7): timedelta(seconds=35),
+            },
+            agent_id_2: {
+                datetime(2012, 10, 1, 6): timedelta(seconds=30),
+                datetime(2012, 10, 1, 7): timedelta(seconds=20),
+            },
+        }
+
+        from pprint import pprint
+        pprint(result)
+
+        self.assertEqual(result, expected)
 
     def test_get_first_time(self):
         queuename = 'q1'
         for minute in [0, 10, 20, 30, 40, 50]:
-            datetimewithmicro = datetime.datetime(2012, 1, 1, 0, minute, 59)
+            datetimewithmicro = datetime(2012, 1, 1, 0, minute, 59)
             callid = str(12345678.123 + minute)
             self._insert_entry_queue_full(datetimewithmicro, callid, queuename, 0)
 
-        expected = datetime.datetime(2012, 01, 01, 0, 0, 59)
+        expected = datetime(2012, 01, 01, 0, 0, 59)
 
         result = queue_log_dao.get_first_time()
 
@@ -107,18 +150,17 @@ class TestQueueLogDAO(DAOTestCase):
 
     def test_get_queue_names_in_range(self):
         queue_names = sorted(['queue_%s' % x for x in range(10)])
-        t = datetime.datetime(2012, 1, 1, 1, 1, 1)
+        t = datetime(2012, 1, 1, 1, 1, 1)
         timestamp = self._build_date(t.year, t.month, t.day, t.hour, t.minute, t.second)
         for queue_name in queue_names:
             self._insert_entry_queue('FULL', timestamp, queue_name, queue_name)
 
-        one_hour = datetime.timedelta(hours=1)
-        result = sorted(queue_log_dao.get_queue_names_in_range(t - one_hour, t + one_hour))
+        result = sorted(queue_log_dao.get_queue_names_in_range(t - ONE_HOUR, t + ONE_HOUR))
 
         self.assertEqual(result, queue_names)
 
     def test_get_queue_abandoned_call(self):
-        start = datetime.datetime(2012, 01, 01, 01, 00, 00)
+        start = datetime(2012, 01, 01, 01, 00, 00)
         expected = self._insert_abandon(start, [-1, 0, 10, 30, 59, 60, 120])
 
         result = queue_log_dao.get_queue_abandoned_call(start, start + ONE_HOUR - ONE_MICROSECOND)
@@ -126,7 +168,7 @@ class TestQueueLogDAO(DAOTestCase):
         self.assertEqual(sorted(result), sorted(expected))
 
     def test_get_queue_timeout_call(self):
-        start = datetime.datetime(2012, 01, 01, 01, 00, 00)
+        start = datetime(2012, 01, 01, 01, 00, 00)
         expected = self._insert_timeout(start, [-1, 0, 10, 30, 59, 60, 120])
 
         result = queue_log_dao.get_queue_timeout_call(start, start + ONE_HOUR - ONE_MICROSECOND)
@@ -136,13 +178,13 @@ class TestQueueLogDAO(DAOTestCase):
     def _insert_timeout(self, start, minutes):
         expected = []
         for minute in minutes:
-            leave_time = start + datetime.timedelta(minutes=minute)
+            leave_time = start + timedelta(minutes=minute)
             waittime = self._random_time()
-            enter_time = leave_time - datetime.timedelta(seconds=waittime)
+            enter_time = leave_time - timedelta(seconds=waittime)
             callid = str(143897234.123 + minute)
             self._insert_entry_queue_enterqueue(enter_time, callid, self.queue_name)
             self._insert_entry_queue_timeout(leave_time, callid, self.queue_name, waittime)
-            if start <= enter_time < start + datetime.timedelta(hours=1):
+            if start <= enter_time < start + ONE_HOUR:
                 expected.append(
                     {
                         'queue_name': self.queue_name,
@@ -157,13 +199,13 @@ class TestQueueLogDAO(DAOTestCase):
     def _insert_abandon(self, start, minutes):
         expected = []
         for minute in minutes:
-            leave_time = start + datetime.timedelta(minutes=minute)
+            leave_time = start + timedelta(minutes=minute)
             waittime = self._random_time()
-            enter_time = leave_time - datetime.timedelta(seconds=waittime)
+            enter_time = leave_time - timedelta(seconds=waittime)
             callid = str(143897234.123 + minute)
             self._insert_entry_queue_enterqueue(enter_time, callid, self.queue_name)
             self._insert_entry_queue_abandoned(leave_time, callid, self.queue_name, waittime)
-            if start <= enter_time < start + datetime.timedelta(hours=1):
+            if start <= enter_time < start + ONE_HOUR:
                 expected.append(
                     {
                         'queue_name': self.queue_name,
@@ -178,13 +220,13 @@ class TestQueueLogDAO(DAOTestCase):
     def _insert_leaveempty(self, start, minutes):
         expected = []
         for minute in minutes:
-            leave_time = start + datetime.timedelta(minutes=minute)
+            leave_time = start + timedelta(minutes=minute)
             waittime = self._random_time()
-            enter_time = leave_time - datetime.timedelta(seconds=waittime)
+            enter_time = leave_time - timedelta(seconds=waittime)
             callid = str(143897234.123 + minute)
             self._insert_entry_queue_enterqueue(enter_time, callid, self.queue_name)
             self._insert_entry_queue_leaveempty(leave_time, callid, self.queue_name)
-            if start <= enter_time < start + datetime.timedelta(hours=1):
+            if start <= enter_time < start + ONE_HOUR:
                 expected.append(
                     {
                         'queue_name': self.queue_name,
@@ -212,7 +254,7 @@ class TestQueueLogDAO(DAOTestCase):
     def _insert_event_list(self, event_name, start, minutes):
         expected = []
         for minute in minutes:
-            delta = datetime.timedelta(minutes=minute)
+            delta = timedelta(minutes=minute)
             t = start + delta
             callid = str(1234567.123 + minute)
             waittime = 0
@@ -229,10 +271,10 @@ class TestQueueLogDAO(DAOTestCase):
         return expected
 
     def test_delete_event_by_queue_between(self):
-        self._insert_entry_queue_full(datetime.datetime(2012, 07, 01, 7, 1, 1), 'delete_between_1', 'q1')
-        self._insert_entry_queue_full(datetime.datetime(2012, 07, 01, 8, 1, 1), 'delete_between_2', 'q1')
-        self._insert_entry_queue_full(datetime.datetime(2012, 07, 01, 9, 1, 1), 'delete_between_3', 'q1')
-        self._insert_entry_queue_full(datetime.datetime(2012, 07, 01, 8, 1, 0), 'delete_between_4', 'q2')
+        self._insert_entry_queue_full(datetime(2012, 07, 01, 7, 1, 1), 'delete_between_1', 'q1')
+        self._insert_entry_queue_full(datetime(2012, 07, 01, 8, 1, 1), 'delete_between_2', 'q1')
+        self._insert_entry_queue_full(datetime(2012, 07, 01, 9, 1, 1), 'delete_between_3', 'q1')
+        self._insert_entry_queue_full(datetime(2012, 07, 01, 8, 1, 0), 'delete_between_4', 'q2')
 
         queue_log_dao.delete_event_by_queue_between(
             'FULL', 'q1', '2012-07-01 08:00:00.000000', '2012-07-01 08:59:59.999999')
@@ -260,8 +302,8 @@ class TestQueueLogDAO(DAOTestCase):
         self.assertEqual(result.data5, '5')
 
     def test_hours_with_calls(self):
-        start = datetime.datetime(2012, 01, 01)
-        end = datetime.datetime(2012, 6, 30, 23, 59, 59, 999999)
+        start = datetime(2012, 01, 01)
+        end = datetime(2012, 6, 30, 23, 59, 59, 999999)
         res = [h for h in queue_log_dao.hours_with_calls(start, end)]
 
         self.assertEqual(res, [])
@@ -275,8 +317,8 @@ class TestQueueLogDAO(DAOTestCase):
         _insert_at('2012-07-01 00:00:00.000000')
 
         expected = [
-            datetime.datetime(2012, 1, 1, 8),
-            datetime.datetime(2012, 6, 30, 23)
+            datetime(2012, 1, 1, 8),
+            datetime(2012, 6, 30, 23)
         ]
 
         res = [h for h in queue_log_dao.hours_with_calls(start, end)]
@@ -284,7 +326,7 @@ class TestQueueLogDAO(DAOTestCase):
         self.assertEqual(res, expected)
 
     def test_last_callid_with_event_for_agent(self):
-        t = datetime.datetime(2012, 1, 1)
+        t = datetime(2012, 1, 1)
         event = 'FULL'
         agent = 'Agent/1234'
         queue = 'queue'
@@ -299,7 +341,7 @@ class TestQueueLogDAO(DAOTestCase):
 
         self._insert_entry_queue(
             event,
-            self._build_timestamp(t + datetime.timedelta(minutes=3)),
+            self._build_timestamp(t + timedelta(minutes=3)),
             'two',
             queue,
             agent,
@@ -311,3 +353,29 @@ class TestQueueLogDAO(DAOTestCase):
         )
 
         self.assertEqual(res, 'two')
+
+    def _insert_queue_log_data(self, queue_log_data):
+        lines = queue_log_data.split('\n')
+        lines.pop()
+        header = self._strip_content_list(lines.pop(0).split('|')[1:-1])
+        for line in lines:
+            tmp = self._strip_content_list(line[1:-1].split('|'))
+            data = dict(zip(header, tmp))
+            queue_log = QueueLog(
+                time=data['time'],
+                callid=data['callid'],
+                queuename=data['queuename'],
+                agent=data['agent'],
+                event=data['event'],
+                data1=data['data1'],
+                data2=data['data2'],
+                data3=data['data3'],
+                data4=data['data4'],
+                data5=data['data5']
+            )
+            self.session.add(queue_log)
+
+        self.session.commit()
+
+    def _strip_content_list(self, lines):
+        return [line.strip() for line in lines]
