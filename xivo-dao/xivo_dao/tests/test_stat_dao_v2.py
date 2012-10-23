@@ -87,8 +87,6 @@ class TestStatDAO(DAOTestCase):
         _, agent_id_1 = self._insert_agent('Agent/1')
         _, agent_id_2 = self._insert_agent('Agent/2')
         _, agent_id_3 = self._insert_agent('Agent/3')
-        start = dt(2012, 6, 1)
-        end = dt(2012, 6, 1, 23, 59, 59, 999999)
 
         queue_log_data = '''\
 | time                       | callid     | queuename | agent   | event               | data1        | data2 | data3         | data4 | data5 |
@@ -146,16 +144,15 @@ class TestStatDAO(DAOTestCase):
         result = stat_dao.get_ongoing_logins(start, end)
 
         expected = {
-	    agent_id_2: [
+            agent_id_2: [
                 (dt(2012, 6, 1, 9), end),
-	    ],
-	    agent_id_3: [
+            ],
+            agent_id_3: [
                 (start, end),
-	    ],
+            ],
         }
 
         self.assertEqual(result, expected)
-
 
     def test_get_pause_intervals_in_range(self):
         _, agent_id_1 = self._insert_agent('Agent/1')
@@ -232,7 +229,7 @@ class TestStatDAO(DAOTestCase):
                 data3=data['data3'],
                 data4=data['data4'],
                 data5=data['data5']
-                )
+            )
             self.session.add(queue_log)
 
         self.session.commit()
