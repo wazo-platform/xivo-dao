@@ -14,4 +14,5 @@ class StatAgentPeriodic(Base):
     time = Column(TIMESTAMP, nullable=False)
     login_time = Column(INTERVAL, nullable=False, default=0)
     pause_time = Column(INTERVAL, nullable=False, default=0)
+    wrapup_time = Column(INTERVAL, nullable=False, default=0)
     agent_id = Column(Integer, ForeignKey("stat_agent.id"))

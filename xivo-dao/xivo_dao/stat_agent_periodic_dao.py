@@ -18,6 +18,7 @@ def insert_stats(period_stats, period_start):
             time=period_start,
             login_time=times['login_time'] if 'login_time' in times else '00:00:00',
             pause_time=times['pause_time'] if 'pause_time' in times else '00:00:00',
+            wrapup_time=times['wrapup_time'] if 'wrapup_time' in times else '00:00:00',
             agent_id=agent_id,
         )
 
