@@ -139,7 +139,10 @@ def get_queue_timeout_call(start, end):
 
 
 def get_first_time():
-    return _session().query(cast(min(QueueLog.time), TIMESTAMP))[0][0]
+    res = _session().query(cast(min(QueueLog.time), TIMESTAMP)).first()[0]
+    if res is None:
+        raise LookupError('Table is empty')
+    return res
 
 
 def get_queue_names_in_range(start, end):

@@ -133,6 +133,8 @@ class TestQueueLogDAO(DAOTestCase):
         self.assertEqual(result, expected)
 
     def test_get_first_time(self):
+        self.assertRaises(LookupError, queue_log_dao.get_first_time)
+
         queuename = 'q1'
         for minute in [0, 10, 20, 30, 40, 50]:
             datetimewithmicro = datetime(2012, 1, 1, 0, minute, 59)

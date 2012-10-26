@@ -35,10 +35,10 @@ def insert_stats(stats, period_start):
 
 
 def get_most_recent_time():
-    res = _session().query(max(StatQueuePeriodic.time))
-    if res[0][0] is None:
-        raise LookupError('table empty')
-    return res[0][0]
+    res = _session().query(max(StatQueuePeriodic.time)).first()[0]
+    if res is None:
+        raise LookupError('Table is empty')
+    return res
 
 
 def clean_table():
