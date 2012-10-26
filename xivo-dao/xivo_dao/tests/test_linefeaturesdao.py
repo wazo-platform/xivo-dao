@@ -21,7 +21,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from mock import Mock, patch
+from mock import patch
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.usersip import UserSIP
@@ -29,9 +29,6 @@ from xivo_dao import linefeaturesdao
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.linefeaturesdao import LineFeaturesDAO
-
-get_sip_cid = Mock()
-get_sccp_cid = Mock()
 
 
 class TestLineFeaturesDAO(DAOTestCase):
@@ -140,9 +137,9 @@ class TestLineFeaturesDAO(DAOTestCase):
 
         self.assertRaises(ValueError, linefeaturesdao._get_cid_for_sip_channel, 'sccp/1300@SEP29287324-1')
 
-    @patch('xivo_dao.linefeaturesdao._get_cid_for_sccp_channel', get_sccp_cid)
-    @patch('xivo_dao.linefeaturesdao._get_cid_for_sip_channel', get_sip_cid)
-    def test_get_cid_for_channel(self):
+    @patch('xivo_dao.linefeaturesdao._get_cid_for_sccp_channel')
+    @patch('xivo_dao.linefeaturesdao._get_cid_for_sip_channel')
+    def test_get_cid_for_channel(self, get_sip_cid, get_sccp_cid):
         channel = 'DAHDI/i1/12543656-1235'
 
         self.assertRaises(ValueError, linefeaturesdao.get_cid_for_channel, channel)
