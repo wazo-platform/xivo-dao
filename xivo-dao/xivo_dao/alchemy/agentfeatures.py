@@ -40,7 +40,6 @@ class AgentFeatures(Base):
     language = Column(String(20), nullable=False)
     autologoff = Column(Integer)
     wrapuptime = Column(Integer)
-    musiconhold = Column(String(80))
     group = Column(String(255))
     commented = Column(Integer, nullable=False, default=0)
     description = Column(Text)
