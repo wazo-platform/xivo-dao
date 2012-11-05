@@ -30,7 +30,6 @@ class TestAgentFeaturesDAO(DAOTestCase):
 
     agent_number = '1234'
     agent_context = 'test'
-    agent_ackcall = 'yes'
 
     tables = [AgentFeatures]
 
@@ -51,13 +50,6 @@ class TestAgentFeaturesDAO(DAOTestCase):
         context = self.dao.agent_context(agent_id)
 
         self.assertEqual(context, self.agent_context)
-
-    def test_agent_ackcall(self):
-        agent_id = self._insert_agent()
-
-        ackcall = self.dao.agent_ackcall(agent_id)
-
-        self.assertEqual(ackcall, self.agent_ackcall)
 
     def test_agent_number_unknown(self):
         self.assertRaises(LookupError, lambda: self.dao.agent_number(-1))
@@ -86,7 +78,6 @@ class TestAgentFeaturesDAO(DAOTestCase):
         agent.passwd = ''
         agent.context = self.agent_context
         agent.language = ''
-        agent.ackcall = self.agent_ackcall
 
         self.session.add(agent)
         self.session.commit()

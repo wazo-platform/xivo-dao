@@ -35,9 +35,6 @@ class AgentFeaturesDAO(object):
     def agent_context(self, agentid):
         return self._get_one(agentid).context
 
-    def agent_ackcall(self, agentid):
-        return self._get_one(agentid).ackcall
-
     def agent_interface(self, agentid):
         try:
             return 'Agent/%s' % self._get_one(agentid).number
