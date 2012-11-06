@@ -70,7 +70,6 @@ class UserFeatures(Base):
     ringgroup = Column(String(64))
     ringforward = Column(String(64))
     rightcallcode = Column(String(16))
-    alarmclock = Column(String(5), nullable=False, server_default='')
     commented = Column(Integer, nullable=False, default=0)
     description = Column(Text)
 
