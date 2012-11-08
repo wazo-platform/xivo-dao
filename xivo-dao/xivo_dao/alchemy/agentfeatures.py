@@ -39,7 +39,6 @@ class AgentFeatures(Base):
     context = Column(String(39), nullable=False)
     language = Column(String(20), nullable=False)
     autologoff = Column(Integer)
-    wrapuptime = Column(Integer)
     group = Column(String(255))
     commented = Column(Integer, nullable=False, default=0)
     description = Column(Text)
