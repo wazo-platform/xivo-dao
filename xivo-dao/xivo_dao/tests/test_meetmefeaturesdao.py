@@ -64,6 +64,17 @@ class TestMeetmeFeaturesDAO(DAOTestCase):
 
         self.assertEqual(result.id, meetme.id)
 
+    def test_is_a_meetme(self):
+        meetme = self._insert_meetme(1, 'red', '9000')
+
+        result = meetme_features_dao.is_a_meetme('9005')
+
+        self.assertEqual(result, False)
+
+        result = meetme_features_dao.is_a_meetme(meetme.confno)
+
+        self.assertEqual(result, True)
+
     def test_get_string_id(self):
         meetme = self._insert_meetme(1, 'red', '9000')
 

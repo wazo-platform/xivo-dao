@@ -25,6 +25,8 @@ from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
 from xivo_dao.alchemy.staticmeetme import StaticMeetme
 from xivo_dao.alchemy import dbconnection
 
+from sqlalchemy import func
+
 _DB_NAME = 'asterisk'
 
 
@@ -42,6 +44,13 @@ def get(meetme_id):
 
 def _get_by_number(number):
     return _session().query(MeetmeFeatures).filter(MeetmeFeatures.confno == number)[0]
+
+
+def is_a_meetme(number):
+    row = (_session()
+           .query(func.count(MeetmeFeatures.confno).label('count'))
+           .filter(MeetmeFeatures.confno == number)).first()
+    return row.count != 0
 
 
 def find_by_name(meetme_name):
