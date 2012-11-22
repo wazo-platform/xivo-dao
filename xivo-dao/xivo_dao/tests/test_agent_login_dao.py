@@ -46,7 +46,10 @@ class TestAgentLoginDao(DAOTestCase):
         agent.agent_id = agent_id
         agent.interface = interface
 
-        self.session.add(agent)
-        self.session.commit()
+        try:
+            self.session.add(agent)
+            self.session.commit()
+        except Exception:
+            self.session.rollback()
 
         return agent

@@ -51,5 +51,9 @@ def log_in_agent(agent_id, interface):
     agent.interface = interface
 
     session = _session()
-    session.add(agent)
-    session.commit()
+    try:
+        session.add(agent)
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
