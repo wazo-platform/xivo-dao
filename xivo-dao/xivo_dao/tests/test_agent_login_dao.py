@@ -51,5 +51,6 @@ class TestAgentLoginDao(DAOTestCase):
             self.session.commit()
         except Exception:
             self.session.rollback()
+            raise
 
         return agent

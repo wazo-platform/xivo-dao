@@ -20,8 +20,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from collections import namedtuple
+from sqlalchemy.sql import select, and_
 from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
+from xivo_dao.alchemy.queuemember import QueueMember
+
+_DB_NAME = 'asterisk'
+
+_Agent = namedtuple('_Agent', ['id', 'number', 'queues'])
+_Queue = namedtuple('_Queue', ['name'])
+
+
+def _session():
+    connection = dbconnection.get_connection(_DB_NAME)
+    return connection.get_session()
 
 
 class AgentFeaturesDAO(object):
@@ -57,6 +70,33 @@ class AgentFeaturesDAO(object):
         if result is None:
             raise LookupError('No such agent')
         return result
+
+    def agent_with_id(self, agent_id):
+        agent_id = int(agent_id)
+
+        conn = _session().get_engine().connect()
+        try:
+            agent = self._get_agent_with_id(conn, agent_id)
+            self._add_queues_to_agent(conn, agent)
+            return agent
+        finally:
+            conn.close()
+
+    def _get_agent_with_id(self, conn, agent_id):
+        query = select([AgentFeatures.id, AgentFeatures.number],
+                       AgentFeatures.id == agent_id)
+        row = conn.execute(query).first()
+        if row is None:
+            raise Exception('no agent with id %r' % agent_id)
+        return _Agent(row['id'], row['number'], [])
+
+    def _add_queues_to_agent(self, conn, agent):
+        query = select([QueueMember.queue_name],
+                       and_(QueueMember.usertype == u'agent',
+                            QueueMember.userid == agent.id))
+        for row in conn.execute(query):
+            queue = _Queue(row['queue_name'])
+            agent.queues.append(queue)
 
     @classmethod
     def new_from_uri(cls, uri):
