@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import unittest
+
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
 from xivo_dao import agent_login_dao

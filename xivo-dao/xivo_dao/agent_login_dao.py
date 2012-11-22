@@ -26,12 +26,15 @@ from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
 
 _DB_NAME = 'asterisk'
 
+
 def _session():
     connection = dbconnection.get_connection(_DB_NAME)
     return connection.get_session()
 
+
 def get_agent(agent_id):
     return _session().query(AgentLoginStatus).get(agent_id)
+
 
 def is_agent_logged_in(agent_id):
     count = (_session()
@@ -41,8 +44,8 @@ def is_agent_logged_in(agent_id):
 
     return count > 0
 
-def log_in_agent(agent_id, interface):
 
+def log_in_agent(agent_id, interface):
     agent = AgentLoginStatus()
     agent.agent_id = agent_id
     agent.interface = interface

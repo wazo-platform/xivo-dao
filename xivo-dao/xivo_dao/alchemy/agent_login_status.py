@@ -22,7 +22,7 @@
 
 from xivo_dao.alchemy.base import Base
 from sqlalchemy.schema import Column
-from sqlalchemy.types import Integer, String, Text, DateTime
+from sqlalchemy.types import Integer, String, DateTime
 from sqlalchemy.sql import func
 
 
@@ -32,4 +32,3 @@ class AgentLoginStatus(Base):
     agent_id = Column(Integer, primary_key=True)
     interface = Column(String(128), nullable=False, unique=True)
     login_at = Column(DateTime, nullable=False, default=func.now())
-
