@@ -32,8 +32,11 @@ def _session():
     return connection.get_session()
 
 
-def get_agent(agent_id):
-    return _session().query(AgentLoginStatus).get(agent_id)
+def get_status(agent_id):
+    status = _session().query(AgentLoginStatus).get(agent_id)
+    if status is None:
+        raise LookupError('no login status for agent %r' % agent_id)
+    return status
 
 
 def is_agent_logged_in(agent_id):

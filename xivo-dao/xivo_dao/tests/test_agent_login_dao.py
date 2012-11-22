@@ -36,10 +36,13 @@ class TestAgentLoginDao(DAOTestCase):
 
         agent_login_dao.log_in_agent(agent_id, interface)
 
-        agent = agent_login_dao.get_agent(agent_id)
+        agent = agent_login_dao.get_status(agent_id)
 
         self.assertEquals(agent.agent_id, agent_id)
         self.assertEquals(agent.interface, interface)
+
+    def test_get_status_with_unlogged_agent_raise_error(self):
+        self.assertRaises(LookupError, agent_login_dao.get_status, 1)
 
     def _create_agent(self, agent_id, interface='Local/1001@default'):
         agent = AgentLoginStatus()
