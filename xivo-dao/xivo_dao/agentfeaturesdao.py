@@ -37,6 +37,11 @@ def _session():
     return connection.get_session()
 
 
+def _engine():
+    connection = dbconnection.get_connection(_DB_NAME)
+    return connection.get_engine()
+
+
 class AgentFeaturesDAO(object):
 
     def __init__(self, session):
@@ -74,7 +79,7 @@ class AgentFeaturesDAO(object):
     def agent_with_id(self, agent_id):
         agent_id = int(agent_id)
 
-        conn = _session().get_engine().connect()
+        conn = _engine().connect()
         try:
             agent = self._get_agent_with_id(conn, agent_id)
             self._add_queues_to_agent(conn, agent)
