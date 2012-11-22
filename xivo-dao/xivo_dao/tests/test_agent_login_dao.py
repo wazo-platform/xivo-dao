@@ -32,19 +32,22 @@ class TestAgentLoginDao(DAOTestCase):
 
     def test_log_in_agent(self):
         agent_id = 1
-        interface = 'Local/1001@default'
+        extension = '1001'
+        context = 'default'
 
-        agent_login_dao.log_in_agent(agent_id, interface)
+        agent_login_dao.log_in_agent(agent_id, extension, context)
 
         agent = agent_login_dao.get_status(agent_id)
 
         self.assertEquals(agent.agent_id, agent_id)
-        self.assertEquals(agent.interface, interface)
+        self.assertEquals(agent.extension, extension)
+        self.assertEquals(agent.context, context)
 
     def test_log_off_agent(self):
         agent_id = 1
-        interface = 'Local/1001@default'
-        self._create_agent(agent_id, interface)
+        extension = '1001'
+        context = 'default'
+        self._create_agent(agent_id, extension, context)
 
         agent_login_dao.log_off_agent(agent_id)
 
@@ -53,10 +56,28 @@ class TestAgentLoginDao(DAOTestCase):
     def test_get_status_with_unlogged_agent_raise_error(self):
         self.assertRaises(LookupError, agent_login_dao.get_status, 1)
 
-    def _create_agent(self, agent_id, interface='Local/1001@default'):
+    def test_is_extension_in_use_with_an_agent(self):
+        agent_id = 1
+        extension = '1001'
+        context = 'default'
+        self._create_agent(agent_id, extension, context)
+
+        in_use = agent_login_dao.is_extension_in_use(extension, context)
+
+        self.assertTrue(in_use)
+
+    def test_is_extension_in_use_with_no_agent(self):
+        extension = '1001'
+        context = 'default'
+
+        in_use = agent_login_dao.is_extension_in_use(extension, context)
+
+        self.assertFalse(in_use)
+
+    def _create_agent(self, agent_id, extension='1001', context='default'):
         agent = AgentLoginStatus()
-        agent.agent_id = agent_id
-        agent.interface = interface
+        agent.extension = extension
+        agent.context = context
 
         try:
             self.session.add(agent)

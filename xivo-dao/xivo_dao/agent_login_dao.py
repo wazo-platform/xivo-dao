@@ -48,10 +48,21 @@ def is_agent_logged_in(agent_id):
     return count > 0
 
 
-def log_in_agent(agent_id, interface):
+def is_extension_in_use(extension, context):
+    count = (_session()
+           .query(AgentLoginStatus)
+           .filter(AgentLoginStatus.extension == extension)
+           .filter(AgentLoginStatus.context == context)
+           .count())
+
+    return count > 0
+
+
+def log_in_agent(agent_id, extension, context):
     agent = AgentLoginStatus()
     agent.agent_id = agent_id
-    agent.interface = interface
+    agent.extension = extension
+    agent.context = context
 
     session = _session()
     try:
