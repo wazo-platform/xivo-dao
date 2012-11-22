@@ -63,7 +63,9 @@ def log_in_agent(agent_id, interface):
 
 
 def log_off_agent(agent_id):
-    (_session()
+    session = _session()
+    (session
         .query(AgentLoginStatus)
         .filter(AgentLoginStatus.agent_id == agent_id)
         .delete(synchronize_session=False))
+    session.commit()

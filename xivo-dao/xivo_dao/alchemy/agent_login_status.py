@@ -32,3 +32,14 @@ class AgentLoginStatus(Base):
     agent_id = Column(Integer, primary_key=True)
     interface = Column(String(128), nullable=False, unique=True)
     login_at = Column(DateTime, nullable=False, default=func.now())
+
+    def _interface_parts(self):
+        return self.interface.split('/')[1].split('@')
+
+    @property
+    def extension(self):
+        return self._interface_parts()[0]
+
+    @property
+    def context(self):
+        return self._interface_parts()[1]
