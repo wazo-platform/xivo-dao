@@ -22,6 +22,11 @@
 
 from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.cti_profile import CtiProfile
+from xivo_dao.alchemy.ctipresences import CtiPresences
+from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
+from xivo_dao.alchemy.cti_profile_xlet import CtiProfileXlet
+from xivo_dao.alchemy.cti_xlet import CtiXlet
+from xivo_dao.alchemy.cti_xlet_layout import CtiXletLayout
 
 _DB_NAME = 'asterisk'
 
@@ -37,3 +42,39 @@ def _get(profile_id):
 
 def get_name(profile_id):
     return _get(profile_id).name
+
+
+def get_profiles():
+    rows = (_session().query(CtiProfile, CtiPresences, CtiPhoneHintsGroup, CtiProfileXlet, CtiXlet, CtiXletLayout)
+            .join((CtiPresences, CtiProfile.presence_id == CtiPresences.id),
+                  (CtiPhoneHintsGroup, CtiProfile.phonehints_id == CtiPhoneHintsGroup.id),
+                  (CtiProfileXlet, CtiProfile.id == CtiProfileXlet.profile_id),
+                  (CtiXlet, CtiProfileXlet.xlet_id == CtiXlet.id),
+                  (CtiXletLayout, CtiProfileXlet.layout_id == CtiXletLayout.id))
+            .all())
+
+    res = {}
+    for row in rows:
+        cti_profiles, cti_presences, cti_phonehints_group, cti_profile_xlet, cti_xlet, cti_xlet_layout = row
+        if cti_profiles.name not in res:
+            res[cti_profiles.name] = {}
+            new_profile = res[cti_profiles.name]
+            new_profile['name'] = cti_profiles.name
+            new_profile['phonestatus'] = cti_phonehints_group.name
+            new_profile['userstatus'] = cti_presences.name
+            new_profile['preferences'] = 'itm_preferences_%s' % cti_profiles.name
+            new_profile['services'] = 'itm_services_%s' % cti_profiles.name
+            new_profile['xlets'] = []
+
+        xlet = {}
+        xlet['name'] = cti_xlet.plugin_name
+        xlet['layout'] = cti_xlet_layout.name
+        xlet['floating'] = cti_profile_xlet.floating
+        xlet['closable'] = cti_profile_xlet.closable
+        xlet['movable'] = cti_profile_xlet.movable
+        xlet['scrollable'] = cti_profile_xlet.scrollable
+        xlet['order'] = cti_profile_xlet.order
+
+        res[cti_profiles.name]['xlets'].append(xlet)
+
+    return res

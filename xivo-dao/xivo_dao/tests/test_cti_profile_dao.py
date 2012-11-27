@@ -35,13 +35,15 @@ from xivo_dao.alchemy.cti_profile_xlet import CtiProfileXlet
 from xivo_dao.alchemy.cti_service import CtiService
 from xivo_dao.alchemy.cti_xlet import CtiXlet
 from xivo_dao.alchemy.cti_xlet_layout import CtiXletLayout
+from xivo_dao.alchemy.ctistatus import CtiStatus
 
 
 class TestCtiProfileDAO(unittest.TestCase):
 
     tables = [CtiProfile, CtiPreference, CtiPhoneHintsGroup,
               CtiPresences, CtiProfilePreference, CtiProfileService,
-              CtiProfileXlet, CtiService, CtiXlet, CtiXletLayout]
+              CtiProfileXlet, CtiService, CtiXlet, CtiXletLayout,
+              CtiStatus]
 
     @classmethod
     def setUpClass(cls):
@@ -81,12 +83,123 @@ class TestCtiProfileDAO(unittest.TestCase):
         self.empty_tables()
 
     def test_get_name(self):
-        session = dbconnection.get_connection('asterisk').get_session()
         cti_profile = CtiProfile()
         cti_profile.name = 'test_name'
-        session.add(cti_profile)
-        session.commit()
+        self.session.add(cti_profile)
+        self.session.commit()
 
         result = cti_profile_dao.get_name(cti_profile.id)
 
         self.assertEqual(result, cti_profile.name)
+
+    def _add_presence(self, name):
+        cti_presence = CtiPresences()
+        cti_presence.name = name
+        self.session.add(cti_presence)
+        self.session.commit()
+        return cti_presence.id
+
+    def _add_phone_hints_group(self, name):
+        cti_phone_hints_group = CtiPhoneHintsGroup()
+        cti_phone_hints_group.name = name
+        self.session.add(cti_phone_hints_group)
+        self.session.commit()
+        return cti_phone_hints_group.id
+
+    def _add_profile(self, name):
+        cti_profile = CtiProfile()
+        cti_profile.name = name
+        cti_profile.presence_id = self._add_presence('test_presence')
+        cti_profile.phonehints_id = self._add_phone_hints_group('test_add_phone_hints_group')
+        self.session.add(cti_profile)
+        self.session.commit()
+        return cti_profile.id
+
+    def _add_xlet_layout(self, name):
+        cti_xlet_layout = CtiXletLayout()
+        cti_xlet_layout.name = name
+        self.session.add(cti_xlet_layout)
+        self.session.commit()
+        return cti_xlet_layout.id
+
+    def _add_xlet(self, name):
+        cti_xlet = CtiXlet()
+        cti_xlet.plugin_name = name
+        self.session.add(cti_xlet)
+        self.session.commit()
+        return cti_xlet.id
+
+    def _add_xlet_to_profile(self,
+                             xlet_id,
+                             profile_id,
+                             layout_id,
+                             floating,
+                             closable,
+                             movable,
+                             scrollable,
+                             order):
+        cti_profile_xlet = CtiProfileXlet()
+        cti_profile_xlet.xlet_id = xlet_id
+        cti_profile_xlet.profile_id = profile_id
+        cti_profile_xlet.layout_id = layout_id
+        cti_profile_xlet.floating = floating
+        cti_profile_xlet.closable = closable
+        cti_profile_xlet.movable = movable
+        cti_profile_xlet.scrollable = scrollable
+        cti_profile_xlet.order = order
+        self.session.add(cti_profile_xlet)
+        self.session.commit()
+
+    def test_get_profiles(self):
+        expected_result = {
+            "test_profile": {
+                "name": "test_profile",
+                "phonestatus": "test_add_phone_hints_group",
+                "userstatus": "test_presence",
+                "preferences": "itm_preferences_test_profile",
+                "services": "itm_services_test_profile",
+                "xlets": [
+                    {'name': 'tabber',
+                     'layout': 'grid',
+                     'floating': True,
+                     'closable': True,
+                     'movable': True,
+                     'scrollable': True,
+                     'order': 1},
+                    {'name': 'agentdetails',
+                     'layout': 'dock',
+                     'floating': False,
+                     'closable': True,
+                     'movable': True,
+                     'scrollable': True,
+                     'order': 0}
+                ]
+            }
+        }
+        profile_id = self._add_profile('test_profile')
+
+        xlet_layout_grid_id = self._add_xlet_layout('grid')
+        xlet_tabber_id = self._add_xlet('tabber')
+        self._add_xlet_to_profile(xlet_tabber_id,
+                             profile_id,
+                             xlet_layout_grid_id,
+                             floating=True,
+                             closable=True,
+                             movable=True,
+                             scrollable=True,
+                             order=1)
+
+        xlet_agentdetails_id = self._add_xlet('agentdetails')
+        xlet_layout_dock_id = self._add_xlet_layout('dock')
+        self._add_xlet_to_profile(xlet_agentdetails_id,
+                             profile_id,
+                             xlet_layout_dock_id,
+                             floating=False,
+                             closable=True,
+                             movable=True,
+                             scrollable=True,
+                             order=0)
+
+        result = cti_profile_dao.get_profiles()
+
+        self.assertEquals(result, expected_result)

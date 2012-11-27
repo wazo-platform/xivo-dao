@@ -31,5 +31,5 @@ class CtiPhoneHintsGroup(Base):
 
     id = Column(Integer, Sequence('ctiphonehintsgroup_id_seq'), primary_key=True)
     name = Column(String(255), nullable=False)
-    description = Column(String(255), nullable=False)
+    description = Column(String(255))
     deletable = Column(Integer)

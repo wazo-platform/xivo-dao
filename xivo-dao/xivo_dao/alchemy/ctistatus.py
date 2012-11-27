@@ -25,11 +25,15 @@ from sqlalchemy.types import Integer, String
 from xivo_dao.alchemy.base import Base
 
 
-class CtiPresences(Base):
+class CtiStatus(Base):
 
-    __tablename__ = 'ctipresences'
+    __tablename__ = 'ctistatus'
 
-    id = Column(Integer, Sequence('ctipresences_id_seq'), primary_key=True)
+    id = Column(Integer, Sequence('ctistatus_id_seq'), primary_key=True)
+    presence_id = Column(Integer)
     name = Column(String(255), nullable=False)
-    description = Column(String(255))
+    display_name = Column(String(255), nullable=False)
+    actions = Column(String(255), nullable=False)
+    color = Column(String(20), nullable=False)
+    access_status = Column(String(255), nullable=False)
     deletable = Column(Integer, default=1)

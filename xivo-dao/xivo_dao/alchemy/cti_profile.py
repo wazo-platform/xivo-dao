@@ -21,7 +21,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from sqlalchemy.schema import Column, ForeignKey, Sequence
-from sqlalchemy.types import Integer, String, Boolean
+from sqlalchemy.types import Integer, String
 from xivo_dao.alchemy.base import Base
 
 
@@ -31,6 +31,5 @@ class CtiProfile(Base):
 
     id = Column(Integer, Sequence('cti_profile_id_seq'), primary_key=True)
     name = Column(String(255), nullable=False)
-    presence_id = Column(Integer, ForeignKey("ctiphonehintsgroup.id"))
-    phonehints_id = Column(Integer, ForeignKey("ctipresences.id"))
-    deletable = Column(Boolean)
+    presence_id = Column(Integer, ForeignKey("ctipresences.id"))
+    phonehints_id = Column(Integer, ForeignKey("ctiphonehintsgroup.id"))
