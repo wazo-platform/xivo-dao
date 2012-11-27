@@ -21,11 +21,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from xivo import caller_id
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy import dbconnection
-from xivo import caller_id
 from sqlalchemy import and_
 
 _DB_NAME = 'asterisk'

@@ -83,18 +83,11 @@ class TestLineFeaturesDAO(DAOTestCase):
         return line
 
     def test_find_context_by_user_id(self):
-        user = UserFeatures()
-        user.id = self.user_id
-        user.firstname = 'test_line'
-
         self._insert_line('falafel')
 
         context = self.dao.find_context_by_user_id(self.user_id)
 
         self.assertEqual('falafel', context)
-
-    def test_get_cid_from_channel(self):
-        pass
 
     def test_get_cid_from_sccp_channel(self):
         channel = 'sccp/1234@SEP0023EBC64F92-1'
