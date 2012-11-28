@@ -68,10 +68,11 @@ class TestLineFeaturesDAO(DAOTestCase):
 
         self.assertTrue(self.dao.is_phone_exten(self.line_number))
 
-    def _insert_line(self, context='test_context'):
+    def _insert_line(self, context='test_context', name='tre321', protocol='sip'):
         line = LineFeatures()
         line.protocolid = 0
-        line.name = 'tre321'
+        line.protocol = protocol
+        line.name = name
         line.context = context
         line.provisioningid = 0
         line.number = self.line_number
@@ -88,6 +89,39 @@ class TestLineFeaturesDAO(DAOTestCase):
         context = self.dao.find_context_by_user_id(self.user_id)
 
         self.assertEqual('falafel', context)
+
+    def test_get_interface_from_exten_and_context_sip(self):
+        protocol = 'sip'
+        name = 'abcdef'
+        context = 'foobar'
+        self._insert_line(context, name=name, protocol=protocol)
+
+        interface = self.dao.get_interface_from_exten_and_context(self.line_number, context)
+
+        self.assertEqual('SIP/abcdef', interface)
+
+    def test_get_interface_from_exten_and_context_sccp(self):
+        protocol = 'sccp'
+        name = '1001'
+        context = 'foobar'
+        self._insert_line(context, name=name, protocol=protocol)
+
+        interface = self.dao.get_interface_from_exten_and_context(self.line_number, context)
+
+        self.assertEqual('SCCP/1001', interface)
+
+    def test_get_interface_from_exten_and_context_custom(self):
+        protocol = 'custom'
+        name = 'dahdi/g1/12345'
+        context = 'foobar'
+        self._insert_line(context, name=name, protocol=protocol)
+
+        interface = self.dao.get_interface_from_exten_and_context(self.line_number, context)
+
+        self.assertEqual('dahdi/g1/12345', interface)
+
+    def test_get_interface_no_matching_exten(self):
+        self.assertRaises(LookupError, self.dao.get_interface_from_exten_and_context, '555', 'fijsifjsif')
 
     def test_get_cid_from_sccp_channel(self):
         channel = 'sccp/1234@SEP0023EBC64F92-1'

@@ -50,6 +50,20 @@ class LineFeaturesDAO(object):
         context_list = [line.context for line in res]
         return context_list[0] if len(context_list) > 0 else None
 
+    def get_interface_from_exten_and_context(self, extension, context):
+        res = (self._session.query(LineFeatures.protocol, LineFeatures.name)
+               .filter(LineFeatures.number == extension)
+               .filter(LineFeatures.context == context)).first()
+        if res is None:
+            raise LookupError('no line with extension %s and context %s' % (extension, context))
+        return self._format_interface(res.protocol, res.name)
+
+    def _format_interface(self, protocol, name):
+        if protocol == 'custom':
+            return name
+        else:
+            return '%s/%s' % (protocol.upper(), name)
+
     def number(self, line_id):
         res = self._session.query(LineFeatures).filter(LineFeatures.id == line_id)
         if res.count() == 0:
