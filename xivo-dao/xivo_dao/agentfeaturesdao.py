@@ -102,3 +102,7 @@ class AgentFeaturesDAO(object):
         for row in conn.execute(query):
             queue = _Queue(row['queue_name'])
             agent.queues.append(queue)
+
+
+def all():
+    return _session().query(AgentFeatures).all()

@@ -41,3 +41,7 @@ def get_name(group_id):
 def get_name_number(group_id):
     group = _get(group_id)
     return group.name, group.number
+
+
+def all():
+    return _session().query(GroupFeatures).all()
