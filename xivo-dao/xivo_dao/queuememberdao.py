@@ -26,18 +26,20 @@ from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy import dbconnection
 from xivo_dao.helpers.queuemember_formatter import QueueMemberFormatter
 
+_DB_NAME = 'asterisk'
+
+
+def _session():
+    connection = dbconnection.get_connection(_DB_NAME)
+    return connection.get_session()
+
 
 class QueueMemberDAO(object):
 
-    def __init__(self, session):
-        self._session = session
+    def __init__(self):
+        pass
 
     def get_queuemembers(self):
-        query_result = self._session.query(QueueMember)
+        query_result = _session().query(QueueMember)
         formatted_result = QueueMemberFormatter.format_queuemembers(query_result)
         return formatted_result
-
-    @classmethod
-    def new_from_uri(cls, uri):
-        connection = dbconnection.get_connection(uri)
-        return cls(connection.get_session())

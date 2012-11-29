@@ -38,15 +38,15 @@ def _session():
 
 class LineFeaturesDAO(object):
 
-    def __init__(self, session):
-        self._session = session
+    def __init__(self):
+        pass
 
     def find_line_id_by_user_id(self, user_id):
-        res = self._session.query(LineFeatures).filter(LineFeatures.iduserfeatures == int(user_id))
+        res = _session().query(LineFeatures).filter(LineFeatures.iduserfeatures == int(user_id))
         return [line.id for line in res]
 
     def find_context_by_user_id(self, user_id):
-        res = self._session.query(LineFeatures).filter(LineFeatures.iduserfeatures == int(user_id))
+        res = _session().query(LineFeatures).filter(LineFeatures.iduserfeatures == int(user_id))
         context_list = [line.context for line in res]
         return context_list[0] if len(context_list) > 0 else None
 
@@ -65,19 +65,14 @@ class LineFeaturesDAO(object):
             return '%s/%s' % (protocol.upper(), name)
 
     def number(self, line_id):
-        res = self._session.query(LineFeatures).filter(LineFeatures.id == line_id)
+        res = _session().query(LineFeatures).filter(LineFeatures.id == line_id)
         if res.count() == 0:
             raise LookupError
         else:
             return res[0].number
 
     def is_phone_exten(self, exten):
-        return self._session.query(LineFeatures).filter(LineFeatures.number == exten).count() > 0
-
-    @classmethod
-    def new_from_uri(cls, uri):
-        connection = dbconnection.get_connection(uri)
-        return cls(connection.get_session())
+        return _session().query(LineFeatures).filter(LineFeatures.number == exten).count() > 0
 
 
 def get_cid_for_channel(channel):
