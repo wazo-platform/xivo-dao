@@ -23,7 +23,7 @@
 
 from xivo_dao.alchemy.base import Base
 from sqlalchemy.schema import Column
-from sqlalchemy.types import Integer, String, Text
+from sqlalchemy.types import Integer, String
 
 
 class UserCustom(Base):
