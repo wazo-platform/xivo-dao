@@ -22,16 +22,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from xivo_dao.alchemy.base import Base
+from xivo_dao.alchemy.base import Base, Type
 
 from sqlalchemy.schema import Column
-from sqlalchemy.types import Integer, String
+from sqlalchemy.types import Integer, String, Enum
 
 
-class ContextInclude(Base):
+class ContextNumbers(Base):
 
-    __tablename__ = 'contextinclude'
+    __tablename__ = 'contextnumbers'
 
-    context = Column(String(39), nullable=False, primary_key=True)
-    include = Column(String(39), nullable=False, primary_key=True)
-    priority = Column(Integer, nullable=False, default=0)
+    context = Column(String(39), primary_key=True)
+    type = Column(Enum(('user', 'group', 'queue', 'meetme', 'incall'),
+                       name='contextnumbers_type',
+                       metadata=Type.metadata),
+                  nullable=False,
+                  primary_key=True)
+    numberbeg = Column(String(16), nullable=False, default=0, primary_key=True)
+    numberbeg = Column(String(16), nullable=False, default=0, primary_key=True)
+    didlength = Column(Integer, nullable=False, default=0)
