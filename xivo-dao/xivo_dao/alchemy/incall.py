@@ -33,4 +33,4 @@ class Incall(Base):
     context = Column(String(39), nullable=False)
     preprocess_subroutine = Column(String(39))
     commented = Column(Integer, nullable=False, default=0)
-    preprocess_subroutine = Column(Text, nullable=False)
+    description = Column(Text, nullable=False)
