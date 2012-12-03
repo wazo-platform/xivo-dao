@@ -35,6 +35,10 @@ def _session():
     return connection.get_session()
 
 
+def all():
+    return _session().query(MeetmeFeatures).all()
+
+
 def get(meetme_id):
     res = _session().query(MeetmeFeatures).filter(MeetmeFeatures.id == int(meetme_id))
     if res.count() == 0:

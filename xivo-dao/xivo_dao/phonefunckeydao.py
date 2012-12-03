@@ -24,14 +24,22 @@ from xivo_dao.alchemy.phonefunckey import PhoneFunckey
 from xivo_dao.alchemy import dbconnection
 from sqlalchemy import and_
 
+_DB_NAME = 'asterisk'
+
+
+def _session():
+    connection = dbconnection.get_connection(_DB_NAME)
+    return connection.get_session()
+
+
 
 class PhoneFunckeyDAO(object):
 
-    def __init__(self, session):
-        self._session = session
+    def __init__(self):
+        pass
 
     def _get_dest(self, user_id, fwd_type):
-        destinations = (self._session.query(PhoneFunckey.exten)
+        destinations = (_session().query(PhoneFunckey.exten)
                         .filter(and_(PhoneFunckey.iduserfeatures == user_id,
                                      PhoneFunckey.typevalextenumbers == fwd_type)))
 
@@ -47,8 +55,3 @@ class PhoneFunckeyDAO(object):
 
     def get_dest_busy(self, user_id):
         return self._get_dest(user_id, 'fwdbusy')
-
-    @classmethod
-    def new_from_uri(cls, uri):
-        connection = dbconnection.get_connection(uri)
-        return cls(connection.get_session())

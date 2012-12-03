@@ -22,16 +22,25 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from xivo_dao.alchemy.base import Base
 
 from sqlalchemy.schema import Column
-from sqlalchemy.types import Integer, String
+from sqlalchemy.types import Integer, String, Text, Enum, LargeBinary
+from xivo_dao.alchemy.base import Base, Type
 
 
-class ContextInclude(Base):
+class Phonebook(Base):
 
-    __tablename__ = 'contextinclude'
+    __tablename__ = 'phonebook'
 
-    context = Column(String(39), nullable=False, primary_key=True)
-    include = Column(String(39), nullable=False, primary_key=True)
-    priority = Column(Integer, nullable=False, default=0)
+    id = Column(Integer, nullable=False, primary_key=True)
+    title = Column(Enum(('mr', 'mrs', 'ms'), name='phonebook_title', metadata=Type.metadata),
+                  nullable=False,
+                  primary_key=True)
+    firstname = Column(String(128), nullable=False, default='')
+    lastname = Column(String(128), nullable=False, default='')
+    displayname = Column(String(64), nullable=False, default='')
+    society = Column(String(128), nullable=False, default='')
+    email = Column(String(255), nullable=False, default='')
+    url = Column(String(255), nullable=False, default='')
+    image = Column(LargeBinary)
+    description = Column(Text, nullable=False)

@@ -25,13 +25,15 @@
 from xivo_dao.alchemy.base import Base
 
 from sqlalchemy.schema import Column
-from sqlalchemy.types import Integer, String
+from sqlalchemy.types import Integer, String, Text
 
 
-class ContextInclude(Base):
+class ContextType(Base):
 
-    __tablename__ = 'contextinclude'
+    __tablename__ = 'contexttype'
 
-    context = Column(String(39), nullable=False, primary_key=True)
-    include = Column(String(39), nullable=False, primary_key=True)
-    priority = Column(Integer, nullable=False, default=0)
+    id = Column(Integer, primary_key=True)
+    name = Column(String(40), nullable=False)
+    commented = Column(Integer)
+    deletable = Column(Integer)
+    description = Column(Text)

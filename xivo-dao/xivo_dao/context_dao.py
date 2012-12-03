@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#
 # Copyright (C) 2012  Avencall
 #
 # This program is free software; you can redistribute it and/or modify
@@ -20,7 +21,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from xivo_dao.alchemy import dbconnection
-from xivo_dao.alchemy.groupfeatures import GroupFeatures
+from xivo_dao.alchemy.context import Context
+from xivo_dao.alchemy.contextnumbers import ContextNumbers
+from xivo_dao.alchemy.contexttype import ContextType
+from xivo_dao.alchemy.contextinclude import ContextInclude
 
 _DB_NAME = 'asterisk'
 
@@ -30,18 +34,13 @@ def _session():
     return connection.get_session()
 
 
-def _get(group_id):
-    return _session().query(GroupFeatures).filter(GroupFeatures.id == group_id)[0]
-
-
-def get_name(group_id):
-    return _get(group_id).name
-
-
-def get_name_number(group_id):
-    group = _get(group_id)
-    return group.name, group.number
+def get(context_name):
+    return _session().query(Context).filter(Context.name == context_name).first()
 
 
 def all():
-    return _session().query(GroupFeatures).all()
+    return (_session().query(Context, ContextNumbers, ContextType, ContextInclude)
+            .join((ContextNumbers, Context.name == ContextNumbers.context),
+                  (ContextInclude, Context.name == ContextInclude.context),
+                  (ContextType, Context.contexttype == ContextType.name))
+            .all())

@@ -44,8 +44,8 @@ def _engine():
 
 class AgentFeaturesDAO(object):
 
-    def __init__(self, session):
-        self._session = session
+    def __init__(self):
+        pass
 
     def agent_number(self, agentid):
         return self._get_one(agentid).number
@@ -62,7 +62,7 @@ class AgentFeaturesDAO(object):
     def agent_id(self, agent_number):
         if agent_number is None:
             raise ValueError('Agent number is None')
-        result = self._session.query(AgentFeatures.id).filter(AgentFeatures.number == agent_number).first()
+        result = _session().query(AgentFeatures.id).filter(AgentFeatures.number == agent_number).first()
         if result is None:
             raise LookupError('No such agent')
         return str(result.id)
@@ -71,7 +71,7 @@ class AgentFeaturesDAO(object):
         # field id != field agentid used only for joining with staticagent table.
         if agentid is None:
             raise ValueError('Agent ID is None')
-        result = self._session.query(AgentFeatures).filter(AgentFeatures.id == int(agentid)).first()
+        result = _session().query(AgentFeatures).filter(AgentFeatures.id == int(agentid)).first()
         if result is None:
             raise LookupError('No such agent')
         return result
@@ -109,7 +109,6 @@ class AgentFeaturesDAO(object):
             queue = _Queue(row['queue_name'])
             agent.queues.append(queue)
 
-    @classmethod
-    def new_from_uri(cls, uri):
-        connection = dbconnection.get_connection(uri)
-        return cls(connection.get_session())
+
+def all():
+    return _session().query(AgentFeatures).all()

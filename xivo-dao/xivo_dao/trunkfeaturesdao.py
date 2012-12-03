@@ -28,12 +28,18 @@ from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
 from xivo_dao.alchemy import dbconnection
 
 TRUNK_TYPES = ['sip', 'iax', 'custom']
+_DB_NAME = 'asterisk'
+
+
+def _session():
+    connection = dbconnection.get_connection(_DB_NAME)
+    return connection.get_session()
 
 
 class TrunkFeaturesDAO(object):
 
-    def __init__(self, session):
-        self._session = session
+    def __init__(self):
+        pass
 
     def find_by_proto_name(self, protocol, name):
         if not protocol or protocol not in TRUNK_TYPES:
@@ -43,9 +49,9 @@ class TrunkFeaturesDAO(object):
         table, field = self._trunk_table_lookup_field(protocol)
 
         try:
-            protocol_id = (self._session.query(table.id)
+            protocol_id = (_session().query(table.id)
                            .filter(field.ilike(name)))[0].id
-            trunk_id = (self._session.query(TrunkFeatures.id)
+            trunk_id = (_session().query(TrunkFeatures.id)
                         .filter(TrunkFeatures.protocolid == protocol_id)
                         .filter(TrunkFeatures.protocol == protocol.lower()))[0].id
         except IndexError:
@@ -66,9 +72,4 @@ class TrunkFeaturesDAO(object):
         return table, field
 
     def get_ids(self):
-        return [item.id for item in self._session.query(TrunkFeatures.id)]
-
-    @classmethod
-    def new_from_uri(cls, uri):
-        connection = dbconnection.get_connection(uri)
-        return cls(connection.get_session())
+        return [item.id for item in _session().query(TrunkFeatures.id)]

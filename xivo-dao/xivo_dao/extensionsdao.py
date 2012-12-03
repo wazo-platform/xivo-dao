@@ -25,16 +25,19 @@ from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy import dbconnection
 
 
+_DB_NAME = 'asterisk'
+
+
+def _session():
+    connection = dbconnection.get_connection(_DB_NAME)
+    return connection.get_session()
+
+
 class ExtensionsDAO(object):
 
-    def __init__(self, session):
-        self._session = session
+    def __init__(self):
+        pass
 
     def exten_by_name(self, funckey_name):
-        extens = [exten for exten, name in self._session.query(Extension.exten, Extension.name) if name == funckey_name]
+        extens = [exten for exten, name in _session().query(Extension.exten, Extension.name) if name == funckey_name]
         return extens[0] if extens else ''
-
-    @classmethod
-    def new_from_uri(cls, uri):
-        connection = dbconnection.get_connection(uri)
-        return cls(connection.get_session())

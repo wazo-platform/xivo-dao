@@ -1,7 +1,6 @@
-# vim: set fileencoding=utf-8 :
-# XiVO CTI Server
+# -*- coding: UTF-8 -*-
 
-# Copyright (C) 2007-2012  Avencall
+# Copyright (C) 2012  Avencall
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -9,7 +8,7 @@
 # (at your option) any later version.
 #
 # Alternatively, XiVO CTI Server is available under other licenses directly
-# contracted with Pro-formatique SARL. See the LICENSE file at top of the
+# contracted with Avencall SAS. See the LICENSE file at top of the
 # source tree or delivered in the installable package in which XiVO CTI Server
 # is distributed for more details.
 #
@@ -21,25 +20,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
-from xivo_dao.alchemy.queuemember import QueueMember
-from xivo_dao.alchemy import dbconnection
-from xivo_dao.helpers.queuemember_formatter import QueueMemberFormatter
-
-_DB_NAME = 'asterisk'
+from xivo_dao.alchemy.base import Base
+from sqlalchemy.schema import Column
+from sqlalchemy.types import Integer, String, Text
 
 
-def _session():
-    connection = dbconnection.get_connection(_DB_NAME)
-    return connection.get_session()
+class Voicemenu(Base):
 
+    __tablename__ = 'voicemenu'
 
-class QueueMemberDAO(object):
-
-    def __init__(self):
-        pass
-
-    def get_queuemembers(self):
-        query_result = _session().query(QueueMember)
-        formatted_result = QueueMemberFormatter.format_queuemembers(query_result)
-        return formatted_result
+    id = Column(Integer, primary_key=True, nullable=False)
+    name = Column(String(29), nullable=False, default='')
+    number = Column(String(40), nullable=False)
+    context = Column(String(39), nullable=False)
+    commented = Column(Integer, nullable=False, default=0)
+    description = Column(Text, nullable=False)

@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-
-# XiVO CTI Server
 #
 # Copyright (C) 2012  Avencall
 #
@@ -10,7 +8,7 @@
 # (at your option) any later version.
 #
 # Alternatively, XiVO CTI Server is available under other licenses directly
-# contracted with Avencall. See the LICENSE file at top of the souce tree
+# contracted with Avencall. See the LICENSE file at top of the source tree
 # or delivered in the installable package in which XiVO CTI Server is
 # distributed for more details.
 #
@@ -23,15 +21,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from xivo_dao.alchemy.base import Base
-
 from sqlalchemy.schema import Column
-from sqlalchemy.types import Integer, String
+from sqlalchemy.types import Integer, String, Text
 
 
-class ContextInclude(Base):
+class Incall(Base):
+    __tablename__ = 'incall'
 
-    __tablename__ = 'contextinclude'
-
-    context = Column(String(39), nullable=False, primary_key=True)
-    include = Column(String(39), nullable=False, primary_key=True)
-    priority = Column(Integer, nullable=False, default=0)
+    id = Column(Integer, primary_key=True)
+    exten = Column(String(40), nullable=False)
+    context = Column(String(39), nullable=False)
+    preprocess_subroutine = Column(String(39))
+    commented = Column(Integer, nullable=False, default=0)
+    description = Column(Text, nullable=False)

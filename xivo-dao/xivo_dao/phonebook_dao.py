@@ -1,7 +1,6 @@
-# vim: set fileencoding=utf-8 :
-# XiVO CTI Server
-
-# Copyright (C) 2007-2012  Avencall
+# -*- coding: utf-8 -*-
+#
+# Copyright (C) 2012  Avencall
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -9,9 +8,9 @@
 # (at your option) any later version.
 #
 # Alternatively, XiVO CTI Server is available under other licenses directly
-# contracted with Pro-formatique SARL. See the LICENSE file at top of the
-# source tree or delivered in the installable package in which XiVO CTI Server
-# is distributed for more details.
+# contracted with Avencall. See the LICENSE file at top of the source tree
+# or delivered in the installable package in which XiVO CTI Server is
+# distributed for more details.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -21,10 +20,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
-from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy import dbconnection
-from xivo_dao.helpers.queuemember_formatter import QueueMemberFormatter
+from xivo_dao.alchemy.phonebook import Phonebook
+from xivo_dao.alchemy.phonebookaddress import PhonebookAddress
+from xivo_dao.alchemy.phonebooknumber import PhonebookNumber
 
 _DB_NAME = 'asterisk'
 
@@ -34,12 +33,12 @@ def _session():
     return connection.get_session()
 
 
-class QueueMemberDAO(object):
+def get(phonebook_id):
+    return _session().query(Phonebook).filter(Phonebook.id == phonebook_id).first()
 
-    def __init__(self):
-        pass
 
-    def get_queuemembers(self):
-        query_result = _session().query(QueueMember)
-        formatted_result = QueueMemberFormatter.format_queuemembers(query_result)
-        return formatted_result
+def all():
+    return (_session().query(Phonebook, PhonebookAddress, PhonebookNumber)
+            .join((PhonebookAddress, Phonebook.id == PhonebookAddress.phonebookid))
+            .outerjoin((PhonebookNumber, Phonebook.id == PhonebookNumber.phonebookid))
+            .all())

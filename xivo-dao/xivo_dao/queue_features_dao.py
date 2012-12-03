@@ -31,6 +31,10 @@ def _session():
     return connection.get_session()
 
 
+def all():
+    return _session().query(QueueFeatures).all()
+
+
 def _get(queue_id):
     return _session().query(QueueFeatures).filter(QueueFeatures.id == queue_id)[0]
 

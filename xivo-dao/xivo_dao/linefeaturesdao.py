@@ -25,6 +25,8 @@ from xivo import caller_id
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.usersip import UserSIP
+from xivo_dao.alchemy.useriax import UserIAX
+from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.alchemy import dbconnection
 from sqlalchemy import and_
 
@@ -38,15 +40,15 @@ def _session():
 
 class LineFeaturesDAO(object):
 
-    def __init__(self, session):
-        self._session = session
+    def __init__(self):
+        pass
 
     def find_line_id_by_user_id(self, user_id):
-        res = self._session.query(LineFeatures).filter(LineFeatures.iduserfeatures == int(user_id))
+        res = _session().query(LineFeatures).filter(LineFeatures.iduserfeatures == int(user_id))
         return [line.id for line in res]
 
     def find_context_by_user_id(self, user_id):
-        res = self._session.query(LineFeatures).filter(LineFeatures.iduserfeatures == int(user_id))
+        res = _session().query(LineFeatures).filter(LineFeatures.iduserfeatures == int(user_id))
         context_list = [line.context for line in res]
         return context_list[0] if len(context_list) > 0 else None
 
@@ -65,19 +67,25 @@ class LineFeaturesDAO(object):
             return '%s/%s' % (protocol.upper(), name)
 
     def number(self, line_id):
-        res = self._session.query(LineFeatures).filter(LineFeatures.id == line_id)
+        res = _session().query(LineFeatures).filter(LineFeatures.id == line_id)
         if res.count() == 0:
             raise LookupError
         else:
             return res[0].number
 
     def is_phone_exten(self, exten):
-        return self._session.query(LineFeatures).filter(LineFeatures.number == exten).count() > 0
+        return _session().query(LineFeatures).filter(LineFeatures.number == exten).count() > 0
 
-    @classmethod
-    def new_from_uri(cls, uri):
-        connection = dbconnection.get_connection(uri)
-        return cls(connection.get_session())
+
+def all_with_protocol(protocol):
+    if protocol.lower() == 'sip':
+        return _session().query(LineFeatures, UserSIP).filter(LineFeatures.protocolid == UserSIP.id).all()
+    elif protocol.lower() == 'iax':
+        return _session().query(LineFeatures, UserIAX).filter(LineFeatures.protocolid == UserIAX.id).all()
+    elif protocol.lower() == 'sccp':
+        return _session().query(LineFeatures, SCCPLine).filter(LineFeatures.protocolid == SCCPLine.id).all()
+    elif protocol.lower() == 'custom':
+        return _session().query(LineFeatures, UserCustom).filter(LineFeatures.protocolid == UserCustom.id).all()
 
 
 def get_cid_for_channel(channel):
