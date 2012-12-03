@@ -52,12 +52,12 @@ class TestAgentLoginDao(DAOTestCase):
         agent_login_dao.log_off_agent(agent_id)
 
         agent = self.session.query(AgentLoginStatus).get(agent_id)
-        self.assertIsNone(agent)
+        self.assertEquals(agent, None)
 
     def test_get_status_with_unlogged_agent_returns_none(self):
         agent_id = 1
         agent = agent_login_dao.get_status(agent_id)
-        self.assertIsNone(agent)
+        self.assertEquals(agent, None)
 
     def test_is_extension_in_use_with_an_agent(self):
         agent_id = 1
