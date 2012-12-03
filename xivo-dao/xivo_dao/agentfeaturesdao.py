@@ -77,22 +77,28 @@ class AgentFeaturesDAO(object):
         return result
 
     def agent_with_id(self, agent_id):
-        agent_id = int(agent_id)
-
         conn = _engine().connect()
         try:
-            agent = self._get_agent_with_id(conn, agent_id)
+            agent = self._get_agent(conn, AgentFeatures.id == int(agent_id))
             self._add_queues_to_agent(conn, agent)
             return agent
         finally:
             conn.close()
 
-    def _get_agent_with_id(self, conn, agent_id):
-        query = select([AgentFeatures.id, AgentFeatures.number],
-                       AgentFeatures.id == agent_id)
+    def agent_with_number(self, agent_number):
+        conn = _engine().connect()
+        try:
+            agent = self._get_agent(conn, AgentFeatures.number == agent_number)
+            self._add_queues_to_agent(conn, agent)
+            return agent
+        finally:
+            conn.close()
+
+    def _get_agent(self, conn, whereclause):
+        query = select([AgentFeatures.id, AgentFeatures.number], whereclause)
         row = conn.execute(query).first()
         if row is None:
-            raise Exception('no agent with id %r' % agent_id)
+            raise LookupError('no agent matching clause %s' % whereclause)
         return _Agent(row['id'], row['number'], [])
 
     def _add_queues_to_agent(self, conn, agent):
