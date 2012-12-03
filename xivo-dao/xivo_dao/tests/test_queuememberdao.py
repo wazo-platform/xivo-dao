@@ -17,7 +17,7 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA..
 
 
-from mock import Mock
+from mock import Mock, patch
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.queuememberdao import QueueMemberDAO
 from xivo_dao.helpers.queuemember_formatter import QueueMemberFormatter
@@ -29,18 +29,15 @@ class TestQueueMemberDAO(DAOTestCase):
     tables = []
 
     def test_get_queuemembers(self):
-        session = Mock()
-        queuemember_dao = QueueMemberDAO(session)
-        old_queuemember_formatter = QueueMemberFormatter.format_queuemembers
-        QueueMemberFormatter.format_queuemembers = Mock()
+        with patch.object(self.session, 'query') as mock_query:
+            queuemember_dao = QueueMemberDAO()
+            old_queuemember_formatter = QueueMemberFormatter.format_queuemembers
+            QueueMemberFormatter.format_queuemembers = Mock()
 
-        queuemember_dao.get_queuemembers()
+            queuemember_dao.get_queuemembers()
 
-        try:
-            method_name = session.method_calls[0][0]
-            method_args = session.method_calls[0][1][0]
-            self.assertEqual(method_name, 'query')
-            self.assertEqual(method_args, QueueMember)
-            self.assertTrue(QueueMemberFormatter.format_queuemembers.called)
-        finally:
-            QueueMemberFormatter.format_queuemembers = old_queuemember_formatter
+            try:
+                mock_query.assert_called_with(QueueMember)
+                self.assertTrue(QueueMemberFormatter.format_queuemembers.called)
+            finally:
+                QueueMemberFormatter.format_queuemembers = old_queuemember_formatter

@@ -40,7 +40,7 @@ class TestLineFeaturesDAO(DAOTestCase):
 
     def setUp(self):
         self.empty_tables()
-        self.dao = LineFeaturesDAO(self.session)
+        self.dao = LineFeaturesDAO()
 
     def test_find_line_id_by_user_id(self):
         user = UserFeatures()

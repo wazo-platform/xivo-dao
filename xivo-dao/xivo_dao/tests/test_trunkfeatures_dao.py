@@ -35,7 +35,7 @@ class TrunkFeaturesDAOTestCase(DAOTestCase):
 
     def setUp(self):
         self.empty_tables()
-        self.dao = TrunkFeaturesDAO(self.session)
+        self.dao = TrunkFeaturesDAO()
 
     def test_find_by_proto_name_sip(self):
         trunk_name = 'my_trunk'

@@ -46,7 +46,7 @@ class TestExtensionsDAO(DAOTestCase):
         self.session.commit()
 
     def test_exten_by_name(self):
-        dao = ExtensionsDAO(self.session)
+        dao = ExtensionsDAO()
 
         enablednd = dao.exten_by_name('enablednd')
         phoneprogfunckey = dao.exten_by_name('phoneprogfunckey')

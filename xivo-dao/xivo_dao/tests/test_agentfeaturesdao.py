@@ -35,7 +35,7 @@ class TestAgentFeaturesDAO(DAOTestCase):
 
     def setUp(self):
         self.empty_tables()
-        self.dao = AgentFeaturesDAO(self.session)
+        self.dao = AgentFeaturesDAO()
 
     def test_agent_number(self):
         agent_id = self._insert_agent()

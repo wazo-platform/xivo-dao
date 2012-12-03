@@ -54,21 +54,21 @@ class TestPhoneFunckey(DAOTestCase):
         self.session.commit()
 
     def test_get_destination_unc(self):
-        dao = PhoneFunckeyDAO(self.session)
+        dao = PhoneFunckeyDAO()
 
         reply = dao.get_dest_unc(self._user_id)
 
         self.assertEqual(reply, [self._destination_unc])
 
     def test_get_destination_unc_no_destination(self):
-        dao = PhoneFunckeyDAO(self.session)
+        dao = PhoneFunckeyDAO()
 
         reply = dao.get_dest_unc(self._user_id_no_dest)
 
         self.assertEqual(reply, [''])
 
     def test_get_destination_rna(self):
-        dao = PhoneFunckeyDAO(self.session)
+        dao = PhoneFunckeyDAO()
 
         reply = dao.get_dest_rna(self._user_id)
 
