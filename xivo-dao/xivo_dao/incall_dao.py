@@ -28,7 +28,6 @@ from xivo_dao.alchemy.groupfeatures import GroupFeatures
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
 from xivo_dao.alchemy.voicemail import Voicemail
-from xivo_dao.alchemy.voicemenu import Voicemenu
 from sqlalchemy.sql.expression import and_, cast
 from sqlalchemy.types import Integer
 
@@ -45,7 +44,7 @@ def get(incall_id):
 
 
 def all():
-    return (_session().query(Incall, Dialaction, UserFeatures, GroupFeatures, QueueFeatures, MeetmeFeatures, Voicemail, Voicemenu)
+    return (_session().query(Incall, Dialaction, UserFeatures, GroupFeatures, QueueFeatures, MeetmeFeatures, Voicemail)
             .join((Dialaction, Incall.id == cast(Dialaction.categoryval, Integer)))
             .outerjoin((UserFeatures, and_(UserFeatures.id == cast(Dialaction.actionarg1, Integer),
                                            Dialaction.action == u'user')))
@@ -57,8 +56,6 @@ def all():
                                              Dialaction.action == u'meetme')))
             .outerjoin((Voicemail, and_(Voicemail.uniqueid == cast(Dialaction.actionarg1, Integer),
                                         Dialaction.action == u'voicemail')))
-            .outerjoin((Voicemenu, and_(Voicemenu.id == cast(Dialaction.actionarg1, Integer),
-                                        Dialaction.action == u'voicemenu')))
             .filter(and_(Dialaction.event == u'answer',
                          Dialaction.category == u'incall'))
             .all())
