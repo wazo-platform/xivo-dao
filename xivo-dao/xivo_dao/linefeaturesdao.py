@@ -53,7 +53,7 @@ class LineFeaturesDAO(object):
         return context_list[0] if len(context_list) > 0 else None
 
     def get_interface_from_exten_and_context(self, extension, context):
-        res = (self._session.query(LineFeatures.protocol, LineFeatures.name)
+        res = (_session().query(LineFeatures.protocol, LineFeatures.name)
                .filter(LineFeatures.number == extension)
                .filter(LineFeatures.context == context)).first()
         if res is None:
