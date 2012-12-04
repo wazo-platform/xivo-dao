@@ -71,5 +71,14 @@ class TrunkFeaturesDAO(object):
             field = UserCustom.interface
         return table, field
 
-    def get_ids(self):
-        return [item.id for item in _session().query(TrunkFeatures.id)]
+
+def get(id):
+    return _session().query(TrunkFeatures).filter(TrunkFeatures.id == id).first()
+
+
+def all():
+    return _session().query(TrunkFeatures).all()
+
+
+def get_ids():
+    return [item.id for item in _session().query(TrunkFeatures.id)]
