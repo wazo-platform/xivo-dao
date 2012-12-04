@@ -43,6 +43,25 @@ def get(incall_id):
     return _session().query(Incall).filter(Incall.id == incall_id).first()
 
 
+def get_join_elements(incall_id):
+    return (_session().query(Incall, Dialaction, UserFeatures, GroupFeatures, QueueFeatures, MeetmeFeatures, Voicemail)
+            .join((Dialaction, Incall.id == cast(Dialaction.categoryval, Integer)))
+            .outerjoin((UserFeatures, and_(UserFeatures.id == cast(Dialaction.actionarg1, Integer),
+                                           Dialaction.action == u'user')))
+            .outerjoin((GroupFeatures, and_(GroupFeatures.id == cast(Dialaction.actionarg1, Integer),
+                                            Dialaction.action == u'group')))
+            .outerjoin((QueueFeatures, and_(QueueFeatures.id == cast(Dialaction.actionarg1, Integer),
+                                            Dialaction.action == u'queue')))
+            .outerjoin((MeetmeFeatures, and_(MeetmeFeatures.id == cast(Dialaction.actionarg1, Integer),
+                                             Dialaction.action == u'meetme')))
+            .outerjoin((Voicemail, and_(Voicemail.uniqueid == cast(Dialaction.actionarg1, Integer),
+                                        Dialaction.action == u'voicemail')))
+            .filter(and_(Dialaction.event == u'answer',
+                         Dialaction.category == u'incall',
+                         Incall.id == incall_id))
+            .first()())
+
+
 def all():
     return (_session().query(Incall, Dialaction, UserFeatures, GroupFeatures, QueueFeatures, MeetmeFeatures, Voicemail)
             .join((Dialaction, Incall.id == cast(Dialaction.categoryval, Integer)))

@@ -37,6 +37,14 @@ def get(phonebook_id):
     return _session().query(Phonebook).filter(Phonebook.id == phonebook_id).first()
 
 
+def get_join_elements(phonebook_id):
+    return (_session().query(Phonebook, PhonebookAddress, PhonebookNumber)
+            .join((PhonebookAddress, Phonebook.id == PhonebookAddress.phonebookid))
+            .outerjoin((PhonebookNumber, Phonebook.id == PhonebookNumber.phonebookid))
+            .filter(Phonebook.id == phonebook_id)
+            .first()())
+
+
 def all():
     return (_session().query(Phonebook, PhonebookAddress, PhonebookNumber)
             .join((PhonebookAddress, Phonebook.id == PhonebookAddress.phonebookid))

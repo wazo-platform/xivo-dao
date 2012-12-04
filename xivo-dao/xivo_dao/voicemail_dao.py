@@ -33,3 +33,7 @@ def _session():
 
 def all():
     return _session().query(Voicemail).all()
+
+
+def get(voicemail_id):
+    return _session().query(Voicemail).filter(Voicemail.uniqueid == voicemail_id).first()

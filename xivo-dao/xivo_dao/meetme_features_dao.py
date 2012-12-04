@@ -40,10 +40,10 @@ def all():
 
 
 def get(meetme_id):
-    res = _session().query(MeetmeFeatures).filter(MeetmeFeatures.id == int(meetme_id))
-    if res.count() == 0:
+    res = _session().query(MeetmeFeatures).filter(MeetmeFeatures.id == int(meetme_id)).first()
+    if not res:
         raise LookupError
-    return res[0]
+    return res
 
 
 def _get_by_number(number):

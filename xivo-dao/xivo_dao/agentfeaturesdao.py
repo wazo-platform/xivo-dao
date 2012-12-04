@@ -110,5 +110,9 @@ class AgentFeaturesDAO(object):
             agent.queues.append(queue)
 
 
+def get(self, agentid):
+    return _session().query(AgentFeatures).filter(AgentFeatures.id == int(agentid)).first()
+
+
 def all():
     return _session().query(AgentFeatures).all()

@@ -77,6 +77,13 @@ class LineFeaturesDAO(object):
         return _session().query(LineFeatures).filter(LineFeatures.number == exten).count() > 0
 
 
+def get_protocol(line_id):
+    row = _session().query(LineFeatures).filter(LineFeatures.id == line_id).first()
+    if not row:
+        raise LookupError
+    return row.protocol
+
+
 def all_with_protocol(protocol):
     if protocol.lower() == 'sip':
         return _session().query(LineFeatures, UserSIP).filter(LineFeatures.protocolid == UserSIP.id).all()
@@ -86,6 +93,30 @@ def all_with_protocol(protocol):
         return _session().query(LineFeatures, SCCPLine).filter(LineFeatures.protocolid == SCCPLine.id).all()
     elif protocol.lower() == 'custom':
         return _session().query(LineFeatures, UserCustom).filter(LineFeatures.protocolid == UserCustom.id).all()
+
+
+def get_with_line_id(line_id):
+    protocol = get_protocol(line_id)
+    if protocol.lower() == 'sip':
+        return (_session().query(LineFeatures, UserSIP)
+                .filter(LineFeatures.id == int(line_id))
+                .filter(LineFeatures.protocolid == UserSIP.id)
+                .first())
+    elif protocol.lower() == 'iax':
+        return (_session().query(LineFeatures, UserIAX)
+                .filter(LineFeatures.id == int(line_id))
+                .filter(LineFeatures.protocolid == UserIAX.id)
+                .first())
+    elif protocol.lower() == 'sccp':
+        return (_session().query(LineFeatures, SCCPLine)
+                .filter(LineFeatures.id == int(line_id))
+                .filter(LineFeatures.protocolid == SCCPLine.id)
+                .first())
+    elif protocol.lower() == 'custom':
+        return (_session().query(LineFeatures, UserCustom)
+                .filter(LineFeatures.id == int(line_id))
+                .filter(LineFeatures.protocolid == UserCustom.id)
+                .first())
 
 
 def get_cid_for_channel(channel):
