@@ -33,11 +33,6 @@ def _session():
     return connection.get_session()
 
 
-class ExtensionsDAO(object):
-
-    def __init__(self):
-        pass
-
-    def exten_by_name(self, funckey_name):
-        extens = [exten for exten, name in _session().query(Extension.exten, Extension.name) if name == funckey_name]
-        return extens[0] if extens else ''
+def exten_by_name(funckey_name):
+    extens = [exten for exten, name in _session().query(Extension.exten, Extension.name) if name == funckey_name]
+    return extens[0] if extens else ''

@@ -21,7 +21,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from xivo_dao.extensionsdao import ExtensionsDAO
+from xivo_dao import extensionsdao
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.tests.test_dao import DAOTestCase
 
@@ -46,10 +46,8 @@ class TestExtensionsDAO(DAOTestCase):
         self.session.commit()
 
     def test_exten_by_name(self):
-        dao = ExtensionsDAO()
-
-        enablednd = dao.exten_by_name('enablednd')
-        phoneprogfunckey = dao.exten_by_name('phoneprogfunckey')
+        enablednd = extensionsdao.exten_by_name('enablednd')
+        phoneprogfunckey = extensionsdao.exten_by_name('phoneprogfunckey')
 
         self.assertEqual(enablednd, '*25')
         self.assertEqual(phoneprogfunckey, '_*735')
