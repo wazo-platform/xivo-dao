@@ -21,8 +21,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from sqlalchemy.sql.expression import case
 from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
+from xivo_dao.alchemy.agentfeatures import AgentFeatures
 
 _DB_NAME = 'asterisk'
 
@@ -34,6 +36,14 @@ def _session():
 
 def get_status(agent_id):
     return _session().query(AgentLoginStatus).get(agent_id)
+
+
+def get_statuses():
+    return _session().query(
+        AgentFeatures.id.label('agent_id'),
+        AgentFeatures.number.label('agent_number'),
+        case([(AgentLoginStatus.agent_id == None, False)], else_=True).label('logged')
+    ).outerjoin((AgentLoginStatus, AgentFeatures.id == AgentLoginStatus.agent_id)).all()
 
 
 def is_agent_logged_in(agent_id):
