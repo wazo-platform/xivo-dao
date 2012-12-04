@@ -29,73 +29,76 @@ from xivo_dao.helpers.cel_exception import CELException
 
 logger = logging.getLogger(__name__)
 
+_DB_NAME = 'asterisk'
+
+
+def _session():
+    connection = dbconnection.get_connection(_DB_NAME)
+    return connection.get_session()
+
 
 class UnsupportedLineProtocolException(Exception):
     pass
 
 
-class CELDAO(object):
-    def __init__(self, session):
-        self._session = session
+def caller_id_by_unique_id(unique_id):
+    cel_events = (_session().query(CEL.cid_name, CEL.cid_num)
+                  .filter(CEL.eventtype.in_(['APP_START', 'CHAN_START']))
+                  .filter(CEL.uniqueid == unique_id)
+                  .order_by(CEL.id.desc())
+                  .first())
 
-    def caller_id_by_unique_id(self, unique_id):
-        cel_events = (self._session.query(CEL.cid_name, CEL.cid_num)
-                      .filter(CEL.eventtype.in_(['APP_START', 'CHAN_START']))
-                      .filter(CEL.uniqueid == unique_id)
-                      .order_by(CEL.id.desc())
-                      .first())
+    if cel_events is None:
+        raise CELException('no such CEL event with uniqueid %s' % unique_id)
+    else:
+        cid_name, cid_num = cel_events
+        return '"%s" <%s>' % (cid_name, cid_num)
 
-        if cel_events is None:
-            raise CELException('no such CEL event with uniqueid %s' % unique_id)
+
+def channel_by_unique_id(unique_id):
+    cel_events = (_session().query(CEL)
+                  .filter(CEL.uniqueid == unique_id)
+                  .all())
+    if not cel_events:
+        raise CELException('no such CEL event with uniqueid %s' % unique_id)
+    else:
+        return CELChannel(cel_events)
+
+
+def channels_for_phone(phone, limit=None):
+    channel_pattern = _channel_pattern_from_phone(phone)
+    unique_ids = (_session().query(CEL.uniqueid)
+                  .filter(CEL.channame.like(channel_pattern))
+                  .filter(CEL.eventtype == 'CHAN_START')
+                  .order_by(CEL.id.desc()))
+    if limit is not None:
+        fuzzy_limit = 2 * limit
+        unique_ids = unique_ids.limit(fuzzy_limit)
+    ret = []
+    for unique_id, in unique_ids:
+        try:
+            channel = channel_by_unique_id(unique_id)
+        except CELException as e:
+            # this can happen in the case the channel is alive
+            logger.info('could not create CEL channel %s: %s', unique_id, e)
         else:
-            cid_name, cid_num = cel_events
-            return '"%s" <%s>' % (cid_name, cid_num)
+            ret.append(channel)
+    return ret
 
-    def channel_by_unique_id(self, unique_id):
-        cel_events = (self._session.query(CEL)
-                      .filter(CEL.uniqueid == unique_id)
-                      .all())
-        if not cel_events:
-            raise CELException('no such CEL event with uniqueid %s' % unique_id)
-        else:
-            return CELChannel(cel_events)
 
-    def channels_for_phone(self, phone, limit=None):
-        channel_pattern = self._channel_pattern_from_phone(phone)
-        unique_ids = (self._session.query(CEL.uniqueid)
-                      .filter(CEL.channame.like(channel_pattern))
-                      .filter(CEL.eventtype == 'CHAN_START')
-                      .order_by(CEL.id.desc()))
-        if limit is not None:
-            fuzzy_limit = 2 * limit
-            unique_ids = unique_ids.limit(fuzzy_limit)
-        ret = []
-        for unique_id, in unique_ids:
-            try:
-                channel = self.channel_by_unique_id(unique_id)
-            except CELException as e:
-                # this can happen in the case the channel is alive
-                logger.info('could not create CEL channel %s: %s', unique_id, e)
-            else:
-                ret.append(channel)
-        return ret
+def _channel_pattern_from_phone(phone):
+    protocol = phone['protocol']
+    if protocol == 'sip':
+        return _channel_pattern_from_phone_sip(phone)
+    elif protocol == 'sccp':
+        return _channel_pattern_from_phone_sccp(phone)
+    else:
+        raise UnsupportedLineProtocolException()
 
-    def _channel_pattern_from_phone(self, phone):
-        protocol = phone['protocol']
-        if protocol == 'sip':
-            return self._channel_pattern_from_phone_sip(phone)
-        elif protocol == 'sccp':
-            return self._channel_pattern_from_phone_sccp(phone)
-        else:
-            raise UnsupportedLineProtocolException()
 
-    def _channel_pattern_from_phone_sip(self, phone):
-        return "SIP/%s-%%" % phone['name']
+def _channel_pattern_from_phone_sip(phone):
+    return "SIP/%s-%%" % phone['name']
 
-    def _channel_pattern_from_phone_sccp(self, phone):
-        return "sccp/%s@%%" % phone['name']
 
-    @classmethod
-    def new_from_uri(cls, uri):
-        connection = dbconnection.get_connection(uri)
-        return cls(connection.get_session())
+def _channel_pattern_from_phone_sccp(phone):
+    return "sccp/%s@%%" % phone['name']

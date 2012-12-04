@@ -21,13 +21,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import unittest
 from datetime import datetime, timedelta
-from xivo_dao.alchemy.dbconnection import DBConnection
-from xivo_dao.alchemy.base import Base
 from xivo_dao.alchemy.cel import CEL
-from xivo_dao.celdao import CELDAO
 from xivo_dao.helpers.cel_exception import CELException
+from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao import celdao
 
 
 def _new_datetime_generator(step=timedelta(seconds=1)):
@@ -65,28 +63,17 @@ def _new_cel(**kwargs):
     return CEL(**cel_kwargs)
 
 
-class TestCELDAO(unittest.TestCase):
-    _URI = 'sqlite:///:memory:'
+class TestCELDAO(DAOTestCase):
+
+    tables = [CEL]
 
     def setUp(self):
-        self._connection = DBConnection(self._URI)
-        self._connection.connect()
-        self._session = self._connection.get_session()
-        self._celdao = CELDAO(self._session)
-
-        Base.metadata.create_all(self._connection.get_engine(), [CEL.__table__])
-
-        self._datetime_gen = _new_datetime_generator()
-
-    def tearDown(self):
-        Base.metadata.drop_all(self._connection.get_engine(), [CEL.__table__])
-
-        self._connection.close()
+        self.empty_tables()
 
     def _insert_cels(self, cels):
         for cel in cels:
-            self._session.add(cel)
-        self._session.commit()
+            self.session.add(cel)
+        self.session.commit()
 
     def test_caller_id_by_unique_id_when_unique_id_is_present(self):
         self._insert_cels([
@@ -96,7 +83,7 @@ class TestCELDAO(unittest.TestCase):
                      uniqueid='2'),
         ])
 
-        self.assertEqual('"name2" <num2>', self._celdao.caller_id_by_unique_id('2'))
+        self.assertEqual('"name2" <num2>', celdao.caller_id_by_unique_id('2'))
 
     def test_caller_id_by_unique_id_when_unique_id_is_present_no_app_start(self):
         self._insert_cels([
@@ -104,7 +91,7 @@ class TestCELDAO(unittest.TestCase):
                      uniqueid='1'),
         ])
 
-        self.assertEqual('"name1" <num1>', self._celdao.caller_id_by_unique_id('1'))
+        self.assertEqual('"name1" <num1>', celdao.caller_id_by_unique_id('1'))
 
     def test_caller_id_by_unique_id_when_unique_id_is_missing(self):
         self._insert_cels([
@@ -112,7 +99,7 @@ class TestCELDAO(unittest.TestCase):
                      uniqueid='1'),
         ])
 
-        self.assertRaises(CELException, self._celdao.caller_id_by_unique_id, '2')
+        self.assertRaises(CELException, celdao.caller_id_by_unique_id, '2')
 
     def test_channel_by_unique_id_when_channel_is_present(self):
         self._insert_cels([
@@ -121,7 +108,7 @@ class TestCELDAO(unittest.TestCase):
             _new_cel(eventtype='CHAN_END', uniqueid='1'),
         ])
 
-        channel = self._celdao.channel_by_unique_id('1')
+        channel = celdao.channel_by_unique_id('1')
         self.assertEqual(u'100', channel.exten())
 
     def test_channel_by_unique_id_when_channel_is_missing(self):
@@ -131,13 +118,13 @@ class TestCELDAO(unittest.TestCase):
             _new_cel(eventtype='CHAN_END', uniqueid='2'),
         ])
 
-        self.assertRaises(CELException, self._celdao.channel_by_unique_id, '1')
+        self.assertRaises(CELException, celdao.channel_by_unique_id, '1')
 
     def test_channels_for_phone_sip(self):
         phone = {'protocol': 'sip',
                  'name': 'abcdef'}
         cels = [
-            _new_cel(eventtype='CHAN_START', channame=u'SIP/abcdef-001', uniqueid=u'1', ),
+            _new_cel(eventtype='CHAN_START', channame=u'SIP/abcdef-001', uniqueid=u'1',),
             _new_cel(eventtype='HANGUP', uniqueid='1', linkedid=u'1'),
             _new_cel(eventtype='CHAN_END', uniqueid='1', linkedid=u'1'),
             _new_cel(eventtype='CHAN_START', channame=u'SIP/ghijkl-001', uniqueid=u'2', linkedid=u'2'),
@@ -146,7 +133,7 @@ class TestCELDAO(unittest.TestCase):
         ]
         self._insert_cels(cels)
 
-        channels = self._celdao.channels_for_phone(phone)
+        channels = celdao.channels_for_phone(phone)
 
         self.assertEqual(len(channels), 1)
         self.assertEqual(channels[0].linked_id(), u'1')
@@ -155,7 +142,7 @@ class TestCELDAO(unittest.TestCase):
         phone = {'protocol': 'sccp',
                  'name': '101'}
         cels = [
-            _new_cel(eventtype='CHAN_START', channame=u'sccp/101@SEP001122334455-1', uniqueid=u'1', ),
+            _new_cel(eventtype='CHAN_START', channame=u'sccp/101@SEP001122334455-1', uniqueid=u'1',),
             _new_cel(eventtype='HANGUP', uniqueid='1', linkedid=u'1'),
             _new_cel(eventtype='CHAN_END', uniqueid='1', linkedid=u'1'),
             _new_cel(eventtype='CHAN_START', channame=u'sccp/102@SEP001122334455-1', uniqueid=u'2', linkedid=u'2'),
@@ -164,7 +151,7 @@ class TestCELDAO(unittest.TestCase):
         ]
         self._insert_cels(cels)
 
-        channels = self._celdao.channels_for_phone(phone)
+        channels = celdao.channels_for_phone(phone)
 
         self.assertEqual(len(channels), 1)
         self.assertEqual(channels[0].linked_id(), u'1')
