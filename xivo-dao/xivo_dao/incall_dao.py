@@ -59,7 +59,7 @@ def get_join_elements(incall_id):
             .filter(and_(Dialaction.event == u'answer',
                          Dialaction.category == u'incall',
                          Incall.id == incall_id))
-            .first()())
+            .first())
 
 
 def all():
