@@ -106,12 +106,19 @@ class QueueMemberFormatter(object):
             'status': 'Status',
             'paused': 'Paused',
             'lastcall': 'LastCall',
-            'callstaken': 'CallsTaken'}
+            'callstaken': 'CallsTaken',
+        }
         queuemember = {}
         for expected_field in expected_field_list:
             if expected_field in ami_map:
                 ami_field = ami_map[expected_field]
                 queuemember[expected_field] = ami_event[ami_field]
+        if 'interface' in expected_field_list:
+            member_name = ami_event.get('MemberName')
+            if member_name is None:
+                member_name = ami_event['Name']
+            if member_name.startswith('Agent/'):
+                queuemember['interface'] = member_name
         if 'lastcall' in expected_field_list:
             queuemember['lastcall'] = cls._convert_timestamp_to_date(queuemember['lastcall'])
         key = cls._generate_key(queuemember)

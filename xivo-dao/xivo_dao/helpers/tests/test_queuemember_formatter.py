@@ -49,22 +49,27 @@ class TestQueueMemberFormatter(unittest.TestCase):
 
         self.ami_event = {
             'Queue': 'queue1',
-            'Location': 'agent1',
+            'Location': 'SIP/abcdef',
+            'MemberName': 'Agent/1',
             'Status': 'status1',
             'Paused': 'yes',
             'Membership': 'dynamic',
             'CallsTaken': '0',
             'Penalty': '0',
-            'LastCall': '1300000000'}
-        self.ami_event_formatted = {'agent1,queue1': {
-            'queue_name': 'queue1',
-            'interface': 'agent1',
-            'membership': 'dynamic',
-            'penalty': '0',
-            'status': 'status1',
-            'paused': 'yes',
-            'lastcall': '03:06:40',
-            'callstaken': '0'}}
+            'LastCall': '1300000000',
+        }
+        self.ami_event_formatted = {
+            'Agent/1,queue1': {
+                'queue_name': 'queue1',
+                'interface': 'Agent/1',
+                'membership': 'dynamic',
+                'penalty': '0',
+                'status': 'status1',
+                'paused': 'yes',
+                'lastcall': '03:06:40',
+                'callstaken': '0'
+            }
+        }
 
     def tearDown(self):
         dbconnection.unregister_db_connection_pool()
@@ -72,7 +77,7 @@ class TestQueueMemberFormatter(unittest.TestCase):
     def _insert_data(self):
         self.queuem1 = QueueMember()
         self.queuem1.queue_name = 'queue1'
-        self.queuem1.interface = 'agent1'
+        self.queuem1.interface = 'Agent/1'
         self.queuem1.penalty = 0
         self.queuem1.paused = 0
         self.queuem1.usertype = 'user'
@@ -81,7 +86,7 @@ class TestQueueMemberFormatter(unittest.TestCase):
         self.queuem1.category = 'queue'
         self.queuem2 = QueueMember()
         self.queuem2.queue_name = 'queue2'
-        self.queuem2.interface = 'agent2'
+        self.queuem2.interface = 'Agent/2'
         self.queuem2.penalty = 0
         self.queuem2.paused = 0
         self.queuem2.usertype = 'agent'
@@ -90,7 +95,7 @@ class TestQueueMemberFormatter(unittest.TestCase):
         self.queuem2.category = 'queue'
         self.queuem3 = QueueMember()
         self.queuem3.queue_name = 'queue3'
-        self.queuem3.interface = 'agent3'
+        self.queuem3.interface = 'Agent/3'
         self.queuem3.penalty = 0
         self.queuem3.paused = 0
         self.queuem3.usertype = 'user'
@@ -99,7 +104,7 @@ class TestQueueMemberFormatter(unittest.TestCase):
         self.queuem3.category = 'group'
         self.queuem4 = QueueMember()
         self.queuem4.queue_name = 'queue4'
-        self.queuem4.interface = 'agent4'
+        self.queuem4.interface = 'Agent/4'
         self.queuem4.penalty = 0
         self.queuem4.paused = 0
         self.queuem4.usertype = 'agent'
@@ -115,7 +120,7 @@ class TestQueueMemberFormatter(unittest.TestCase):
     def _define_expected(self):
         self.queuem1_dict = {
             'queue_name': u'queue1',
-            'interface': u'agent1',
+            'interface': u'Agent/1',
             'penalty': 0,
             'call_limit': 0,
             'paused': 0,
@@ -129,7 +134,7 @@ class TestQueueMemberFormatter(unittest.TestCase):
         }
         self.queuem2_dict = {
             'queue_name': u'queue2',
-            'interface': u'agent2',
+            'interface': u'Agent/2',
             'penalty': 0,
             'call_limit': 0,
             'paused': 0,
@@ -143,7 +148,7 @@ class TestQueueMemberFormatter(unittest.TestCase):
         }
         self.queuem3_dict = {
             'queue_name': u'queue3',
-            'interface': u'agent3',
+            'interface': u'Agent/3',
             'penalty': 0,
             'call_limit': 0,
             'paused': 0,
@@ -157,7 +162,7 @@ class TestQueueMemberFormatter(unittest.TestCase):
         }
         self.queuem4_dict = {
             'queue_name': u'queue4',
-            'interface': u'agent4',
+            'interface': u'Agent/4',
             'penalty': 0,
             'call_limit': 0,
             'paused': 0,
@@ -173,10 +178,10 @@ class TestQueueMemberFormatter(unittest.TestCase):
     def test_format_queuemembers(self):
         query_result = self.session.query(QueueMember)
         expected_result = {
-            'agent1,queue1': self.queuem1_dict,
-            'agent2,queue2': self.queuem2_dict,
-            'agent3,queue3': self.queuem3_dict,
-            'agent4,queue4': self.queuem4_dict
+            'Agent/1,queue1': self.queuem1_dict,
+            'Agent/2,queue2': self.queuem2_dict,
+            'Agent/3,queue3': self.queuem3_dict,
+            'Agent/4,queue4': self.queuem4_dict
         }
         result = QueueMemberFormatter.format_queuemembers(query_result)
 
@@ -184,7 +189,7 @@ class TestQueueMemberFormatter(unittest.TestCase):
 
     def test_generate_key(self):
         queuemember = self.queuem1_dict
-        expected_result = 'agent1,queue1'
+        expected_result = 'Agent/1,queue1'
 
         result = QueueMemberFormatter._generate_key(queuemember)
 
@@ -210,9 +215,9 @@ class TestQueueMemberFormatter(unittest.TestCase):
     def test_format_queuemember_from_ami_remove(self):
         ami_event = self.ami_event
         expected_result = {
-            'agent1,queue1': {
+            'Agent/1,queue1': {
                 'queue_name': 'queue1',
-                'interface': 'agent1'
+                'interface': 'Agent/1'
             }
         }
 
@@ -220,22 +225,79 @@ class TestQueueMemberFormatter(unittest.TestCase):
 
         self.assertEqual(result, expected_result)
 
-    def test_format_queuemember_from_ami_update(self):
-        ami_event = self.ami_event
-        expected_result = self.ami_event_formatted
+    def test_format_queuemember_from_ami_update_and_queuemember_event(self):
+        ami_event = {
+            'Event': 'QueueMember',
+            'Status': '1',
+            'Penalty': '0',
+            'Name': 'Agent/3',
+            'Skills': '',
+            'Queue': '1202',
+            'Membership': 'dynamic',
+            'Location': 'SIP/t5rsvq',
+            'LastCall': '1300000000',
+            'Paused': '0',
+            'CallsTaken': '0',
+        }
+        expected_result = {
+            'Agent/3,1202': {
+                'queue_name': '1202',
+                'interface': 'Agent/3',
+                'membership': 'dynamic',
+                'penalty': '0',
+                'status': '1',
+                'paused': '0',
+                'lastcall': '03:06:40',
+                'callstaken': '0'
+            }
+        }
+
+        result = QueueMemberFormatter.format_queuemember_from_ami_update(ami_event)
+
+        self.assertEqual(result, expected_result)
+
+    def test_format_queuemember_from_ami_update_and_queuememberstatus_event(self):
+        ami_event = {
+            'Event': 'QueueMemberStatus',
+            'Status': '1',
+            'Penalty': '0',
+            'MemberName': 'Agent/3',
+            'Skills': '',
+            'Queue': '1202',
+            'Membership': 'dynamic',
+            'Location': 'SIP/t5rsvq',
+            'LastCall': '1300000000',
+            'Paused': '0',
+            'CallsTaken': '0',
+        }
+        expected_result = {
+            'Agent/3,1202': {
+                'queue_name': '1202',
+                'interface': 'Agent/3',
+                'membership': 'dynamic',
+                'penalty': '0',
+                'status': '1',
+                'paused': '0',
+                'lastcall': '03:06:40',
+                'callstaken': '0'
+            }
+        }
 
         result = QueueMemberFormatter.format_queuemember_from_ami_update(ami_event)
 
         self.assertEqual(result, expected_result)
 
     def test_format_queuemember_from_ami_pause(self):
-        ami_event = {'Queue': 'queue1',
-                     'Location': 'agent1',
-                     'Paused': '0'}
+        ami_event = {
+            'Queue': 'queue1',
+            'MemberName': 'Agent/1',
+            'Location': 'SIP/abcdef',
+            'Paused': '0',
+        }
         expected_result = {
-            'agent1,queue1': {
+            'Agent/1,queue1': {
                 'queue_name': 'queue1',
-                'interface': 'agent1',
+                'interface': 'Agent/1',
                 'paused': '0'
             }
         }
@@ -247,9 +309,9 @@ class TestQueueMemberFormatter(unittest.TestCase):
     def test_extract_ami(self):
         field_list = ['queue_name', 'interface', 'membership']
         ami_event = self.ami_event
-        expected_result = {'agent1,queue1': {
+        expected_result = {'Agent/1,queue1': {
             'queue_name': 'queue1',
-            'interface': 'agent1',
+            'interface': 'Agent/1',
             'membership': 'dynamic'}}
 
         result = QueueMemberFormatter._extract_ami(field_list, ami_event)
