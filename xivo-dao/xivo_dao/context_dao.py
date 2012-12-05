@@ -42,7 +42,7 @@ def get_join_elements(context_name):
     return (_session().query(Context, ContextNumbers, ContextType, ContextInclude)
             .join((ContextNumbers, Context.name == ContextNumbers.context),
                   (ContextType, Context.contexttype == ContextType.name))
-            .outerjoin(ContextInclude, Context.name == ContextInclude.context)
+            .outerjoin((ContextInclude, Context.name == ContextInclude.context))
             .filter(Context.name == context_name)
             .first())
 
@@ -51,5 +51,5 @@ def all():
     return (_session().query(Context, ContextNumbers, ContextType, ContextInclude)
             .join((ContextNumbers, Context.name == ContextNumbers.context),
                   (ContextType, Context.contexttype == ContextType.name))
-            .outerjoin(ContextInclude, Context.name == ContextInclude.context)
+            .outerjoin((ContextInclude, Context.name == ContextInclude.context))
             .all())
