@@ -33,7 +33,7 @@ class ContextNumbers(Base):
     __tablename__ = 'contextnumbers'
 
     context = Column(String(39), primary_key=True)
-    type = Column(Enum(('user', 'group', 'queue', 'meetme', 'incall'),
+    type = Column(Enum('user', 'group', 'queue', 'meetme', 'incall',
                        name='contextnumbers_type',
                        metadata=Type.metadata),
                   nullable=False,

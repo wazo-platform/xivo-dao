@@ -1,0 +1,104 @@
+# -*- coding: UTF-8 -*-
+
+# Copyright (C) 2007-2012  Avencall
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# Alternatively, XiVO CTI Server is available under other licenses directly
+# contracted with Pro-formatique SARL. See the LICENSE file at top of the
+# source tree or delivered in the installable package in which XiVO CTI Server
+# is distributed for more details.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from xivo_dao import context_dao
+from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao.alchemy.context import Context
+from xivo_dao.alchemy.contexttype import ContextType
+from xivo_dao.alchemy.contextinclude import ContextInclude
+from xivo_dao.alchemy.contextnumbers import ContextNumbers
+
+
+class TestContextDAO(DAOTestCase):
+
+    tables = [Context, ContextType, ContextInclude, ContextNumbers]
+
+    def setUp(self):
+        self.empty_tables()
+
+    def _insert_context(self, name, displayname=None, contexttype_name='internal'):
+        contexttype = ContextType()
+        contexttype.name = contexttype_name
+        self.session.add(contexttype)
+
+        context = Context()
+        context.name = name
+        context.displayname = displayname if displayname else name
+        context.entity = 'entity'
+        context.contexttype = contexttype_name
+        context.description = ''
+        self.session.add(context)
+
+        self.session.commit()
+
+    def _insert_contextnumbers(self, context_name):
+        contextnumbers = ContextNumbers()
+        contextnumbers.context = context_name
+        contextnumbers.type = 'user'
+        contextnumbers.numberbeg = '1000'
+        contextnumbers.numberend = '1999'
+        contextnumbers.didlength = 0
+        self.session.add(contextnumbers)
+        self.session.commit()
+
+    def test_get(self):
+        context_name = 'test_context'
+        self._insert_context(context_name)
+
+        context = context_dao.get(context_name)
+
+        self.assertEqual(context.name, context_name)
+
+    def test_get_join_elements(self):
+        context_name = 'test_context'
+        self._insert_context(context_name)
+        self._insert_contextnumbers(context_name)
+
+        context, contextnumbers, contexttype, contextinclude = context_dao.get_join_elements(context_name)
+
+        self.assertEqual(context.name, context_name)
+        self.assertEqual(contextnumbers.context, context_name)
+        self.assertEqual(contextinclude, None)
+        self.assertEqual(contexttype.name, context.contexttype)
+
+    def test_all(self):
+        context_name1 = 'test_context1'
+        self._insert_context(context_name1)
+        self._insert_contextnumbers(context_name1)
+
+        context_name2 = 'test_context2'
+        self._insert_context(context_name2)
+        self._insert_contextnumbers(context_name2)
+
+        context_full_infos = context_dao.all()
+
+        for row in context_full_infos:
+            context, contextnumbers, contexttype, contextinclude = row
+
+            assert(context.name in [context_name1, context_name2])
+            assert(contextnumbers.context in [context_name1, context_name2])
+            self.assertEqual(contextinclude, None)
+            self.assertEqual(contexttype.name, context.contexttype)
+
+    def test_all_empty(self):
+        result = context_dao.all()
+        self.assertEqual([], result)
