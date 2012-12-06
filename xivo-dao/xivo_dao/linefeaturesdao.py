@@ -129,6 +129,23 @@ def get_cid_for_channel(channel):
         raise ValueError('Cannot get the Caller ID for this channel')
 
 
+def get_interface_from_user_id(user_id):
+    row = (_session()
+           .query(LineFeatures.protocol,
+                  LineFeatures.name,
+                  LineFeatures.iduserfeatures)
+           .filter(LineFeatures.iduserfeatures == user_id)
+           .first())
+
+    if not row:
+        raise LookupError('No such line')
+
+    if row.protocol.lower() == 'custom':
+        return row.name
+    else:
+        return row.protocol + '/' + row.name
+
+
 def _get_cid_for_sccp_channel(channel):
     try:
         interesting_part = channel.split('@', 1)[0]

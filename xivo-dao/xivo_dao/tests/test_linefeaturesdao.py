@@ -186,3 +186,28 @@ class TestLineFeaturesDAO(DAOTestCase):
         result = linefeaturesdao.get_cid_for_channel(channel)
 
         self.assertEqual(result, cid)
+
+    def test_get_interface_from_user_id(self):
+        self.assertRaises(LookupError, linefeaturesdao.get_interface_from_user_id, 5)
+
+        line = self._insert_line()
+
+        user_id = int(line.iduserfeatures)
+
+        interface = linefeaturesdao.get_interface_from_user_id(user_id)
+
+        expected_iface = line.protocol + '/' + line.name
+
+        self.assertEqual(interface, expected_iface)
+
+    def test_get_interface_from_user_id_custom_line(self):
+        protocol = 'custom'
+        name = 'dahdi/g1/12345'
+        context = 'foobar'
+        line = self._insert_line(context, name=name, protocol=protocol)
+
+        user_id = int(line.iduserfeatures)
+
+        interface = linefeaturesdao.get_interface_from_user_id(user_id)
+
+        self.assertEqual(interface, name)
