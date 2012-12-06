@@ -27,6 +27,7 @@ from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
 from xivo_dao.alchemy.cti_profile_xlet import CtiProfileXlet
 from xivo_dao.alchemy.cti_xlet import CtiXlet
 from xivo_dao.alchemy.cti_xlet_layout import CtiXletLayout
+from sqlalchemy.sql.expression import asc
 
 _DB_NAME = 'asterisk'
 
@@ -51,6 +52,7 @@ def get_profiles():
                   (CtiProfileXlet, CtiProfile.id == CtiProfileXlet.profile_id),
                   (CtiXlet, CtiProfileXlet.xlet_id == CtiXlet.id),
                   (CtiXletLayout, CtiProfileXlet.layout_id == CtiXletLayout.id))
+                  .order_by(asc(CtiProfileXlet.order))
             .all())
 
     res = {}
