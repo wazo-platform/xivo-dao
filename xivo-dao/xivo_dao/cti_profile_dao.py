@@ -57,15 +57,17 @@ def get_profiles():
 
     res = {}
     for row in rows:
-        cti_profiles, cti_presences, cti_phonehints_group, cti_profile_xlet, cti_xlet, cti_xlet_layout = row
-        if cti_profiles.name not in res:
-            res[cti_profiles.name] = {}
-            new_profile = res[cti_profiles.name]
-            new_profile['name'] = cti_profiles.name
+        cti_profile, cti_presences, cti_phonehints_group, cti_profile_xlet, cti_xlet, cti_xlet_layout = row
+        cti_profile_id = cti_profile.id
+        if cti_profile_id not in res:
+            res[cti_profile_id] = {}
+            new_profile = res[cti_profile_id]
+            new_profile['id'] = cti_profile.id
+            new_profile['name'] = cti_profile.name
             new_profile['phonestatus'] = cti_phonehints_group.name
             new_profile['userstatus'] = cti_presences.name
-            new_profile['preferences'] = 'itm_preferences_%s' % cti_profiles.name
-            new_profile['services'] = 'itm_services_%s' % cti_profiles.name
+            new_profile['preferences'] = 'itm_preferences_%s' % cti_profile.name
+            new_profile['services'] = 'itm_services_%s' % cti_profile.name
             new_profile['xlets'] = []
 
         xlet = {}
@@ -77,6 +79,6 @@ def get_profiles():
         xlet['scrollable'] = cti_profile_xlet.scrollable
         xlet['order'] = cti_profile_xlet.order
 
-        res[cti_profiles.name]['xlets'].append(xlet)
+        res[cti_profile_id]['xlets'].append(xlet)
 
     return res

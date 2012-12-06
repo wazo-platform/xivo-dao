@@ -20,21 +20,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from mock import Mock
-from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao.alchemy.incall import Incall
+from xivo_dao import incall_dao
+from xivo_dao.alchemy.cti_profile import CtiProfile
+from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
+from xivo_dao.alchemy.ctipresences import CtiPresences
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.groupfeatures import GroupFeatures
+from xivo_dao.alchemy.incall import Incall
 from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.alchemy.voicemail import Voicemail
-from xivo_dao import incall_dao
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestIncallDAO(DAOTestCase):
 
-    tables = [Incall, Dialaction, UserFeatures, GroupFeatures, QueueFeatures, MeetmeFeatures, Voicemail]
+    tables = [Incall, Dialaction, UserFeatures, GroupFeatures, QueueFeatures,
+              MeetmeFeatures, Voicemail, CtiPresences, CtiPhoneHintsGroup, CtiProfile]
 
     def setUp(self):
         self.empty_tables()

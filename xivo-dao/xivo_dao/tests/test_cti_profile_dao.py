@@ -19,66 +19,27 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import unittest
-
-from xivo_dao.alchemy import dbconnection
-from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao import cti_profile_dao
-from xivo_dao.alchemy.base import Base
-from sqlalchemy.schema import MetaData
 from xivo_dao.alchemy.cti_preference import CtiPreference
-from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
-from xivo_dao.alchemy.ctipresences import CtiPresences
+from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.alchemy.cti_profile_preference import CtiProfilePreference
 from xivo_dao.alchemy.cti_profile_service import CtiProfileService
 from xivo_dao.alchemy.cti_profile_xlet import CtiProfileXlet
 from xivo_dao.alchemy.cti_service import CtiService
 from xivo_dao.alchemy.cti_xlet import CtiXlet
 from xivo_dao.alchemy.cti_xlet_layout import CtiXletLayout
+from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
+from xivo_dao.alchemy.ctipresences import CtiPresences
 from xivo_dao.alchemy.ctistatus import CtiStatus
-from pprint import pprint
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
-class TestCtiProfileDAO(unittest.TestCase):
+class TestCtiProfileDAO(DAOTestCase):
 
     tables = [CtiProfile, CtiPreference, CtiPhoneHintsGroup,
               CtiPresences, CtiProfilePreference, CtiProfileService,
               CtiProfileXlet, CtiService, CtiXlet, CtiXletLayout,
               CtiStatus]
-
-    @classmethod
-    def setUpClass(cls):
-        db_connection_pool = dbconnection.DBConnectionPool(dbconnection.DBConnection)
-        dbconnection.register_db_connection_pool(db_connection_pool)
-
-        uri = 'postgresql://asterisk:asterisk@localhost/asterisktest'
-        dbconnection.add_connection_as(uri, 'asterisk')
-        cls.connection = dbconnection.get_connection('asterisk')
-
-        cls.cleanTables()
-
-        cls.session = cls.connection.get_session()
-
-    @classmethod
-    def tearDownClass(cls):
-        dbconnection.unregister_db_connection_pool()
-
-    @classmethod
-    def cleanTables(cls):
-        if len(cls.tables):
-            engine = cls.connection.get_engine()
-
-            meta = MetaData(engine)
-            meta.reflect()
-            meta.drop_all()
-
-            table_list = [table.__table__ for table in cls.tables]
-            Base.metadata.create_all(engine, table_list)
-            engine.dispose()
-
-    def empty_tables(self):
-        for table in self.tables:
-            self.session.execute("TRUNCATE %s CASCADE;" % table.__tablename__)
 
     def setUp(self):
         self.empty_tables()
@@ -152,31 +113,6 @@ class TestCtiProfileDAO(unittest.TestCase):
         self.session.commit()
 
     def test_get_profiles(self):
-        expected_result = {
-            "test_profile": {
-                "name": "test_profile",
-                "phonestatus": "test_add_phone_hints_group",
-                "userstatus": "test_presence",
-                "preferences": "itm_preferences_test_profile",
-                "services": "itm_services_test_profile",
-                "xlets": [
-                    {'name': 'agentdetails',
-                     'layout': 'dock',
-                     'floating': False,
-                     'closable': True,
-                     'movable': True,
-                     'scrollable': True,
-                     'order': 0},
-                    {'name': 'tabber',
-                     'layout': 'grid',
-                     'floating': True,
-                     'closable': True,
-                     'movable': True,
-                     'scrollable': True,
-                     'order': 1}
-                ]
-            }
-        }
         profile_id = self._add_profile('test_profile')
 
         xlet_layout_grid_id = self._add_xlet_layout('grid')
@@ -200,10 +136,33 @@ class TestCtiProfileDAO(unittest.TestCase):
                              movable=True,
                              scrollable=True,
                              order=0)
+        expected_result = {
+            profile_id: {
+                "id": profile_id,
+                "name": "test_profile",
+                "phonestatus": "test_add_phone_hints_group",
+                "userstatus": "test_presence",
+                "preferences": "itm_preferences_test_profile",
+                "services": "itm_services_test_profile",
+                "xlets": [
+                    {'name': 'agentdetails',
+                     'layout': 'dock',
+                     'floating': False,
+                     'closable': True,
+                     'movable': True,
+                     'scrollable': True,
+                     'order': 0},
+                    {'name': 'tabber',
+                     'layout': 'grid',
+                     'floating': True,
+                     'closable': True,
+                     'movable': True,
+                     'scrollable': True,
+                     'order': 1}
+                ]
+            }
+        }
 
         result = cti_profile_dao.get_profiles()
-
-        pprint(result)
-        pprint(expected_result)
 
         self.assertEquals(result, expected_result)

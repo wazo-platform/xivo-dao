@@ -22,7 +22,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from xivo_dao.alchemy.base import Base
-from sqlalchemy.schema import Column
+from sqlalchemy.schema import Column, ForeignKey
 from sqlalchemy.types import Integer, String, Text
 
 
@@ -43,7 +43,7 @@ class UserFeatures(Base):
     enableclient = Column(Integer, nullable=False, default=1)
     loginclient = Column(String(64), nullable=False, server_default='')
     passwdclient = Column(String(64), nullable=False, server_default='')
-    profileclient = Column(String(64), nullable=False, server_default='')
+    cti_profile_id = Column(Integer, ForeignKey('cti_profile.id'))
     enablehint = Column(Integer, nullable=False, default=1)
     enablevoicemail = Column(Integer, nullable=False, default=0)
     enablexfer = Column(Integer, nullable=False, default=0)
