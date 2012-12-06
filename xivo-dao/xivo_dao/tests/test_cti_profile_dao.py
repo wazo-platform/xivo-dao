@@ -36,6 +36,7 @@ from xivo_dao.alchemy.cti_service import CtiService
 from xivo_dao.alchemy.cti_xlet import CtiXlet
 from xivo_dao.alchemy.cti_xlet_layout import CtiXletLayout
 from xivo_dao.alchemy.ctistatus import CtiStatus
+from pprint import pprint
 
 
 class TestCtiProfileDAO(unittest.TestCase):
@@ -159,20 +160,20 @@ class TestCtiProfileDAO(unittest.TestCase):
                 "preferences": "itm_preferences_test_profile",
                 "services": "itm_services_test_profile",
                 "xlets": [
-                    {'name': 'tabber',
-                     'layout': 'grid',
-                     'floating': True,
-                     'closable': True,
-                     'movable': True,
-                     'scrollable': True,
-                     'order': 1},
                     {'name': 'agentdetails',
                      'layout': 'dock',
                      'floating': False,
                      'closable': True,
                      'movable': True,
                      'scrollable': True,
-                     'order': 0}
+                     'order': 0},
+                    {'name': 'tabber',
+                     'layout': 'grid',
+                     'floating': True,
+                     'closable': True,
+                     'movable': True,
+                     'scrollable': True,
+                     'order': 1}
                 ]
             }
         }
@@ -201,5 +202,8 @@ class TestCtiProfileDAO(unittest.TestCase):
                              order=0)
 
         result = cti_profile_dao.get_profiles()
+
+        pprint(result)
+        pprint(expected_result)
 
         self.assertEquals(result, expected_result)
