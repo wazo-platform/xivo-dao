@@ -38,43 +38,43 @@ def _session():
     return connection.get_session()
 
 
-class LineFeaturesDAO(object):
+def find_line_id_by_user_id(user_id):
+    res = _session().query(LineFeatures).filter(LineFeatures.iduserfeatures == int(user_id))
+    return [line.id for line in res]
 
-    def __init__(self):
-        pass
 
-    def find_line_id_by_user_id(self, user_id):
-        res = _session().query(LineFeatures).filter(LineFeatures.iduserfeatures == int(user_id))
-        return [line.id for line in res]
+def find_context_by_user_id(user_id):
+    res = _session().query(LineFeatures).filter(LineFeatures.iduserfeatures == int(user_id))
+    context_list = [line.context for line in res]
+    return context_list[0] if len(context_list) > 0 else None
 
-    def find_context_by_user_id(self, user_id):
-        res = _session().query(LineFeatures).filter(LineFeatures.iduserfeatures == int(user_id))
-        context_list = [line.context for line in res]
-        return context_list[0] if len(context_list) > 0 else None
 
-    def get_interface_from_exten_and_context(self, extension, context):
-        res = (_session().query(LineFeatures.protocol, LineFeatures.name)
-               .filter(LineFeatures.number == extension)
-               .filter(LineFeatures.context == context)).first()
-        if res is None:
-            raise LookupError('no line with extension %s and context %s' % (extension, context))
-        return self._format_interface(res.protocol, res.name)
+def get_interface_from_exten_and_context(extension, context):
+    res = (_session().query(LineFeatures.protocol, LineFeatures.name)
+           .filter(LineFeatures.number == extension)
+           .filter(LineFeatures.context == context)).first()
+    if res is None:
+        raise LookupError('no line with extension %s and context %s' % (extension, context))
+    return _format_interface(res.protocol, res.name)
 
-    def _format_interface(self, protocol, name):
-        if protocol == 'custom':
-            return name
-        else:
-            return '%s/%s' % (protocol.upper(), name)
 
-    def number(self, line_id):
-        res = _session().query(LineFeatures).filter(LineFeatures.id == line_id)
-        if res.count() == 0:
-            raise LookupError
-        else:
-            return res[0].number
+def _format_interface(protocol, name):
+    if protocol == 'custom':
+        return name
+    else:
+        return '%s/%s' % (protocol.upper(), name)
 
-    def is_phone_exten(self, exten):
-        return _session().query(LineFeatures).filter(LineFeatures.number == exten).count() > 0
+
+def number(line_id):
+    res = _session().query(LineFeatures).filter(LineFeatures.id == line_id)
+    if res.count() == 0:
+        raise LookupError
+    else:
+        return res[0].number
+
+
+def is_phone_exten(exten):
+    return _session().query(LineFeatures).filter(LineFeatures.number == exten).count() > 0
 
 
 def get_protocol(line_id):
