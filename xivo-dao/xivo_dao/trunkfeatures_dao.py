@@ -36,43 +36,40 @@ def _session():
     return connection.get_session()
 
 
-class TrunkFeaturesDAO(object):
+def find_by_proto_name(protocol, name):
+    if not protocol or protocol not in TRUNK_TYPES:
+        raise ValueError('Protocol %s is not allowed', protocol)
 
-    def __init__(self):
-        pass
+    protocol = protocol.lower()
+    table, field = _trunk_table_lookup_field(protocol)
 
-    def find_by_proto_name(self, protocol, name):
-        if not protocol or protocol not in TRUNK_TYPES:
-            raise ValueError('Protocol %s is not allowed', protocol)
+    try:
+        protocol_id = (_session().query(table.id)
+                       .filter(field.ilike(name)))[0].id
+        trunk_id = (_session().query(TrunkFeatures.id)
+                    .filter(TrunkFeatures.protocolid == protocol_id)
+                    .filter(TrunkFeatures.protocol == protocol.lower()))[0].id
+    except IndexError:
+        raise LookupError('No such trunk')
+    else:
+        return trunk_id
 
-        protocol = protocol.lower()
-        table, field = self._trunk_table_lookup_field(protocol)
 
-        try:
-            protocol_id = (_session().query(table.id)
-                           .filter(field.ilike(name)))[0].id
-            trunk_id = (_session().query(TrunkFeatures.id)
-                        .filter(TrunkFeatures.protocolid == protocol_id)
-                        .filter(TrunkFeatures.protocol == protocol.lower()))[0].id
-        except IndexError:
-            raise LookupError('No such trunk')
-        else:
-            return trunk_id
+def _trunk_table_lookup_field(protocol):
+    if protocol == 'sip':
+        table = UserSIP
+        field = UserSIP.name
+    elif protocol == 'iax':
+        table = UserIAX
+        field = UserIAX.name
+    elif protocol == 'custom':
+        table = UserCustom
+        field = UserCustom.interface
+    return table, field
 
-    def _trunk_table_lookup_field(self, protocol):
-        if protocol == 'sip':
-            table = UserSIP
-            field = UserSIP.name
-        elif protocol == 'iax':
-            table = UserIAX
-            field = UserIAX.name
-        elif protocol == 'custom':
-            table = UserCustom
-            field = UserCustom.interface
-        return table, field
 
-    def get_ids(self):
-        return [item.id for item in _session().query(TrunkFeatures.id)]
+def get_ids(self):
+    return [item.id for item in _session().query(TrunkFeatures.id)]
 
 
 def get(id):
@@ -81,7 +78,3 @@ def get(id):
 
 def all():
     return _session().query(TrunkFeatures).all()
-
-
-def get_ids():
-    return [item.id for item in _session().query(TrunkFeatures.id)]

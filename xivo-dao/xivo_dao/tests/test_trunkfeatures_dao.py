@@ -25,7 +25,7 @@ from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
 from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.usercustom import UserCustom
-from xivo_dao.trunkfeaturesdao import TrunkFeaturesDAO
+from xivo_dao import trunkfeatures_dao
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao import trunkfeaturesdao
 
@@ -36,7 +36,6 @@ class TrunkFeaturesDAOTestCase(DAOTestCase):
 
     def setUp(self):
         self.empty_tables()
-        self.dao = TrunkFeaturesDAO()
 
     def test_find_by_proto_name_sip(self):
         trunk_name = 'my_trunk'
@@ -134,12 +133,12 @@ class TrunkFeaturesDAOTestCase(DAOTestCase):
         self.session.commit()
 
         expected = sorted([trunk1.id, trunk2.id, trunk3.id])
-        result = sorted(trunkfeaturesdao.get_ids())
+        result = sorted(trunkfeatures_dao.get_ids())
 
         self.assertEqual(expected, result)
 
     def test_get_ids_empty(self):
-        result = trunkfeaturesdao.get_ids()
+        result = trunkfeatures_dao.get_ids()
         self.assertEqual([], result)
 
     def test_find_by_proto_name_agent(self):
