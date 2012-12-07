@@ -27,7 +27,6 @@ from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao import trunkfeatures_dao
 from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao import trunkfeaturesdao
 
 
 class TrunkFeaturesDAOTestCase(DAOTestCase):
@@ -52,7 +51,7 @@ class TrunkFeaturesDAOTestCase(DAOTestCase):
         map(self.session.add, [trunk, usersip])
         self.session.commit()
 
-        result = self.dao.find_by_proto_name('sip', trunk_name)
+        result = trunkfeatures_dao.find_by_proto_name('sip', trunk_name)
 
         self.assertEqual(result, trunk.id)
 
@@ -71,7 +70,7 @@ class TrunkFeaturesDAOTestCase(DAOTestCase):
         map(self.session.add, [trunk, useriax])
         self.session.commit()
 
-        result = self.dao.find_by_proto_name('iax', trunk_name)
+        result = trunkfeatures_dao.find_by_proto_name('iax', trunk_name)
 
         self.assertEqual(result, trunk.id)
 
@@ -90,7 +89,7 @@ class TrunkFeaturesDAOTestCase(DAOTestCase):
         map(self.session.add, [trunk, usercustom])
         self.session.commit()
 
-        result = self.dao.find_by_proto_name('custom', dahdi_interface)
+        result = trunkfeatures_dao.find_by_proto_name('custom', dahdi_interface)
 
         self.assertEqual(result, trunk.id)
 
@@ -109,12 +108,12 @@ class TrunkFeaturesDAOTestCase(DAOTestCase):
         map(self.session.add, [trunk, usercustom])
         self.session.commit()
 
-        result = self.dao.find_by_proto_name('custom', 'DAHDI/g1')
+        result = trunkfeatures_dao.find_by_proto_name('custom', 'DAHDI/g1')
 
         self.assertEqual(result, trunk.id)
 
     def test_null_input(self):
-        self.assertRaises(ValueError, self.dao.find_by_proto_name, None, 'my_trunk')
+        self.assertRaises(ValueError, trunkfeatures_dao.find_by_proto_name, None, 'my_trunk')
 
     def test_get_ids(self):
         trunk1 = TrunkFeatures()
@@ -142,4 +141,4 @@ class TrunkFeaturesDAOTestCase(DAOTestCase):
         self.assertEqual([], result)
 
     def test_find_by_proto_name_agent(self):
-        self.assertRaises(ValueError, self.dao.find_by_proto_name, 'Agent', 1)
+        self.assertRaises(ValueError, trunkfeatures_dao.find_by_proto_name, 'Agent', 1)

@@ -68,7 +68,7 @@ def _trunk_table_lookup_field(protocol):
     return table, field
 
 
-def get_ids(self):
+def get_ids():
     return [item.id for item in _session().query(TrunkFeatures.id)]
 
 
