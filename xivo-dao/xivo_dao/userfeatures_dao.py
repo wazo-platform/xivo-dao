@@ -35,6 +35,51 @@ def _session():
     return connection.get_session()
 
 
+def enable_dnd(user_id):
+    _update(user_id, {'enablednd': 1})
+
+
+def disable_dnd(user_id):
+    _update(user_id, {'enablednd': 0})
+
+
+def enable_filter(user_id):
+    _update(user_id, {'incallfilter': 1})
+
+
+def disable_filter(user_id):
+    _update(user_id, {'incallfilter': 0})
+
+
+def enable_unconditional_fwd(user_id, destination):
+    _update(user_id, {'enableunc': 1, 'destunc': destination})
+
+
+def disable_unconditional_fwd(user_id, destination):
+    _update(user_id, {'enableunc': 0, 'destunc': destination})
+
+
+def enable_rna_fwd(user_id, destination):
+    _update(user_id, {'enablerna': 1, 'destrna': destination})
+
+
+def disable_rna_fwd(user_id, destination):
+    _update(user_id, {'enablerna': 0, 'destrna': destination})
+
+
+def enable_busy_fwd(user_id, destination):
+    _update(user_id, {'enablebusy': 1, 'destbusy': destination})
+
+
+def disable_busy_fwd(user_id, destination):
+    _update(user_id, {'enablebusy': 0, 'destbusy': destination})
+
+
+def _update(user_id, user_data_dict):
+    _session().query(UserFeatures).filter(UserFeatures.id == user_id).update(user_data_dict)
+    _session().commit()
+
+
 def get(user_id):
     result = _session().query(UserFeatures).filter(UserFeatures.id == int(user_id)).first()
     if result is None:

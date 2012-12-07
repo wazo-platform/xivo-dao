@@ -56,12 +56,196 @@ class TestUserFeaturesDAO(DAOTestCase):
     def test_get_no_result(self):
         self.assertRaises(LookupError, userfeatures_dao.get, 1)
 
+    def test_set_dnd(self):
+        user_id = self._insert_user_dnd_not_set()
+
+        userfeatures_dao.enable_dnd(user_id)
+
+        self._check_dnd_is_set(user_id)
+
+    def test_unset_dnd(self):
+        user_id = self._insert_user_dnd_set()
+
+        userfeatures_dao.disable_dnd(user_id)
+
+        self._check_dnd_is_not_set(user_id)
+
     def _insert_user(self, firstname):
         user = UserFeatures()
         user.firstname = firstname
         self.session.add(user)
         self.session.commit()
         return user.id
+
+    def _insert_user_dnd_set(self):
+        user_features = UserFeatures()
+        user_features.enablednd = 1
+        user_features.firstname = 'firstname_test'
+        self.session.add(user_features)
+        self.session.commit()
+        user_id = user_features.id
+        return user_id
+
+    def _insert_user_dnd_not_set(self):
+        user_features = UserFeatures()
+        user_features.enablednd = 0
+        user_features.firstname = 'firstname_dnd not set'
+        self.session.add(user_features)
+        self.session.commit()
+        user_id = user_features.id
+        return user_id
+
+    def _check_dnd_is_set(self, user_id):
+        user_features = (self.session.query(UserFeatures)
+                         .filter(UserFeatures.id == user_id))[0]
+        self.assertTrue(user_features.enablednd)
+
+    def _check_dnd_is_not_set(self, user_id):
+        user_features = (self.session.query(UserFeatures)
+                         .filter(UserFeatures.id == user_id))[0]
+        self.assertFalse(user_features.enablednd)
+
+    def test_enable_filter(self):
+        user_id = self._insert_user_with_filter(0)
+
+        userfeatures_dao.enable_filter(user_id)
+
+        self._check_filter_in_db(user_id, 1)
+
+    def test_disable_filter(self):
+        user_id = self._insert_user_with_filter(1)
+
+        userfeatures_dao.disable_filter(user_id)
+
+        self._check_filter_in_db(user_id, 0)
+
+    def _insert_user_with_filter(self, filter_status):
+        user_features = UserFeatures()
+        user_features.incallfilter = filter_status
+        user_features.firstname = 'firstname_filter not set'
+        self.session.add(user_features)
+        self.session.commit()
+        user_id = user_features.id
+        return user_id
+
+    def _check_filter_in_db(self, user_id, value):
+        user_features = (self.session.query(UserFeatures)
+                         .filter(UserFeatures.id == user_id))[0]
+        self.assertEquals(user_features.incallfilter, value)
+
+    def test_enable_unconditional_fwd(self):
+        destination = '765'
+        user_id = self._insert_user_with_unconditional_fwd(destination, 0)
+
+        userfeatures_dao.enable_unconditional_fwd(user_id, destination)
+
+        self._check_unconditional_fwd_in_db(user_id, 1)
+        self._check_unconditional_dest_in_db(user_id, destination)
+
+    def _insert_user_with_unconditional_fwd(self, destination, enabled):
+        user_features = UserFeatures()
+        user_features.enableunc = enabled
+        user_features.destunc = destination
+        user_features.firstname = 'firstname_unconditional_fwd'
+        self.session.add(user_features)
+        self.session.commit()
+        user_id = user_features.id
+        return user_id
+
+    def _check_unconditional_fwd_in_db(self, user_id, value):
+        user_features = (self.session.query(UserFeatures)
+                         .filter(UserFeatures.id == user_id))[0]
+        self.assertEquals(user_features.enableunc, value)
+
+    def test_unconditional_fwd_disabled(self):
+        destination = '4321'
+        user_id = self._insert_user_with_unconditional_fwd('', 0)
+
+        userfeatures_dao.disable_unconditional_fwd(user_id, destination)
+
+        self._check_unconditional_fwd_in_db(user_id, 0)
+        self._check_unconditional_dest_in_db(user_id, destination)
+
+    def _check_unconditional_dest_in_db(self, user_id, destination):
+        user_features = (self.session.query(UserFeatures)
+                         .filter(UserFeatures.id == user_id))[0]
+        self.assertEquals(user_features.destunc, destination)
+
+    def test_rna_fwd_enabled(self):
+        destination = '4321'
+        user_id = self._insert_user_with_rna_fwd('', 1)
+
+        userfeatures_dao.enable_rna_fwd(user_id, destination)
+
+        self._check_rna_fwd_in_db(user_id, 1)
+        self._check_rna_dest_in_db(user_id, destination)
+
+    def test_rna_fwd_disabled(self):
+        destination = '4325'
+        user_id = self._insert_user_with_rna_fwd('', 0)
+
+        userfeatures_dao.disable_rna_fwd(user_id, destination)
+
+        self._check_rna_fwd_in_db(user_id, 0)
+        self._check_rna_dest_in_db(user_id, destination)
+
+    def _insert_user_with_rna_fwd(self, destination, enabled):
+        user_features = UserFeatures()
+        user_features.enablerna = enabled
+        user_features.destrna = destination
+        user_features.firstname = 'firstname_rna_fwd'
+        self.session.add(user_features)
+        self.session.commit()
+        user_id = user_features.id
+        return user_id
+
+    def _check_rna_dest_in_db(self, user_id, destination):
+        user_features = (self.session.query(UserFeatures)
+                         .filter(UserFeatures.id == user_id))[0]
+        self.assertEquals(user_features.destrna, destination)
+
+    def _check_rna_fwd_in_db(self, user_id, value):
+        user_features = (self.session.query(UserFeatures)
+                         .filter(UserFeatures.id == user_id))[0]
+        self.assertEquals(user_features.enablerna, value)
+
+    def _insert_user_with_busy_fwd(self, destination, enabled):
+        user_features = UserFeatures()
+        user_features.enablebusy = enabled
+        user_features.destbusy = destination
+        user_features.firstname = 'firstname_busy_fwd'
+        self.session.add(user_features)
+        self.session.commit()
+        user_id = user_features.id
+        return user_id
+
+    def _check_busy_fwd_in_db(self, user_id, value):
+        user_features = (self.session.query(UserFeatures)
+                         .filter(UserFeatures.id == user_id))[0]
+        self.assertEquals(user_features.enablebusy, value)
+
+    def _check_busy_dest_in_db(self, user_id, destination):
+        user_features = (self.session.query(UserFeatures)
+                         .filter(UserFeatures.id == user_id))[0]
+        self.assertEquals(user_features.destbusy, destination, 'Destination not updated')
+
+    def test_busy_fwd_disabled(self):
+        destination = '435'
+        user_id = self._insert_user_with_busy_fwd('', 0)
+
+        userfeatures_dao.disable_busy_fwd(user_id, destination)
+
+        self._check_busy_fwd_in_db(user_id, 0)
+        self._check_busy_dest_in_db(user_id, destination)
+
+    def test_busy_fwd_enabled(self):
+        destination = '435'
+        user_id = self._insert_user_with_busy_fwd('', 1)
+
+        userfeatures_dao.enable_busy_fwd(user_id, destination)
+
+        self._check_busy_fwd_in_db(user_id, 1)
+        self._check_busy_dest_in_db(user_id, destination)
 
     def test_find_by_agent_id(self):
         agent_id = 5

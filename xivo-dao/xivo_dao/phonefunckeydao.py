@@ -32,7 +32,6 @@ def _session():
     return connection.get_session()
 
 
-
 class PhoneFunckeyDAO(object):
 
     def __init__(self):
