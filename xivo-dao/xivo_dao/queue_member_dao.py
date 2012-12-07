@@ -34,12 +34,7 @@ def _session():
     return connection.get_session()
 
 
-class QueueMemberDAO(object):
-
-    def __init__(self):
-        pass
-
-    def get_queuemembers(self):
-        query_result = _session().query(QueueMember)
-        formatted_result = QueueMemberFormatter.format_queuemembers(query_result)
-        return formatted_result
+def get_queuemembers():
+    query_result = _session().query(QueueMember)
+    formatted_result = QueueMemberFormatter.format_queuemembers(query_result)
+    return formatted_result

@@ -19,7 +19,7 @@
 
 from mock import Mock, patch
 from xivo_dao.alchemy.queuemember import QueueMember
-from xivo_dao.queuememberdao import QueueMemberDAO
+from xivo_dao import queue_member_dao
 from xivo_dao.helpers.queuemember_formatter import QueueMemberFormatter
 from xivo_dao.tests.test_dao import DAOTestCase
 
@@ -30,11 +30,10 @@ class TestQueueMemberDAO(DAOTestCase):
 
     def test_get_queuemembers(self):
         with patch.object(self.session, 'query') as mock_query:
-            queuemember_dao = QueueMemberDAO()
             old_queuemember_formatter = QueueMemberFormatter.format_queuemembers
             QueueMemberFormatter.format_queuemembers = Mock()
 
-            queuemember_dao.get_queuemembers()
+            queue_member_dao.get_queuemembers()
 
             try:
                 mock_query.assert_called_with(QueueMember)
