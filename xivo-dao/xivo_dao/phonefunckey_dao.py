@@ -32,25 +32,23 @@ def _session():
     return connection.get_session()
 
 
-class PhoneFunckeyDAO(object):
+def _get_dest(user_id, fwd_type):
+    destinations = (_session().query(PhoneFunckey.exten)
+                    .filter(and_(PhoneFunckey.iduserfeatures == user_id,
+                                 PhoneFunckey.typevalextenumbers == fwd_type)))
 
-    def __init__(self):
-        pass
+    destinations = [d.exten if d.exten else '' for d in destinations.all()]
 
-    def _get_dest(self, user_id, fwd_type):
-        destinations = (_session().query(PhoneFunckey.exten)
-                        .filter(and_(PhoneFunckey.iduserfeatures == user_id,
-                                     PhoneFunckey.typevalextenumbers == fwd_type)))
+    return destinations
 
-        destinations = [d.exten if d.exten else '' for d in destinations.all()]
 
-        return destinations
+def get_dest_unc(user_id):
+    return _get_dest(user_id, 'fwdunc')
 
-    def get_dest_unc(self, user_id):
-        return self._get_dest(user_id, 'fwdunc')
 
-    def get_dest_rna(self, user_id):
-        return self._get_dest(user_id, 'fwdrna')
+def get_dest_rna(user_id):
+    return _get_dest(user_id, 'fwdrna')
 
-    def get_dest_busy(self, user_id):
-        return self._get_dest(user_id, 'fwdbusy')
+
+def get_dest_busy(user_id):
+    return _get_dest(user_id, 'fwdbusy')
