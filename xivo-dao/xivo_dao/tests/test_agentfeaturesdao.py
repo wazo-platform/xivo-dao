@@ -22,7 +22,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
-from xivo_dao.agentfeaturesdao import AgentFeaturesDAO
+from xivo_dao import agentfeatures_dao
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -35,41 +35,40 @@ class TestAgentFeaturesDAO(DAOTestCase):
 
     def setUp(self):
         self.empty_tables()
-        self.dao = AgentFeaturesDAO()
 
     def test_agent_number(self):
         agent_id = self._insert_agent()
 
-        number = self.dao.agent_number(agent_id)
+        number = agentfeatures_dao.agent_number(agent_id)
 
         self.assertEqual(number, self.agent_number)
 
     def test_agent_context(self):
         agent_id = self._insert_agent()
 
-        context = self.dao.agent_context(agent_id)
+        context = agentfeatures_dao.agent_context(agent_id)
 
         self.assertEqual(context, self.agent_context)
 
     def test_agent_number_unknown(self):
-        self.assertRaises(LookupError, lambda: self.dao.agent_number(-1))
+        self.assertRaises(LookupError, lambda: agentfeatures_dao.agent_number(-1))
 
     def test_agent_interface(self):
         agent_id = self._insert_agent()
 
-        interface = self.dao.agent_interface(agent_id)
+        interface = agentfeatures_dao.agent_interface(agent_id)
 
         self.assertEqual(interface, 'Agent/%s' % self.agent_number)
 
     def test_agent_id(self):
         expected_agent_id = self._insert_agent()
 
-        agent_id = self.dao.agent_id(self.agent_number)
+        agent_id = agentfeatures_dao.agent_id(self.agent_number)
 
         self.assertEqual(str(expected_agent_id), agent_id)
 
     def test_agent_id_inexistant(self):
-        self.assertRaises(LookupError, self.dao.agent_id, '2345')
+        self.assertRaises(LookupError, agentfeatures_dao.agent_id, '2345')
 
     def _insert_agent(self):
         agent = AgentFeatures()
