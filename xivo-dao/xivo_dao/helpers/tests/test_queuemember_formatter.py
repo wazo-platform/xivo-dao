@@ -26,10 +26,10 @@ from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.base import Base
 
-from xivo_dao.helpers.queuemember_formatter import QueueMemberFormatter
+from xivo_dao.helpers import queuemember_formatter
 
 
-class TestQueueMemberFormatter(unittest.TestCase):
+class Testqueuemember_formatter(unittest.TestCase):
 
     def setUp(self):
         db_connection_pool = dbconnection.DBConnectionPool(dbconnection.DBConnection)
@@ -183,7 +183,7 @@ class TestQueueMemberFormatter(unittest.TestCase):
             'Agent/3,queue3': self.queuem3_dict,
             'Agent/4,queue4': self.queuem4_dict
         }
-        result = QueueMemberFormatter.format_queuemembers(query_result)
+        result = queuemember_formatter.format_queuemembers(query_result)
 
         self.assertEqual(result, expected_result)
 
@@ -191,7 +191,7 @@ class TestQueueMemberFormatter(unittest.TestCase):
         queuemember = self.queuem1_dict
         expected_result = 'Agent/1,queue1'
 
-        result = QueueMemberFormatter._generate_key(queuemember)
+        result = queuemember_formatter._generate_key(queuemember)
 
         self.assertEqual(result, expected_result)
 
@@ -200,7 +200,7 @@ class TestQueueMemberFormatter(unittest.TestCase):
         row = query_result[0]
         expected_result = self.queuem1_dict
 
-        result = QueueMemberFormatter._convert_row_to_dict(row)
+        result = queuemember_formatter._convert_row_to_dict(row)
 
         self.assertEqual(result, expected_result)
 
@@ -208,7 +208,7 @@ class TestQueueMemberFormatter(unittest.TestCase):
         ami_event = self.ami_event
         expected_result = self.ami_event_formatted
 
-        result = QueueMemberFormatter.format_queuemember_from_ami_add(ami_event)
+        result = queuemember_formatter.format_queuemember_from_ami_add(ami_event)
 
         self.assertEqual(result, expected_result)
 
@@ -221,7 +221,7 @@ class TestQueueMemberFormatter(unittest.TestCase):
             }
         }
 
-        result = QueueMemberFormatter.format_queuemember_from_ami_remove(ami_event)
+        result = queuemember_formatter.format_queuemember_from_ami_remove(ami_event)
 
         self.assertEqual(result, expected_result)
 
@@ -252,7 +252,7 @@ class TestQueueMemberFormatter(unittest.TestCase):
             }
         }
 
-        result = QueueMemberFormatter.format_queuemember_from_ami_update(ami_event)
+        result = queuemember_formatter.format_queuemember_from_ami_update(ami_event)
 
         self.assertEqual(result, expected_result)
 
@@ -283,7 +283,7 @@ class TestQueueMemberFormatter(unittest.TestCase):
             }
         }
 
-        result = QueueMemberFormatter.format_queuemember_from_ami_update(ami_event)
+        result = queuemember_formatter.format_queuemember_from_ami_update(ami_event)
 
         self.assertEqual(result, expected_result)
 
@@ -302,7 +302,7 @@ class TestQueueMemberFormatter(unittest.TestCase):
             }
         }
 
-        result = QueueMemberFormatter.format_queuemember_from_ami_pause(ami_event)
+        result = queuemember_formatter.format_queuemember_from_ami_pause(ami_event)
 
         self.assertEqual(result, expected_result)
 
@@ -314,6 +314,6 @@ class TestQueueMemberFormatter(unittest.TestCase):
             'interface': 'Agent/1',
             'membership': 'dynamic'}}
 
-        result = QueueMemberFormatter._extract_ami(field_list, ami_event)
+        result = queuemember_formatter._extract_ami(field_list, ami_event)
 
         self.assertEqual(result, expected_result)

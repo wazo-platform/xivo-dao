@@ -24,7 +24,7 @@
 
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy import dbconnection
-from xivo_dao.helpers.queuemember_formatter import QueueMemberFormatter
+from xivo_dao.helpers import queuemember_formatter
 
 _DB_NAME = 'asterisk'
 
@@ -36,5 +36,5 @@ def _session():
 
 def get_queuemembers():
     query_result = _session().query(QueueMember)
-    formatted_result = QueueMemberFormatter.format_queuemembers(query_result)
+    formatted_result = queuemember_formatter.format_queuemembers(query_result)
     return formatted_result
