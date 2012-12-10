@@ -7,8 +7,14 @@ sqlalchemy >= 0.6.3
 postgresql
 
 
-Run unittests with:
+To Run Unittests:
 -------------------
+
+- Install postgres sql
+- Create a database asterisktest
+- Create a user asterisk / passwd asterisk
+        create DATABASE asterisktest;
+        create USER asterisk with password 'asterisk';
+        grant all ON DATABASE asterisktest to asterisk;
+
 PYTHONPATH=</path/to/lib-python> nosetests
-a local database named 'asterisktest' with username and password 'asterisk', 'asterisk' is
-required to run the unittests.
