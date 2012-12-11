@@ -135,8 +135,17 @@ def get_reachable_contexts(user_id):
     return _get_nested_contexts(line_contexts)
 
 
-def all():
-    return _session().query(UserFeatures).all()
+def all_join_line_id():
+    return (_session().query(UserFeatures, LineFeatures.id)
+            .outerjoin((LineFeatures, UserFeatures.id == LineFeatures.iduserfeatures))
+            .all())
+
+
+def get_join_line_id_with_user_id(user_id):
+    return (_session().query(UserFeatures, LineFeatures.id)
+            .outerjoin((LineFeatures, UserFeatures.id == LineFeatures.iduserfeatures))
+            .filter(UserFeatures.id == int(user_id))
+            .first())
 
 
 def find_by_line_id(line_id):

@@ -349,7 +349,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.session.commit()
         return cti_profile.id
 
-    def _add_user_with_line(self, name, context):
+    def _add_user_with_line(self, name, context='default'):
         user = UserFeatures()
         user.firstname = name
 
@@ -366,12 +366,12 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.session.add(line)
         self.session.commit()
 
-        return user
+        return user, line
 
     def test_get_reachable_contexts(self):
         context = 'my_context'
 
-        user = self._add_user_with_line('Tester', context)
+        user, line = self._add_user_with_line('Tester', context)
 
         result = userfeatures_dao.get_reachable_contexts(user.id)
 
@@ -397,7 +397,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.session.add(ctx_include)
         self.session.commit()
 
-        user = self._add_user_with_line('Tester', context)
+        user, line = self._add_user_with_line('Tester', context)
 
         result = userfeatures_dao.get_reachable_contexts(user.id)
 
@@ -423,7 +423,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         map(self.session.add, [ctx, ctx_include, ctx_loop])
         self.session.commit()
 
-        user = self._add_user_with_line('Tester', context)
+        user, line = self._add_user_with_line('Tester', context)
 
         result = userfeatures_dao.get_reachable_contexts(user.id)
 
@@ -701,3 +701,26 @@ class TestUserFeaturesDAO(DAOTestCase):
 
     def test_get_device_id_no_user(self):
         self.assertRaises(LookupError, userfeatures_dao.get_device_id, 666)
+
+    def test_all_join_line_id(self):
+        user1, line1 = self._add_user_with_line('test_user1')
+        user2, line2 = self._add_user_with_line('test_user2')
+
+        result = userfeatures_dao.all_join_line_id()
+
+        for row in result:
+            user_result, line_id_result = row
+            if user_result.firstname == 'test_user1':
+                self.assertEquals(user1.id, user_result.id)
+                self.assertEquals(line1.id, line_id_result)
+            elif user_result.firstname == 'test_user2':
+                self.assertEquals(user2.id, user_result.id)
+                self.assertEquals(line2.id, line_id_result)
+
+    def test_get_join_line_id_with_user_id(self):
+        user, line = self._add_user_with_line('test_user1')
+
+        user_result, line_id_result = userfeatures_dao.get_join_line_id_with_user_id(user.id)
+
+        self.assertEquals(user.id, user_result.id)
+        self.assertEquals(line.id, line_id_result)
