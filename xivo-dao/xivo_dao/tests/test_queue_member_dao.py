@@ -18,14 +18,17 @@
 
 
 from mock import patch
-from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao import queue_member_dao
+from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestQueueMemberDAO(DAOTestCase):
 
-    tables = []
+    tables = [QueueMember]
+
+    def setUp(self):
+        self.empty_tables()
 
     @patch('xivo_dao.helpers.queuemember_formatter.format_queuemembers')
     def test_get_queuemembers(self, mock_format_queuemembers):
@@ -39,3 +42,32 @@ class TestQueueMemberDAO(DAOTestCase):
                 self.assertTrue(mock_format_queuemembers.called)
             finally:
                 mock_format_queuemembers = old_queuemember_formatter
+
+    def test_get_queue_members_for_queues(self):
+        self._insert_queue_member('queue1', 'Agent/2', True)
+        self._insert_queue_member('group1', 'SIP/abcdef', False)
+
+        queue_members = queue_member_dao.get_queue_members_for_queues()
+
+        self.assertEqual(len(queue_members), 1)
+
+        queue_member = queue_members[0]
+        self.assertEqual(queue_member.queue_name, 'queue1')
+        self.assertEqual(queue_member.member_name, 'Agent/2')
+
+    def _insert_queue_member(self, queue_name, member_name, is_queue):
+        queue_member = QueueMember()
+        queue_member.queue_name = queue_name
+        queue_member.interface = member_name
+        queue_member.penalty = 0
+        queue_member.usertype = 'user'
+        queue_member.userid = 1
+        queue_member.channel = 'foobar'
+        queue_member.category = 'queue' if is_queue else 'group'
+
+        try:
+            self.session.add(queue_member)
+            self.session.commit()
+        except Exception:
+            self.session.rollback()
+            raise

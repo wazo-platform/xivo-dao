@@ -38,3 +38,13 @@ def get_queuemembers():
     query_result = _session().query(QueueMember)
     formatted_result = queuemember_formatter.format_queuemembers(query_result)
     return formatted_result
+
+
+def get_queue_members_for_queues():
+    rows = (_session()
+            .query(QueueMember.queue_name,
+                   QueueMember.interface.label('member_name'),
+                   QueueMember.penalty)
+            .filter(QueueMember.category == 'queue')
+            .all())
+    return rows
