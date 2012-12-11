@@ -17,7 +17,6 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA..
 
 
-from mock import patch
 from xivo_dao import queue_member_dao
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -29,19 +28,6 @@ class TestQueueMemberDAO(DAOTestCase):
 
     def setUp(self):
         self.empty_tables()
-
-    @patch('xivo_dao.helpers.queuemember_formatter.format_queuemembers')
-    def test_get_queuemembers(self, mock_format_queuemembers):
-        with patch.object(self.session, 'query') as mock_query:
-            old_queuemember_formatter = mock_format_queuemembers
-
-            queue_member_dao.get_queuemembers()
-
-            try:
-                mock_query.assert_called_with(QueueMember)
-                self.assertTrue(mock_format_queuemembers.called)
-            finally:
-                mock_format_queuemembers = old_queuemember_formatter
 
     def test_get_queue_members_for_queues(self):
         self._insert_queue_member('queue1', 'Agent/2', True)
