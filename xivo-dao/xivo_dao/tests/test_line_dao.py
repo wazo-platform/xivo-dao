@@ -25,7 +25,7 @@ from mock import patch
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.usersip import UserSIP
-from xivo_dao import linefeatures_dao
+from xivo_dao import line_dao
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.tests.test_dao import DAOTestCase
 
@@ -47,24 +47,24 @@ class TestLineFeaturesDAO(DAOTestCase):
 
         line = self._insert_line()
 
-        lines = linefeatures_dao.find_line_id_by_user_id(self.user_id)
+        lines = line_dao.find_line_id_by_user_id(self.user_id)
 
         self.assertEqual(lines[0], line.id)
 
     def test_number(self):
         line = self._insert_line()
 
-        number = linefeatures_dao.number(line.id)
+        number = line_dao.number(line.id)
 
         self.assertEqual(number, line.number)
 
     def test_is_phone_exten(self):
-        self.assertFalse(linefeatures_dao.is_phone_exten('12345'))
-        self.assertFalse(linefeatures_dao.is_phone_exten(None))
+        self.assertFalse(line_dao.is_phone_exten('12345'))
+        self.assertFalse(line_dao.is_phone_exten(None))
 
         self._insert_line()
 
-        self.assertTrue(linefeatures_dao.is_phone_exten(self.line_number))
+        self.assertTrue(line_dao.is_phone_exten(self.line_number))
 
     def _insert_line(self, context='test_context', name='tre321', protocol='sip'):
         line = LineFeatures()
@@ -84,7 +84,7 @@ class TestLineFeaturesDAO(DAOTestCase):
     def test_find_context_by_user_id(self):
         self._insert_line('falafel')
 
-        context = linefeatures_dao.find_context_by_user_id(self.user_id)
+        context = line_dao.find_context_by_user_id(self.user_id)
 
         self.assertEqual('falafel', context)
 
@@ -94,7 +94,7 @@ class TestLineFeaturesDAO(DAOTestCase):
         context = 'foobar'
         self._insert_line(context, name=name, protocol=protocol)
 
-        interface = linefeatures_dao.get_interface_from_exten_and_context(self.line_number, context)
+        interface = line_dao.get_interface_from_exten_and_context(self.line_number, context)
 
         self.assertEqual('SIP/abcdef', interface)
 
@@ -104,7 +104,7 @@ class TestLineFeaturesDAO(DAOTestCase):
         context = 'foobar'
         self._insert_line(context, name=name, protocol=protocol)
 
-        interface = linefeatures_dao.get_interface_from_exten_and_context(self.line_number, context)
+        interface = line_dao.get_interface_from_exten_and_context(self.line_number, context)
 
         self.assertEqual('SCCP/1001', interface)
 
@@ -114,17 +114,17 @@ class TestLineFeaturesDAO(DAOTestCase):
         context = 'foobar'
         self._insert_line(context, name=name, protocol=protocol)
 
-        interface = linefeatures_dao.get_interface_from_exten_and_context(self.line_number, context)
+        interface = line_dao.get_interface_from_exten_and_context(self.line_number, context)
 
         self.assertEqual('dahdi/g1/12345', interface)
 
     def test_get_interface_no_matching_exten(self):
-        self.assertRaises(LookupError, linefeatures_dao.get_interface_from_exten_and_context, '555', 'fijsifjsif')
+        self.assertRaises(LookupError, line_dao.get_interface_from_exten_and_context, '555', 'fijsifjsif')
 
     def test_get_cid_from_sccp_channel(self):
         channel = 'sccp/1234@SEP0023EBC64F92-1'
 
-        self.assertRaises(LookupError, linefeatures_dao._get_cid_for_sccp_channel, channel)
+        self.assertRaises(LookupError, line_dao._get_cid_for_sccp_channel, channel)
 
         line = SCCPLine()
         line.name = '1234'
@@ -135,17 +135,17 @@ class TestLineFeaturesDAO(DAOTestCase):
         self.session.add(line)
         self.session.commit()
 
-        result = linefeatures_dao._get_cid_for_sccp_channel(channel)
+        result = line_dao._get_cid_for_sccp_channel(channel)
         expected = ('"Tester One" <1234>', 'Tester One', '1234')
 
         self.assertEqual(result, expected)
 
-        self.assertRaises(ValueError, linefeatures_dao._get_cid_for_sccp_channel, 'SIP/abc-123')
+        self.assertRaises(ValueError, line_dao._get_cid_for_sccp_channel, 'SIP/abc-123')
 
     def test_get_cid_for_sip_channel(self):
         channel = 'SIP/abcd-12445'
 
-        self.assertRaises(LookupError, linefeatures_dao._get_cid_for_sip_channel, channel)
+        self.assertRaises(LookupError, line_dao._get_cid_for_sip_channel, channel)
 
         line = UserSIP()
         line.name = 'abcd'
@@ -155,25 +155,25 @@ class TestLineFeaturesDAO(DAOTestCase):
         self.session.add(line)
         self.session.commit()
 
-        result = linefeatures_dao._get_cid_for_sip_channel(channel)
+        result = line_dao._get_cid_for_sip_channel(channel)
         expected = (line.callerid, 'Tester One', '1234')
 
         self.assertEqual(result, expected)
 
-        self.assertRaises(ValueError, linefeatures_dao._get_cid_for_sip_channel, 'sccp/1300@SEP29287324-1')
+        self.assertRaises(ValueError, line_dao._get_cid_for_sip_channel, 'sccp/1300@SEP29287324-1')
 
-    @patch('xivo_dao.linefeatures_dao._get_cid_for_sccp_channel')
-    @patch('xivo_dao.linefeatures_dao._get_cid_for_sip_channel')
+    @patch('xivo_dao.line_dao._get_cid_for_sccp_channel')
+    @patch('xivo_dao.line_dao._get_cid_for_sip_channel')
     def test_get_cid_for_channel(self, get_sip_cid, get_sccp_cid):
         channel = 'DAHDI/i1/12543656-1235'
 
-        self.assertRaises(ValueError, linefeatures_dao.get_cid_for_channel, channel)
+        self.assertRaises(ValueError, line_dao.get_cid_for_channel, channel)
 
         cid = ('"Tester One" <555>', 'Tester One', '555')
         channel = 'SIP/abcde-1234'
 
         get_sip_cid.return_value = cid
-        result = linefeatures_dao.get_cid_for_channel(channel)
+        result = line_dao.get_cid_for_channel(channel)
 
         self.assertEqual(result, cid)
 
@@ -181,18 +181,18 @@ class TestLineFeaturesDAO(DAOTestCase):
         channel = 'sccp/1300@SEP2897423897-12'
 
         get_sccp_cid.return_value = cid
-        result = linefeatures_dao.get_cid_for_channel(channel)
+        result = line_dao.get_cid_for_channel(channel)
 
         self.assertEqual(result, cid)
 
     def test_get_interface_from_user_id(self):
-        self.assertRaises(LookupError, linefeatures_dao.get_interface_from_user_id, 5)
+        self.assertRaises(LookupError, line_dao.get_interface_from_user_id, 5)
 
         line = self._insert_line()
 
         user_id = int(line.iduserfeatures)
 
-        interface = linefeatures_dao.get_interface_from_user_id(user_id)
+        interface = line_dao.get_interface_from_user_id(user_id)
 
         expected_iface = line.protocol + '/' + line.name
 
@@ -206,6 +206,6 @@ class TestLineFeaturesDAO(DAOTestCase):
 
         user_id = int(line.iduserfeatures)
 
-        interface = linefeatures_dao.get_interface_from_user_id(user_id)
+        interface = line_dao.get_interface_from_user_id(user_id)
 
         self.assertEqual(interface, name)
