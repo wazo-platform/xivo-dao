@@ -28,7 +28,7 @@ from xivo_dao.alchemy.ctipresences import CtiPresences
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao import userfeatures_dao
+from xivo_dao import user_dao
 
 
 class TestUserFeaturesDAO(DAOTestCase):
@@ -42,31 +42,31 @@ class TestUserFeaturesDAO(DAOTestCase):
     def test_get_one_result(self):
         user_id = self._insert_user('first')
 
-        user = userfeatures_dao.get(user_id)
+        user = user_dao.get(user_id)
 
         self.assertEqual(user.id, user_id)
 
     def test_get_string_id(self):
         user_id = self._insert_user('first')
 
-        user = userfeatures_dao.get(str(user_id))
+        user = user_dao.get(str(user_id))
 
         self.assertEqual(user.id, user_id)
 
     def test_get_no_result(self):
-        self.assertRaises(LookupError, userfeatures_dao.get, 1)
+        self.assertRaises(LookupError, user_dao.get, 1)
 
     def test_set_dnd(self):
         user_id = self._insert_user_dnd_not_set()
 
-        userfeatures_dao.enable_dnd(user_id)
+        user_dao.enable_dnd(user_id)
 
         self._check_dnd_is_set(user_id)
 
     def test_unset_dnd(self):
         user_id = self._insert_user_dnd_set()
 
-        userfeatures_dao.disable_dnd(user_id)
+        user_dao.disable_dnd(user_id)
 
         self._check_dnd_is_not_set(user_id)
 
@@ -108,14 +108,14 @@ class TestUserFeaturesDAO(DAOTestCase):
     def test_enable_filter(self):
         user_id = self._insert_user_with_filter(0)
 
-        userfeatures_dao.enable_filter(user_id)
+        user_dao.enable_filter(user_id)
 
         self._check_filter_in_db(user_id, 1)
 
     def test_disable_filter(self):
         user_id = self._insert_user_with_filter(1)
 
-        userfeatures_dao.disable_filter(user_id)
+        user_dao.disable_filter(user_id)
 
         self._check_filter_in_db(user_id, 0)
 
@@ -137,7 +137,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         destination = '765'
         user_id = self._insert_user_with_unconditional_fwd(destination, 0)
 
-        userfeatures_dao.enable_unconditional_fwd(user_id, destination)
+        user_dao.enable_unconditional_fwd(user_id, destination)
 
         self._check_unconditional_fwd_in_db(user_id, 1)
         self._check_unconditional_dest_in_db(user_id, destination)
@@ -161,7 +161,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         destination = '4321'
         user_id = self._insert_user_with_unconditional_fwd('', 0)
 
-        userfeatures_dao.disable_unconditional_fwd(user_id, destination)
+        user_dao.disable_unconditional_fwd(user_id, destination)
 
         self._check_unconditional_fwd_in_db(user_id, 0)
         self._check_unconditional_dest_in_db(user_id, destination)
@@ -175,7 +175,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         destination = '4321'
         user_id = self._insert_user_with_rna_fwd('', 1)
 
-        userfeatures_dao.enable_rna_fwd(user_id, destination)
+        user_dao.enable_rna_fwd(user_id, destination)
 
         self._check_rna_fwd_in_db(user_id, 1)
         self._check_rna_dest_in_db(user_id, destination)
@@ -184,7 +184,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         destination = '4325'
         user_id = self._insert_user_with_rna_fwd('', 0)
 
-        userfeatures_dao.disable_rna_fwd(user_id, destination)
+        user_dao.disable_rna_fwd(user_id, destination)
 
         self._check_rna_fwd_in_db(user_id, 0)
         self._check_rna_dest_in_db(user_id, destination)
@@ -233,7 +233,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         destination = '435'
         user_id = self._insert_user_with_busy_fwd('', 0)
 
-        userfeatures_dao.disable_busy_fwd(user_id, destination)
+        user_dao.disable_busy_fwd(user_id, destination)
 
         self._check_busy_fwd_in_db(user_id, 0)
         self._check_busy_dest_in_db(user_id, destination)
@@ -242,7 +242,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         destination = '435'
         user_id = self._insert_user_with_busy_fwd('', 1)
 
-        userfeatures_dao.enable_busy_fwd(user_id, destination)
+        user_dao.enable_busy_fwd(user_id, destination)
 
         self._check_busy_fwd_in_db(user_id, 1)
         self._check_busy_dest_in_db(user_id, destination)
@@ -257,7 +257,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.session.add(user)
         self.session.commit()
 
-        user_ids = userfeatures_dao.find_by_agent_id(agent_id)
+        user_ids = user_dao.find_by_agent_id(agent_id)
 
         self.assertEqual(user_ids[0], user.id)
 
@@ -271,7 +271,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.session.add(user)
         self.session.commit()
 
-        res = userfeatures_dao.agent_id(user.id)
+        res = user_dao.agent_id(user.id)
 
         self.assertEqual(res, agent_id)
 
@@ -283,7 +283,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.session.add(user)
         self.session.commit()
 
-        res = userfeatures_dao.agent_id(user.id)
+        res = user_dao.agent_id(user.id)
 
         self.assertEqual(res, None)
 
@@ -297,7 +297,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.session.add(user)
         self.session.commit()
 
-        result = userfeatures_dao.is_agent(user.id)
+        result = user_dao.is_agent(user.id)
 
         self.assertEqual(result, True)
 
@@ -309,7 +309,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.session.add(user)
         self.session.commit()
 
-        result = userfeatures_dao.is_agent(user.id)
+        result = user_dao.is_agent(user.id)
 
         self.assertEqual(result, False)
 
@@ -322,7 +322,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.session.add(user)
         self.session.commit()
 
-        result = userfeatures_dao.get_profile(user.id)
+        result = user_dao.get_profile(user.id)
 
         self.assertEqual(result, user_profile_id)
 
@@ -373,7 +373,7 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         user, line = self._add_user_with_line('Tester', context)
 
-        result = userfeatures_dao.get_reachable_contexts(user.id)
+        result = user_dao.get_reachable_contexts(user.id)
 
         self.assertEqual(result, [context])
 
@@ -384,7 +384,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.session.add(user)
         self.session.commit()
 
-        self.assertEqual(userfeatures_dao.get_reachable_contexts(user.id), [])
+        self.assertEqual(user_dao.get_reachable_contexts(user.id), [])
 
     def test_get_reachable_context_included_ctx(self):
         context = 'my_context'
@@ -399,7 +399,7 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         user, line = self._add_user_with_line('Tester', context)
 
-        result = userfeatures_dao.get_reachable_contexts(user.id)
+        result = user_dao.get_reachable_contexts(user.id)
 
         self.assertEqual(result, [context, included_context])
 
@@ -425,13 +425,13 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         user, line = self._add_user_with_line('Tester', context)
 
-        result = userfeatures_dao.get_reachable_contexts(user.id)
+        result = user_dao.get_reachable_contexts(user.id)
 
         for context in [context, included_context, looping_context]:
             self.assertTrue(context in result)
 
     def test_get_line_identity(self):
-        self.assertRaises(LookupError, userfeatures_dao.get_line_identity, 1234)
+        self.assertRaises(LookupError, user_dao.get_line_identity, 1234)
 
         user = UserFeatures()
         user.name = 'Tester'
@@ -451,7 +451,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.session.commit()
 
         expected = 'sip/a1b2c3'
-        result = userfeatures_dao.get_line_identity(user.id)
+        result = user_dao.get_line_identity(user.id)
 
         self.assertEqual(result, expected)
 
@@ -472,12 +472,12 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.session.add(line)
         self.session.commit()
 
-        user_id = userfeatures_dao.find_by_line_id(line.id)
+        user_id = user_dao.find_by_line_id(line.id)
 
         self.assertEqual(user_id, user.id)
 
     def test_get_agent_number(self):
-        self.assertRaises(LookupError, userfeatures_dao.get_agent_number, 1)
+        self.assertRaises(LookupError, user_dao.get_agent_number, 1)
 
         agent = AgentFeatures()
         agent.number = '1234'
@@ -495,7 +495,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.session.add(user)
         self.session.commit()
 
-        result = userfeatures_dao.get_agent_number(user.id)
+        result = user_dao.get_agent_number(user.id)
 
         self.assertEqual(result, agent.number)
 
@@ -505,7 +505,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.session.add(user)
         self.session.commit()
 
-        result = userfeatures_dao.get_dest_unc(user.id)
+        result = user_dao.get_dest_unc(user.id)
 
         self.assertEqual(result, '')
 
@@ -513,7 +513,7 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         self.session.commit()
 
-        result = userfeatures_dao.get_dest_unc(user.id)
+        result = user_dao.get_dest_unc(user.id)
 
         self.assertEqual(result, '1002')
 
@@ -523,7 +523,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.session.add(user)
         self.session.commit()
 
-        result = userfeatures_dao.get_fwd_unc(user.id)
+        result = user_dao.get_fwd_unc(user.id)
 
         self.assertFalse(result)
 
@@ -531,7 +531,7 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         self.session.commit()
 
-        result = userfeatures_dao.get_fwd_unc(user.id)
+        result = user_dao.get_fwd_unc(user.id)
 
         self.assertTrue(result)
 
@@ -541,7 +541,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.session.add(user)
         self.session.commit()
 
-        result = userfeatures_dao.get_dest_busy(user.id)
+        result = user_dao.get_dest_busy(user.id)
 
         self.assertEqual(result, '')
 
@@ -549,7 +549,7 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         self.session.commit()
 
-        result = userfeatures_dao.get_dest_busy(user.id)
+        result = user_dao.get_dest_busy(user.id)
 
         self.assertEqual(result, '1002')
 
@@ -559,7 +559,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.session.add(user)
         self.session.commit()
 
-        result = userfeatures_dao.get_fwd_busy(user.id)
+        result = user_dao.get_fwd_busy(user.id)
 
         self.assertFalse(result)
 
@@ -567,7 +567,7 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         self.session.commit()
 
-        result = userfeatures_dao.get_fwd_busy(user.id)
+        result = user_dao.get_fwd_busy(user.id)
 
         self.assertTrue(result)
 
@@ -577,7 +577,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.session.add(user)
         self.session.commit()
 
-        result = userfeatures_dao.get_dest_rna(user.id)
+        result = user_dao.get_dest_rna(user.id)
 
         self.assertEqual(result, '')
 
@@ -585,7 +585,7 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         self.session.commit()
 
-        result = userfeatures_dao.get_dest_rna(user.id)
+        result = user_dao.get_dest_rna(user.id)
 
         self.assertEqual(result, '1002')
 
@@ -595,7 +595,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.session.add(user)
         self.session.commit()
 
-        result = userfeatures_dao.get_fwd_rna(user.id)
+        result = user_dao.get_fwd_rna(user.id)
 
         self.assertFalse(result)
 
@@ -603,7 +603,7 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         self.session.commit()
 
-        result = userfeatures_dao.get_fwd_rna(user.id)
+        result = user_dao.get_fwd_rna(user.id)
 
         self.assertTrue(result)
 
@@ -626,7 +626,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.session.add(line)
         self.session.commit()
 
-        name, number = userfeatures_dao.get_name_number(user.id)
+        name, number = user_dao.get_name_number(user.id)
 
         self.assertEqual(name, '%s %s' % (user.firstname, user.lastname))
         self.assertEqual(number, '1234')
@@ -653,7 +653,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.session.add(line)
         self.session.commit()
 
-        result = userfeatures_dao.get_device_id(user.id)
+        result = user_dao.get_device_id(user.id)
 
         self.assertEqual(result, device_id)
 
@@ -685,7 +685,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.session.add(line)
         self.session.commit()
 
-        result = userfeatures_dao.get_device_id(user2.id)
+        result = user_dao.get_device_id(user2.id)
 
         self.assertEqual(result, device_id)
 
@@ -697,16 +697,16 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.session.add(user)
         self.session.commit()
 
-        self.assertRaises(LookupError, userfeatures_dao.get_device_id, user.id)
+        self.assertRaises(LookupError, user_dao.get_device_id, user.id)
 
     def test_get_device_id_no_user(self):
-        self.assertRaises(LookupError, userfeatures_dao.get_device_id, 666)
+        self.assertRaises(LookupError, user_dao.get_device_id, 666)
 
     def test_all_join_line_id(self):
         user1, line1 = self._add_user_with_line('test_user1')
         user2, line2 = self._add_user_with_line('test_user2')
 
-        result = userfeatures_dao.all_join_line_id()
+        result = user_dao.all_join_line_id()
 
         for row in result:
             user_result, line_id_result = row
@@ -720,7 +720,7 @@ class TestUserFeaturesDAO(DAOTestCase):
     def test_get_join_line_id_with_user_id(self):
         user, line = self._add_user_with_line('test_user1')
 
-        user_result, line_id_result = userfeatures_dao.get_join_line_id_with_user_id(user.id)
+        user_result, line_id_result = user_dao.get_join_line_id_with_user_id(user.id)
 
         self.assertEquals(user.id, user_result.id)
         self.assertEquals(line.id, line_id_result)
