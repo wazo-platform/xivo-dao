@@ -20,8 +20,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy import dbconnection
+from xivo_dao.alchemy.queuefeatures import QueueFeatures
 
 _DB_NAME = 'asterisk'
 
@@ -66,6 +66,35 @@ def is_a_queue(name):
         return False
     else:
         return True
+
+
+def is_user_member_of_queue(user_id, queue_id):
+    statement = '''\
+SELECT
+    1 AS found
+FROM
+    queuefeatures
+JOIN
+    queuemember on queuemember.queue_name = queuefeatures.name
+WHERE
+    queuefeatures.id = :queue_id AND
+    (queuemember.usertype = 'user' AND queuemember.userid = :user_id OR
+     queuemember.usertype = 'agent' AND queuemember.userid = (
+         SELECT
+             agentid
+         FROM
+             userfeatures
+         WHERE
+             id = :user_id
+        )
+    )
+'''
+    row = (_session()
+           .query('found')
+           .from_statement(statement)
+           .params(user_id=user_id, queue_id=queue_id)
+           .first())
+    return row is not None
 
 
 def get_queue_name(queue_id):
