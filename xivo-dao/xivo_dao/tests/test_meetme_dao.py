@@ -21,7 +21,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from xivo_dao import meetme_features_dao
+from xivo_dao import meetme_dao
 from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
 from xivo_dao.alchemy.staticmeetme import StaticMeetme
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -60,37 +60,37 @@ class TestMeetmeFeaturesDAO(DAOTestCase):
     def test_get_one_result(self):
         meetme = self._insert_meetme(1, 'red', '9000')
 
-        result = meetme_features_dao.get(meetme.id)
+        result = meetme_dao.get(meetme.id)
 
         self.assertEqual(result.id, meetme.id)
 
     def test_is_a_meetme(self):
         meetme = self._insert_meetme(1, 'red', '9000')
 
-        result = meetme_features_dao.is_a_meetme('9005')
+        result = meetme_dao.is_a_meetme('9005')
 
         self.assertEqual(result, False)
 
-        result = meetme_features_dao.is_a_meetme(meetme.confno)
+        result = meetme_dao.is_a_meetme(meetme.confno)
 
         self.assertEqual(result, True)
 
     def test_get_string_id(self):
         meetme = self._insert_meetme(1, 'red', '9000')
 
-        result = meetme_features_dao.get(str(meetme.id))
+        result = meetme_dao.get(str(meetme.id))
 
         self.assertEqual(result.id, meetme.id)
 
     def test_get_no_result(self):
-        self.assertRaises(LookupError, lambda: meetme_features_dao.get(1))
+        self.assertRaises(LookupError, lambda: meetme_dao.get(1))
 
     def test_find_by_name(self):
         self._insert_meetme(1, 'red', '9000')
         self._insert_meetme(2, 'blue', '9001')
 
-        meetme_red = meetme_features_dao.find_by_name('red')
-        meetme_blue = meetme_features_dao.find_by_name('blue')
+        meetme_red = meetme_dao.find_by_name('red')
+        meetme_blue = meetme_dao.find_by_name('blue')
 
         self.assertEqual(meetme_red.name, 'red')
         self.assertEqual(meetme_blue.name, 'blue')
@@ -99,45 +99,45 @@ class TestMeetmeFeaturesDAO(DAOTestCase):
         self._insert_meetme(1, 'red', '9000')
         self._insert_meetme(2, 'blue', '9001')
 
-        red_id = meetme_features_dao.find_by_confno('9000')
-        blue_id = meetme_features_dao.find_by_confno('9001')
+        red_id = meetme_dao.find_by_confno('9000')
+        blue_id = meetme_dao.find_by_confno('9001')
 
         self.assertEqual(red_id, 1)
         self.assertEqual(blue_id, 2)
 
     def test_find_by_confno_no_conf(self):
-        self.assertRaises(LookupError, meetme_features_dao.find_by_confno, '1234')
+        self.assertRaises(LookupError, meetme_dao.find_by_confno, '1234')
 
     def test_get_name(self):
         red = self._insert_meetme(1, 'red', '9000')
 
-        result = meetme_features_dao.get_name(red.id)
+        result = meetme_dao.get_name(red.id)
 
         self.assertEqual(result, 'red')
 
     def test_has_pin_true(self):
         red = self._insert_meetme(1, 'red', '9000', '1234')
 
-        result = meetme_features_dao.has_pin(red.id)
+        result = meetme_dao.has_pin(red.id)
 
         self.assertTrue(result)
 
     def test_has_pin_false(self):
         red = self._insert_meetme(1, 'red', '9000')
 
-        result = meetme_features_dao.has_pin(red.id)
+        result = meetme_dao.has_pin(red.id)
 
         self.assertFalse(result)
 
     def test_has_pin_no_confroom(self):
-        self.assertRaises(LookupError, meetme_features_dao.has_pin, 1)
+        self.assertRaises(LookupError, meetme_dao.has_pin, 1)
 
     def test_get_configs(self):
         self._insert_meetme(1, 'red', '9000', context='default')
         self._insert_meetme(2, 'blue', '9001', '1234', context='test')
         self._insert_meetme(3, 'green', '9002', '5555', context='test')
 
-        result = meetme_features_dao.get_configs()
+        result = meetme_dao.get_configs()
 
         expected = [('red', '9000', False, 'default'),
                     ('blue', '9001', True, 'test'),
@@ -147,13 +147,13 @@ class TestMeetmeFeaturesDAO(DAOTestCase):
             self.assertTrue(config in result)
 
     def test_get_config(self):
-        self.assertRaises(LookupError, meetme_features_dao.get_config, 2)
+        self.assertRaises(LookupError, meetme_dao.get_config, 2)
 
         red = self._insert_meetme(1, 'red', '9000', 'test')
         blue = self._insert_meetme(2, 'blue', '9001', '1234', 'test')
         green = self._insert_meetme(3, 'green', '9002', '5555', 'detault')
 
-        result = meetme_features_dao.get_config(blue.id)
+        result = meetme_dao.get_config(blue.id)
 
         expected = ('blue', '9001', True, 'test')
 
@@ -162,19 +162,19 @@ class TestMeetmeFeaturesDAO(DAOTestCase):
     def test_muted_on_join_by_number(self):
         red = self._insert_meetme(1, 'red', '9000')
 
-        self.assertFalse(meetme_features_dao.muted_on_join_by_number('9000'))
+        self.assertFalse(meetme_dao.muted_on_join_by_number('9000'))
 
         red.user_initiallymuted = 1
 
         self.session.commit()
 
-        self.assertTrue(meetme_features_dao.muted_on_join_by_number('9000'))
+        self.assertTrue(meetme_dao.muted_on_join_by_number('9000'))
 
-        self.assertRaises(LookupError, meetme_features_dao.muted_on_join_by_number, '9009')
+        self.assertRaises(LookupError, meetme_dao.muted_on_join_by_number, '9009')
 
     def test_get_by_number(self):
-        self.assertRaises(LookupError, meetme_features_dao._get_by_number, '9000')
+        self.assertRaises(LookupError, meetme_dao._get_by_number, '9000')
 
         red = self._insert_meetme(1, 'red', '9000')
 
-        self.assertEqual(meetme_features_dao._get_by_number('9000'), red)
+        self.assertEqual(meetme_dao._get_by_number('9000'), red)
