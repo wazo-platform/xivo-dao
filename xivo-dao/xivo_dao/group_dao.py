@@ -21,6 +21,7 @@
 
 from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.groupfeatures import GroupFeatures
+from xivo_dao.alchemy.queuemember import QueueMember
 
 _DB_NAME = 'asterisk'
 
@@ -41,6 +42,17 @@ def get_name(group_id):
 def get_name_number(group_id):
     group = get(group_id)
     return group.name, group.number
+
+
+def is_user_member_of_group(user_id, group_id):
+    row = (_session()
+           .query(GroupFeatures.id)
+           .join((QueueMember, QueueMember.queue_name == GroupFeatures.name))
+           .filter(GroupFeatures.id == group_id)
+           .filter(QueueMember.usertype == 'user')
+           .filter(QueueMember.userid == user_id)
+           .first())
+    return row is not None
 
 
 def all():

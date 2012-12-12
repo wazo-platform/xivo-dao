@@ -19,70 +19,52 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import unittest
-
-from xivo_dao.alchemy import dbconnection
-from xivo_dao.alchemy.groupfeatures import GroupFeatures
 from xivo_dao import group_dao
-from xivo_dao.alchemy.base import Base
-from sqlalchemy.schema import MetaData
+from xivo_dao.alchemy.groupfeatures import GroupFeatures
+from xivo_dao.alchemy.queuemember import QueueMember
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
-class TestGroupDAO(unittest.TestCase):
+class TestGroupDAO(DAOTestCase):
 
-    tables = [GroupFeatures]
-
-    @classmethod
-    def setUpClass(cls):
-        db_connection_pool = dbconnection.DBConnectionPool(dbconnection.DBConnection)
-        dbconnection.register_db_connection_pool(db_connection_pool)
-
-        uri = 'postgresql://asterisk:asterisk@localhost/asterisktest'
-        dbconnection.add_connection_as(uri, 'asterisk')
-        cls.connection = dbconnection.get_connection('asterisk')
-
-        cls.cleanTables()
-
-        cls.session = cls.connection.get_session()
-
-    @classmethod
-    def tearDownClass(cls):
-        dbconnection.unregister_db_connection_pool()
-
-    @classmethod
-    def cleanTables(cls):
-        if len(cls.tables):
-            engine = cls.connection.get_engine()
-
-            meta = MetaData(engine)
-            meta.reflect()
-            meta.drop_all()
-
-            table_list = [table.__table__ for table in cls.tables]
-            Base.metadata.create_all(engine, table_list)
-            engine.dispose()
-
-    def empty_tables(self):
-        for table in self.tables:
-            self.session.execute("TRUNCATE %s CASCADE;" % table.__tablename__)
+    tables = [GroupFeatures, QueueMember]
 
     def setUp(self):
         self.empty_tables()
 
     def test_get_name(self):
-        session = dbconnection.get_connection('asterisk').get_session()
-        group = GroupFeatures()
-        group.name = 'test_name'
-        group.number = '1234'
-        group.context = 'my_ctx'
-        session.add(group)
-        session.commit()
+        group = self._insert_group('test_name', '1234', 'my_ctx')
 
         result = group_dao.get_name(group.id)
 
         self.assertEqual(result, group.name)
 
     def test_get_name_number(self):
+        group = self._insert_group('test_name', '1234', 'my_ctx')
+
+        name, number = group_dao.get_name_number(group.id)
+
+        self.assertEqual(name, 'test_name')
+        self.assertEqual(number, '1234')
+
+    def test_is_user_member_of_group_when_present(self):
+        user_id = 1
+        group = self._insert_group('foobar', '1234', 'default')
+        self._insert_group_member(group.name, 'user', user_id)
+
+        result = group_dao.is_user_member_of_group(user_id, group.id)
+
+        self.assertTrue(result)
+
+    def test_is_user_member_of_group_when_not_present(self):
+        user_id = 1
+        group = self._insert_group('foobar', '1234', 'default')
+
+        result = group_dao.is_user_member_of_group(user_id, group.id)
+
+        self.assertFalse(result)
+
+    def _insert_group(self, name, number, context):
         group = GroupFeatures()
         group.name = 'test_name'
         group.number = '1234'
@@ -91,7 +73,17 @@ class TestGroupDAO(unittest.TestCase):
         self.session.add(group)
         self.session.commit()
 
-        name, number = group_dao.get_name_number(group.id)
+        return group
 
-        self.assertEqual(name, 'test_name')
-        self.assertEqual(number, '1234')
+    def _insert_group_member(self, group_name, user_type, user_id):
+        queue_member = QueueMember()
+        queue_member.queue_name = group_name
+        queue_member.interface = 'SIP/abcdef'
+        queue_member.penalty = 0
+        queue_member.usertype = user_type
+        queue_member.userid = user_id
+        queue_member.channel = 'foobar'
+        queue_member.category = 'group'
+
+        self.session.add(queue_member)
+        self.session.commit()

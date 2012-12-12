@@ -27,7 +27,7 @@ class DAOTestCase(unittest.TestCase):
 
     @classmethod
     def cleanTables(cls):
-        if len(cls.tables):
+        if cls.tables:
             engine = cls.connection.get_engine()
 
             meta = MetaData(engine)
