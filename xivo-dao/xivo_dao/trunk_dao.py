@@ -1,5 +1,4 @@
-#!/usr/bin/python
-# vim: set fileencoding=utf-8 :
+# -*- coding: utf-8 -*-
 
 # Copyright (C) 2012  Avencall
 #
