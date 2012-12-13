@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from xivo_dao import queue_features_dao
+from xivo_dao import queue_dao
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.userfeatures import UserFeatures
@@ -41,39 +41,39 @@ class TestQueueFeaturesDAO(DAOTestCase):
     def test_id_from_name(self):
         queue = self._insert_queue('test_queue', 'Queue Test')
 
-        result = queue_features_dao.id_from_name(queue.name)
+        result = queue_dao.id_from_name(queue.name)
 
         self.assertEqual(result, queue.id)
 
     def test_queue_name(self):
         queue = self._insert_queue('my_queue', 'My Queue')
 
-        result = queue_features_dao.queue_name(queue.id)
+        result = queue_dao.queue_name(queue.id)
 
         self.assertEquals(result, 'my_queue')
 
     def test_is_a_queue(self):
-        self.assertFalse(queue_features_dao.is_a_queue('not_a_queue'))
+        self.assertFalse(queue_dao.is_a_queue('not_a_queue'))
 
         self._insert_queue('a_queue', 'My Queue')
 
-        self.assertTrue(queue_features_dao.is_a_queue('a_queue'))
+        self.assertTrue(queue_dao.is_a_queue('a_queue'))
 
     def test_get_queue_name(self):
-        self.assertRaises(LookupError, queue_features_dao.get_queue_name, 1)
+        self.assertRaises(LookupError, queue_dao.get_queue_name, 1)
 
         queue = self._insert_queue('my_queue', 'My Queue')
 
-        result = queue_features_dao.get_queue_name(queue.id)
+        result = queue_dao.get_queue_name(queue.id)
 
         self.assertEqual(result, queue.name)
 
     def test_get_name_number(self):
-        self.assertRaises(LookupError, queue_features_dao.get_queue_name, 1)
+        self.assertRaises(LookupError, queue_dao.get_queue_name, 1)
 
         queue = self._insert_queue('my_queue', 'My Queue', '3000')
 
-        name, number = queue_features_dao.get_display_name_number(queue.id)
+        name, number = queue_dao.get_display_name_number(queue.id)
 
         self.assertEqual(name, 'My Queue')
         self.assertEqual(number, '3000')
@@ -83,7 +83,7 @@ class TestQueueFeaturesDAO(DAOTestCase):
         queue = self._insert_queue('foobar', 'Foobar')
         self._insert_queue_member(queue.name, 'user', user_id)
 
-        result = queue_features_dao.is_user_member_of_queue(user_id, queue.id)
+        result = queue_dao.is_user_member_of_queue(user_id, queue.id)
 
         self.assertTrue(result)
 
@@ -91,7 +91,7 @@ class TestQueueFeaturesDAO(DAOTestCase):
         user_id = 1
         queue = self._insert_queue('foobar', 'Foobar')
 
-        result = queue_features_dao.is_user_member_of_queue(user_id, queue.id)
+        result = queue_dao.is_user_member_of_queue(user_id, queue.id)
 
         self.assertFalse(result)
 
@@ -102,7 +102,7 @@ class TestQueueFeaturesDAO(DAOTestCase):
         queue = self._insert_queue('foobar', 'Foobar')
         self._insert_queue_member(queue.name, 'agent', agent_id)
 
-        result = queue_features_dao.is_user_member_of_queue(user_id, queue.id)
+        result = queue_dao.is_user_member_of_queue(user_id, queue.id)
 
         self.assertTrue(result)
 
