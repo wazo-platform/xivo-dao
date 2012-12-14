@@ -29,6 +29,32 @@ class TestQueueMemberDAO(DAOTestCase):
     def setUp(self):
         self.empty_tables()
 
+    def test_add_agent_to_queue(self):
+        agent_id = 123
+        agent_number = '123'
+        queue_name = 'queue1'
+
+        queue_member_dao.add_agent_to_queue(agent_id, agent_number, queue_name)
+
+        queue_member = self.session.query(QueueMember).first()
+        self.assertEqual(queue_member.queue_name, queue_name)
+        self.assertEqual(queue_member.interface, 'Agent/123')
+        self.assertEqual(queue_member.usertype, 'agent')
+        self.assertEqual(queue_member.userid, agent_id)
+        self.assertEqual(queue_member.channel, 'Agent')
+        self.assertEqual(queue_member.category, 'queue')
+        self.assertEqual(queue_member.skills, 'agent-123')
+        self.assertEqual(queue_member.position, 0)
+
+    def test_get_next_position_for_queue(self):
+        queue_name = 'queue1'
+        member_name = 'Agent/123'
+        self._insert_queue_member(queue_name, member_name, True)
+
+        position = queue_member_dao._get_next_position_for_queue(queue_name)
+
+        self.assertEqual(position, 1)
+
     def test_get_queue_members_for_queues(self):
         self._insert_queue_member('queue1', 'Agent/2', True)
         self._insert_queue_member('group1', 'SIP/abcdef', False)
@@ -50,6 +76,7 @@ class TestQueueMemberDAO(DAOTestCase):
         queue_member.userid = 1
         queue_member.channel = 'foobar'
         queue_member.category = 'queue' if is_queue else 'group'
+        queue_member.position = 0
 
         try:
             self.session.add(queue_member)

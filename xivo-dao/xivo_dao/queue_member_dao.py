@@ -21,9 +21,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
-from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy import dbconnection
+from xivo_dao.alchemy.queuemember import QueueMember
+from sqlalchemy import func
 
 _DB_NAME = 'asterisk'
 
@@ -31,6 +31,38 @@ _DB_NAME = 'asterisk'
 def _session():
     connection = dbconnection.get_connection(_DB_NAME)
     return connection.get_session()
+
+
+def add_agent_to_queue(agent_id, agent_number, queue_name):
+    next_position = _get_next_position_for_queue(queue_name)
+    queue_member = QueueMember()
+    queue_member.queue_name = queue_name
+    queue_member.interface = 'Agent/%s' % agent_number
+    queue_member.usertype = 'agent'
+    queue_member.userid = agent_id
+    queue_member.channel = 'Agent'
+    queue_member.category = 'queue'
+    queue_member.skills = 'agent-%s' % agent_id
+    queue_member.position = next_position
+
+    try:
+        _session().add(queue_member)
+        _session().commit()
+    except Exception:
+        _session().rollback()
+        raise
+
+
+def _get_next_position_for_queue(queue_name):
+    result = (_session()
+              .query(func.max(QueueMember.position).label('max'))
+              .filter(QueueMember.queue_name == queue_name)
+              .first())
+    last_position = result.max
+    if last_position is None:
+        return 0
+    else:
+        return last_position + 1
 
 
 def get_queue_members_for_queues():
