@@ -53,6 +53,17 @@ def add_agent_to_queue(agent_id, agent_number, queue_name):
         raise
 
 
+def remove_agent_from_queue(agent_id, queue_name):
+    print 'removing agent from %r %r' % (agent_id, queue_name)
+    (_session()
+     .query(QueueMember)
+     .filter(QueueMember.queue_name == queue_name)
+     .filter(QueueMember.usertype == 'agent')
+     .filter(QueueMember.userid == agent_id)
+     .delete())
+    _session().commit()
+
+
 def _get_next_position_for_queue(queue_name):
     result = (_session()
               .query(func.max(QueueMember.position).label('max'))

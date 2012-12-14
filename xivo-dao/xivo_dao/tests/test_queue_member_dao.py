@@ -46,18 +46,28 @@ class TestQueueMemberDAO(DAOTestCase):
         self.assertEqual(queue_member.skills, 'agent-123')
         self.assertEqual(queue_member.position, 0)
 
+    def test_remove_agent_from_queue(self):
+        agent_id = 123
+        queue_name = 'queue1'
+        self._insert_queue_member(queue_name, 'Agent/123', usertype='agent', userid=agent_id)
+
+        queue_member_dao.remove_agent_from_queue(agent_id, queue_name)
+
+        nb_queue_members = self.session.query(QueueMember).count()
+        self.assertEqual(0, nb_queue_members)
+
     def test_get_next_position_for_queue(self):
         queue_name = 'queue1'
         member_name = 'Agent/123'
-        self._insert_queue_member(queue_name, member_name, True)
+        self._insert_queue_member(queue_name, member_name)
 
         position = queue_member_dao._get_next_position_for_queue(queue_name)
 
         self.assertEqual(position, 1)
 
     def test_get_queue_members_for_queues(self):
-        self._insert_queue_member('queue1', 'Agent/2', True)
-        self._insert_queue_member('group1', 'SIP/abcdef', False)
+        self._insert_queue_member('queue1', 'Agent/2')
+        self._insert_queue_member('group1', 'SIP/abcdef', is_queue=False)
 
         queue_members = queue_member_dao.get_queue_members_for_queues()
 
@@ -67,13 +77,13 @@ class TestQueueMemberDAO(DAOTestCase):
         self.assertEqual(queue_member.queue_name, 'queue1')
         self.assertEqual(queue_member.member_name, 'Agent/2')
 
-    def _insert_queue_member(self, queue_name, member_name, is_queue):
+    def _insert_queue_member(self, queue_name, member_name, usertype='user', userid=1, is_queue=True):
         queue_member = QueueMember()
         queue_member.queue_name = queue_name
         queue_member.interface = member_name
         queue_member.penalty = 0
-        queue_member.usertype = 'user'
-        queue_member.userid = 1
+        queue_member.usertype = usertype
+        queue_member.userid = userid
         queue_member.channel = 'foobar'
         queue_member.category = 'queue' if is_queue else 'group'
         queue_member.position = 0
