@@ -54,7 +54,6 @@ def add_agent_to_queue(agent_id, agent_number, queue_name):
 
 
 def remove_agent_from_queue(agent_id, queue_name):
-    print 'removing agent from %r %r' % (agent_id, queue_name)
     (_session()
      .query(QueueMember)
      .filter(QueueMember.queue_name == queue_name)
