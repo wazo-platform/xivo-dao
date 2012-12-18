@@ -20,11 +20,12 @@
 from xivo_dao import queue_member_dao
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao.alchemy.queuefeatures import QueueFeatures
 
 
 class TestQueueMemberDAO(DAOTestCase):
 
-    tables = [QueueMember]
+    tables = [QueueMember, QueueFeatures]
 
     def setUp(self):
         self.empty_tables()
@@ -67,7 +68,12 @@ class TestQueueMemberDAO(DAOTestCase):
 
     def test_get_queue_members_for_queues(self):
         self._insert_queue_member('queue1', 'Agent/2')
+        self._insert_queue_member('queue2', 'Agent/3')
         self._insert_queue_member('group1', 'SIP/abcdef', is_queue=False)
+
+        queue_feature = QueueFeatures(name='queue1', displayname='queue1')
+        self.session.add(queue_feature)
+        self.session.commit()
 
         queue_members = queue_member_dao.get_queue_members_for_queues()
 

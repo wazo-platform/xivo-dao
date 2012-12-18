@@ -23,7 +23,8 @@
 
 from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.queuemember import QueueMember
-from sqlalchemy import func
+from sqlalchemy import func, select
+from xivo_dao.alchemy.queuefeatures import QueueFeatures
 
 _DB_NAME = 'asterisk'
 
@@ -76,10 +77,13 @@ def _get_next_position_for_queue(queue_name):
 
 
 def get_queue_members_for_queues():
+    queue_name_subquery = select([QueueFeatures.name])
+
     rows = (_session()
             .query(QueueMember.queue_name,
                    QueueMember.interface.label('member_name'),
                    QueueMember.penalty)
             .filter(QueueMember.category == 'queue')
+            .filter(QueueMember.queue_name.in_(queue_name_subquery))
             .all())
     return rows
