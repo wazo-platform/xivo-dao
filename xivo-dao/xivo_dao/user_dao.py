@@ -211,3 +211,15 @@ def get_device_id(user_id):
     if not row:
         raise LookupError('Cannot find a device from this user id %s' % user_id)
     return int(row.device)
+
+
+def get_context(user_id):
+    res = (_session()
+           .query(LineFeatures.context)
+           .filter(LineFeatures.iduserfeatures == user_id)
+           .first())
+
+    if not res:
+        return None
+
+    return res.context

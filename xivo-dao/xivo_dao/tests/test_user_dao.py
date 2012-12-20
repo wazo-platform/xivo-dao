@@ -349,12 +349,17 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.session.commit()
         return cti_profile.id
 
-    def _add_user_with_line(self, name, context='default'):
+    def _add_user(self, name):
         user = UserFeatures()
         user.firstname = name
 
         self.session.add(user)
         self.session.commit()
+
+        return user
+
+    def _add_user_with_line(self, name, context='default'):
+        user = self._add_user(name)
 
         line = LineFeatures()
         line.iduserfeatures = user.id
@@ -724,3 +729,17 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         self.assertEquals(user.id, user_result.id)
         self.assertEquals(line.id, line_id_result)
+
+    def test_get_context(self):
+        user, line = self._add_user_with_line('test_user1')
+
+        context = user_dao.get_context(user.id)
+
+        self.assertEquals(context, line.context)
+
+    def test_get_context_no_line(self):
+        user = self._add_user('test_user1')
+
+        context = user_dao.get_context(user.id)
+
+        self.assertEqual(context, None)
