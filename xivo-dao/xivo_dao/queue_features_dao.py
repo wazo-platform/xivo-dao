@@ -31,8 +31,16 @@ def _session():
     return connection.get_session()
 
 
-def _get(queue_id):
-    return _session().query(QueueFeatures).filter(QueueFeatures.id == queue_id)[0]
+def all():
+    return _session().query(QueueFeatures).all()
+
+
+def get(queue_id):
+    result = _session().query(QueueFeatures).filter(QueueFeatures.id == queue_id).first()
+    if result is None:
+        raise LookupError('No such queue')
+    else:
+        return result
 
 
 def id_from_name(queue_name):
@@ -61,9 +69,13 @@ def is_a_queue(name):
 
 
 def get_queue_name(queue_id):
-    return _get(queue_id).name
+    return get(queue_id).name
 
 
 def get_display_name_number(queue_id):
-    queue = _get(queue_id)
+    queue = get(queue_id)
     return queue.displayname, queue.number
+
+def add_queue(queue):
+    _session().add(queue)
+    _session().commit()
