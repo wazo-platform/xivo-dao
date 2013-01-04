@@ -42,6 +42,8 @@ def get_statuses():
     return _session().query(
         AgentFeatures.id.label('agent_id'),
         AgentFeatures.number.label('agent_number'),
+        AgentLoginStatus.extension.label('extension'),
+        AgentLoginStatus.context.label('context'),
         case([(AgentLoginStatus.agent_id == None, False)], else_=True).label('logged')
     ).outerjoin((AgentLoginStatus, AgentFeatures.id == AgentLoginStatus.agent_id)).all()
 

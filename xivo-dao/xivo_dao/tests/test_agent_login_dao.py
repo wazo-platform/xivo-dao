@@ -69,6 +69,8 @@ class TestAgentLoginDao(DAOTestCase):
         self.assertEqual(statuses[0].agent_id, agent.id)
         self.assertEqual(statuses[0].agent_number, agent.number)
         self.assertEqual(statuses[0].logged, False)
+        self.assertEqual(statuses[0].extension, None)
+        self.assertEqual(statuses[0].context, None)
 
     def test_get_statuses_of_logged_agent(self):
         agent = self._insert_agent(42, '12')
@@ -80,6 +82,8 @@ class TestAgentLoginDao(DAOTestCase):
         self.assertEqual(statuses[0].agent_id, agent.id)
         self.assertEqual(statuses[0].agent_number, agent.number)
         self.assertEqual(statuses[0].logged, True)
+        self.assertEqual(statuses[0].extension, '1001')
+        self.assertEqual(statuses[0].context, 'default')
 
     def test_is_extension_in_use_with_an_agent(self):
         agent_id = 1
