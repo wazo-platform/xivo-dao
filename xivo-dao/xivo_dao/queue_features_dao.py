@@ -76,6 +76,10 @@ def get_display_name_number(queue_id):
     queue = get(queue_id)
     return queue.displayname, queue.number
 
+
 def add_queue(queue):
+    if type(queue) != QueueFeatures:
+        raise ValueError('Wrong object passed')
+
     _session().add(queue)
     _session().commit()

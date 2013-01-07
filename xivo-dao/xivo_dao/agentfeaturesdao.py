@@ -58,6 +58,13 @@ class AgentFeaturesDAO(object):
             raise LookupError('No such agent')
         return result
 
+    def add_agent(self, agent_features):
+        if type(agent_features) != AgentFeatures:
+            raise ValueError('Wrong object passed')
+
+        self._session.add(agent_features)
+        self._session.commit()
+
     @classmethod
     def new_from_uri(cls, uri):
         connection = dbconnection.get_connection(uri)
