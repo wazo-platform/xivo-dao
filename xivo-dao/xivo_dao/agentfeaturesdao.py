@@ -64,7 +64,17 @@ class AgentFeaturesDAO(object):
 
         self._session.add(agent_features)
         self._session.commit()
-
+    
+    def del_agent(self, agent_id):
+        try:
+            self._session.query(AgentFeatures)\
+                .filter(AgentFeatures.id == agent_id)\
+                .delete()
+            self._session.commit()
+        except Exception as e:
+            self._session.rollback()
+            raise e
+    
     @classmethod
     def new_from_uri(cls, uri):
         connection = dbconnection.get_connection(uri)
