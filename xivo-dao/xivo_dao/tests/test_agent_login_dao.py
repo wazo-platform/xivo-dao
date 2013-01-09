@@ -36,8 +36,9 @@ class TestAgentLoginDao(DAOTestCase):
         extension = '1001'
         context = 'default'
         interface = 'sip/abcdef'
+        state_interface = interface
 
-        agent_login_dao.log_in_agent(agent_id, extension, context, interface)
+        agent_login_dao.log_in_agent(agent_id, extension, context, interface, state_interface)
 
         agent_status = agent_login_dao.get_status(agent_id)
 
@@ -45,6 +46,7 @@ class TestAgentLoginDao(DAOTestCase):
         self.assertEquals(agent_status.extension, extension)
         self.assertEquals(agent_status.context, context)
         self.assertEquals(agent_status.interface, interface)
+        self.assertEquals(agent_status.state_interface, state_interface)
 
     def test_log_off_agent(self):
         agent_id = 1
@@ -123,6 +125,7 @@ class TestAgentLoginDao(DAOTestCase):
         agent_status.extension = extension
         agent_status.context = context
         agent_status.interface = interface
+        agent_status.state_interface = interface
 
         try:
             self.session.add(agent_status)

@@ -33,4 +33,5 @@ class AgentLoginStatus(Base):
     extension = Column(String(80), nullable=False)
     context = Column(String(80), nullable=False)
     interface = Column(String(128), nullable=False, unique=True)
+    state_interface = Column(String(128), nullable=False)
     login_at = Column(DateTime, nullable=False, default=func.now())

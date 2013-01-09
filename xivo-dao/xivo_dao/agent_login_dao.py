@@ -67,12 +67,13 @@ def is_extension_in_use(extension, context):
     return count > 0
 
 
-def log_in_agent(agent_id, extension, context, interface):
+def log_in_agent(agent_id, extension, context, interface, state_interface):
     agent = AgentLoginStatus()
     agent.agent_id = agent_id
     agent.extension = extension
     agent.context = context
     agent.interface = interface
+    agent.state_interface = state_interface
 
     session = _session()
     try:
