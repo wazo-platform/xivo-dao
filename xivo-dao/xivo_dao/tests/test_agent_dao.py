@@ -23,6 +23,7 @@
 
 from xivo_dao import agent_dao
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
+from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.tests.test_dao import DAOTestCase
 
@@ -32,7 +33,7 @@ class TestAgentDAO(DAOTestCase):
     agent_number = '1234'
     agent_context = 'test'
 
-    tables = [AgentFeatures, QueueMember]
+    tables = [AgentFeatures, QueueFeatures, QueueMember]
 
     def setUp(self):
         self.empty_tables()
@@ -74,12 +75,14 @@ class TestAgentDAO(DAOTestCase):
     def test_agent_with_id(self):
         agent = self._insert_agent()
         queue_member = self._insert_queue_member('foobar', 'Agent/2', agent.id)
+        queue = self._insert_queue(64, queue_member.queue_name)
 
         result = agent_dao.agent_with_id(agent.id)
 
         self.assertEqual(result.id, agent.id)
         self.assertEqual(result.number, agent.number)
         self.assertEqual(len(result.queues), 1)
+        self.assertEqual(result.queues[0].id, queue.id)
         self.assertEqual(result.queues[0].name, queue_member.queue_name)
         self.assertEqual(result.queues[0].penalty, queue_member.penalty)
         self.assertEqual(result.queues[0].skills, queue_member.skills)
@@ -96,6 +99,18 @@ class TestAgentDAO(DAOTestCase):
         self.session.commit()
 
         return agent
+
+    def _insert_queue(self, queue_id, name):
+        queue = QueueFeatures()
+        queue.id = queue_id
+        queue.name = name
+        queue.displayname = name
+        queue.number = '3000'
+
+        self.session.add(queue)
+        self.session.commit()
+
+        return queue
 
     def _insert_queue_member(self, queue_name, member_name, agent_id=1, penalty=0, skills='agent-1'):
         queue_member = QueueMember()

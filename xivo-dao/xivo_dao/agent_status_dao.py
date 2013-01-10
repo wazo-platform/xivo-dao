@@ -130,9 +130,22 @@ def remove_agent_from_queues(agent_id, queues):
     queue_ids = [q.id for q in queues]
     queue_names = [q.name for q in queues]
 
-    query = (session.query(AgentMembershipStatus)
-             .filter(AgentMembershipStatus.agent_id == agent_id)
-             .filter(AgentMembershipStatus.queue_id.in_(queue_ids))
-             .filter(AgentMembershipStatus.queue_name.in_(queue_names)))
+    (session
+        .query(AgentMembershipStatus)
+        .filter(AgentMembershipStatus.agent_id == agent_id)
+        .filter(AgentMembershipStatus.queue_id.in_(queue_ids))
+        .filter(AgentMembershipStatus.queue_name.in_(queue_names))
+        .delete(synchronize_session=False))
 
-    query.delete(synchronize_session=False)
+    session.commit()
+
+
+def remove_agent_from_all_queues(agent_id):
+    session = _session()
+
+    (session
+        .query(AgentMembershipStatus)
+        .filter(AgentMembershipStatus.agent_id == agent_id)
+        .delete(synchronize_session=False))
+
+    session.commit()
