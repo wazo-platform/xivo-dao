@@ -21,13 +21,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from collections import namedtuple
 from sqlalchemy.sql.expression import case
 from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
+from xivo_dao.alchemy.agent_membership_status import AgentMembershipStatus
 
 _DB_NAME = 'asterisk'
 
+
+_Queue = namedtuple('_Queue', ['id', 'name'])
 
 def _session():
     connection = dbconnection.get_connection(_DB_NAME)
@@ -35,7 +39,23 @@ def _session():
 
 
 def get_status(agent_id):
+    agent_status = _get_agent_status(agent_id)
+    if agent_status:
+        agent_status.queues = _get_queues_for_agent(agent_id)
+    return agent_status
+
+
+def _get_agent_status(agent_id):
     return _session().query(AgentLoginStatus).get(agent_id)
+
+
+def _get_queues_for_agent(agent_id):
+    query = _session().query(
+                AgentMembershipStatus.queue_id.label('queue_id'),
+                AgentMembershipStatus.queue_name.label('queue_name')
+            ).filter(AgentMembershipStatus.agent_id == agent_id)
+
+    return [_Queue(q.queue_id, q.queue_name) for q in query]
 
 
 def get_statuses():
@@ -91,3 +111,28 @@ def log_off_agent(agent_id):
         .filter(AgentLoginStatus.agent_id == agent_id)
         .delete(synchronize_session=False))
     session.commit()
+
+
+def add_agent_to_queues(agent_id, queues):
+    session = _session()
+    for queue in queues:
+        agent_membership_status = AgentMembershipStatus(agent_id=agent_id,
+                                                        queue_id=queue.id,
+                                                        queue_name=queue.name)
+        session.add(agent_membership_status)
+
+    session.commit()
+
+
+def remove_agent_from_queues(agent_id, queues):
+    session = _session()
+
+    queue_ids = [q.id for q in queues]
+    queue_names = [q.name for q in queues]
+
+    query = (session.query(AgentMembershipStatus)
+             .filter(AgentMembershipStatus.agent_id == agent_id)
+             .filter(AgentMembershipStatus.queue_id.in_(queue_ids))
+             .filter(AgentMembershipStatus.queue_name.in_(queue_names)))
+
+    query.delete(synchronize_session=False)
