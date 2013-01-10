@@ -29,7 +29,7 @@ from xivo_dao.alchemy.queuemember import QueueMember
 _DB_NAME = 'asterisk'
 
 _Agent = namedtuple('_Agent', ['id', 'number', 'queues'])
-_Queue = namedtuple('_Queue', ['name'])
+_Queue = namedtuple('_Queue', ['name', 'penalty', 'skills'])
 
 
 def _session():
@@ -105,11 +105,11 @@ def _get_agent(conn, whereclause):
 
 
 def _add_queues_to_agent(conn, agent):
-    query = select([QueueMember.queue_name],
+    query = select([QueueMember.queue_name, QueueMember.penalty, QueueMember.skills],
                    and_(QueueMember.usertype == u'agent',
                         QueueMember.userid == agent.id))
     for row in conn.execute(query):
-        queue = _Queue(row['queue_name'])
+        queue = _Queue(row['queue_name'], row['penalty'], row['skills'])
         agent.queues.append(queue)
 
 

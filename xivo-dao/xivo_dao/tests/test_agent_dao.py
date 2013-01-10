@@ -21,32 +21,33 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao import agent_dao
+from xivo_dao.alchemy.agentfeatures import AgentFeatures
+from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
-class TestAgentFeaturesDAO(DAOTestCase):
+class TestAgentDAO(DAOTestCase):
 
     agent_number = '1234'
     agent_context = 'test'
 
-    tables = [AgentFeatures]
+    tables = [AgentFeatures, QueueMember]
 
     def setUp(self):
         self.empty_tables()
 
     def test_agent_number(self):
-        agent_id = self._insert_agent()
+        agent = self._insert_agent()
 
-        number = agent_dao.agent_number(agent_id)
+        number = agent_dao.agent_number(agent.id)
 
         self.assertEqual(number, self.agent_number)
 
     def test_agent_context(self):
-        agent_id = self._insert_agent()
+        agent = self._insert_agent()
 
-        context = agent_dao.agent_context(agent_id)
+        context = agent_dao.agent_context(agent.id)
 
         self.assertEqual(context, self.agent_context)
 
@@ -54,21 +55,34 @@ class TestAgentFeaturesDAO(DAOTestCase):
         self.assertRaises(LookupError, lambda: agent_dao.agent_number(-1))
 
     def test_agent_interface(self):
-        agent_id = self._insert_agent()
+        agent = self._insert_agent()
 
-        interface = agent_dao.agent_interface(agent_id)
+        interface = agent_dao.agent_interface(agent.id)
 
         self.assertEqual(interface, 'Agent/%s' % self.agent_number)
 
     def test_agent_id(self):
-        expected_agent_id = self._insert_agent()
+        agent = self._insert_agent()
 
         agent_id = agent_dao.agent_id(self.agent_number)
 
-        self.assertEqual(str(expected_agent_id), agent_id)
+        self.assertEqual(str(agent.id), agent_id)
 
     def test_agent_id_inexistant(self):
         self.assertRaises(LookupError, agent_dao.agent_id, '2345')
+
+    def test_agent_with_id(self):
+        agent = self._insert_agent()
+        queue_member = self._insert_queue_member('foobar', 'Agent/2', agent.id)
+
+        result = agent_dao.agent_with_id(agent.id)
+
+        self.assertEqual(result.id, agent.id)
+        self.assertEqual(result.number, agent.number)
+        self.assertEqual(len(result.queues), 1)
+        self.assertEqual(result.queues[0].name, queue_member.queue_name)
+        self.assertEqual(result.queues[0].penalty, queue_member.penalty)
+        self.assertEqual(result.queues[0].skills, queue_member.skills)
 
     def _insert_agent(self):
         agent = AgentFeatures()
@@ -81,4 +95,25 @@ class TestAgentFeaturesDAO(DAOTestCase):
         self.session.add(agent)
         self.session.commit()
 
-        return agent.id
+        return agent
+
+    def _insert_queue_member(self, queue_name, member_name, agent_id=1, penalty=0, skills='agent-1'):
+        queue_member = QueueMember()
+        queue_member.queue_name = queue_name
+        queue_member.interface = member_name
+        queue_member.penalty = penalty
+        queue_member.usertype = 'agent'
+        queue_member.userid = agent_id
+        queue_member.channel = 'foobar'
+        queue_member.category = 'queue'
+        queue_member.position = 0
+        queue_member.skills = skills
+
+        try:
+            self.session.add(queue_member)
+            self.session.commit()
+        except Exception:
+            self.session.rollback()
+            raise
+
+        return queue_member
