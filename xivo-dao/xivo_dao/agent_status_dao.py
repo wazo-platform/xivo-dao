@@ -142,17 +142,13 @@ def add_agent_to_queues(agent_id, queues):
     session.commit()
 
 
-def remove_agent_from_queues(agent_id, queues):
+def remove_agent_from_queues(agent_id, queue_ids):
     session = _session()
-
-    queue_ids = [q.id for q in queues]
-    queue_names = [q.name for q in queues]
 
     (session
         .query(AgentMembershipStatus)
         .filter(AgentMembershipStatus.agent_id == agent_id)
         .filter(AgentMembershipStatus.queue_id.in_(queue_ids))
-        .filter(AgentMembershipStatus.queue_name.in_(queue_names))
         .delete(synchronize_session=False))
 
     session.commit()

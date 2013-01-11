@@ -175,9 +175,9 @@ class TestAgentStatusDao(DAOTestCase):
         agent = self._insert_agent(42, '12')
         self._insert_agent_membership(agent.id, 1, 'queue1')
 
-        queues = [agent_status_dao._Queue(1, 'queue1')]
+        queue_ids = [1]
 
-        agent_status_dao.remove_agent_from_queues(agent.id, queues)
+        agent_status_dao.remove_agent_from_queues(agent.id, queue_ids)
 
         memberships = self.session.query(AgentMembershipStatus).all()
         self.assertEquals(len(memberships), 0)
@@ -187,9 +187,9 @@ class TestAgentStatusDao(DAOTestCase):
         self._insert_agent_membership(agent.id, 1, 'queue1')
         self._insert_agent_membership(agent.id, 2, 'queue2')
 
-        queues = [agent_status_dao._Queue(1, 'queue1')]
+        queue_ids = [1]
 
-        agent_status_dao.remove_agent_from_queues(agent.id, queues)
+        agent_status_dao.remove_agent_from_queues(agent.id, queue_ids)
         memberships = self.session.query(AgentMembershipStatus).all()
         self.assertEquals(len(memberships), 1)
         self.assertEquals(memberships[0].queue_id, 2)
