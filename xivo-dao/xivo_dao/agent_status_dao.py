@@ -28,10 +28,15 @@ from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
 from xivo_dao.alchemy.agent_membership_status import AgentMembershipStatus
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 
+
 _DB_NAME = 'asterisk'
 
 
 _Queue = namedtuple('_Queue', ['id', 'name'])
+_AgentStatus = namedtuple('_AgentStatus', ['agent_id', 'agent_number', 'extension',
+                                           'context', 'interface', 'state_interface',
+                                           'login_at', 'queues'])
+
 
 def _session():
     connection = dbconnection.get_connection(_DB_NAME)
@@ -39,14 +44,26 @@ def _session():
 
 
 def get_status(agent_id):
-    agent_status = _get_agent_status(agent_id)
-    if agent_status:
-        agent_status.queues = _get_queues_for_agent(agent_id)
-    return agent_status
+    agent_login_status = _get_agent_login_status(agent_id)
+
+    if not agent_login_status:
+        return None
+
+    return _AgentStatus(agent_login_status.agent_id,
+                agent_login_status.agent_number,
+                agent_login_status.extension,
+                agent_login_status.context,
+                agent_login_status.interface,
+                agent_login_status.state_interface,
+                agent_login_status.login_at,
+                _get_queues_for_agent(agent_id))
 
 
-def _get_agent_status(agent_id):
-    return _session().query(AgentLoginStatus).get(agent_id)
+def _get_agent_login_status(agent_id):
+    agent_login_status = (_session()
+                            .query(AgentLoginStatus)
+                            .get(agent_id))
+    return agent_login_status
 
 
 def _get_queues_for_agent(agent_id):
