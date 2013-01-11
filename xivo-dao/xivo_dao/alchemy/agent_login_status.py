@@ -30,6 +30,7 @@ class AgentLoginStatus(Base):
     __tablename__ = 'agent_login_status'
 
     agent_id = Column(Integer, primary_key=True)
+    agent_number = Column(String(40), nullable=False)
     extension = Column(String(80), nullable=False)
     context = Column(String(80), nullable=False)
     interface = Column(String(128), nullable=False, unique=True)

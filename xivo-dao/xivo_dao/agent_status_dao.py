@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # XiVO CTI Server
-# Copyright (C) 2007-2012  Avencall'
+# Copyright (C) 2007-2013  Avencall'
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,8 +25,8 @@ from collections import namedtuple
 from sqlalchemy.sql.expression import case
 from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
-from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.agent_membership_status import AgentMembershipStatus
+from xivo_dao.alchemy.agentfeatures import AgentFeatures
 
 _DB_NAME = 'asterisk'
 
@@ -87,9 +87,10 @@ def is_extension_in_use(extension, context):
     return count > 0
 
 
-def log_in_agent(agent_id, extension, context, interface, state_interface):
+def log_in_agent(agent_id, agent_number, extension, context, interface, state_interface):
     agent = AgentLoginStatus()
     agent.agent_id = agent_id
+    agent.agent_number = agent_number
     agent.extension = extension
     agent.context = context
     agent.interface = interface
