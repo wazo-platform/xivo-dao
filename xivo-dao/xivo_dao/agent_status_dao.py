@@ -184,3 +184,14 @@ def remove_agent_from_all_queues(agent_id):
         .delete(synchronize_session=False))
 
     session.commit()
+
+
+def remove_all_agents_from_queue(queue_id):
+    session = _session()
+
+    (session
+        .query(AgentMembershipStatus)
+        .filter(AgentMembershipStatus.queue_id == queue_id)
+        .delete(synchronize_session=False))
+
+    session.commit()
