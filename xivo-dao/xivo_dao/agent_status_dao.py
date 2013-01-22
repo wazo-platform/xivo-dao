@@ -27,6 +27,8 @@ from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
 from xivo_dao.alchemy.agent_membership_status import AgentMembershipStatus
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
+from xivo_dao.alchemy.queuemember import QueueMember
+from xivo_dao.alchemy.queuefeatures import QueueFeatures
 
 
 _DB_NAME = 'asterisk'
@@ -49,14 +51,7 @@ def get_status(agent_id):
     if not agent_login_status:
         return None
 
-    return _AgentStatus(agent_login_status.agent_id,
-                agent_login_status.agent_number,
-                agent_login_status.extension,
-                agent_login_status.context,
-                agent_login_status.interface,
-                agent_login_status.state_interface,
-                agent_login_status.login_at,
-                _get_queues_for_agent(agent_id))
+    return _to_agent_status(agent_login_status, _get_queues_for_agent(agent_id))
 
 
 def _get_agent_login_status(agent_id):
@@ -83,6 +78,32 @@ def get_statuses():
         AgentLoginStatus.context.label('context'),
         case([(AgentLoginStatus.agent_id == None, False)], else_=True).label('logged')
     ).outerjoin((AgentLoginStatus, AgentFeatures.id == AgentLoginStatus.agent_id)).all()
+
+
+def get_statuses_of_logged_agent_for_queue(queue_id):
+    subquery = (_session()
+        .query(QueueMember.userid)
+        .filter(QueueFeatures.name == QueueMember.queue_name)
+        .filter(QueueFeatures.id == queue_id)
+        .filter(QueueMember.usertype == 'agent')
+    )
+    query = (_session()
+        .query(AgentLoginStatus)
+        .filter(AgentLoginStatus.agent_id.in_(subquery))
+    )
+
+    return [_to_agent_status(q, None) for q in query]
+
+
+def _to_agent_status(agent_login_status, queues):
+    return _AgentStatus(agent_login_status.agent_id,
+                        agent_login_status.agent_number,
+                        agent_login_status.extension,
+                        agent_login_status.context,
+                        agent_login_status.interface,
+                        agent_login_status.state_interface,
+                        agent_login_status.login_at,
+                        queues)
 
 
 def is_agent_logged_in(agent_id):

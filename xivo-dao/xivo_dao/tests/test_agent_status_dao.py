@@ -5,11 +5,14 @@ from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
 from xivo_dao.alchemy.agent_membership_status import AgentMembershipStatus
+from xivo_dao.alchemy.queuefeatures import QueueFeatures
+from xivo_dao.alchemy.queuemember import QueueMember
 
 
 class TestAgentStatusDao(DAOTestCase):
 
-    tables = [AgentFeatures, AgentLoginStatus, AgentMembershipStatus]
+    tables = [AgentFeatures, AgentLoginStatus, AgentMembershipStatus,
+              QueueFeatures, QueueMember]
 
     def setUp(self):
         self.empty_tables()
@@ -107,6 +110,22 @@ class TestAgentStatusDao(DAOTestCase):
         self.assertEqual(statuses[0].logged, True)
         self.assertEqual(statuses[0].extension, '1001')
         self.assertEqual(statuses[0].context, 'default')
+
+    def test_get_statuses_of_logged_for_queue(self):
+        queue = self._insert_queue(1, 'queue1', '3000')
+        agent = self._insert_agent(2, 'agent1')
+        agent_login_status = self._insert_agent_login_status(agent.id, agent.number)
+        self._insert_agent_queue_member(queue.name, agent.id)
+
+        statuses = agent_status_dao.get_statuses_of_logged_agent_for_queue(queue.id)
+
+        self.assertEqual(len(statuses), 1)
+        self.assertEquals(statuses[0].agent_id, agent.id)
+        self.assertEquals(statuses[0].agent_number, agent.number)
+        self.assertEquals(statuses[0].extension, agent_login_status.extension)
+        self.assertEquals(statuses[0].context, agent_login_status.context)
+        self.assertEquals(statuses[0].interface, agent_login_status.interface)
+        self.assertEquals(statuses[0].state_interface, agent_login_status.state_interface)
 
     def test_is_extension_in_use_with_an_agent(self):
         agent_id = 1
@@ -251,3 +270,27 @@ class TestAgentStatusDao(DAOTestCase):
             raise
 
         return agent_membership
+
+    def _insert_queue(self, queue_id, queue_name, queue_number):
+        queue = QueueFeatures()
+        queue.name = queue_name
+        queue.displayname = queue_name
+        queue.number = queue_number
+
+        self.session.add(queue)
+        self.session.commit()
+
+        return queue
+
+    def _insert_agent_queue_member(self, queue_name, agent_id):
+        queue_member = QueueMember()
+        queue_member.queue_name = queue_name
+        queue_member.interface = 'Agent/123'
+        queue_member.penalty = 0
+        queue_member.usertype = 'agent'
+        queue_member.userid = agent_id
+        queue_member.channel = 'foobar'
+        queue_member.category = 'queue'
+
+        self.session.add(queue_member)
+        self.session.commit()
