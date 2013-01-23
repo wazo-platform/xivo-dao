@@ -50,38 +50,44 @@ def get_status(agent_id):
 
 def _get_agent_login_status(agent_id):
     agent_login_status = (_session()
-                            .query(AgentLoginStatus)
-                            .get(agent_id))
+        .query(AgentLoginStatus)
+        .get(agent_id)
+    )
     return agent_login_status
 
 
 def _get_queues_for_agent(agent_id):
-    query = _session().query(
-                AgentMembershipStatus.queue_id.label('queue_id'),
-                AgentMembershipStatus.queue_name.label('queue_name')
-            ).filter(AgentMembershipStatus.agent_id == agent_id)
+    query = (_session()
+        .query(AgentMembershipStatus.queue_id.label('queue_id'),
+               AgentMembershipStatus.queue_name.label('queue_name'))
+        .filter(AgentMembershipStatus.agent_id == agent_id)
+    )
 
     return [_Queue(q.queue_id, q.queue_name) for q in query]
 
 
 def get_statuses():
-    return _session().query(
-        AgentFeatures.id.label('agent_id'),
-        AgentFeatures.number.label('agent_number'),
-        AgentLoginStatus.extension.label('extension'),
-        AgentLoginStatus.context.label('context'),
-        case([(AgentLoginStatus.agent_id == None, False)], else_=True).label('logged')
-    ).outerjoin((AgentLoginStatus, AgentFeatures.id == AgentLoginStatus.agent_id)).all()
+    return (_session()
+        .query(AgentFeatures.id.label('agent_id'),
+               AgentFeatures.number.label('agent_number'),
+               AgentLoginStatus.extension.label('extension'),
+               AgentLoginStatus.context.label('context'),
+               case([(AgentLoginStatus.agent_id == None, False)], else_=True).label('logged'))
+        .outerjoin((AgentLoginStatus, AgentFeatures.id == AgentLoginStatus.agent_id))
+        .all()
+    )
 
 
 def get_statuses_of_logged_agent_for_queue(queue_id):
-    subquery = (_session()
+    session = _session()
+
+    subquery = (session
         .query(QueueMember.userid)
         .filter(QueueFeatures.name == QueueMember.queue_name)
         .filter(QueueFeatures.id == queue_id)
         .filter(QueueMember.usertype == 'agent')
     )
-    query = (_session()
+    query = (session
         .query(AgentLoginStatus)
         .filter(AgentLoginStatus.agent_id.in_(subquery))
     )
@@ -151,20 +157,20 @@ def _to_agent_status(agent_login_status, queues):
 
 def is_agent_logged_in(agent_id):
     count = (_session()
-    .query(AgentLoginStatus)
-    .filter(AgentLoginStatus.agent_id == agent_id)
-    .count())
-
+        .query(AgentLoginStatus)
+        .filter(AgentLoginStatus.agent_id == agent_id)
+        .count()
+    )
     return count > 0
 
 
 def is_extension_in_use(extension, context):
     count = (_session()
-           .query(AgentLoginStatus)
-           .filter(AgentLoginStatus.extension == extension)
-           .filter(AgentLoginStatus.context == context)
-           .count())
-
+        .query(AgentLoginStatus)
+        .filter(AgentLoginStatus.extension == extension)
+        .filter(AgentLoginStatus.context == context)
+        .count()
+    )
     return count > 0
 
 
