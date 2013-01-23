@@ -99,19 +99,16 @@ def get_statuses_to_add_to_queue(queue_id):
     session = _session()
 
     q1 = (session
-        .query(AgentLoginStatus.agent_id)
-    )
-    q2 = (session
         .query(QueueMember.userid)
         .filter(QueueFeatures.name == QueueMember.queue_name)
         .filter(QueueFeatures.id == queue_id)
         .filter(QueueMember.usertype == 'agent')
     )
-    q3 = (session
+    q2 = (session
         .query(AgentMembershipStatus.agent_id)
         .filter(AgentMembershipStatus.queue_id == queue_id)
     )
-    agent_ids_to_add = q1.intersect(q2).except_(q3)
+    agent_ids_to_add = q1.except_(q2)
     query = (session
         .query(AgentLoginStatus)
         .filter(AgentLoginStatus.agent_id.in_(agent_ids_to_add))
