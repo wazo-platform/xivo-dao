@@ -89,6 +89,55 @@ def get_statuses_of_logged_agent_for_queue(queue_id):
     return [_to_agent_status(q, None) for q in query]
 
 
+def get_statuses_to_add_to_queue(queue_id):
+    # XXX name could be better
+    session = _session()
+
+    q1 = (session
+        .query(AgentLoginStatus.agent_id)
+    )
+    q2 = (session
+        .query(QueueMember.userid)
+        .filter(QueueFeatures.name == QueueMember.queue_name)
+        .filter(QueueFeatures.id == queue_id)
+        .filter(QueueMember.usertype == 'agent')
+    )
+    q3 = (session
+        .query(AgentMembershipStatus.agent_id)
+        .filter(AgentMembershipStatus.queue_id == queue_id)
+    )
+    agent_ids_to_add = q1.intersect(q2).except_(q3)
+    query = (session
+        .query(AgentLoginStatus)
+        .filter(AgentLoginStatus.agent_id.in_(agent_ids_to_add))
+    )
+
+    return [_to_agent_status(q, None) for q in query]
+
+
+def get_statuses_to_remove_from_queue(queue_id):
+    # XXX name could be better
+    session = _session()
+
+    q1 = (session
+        .query(AgentMembershipStatus.agent_id)
+        .filter(AgentMembershipStatus.queue_id == queue_id)
+    )
+    q2 = (session
+        .query(QueueMember.userid)
+        .filter(QueueFeatures.name == QueueMember.queue_name)
+        .filter(QueueFeatures.id == queue_id)
+        .filter(QueueMember.usertype == 'agent')
+    )
+    agent_ids_to_remove = q1.except_(q2)
+    query = (session
+        .query(AgentLoginStatus)
+        .filter(AgentLoginStatus.agent_id.in_(agent_ids_to_remove))
+    )
+
+    return [_to_agent_status(q, None) for q in query]
+
+
 def _to_agent_status(agent_login_status, queues):
     return _AgentStatus(agent_login_status.agent_id,
                         agent_login_status.agent_number,
