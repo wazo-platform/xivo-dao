@@ -132,7 +132,7 @@ class TestAgentStatusDao(DAOTestCase):
         self._insert_agent_queue_member(agent.id, queue.name)
         agent_login_status = self._insert_agent_login_status(agent.id, agent.number)
 
-        statuses = agent_status_dao.get_statuses_of_logged_agent_for_queue(queue.id)
+        statuses = agent_status_dao.get_statuses_for_queue(queue.id)
 
         self.assertEqual(len(statuses), 1)
         self.assertEquals(statuses[0].agent_id, agent.id)

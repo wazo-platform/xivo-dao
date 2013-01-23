@@ -78,7 +78,7 @@ def get_statuses():
     )
 
 
-def get_statuses_of_logged_agent_for_queue(queue_id):
+def get_statuses_for_queue(queue_id):
     session = _session()
 
     subquery = (session
