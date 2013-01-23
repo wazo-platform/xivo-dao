@@ -96,7 +96,6 @@ def get_statuses_of_logged_agent_for_queue(queue_id):
 
 
 def get_statuses_to_add_to_queue(queue_id):
-    # XXX name could be better
     session = _session()
 
     q1 = (session
@@ -122,7 +121,6 @@ def get_statuses_to_add_to_queue(queue_id):
 
 
 def get_statuses_to_remove_from_queue(queue_id):
-    # XXX name could be better
     session = _session()
 
     q1 = (session
