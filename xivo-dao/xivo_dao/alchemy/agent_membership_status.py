@@ -26,5 +26,4 @@ class AgentMembershipStatus(Base):
     agent_id = Column(Integer, primary_key=True)
     queue_id = Column(Integer, primary_key=True)
     queue_name = Column(String(128), nullable=False)
-    penalty = Column(Integer, nullable=False, default=0)
-
+    penalty = Column(Integer, nullable=False, server_default='0')
