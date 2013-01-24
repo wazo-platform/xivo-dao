@@ -101,6 +101,28 @@ class TestAgentStatusDao(DAOTestCase):
         self.assertEquals(result.queues[0].id, agent_membership.queue_id)
         self.assertEquals(result.queues[0].name, agent_membership.queue_name)
 
+    def test_get_status_by_number_with_unlogged_agent_returns_none(self):
+        agent_number = '1001'
+        agent_status = agent_status_dao.get_status(agent_number)
+        self.assertEquals(agent_status, None)
+
+    def test_get_status_by_number_with_logged_agent(self):
+        agent = self._insert_agent(42, '12')
+        agent_login_status = self._insert_agent_login_status(agent.id, agent.number)
+        agent_membership = self._insert_agent_membership(agent.id, 1, 'queue1')
+
+        result = agent_status_dao.get_status_by_number(agent.number)
+
+        self.assertEquals(result.agent_id, agent.id)
+        self.assertEquals(result.agent_number, agent.number)
+        self.assertEquals(result.extension, agent_login_status.extension)
+        self.assertEquals(result.context, agent_login_status.context)
+        self.assertEquals(result.interface, agent_login_status.interface)
+        self.assertEquals(result.state_interface, agent_login_status.state_interface)
+        self.assertEquals(len(result.queues), 1)
+        self.assertEquals(result.queues[0].id, agent_membership.queue_id)
+        self.assertEquals(result.queues[0].name, agent_membership.queue_name)
+
     def test_get_statuses_of_unlogged_agent(self):
         agent = self._insert_agent(42, '12')
 

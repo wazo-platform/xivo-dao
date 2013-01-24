@@ -40,20 +40,36 @@ def _session():
 
 
 def get_status(agent_id):
-    agent_login_status = _get_agent_login_status(agent_id)
-
-    if not agent_login_status:
+    login_status = _get_login_status_by_id(agent_id)
+    if not login_status:
         return None
 
-    return _to_agent_status(agent_login_status, _get_queues_for_agent(agent_id))
+    return _to_agent_status(login_status, _get_queues_for_agent(agent_id))
 
 
-def _get_agent_login_status(agent_id):
-    agent_login_status = (_session()
+def get_status_by_number(agent_number):
+    login_status = _get_login_status_by_number(agent_number)
+    if not login_status:
+        return None
+
+    return _to_agent_status(login_status, _get_queues_for_agent(login_status.agent_id))
+
+
+def _get_login_status_by_id(agent_id):
+    login_status = (_session()
         .query(AgentLoginStatus)
         .get(agent_id)
     )
-    return agent_login_status
+    return login_status
+
+
+def _get_login_status_by_number(agent_number):
+    login_status = (_session()
+        .query(AgentLoginStatus)
+        .filter(AgentLoginStatus.agent_number == agent_number)
+        .first()
+    )
+    return login_status
 
 
 def _get_queues_for_agent(agent_id):
