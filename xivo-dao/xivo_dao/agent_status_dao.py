@@ -17,6 +17,7 @@
 
 from collections import namedtuple
 from sqlalchemy.sql.expression import case
+from sqlalchemy import and_
 from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
 from xivo_dao.alchemy.agent_membership_status import AgentMembershipStatus
@@ -253,5 +254,15 @@ def remove_all_agents_from_queue(queue_id):
         .query(AgentMembershipStatus)
         .filter(AgentMembershipStatus.queue_id == queue_id)
         .delete(synchronize_session=False))
+
+    session.commit()
+
+def update_penalty(agent_id, queue_id, penalty):
+    session = _session()
+
+    (session
+        .query(AgentMembershipStatus)
+        .filter(and_(AgentMembershipStatus.queue_id == queue_id, AgentMembershipStatus.agent_id == agent_id))
+        .update({'penalty': penalty}, synchronize_session=False))
 
     session.commit()

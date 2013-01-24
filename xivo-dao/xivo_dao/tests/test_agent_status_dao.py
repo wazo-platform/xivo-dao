@@ -22,6 +22,7 @@ from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
 from xivo_dao.alchemy.agent_membership_status import AgentMembershipStatus
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
+from sqlalchemy import and_
 
 
 class TestAgentStatusDao(DAOTestCase):
@@ -316,6 +317,19 @@ class TestAgentStatusDao(DAOTestCase):
         self.assertEquals(memberships[0].queue_id, queue2_id)
         self.assertEquals(memberships[0].queue_name, queue2_name)
 
+    def test_update_penalty(self):
+        agent_id = 42
+        queue_id = 42
+        queue_name = '42'
+        queue_penalty_before = 42
+        queue_penalty_after = 43
+        self._insert_agent_membership(agent_id, queue_id, queue_name, queue_penalty_before)
+
+        agent_status_dao.update_penalty(agent_id, queue_id, queue_penalty_after)
+
+        memberships = self.session.query(AgentMembershipStatus).filter(and_(AgentMembershipStatus.queue_id == queue_id, AgentMembershipStatus.agent_id == agent_id))
+        self.assertEquals(memberships[0].penalty, queue_penalty_after)
+
     def _insert_agent(self, agent_id, agent_number):
         agent = AgentFeatures()
         agent.id = agent_id
@@ -353,10 +367,11 @@ class TestAgentStatusDao(DAOTestCase):
 
         return agent_status
 
-    def _insert_agent_membership(self, agent_id, queue_id, queue_name):
+    def _insert_agent_membership(self, agent_id, queue_id, queue_name, queue_penalty=0):
         agent_membership = AgentMembershipStatus(agent_id=agent_id,
                                                  queue_id=queue_id,
-                                                 queue_name=queue_name)
+                                                 queue_name=queue_name,
+                                                 penalty=queue_penalty)
         try:
             self.session.add(agent_membership)
             self.session.commit()
