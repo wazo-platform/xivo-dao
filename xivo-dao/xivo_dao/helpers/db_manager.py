@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import logging
+from functools import wraps
 from sqlalchemy.orm.session import sessionmaker
 from sqlalchemy.engine import create_engine
 from xivo_dao.helpers import config
@@ -25,29 +26,37 @@ logger = logging.getLogger(__name__)
 
 _DB_URI = config.DB_URI
 
+dbsession = None
 
-class DBSessionManager(object):
-    _sess = None
+def connect():
+    logger.debug('Connecting to database: %s' % _DB_URI)
+    engine = create_engine(_DB_URI, echo=config.SQL_DEBUG)
+    Session = sessionmaker(bind=engine)
+    return Session()
 
-    def _connect(self):
-        logger.debug('Connecting to database: %s' % _DB_URI)
-        engine = create_engine(_DB_URI, echo=config.SQL_DEBUG)
-        Session = sessionmaker(bind=engine)
-        return Session()
 
-    @classmethod
-    def session(cls):
-        if cls._sess is None:
-            cls._sess = cls()._connect()
+def session():
+    global dbsession
+    if not dbsession:
+        dbsession = connect()
+    return dbsession
 
+
+def daosession(session, func):
+
+    @wraps(func)
+    def wrapped(session, *args, **kwargs):
+        sess = session()
         try:
-            cls._sess.execute('SELECT 1;')
+            sess.begin()
+            result = func(sess, *args, **kwargs)
+            sess.commit()
+            return result
         except (OperationalError, InvalidRequestError):
             logger.debug('Trying to reconnect')
-            cls._sess = cls()._connect()
+            new_sess = session()
+            result = func(new_sess, *args, **kwargs)
+            new_sess.commit()
+            return result
 
-        return cls._sess
-
-
-def DbSession():
-    return DBSessionManager.session()
+    return wrapped
