@@ -81,7 +81,7 @@ def _get_agent(whereclause):
     return _Agent(row['id'], row['number'], [])
 
 
-def _add_queues_to_agent(conn, agent):
+def _add_queues_to_agent(agent):
     query = select([QueueFeatures.id, QueueMember.queue_name, QueueMember.penalty],
                    and_(QueueMember.usertype == u'agent',
                         QueueMember.userid == agent.id,
