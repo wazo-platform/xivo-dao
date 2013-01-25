@@ -30,7 +30,7 @@ class DBSessionManager(object):
 
     def connect(self):
         logger.debug('Connecting to database: %s' % _DB_URI)
-        engine = create_engine(_DB_URI, echo=config.DB_URI)
+        engine = create_engine(_DB_URI, echo=config.SQL_DEBUG)
         Session = sessionmaker(bind=engine)
         return Session()
 
