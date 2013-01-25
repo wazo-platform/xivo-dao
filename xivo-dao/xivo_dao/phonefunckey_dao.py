@@ -16,19 +16,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.alchemy.phonefunckey import PhoneFunckey
-from xivo_dao.alchemy import dbconnection
 from sqlalchemy import and_
-
-_DB_NAME = 'asterisk'
-
-
-def _session():
-    connection = dbconnection.get_connection(_DB_NAME)
-    return connection.get_session()
+from xivo_dao.helpers.db_manager import DbSession
 
 
 def _get_dest(user_id, fwd_type):
-    destinations = (_session().query(PhoneFunckey.exten)
+    destinations = (DbSession().query(PhoneFunckey.exten)
                     .filter(and_(PhoneFunckey.iduserfeatures == user_id,
                                  PhoneFunckey.typevalextenumbers == fwd_type)))
 

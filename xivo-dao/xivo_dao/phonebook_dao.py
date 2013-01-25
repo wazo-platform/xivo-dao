@@ -15,25 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.phonebook import Phonebook
 from xivo_dao.alchemy.phonebookaddress import PhonebookAddress
 from xivo_dao.alchemy.phonebooknumber import PhonebookNumber
-
-_DB_NAME = 'asterisk'
-
-
-def _session():
-    connection = dbconnection.get_connection(_DB_NAME)
-    return connection.get_session()
+from xivo_dao.helpers.db_manager import DbSession
 
 
 def get(phonebook_id):
-    return _session().query(Phonebook).filter(Phonebook.id == phonebook_id).first()
+    return DbSession().query(Phonebook).filter(Phonebook.id == phonebook_id).first()
 
 
 def get_join_elements(phonebook_id):
-    return (_session().query(Phonebook, PhonebookAddress, PhonebookNumber)
+    return (DbSession().query(Phonebook, PhonebookAddress, PhonebookNumber)
             .join((PhonebookAddress, Phonebook.id == PhonebookAddress.phonebookid))
             .outerjoin((PhonebookNumber, Phonebook.id == PhonebookNumber.phonebookid))
             .filter(Phonebook.id == phonebook_id)
@@ -41,7 +34,7 @@ def get_join_elements(phonebook_id):
 
 
 def all():
-    return (_session().query(Phonebook, PhonebookAddress, PhonebookNumber)
+    return (DbSession().query(Phonebook, PhonebookAddress, PhonebookNumber)
             .join((PhonebookAddress, Phonebook.id == PhonebookAddress.phonebookid))
             .outerjoin((PhonebookNumber, Phonebook.id == PhonebookNumber.phonebookid))
             .all())

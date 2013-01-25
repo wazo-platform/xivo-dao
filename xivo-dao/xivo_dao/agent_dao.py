@@ -17,25 +17,14 @@
 
 from collections import namedtuple
 from sqlalchemy.sql import select, and_
-from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
+from xivo_dao.helpers.db_manager import DbSession
 
-_DB_NAME = 'asterisk'
 
 _Agent = namedtuple('_Agent', ['id', 'number', 'queues'])
 _Queue = namedtuple('_Queue', ['id', 'name', 'penalty', 'skills'])
-
-
-def _session():
-    connection = dbconnection.get_connection(_DB_NAME)
-    return connection.get_session()
-
-
-def _engine():
-    connection = dbconnection.get_connection(_DB_NAME)
-    return connection.get_engine()
 
 
 def agent_number(agentid):
@@ -56,7 +45,7 @@ def agent_interface(agentid):
 def agent_id(agent_number):
     if agent_number is None:
         raise ValueError('Agent number is None')
-    result = _session().query(AgentFeatures.id).filter(AgentFeatures.number == agent_number).first()
+    result = DbSession().query(AgentFeatures.id).filter(AgentFeatures.number == agent_number).first()
     if result is None:
         raise LookupError('No such agent')
     return str(result.id)
@@ -66,54 +55,46 @@ def _get_one(agentid):
     # field id != field agentid used only for joining with staticagent table.
     if agentid is None:
         raise ValueError('Agent ID is None')
-    result = _session().query(AgentFeatures).filter(AgentFeatures.id == int(agentid)).first()
+    result = DbSession().query(AgentFeatures).filter(AgentFeatures.id == int(agentid)).first()
     if result is None:
         raise LookupError('No such agent')
     return result
 
 
 def agent_with_id(agent_id):
-    conn = _engine().connect()
-    try:
-        agent = _get_agent(conn, AgentFeatures.id == int(agent_id))
-        _add_queues_to_agent(conn, agent)
-        return agent
-    finally:
-        conn.close()
+    agent = _get_agent(AgentFeatures.id == int(agent_id))
+    _add_queues_to_agent(agent)
+    return agent
 
 
 def agent_with_number(agent_number):
-    conn = _engine().connect()
-    try:
-        agent = _get_agent(conn, AgentFeatures.number == agent_number)
-        _add_queues_to_agent(conn, agent)
-        return agent
-    finally:
-        conn.close()
+    agent = _get_agent(AgentFeatures.number == agent_number)
+    _add_queues_to_agent(agent)
+    return agent
 
 
-def _get_agent(conn, whereclause):
+def _get_agent(whereclause):
     query = select([AgentFeatures.id, AgentFeatures.number], whereclause)
-    row = conn.execute(query).first()
+    row = DbSession().execute(query).first()
     if row is None:
         raise LookupError('no agent matching clause %s' % whereclause)
     return _Agent(row['id'], row['number'], [])
 
 
-def _add_queues_to_agent(conn, agent):
+def _add_queues_to_agent(agent):
     query = select([QueueFeatures.id, QueueMember.queue_name, QueueMember.penalty, QueueMember.skills],
                    and_(QueueMember.usertype == u'agent',
                         QueueMember.userid == agent.id,
                         QueueMember.queue_name == QueueFeatures.name))
 
-    for row in conn.execute(query):
+    for row in DbSession().execute(query):
         queue = _Queue(row['id'], row['queue_name'], row['penalty'], row['skills'])
         agent.queues.append(queue)
 
 
 def get(agentid):
-    return _session().query(AgentFeatures).filter(AgentFeatures.id == int(agentid)).first()
+    return DbSession().query(AgentFeatures).filter(AgentFeatures.id == int(agentid)).first()
 
 
 def all():
-    return _session().query(AgentFeatures).all()
+    return DbSession().query(AgentFeatures).all()

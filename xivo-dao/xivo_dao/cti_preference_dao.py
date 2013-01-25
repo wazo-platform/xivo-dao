@@ -15,21 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.cti_preference import CtiPreference
 from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.alchemy.cti_profile_preference import CtiProfilePreference
-
-_DB_NAME = 'asterisk'
-
-
-def _session():
-    connection = dbconnection.get_connection(_DB_NAME)
-    return connection.get_session()
+from xivo_dao.helpers.db_manager import DbSession
 
 
 def _get(preference_id):
-    return _session().query(CtiPreference).filter(CtiPreference.id == preference_id).first()
+    return DbSession().query(CtiPreference).filter(CtiPreference.id == preference_id).first()
 
 
 def get_name(preference_id):
@@ -38,11 +31,11 @@ def get_name(preference_id):
 
 def get_preferences():
     res = {}
-    rows = (_session().query(CtiProfile).all())
+    rows = (DbSession().query(CtiProfile).all())
     for row in rows:
         res[row.name] = {}
 
-    rows = (_session().query(CtiProfile, CtiProfilePreference, CtiPreference)
+    rows = (DbSession().query(CtiProfile, CtiProfilePreference, CtiPreference)
             .join((CtiProfilePreference, CtiProfilePreference.profile_id == CtiProfile.id),
                   (CtiPreference, CtiProfilePreference.preference_id == CtiPreference.id))
             .all())

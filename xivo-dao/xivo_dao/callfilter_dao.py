@@ -20,19 +20,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.callfilter import Callfilter
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from sqlalchemy.sql.expression import and_, cast, func
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from sqlalchemy.types import Integer
-
-_DB_NAME = 'asterisk'
-
-
-def _session():
-    connection = dbconnection.get_connection(_DB_NAME)
-    return connection.get_session()
+from xivo_dao.helpers.db_manager import DbSession
 
 
 def does_secretary_filter_boss(boss_user_id, secretary_user_id):
@@ -44,19 +37,19 @@ AND "typeval" = '%s'
 AND "bstype" = 'secretary'
 ''' % (boss_user_id, secretary_user_id)
 
-    res, = _session().query('count').from_statement(query).first()
+    res, = DbSession().query('count').from_statement(query).first()
     return res
 
 
 def get(callfilter_id):
-    return (_session().query(Callfilter, Callfiltermember)
+    return (DbSession().query(Callfilter, Callfiltermember)
             .join((Callfiltermember, Callfilter.id == Callfiltermember.callfilterid))
             .filter(Callfilter.id == callfilter_id)
             .all())
 
 
 def get_secretaries_id_by_context(context):
-    return (_session().query(Callfiltermember.id)
+    return (DbSession().query(Callfiltermember.id)
             .join((Callfilter, Callfilter.id == Callfiltermember.callfilterid))
             .filter(and_(Callfilter.context == context,
                          Callfiltermember.bstype == 'secretary'))
@@ -64,7 +57,7 @@ def get_secretaries_id_by_context(context):
 
 
 def get_secretaries_by_callfiltermember_id(callfiltermember_id):
-    return (_session().query(Callfiltermember, UserFeatures.ringseconds)
+    return (DbSession().query(Callfiltermember, UserFeatures.ringseconds)
             .join((Callfilter, Callfilter.id == Callfiltermember.callfilterid))
             .join((UserFeatures, UserFeatures.id == cast(Callfiltermember.typeval, Integer)))
             .filter(and_(Callfilter.id == callfiltermember_id,
@@ -74,13 +67,13 @@ def get_secretaries_by_callfiltermember_id(callfiltermember_id):
 
 
 def get_by_callfiltermember_id(callfiltermember_id):
-    return (_session().query(Callfiltermember)
+    return (DbSession().query(Callfiltermember)
             .filter(Callfiltermember.id == callfiltermember_id)
             .first())
 
 
 def get_by_boss_id(boss_id):
-    return (_session().query(Callfiltermember, Callfilter)
+    return (DbSession().query(Callfiltermember, Callfilter)
             .join((Callfilter, Callfilter.id == Callfiltermember.callfilterid))
             .filter(and_(Callfiltermember.typeval == str(boss_id),
                          Callfiltermember.bstype == 'boss'))
@@ -88,7 +81,7 @@ def get_by_boss_id(boss_id):
 
 
 def is_activated_by_callfilter_id(callfilter_id):
-    return (_session().query(func.count(Callfiltermember.active))
+    return (DbSession().query(func.count(Callfiltermember.active))
             .join((Callfilter, Callfilter.id == Callfiltermember.callfilterid))
             .filter(and_(Callfiltermember.callfilterid == callfilter_id,
                          Callfiltermember.bstype == 'secretary',
@@ -98,5 +91,5 @@ def is_activated_by_callfilter_id(callfilter_id):
 
 def update_callfiltermember_state(callfiltermember_id, new_state):
     data_dict = {'active': int(new_state)}
-    _session().query(Callfiltermember).filter(Callfiltermember.id == callfiltermember_id).update(data_dict)
-    _session().commit()
+    DbSession().query(Callfiltermember).filter(Callfiltermember.id == callfiltermember_id).update(data_dict)
+    DbSession().commit()

@@ -15,21 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.cti_service import CtiService
 from xivo_dao.alchemy.cti_profile_service import CtiProfileService
 from xivo_dao.alchemy.cti_profile import CtiProfile
-
-_DB_NAME = 'asterisk'
-
-
-def _session():
-    connection = dbconnection.get_connection(_DB_NAME)
-    return connection.get_session()
+from xivo_dao.helpers.db_manager import DbSession
 
 
 def _get(profile_id):
-    return _session().query(CtiService).filter(CtiService.id == profile_id).first()
+    return DbSession().query(CtiService).filter(CtiService.id == profile_id).first()
 
 
 def get_name(profile_id):
@@ -38,11 +31,11 @@ def get_name(profile_id):
 
 def get_services():
     res = {}
-    rows = (_session().query(CtiProfile).all())
+    rows = (DbSession().query(CtiProfile).all())
     for row in rows:
         res[row.name] = []
 
-    rows = (_session().query(CtiProfile, CtiService)
+    rows = (DbSession().query(CtiProfile, CtiService)
             .join((CtiProfileService, CtiProfileService.profile_id == CtiProfile.id),
                   (CtiService, CtiProfileService.service_id == CtiService.id))
             .all())

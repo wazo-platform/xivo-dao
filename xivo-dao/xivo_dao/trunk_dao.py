@@ -19,15 +19,9 @@ from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
-from xivo_dao.alchemy import dbconnection
+from xivo_dao.helpers.db_manager import DbSession
 
 TRUNK_TYPES = ['sip', 'iax', 'custom']
-_DB_NAME = 'asterisk'
-
-
-def _session():
-    connection = dbconnection.get_connection(_DB_NAME)
-    return connection.get_session()
 
 
 def find_by_proto_name(protocol, name):
@@ -38,9 +32,9 @@ def find_by_proto_name(protocol, name):
     table, field = _trunk_table_lookup_field(protocol)
 
     try:
-        protocol_id = (_session().query(table.id)
+        protocol_id = (DbSession().query(table.id)
                        .filter(field.ilike(name)))[0].id
-        trunk_id = (_session().query(TrunkFeatures.id)
+        trunk_id = (DbSession().query(TrunkFeatures.id)
                     .filter(TrunkFeatures.protocolid == protocol_id)
                     .filter(TrunkFeatures.protocol == protocol.lower()))[0].id
     except IndexError:
@@ -63,12 +57,12 @@ def _trunk_table_lookup_field(protocol):
 
 
 def get_ids():
-    return [item.id for item in _session().query(TrunkFeatures.id)]
+    return [item.id for item in DbSession().query(TrunkFeatures.id)]
 
 
-def get(id):
-    return _session().query(TrunkFeatures).filter(TrunkFeatures.id == id).first()
+def get(trunk_id):
+    return DbSession().query(TrunkFeatures).filter(TrunkFeatures.id == trunk_id).first()
 
 
 def all():
-    return _session().query(TrunkFeatures).all()
+    return DbSession().query(TrunkFeatures).all()

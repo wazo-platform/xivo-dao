@@ -15,16 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.stat_agent_periodic import StatAgentPeriodic
-
-
-_DB_NAME = 'asterisk'
-
-
-def _session():
-    connection = dbconnection.get_connection(_DB_NAME)
-    return connection.get_session()
+from xivo_dao.helpers.db_manager import DbSession
 
 
 def insert_stats(period_stats, period_start):
@@ -37,16 +29,16 @@ def insert_stats(period_stats, period_start):
             agent_id=agent_id,
         )
 
-        _session().add(entry)
+        DbSession().add(entry)
 
-    _session().commit()
+    DbSession().commit()
 
 
 def clean_table():
-    _session().query(StatAgentPeriodic).delete()
-    _session().commit()
+    DbSession().query(StatAgentPeriodic).delete()
+    DbSession().commit()
 
 
 def remove_after(date):
-    _session().query(StatAgentPeriodic).filter(StatAgentPeriodic.time >= date).delete()
-    _session().commit()
+    DbSession().query(StatAgentPeriodic).filter(StatAgentPeriodic.time >= date).delete()
+    DbSession().commit()

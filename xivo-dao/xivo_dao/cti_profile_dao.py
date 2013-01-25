@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.alchemy.ctipresences import CtiPresences
 from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
@@ -23,17 +22,11 @@ from xivo_dao.alchemy.cti_profile_xlet import CtiProfileXlet
 from xivo_dao.alchemy.cti_xlet import CtiXlet
 from xivo_dao.alchemy.cti_xlet_layout import CtiXletLayout
 from sqlalchemy.sql.expression import asc
-
-_DB_NAME = 'asterisk'
-
-
-def _session():
-    connection = dbconnection.get_connection(_DB_NAME)
-    return connection.get_session()
+from xivo_dao.helpers.db_manager import DbSession
 
 
 def _get(profile_id):
-    return _session().query(CtiProfile).filter(CtiProfile.id == profile_id).first()
+    return DbSession().query(CtiProfile).filter(CtiProfile.id == profile_id).first()
 
 
 def get_name(profile_id):
@@ -41,7 +34,7 @@ def get_name(profile_id):
 
 
 def get_profiles():
-    rows = (_session().query(CtiProfile, CtiPresences, CtiPhoneHintsGroup, CtiProfileXlet, CtiXlet, CtiXletLayout)
+    rows = (DbSession().query(CtiProfile, CtiPresences, CtiPhoneHintsGroup, CtiProfileXlet, CtiXlet, CtiXletLayout)
             .join((CtiPresences, CtiProfile.presence_id == CtiPresences.id),
                   (CtiPhoneHintsGroup, CtiProfile.phonehints_id == CtiPhoneHintsGroup.id),
                   (CtiProfileXlet, CtiProfile.id == CtiProfileXlet.profile_id),

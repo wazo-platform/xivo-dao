@@ -15,31 +15,5 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-import logging
-from sqlalchemy.orm.session import sessionmaker
-from sqlalchemy.engine import create_engine
-from xivo_dao.helpers import config
-
-logger = logging.getLogger(__name__)
-
-_DB_URI = config.DB_URI
-
-
-class DBSessionManager(object):
-    sess = None
-
-    def connect(self):
-        logger.debug('Connecting to database: %s' % _DB_URI)
-        engine = create_engine(_DB_URI, echo=config.DB_URI)
-        Session = sessionmaker(bind=engine)
-        return Session()
-
-    @classmethod
-    def session(cls):
-        if cls.sess is None:
-            cls.sess = cls().connect()
-        return cls.sess
-
-
-def DbSession():
-    return DBSessionManager.session()
+DB_URI = 'postgresql://asterisk:proformatique@localhost/asterisk'
+SQL_DEBUG = False

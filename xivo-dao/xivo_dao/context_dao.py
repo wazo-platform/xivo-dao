@@ -15,26 +15,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.context import Context
 from xivo_dao.alchemy.contextnumbers import ContextNumbers
 from xivo_dao.alchemy.contexttype import ContextType
 from xivo_dao.alchemy.contextinclude import ContextInclude
-
-_DB_NAME = 'asterisk'
-
-
-def _session():
-    connection = dbconnection.get_connection(_DB_NAME)
-    return connection.get_session()
+from xivo_dao.helpers.db_manager import DbSession
 
 
 def get(context_name):
-    return _session().query(Context).filter(Context.name == context_name).first()
+    return DbSession().query(Context).filter(Context.name == context_name).first()
 
 
 def get_join_elements(context_name):
-    return (_session().query(Context, ContextNumbers, ContextType, ContextInclude)
+    return (DbSession().query(Context, ContextNumbers, ContextType, ContextInclude)
             .join((ContextNumbers, Context.name == ContextNumbers.context),
                   (ContextType, Context.contexttype == ContextType.name))
             .outerjoin((ContextInclude, Context.name == ContextInclude.context))
@@ -43,7 +36,7 @@ def get_join_elements(context_name):
 
 
 def all():
-    return (_session().query(Context, ContextNumbers, ContextType, ContextInclude)
+    return (DbSession().query(Context, ContextNumbers, ContextType, ContextInclude)
             .join((ContextNumbers, Context.name == ContextNumbers.context),
                   (ContextType, Context.contexttype == ContextType.name))
             .outerjoin((ContextInclude, Context.name == ContextInclude.context))
