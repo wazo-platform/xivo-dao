@@ -17,7 +17,6 @@
 
 from collections import namedtuple
 from sqlalchemy.sql.expression import case
-from sqlalchemy import and_
 from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
 from xivo_dao.alchemy.agent_membership_status import AgentMembershipStatus
@@ -29,10 +28,10 @@ from xivo_dao.alchemy.queuefeatures import QueueFeatures
 _DB_NAME = 'asterisk'
 
 
-_Queue = namedtuple('_Queue', ['id', 'name'])
 _AgentStatus = namedtuple('_AgentStatus', ['agent_id', 'agent_number', 'extension',
                                            'context', 'interface', 'state_interface',
                                            'login_at', 'queues'])
+_Queue = namedtuple('_Queue', ['id', 'name', 'penalty'])
 
 
 def _session():
@@ -76,11 +75,12 @@ def _get_login_status_by_number(agent_number):
 def _get_queues_for_agent(agent_id):
     query = (_session()
         .query(AgentMembershipStatus.queue_id.label('queue_id'),
-               AgentMembershipStatus.queue_name.label('queue_name'))
+               AgentMembershipStatus.queue_name.label('queue_name'),
+               AgentMembershipStatus.penalty.label('penalty'))
         .filter(AgentMembershipStatus.agent_id == agent_id)
     )
 
-    return [_Queue(q.queue_id, q.queue_name) for q in query]
+    return [_Queue(q.queue_id, q.queue_name, q.penalty) for q in query]
 
 
 def get_statuses():
@@ -226,7 +226,8 @@ def add_agent_to_queues(agent_id, queues):
     for queue in queues:
         agent_membership_status = AgentMembershipStatus(agent_id=agent_id,
                                                         queue_id=queue.id,
-                                                        queue_name=queue.name)
+                                                        queue_name=queue.name,
+                                                        penalty=queue.penalty)
         session.add(agent_membership_status)
 
     session.commit()
@@ -265,12 +266,14 @@ def remove_all_agents_from_queue(queue_id):
 
     session.commit()
 
+
 def update_penalty(agent_id, queue_id, penalty):
     session = _session()
 
     (session
         .query(AgentMembershipStatus)
-        .filter(and_(AgentMembershipStatus.queue_id == queue_id, AgentMembershipStatus.agent_id == agent_id))
+        .filter(AgentMembershipStatus.queue_id == queue_id)
+        .filter(AgentMembershipStatus.agent_id == agent_id)
         .update({'penalty': penalty}, synchronize_session=False))
 
     session.commit()

@@ -88,7 +88,7 @@ class TestAgentStatusDao(DAOTestCase):
     def test_get_status_with_logged_agent_returns_an_agent(self):
         agent = self._insert_agent(42, '12')
         agent_login_status = self._insert_agent_login_status(agent.id, agent.number)
-        agent_membership = self._insert_agent_membership(agent.id, 1, 'queue1')
+        agent_membership = self._insert_agent_membership(agent.id, 1, 'queue1', 64)
 
         result = agent_status_dao.get_status(agent.id)
 
@@ -101,6 +101,7 @@ class TestAgentStatusDao(DAOTestCase):
         self.assertEquals(len(result.queues), 1)
         self.assertEquals(result.queues[0].id, agent_membership.queue_id)
         self.assertEquals(result.queues[0].name, agent_membership.queue_name)
+        self.assertEquals(result.queues[0].penalty, agent_membership.penalty)
 
     def test_get_status_by_number_with_unlogged_agent_returns_none(self):
         agent_number = '1001'
@@ -233,19 +234,21 @@ class TestAgentStatusDao(DAOTestCase):
 
     def test_add_agent_to_queues(self):
         agent = self._insert_agent(42, '12')
+        queue1 = agent_status_dao._Queue(1, 'queue1', 3)
+        queue2 = agent_status_dao._Queue(2, 'queue2', 4)
 
-        queues = [agent_status_dao._Queue(1, 'queue1'),
-                  agent_status_dao._Queue(2, 'queue2'),
-                  ]
+        queues = [queue1, queue2]
 
         agent_status_dao.add_agent_to_queues(agent.id, queues)
 
         memberships = self.session.query(AgentMembershipStatus).all()
         self.assertEquals(len(memberships), 2)
-        self.assertEquals(memberships[0].queue_id, 1)
-        self.assertEquals(memberships[0].queue_name, 'queue1')
-        self.assertEquals(memberships[1].queue_id, 2)
-        self.assertEquals(memberships[1].queue_name, 'queue2')
+        self.assertEquals(memberships[0].queue_id, queue1.id)
+        self.assertEquals(memberships[0].queue_name, queue1.name)
+        self.assertEquals(memberships[0].penalty, queue1.penalty)
+        self.assertEquals(memberships[1].queue_id, queue2.id)
+        self.assertEquals(memberships[1].queue_name, queue2.name)
+        self.assertEquals(memberships[1].penalty, queue2.penalty)
 
     def test_add_agent_to_queue_two_agents(self):
         agent1 = self._insert_agent(42, '12')
@@ -253,8 +256,8 @@ class TestAgentStatusDao(DAOTestCase):
         agent2 = self._insert_agent(43, '13')
         self._insert_agent_login_status(agent2.id, agent2.number, '1002', 'default', interface='Local/2@foo', state_interface='SIP/defabc')
 
-        queues = [agent_status_dao._Queue(1, 'queue1'),
-                  agent_status_dao._Queue(2, 'queue2'),
+        queues = [agent_status_dao._Queue(1, 'queue1', 0),
+                  agent_status_dao._Queue(2, 'queue2', 0),
                   ]
 
         agent_status_dao.add_agent_to_queues(agent1.id, queues)
