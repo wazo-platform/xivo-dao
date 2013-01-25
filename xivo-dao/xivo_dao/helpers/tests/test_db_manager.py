@@ -3,7 +3,7 @@
 import unittest
 from mock import patch, ANY
 from xivo import config
-from xivo.db_manager import DBManager
+from xivo_dao.helpers.db_manager import DBManager
 
 
 class TestDBManager(unittest.TestCase):
