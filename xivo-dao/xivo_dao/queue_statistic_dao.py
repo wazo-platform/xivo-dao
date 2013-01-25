@@ -16,16 +16,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import time
-from xivo_dao.alchemy.dbconnection import get_connection
-
-
-def _get_session():
-    return get_connection('asterisk').get_session()
+from xivo_dao.helpers.db_manager import DbSession
 
 
 def get_statistics(queue_name, window, xqos):
     in_window = _compute_window_time(window)
-    queue_statistic = (_get_session()
+    queue_statistic = (DbSession()
                        .query('received_call_count',
                               'answered_call_count',
                               'answered_call_in_qos_count',

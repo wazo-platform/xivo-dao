@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.incall import Incall
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.userfeatures import UserFeatures
@@ -25,21 +24,15 @@ from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
 from xivo_dao.alchemy.voicemail import Voicemail
 from sqlalchemy.sql.expression import and_, cast
 from sqlalchemy.types import Integer
-
-_DB_NAME = 'asterisk'
-
-
-def _session():
-    connection = dbconnection.get_connection(_DB_NAME)
-    return connection.get_session()
+from xivo_dao.helpers.db_manager import DbSession
 
 
 def get(incall_id):
-    return _session().query(Incall).filter(Incall.id == incall_id).first()
+    return DbSession().query(Incall).filter(Incall.id == incall_id).first()
 
 
 def get_join_elements(incall_id):
-    return (_session().query(Incall, Dialaction, UserFeatures, GroupFeatures, QueueFeatures, MeetmeFeatures, Voicemail)
+    return (DbSession().query(Incall, Dialaction, UserFeatures, GroupFeatures, QueueFeatures, MeetmeFeatures, Voicemail)
             .join((Dialaction, Incall.id == cast(Dialaction.categoryval, Integer)))
             .outerjoin((UserFeatures, and_(UserFeatures.id == cast(Dialaction.actionarg1, Integer),
                                            Dialaction.action == u'user')))
@@ -58,7 +51,7 @@ def get_join_elements(incall_id):
 
 
 def all():
-    return (_session().query(Incall, Dialaction, UserFeatures, GroupFeatures, QueueFeatures, MeetmeFeatures, Voicemail)
+    return (DbSession().query(Incall, Dialaction, UserFeatures, GroupFeatures, QueueFeatures, MeetmeFeatures, Voicemail)
             .join((Dialaction, Incall.id == cast(Dialaction.categoryval, Integer)))
             .outerjoin((UserFeatures, and_(UserFeatures.id == cast(Dialaction.actionarg1, Integer),
                                            Dialaction.action == u'user')))

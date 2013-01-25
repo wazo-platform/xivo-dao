@@ -15,20 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.groupfeatures import GroupFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
-
-_DB_NAME = 'asterisk'
-
-
-def _session():
-    connection = dbconnection.get_connection(_DB_NAME)
-    return connection.get_session()
+from xivo_dao.helpers.db_manager import DbSession
 
 
 def get(group_id):
-    return _session().query(GroupFeatures).filter(GroupFeatures.id == group_id).first()
+    return DbSession().query(GroupFeatures).filter(GroupFeatures.id == group_id).first()
 
 
 def get_name(group_id):
@@ -41,7 +34,7 @@ def get_name_number(group_id):
 
 
 def is_user_member_of_group(user_id, group_id):
-    row = (_session()
+    row = (DbSession()
            .query(GroupFeatures.id)
            .join((QueueMember, QueueMember.queue_name == GroupFeatures.name))
            .filter(GroupFeatures.id == group_id)
@@ -52,4 +45,4 @@ def is_user_member_of_group(user_id, group_id):
 
 
 def all():
-    return _session().query(GroupFeatures).all()
+    return DbSession().query(GroupFeatures).all()

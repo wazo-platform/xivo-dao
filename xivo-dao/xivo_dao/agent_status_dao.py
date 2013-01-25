@@ -17,26 +17,18 @@
 
 from collections import namedtuple
 from sqlalchemy.sql.expression import case
-from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
 from xivo_dao.alchemy.agent_membership_status import AgentMembershipStatus
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
-
-
-_DB_NAME = 'asterisk'
+from xivo_dao.helpers.db_manager import DbSession
 
 
 _AgentStatus = namedtuple('_AgentStatus', ['agent_id', 'agent_number', 'extension',
                                            'context', 'interface', 'state_interface',
                                            'login_at', 'queues'])
 _Queue = namedtuple('_Queue', ['id', 'name', 'penalty'])
-
-
-def _session():
-    connection = dbconnection.get_connection(_DB_NAME)
-    return connection.get_session()
 
 
 def get_status(agent_id):
@@ -56,7 +48,7 @@ def get_status_by_number(agent_number):
 
 
 def _get_login_status_by_id(agent_id):
-    login_status = (_session()
+    login_status = (DbSession()
         .query(AgentLoginStatus)
         .get(agent_id)
     )
@@ -64,7 +56,7 @@ def _get_login_status_by_id(agent_id):
 
 
 def _get_login_status_by_number(agent_number):
-    login_status = (_session()
+    login_status = (DbSession()
         .query(AgentLoginStatus)
         .filter(AgentLoginStatus.agent_number == agent_number)
         .first()
@@ -73,7 +65,7 @@ def _get_login_status_by_number(agent_number):
 
 
 def _get_queues_for_agent(agent_id):
-    query = (_session()
+    query = (DbSession()
         .query(AgentMembershipStatus.queue_id.label('queue_id'),
                AgentMembershipStatus.queue_name.label('queue_name'),
                AgentMembershipStatus.penalty.label('penalty'))
@@ -84,7 +76,7 @@ def _get_queues_for_agent(agent_id):
 
 
 def get_statuses():
-    return (_session()
+    return (DbSession()
         .query(AgentFeatures.id.label('agent_id'),
                AgentFeatures.number.label('agent_number'),
                AgentLoginStatus.extension.label('extension'),
@@ -96,7 +88,7 @@ def get_statuses():
 
 
 def get_statuses_for_queue(queue_id):
-    session = _session()
+    session = DbSession()
 
     subquery = (session
         .query(QueueMember.userid)
@@ -113,7 +105,7 @@ def get_statuses_for_queue(queue_id):
 
 
 def get_statuses_to_add_to_queue(queue_id):
-    session = _session()
+    session = DbSession()
 
     q1 = (session
         .query(QueueMember.userid)
@@ -135,7 +127,7 @@ def get_statuses_to_add_to_queue(queue_id):
 
 
 def get_statuses_to_remove_from_queue(queue_id):
-    session = _session()
+    session = DbSession()
 
     q1 = (session
         .query(AgentMembershipStatus.agent_id)
@@ -157,7 +149,7 @@ def get_statuses_to_remove_from_queue(queue_id):
 
 
 def get_logged_agent_ids():
-    query = (_session()
+    query = (DbSession()
         .query(AgentLoginStatus.agent_id)
     )
 
@@ -176,7 +168,7 @@ def _to_agent_status(agent_login_status, queues):
 
 
 def is_agent_logged_in(agent_id):
-    count = (_session()
+    count = (DbSession()
         .query(AgentLoginStatus)
         .filter(AgentLoginStatus.agent_id == agent_id)
         .count()
@@ -185,7 +177,7 @@ def is_agent_logged_in(agent_id):
 
 
 def is_extension_in_use(extension, context):
-    count = (_session()
+    count = (DbSession()
         .query(AgentLoginStatus)
         .filter(AgentLoginStatus.extension == extension)
         .filter(AgentLoginStatus.context == context)
@@ -203,7 +195,7 @@ def log_in_agent(agent_id, agent_number, extension, context, interface, state_in
     agent.interface = interface
     agent.state_interface = state_interface
 
-    session = _session()
+    session = DbSession()
     try:
         session.add(agent)
         session.commit()
@@ -213,16 +205,16 @@ def log_in_agent(agent_id, agent_number, extension, context, interface, state_in
 
 
 def log_off_agent(agent_id):
-    session = _session()
+    session = DbSession()
     (session
         .query(AgentLoginStatus)
         .filter(AgentLoginStatus.agent_id == agent_id)
-        .delete(synchronize_session=False))
+        .delete(synchronize_session='fetch'))
     session.commit()
 
 
 def add_agent_to_queues(agent_id, queues):
-    session = _session()
+    session = DbSession()
     for queue in queues:
         agent_membership_status = AgentMembershipStatus(agent_id=agent_id,
                                                         queue_id=queue.id,
@@ -234,46 +226,46 @@ def add_agent_to_queues(agent_id, queues):
 
 
 def remove_agent_from_queues(agent_id, queue_ids):
-    session = _session()
+    session = DbSession()
 
     (session
         .query(AgentMembershipStatus)
         .filter(AgentMembershipStatus.agent_id == agent_id)
         .filter(AgentMembershipStatus.queue_id.in_(queue_ids))
-        .delete(synchronize_session=False))
+        .delete(synchronize_session='fetch'))
 
     session.commit()
 
 
 def remove_agent_from_all_queues(agent_id):
-    session = _session()
+    session = DbSession()
 
     (session
         .query(AgentMembershipStatus)
         .filter(AgentMembershipStatus.agent_id == agent_id)
-        .delete(synchronize_session=False))
+        .delete(synchronize_session='fetch'))
 
     session.commit()
 
 
 def remove_all_agents_from_queue(queue_id):
-    session = _session()
+    session = DbSession()
 
     (session
         .query(AgentMembershipStatus)
         .filter(AgentMembershipStatus.queue_id == queue_id)
-        .delete(synchronize_session=False))
+        .delete(synchronize_session='fetch'))
 
     session.commit()
 
 
 def update_penalty(agent_id, queue_id, penalty):
-    session = _session()
+    session = DbSession()
 
     (session
         .query(AgentMembershipStatus)
         .filter(AgentMembershipStatus.queue_id == queue_id)
         .filter(AgentMembershipStatus.agent_id == agent_id)
-        .update({'penalty': penalty}, synchronize_session=False))
+        .update({'penalty': penalty}))
 
     session.commit()

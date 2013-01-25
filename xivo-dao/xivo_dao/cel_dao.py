@@ -16,19 +16,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import logging
-from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.cel import CEL
 from xivo_dao.helpers.cel_channel import CELChannel
 from xivo_dao.helpers.cel_exception import CELException
+from xivo_dao.helpers.db_manager import DbSession
 
 logger = logging.getLogger(__name__)
-
-_DB_NAME = 'asterisk'
-
-
-def _session():
-    connection = dbconnection.get_connection(_DB_NAME)
-    return connection.get_session()
 
 
 class UnsupportedLineProtocolException(Exception):
@@ -36,7 +29,7 @@ class UnsupportedLineProtocolException(Exception):
 
 
 def caller_id_by_unique_id(unique_id):
-    cel_events = (_session().query(CEL.cid_name, CEL.cid_num)
+    cel_events = (DbSession().query(CEL.cid_name, CEL.cid_num)
                   .filter(CEL.eventtype.in_(['APP_START', 'CHAN_START']))
                   .filter(CEL.uniqueid == unique_id)
                   .order_by(CEL.id.desc())
@@ -50,7 +43,7 @@ def caller_id_by_unique_id(unique_id):
 
 
 def channel_by_unique_id(unique_id):
-    cel_events = (_session().query(CEL)
+    cel_events = (DbSession().query(CEL)
                   .filter(CEL.uniqueid == unique_id)
                   .all())
     if not cel_events:
@@ -61,7 +54,7 @@ def channel_by_unique_id(unique_id):
 
 def channels_for_phone(phone, limit=None):
     channel_pattern = _channel_pattern_from_phone(phone)
-    unique_ids = (_session().query(CEL.uniqueid)
+    unique_ids = (DbSession().query(CEL.uniqueid)
                   .filter(CEL.channame.like(channel_pattern))
                   .filter(CEL.eventtype == 'CHAN_START')
                   .order_by(CEL.id.desc()))

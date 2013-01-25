@@ -16,19 +16,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.alchemy.voicemail import Voicemail
-from xivo_dao.alchemy import dbconnection
-
-_DB_NAME = 'asterisk'
-
-
-def _session():
-    connection = dbconnection.get_connection(_DB_NAME)
-    return connection.get_session()
+from xivo_dao.helpers.db_manager import DbSession
 
 
 def all():
-    return _session().query(Voicemail).all()
+    return DbSession().query(Voicemail).all()
 
 
 def get(voicemail_id):
-    return _session().query(Voicemail).filter(Voicemail.uniqueid == voicemail_id).first()
+    return DbSession().query(Voicemail).filter(Voicemail.uniqueid == voicemail_id).first()

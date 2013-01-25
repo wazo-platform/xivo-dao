@@ -15,17 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.stat_queue_periodic import StatQueuePeriodic
 from sqlalchemy.sql.functions import max
-
-
-_DB_NAME = 'asterisk'
-
-
-def _session():
-    connection = dbconnection.get_connection(_DB_NAME)
-    return connection.get_session()
+from xivo_dao.helpers.db_manager import DbSession
 
 
 def insert_stats(stats, period_start):
@@ -44,23 +36,23 @@ def insert_stats(stats, period_start):
         entry.total = queue_stats['total']
         entry.queue_id = queue_id
 
-        _session().add(entry)
+        DbSession().add(entry)
 
-    _session().commit()
+    DbSession().commit()
 
 
 def get_most_recent_time():
-    res = _session().query(max(StatQueuePeriodic.time)).first()[0]
+    res = DbSession().query(max(StatQueuePeriodic.time)).first()[0]
     if res is None:
         raise LookupError('Table is empty')
     return res
 
 
 def clean_table():
-    _session().query(StatQueuePeriodic).delete()
-    _session().commit()
+    DbSession().query(StatQueuePeriodic).delete()
+    DbSession().commit()
 
 
 def remove_after(date):
-    _session().query(StatQueuePeriodic).filter(StatQueuePeriodic.time >= date).delete()
-    _session().commit()
+    DbSession().query(StatQueuePeriodic).filter(StatQueuePeriodic.time >= date).delete()
+    DbSession().commit()

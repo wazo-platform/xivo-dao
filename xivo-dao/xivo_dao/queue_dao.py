@@ -15,23 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
-
-_DB_NAME = 'asterisk'
-
-
-def _session():
-    connection = dbconnection.get_connection(_DB_NAME)
-    return connection.get_session()
+from xivo_dao.helpers.db_manager import DbSession
 
 
 def all():
-    return _session().query(QueueFeatures).all()
+    return DbSession().query(QueueFeatures).all()
 
 
 def get(queue_id):
-    result = _session().query(QueueFeatures).filter(QueueFeatures.id == queue_id).first()
+    result = DbSession().query(QueueFeatures).filter(QueueFeatures.id == queue_id).first()
     if result is None:
         raise LookupError('No such queue')
     else:
@@ -39,7 +32,7 @@ def get(queue_id):
 
 
 def id_from_name(queue_name):
-    result = _session().query(QueueFeatures.id).filter(QueueFeatures.name == queue_name).first()
+    result = DbSession().query(QueueFeatures.id).filter(QueueFeatures.name == queue_name).first()
     if result is None:
         raise LookupError('No such queue')
     else:
@@ -47,7 +40,7 @@ def id_from_name(queue_name):
 
 
 def queue_name(queue_id):
-    result = _session().query(QueueFeatures.name).filter(QueueFeatures.id == queue_id).first()
+    result = DbSession().query(QueueFeatures.name).filter(QueueFeatures.id == queue_id).first()
     if result is None:
         raise LookupError('No such queue')
     else:
@@ -84,7 +77,7 @@ WHERE
         )
     )
 '''
-    row = (_session()
+    row = (DbSession()
            .query('found')
            .from_statement(statement)
            .params(user_id=user_id, queue_id=queue_id)
