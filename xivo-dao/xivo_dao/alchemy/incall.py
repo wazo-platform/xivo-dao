@@ -1,6 +1,5 @@
-# vim: set fileencoding=utf-8 :
-# XiVO CTI Server
-
+# -*- coding: utf-8 -*-
+#
 # Copyright (C) 2012  Avencall
 #
 # This program is free software; you can redistribute it and/or modify
@@ -23,18 +22,15 @@
 
 from xivo_dao.alchemy.base import Base
 from sqlalchemy.schema import Column
-from sqlalchemy.types import Integer, String
+from sqlalchemy.types import Integer, String, Text
 
 
-class UserCustom(Base):
-
-    __tablename__ = 'usercustom'
+class Incall(Base):
+    __tablename__ = 'incall'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(40))
-    context = Column(String(39))
-    interface = Column(String(128), nullable=False)
-    intfsuffix = Column(String(32), nullable=False, default='')
+    exten = Column(String(40), nullable=False)
+    context = Column(String(39), nullable=False)
+    preprocess_subroutine = Column(String(39))
     commented = Column(Integer, nullable=False, default=0)
-    protocol = Column(String(8), nullable=False, default='custom')
-    category = Column(String(8))
+    description = Column(Text, nullable=False)

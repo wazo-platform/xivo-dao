@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# XiVO CTI Server
-#
-# Copyright (C) 2012  Avencall
+# Copyright (C) 2007-2012  Avencall
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,16 +20,33 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from xivo_dao.alchemy.base import Base
+from xivo_dao import extensions_dao
+from xivo_dao.alchemy.extension import Extension
+from xivo_dao.tests.test_dao import DAOTestCase
 
-from sqlalchemy.schema import Column
-from sqlalchemy.types import Integer, String
 
+class TestExtensionsDAO(DAOTestCase):
 
-class ContextInclude(Base):
+    tables = [Extension]
 
-    __tablename__ = 'contextinclude'
+    def setUp(self):
+        self.empty_tables()
+        self._insert_extens()
 
-    context = Column(String(39), nullable=False, primary_key=True)
-    include = Column(String(39), nullable=False, primary_key=True)
-    priority = Column(Integer, nullable=False, default=0)
+    def _insert_extens(self):
+        exten = Extension()
+        exten.name = 'enablednd'
+        exten.exten = '*25'
+        self.session.add(exten)
+        exten = Extension()
+        exten.name = 'phoneprogfunckey'
+        exten.exten = '_*735'
+        self.session.add(exten)
+        self.session.commit()
+
+    def test_exten_by_name(self):
+        enablednd = extensions_dao.exten_by_name('enablednd')
+        phoneprogfunckey = extensions_dao.exten_by_name('phoneprogfunckey')
+
+        self.assertEqual(enablednd, '*25')
+        self.assertEqual(phoneprogfunckey, '_*735')

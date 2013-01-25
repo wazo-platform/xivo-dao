@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#
 # Copyright (C) 2012  Avencall
 #
 # This program is free software; you can redistribute it and/or modify
@@ -20,8 +21,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from xivo_dao.alchemy import dbconnection
-from xivo_dao.alchemy.groupfeatures import GroupFeatures
-from xivo_dao.alchemy.queuemember import QueueMember
+from xivo_dao.alchemy.context import Context
+from xivo_dao.alchemy.contextnumbers import ContextNumbers
+from xivo_dao.alchemy.contexttype import ContextType
+from xivo_dao.alchemy.contextinclude import ContextInclude
 
 _DB_NAME = 'asterisk'
 
@@ -31,29 +34,22 @@ def _session():
     return connection.get_session()
 
 
-def get(group_id):
-    return _session().query(GroupFeatures).filter(GroupFeatures.id == group_id).first()
+def get(context_name):
+    return _session().query(Context).filter(Context.name == context_name).first()
 
 
-def get_name(group_id):
-    return get(group_id).name
-
-
-def get_name_number(group_id):
-    group = get(group_id)
-    return group.name, group.number
-
-
-def is_user_member_of_group(user_id, group_id):
-    row = (_session()
-           .query(GroupFeatures.id)
-           .join((QueueMember, QueueMember.queue_name == GroupFeatures.name))
-           .filter(GroupFeatures.id == group_id)
-           .filter(QueueMember.usertype == 'user')
-           .filter(QueueMember.userid == user_id)
-           .first())
-    return row is not None
+def get_join_elements(context_name):
+    return (_session().query(Context, ContextNumbers, ContextType, ContextInclude)
+            .join((ContextNumbers, Context.name == ContextNumbers.context),
+                  (ContextType, Context.contexttype == ContextType.name))
+            .outerjoin((ContextInclude, Context.name == ContextInclude.context))
+            .filter(Context.name == context_name)
+            .first())
 
 
 def all():
-    return _session().query(GroupFeatures).all()
+    return (_session().query(Context, ContextNumbers, ContextType, ContextInclude)
+            .join((ContextNumbers, Context.name == ContextNumbers.context),
+                  (ContextType, Context.contexttype == ContextType.name))
+            .outerjoin((ContextInclude, Context.name == ContextInclude.context))
+            .all())

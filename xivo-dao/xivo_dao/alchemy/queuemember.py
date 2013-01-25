@@ -24,7 +24,7 @@
 
 from xivo_dao.alchemy.base import Base, Type
 from sqlalchemy.schema import Column
-from sqlalchemy.types import Integer, String, Text, Enum
+from sqlalchemy.types import Integer, String, Enum
 
 
 class QueueMember(Base):
@@ -32,7 +32,7 @@ class QueueMember(Base):
 
     queue_name = Column(String(128), primary_key=True)
     interface = Column(String(128), primary_key=True)
-    penalty = Column(Integer, nullable=False)
+    penalty = Column(Integer, nullable=False, server_default='0')
     call_limit = Column('call-limit', Integer, nullable=False, server_default='0')
     paused = Column(Integer)
     commented = Column(Integer, nullable=False, server_default='0')
@@ -42,3 +42,4 @@ class QueueMember(Base):
     category = Column(Enum('queue', 'group', name='queue_category', metadata=Type.metadata), nullable=False)
     skills = Column(String(64), nullable=False, server_default='')
     state_interface = Column(String(128), nullable=False, server_default='')
+    position = Column(Integer, nullable=False, server_default='0')

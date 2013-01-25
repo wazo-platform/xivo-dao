@@ -1,7 +1,5 @@
-# -*- coding: utf-8 -*-
+# -*- coding: UTF-8 -*-
 
-# XiVO CTI Server
-#
 # Copyright (C) 2012  Avencall
 #
 # This program is free software; you can redistribute it and/or modify
@@ -10,9 +8,9 @@
 # (at your option) any later version.
 #
 # Alternatively, XiVO CTI Server is available under other licenses directly
-# contracted with Avencall. See the LICENSE file at top of the source tree
-# or delivered in the installable package in which XiVO CTI Server is
-# distributed for more details.
+# contracted with Avencall SAS. See the LICENSE file at top of the
+# source tree or delivered in the installable package in which XiVO CTI Server
+# is distributed for more details.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -22,16 +20,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from xivo_dao.alchemy.base import Base
+from xivo_dao.alchemy.voicemail import Voicemail
+from xivo_dao.alchemy import dbconnection
 
-from sqlalchemy.schema import Column
-from sqlalchemy.types import Integer, String
+_DB_NAME = 'asterisk'
 
 
-class ContextInclude(Base):
+def _session():
+    connection = dbconnection.get_connection(_DB_NAME)
+    return connection.get_session()
 
-    __tablename__ = 'contextinclude'
 
-    context = Column(String(39), nullable=False, primary_key=True)
-    include = Column(String(39), nullable=False, primary_key=True)
-    priority = Column(Integer, nullable=False, default=0)
+def all():
+    return _session().query(Voicemail).all()
+
+
+def get(voicemail_id):
+    return _session().query(Voicemail).filter(Voicemail.uniqueid == voicemail_id).first()

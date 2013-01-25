@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#
 # Copyright (C) 2012  Avencall
 #
 # This program is free software; you can redistribute it and/or modify
@@ -20,8 +21,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from xivo_dao.alchemy import dbconnection
-from xivo_dao.alchemy.groupfeatures import GroupFeatures
-from xivo_dao.alchemy.queuemember import QueueMember
+from xivo_dao.alchemy.cti_preference import CtiPreference
+from xivo_dao.alchemy.cti_profile import CtiProfile
+from xivo_dao.alchemy.cti_profile_preference import CtiProfilePreference
 
 _DB_NAME = 'asterisk'
 
@@ -31,29 +33,27 @@ def _session():
     return connection.get_session()
 
 
-def get(group_id):
-    return _session().query(GroupFeatures).filter(GroupFeatures.id == group_id).first()
+def _get(preference_id):
+    return _session().query(CtiPreference).filter(CtiPreference.id == preference_id).first()
 
 
-def get_name(group_id):
-    return get(group_id).name
+def get_name(preference_id):
+    return _get(preference_id).name
 
 
-def get_name_number(group_id):
-    group = get(group_id)
-    return group.name, group.number
+def get_preferences():
+    res = {}
+    rows = (_session().query(CtiProfile).all())
+    for row in rows:
+        res[row.name] = {}
 
-
-def is_user_member_of_group(user_id, group_id):
-    row = (_session()
-           .query(GroupFeatures.id)
-           .join((QueueMember, QueueMember.queue_name == GroupFeatures.name))
-           .filter(GroupFeatures.id == group_id)
-           .filter(QueueMember.usertype == 'user')
-           .filter(QueueMember.userid == user_id)
-           .first())
-    return row is not None
-
-
-def all():
-    return _session().query(GroupFeatures).all()
+    rows = (_session().query(CtiProfile, CtiProfilePreference, CtiPreference)
+            .join((CtiProfilePreference, CtiProfilePreference.profile_id == CtiProfile.id),
+                  (CtiPreference, CtiProfilePreference.preference_id == CtiPreference.id))
+            .all())
+    for row in rows:
+        cti_profile, cti_profile_preference, cti_preference = row
+        profile = cti_profile.name
+        option_dict = {cti_preference.option: cti_profile_preference.value}
+        res[profile].update(option_dict)
+    return res

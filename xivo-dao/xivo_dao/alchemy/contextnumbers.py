@@ -1,6 +1,7 @@
-# vim: set fileencoding=utf-8 :
-# XiVO CTI Server
+# -*- coding: utf-8 -*-
 
+# XiVO CTI Server
+#
 # Copyright (C) 2012  Avencall
 #
 # This program is free software; you can redistribute it and/or modify
@@ -21,20 +22,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from xivo_dao.alchemy.base import Base
+from xivo_dao.alchemy.base import Base, Type
+
 from sqlalchemy.schema import Column
-from sqlalchemy.types import Integer, String
+from sqlalchemy.types import Integer, String, Enum
 
 
-class UserCustom(Base):
+class ContextNumbers(Base):
 
-    __tablename__ = 'usercustom'
+    __tablename__ = 'contextnumbers'
 
-    id = Column(Integer, primary_key=True)
-    name = Column(String(40))
-    context = Column(String(39))
-    interface = Column(String(128), nullable=False)
-    intfsuffix = Column(String(32), nullable=False, default='')
-    commented = Column(Integer, nullable=False, default=0)
-    protocol = Column(String(8), nullable=False, default='custom')
-    category = Column(String(8))
+    context = Column(String(39), primary_key=True)
+    type = Column(Enum('user', 'group', 'queue', 'meetme', 'incall',
+                       name='contextnumbers_type',
+                       metadata=Type.metadata),
+                  nullable=False,
+                  primary_key=True)
+    numberbeg = Column(String(16), nullable=False, default=0, primary_key=True)
+    numberbeg = Column(String(16), nullable=False, default=0, primary_key=True)
+    didlength = Column(Integer, nullable=False, default=0)

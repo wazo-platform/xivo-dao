@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#
 # Copyright (C) 2012  Avencall
 #
 # This program is free software; you can redistribute it and/or modify
@@ -20,8 +21,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from xivo_dao.alchemy import dbconnection
-from xivo_dao.alchemy.groupfeatures import GroupFeatures
-from xivo_dao.alchemy.queuemember import QueueMember
+from xivo_dao.alchemy.cti_service import CtiService
+from xivo_dao.alchemy.cti_profile_service import CtiProfileService
+from xivo_dao.alchemy.cti_profile import CtiProfile
 
 _DB_NAME = 'asterisk'
 
@@ -31,29 +33,26 @@ def _session():
     return connection.get_session()
 
 
-def get(group_id):
-    return _session().query(GroupFeatures).filter(GroupFeatures.id == group_id).first()
+def _get(profile_id):
+    return _session().query(CtiService).filter(CtiService.id == profile_id).first()
 
 
-def get_name(group_id):
-    return get(group_id).name
+def get_name(profile_id):
+    return _get(profile_id).name
 
 
-def get_name_number(group_id):
-    group = get(group_id)
-    return group.name, group.number
+def get_services():
+    res = {}
+    rows = (_session().query(CtiProfile).all())
+    for row in rows:
+        res[row.name] = []
 
-
-def is_user_member_of_group(user_id, group_id):
-    row = (_session()
-           .query(GroupFeatures.id)
-           .join((QueueMember, QueueMember.queue_name == GroupFeatures.name))
-           .filter(GroupFeatures.id == group_id)
-           .filter(QueueMember.usertype == 'user')
-           .filter(QueueMember.userid == user_id)
-           .first())
-    return row is not None
-
-
-def all():
-    return _session().query(GroupFeatures).all()
+    rows = (_session().query(CtiProfile, CtiService)
+            .join((CtiProfileService, CtiProfileService.profile_id == CtiProfile.id),
+                  (CtiService, CtiProfileService.service_id == CtiService.id))
+            .all())
+    for row in rows:
+        cti_profile, cti_service = row
+        profile = cti_profile.name
+        res[profile].append(cti_service.key)
+    return res

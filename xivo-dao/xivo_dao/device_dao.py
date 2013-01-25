@@ -1,7 +1,8 @@
-# vim: set fileencoding=utf-8 :
+# -*- coding: utf-8 -*-
+
 # XiVO CTI Server
 
-# Copyright (C) 2012  Avencall
+# Copyright (C) 2007-2012  Avencall'
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,20 +22,36 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from xivo_dao.alchemy.base import Base
-from sqlalchemy.schema import Column
-from sqlalchemy.types import Integer, String
+
+from xivo_dao.alchemy import dbconnection
+from xivo_dao.alchemy.devicefeatures import DeviceFeatures
+from xivo_dao.alchemy.linefeatures import LineFeatures
+
+_DB_NAME = 'asterisk'
 
 
-class UserCustom(Base):
+def _session():
+    connection = dbconnection.get_connection(_DB_NAME)
+    return connection.get_session()
 
-    __tablename__ = 'usercustom'
 
-    id = Column(Integer, primary_key=True)
-    name = Column(String(40))
-    context = Column(String(39))
-    interface = Column(String(128), nullable=False)
-    intfsuffix = Column(String(32), nullable=False, default='')
-    commented = Column(Integer, nullable=False, default=0)
-    protocol = Column(String(8), nullable=False, default='custom')
-    category = Column(String(8))
+def get_peer_name(device_id):
+    row = (_session()
+           .query(LineFeatures.name, LineFeatures.protocol)
+           .filter(LineFeatures.device == str(device_id))).first()
+
+    if not row:
+        raise LookupError('No such device')
+
+    return '/'.join([row.protocol, row.name])
+
+
+def get_vendor_model(device_id):
+    row = (_session()
+           .query(DeviceFeatures.vendor, DeviceFeatures.model)
+           .filter(DeviceFeatures.id == device_id)).first()
+
+    if not row:
+        raise LookupError('No such device')
+
+    return row.vendor, row.model

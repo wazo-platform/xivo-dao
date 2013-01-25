@@ -1,6 +1,5 @@
-# vim: set fileencoding=utf-8 :
-# XiVO CTI Server
-
+# -*- coding: utf-8 -*-
+#
 # Copyright (C) 2012  Avencall
 #
 # This program is free software; you can redistribute it and/or modify
@@ -21,20 +20,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from xivo_dao.alchemy.base import Base
-from sqlalchemy.schema import Column
+from sqlalchemy.schema import Column, ForeignKey
 from sqlalchemy.types import Integer, String
+from xivo_dao.alchemy.base import Base
 
 
-class UserCustom(Base):
+class CtiProfilePreference(Base):
 
-    __tablename__ = 'usercustom'
+    __tablename__ = 'cti_profile_preference'
 
-    id = Column(Integer, primary_key=True)
-    name = Column(String(40))
-    context = Column(String(39))
-    interface = Column(String(128), nullable=False)
-    intfsuffix = Column(String(32), nullable=False, default='')
-    commented = Column(Integer, nullable=False, default=0)
-    protocol = Column(String(8), nullable=False, default='custom')
-    category = Column(String(8))
+    profile_id = Column(Integer, ForeignKey('cti_profile.id'), primary_key=True)
+    preference_id = Column(Integer, ForeignKey("cti_preference.id"), primary_key=True)
+    value = Column(String(255), nullable=False)
