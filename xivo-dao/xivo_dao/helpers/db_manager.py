@@ -19,6 +19,7 @@ import logging
 from sqlalchemy.orm.session import sessionmaker
 from sqlalchemy.engine import create_engine
 from xivo_dao.helpers import config
+from sqlalchemy.exc import InvalidRequestError, OperationalError
 
 logger = logging.getLogger(__name__)
 
@@ -26,9 +27,9 @@ _DB_URI = config.DB_URI
 
 
 class DBSessionManager(object):
-    sess = None
+    _sess = None
 
-    def connect(self):
+    def _connect(self):
         logger.debug('Connecting to database: %s' % _DB_URI)
         engine = create_engine(_DB_URI, echo=config.SQL_DEBUG)
         Session = sessionmaker(bind=engine)
@@ -36,9 +37,16 @@ class DBSessionManager(object):
 
     @classmethod
     def session(cls):
-        if cls.sess is None:
-            cls.sess = cls().connect()
-        return cls.sess
+        if cls._sess is None:
+            cls._sess = cls()._connect()
+
+        try:
+            cls._sess.execute('SELECT 1;')
+        except (OperationalError, InvalidRequestError):
+            logger.debug('Trying to reconnect')
+            cls._sess = cls()._connect()
+
+        return cls._sess
 
 
 def DbSession():
