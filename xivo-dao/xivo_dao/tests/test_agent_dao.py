@@ -102,7 +102,6 @@ class TestAgentDAO(DAOTestCase):
         self.assertEqual(result.queues[0].id, queue.id)
         self.assertEqual(result.queues[0].name, queue_member.queue_name)
         self.assertEqual(result.queues[0].penalty, queue_member.penalty)
-        self.assertEqual(result.queues[0].skills, queue_member.skills)
 
     def _insert_agent(self):
         agent = AgentFeatures()
