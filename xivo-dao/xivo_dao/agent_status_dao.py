@@ -156,6 +156,14 @@ def get_statuses_to_remove_from_queue(queue_id):
     return [_to_agent_status(q, None) for q in query]
 
 
+def get_logged_agent_ids():
+    query = (_session()
+        .query(AgentLoginStatus.agent_id)
+    )
+
+    return [q.agent_id for q in query]
+
+
 def _to_agent_status(agent_login_status, queues):
     return _AgentStatus(agent_login_status.agent_id,
                         agent_login_status.agent_number,

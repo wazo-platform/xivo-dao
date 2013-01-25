@@ -203,6 +203,15 @@ class TestAgentStatusDao(DAOTestCase):
         self.assertEquals(statuses[0].agent_id, agent1.id)
         self.assertEquals(statuses[0].agent_number, agent1.number)
 
+    def test_get_logged_agent_ids(self):
+        agent_id = 1
+        agent_number = '42'
+        self._insert_agent_login_status(agent_id, agent_number)
+
+        agent_ids = agent_status_dao.get_logged_agent_ids()
+
+        self.assertEqual(agent_ids, [agent_id])
+
     def test_is_extension_in_use_with_an_agent(self):
         agent_id = 1
         agent_number = '42'
