@@ -42,10 +42,10 @@ def session():
     return dbsession
 
 
-def daosession(session, func):
+def daosession(func):
 
     @wraps(func)
-    def wrapped(session, *args, **kwargs):
+    def wrapped(*args, **kwargs):
         sess = session()
         try:
             sess.begin()
