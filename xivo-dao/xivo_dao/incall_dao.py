@@ -24,15 +24,17 @@ from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
 from xivo_dao.alchemy.voicemail import Voicemail
 from sqlalchemy.sql.expression import and_, cast
 from sqlalchemy.types import Integer
-from xivo_dao.helpers.db_manager import DbSession
+from xivo_dao.helpers.db_manager import daosession
 
 
-def get(incall_id):
-    return DbSession().query(Incall).filter(Incall.id == incall_id).first()
+@daosession
+def get(session, incall_id):
+    return session.query(Incall).filter(Incall.id == incall_id).first()
 
 
-def get_join_elements(incall_id):
-    return (DbSession().query(Incall, Dialaction, UserFeatures, GroupFeatures, QueueFeatures, MeetmeFeatures, Voicemail)
+@daosession
+def get_join_elements(session, incall_id):
+    return (session.query(Incall, Dialaction, UserFeatures, GroupFeatures, QueueFeatures, MeetmeFeatures, Voicemail)
             .join((Dialaction, Incall.id == cast(Dialaction.categoryval, Integer)))
             .outerjoin((UserFeatures, and_(UserFeatures.id == cast(Dialaction.actionarg1, Integer),
                                            Dialaction.action == u'user')))
@@ -50,8 +52,9 @@ def get_join_elements(incall_id):
             .first())
 
 
-def all():
-    return (DbSession().query(Incall, Dialaction, UserFeatures, GroupFeatures, QueueFeatures, MeetmeFeatures, Voicemail)
+@daosession
+def all(session):
+    return (session.query(Incall, Dialaction, UserFeatures, GroupFeatures, QueueFeatures, MeetmeFeatures, Voicemail)
             .join((Dialaction, Incall.id == cast(Dialaction.categoryval, Integer)))
             .outerjoin((UserFeatures, and_(UserFeatures.id == cast(Dialaction.actionarg1, Integer),
                                            Dialaction.action == u'user')))
