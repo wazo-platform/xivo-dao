@@ -47,7 +47,7 @@ from xivo_dao.alchemy.ctipresences import CtiPresences
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
-class TestQueueFeaturesDAO(DAOTestCase):
+class TestQueueDAO(DAOTestCase):
 
     tables = [QueueFeatures, QueueMember, UserFeatures,
               CtiProfile, CtiPresences, CtiPhoneHintsGroup]
@@ -131,7 +131,7 @@ class TestQueueFeaturesDAO(DAOTestCase):
 
     def test_add_queue(self):
         queue = QueueFeatures()
-        name = 'àç__-\'"é'
+        name = u'àç__-\'"é'
         queue.name = name
         queue.displayname = name + 'display'
         queue.number = '3003'
