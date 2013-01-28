@@ -123,6 +123,22 @@ class TestQueueFeaturesDAO(DAOTestCase):
 
         self.assertTrue(result)
 
+    def test_all_queues(self):
+        expected = []
+        expected.append(self._insert_queue('name1', 'display1', '3001'))
+        expected.append(self._insert_queue('name2', 'display2', '3002'))
+        self.assertTrue(queue_dao.all_queues() == expected)
+
+    def test_add_queue(self):
+        queue = QueueFeatures()
+        name = 'àç__-\'"é'
+        queue.name = name
+        queue.displayname = name + 'display'
+        queue.number = '3003'
+        queue_dao.add_queue(queue)
+        self.assertTrue(queue.id > 0)
+        self.assertTrue(queue_dao.queue_name(queue.id) == name)
+
     def _insert_user(self, user_id, agent_id):
         user = UserFeatures()
         user.id = user_id

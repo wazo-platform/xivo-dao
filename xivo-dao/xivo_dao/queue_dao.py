@@ -19,16 +19,12 @@ from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.helpers.db_manager import DbSession
 
 
-def all():
+def all_queues():
     return DbSession().query(QueueFeatures).all()
 
 
-def get(queue_id):
-    result = DbSession().query(QueueFeatures).filter(QueueFeatures.id == queue_id).first()
-    if result is None:
-        raise LookupError('No such queue')
-    else:
-        return result
+def _get(queue_id):
+    return DbSession().query(QueueFeatures).filter(QueueFeatures.id == queue_id)[0]
 
 
 def id_from_name(queue_name):
@@ -86,9 +82,17 @@ WHERE
 
 
 def get_queue_name(queue_id):
-    return get(queue_id).name
+    return _get(queue_id).name
 
 
 def get_display_name_number(queue_id):
-    queue = get(queue_id)
+    queue = _get(queue_id)
     return queue.displayname, queue.number
+
+
+def add_queue(queue):
+    if type(queue) != QueueFeatures:
+        raise ValueError('Wrong object passed')
+
+    DbSession().add(queue)
+    DbSession().commit()

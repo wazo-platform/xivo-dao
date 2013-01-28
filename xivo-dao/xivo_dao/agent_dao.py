@@ -61,6 +61,29 @@ def _get_one(agentid):
     return result
 
 
+def add_agent(agent_features):
+    if type(agent_features) != AgentFeatures:
+        raise ValueError('Wrong object passed')
+
+    DbSession().add(agent_features)
+    DbSession().commit()
+
+    return agent_features.id
+
+
+def del_agent(agentid):
+    if agentid is None:
+        raise ValueError('Agent ID is None')
+    try:
+        DbSession().query(AgentFeatures)\
+            .filter(AgentFeatures.id == agentid)\
+            .delete()
+        DbSession().commit()
+    except Exception as e:
+        DbSession().rollback()
+        raise e
+
+
 def agent_with_id(agent_id):
     agent = _get_agent(AgentFeatures.id == int(agent_id))
     _add_queues_to_agent(agent)
