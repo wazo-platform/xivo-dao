@@ -16,9 +16,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.alchemy.extension import Extension
-from xivo_dao.helpers.db_manager import DbSession
+from xivo_dao.helpers.db_manager import daosession
 
 
-def exten_by_name(funckey_name):
-    extens = [exten for exten, name in DbSession().query(Extension.exten, Extension.name) if name == funckey_name]
+@daosession
+def exten_by_name(session, funckey_name):
+    extens = [exten for exten, name in session.query(Extension.exten, Extension.name) if name == funckey_name]
     return extens[0] if extens else ''
