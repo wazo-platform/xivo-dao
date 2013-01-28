@@ -18,40 +18,46 @@
 from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
 from xivo_dao.alchemy.staticmeetme import StaticMeetme
 from sqlalchemy import func
-from xivo_dao.helpers.db_manager import DbSession
+from xivo_dao.helpers.db_manager import daosession
 
 
-def all():
-    return DbSession().query(MeetmeFeatures).all()
+@daosession
+def all(session):
+    return session.query(MeetmeFeatures).all()
 
 
-def get(meetme_id):
-    res = DbSession().query(MeetmeFeatures).filter(MeetmeFeatures.id == int(meetme_id)).first()
+@daosession
+def get(session, meetme_id):
+    res = session.query(MeetmeFeatures).filter(MeetmeFeatures.id == int(meetme_id)).first()
     if not res:
         raise LookupError
     return res
 
 
-def _get_by_number(number):
-    return DbSession().query(MeetmeFeatures).filter(MeetmeFeatures.confno == number)[0]
+@daosession
+def _get_by_number(session, number):
+    return session.query(MeetmeFeatures).filter(MeetmeFeatures.confno == number)[0]
 
 
-def is_a_meetme(number):
-    row = (DbSession()
+@daosession
+def is_a_meetme(session, number):
+    row = (session
            .query(func.count(MeetmeFeatures.confno).label('count'))
            .filter(MeetmeFeatures.confno == number)).first()
     return row.count != 0
 
 
-def find_by_name(meetme_name):
-    res = DbSession().query(MeetmeFeatures).filter(MeetmeFeatures.name == meetme_name)
+@daosession
+def find_by_name(session, meetme_name):
+    res = session.query(MeetmeFeatures).filter(MeetmeFeatures.name == meetme_name)
     if res.count() == 0:
         return ''
     return res[0]
 
 
-def find_by_confno(meetme_confno):
-    res = DbSession().query(MeetmeFeatures).filter(MeetmeFeatures.confno == meetme_confno)
+@daosession
+def find_by_confno(session, meetme_confno):
+    res = session.query(MeetmeFeatures).filter(MeetmeFeatures.confno == meetme_confno)
     if res.count() == 0:
         raise LookupError('No such conference room: %s', meetme_confno)
     return res[0].id
@@ -61,9 +67,10 @@ def get_name(meetme_id):
     return get(meetme_id).name
 
 
-def has_pin(meetme_id):
+@daosession
+def has_pin(session, meetme_id):
     meetme = get(meetme_id)
-    var_val = DbSession().query(StaticMeetme.var_val).filter(StaticMeetme.id == meetme.meetmeid)
+    var_val = session.query(StaticMeetme.var_val).filter(StaticMeetme.id == meetme.meetmeid)
     return _has_pin_from_var_val(var_val[0].var_val)
 
 
@@ -76,14 +83,16 @@ def _has_pin_from_var_val(var_val):
         return len(pin) > 0
 
 
-def get_configs():
-    res = (DbSession().query(MeetmeFeatures.name, MeetmeFeatures.confno, StaticMeetme.var_val, MeetmeFeatures.context)
+@daosession
+def get_configs(session):
+    res = (session.query(MeetmeFeatures.name, MeetmeFeatures.confno, StaticMeetme.var_val, MeetmeFeatures.context)
            .filter(MeetmeFeatures.meetmeid == StaticMeetme.id))
     return [(r.name, r.confno, _has_pin_from_var_val(r.var_val), r.context) for r in res]
 
 
-def get_config(meetme_id):
-    res = (DbSession().query(MeetmeFeatures.name, MeetmeFeatures.confno, StaticMeetme.var_val, MeetmeFeatures.context)
+@daosession
+def get_config(session, meetme_id):
+    res = (session.query(MeetmeFeatures.name, MeetmeFeatures.confno, StaticMeetme.var_val, MeetmeFeatures.context)
            .filter(MeetmeFeatures.meetmeid == StaticMeetme.id)
            .filter(MeetmeFeatures.id == meetme_id))[0]
     return (res.name, res.confno, _has_pin_from_var_val(res.var_val), res.context)
