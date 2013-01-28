@@ -7,6 +7,9 @@ from sqlalchemy.exc import InvalidRequestError
 
 class TestDBManager(unittest.TestCase):
 
+    def tearDown(self):
+        db_manager.dbsession = None
+
     @patch('xivo_dao.helpers.db_manager.create_engine')
     @patch('xivo_dao.helpers.db_manager.sessionmaker')
     def test_connect(self, sessionmaker_mock, create_engine_mock):
@@ -57,8 +60,6 @@ class TestDBManager(unittest.TestCase):
         result2 = db_manager.session()
         self.assertEquals(result2, dbsession)
 
-        # cleanup session
-        db_manager.dbsession = None
 
     @patch('xivo_dao.helpers.db_manager.connect')
     def test_daosession_reconnects_after_connection_error(self, connect_mock):
@@ -81,5 +82,3 @@ class TestDBManager(unittest.TestCase):
 
         self.assertEquals(result, function_result)
 
-        # cleanup session
-        db_manager.dbsession = None
