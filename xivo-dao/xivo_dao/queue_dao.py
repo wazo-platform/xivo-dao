@@ -96,3 +96,12 @@ def get_queue_name(queue_id):
 def get_display_name_number(queue_id):
     queue = get(queue_id)
     return queue.displayname, queue.number
+
+@daosession
+def add_queue(session, queue):
+    if type(queue) != QueueFeatures:
+        raise ValueError('Wrong object passed')
+
+    session.add(queue)
+    session.commit()
+
