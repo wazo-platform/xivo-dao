@@ -18,7 +18,7 @@
 import unittest
 from xivo_dao.alchemy.base import Base
 from sqlalchemy.schema import MetaData
-from xivo_dao.helpers.db_manager import DbSession
+from xivo_dao.helpers.db_manager import session
 from xivo_dao.helpers import db_manager
 
 
@@ -27,7 +27,7 @@ class DAOTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         db_manager._DB_URI = 'postgresql://asterisk:asterisk@localhost/asterisktest'
-        cls.session = DbSession()
+        cls.session = session()
         cls.engine = cls.session.get_bind()
         cls.cleanTables()
 
