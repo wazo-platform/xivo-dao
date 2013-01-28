@@ -34,6 +34,9 @@ def connect():
     Session = sessionmaker(bind=engine)
     return Session()
 
+def reconnect():
+    global dbsession
+    dbsession = connect()
 
 def session():
     global dbsession
@@ -41,22 +44,21 @@ def session():
         dbsession = connect()
     return dbsession
 
+def _execute_with_session(func, *args, **kwargs):
+    sess = session()
+    result = func(sess, *args, **kwargs)
+    sess.commit()
+    return result
 
 def daosession(func):
 
     @wraps(func)
     def wrapped(*args, **kwargs):
-        sess = session()
         try:
-            sess.begin()
-            result = func(sess, *args, **kwargs)
-            sess.commit()
-            return result
+            return _execute_with_session(func, *args, **kwargs)
         except (OperationalError, InvalidRequestError):
-            logger.debug('Trying to reconnect')
-            new_sess = session()
-            result = func(new_sess, *args, **kwargs)
-            new_sess.commit()
-            return result
+            logger.info("Trying to reconnect")
+            reconnect()
+            return _execute_with_session(func, *args, **kwargs)
 
     return wrapped
