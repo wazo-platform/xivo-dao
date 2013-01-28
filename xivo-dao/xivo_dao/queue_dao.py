@@ -16,31 +16,35 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
-from xivo_dao.helpers.db_manager import DbSession
+from xivo_dao.helpers.db_manager import daosession
 
 
-def all():
-    return DbSession().query(QueueFeatures).all()
+@daosession
+def all(session):
+    return session.query(QueueFeatures).all()
 
 
-def get(queue_id):
-    result = DbSession().query(QueueFeatures).filter(QueueFeatures.id == queue_id).first()
+@daosession
+def get(session, queue_id):
+    result = session.query(QueueFeatures).filter(QueueFeatures.id == queue_id).first()
     if result is None:
         raise LookupError('No such queue')
     else:
         return result
 
 
-def id_from_name(queue_name):
-    result = DbSession().query(QueueFeatures.id).filter(QueueFeatures.name == queue_name).first()
+@daosession
+def id_from_name(session, queue_name):
+    result = session.query(QueueFeatures.id).filter(QueueFeatures.name == queue_name).first()
     if result is None:
         raise LookupError('No such queue')
     else:
         return result.id
 
 
-def queue_name(queue_id):
-    result = DbSession().query(QueueFeatures.name).filter(QueueFeatures.id == queue_id).first()
+@daosession
+def queue_name(session, queue_id):
+    result = session.query(QueueFeatures.name).filter(QueueFeatures.id == queue_id).first()
     if result is None:
         raise LookupError('No such queue')
     else:
@@ -56,7 +60,8 @@ def is_a_queue(name):
         return True
 
 
-def is_user_member_of_queue(user_id, queue_id):
+@daosession
+def is_user_member_of_queue(session, user_id, queue_id):
     statement = '''\
 SELECT
     1 AS found
@@ -77,7 +82,7 @@ WHERE
         )
     )
 '''
-    row = (DbSession()
+    row = (session
            .query('found')
            .from_statement(statement)
            .params(user_id=user_id, queue_id=queue_id)
