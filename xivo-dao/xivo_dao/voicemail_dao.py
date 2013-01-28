@@ -16,12 +16,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.alchemy.voicemail import Voicemail
-from xivo_dao.helpers.db_manager import DbSession
+from xivo_dao.helpers.db_manager import daosession
 
 
-def all():
-    return DbSession().query(Voicemail).all()
+@daosession
+def all(session):
+    return session.query(Voicemail).all()
 
 
-def get(voicemail_id):
-    return DbSession().query(Voicemail).filter(Voicemail.uniqueid == voicemail_id).first()
+@daosession
+def get(session, voicemail_id):
+    return session.query(Voicemail).filter(Voicemail.uniqueid == voicemail_id).first()
