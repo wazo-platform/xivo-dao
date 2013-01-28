@@ -18,11 +18,12 @@
 from xivo_dao.alchemy.queuemember import QueueMember
 from sqlalchemy import func, select
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
-from xivo_dao.helpers.db_manager import DbSession
+from xivo_dao.helpers.db_manager import daosession
 
 
-def add_agent_to_queue(agent_id, agent_number, queue_name):
-    next_position = _get_next_position_for_queue(queue_name)
+@daosession
+def add_agent_to_queue(session, agent_id, agent_number, queue_name):
+    next_position = _get_next_position_for_queue(session, queue_name)
     queue_member = QueueMember()
     queue_member.queue_name = queue_name
     queue_member.interface = 'Agent/%s' % agent_number
@@ -34,25 +35,25 @@ def add_agent_to_queue(agent_id, agent_number, queue_name):
     queue_member.position = next_position
 
     try:
-        DbSession().add(queue_member)
-        DbSession().commit()
+        session.add(queue_member)
+        session.commit()
     except Exception:
-        DbSession().rollback()
+        session.rollback()
         raise
 
 
-def remove_agent_from_queue(agent_id, queue_name):
-    (DbSession()
+@daosession
+def remove_agent_from_queue(session, agent_id, queue_name):
+    (session
      .query(QueueMember)
      .filter(QueueMember.queue_name == queue_name)
      .filter(QueueMember.usertype == 'agent')
      .filter(QueueMember.userid == agent_id)
      .delete())
-    DbSession().commit()
 
 
-def _get_next_position_for_queue(queue_name):
-    result = (DbSession()
+def _get_next_position_for_queue(session, queue_name):
+    result = (session
               .query(func.max(QueueMember.position).label('max'))
               .filter(QueueMember.queue_name == queue_name)
               .first())
@@ -63,10 +64,11 @@ def _get_next_position_for_queue(queue_name):
         return last_position + 1
 
 
-def get_queue_members_for_queues():
+@daosession
+def get_queue_members_for_queues(session):
     queue_name_subquery = select([QueueFeatures.name])
 
-    rows = (DbSession()
+    rows = (session
             .query(QueueMember.queue_name,
                    QueueMember.interface.label('member_name'),
                    QueueMember.penalty)

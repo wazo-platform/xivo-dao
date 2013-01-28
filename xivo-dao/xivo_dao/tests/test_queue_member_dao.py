@@ -34,6 +34,7 @@ from xivo_dao import queue_member_dao
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
+from xivo_dao.helpers import db_manager
 
 
 class TestQueueMemberDAO(DAOTestCase):
@@ -75,7 +76,8 @@ class TestQueueMemberDAO(DAOTestCase):
         member_name = 'Agent/123'
         self._insert_queue_member(queue_name, member_name)
 
-        position = queue_member_dao._get_next_position_for_queue(queue_name)
+        sess = db_manager.session()
+        position = queue_member_dao._get_next_position_for_queue(sess, queue_name)
 
         self.assertEqual(position, 1)
 
