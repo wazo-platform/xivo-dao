@@ -19,15 +19,16 @@ from xivo_dao.alchemy.context import Context
 from xivo_dao.alchemy.contextnumbers import ContextNumbers
 from xivo_dao.alchemy.contexttype import ContextType
 from xivo_dao.alchemy.contextinclude import ContextInclude
-from xivo_dao.helpers.db_manager import DbSession
+from xivo_dao.helpers.db_manager import daosession
+
+@daosession
+def get(session, context_name):
+    return session.query(Context).filter(Context.name == context_name).first()
 
 
-def get(context_name):
-    return DbSession().query(Context).filter(Context.name == context_name).first()
-
-
-def get_join_elements(context_name):
-    return (DbSession().query(Context, ContextNumbers, ContextType, ContextInclude)
+@daosession
+def get_join_elements(session, context_name):
+    return (session.query(Context, ContextNumbers, ContextType, ContextInclude)
             .join((ContextNumbers, Context.name == ContextNumbers.context),
                   (ContextType, Context.contexttype == ContextType.name))
             .outerjoin((ContextInclude, Context.name == ContextInclude.context))
@@ -35,8 +36,9 @@ def get_join_elements(context_name):
             .first())
 
 
-def all():
-    return (DbSession().query(Context, ContextNumbers, ContextType, ContextInclude)
+@daosession
+def all(session):
+    return (session.query(Context, ContextNumbers, ContextType, ContextInclude)
             .join((ContextNumbers, Context.name == ContextNumbers.context),
                   (ContextType, Context.contexttype == ContextType.name))
             .outerjoin((ContextInclude, Context.name == ContextInclude.context))
