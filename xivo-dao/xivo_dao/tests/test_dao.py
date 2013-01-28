@@ -16,38 +16,52 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import unittest
+import logging
+
 from xivo_dao.alchemy.base import Base
 from sqlalchemy.schema import MetaData
 from xivo_dao.helpers import db_manager
+
+logger = logging.getLogger(__name__)
 
 
 class DAOTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        logger.debug("Connecting to database")
         db_manager._DB_URI = 'postgresql://asterisk:asterisk@localhost/asterisktest'
         cls.session = db_manager.session()
         cls.engine = cls.session.get_bind()
+        logger.debug("Connected to database")
         cls.cleanTables()
 
     @classmethod
     def tearDownClass(cls):
+        logger.debug("Closing connection")
         cls.session.close()
 
     @classmethod
     def cleanTables(cls):
+        logger.debug("Cleaning tables")
         if cls.tables:
             engine = cls.engine
 
             meta = MetaData(engine)
             meta.reflect()
+            logger.debug("drop all tables")
             meta.drop_all()
 
             table_list = [table.__table__ for table in cls.tables]
+            logger.debug("create all tables")
             Base.metadata.create_all(engine, table_list)
             engine.dispose()
+        cls.session.commit()
+        logger.debug("Tables cleaned")
 
     def empty_tables(self):
+        logger.debug("Emptying tables")
         for table in self.tables:
             self.session.execute("TRUNCATE %s CASCADE;" % table.__tablename__)
         self.session.commit()
+        logger.debug("Tables emptied")
