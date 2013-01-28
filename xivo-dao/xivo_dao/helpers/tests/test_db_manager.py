@@ -11,19 +11,19 @@ class TestDBManager(unittest.TestCase):
     def test_connect(self, sessionmaker_mock, create_engine_mock):
         db_manager._DB_URI = "testuri"
 
-        engine = Mock()
-        sessionmaker = Mock()
-        session = Mock()
+        engine_mock = Mock()
+        sessionmaker_value = Mock()
+        session_mock = Mock()
 
-        create_engine_mock.return_value = engine
-        sessionmaker_mock.return_value = sessionmaker
-        sessionmaker.return_value = session
+        create_engine_mock.return_value = engine_mock
+        sessionmaker_mock.return_value = sessionmaker_value
+        sessionmaker_value.return_value = session_mock
 
         result = db_manager.connect()
 
         create_engine_mock.assert_called_once_with("testuri", echo=ANY)
-        sessionmaker_mock.assert_called_once_with(bind=engine)
-        self.assertEquals(result, session)
+        sessionmaker_mock.assert_called_once_with(bind=engine_mock)
+        self.assertEquals(result, session_mock)
 
     @patch('xivo_dao.helpers.db_manager.connect')
     def test_session_returns_same_session_when_called_twice(self, connect_mock):
