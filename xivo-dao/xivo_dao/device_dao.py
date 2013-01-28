@@ -18,11 +18,11 @@
 
 from xivo_dao.alchemy.devicefeatures import DeviceFeatures
 from xivo_dao.alchemy.linefeatures import LineFeatures
-from xivo_dao.helpers.db_manager import DbSession
+from xivo_dao.helpers.db_manager import daosession
 
-
-def get_peer_name(device_id):
-    row = (DbSession()
+@daosession
+def get_peer_name(session, device_id):
+    row = (session
            .query(LineFeatures.name, LineFeatures.protocol)
            .filter(LineFeatures.device == str(device_id))).first()
 
@@ -32,8 +32,9 @@ def get_peer_name(device_id):
     return '/'.join([row.protocol, row.name])
 
 
-def get_vendor_model(device_id):
-    row = (DbSession()
+@daosession
+def get_vendor_model(session, device_id):
+    row = (session
            .query(DeviceFeatures.vendor, DeviceFeatures.model)
            .filter(DeviceFeatures.id == device_id)).first()
 

@@ -18,10 +18,11 @@
 from xivo_dao.alchemy.stat_call_on_queue import StatCallOnQueue
 from xivo_dao import stat_queue_dao, stat_agent_dao
 from sqlalchemy import func, between, literal
-from xivo_dao.helpers.db_manager import DbSession
+from xivo_dao.helpers.db_manager import daosession
 
 
-def _add_call(callid, time, queue_name, event, waittime=None, agent=None, talktime=None):
+@daosession
+def _add_call(session, callid, time, queue_name, event, waittime=None, agent=None, talktime=None):
     queue_id = int(stat_queue_dao.id_from_name(queue_name))
     call_on_queue = StatCallOnQueue()
     call_on_queue.time = time
@@ -36,8 +37,8 @@ def _add_call(callid, time, queue_name, event, waittime=None, agent=None, talkti
     if talktime:
         call_on_queue.talktime = talktime
 
-    DbSession().add(call_on_queue)
-    DbSession().commit()
+    session.add(call_on_queue)
+    session.commit()
 
 
 def add_abandoned_call(callid, time, queue_name, waittime):
@@ -68,10 +69,11 @@ def add_timeout_call(callid, time, queue_name, waittime):
     _add_call(callid, time, queue_name, 'timeout', waittime)
 
 
-def get_periodic_stats(start, end):
+@daosession
+def get_periodic_stats(session, start, end):
     stats = {}
 
-    rows = (DbSession()
+    rows = (session
             .query(func.date_trunc(literal('hour'), StatCallOnQueue.time),
                    StatCallOnQueue.queue_id,
                    StatCallOnQueue.status,
@@ -92,11 +94,11 @@ def get_periodic_stats(start, end):
     return stats
 
 
-def clean_table():
-    DbSession().query(StatCallOnQueue).delete()
-    DbSession().commit()
+@daosession
+def clean_table(session):
+    session.query(StatCallOnQueue).delete()
 
 
-def remove_after(date):
-    DbSession().query(StatCallOnQueue).filter(StatCallOnQueue.time >= date).delete()
-    DbSession().commit()
+@daosession
+def remove_after(session, date):
+    session.query(StatCallOnQueue).filter(StatCallOnQueue.time >= date).delete()

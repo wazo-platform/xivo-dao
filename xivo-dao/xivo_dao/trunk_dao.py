@@ -19,12 +19,13 @@ from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
-from xivo_dao.helpers.db_manager import DbSession
+from xivo_dao.helpers.db_manager import daosession
 
 TRUNK_TYPES = ['sip', 'iax', 'custom']
 
 
-def find_by_proto_name(protocol, name):
+@daosession
+def find_by_proto_name(session, protocol, name):
     if not protocol or protocol not in TRUNK_TYPES:
         raise ValueError('Protocol %s is not allowed', protocol)
 
@@ -32,9 +33,9 @@ def find_by_proto_name(protocol, name):
     table, field = _trunk_table_lookup_field(protocol)
 
     try:
-        protocol_id = (DbSession().query(table.id)
+        protocol_id = (session.query(table.id)
                        .filter(field.ilike(name)))[0].id
-        trunk_id = (DbSession().query(TrunkFeatures.id)
+        trunk_id = (session.query(TrunkFeatures.id)
                     .filter(TrunkFeatures.protocolid == protocol_id)
                     .filter(TrunkFeatures.protocol == protocol.lower()))[0].id
     except IndexError:
@@ -56,13 +57,16 @@ def _trunk_table_lookup_field(protocol):
     return table, field
 
 
-def get_ids():
-    return [item.id for item in DbSession().query(TrunkFeatures.id)]
+@daosession
+def get_ids(session):
+    return [item.id for item in session.query(TrunkFeatures.id)]
 
 
-def get(trunk_id):
-    return DbSession().query(TrunkFeatures).filter(TrunkFeatures.id == trunk_id).first()
+@daosession
+def get(session, trunk_id):
+    return session.query(TrunkFeatures).filter(TrunkFeatures.id == trunk_id).first()
 
 
-def all():
-    return DbSession().query(TrunkFeatures).all()
+@daosession
+def all(session):
+    return session.query(TrunkFeatures).all()

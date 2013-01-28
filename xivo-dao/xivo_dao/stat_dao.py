@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.db_manager import DbSession
+from xivo_dao.helpers.db_manager import daosession
 
 
 _STR_TIME_FMT = "%Y-%m-%d %H:%M:%S.%f"
@@ -42,18 +42,20 @@ def fill_leaveempty_calls(start, end):
     )
 
 
-def _run_sql_function_returning_void(start, end, function):
+@daosession
+def _run_sql_function_returning_void(session, start, end, function):
     start = start.strftime(_STR_TIME_FMT)
     end = end.strftime(_STR_TIME_FMT)
 
-    (DbSession()
+    (session
      .query('place_holder')
      .from_statement(function)
      .params(start=start, end=end)
      .first())
 
 
-def get_pause_intervals_in_range(start, end):
+@daosession
+def get_pause_intervals_in_range(session, start, end):
     pause_in_range = '''\
 SELECT stat_agent.id AS agent,
        CAST(MIN(pauseall) AS TIMESTAMP) AS pauseall,
@@ -77,7 +79,7 @@ SELECT stat_agent.id AS agent,
   GROUP BY stat_agent.id, unpauseall
 '''
 
-    rows = (DbSession()
+    rows = (session
             .query('agent', 'pauseall', 'unpauseall')
             .from_statement(pause_in_range)
             .params(start=start, end=end))
@@ -94,9 +96,10 @@ SELECT stat_agent.id AS agent,
     return results
 
 
-def get_login_intervals_in_range(start, end):
-    completed_logins = get_completed_logins(start, end)
-    ongoing_logins = get_ongoing_logins(start, end)
+@daosession
+def get_login_intervals_in_range(session, start, end):
+    completed_logins = _get_completed_logins(session, start, end)
+    ongoing_logins = _get_ongoing_logins(session, start, end)
 
     results = _merge_agent_statistics(
         completed_logins,
@@ -176,7 +179,7 @@ def _pick_longest_with_same_end(logins):
     return res
 
 
-def get_completed_logins(start, end):
+def _get_completed_logins(session, start, end):
     completed_logins_query = '''\
 SELECT
   logout_timestamp - login_delay AS login_timestamp,
@@ -197,7 +200,7 @@ WHERE stat_agent.name = agent
 ORDER BY agent, logout_timestamp
 '''
 
-    rows = DbSession().query(
+    rows = session.query(
         'agent',
         'login_timestamp',
         'logout_timestamp'
@@ -215,7 +218,7 @@ ORDER BY agent, logout_timestamp
     return results
 
 
-def _get_last_logouts():
+def _get_last_logouts(session):
     last_agent_logout_query = '''\
 select
   stat_agent.id AS agent,
@@ -227,7 +230,7 @@ select
 from stat_agent
 '''
 
-    rows = DbSession().query(
+    rows = session.query(
         'agent',
         'logout',
     ).from_statement(last_agent_logout_query)
@@ -240,7 +243,7 @@ from stat_agent
     return agents_last_logouts
 
 
-def _get_last_logins():
+def _get_last_logins(session):
     last_agent_logout_query = '''\
 SELECT
   stat_agent.id AS agent,
@@ -251,7 +254,7 @@ WHERE agent = stat_agent.name AND
 GROUP BY stat_agent.id
 '''
 
-    rows = DbSession().query(
+    rows = session.query(
         'agent',
         'login',
     ).from_statement(last_agent_logout_query)
@@ -264,9 +267,9 @@ GROUP BY stat_agent.id
     return agents_last_logins
 
 
-def get_ongoing_logins(start, end):
-    last_logins = _get_last_logins()
-    last_logouts = _get_last_logouts()
+def _get_ongoing_logins(session, start, end):
+    last_logins = _get_last_logins(session)
+    last_logouts = _get_last_logouts(session)
 
     def filter_ended_logins(logins, logouts):
         filtered_logins = {}

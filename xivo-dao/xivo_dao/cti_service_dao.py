@@ -18,24 +18,25 @@
 from xivo_dao.alchemy.cti_service import CtiService
 from xivo_dao.alchemy.cti_profile_service import CtiProfileService
 from xivo_dao.alchemy.cti_profile import CtiProfile
-from xivo_dao.helpers.db_manager import DbSession
+from xivo_dao.helpers.db_manager import daosession
 
 
-def _get(profile_id):
-    return DbSession().query(CtiService).filter(CtiService.id == profile_id).first()
+@daosession
+def _get(session, profile_id):
+    return session.query(CtiService).filter(CtiService.id == profile_id).first()
 
 
 def get_name(profile_id):
     return _get(profile_id).name
 
-
-def get_services():
+@daosession
+def get_services(session):
     res = {}
-    rows = (DbSession().query(CtiProfile).all())
+    rows = (session.query(CtiProfile).all())
     for row in rows:
         res[row.name] = []
 
-    rows = (DbSession().query(CtiProfile, CtiService)
+    rows = (session.query(CtiProfile, CtiService)
             .join((CtiProfileService, CtiProfileService.profile_id == CtiProfile.id),
                   (CtiService, CtiProfileService.service_id == CtiService.id))
             .all())

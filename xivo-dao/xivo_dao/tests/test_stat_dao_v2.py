@@ -21,6 +21,7 @@ from xivo_dao.alchemy.queue_log import QueueLog
 from xivo_dao.alchemy.stat_call_on_queue import StatCallOnQueue
 from xivo_dao.alchemy.stat_agent import StatAgent
 from xivo_dao.alchemy.stat_queue import StatQueue
+from xivo_dao.helpers import db_manager
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao import stat_dao
 
@@ -53,7 +54,8 @@ class TestStatDAO(DAOTestCase):
 
         self._insert_queue_log_data(queue_log_data)
 
-        result = stat_dao.get_completed_logins(start, end)
+        session = db_manager.session()
+        result = stat_dao._get_completed_logins(session, start, end)
 
         expected = {
             agent_id_1: [
@@ -88,7 +90,8 @@ class TestStatDAO(DAOTestCase):
 
         self._insert_queue_log_data(queue_log_data)
 
-        result = stat_dao._get_last_logouts()
+        session = db_manager.session()
+        result = stat_dao._get_last_logouts(session)
 
         expected = {
             agent_id_1: dt(2012, 6, 1, 6, 45),
@@ -121,7 +124,8 @@ class TestStatDAO(DAOTestCase):
 
         self._insert_queue_log_data(queue_log_data)
 
-        result = stat_dao._get_last_logins()
+        session = db_manager.session()
+        result = stat_dao._get_last_logins(session)
 
         expected = {
             agent_id_1: dt(2012, 6, 1, 6, 40),
@@ -156,7 +160,8 @@ class TestStatDAO(DAOTestCase):
 
         self._insert_queue_log_data(queue_log_data)
 
-        result = stat_dao.get_ongoing_logins(start, end)
+        session = db_manager.session()
+        result = stat_dao._get_ongoing_logins(session, start, end)
 
         expected = {
             agent_id_2: [

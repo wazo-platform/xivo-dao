@@ -16,27 +16,34 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
-from xivo_dao.helpers.db_manager import DbSession
+from xivo_dao.helpers.db_manager import daosession
+
+@daosession
+def all_queues(session):
+    return session.query(QueueFeatures).all()
 
 
-def all_queues():
-    return DbSession().query(QueueFeatures).all()
+@daosession
+def get(session, queue_id):
+    result = session.query(QueueFeatures).filter(QueueFeatures.id == queue_id).first()
+    if result is None:
+        raise LookupError('No such queue')
+    else:
+        return result
 
 
-def _get(queue_id):
-    return DbSession().query(QueueFeatures).filter(QueueFeatures.id == queue_id)[0]
-
-
-def id_from_name(queue_name):
-    result = DbSession().query(QueueFeatures.id).filter(QueueFeatures.name == queue_name).first()
+@daosession
+def id_from_name(session, queue_name):
+    result = session.query(QueueFeatures.id).filter(QueueFeatures.name == queue_name).first()
     if result is None:
         raise LookupError('No such queue')
     else:
         return result.id
 
 
-def queue_name(queue_id):
-    result = DbSession().query(QueueFeatures.name).filter(QueueFeatures.id == queue_id).first()
+@daosession
+def queue_name(session, queue_id):
+    result = session.query(QueueFeatures.name).filter(QueueFeatures.id == queue_id).first()
     if result is None:
         raise LookupError('No such queue')
     else:
@@ -52,7 +59,8 @@ def is_a_queue(name):
         return True
 
 
-def is_user_member_of_queue(user_id, queue_id):
+@daosession
+def is_user_member_of_queue(session, user_id, queue_id):
     statement = '''\
 SELECT
     1 AS found
@@ -73,7 +81,7 @@ WHERE
         )
     )
 '''
-    row = (DbSession()
+    row = (session
            .query('found')
            .from_statement(statement)
            .params(user_id=user_id, queue_id=queue_id)
@@ -82,17 +90,9 @@ WHERE
 
 
 def get_queue_name(queue_id):
-    return _get(queue_id).name
+    return get(queue_id).name
 
 
 def get_display_name_number(queue_id):
-    queue = _get(queue_id)
+    queue = get(queue_id)
     return queue.displayname, queue.number
-
-
-def add_queue(queue):
-    if type(queue) != QueueFeatures:
-        raise ValueError('Wrong object passed')
-
-    DbSession().add(queue)
-    DbSession().commit()

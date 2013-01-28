@@ -16,10 +16,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.alchemy.stat_agent_periodic import StatAgentPeriodic
-from xivo_dao.helpers.db_manager import DbSession
+from xivo_dao.helpers.db_manager import daosession
 
 
-def insert_stats(period_stats, period_start):
+@daosession
+def insert_stats(session, period_stats, period_start):
     for agent_id, times in period_stats.iteritems():
         entry = StatAgentPeriodic(
             time=period_start,
@@ -29,16 +30,14 @@ def insert_stats(period_stats, period_start):
             agent_id=agent_id,
         )
 
-        DbSession().add(entry)
-
-    DbSession().commit()
+        session.add(entry)
 
 
-def clean_table():
-    DbSession().query(StatAgentPeriodic).delete()
-    DbSession().commit()
+@daosession
+def clean_table(session):
+    session.query(StatAgentPeriodic).delete()
 
 
-def remove_after(date):
-    DbSession().query(StatAgentPeriodic).filter(StatAgentPeriodic.time >= date).delete()
-    DbSession().commit()
+@daosession
+def remove_after(session, date):
+    session.query(StatAgentPeriodic).filter(StatAgentPeriodic.time >= date).delete()

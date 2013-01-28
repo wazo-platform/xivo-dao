@@ -17,21 +17,22 @@
 
 from xivo_dao.alchemy.stat_agent import StatAgent
 from sqlalchemy import distinct
-from xivo_dao.helpers.db_manager import DbSession
+from xivo_dao.helpers.db_manager import daosession
 
 
-def insert_if_missing(agents):
+@daosession
+def insert_if_missing(session, agents):
     agents = set(agents)
-    old_agents = set(r.agent for r in DbSession().query(distinct(StatAgent.name).label('agent')))
+    old_agents = set(r.agent for r in session.query(distinct(StatAgent.name).label('agent')))
 
     missing_agents = list(agents - old_agents)
 
     for agent_name in missing_agents:
         agent = StatAgent()
         agent.name = agent_name
-        DbSession().add(agent)
-    DbSession().commit()
+        session.add(agent)
 
 
-def id_from_name(agent_name):
-    return DbSession().query(StatAgent.id).filter(StatAgent.name == agent_name).first().id
+@daosession
+def id_from_name(session, agent_name):
+    return session.query(StatAgent.id).filter(StatAgent.name == agent_name).first().id

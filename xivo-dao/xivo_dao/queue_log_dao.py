@@ -21,13 +21,14 @@ from sqlalchemy.sql.functions import min
 from xivo_dao.alchemy.queue_log import QueueLog
 from sqlalchemy import cast, TIMESTAMP, func
 from datetime import timedelta
-from xivo_dao.helpers.db_manager import DbSession
+from xivo_dao.helpers.db_manager import daosession
 
 
 _STR_TIME_FMT = "%Y-%m-%d %H:%M:%S.%f"
 
 
-def get_wrapup_times(start, end, interval):
+@daosession
+def get_wrapup_times(session, start, end, interval):
     before_start = start - timedelta(minutes=2)
     wrapup_times_query = '''\
 SELECT
@@ -47,7 +48,7 @@ AND
 
     periods = [t for t in _enumerate_periods(start, end, interval)]
 
-    rows = DbSession().query(
+    rows = session.query(
         'start',
         'end',
         'agent_id'
@@ -104,11 +105,12 @@ def _enumerate_periods(start, end, interval):
         tmp += interval
 
 
-def _get_event_with_enterqueue(start, end, match, event):
+@daosession
+def _get_event_with_enterqueue(session, start, end, match, event):
     start = start.strftime(_STR_TIME_FMT)
     end = end.strftime(_STR_TIME_FMT)
 
-    enter_queues = (DbSession()
+    enter_queues = (session
                     .query(QueueLog.callid,
                            cast(QueueLog.time, TIMESTAMP).label('time'))
                     .filter(and_(QueueLog.event == 'ENTERQUEUE',
@@ -119,7 +121,7 @@ def _get_event_with_enterqueue(start, end, match, event):
         enter_map[enter_queue.callid] = enter_queue.time
 
     if enter_map:
-        res = (DbSession()
+        res = (session
                .query(QueueLog.event,
                       QueueLog.queuename,
                       cast(QueueLog.time, TIMESTAMP).label('time'),
@@ -147,44 +149,48 @@ def get_queue_timeout_call(start, end):
     return _get_event_with_enterqueue(start, end, 'EXITWITHTIMEOUT', 'timeout')
 
 
-def get_first_time():
-    res = DbSession().query(cast(min(QueueLog.time), TIMESTAMP)).first()[0]
+@daosession
+def get_first_time(session):
+    res = session.query(cast(min(QueueLog.time), TIMESTAMP)).first()[0]
     if res is None:
         raise LookupError('Table is empty')
     return res
 
 
-def get_queue_names_in_range(start, end):
+@daosession
+def get_queue_names_in_range(session, start, end):
     start = start.strftime(_STR_TIME_FMT)
     end = end.strftime(_STR_TIME_FMT)
 
-    return [r[0] for r in (DbSession().query(distinct(QueueLog.queuename))
+    return [r[0] for r in (session.query(distinct(QueueLog.queuename))
                            .filter(between(QueueLog.time, start, end)))]
 
 
-def get_agents_after(start):
+@daosession
+def get_agents_after(session, start):
     s = start.strftime(_STR_TIME_FMT)
 
-    return [r.agent for r in (DbSession()
+    return [r.agent for r in (session
                               .query(distinct(QueueLog.agent).label('agent'))
                               .filter(QueueLog.time >= s))]
 
 
-def delete_event_by_queue_between(event, qname, start, end):
-    DbSession().query(QueueLog).filter(
+@daosession
+def delete_event_by_queue_between(session, event, qname, start, end):
+    session.query(QueueLog).filter(
         and_(QueueLog.event == event,
              QueueLog.queuename == qname,
              between(QueueLog.time, start, end))).delete(synchronize_session='fetch')
-    DbSession().commit()
 
 
-def delete_event_between(start, end):
-    DbSession().query(QueueLog).filter(
+@daosession
+def delete_event_between(session, start, end):
+    session.query(QueueLog).filter(
         and_(between(QueueLog.time, start, end))).delete(synchronize_session='fetch')
-    DbSession().commit()
 
 
-def insert_entry(time, callid, queue, agent, event, d1='', d2='', d3='', d4='', d5=''):
+@daosession
+def insert_entry(session, time, callid, queue, agent, event, d1='', d2='', d3='', d4='', d5=''):
     entry = QueueLog(
         time=time,
         callid=callid,
@@ -196,15 +202,15 @@ def insert_entry(time, callid, queue, agent, event, d1='', d2='', d3='', d4='', 
         data3=d3,
         data4=d4,
         data5=d5)
-    DbSession().add(entry)
-    DbSession().commit()
+    session.add(entry)
 
 
-def hours_with_calls(start, end):
+@daosession
+def hours_with_calls(session, start, end):
     start = start.strftime(_STR_TIME_FMT)
     end = end.strftime(_STR_TIME_FMT)
 
-    hours = (DbSession()
+    hours = (session
              .query(distinct(func.date_trunc('hour', cast(QueueLog.time, TIMESTAMP))).label('time'))
              .filter(between(QueueLog.time, start, end)))
 
@@ -212,8 +218,9 @@ def hours_with_calls(start, end):
         yield hour.time
 
 
-def get_last_callid_with_event_for_agent(event, agent):
-    row = DbSession().query(QueueLog.callid).filter(
+@daosession
+def get_last_callid_with_event_for_agent(session, event, agent):
+    row = session.query(QueueLog.callid).filter(
         and_(QueueLog.agent == agent,
              QueueLog.event == event)).order_by(QueueLog.time.desc()).first()
 

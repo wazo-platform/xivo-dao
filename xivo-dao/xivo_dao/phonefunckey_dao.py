@@ -17,11 +17,12 @@
 
 from xivo_dao.alchemy.phonefunckey import PhoneFunckey
 from sqlalchemy import and_
-from xivo_dao.helpers.db_manager import DbSession
+from xivo_dao.helpers.db_manager import daosession
 
 
-def _get_dest(user_id, fwd_type):
-    destinations = (DbSession().query(PhoneFunckey.exten)
+@daosession
+def _get_dest(session, user_id, fwd_type):
+    destinations = (session.query(PhoneFunckey.exten)
                     .filter(and_(PhoneFunckey.iduserfeatures == user_id,
                                  PhoneFunckey.typevalextenumbers == fwd_type)))
 
