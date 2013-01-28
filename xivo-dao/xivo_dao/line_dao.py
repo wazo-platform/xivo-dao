@@ -22,22 +22,25 @@ from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.usercustom import UserCustom
 from sqlalchemy import and_
-from xivo_dao.helpers.db_manager import DbSession
+from xivo_dao.helpers.db_manager import daosession
 
 
-def find_line_id_by_user_id(user_id):
-    res = DbSession().query(LineFeatures).filter(LineFeatures.iduserfeatures == int(user_id))
+@daosession
+def find_line_id_by_user_id(session, user_id):
+    res = session.query(LineFeatures).filter(LineFeatures.iduserfeatures == int(user_id))
     return [line.id for line in res]
 
 
-def find_context_by_user_id(user_id):
-    res = DbSession().query(LineFeatures).filter(LineFeatures.iduserfeatures == int(user_id))
+@daosession
+def find_context_by_user_id(session, user_id):
+    res = session.query(LineFeatures).filter(LineFeatures.iduserfeatures == int(user_id))
     context_list = [line.context for line in res]
     return context_list[0] if len(context_list) > 0 else None
 
 
-def get_interface_from_exten_and_context(extension, context):
-    res = (DbSession().query(LineFeatures.protocol, LineFeatures.name)
+@daosession
+def get_interface_from_exten_and_context(session, extension, context):
+    res = (session.query(LineFeatures.protocol, LineFeatures.name)
            .filter(LineFeatures.number == extension)
            .filter(LineFeatures.context == context)).first()
     if res is None:
@@ -52,55 +55,60 @@ def _format_interface(protocol, name):
         return '%s/%s' % (protocol.upper(), name)
 
 
-def number(line_id):
-    res = DbSession().query(LineFeatures).filter(LineFeatures.id == line_id)
+@daosession
+def number(session, line_id):
+    res = session.query(LineFeatures).filter(LineFeatures.id == line_id)
     if res.count() == 0:
         raise LookupError
     else:
         return res[0].number
 
 
-def is_phone_exten(exten):
-    return DbSession().query(LineFeatures).filter(LineFeatures.number == exten).count() > 0
+@daosession
+def is_phone_exten(session, exten):
+    return session.query(LineFeatures).filter(LineFeatures.number == exten).count() > 0
 
 
-def get_protocol(line_id):
-    row = DbSession().query(LineFeatures).filter(LineFeatures.id == line_id).first()
+@daosession
+def get_protocol(session, line_id):
+    row = session.query(LineFeatures).filter(LineFeatures.id == line_id).first()
     if not row:
         raise LookupError
     return row.protocol
 
 
-def all_with_protocol(protocol):
+@daosession
+def all_with_protocol(session, protocol):
     if protocol.lower() == 'sip':
-        return DbSession().query(LineFeatures, UserSIP).filter(LineFeatures.protocolid == UserSIP.id).all()
+        return session.query(LineFeatures, UserSIP).filter(LineFeatures.protocolid == UserSIP.id).all()
     elif protocol.lower() == 'iax':
-        return DbSession().query(LineFeatures, UserIAX).filter(LineFeatures.protocolid == UserIAX.id).all()
+        return session.query(LineFeatures, UserIAX).filter(LineFeatures.protocolid == UserIAX.id).all()
     elif protocol.lower() == 'sccp':
-        return DbSession().query(LineFeatures, SCCPLine).filter(LineFeatures.protocolid == SCCPLine.id).all()
+        return session.query(LineFeatures, SCCPLine).filter(LineFeatures.protocolid == SCCPLine.id).all()
     elif protocol.lower() == 'custom':
-        return DbSession().query(LineFeatures, UserCustom).filter(LineFeatures.protocolid == UserCustom.id).all()
+        return session.query(LineFeatures, UserCustom).filter(LineFeatures.protocolid == UserCustom.id).all()
 
 
-def get_with_line_id(line_id):
+@daosession
+def get_with_line_id(session, line_id):
     protocol = get_protocol(line_id)
     if protocol.lower() == 'sip':
-        return (DbSession().query(LineFeatures, UserSIP)
+        return (session.query(LineFeatures, UserSIP)
                 .filter(LineFeatures.id == int(line_id))
                 .filter(LineFeatures.protocolid == UserSIP.id)
                 .first())
     elif protocol.lower() == 'iax':
-        return (DbSession().query(LineFeatures, UserIAX)
+        return (session.query(LineFeatures, UserIAX)
                 .filter(LineFeatures.id == int(line_id))
                 .filter(LineFeatures.protocolid == UserIAX.id)
                 .first())
     elif protocol.lower() == 'sccp':
-        return (DbSession().query(LineFeatures, SCCPLine)
+        return (session.query(LineFeatures, SCCPLine)
                 .filter(LineFeatures.id == int(line_id))
                 .filter(LineFeatures.protocolid == SCCPLine.id)
                 .first())
     elif protocol.lower() == 'custom':
-        return (DbSession().query(LineFeatures, UserCustom)
+        return (session.query(LineFeatures, UserCustom)
                 .filter(LineFeatures.id == int(line_id))
                 .filter(LineFeatures.protocolid == UserCustom.id)
                 .first())
@@ -116,8 +124,9 @@ def get_cid_for_channel(channel):
         raise ValueError('Cannot get the Caller ID for this channel')
 
 
-def get_interface_from_user_id(user_id):
-    row = (DbSession()
+@daosession
+def get_interface_from_user_id(session, user_id):
+    row = (session
            .query(LineFeatures.protocol,
                   LineFeatures.name,
                   LineFeatures.iduserfeatures)
@@ -133,7 +142,8 @@ def get_interface_from_user_id(user_id):
         return row.protocol + '/' + row.name
 
 
-def _get_cid_for_sccp_channel(channel):
+@daosession
+def _get_cid_for_sccp_channel(session, channel):
     try:
         interesting_part = channel.split('@', 1)[0]
         protocol, line_name = interesting_part.split('/', 1)
@@ -141,19 +151,20 @@ def _get_cid_for_sccp_channel(channel):
     except (IndexError, AssertionError):
         raise ValueError('Not an SCCP channel')
 
-    line = DbSession().query(SCCPLine.cid_name, SCCPLine.cid_num).filter(SCCPLine.name == line_name)[0]
+    line = session.query(SCCPLine.cid_name, SCCPLine.cid_num).filter(SCCPLine.name == line_name)[0]
 
     cid_name, cid_num = line.cid_name, line.cid_num
 
     return caller_id.build_caller_id('', cid_name, cid_num)
 
 
-def _get_cid_for_sip_channel(channel):
+@daosession
+def _get_cid_for_sip_channel(session, channel):
     protocol, name = channel.split('-', 1)[0].split('/', 1)
     if protocol.lower() != 'sip':
         raise ValueError('Not a SIP channel')
 
-    cid_all = (DbSession().query(UserSIP.callerid)
+    cid_all = (session.query(UserSIP.callerid)
                .filter(and_(UserSIP.name == name, UserSIP.protocol == protocol.lower()))[0].callerid)
 
     return caller_id.build_caller_id(cid_all, None, None)
