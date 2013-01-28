@@ -18,24 +18,26 @@
 from xivo_dao.alchemy.cti_preference import CtiPreference
 from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.alchemy.cti_profile_preference import CtiProfilePreference
-from xivo_dao.helpers.db_manager import DbSession
+from xivo_dao.helpers.db_manager import daosession
 
 
-def _get(preference_id):
-    return DbSession().query(CtiPreference).filter(CtiPreference.id == preference_id).first()
+@daosession
+def _get(session, preference_id):
+    return session.query(CtiPreference).filter(CtiPreference.id == preference_id).first()
 
 
 def get_name(preference_id):
     return _get(preference_id).name
 
 
-def get_preferences():
+@daosession
+def get_preferences(session):
     res = {}
-    rows = (DbSession().query(CtiProfile).all())
+    rows = (session.query(CtiProfile).all())
     for row in rows:
         res[row.name] = {}
 
-    rows = (DbSession().query(CtiProfile, CtiProfilePreference, CtiPreference)
+    rows = (session.query(CtiProfile, CtiProfilePreference, CtiPreference)
             .join((CtiProfilePreference, CtiProfilePreference.profile_id == CtiProfile.id),
                   (CtiPreference, CtiProfilePreference.preference_id == CtiPreference.id))
             .all())

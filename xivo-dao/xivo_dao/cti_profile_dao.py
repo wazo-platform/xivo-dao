@@ -22,19 +22,21 @@ from xivo_dao.alchemy.cti_profile_xlet import CtiProfileXlet
 from xivo_dao.alchemy.cti_xlet import CtiXlet
 from xivo_dao.alchemy.cti_xlet_layout import CtiXletLayout
 from sqlalchemy.sql.expression import asc
-from xivo_dao.helpers.db_manager import DbSession
+from xivo_dao.helpers.db_manager import daosession
 
 
-def _get(profile_id):
-    return DbSession().query(CtiProfile).filter(CtiProfile.id == profile_id).first()
+@daosession
+def _get(session, profile_id):
+    return session.query(CtiProfile).filter(CtiProfile.id == profile_id).first()
 
 
 def get_name(profile_id):
     return _get(profile_id).name
 
 
-def get_profiles():
-    rows = (DbSession().query(CtiProfile, CtiPresences, CtiPhoneHintsGroup, CtiProfileXlet, CtiXlet, CtiXletLayout)
+@daosession
+def get_profiles(session):
+    rows = (session.query(CtiProfile, CtiPresences, CtiPhoneHintsGroup, CtiProfileXlet, CtiXlet, CtiXletLayout)
             .join((CtiPresences, CtiProfile.presence_id == CtiPresences.id),
                   (CtiPhoneHintsGroup, CtiProfile.phonehints_id == CtiPhoneHintsGroup.id),
                   (CtiProfileXlet, CtiProfile.id == CtiProfileXlet.profile_id),
