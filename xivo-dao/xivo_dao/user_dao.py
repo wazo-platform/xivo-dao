@@ -20,7 +20,7 @@ from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.contextinclude import ContextInclude
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from sqlalchemy import and_
-from xivo_dao.helpers.db_manager import DbSession
+from xivo_dao.helpers.db_manager import daosession
 
 
 def enable_dnd(user_id):
@@ -63,20 +63,23 @@ def disable_busy_fwd(user_id, destination):
     _update(user_id, {'enablebusy': 0, 'destbusy': destination})
 
 
-def _update(user_id, user_data_dict):
-    DbSession().query(UserFeatures).filter(UserFeatures.id == user_id).update(user_data_dict)
-    DbSession().commit()
+@daosession
+def _update(session, user_id, user_data_dict):
+    session.query(UserFeatures).filter(UserFeatures.id == user_id).update(user_data_dict)
+    session.commit()
 
 
-def get(user_id):
-    result = DbSession().query(UserFeatures).filter(UserFeatures.id == int(user_id)).first()
+@daosession
+def get(session, user_id):
+    result = session.query(UserFeatures).filter(UserFeatures.id == int(user_id)).first()
     if result is None:
         raise LookupError()
     return result
 
 
-def find_by_agent_id(agent_id):
-    res = DbSession().query(UserFeatures).filter(UserFeatures.agentid == int(agent_id))
+@daosession
+def find_by_agent_id(session, agent_id):
+    res = session.query(UserFeatures).filter(UserFeatures.agentid == int(agent_id))
     return [user.id for user in res]
 
 
@@ -99,8 +102,9 @@ def get_profile(user_id):
     return get(user_id).cti_profile_id
 
 
-def _get_included_contexts(context):
-    return [line.include for line in (DbSession().query(ContextInclude.include)
+@daosession
+def _get_included_contexts(session, context):
+    return [line.include for line in (session.query(ContextInclude.include)
                                        .filter(ContextInclude.context == context))]
 
 
@@ -116,33 +120,38 @@ def _get_nested_contexts(contexts):
     return list(set(contexts))
 
 
-def get_reachable_contexts(user_id):
-    line_contexts = [line.context for line in (DbSession().query(LineFeatures)
+@daosession
+def get_reachable_contexts(session, user_id):
+    line_contexts = [line.context for line in (session.query(LineFeatures)
                                                 .filter(LineFeatures.iduserfeatures == user_id))]
 
     return _get_nested_contexts(line_contexts)
 
 
-def all_join_line_id():
-    return (DbSession().query(UserFeatures, LineFeatures.id)
+@daosession
+def all_join_line_id(session):
+    return (session.query(UserFeatures, LineFeatures.id)
             .outerjoin((LineFeatures, UserFeatures.id == LineFeatures.iduserfeatures))
             .all())
 
 
-def get_join_line_id_with_user_id(user_id):
-    return (DbSession().query(UserFeatures, LineFeatures.id)
+@daosession
+def get_join_line_id_with_user_id(session, user_id):
+    return (session.query(UserFeatures, LineFeatures.id)
             .outerjoin((LineFeatures, UserFeatures.id == LineFeatures.iduserfeatures))
             .filter(UserFeatures.id == int(user_id))
             .first())
 
 
-def find_by_line_id(line_id):
-    return DbSession().query(LineFeatures.iduserfeatures).filter(LineFeatures.id == line_id).first().iduserfeatures
+@daosession
+def find_by_line_id(session, line_id):
+    return session.query(LineFeatures.iduserfeatures).filter(LineFeatures.id == line_id).first().iduserfeatures
 
 
-def get_line_identity(user_id):
+@daosession
+def get_line_identity(session, user_id):
     try:
-        line = (DbSession().query(LineFeatures.protocol, LineFeatures.name)
+        line = (session.query(LineFeatures.protocol, LineFeatures.name)
                          .filter(LineFeatures.iduserfeatures == user_id)).first()
     except IndexError:
         raise LookupError('Could not find a line for user %s', user_id)
@@ -151,8 +160,9 @@ def get_line_identity(user_id):
     return '%s/%s' % (line.protocol, line.name)
 
 
-def get_agent_number(user_id):
-    row = (DbSession().query(AgentFeatures.number, UserFeatures.agentid)
+@daosession
+def get_agent_number(session, user_id):
+    row = (session.query(AgentFeatures.number, UserFeatures.agentid)
             .filter(and_(UserFeatures.id == user_id,
                          AgentFeatures.id == UserFeatures.agentid))
             .first())
@@ -161,38 +171,46 @@ def get_agent_number(user_id):
     return row.number
 
 
-def get_dest_unc(user_id):
-    return DbSession().query(UserFeatures.destunc).filter(UserFeatures.id == int(user_id)).first().destunc
+@daosession
+def get_dest_unc(session, user_id):
+    return session.query(UserFeatures.destunc).filter(UserFeatures.id == int(user_id)).first().destunc
 
 
-def get_fwd_unc(user_id):
-    return (DbSession().query(UserFeatures.enableunc).filter(UserFeatures.id == int(user_id)).first().enableunc == 1)
+@daosession
+def get_fwd_unc(session, user_id):
+    return (session.query(UserFeatures.enableunc).filter(UserFeatures.id == int(user_id)).first().enableunc == 1)
 
 
-def get_dest_busy(user_id):
-    return DbSession().query(UserFeatures.destbusy).filter(UserFeatures.id == int(user_id)).first().destbusy
+@daosession
+def get_dest_busy(session, user_id):
+    return session.query(UserFeatures.destbusy).filter(UserFeatures.id == int(user_id)).first().destbusy
 
 
-def get_fwd_busy(user_id):
-    return (DbSession().query(UserFeatures.enablebusy).filter(UserFeatures.id == int(user_id)).first().enablebusy == 1)
+@daosession
+def get_fwd_busy(session, user_id):
+    return (session.query(UserFeatures.enablebusy).filter(UserFeatures.id == int(user_id)).first().enablebusy == 1)
 
 
-def get_dest_rna(user_id):
-    return DbSession().query(UserFeatures.destrna).filter(UserFeatures.id == int(user_id)).first().destrna
+@daosession
+def get_dest_rna(session, user_id):
+    return session.query(UserFeatures.destrna).filter(UserFeatures.id == int(user_id)).first().destrna
 
 
-def get_fwd_rna(user_id):
-    return (DbSession().query(UserFeatures.enablerna).filter(UserFeatures.id == int(user_id)).first().enablerna == 1)
+@daosession
+def get_fwd_rna(session, user_id):
+    return (session.query(UserFeatures.enablerna).filter(UserFeatures.id == int(user_id)).first().enablerna == 1)
 
 
-def get_name_number(user_id):
-    res = (DbSession().query(UserFeatures.firstname, UserFeatures.lastname, LineFeatures.number).
+@daosession
+def get_name_number(session, user_id):
+    res = (session.query(UserFeatures.firstname, UserFeatures.lastname, LineFeatures.number).
            filter(and_(UserFeatures.id == LineFeatures.iduserfeatures, UserFeatures.id == user_id))).first()
     return '%s %s' % (res.firstname, res.lastname), res.number
 
 
-def get_device_id(user_id):
-    row = (DbSession()
+@daosession
+def get_device_id(session, user_id):
+    row = (session
            .query(LineFeatures.iduserfeatures, LineFeatures.device)
            .filter(LineFeatures.iduserfeatures == user_id)
            .first())
@@ -201,8 +219,9 @@ def get_device_id(user_id):
     return int(row.device)
 
 
-def get_context(user_id):
-    res = (DbSession()
+@daosession
+def get_context(session, user_id):
+    res = (session
            .query(LineFeatures.context)
            .filter(LineFeatures.iduserfeatures == user_id)
            .first())
