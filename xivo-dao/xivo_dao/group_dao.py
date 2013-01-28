@@ -17,11 +17,12 @@
 
 from xivo_dao.alchemy.groupfeatures import GroupFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
-from xivo_dao.helpers.db_manager import DbSession
+from xivo_dao.helpers.db_manager import daosession
 
 
-def get(group_id):
-    return DbSession().query(GroupFeatures).filter(GroupFeatures.id == group_id).first()
+@daosession
+def get(session, group_id):
+    return session.query(GroupFeatures).filter(GroupFeatures.id == group_id).first()
 
 
 def get_name(group_id):
@@ -33,8 +34,9 @@ def get_name_number(group_id):
     return group.name, group.number
 
 
-def is_user_member_of_group(user_id, group_id):
-    row = (DbSession()
+@daosession
+def is_user_member_of_group(session, user_id, group_id):
+    row = (session
            .query(GroupFeatures.id)
            .join((QueueMember, QueueMember.queue_name == GroupFeatures.name))
            .filter(GroupFeatures.id == group_id)
@@ -44,5 +46,6 @@ def is_user_member_of_group(user_id, group_id):
     return row is not None
 
 
-def all():
-    return DbSession().query(GroupFeatures).all()
+@daosession
+def all(session):
+    return session.query(GroupFeatures).all()
