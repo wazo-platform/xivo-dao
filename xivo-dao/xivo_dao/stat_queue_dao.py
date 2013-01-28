@@ -17,28 +17,30 @@
 
 from sqlalchemy import distinct
 from xivo_dao.alchemy.stat_queue import StatQueue
-from xivo_dao.helpers.db_manager import DbSession
+from xivo_dao.helpers.db_manager import daosession
 
 
-def _get(queue_id):
-    return DbSession().query(StatQueue).filter(StatQueue.id == queue_id)[0]
+@daosession
+def _get(session, queue_id):
+    return session.query(StatQueue).filter(StatQueue.id == queue_id)[0]
 
 
-def id_from_name(queue_name):
-    res = DbSession().query(StatQueue).filter(StatQueue.name == queue_name)
+@daosession
+def id_from_name(session, queue_name):
+    res = session.query(StatQueue).filter(StatQueue.name == queue_name)
     if res.count() == 0:
         raise LookupError('No such queue')
     return res[0].id
 
 
-def insert_if_missing(all_queues):
+@daosession
+def insert_if_missing(session, all_queues):
     all_queues = set(all_queues)
-    old_queues = set(r[0] for r in DbSession().query(distinct(StatQueue.name)))
+    old_queues = set(r[0] for r in session.query(distinct(StatQueue.name)))
 
     missing_queues = list(all_queues - old_queues)
 
     for queue_name in missing_queues:
         new_queue = StatQueue()
         new_queue.name = queue_name
-        DbSession().add(new_queue)
-    DbSession().commit()
+        session.add(new_queue)
