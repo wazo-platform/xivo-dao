@@ -35,3 +35,6 @@ class TestDBManager(unittest.TestCase):
 
         result2 = db_manager.session()
         self.assertEquals(result2, dbsession)
+
+        # cleanup
+        db_manager.dbsession = None
