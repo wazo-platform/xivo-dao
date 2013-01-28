@@ -1,16 +1,11 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012  Avencall
+# Copyright (C) 2012-2013 Avencall
 #
-# This program is free software; you can redistribute it and/or modify
+# This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3 of the License, or
+# the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#
-# Alternatively, XiVO CTI Server is available under other licenses directly
-# contracted with Avencall. See the LICENSE file at top of the
-# source tree or delivered in the installable package in which XiVO CTI Server
-# is distributed for more details.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,21 +13,15 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
-from xivo_dao.alchemy import dbconnection
+from xivo_dao.helpers.db_manager import DbSession
 
 TRUNK_TYPES = ['sip', 'iax', 'custom']
-_DB_NAME = 'asterisk'
-
-
-def _session():
-    connection = dbconnection.get_connection(_DB_NAME)
-    return connection.get_session()
 
 
 def find_by_proto_name(protocol, name):
@@ -43,9 +32,9 @@ def find_by_proto_name(protocol, name):
     table, field = _trunk_table_lookup_field(protocol)
 
     try:
-        protocol_id = (_session().query(table.id)
+        protocol_id = (DbSession().query(table.id)
                        .filter(field.ilike(name)))[0].id
-        trunk_id = (_session().query(TrunkFeatures.id)
+        trunk_id = (DbSession().query(TrunkFeatures.id)
                     .filter(TrunkFeatures.protocolid == protocol_id)
                     .filter(TrunkFeatures.protocol == protocol.lower()))[0].id
     except IndexError:
@@ -68,12 +57,12 @@ def _trunk_table_lookup_field(protocol):
 
 
 def get_ids():
-    return [item.id for item in _session().query(TrunkFeatures.id)]
+    return [item.id for item in DbSession().query(TrunkFeatures.id)]
 
 
-def get(id):
-    return _session().query(TrunkFeatures).filter(TrunkFeatures.id == id).first()
+def get(trunk_id):
+    return DbSession().query(TrunkFeatures).filter(TrunkFeatures.id == trunk_id).first()
 
 
 def all():
-    return _session().query(TrunkFeatures).all()
+    return DbSession().query(TrunkFeatures).all()

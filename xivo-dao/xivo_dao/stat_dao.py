@@ -1,12 +1,24 @@
 # -*- coding: utf-8 -*-
 
-from xivo_dao.alchemy.dbconnection import get_connection
+# Copyright (C) 2013 Avencall
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+from xivo_dao.helpers.db_manager import DbSession
+
 
 _STR_TIME_FMT = "%Y-%m-%d %H:%M:%S.%f"
-
-
-def _get_session():
-    return get_connection('asterisk').get_session()
 
 
 def fill_simple_calls(start, end):
@@ -34,7 +46,7 @@ def _run_sql_function_returning_void(start, end, function):
     start = start.strftime(_STR_TIME_FMT)
     end = end.strftime(_STR_TIME_FMT)
 
-    (_get_session()
+    (DbSession()
      .query('place_holder')
      .from_statement(function)
      .params(start=start, end=end)
@@ -65,7 +77,7 @@ SELECT stat_agent.id AS agent,
   GROUP BY stat_agent.id, unpauseall
 '''
 
-    rows = (_get_session()
+    rows = (DbSession()
             .query('agent', 'pauseall', 'unpauseall')
             .from_statement(pause_in_range)
             .params(start=start, end=end))
@@ -185,7 +197,7 @@ WHERE stat_agent.name = agent
 ORDER BY agent, logout_timestamp
 '''
 
-    rows = _get_session().query(
+    rows = DbSession().query(
         'agent',
         'login_timestamp',
         'logout_timestamp'
@@ -215,7 +227,7 @@ select
 from stat_agent
 '''
 
-    rows = _get_session().query(
+    rows = DbSession().query(
         'agent',
         'logout',
     ).from_statement(last_agent_logout_query)
@@ -239,7 +251,7 @@ WHERE agent = stat_agent.name AND
 GROUP BY stat_agent.id
 '''
 
-    rows = _get_session().query(
+    rows = DbSession().query(
         'agent',
         'login',
     ).from_statement(last_agent_logout_query)

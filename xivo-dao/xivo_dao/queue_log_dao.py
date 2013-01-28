@@ -1,21 +1,30 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
+
+# Copyright (C) 2013 Avencall
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from sqlalchemy import between, distinct
 from sqlalchemy.sql.expression import and_
 from sqlalchemy.sql.functions import min
-from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.queue_log import QueueLog
 from sqlalchemy import cast, TIMESTAMP, func
 from datetime import timedelta
+from xivo_dao.helpers.db_manager import DbSession
 
 
-_DB_NAME = 'asterisk'
 _STR_TIME_FMT = "%Y-%m-%d %H:%M:%S.%f"
-
-
-def _session():
-    connection = dbconnection.get_connection(_DB_NAME)
-    return connection.get_session()
 
 
 def get_wrapup_times(start, end, interval):
@@ -38,7 +47,7 @@ AND
 
     periods = [t for t in _enumerate_periods(start, end, interval)]
 
-    rows = _session().query(
+    rows = DbSession().query(
         'start',
         'end',
         'agent_id'
@@ -99,7 +108,7 @@ def _get_event_with_enterqueue(start, end, match, event):
     start = start.strftime(_STR_TIME_FMT)
     end = end.strftime(_STR_TIME_FMT)
 
-    enter_queues = (_session()
+    enter_queues = (DbSession()
                     .query(QueueLog.callid,
                            cast(QueueLog.time, TIMESTAMP).label('time'))
                     .filter(and_(QueueLog.event == 'ENTERQUEUE',
@@ -110,7 +119,7 @@ def _get_event_with_enterqueue(start, end, match, event):
         enter_map[enter_queue.callid] = enter_queue.time
 
     if enter_map:
-        res = (_session()
+        res = (DbSession()
                .query(QueueLog.event,
                       QueueLog.queuename,
                       cast(QueueLog.time, TIMESTAMP).label('time'),
@@ -139,7 +148,7 @@ def get_queue_timeout_call(start, end):
 
 
 def get_first_time():
-    res = _session().query(cast(min(QueueLog.time), TIMESTAMP)).first()[0]
+    res = DbSession().query(cast(min(QueueLog.time), TIMESTAMP)).first()[0]
     if res is None:
         raise LookupError('Table is empty')
     return res
@@ -149,30 +158,30 @@ def get_queue_names_in_range(start, end):
     start = start.strftime(_STR_TIME_FMT)
     end = end.strftime(_STR_TIME_FMT)
 
-    return [r[0] for r in (_session().query(distinct(QueueLog.queuename))
+    return [r[0] for r in (DbSession().query(distinct(QueueLog.queuename))
                            .filter(between(QueueLog.time, start, end)))]
 
 
 def get_agents_after(start):
     s = start.strftime(_STR_TIME_FMT)
 
-    return [r.agent for r in (_session()
+    return [r.agent for r in (DbSession()
                               .query(distinct(QueueLog.agent).label('agent'))
                               .filter(QueueLog.time >= s))]
 
 
 def delete_event_by_queue_between(event, qname, start, end):
-    _session().query(QueueLog).filter(
+    DbSession().query(QueueLog).filter(
         and_(QueueLog.event == event,
              QueueLog.queuename == qname,
-             between(QueueLog.time, start, end))).delete(synchronize_session=False)
-    _session().commit()
+             between(QueueLog.time, start, end))).delete(synchronize_session='fetch')
+    DbSession().commit()
 
 
 def delete_event_between(start, end):
-    _session().query(QueueLog).filter(
-        and_(between(QueueLog.time, start, end))).delete(synchronize_session=False)
-    _session().commit()
+    DbSession().query(QueueLog).filter(
+        and_(between(QueueLog.time, start, end))).delete(synchronize_session='fetch')
+    DbSession().commit()
 
 
 def insert_entry(time, callid, queue, agent, event, d1='', d2='', d3='', d4='', d5=''):
@@ -187,15 +196,15 @@ def insert_entry(time, callid, queue, agent, event, d1='', d2='', d3='', d4='', 
         data3=d3,
         data4=d4,
         data5=d5)
-    _session().add(entry)
-    _session().commit()
+    DbSession().add(entry)
+    DbSession().commit()
 
 
 def hours_with_calls(start, end):
     start = start.strftime(_STR_TIME_FMT)
     end = end.strftime(_STR_TIME_FMT)
 
-    hours = (_session()
+    hours = (DbSession()
              .query(distinct(func.date_trunc('hour', cast(QueueLog.time, TIMESTAMP))).label('time'))
              .filter(between(QueueLog.time, start, end)))
 
@@ -204,7 +213,7 @@ def hours_with_calls(start, end):
 
 
 def get_last_callid_with_event_for_agent(event, agent):
-    row = _session().query(QueueLog.callid).filter(
+    row = DbSession().query(QueueLog.callid).filter(
         and_(QueueLog.agent == agent,
              QueueLog.event == event)).order_by(QueueLog.time.desc()).first()
 

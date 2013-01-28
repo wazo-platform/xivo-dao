@@ -1,17 +1,11 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 
-# XiVO CTI Server
-# Copyright (C) 2009-2012  Avencall
+# Copyright (C) 2009-2013 Avencall
 #
-# This program is free software; you can redistribute it and/or modify
+# This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3 of the License, or
+# the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#
-# Alternatively, XiVO CTI Server is available under other licenses directly
-# contracted with Pro-formatique SARL. See the LICENSE file at top of the
-# source tree or delivered in the installable package in which XiVO CTI Server
-# is distributed for more details.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -19,22 +13,15 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import logging
-from xivo_dao.alchemy import dbconnection
 from xivo_dao.alchemy.cel import CEL
 from xivo_dao.helpers.cel_channel import CELChannel
 from xivo_dao.helpers.cel_exception import CELException
+from xivo_dao.helpers.db_manager import DbSession
 
 logger = logging.getLogger(__name__)
-
-_DB_NAME = 'asterisk'
-
-
-def _session():
-    connection = dbconnection.get_connection(_DB_NAME)
-    return connection.get_session()
 
 
 class UnsupportedLineProtocolException(Exception):
@@ -42,7 +29,7 @@ class UnsupportedLineProtocolException(Exception):
 
 
 def caller_id_by_unique_id(unique_id):
-    cel_events = (_session().query(CEL.cid_name, CEL.cid_num)
+    cel_events = (DbSession().query(CEL.cid_name, CEL.cid_num)
                   .filter(CEL.eventtype.in_(['APP_START', 'CHAN_START']))
                   .filter(CEL.uniqueid == unique_id)
                   .order_by(CEL.id.desc())
@@ -56,7 +43,7 @@ def caller_id_by_unique_id(unique_id):
 
 
 def channel_by_unique_id(unique_id):
-    cel_events = (_session().query(CEL)
+    cel_events = (DbSession().query(CEL)
                   .filter(CEL.uniqueid == unique_id)
                   .all())
     if not cel_events:
@@ -67,7 +54,7 @@ def channel_by_unique_id(unique_id):
 
 def channels_for_phone(phone, limit=None):
     channel_pattern = _channel_pattern_from_phone(phone)
-    unique_ids = (_session().query(CEL.uniqueid)
+    unique_ids = (DbSession().query(CEL.uniqueid)
                   .filter(CEL.channame.like(channel_pattern))
                   .filter(CEL.eventtype == 'CHAN_START')
                   .order_by(CEL.id.desc()))

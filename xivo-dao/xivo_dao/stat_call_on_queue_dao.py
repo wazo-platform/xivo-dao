@@ -1,16 +1,24 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
+
+# Copyright (C) 2013 Avencall
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.alchemy.stat_call_on_queue import StatCallOnQueue
-from xivo_dao.alchemy import dbconnection
 from xivo_dao import stat_queue_dao, stat_agent_dao
 from sqlalchemy import func, between, literal
-
-_DB_NAME = 'asterisk'
-
-
-def _session():
-    connection = dbconnection.get_connection(_DB_NAME)
-    return connection.get_session()
+from xivo_dao.helpers.db_manager import DbSession
 
 
 def _add_call(callid, time, queue_name, event, waittime=None, agent=None, talktime=None):
@@ -28,8 +36,8 @@ def _add_call(callid, time, queue_name, event, waittime=None, agent=None, talkti
     if talktime:
         call_on_queue.talktime = talktime
 
-    _session().add(call_on_queue)
-    _session().commit()
+    DbSession().add(call_on_queue)
+    DbSession().commit()
 
 
 def add_abandoned_call(callid, time, queue_name, waittime):
@@ -63,7 +71,7 @@ def add_timeout_call(callid, time, queue_name, waittime):
 def get_periodic_stats(start, end):
     stats = {}
 
-    rows = (_session()
+    rows = (DbSession()
             .query(func.date_trunc(literal('hour'), StatCallOnQueue.time),
                    StatCallOnQueue.queue_id,
                    StatCallOnQueue.status,
@@ -85,10 +93,10 @@ def get_periodic_stats(start, end):
 
 
 def clean_table():
-    _session().query(StatCallOnQueue).delete()
-    _session().commit()
+    DbSession().query(StatCallOnQueue).delete()
+    DbSession().commit()
 
 
 def remove_after(date):
-    _session().query(StatCallOnQueue).filter(StatCallOnQueue.time >= date).delete()
-    _session().commit()
+    DbSession().query(StatCallOnQueue).filter(StatCallOnQueue.time >= date).delete()
+    DbSession().commit()
