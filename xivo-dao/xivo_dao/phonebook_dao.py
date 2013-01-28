@@ -18,23 +18,26 @@
 from xivo_dao.alchemy.phonebook import Phonebook
 from xivo_dao.alchemy.phonebookaddress import PhonebookAddress
 from xivo_dao.alchemy.phonebooknumber import PhonebookNumber
-from xivo_dao.helpers.db_manager import DbSession
+from xivo_dao.helpers.db_manager import daosession
 
 
-def get(phonebook_id):
-    return DbSession().query(Phonebook).filter(Phonebook.id == phonebook_id).first()
+@daosession
+def get(session, phonebook_id):
+    return session.query(Phonebook).filter(Phonebook.id == phonebook_id).first()
 
 
-def get_join_elements(phonebook_id):
-    return (DbSession().query(Phonebook, PhonebookAddress, PhonebookNumber)
+@daosession
+def get_join_elements(session, phonebook_id):
+    return (session.query(Phonebook, PhonebookAddress, PhonebookNumber)
             .join((PhonebookAddress, Phonebook.id == PhonebookAddress.phonebookid))
             .outerjoin((PhonebookNumber, Phonebook.id == PhonebookNumber.phonebookid))
             .filter(Phonebook.id == phonebook_id)
             .first()())
 
 
-def all():
-    return (DbSession().query(Phonebook, PhonebookAddress, PhonebookNumber)
+@daosession
+def all(session):
+    return (session.query(Phonebook, PhonebookAddress, PhonebookNumber)
             .join((PhonebookAddress, Phonebook.id == PhonebookAddress.phonebookid))
             .outerjoin((PhonebookNumber, Phonebook.id == PhonebookNumber.phonebookid))
             .all())
