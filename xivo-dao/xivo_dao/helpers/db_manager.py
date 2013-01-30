@@ -28,15 +28,18 @@ _DB_URI = config.DB_URI
 
 dbsession = None
 
+
 def connect():
     logger.debug('Connecting to database: %s' % _DB_URI)
     engine = create_engine(_DB_URI, echo=config.SQL_DEBUG)
     Session = sessionmaker(bind=engine)
     return Session()
 
+
 def reconnect():
     global dbsession
     dbsession = connect()
+
 
 def session():
     global dbsession
@@ -44,11 +47,13 @@ def session():
         dbsession = connect()
     return dbsession
 
+
 def _execute_with_session(func, *args, **kwargs):
     sess = session()
     result = func(sess, *args, **kwargs)
     sess.commit()
     return result
+
 
 def daosession(func):
 

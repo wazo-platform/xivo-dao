@@ -5,6 +5,7 @@ from mock import patch, Mock, ANY
 from xivo_dao.helpers import db_manager
 from sqlalchemy.exc import InvalidRequestError
 
+
 class TestDBManager(unittest.TestCase):
 
     def tearDown(self):
@@ -60,7 +61,6 @@ class TestDBManager(unittest.TestCase):
         result2 = db_manager.session()
         self.assertEquals(result2, dbsession)
 
-
     @patch('xivo_dao.helpers.db_manager.connect')
     def test_daosession_reconnects_after_connection_error(self, connect_mock):
         function_mock = Mock()
@@ -81,4 +81,3 @@ class TestDBManager(unittest.TestCase):
         function_mock.assert_called_with(new_session, 'arg1')
 
         self.assertEquals(result, function_result)
-
