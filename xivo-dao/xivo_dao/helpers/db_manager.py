@@ -62,3 +62,32 @@ def daosession(func):
             return _execute_with_session(func, *args, **kwargs)
 
     return wrapped
+
+
+def _execute_with_session_class(self_holder, func, *args, **kwargs):
+    sess = session()
+    result = func(self_holder, sess, *args, **kwargs)
+    sess.commit()
+    return result
+
+
+def daosession_class(func):
+
+    @wraps(func)
+    def wrapped(self_holder, *args, **kwargs):
+        try:
+            return _execute_with_session_class(self_holder,
+                                               func,
+                                               *args,
+                                               **kwargs)
+
+        except (OperationalError, InvalidRequestError):
+            logger.info("Trying to reconnect")
+            reconnect()
+            return _execute_with_session_class(self_holder,
+                                               func,
+                                               *args,
+                                               **kwargs)
+
+    return wrapped
+
