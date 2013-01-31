@@ -2,6 +2,7 @@
 
 import unittest
 from mock import patch, Mock, ANY
+from xivo_dao.helpers import config
 from xivo_dao.helpers import db_manager
 from sqlalchemy.exc import InvalidRequestError
 
@@ -14,8 +15,6 @@ class TestDBManager(unittest.TestCase):
     @patch('xivo_dao.helpers.db_manager.create_engine')
     @patch('xivo_dao.helpers.db_manager.sessionmaker')
     def test_connect(self, sessionmaker_mock, create_engine_mock):
-        db_manager._DB_URI = "testuri"
-
         engine_mock = Mock()
         sessionmaker_value = Mock()
         session_mock = Mock()
@@ -26,7 +25,7 @@ class TestDBManager(unittest.TestCase):
 
         result = db_manager.connect()
 
-        create_engine_mock.assert_called_once_with("testuri", echo=ANY)
+        create_engine_mock.assert_called_once_with(config.DB_URI, echo=ANY)
         sessionmaker_mock.assert_called_once_with(bind=engine_mock)
         self.assertEquals(result, session_mock)
 

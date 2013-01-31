@@ -20,6 +20,7 @@ import logging
 
 from xivo_dao.alchemy.base import Base
 from sqlalchemy.schema import MetaData
+from xivo_dao.helpers import config
 from xivo_dao.helpers import db_manager
 
 logger = logging.getLogger(__name__)
@@ -30,7 +31,7 @@ class DAOTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         logger.debug("Connecting to database")
-        db_manager._DB_URI = 'postgresql://asterisk:asterisk@localhost/asterisktest'
+        config.DB_URI = 'postgresql://asterisk:asterisk@localhost/asterisktest'
         cls.session = db_manager.session()
         cls.engine = cls.session.get_bind()
         logger.debug("Connected to database")

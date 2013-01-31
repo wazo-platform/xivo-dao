@@ -24,14 +24,12 @@ from sqlalchemy.exc import InvalidRequestError, OperationalError
 
 logger = logging.getLogger(__name__)
 
-_DB_URI = config.DB_URI
-
 dbsession = None
 
 
 def connect():
-    logger.debug('Connecting to database: %s' % _DB_URI)
-    engine = create_engine(_DB_URI, echo=config.SQL_DEBUG)
+    logger.debug('Connecting to database: %s' % config.DB_URI)
+    engine = create_engine(config.DB_URI, echo=config.SQL_DEBUG)
     Session = sessionmaker(bind=engine)
     return Session()
 
