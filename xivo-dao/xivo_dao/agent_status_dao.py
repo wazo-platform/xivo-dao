@@ -31,23 +31,24 @@ _AgentStatus = namedtuple('_AgentStatus', ['agent_id', 'agent_number', 'extensio
 _Queue = namedtuple('_Queue', ['id', 'name', 'penalty'])
 
 
-def get_status(agent_id):
-    login_status = _get_login_status_by_id(agent_id)
+@daosession
+def get_status(session, agent_id):
+    login_status = _get_login_status_by_id(session, agent_id)
     if not login_status:
         return None
 
-    return _to_agent_status(login_status, _get_queues_for_agent(agent_id))
-
-
-def get_status_by_number(agent_number):
-    login_status = _get_login_status_by_number(agent_number)
-    if not login_status:
-        return None
-
-    return _to_agent_status(login_status, _get_queues_for_agent(login_status.agent_id))
+    return _to_agent_status(login_status, _get_queues_for_agent(session, agent_id))
 
 
 @daosession
+def get_status_by_number(session, agent_number):
+    login_status = _get_login_status_by_number(session, agent_number)
+    if not login_status:
+        return None
+
+    return _to_agent_status(login_status, _get_queues_for_agent(session, login_status.agent_id))
+
+
 def _get_login_status_by_id(session, agent_id):
     login_status = (session
         .query(AgentLoginStatus)
@@ -56,7 +57,6 @@ def _get_login_status_by_id(session, agent_id):
     return login_status
 
 
-@daosession
 def _get_login_status_by_number(session, agent_number):
     login_status = (session
         .query(AgentLoginStatus)
@@ -66,7 +66,6 @@ def _get_login_status_by_number(session, agent_number):
     return login_status
 
 
-@daosession
 def _get_queues_for_agent(session, agent_id):
     query = (session
         .query(AgentMembershipStatus.queue_id.label('queue_id'),
@@ -191,7 +190,9 @@ def is_extension_in_use(session, extension, context):
     )
     return count > 0
 
-def log_in_agent(agent_id, agent_number, extension, context, interface, state_interface):
+
+@daosession
+def log_in_agent(session, agent_id, agent_number, extension, context, interface, state_interface):
     agent = AgentLoginStatus()
     agent.agent_id = agent_id
     agent.agent_number = agent_number
@@ -200,9 +201,9 @@ def log_in_agent(agent_id, agent_number, extension, context, interface, state_in
     agent.interface = interface
     agent.state_interface = state_interface
 
-    _add_agent(agent)
+    _add_agent(session, agent)
 
-@daosession
+
 def _add_agent(session, agent):
     try:
         session.add(agent)
