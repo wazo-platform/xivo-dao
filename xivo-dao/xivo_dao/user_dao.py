@@ -150,11 +150,11 @@ def find_by_line_id(session, line_id):
 
 @daosession
 def get_line_identity(session, user_id):
-    try:
-        line = (session.query(LineFeatures.protocol, LineFeatures.name)
-                         .filter(LineFeatures.iduserfeatures == user_id)).first()
-    except IndexError:
-        raise LookupError('Could not find a line for user %s', user_id)
+    line = (session
+        .query(LineFeatures.protocol, LineFeatures.name)
+        .filter(LineFeatures.iduserfeatures == user_id)
+        .first()
+    )
     if not line:
         raise LookupError('Could not find a line for user %s', user_id)
     return '%s/%s' % (line.protocol, line.name)
