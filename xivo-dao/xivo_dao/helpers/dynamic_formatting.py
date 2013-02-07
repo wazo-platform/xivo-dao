@@ -42,10 +42,10 @@ def table_list_to_list_dict(list_instance):
     list_of_dict = []
 
     for class_instance in list_instance:
-        if type(class_instance).__name__ != "Recordings":
-            my_var = class_instance.id
-        else:
-            my_var = class_instance.cid
+        for key in dir(class_instance.__class__):
+            if not key.startswith('_'):
+                getattr(class_instance, key)
+                break
         dict_instance = {}
         members = vars(class_instance)
         logger.debug("members = " + str(members))
