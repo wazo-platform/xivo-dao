@@ -38,10 +38,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from xivo_dao.alchemy.base import Base
+from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION
 from sqlalchemy.schema import Column, ForeignKeyConstraint
 from sqlalchemy.types import Integer, String
-from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION
+from xivo_dao.alchemy.base import Base
+from xivo_dao.alchemy.record_campaigns import RecordCampaigns
 from xivo_dao.alchemy.stat_call_on_queue import StatCallOnQueue
 from xivo_dao.alchemy.stat_queue_periodic import StatQueuePeriodic
 
@@ -74,3 +75,4 @@ class QueueFeatures(Base):
 
 ForeignKeyConstraint(columns=[QueueFeatures.id], refcolumns=[StatCallOnQueue.queue_id], ondelete="CASCADE")
 ForeignKeyConstraint(columns=[QueueFeatures.id], refcolumns=[StatQueuePeriodic.queue_id], ondelete="CASCADE")
+ForeignKeyConstraint(columns=[QueueFeatures.id], refcolumns=[RecordCampaigns.queue_id], ondelete="CASCADE")

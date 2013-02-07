@@ -15,9 +15,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+
 class CELException(Exception):
     pass
 
 
 class MissingCELEventException(CELException):
+    pass
+
+
+class InvalidInputException(Exception):
+    def __init__(self, value, errors_list):
+        self.value = value
+        self.errors_list = errors_list
+
+    def __str__(self):
+        return self.value + " : " + str(self.errors_list)
+
+
+class InvalidPaginatorException(Exception):
     pass
