@@ -51,7 +51,6 @@ def add_recording(session, params):
         setattr(record, k, v)
     try:
         session.add(record)
-        session.commit()
     except Exception as e:
         logger.error("SQL exception:" + e.message)
         session.rollback()
@@ -89,7 +88,6 @@ def delete(session, campaign_id, recording_id):
     else:
         filename = recording.filename
         session.delete(recording)
-        session.commit()
         return filename
 
 

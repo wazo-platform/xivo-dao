@@ -108,7 +108,7 @@ class TestRecordCampaignDao(DAOTestCase):
         result = self.session.query(RecordCampaigns).all()
         self.assertTrue(len(result) == 1)
         result = table_list_to_list_dict(result)
-        self.assertTrue(result[0] == expected_dict)
+        self.assertEquals(result[0], expected_dict)
 
     def test_update(self):
         campaign_name = "campaign-àé"

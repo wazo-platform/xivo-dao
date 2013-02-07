@@ -101,7 +101,6 @@ def update(session, campaign_id, params):
         logger.debug('attributes modified')
         _validate_campaign(campaign)
         session.add(campaign)
-        session.commit()
         logger.debug('commited')
     except Exception as e:
         session.rollback()
