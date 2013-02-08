@@ -20,7 +20,6 @@ from datetime import datetime
 from xivo_dao.helpers.cel_exception import InvalidInputException
 from xivo_dao.helpers.dynamic_formatting import table_to_string, \
     table_list_to_list_dict, str_to_datetime
-import sys
 import unittest
 
 

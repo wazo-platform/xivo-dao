@@ -16,4 +16,5 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 DB_URI = 'postgresql://asterisk:proformatique@localhost/asterisk'
+XIVO_DB_URI = 'postgresql://xivo:proformatique@localhost/xivo'
 SQL_DEBUG = False
