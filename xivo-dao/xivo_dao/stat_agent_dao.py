@@ -36,3 +36,8 @@ def insert_if_missing(session, agents):
 @daosession
 def id_from_name(session, agent_name):
     return session.query(StatAgent.id).filter(StatAgent.name == agent_name).first().id
+
+
+@daosession
+def clean_table(session):
+    session.query(StatAgent).delete()

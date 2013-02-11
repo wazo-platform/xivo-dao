@@ -30,10 +30,7 @@ class TestStatAgentDAO(DAOTestCase):
     def test_insert_if_missing(self):
         old_agents = ['Agent/%s' % (number + 1000) for number in range(5)]
         for agent_name in old_agents:
-            agent = StatAgent()
-            agent.name = agent_name
-            self.session.add(agent)
-        self.session.commit()
+            self._insert_agent(agent_name)
 
         new_agents = ['Agent/%s' % (number + 1000) for number in range(5, 10)]
 
@@ -41,17 +38,29 @@ class TestStatAgentDAO(DAOTestCase):
 
         stat_agent_dao.insert_if_missing(all_agents)
 
-        result = sorted([r.name for r in self.session.query(StatAgent.name)])
+        result = sorted(r.name for r in self.session.query(StatAgent.name))
 
         self.assertEqual(result, all_agents)
 
     def test_id_from_name(self):
-        agent = StatAgent()
-        agent.name = 'Agent/1234'
-
-        self.session.add(agent)
-        self.session.commit()
+        agent = self._insert_agent('Agent/1234')
 
         result = stat_agent_dao.id_from_name(agent.name)
 
         self.assertEqual(result, agent.id)
+
+    def test_clean_table(self):
+        self._insert_agent('Agent/123')
+
+        stat_agent_dao.clean_table()
+
+        self.assertTrue(self.session.query(StatAgent).first() is None)
+
+    def _insert_agent(self, name):
+        agent = StatAgent()
+        agent.name = name
+
+        self.session.add(agent)
+        self.session.commit()
+
+        return agent

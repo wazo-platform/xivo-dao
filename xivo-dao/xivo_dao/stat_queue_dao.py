@@ -44,3 +44,8 @@ def insert_if_missing(session, all_queues):
         new_queue = StatQueue()
         new_queue.name = queue_name
         session.add(new_queue)
+
+
+@daosession
+def clean_table(session):
+    session.query(StatQueue).delete()
