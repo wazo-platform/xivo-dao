@@ -167,15 +167,6 @@ def get_queue_names_in_range(session, start, end):
 
 
 @daosession
-def get_agents_after(session, start):
-    s = start.strftime(_STR_TIME_FMT)
-
-    return [r.agent for r in (session
-                              .query(distinct(QueueLog.agent).label('agent'))
-                              .filter(QueueLog.time >= s))]
-
-
-@daosession
 def delete_event_by_queue_between(session, event, qname, start, end):
     session.query(QueueLog).filter(
         and_(QueueLog.event == event,

@@ -15,22 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.alchemy.stat_agent import StatAgent
-from sqlalchemy import distinct
 from xivo_dao.helpers.db_manager import daosession
+from xivo_dao.alchemy.stat_agent import StatAgent
 
 
 @daosession
-def insert_if_missing(session, agents):
-    agents = set(agents)
-    old_agents = set(r.agent for r in session.query(distinct(StatAgent.name).label('agent')))
-
-    missing_agents = list(agents - old_agents)
-
-    for agent_name in missing_agents:
-        agent = StatAgent()
-        agent.name = agent_name
-        session.add(agent)
+def insert_missing_agents(session):
+    session.execute('''\
+INSERT INTO stat_agent (name)
+  SELECT 'Agent/' || number FROM agentfeatures EXCEPT SELECT name FROM stat_agent
+''')
 
 
 @daosession
