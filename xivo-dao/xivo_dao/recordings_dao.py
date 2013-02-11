@@ -20,7 +20,7 @@ from sqlalchemy.sql.expression import or_, and_
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.recordings import Recordings
 from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.helpers.query_utils import get_all_data, get_paginated_data
+from xivo_dao.helpers.query_utils import paginate
 import logging
 
 logger = logging.getLogger(__name__)
@@ -28,7 +28,7 @@ logging.basicConfig()
 
 
 @daosession
-def get_recordings_as_list(session, campaign_id, search = None, pagination = None):
+def get_recordings(session, campaign_id, search, paginator):
     search_pattern = {}
     search_pattern['campaign_id'] = campaign_id
     if search != None:
@@ -38,19 +38,13 @@ def get_recordings_as_list(session, campaign_id, search = None, pagination = Non
     logger.debug("Search search_pattern: " + str(search_pattern))
     my_query = session.query(Recordings)\
                                    .filter_by(**search_pattern)
-    if (pagination == None):
-        return get_all_data(session, my_query)
-    else:
-        return get_paginated_data(session, my_query, pagination)
+    return paginate(my_query, paginator)
 
 
 @daosession
-def add_recording(session, params):
-    record = Recordings()
-    for k, v in params.items():
-        setattr(record, k, v)
+def add_recording(session, recording):
     try:
-        session.add(record)
+        session.add(recording)
     except Exception as e:
         logger.error("SQL exception:" + e.message)
         session.rollback()
@@ -59,20 +53,17 @@ def add_recording(session, params):
 
 
 @daosession
-def search_recordings(session, campaign_id, key, pagination = None):
+def search_recordings(session, campaign_id, key, paginator):
     logger.debug("campaign id = " + str(campaign_id)\
                   + ", key = " + str(key))
     #jointure interne:
     #Recordings r inner join AgentFeatures a on r.agent_id = a.id
     my_query = session.query(Recordings)\
-                    .join((AgentFeatures, Recordings.agent_id == AgentFeatures.id))\
-                    .filter(and_(Recordings.campaign_id == campaign_id, \
-                                 or_(Recordings.caller == key,
-                                     AgentFeatures.number == key)))
-    if (pagination == None):
-        return get_all_data(session, my_query)
-    else:
-        return get_paginated_data(session, my_query, pagination)
+                .join((AgentFeatures, Recordings.agent_id == AgentFeatures.id))\
+                .filter(and_(Recordings.campaign_id == campaign_id, \
+                             or_(Recordings.caller == key,
+                                 AgentFeatures.number == key)))
+    return paginate(my_query, paginator)
 
 
 @daosession

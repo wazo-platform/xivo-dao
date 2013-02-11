@@ -38,33 +38,6 @@ def table_to_string(class_instance):
     return result.rstrip(',')
 
 
-def table_list_to_list_dict(list_instance):
-    list_of_dict = []
-
-    for class_instance in list_instance:
-        for key in dir(class_instance.__class__):
-            if not key.startswith('_'):
-                getattr(class_instance, key)
-                break
-        dict_instance = {}
-        members = vars(class_instance)
-        logger.debug("members = " + str(members))
-        for elem in sorted(set(members)):
-            logger.debug("Entering for: " + str(elem))
-            if not elem.startswith('_'):
-                value = getattr(class_instance, elem)
-                #pour éviter d'avoir None au lieu de '' dans le résultat
-                if value == None:
-                    value = ''
-                if type(value).__name__ != 'unicode':
-                    value = str(value)
-                else:
-                    value = value.encode('utf-8', 'ignore')
-                dict_instance[str(elem)] = value
-        list_of_dict.append(dict_instance)
-    return list_of_dict
-
-
 def str_to_datetime(string):
     if(type(string) != str and type(string) != unicode):
         raise InvalidInputException("Invalid data provided",

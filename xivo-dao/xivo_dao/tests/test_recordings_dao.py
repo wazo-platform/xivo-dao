@@ -22,7 +22,6 @@ from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.record_campaigns import RecordCampaigns
 from xivo_dao.alchemy.recordings import Recordings
-from xivo_dao.helpers.dynamic_formatting import table_list_to_list_dict
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.tests.test_preriquisites import recording_preriquisites
 import copy
@@ -35,6 +34,72 @@ class TestRecordingDao(DAOTestCase):
     def setUp(self):
         self.empty_tables()
         recording_preriquisites(self.session)
+        self._insert_campaign()
+        self._create_sample_recording()
+
+    def test_get_recordings(self):
+        my_recording1 = copy.deepcopy(self.sample_recording)
+        my_recording2 = copy.deepcopy(self.sample_recording)
+        my_recording2.cid = '002'
+        my_recording2.caller = '3003'
+        self.session.add(my_recording1)
+        self.session.add(my_recording2)
+        print "1: ", my_recording1
+        print "2: ", my_recording2
+        print "default: ", self.sample_recording
+        self.session.commit()
+
+        search = {'caller': '2002'}
+        paginator = (1, 1)
+        (total, items) = recordings_dao\
+                     .get_recordings(self.campaign.id, search, paginator)
+        self.assertEqual(total, 1)
+        self.assertEquals(items, [my_recording1])
+
+    def test_add_recording(self):
+        my_recording = copy.deepcopy(self.sample_recording)
+        recordings_dao.add_recording(my_recording)
+        result = self.session.query(Recordings).all()
+        self.assertEqual([my_recording], result)
+
+    def test_search_recordings(self):
+        my_recording1 = copy.deepcopy(self.sample_recording)
+        my_recording2 = copy.deepcopy(self.sample_recording)
+        my_recording2.cid = '002'
+        my_recording2.caller = '3003'
+        self.session.add(my_recording1)
+        self.session.add(my_recording2)
+        self.session.commit()
+
+        key = '3003'
+        paginator = (1, 2)
+        (total, items) = recordings_dao\
+                     .search_recordings(self.campaign.id, key, paginator)
+        self.assertEqual(total, 1)
+        self.assertEquals([my_recording2], items)
+
+        key = '1000'
+        (total, items) = recordings_dao\
+                     .search_recordings(self.campaign.id, key, paginator)
+        self.assertEquals(total, 2)
+        self.assertEquals(items, [my_recording1, my_recording2])
+
+    def test_delete(self):
+        result = recordings_dao.delete(1, '001')
+        self.assertEquals(result, None)
+        my_recording = copy.deepcopy(self.sample_recording)
+        self.session.add(my_recording)
+        self.session.commit()
+
+        data = self.session.query(Recordings).all()
+        self.assertEqual([my_recording], data)
+        result = recordings_dao.delete(self.campaign.id,
+                                                  my_recording.cid)
+        data = self.session.query(Recordings).all()
+        self.assertEquals(data, [])
+        self.assertEquals(result, my_recording.filename)
+
+    def _insert_campaign(self):
         self.campaign = RecordCampaigns()
         self.campaign.campaign_name = 'name'
         self.campaign.base_filename = 'file-'
@@ -47,89 +112,16 @@ class TestRecordingDao(DAOTestCase):
         self.session.add(self.campaign)
         self.session.commit()
 
-        self.default_dict_data = {'cid': '001',
-                                  'caller': '2002',
-                                  'callee': '',
-                                  'agent_id': '1',
-                                  'filename': 'file.wav',
-                                  'start_time': '2012-01-01 00:00:00',
-                                  'end_time': '2012-01-01 00:10:00',
-                                  'campaign_id': str(self.campaign.id),
-                                  'client_id': ''
-                                  }
-
-    def test_get_recordings_as_list(self):
-        dict_data1 = copy.deepcopy(self.default_dict_data)
-        dict_data2 = copy.deepcopy(dict_data1)
-        dict_data2['cid'] = '002'
-        dict_data2['caller'] = '3003'
-        my_recording1 = Recordings()
-        my_recording2 = Recordings()
-        for k, v in dict_data1.items():
-            setattr(my_recording1, k, v)
-        for k, v in dict_data2.items():
-            setattr(my_recording2, k, v)
-        self.session.add(my_recording1)
-        self.session.add(my_recording2)
-        self.session.commit()
-
-        search = {'caller': '2002'}
-        result = recordings_dao\
-                     .get_recordings_as_list(self.campaign.id, search)
-        self.assertTrue(result['total'] == 1)
-        self.assertEquals(dict_data1, result['data'][0])
-
-    def test_add_recording(self):
-        dict_data1 = copy.deepcopy(self.default_dict_data)
-        recordings_dao.add_recording(dict_data1)
-        result = self.session.query(Recordings).all()
-        result = table_list_to_list_dict(result)
-        self.assertTrue(len(result) == 1)
-        self.assertEqual(dict_data1, result[0])
-
-    def test_search_recordings(self):
-        dict_data1 = copy.deepcopy(self.default_dict_data)
-        dict_data2 = copy.deepcopy(dict_data1)
-        dict_data2['cid'] = '002'
-        dict_data2['caller'] = '3003'
-        my_recording1 = Recordings()
-        my_recording2 = Recordings()
-        for k, v in dict_data1.items():
-            setattr(my_recording1, k, v)
-        for k, v in dict_data2.items():
-            setattr(my_recording2, k, v)
-        self.session.add(my_recording1)
-        self.session.add(my_recording2)
-        self.session.commit()
-
-        key = '3003'
-        result = recordings_dao\
-                     .search_recordings(self.campaign.id, key)
-        self.assertTrue(result['total'] == 1)
-        self.assertEquals(dict_data2, result['data'][0])
-
-        key = '1000'
-        result = recordings_dao\
-                     .search_recordings(self.campaign.id, key)
-        self.assertTrue(result['total'] == 2)
-        self.assertEquals(dict_data1, result['data'][0])
-        self.assertEquals(dict_data2, result['data'][1])
-
-    def test_delete(self):
-        result = recordings_dao.delete(1, '001')
-        assert result == None
-        dict_data1 = copy.deepcopy(self.default_dict_data)
-        my_recording1 = Recordings()
-        for k, v in dict_data1.items():
-            setattr(my_recording1, k, v)
-        self.session.add(my_recording1)
-        self.session.commit()
-        data = self.session.query(Recordings).all()
-        self.assertTrue(len(data) == 1)
-        data = table_list_to_list_dict(data)
-        self.assertEqual(dict_data1, data[0])
-        result = recordings_dao.delete(self.campaign.id,
-                                                  my_recording1.cid)
-        data = self.session.query(Recordings).all()
-        self.assertTrue(len(data) == 0)
-        self.assertTrue(result == my_recording1.filename)
+    def _create_sample_recording(self):
+        self.sample_recording = Recordings()
+        self.sample_recording.cid = '001'
+        self.sample_recording.caller = '2002'
+        self.sample_recording.callee = ''
+        self.sample_recording.agent_id = 1
+        self.sample_recording.filename = 'file.wav'
+        self.sample_recording.start_time = datetime.strptime('2012-01-01 00:00:00',
+                                                      "%Y-%m-%d %H:%M:%S")
+        self.sample_recording.end_time = datetime.strptime('2012-01-01 00:10:00',
+                                                      "%Y-%m-%d %H:%M:%S")
+        self.sample_recording.campaign_id = self.campaign.id
+        self.sample_recording.client_id = ''

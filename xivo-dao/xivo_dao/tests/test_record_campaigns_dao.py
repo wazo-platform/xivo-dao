@@ -23,8 +23,6 @@ from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.record_campaigns import RecordCampaigns
 from xivo_dao.alchemy.recordings import Recordings
-from xivo_dao.helpers.cel_exception import InvalidInputException
-from xivo_dao.helpers.dynamic_formatting import table_list_to_list_dict
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.tests.test_preriquisites import recording_preriquisites
 import copy
@@ -37,208 +35,71 @@ class TestRecordCampaignDao(DAOTestCase):
     def setUp(self):
         self.empty_tables()
         recording_preriquisites(self.session)
+        self._create_sample_campaign()
 
     def test_get_records(self):
-        campaign_name = "campaign-àé"
-        queue_id = "1"
-        base_filename = campaign_name + "-"
-
-        expected_dict = {
-            "campaign_name": campaign_name,
-            "activated": "False",
-            "base_filename": base_filename,
-            "queue_id": queue_id,
-            "start_date": '2012-01-01 12:12:12',
-            "end_date": '2012-12-12 12:12:12',
-        }
-
-        obj = RecordCampaigns()
-        for k, v in expected_dict.items():
-            setattr(obj, k, v)
-
-        self.session.add(obj)
+        campaign = copy.deepcopy(self.sample_campaign)
+        self.session.add(campaign)
         self.session.commit()
-        expected_dict['id'] = str(obj.id)
-        records = record_campaigns_dao.get_records()['data']
-        self.assertTrue(expected_dict == records[0])
+
+        paginator = (1, 1)
+        (total, items) = record_campaigns_dao.get_records(
+                                                None,
+                                                False,
+                                                paginator)
+        self.assertEquals([campaign], items)
+        self.assertEqual(total, 1)
 
     def test_id_from_name(self):
-        campaign_name = "campaign-àé"
-        queue_id = "1"
-        base_filename = campaign_name + "-"
-
-        expected_dict = {
-            "campaign_name": campaign_name,
-            "activated": "False",
-            "base_filename": base_filename,
-            "queue_id": queue_id,
-            "start_date": '2012-01-01 12:12:12',
-            "end_date": '2012-12-12 12:12:12',
-        }
-
-        obj = RecordCampaigns()
-        for k, v in expected_dict.items():
-            setattr(obj, k, v)
-
-        self.session.add(obj)
+        campaign = copy.deepcopy(self.sample_campaign)
+        self.session.add(campaign)
         self.session.commit()
         retrieved_id = record_campaigns_dao\
-                .id_from_name(expected_dict['campaign_name'])
-        self.assertTrue(retrieved_id == obj.id)
-
+                .id_from_name(campaign.campaign_name)
+        self.assertEquals(retrieved_id, campaign.id)
         self.assertEqual(None, record_campaigns_dao.id_from_name('test'))
 
     def test_add(self):
-        campaign_name = "campaign-àé"
-        queue_id = "1"
-        base_filename = campaign_name + "-"
-
-        expected_dict = {
-            "campaign_name": campaign_name,
-            "activated": "False",
-            "base_filename": base_filename,
-            "queue_id": queue_id,
-            "start_date": '2012-01-01 12:12:12',
-            "end_date": '2012-12-12 12:12:12',
-        }
-
-        gen_id = record_campaigns_dao.add(expected_dict)
-
-        expected_dict['id'] = str(gen_id)
+        campaign = copy.deepcopy(self.sample_campaign)
+        gen_id = record_campaigns_dao.add_or_update(campaign)
+        self.assertTrue(gen_id > 0)
         result = self.session.query(RecordCampaigns).all()
-        self.assertTrue(len(result) == 1)
-        result = table_list_to_list_dict(result)
-        self.assertEquals(result[0], expected_dict)
+        self.assertEqual([campaign], result)
 
     def test_update(self):
-        campaign_name = "campaign-àé"
-        queue_id = "1"
-        base_filename = campaign_name + "-"
-
-        inserted_dict = {
-            "campaign_name": campaign_name,
-            "activated": "False",
-            "base_filename": base_filename,
-            "queue_id": queue_id,
-            "start_date": '2012-01-01 12:12:12',
-            "end_date": '2012-12-12 12:12:12',
-        }
-
-        obj = RecordCampaigns()
-        for k, v in inserted_dict.items():
-            setattr(obj, k, v)
-
-        self.session.add(obj)
+        campaign = copy.deepcopy(self.sample_campaign)
+        self.session.add(campaign)
         self.session.commit()
-        queue_id2 = '2'
+        new_name = campaign.campaign_name + "1"
+        new_queue_id = 2
+        campaign.campaign_name = new_name
+        campaign.queue_id = new_queue_id
+        record_campaigns_dao.add_or_update(campaign)
 
-        updated_dict = {
-            "campaign_name": campaign_name + str(1),
-            "activated": "True",
-            "base_filename": base_filename + str(1),
-            "queue_id": queue_id2,
-            "start_date": '2012-01-01 12:12:13',
-            "end_date": '2012-12-12 12:12:13',
-        }
-        record_campaigns_dao.update(obj.id, updated_dict)
-        updated_dict['id'] = str(obj.id)
         result = self.session.query(RecordCampaigns).all()
-        self.assertTrue(len(result) == 1)
-        result = table_list_to_list_dict(result)
-        self.assertTrue(result[0] == updated_dict)
-
-    def test_validate_campaign(self):
-        campaign = RecordCampaigns()
-        campaign.campaign_name = None
-        campaign.start_date = datetime.strptime('2012-12-31',
-                                                "%Y-%m-%d")
-        campaign.end_date = datetime.strptime('2012-01-31',
-                                              "%Y-%m-%d")
-        gotException = False
-        try:
-            record_campaigns_dao._validate_campaign(campaign)
-        except InvalidInputException as e:
-            self.assertTrue('empty_name' in e.errors_list)
-            self.assertTrue('start_greater_than_end' in e.errors_list)
-            gotException = True
-        self.assertTrue(gotException)
-
-        #we check that overlapping campaigns are rejected
-        campaign1 = RecordCampaigns()
-        campaign1.campaign_name = 'name1'
-        campaign1.start_date = datetime.strptime('2012-01-31',
-                                              "%Y-%m-%d")
-        campaign1.end_date = datetime.strptime('2012-12-31',
-                                                "%Y-%m-%d")
-        campaign1.base_filename = 'file-'
-        campaign1.activated = True
-        campaign1.queue_id = 1
-        campaign2 = copy.deepcopy(campaign1)
-        self.session.add(campaign1)
-        self.session.commit()
-        campaign2.start_date = datetime.strptime('2012-02-28',
-                                              "%Y-%m-%d")
-        campaign2.end_date = datetime.strptime('2013-01-31',
-                                                "%Y-%m-%d")
-        gotException = False
-        try:
-            record_campaigns_dao._validate_campaign(campaign2)
-        except InvalidInputException as e:
-            self.assertTrue('concurrent_campaigns' in e.errors_list)
-            gotException = True
-        self.assertTrue(gotException)
+        self.assertEquals(len(result), 1)
+        updated_campaign = result[0]
+        self.assertEqual(updated_campaign.campaign_name,
+                         new_name)
+        self.assertEqual(updated_campaign.queue_id,
+                         new_queue_id)
 
     def test_get(self):
-        campaign_name = "campaign-àé"
-        queue_id = "1"
-        base_filename = campaign_name + "-"
-
-        obj = RecordCampaigns()
-
-        obj.campaign_name = campaign_name
-        obj.activated = False
-        obj.base_filename = base_filename,
-        obj.queue_id = queue_id,
-        obj.start_date = '2012-01-01 12:12:12',
-        obj.end_date = '2012-12-12 12:12:12',
-
-        self.session.add(obj)
+        campaign = copy.deepcopy(self.sample_campaign)
+        self.session.add(campaign)
         self.session.commit()
-        returned_obj = record_campaigns_dao.get(obj.id)
-        self.assertEqual(returned_obj, obj)
+        returned_obj = record_campaigns_dao.get(campaign.id)
+        self.assertEqual(returned_obj, campaign)
 
     def test_delete(self):
-        campaign_name = "campaign-àé"
-        queue_id = "1"
-        base_filename = campaign_name + "-"
-
-        obj = RecordCampaigns()
-
-        obj.campaign_name = campaign_name
-        obj.activated = False
-        obj.base_filename = base_filename
-        obj.queue_id = queue_id
-        obj.start_date = '2012-01-01 12:12:12'
-        obj.end_date = '2012-12-12 12:12:12'
-
-        self.session.add(obj)
+        campaign = copy.deepcopy(self.sample_campaign)
+        self.session.add(campaign)
         self.session.commit()
-        record_campaigns_dao.delete(obj)
-        self.assertEqual(None, record_campaigns_dao.get(obj.id))
+        record_campaigns_dao.delete(campaign)
+        self.assertEqual(None, record_campaigns_dao.get(campaign.id))
 
     def test_delete_integrity_error(self):
-        campaign_name = "campaign-àé"
-        queue_id = "1"
-        base_filename = campaign_name + "-"
-
-        campaign = RecordCampaigns()
-
-        campaign.campaign_name = campaign_name
-        campaign.activated = False
-        campaign.base_filename = base_filename
-        campaign.queue_id = queue_id
-        campaign.start_date = '2012-01-01 12:12:12'
-        campaign.end_date = '2012-12-12 12:12:12'
+        campaign = copy.deepcopy(self.sample_campaign)
         self.session.add(campaign)
         self.session.commit()
 
@@ -251,4 +112,26 @@ class TestRecordCampaignDao(DAOTestCase):
         self.session.add(recording)
         self.session.commit()
 
-        self.assertRaises(IntegrityError, record_campaigns_dao.delete, campaign)
+        self.assertRaises(IntegrityError,
+                          record_campaigns_dao.delete,
+                          campaign)
+
+    def test_eager_loading(self):
+        campaign = copy.deepcopy(self.sample_campaign)
+        self.session.add(campaign)
+        self.session.commit()
+        my_id = campaign.id
+        self.session.expunge_all()
+        returned_obj = record_campaigns_dao.get(my_id)
+        self.assertTrue('id' in returned_obj.__dict__.keys())
+
+    def _create_sample_campaign(self):
+        self.sample_campaign = RecordCampaigns()
+        self.sample_campaign.activated = True
+        self.sample_campaign.campaign_name = "campaign-àé"
+        self.sample_campaign.queue_id = 1
+        self.sample_campaign.base_filename = self.sample_campaign.campaign_name + "-"
+        self.sample_campaign.start_date = datetime.strptime('2012-01-01 12:12:12',
+                                                            "%Y-%m-%d %H:%M:%S")
+        self.sample_campaign.end_date = datetime.strptime('2012-12-12 12:12:12',
+                                                            "%Y-%m-%d %H:%M:%S")

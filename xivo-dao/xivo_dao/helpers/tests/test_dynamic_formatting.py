@@ -19,7 +19,7 @@
 from datetime import datetime
 from xivo_dao.helpers.cel_exception import InvalidInputException
 from xivo_dao.helpers.dynamic_formatting import table_to_string, \
-    table_list_to_list_dict, str_to_datetime
+    str_to_datetime
 import unittest
 
 
@@ -42,17 +42,6 @@ class TestDynamicFormatting(unittest.TestCase):
         assert expected_result == actual_result, \
                 "Instance not properly formatted: " + actual_result + \
                     ", expected: " + expected_result
-
-    def test_table_list_to_list_dict(self):
-        table_list = [SampleClass("un", None, "trois", 4, None),
-                      SampleClass("deux", "trois", None, 5, None)]
-        expected_list_dict = [{"bar":"4", "foo":"trois", "id":"1", "other":""},
-                              {"bar":"5", "foo":"", "id": "1", "other":""}]
-
-        actual_result = table_list_to_list_dict(table_list)
-        assert expected_list_dict == actual_result, "Incorrect dictionary: " + \
-                     str(actual_result) + ", expected: " + \
-                     str(expected_list_dict)
 
     def test_str_to_datetime(self):
         strDate = "2012-01-01"
