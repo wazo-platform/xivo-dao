@@ -218,58 +218,8 @@ ORDER BY agent, logout_timestamp
     return results
 
 
-def _get_last_logouts(session):
-    last_agent_logout_query = '''\
-select
-  stat_agent.id AS agent,
-  (
-   SELECT CAST(MAX(time) AS TIMESTAMP) as last_logout
-   FROM queue_log
-   WHERE queue_log.agent = stat_agent.name AND event LIKE 'AGENT%LOGOFF'
-  ) AS logout
-from stat_agent
-'''
-
-    rows = session.query(
-        'agent',
-        'logout',
-    ).from_statement(last_agent_logout_query)
-
-    agents_last_logouts = {}
-
-    for row in rows.all():
-        agents_last_logouts[row.agent] = row.logout
-
-    return agents_last_logouts
-
-
-def _get_last_logins(session):
-    last_agent_logout_query = '''\
-SELECT
-  stat_agent.id AS agent,
-  CAST(MAX(time) AS TIMESTAMP) as login
-FROM queue_log, stat_agent
-WHERE agent = stat_agent.name AND
-  event LIKE 'AGENT%LOGIN'
-GROUP BY stat_agent.id
-'''
-
-    rows = session.query(
-        'agent',
-        'login',
-    ).from_statement(last_agent_logout_query)
-
-    agents_last_logins = {}
-
-    for row in rows.all():
-        agents_last_logins[row.agent] = row.login
-
-    return agents_last_logins
-
-
 def _get_ongoing_logins(session, start, end):
-    last_logins = _get_last_logins(session)
-    last_logouts = _get_last_logouts(session)
+    last_logins, last_logouts = _get_last_logins_and_logouts(session)
 
     def filter_ended_logins(logins, logouts):
         filtered_logins = {}
@@ -289,3 +239,35 @@ def _get_ongoing_logins(session, start, end):
         results[agent].append((login, end))
 
     return results
+
+
+def _get_last_logins_and_logouts(session):
+    query = '''\
+SELECT
+  stat_agent.id AS agent,
+  CAST(MAX(case when event like '%LOGIN' then time end) AS TIMESTAMP) AS login,
+  CAST(MAX(case when event like '%LOGOFF' then time end) AS TIMESTAMP) AS logout
+FROM
+  stat_agent
+JOIN
+  queue_log ON queue_log.agent = stat_agent.name
+WHERE
+  event LIKE 'AGENT%'
+GROUP BY
+  stat_agent.id
+'''
+    rows = session.query(
+        'agent',
+        'login',
+        'logout',
+    ).from_statement(query)
+
+    agent_last_logins = {}
+    agent_last_logouts = {}
+
+    for row in rows:
+        agent = row.agent
+        agent_last_logins[agent] = row.login
+        agent_last_logouts[agent] = row.logout
+
+    return agent_last_logins, agent_last_logouts

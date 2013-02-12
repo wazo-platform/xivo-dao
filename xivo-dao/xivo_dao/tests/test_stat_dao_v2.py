@@ -90,13 +90,11 @@ class TestStatDAO(DAOTestCase):
 
         self._insert_queue_log_data(queue_log_data)
 
-        session = db_manager.session()
-        result = stat_dao._get_last_logouts(session)
+        _, result = stat_dao._get_last_logins_and_logouts(self.session)
 
         expected = {
             agent_id_1: dt(2012, 6, 1, 6, 45),
             agent_id_2: dt(2012, 6, 1, 6, 30, 0, 1),
-            agent_id_3: None,
         }
 
         self.assertEqual(result, expected)
@@ -124,8 +122,7 @@ class TestStatDAO(DAOTestCase):
 
         self._insert_queue_log_data(queue_log_data)
 
-        session = db_manager.session()
-        result = stat_dao._get_last_logins(session)
+        result, _ = stat_dao._get_last_logins_and_logouts(self.session)
 
         expected = {
             agent_id_1: dt(2012, 6, 1, 6, 40),
@@ -160,8 +157,7 @@ class TestStatDAO(DAOTestCase):
 
         self._insert_queue_log_data(queue_log_data)
 
-        session = db_manager.session()
-        result = stat_dao._get_ongoing_logins(session, start, end)
+        result = stat_dao._get_ongoing_logins(self.session, start, end)
 
         expected = {
             agent_id_2: [
