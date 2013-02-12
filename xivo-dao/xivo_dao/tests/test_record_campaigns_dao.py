@@ -116,15 +116,6 @@ class TestRecordCampaignDao(DAOTestCase):
                           record_campaigns_dao.delete,
                           campaign)
 
-    def test_eager_loading(self):
-        campaign = copy.deepcopy(self.sample_campaign)
-        self.session.add(campaign)
-        self.session.commit()
-        my_id = campaign.id
-        self.session.expunge_all()
-        returned_obj = record_campaigns_dao.get(my_id)
-        self.assertTrue('id' in returned_obj.__dict__.keys())
-
     def _create_sample_campaign(self):
         self.sample_campaign = RecordCampaigns()
         self.sample_campaign.activated = True
