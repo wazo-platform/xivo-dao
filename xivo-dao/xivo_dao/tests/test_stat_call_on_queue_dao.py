@@ -86,21 +86,6 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         self.assertEqual(res[0].callid, 'callid')
         self.assertEqual(res[0].time, timestamp)
 
-    def test_add_answered_call(self):
-        timestamp = datetime.datetime(2012, 01, 02, 00, 00, 00)
-        queue_name, _ = self._insert_queue_to_stat_queue()
-        agent_name, agent_id = self._insert_agent_to_stat_agent()
-
-        stat_call_on_queue_dao.add_answered_call('callid', timestamp, queue_name, agent_name, 13, 22)
-
-        res = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid == 'callid').first()
-
-        self.assertEqual(res.callid, 'callid')
-        self.assertEqual(res.waittime, 13)
-        self.assertEqual(res.talktime, 22)
-        self.assertEqual(res.agent_id, agent_id)
-        self.assertEqual(res.time, timestamp)
-
     def test_add_abandoned_call(self):
         timestamp = datetime.datetime(2012, 01, 02, 00, 00, 00)
         queue_name, _ = self._insert_queue_to_stat_queue()

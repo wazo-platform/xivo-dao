@@ -16,26 +16,21 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.alchemy.stat_call_on_queue import StatCallOnQueue
-from xivo_dao import stat_queue_dao, stat_agent_dao
+from xivo_dao import stat_queue_dao
 from sqlalchemy import func, between, literal
 from xivo_dao.helpers.db_manager import daosession
 
 
 @daosession
-def _add_call(session, callid, time, queue_name, event, waittime=None, agent=None, talktime=None):
+def _add_call(session, callid, time, queue_name, event, waittime=None):
     queue_id = int(stat_queue_dao.id_from_name(queue_name))
     call_on_queue = StatCallOnQueue()
     call_on_queue.time = time
     call_on_queue.callid = callid
     call_on_queue.queue_id = queue_id
     call_on_queue.status = event
-    if agent:
-        agent_id = stat_agent_dao.id_from_name(agent)
-        call_on_queue.agent_id = agent_id
     if waittime:
         call_on_queue.waittime = waittime
-    if talktime:
-        call_on_queue.talktime = talktime
 
     session.add(call_on_queue)
     session.commit()
@@ -43,10 +38,6 @@ def _add_call(session, callid, time, queue_name, event, waittime=None, agent=Non
 
 def add_abandoned_call(callid, time, queue_name, waittime):
     _add_call(callid, time, queue_name, 'abandoned', waittime)
-
-
-def add_answered_call(callid, time, queue_name, agent, waittime, talktime):
-    _add_call(callid, time, queue_name, 'answered', waittime, agent, talktime)
 
 
 def add_full_call(callid, time, queue_name):
