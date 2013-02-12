@@ -224,7 +224,11 @@ def _get_ongoing_logins(session, start, end):
     def filter_ended_logins(logins, logouts):
         filtered_logins = {}
         for agent, login in logins.iteritems():
-            if not logouts[agent] or logouts[agent] < login:
+            if not login:
+                continue
+
+            logout = logouts[agent]
+            if not logout or logout < login:
                 filtered_logins[agent] = login if login > start else start
 
         return filtered_logins

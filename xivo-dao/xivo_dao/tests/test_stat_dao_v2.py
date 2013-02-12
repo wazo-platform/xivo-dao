@@ -136,6 +136,7 @@ class TestStatDAO(DAOTestCase):
         _, agent_id_1 = self._insert_agent('Agent/1')
         _, agent_id_2 = self._insert_agent('Agent/2')
         _, agent_id_3 = self._insert_agent('Agent/3')
+        _, agent_id_4 = self._insert_agent('Agent/4')
         start = dt(2012, 6, 1)
         end = dt(2012, 6, 1, 23, 59, 59, 999999)
 
@@ -152,6 +153,7 @@ class TestStatDAO(DAOTestCase):
 | 2012-06-01 06:40:00.000000 | login_3    | NONE      | Agent/1 | AGENTLOGIN          | SIP/abc-1234 |       |               |       |       |
 | 2012-06-01 06:45:00.000000 | login_3    | NONE      | Agent/1 | AGENTCALLBACKLOGOFF | SIP/abc-1234 |   300 | CommandLogoff |       |       |
 | 2012-06-01 09:00:00.000000 | agent_4    | NONE      | Agent/2 | AGENTCALLBACKLOGIN  | 1002@default |       |               |       |       |
+| 2012-06-01 10:00:00.000000 | agent_5    | NONE      | Agent/4 | AGENTCALLBACKLOGOFF | 1004@default |   300 |               |       |       |
 | 2012-01-01 10:00:00.000000 | agent_3    | NONE      | Agent/3 | AGENTCALLBACKLOGIN  | 1003@default |       |               |       |       |
 '''
 
