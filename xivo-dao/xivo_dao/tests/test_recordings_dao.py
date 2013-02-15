@@ -99,6 +99,57 @@ class TestRecordingDao(DAOTestCase):
         self.assertEquals(data, [])
         self.assertEquals(result, my_recording.filename)
 
+    def test_delete_all(self):
+        recording1 = copy.deepcopy(self.sample_recording)
+        recording2 = copy.deepcopy(self.sample_recording)
+        recording2.cid = '002'
+        self.session.add_all([recording1, recording2])
+        self.session.commit()
+
+        recordings_dao.delete_all()
+        data = self.session.query(Recordings).all()
+        self.assertEqual([], data)
+
+    def test_get_all(self):
+        recording1 = copy.deepcopy(self.sample_recording)
+        recording2 = copy.deepcopy(self.sample_recording)
+        recording2.cid = '002'
+        self.session.add_all([recording1, recording2])
+        self.session.commit()
+
+        data = recordings_dao.get_all()
+        self.assertEqual(data, [recording1, recording2])
+
+    def test_delete_by_campaign_name(self):
+        recording1 = copy.deepcopy(self.sample_recording)
+        recording2 = copy.deepcopy(self.sample_recording)
+        recording2.cid = '002'
+        self.session.add_all([recording1, recording2])
+        self.session.commit()
+
+        campaign2 = RecordCampaigns()
+        campaign2.activated = True
+        campaign2.base_filename = 'file'
+        campaign2.campaign_name = 'name2'
+        campaign2.start_date = datetime.strptime('2012-01-31',
+                                              "%Y-%m-%d")
+        campaign2.end_date = datetime.strptime('2012-01-31',
+                                              "%Y-%m-%d")
+        campaign2.queue_id = 1
+        self.session.add(campaign2)
+        self.session.commit()
+        recording3 = copy.deepcopy(self.sample_recording)
+        recording3.cid = '003'
+        recording3.campaign_id = campaign2.id
+        self.session.add(recording3)
+        self.session.commit()
+
+        recordings_dao.delete_by_campaign_name(self.campaign.campaign_name)
+        empty_data = recordings_dao.get_recordings(self.campaign.id, {}, (0, 0))
+        self.assertEqual(empty_data, (0, []))
+        full_data = recordings_dao.get_recordings(campaign2.id, {}, (0, 0))
+        self.assertEqual(full_data, (1, [recording3]))
+
     def _insert_campaign(self):
         self.campaign = RecordCampaigns()
         self.campaign.campaign_name = 'name'
@@ -125,3 +176,4 @@ class TestRecordingDao(DAOTestCase):
                                                       "%Y-%m-%d %H:%M:%S")
         self.sample_recording.campaign_id = self.campaign.id
         self.sample_recording.client_id = ''
+

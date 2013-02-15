@@ -83,3 +83,15 @@ def delete(session, campaign):
     except Exception as e:
         session.rollback()
         raise e
+
+
+@daosession
+def delete_all(session):
+    try:
+        session.query(RecordCampaigns).delete()
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        raise e
+
+

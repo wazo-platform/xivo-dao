@@ -116,6 +116,37 @@ class TestRecordCampaignDao(DAOTestCase):
                           record_campaigns_dao.delete,
                           campaign)
 
+    def test_delete_all(self):
+        campaign1 = copy.deepcopy(self.sample_campaign)
+        campaign2 = copy.deepcopy(self.sample_campaign)
+        self.session.add_all([campaign1, campaign2])
+        self.session.commit()
+        id1, id2 = campaign1.id, campaign2.id
+        record_campaigns_dao.delete_all()
+        self.assertEqual(None, record_campaigns_dao.get(id1))
+        self.assertEqual(None, record_campaigns_dao.get(id2))
+
+    def test_delete_all_integrity_error(self):
+        campaign1 = copy.deepcopy(self.sample_campaign)
+        campaign2 = copy.deepcopy(self.sample_campaign)
+        self.session.add_all([campaign1, campaign2])
+        self.session.commit()
+        id1, id2 = campaign1.id, campaign2.id
+
+        recording = Recordings()
+        recording.campaign_id = campaign1.id
+        recording.filename = 'file'
+        recording.cid = '123'
+        recording.agent_id = 1
+        recording.caller = '2002'
+        self.session.add(recording)
+        self.session.commit()
+
+        self.assertRaises(IntegrityError, record_campaigns_dao.delete_all)
+        self.assertNotEqual(None, record_campaigns_dao.get(id1))
+        self.assertNotEqual(None, record_campaigns_dao.get(id2))
+
+
     def _create_sample_campaign(self):
         self.sample_campaign = RecordCampaigns()
         self.sample_campaign.activated = True

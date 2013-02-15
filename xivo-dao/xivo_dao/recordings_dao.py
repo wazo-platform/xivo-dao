@@ -17,6 +17,7 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 from sqlalchemy.sql.expression import or_, and_
+from xivo_dao import record_campaigns_dao
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.recordings import Recordings
 from xivo_dao.helpers.db_manager import daosession
@@ -29,15 +30,10 @@ logging.basicConfig()
 
 @daosession
 def get_recordings(session, campaign_id, search, paginator):
-    search_pattern = {}
-    search_pattern['campaign_id'] = campaign_id
-    if search != None:
-        for item in search:
-                search_pattern[item] = search[item]
-
-    logger.debug("Search search_pattern: " + str(search_pattern))
+    search['campaign_id'] = campaign_id
+    logger.debug("Search search_pattern: " + str(search))
     my_query = session.query(Recordings)\
-                                   .filter_by(**search_pattern)
+                                   .filter_by(**search)
     return paginate(my_query, paginator)
 
 
@@ -86,3 +82,27 @@ def delete(session, campaign_id, recording_id):
 def count_recordings(session, campaign_id):
     return session.query(Recordings)\
         .filter(Recordings.campaign_id == campaign_id).count()
+
+
+@daosession
+def delete_all(session):
+    try:
+        session.query(Recordings).delete()
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        raise e
+
+
+@daosession
+def get_all(session):
+    return session.query(Recordings).all()
+
+
+@daosession
+def delete_by_campaign_name(session, campaign_name):
+    campaign_id = record_campaigns_dao.id_from_name(campaign_name)
+    session.query(Recordings).filter_by(campaign_id=int(campaign_id)).delete()
+    session.commit()
+
+
