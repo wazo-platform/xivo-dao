@@ -18,6 +18,7 @@
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.helpers.db_manager import daosession
 
+
 @daosession
 def all_queues(session):
     return session.query(QueueFeatures).all()
@@ -97,11 +98,19 @@ def get_display_name_number(queue_id):
     queue = get(queue_id)
     return queue.displayname, queue.number
 
+
 @daosession
 def add_queue(session, queue):
     if type(queue) != QueueFeatures:
         raise ValueError('Wrong object passed')
 
     session.add(queue)
+    session.commit()
+
+
+@daosession
+def delete_by_name(session, queue_name):
+    session.query(QueueFeatures).filter(QueueFeatures.name == queue_name)\
+                                .delete()
     session.commit()
 

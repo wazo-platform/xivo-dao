@@ -139,6 +139,12 @@ class TestQueueDAO(DAOTestCase):
         self.assertTrue(queue.id > 0)
         self.assertTrue(queue_dao.queue_name(queue.id) == name)
 
+    def test_delete_by_name(self):
+        queue_name = 'name'
+        self._insert_queue(queue_name, 'display_name', '3000')
+        queue_dao.delete_by_name(queue_name)
+        self.assertRaises(LookupError, queue_dao.id_from_name, queue_name)
+
     def _insert_user(self, user_id, agent_id):
         user = UserFeatures()
         user.id = user_id
