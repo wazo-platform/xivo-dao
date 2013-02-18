@@ -21,6 +21,7 @@ from sqlalchemy.orm.session import sessionmaker
 from sqlalchemy.engine import create_engine
 from xivo_dao.helpers import config
 from sqlalchemy.exc import InvalidRequestError, OperationalError
+from sqlalchemy.orm import scoped_session
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +42,8 @@ def connect(db_name=ASTERISK_DB_NAME):
         return None
     logger.debug('Connecting to database: %s' % db_uri)
     engine = create_engine(db_uri, echo=config.SQL_DEBUG)
-    Session = sessionmaker(bind=engine)
+    Session = scoped_session(sessionmaker())
+    Session.configure(bind=engine)
     return Session()
 
 
