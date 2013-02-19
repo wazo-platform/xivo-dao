@@ -102,5 +102,5 @@ def get_all(session):
 @daosession
 def delete_by_campaign_name(session, campaign_name):
     campaign_id = record_campaigns_dao.id_from_name(campaign_name)
-    session.query(Recordings).filter_by(campaign_id=int(campaign_id)).delete()
+    session.query(Recordings).filter_by(campaign_id=int(campaign_id)).delete(synchronize_session=False)
     session.commit()
