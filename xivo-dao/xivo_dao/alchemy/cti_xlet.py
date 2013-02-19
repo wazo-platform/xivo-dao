@@ -17,7 +17,7 @@
 
 from sqlalchemy.schema import Column, Sequence
 from sqlalchemy.types import Integer, String
-from xivo_dao.alchemy.base import Base
+from xivo_dao.helpers.db_manager import Base
 
 
 class CtiXlet(Base):

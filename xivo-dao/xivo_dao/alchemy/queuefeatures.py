@@ -41,7 +41,7 @@
 from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION
 from sqlalchemy.schema import Column, ForeignKeyConstraint
 from sqlalchemy.types import Integer, String
-from xivo_dao.alchemy.base import Base
+from xivo_dao.helpers.db_manager import Base
 from xivo_dao.alchemy.record_campaigns import RecordCampaigns
 from xivo_dao.alchemy.stat_call_on_queue import StatCallOnQueue
 from xivo_dao.alchemy.stat_queue_periodic import StatQueuePeriodic

@@ -17,10 +17,11 @@
 
 import unittest
 from mock import Mock
-from xivo_dao.alchemy import dbconnection
+from xivo_dao.helpers import dbconnection
 
 
 class TestDBConnectionPool(unittest.TestCase):
+
     def test_add_connection_creates_new_connection(self):
         connection_factory = Mock()
 

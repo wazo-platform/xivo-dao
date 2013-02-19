@@ -18,7 +18,7 @@
 import unittest
 import logging
 
-from xivo_dao.alchemy.base import Base
+from xivo_dao.helpers.db_manager import Base
 from sqlalchemy.schema import MetaData
 from xivo_dao.helpers import config
 from xivo_dao.helpers import db_manager

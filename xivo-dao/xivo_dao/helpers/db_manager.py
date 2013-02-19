@@ -22,6 +22,7 @@ from sqlalchemy.engine import create_engine
 from xivo_dao.helpers import config
 from sqlalchemy.exc import InvalidRequestError, OperationalError
 from sqlalchemy.orm import scoped_session
+from sqlalchemy.ext.declarative import declarative_base
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +30,21 @@ dbsession = None
 xivo_dbsession = None
 ASTERISK_DB_NAME = 'asterisk'
 XIVO_DB_NAME = 'xivo'
+
+
+def todict(self):
+    d = {}
+    for c in self.__table__.columns:
+        value = getattr(self, c.name)
+        d[c.name] = value
+
+    return d
+
+
+Base = declarative_base()
+Base.todict = todict
+
+Type = declarative_base()
 
 
 def connect(db_name=ASTERISK_DB_NAME):

@@ -22,7 +22,7 @@
 
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String, Enum, Text
-from xivo_dao.alchemy.base import Base, Type
+from xivo_dao.helpers.db_manager import Base, Type
 
 
 class Callfilter(Base):

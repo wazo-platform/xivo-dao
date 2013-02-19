@@ -23,7 +23,7 @@
 
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String, TEXT
-from xivo_dao.alchemy.base import Base
+from xivo_dao.helpers.db_manager import Base
 
 
 class AccessWebService(Base):
