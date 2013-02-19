@@ -28,14 +28,14 @@ class TestDBManager(unittest.TestCase):
         result = db_manager.connect(db_name)
 
         create_engine_mock.assert_called_with(config.XIVO_DB_URI, echo=ANY)
-        sessionmaker_mock.assert_called_with(bind=engine_mock)
+        sessionmaker_mock.assert_called_with()
         self.assertEquals(result, session_mock)
 
         db_name = db_manager.ASTERISK_DB_NAME
         result = db_manager.connect(db_name)
 
         create_engine_mock.assert_called_with(config.DB_URI, echo=ANY)
-        sessionmaker_mock.assert_called_with(bind=engine_mock)
+        sessionmaker_mock.assert_called_with()
         self.assertEquals(result, session_mock)
 
     @patch('xivo_dao.helpers.db_manager.session')
