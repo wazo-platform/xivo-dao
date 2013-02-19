@@ -1,4 +1,5 @@
 # -*- coding: UTF-8 -*-
+
 # Copyright (C) 2012-2013  Avencall
 #
 # This program is free software: you can redistribute it and/or modify
@@ -13,6 +14,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+
 from sqlalchemy.sql.expression import and_, distinct
 from xivo_dao.alchemy.accesswebservice import AccessWebService
 from xivo_dao.helpers.db_manager import xivo_daosession

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-# vim: set fileencoding=utf-8 :
-# XiVO CTI Server
-# Copyright (C) 2007-2012  Avencall
+
+# Copyright (C) 2013  Avencall
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,6 +19,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String, TEXT
 from xivo_dao.alchemy.base import Base
