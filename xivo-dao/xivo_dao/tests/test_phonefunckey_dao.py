@@ -43,8 +43,6 @@ class TestPhoneFunckey(DAOTestCase):
         fwd_unc.supervision = 1
         fwd_unc.progfunckey = 1
 
-        self.session.add(fwd_unc)
-
         fwd_unc_no_dest = PhoneFunckey()
         fwd_unc_no_dest.iduserfeatures = self._user_id_no_dest
         fwd_unc_no_dest.fknum = 2
@@ -52,8 +50,6 @@ class TestPhoneFunckey(DAOTestCase):
         fwd_unc_no_dest.typevalextenumbers = 'fwdunc'
         fwd_unc_no_dest.supervision = 1
         fwd_unc_no_dest.progfunckey = 1
-
-        self.session.add(fwd_unc_no_dest)
 
         fwd_rna = PhoneFunckey()
         fwd_rna.iduserfeatures = self._user_id
@@ -64,8 +60,10 @@ class TestPhoneFunckey(DAOTestCase):
         fwd_rna.supervision = 1
         fwd_rna.progfunckey = 1
 
+        self.session.begin()
+        self.session.add(fwd_unc)
+        self.session.add(fwd_unc_no_dest)
         self.session.add(fwd_rna)
-
         self.session.commit()
 
     def test_get_destination_unc(self):

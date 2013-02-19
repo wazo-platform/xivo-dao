@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 # Copyright (C) 2013 Avencall
 #
 # This program is free software; you can redistribute it and/or modify
@@ -18,6 +19,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 
@@ -42,5 +45,6 @@ def recording_preriquisites(session):
     agent.language = 'fr_FR'
     agent.description = 'my_agent'
 
+    session.begin()
     session.add_all([queue1, queue2, agent])
     session.commit()

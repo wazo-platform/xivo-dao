@@ -65,6 +65,7 @@ class TestCELDAO(DAOTestCase):
         self.empty_tables()
 
     def _insert_cels(self, cels):
+        self.session.begin()
         for cel in cels:
             self.session.add(cel)
         self.session.commit()

@@ -46,6 +46,8 @@ class DAOTestCase(unittest.TestCase):
     @classmethod
     def cleanTables(cls):
         logger.debug("Cleaning tables")
+        cls.session.begin()
+
         if cls.tables:
             engine = cls.engine
 
@@ -58,12 +60,24 @@ class DAOTestCase(unittest.TestCase):
             logger.debug("create all tables")
             Base.metadata.create_all(engine, table_list)
             engine.dispose()
+
         cls.session.commit()
         logger.debug("Tables cleaned")
 
     def empty_tables(self):
         logger.debug("Emptying tables")
+        self.session.begin()
         for table in self.tables:
             self.session.execute("TRUNCATE %s CASCADE;" % table.__tablename__)
         self.session.commit()
         logger.debug("Tables emptied")
+
+    def add_me(self, obj):
+        self.session.begin()
+        self.session.add(obj)
+        self.session.commit()
+
+    def add_me_all(self, obj_list):
+        self.session.begin()
+        self.session.add_all(obj_list)
+        self.session.commit()

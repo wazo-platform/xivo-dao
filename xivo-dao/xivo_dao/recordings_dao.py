@@ -40,7 +40,9 @@ def get_recordings(session, campaign_id, search, paginator):
 @daosession
 def add_recording(session, recording):
     try:
+        session.begin()
         session.add(recording)
+        session.commit()
     except Exception as e:
         logger.error("SQL exception:" + e.message)
         session.rollback()
@@ -52,8 +54,8 @@ def add_recording(session, recording):
 def search_recordings(session, campaign_id, key, paginator):
     logger.debug("campaign id = " + str(campaign_id)\
                   + ", key = " + str(key))
-    #jointure interne:
-    #Recordings r inner join AgentFeatures a on r.agent_id = a.id
+    # jointure interne:
+    # Recordings r inner join AgentFeatures a on r.agent_id = a.id
     my_query = session.query(Recordings)\
                 .join((AgentFeatures, Recordings.agent_id == AgentFeatures.id))\
                 .filter(and_(Recordings.campaign_id == campaign_id, \
@@ -87,6 +89,7 @@ def count_recordings(session, campaign_id):
 @daosession
 def delete_all(session):
     try:
+        session.begin()
         session.query(Recordings).delete()
         session.commit()
     except Exception as e:
@@ -102,5 +105,6 @@ def get_all(session):
 @daosession
 def delete_by_campaign_name(session, campaign_name):
     campaign_id = record_campaigns_dao.id_from_name(campaign_name)
+    session.begin()
     session.query(Recordings).filter_by(campaign_id=int(campaign_id)).delete(synchronize_session=False)
     session.commit()

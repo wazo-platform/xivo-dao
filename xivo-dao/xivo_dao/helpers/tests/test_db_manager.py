@@ -53,7 +53,7 @@ class TestDBManager(unittest.TestCase):
 
         result = decorated_function('arg1', 'arg2', arg3='arg3')
 
-        session_mock.commit.assert_called_once_with()
+        session_mock.flush.assert_called_once_with()
         function_mock.assert_called_once_with(session_mock, 'arg1', 'arg2', arg3='arg3')
 
         self.assertEquals(result, function_result)
@@ -100,7 +100,7 @@ class TestDBManager(unittest.TestCase):
 
         result = decorated_function('arg1')
 
-        new_session.commit.assert_called_once_with()
+        new_session.flush.assert_called_once_with()
         function_mock.assert_called_with(new_session, 'arg1')
 
         self.assertEquals(result, function_result)
@@ -120,7 +120,7 @@ class TestDBManager(unittest.TestCase):
 
         result = decorated_function('arg1', 'arg2', arg3='arg3')
 
-        session_mock.commit.assert_called_once_with()
+        session_mock.flush.assert_called_once_with()
         function_mock.assert_called_once_with(session_mock, 'arg1', 'arg2', arg3='arg3')
 
         self.assertEquals(result, function_result)
@@ -142,7 +142,7 @@ class TestDBManager(unittest.TestCase):
 
         result = decorated_function('arg1')
 
-        new_session.commit.assert_called_once_with()
+        new_session.flush.assert_called_once_with()
         function_mock.assert_called_with(new_session, 'arg1')
 
         self.assertEquals(result, function_result)

@@ -21,7 +21,6 @@ from sqlalchemy.orm.session import sessionmaker
 from sqlalchemy.engine import create_engine
 from xivo_dao.helpers import config
 from sqlalchemy.exc import InvalidRequestError, OperationalError
-from sqlalchemy.orm import scoped_session
 from sqlalchemy.ext.declarative import declarative_base
 
 logger = logging.getLogger(__name__)
@@ -54,12 +53,12 @@ def connect(db_name=ASTERISK_DB_NAME):
     elif db_name == XIVO_DB_NAME:
         db_uri = config.XIVO_DB_URI
     else:
-        logger.error('Unknown databse name provided: ' + str(db_name))
+        logger.error('Unknown database name provided: ' + str(db_name))
         return None
     logger.debug('Connecting to database: %s' % db_uri)
     engine = create_engine(db_uri, echo=config.SQL_DEBUG)
-    Session = scoped_session(sessionmaker())
-    Session.configure(bind=engine)
+    Session = sessionmaker()
+    Session.configure(bind=engine, autoflush=False, autocommit=True)
     return Session()
 
 
@@ -88,12 +87,11 @@ def session(db_name=ASTERISK_DB_NAME):
 def _execute_with_session(func, db_name, *args, **kwargs):
     sess = session(db_name)
     result = func(sess, *args, **kwargs)
-    sess.commit()
+    sess.flush()
     return result
 
 
 def daosession(func):
-
     @wraps(func)
     def wrapped(*args, **kwargs):
         try:

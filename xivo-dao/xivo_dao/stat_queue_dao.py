@@ -40,12 +40,19 @@ def insert_if_missing(session, all_queues):
 
     missing_queues = list(all_queues - old_queues)
 
-    for queue_name in missing_queues:
-        new_queue = StatQueue()
-        new_queue.name = queue_name
-        session.add(new_queue)
+    try:
+        session.begin()
+        for queue_name in missing_queues:
+            new_queue = StatQueue()
+            new_queue.name = queue_name
+            session.add(new_queue)
+        session.commit()
+    except Exception:
+        session.rollback()
 
 
 @daosession
 def clean_table(session):
+    session.begin()
     session.query(StatQueue).delete()
+    session.commit()

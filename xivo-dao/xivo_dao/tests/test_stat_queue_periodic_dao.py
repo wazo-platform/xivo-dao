@@ -35,6 +35,7 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
         queue = StatQueue()
         queue.name = 'test_queue'
 
+        self.session.begin()
         self.session.add(queue)
         self.session.commit()
 

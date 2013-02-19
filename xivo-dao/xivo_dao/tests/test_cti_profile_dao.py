@@ -43,6 +43,8 @@ class TestCtiProfileDAO(DAOTestCase):
     def test_get_name(self):
         cti_profile = CtiProfile()
         cti_profile.name = 'test_name'
+
+        self.session.begin()
         self.session.add(cti_profile)
         self.session.commit()
 
@@ -53,6 +55,8 @@ class TestCtiProfileDAO(DAOTestCase):
     def _add_presence(self, name):
         cti_presence = CtiPresences()
         cti_presence.name = name
+
+        self.session.begin()
         self.session.add(cti_presence)
         self.session.commit()
         return cti_presence.id
@@ -60,8 +64,11 @@ class TestCtiProfileDAO(DAOTestCase):
     def _add_phone_hints_group(self, name):
         cti_phone_hints_group = CtiPhoneHintsGroup()
         cti_phone_hints_group.name = name
+
+        self.session.begin()
         self.session.add(cti_phone_hints_group)
         self.session.commit()
+
         return cti_phone_hints_group.id
 
     def _add_profile(self, name):
@@ -69,22 +76,31 @@ class TestCtiProfileDAO(DAOTestCase):
         cti_profile.name = name
         cti_profile.presence_id = self._add_presence('test_presence')
         cti_profile.phonehints_id = self._add_phone_hints_group('test_add_phone_hints_group')
+
+        self.session.begin()
         self.session.add(cti_profile)
         self.session.commit()
+
         return cti_profile.id
 
     def _add_xlet_layout(self, name):
         cti_xlet_layout = CtiXletLayout()
         cti_xlet_layout.name = name
+
+        self.session.begin()
         self.session.add(cti_xlet_layout)
         self.session.commit()
+
         return cti_xlet_layout.id
 
     def _add_xlet(self, name):
         cti_xlet = CtiXlet()
         cti_xlet.plugin_name = name
+
+        self.session.begin()
         self.session.add(cti_xlet)
         self.session.commit()
+
         return cti_xlet.id
 
     def _add_xlet_to_profile(self,
@@ -105,6 +121,8 @@ class TestCtiProfileDAO(DAOTestCase):
         cti_profile_xlet.movable = movable
         cti_profile_xlet.scrollable = scrollable
         cti_profile_xlet.order = order
+
+        self.session.begin()
         self.session.add(cti_profile_xlet)
         self.session.commit()
 

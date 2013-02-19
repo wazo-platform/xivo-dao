@@ -60,6 +60,7 @@ class TestStatQueueDAO(DAOTestCase):
         queue = StatQueue()
         queue.name = name
 
+        self.session.begin()
         self.session.add(queue)
         self.session.commit()
 

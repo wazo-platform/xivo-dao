@@ -62,21 +62,25 @@ def _get_one(session, agentid):
         raise LookupError('No such agent')
     return result
 
+
 @daosession
 def add_agent(session, agent_features):
     if type(agent_features) != AgentFeatures:
         raise ValueError('Wrong object passed')
 
+    session.begin()
     session.add(agent_features)
     session.commit()
 
     return agent_features.id
+
 
 @daosession
 def del_agent(session, agentid):
     if agentid is None:
         raise ValueError('Agent ID is None')
     try:
+        session.begin()
         session.query(AgentFeatures)\
             .filter(AgentFeatures.id == agentid)\
             .delete()
@@ -96,6 +100,7 @@ def agent_with_number(agent_number):
     agent = _get_agent(AgentFeatures.number == agent_number)
     _add_queues_to_agent(agent)
     return agent
+
 
 @daosession
 def _get_agent(session, whereclause):

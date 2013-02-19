@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-from xivo_dao.alchemy.accesswebservice import AccessWebService
-from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao import accesswebservice_dao
 
 # Copyright (C) 2013 Avencall
 #
@@ -17,6 +14,11 @@ from xivo_dao import accesswebservice_dao
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+
+from xivo_dao.alchemy.accesswebservice import AccessWebService
+from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao import accesswebservice_dao
 
 
 class TestAccessWebServiceDao(DAOTestCase):
@@ -50,6 +52,7 @@ class TestAccessWebServiceDao(DAOTestCase):
         access.host = self.host
         access.obj = ''
 
+        self.session.begin()
         self.session.add(access)
         self.session.commit()
 

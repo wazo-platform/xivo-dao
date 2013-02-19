@@ -103,6 +103,7 @@ class TestAgentDAO(DAOTestCase):
         agent.context = self.agent_context
         agent.language = ''
 
+        self.session.begin()
         self.session.add(agent)
         self.session.commit()
 
@@ -115,6 +116,7 @@ class TestAgentDAO(DAOTestCase):
         queue.displayname = name
         queue.number = '3000'
 
+        self.session.begin()
         self.session.add(queue)
         self.session.commit()
 
@@ -133,6 +135,7 @@ class TestAgentDAO(DAOTestCase):
         queue_member.skills = skills
 
         try:
+            self.session.begin()
             self.session.add(queue_member)
             self.session.commit()
         except Exception:

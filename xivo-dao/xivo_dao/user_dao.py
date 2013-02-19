@@ -65,6 +65,7 @@ def disable_busy_fwd(user_id, destination):
 
 @daosession
 def _update(session, user_id, user_data_dict):
+    session.begin()
     session.query(UserFeatures).filter(UserFeatures.id == user_id).update(user_data_dict)
     session.commit()
 

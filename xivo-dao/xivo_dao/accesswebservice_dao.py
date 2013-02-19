@@ -1,6 +1,6 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2013  Avencall
+# Copyright (C) 2013 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ from xivo_dao.helpers.db_manager import xivo_daosession
 
 @xivo_daosession
 def get_password(session, login):
-    result = session.query(AccessWebService)\
+    result = session.query(AccessWebService.passwd)\
             .filter(and_(AccessWebService.login == login,
                          AccessWebService.disable == 0)).first()
     if result == None:

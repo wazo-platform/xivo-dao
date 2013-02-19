@@ -39,6 +39,8 @@ class TestRecordCampaignDao(DAOTestCase):
 
     def test_get_records(self):
         campaign = copy.deepcopy(self.sample_campaign)
+
+        self.session.begin()
         self.session.add(campaign)
         self.session.commit()
 
@@ -52,8 +54,11 @@ class TestRecordCampaignDao(DAOTestCase):
 
     def test_id_from_name(self):
         campaign = copy.deepcopy(self.sample_campaign)
+
+        self.session.begin()
         self.session.add(campaign)
         self.session.commit()
+
         retrieved_id = record_campaigns_dao\
                 .id_from_name(campaign.campaign_name)
         self.assertEquals(retrieved_id, campaign.id)
@@ -68,8 +73,11 @@ class TestRecordCampaignDao(DAOTestCase):
 
     def test_update(self):
         campaign = copy.deepcopy(self.sample_campaign)
+
+        self.session.begin()
         self.session.add(campaign)
         self.session.commit()
+
         new_name = campaign.campaign_name + "1"
         new_queue_id = 2
         campaign.campaign_name = new_name
@@ -86,20 +94,28 @@ class TestRecordCampaignDao(DAOTestCase):
 
     def test_get(self):
         campaign = copy.deepcopy(self.sample_campaign)
+
+        self.session.begin()
         self.session.add(campaign)
         self.session.commit()
+
         returned_obj = record_campaigns_dao.get(campaign.id)
         self.assertEqual(returned_obj, campaign)
 
     def test_delete(self):
         campaign = copy.deepcopy(self.sample_campaign)
+
+        self.session.begin()
         self.session.add(campaign)
         self.session.commit()
+
         record_campaigns_dao.delete(campaign)
         self.assertEqual(None, record_campaigns_dao.get(campaign.id))
 
     def test_delete_integrity_error(self):
         campaign = copy.deepcopy(self.sample_campaign)
+
+        self.session.begin()
         self.session.add(campaign)
         self.session.commit()
 
@@ -109,6 +125,8 @@ class TestRecordCampaignDao(DAOTestCase):
         recording.cid = '123'
         recording.agent_id = 1
         recording.caller = '2002'
+
+        self.session.begin()
         self.session.add(recording)
         self.session.commit()
 
@@ -119,8 +137,11 @@ class TestRecordCampaignDao(DAOTestCase):
     def test_delete_all(self):
         campaign1 = copy.deepcopy(self.sample_campaign)
         campaign2 = copy.deepcopy(self.sample_campaign)
+
+        self.session.begin()
         self.session.add_all([campaign1, campaign2])
         self.session.commit()
+
         id1, id2 = campaign1.id, campaign2.id
         record_campaigns_dao.delete_all()
         self.assertEqual(None, record_campaigns_dao.get(id1))
@@ -129,8 +150,11 @@ class TestRecordCampaignDao(DAOTestCase):
     def test_delete_all_integrity_error(self):
         campaign1 = copy.deepcopy(self.sample_campaign)
         campaign2 = copy.deepcopy(self.sample_campaign)
+
+        self.session.begin()
         self.session.add_all([campaign1, campaign2])
         self.session.commit()
+
         id1, id2 = campaign1.id, campaign2.id
 
         recording = Recordings()
@@ -139,13 +163,14 @@ class TestRecordCampaignDao(DAOTestCase):
         recording.cid = '123'
         recording.agent_id = 1
         recording.caller = '2002'
+
+        self.session.begin()
         self.session.add(recording)
         self.session.commit()
 
         self.assertRaises(IntegrityError, record_campaigns_dao.delete_all)
         self.assertNotEqual(None, record_campaigns_dao.get(id1))
         self.assertNotEqual(None, record_campaigns_dao.get(id2))
-
 
     def _create_sample_campaign(self):
         self.sample_campaign = RecordCampaigns()

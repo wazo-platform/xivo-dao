@@ -36,6 +36,8 @@ class TestExtensionsDAO(DAOTestCase):
         exten = Extension()
         exten.name = 'phoneprogfunckey'
         exten.exten = '_*735'
+
+        self.session.begin()
         self.session.add(exten)
         self.session.commit()
 

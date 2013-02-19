@@ -42,8 +42,7 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         queue = StatQueue()
         queue.name = queue_name
 
-        self.session.add(queue)
-        self.session.commit()
+        self.add_me(queue)
 
         return queue.name, queue.id
 
@@ -52,8 +51,7 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         agent = StatAgent()
         agent.name = agent_name
 
-        self.session.add(agent)
-        self.session.commit()
+        self.add_me(agent)
 
         return agent.name, agent.id
 
@@ -187,6 +185,7 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         other_call.queue_id = queue_id
         other_call.status = 'abandoned'
 
+        self.session.begin()
         self.session.add(other_call)
         self.session.commit()
 
