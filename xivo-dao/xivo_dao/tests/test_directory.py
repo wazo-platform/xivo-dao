@@ -53,8 +53,13 @@ class TestDirectoryDAO(DAOTestCase):
         self.session.commit()
 
         result = directory_dao.get_directory_headers(context_name)
+        expected_result = [
+            ('Name', 'name'),
+            ('Number', 'number'),
+            ('Location', '')
+        ]
 
-        assert_that(result, contains_inanyorder('Name', 'Number', 'Location'))
+        self.assertEquals(result, expected_result)
 
     def test_get_directory_headers_unknown_context(self):
         context_name = 'myctx'
@@ -81,6 +86,10 @@ class TestDirectoryDAO(DAOTestCase):
         self.session.commit()
 
         result = directory_dao.get_directory_headers(context_name)
-        print result
+        expected_result = [
+            ('Name', 'name'),
+            ('Number', 'number'),
+            ('Location', '')
+        ]
 
-        assert_that(result, contains_inanyorder('Name', 'Number', 'Location'))
+        self.assertEqual(result, expected_result)
