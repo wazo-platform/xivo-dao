@@ -738,3 +738,24 @@ class TestUserFeaturesDAO(DAOTestCase):
         context = user_dao.get_context(user.id)
 
         self.assertEqual(context, None)
+
+    def test_get_all(self):
+        user1 = self._add_user('test_user_1')
+        user2 = self._add_user('test_user_2')
+        result = user_dao.get_all()
+        self.assertEqual(result, [user1, user2])
+
+    def test_delete_all(self):
+        self._add_user('test_user_1')
+        self._add_user('test_user_2')
+        user_dao.delete_all()
+        result = user_dao.get_all()
+        self.assertEqual(result, [])
+
+    def test_add_user(self):
+        user = UserFeatures()
+        user.firstname = 'test_user'
+        user_dao.add_user(user)
+        result = user_dao.get_all()
+        self.assertEqual(result, [user])
+

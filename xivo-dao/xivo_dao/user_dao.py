@@ -230,3 +230,20 @@ def get_context(session, user_id):
         return None
 
     return res.context
+
+
+@daosession
+def get_all(session):
+    return session.query(UserFeatures).all()
+
+
+@daosession
+def delete_all(session):
+    session.query(UserFeatures).delete()
+    session.commit()
+
+
+@daosession
+def add_user(session, user):
+    session.add(user)
+    session.commit()
