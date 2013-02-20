@@ -45,6 +45,7 @@ class TestQueryUtils(DAOTestCase):
         campaign2 = copy.deepcopy(campaign1)
         campaign2.campaign_name = 'test2'
 
+        self.session.begin()
         self.session.add_all([campaign1, campaign2])
         self.session.commit()
 
@@ -76,6 +77,7 @@ class TestQueryUtils(DAOTestCase):
         campaign2 = copy.deepcopy(campaign1)
         campaign2.campaign_name = 'test2'
 
+        self.session.begin()
         self.session.add_all([campaign1, campaign2])
         self.session.commit()
 

@@ -27,19 +27,36 @@ from sqlalchemy import and_
 
 @daosession
 def get_directory_headers(session, context):
+    NAME_INDEX, TYPE_INDEX = 0, 1
     raw_display_data = session.query(
         CtiDisplays.data
     ).filter(
         and_(CtiContexts.name == context,
              CtiContexts.display == CtiDisplays.name)
-    )
+    ).first()
 
-    display_data = [cjson.decode(display.data) for display in raw_display_data.all()]
+    if not raw_display_data:
+        return []
+
+    display_data = cjson.decode(raw_display_data.data)
+
+    indices = sorted(display_data.keys())
 
     results = []
 
-    for display in display_data:
-        for entry in display.itervalues():
-            results.append(entry[0])
+    def already_in_list(new):
+        for name, field_type in results:
+            if new == name:
+                return True
+        return False
 
-    return list(set(results))
+    for position in indices:
+        entry = display_data[position]
+        name = entry[NAME_INDEX]
+        if already_in_list(name):
+            continue
+        field_type = 'number' if entry[TYPE_INDEX].startswith('number_') else entry[TYPE_INDEX]
+        pair = name, field_type
+        results.append(pair)
+
+    return results

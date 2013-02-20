@@ -87,6 +87,8 @@ class TestQueueMemberDAO(DAOTestCase):
         self._insert_queue_member('group1', 'SIP/abcdef', is_queue=False)
 
         queue_feature = QueueFeatures(name='queue1', displayname='queue1')
+
+        self.session.begin()
         self.session.add(queue_feature)
         self.session.commit()
 
@@ -110,6 +112,7 @@ class TestQueueMemberDAO(DAOTestCase):
         queue_member.position = 0
 
         try:
+            self.session.begin()
             self.session.add(queue_member)
             self.session.commit()
         except Exception:

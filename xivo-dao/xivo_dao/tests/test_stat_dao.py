@@ -41,281 +41,15 @@ class TestStatDAO(DAOTestCase):
         self.aname1, self.aid1 = self._insert_agent('a1')
         self.aname2, self.aid2 = self._insert_agent('a2')
 
-    def test_fill_leaveempty_calls(self):
-        try:
-            stat_dao.fill_leaveempty_calls(self.start, self.end)
-        except Exception:
-            self.fail('Should not happen')
-
-        le_calls = [
-            (t(2012, 7, 1, 10, 00, 00), 'le_1', self.qname1, 5),
-            (t(2012, 7, 1, 10, 00, 01), 'le_2', self.qname2, 7),
-            (t(2012, 7, 1, 10, 59, 59), 'le_3', self.qname1, 10),
-            (t(2012, 7, 1, 11, 00, 00), 'le_4', self.qname1, 3),
-        ]
-        self._insert_leaveempty_calls(le_calls)
-
-        stat_dao.fill_leaveempty_calls(self.start, self.end)
-
-        result = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid.like('le_%'))
-        self.assertEqual(result.count(), len(le_calls))
-        for r in result.all():
-            expected = self._get_expected_call(le_calls, r.callid)
-            qid = self.qid1 if expected[2] == self.qname1 else self.qid2
-            self.assertEqual(r.time, expected[0])
-            self.assertEqual(r.callid, expected[1])
-            self.assertEqual(r.queue_id, qid)
-            self.assertEqual(r.waittime, expected[3])
-
     @staticmethod
     def _get_expected_call(call_list, callid):
         return [c for c in call_list if c[1] == callid][0]
-
-    def test_fill_answered_calls_empty(self):
-        try:
-            stat_dao.fill_answered_calls(self.start, self.end)
-        except Exception:
-            self.fail('Should not happen')
-
-    def test_fill_answered_direct_transfer_to_queue(self):
-        # When doing a direct transfer both calls have the same callid
-        completed_calls = [
-            (t(2012, 7, 1, 10, 00, 00), 'completed_1', self.qname1, self.aname1, 5, 25, True),
-            (t(2012, 7, 1, 10, 15, 01), 'completed_1', self.qname2, self.aname1, 7, 32, False),
-            (t(2012, 7, 1, 10, 59, 59), 'completed_3', self.qname1, self.aname1, 10, 59, True),
-            (t(2012, 7, 1, 11, 00, 00), 'completed_4', self.qname1, self.aname2, 3, 13, False),
-        ]
-        self._insert_completed_calls(completed_calls)
-
-        stat_dao.fill_answered_calls(self.start, self.end)
-
-        result = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid.like('completed_%'))
-        self.assertEqual(result.count(), len(completed_calls))
-        for r in result.all():
-            expected = filter(lambda c: c[1] == r.callid and (self.qname1 if r.queue_id == self.qid1 else self.qname2) == c[2], completed_calls)[0]
-            self.assertEqual(r.time, expected[0])
-            self.assertEqual(r.callid, expected[1])
-            self.assertEqual(r.waittime, expected[4])
-            self.assertEqual(r.talktime, expected[5])
-
-    def test_fill_answered_two_enterqueue(self):
-        double = QueueLog(
-            callid='completed_1',
-            time='2012-07-01 09:59:55.000000',
-            queuename=self.qname1,
-            agent='NONE',
-            event='ENTERQUEUE'
-        )
-        self.session.add(double)
-        self.session.commit()
-        completed_calls = [
-            (t(2012, 7, 1, 10, 00, 00), 'completed_1', self.qname1, self.aname1, 5, 25, True),
-            (t(2012, 7, 1, 10, 00, 01), 'completed_2', self.qname2, self.aname1, 7, 32, False),
-            (t(2012, 7, 1, 10, 59, 59), 'completed_3', self.qname1, self.aname1, 10, 59, True),
-            (t(2012, 7, 1, 11, 00, 00), 'completed_4', self.qname1, self.aname2, 3, 13, False),
-        ]
-        self._insert_completed_calls(completed_calls)
-
-        stat_dao.fill_answered_calls(self.start, self.end)
-
-        result = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid.like('completed_%'))
-        self.assertEqual(result.count(), len(completed_calls))
-        for r in result.all():
-            expected = self._get_expected_call(completed_calls, r.callid)
-            self.assertEqual(r.time, expected[0])
-            self.assertEqual(r.callid, expected[1])
-            qid = self.qid1 if expected[2] == self.qname1 else self.qid2
-            self.assertEqual(r.queue_id, qid)
-            aid = self.aid1 if expected[3] == self.aname1 else self.aid2
-            self.assertEqual(r.agent_id, aid)
-            self.assertEqual(r.waittime, expected[4])
-            self.assertEqual(r.talktime, expected[5])
-
-    def test_fill_answered_transfer(self):
-        transfered_calls = [
-            (t(2012, 7, 1, 10, 00, 00), 'transfered_1', self.qname1, self.aname1, 5, 25),
-            (t(2012, 7, 1, 10, 00, 01), 'transfered_2', self.qname2, self.aname1, 7, 32),
-            (t(2012, 7, 1, 10, 59, 59), 'transfered_3', self.qname1, self.aname1, 10, 59),
-            (t(2012, 7, 1, 11, 00, 00), 'transfered_4', self.qname1, self.aname2, 3, 13),
-        ]
-        self._insert_transfered_calls(transfered_calls)
-
-        stat_dao.fill_answered_calls(self.start, self.end)
-
-        result = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid.like('transfered_%'))
-        self.assertEqual(result.count(), len(transfered_calls))
-        for r in result.all():
-            expected = self._get_expected_call(transfered_calls, r.callid)
-            self.assertEqual(r.time, expected[0])
-            self.assertEqual(r.callid, expected[1])
-            qid = self.qid1 if expected[2] == self.qname1 else self.qid2
-            self.assertEqual(r.queue_id, qid)
-            aid = self.aid1 if expected[3] == self.aname1 else self.aid2
-            self.assertEqual(r.agent_id, aid)
-            self.assertEqual(r.waittime, expected[4])
-            self.assertEqual(r.talktime, expected[5])
-
-    def test_fill_answered_complete(self):
-        completed_calls = [
-            (t(2012, 7, 1, 10, 00, 00), 'completed_1', self.qname1, self.aname1, 5, 25, True),
-            (t(2012, 7, 1, 10, 00, 01), 'completed_2', self.qname2, self.aname1, 7, 32, False),
-            (t(2012, 7, 1, 10, 59, 59), 'completed_3', self.qname1, self.aname1, 10, 59, True),
-            (t(2012, 7, 1, 11, 00, 00), 'completed_4', self.qname1, self.aname2, 3, 13, False),
-        ]
-        self._insert_completed_calls(completed_calls)
-
-        stat_dao.fill_answered_calls(self.start, self.end)
-
-        result = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid.like('completed_%'))
-        self.assertEqual(result.count(), len(completed_calls))
-        for r in result.all():
-            expected = self._get_expected_call(completed_calls, r.callid)
-            self.assertEqual(r.time, expected[0])
-            self.assertEqual(r.callid, expected[1])
-            qid = self.qid1 if expected[2] == self.qname1 else self.qid2
-            self.assertEqual(r.queue_id, qid)
-            aid = self.aid1 if expected[3] == self.aname1 else self.aid2
-            self.assertEqual(r.agent_id, aid)
-            self.assertEqual(r.waittime, expected[4])
-            self.assertEqual(r.talktime, expected[5])
-
-    def test_fill_simple_calls_closed(self):
-        closed_calls = [
-            (t(2012, 7, 1, 10, 00, 00), 'closed_1', self.qname1),
-            (t(2012, 7, 1, 10, 59, 59), 'closed_2', self.qname2),
-            (t(2012, 7, 1, 10, 00, 01), 'closed_3', self.qname1),
-            (t(2012, 7, 1, 10, 00, 02), 'closed_4', self.qname2),
-            (t(2012, 7, 1, 10, 00, 03), 'closed_5', self.qname1),
-        ]
-        self._insert_closed_calls(closed_calls)
-
-        stat_dao.fill_simple_calls(self.start, self.end)
-
-        result = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid.like('closed_%'))
-        self.assertEqual(result.count(), len(closed_calls))
-        for r in result.all():
-            expected = self._get_expected_call(closed_calls, r.callid)
-            qid = self.qid1 if expected[2] == self.qname1 else self.qid2
-            self.assertEqual(r.time, expected[0])
-            self.assertEqual(r.callid, expected[1])
-            self.assertEqual(r.queue_id, qid)
-            self.assertEqual(r.status, 'closed')
 
     def test_fill_simple_calls_empty(self):
         try:
             stat_dao.fill_simple_calls(self.start, self.end)
         except:
             self.assertTrue(False, 'Should not happen')
-
-    def test_fill_simple_calls_fulls(self):
-        full_calls = [
-            (t(2012, 7, 1, 10, 00, 00), 'full_1', self.qname1),
-            (t(2012, 7, 1, 10, 59, 59), 'full_2', self.qname2),
-            (t(2012, 7, 1, 10, 00, 01), 'full_3', self.qname1),
-            (t(2012, 7, 1, 10, 00, 02), 'full_4', self.qname2),
-            (t(2012, 7, 1, 10, 00, 03), 'full_5', self.qname1),
-        ]
-
-        self._insert_full_calls(full_calls)
-
-        stat_dao.fill_simple_calls(self.start, self.end)
-
-        result = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid.like('full_%'))
-        self.assertEqual(result.count(), len(full_calls))
-        for r in result.all():
-            cid = r.callid
-            if r.queue_id == self.qid1:
-                qname = self.qname1
-            elif r.queue_id == self.qid2:
-                qname = self.qname2
-            else:
-                raise AssertionError('%s should be in [%s, %s]' % (r.queue_id, self.qid1, self.qid2))
-            expected = self._get_expected_call(full_calls, r.callid)
-            self.assertEqual(cid, expected[1])
-            self.assertEqual(r.time, expected[0])
-            self.assertEqual(qname, expected[2])
-            self.assertEqual(r.status, 'full')
-
-    def test_fill_simple_calls_joinempty(self):
-        je_calls = [
-            (t(2012, 7, 1, 10, 00, 00), 'je_1', self.qname1),
-            (t(2012, 7, 1, 10, 59, 59), 'je_2', self.qname2),
-            (t(2012, 7, 1, 10, 00, 01), 'je_3', self.qname1),
-            (t(2012, 7, 1, 10, 00, 02), 'je_4', self.qname2),
-            (t(2012, 7, 1, 10, 00, 03), 'je_5', self.qname1),
-        ]
-
-        self._insert_joinempty_calls(je_calls)
-
-        stat_dao.fill_simple_calls(self.start, self.end)
-
-        result = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid.like('je_%'))
-        self.assertEqual(result.count(), len(je_calls))
-        for r in result.all():
-            expected = self._get_expected_call(je_calls, r.callid)
-            qid = self.qid1 if expected[2] == self.qname1 else self.qid2
-            self.assertEqual(r.callid, expected[1])
-            self.assertEqual(r.time, expected[0])
-            self.assertEqual(r.queue_id, qid)
-            self.assertEqual(r.status, 'joinempty')
-
-    def test_fill_simple_calls_ca_ratio(self):
-        ca_ratio_calls = [
-            (t(2012, 7, 1, 10, 00, 00), 'ratio_1', self.qname1),
-            (t(2012, 7, 1, 10, 59, 59), 'ratio_2', self.qname2),
-            (t(2012, 7, 1, 10, 00, 01), 'ratio_3', self.qname1),
-            (t(2012, 7, 1, 10, 00, 02), 'ratio_4', self.qname2),
-            (t(2012, 7, 1, 10, 00, 03), 'ratio_5', self.qname1),
-        ]
-
-        self._insert_ca_ratio_calls(ca_ratio_calls)
-
-        stat_dao.fill_simple_calls(self.start, self.end)
-
-        result = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid.like('ratio_%'))
-        self.assertEqual(result.count(), len(ca_ratio_calls))
-        for r in result.all():
-            cid = r.callid
-            if r.queue_id == self.qid1:
-                qname = self.qname1
-            elif r.queue_id == self.qid2:
-                qname = self.qname2
-            else:
-                raise AssertionError('%s should be in [%s, %s]' % (r.queue_id, self.qid1, self.qid2))
-            expected = self._get_expected_call(ca_ratio_calls, r.callid)
-            self.assertEqual(cid, expected[1])
-            self.assertEqual(r.time, expected[0])
-            self.assertEqual(qname, expected[2])
-            self.assertEqual(r.status, 'divert_ca_ratio')
-
-    def test_fill_simple_calls_holdtime(self):
-        ca_ratio_calls = [
-            (t(2012, 7, 1, 10, 00, 00), 'ratio_1', self.qname1),
-            (t(2012, 7, 1, 10, 59, 59), 'ratio_2', self.qname2),
-            (t(2012, 7, 1, 10, 00, 01), 'ratio_3', self.qname1),
-            (t(2012, 7, 1, 10, 00, 02), 'ratio_4', self.qname2),
-            (t(2012, 7, 1, 10, 00, 03), 'ratio_5', self.qname1),
-        ]
-
-        self._insert_holdtime_calls(ca_ratio_calls)
-
-        stat_dao.fill_simple_calls(self.start, self.end)
-
-        result = self.session.query(StatCallOnQueue).filter(StatCallOnQueue.callid.like('ratio_%'))
-        self.assertEqual(result.count(), len(ca_ratio_calls))
-        for r in result.all():
-            cid = r.callid
-            if r.queue_id == self.qid1:
-                qname = self.qname1
-            elif r.queue_id == self.qid2:
-                qname = self.qname2
-            else:
-                raise AssertionError('%s should be in [%s, %s]' % (r.queue_id, self.qid1, self.qid2))
-            expected = self._get_expected_call(ca_ratio_calls, r.callid)
-            self.assertEqual(cid, expected[1])
-            self.assertEqual(r.time, expected[0])
-            self.assertEqual(qname, expected[2])
-            self.assertEqual(r.status, 'divert_waittime')
 
     def test_get_login_intervals_in_range_calls_empty(self):
         result = stat_dao.get_login_intervals_in_range(self.start, self.end)
@@ -461,8 +195,9 @@ class TestStatDAO(DAOTestCase):
             data2='linked_callid_2',
             data3='4'
         )
-        self.session.add(connect2)
 
+        self.session.begin()
+        self.session.add(connect2)
         self.session.commit()
 
         result = stat_dao.get_login_intervals_in_range(self.start, self.end)
@@ -472,6 +207,8 @@ class TestStatDAO(DAOTestCase):
         self.assertEqual(expected, result)
 
     def _insert_agent_logins_logoffs(self, logins, logoffs):
+        self.session.begin()
+
         for login in logins:
             callback_login = QueueLog(
                 time=login['time'],
@@ -498,6 +235,8 @@ class TestStatDAO(DAOTestCase):
         self.session.commit()
 
     def _insert_agent_callback_logins_logoffs(self, logins, logoffs):
+        self.session.begin()
+
         for login in logins:
             callback_login = QueueLog(
                 time=login['time'],
@@ -581,9 +320,8 @@ class TestStatDAO(DAOTestCase):
             data4=str(talktime)
         )
 
-        self.session.add(enterqueue)
-        self.session.add(connect)
-        self.session.add(transfer)
+        self.session.begin()
+        self.session.add_all([enterqueue, connect, transfer])
         self.session.commit()
 
     def _insert_completed_call(self, time, callid, qname, aname, waittime, talktime, agent_complete):
@@ -618,9 +356,8 @@ class TestStatDAO(DAOTestCase):
             data2=str(talktime)
         )
 
-        self.session.add(enterqueue)
-        self.session.add(connect)
-        self.session.add(complete)
+        self.session.begin()
+        self.session.add_all([enterqueue, connect, complete])
         self.session.commit()
 
     def _insert_full_call(self, t, callid, qname):
@@ -632,6 +369,7 @@ class TestStatDAO(DAOTestCase):
             event='FULL'
         )
 
+        self.session.begin()
         self.session.add(full)
         self.session.commit()
 
@@ -644,6 +382,7 @@ class TestStatDAO(DAOTestCase):
             event='JOINEMPTY'
         )
 
+        self.session.begin()
         self.session.add(je)
         self.session.commit()
 
@@ -667,6 +406,7 @@ class TestStatDAO(DAOTestCase):
             event='LEAVEEMPTY'
         )
 
+        self.session.begin()
         self.session.add(enterqueue)
         self.session.add(le)
         self.session.commit()
@@ -680,6 +420,7 @@ class TestStatDAO(DAOTestCase):
             event='CLOSED'
         )
 
+        self.session.begin()
         self.session.add(closed)
         self.session.commit()
 
@@ -692,6 +433,7 @@ class TestStatDAO(DAOTestCase):
             event='DIVERT_CA_RATIO'
         )
 
+        self.session.begin()
         self.session.add(call)
         self.session.commit()
 
@@ -704,24 +446,31 @@ class TestStatDAO(DAOTestCase):
             event='DIVERT_HOLDTIME'
         )
 
+        self.session.begin()
         self.session.add(call)
         self.session.commit()
 
     def _insert_agent(self, aname):
         a = StatAgent(name=aname)
+
+        self.session.begin()
         self.session.add(a)
         self.session.commit()
+
         return a.name, a.id
 
     def _insert_queue(self, qname):
         q = StatQueue(name=qname)
+
+        self.session.begin()
         self.session.add(q)
         self.session.commit()
+
         return q.name, q.id
 
     @classmethod
     def _create_functions(cls):
-        ### WARNING: These functions should always be the same as the one in baseconfig
+        # ## WARNING: These functions should always be the same as the one in baseconfig
         fill_simple_calls_fn = '''\
 DROP FUNCTION IF EXISTS "fill_saturated_calls" (text, text);
 DROP FUNCTION IF EXISTS "fill_simple_calls" (text, text);

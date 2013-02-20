@@ -57,6 +57,7 @@ def id_from_name(session, name):
 @daosession
 def add_or_update(session, campaign):
     try:
+        session.begin()
         session.add(campaign)
         session.commit()
     except Exception as e:
@@ -78,6 +79,7 @@ def get(session, campaign_id):
 @daosession
 def delete(session, campaign):
     try:
+        session.begin()
         session.delete(campaign)
         session.commit()
     except Exception as e:
@@ -88,6 +90,7 @@ def delete(session, campaign):
 @daosession
 def delete_all(session):
     try:
+        session.begin()
         session.query(RecordCampaigns).delete()
         session.commit()
     except Exception as e:

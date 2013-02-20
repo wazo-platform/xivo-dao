@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from sqlalchemy.schema import Column, ForeignKey
 from sqlalchemy.types import Integer, String, Boolean, DateTime
-from xivo_dao.alchemy.base import Base
+from xivo_dao.helpers.db_manager import Base
 
 
 class RecordCampaigns(Base):

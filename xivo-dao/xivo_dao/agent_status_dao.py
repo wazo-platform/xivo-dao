@@ -206,6 +206,7 @@ def log_in_agent(session, agent_id, agent_number, extension, context, interface,
 
 def _add_agent(session, agent):
     try:
+        session.begin()
         session.add(agent)
         session.commit()
     except Exception:

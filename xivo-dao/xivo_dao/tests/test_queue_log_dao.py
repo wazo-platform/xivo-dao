@@ -39,6 +39,8 @@ class TestQueueLogDAO(DAOTestCase):
 
     def _insert_agent(self, aname):
         a = StatAgent(name=aname)
+
+        self.session.begin()
         self.session.add(a)
         self.session.commit()
         return a.name, a.id
@@ -63,6 +65,7 @@ class TestQueueLogDAO(DAOTestCase):
         if d5:
             queue_log.data5 = d5
 
+        self.session.begin()
         self.session.add(queue_log)
         self.session.commit()
 
@@ -369,6 +372,8 @@ class TestQueueLogDAO(DAOTestCase):
         self.assertEqual(res, 'two')
 
     def _insert_queue_log_data(self, queue_log_data):
+        self.session.begin()
+
         lines = queue_log_data.split('\n')
         lines.pop()
         header = self._strip_content_list(lines.pop(0).split('|')[1:-1])

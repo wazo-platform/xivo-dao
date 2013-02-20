@@ -104,12 +104,14 @@ def add_queue(session, queue):
     if type(queue) != QueueFeatures:
         raise ValueError('Wrong object passed')
 
+    session.begin()
     session.add(queue)
     session.commit()
 
 
 @daosession
 def delete_by_name(session, queue_name):
+    session.begin()
     session.query(QueueFeatures).filter(QueueFeatures.name == queue_name)\
                                 .delete()
     session.commit()

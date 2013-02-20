@@ -35,6 +35,8 @@ class TestCtiPreferenceDAO(DAOTestCase):
     def test_get_name(self):
         cti_profile = CtiProfile()
         cti_profile.name = 'test_name'
+
+        self.session.begin()
         self.session.add(cti_profile)
         self.session.commit()
 
@@ -45,6 +47,8 @@ class TestCtiPreferenceDAO(DAOTestCase):
     def _add_presence(self, name):
         cti_presence = CtiPresences()
         cti_presence.name = name
+
+        self.session.begin()
         self.session.add(cti_presence)
         self.session.commit()
         return cti_presence.id
@@ -52,6 +56,8 @@ class TestCtiPreferenceDAO(DAOTestCase):
     def _add_preference(self, name):
         cti_preference = CtiPreference()
         cti_preference.option = name
+
+        self.session.begin()
         self.session.add(cti_preference)
         self.session.commit()
         return cti_preference.id
@@ -59,6 +65,8 @@ class TestCtiPreferenceDAO(DAOTestCase):
     def _add_phone_hints_group(self, name):
         cti_phone_hints_group = CtiPhoneHintsGroup()
         cti_phone_hints_group.name = name
+
+        self.session.begin()
         self.session.add(cti_phone_hints_group)
         self.session.commit()
         return cti_phone_hints_group.id
@@ -68,6 +76,8 @@ class TestCtiPreferenceDAO(DAOTestCase):
         cti_profile.name = name
         cti_profile.presence_id = self._add_presence('test_presence')
         cti_profile.phonehints_id = self._add_phone_hints_group('test_add_phone_hints_group')
+
+        self.session.begin()
         self.session.add(cti_profile)
         self.session.commit()
         return cti_profile.id
@@ -80,6 +90,8 @@ class TestCtiPreferenceDAO(DAOTestCase):
         cti_profile_preference.preference_id = preference_id
         cti_profile_preference.profile_id = profile_id
         cti_profile_preference.value = value
+
+        self.session.begin()
         self.session.add(cti_profile_preference)
         self.session.commit()
 

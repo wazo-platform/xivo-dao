@@ -68,16 +68,18 @@ class TestUserFeaturesDAO(DAOTestCase):
     def _insert_user(self, firstname):
         user = UserFeatures()
         user.firstname = firstname
-        self.session.add(user)
-        self.session.commit()
+
+        self.add_me(user)
+
         return user.id
 
     def _insert_user_dnd_set(self):
         user_features = UserFeatures()
         user_features.enablednd = 1
         user_features.firstname = 'firstname_test'
-        self.session.add(user_features)
-        self.session.commit()
+
+        self.add_me(user_features)
+
         user_id = user_features.id
         return user_id
 
@@ -85,8 +87,9 @@ class TestUserFeaturesDAO(DAOTestCase):
         user_features = UserFeatures()
         user_features.enablednd = 0
         user_features.firstname = 'firstname_dnd not set'
-        self.session.add(user_features)
-        self.session.commit()
+
+        self.add_me(user_features)
+
         user_id = user_features.id
         return user_id
 
@@ -118,8 +121,9 @@ class TestUserFeaturesDAO(DAOTestCase):
         user_features = UserFeatures()
         user_features.incallfilter = filter_status
         user_features.firstname = 'firstname_filter not set'
-        self.session.add(user_features)
-        self.session.commit()
+
+        self.add_me(user_features)
+
         user_id = user_features.id
         return user_id
 
@@ -142,8 +146,9 @@ class TestUserFeaturesDAO(DAOTestCase):
         user_features.enableunc = enabled
         user_features.destunc = destination
         user_features.firstname = 'firstname_unconditional_fwd'
-        self.session.add(user_features)
-        self.session.commit()
+
+        self.add_me(user_features)
+
         user_id = user_features.id
         return user_id
 
@@ -189,8 +194,9 @@ class TestUserFeaturesDAO(DAOTestCase):
         user_features.enablerna = enabled
         user_features.destrna = destination
         user_features.firstname = 'firstname_rna_fwd'
-        self.session.add(user_features)
-        self.session.commit()
+
+        self.add_me(user_features)
+
         user_id = user_features.id
         return user_id
 
@@ -209,8 +215,9 @@ class TestUserFeaturesDAO(DAOTestCase):
         user_features.enablebusy = enabled
         user_features.destbusy = destination
         user_features.firstname = 'firstname_busy_fwd'
-        self.session.add(user_features)
-        self.session.commit()
+
+        self.add_me(user_features)
+
         user_id = user_features.id
         return user_id
 
@@ -249,8 +256,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         user.firstname = 'test_agent'
         user.agentid = agent_id
 
-        self.session.add(user)
-        self.session.commit()
+        self.add_me(user)
 
         user_ids = user_dao.find_by_agent_id(agent_id)
 
@@ -263,8 +269,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         user.firstname = 'test_agent'
         user.agentid = agent_id
 
-        self.session.add(user)
-        self.session.commit()
+        self.add_me(user)
 
         res = user_dao.agent_id(user.id)
 
@@ -275,8 +280,7 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         user.firstname = 'test_agent'
 
-        self.session.add(user)
-        self.session.commit()
+        self.add_me(user)
 
         res = user_dao.agent_id(user.id)
 
@@ -289,8 +293,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         user.firstname = 'test_agent'
         user.agentid = agent_id
 
-        self.session.add(user)
-        self.session.commit()
+        self.add_me(user)
 
         result = user_dao.is_agent(user.id)
 
@@ -301,8 +304,7 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         user.firstname = 'test_agent'
 
-        self.session.add(user)
-        self.session.commit()
+        self.add_me(user)
 
         result = user_dao.is_agent(user.id)
 
@@ -314,8 +316,8 @@ class TestUserFeaturesDAO(DAOTestCase):
         user = UserFeatures()
         user.firstname = 'test_agent'
         user.cti_profile_id = user_profile_id
-        self.session.add(user)
-        self.session.commit()
+
+        self.add_me(user)
 
         result = user_dao.get_profile(user.id)
 
@@ -324,15 +326,17 @@ class TestUserFeaturesDAO(DAOTestCase):
     def _add_presence(self, name):
         cti_presence = CtiPresences()
         cti_presence.name = name
-        self.session.add(cti_presence)
-        self.session.commit()
+
+        self.add_me(cti_presence)
+
         return cti_presence.id
 
     def _add_phone_hints_group(self, name):
         cti_phone_hints_group = CtiPhoneHintsGroup()
         cti_phone_hints_group.name = name
-        self.session.add(cti_phone_hints_group)
-        self.session.commit()
+
+        self.add_me(cti_phone_hints_group)
+
         return cti_phone_hints_group.id
 
     def _add_profile(self, name):
@@ -340,16 +344,16 @@ class TestUserFeaturesDAO(DAOTestCase):
         cti_profile.name = name
         cti_profile.presence_id = self._add_presence('test_presence')
         cti_profile.phonehints_id = self._add_phone_hints_group('test_add_phone_hints_group')
-        self.session.add(cti_profile)
-        self.session.commit()
+
+        self.add_me(cti_profile)
+
         return cti_profile.id
 
     def _add_user(self, name):
         user = UserFeatures()
         user.firstname = name
 
-        self.session.add(user)
-        self.session.commit()
+        self.add_me(user)
 
         return user
 
@@ -363,8 +367,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         line.name = 'jk1j3'
         line.provisioningid = '12345'
 
-        self.session.add(line)
-        self.session.commit()
+        self.add_me(line)
 
         return user, line
 
@@ -381,8 +384,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         user = UserFeatures()
         user.name = 'Tester'
 
-        self.session.add(user)
-        self.session.commit()
+        self.add_me(user)
 
         self.assertEqual(user_dao.get_reachable_contexts(user.id), [])
 
@@ -394,8 +396,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         ctx_include.context = context
         ctx_include.include = included_context
 
-        self.session.add(ctx_include)
-        self.session.commit()
+        self.add_me(ctx_include)
 
         user, line = self._add_user_with_line('Tester', context)
 
@@ -420,8 +421,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         ctx_loop.context = looping_context
         ctx_loop.include = context
 
-        map(self.session.add, [ctx, ctx_include, ctx_loop])
-        self.session.commit()
+        map(self.add_me, [ctx, ctx_include, ctx_loop])
 
         user, line = self._add_user_with_line('Tester', context)
 
@@ -436,8 +436,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         user = UserFeatures()
         user.name = 'Tester'
 
-        self.session.add(user)
-        self.session.commit()
+        self.add_me(user)
 
         line = LineFeatures()
         line.protocolid = 1
@@ -447,8 +446,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         line.context = 'ctx'
         line.provisioningid = 1234
 
-        self.session.add(line)
-        self.session.commit()
+        self.add_me(line)
 
         expected = 'sip/a1b2c3'
         result = user_dao.get_line_identity(user.id)
@@ -459,8 +457,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         user = UserFeatures()
         user.firstname = 'test'
 
-        self.session.add(user)
-        self.session.commit()
+        self.add_me(user)
 
         line = LineFeatures()
         line.protocolid = 1
@@ -469,8 +466,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         line.provisioningid = 2
         line.iduserfeatures = user.id
 
-        self.session.add(line)
-        self.session.commit()
+        self.add_me(line)
 
         user_id = user_dao.find_by_line_id(line.id)
 
@@ -486,14 +482,12 @@ class TestUserFeaturesDAO(DAOTestCase):
         agent.context = 'ctx'
         agent.language = 'fr'
 
-        self.session.add(agent)
-        self.session.commit()
+        self.add_me(agent)
 
         user = UserFeatures()
         user.agentid = agent.id
 
-        self.session.add(user)
-        self.session.commit()
+        self.add_me(user)
 
         result = user_dao.get_agent_number(user.id)
 
@@ -502,15 +496,14 @@ class TestUserFeaturesDAO(DAOTestCase):
     def test_get_dest_unc(self):
         user = UserFeatures()
 
-        self.session.add(user)
-        self.session.commit()
+        self.add_me(user)
 
         result = user_dao.get_dest_unc(user.id)
 
         self.assertEqual(result, '')
 
+        self.session.begin()
         user.destunc = '1002'
-
         self.session.commit()
 
         result = user_dao.get_dest_unc(user.id)
@@ -520,15 +513,14 @@ class TestUserFeaturesDAO(DAOTestCase):
     def test_get_fwd_unc(self):
         user = UserFeatures()
 
-        self.session.add(user)
-        self.session.commit()
+        self.add_me(user)
 
         result = user_dao.get_fwd_unc(user.id)
 
         self.assertFalse(result)
 
+        self.session.begin()
         user.enableunc = 1
-
         self.session.commit()
 
         result = user_dao.get_fwd_unc(user.id)
@@ -538,15 +530,14 @@ class TestUserFeaturesDAO(DAOTestCase):
     def test_get_dest_busy(self):
         user = UserFeatures()
 
-        self.session.add(user)
-        self.session.commit()
+        self.add_me(user)
 
         result = user_dao.get_dest_busy(user.id)
 
         self.assertEqual(result, '')
 
+        self.session.begin()
         user.destbusy = '1002'
-
         self.session.commit()
 
         result = user_dao.get_dest_busy(user.id)
@@ -556,15 +547,14 @@ class TestUserFeaturesDAO(DAOTestCase):
     def test_get_fwd_busy(self):
         user = UserFeatures()
 
-        self.session.add(user)
-        self.session.commit()
+        self.add_me(user)
 
         result = user_dao.get_fwd_busy(user.id)
 
         self.assertFalse(result)
 
+        self.session.begin()
         user.enablebusy = 1
-
         self.session.commit()
 
         result = user_dao.get_fwd_busy(user.id)
@@ -574,15 +564,14 @@ class TestUserFeaturesDAO(DAOTestCase):
     def test_get_dest_rna(self):
         user = UserFeatures()
 
-        self.session.add(user)
-        self.session.commit()
+        self.add_me(user)
 
         result = user_dao.get_dest_rna(user.id)
 
         self.assertEqual(result, '')
 
+        self.session.begin()
         user.destrna = '1002'
-
         self.session.commit()
 
         result = user_dao.get_dest_rna(user.id)
@@ -592,15 +581,14 @@ class TestUserFeaturesDAO(DAOTestCase):
     def test_get_fwd_rna(self):
         user = UserFeatures()
 
-        self.session.add(user)
-        self.session.commit()
+        self.add_me(user)
 
         result = user_dao.get_fwd_rna(user.id)
 
         self.assertFalse(result)
 
+        self.session.begin()
         user.enablerna = 1
-
         self.session.commit()
 
         result = user_dao.get_fwd_rna(user.id)
@@ -612,8 +600,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         user.firstname = 'Toto'
         user.lastname = 'Plop'
 
-        self.session.add(user)
-        self.session.commit()
+        self.add_me(user)
 
         line = LineFeatures()
         line.number = '1234'
@@ -623,8 +610,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         line.iduserfeatures = user.id
         line.protocolid = 1
 
-        self.session.add(line)
-        self.session.commit()
+        self.add_me(line)
 
         name, number = user_dao.get_name_number(user.id)
 
@@ -638,8 +624,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         user.firstname = 'Toto'
         user.lastname = 'Plop'
 
-        self.session.add(user)
-        self.session.commit()
+        self.add_me(user)
 
         line = LineFeatures()
         line.number = '1234'
@@ -650,8 +635,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         line.protocolid = 1
         line.device = str(8)
 
-        self.session.add(line)
-        self.session.commit()
+        self.add_me(line)
 
         result = user_dao.get_device_id(user.id)
 
@@ -664,14 +648,13 @@ class TestUserFeaturesDAO(DAOTestCase):
         user1.firstname = 'Toto1'
         user1.lastname = 'Plop1'
 
-        self.session.add(user1)
+        self.add_me(user1)
 
         user2 = UserFeatures()
         user2.firstname = 'Toto2'
         user2.lastname = 'Plop2'
 
-        self.session.add(user2)
-        self.session.commit()
+        self.add_me(user2)
 
         line = LineFeatures()
         line.number = '1234'
@@ -682,8 +665,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         line.protocolid = 1
         line.device = str(device_id)
 
-        self.session.add(line)
-        self.session.commit()
+        self.add_me(line)
 
         result = user_dao.get_device_id(user2.id)
 
@@ -694,8 +676,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         user.firstname = 'Toto'
         user.lastname = 'Plop'
 
-        self.session.add(user)
-        self.session.commit()
+        self.add_me(user)
 
         self.assertRaises(LookupError, user_dao.get_device_id, user.id)
 

@@ -1,5 +1,6 @@
-# -*- coding: UTF-8 -*-
-# Copyright (C) 2012-2013  Avencall
+# -*- coding: utf-8 -*-
+
+# Copyright (C) 2013 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,6 +14,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+
 from sqlalchemy.sql.expression import and_, distinct
 from xivo_dao.alchemy.accesswebservice import AccessWebService
 from xivo_dao.helpers.db_manager import xivo_daosession
@@ -20,7 +23,7 @@ from xivo_dao.helpers.db_manager import xivo_daosession
 
 @xivo_daosession
 def get_password(session, login):
-    result = session.query(AccessWebService)\
+    result = session.query(AccessWebService.passwd)\
             .filter(and_(AccessWebService.login == login,
                          AccessWebService.disable == 0)).first()
     if result == None:

@@ -17,7 +17,7 @@
 
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String, Text, Enum, LargeBinary
-from xivo_dao.alchemy.base import Base, Type
+from xivo_dao.helpers.db_manager import Base, Type
 
 
 class Phonebook(Base):

@@ -58,6 +58,8 @@ class TestMeetmeFeaturesDAO(DAOTestCase):
         static_meetme.var_name = 'conf'
         static_meetme.var_val = var_val
         static_meetme.filename = 'meetme.conf'
+
+        self.session.begin()
         self.session.add(static_meetme)
         self.session.commit()
 
@@ -69,6 +71,7 @@ class TestMeetmeFeaturesDAO(DAOTestCase):
         if context is not None:
             meetme.context = context
 
+        self.session.begin()
         self.session.add(meetme)
         self.session.commit()
 
@@ -182,8 +185,6 @@ class TestMeetmeFeaturesDAO(DAOTestCase):
         self.assertFalse(meetme_dao.muted_on_join_by_number('9000'))
 
         red.user_initiallymuted = 1
-
-        self.session.commit()
 
         self.assertTrue(meetme_dao.muted_on_join_by_number('9000'))
 

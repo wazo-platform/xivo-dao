@@ -37,6 +37,7 @@ class TestDeviceDAO(DAOTestCase):
         device.model = 'abcde'
         device.proto = 'sip'
 
+        self.session.begin()
         self.session.add(device)
         self.session.commit()
 
@@ -54,6 +55,7 @@ class TestDeviceDAO(DAOTestCase):
         device.model = 'qwerty'
         device.proto = 'sip'
 
+        self.session.begin()
         self.session.add(device)
         self.session.commit()
 
@@ -79,6 +81,7 @@ class TestDeviceDAO(DAOTestCase):
         aastra.model = 'qwerty'
         aastra.proto = 'sip'
 
+        self.session.begin()
         self.session.add(cisco)
         self.session.add(aastra)
         self.session.commit()
@@ -106,6 +109,7 @@ class TestDeviceDAO(DAOTestCase):
         device.model = '6731i'
         device.proto = 'sip'
 
+        self.session.begin()
         self.session.add(device)
         self.session.commit()
 
@@ -119,6 +123,7 @@ class TestDeviceDAO(DAOTestCase):
         line.provisioningid = 123
         line.protocol = protocol
 
+        self.session.begin()
         self.session.add(line)
         self.session.commit()
 
@@ -138,6 +143,7 @@ class TestDeviceDAO(DAOTestCase):
         device.model = '6731i'
         device.proto = 'sip'
 
+        self.session.begin()
         self.session.add(device)
         self.session.commit()
 
@@ -151,6 +157,7 @@ class TestDeviceDAO(DAOTestCase):
         line.provisioningid = 123
         line.protocol = protocol
 
+        self.session.begin()
         self.session.add(line)
         self.session.commit()
 
@@ -167,6 +174,7 @@ class TestDeviceDAO(DAOTestCase):
         device.model = '6731i'
         device.proto = 'sip'
 
+        self.session.begin()
         self.session.add(device)
         self.session.commit()
 

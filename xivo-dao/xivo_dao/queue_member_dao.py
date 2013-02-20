@@ -35,6 +35,7 @@ def add_agent_to_queue(session, agent_id, agent_number, queue_name):
     queue_member.position = next_position
 
     try:
+        session.begin()
         session.add(queue_member)
         session.commit()
     except Exception:

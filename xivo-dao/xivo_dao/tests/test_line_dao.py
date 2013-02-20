@@ -93,6 +93,7 @@ class TestLineFeaturesDAO(DAOTestCase):
         line.number = self.line_number
         line.iduserfeatures = self.user_id
 
+        self.session.begin()
         self.session.add(line)
         self.session.commit()
 
@@ -149,6 +150,7 @@ class TestLineFeaturesDAO(DAOTestCase):
         line.cid_name = 'Tester One'
         line.cid_num = '1234'
 
+        self.session.begin()
         self.session.add(line)
         self.session.commit()
 
@@ -169,6 +171,7 @@ class TestLineFeaturesDAO(DAOTestCase):
         line.type = 'friend'
         line.callerid = '"Tester One" <1234>'
 
+        self.session.begin()
         self.session.add(line)
         self.session.commit()
 

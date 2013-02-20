@@ -230,6 +230,8 @@ class TestStatDAO(DAOTestCase):
         self.assertEqual(result, expected)
 
     def _insert_queue_log_data(self, queue_log_data):
+        self.session.begin()
+
         lines = queue_log_data.split('\n')
         lines.pop()
         header = self._strip_content_list(lines.pop(0).split('|')[1:-1])
@@ -257,19 +259,23 @@ class TestStatDAO(DAOTestCase):
 
     def _insert_agent(self, aname):
         a = StatAgent(name=aname)
+
+        self.session.begin()
         self.session.add(a)
         self.session.commit()
         return a.name, a.id
 
     def _insert_queue(self, qname):
         q = StatQueue(name=qname)
+
+        self.session.begin()
         self.session.add(q)
         self.session.commit()
         return q.name, q.id
 
     @classmethod
     def _create_functions(cls):
-        ### WARNING: These functions should always be the same as the one in baseconfig
+        # ## WARNING: These functions should always be the same as the one in baseconfig
         fill_simple_calls_fn = '''\
 DROP FUNCTION IF EXISTS "fill_saturated_calls" (text, text);
 DROP FUNCTION IF EXISTS "fill_simple_calls" (text, text);

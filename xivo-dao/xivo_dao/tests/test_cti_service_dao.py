@@ -35,6 +35,8 @@ class TestCtiServiceDAO(DAOTestCase):
     def test_get_name(self):
         cti_profile = CtiProfile()
         cti_profile.name = 'test_name'
+
+        self.session.begin()
         self.session.add(cti_profile)
         self.session.commit()
 
@@ -45,6 +47,8 @@ class TestCtiServiceDAO(DAOTestCase):
     def _add_presence(self, name):
         cti_presence = CtiPresences()
         cti_presence.name = name
+
+        self.session.begin()
         self.session.add(cti_presence)
         self.session.commit()
         return cti_presence.id
@@ -52,6 +56,8 @@ class TestCtiServiceDAO(DAOTestCase):
     def _add_service(self, key):
         cti_service = CtiService()
         cti_service.key = key
+
+        self.session.begin()
         self.session.add(cti_service)
         self.session.commit()
         return cti_service.id
@@ -59,6 +65,8 @@ class TestCtiServiceDAO(DAOTestCase):
     def _add_phone_hints_group(self, name):
         cti_phone_hints_group = CtiPhoneHintsGroup()
         cti_phone_hints_group.name = name
+
+        self.session.begin()
         self.session.add(cti_phone_hints_group)
         self.session.commit()
         return cti_phone_hints_group.id
@@ -68,6 +76,8 @@ class TestCtiServiceDAO(DAOTestCase):
         cti_profile.name = name
         cti_profile.presence_id = self._add_presence('test_presence')
         cti_profile.phonehints_id = self._add_phone_hints_group('test_add_phone_hints_group')
+
+        self.session.begin()
         self.session.add(cti_profile)
         self.session.commit()
         return cti_profile.id
@@ -78,6 +88,8 @@ class TestCtiServiceDAO(DAOTestCase):
         cti_profile_service = CtiProfileService()
         cti_profile_service.service_id = service_id
         cti_profile_service.profile_id = profile_id
+
+        self.session.begin()
         self.session.add(cti_profile_service)
         self.session.commit()
 

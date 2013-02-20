@@ -41,8 +41,9 @@ class TestContextDAO(DAOTestCase):
         context.entity = 'entity'
         context.contexttype = contexttype_name
         context.description = ''
-        self.session.add(context)
 
+        self.session.begin()
+        self.session.add(context)
         self.session.commit()
 
     def _insert_contextnumbers(self, context_name):
@@ -52,6 +53,8 @@ class TestContextDAO(DAOTestCase):
         contextnumbers.numberbeg = '1000'
         contextnumbers.numberend = '1999'
         contextnumbers.didlength = 0
+
+        self.session.begin()
         self.session.add(contextnumbers)
         self.session.commit()
 

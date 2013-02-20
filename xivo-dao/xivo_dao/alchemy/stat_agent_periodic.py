@@ -18,7 +18,7 @@
 from sqlalchemy.schema import Column, ForeignKey, Sequence
 from sqlalchemy.types import Integer, TIMESTAMP
 from sqlalchemy.dialects.postgresql import INTERVAL
-from xivo_dao.alchemy.base import Base
+from xivo_dao.helpers.db_manager import Base
 
 
 class StatAgentPeriodic(Base):

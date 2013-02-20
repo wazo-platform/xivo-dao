@@ -351,6 +351,7 @@ class TestAgentStatusDao(DAOTestCase):
         agent.context = 'foobar'
         agent.language = ''
 
+        self.session.begin()
         self.session.add(agent)
         self.session.commit()
 
@@ -371,6 +372,7 @@ class TestAgentStatusDao(DAOTestCase):
         agent_status.state_interface = state_interface
 
         try:
+            self.session.begin()
             self.session.add(agent_status)
             self.session.commit()
         except Exception:
@@ -385,6 +387,7 @@ class TestAgentStatusDao(DAOTestCase):
                                                  queue_name=queue_name,
                                                  penalty=queue_penalty)
         try:
+            self.session.begin()
             self.session.add(agent_membership)
             self.session.commit()
         except Exception:
@@ -399,6 +402,7 @@ class TestAgentStatusDao(DAOTestCase):
         queue.displayname = queue_name
         queue.number = queue_number
 
+        self.session.begin()
         self.session.add(queue)
         self.session.commit()
 
@@ -414,5 +418,6 @@ class TestAgentStatusDao(DAOTestCase):
         queue_member.channel = 'foobar'
         queue_member.category = 'queue'
 
+        self.session.begin()
         self.session.add(queue_member)
         self.session.commit()

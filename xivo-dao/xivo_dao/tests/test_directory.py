@@ -48,13 +48,20 @@ class TestDirectoryDAO(DAOTestCase):
             name=display_name,
             data='{ "10": [ "Name","name","","{db-name}" ],"20": [ "Number","number_office","","{db-number}" ],"30": [ "Location","","","{db-location}" ] }'
         )
+
+        self.session.begin()
         self.session.add(cti_display)
         self.session.add(cti_contexts)
         self.session.commit()
 
         result = directory_dao.get_directory_headers(context_name)
+        expected_result = [
+            ('Name', 'name'),
+            ('Number', 'number'),
+            ('Location', '')
+        ]
 
-        assert_that(result, contains_inanyorder('Name', 'Number', 'Location'))
+        self.assertEquals(result, expected_result)
 
     def test_get_directory_headers_unknown_context(self):
         context_name = 'myctx'
@@ -76,11 +83,17 @@ class TestDirectoryDAO(DAOTestCase):
             name=display_name,
             data='{ "10": [ "Name","name","","{db-name}" ],"20": [ "Number","number_office","","{db-number}" ],"30": [ "Location","","","{db-location}" ], "40": [ "Number","number_mobile","","{db-mobile}" ] }'
         )
+
+        self.session.begin()
         self.session.add(cti_display)
         self.session.add(cti_contexts)
         self.session.commit()
 
         result = directory_dao.get_directory_headers(context_name)
-        print result
+        expected_result = [
+            ('Name', 'name'),
+            ('Number', 'number'),
+            ('Location', '')
+        ]
 
-        assert_that(result, contains_inanyorder('Name', 'Number', 'Location'))
+        self.assertEqual(result, expected_result)

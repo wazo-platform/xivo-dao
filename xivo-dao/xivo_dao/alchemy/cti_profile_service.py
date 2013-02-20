@@ -17,7 +17,7 @@
 
 from sqlalchemy.schema import Column, ForeignKey
 from sqlalchemy.types import Integer
-from xivo_dao.alchemy.base import Base
+from xivo_dao.helpers.db_manager import Base
 
 
 class CtiProfileService(Base):

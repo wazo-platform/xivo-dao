@@ -35,7 +35,7 @@
 
 from sqlalchemy.schema import Column, ForeignKey
 from sqlalchemy.types import String, TIMESTAMP, Integer, Enum
-from xivo_dao.alchemy.base import Base, Type
+from xivo_dao.helpers.db_manager import Base, Type
 
 
 class StatCallOnQueue(Base):

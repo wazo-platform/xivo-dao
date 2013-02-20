@@ -39,7 +39,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from xivo_dao.alchemy.base import Base, Type
+from xivo_dao.helpers.db_manager import Base, Type
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String, Enum
 

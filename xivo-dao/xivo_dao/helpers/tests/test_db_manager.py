@@ -28,14 +28,14 @@ class TestDBManager(unittest.TestCase):
         result = db_manager.connect(db_name)
 
         create_engine_mock.assert_called_with(config.XIVO_DB_URI, echo=ANY)
-        sessionmaker_mock.assert_called_with(bind=engine_mock)
+        sessionmaker_mock.assert_called_with()
         self.assertEquals(result, session_mock)
 
         db_name = db_manager.ASTERISK_DB_NAME
         result = db_manager.connect(db_name)
 
         create_engine_mock.assert_called_with(config.DB_URI, echo=ANY)
-        sessionmaker_mock.assert_called_with(bind=engine_mock)
+        sessionmaker_mock.assert_called_with()
         self.assertEquals(result, session_mock)
 
     @patch('xivo_dao.helpers.db_manager.session')
@@ -53,7 +53,7 @@ class TestDBManager(unittest.TestCase):
 
         result = decorated_function('arg1', 'arg2', arg3='arg3')
 
-        session_mock.commit.assert_called_once_with()
+        session_mock.flush.assert_called_once_with()
         function_mock.assert_called_once_with(session_mock, 'arg1', 'arg2', arg3='arg3')
 
         self.assertEquals(result, function_result)
@@ -100,7 +100,7 @@ class TestDBManager(unittest.TestCase):
 
         result = decorated_function('arg1')
 
-        new_session.commit.assert_called_once_with()
+        new_session.flush.assert_called_once_with()
         function_mock.assert_called_with(new_session, 'arg1')
 
         self.assertEquals(result, function_result)
@@ -120,7 +120,7 @@ class TestDBManager(unittest.TestCase):
 
         result = decorated_function('arg1', 'arg2', arg3='arg3')
 
-        session_mock.commit.assert_called_once_with()
+        session_mock.flush.assert_called_once_with()
         function_mock.assert_called_once_with(session_mock, 'arg1', 'arg2', arg3='arg3')
 
         self.assertEquals(result, function_result)
@@ -142,7 +142,7 @@ class TestDBManager(unittest.TestCase):
 
         result = decorated_function('arg1')
 
-        new_session.commit.assert_called_once_with()
+        new_session.flush.assert_called_once_with()
         function_mock.assert_called_with(new_session, 'arg1')
 
         self.assertEquals(result, function_result)

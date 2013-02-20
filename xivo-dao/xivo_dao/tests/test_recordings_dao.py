@@ -42,11 +42,10 @@ class TestRecordingDao(DAOTestCase):
         my_recording2 = copy.deepcopy(self.sample_recording)
         my_recording2.cid = '002'
         my_recording2.caller = '3003'
+
+        self.session.begin()
         self.session.add(my_recording1)
         self.session.add(my_recording2)
-        print "1: ", my_recording1
-        print "2: ", my_recording2
-        print "default: ", self.sample_recording
         self.session.commit()
 
         search = {'caller': '2002'}
@@ -67,6 +66,8 @@ class TestRecordingDao(DAOTestCase):
         my_recording2 = copy.deepcopy(self.sample_recording)
         my_recording2.cid = '002'
         my_recording2.caller = '3003'
+
+        self.session.begin()
         self.session.add(my_recording1)
         self.session.add(my_recording2)
         self.session.commit()
@@ -88,6 +89,8 @@ class TestRecordingDao(DAOTestCase):
         result = recordings_dao.delete(1, '001')
         self.assertEquals(result, None)
         my_recording = copy.deepcopy(self.sample_recording)
+
+        self.session.begin()
         self.session.add(my_recording)
         self.session.commit()
 
@@ -103,6 +106,8 @@ class TestRecordingDao(DAOTestCase):
         recording1 = copy.deepcopy(self.sample_recording)
         recording2 = copy.deepcopy(self.sample_recording)
         recording2.cid = '002'
+
+        self.session.begin()
         self.session.add_all([recording1, recording2])
         self.session.commit()
 
@@ -114,6 +119,8 @@ class TestRecordingDao(DAOTestCase):
         recording1 = copy.deepcopy(self.sample_recording)
         recording2 = copy.deepcopy(self.sample_recording)
         recording2.cid = '002'
+
+        self.session.begin()
         self.session.add_all([recording1, recording2])
         self.session.commit()
 
@@ -124,6 +131,8 @@ class TestRecordingDao(DAOTestCase):
         recording1 = copy.deepcopy(self.sample_recording)
         recording2 = copy.deepcopy(self.sample_recording)
         recording2.cid = '002'
+
+        self.session.begin()
         self.session.add_all([recording1, recording2])
         self.session.commit()
 
@@ -136,11 +145,16 @@ class TestRecordingDao(DAOTestCase):
         campaign2.end_date = datetime.strptime('2012-01-31',
                                               "%Y-%m-%d")
         campaign2.queue_id = 1
+
+        self.session.begin()
         self.session.add(campaign2)
         self.session.commit()
+
         recording3 = copy.deepcopy(self.sample_recording)
         recording3.cid = '003'
         recording3.campaign_id = campaign2.id
+
+        self.session.begin()
         self.session.add(recording3)
         self.session.commit()
 
@@ -160,6 +174,8 @@ class TestRecordingDao(DAOTestCase):
         self.campaign.end_date = datetime.strptime('2012-01-31',
                                               "%Y-%m-%d")
         self.campaign.activated = True
+
+        self.session.begin()
         self.session.add(self.campaign)
         self.session.commit()
 
@@ -176,4 +192,3 @@ class TestRecordingDao(DAOTestCase):
                                                       "%Y-%m-%d %H:%M:%S")
         self.sample_recording.campaign_id = self.campaign.id
         self.sample_recording.client_id = ''
-

@@ -21,6 +21,7 @@ from xivo_dao.helpers.db_manager import daosession
 
 @daosession
 def insert_stats(session, period_stats, period_start):
+    session.begin()
     for agent_id, times in period_stats.iteritems():
         entry = StatAgentPeriodic(
             time=period_start,
@@ -31,6 +32,7 @@ def insert_stats(session, period_stats, period_start):
         )
 
         session.add(entry)
+    session.commit()
 
 
 @daosession

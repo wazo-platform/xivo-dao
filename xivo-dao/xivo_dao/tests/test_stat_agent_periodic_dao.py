@@ -38,6 +38,7 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
         agent = StatAgent()
         agent.name = 'test_agent'
 
+        self.session.begin()
         self.session.add(agent)
         self.session.commit()
 
