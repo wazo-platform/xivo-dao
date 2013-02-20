@@ -240,11 +240,21 @@ def get_all(session):
 
 @daosession
 def delete_all(session):
-    session.query(UserFeatures).delete()
-    session.commit()
+    try:
+        session.begin()
+        session.query(UserFeatures).delete()
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        raise e
 
 
 @daosession
 def add_user(session, user):
-    session.add(user)
-    session.commit()
+    try:
+        session.begin()
+        session.add(user)
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        raise e
