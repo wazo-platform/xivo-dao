@@ -17,55 +17,33 @@
 
 from xivo_dao.alchemy.incall import Incall
 from xivo_dao.alchemy.dialaction import Dialaction
-from xivo_dao.alchemy.userfeatures import UserFeatures
-from xivo_dao.alchemy.groupfeatures import GroupFeatures
-from xivo_dao.alchemy.queuefeatures import QueueFeatures
-from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
-from xivo_dao.alchemy.voicemail import Voicemail
-from sqlalchemy.sql.expression import and_, cast
-from sqlalchemy.types import Integer
 from xivo_dao.helpers.db_manager import daosession
+from sqlalchemy.sql.expression import cast
+from sqlalchemy.types import Integer
 
 
 @daosession
 def get(session, incall_id):
-    return session.query(Incall).filter(Incall.id == incall_id).first()
+    query = _new_query(session)
+    return (query
+        .filter(Incall.id == incall_id)
+        .first()
+    )
 
 
 @daosession
-def get_join_elements(session, incall_id):
-    return (session.query(Incall, Dialaction, UserFeatures, GroupFeatures, QueueFeatures, MeetmeFeatures, Voicemail)
-            .join((Dialaction, Incall.id == cast(Dialaction.categoryval, Integer)))
-            .outerjoin((UserFeatures, and_(UserFeatures.id == cast(Dialaction.actionarg1, Integer),
-                                           Dialaction.action == u'user')))
-            .outerjoin((GroupFeatures, and_(GroupFeatures.id == cast(Dialaction.actionarg1, Integer),
-                                            Dialaction.action == u'group')))
-            .outerjoin((QueueFeatures, and_(QueueFeatures.id == cast(Dialaction.actionarg1, Integer),
-                                            Dialaction.action == u'queue')))
-            .outerjoin((MeetmeFeatures, and_(MeetmeFeatures.id == cast(Dialaction.actionarg1, Integer),
-                                             Dialaction.action == u'meetme')))
-            .outerjoin((Voicemail, and_(Voicemail.uniqueid == cast(Dialaction.actionarg1, Integer),
-                                        Dialaction.action == u'voicemail')))
-            .filter(and_(Dialaction.event == u'answer',
-                         Dialaction.category == u'incall',
-                         Incall.id == incall_id))
-            .first())
+def get_by_exten(session, incall_exten):
+    query = _new_query(session)
+    return (query
+        .filter(Incall.exten == incall_exten)
+        .first()
+    )
 
 
-@daosession
-def all(session):
-    return (session.query(Incall, Dialaction, UserFeatures, GroupFeatures, QueueFeatures, MeetmeFeatures, Voicemail)
-            .join((Dialaction, Incall.id == cast(Dialaction.categoryval, Integer)))
-            .outerjoin((UserFeatures, and_(UserFeatures.id == cast(Dialaction.actionarg1, Integer),
-                                           Dialaction.action == u'user')))
-            .outerjoin((GroupFeatures, and_(GroupFeatures.id == cast(Dialaction.actionarg1, Integer),
-                                            Dialaction.action == u'group')))
-            .outerjoin((QueueFeatures, and_(QueueFeatures.id == cast(Dialaction.actionarg1, Integer),
-                                            Dialaction.action == u'queue')))
-            .outerjoin((MeetmeFeatures, and_(MeetmeFeatures.id == cast(Dialaction.actionarg1, Integer),
-                                             Dialaction.action == u'meetme')))
-            .outerjoin((Voicemail, and_(Voicemail.uniqueid == cast(Dialaction.actionarg1, Integer),
-                                        Dialaction.action == u'voicemail')))
-            .filter(and_(Dialaction.event == u'answer',
-                         Dialaction.category == u'incall'))
-            .all())
+def _new_query(session):
+    return (session
+        .query(Incall.id, Dialaction.action, Dialaction.actionarg1)
+        .join((Dialaction, Incall.id == cast(Dialaction.categoryval, Integer)))
+        .filter(Dialaction.category == u'incall')
+        .filter(Dialaction.event == u'answer')
+    )
