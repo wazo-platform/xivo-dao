@@ -32,7 +32,7 @@ def get_join_elements(session, phonebook_id):
             .join((PhonebookAddress, Phonebook.id == PhonebookAddress.phonebookid))
             .outerjoin((PhonebookNumber, Phonebook.id == PhonebookNumber.phonebookid))
             .filter(Phonebook.id == phonebook_id)
-            .first()())
+            .first())
 
 
 @daosession
