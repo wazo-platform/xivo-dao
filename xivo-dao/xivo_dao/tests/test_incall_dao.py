@@ -20,19 +20,13 @@ from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
 from xivo_dao.alchemy.ctipresences import CtiPresences
 from xivo_dao.alchemy.dialaction import Dialaction
-from xivo_dao.alchemy.groupfeatures import GroupFeatures
 from xivo_dao.alchemy.incall import Incall
-from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
-from xivo_dao.alchemy.queuefeatures import QueueFeatures
-from xivo_dao.alchemy.userfeatures import UserFeatures
-from xivo_dao.alchemy.voicemail import Voicemail
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestIncallDAO(DAOTestCase):
 
-    tables = [Incall, Dialaction, UserFeatures, GroupFeatures, QueueFeatures,
-              MeetmeFeatures, Voicemail, CtiPresences, CtiPhoneHintsGroup, CtiProfile]
+    tables = [Incall, Dialaction, CtiPresences, CtiPhoneHintsGroup, CtiProfile]
 
     def setUp(self):
         self.empty_tables()
@@ -48,14 +42,13 @@ class TestIncallDAO(DAOTestCase):
         self.session.commit()
         return incall.id
 
-    def _insert_dialaction(self, incall_id, user_id=None):
+    def _insert_dialaction(self, incall_id, action, actionarg1):
         dialaction = Dialaction()
         dialaction.event = 'answer'
         dialaction.category = 'incall'
         dialaction.categoryval = str(incall_id)
-        if user_id:
-            dialaction.action = 'user'
-            dialaction.actionarg1 = str(user_id)
+        dialaction.action = action
+        dialaction.actionarg1 = actionarg1
         dialaction.actionarg2 = ''
         dialaction.linked = 1
 
@@ -63,68 +56,28 @@ class TestIncallDAO(DAOTestCase):
         self.session.add(dialaction)
         self.session.commit()
 
-    def _insert_user(self, firstname):
-        user = UserFeatures()
-        user.firstname = firstname
-
-        self.session.begin()
-        self.session.add(user)
-        self.session.commit()
-        return user.id
-
     def test_get(self):
         incall_exten = '1001'
+        incall_action = 'user'
+        incall_actionarg1 = '42'
         incall_id = self._insert_incall(incall_exten)
+        self._insert_dialaction(incall_id, incall_action, incall_actionarg1)
 
         incall = incall_dao.get(incall_id)
 
-        self.assertEqual(incall.exten, incall_exten)
+        self.assertEqual(incall.id, incall_id)
+        self.assertEqual(incall.action, incall_action)
+        self.assertEqual(incall.actionarg1, incall_actionarg1)
 
-    def test_get_join_elements_with_user(self):
+    def test_get_by_exten(self):
         incall_exten = '1001'
+        incall_action = 'user'
+        incall_actionarg1 = '42'
         incall_id = self._insert_incall(incall_exten)
-        user_id = self._insert_user('test_incall')
-        self._insert_dialaction(incall_id, user_id=user_id)
+        self._insert_dialaction(incall_id, incall_action, incall_actionarg1)
 
-        incall, dialaction, user, group, queue, meetme, voicemail = incall_dao.get_join_elements(incall_id)
+        incall = incall_dao.get_by_exten(incall_exten)
 
-        self.assertEqual(incall.exten, incall_exten)
-        self.assertEqual(dialaction.categoryval, str(incall_id))
-        self.assertEqual(user.id, user_id)
-        self.assertEqual(group, None)
-        self.assertEqual(queue, None)
-        self.assertEqual(meetme, None)
-        self.assertEqual(voicemail, None)
-
-    def test_all_with_user(self):
-        incall_exten1 = '1001'
-        incall_id1 = self._insert_incall(incall_exten1)
-        user_id1 = self._insert_user('test_incall1')
-        self._insert_dialaction(incall_id1, user_id=user_id1)
-
-        incall_exten2 = '1002'
-        incall_id2 = self._insert_incall(incall_exten2)
-        user_id2 = self._insert_user('test_incall2')
-        self._insert_dialaction(incall_id2, user_id=user_id2)
-
-        incall_full_infos = incall_dao.all()
-
-        incall, dialaction, user, group, queue, meetme, voicemail = incall_full_infos[0]
-
-        self.assertEqual(incall.exten, incall_exten1)
-        self.assertEqual(dialaction.categoryval, str(incall_id1))
-        self.assertEqual(user.id, user_id1)
-        self.assertEqual(group, None)
-        self.assertEqual(queue, None)
-        self.assertEqual(meetme, None)
-        self.assertEqual(voicemail, None)
-
-        incall, dialaction, user, group, queue, meetme, voicemail = incall_full_infos[1]
-
-        self.assertEqual(incall.exten, incall_exten2)
-        self.assertEqual(dialaction.categoryval, str(incall_id2))
-        self.assertEqual(user.id, user_id2)
-        self.assertEqual(group, None)
-        self.assertEqual(queue, None)
-        self.assertEqual(meetme, None)
-        self.assertEqual(voicemail, None)
+        self.assertEqual(incall.id, incall_id)
+        self.assertEqual(incall.action, incall_action)
+        self.assertEqual(incall.actionarg1, incall_actionarg1)

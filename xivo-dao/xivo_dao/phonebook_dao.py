@@ -27,17 +27,26 @@ def get(session, phonebook_id):
 
 
 @daosession
-def get_join_elements(session, phonebook_id):
-    return (session.query(Phonebook, PhonebookAddress, PhonebookNumber)
-            .join((PhonebookAddress, Phonebook.id == PhonebookAddress.phonebookid))
-            .outerjoin((PhonebookNumber, Phonebook.id == PhonebookNumber.phonebookid))
-            .filter(Phonebook.id == phonebook_id)
-            .first()())
+def get_phonebookaddress(session, phonebook_id):
+    return session.query(PhonebookAddress).filter(PhonebookAddress.phonebookid == phonebook_id).all()
+
+
+@daosession
+def get_phonebooknumber(session, phonebook_id):
+    return session.query(PhonebookNumber).filter(PhonebookNumber.phonebookid == phonebook_id).all()
 
 
 @daosession
 def all(session):
-    return (session.query(Phonebook, PhonebookAddress, PhonebookNumber)
-            .join((PhonebookAddress, Phonebook.id == PhonebookAddress.phonebookid))
-            .outerjoin((PhonebookNumber, Phonebook.id == PhonebookNumber.phonebookid))
-            .all())
+    return session.query(Phonebook).all()
+
+
+@daosession
+def all_join_elements(session):
+    res = []
+    phonebooks = session.query(Phonebook).all()
+    for phonebook in phonebooks:
+        phonebookaddress = get_phonebookaddress(phonebook.id)
+        phonebooknumber = get_phonebooknumber(phonebook.id)
+        res.append((phonebook, phonebookaddress, phonebooknumber))
+    return res
