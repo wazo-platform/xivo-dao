@@ -21,53 +21,56 @@ from xivo_dao.alchemy.contextinclude import ContextInclude
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from sqlalchemy import and_
 from xivo_dao.helpers.db_manager import daosession
+#the following import is necessary to laod CtiProfiles' definition:
+from xivo_dao.alchemy.cti_profile import CtiProfile
 
 
 def enable_dnd(user_id):
-    _update(user_id, {'enablednd': 1})
+    update(user_id, {'enablednd': 1})
 
 
 def disable_dnd(user_id):
-    _update(user_id, {'enablednd': 0})
+    update(user_id, {'enablednd': 0})
 
 
 def enable_filter(user_id):
-    _update(user_id, {'incallfilter': 1})
+    update(user_id, {'incallfilter': 1})
 
 
 def disable_filter(user_id):
-    _update(user_id, {'incallfilter': 0})
+    update(user_id, {'incallfilter': 0})
 
 
 def enable_unconditional_fwd(user_id, destination):
-    _update(user_id, {'enableunc': 1, 'destunc': destination})
+    update(user_id, {'enableunc': 1, 'destunc': destination})
 
 
 def disable_unconditional_fwd(user_id, destination):
-    _update(user_id, {'enableunc': 0, 'destunc': destination})
+    update(user_id, {'enableunc': 0, 'destunc': destination})
 
 
 def enable_rna_fwd(user_id, destination):
-    _update(user_id, {'enablerna': 1, 'destrna': destination})
+    update(user_id, {'enablerna': 1, 'destrna': destination})
 
 
 def disable_rna_fwd(user_id, destination):
-    _update(user_id, {'enablerna': 0, 'destrna': destination})
+    update(user_id, {'enablerna': 0, 'destrna': destination})
 
 
 def enable_busy_fwd(user_id, destination):
-    _update(user_id, {'enablebusy': 1, 'destbusy': destination})
+    update(user_id, {'enablebusy': 1, 'destbusy': destination})
 
 
 def disable_busy_fwd(user_id, destination):
-    _update(user_id, {'enablebusy': 0, 'destbusy': destination})
+    update(user_id, {'enablebusy': 0, 'destbusy': destination})
 
 
 @daosession
-def _update(session, user_id, user_data_dict):
+def update(session, user_id, user_data_dict):
     session.begin()
-    session.query(UserFeatures).filter(UserFeatures.id == user_id).update(user_data_dict)
+    result = session.query(UserFeatures).filter(UserFeatures.id == user_id).update(user_data_dict)
     session.commit()
+    return result
 
 
 @daosession
@@ -258,3 +261,11 @@ def add_user(session, user):
     except Exception as e:
         session.rollback()
         raise e
+
+
+@daosession
+def delete(session, userid):
+    session.begin()
+    result = session.query(UserFeatures.id == userid).delete()
+    session.commit()
+    return result

@@ -740,3 +740,28 @@ class TestUserFeaturesDAO(DAOTestCase):
         result = user_dao.get_all()
         self.assertEqual(result, [user])
 
+    def test_update(self):
+        user = self._add_user('test')
+        data = {'firstname': 'test_first',
+                'lastname': 'test_last'}
+        result = user_dao.update(user.id, data)
+        self.assertEqual(user.firstname, 'test_first')
+        self.assertEqual(user.lastname, 'test_last')
+        self.assertEqual(result, 1)
+
+    def test_update_unexisting_user(self):
+        data = {'firstname': 'test_first',
+                'lastname': 'test_last'}
+        result = user_dao.update(1, data)
+        self.assertEqual(result, 0)
+
+    def test_delete(self):
+        user = self._add_user('test')
+        generated_id = user.id
+        result = user_dao.delete(generated_id)
+        self.assertEqual(result, 1)
+        self.assertRaises(LookupError, user_dao.get, generated_id)
+
+    def test_delete_unexisting_user(self):
+        result = user_dao.delete(1)
+        self.assertEqual(result, 0)
