@@ -18,10 +18,8 @@
 from xivo_dao.alchemy.stat_call_on_queue import StatCallOnQueue
 from xivo_dao import stat_queue_dao
 from sqlalchemy import func, between, literal
-from xivo_dao.helpers.db_manager import daosession
 
 
-@daosession
 def _add_call(session, callid, time, queue_name, event, waittime=None):
     queue_id = int(stat_queue_dao.id_from_name(queue_name))
     call_on_queue = StatCallOnQueue()
@@ -37,31 +35,30 @@ def _add_call(session, callid, time, queue_name, event, waittime=None):
     session.commit()
 
 
-def add_abandoned_call(callid, time, queue_name, waittime):
-    _add_call(callid, time, queue_name, 'abandoned', waittime)
+def add_abandoned_call(dao_sess, callid, time, queue_name, waittime):
+    _add_call(dao_sess, callid, time, queue_name, 'abandoned', waittime)
 
 
-def add_full_call(callid, time, queue_name):
-    _add_call(callid, time, queue_name, 'full')
+def add_full_call(dao_sess, callid, time, queue_name):
+    _add_call(dao_sess, callid, time, queue_name, 'full')
 
 
 def add_joinempty_call(callid, time, queue_name):
     _add_call(callid, time, queue_name, 'joinempty')
 
 
-def add_leaveempty_call(callid, time, queue_name, waittime):
-    _add_call(callid, time, queue_name, 'leaveempty', waittime)
+def add_leaveempty_call(dao_sess, callid, time, queue_name, waittime):
+    _add_call(dao_sess, callid, time, queue_name, 'leaveempty', waittime)
 
 
-def add_closed_call(callid, time, queue_name):
-    _add_call(callid, time, queue_name, 'closed')
+def add_closed_call(dao_sess, callid, time, queue_name):
+    _add_call(dao_sess, callid, time, queue_name, 'closed')
 
 
-def add_timeout_call(callid, time, queue_name, waittime):
-    _add_call(callid, time, queue_name, 'timeout', waittime)
+def add_timeout_call(dao_sess, callid, time, queue_name, waittime):
+    _add_call(dao_sess, callid, time, queue_name, 'timeout', waittime)
 
 
-@daosession
 def get_periodic_stats(session, start, end):
     stats = {}
 
@@ -86,11 +83,9 @@ def get_periodic_stats(session, start, end):
     return stats
 
 
-@daosession
 def clean_table(session):
     session.query(StatCallOnQueue).delete()
 
 
-@daosession
 def remove_after(session, date):
     session.query(StatCallOnQueue).filter(StatCallOnQueue.time >= date).delete()

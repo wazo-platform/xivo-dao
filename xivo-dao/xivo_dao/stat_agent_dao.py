@@ -19,7 +19,6 @@ from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.stat_agent import StatAgent
 
 
-@daosession
 def insert_missing_agents(session):
     session.execute('''\
 INSERT INTO stat_agent (name)
@@ -32,6 +31,5 @@ def id_from_name(session, agent_name):
     return session.query(StatAgent.id).filter(StatAgent.name == agent_name).first().id
 
 
-@daosession
 def clean_table(session):
     session.query(StatAgent).delete()

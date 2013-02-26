@@ -15,34 +15,34 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.db_manager import daosession
-
 
 _STR_TIME_FMT = "%Y-%m-%d %H:%M:%S.%f"
 
 
-def fill_simple_calls(start, end):
+def fill_simple_calls(session, start, end):
     _run_sql_function_returning_void(
+        session,
         start, end,
         'SELECT 1 AS place_holder FROM fill_simple_calls(:start, :end)'
     )
 
 
-def fill_answered_calls(start, end):
+def fill_answered_calls(session, start, end):
     _run_sql_function_returning_void(
+        session,
         start, end,
         'SELECT 1 AS place_holder FROM fill_answered_calls(:start, :end)'
     )
 
 
-def fill_leaveempty_calls(start, end):
+def fill_leaveempty_calls(session, start, end):
     _run_sql_function_returning_void(
+        session,
         start, end,
         'SELECT 1 AS place_holder FROM fill_leaveempty_calls(:start, :end)'
     )
 
 
-@daosession
 def _run_sql_function_returning_void(session, start, end, function):
     start = start.strftime(_STR_TIME_FMT)
     end = end.strftime(_STR_TIME_FMT)
@@ -54,7 +54,6 @@ def _run_sql_function_returning_void(session, start, end, function):
      .first())
 
 
-@daosession
 def get_pause_intervals_in_range(session, start, end):
     pause_in_range = '''\
 SELECT stat_agent.id AS agent,
@@ -96,7 +95,6 @@ SELECT stat_agent.id AS agent,
     return results
 
 
-@daosession
 def get_login_intervals_in_range(session, start, end):
     completed_logins = _get_completed_logins(session, start, end)
     ongoing_logins = _get_ongoing_logins(session, start, end)

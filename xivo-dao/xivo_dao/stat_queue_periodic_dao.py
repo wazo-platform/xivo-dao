@@ -17,10 +17,8 @@
 
 from xivo_dao.alchemy.stat_queue_periodic import StatQueuePeriodic
 from sqlalchemy.sql.functions import max
-from xivo_dao.helpers.db_manager import daosession
 
 
-@daosession
 def insert_stats(session, stats, period_start):
     for queue_id, queue_stats in stats.iteritems():
         entry = StatQueuePeriodic()
@@ -40,7 +38,6 @@ def insert_stats(session, stats, period_start):
         session.add(entry)
 
 
-@daosession
 def get_most_recent_time(session):
     res = session.query(max(StatQueuePeriodic.time)).first()[0]
     if res is None:
@@ -48,11 +45,9 @@ def get_most_recent_time(session):
     return res
 
 
-@daosession
 def clean_table(session):
     session.query(StatQueuePeriodic).delete()
 
 
-@daosession
 def remove_after(session, date):
     session.query(StatQueuePeriodic).filter(StatQueuePeriodic.time >= date).delete()

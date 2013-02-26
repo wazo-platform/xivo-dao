@@ -27,7 +27,6 @@ from xivo_dao.helpers.db_manager import daosession
 _STR_TIME_FMT = "%Y-%m-%d %H:%M:%S.%f"
 
 
-@daosession
 def get_wrapup_times(session, start, end, interval):
     before_start = start - timedelta(minutes=2)
     wrapup_times_query = '''\
@@ -105,7 +104,6 @@ def _enumerate_periods(start, end, interval):
         tmp += interval
 
 
-@daosession
 def _get_event_with_enterqueue(session, start, end, match, event):
     start = start.strftime(_STR_TIME_FMT)
     end = end.strftime(_STR_TIME_FMT)
@@ -141,15 +139,14 @@ def _get_event_with_enterqueue(session, start, end, match, event):
             }
 
 
-def get_queue_abandoned_call(start, end):
-    return _get_event_with_enterqueue(start, end, 'ABANDON', 'abandoned')
+def get_queue_abandoned_call(session, start, end):
+    return _get_event_with_enterqueue(session, start, end, 'ABANDON', 'abandoned')
 
 
-def get_queue_timeout_call(start, end):
-    return _get_event_with_enterqueue(start, end, 'EXITWITHTIMEOUT', 'timeout')
+def get_queue_timeout_call(session, start, end):
+    return _get_event_with_enterqueue(session, start, end, 'EXITWITHTIMEOUT', 'timeout')
 
 
-@daosession
 def get_first_time(session):
     res = session.query(cast(min(QueueLog.time), TIMESTAMP)).first()[0]
     if res is None:
@@ -157,7 +154,6 @@ def get_first_time(session):
     return res
 
 
-@daosession
 def get_queue_names_in_range(session, start, end):
     start = start.strftime(_STR_TIME_FMT)
     end = end.strftime(_STR_TIME_FMT)
@@ -196,7 +192,6 @@ def insert_entry(session, time, callid, queue, agent, event, d1='', d2='', d3=''
     session.add(entry)
 
 
-@daosession
 def hours_with_calls(session, start, end):
     start = start.strftime(_STR_TIME_FMT)
     end = end.strftime(_STR_TIME_FMT)

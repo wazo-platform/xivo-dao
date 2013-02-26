@@ -33,26 +33,17 @@ def id_from_name(session, queue_name):
     return res[0].id
 
 
-@daosession
 def insert_if_missing(session, all_queues):
     all_queues = set(all_queues)
     old_queues = set(r[0] for r in session.query(distinct(StatQueue.name)))
 
     missing_queues = list(all_queues - old_queues)
 
-    try:
-        session.begin()
-        for queue_name in missing_queues:
-            new_queue = StatQueue()
-            new_queue.name = queue_name
-            session.add(new_queue)
-        session.commit()
-    except Exception:
-        session.rollback()
+    for queue_name in missing_queues:
+        new_queue = StatQueue()
+        new_queue.name = queue_name
+        session.add(new_queue)
 
 
-@daosession
 def clean_table(session):
-    session.begin()
     session.query(StatQueue).delete()
-    session.commit()
