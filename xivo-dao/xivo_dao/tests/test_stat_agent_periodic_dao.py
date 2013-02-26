@@ -81,8 +81,10 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
             }
         }
 
+        self.session.begin()
         for period_start, agents_stats in stats.iteritems():
             stat_agent_periodic_dao.insert_stats(self.session, agents_stats, period_start)
+        self.session.commit()
 
         period_start = dt(2012, 01, 01, 01, 00, 00)
 
@@ -135,8 +137,10 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
             },
         }
 
+        self.session.begin()
         for period_start, agents_stats in stats.iteritems():
             stat_agent_periodic_dao.insert_stats(self.session, agents_stats, period_start)
+        self.session.commit()
 
         stat_agent_periodic_dao.remove_after(self.session, dt(2012, 1, 2))
 
