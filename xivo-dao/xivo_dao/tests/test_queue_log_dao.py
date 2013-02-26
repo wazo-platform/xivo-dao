@@ -135,7 +135,7 @@ class TestQueueLogDAO(DAOTestCase):
 '''
         self._insert_queue_log_data(queue_log_data)
 
-        result = queue_log_dao.get_wrapup_times(start, end, ONE_HOUR)
+        result = queue_log_dao.get_wrapup_times(self.session, start, end, ONE_HOUR)
 
         expected = {
             datetime(2012, 10, 1, 6): {
@@ -151,7 +151,7 @@ class TestQueueLogDAO(DAOTestCase):
         self.assertEqual(result, expected)
 
     def test_get_first_time(self):
-        self.assertRaises(LookupError, queue_log_dao.get_first_time)
+        self.assertRaises(LookupError, queue_log_dao.get_first_time, self.session)
 
         queuename = 'q1'
         for minute in [0, 10, 20, 30, 40, 50]:
@@ -161,7 +161,7 @@ class TestQueueLogDAO(DAOTestCase):
 
         expected = datetime(2012, 01, 01, 0, 0, 59)
 
-        result = queue_log_dao.get_first_time()
+        result = queue_log_dao.get_first_time(self.session)
 
         self.assertEqual(result, expected)
 
@@ -172,7 +172,7 @@ class TestQueueLogDAO(DAOTestCase):
         for queue_name in queue_names:
             self._insert_entry_queue('FULL', timestamp, queue_name, queue_name)
 
-        result = sorted(queue_log_dao.get_queue_names_in_range(t - ONE_HOUR, t + ONE_HOUR))
+        result = sorted(queue_log_dao.get_queue_names_in_range(self.session, t - ONE_HOUR, t + ONE_HOUR))
 
         self.assertEqual(result, queue_names)
 
@@ -180,7 +180,7 @@ class TestQueueLogDAO(DAOTestCase):
         start = datetime(2012, 01, 01, 01, 00, 00)
         expected = self._insert_abandon(start, [-1, 0, 10, 30, 59, 60, 120])
 
-        result = queue_log_dao.get_queue_abandoned_call(start, start + ONE_HOUR - ONE_MICROSECOND)
+        result = queue_log_dao.get_queue_abandoned_call(self.session, start, start + ONE_HOUR - ONE_MICROSECOND)
 
         self.assertEqual(sorted(result), sorted(expected))
 
@@ -188,7 +188,7 @@ class TestQueueLogDAO(DAOTestCase):
         start = datetime(2012, 01, 01, 01, 00, 00)
         expected = self._insert_timeout(start, [-1, 0, 10, 30, 59, 60, 120])
 
-        result = queue_log_dao.get_queue_timeout_call(start, start + ONE_HOUR - ONE_MICROSECOND)
+        result = queue_log_dao.get_queue_timeout_call(self.session, start, start + ONE_HOUR - ONE_MICROSECOND)
 
         self.assertEqual(sorted(result), sorted(expected))
 
@@ -321,7 +321,7 @@ class TestQueueLogDAO(DAOTestCase):
     def test_hours_with_calls(self):
         start = datetime(2012, 01, 01)
         end = datetime(2012, 6, 30, 23, 59, 59, 999999)
-        res = [h for h in queue_log_dao.hours_with_calls(start, end)]
+        res = [h for h in queue_log_dao.hours_with_calls(self.session, start, end)]
 
         self.assertEqual(res, [])
 
@@ -338,7 +338,7 @@ class TestQueueLogDAO(DAOTestCase):
             datetime(2012, 6, 30, 23)
         ]
 
-        res = [h for h in queue_log_dao.hours_with_calls(start, end)]
+        res = [h for h in queue_log_dao.hours_with_calls(self.session, start, end)]
 
         self.assertEqual(res, expected)
 

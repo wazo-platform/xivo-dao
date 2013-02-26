@@ -37,7 +37,7 @@ class TestStatAgentDAO(DAOTestCase):
     def test_clean_table(self):
         self._insert_agent('Agent/123')
 
-        stat_agent_dao.clean_table()
+        stat_agent_dao.clean_table(self.session)
 
         self.assertTrue(self.session.query(StatAgent).first() is None)
 

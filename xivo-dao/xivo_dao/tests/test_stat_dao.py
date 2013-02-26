@@ -47,12 +47,12 @@ class TestStatDAO(DAOTestCase):
 
     def test_fill_simple_calls_empty(self):
         try:
-            stat_dao.fill_simple_calls(self.start, self.end)
+            stat_dao.fill_simple_calls(self.session, self.start, self.end)
         except:
             self.assertTrue(False, 'Should not happen')
 
     def test_get_login_intervals_in_range_calls_empty(self):
-        result = stat_dao.get_login_intervals_in_range(self.start, self.end)
+        result = stat_dao.get_login_intervals_in_range(self.session, self.start, self.end)
 
         self.assertEqual(len(result), 0)
 
@@ -123,7 +123,7 @@ class TestStatDAO(DAOTestCase):
 
         self._insert_agent_logins_logoffs(logins, logoffs)
 
-        result = stat_dao.get_login_intervals_in_range(self.start, self.end)
+        result = stat_dao.get_login_intervals_in_range(self.session, self.start, self.end)
 
         expected = {
             self.aid1: sorted([(cb_logins[0]['time'], cb_logoffs[0]['time']),
@@ -164,7 +164,7 @@ class TestStatDAO(DAOTestCase):
 
         self._insert_agent_logins_logoffs(logins, [])
 
-        result = stat_dao.get_login_intervals_in_range(self.start, self.end)
+        result = stat_dao.get_login_intervals_in_range(self.session, self.start, self.end)
 
         expected = {
             self.aid1: [(self.start, self.end)],
@@ -200,7 +200,7 @@ class TestStatDAO(DAOTestCase):
         self.session.add(connect2)
         self.session.commit()
 
-        result = stat_dao.get_login_intervals_in_range(self.start, self.end)
+        result = stat_dao.get_login_intervals_in_range(self.session, self.start, self.end)
 
         expected = {}
 

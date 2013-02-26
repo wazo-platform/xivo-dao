@@ -187,7 +187,7 @@ class TestStatDAO(DAOTestCase):
 
         self._insert_queue_log_data(queue_log_data)
 
-        result = stat_dao.get_pause_intervals_in_range(start, end)
+        result = stat_dao.get_pause_intervals_in_range(self.session, start, end)
         for agent, logins in result.iteritems():
             result[agent] = sorted(logins, key=lambda login: login[0])
 
@@ -216,7 +216,7 @@ class TestStatDAO(DAOTestCase):
 
         self._insert_queue_log_data(queue_log_data)
 
-        result = stat_dao.get_pause_intervals_in_range(start, end)
+        result = stat_dao.get_pause_intervals_in_range(self.session, start, end)
         for agent, logins in result.iteritems():
             result[agent] = sorted(logins, key=lambda login: login[0])
 

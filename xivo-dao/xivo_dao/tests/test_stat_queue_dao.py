@@ -43,7 +43,9 @@ class TestStatQueueDAO(DAOTestCase):
 
         all_queues = sorted(old_queues + new_queues)
 
-        stat_queue_dao.insert_if_missing(all_queues)
+        self.session.begin()
+        stat_queue_dao.insert_if_missing(self.session, all_queues)
+        self.session.commit()
 
         result = sorted(r.name for r in self.session.query(StatQueue.name))
 
@@ -52,7 +54,7 @@ class TestStatQueueDAO(DAOTestCase):
     def test_clean_table(self):
         self._insert_queue('queue1')
 
-        stat_queue_dao.clean_table()
+        stat_queue_dao.clean_table(self.session)
 
         self.assertTrue(self.session.query(StatQueue).first() is None)
 

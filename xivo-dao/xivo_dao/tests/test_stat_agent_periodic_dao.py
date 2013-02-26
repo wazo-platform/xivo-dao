@@ -82,7 +82,7 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
         }
 
         for period_start, agents_stats in stats.iteritems():
-            stat_agent_periodic_dao.insert_stats(agents_stats, period_start)
+            stat_agent_periodic_dao.insert_stats(self.session, agents_stats, period_start)
 
         period_start = dt(2012, 01, 01, 01, 00, 00)
 
@@ -104,9 +104,9 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
             },
         }
 
-        stat_agent_periodic_dao.insert_stats(stats, dt(2012, 1, 1))
+        stat_agent_periodic_dao.insert_stats(self.session, stats, dt(2012, 1, 1))
 
-        stat_agent_periodic_dao.clean_table()
+        stat_agent_periodic_dao.clean_table(self.session)
 
         total = self.session.query(func.count(StatAgentPeriodic.time))[0][0]
 
@@ -136,9 +136,9 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
         }
 
         for period_start, agents_stats in stats.iteritems():
-            stat_agent_periodic_dao.insert_stats(agents_stats, period_start)
+            stat_agent_periodic_dao.insert_stats(self.session, agents_stats, period_start)
 
-        stat_agent_periodic_dao.remove_after(dt(2012, 1, 2))
+        stat_agent_periodic_dao.remove_after(self.session, dt(2012, 1, 2))
 
         res = self.session.query(StatAgentPeriodic.time)
 

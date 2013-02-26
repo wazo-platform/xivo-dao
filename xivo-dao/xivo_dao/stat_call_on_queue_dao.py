@@ -43,8 +43,8 @@ def add_full_call(dao_sess, callid, time, queue_name):
     _add_call(dao_sess, callid, time, queue_name, 'full')
 
 
-def add_joinempty_call(callid, time, queue_name):
-    _add_call(callid, time, queue_name, 'joinempty')
+def add_joinempty_call(dao_sess, callid, time, queue_name):
+    _add_call(dao_sess, callid, time, queue_name, 'joinempty')
 
 
 def add_leaveempty_call(dao_sess, callid, time, queue_name, waittime):

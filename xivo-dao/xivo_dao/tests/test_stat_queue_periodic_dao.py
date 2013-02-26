@@ -63,7 +63,9 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
         stats = self._get_stats_for_queue()
         period_start = datetime.datetime(2012, 01, 01, 00, 00, 00)
 
-        stat_queue_periodic_dao.insert_stats(stats, period_start)
+        self.session.begin()
+        stat_queue_periodic_dao.insert_stats(self.session, stats, period_start)
+        self.session.commit()
 
         try:
             result = (self.session.query(StatQueuePeriodic)
@@ -83,17 +85,19 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
             self.fail('Should have found a row')
 
     def test_get_most_recent_time(self):
-        self.assertRaises(LookupError, stat_queue_periodic_dao.get_most_recent_time)
+        self.assertRaises(LookupError, stat_queue_periodic_dao.get_most_recent_time, self.session)
 
         stats = self._get_stats_for_queue()
         start = datetime.datetime(2012, 01, 01, 00, 00, 00)
 
+        self.session.begin()
         for minute_increment in [-5, 5, 15, 22, 35, 65, 120]:
             delta = datetime.timedelta(minutes=minute_increment)
             time = start + delta
-            stat_queue_periodic_dao.insert_stats(stats, time)
+            stat_queue_periodic_dao.insert_stats(self.session, stats, time)
+        self.session.commit()
 
-        result = stat_queue_periodic_dao.get_most_recent_time()
+        result = stat_queue_periodic_dao.get_most_recent_time(self.session)
         expected = start + datetime.timedelta(minutes=120)
 
         self.assertEqual(result, expected)
@@ -108,9 +112,9 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
         }
         period_start = datetime.datetime(2012, 01, 01, 00, 00, 00)
 
-        stat_queue_periodic_dao.insert_stats(stats, period_start)
+        stat_queue_periodic_dao.insert_stats(self.session, stats, period_start)
 
-        stat_queue_periodic_dao.clean_table()
+        stat_queue_periodic_dao.clean_table(self.session)
 
         total = self.session.query(func.count(StatQueuePeriodic.time))[0][0]
 
@@ -125,11 +129,13 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
             }
         }
 
-        stat_queue_periodic_dao.insert_stats(stats, datetime.datetime(2012, 1, 1))
-        stat_queue_periodic_dao.insert_stats(stats, datetime.datetime(2012, 1, 2))
-        stat_queue_periodic_dao.insert_stats(stats, datetime.datetime(2012, 1, 3))
+        self.session.begin()
+        stat_queue_periodic_dao.insert_stats(self.session, stats, datetime.datetime(2012, 1, 1))
+        stat_queue_periodic_dao.insert_stats(self.session, stats, datetime.datetime(2012, 1, 2))
+        stat_queue_periodic_dao.insert_stats(self.session, stats, datetime.datetime(2012, 1, 3))
+        self.session.commit()
 
-        stat_queue_periodic_dao.remove_after(datetime.datetime(2012, 1, 2))
+        stat_queue_periodic_dao.remove_after(self.session, datetime.datetime(2012, 1, 2))
 
         res = self.session.query(StatQueuePeriodic.time)
 
