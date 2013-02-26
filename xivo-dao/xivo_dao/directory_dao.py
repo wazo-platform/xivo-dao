@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import cjson
+import logging
 
 from xivo_dao.helpers.db_manager import daosession
 
@@ -25,9 +26,27 @@ from xivo_dao.alchemy.cti_displays import CtiDisplays
 from sqlalchemy import and_
 
 
+logger = logging.getLogger(__name__)
+
+
+NUMBER_TYPE = 'number'
+
+
 @daosession
 def get_directory_headers(session, context):
-    NAME_INDEX, TYPE_INDEX = 0, 1
+    attribute_list = _get_attribute_list(session, context)
+    header_list = _merge_number_attributes(attribute_list)
+    return header_list
+
+
+def _get_attribute_list(session, context):
+    display_filter_json = _get_display_filter_json(session, context)
+    display_filter = _display_filter_from_json(display_filter_json)
+    attribute_list = _extract_attributes_from_display_filter(display_filter)
+    return attribute_list
+
+
+def _get_display_filter_json(session, context):
     raw_display_data = session.query(
         CtiDisplays.data
     ).filter(
@@ -36,27 +55,39 @@ def get_directory_headers(session, context):
     ).first()
 
     if not raw_display_data:
-        return []
+        return ''
+    else:
+        return raw_display_data.data
 
-    display_data = cjson.decode(raw_display_data.data)
 
-    indices = sorted(display_data.keys())
+def _display_filter_from_json(display_filter_json):
+    display_data = cjson.decode(display_filter_json)
+    return display_data
+
+
+def _extract_attributes_from_display_filter(display_data):
+    NAME_INDEX, TYPE_INDEX = 0, 1
 
     results = []
-
-    def already_in_list(new):
-        for name, field_type in results:
-            if new == name:
-                return True
-        return False
-
+    indices = sorted(display_data.keys())
     for position in indices:
         entry = display_data[position]
         name = entry[NAME_INDEX]
-        if already_in_list(name):
-            continue
-        field_type = 'number' if entry[TYPE_INDEX].startswith('number_') else entry[TYPE_INDEX]
+        field_type = NUMBER_TYPE if entry[TYPE_INDEX].startswith('number_') else entry[TYPE_INDEX]
         pair = name, field_type
         results.append(pair)
-
     return results
+
+
+def _merge_number_attributes(attribute_list):
+    first_number_type = True
+    header_list = []
+    for attribute in attribute_list:
+        attribute_name, attribute_type = attribute
+        if attribute_type == NUMBER_TYPE:
+            if first_number_type:
+                header_list.append(attribute)
+                first_number_type = False
+        else:
+            header_list.append(attribute)
+    return header_list
