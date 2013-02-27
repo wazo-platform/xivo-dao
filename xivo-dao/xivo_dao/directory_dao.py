@@ -41,6 +41,8 @@ def get_directory_headers(session, context):
 
 def _get_attribute_list(session, context):
     display_filter_json = _get_display_filter_json(session, context)
+    if not display_filter_json:
+        return []
     display_filter = _display_filter_from_json(display_filter_json)
     attribute_list = _extract_attributes_from_display_filter(display_filter)
     return attribute_list
