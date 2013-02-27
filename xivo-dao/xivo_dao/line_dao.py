@@ -79,39 +79,69 @@ def get_protocol(session, line_id):
 
 @daosession
 def all_with_protocol(session, protocol):
-    if protocol.lower() == 'sip':
-        return session.query(LineFeatures, UserSIP).filter(LineFeatures.protocolid == UserSIP.id).all()
-    elif protocol.lower() == 'iax':
-        return session.query(LineFeatures, UserIAX).filter(LineFeatures.protocolid == UserIAX.id).all()
-    elif protocol.lower() == 'sccp':
-        return session.query(LineFeatures, SCCPLine).filter(LineFeatures.protocolid == SCCPLine.id).all()
-    elif protocol.lower() == 'custom':
-        return session.query(LineFeatures, UserCustom).filter(LineFeatures.protocolid == UserCustom.id).all()
+    protocol = protocol.lower()
+    if protocol == 'sip':
+        return (session
+            .query(LineFeatures, UserSIP)
+            .filter(LineFeatures.protocolid == UserSIP.id)
+            .filter(LineFeatures.protocol == 'sip')
+            .all()
+        )
+    elif protocol == 'iax':
+        return (session
+            .query(LineFeatures, UserIAX)
+            .filter(LineFeatures.protocolid == UserIAX.id)
+            .filter(LineFeatures.protocol == 'iax')
+            .all()
+        )
+    elif protocol == 'sccp':
+        return (session
+            .query(LineFeatures, SCCPLine)
+            .filter(LineFeatures.protocolid == SCCPLine.id)
+            .filter(LineFeatures.protocol == 'sccp')
+            .all()
+        )
+    elif protocol == 'custom':
+        return (session
+            .query(LineFeatures, UserCustom)
+            .filter(LineFeatures.protocolid == UserCustom.id)
+            .filter(LineFeatures.protocol == 'custom')
+            .all()
+        )
 
 
 @daosession
 def get_with_line_id(session, line_id):
     protocol = get_protocol(line_id)
-    if protocol.lower() == 'sip':
-        return (session.query(LineFeatures, UserSIP)
-                .filter(LineFeatures.id == int(line_id))
-                .filter(LineFeatures.protocolid == UserSIP.id)
-                .first())
-    elif protocol.lower() == 'iax':
-        return (session.query(LineFeatures, UserIAX)
-                .filter(LineFeatures.id == int(line_id))
-                .filter(LineFeatures.protocolid == UserIAX.id)
-                .first())
-    elif protocol.lower() == 'sccp':
-        return (session.query(LineFeatures, SCCPLine)
-                .filter(LineFeatures.id == int(line_id))
-                .filter(LineFeatures.protocolid == SCCPLine.id)
-                .first())
-    elif protocol.lower() == 'custom':
-        return (session.query(LineFeatures, UserCustom)
-                .filter(LineFeatures.id == int(line_id))
-                .filter(LineFeatures.protocolid == UserCustom.id)
-                .first())
+    protocol = protocol.lower()
+    if protocol == 'sip':
+        return (session
+            .query(LineFeatures, UserSIP)
+            .filter(LineFeatures.id == int(line_id))
+            .filter(LineFeatures.protocolid == UserSIP.id)
+            .first()
+        )
+    elif protocol == 'iax':
+        return (session
+            .query(LineFeatures, UserIAX)
+            .filter(LineFeatures.id == int(line_id))
+            .filter(LineFeatures.protocolid == UserIAX.id)
+            .first()
+        )
+    elif protocol == 'sccp':
+        return (session
+            .query(LineFeatures, SCCPLine)
+            .filter(LineFeatures.id == int(line_id))
+            .filter(LineFeatures.protocolid == SCCPLine.id)
+            .first()
+        )
+    elif protocol == 'custom':
+        return (session
+            .query(LineFeatures, UserCustom)
+            .filter(LineFeatures.id == int(line_id))
+            .filter(LineFeatures.protocolid == UserCustom.id)
+            .first()
+        )
 
 
 def get_cid_for_channel(channel):

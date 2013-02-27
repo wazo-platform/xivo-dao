@@ -83,9 +83,9 @@ class TestLineFeaturesDAO(DAOTestCase):
 
         self.assertTrue(line_dao.is_phone_exten(self.line_number))
 
-    def _insert_line(self, context='test_context', name='tre321', protocol='sip'):
+    def _insert_line(self, context='test_context', name='tre321', protocol='sip', protocol_id=0):
         line = LineFeatures()
-        line.protocolid = 0
+        line.protocolid = protocol_id
         line.protocol = protocol
         line.name = name
         line.context = context
@@ -98,6 +98,47 @@ class TestLineFeaturesDAO(DAOTestCase):
         self.session.commit()
 
         return line
+
+    def _insert_usersip(self, usersip_id):
+        usersip = UserSIP()
+        usersip.id = usersip_id
+        usersip.name = 'abcd'
+        usersip.type = 'friend'
+
+        self.session.begin()
+        self.session.add(usersip)
+        self.session.commit()
+
+        return usersip
+
+    def _insert_sccpline(self, sccpline_id):
+        sccpline = SCCPLine()
+        sccpline.id = sccpline_id
+        sccpline.name = '1234'
+        sccpline.context = 'test'
+        sccpline.cid_name = 'Tester One'
+        sccpline.cid_num = '1234'
+
+        self.session.begin()
+        self.session.add(sccpline)
+        self.session.commit()
+
+        return sccpline
+
+    def test_all_with_protocol(self):
+        protocol_id = 1
+        self._insert_usersip(protocol_id)
+        self._insert_sccpline(protocol_id)
+        self._insert_line(protocol='sip', protocol_id=protocol_id)
+        line = self._insert_line(protocol='sccp', protocol_id=protocol_id)
+
+        results = line_dao.all_with_protocol('sccp')
+        result_line_id = results[0][0].id
+        result_protocol = results[0][0].protocol
+
+        self.assertEqual(len(results), 1)
+        self.assertEqual(result_line_id, line.id)
+        self.assertEqual(result_protocol, line.protocol)
 
     def test_find_context_by_user_id(self):
         self._insert_line('falafel')
