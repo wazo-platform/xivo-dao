@@ -26,7 +26,6 @@ class Callfilter(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(128), nullable=False, server_default='')
-    context = Column(String(39), nullable=False)
     type = Column(Enum('bosssecretary',
                        name='callfilter_type',
                        metadata=Type.metadata),
