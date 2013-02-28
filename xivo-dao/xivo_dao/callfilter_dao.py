@@ -26,6 +26,7 @@ from sqlalchemy.sql.expression import and_, cast, func
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from sqlalchemy.types import Integer
 from xivo_dao.helpers.db_manager import daosession
+from xivo_dao.alchemy.linefeatures import LineFeatures
 
 
 @daosession
@@ -53,10 +54,12 @@ def get(session, callfilter_id):
 @daosession
 def get_secretaries_id_by_context(session, context):
     return (session.query(Callfiltermember.id)
-            .join((Callfilter, Callfilter.id == Callfiltermember.callfilterid))
-            .filter(and_(Callfilter.context == context,
+            .join((LineFeatures, LineFeatures.iduserfeatures == cast(Callfiltermember.typeval, Integer)))
+            .filter(and_(LineFeatures.context == context,
+                         Callfiltermember.type == 'user',
                          Callfiltermember.bstype == 'secretary'))
             .all())
+
 
 @daosession
 def get_secretaries_by_callfiltermember_id(session, callfiltermember_id):
