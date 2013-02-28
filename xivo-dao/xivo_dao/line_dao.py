@@ -17,6 +17,7 @@
 
 from xivo import caller_id
 from xivo_dao.alchemy.linefeatures import LineFeatures
+from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.useriax import UserIAX
@@ -81,31 +82,55 @@ def get_protocol(session, line_id):
 def all_with_protocol(session, protocol):
     protocol = protocol.lower()
     if protocol == 'sip':
-        return (session
-            .query(LineFeatures, UserSIP)
+        return (
+            session.query(
+                LineFeatures,
+                UserSIP,
+                UserFeatures.firstname,
+                UserFeatures.lastname
+            )
             .filter(LineFeatures.protocolid == UserSIP.id)
             .filter(LineFeatures.protocol == 'sip')
+            .filter(LineFeatures.iduserfeatures == UserFeatures.id)
             .all()
         )
     elif protocol == 'iax':
-        return (session
-            .query(LineFeatures, UserIAX)
+        return (
+            session.query(
+                LineFeatures,
+                UserIAX,
+                UserFeatures.firstname,
+                UserFeatures.lastname
+            )
             .filter(LineFeatures.protocolid == UserIAX.id)
             .filter(LineFeatures.protocol == 'iax')
+            .filter(LineFeatures.iduserfeatures == UserFeatures.id)
             .all()
         )
     elif protocol == 'sccp':
-        return (session
-            .query(LineFeatures, SCCPLine)
+        return (
+            session.query(
+                LineFeatures,
+                SCCPLine,
+                UserFeatures.firstname,
+                UserFeatures.lastname
+            )
             .filter(LineFeatures.protocolid == SCCPLine.id)
             .filter(LineFeatures.protocol == 'sccp')
+            .filter(LineFeatures.iduserfeatures == UserFeatures.id)
             .all()
         )
     elif protocol == 'custom':
-        return (session
-            .query(LineFeatures, UserCustom)
+        return (
+            session.query(
+                LineFeatures,
+                UserCustom,
+                UserFeatures.firstname,
+                UserFeatures.lastname
+            )
             .filter(LineFeatures.protocolid == UserCustom.id)
             .filter(LineFeatures.protocol == 'custom')
+            .filter(LineFeatures.iduserfeatures == UserFeatures.id)
             .all()
         )
 
@@ -115,31 +140,55 @@ def get_with_line_id(session, line_id):
     protocol = get_protocol(line_id)
     protocol = protocol.lower()
     if protocol == 'sip':
-        return (session
-            .query(LineFeatures, UserSIP)
+        return (
+            session.query(
+                LineFeatures,
+                UserSIP,
+                UserFeatures.firstname,
+                UserFeatures.lastname
+            )
             .filter(LineFeatures.id == int(line_id))
             .filter(LineFeatures.protocolid == UserSIP.id)
+            .filter(LineFeatures.iduserfeatures == UserFeatures.id)
             .first()
         )
     elif protocol == 'iax':
-        return (session
-            .query(LineFeatures, UserIAX)
+        return (
+            session.query(
+                LineFeatures,
+                UserIAX,
+                UserFeatures.firstname,
+                UserFeatures.lastname
+            )
             .filter(LineFeatures.id == int(line_id))
             .filter(LineFeatures.protocolid == UserIAX.id)
+            .filter(LineFeatures.iduserfeatures == UserFeatures.id)
             .first()
         )
     elif protocol == 'sccp':
-        return (session
-            .query(LineFeatures, SCCPLine)
+        return (
+            session.query(
+                LineFeatures,
+                SCCPLine,
+                UserFeatures.firstname,
+                UserFeatures.lastname
+            )
             .filter(LineFeatures.id == int(line_id))
             .filter(LineFeatures.protocolid == SCCPLine.id)
+            .filter(LineFeatures.iduserfeatures == UserFeatures.id)
             .first()
         )
     elif protocol == 'custom':
-        return (session
-            .query(LineFeatures, UserCustom)
+        return (
+            session.query(
+                LineFeatures,
+                UserCustom,
+                UserFeatures.firstname,
+                UserFeatures.lastname
+            )
             .filter(LineFeatures.id == int(line_id))
             .filter(LineFeatures.protocolid == UserCustom.id)
+            .filter(LineFeatures.iduserfeatures == UserFeatures.id)
             .first()
         )
 
