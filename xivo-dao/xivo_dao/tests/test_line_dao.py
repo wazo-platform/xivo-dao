@@ -45,6 +45,10 @@ from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao import line_dao
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao.alchemy.cti_profile import CtiProfile
+from xivo_dao.alchemy.ctipresences import CtiPresences
+from xivo_dao.alchemy.ctiphonehints import CtiPhoneHints
+from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
 
 
 class TestLineFeaturesDAO(DAOTestCase):
@@ -52,7 +56,16 @@ class TestLineFeaturesDAO(DAOTestCase):
     user_id = 5
     line_number = '1666'
 
-    tables = [LineFeatures, SCCPLine, UserSIP]
+    tables = [
+        LineFeatures,
+        SCCPLine,
+        UserSIP,
+        UserFeatures,
+        CtiProfile,
+        CtiPresences,
+        CtiPhoneHints,
+        CtiPhoneHintsGroup,
+    ]
 
     def setUp(self):
         self.empty_tables()
@@ -111,6 +124,18 @@ class TestLineFeaturesDAO(DAOTestCase):
 
         return usersip
 
+    def _insert_user(self, firstname, lastname):
+        user = UserFeatures(
+            id=self.user_id,
+            firstname=firstname,
+            lastname=lastname
+        )
+        self.session.begin()
+        self.session.add(user)
+        self.session.commit()
+
+        return user
+
     def _insert_sccpline(self, sccpline_id):
         sccpline = SCCPLine()
         sccpline.id = sccpline_id
@@ -126,6 +151,8 @@ class TestLineFeaturesDAO(DAOTestCase):
         return sccpline
 
     def test_all_with_protocol(self):
+        first, last = 'Lord', 'Sanderson'
+        self._insert_user(first, last)
         protocol_id = 1
         self._insert_usersip(protocol_id)
         self._insert_sccpline(protocol_id)
@@ -135,10 +162,14 @@ class TestLineFeaturesDAO(DAOTestCase):
         results = line_dao.all_with_protocol('sccp')
         result_line_id = results[0][0].id
         result_protocol = results[0][0].protocol
+        result_firstname = results[0].firstname
+        result_lastname = results[0].lastname
 
         self.assertEqual(len(results), 1)
         self.assertEqual(result_line_id, line.id)
         self.assertEqual(result_protocol, line.protocol)
+        self.assertEqual(result_firstname, first)
+        self.assertEqual(result_lastname, last)
 
     def test_find_context_by_user_id(self):
         self._insert_line('falafel')
