@@ -34,7 +34,7 @@ XIVO_DB_NAME = 'xivo'
 def todict(self):
     d = {}
     for c in self.__table__.columns:
-        value = getattr(self, c.name)
+        value = getattr(self, c.name.replace('-', '_'))
         d[c.name] = value
 
     return d
