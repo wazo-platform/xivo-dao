@@ -96,11 +96,12 @@ class TestRecordingDao(DAOTestCase):
 
         data = self.session.query(Recordings).all()
         self.assertEqual([my_recording], data)
+        filename = my_recording.filename
         result = recordings_dao.delete(self.campaign.id,
                                                   my_recording.cid)
         data = self.session.query(Recordings).all()
         self.assertEquals(data, [])
-        self.assertEquals(result, my_recording.filename)
+        self.assertEquals(result, filename)
 
     def test_delete_all(self):
         recording1 = copy.deepcopy(self.sample_recording)
