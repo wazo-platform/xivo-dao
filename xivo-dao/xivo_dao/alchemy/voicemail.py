@@ -45,7 +45,7 @@ class Voicemail(Base):
     saydurationm = Column(Integer)
     sendvoicemail = Column(Integer)
     deletevoicemail = Column(Integer, nullable=False, default=0)
-    sendvoicemail = Column(Integer)
+    forcename = Column(Integer)
     forcegreetings = Column(Integer)
     hidefromdir = Column(Enum('yes', 'no', name='voicemail_hidefromdir', metadata=Type.metadata),
                          nullable=False,
