@@ -133,21 +133,6 @@ def get_reachable_contexts(session, user_id):
 
 
 @daosession
-def all_join_line_id(session):
-    return (session.query(UserFeatures, LineFeatures.id)
-            .outerjoin((LineFeatures, UserFeatures.id == LineFeatures.iduserfeatures))
-            .all())
-
-
-@daosession
-def get_join_line_id_with_user_id(session, user_id):
-    return (session.query(UserFeatures, LineFeatures.id)
-            .outerjoin((LineFeatures, UserFeatures.id == LineFeatures.iduserfeatures))
-            .filter(UserFeatures.id == int(user_id))
-            .first())
-
-
-@daosession
 def find_by_line_id(session, line_id):
     return session.query(LineFeatures.iduserfeatures).filter(LineFeatures.id == line_id).first().iduserfeatures
 
@@ -269,3 +254,132 @@ def delete(session, userid):
     result = session.query(UserFeatures.id == userid).delete()
     session.commit()
     return result
+
+
+@daosession
+def get_user_config(session, user_id):
+    session.begin()
+    query = _user_config_query(session)
+    user = query.filter(UserFeatures.id == user_id).first()
+    session.commit()
+
+    return {str(user.id): _format_user(user)}
+
+
+@daosession
+def get_users_config(session):
+    session.begin()
+    query = _user_config_query(session)
+    users = query.all()
+    session.commit()
+
+    return dict((str(user.id), _format_user(user)) for user in users)
+
+
+def _user_config_query(session):
+    return session.query(
+        UserFeatures.agentid,
+        UserFeatures.bsfilter,
+        UserFeatures.callerid,
+        UserFeatures.callrecord,
+        UserFeatures.commented,
+        UserFeatures.cti_profile_id,
+        UserFeatures.description,
+        UserFeatures.destbusy,
+        UserFeatures.destrna,
+        UserFeatures.destunc,
+        UserFeatures.enableautomon,
+        UserFeatures.enablebusy,
+        UserFeatures.enableclient,
+        UserFeatures.enablednd,
+        UserFeatures.enablehint,
+        UserFeatures.enablerna,
+        UserFeatures.enableunc,
+        UserFeatures.enablevoicemail,
+        UserFeatures.enablexfer,
+        UserFeatures.entityid,
+        UserFeatures.firstname,
+        UserFeatures.id,
+        UserFeatures.incallfilter,
+        UserFeatures.language,
+        UserFeatures.lastname,
+        UserFeatures.loginclient,
+        UserFeatures.mobilephonenumber,
+        UserFeatures.musiconhold,
+        UserFeatures.outcallerid,
+        UserFeatures.passwdclient,
+        UserFeatures.pictureid,
+        UserFeatures.preprocess_subroutine,
+        UserFeatures.rightcallcode,
+        UserFeatures.ringextern,
+        UserFeatures.ringforward,
+        UserFeatures.ringgroup,
+        UserFeatures.ringintern,
+        UserFeatures.ringseconds,
+        UserFeatures.simultcalls,
+        UserFeatures.timezone,
+        UserFeatures.userfield,
+        UserFeatures.voicemailid,
+        UserFeatures.voicemailtype,
+        LineFeatures.id.label('line_id'),
+        LineFeatures.context.label('line_context'),
+    ).outerjoin((LineFeatures, UserFeatures.id == LineFeatures.iduserfeatures))
+
+
+def _format_user(user):
+    fullname = '%s %s' % (user.firstname, user.lastname)
+    context = user.line_context
+    if user.line_id is None:
+        line_list = []
+    else:
+        line_list = [str(user.line_id)]
+
+    return {
+        'agentid': user.agentid,
+        'bsfilter': user.bsfilter,
+        'callerid': user.callerid,
+        'callrecord': user.callrecord,
+        'commented': user.commented,
+        'context': context,
+        'cti_profile_id': user.cti_profile_id,
+        'description': user.description,
+        'destbusy': user.destbusy,
+        'destrna': user.destrna,
+        'destunc': user.destunc,
+        'enableautomon': user.enableautomon,
+        'enablebusy': user.enablebusy,
+        'enableclient': user.enableclient,
+        'enablednd': user.enablednd,
+        'enablehint': user.enablehint,
+        'enablerna': user.enablerna,
+        'enableunc': user.enableunc,
+        'enablevoicemail': user.enablevoicemail,
+        'enablexfer': user.enablexfer,
+        'entityid': user.entityid,
+        'firstname': user.firstname,
+        'fullname': fullname,
+        'id': user.id,
+        'identity': fullname,
+        'incallfilter': user.incallfilter,
+        'language': user.language,
+        'lastname': user.lastname,
+        'linelist': line_list,
+        'loginclient': user.loginclient,
+        'mobilephonenumber': user.mobilephonenumber,
+        'musiconhold': user.musiconhold,
+        'outcallerid': user.outcallerid,
+        'passwdclient': user.passwdclient,
+        'pictureid': user.pictureid,
+        'preprocess_subroutine': user.preprocess_subroutine,
+        'rightcallcode': user.rightcallcode,
+        'ringextern': user.ringextern,
+        'ringforward': user.ringforward,
+        'ringgroup': user.ringgroup,
+        'ringintern': user.ringintern,
+        'ringseconds': user.ringseconds,
+        'simultcalls': user.simultcalls,
+        'timezone': user.timezone,
+        'userfield': user.userfield,
+        'voicemailid': user.voicemailid,
+        'voicemailtype': user.voicemailtype,
+    }

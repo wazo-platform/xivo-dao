@@ -70,3 +70,4 @@ class Voicemail(Base):
     volgain = Column(Float)
     passwordlocation = Column(Enum('spooldir', 'voicemail', name='voicemail_passwordlocation', metadata=Type.metadata))
     commented = Column(Integer, nullable=False, default=0)
+    skipcheckpass = Column(Integer, nullable=False, default=0)

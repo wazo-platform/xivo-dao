@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from xivo_dao import user_dao
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.contextinclude import ContextInclude
 from xivo_dao.alchemy.cti_profile import CtiProfile
@@ -23,7 +24,7 @@ from xivo_dao.alchemy.ctipresences import CtiPresences
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao import user_dao
+from hamcrest import *
 
 
 class TestUserFeaturesDAO(DAOTestCase):
@@ -349,10 +350,11 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         return cti_profile.id
 
-    def _add_user(self, name):
-        user = UserFeatures()
-        user.firstname = name
-
+    def _add_user(self, firstname, lastname=''):
+        user = UserFeatures(
+            firstname=firstname,
+            lastname=lastname
+        )
         self.add_me(user)
 
         return user
@@ -683,29 +685,6 @@ class TestUserFeaturesDAO(DAOTestCase):
     def test_get_device_id_no_user(self):
         self.assertRaises(LookupError, user_dao.get_device_id, 666)
 
-    def test_all_join_line_id(self):
-        user1, line1 = self._add_user_with_line('test_user1')
-        user2, line2 = self._add_user_with_line('test_user2')
-
-        result = user_dao.all_join_line_id()
-
-        for row in result:
-            user_result, line_id_result = row
-            if user_result.firstname == 'test_user1':
-                self.assertEquals(user1.id, user_result.id)
-                self.assertEquals(line1.id, line_id_result)
-            elif user_result.firstname == 'test_user2':
-                self.assertEquals(user2.id, user_result.id)
-                self.assertEquals(line2.id, line_id_result)
-
-    def test_get_join_line_id_with_user_id(self):
-        user, line = self._add_user_with_line('test_user1')
-
-        user_result, line_id_result = user_dao.get_join_line_id_with_user_id(user.id)
-
-        self.assertEquals(user.id, user_result.id)
-        self.assertEquals(line.id, line_id_result)
-
     def test_get_context(self):
         user, line = self._add_user_with_line('test_user1')
 
@@ -765,3 +744,121 @@ class TestUserFeaturesDAO(DAOTestCase):
     def test_delete_unexisting_user(self):
         result = user_dao.delete(1)
         self.assertEqual(result, 0)
+
+    def test_get_user_config(self):
+        firstname = u'Jack'
+        lastname = u'Strap'
+        fullname = u'%s %s' % (firstname, lastname)
+        callerid = u'"%s"' % fullname
+        context = u'mycontext'
+
+        user = UserFeatures(
+            firstname=firstname,
+            lastname=lastname,
+            callerid=callerid,
+        )
+        self.add_me(user)
+
+        line = LineFeatures(
+            iduserfeatures=user.id,
+            number='1234',
+            name='12kjdhf',
+            context=context,
+            provisioningid=1234,
+            protocolid=1,
+        )
+        self.add_me(line)
+
+        user_id = user.id
+        line_list = [str(line.id)]
+        expected = {
+            str(user_id): {
+                'agentid': None,
+                'bsfilter': 'no',
+                'callerid': callerid,
+                'callrecord': 0,
+                'commented': 0,
+                'context': context,
+                'cti_profile_id': None,
+                'description': None,
+                'destbusy': u'',
+                'destrna': u'',
+                'destunc': u'',
+                'enableautomon': 0,
+                'enablebusy': 0,
+                'enableclient': 1,
+                'enablednd': 0,
+                'enablehint': 1,
+                'enablerna': 0,
+                'enableunc': 0,
+                'enablevoicemail': 0,
+                'enablexfer': 0,
+                'entityid': None,
+                'firstname': firstname,
+                'fullname': fullname,
+                'id': user_id,
+                'identity': fullname,
+                'incallfilter': 0,
+                'language': None,
+                'lastname': lastname,
+                'linelist': line_list,
+                'loginclient': u'',
+                'mobilephonenumber': u'',
+                'musiconhold': u'',
+                'outcallerid': u'',
+                'passwdclient': u'',
+                'pictureid': None,
+                'preprocess_subroutine': None,
+                'rightcallcode': None,
+                'ringextern': None,
+                'ringforward': None,
+                'ringgroup': None,
+                'ringintern': None,
+                'ringseconds': 30,
+                'simultcalls': 5,
+                'timezone': None,
+                'userfield': u'',
+                'voicemailid': None,
+                'voicemailtype': None,
+            }
+        }
+
+        result = user_dao.get_user_config(user_id)
+
+        result_dict = result[str(user_id)]
+        expected_dict = expected[str(user_id)]
+
+        for key, expected_value in expected_dict.iteritems():
+            result_value = result_dict[key]
+            assert_that(expected_value, equal_to(result_value),
+                        'key %r does not match' % key)
+        assert_that(result, equal_to(expected))
+
+    def test_get_user_config_with_no_line(self):
+        user = UserFeatures()
+        self.add_me(user)
+
+        result = user_dao.get_user_config(user.id)
+
+        assert_that(result[str(user.id)]['context'], none())
+        assert_that(result[str(user.id)]['linelist'], equal_to([]))
+
+    def test_get_users_config(self):
+        user1 = UserFeatures(
+            firstname='John',
+            lastname='Jackson',
+        )
+        user2 = UserFeatures(
+            firstname='Jack',
+            lastname='Johnson',
+        )
+        self.add_me(user1)
+        self.add_me(user2)
+
+        result = user_dao.get_users_config()
+
+        user1_id = str(user1.id)
+        user2_id = str(user2.id)
+        assert_that(result, contains_inanyorder(user1_id, user2_id))
+        assert_that(result[user1_id]['firstname'], equal_to(user1.firstname))
+        assert_that(result[user2_id]['firstname'], equal_to(user2.firstname))
