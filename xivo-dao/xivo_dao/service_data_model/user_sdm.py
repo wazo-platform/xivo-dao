@@ -15,9 +15,10 @@
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+from xivo_dao.service_data_model.base_sdm import BaseSdm
 
 
-class UserSdm(object):
+class UserSdm(BaseSdm):
 
     def __init__(self):
         self.id = None
