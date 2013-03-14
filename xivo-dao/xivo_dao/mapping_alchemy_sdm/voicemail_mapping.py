@@ -18,7 +18,6 @@
 from xivo_dao.alchemy.voicemail import Voicemail
 from xivo_dao.service_data_model.voicemail_sdm import VoicemailSdm
 from xivo_dao.helpers import object_mapping
-import re
 
 
 #mapping = {alchemy_field: sdm_field}
@@ -35,7 +34,18 @@ mapping = {'uniqueid': 'id',
 reverse_mapping = dict([[v, k] for k, v in mapping.items()])
 
 alchemy_default_values = {'context': 'default',
-                  'tz': 'eu-fr'}
+                          'tz': 'eu-fr'}
+
+alchemy_types = {
+                'uniqueid': int,
+                   'email': str,
+                   'fullname': str,
+                   'mailbox': str,
+                   'password': str,
+                   'attach': int,
+                   'skipcheckpass': int,
+                   'deletevoicemail': int
+                 }
 
 
 def alchemy_to_sdm(voicemail_alchemy):
@@ -61,6 +71,7 @@ def sdm_to_alchemy_dict(voicemail_dict):
         if k in reverse_mapping:
             new_key = reverse_mapping[k]
             result[new_key] = voicemail_dict[k]
+            result[new_key] = alchemy_types[new_key](result[new_key])
         else:
             raise AttributeError()
 

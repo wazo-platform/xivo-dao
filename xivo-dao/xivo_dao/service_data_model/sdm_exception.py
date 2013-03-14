@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from xivo_dao.service_data_model.sdm_exception import IncorrectParametersException
 
 # Copyright (C) 2013 Avencall
 #
@@ -17,17 +16,13 @@ from xivo_dao.service_data_model.sdm_exception import IncorrectParametersExcepti
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 
-class BaseSdm:
+class IncorrectParametersException(Exception):
+    def __init__(self, *params):
+        self.params = params
 
-    def todict(self):
-        return self.__dict__
-
-    def validate(self, data):
-        invalid_params = []
-        for param in data:
-            if(param not in self.__dict__):
-                invalid_params.append(param)
-        if(len(invalid_params) > 0):
-            raise IncorrectParametersException(*invalid_params)
-
-        return True
+    def __str__(self):
+        message = "Incorrect parameters sent: "
+        for param in self.params:
+            message += param + ", "
+        message = message.rstrip(", ")
+        return message

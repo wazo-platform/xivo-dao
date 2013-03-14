@@ -65,11 +65,12 @@ class TestVoicemailMapping(unittest.TestCase):
         deletevoicemail = True
         voicemail_dict_alchemy['fullname'] = fullname
         voicemail_dict_sdm['fullname'] = fullname
-        voicemail_dict_alchemy['deletevoicemail'] = deletevoicemail
+        voicemail_dict_alchemy['deletevoicemail'] = int(deletevoicemail)
         voicemail_dict_sdm['deleteaftersend'] = deletevoicemail
 
         result = voicemail_mapping.sdm_to_alchemy_dict(voicemail_dict_sdm)
         self.assertEquals(voicemail_dict_alchemy, result)
+        self.assertEquals(type(voicemail_dict_alchemy['deletevoicemail']), type(result['deletevoicemail']))
 
     def test_sdm_to_alchemy_dict_fails(self):
         voicemail_dict_sdm = {}
