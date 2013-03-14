@@ -31,27 +31,16 @@ def get_config(session):
         uri = directory.uri
         if uri.startswith('ldapfilter://'):
             ldap_name = uri.replace('ldapfilter://', '')
-            ldapfilter = ldap_dao.get_ldapfilter_with_name(ldap_name)
-            if ldapfilter:
-                ldapserver = ldap_dao.get_ldapserver_with_id(ldapfilter.ldapserverid)
+            uri = _build_ldap_uri_with_name(ldap_name)
 
-                secure = 'ldaps' if ldapserver.securitylayer == 'ssl' else 'ldap'
-                uri = '%s://%s:%s@%s:%s/%s???%s' % (secure,
-                                                    ldapfilter.user,
-                                                    ldapfilter.passwd,
-                                                    ldapserver.host,
-                                                    ldapserver.port,
-                                                    ldapfilter.basedn,
-                                                    ldapfilter.filter)
-
-        dird_match_direct = json.loads(directory.match_direct) if directory.match_direct else {}
-        dird_match_reverse = json.loads(directory.match_reverse) if directory.match_reverse else {}
+        dird_match_direct = json.loads(directory.match_direct) if directory.match_direct else []
+        dird_match_reverse = json.loads(directory.match_reverse) if directory.match_reverse else []
 
         dir_id = directory.name
         res[dir_id] = {}
         res[dir_id]['uri'] = uri
-        res[dir_id]['delimiter'] = directory.delimiter
-        res[dir_id]['name'] = directory.description
+        res[dir_id]['delimiter'] = directory.delimiter if directory.delimiter else ''
+        res[dir_id]['name'] = directory.description if directory.description else ''
         res[dir_id]['match_direct'] = dird_match_direct
         res[dir_id]['match_reverse'] = dird_match_reverse
 
@@ -59,6 +48,22 @@ def get_config(session):
         res[dir_id].update(directoryfields)
 
     return res
+
+
+def _build_ldap_uri_with_name(ldap_name):
+    uri = ''
+    ldapfilter = ldap_dao.get_ldapfilter_with_name(ldap_name)
+    if ldapfilter:
+        ldapserver = ldap_dao.get_ldapserver_with_id(ldapfilter.ldapserverid)
+        secure = 'ldaps' if ldapserver.securitylayer == 'ssl' else 'ldap'
+        uri = '%s://%s:%s@%s:%s/%s???%s' % (secure,
+                                            ldapfilter.user,
+                                            ldapfilter.passwd,
+                                            ldapserver.host,
+                                            ldapserver.port,
+                                            ldapfilter.basedn,
+                                            ldapfilter.filter)
+    return uri
 
 
 @daosession
@@ -69,5 +74,5 @@ def _build_directoryfields(session, dir_id):
     if ctidirectoryfields:
         for field in ctidirectoryfields:
             dir_key = 'field_%s' % field.fieldname
-            res[dir_key] = field.value
+            res[dir_key] = [field.value]
     return res
