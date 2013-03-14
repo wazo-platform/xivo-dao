@@ -38,10 +38,14 @@ def _build_sheetevents(session):
         for field_name, ctisheetevent in ctisheetevents.todict().iteritems():
             if field_name == 'id' or not ctisheetevent:
                 continue
-            tmp = events[field_name] = {}
-            tmp["display"] = ctisheetevent
-            tmp["option"] = ctisheetevent
-            tmp["condition"] = ctisheetevent
+            if field_name not in events:
+                events[field_name] = []
+            tmp = {
+                'display': ctisheetevent,
+                'option': ctisheetevent,
+                'condition': ctisheetevent
+            }
+            events[field_name].append(tmp)
     return events
 
 
