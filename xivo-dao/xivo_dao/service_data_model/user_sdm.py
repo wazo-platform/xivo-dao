@@ -32,7 +32,7 @@ class UserSdm(BaseSdm):
         self.outcallerid = ""
         self.mobilephonenumber = ""
 
-        # TODO: explain
+        # field to be used for user specific purposes like billing
         self.userfield = ""
         self.timezone = ""
         self.language = ""

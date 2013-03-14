@@ -18,11 +18,10 @@
 
 
 def map_attributes(src_object, dst_object, mapping, default_values={}):
-    for dst_field in default_values:
-        value = default_values[dst_field]
+    for dst_field, value in default_values.iteritems():
         setattr(dst_object, dst_field, value)
     for src_field in mapping:
-        if src_field in src_object.__dict__:
+        if hasattr(src_object, src_field):
             dst_field = mapping[src_field]
             value = getattr(src_object, src_field)
             setattr(dst_object, dst_field, value)

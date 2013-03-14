@@ -36,9 +36,9 @@ def delete_all(session):
     try:
         session.query(Voicemail).delete()
         session.commit()
-    except Exception as e:
+    except Exception:
         session.rollback()
-        raise e
+        raise
 
 
 @daosession
@@ -47,9 +47,9 @@ def add(session, voicemail):
     try:
         session.add(voicemail)
         session.commit()
-    except Exception as e:
+    except Exception:
         session.rollback()
-        raise e
+        raise
 
 
 @daosession
@@ -65,6 +65,6 @@ def update(session, voicemailid, data):
     try:
         session.query(Voicemail).filter(Voicemail.uniqueid == voicemailid).update(data)
         session.commit()
-    except Exception as e:
+    except Exception:
         session.rollback()
-        raise e
+        raise

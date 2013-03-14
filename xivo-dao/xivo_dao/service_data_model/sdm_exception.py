@@ -22,7 +22,5 @@ class IncorrectParametersException(Exception):
 
     def __str__(self):
         message = "Incorrect parameters sent: "
-        for param in self.params:
-            message += param + ", "
-        message = message.rstrip(", ")
+        message += ', '.join(self.params)
         return message

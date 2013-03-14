@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
 from xivo_dao.alchemy.voicemail import Voicemail
 from xivo_dao.service_data_model.voicemail_sdm import VoicemailSdm
 from xivo_dao.helpers import object_mapping
@@ -31,7 +32,7 @@ mapping = {'uniqueid': 'id',
            'deletevoicemail': 'deleteaftersend'
            }
 
-reverse_mapping = dict([[v, k] for k, v in mapping.items()])
+reverse_mapping = dict((v, k) for k, v in mapping.items())
 
 alchemy_default_values = {'context': 'default',
                           'tz': 'eu-fr'}
