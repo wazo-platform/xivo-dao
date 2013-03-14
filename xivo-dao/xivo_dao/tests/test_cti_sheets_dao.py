@@ -72,16 +72,16 @@ class TestCtiSheetsDAO(DAOTestCase):
                 }
             },
             'events': {
-                'dial': {
+                'dial': [{
                     'condition': u'XiVO',
                     'display': u'XiVO',
                     'option': u'XiVO'
-                },
-                'link': {
+                }],
+                'link': [{
                     'condition': u'XiVO',
                     'display': u'XiVO',
                     'option': u'XiVO'
-                }
+                }]
             },
             'options': {
                 u'XiVO': {
