@@ -13,5 +13,7 @@ setup(
     license='GPLv3',
     packages=['xivo_dao',
               'xivo_dao.alchemy',
-              'xivo_dao.helpers'],
+              'xivo_dao.helpers',
+              'xivo_dao.service_data_model',
+              'xivo_dao.mapping_alchemy_sdm'],
 )
