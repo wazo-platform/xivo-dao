@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy.sql.expression import and_
 from xivo_dao.alchemy.voicemail import Voicemail
 from xivo_dao.helpers.db_manager import daosession
 
@@ -27,3 +28,43 @@ def all(session):
 @daosession
 def get(session, voicemail_id):
     return session.query(Voicemail).filter(Voicemail.uniqueid == voicemail_id).first()
+
+
+@daosession
+def delete_all(session):
+    session.begin()
+    try:
+        session.query(Voicemail).delete()
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+
+
+@daosession
+def add(session, voicemail):
+    session.begin()
+    try:
+        session.add(voicemail)
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+
+
+@daosession
+def id_from_mailbox(session, mailbox, context):
+    result = session.query(Voicemail.uniqueid).filter(and_(Voicemail.mailbox == mailbox,
+                                                         Voicemail.context == context)).first()
+    return result[0]
+
+
+@daosession
+def update(session, voicemailid, data):
+    session.begin()
+    try:
+        session.query(Voicemail).filter(Voicemail.uniqueid == voicemailid).update(data)
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
