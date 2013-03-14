@@ -38,7 +38,7 @@ class TestSession(DAOTestCase):
 
         self.session.add(agent)
 
-    def _insert_inalid_agent(self):
+    def _insert_invalid_agent(self):
         agent = AgentFeatures()
         agent.numgroup = 6
         agent.number = '15'
@@ -63,7 +63,7 @@ class TestSession(DAOTestCase):
         self.session.begin()
         try:
             self._insert_valid_agent()
-            self._insert_inalid_agent()
+            self._insert_invalid_agent()
             self.session.commit()
         except IntegrityError:
             self.session.rollback()
