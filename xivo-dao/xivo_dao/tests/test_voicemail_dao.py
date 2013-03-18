@@ -94,7 +94,11 @@ class VoicemailDAOTestCase(DAOTestCase):
         self.assertEquals(updated_voicemail.mailbox, "456")
         self.assertEquals(updated_voicemail.fullname, "test")
 
-    def test_id_from_mailbox_context(self):
+    def test_id_from_mailbox(self):
         generated_id = self._insert_voicemail("123", "default")
         result = voicemail_dao.id_from_mailbox("123", "default")
         self.assertEquals(result, generated_id)
+
+    def test_id_from_mailbox_unexisting(self):
+        result = voicemail_dao.id_from_mailbox("123", "default")
+        self.assertEquals(result, None)

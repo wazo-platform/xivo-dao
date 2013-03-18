@@ -56,6 +56,8 @@ def add(session, voicemail):
 def id_from_mailbox(session, mailbox, context):
     result = session.query(Voicemail.uniqueid).filter(and_(Voicemail.mailbox == mailbox,
                                                          Voicemail.context == context)).first()
+    if(result is None):
+        return None
     return result[0]
 
 
