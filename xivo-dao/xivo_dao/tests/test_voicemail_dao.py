@@ -69,13 +69,6 @@ class VoicemailDAOTestCase(DAOTestCase):
         result = voicemail_dao.all()
         self.assertEqual([], result)
 
-    def test_delete_all(self):
-        self._insert_voicemail("123")
-        self._insert_voicemail("456")
-        voicemail_dao.delete_all()
-        result = voicemail_dao.all()
-        self.assertEqual([], result)
-
     def test_add(self):
         voicemail = Voicemail()
         voicemail.mailbox = "123"
@@ -102,3 +95,8 @@ class VoicemailDAOTestCase(DAOTestCase):
     def test_id_from_mailbox_unexisting(self):
         result = voicemail_dao.id_from_mailbox("123", "default")
         self.assertEquals(result, None)
+
+    def test_delete(self):
+        generated_id = self._insert_voicemail("123", "default")
+        impacted_rows = voicemail_dao.delete(generated_id)
+        self.assertEquals(impacted_rows, 1)
