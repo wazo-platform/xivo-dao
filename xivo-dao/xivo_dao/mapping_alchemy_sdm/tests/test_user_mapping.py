@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 from xivo_dao.alchemy.userfeatures import UserFeatures
-from xivo_dao.mapping_alchemy_sdm import user_mapping
 from xivo_dao.service_data_model.user_sdm import UserSdm
 import unittest
 from xivo_dao.mapping_alchemy_sdm.user_mapping import UserMapping

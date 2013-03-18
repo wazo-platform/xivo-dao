@@ -58,7 +58,7 @@ class AbstractMapping(object):
                 value = getattr(src_object, src_field)
                 setattr(dst_object, dst_field, value)
         for dst_field, cast_fct in cast.iteritems():
-                value = getattr(dst_object, dst_field)
-                if (value is not None):
-                    setattr(dst_object, dst_field, cast_fct(value))
+            value = getattr(dst_object, dst_field)
+            if (value is not None):
+                setattr(dst_object, dst_field, cast_fct(value))
         return dst_object
