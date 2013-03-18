@@ -862,3 +862,27 @@ class TestUserFeaturesDAO(DAOTestCase):
         assert_that(result, contains_inanyorder(user1_id, user2_id))
         assert_that(result[user1_id]['firstname'], equal_to(user1.firstname))
         assert_that(result[user2_id]['firstname'], equal_to(user2.firstname))
+
+    def test_get_by_voicemailid(self):
+        user1 = UserFeatures(
+            firstname='John',
+            lastname='Jackson',
+            voicemailid=1
+        )
+        user2 = UserFeatures(
+            firstname='Jack',
+            lastname='Johnson',
+            voicemailid=1
+        )
+        user3 = UserFeatures(
+            firstname='Christopher',
+            lastname='Christopherson',
+            voicemailid=2
+        )
+        self.add_me(user1)
+        self.add_me(user2)
+        self.add_me(user3)
+        result = user_dao.get_by_voicemailid(1)
+        self.assertTrue(user1 in result)
+        self.assertTrue(user2 in result)
+        self.assertFalse(user3 in result)

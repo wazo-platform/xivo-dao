@@ -276,6 +276,11 @@ def get_users_config(session):
     return dict((str(user.id), _format_user(user)) for user in users)
 
 
+@daosession
+def get_by_voicemailid(session, voicemailid):
+    return session.query(UserFeatures).filter(UserFeatures.voicemailid == voicemailid).all()
+
+
 def _user_config_query(session):
     return session.query(
         UserFeatures.agentid,
