@@ -65,6 +65,14 @@ def disable_busy_fwd(user_id, destination):
     update(user_id, {'enablebusy': 0, 'destbusy': destination})
 
 
+def enable_recording(user_id):
+    update(user_id, {'callrecord': 1})
+
+
+def disable_recording(user_id):
+    update(user_id, {'callrecord': 0})
+
+
 @daosession
 def update(session, user_id, user_data_dict):
     session.begin()

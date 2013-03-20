@@ -128,6 +128,39 @@ class TestUserFeaturesDAO(DAOTestCase):
         user_id = user_features.id
         return user_id
 
+    def test_enable_recording(self):
+        user_id = self._insert_user_recording_disabled()
+        user_dao.enable_recording(user_id)
+        self._check_recording(user_id, 1)
+
+    def test_disable_recording(self):
+        user_id = self._insert_user_recording_enabled()
+        user_dao.disable_recording(user_id)
+        self._check_recording(user_id, 0)
+
+    def _check_recording(self, user_id, value):
+        user_features = (self.session.query(UserFeatures)
+                         .filter(UserFeatures.id == user_id))[0]
+        self.assertEquals(user_features.callrecord, value)
+
+    def _insert_user_recording_disabled(self):
+        user_features = UserFeatures()
+        user_features.callrecord = 0
+        user_features.firstname = 'firstname_recording not set'
+        self.add_me(user_features)
+
+        user_id = user_features.id
+        return user_id
+
+    def _insert_user_recording_enabled(self):
+        user_features = UserFeatures()
+        user_features.callrecord = 1
+        user_features.firstname = 'firstname_recording set'
+        self.add_me(user_features)
+
+        user_id = user_features.id
+        return user_id
+
     def _check_filter_in_db(self, user_id, value):
         user_features = (self.session.query(UserFeatures)
                          .filter(UserFeatures.id == user_id))[0]
