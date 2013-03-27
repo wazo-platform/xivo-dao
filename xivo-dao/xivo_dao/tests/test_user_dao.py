@@ -768,11 +768,14 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.assertEqual(result, 0)
 
     def test_delete(self):
-        user = self._add_user('test')
-        generated_id = user.id
-        result = user_dao.delete(generated_id)
+        user1 = self._add_user('test1')
+        generated_id1 = user1.id
+        user2 = self._add_user('test2')
+        generated_id2 = user2.id
+        result = user_dao.delete(generated_id1)
         self.assertEqual(result, 1)
-        self.assertRaises(LookupError, user_dao.get, generated_id)
+        self.assertRaises(LookupError, user_dao.get, generated_id1)
+        self.assertEqual(user2, user_dao.get(generated_id2))
 
     def test_delete_unexisting_user(self):
         result = user_dao.delete(1)

@@ -259,7 +259,8 @@ def add_user(session, user):
 @daosession
 def delete(session, userid):
     session.begin()
-    result = session.query(UserFeatures.id == userid).delete()
+    result = session.query(UserFeatures).filter(UserFeatures.id == userid)\
+                                        .delete(synchronize_session=False)
     session.commit()
     return result
 
