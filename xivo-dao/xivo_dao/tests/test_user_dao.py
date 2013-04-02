@@ -932,3 +932,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.assertEqual(user, resultuser)
         self.assertEqual(line, resultline)
         self.assertEqual(resultline.number, "1234")
+
+    def test_get_user_join_line_no_result(self):
+        result = user_dao.get_user_join_line(1)
+        self.assertEqual(result, None)
