@@ -27,9 +27,15 @@ class TestBaseSdm(unittest.TestCase):
         base_instance.attr1 = 'val1'
         base_instance.attr2 = 2
         base_instance.attr3 = None
+        second_instance = BaseSdm()
+        second_instance.my_attr = 'hello'
+        base_instance.attr4 = second_instance
+        base_instance.attr5 = [second_instance]
         expected_result = {'attr1': 'val1',
                            'attr2': 2,
-                           'attr3': None}
+                           'attr3': None,
+                           'attr4': {'my_attr': 'hello'},
+                           'attr5': [{'my_attr': 'hello'}]}
 
         result = base_instance.todict()
         self.assertEquals(result, expected_result)

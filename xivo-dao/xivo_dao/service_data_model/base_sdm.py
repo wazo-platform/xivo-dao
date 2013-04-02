@@ -21,7 +21,10 @@ from xivo_dao.service_data_model.sdm_exception import IncorrectParametersExcepti
 class BaseSdm(object):
 
     def todict(self):
-        return dict(self.__dict__)
+        result = {}
+        for key, value in self.__dict__.iteritems():
+            result[key] = self._process_value(value)
+        return result
 
     def validate(self, data):
         invalid_params = []
@@ -32,3 +35,14 @@ class BaseSdm(object):
             raise IncorrectParametersException(*invalid_params)
 
         return True
+
+    def _process_value(self, value):
+        if(isinstance(value, BaseSdm)):
+            return value.todict()
+        elif(isinstance(value, list)):
+            result = []
+            for item in value:
+                result.append(self._process_value(item))
+            return result
+        else:
+            return value
