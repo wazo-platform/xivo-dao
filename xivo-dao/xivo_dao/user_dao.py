@@ -408,4 +408,10 @@ def get_user_join_line(session, userid):
                   .first()
 
 
+@daosession
+def get_all_join_line(session):
+    return session.query(UserFeatures, LineFeatures)\
+                  .outerjoin((LineFeatures, UserFeatures.id == LineFeatures.iduserfeatures))\
+                  .all()
+
 

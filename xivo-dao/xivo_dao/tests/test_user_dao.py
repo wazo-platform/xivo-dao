@@ -942,3 +942,10 @@ class TestUserFeaturesDAO(DAOTestCase):
         resultuser, resultline = user_dao.get_user_join_line(user.id)
         self.assertEqual(user, resultuser)
         self.assertEqual(None, resultline)
+
+    def test_get_all_join_lines(self):
+        user1, line1 = self._add_user_with_line("test1", "default")
+        user2, line2 = self._add_user_with_line("test2", "default")
+
+        result = user_dao.get_all_join_line()
+        self.assertEqual([(user1, line1), (user2, line2)], result)
