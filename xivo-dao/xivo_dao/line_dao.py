@@ -247,3 +247,26 @@ def _get_cid_for_sip_channel(session, channel):
                .filter(and_(UserSIP.name == name, UserSIP.protocol == protocol.lower()))[0].callerid)
 
     return caller_id.build_caller_id(cid_all, None, None)
+
+
+@daosession
+def create(session, line):
+    session.begin()
+    try:
+        session.add(line)
+        session.commit()
+    except:
+        session.rollback()
+        raise
+
+@daosession
+def delete(session, lineid):
+    session.begin()
+    try:
+        session.query(LineFeatures).filter(LineFeatures.id == lineid).delete()
+        session.commit()
+    except:
+        session.rollback()
+        raise
+
+
