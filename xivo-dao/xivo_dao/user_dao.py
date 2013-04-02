@@ -404,7 +404,7 @@ def _format_user(user):
 def get_user_join_line(session, userid):
     return session.query(UserFeatures, LineFeatures)\
                   .filter(UserFeatures.id == userid)\
-                  .filter(UserFeatures.id == LineFeatures.iduserfeatures)\
+                  .outerjoin((LineFeatures, UserFeatures.id == LineFeatures.iduserfeatures))\
                   .first()
 
 
