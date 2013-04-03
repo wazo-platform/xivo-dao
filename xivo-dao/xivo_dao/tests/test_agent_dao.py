@@ -122,7 +122,7 @@ class TestAgentDAO(DAOTestCase):
 
         return queue
 
-    def _insert_queue_member(self, queue_name, member_name, agent_id=1, penalty=0, skills='agent-1'):
+    def _insert_queue_member(self, queue_name, member_name, agent_id=1, penalty=0):
         queue_member = QueueMember()
         queue_member.queue_name = queue_name
         queue_member.interface = member_name
@@ -132,7 +132,6 @@ class TestAgentDAO(DAOTestCase):
         queue_member.channel = 'foobar'
         queue_member.category = 'queue'
         queue_member.position = 0
-        queue_member.skills = skills
 
         try:
             self.session.begin()

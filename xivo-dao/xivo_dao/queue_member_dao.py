@@ -31,7 +31,6 @@ def add_agent_to_queue(session, agent_id, agent_number, queue_name):
     queue_member.userid = agent_id
     queue_member.channel = 'Agent'
     queue_member.category = 'queue'
-    queue_member.skills = 'agent-%s' % agent_id
     queue_member.position = next_position
 
     try:
