@@ -259,6 +259,7 @@ def create(session, line):
         session.rollback()
         raise
 
+
 @daosession
 def delete(session, lineid):
     session.begin()
@@ -268,5 +269,3 @@ def delete(session, lineid):
     except:
         session.rollback()
         raise
-
-

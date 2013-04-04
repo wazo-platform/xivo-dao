@@ -22,7 +22,6 @@ from xivo_dao.service_data_model.line_sdm import LineSdm
 
 class LineMapping(AbstractMapping):
 
-
     #mapping = {alchemy_field: sdm_field}
     mapping = {'number': 'number'
                }
@@ -34,7 +33,6 @@ class LineMapping(AbstractMapping):
     alchemy_types = {}
 
     sdm_types = {}
-
 
     def __init__(self):
         self.sdm_class = LineSdm
