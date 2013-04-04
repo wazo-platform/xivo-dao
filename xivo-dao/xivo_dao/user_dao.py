@@ -15,14 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.alchemy.agentfeatures import AgentFeatures
-from xivo_dao.alchemy.linefeatures import LineFeatures
-from xivo_dao.alchemy.contextinclude import ContextInclude
-from xivo_dao.alchemy.userfeatures import UserFeatures
 from sqlalchemy import and_
+from sqlalchemy.sql.expression import func
+from xivo_dao.alchemy.agentfeatures import AgentFeatures
+from xivo_dao.alchemy.contextinclude import ContextInclude
+from xivo_dao.alchemy.cti_profile import CtiProfile
+from xivo_dao.alchemy.linefeatures import LineFeatures
+from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.helpers.db_manager import daosession
 #the following import is necessary to laod CtiProfiles' definition:
-from xivo_dao.alchemy.cti_profile import CtiProfile
 
 
 def enable_dnd(user_id):
@@ -397,3 +398,20 @@ def _format_user(user):
         'voicemailid': user.voicemailid,
         'voicemailtype': user.voicemailtype,
     }
+
+
+@daosession
+def get_user_join_line(session, userid):
+    return session.query(UserFeatures, LineFeatures)\
+                  .filter(UserFeatures.id == userid)\
+                  .outerjoin((LineFeatures, UserFeatures.id == LineFeatures.iduserfeatures))\
+                  .first()
+
+
+@daosession
+def get_all_join_line(session):
+    return session.query(UserFeatures, LineFeatures)\
+                  .outerjoin((LineFeatures, UserFeatures.id == LineFeatures.iduserfeatures))\
+                  .all()
+
+

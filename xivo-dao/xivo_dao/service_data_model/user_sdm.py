@@ -41,3 +41,4 @@ class UserSdm(BaseSdm):
         self.voicemailid = None
         self.agentid = None
         self.entityid = None
+        self.line = None
