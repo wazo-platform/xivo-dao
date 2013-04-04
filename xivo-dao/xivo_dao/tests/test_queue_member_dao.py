@@ -58,7 +58,6 @@ class TestQueueMemberDAO(DAOTestCase):
         self.assertEqual(queue_member.userid, agent_id)
         self.assertEqual(queue_member.channel, 'Agent')
         self.assertEqual(queue_member.category, 'queue')
-        self.assertEqual(queue_member.skills, 'agent-123')
         self.assertEqual(queue_member.position, 0)
 
     def test_remove_agent_from_queue(self):
