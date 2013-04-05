@@ -12,7 +12,7 @@ postgresql
 To Run Unittests:
 -------------------
 
-- Install postgres sql
+- Install PostgreSQL
 - Create a database asterisktest
 - Create a user asterisk / passwd asterisk
         create DATABASE asterisktest;
