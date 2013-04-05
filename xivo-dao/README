@@ -14,7 +14,7 @@ To Run Unittests:
 
 - Install PostgreSQL
 - Create a database asterisktest
-- Create a user asterisk / passwd asterisk
+- Create a user asterisk / password asterisk
         create DATABASE asterisktest;
         create USER asterisk with password 'asterisk';
         grant all ON DATABASE asterisktest to asterisk;
