@@ -30,21 +30,20 @@ def create(session, member):
 
 @daosession
 def get_by_userid_context(session, userid, context):
-    return session.query(ContextNumMember).filter(ContextNumMember.type == "user")\
-                                          .filter(ContextNumMember.typeval == str(userid))\
-                                          .filter(ContextNumMember.context == context)\
-                                          .first()
+    return _request_type_typeval_context(session, "user", str(userid), context).first()
 
 
 @daosession
 def delete_by_userid_context(session, userid, context):
     session.begin()
     try:
-        session.query(ContextNumMember).filter(ContextNumMember.type == "user")\
-                                       .filter(ContextNumMember.typeval == str(userid))\
-                                       .filter(ContextNumMember.context == context)\
-                                       .delete()
+        _request_type_typeval_context(session, "user", str(userid), context).delete()
         session.commit()
     except:
         session.rollback()
         raise
+
+def _request_type_typeval_context(session, typename, typeval, context):
+    return session.query(ContextNumMember).filter(ContextNumMember.type == typename)\
+                                          .filter(ContextNumMember.typeval == typeval)\
+                                          .filter(ContextNumMember.context == context)

@@ -55,5 +55,5 @@ class TestContextNumMemberDAO(DAOTestCase):
         self._insert("user", 2)
 
         contextnummember_dao.delete_by_userid_context(1, "default")
-        self.assertFalse(1 in [item.typeval for item in self._get_all()])
-        self.assertTrue(2 in [item.typeval for item in self._get_all()])
+        self.assertFalse('1' in [item.typeval for item in self._get_all()])
+        self.assertTrue('2' in [item.typeval for item in self._get_all()])
