@@ -29,9 +29,22 @@ def create(session, member):
 
 
 @daosession
-def get_by_userid(session, userid):
+def get_by_userid_context(session, userid, context):
     return session.query(ContextNumMember).filter(ContextNumMember.type == "user")\
                                           .filter(ContextNumMember.typeval == str(userid))\
+                                          .filter(ContextNumMember.context == context)\
                                           .first()
 
 
+@daosession
+def delete_by_userid_context(session, userid, context):
+    session.begin()
+    try:
+        session.query(ContextNumMember).filter(ContextNumMember.type == "user")\
+                                       .filter(ContextNumMember.typeval == str(userid))\
+                                       .filter(ContextNumMember.context == context)\
+                                       .delete()
+        session.commit()
+    except:
+        session.rollback()
+        raise

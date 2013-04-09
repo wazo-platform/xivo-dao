@@ -44,8 +44,16 @@ class TestContextNumMemberDAO(DAOTestCase):
         self.session.add(member)
         self.session.commit()
 
-    def test_get_by_userid(self):
+    def test_get_by_userid_context(self):
         self._insert("user", 1)
-        result = contextnummember_dao.get_by_userid(1)
+        result = contextnummember_dao.get_by_userid_context(1, "default")
         self.assertEquals("user", result.type)
         self.assertEquals('1', result.typeval)
+
+    def test_delete_by_userid_context(self):
+        self._insert("user", 1)
+        self._insert("user", 2)
+
+        contextnummember_dao.delete_by_userid_context(1, "default")
+        self.assertFalse(1 in [item.typeval for item in self._get_all()])
+        self.assertTrue(2 in [item.typeval for item in self._get_all()])
