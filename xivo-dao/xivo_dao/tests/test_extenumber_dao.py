@@ -36,3 +36,17 @@ class TestExteNumberDAO(DAOTestCase):
 
     def _get_all(self):
         return self.session.query(ExteNumber).all()
+
+    def _insert(self, exten, context="default", typename="user"):
+        ext = ExteNumber(exten=exten, context=context, type=typename)
+
+        self.session.begin()
+        self.session.add(ext)
+        self.session.commit()
+        return ext.id
+
+    def test_get_by_exten(self):
+        self._insert("2000")
+
+        result = extenumber_dao.get_by_exten("2000")
+        self.assertEquals("2000", result.exten)
