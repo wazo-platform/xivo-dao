@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 from xivo_dao.helpers.db_manager import daosession
+from xivo_dao.alchemy.contextnummember import ContextNumMember
 
 @daosession
 def create(session, member):
@@ -25,3 +26,12 @@ def create(session, member):
     except:
         session.rollback()
         raise
+
+
+@daosession
+def get_by_userid(session, userid):
+    return session.query(ContextNumMember).filter(ContextNumMember.type == "user")\
+                                          .filter(ContextNumMember.typeval == str(userid))\
+                                          .first()
+
+
