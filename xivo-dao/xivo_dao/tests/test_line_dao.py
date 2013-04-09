@@ -318,3 +318,8 @@ class TestLineFeaturesDAO(DAOTestCase):
         inserted_id = self._insert_line().id
         line_dao.delete(inserted_id)
         self.assertFalse(line_dao.is_phone_exten(self.line_number))
+
+    def test_get(self):
+        line = self._insert_line()
+        result = line_dao.get(line.id)
+        self.assertEquals(line, result)

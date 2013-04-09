@@ -269,3 +269,10 @@ def delete(session, lineid):
     except:
         session.rollback()
         raise
+
+
+@daosession
+def get(session, lineid):
+    return session.query(LineFeatures).filter(LineFeatures.id == lineid).first()
+
+
