@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.helpers.db_manager import daosession
 
 @daosession
@@ -26,3 +27,10 @@ def create(session, usersip):
     except:
         session.rollback()
         raise
+
+
+@daosession
+def get(session, sipid):
+    return session.query(UserSIP).filter(UserSIP.id == sipid).first()
+
+
