@@ -34,3 +34,11 @@ def get(session, sipid):
     return session.query(UserSIP).filter(UserSIP.id == sipid).first()
 
 
+@daosession
+def delete(session, usersip_id):
+    session.begin()
+    try:
+        session.query(UserSIP).filter(UserSIP.id == usersip_id).delete()
+        session.commit()
+    except:
+        session.rollback()
