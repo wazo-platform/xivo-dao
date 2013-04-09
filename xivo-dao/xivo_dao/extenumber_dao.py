@@ -31,3 +31,14 @@ def create(session, extenumber):
 @daosession
 def get_by_exten(session, exten):
     return session.query(ExteNumber).filter(ExteNumber.exten == exten).first()
+
+
+@daosession
+def delete_by_exten(session, exten):
+    session.begin()
+    try:
+        session.query(ExteNumber).filter(ExteNumber.exten == exten).delete()
+        session.commit()
+    except:
+        session.rollback()
+        raise
