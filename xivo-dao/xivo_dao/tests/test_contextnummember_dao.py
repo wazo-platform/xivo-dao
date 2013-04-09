@@ -37,3 +37,15 @@ class TestContextNumMemberDAO(DAOTestCase):
 
     def _get_all(self):
         return self.session.query(ContextNumMember).all()
+
+    def _insert(self, typename, typeval, context="default", number=""):
+        member = ContextNumMember(type=typename, typeval=typeval, context=context, number=number)
+        self.session.begin()
+        self.session.add(member)
+        self.session.commit()
+
+    def test_get_by_userid(self):
+        self._insert("user", 1)
+        result = contextnummember_dao.get_by_userid(1)
+        self.assertEquals("user", result.type)
+        self.assertEquals('1', result.typeval)
