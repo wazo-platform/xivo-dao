@@ -57,5 +57,10 @@ class TestExtensionsDAO(DAOTestCase):
         self.assertTrue(exten.id)
         self.assertTrue(exten in self._get_all())
 
+    def test_get_by_exten(self):
+        self._insert_extens()
+        result = extensions_dao.get_by_exten('*25')
+        self.assertEquals('*25', result.exten)
+
     def _get_all(self):
         return self.session.query(Extension).all()
