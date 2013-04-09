@@ -47,3 +47,15 @@ class TestExtensionsDAO(DAOTestCase):
 
         self.assertEqual(enablednd, '*25')
         self.assertEqual(phoneprogfunckey, '_*735')
+
+    def test_create(self):
+        exten = Extension()
+        exten.exten = "2000"
+        exten.context = "default"
+
+        extensions_dao.create(exten)
+        self.assertTrue(exten.id)
+        self.assertTrue(exten in self._get_all())
+
+    def _get_all(self):
+        return self.session.query(Extension).all()
