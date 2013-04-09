@@ -34,3 +34,8 @@ def create(session, exten):
     except:
         session.rollback()
         raise
+
+
+@daosession
+def get_by_exten(session, exten):
+    return session.query(Extension).filter(Extension.exten == exten).first()
