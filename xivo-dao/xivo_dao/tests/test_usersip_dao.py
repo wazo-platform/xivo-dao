@@ -26,7 +26,7 @@ class TestUserSIPDAO(DAOTestCase):
     def setUp(self):
         self.empty_tables()
 
-    def testCreate(self):
+    def test_create(self):
         usersip = UserSIP(name="abcd", type="friend")
 
         usersip_dao.create(usersip)
@@ -36,3 +36,15 @@ class TestUserSIPDAO(DAOTestCase):
 
     def _get_all(self):
         return self.session.query(UserSIP).all()
+
+    def _insert(self, name, typename="friend"):
+        usersip = UserSIP(name=name, type=typename)
+        self.session.begin()
+        self.session.add(usersip)
+        self.session.commit()
+        return usersip.id
+
+    def test_get(self):
+        gen_id = self._insert("abcd")
+        result = usersip_dao.get(gen_id)
+        self.assertEquals(result.id, gen_id)
