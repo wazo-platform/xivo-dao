@@ -179,3 +179,16 @@ class TestDeviceDAO(DAOTestCase):
         self.session.commit()
 
         self.assertRaises(LookupError, device_dao.get_peer_name, device.id)
+
+    def test_get_deviceid(self):
+        device = DeviceFeatures()
+        device.deviceid = 'sdfjhdf83498erw8'
+        device.config = '893247987djfkh'
+        device.mac = '00:14:7f:e1:37:62'
+        device.vendor = 'Aastra'
+        device.model = '6731i'
+        device.proto = 'sip'
+        self.add_me(device)
+
+        result = device_dao.get_deviceid(device.id)
+        self.assertEquals("sdfjhdf83498erw8", result)

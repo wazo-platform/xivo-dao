@@ -42,3 +42,10 @@ def get_vendor_model(session, device_id):
         raise LookupError('No such device')
 
     return row.vendor, row.model
+
+
+@daosession
+def get_deviceid(session, db_id):
+    return session.query(DeviceFeatures.deviceid).filter(DeviceFeatures.id == db_id).first()[0]
+
+
