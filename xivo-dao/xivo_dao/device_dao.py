@@ -46,6 +46,10 @@ def get_vendor_model(session, device_id):
 
 @daosession
 def get_deviceid(session, db_id):
-    return session.query(DeviceFeatures.deviceid).filter(DeviceFeatures.id == db_id).first()[0]
+    result = session.query(DeviceFeatures.deviceid).filter(DeviceFeatures.id == db_id).first()
+    if result is None:
+        return None
+    else:
+        return result[0]
 
 

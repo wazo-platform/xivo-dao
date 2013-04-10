@@ -192,3 +192,6 @@ class TestDeviceDAO(DAOTestCase):
 
         result = device_dao.get_deviceid(device.id)
         self.assertEquals("sdfjhdf83498erw8", result)
+
+    def test_get_deviceid_unexisting(self):
+        self.assertEquals(None, device_dao.get_deviceid(1))
