@@ -28,3 +28,13 @@ class TestRightCallDAO(DAOTestCase):
 
         result = self.session.query(RightCall).first()
         self.assertEquals(result.name, 'test')
+
+    def test_get_by_name(self):
+        self._insert_rightcall('test')
+        result = rightcall_dao.get_by_name('test')
+        self.assertEquals('test', result.name)
+
+    def _insert_rightcall(self, name):
+        right = RightCall(name=name)
+        self.session.add(right)
+        return right.id

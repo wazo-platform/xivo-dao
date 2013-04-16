@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 from xivo_dao.helpers.db_manager import daosession
+from xivo_dao.alchemy.rightcall import RightCall
 
 @daosession
 def add(session, rightcall):
@@ -25,3 +26,7 @@ def add(session, rightcall):
     except:
         session.rollback()
         raise
+
+@daosession
+def get_by_name(session, name):
+    return session.query(RightCall).filter(RightCall.name == name).first()
