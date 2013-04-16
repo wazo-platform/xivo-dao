@@ -102,3 +102,16 @@ def is_activated_by_callfilter_id(session, callfilter_id):
 def update_callfiltermember_state(session, callfiltermember_id, new_state):
     data_dict = {'active': int(new_state)}
     session.query(Callfiltermember).filter(Callfiltermember.id == callfiltermember_id).update(data_dict)
+
+
+@daosession
+def add(session, callfilter):
+    session.begin()
+    try:
+        session.add(callfilter)
+        session.commit()
+    except:
+        session.rollback()
+        raise
+
+
