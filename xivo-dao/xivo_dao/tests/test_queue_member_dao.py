@@ -101,14 +101,13 @@ class TestQueueMemberDAO(DAOTestCase):
         self.assertEqual(queue_member.member_name, 'Agent/2')
 
     def test_add_user_to_queue(self):
-        line_id = 2
         user_id = 1
         queue = 'queue1'
         interface = 'SIP/123'
         line_dao.get_interface_from_user_id = Mock()
         line_dao.get_interface_from_user_id.return_value = interface
 
-        queue_member_dao.add_user_to_queue(user_id, line_id, queue)
+        queue_member_dao.add_user_to_queue(user_id, queue)
 
         queue_member = self.session.query(QueueMember).first()
         self.assertEqual(queue_member.queue_name, queue)
@@ -118,6 +117,16 @@ class TestQueueMemberDAO(DAOTestCase):
         self.assertEqual(queue_member.channel, 'SIP')
         self.assertEqual(queue_member.category, 'queue')
         self.assertEqual(queue_member.position, 0)
+
+    def test_delete_by_userid(self):
+        self._insert_queue_member("test", "sip/123", 'user', 1, True)
+        self._insert_queue_member("test", "sip/456", 'agent', 1, True)
+
+        queue_member_dao.delete_by_userid(1)
+
+        result = self.session.query(QueueMember).all()
+        self.assertEquals(len(result), 1)
+        self.assertEquals(result[0].usertype, 'agent')
 
     def _insert_queue_member(self, queue_name, member_name, usertype='user', userid=1, is_queue=True):
         queue_member = QueueMember()
