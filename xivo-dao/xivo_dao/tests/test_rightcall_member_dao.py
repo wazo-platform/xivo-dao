@@ -23,6 +23,9 @@ class TestRightCallMemberDAO(DAOTestCase):
 
     tables = [RightCall, RightCallMember]
 
+    def setUp(self):
+        self.cleanTables()
+
     def test_add_user_to_rightcall(self):
         userid = 1
         rightid = 2
@@ -32,3 +35,26 @@ class TestRightCallMemberDAO(DAOTestCase):
         self.assertEquals('1', result.typeval)
         self.assertEquals(2, result.rightcallid)
         self.assertEquals('user', result.type)
+
+    def test_get_by_userid(self):
+        self._insert_rightcallmember(1, 2)
+        self._insert_rightcallmember(3, 4)
+        result = rightcall_member_dao.get_by_userid(1)
+        self.assertEquals(len(result), 1)
+        self.assertEquals(result[0].typeval, '1')
+        self.assertEquals(result[0].rightcallid, 2)
+
+    def test_delete_by_userid(self):
+        self._insert_rightcallmember(1, 2)
+        self._insert_rightcallmember(3, 4)
+        rightcall_member_dao.delete_by_userid(1)
+
+        result = rightcall_member_dao.get_by_userid(1)
+        self.assertEquals(result, [])
+        result = rightcall_member_dao.get_by_userid(3)
+        self.assertEquals(len(result), 1)
+
+    def _insert_rightcallmember(self, userid, rightcallid):
+        self.session.begin()
+        self.session.add(RightCallMember(type='user', typeval=str(userid), rightcallid=rightcallid))
+        self.session.commit()
