@@ -22,6 +22,9 @@ class TestRightCallDAO(DAOTestCase):
 
     tables = [RightCall]
 
+    def setUp(self):
+        self.cleanTables()
+
     def test_add(self):
         right = RightCall(name='test')
         rightcall_dao.add(right)
@@ -36,5 +39,7 @@ class TestRightCallDAO(DAOTestCase):
 
     def _insert_rightcall(self, name):
         right = RightCall(name=name)
+        self.session.begin()
         self.session.add(right)
+        self.session.commit()
         return right.id

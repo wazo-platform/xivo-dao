@@ -14,8 +14,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
-from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.rightcallmember import RightCallMember
+from xivo_dao.helpers.db_manager import daosession
 
 @daosession
 def add_user_to_rightcall(session, userid, rightcallid):
@@ -30,3 +30,24 @@ def add_user_to_rightcall(session, userid, rightcallid):
     except:
         session.rollback()
         raise
+
+@daosession
+def get_by_userid(session, userid):
+    return session.query(RightCallMember).filter(RightCallMember.type == 'user')\
+                                         .filter(RightCallMember.typeval == str(userid))\
+                                         .all()
+
+
+@daosession
+def delete_by_userid(session, userid):
+    session.begin()
+    try:
+        session.query(RightCallMember).filter(RightCallMember.type == 'user')\
+                                      .filter(RightCallMember.typeval == str(userid))\
+                                      .delete()
+        session.commit()
+    except:
+        session.rollback()
+        raise
+
+
