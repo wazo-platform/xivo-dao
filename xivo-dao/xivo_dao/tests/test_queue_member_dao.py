@@ -30,11 +30,12 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA..
 
 
-from xivo_dao import queue_member_dao
-from xivo_dao.alchemy.queuemember import QueueMember
-from xivo_dao.tests.test_dao import DAOTestCase
+from mock import Mock
+from xivo_dao import queue_member_dao, line_dao
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
+from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.helpers import db_manager
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestQueueMemberDAO(DAOTestCase):
@@ -98,6 +99,25 @@ class TestQueueMemberDAO(DAOTestCase):
         queue_member = queue_members[0]
         self.assertEqual(queue_member.queue_name, 'queue1')
         self.assertEqual(queue_member.member_name, 'Agent/2')
+
+    def test_add_user_to_queue(self):
+        line_id = 2
+        user_id = 1
+        queue = 'queue1'
+        interface = 'SIP/123'
+        line_dao.get_interface_from_user_id = Mock()
+        line_dao.get_interface_from_user_id.return_value = interface
+
+        queue_member_dao.add_user_to_queue(user_id, line_id, queue)
+
+        queue_member = self.session.query(QueueMember).first()
+        self.assertEqual(queue_member.queue_name, queue)
+        self.assertEqual(queue_member.interface, interface)
+        self.assertEqual(queue_member.usertype, 'user')
+        self.assertEqual(queue_member.userid, user_id)
+        self.assertEqual(queue_member.channel, 'SIP')
+        self.assertEqual(queue_member.category, 'queue')
+        self.assertEqual(queue_member.position, 0)
 
     def _insert_queue_member(self, queue_name, member_name, usertype='user', userid=1, is_queue=True):
         queue_member = QueueMember()
