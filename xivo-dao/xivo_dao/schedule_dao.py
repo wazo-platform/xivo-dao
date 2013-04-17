@@ -14,6 +14,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
+from xivo_dao.alchemy.schedule import Schedule
+from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.helpers.db_manager import daosession
 
 @daosession
@@ -25,3 +27,30 @@ def add(session, schedule):
     except:
         session.rollback()
         raise
+
+
+@daosession
+def add_user_to_schedule(session, userid, scheduleid, order=0):
+    schedulepath = SchedulePath()
+    schedulepath.path = 'user'
+    schedulepath.schedule_id = scheduleid
+    schedulepath.pathid = userid
+    schedulepath.order = order
+
+    session.begin()
+    try:
+        session.add(schedulepath)
+        session.commit()
+    except:
+        session.rollback()
+        raise
+
+
+@daosession
+def get_schedules_for_user(session, userid):
+    return session.query(Schedule).join((SchedulePath, SchedulePath.schedule_id == Schedule.id))\
+                                  .filter(SchedulePath.path == 'user')\
+                                  .filter(SchedulePath.pathid == userid)\
+                                  .all()
+
+
