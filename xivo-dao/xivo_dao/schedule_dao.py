@@ -54,3 +54,16 @@ def get_schedules_for_user(session, userid):
                                   .all()
 
 
+@daosession
+def remove_user_from_all_schedules(session, userid):
+    session.begin()
+    try:
+        session.query(SchedulePath).filter(SchedulePath.path == 'user')\
+                                   .filter(SchedulePath.pathid == userid)\
+                                   .delete()
+        session.commit()
+    except:
+        session.rollback()
+        raise
+
+
