@@ -115,3 +115,24 @@ def add(session, callfilter):
         raise
 
 
+@daosession
+def get_by_name(session, name):
+    return session.query(Callfilter).filter(Callfilter.name == name).all()
+
+
+@daosession
+def add_user_to_filter(session, userid, filterid, role):
+    member = Callfiltermember()
+    member.type = 'user'
+    member.typeval = str(userid)
+    member.callfilterid = filterid
+    member.bstype = role
+    session.begin()
+    try:
+        session.add(member)
+        session.commit()
+    except:
+        session.rollback()
+        raise
+
+

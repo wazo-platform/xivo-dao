@@ -17,10 +17,11 @@
 from xivo_dao import callfilter_dao
 from xivo_dao.alchemy.callfilter import Callfilter
 from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao.alchemy.callfiltermember import Callfiltermember
 
 class TestCallFilterDAO(DAOTestCase):
 
-    tables = [Callfilter]
+    tables = [Callfilter, Callfiltermember]
 
     def setUp(self):
         self.cleanTables()
@@ -36,3 +37,30 @@ class TestCallFilterDAO(DAOTestCase):
         callfilter_dao.add(callfilter)
         result = self.session.query(Callfilter).first()
         self.assertEquals(result.name, 'test')
+
+    def test_get_by_name(self):
+        self._insert_call_filter('test')
+        result = callfilter_dao.get_by_name('test')
+        self.assertEquals(1, len(result))
+        self.assertEquals('test', result[0].name)
+
+    def _insert_call_filter(self, name):
+        callfilter = Callfilter()
+        callfilter.callfrom = 'internal'
+        callfilter.type = 'bosssecretary'
+        callfilter.bosssecretary = 'bossfirst-serial'
+        callfilter.name = name
+        callfilter.description = ''
+        self.session.begin()
+        self.session.add(callfilter)
+        self.session.commit()
+        return callfilter.id
+
+    def test_add_user_to_filter(self):
+        filterid = self._insert_call_filter('test')
+        callfilter_dao.add_user_to_filter(1, filterid, 'boss')
+        member = self.session.query(Callfiltermember).first()
+        self.assertEquals('1', member.typeval)
+        self.assertEquals('user', member.type)
+        self.assertEquals(filterid, member.callfilterid)
+        self.assertEquals('boss', member.bstype)
