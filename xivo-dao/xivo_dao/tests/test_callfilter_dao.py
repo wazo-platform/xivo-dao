@@ -56,6 +56,16 @@ class TestCallFilterDAO(DAOTestCase):
         self.session.commit()
         return callfilter.id
 
+    def _add_user_to_filter(self, userid, filterid, role='boss'):
+        member = Callfiltermember()
+        member.type = 'user'
+        member.typeval = str(userid)
+        member.callfilterid = filterid
+        member.bstype = role
+        self.session.begin()
+        self.session.add(member)
+        self.session.commit()
+
     def test_add_user_to_filter(self):
         filterid = self._insert_call_filter('test')
         callfilter_dao.add_user_to_filter(1, filterid, 'boss')
@@ -64,3 +74,29 @@ class TestCallFilterDAO(DAOTestCase):
         self.assertEquals('user', member.type)
         self.assertEquals(filterid, member.callfilterid)
         self.assertEquals('boss', member.bstype)
+
+    def test_get_callfiltermember_by_userid(self):
+        filterid1 = self._insert_call_filter('test1')
+        filterid2 = self._insert_call_filter('test2')
+        self._add_user_to_filter(1, filterid1)
+        self._add_user_to_filter(2, filterid1)
+        self._add_user_to_filter(1, filterid2)
+
+        result = callfilter_dao.get_callfiltermembers_by_userid(1)
+        self.assertEquals(2, len(result))
+        self.assertEquals('1', result[0].typeval)
+        self.assertEquals('1', result[1].typeval)
+
+        result = callfilter_dao.get_callfiltermembers_by_userid(2)
+        self.assertEquals(1, len(result))
+        self.assertEquals('2', result[0].typeval)
+
+    def test_delete_callfiltermember_by_userid(self):
+        filterid = self._insert_call_filter('test1')
+        self._add_user_to_filter(1, filterid)
+        self._add_user_to_filter(2, filterid)
+
+        callfilter_dao.delete_callfiltermember_by_userid(1)
+
+        self.assertEquals(None, self.session.query(Callfiltermember).filter(Callfiltermember.typeval == '1').first())
+        self.assertNotEquals(None, self.session.query(Callfiltermember).filter(Callfiltermember.typeval == '2').first())
