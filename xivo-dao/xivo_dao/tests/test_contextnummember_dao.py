@@ -40,9 +40,7 @@ class TestContextNumMemberDAO(DAOTestCase):
 
     def _insert(self, typename, typeval, context="default", number=""):
         member = ContextNumMember(type=typename, typeval=typeval, context=context, number=number)
-        self.session.begin()
-        self.session.add(member)
-        self.session.commit()
+        self.add_me(member)
 
     def test_get_by_type_typeval_context(self):
         self._insert("user", 1)

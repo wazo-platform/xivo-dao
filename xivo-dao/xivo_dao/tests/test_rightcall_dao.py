@@ -39,7 +39,5 @@ class TestRightCallDAO(DAOTestCase):
 
     def _insert_rightcall(self, name):
         right = RightCall(name=name)
-        self.session.begin()
-        self.session.add(right)
-        self.session.commit()
+        self.add_me(right)
         return right.id
