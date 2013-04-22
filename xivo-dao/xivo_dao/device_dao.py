@@ -50,6 +50,6 @@ def get_deviceid(session, db_id):
     if result is None:
         return None
     else:
-        return result[0]
+        return result.deviceid
 
 
