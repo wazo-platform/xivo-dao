@@ -42,3 +42,4 @@ def delete(session, usersip_id):
         session.commit()
     except Exception:
         session.rollback()
+        raise
