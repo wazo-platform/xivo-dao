@@ -23,7 +23,7 @@ def add(session, rightcall):
     try:
         session.add(rightcall)
         session.commit()
-    except:
+    except Exception:
         session.rollback()
         raise
 

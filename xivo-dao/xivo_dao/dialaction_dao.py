@@ -23,7 +23,7 @@ def add(session, dialaction):
     try:
         session.add(dialaction)
         session.commit()
-    except:
+    except Exception:
         session.rollback()
         raise
 
@@ -39,7 +39,7 @@ def delete_by_userid(session, userid):
     try:
         _request_by_userid(session, userid).delete()
         session.commit()
-    except:
+    except Exception:
         session.rollback()
         raise
 

@@ -24,7 +24,7 @@ def add(session, contextmember):
     try:
         session.add(contextmember)
         session.commit()
-    except:
+    except Exception:
         session.rollback()
         raise
 
@@ -35,7 +35,7 @@ def delete_by_type_typeval(session, typename, typeval):
     try:
         _request_type_typeval(session, typename, typeval).delete()
         session.commit()
-    except:
+    except Exception:
         session.rollback()
         raise
 

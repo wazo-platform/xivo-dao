@@ -255,7 +255,7 @@ def create(session, line):
     try:
         session.add(line)
         session.commit()
-    except:
+    except Exception:
         session.rollback()
         raise
 
@@ -266,7 +266,7 @@ def delete(session, lineid):
     try:
         session.query(LineFeatures).filter(LineFeatures.id == lineid).delete()
         session.commit()
-    except:
+    except Exception:
         session.rollback()
         raise
 

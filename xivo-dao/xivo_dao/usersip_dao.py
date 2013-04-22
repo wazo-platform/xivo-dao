@@ -24,7 +24,7 @@ def create(session, usersip):
     try:
         session.add(usersip)
         session.commit()
-    except:
+    except Exception:
         session.rollback()
         raise
 
@@ -40,5 +40,5 @@ def delete(session, usersip_id):
     try:
         session.query(UserSIP).filter(UserSIP.id == usersip_id).delete()
         session.commit()
-    except:
+    except Exception:
         session.rollback()
