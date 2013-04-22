@@ -24,7 +24,7 @@ def create(session, extenumber):
     try:
         session.add(extenumber)
         session.commit()
-    except:
+    except Exception:
         session.rollback()
 
 
@@ -39,6 +39,6 @@ def delete_by_exten(session, exten):
     try:
         session.query(ExteNumber).filter(ExteNumber.exten == exten).delete()
         session.commit()
-    except:
+    except Exception:
         session.rollback()
         raise

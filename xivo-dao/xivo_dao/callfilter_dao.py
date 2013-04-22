@@ -110,7 +110,7 @@ def add(session, callfilter):
     try:
         session.add(callfilter)
         session.commit()
-    except:
+    except Exception:
         session.rollback()
         raise
 
@@ -131,7 +131,7 @@ def add_user_to_filter(session, userid, filterid, role):
     try:
         session.add(member)
         session.commit()
-    except:
+    except Exception:
         session.rollback()
         raise
 
@@ -147,7 +147,7 @@ def delete_callfiltermember_by_userid(session, userid):
     try:
         _request_member_by_userid(session, userid).delete()
         session.commit()
-    except:
+    except Exception:
         session.rollback()
         raise
 

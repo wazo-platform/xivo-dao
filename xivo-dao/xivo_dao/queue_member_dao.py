@@ -106,7 +106,7 @@ def delete_by_userid(session, userid):
                               .filter(QueueMember.userid == userid)\
                               .delete()
         session.commit()
-    except:
+    except Exception:
         session.rollback()
         raise
 

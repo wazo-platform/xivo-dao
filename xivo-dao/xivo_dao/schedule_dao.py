@@ -24,7 +24,7 @@ def add(session, schedule):
     try:
         session.add(schedule)
         session.commit()
-    except:
+    except Exception:
         session.rollback()
         raise
 
@@ -41,7 +41,7 @@ def add_user_to_schedule(session, userid, scheduleid, order=0):
     try:
         session.add(schedulepath)
         session.commit()
-    except:
+    except Exception:
         session.rollback()
         raise
 
@@ -62,7 +62,7 @@ def remove_user_from_all_schedules(session, userid):
                                    .filter(SchedulePath.pathid == userid)\
                                    .delete()
         session.commit()
-    except:
+    except Exception:
         session.rollback()
         raise
 

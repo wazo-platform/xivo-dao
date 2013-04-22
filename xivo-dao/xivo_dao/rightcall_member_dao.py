@@ -27,7 +27,7 @@ def add_user_to_rightcall(session, userid, rightcallid):
     try:
         session.add(member)
         session.commit()
-    except:
+    except Exception:
         session.rollback()
         raise
 
@@ -46,7 +46,7 @@ def delete_by_userid(session, userid):
                                       .filter(RightCallMember.typeval == str(userid))\
                                       .delete()
         session.commit()
-    except:
+    except Exception:
         session.rollback()
         raise
 

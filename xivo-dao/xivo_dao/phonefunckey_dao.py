@@ -49,7 +49,7 @@ def add(session, key):
     try:
         session.add(key)
         session.commit()
-    except:
+    except Exception:
         session.rollback()
         raise
 
@@ -65,7 +65,7 @@ def delete_by_userid(session, userid):
     try:
         session.query(PhoneFunckey).filter(PhoneFunckey.iduserfeatures == userid).delete()
         session.commit()
-    except:
+    except Exception:
         session.rollback()
         raise
 
