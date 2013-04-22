@@ -51,9 +51,7 @@ class TestCallFilterDAO(DAOTestCase):
         callfilter.bosssecretary = 'bossfirst-serial'
         callfilter.name = name
         callfilter.description = ''
-        self.session.begin()
-        self.session.add(callfilter)
-        self.session.commit()
+        self.add_me(callfilter)
         return callfilter.id
 
     def _add_user_to_filter(self, userid, filterid, role='boss'):
@@ -62,9 +60,7 @@ class TestCallFilterDAO(DAOTestCase):
         member.typeval = str(userid)
         member.callfilterid = filterid
         member.bstype = role
-        self.session.begin()
-        self.session.add(member)
-        self.session.commit()
+        self.add_me(member)
 
     def test_add_user_to_filter(self):
         filterid = self._insert_call_filter('test')

@@ -55,6 +55,4 @@ class TestRightCallMemberDAO(DAOTestCase):
         self.assertEquals(len(result), 1)
 
     def _insert_rightcallmember(self, userid, rightcallid):
-        self.session.begin()
-        self.session.add(RightCallMember(type='user', typeval=str(userid), rightcallid=rightcallid))
-        self.session.commit()
+        self.add_me(RightCallMember(type='user', typeval=str(userid), rightcallid=rightcallid))

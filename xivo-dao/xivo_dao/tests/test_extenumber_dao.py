@@ -39,10 +39,7 @@ class TestExteNumberDAO(DAOTestCase):
 
     def _insert(self, exten, context="default", typename="user"):
         ext = ExteNumber(exten=exten, context=context, type=typename)
-
-        self.session.begin()
-        self.session.add(ext)
-        self.session.commit()
+        self.add_me(ext)
         return ext.id
 
     def test_get_by_exten(self):

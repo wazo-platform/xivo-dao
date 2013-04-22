@@ -51,9 +51,7 @@ class TestScheduleDAO(DAOTestCase):
     def _insert_schedule(self, name):
         schedule = Schedule()
         schedule.name = name
-        self.session.begin()
-        self.session.add(schedule)
-        self.session.commit()
+        self.add_me(schedule)
         return schedule.id
 
     def _add_user_to_schedule(self, userid, scheduleid, order=0):
@@ -63,9 +61,7 @@ class TestScheduleDAO(DAOTestCase):
         schedulepath.pathid = userid
         schedulepath.order = order
 
-        self.session.begin()
-        self.session.add(schedulepath)
-        self.session.commit()
+        self.add_me(schedulepath)
 
     def test_remove_user_from_all_schedules(self):
         scheduleid = self._insert_schedule('test')

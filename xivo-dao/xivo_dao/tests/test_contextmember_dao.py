@@ -20,7 +20,7 @@ from xivo_dao.alchemy.contextmember import ContextMember
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
-class TestAgentDAO(DAOTestCase):
+class TestContextMemberDAO(DAOTestCase):
 
     tables = [ContextMember]
 
@@ -50,9 +50,7 @@ class TestAgentDAO(DAOTestCase):
 
     def _insert_contextmember(self, typename, typeval, context="default", varname="context"):
         contextmember = ContextMember(type=typename, typeval=typeval, context=context, varname=varname)
-        self.session.begin()
-        self.session.add(contextmember)
-        self.session.commit()
+        self.add_me(contextmember)
 
     def test_get_by_type_typeval(self):
         self._insert_contextmember('voicemail', '1')

@@ -39,9 +39,7 @@ class TestUserSIPDAO(DAOTestCase):
 
     def _insert(self, name, typename="friend"):
         usersip = UserSIP(name=name, type=typename)
-        self.session.begin()
-        self.session.add(usersip)
-        self.session.commit()
+        self.add_me(usersip)
         return usersip.id
 
     def test_get(self):

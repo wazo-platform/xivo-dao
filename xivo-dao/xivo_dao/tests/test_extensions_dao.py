@@ -29,16 +29,14 @@ class TestExtensionsDAO(DAOTestCase):
         self._insert_extens()
 
     def _insert_extens(self):
-        self.session.begin()
         exten = Extension()
         exten.name = 'enablednd'
         exten.exten = '*25'
-        self.session.add(exten)
+        self.add_me(exten)
         exten = Extension()
         exten.name = 'phoneprogfunckey'
         exten.exten = '_*735'
-        self.session.add(exten)
-        self.session.commit()
+        self.add_me(exten)
 
     def test_exten_by_name(self):
         enablednd = extensions_dao.exten_by_name('enablednd')

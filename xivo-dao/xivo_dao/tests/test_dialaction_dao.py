@@ -48,9 +48,7 @@ class TestDialactionDAO(DAOTestCase):
         dialaction.category = category
         dialaction.categoryval = str(categoryval)
         dialaction.event = event
-        self.session.begin()
-        self.session.add(dialaction)
-        self.session.commit()
+        self.add_me(dialaction)
 
     def test_delete_by_userid(self):
         self._insert_dialaction(1)
