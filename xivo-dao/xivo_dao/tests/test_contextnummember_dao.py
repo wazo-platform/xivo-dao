@@ -35,6 +35,16 @@ class TestContextNumMemberDAO(DAOTestCase):
         contextnummember_dao.create(member)
         self.assertTrue(member in self._get_all())
 
+    def test_create_type_fix(self):
+        member = ContextNumMember()
+        member.context = "default"
+        member.number = "2000"
+        member.type = "line"
+        member.typeval = "1"
+
+        contextnummember_dao.create(member)
+        self.assertEquals("user", member.type)
+
     def _get_all(self):
         return self.session.query(ContextNumMember).all()
 

@@ -21,6 +21,8 @@ from xivo_dao.alchemy.contextnummember import ContextNumMember
 def create(session, member):
     session.begin()
     try:
+        if member.type == "line":
+            member.type = "user"
         session.add(member)
         session.commit()
     except Exception:
