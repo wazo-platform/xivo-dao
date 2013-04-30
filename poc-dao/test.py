@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 
 from xivo_ws import XivoServer, User, UserLine, UserVoicemail
 
-#from dao.services import voicemail
+from xivo_dao.services import voicemail
 
 import psycopg2
 
@@ -17,9 +17,9 @@ DB_USER = 'asterisk'
 DB_PASSWORD = 'proformatique'
 
 
-def delete_user_and_voicemail(extension):
+def delete_user_and_voicemail(number):
     server = XivoServer(WS_IP, WS_USERNAME, WS_PASSWORD)
-    users = server.users.search(extension)
+    users = server.users.search(number)
 
     for user in users:
         if user.voicemail:
@@ -27,21 +27,21 @@ def delete_user_and_voicemail(extension):
         server.users.delete(user.id)
 
 
-def create_user_and_voicemail(extension):
+def create_user_and_voicemail(number):
     server = XivoServer(WS_IP, WS_USERNAME, WS_PASSWORD)
 
-    user = build_user(extension)
+    user = build_user(number)
 
     user_id = server.users.add(user)
     return int(user_id)
 
 
-def build_user(extension):
+def build_user(number):
     user = User(firstname='voicemail', lastname='user', language='fr_FR')
 
-    user_line = UserLine(protocol='sip', context='default', number=extension)
+    user_line = UserLine(protocol='sip', context='default', number=number)
 
-    user_voicemail = UserVoicemail(number=extension, name='voicemail user')
+    user_voicemail = UserVoicemail(number=number, name='voicemail user')
 
     user.line = user_line
     user.voicemail = user_voicemail
@@ -49,23 +49,23 @@ def build_user(extension):
     return user
 
 
-def check_database_tables(user_id, extension):
+def check_database_tables(user_id, number):
     connection = psycopg2.connect(host=DB_HOST,
                                   port=DB_PORT,
                                   dbname=DB_NAME,
                                   user=DB_USER,
                                   password=DB_PASSWORD)
 
-    check_voicemail(connection, extension)
+    check_voicemail(connection, number)
     check_userfeatures(connection, user_id)
-    check_sccp_device(connection, extension)
-    check_usersip(connection, extension)
+    check_sccp_device(connection, number)
+    check_usersip(connection, number)
 
 
-def check_voicemail(conn, extension):
+def check_voicemail(conn, number):
     query = "SELECT COUNT(*) FROM voicemail WHERE mailbox = %s"
     cursor = conn.cursor()
-    cursor.execute(query, (extension,))
+    cursor.execute(query, (number,))
 
     count = cursor.fetchone()[0]
 
@@ -82,22 +82,22 @@ def check_userfeatures(conn, user_id):
     assert voicemail_id is None, "voicemail was not deleted in userfeatures"
 
 
-def check_sccp_device(conn, extension):
+def check_sccp_device(conn, number):
     query = "SELECT COUNT(voicemail) FROM sccpdevice WHERE line = %s AND voicemail != ''"
     cursor = conn.cursor()
-    cursor.execute(query, (extension,))
+    cursor.execute(query, (number,))
 
     count = cursor.fetchone()[0]
 
     assert count == 0, "voicemail was not deleted in sccpdevice"
 
 
-def check_usersip(conn, extension):
+def check_usersip(conn, number):
     query = "SELECT COUNT(*) FROM usersip WHERE mailbox = %s"
     cursor = conn.cursor()
 
-    full_extension = '%s@default' % extension
-    cursor.execute(query, (full_extension,))
+    full_number = '%s@default' % number
+    cursor.execute(query, (full_number,))
 
     count = cursor.fetchone()[0]
 
@@ -105,14 +105,14 @@ def check_usersip(conn, extension):
 
 
 if __name__ == "__main__":
-    extension = '1300'
+    number = '1300'
 
     print "deleting user and voicemail..."
-    delete_user_and_voicemail(extension)
+    delete_user_and_voicemail(number)
 
     print "creating user and voicemail..."
-    user_id = create_user_and_voicemail(extension)
-    #voicemail.delete(extension=extension)
+    user_id = create_user_and_voicemail(number)
+    voicemail.delete(number=number)
 
     print "checking database tables..."
-    check_database_tables(user_id, extension)
+    check_database_tables(user_id, number)
