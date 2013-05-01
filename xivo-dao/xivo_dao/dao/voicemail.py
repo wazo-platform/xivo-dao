@@ -6,10 +6,26 @@ from xivo_dao.helpers.db_manager import daosession
 
 class Voicemail(object):
 
-    def __init__(self, properties):
-        self.number = properties.mailbox
-        self.context = properties.context
-        self.id = properties.uniqueid
+    def __init__(self):
+        pass
+
+    @classmethod
+    def from_data_source(cls, properties):
+        voicemail = cls()
+        voicemail.name = properties.fullname
+        voicemail.number = properties.mailbox
+        voicemail.context = properties.context
+        voicemail.id = properties.uniqueid
+        return voicemail
+
+    @classmethod
+    def from_user_data(cls, properties):
+        voicemail = cls()
+        voicemail.name = properties['name']
+        voicemail.number = properties['number']
+        voicemail.context = properties['context']
+        voicemail.id = properties.get('id')
+        return voicemail
 
     @property
     def number_at_context(self):
@@ -17,16 +33,31 @@ class Voicemail(object):
 
 
 @daosession
-def find_by_number(session, number):
+def find_voicemail(session, number, context):
 
     voicemail = (session.query(VoicemailSchema)
                  .filter(VoicemailSchema.mailbox == number)
+                 .filter(VoicemailSchema.context == context)
                  .first())
 
     if not voicemail:
         return None
 
-    return Voicemail(voicemail)
+    return Voicemail.from_data_source(voicemail)
+
+
+@daosession
+def create(session, voicemail):
+    voicemail_row = VoicemailSchema(
+        fullname=voicemail.name,
+        mailbox=voicemail.number,
+        context=voicemail.context
+    )
+    session.begin()
+    session.add(voicemail_row)
+    session.commit()
+
+    return voicemail_row.uniqueid
 
 
 @daosession
