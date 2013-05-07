@@ -93,8 +93,8 @@ class TestPhoneFunckey(DAOTestCase):
         fwd_unc.label = 'my label for test_add'
 
         phonefunckey_dao.add(fwd_unc)
-        self.assertNotEquals(None, self.session.query(PhoneFunckey)\
-                                               .filter(PhoneFunckey.label == 'my label for test_add')\
+        self.assertNotEquals(None, self.session.query(PhoneFunckey)
+                                               .filter(PhoneFunckey.label == 'my label for test_add')
                                                .first())
 
     def test_get_by_userid(self):
