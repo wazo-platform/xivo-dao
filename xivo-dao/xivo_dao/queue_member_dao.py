@@ -104,9 +104,9 @@ def add_user_to_queue(session, user_id, queue):
 def delete_by_userid(session, userid):
     session.begin()
     try:
-        session.query(QueueMember).filter(QueueMember.usertype == 'user')\
-                                  .filter(QueueMember.userid == userid)\
-                                  .delete()
+        (session.query(QueueMember).filter(QueueMember.usertype == 'user')
+                                   .filter(QueueMember.userid == userid)
+                                   .delete())
         session.commit()
     except Exception:
         session.rollback()

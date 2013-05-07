@@ -49,6 +49,6 @@ def delete_by_type_typeval_context(session, typename, typeval, context):
 
 
 def _request_type_typeval_context(session, typename, typeval, context):
-    return session.query(ContextNumMember).filter(ContextNumMember.type == typename)\
-                                          .filter(ContextNumMember.typeval == typeval)\
-                                          .filter(ContextNumMember.context == context)
+    return (session.query(ContextNumMember).filter(ContextNumMember.type == typename)
+                                           .filter(ContextNumMember.typeval == typeval)
+                                           .filter(ContextNumMember.context == context))

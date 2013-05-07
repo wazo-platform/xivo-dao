@@ -47,5 +47,5 @@ def delete_by_userid(session, userid):
 
 
 def _request_by_userid(session, userid):
-    return session.query(Dialaction).filter(Dialaction.category == 'user')\
-                                    .filter(Dialaction.categoryval == str(userid))
+    return (session.query(Dialaction).filter(Dialaction.category == 'user')
+                                     .filter(Dialaction.categoryval == str(userid)))
