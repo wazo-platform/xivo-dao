@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
+
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.contextmember import ContextMember
 
@@ -48,4 +49,3 @@ def get_by_type_typeval(session, typename, typeval):
 def _request_type_typeval(session, typename, typeval):
     return session.query(ContextMember).filter(ContextMember.type == typename)\
                                        .filter(ContextMember.typeval == typeval)
-

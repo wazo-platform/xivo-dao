@@ -47,7 +47,6 @@ class TestContextMemberDAO(DAOTestCase):
         self.assertEquals(1, len(result))
         self.assertEquals('2', result[0].typeval)
 
-
     def _insert_contextmember(self, typename, typeval, context='default', varname='context'):
         contextmember = ContextMember(type=typename, typeval=typeval, context=context, varname=varname)
         self.add_me(contextmember)

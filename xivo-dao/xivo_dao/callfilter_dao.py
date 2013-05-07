@@ -151,6 +151,7 @@ def delete_callfiltermember_by_userid(session, userid):
         session.rollback()
         raise
 
+
 def _request_member_by_userid(session, userid):
     return session.query(Callfiltermember).filter(Callfiltermember.type == 'user')\
                                        .filter(Callfiltermember.typeval == str(userid))

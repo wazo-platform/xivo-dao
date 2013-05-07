@@ -18,6 +18,7 @@
 from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.helpers.db_manager import daosession
 
+
 @daosession
 def create(session, usersip):
     session.begin()

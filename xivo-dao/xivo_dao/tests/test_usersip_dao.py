@@ -19,6 +19,7 @@ from xivo_dao import usersip_dao
 from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.tests.test_dao import DAOTestCase
 
+
 class TestUserSIPDAO(DAOTestCase):
 
     tables = [UserSIP]

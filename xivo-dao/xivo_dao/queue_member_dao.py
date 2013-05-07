@@ -78,6 +78,7 @@ def get_queue_members_for_queues(session):
             .all())
     return rows
 
+
 @daosession
 def add_user_to_queue(session, user_id, queue):
     next_position = _get_next_position_for_queue(session, queue)
@@ -98,6 +99,7 @@ def add_user_to_queue(session, user_id, queue):
         session.rollback()
         raise
 
+
 @daosession
 def delete_by_userid(session, userid):
     session.begin()
@@ -109,4 +111,3 @@ def delete_by_userid(session, userid):
     except Exception:
         session.rollback()
         raise
-

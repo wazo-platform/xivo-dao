@@ -68,5 +68,3 @@ def delete_by_userid(session, userid):
     except Exception:
         session.rollback()
         raise
-
-

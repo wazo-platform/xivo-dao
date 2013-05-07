@@ -274,5 +274,3 @@ def delete(session, lineid):
 @daosession
 def get(session, lineid):
     return session.query(LineFeatures).filter(LineFeatures.id == lineid).first()
-
-
