@@ -28,7 +28,7 @@ class TestScheduleDAO(DAOTestCase):
 
     def test_add(self):
         schedule = Schedule()
-        schedule.name = "test"
+        schedule.name = 'test'
         schedule_dao.add(schedule)
 
         self.assertEquals(schedule, self.session.query(Schedule).first())

@@ -304,15 +304,15 @@ class TestLineFeaturesDAO(DAOTestCase):
 
     def test_create(self):
         line = LineFeatures()
-        line.number = "1234"
+        line.number = '1234'
         line.protocolid = 0
-        line.protocol = "sip"
-        line.name = "name"
-        line.context = "default"
+        line.protocol = 'sip'
+        line.name = 'name'
+        line.context = 'default'
         line.provisioningid = 0
 
         line_dao.create(line)
-        self.assertTrue(line_dao.is_phone_exten("1234"))
+        self.assertTrue(line_dao.is_phone_exten('1234'))
 
     def test_delete(self):
         inserted_id = self._insert_line().id

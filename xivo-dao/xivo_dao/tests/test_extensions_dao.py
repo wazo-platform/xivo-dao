@@ -47,8 +47,8 @@ class TestExtensionsDAO(DAOTestCase):
 
     def test_create(self):
         exten = Extension()
-        exten.exten = "2000"
-        exten.context = "default"
+        exten.exten = '2000'
+        exten.context = 'default'
 
         extensions_dao.create(exten)
         self.assertTrue(exten.id)
@@ -63,6 +63,6 @@ class TestExtensionsDAO(DAOTestCase):
         return self.session.query(Extension).all()
 
     def test_delete_by_exten(self):
-        extensions_dao.delete_by_exten("*25")
-        self.assertFalse("*25" in [item.exten for item in self._get_all()])
-        self.assertTrue("_*735" in [item.exten for item in self._get_all()])
+        extensions_dao.delete_by_exten('*25')
+        self.assertFalse('*25' in [item.exten for item in self._get_all()])
+        self.assertTrue('_*735' in [item.exten for item in self._get_all()])

@@ -29,10 +29,10 @@ class TestContextMemberDAO(DAOTestCase):
 
     def test_add(self):
         contextmember = ContextMember()
-        contextmember.varname = "context"
-        contextmember.type = "voicemail"
-        contextmember.typeval = "1"
-        contextmember.context = "default"
+        contextmember.varname = 'context'
+        contextmember.type = 'voicemail'
+        contextmember.typeval = '1'
+        contextmember.context = 'default'
 
         contextmember_dao.add(contextmember)
         result = self.session.query(ContextMember).first()
@@ -48,7 +48,7 @@ class TestContextMemberDAO(DAOTestCase):
         self.assertEquals('2', result[0].typeval)
 
 
-    def _insert_contextmember(self, typename, typeval, context="default", varname="context"):
+    def _insert_contextmember(self, typename, typeval, context='default', varname='context'):
         contextmember = ContextMember(type=typename, typeval=typeval, context=context, varname=varname)
         self.add_me(contextmember)
 
