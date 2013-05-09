@@ -20,9 +20,13 @@ from xivo_dao.helpers.db_manager import daosession
 
 
 @daosession
-def all_queues(session):
-    return session.query(QueueFeatures).all()
+def all_queues(session, order='number'):
+    query = session.query(QueueFeatures).all()
 
+    if order == 'number':
+        query = query.order_by(QueueFeatures.number)
+
+    return query.all()
 
 @daosession
 def get(session, queue_id):
