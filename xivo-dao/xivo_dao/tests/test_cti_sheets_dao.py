@@ -53,7 +53,7 @@ class TestCtiSheetsDAO(DAOTestCase):
                                u'{xivo-origin}',
                                0]
                     },
-                    'sheet_qtui': {'null': u''},
+                    'sheet_qtui': {'null': u'file:///tmp/test.ui'},
                     'systray_info': {
                         u'10': [u'Nom',
                                u'title',
@@ -117,7 +117,7 @@ class TestCtiSheetsDAO(DAOTestCase):
         cti_sheetaction.whom = 'dest'
         cti_sheetaction.sheet_info = '{"10": [ "Nom","title","","{xivo-calleridname}",0 ],"20": [ "Numéro","text","","{xivo-calleridnum}",0 ],"30": [ "Origine","text","","{xivo-origin}",0 ]}'
         cti_sheetaction.systray_info = '{"10": [ "Nom","title","","{xivo-calledidname}" ],"20": [ "Numéro","body","","{xivo-calleridnum}" ],"30": [ "Origine","body","","{xivo-origin}" ]}'
-        cti_sheetaction.sheet_qtui = ''
+        cti_sheetaction.sheet_qtui = 'file:///tmp/test.ui'
         cti_sheetaction.action_info = '{}'
         cti_sheetaction.focus = 0
         cti_sheetaction.deletable = 1

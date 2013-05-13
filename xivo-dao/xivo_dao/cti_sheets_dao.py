@@ -35,17 +35,15 @@ def _build_sheetevents(session):
     events = {}
     ctisheetevents = session.query(CtiSheetEvents).first()
     if ctisheetevents:
-        for field_name, ctisheetevent in ctisheetevents.todict().iteritems():
-            if field_name == 'id' or not ctisheetevent:
+        for event_name in ['incomingdid', 'hangup', 'dial', 'link', 'unlink']:
+            model_name = getattr(ctisheetevents, event_name)
+            if not model_name:
                 continue
-            if field_name not in events:
-                events[field_name] = []
-            tmp = {
-                'display': ctisheetevent,
-                'option': ctisheetevent,
-                'condition': ctisheetevent
-            }
-            events[field_name].append(tmp)
+            events[event_name] = [{
+                'display': model_name,
+                'option': model_name,
+                'condition': model_name
+            }]
     return events
 
 
@@ -67,16 +65,7 @@ def _build_sheetactions(session):
         res['displays'][name]['systray_info'] = json.loads(ctisheaction.systray_info)
         res['displays'][name]['sheet_info'] = json.loads(ctisheaction.sheet_info)
         res['displays'][name]['action_info'] = json.loads(ctisheaction.action_info)
-        res['displays'][name]['sheet_qtui'] = {}
-        qtui = 'null'
-        sheet_info = json.loads(ctisheaction.sheet_info)
-        if sheet_info:
-            for sheet_info_value in sheet_info.itervalues():
-                siv = tuple(sheet_info_value)
-                if siv[1] == 'form':
-                    qtui = siv[3]
-
-        res['displays'][name]['sheet_qtui'][qtui] = ctisheaction.sheet_qtui
+        res['displays'][name]['sheet_qtui'] = {'null': ctisheaction.sheet_qtui}
 
         res['conditions'][name] = {}
         res['conditions'][name]['whom'] = ctisheaction.whom
