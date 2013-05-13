@@ -29,8 +29,6 @@ def get_config(session):
     main['incoming_tcp']['CTIS'] = (row.ctis_ip, row.ctis_port, row.ctis_active)
     main['incoming_tcp']['WEBI'] = (row.webi_ip, row.webi_port, row.webi_active)
     main['incoming_tcp']['INFO'] = (row.info_ip, row.info_port, row.info_active)
-    main['incoming_upd'] = {}
-    main['incoming_upd']['ANNOUNCE'] = (row.announce_ip, row.announce_port, row.announce_active)
     main['certfile'] = row.tlscertfile
     main['keyfile'] = row.tlsprivkeyfile
     main['sockettimeout'] = row.socket_timeout
