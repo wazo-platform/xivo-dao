@@ -15,21 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.db_manager import Base, Type
-
 from sqlalchemy.schema import Column
-from sqlalchemy.types import Integer, String, Enum
+from sqlalchemy.types import Integer, String
+from xivo_dao.helpers.db_manager import Base
 
 
-class ContextNumbers(Base):
+class CtiDirectoryFields(Base):
 
-    __tablename__ = 'contextnumbers'
+    __tablename__ = 'ctidirectoryfields'
 
-    context = Column(String(39), primary_key=True)
-    type = Column(Enum('user', 'group', 'queue', 'meetme', 'incall',
-                       name='contextnumbers_type',
-                       metadata=Type.metadata),
-                  primary_key=True)
-    numberbeg = Column(String(16), default=0, primary_key=True)
-    numberbeg = Column(String(16), default=0, primary_key=True)
-    didlength = Column(Integer, nullable=False, default=0)
+    dir_id = Column(Integer, primary_key=True)
+    fieldname = Column(String(255), primary_key=True)
+    value = Column(String(255))

@@ -15,21 +15,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.db_manager import Base, Type
 
-from sqlalchemy.schema import Column
-from sqlalchemy.types import Integer, String, Enum
+from xivo_dao.helpers.db_manager import daosession, xivo_daosession
+from xivo_dao.alchemy.ldapfilter import LdapFilter
+from xivo_dao.alchemy.ldapserver import LdapServer
 
 
-class ContextNumbers(Base):
+@daosession
+def get_ldapfilter_with_name(session, ldap_name):
+    return session.query(LdapFilter).filter(LdapFilter.name == ldap_name).first()
 
-    __tablename__ = 'contextnumbers'
 
-    context = Column(String(39), primary_key=True)
-    type = Column(Enum('user', 'group', 'queue', 'meetme', 'incall',
-                       name='contextnumbers_type',
-                       metadata=Type.metadata),
-                  primary_key=True)
-    numberbeg = Column(String(16), default=0, primary_key=True)
-    numberbeg = Column(String(16), default=0, primary_key=True)
-    didlength = Column(Integer, nullable=False, default=0)
+@xivo_daosession
+def get_ldapserver_with_id(session, ldapserver_id):
+    return session.query(LdapServer).filter(LdapServer.id == ldapserver_id).first()

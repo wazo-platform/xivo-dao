@@ -24,7 +24,7 @@ class PhonebookNumber(Base):
 
     __tablename__ = 'phonebooknumber'
 
-    id = Column(Integer, nullable=False, primary_key=True)
+    id = Column(Integer, primary_key=True)
     phonebookid = Column(Integer, nullable=False)
     number = Column(String(40), nullable=False, default='')
     type = Column(Enum(('home', 'office', 'other'), name='phonebookaddress_type', metadata=Type.metadata),
