@@ -24,7 +24,7 @@ class Voicemail(Base):
 
     __tablename__ = 'voicemail'
 
-    uniqueid = Column(Integer, primary_key=True, nullable=False)
+    uniqueid = Column(Integer, primary_key=True)
     context = Column(String(39), nullable=False)
     mailbox = Column(String(40), nullable=False)
     password = Column(String(80), nullable=False, default='')

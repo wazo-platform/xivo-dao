@@ -24,6 +24,6 @@ class CtiDirectoryFields(Base):
 
     __tablename__ = 'ctidirectoryfields'
 
-    dir_id = Column(Integer, primary_key=True, nullable=False)
-    fieldname = Column(String(255), primary_key=True, nullable=False)
+    dir_id = Column(Integer, primary_key=True)
+    fieldname = Column(String(255), primary_key=True)
     value = Column(String(255))

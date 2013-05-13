@@ -42,8 +42,8 @@ class QueueLog(Base):
 
     __tablename__ = 'queue_log'
 
-    time = Column(String(26), nullable=False, server_default='', primary_key=True)
-    callid = Column(String(32), nullable=False, server_default='', primary_key=True)
+    time = Column(String(26), server_default='', primary_key=True)
+    callid = Column(String(32), server_default='', primary_key=True)
     queuename = Column(String(50), nullable=False, server_default='')
     agent = Column(String(50), nullable=False, server_default='')
     event = Column(String(20), nullable=False, server_default='')

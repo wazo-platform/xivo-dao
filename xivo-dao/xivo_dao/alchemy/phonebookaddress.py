@@ -24,7 +24,7 @@ class PhonebookAddress(Base):
 
     __tablename__ = 'phonebookaddress'
 
-    id = Column(Integer, nullable=False, primary_key=True)
+    id = Column(Integer, primary_key=True)
     phonebookid = Column(Integer, nullable=False)
     address1 = Column(String(30), nullable=False, default='')
     address2 = Column(String(30), nullable=False, default='')
