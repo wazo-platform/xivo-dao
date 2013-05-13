@@ -31,17 +31,6 @@ def get(session, voicemail_id):
 
 
 @daosession
-def delete_all(session):
-    session.begin()
-    try:
-        session.query(Voicemail).delete()
-        session.commit()
-    except Exception:
-        session.rollback()
-        raise
-
-
-@daosession
 def add(session, voicemail):
     session.begin()
     try:
@@ -56,6 +45,8 @@ def add(session, voicemail):
 def id_from_mailbox(session, mailbox, context):
     result = session.query(Voicemail.uniqueid).filter(and_(Voicemail.mailbox == mailbox,
                                                          Voicemail.context == context)).first()
+    if(result is None):
+        return None
     return result[0]
 
 
@@ -65,6 +56,17 @@ def update(session, voicemailid, data):
     try:
         session.query(Voicemail).filter(Voicemail.uniqueid == voicemailid).update(data)
         session.commit()
+    except Exception:
+        session.rollback()
+        raise
+
+@daosession
+def delete(session, uniqueid):
+    session.begin()
+    try:
+        impacted_rows = session.query(Voicemail).filter(Voicemail.uniqueid == uniqueid).delete()
+        session.commit()
+        return impacted_rows
     except Exception:
         session.rollback()
         raise

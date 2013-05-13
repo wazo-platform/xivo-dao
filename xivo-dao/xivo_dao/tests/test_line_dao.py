@@ -301,3 +301,20 @@ class TestLineFeaturesDAO(DAOTestCase):
         interface = line_dao.get_interface_from_user_id(user_id)
 
         self.assertEqual(interface, name)
+
+    def test_create(self):
+        line = LineFeatures()
+        line.number = "1234"
+        line.protocolid = 0
+        line.protocol = "sip"
+        line.name = "name"
+        line.context = "default"
+        line.provisioningid = 0
+
+        line_dao.create(line)
+        self.assertTrue(line_dao.is_phone_exten("1234"))
+
+    def test_delete(self):
+        inserted_id = self._insert_line().id
+        line_dao.delete(inserted_id)
+        self.assertFalse(line_dao.is_phone_exten(self.line_number))

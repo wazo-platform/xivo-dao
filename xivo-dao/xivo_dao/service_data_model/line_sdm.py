@@ -15,14 +15,10 @@
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+from xivo_dao.service_data_model.base_sdm import BaseSdm
 
 
-def map_attributes(src_object, dst_object, mapping, default_values={}):
-    for dst_field, value in default_values.iteritems():
-        setattr(dst_object, dst_field, value)
-    for src_field in mapping:
-        if hasattr(src_object, src_field):
-            dst_field = mapping[src_field]
-            value = getattr(src_object, src_field)
-            setattr(dst_object, dst_field, value)
-    return dst_object
+class LineSdm(BaseSdm):
+
+    def __init__(self):
+        self.number = None

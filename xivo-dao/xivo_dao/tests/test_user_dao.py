@@ -128,6 +128,39 @@ class TestUserFeaturesDAO(DAOTestCase):
         user_id = user_features.id
         return user_id
 
+    def test_enable_recording(self):
+        user_id = self._insert_user_recording_disabled()
+        user_dao.enable_recording(user_id)
+        self._check_recording(user_id, 1)
+
+    def test_disable_recording(self):
+        user_id = self._insert_user_recording_enabled()
+        user_dao.disable_recording(user_id)
+        self._check_recording(user_id, 0)
+
+    def _check_recording(self, user_id, value):
+        user_features = (self.session.query(UserFeatures)
+                         .filter(UserFeatures.id == user_id))[0]
+        self.assertEquals(user_features.callrecord, value)
+
+    def _insert_user_recording_disabled(self):
+        user_features = UserFeatures()
+        user_features.callrecord = 0
+        user_features.firstname = 'firstname_recording not set'
+        self.add_me(user_features)
+
+        user_id = user_features.id
+        return user_id
+
+    def _insert_user_recording_enabled(self):
+        user_features = UserFeatures()
+        user_features.callrecord = 1
+        user_features.firstname = 'firstname_recording set'
+        self.add_me(user_features)
+
+        user_id = user_features.id
+        return user_id
+
     def _check_filter_in_db(self, user_id, value):
         user_features = (self.session.query(UserFeatures)
                          .filter(UserFeatures.id == user_id))[0]
@@ -735,11 +768,14 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.assertEqual(result, 0)
 
     def test_delete(self):
-        user = self._add_user('test')
-        generated_id = user.id
-        result = user_dao.delete(generated_id)
+        user1 = self._add_user('test1')
+        generated_id1 = user1.id
+        user2 = self._add_user('test2')
+        generated_id2 = user2.id
+        result = user_dao.delete(generated_id1)
         self.assertEqual(result, 1)
-        self.assertRaises(LookupError, user_dao.get, generated_id)
+        self.assertRaises(LookupError, user_dao.get, generated_id1)
+        self.assertEqual(user2, user_dao.get(generated_id2))
 
     def test_delete_unexisting_user(self):
         result = user_dao.delete(1)
@@ -862,3 +898,54 @@ class TestUserFeaturesDAO(DAOTestCase):
         assert_that(result, contains_inanyorder(user1_id, user2_id))
         assert_that(result[user1_id]['firstname'], equal_to(user1.firstname))
         assert_that(result[user2_id]['firstname'], equal_to(user2.firstname))
+
+    def test_get_by_voicemailid(self):
+        user1 = UserFeatures(
+            firstname='John',
+            lastname='Jackson',
+            voicemailid=1
+        )
+        user2 = UserFeatures(
+            firstname='Jack',
+            lastname='Johnson',
+            voicemailid=1
+        )
+        user3 = UserFeatures(
+            firstname='Christopher',
+            lastname='Christopherson',
+            voicemailid=2
+        )
+        self.add_me(user1)
+        self.add_me(user2)
+        self.add_me(user3)
+        result = user_dao.get_by_voicemailid(1)
+        self.assertTrue(user1 in result)
+        self.assertTrue(user2 in result)
+        self.assertFalse(user3 in result)
+
+    def test_get_user_join_line(self):
+        user, line = self._add_user_with_line("my_test", "default")
+        line.number = "1234"
+        self.add_me(line)
+
+        resultuser, resultline = user_dao.get_user_join_line(user.id)
+        self.assertEqual(user, resultuser)
+        self.assertEqual(line, resultline)
+        self.assertEqual(resultline.number, "1234")
+
+    def test_get_user_join_line_no_result(self):
+        result = user_dao.get_user_join_line(1)
+        self.assertEqual(result, None)
+
+    def test_get_user_join_line_no_line(self):
+        user = self._add_user("test")
+        resultuser, resultline = user_dao.get_user_join_line(user.id)
+        self.assertEqual(user, resultuser)
+        self.assertEqual(None, resultline)
+
+    def test_get_all_join_lines(self):
+        user1, line1 = self._add_user_with_line("test1", "default")
+        user2, line2 = self._add_user_with_line("test2", "default")
+
+        result = user_dao.get_all_join_line()
+        self.assertEqual([(user1, line1), (user2, line2)], result)

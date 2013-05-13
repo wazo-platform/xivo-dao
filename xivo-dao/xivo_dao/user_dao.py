@@ -15,14 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.alchemy.agentfeatures import AgentFeatures
-from xivo_dao.alchemy.linefeatures import LineFeatures
-from xivo_dao.alchemy.contextinclude import ContextInclude
-from xivo_dao.alchemy.userfeatures import UserFeatures
 from sqlalchemy import and_
+from sqlalchemy.sql.expression import func
+from xivo_dao.alchemy.agentfeatures import AgentFeatures
+from xivo_dao.alchemy.contextinclude import ContextInclude
+from xivo_dao.alchemy.cti_profile import CtiProfile
+from xivo_dao.alchemy.linefeatures import LineFeatures
+from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.helpers.db_manager import daosession
 #the following import is necessary to laod CtiProfiles' definition:
-from xivo_dao.alchemy.cti_profile import CtiProfile
 
 
 def enable_dnd(user_id):
@@ -63,6 +64,14 @@ def enable_busy_fwd(user_id, destination):
 
 def disable_busy_fwd(user_id, destination):
     update(user_id, {'enablebusy': 0, 'destbusy': destination})
+
+
+def enable_recording(user_id):
+    update(user_id, {'callrecord': 1})
+
+
+def disable_recording(user_id):
+    update(user_id, {'callrecord': 0})
 
 
 @daosession
@@ -251,7 +260,8 @@ def add_user(session, user):
 @daosession
 def delete(session, userid):
     session.begin()
-    result = session.query(UserFeatures.id == userid).delete()
+    result = session.query(UserFeatures).filter(UserFeatures.id == userid)\
+                                        .delete(synchronize_session=False)
     session.commit()
     return result
 
@@ -274,6 +284,11 @@ def get_users_config(session):
     session.commit()
 
     return dict((str(user.id), _format_user(user)) for user in users)
+
+
+@daosession
+def get_by_voicemailid(session, voicemailid):
+    return session.query(UserFeatures).filter(UserFeatures.voicemailid == voicemailid).all()
 
 
 def _user_config_query(session):
@@ -383,3 +398,20 @@ def _format_user(user):
         'voicemailid': user.voicemailid,
         'voicemailtype': user.voicemailtype,
     }
+
+
+@daosession
+def get_user_join_line(session, userid):
+    return session.query(UserFeatures, LineFeatures)\
+                  .filter(UserFeatures.id == userid)\
+                  .outerjoin((LineFeatures, UserFeatures.id == LineFeatures.iduserfeatures))\
+                  .first()
+
+
+@daosession
+def get_all_join_line(session):
+    return session.query(UserFeatures, LineFeatures)\
+                  .outerjoin((LineFeatures, UserFeatures.id == LineFeatures.iduserfeatures))\
+                  .all()
+
+

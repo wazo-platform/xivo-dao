@@ -37,7 +37,8 @@ class UserSdm(BaseSdm):
         self.timezone = ""
         self.language = ""
         self.description = ""
-        self.cti_profile_id = None
+        self.ctiprofileid = None
         self.voicemailid = None
         self.agentid = None
         self.entityid = None
+        self.line = None

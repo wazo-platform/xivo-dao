@@ -18,62 +18,38 @@
 
 from xivo_dao.alchemy.voicemail import Voicemail
 from xivo_dao.service_data_model.voicemail_sdm import VoicemailSdm
-from xivo_dao.helpers import object_mapping
+from xivo_dao.mapping_alchemy_sdm.abstract_mapping import AbstractMapping
 
 
-#mapping = {alchemy_field: sdm_field}
-mapping = {'uniqueid': 'id',
-           'email': 'email',
-           'fullname': 'fullname',
-           'mailbox': 'mailbox',
-           'password': 'password',
-           'attach': 'attach',
-           'skipcheckpass': 'skipcheckpass',
-           'deletevoicemail': 'deleteaftersend'
-           }
+class VoicemailMapping(AbstractMapping):
+    #mapping = {alchemy_field: sdm_field}
+    mapping = {'uniqueid': 'id',
+               'email': 'email',
+               'fullname': 'fullname',
+               'mailbox': 'mailbox',
+               'password': 'password',
+               'attach': 'attach',
+               'skipcheckpass': 'skipcheckpass',
+               'deletevoicemail': 'deleteaftersend'
+               }
 
-reverse_mapping = dict((v, k) for k, v in mapping.items())
+    reverse_mapping = dict((v, k) for k, v in mapping.items())
 
-alchemy_default_values = {'context': 'default',
-                          'tz': 'eu-fr'}
+    alchemy_default_values = {'context': 'default',
+                              'tz': 'eu-fr'}
 
-alchemy_types = {
-                'uniqueid': int,
-                   'email': str,
-                   'fullname': str,
-                   'mailbox': str,
-                   'password': str,
-                   'attach': int,
-                   'skipcheckpass': int,
-                   'deletevoicemail': int
+    alchemy_types = {
+                       'attach': int,
+                       'skipcheckpass': int,
+                       'deletevoicemail': int
+                     }
+
+    sdm_types = {
+                'attach': bool,
+                'skipcheckpass': bool,
+                'deleteaftersend': bool
                  }
 
-
-def alchemy_to_sdm(voicemail_alchemy):
-    voicemail_sdm = VoicemailSdm()
-    return object_mapping.map_attributes(voicemail_alchemy,
-                                         voicemail_sdm,
-                                         mapping)
-
-
-def sdm_to_alchemy(voicemail_sdm):
-    voicemail_alchemy = Voicemail()
-
-    return object_mapping.map_attributes(voicemail_sdm,
-                                         voicemail_alchemy,
-                                         reverse_mapping,
-                                         alchemy_default_values)
-
-
-def sdm_to_alchemy_dict(voicemail_dict):
-
-    result = {}
-    for k in voicemail_dict:
-        if k in reverse_mapping:
-            new_key = reverse_mapping[k]
-            result[new_key] = voicemail_dict[k]
-            result[new_key] = alchemy_types[new_key](result[new_key])
-        else:
-            raise AttributeError()
-
-    return result
+    def __init__(self):
+        self.sdm_class = VoicemailSdm
+        self.alchemy_class = Voicemail

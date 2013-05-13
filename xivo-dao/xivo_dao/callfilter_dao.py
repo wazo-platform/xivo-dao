@@ -68,7 +68,7 @@ def get_secretaries_by_callfiltermember_id(session, callfiltermember_id):
             .join((UserFeatures, UserFeatures.id == cast(Callfiltermember.typeval, Integer)))
             .filter(and_(Callfilter.id == callfiltermember_id,
                          Callfiltermember.bstype == 'secretary'))
-            .order_by(Callfiltermember.priority.desc())
+            .order_by(Callfiltermember.priority.asc())
             .all())
 
 
