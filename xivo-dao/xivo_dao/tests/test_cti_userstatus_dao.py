@@ -38,10 +38,10 @@ class TestCtiUserStatusDAO(DAOTestCase):
         self._add_status(cti_presence_id_2, 'disconnected', '', '#202020', '')
         self._add_status(cti_presence_id_2, 'away', '', '#202020', '')
 
-        result_1 = cti_userstatus_dao.get_status_with_presence_id(cti_presence_id_1)
+        result_1 = cti_userstatus_dao.get_statuses_with_presence_id(cti_presence_id_1)
         self.assertEqual(2, len(result_1))
 
-        result_2 = cti_userstatus_dao.get_status_with_presence_id(cti_presence_id_2)
+        result_2 = cti_userstatus_dao.get_statuses_with_presence_id(cti_presence_id_2)
         self.assertEqual(3, len(result_2))
 
     def test_get_config(self):
@@ -60,13 +60,13 @@ class TestCtiUserStatusDAO(DAOTestCase):
                 "available": {
                     "longname": "available",
                     "color": "#08FD20",
-                    # "allowed": ["available"],
                     "actions": {"enablednd": "false",
                                 "queuepause_all": ""}
                 },
                 "disconnected": {
                     "longname": "disconnected",
                     "color": "#202020",
+                    "allowed": ["available"],
                     "actions": {"agentlogoff": ""}
                 }
             }
@@ -78,9 +78,9 @@ class TestCtiUserStatusDAO(DAOTestCase):
 
         cti_presence_id_2 = self._add_presence('test2')
         actions = 'enablednd(false),queuepause_all()'
-        self._add_status(cti_presence_id_2, 'available', actions, '#08FD20', '')
+        status_id = self._add_status(cti_presence_id_2, 'available', actions, '#08FD20', '')
         actions = 'agentlogoff()'
-        self._add_status(cti_presence_id_2, 'disconnected', actions, '#202020', '')
+        self._add_status(cti_presence_id_2, 'disconnected', actions, '#202020', '%s' % status_id)
 
         result = cti_userstatus_dao.get_config()
 
