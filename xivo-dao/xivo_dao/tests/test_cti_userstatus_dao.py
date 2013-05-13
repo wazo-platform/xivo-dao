@@ -19,7 +19,6 @@ from xivo_dao import cti_userstatus_dao
 from xivo_dao.alchemy.ctipresences import CtiPresences
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.ctistatus import CtiStatus
-from pprint import pprint
 
 
 class TestCtiUserStatusDAO(DAOTestCase):

@@ -19,7 +19,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.ctisheetactions import CtiSheetActions
 from xivo_dao.alchemy.ctisheetevents import CtiSheetEvents
 from xivo_dao import cti_sheets_dao
-from pprint import pprint
 
 
 class TestCtiSheetsDAO(DAOTestCase):
@@ -95,9 +94,6 @@ class TestCtiSheetsDAO(DAOTestCase):
         self._add_ctisheetactions()
 
         result = cti_sheets_dao.get_config()
-
-        pprint(result)
-        pprint(expected_result)
 
         self.assertEqual(expected_result, result)
 
