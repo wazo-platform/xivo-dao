@@ -30,7 +30,6 @@ class TestLdapDAO(DAOTestCase):
         self.empty_tables()
 
     def test_get_ldapserver_with_id(self):
-
         ldapserver = self._insert_ldapserver(name='ldapserver_test')
 
         ldapserver_result = ldap_dao.get_ldapserver_with_id(ldapserver.id)
@@ -38,7 +37,6 @@ class TestLdapDAO(DAOTestCase):
         self.assertEqual(ldapserver.id, ldapserver_result.id)
 
     def test_get_ldapfilter_with_name(self):
-
         ldapserver = self._insert_ldapserver(name='ldapserver_test')
         ldapfilter = self._insert_ldapfilter(ldapserver.id, name='ldapfilter_test')
 
