@@ -20,7 +20,7 @@ from sqlalchemy.types import Integer, String
 from xivo_dao.helpers.db_manager import Base
 
 
-class CtiDirectoryfields(Base):
+class CtiDirectoryFields(Base):
 
     __tablename__ = 'ctidirectoryfields'
 

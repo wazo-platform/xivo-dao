@@ -19,7 +19,7 @@
 import json
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.ctidirectories import CtiDirectories
-from xivo_dao.alchemy.ctidirectoryfields import CtiDirectoryfields
+from xivo_dao.alchemy.ctidirectoryfields import CtiDirectoryFields
 from xivo_dao import ldap_dao
 
 
@@ -68,7 +68,7 @@ def _build_ldap_uri_with_name(ldap_name):
 
 @daosession
 def _build_directoryfields(session, dir_id):
-    ctidirectoryfields = session.query(CtiDirectoryfields).filter(CtiDirectoryfields.dir_id == dir_id).all()
+    ctidirectoryfields = session.query(CtiDirectoryFields).filter(CtiDirectoryFields.dir_id == dir_id).all()
 
     res = {}
     if ctidirectoryfields:

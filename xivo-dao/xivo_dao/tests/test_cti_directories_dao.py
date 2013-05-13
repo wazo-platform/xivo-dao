@@ -19,13 +19,13 @@ from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.ldapfilter import LdapFilter
 from xivo_dao.alchemy.ldapserver import LdapServer
 from xivo_dao.alchemy.ctidirectories import CtiDirectories
-from xivo_dao.alchemy.ctidirectoryfields import CtiDirectoryfields
+from xivo_dao.alchemy.ctidirectoryfields import CtiDirectoryFields
 from xivo_dao import cti_directories_dao
 
 
 class TestCtiSheetsDAO(DAOTestCase):
 
-    tables = [LdapServer, LdapFilter, CtiDirectories, CtiDirectoryfields]
+    tables = [LdapServer, LdapFilter, CtiDirectories, CtiDirectoryFields]
 
     def setUp(self):
         self.empty_tables()
@@ -141,7 +141,7 @@ class TestCtiSheetsDAO(DAOTestCase):
         self.assertEqual(expected_result, result)
 
     def _insert_ctidirectoryfields(self, dir_id, fieldname, value):
-        ctidirectoryfields = CtiDirectoryfields()
+        ctidirectoryfields = CtiDirectoryFields()
         ctidirectoryfields.dir_id = dir_id
         ctidirectoryfields.fieldname = fieldname
         ctidirectoryfields.value = value
