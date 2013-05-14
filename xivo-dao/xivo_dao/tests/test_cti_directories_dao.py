@@ -15,12 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from hamcrest import assert_that, equal_to
+from xivo_dao import cti_directories_dao
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.ldapfilter import LdapFilter
 from xivo_dao.alchemy.ldapserver import LdapServer
 from xivo_dao.alchemy.ctidirectories import CtiDirectories
 from xivo_dao.alchemy.ctidirectoryfields import CtiDirectoryFields
-from xivo_dao import cti_directories_dao
 
 
 class TestCtiSheetsDAO(DAOTestCase):
@@ -136,9 +137,20 @@ class TestCtiSheetsDAO(DAOTestCase):
         self._insert_ctidirectoryfields(ctidirectory.id, 'lastname', 'sn')
         self._insert_ctidirectoryfields(ctidirectory.id, 'phone', 'telephoneNumber')
 
+        match_direct = '["cn","phoneNumber","email"]'
+        ctidirectory = self._insert_ctidirectory('ldap2', 'ldapfilter://foobar', '', '')
+
         result = cti_directories_dao.get_config()
 
-        self.assertEqual(expected_result, result)
+        assert_that(result, equal_to(expected_result))
+
+    def test_build_ldap_uri_no_server(self):
+        ldap_name = 'test-ldap-filter'
+        self._insert_ldapfilter(42, ldap_name)
+
+        ldap_uri = cti_directories_dao._build_ldap_uri(ldap_name)
+
+        self.assertEqual(ldap_uri, None)
 
     def _insert_ctidirectoryfields(self, dir_id, fieldname, value):
         ctidirectoryfields = CtiDirectoryFields()

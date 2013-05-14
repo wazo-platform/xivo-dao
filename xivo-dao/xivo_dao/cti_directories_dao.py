@@ -28,10 +28,9 @@ def get_config(session):
     res = {}
     ctidirectories = session.query(CtiDirectories).all()
     for directory in ctidirectories:
-        uri = directory.uri
-        if uri.startswith('ldapfilter://'):
-            ldap_name = uri.replace('ldapfilter://', '')
-            uri = _build_ldap_uri_with_name(ldap_name)
+        uri = _build_uri(directory.uri)
+        if uri is None:
+            continue
 
         dird_match_direct = json.loads(directory.match_direct) if directory.match_direct else []
         dird_match_reverse = json.loads(directory.match_reverse) if directory.match_reverse else []
@@ -50,19 +49,31 @@ def get_config(session):
     return res
 
 
-def _build_ldap_uri_with_name(ldap_name):
-    uri = ''
+def _build_uri(uri):
+    if uri.startswith('ldapfilter://'):
+        ldap_name = uri.replace('ldapfilter://', '')
+        return _build_ldap_uri(ldap_name)
+    else:
+        return uri
+
+
+def _build_ldap_uri(ldap_name):
     ldapfilter = ldap_dao.get_ldapfilter_with_name(ldap_name)
-    if ldapfilter:
-        ldapserver = ldap_dao.get_ldapserver_with_id(ldapfilter.ldapserverid)
-        secure = 'ldaps' if ldapserver.securitylayer == 'ssl' else 'ldap'
-        uri = '%s://%s:%s@%s:%s/%s???%s' % (secure,
-                                            ldapfilter.user,
-                                            ldapfilter.passwd,
-                                            ldapserver.host,
-                                            ldapserver.port,
-                                            ldapfilter.basedn,
-                                            ldapfilter.filter)
+    if ldapfilter is None:
+        return None
+
+    ldapserver = ldap_dao.get_ldapserver_with_id(ldapfilter.ldapserverid)
+    if ldapserver is None:
+        return None
+
+    secure = 'ldaps' if ldapserver.securitylayer == 'ssl' else 'ldap'
+    uri = '%s://%s:%s@%s:%s/%s???%s' % (secure,
+                                        ldapfilter.user,
+                                        ldapfilter.passwd,
+                                        ldapserver.host,
+                                        ldapserver.port,
+                                        ldapfilter.basedn,
+                                        ldapfilter.filter)
     return uri
 
 
