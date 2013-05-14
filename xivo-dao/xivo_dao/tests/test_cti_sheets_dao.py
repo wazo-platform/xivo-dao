@@ -92,6 +92,7 @@ class TestCtiSheetsDAO(DAOTestCase):
 
         self._add_ctisheetevents()
         self._add_ctisheetactions()
+        self._add_bad_ctisheetactions()
 
         result = cti_sheets_dao.get_config()
 
@@ -119,6 +120,24 @@ class TestCtiSheetsDAO(DAOTestCase):
         cti_sheetaction.systray_info = '{"10": [ "Nom","title","","{xivo-calledidname}" ],"20": [ "Numéro","body","","{xivo-calleridnum}" ],"30": [ "Origine","body","","{xivo-origin}" ]}'
         cti_sheetaction.sheet_qtui = 'file:///tmp/test.ui'
         cti_sheetaction.action_info = '{}'
+        cti_sheetaction.focus = 0
+        cti_sheetaction.deletable = 1
+        cti_sheetaction.disable = 1
+
+        self.session.begin()
+        self.session.add(cti_sheetaction)
+        self.session.commit()
+        return cti_sheetaction.id
+
+    def _add_bad_ctisheetactions(self):
+        cti_sheetaction = CtiSheetActions()
+        cti_sheetaction.name = 'bad'
+        cti_sheetaction.description = ''
+        cti_sheetaction.whom = 'dest'
+        cti_sheetaction.sheet_info = '{"bad}'
+        cti_sheetaction.systray_info = '{"bad}'
+        cti_sheetaction.sheet_qtui = ''
+        cti_sheetaction.action_info = '{"bad}'
         cti_sheetaction.focus = 0
         cti_sheetaction.deletable = 1
         cti_sheetaction.disable = 1

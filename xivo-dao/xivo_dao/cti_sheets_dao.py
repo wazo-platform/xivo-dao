@@ -56,17 +56,27 @@ def _build_sheetactions(session):
     }
     ctisheactions = session.query(CtiSheetActions).all()
     for ctisheaction in ctisheactions:
+        try:
+            systray_info = json.loads(ctisheaction.systray_info)
+            sheet_info = json.loads(ctisheaction.sheet_info)
+            action_info = json.loads(ctisheaction.action_info)
+        except ValueError:
+            continue
         name = ctisheaction.name
-        res['options'][name] = {}
-        res['options'][name]['focus'] = 'yes' if ctisheaction.focus else 'no'
-        res['options'][name]['zip'] = 1
+        focus = 'yes' if ctisheaction.focus else 'no'
+        sheet_qtui = {'null': ctisheaction.sheet_qtui}
 
-        res['displays'][name] = {}
-        res['displays'][name]['systray_info'] = json.loads(ctisheaction.systray_info)
-        res['displays'][name]['sheet_info'] = json.loads(ctisheaction.sheet_info)
-        res['displays'][name]['action_info'] = json.loads(ctisheaction.action_info)
-        res['displays'][name]['sheet_qtui'] = {'null': ctisheaction.sheet_qtui}
-
-        res['conditions'][name] = {}
-        res['conditions'][name]['whom'] = ctisheaction.whom
+        res['options'][name] = {
+            'focus': focus,
+            'zip': 1,
+        }
+        res['displays'][name] = {
+            'systray_info': systray_info,
+            'sheet_info': sheet_info,
+            'action_info': action_info,
+            'sheet_qtui': sheet_qtui,
+        }
+        res['conditions'][name] = {
+            'whom': ctisheaction.whom,
+        }
     return res
