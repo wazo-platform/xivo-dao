@@ -7,8 +7,8 @@ from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema
 from xivo_dao.alchemy.sccpdevice import SCCPDevice as SCCPDeviceSchema
 from xivo_dao.alchemy.userfeatures import test_dependencies
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
-from xivo_dao.dao import voicemail as voicemail_dao
-from xivo_dao.dao.voicemail import Voicemail
+from xivo_dao.dao import voicemail_dao
+from xivo_dao.dao.voicemail_dao import Voicemail
 
 
 class TestVoicemail(unittest.TestCase):

@@ -1,7 +1,7 @@
 import unittest
 from mock import Mock, patch
 
-from xivo_dao.services import context
+from xivo_dao.services import context_services
 
 
 class TestContext(unittest.TestCase):
@@ -11,7 +11,7 @@ class TestContext(unittest.TestCase):
         context_name = 'inexistant_context'
         context_dao_get.return_value = None
 
-        result = context.find_by_name(context_name)
+        result = context_services.find_by_name(context_name)
 
         self.assertEquals(None, result)
 
@@ -21,6 +21,6 @@ class TestContext(unittest.TestCase):
         context_mock = Mock()
         context_dao_get.return_value = context_mock
 
-        result = context.find_by_name(context_name)
+        result = context_services.find_by_name(context_name)
 
         self.assertEquals(context_mock, result)
