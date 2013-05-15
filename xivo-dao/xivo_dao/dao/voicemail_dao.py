@@ -3,6 +3,7 @@ from xivo_dao.alchemy.voicemail import Voicemail as VoicemailSchema
 from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.helpers.db_manager import daosession
+from xivo_dao.models.voicemail import Voicemail
 
 
 class VoicemailCreationError(IOError):
@@ -10,47 +11,6 @@ class VoicemailCreationError(IOError):
     def __init__(self, error):
         message = "error while creating voicemail: %s" % error.message
         IOError.__init__(self, message)
-
-
-class Voicemail(object):
-
-    MANDATORY = ['name',
-                 'number',
-                 'context']
-
-    def __init__(self, **kwargs):
-        self.name = kwargs.get('name')
-        self.number = kwargs.get('number')
-        self.context = kwargs.get('context')
-        self.id = kwargs.get('id')
-
-    @classmethod
-    def from_data_source(cls, properties):
-        voicemail = cls()
-        voicemail.name = properties.fullname
-        voicemail.number = properties.mailbox
-        voicemail.context = properties.context
-        voicemail.id = properties.uniqueid
-        return voicemail
-
-    @classmethod
-    def from_user_data(cls, properties):
-        voicemail = cls(**properties)
-        return voicemail
-
-    @property
-    def number_at_context(self):
-        return '%s@%s' % (self.number, self.context)
-
-    def missing_parameters(self):
-        missing = []
-
-        for parameter in self.MANDATORY:
-            attribute = getattr(self, parameter)
-            if attribute is None:
-                missing.append(parameter)
-
-        return missing
 
 
 @daosession

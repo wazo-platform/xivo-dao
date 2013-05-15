@@ -9,7 +9,8 @@ from xivo_dao.alchemy.sccpdevice import SCCPDevice as SCCPDeviceSchema
 from xivo_dao.alchemy.userfeatures import test_dependencies
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.dao import voicemail_dao
-from xivo_dao.dao.voicemail_dao import Voicemail, VoicemailCreationError
+from xivo_dao.dao.voicemail_dao import VoicemailCreationError
+from xivo_dao.models.voicemail import Voicemail
 
 
 class TestVoicemail(unittest.TestCase):

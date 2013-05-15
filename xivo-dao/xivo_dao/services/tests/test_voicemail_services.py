@@ -2,7 +2,8 @@ import unittest
 
 from mock import patch, Mock
 
-from xivo_dao.dao.voicemail_dao import Voicemail, VoicemailCreationError
+from xivo_dao.dao.voicemail_dao import VoicemailCreationError
+from xivo_dao.models.voicemail import Voicemail
 from xivo_dao.services import voicemail_services
 
 
