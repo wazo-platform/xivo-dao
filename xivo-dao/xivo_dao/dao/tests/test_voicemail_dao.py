@@ -277,12 +277,10 @@ class TestCreateVoicemail(DAOTestCase):
         name = 'voicemail'
         number = '42'
         context = 'default'
-        properties = {
-            'name': name,
-            'number': number,
-            'context': context,
-        }
-        voicemail = Voicemail.from_user_data(properties)
+
+        voicemail = Voicemail(name=name,
+                              number=number,
+                              context=context)
 
         result = voicemail_dao.create(voicemail)
 

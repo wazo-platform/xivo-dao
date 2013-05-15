@@ -6,8 +6,15 @@ from xivo_dao.helpers.db_manager import daosession
 
 class Voicemail(object):
 
-    def __init__(self):
-        pass
+    MANDATORY = ['name',
+                 'number',
+                 'context']
+
+    def __init__(self, **kwargs):
+        self.name = kwargs.get('name')
+        self.number = kwargs.get('number')
+        self.context = kwargs.get('context')
+        self.id = kwargs.get('id')
 
     @classmethod
     def from_data_source(cls, properties):
@@ -20,16 +27,22 @@ class Voicemail(object):
 
     @classmethod
     def from_user_data(cls, properties):
-        voicemail = cls()
-        voicemail.name = properties['name']
-        voicemail.number = properties['number']
-        voicemail.context = properties['context']
-        voicemail.id = properties.get('id')
+        voicemail = cls(**properties)
         return voicemail
 
     @property
     def number_at_context(self):
         return '%s@%s' % (self.number, self.context)
+
+    def missing_parameters(self):
+        missing = []
+
+        for parameter in self.MANDATORY:
+            attribute = getattr(self, parameter)
+            if attribute is None:
+                missing.append(parameter)
+
+        return missing
 
 
 @daosession

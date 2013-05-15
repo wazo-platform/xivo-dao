@@ -1,5 +1,4 @@
 from xivo_dao.dao import voicemail_dao
-from xivo_dao.dao.voicemail_dao import Voicemail
 from xivo_dao.services import context_services
 
 
@@ -37,37 +36,36 @@ def delete(number, context):
     voicemail_dao.delete(voicemail)
 
 
-def create(parameters):
-    _check_missing_parameters(parameters)
-    _check_invalid_parameters(parameters)
-    _check_for_existing_voicemail(parameters)
-    voicemail = Voicemail.from_user_data(parameters)
+def create(voicemail):
+    _validate(voicemail)
     return voicemail_dao.create(voicemail)
 
 
+def _validate(voicemail):
+    _check_missing_parameters(voicemail)
+    _check_invalid_parameters(voicemail)
+    _check_for_existing_voicemail(voicemail)
+
+
 def _check_missing_parameters(voicemail):
-    missing_parameters = []
-    mandatory_parameters = ['name', 'number', 'context']
-    for mandatory_parameter in mandatory_parameters:
-        if mandatory_parameter not in voicemail:
-            missing_parameters.append(mandatory_parameter)
-    if missing_parameters:
-        raise MissingParametersError(missing_parameters)
+    missing = voicemail.missing_parameters()
+    if missing:
+        raise MissingParametersError(missing)
 
 
 def _check_invalid_parameters(voicemail):
     invalid_parameters = []
-    if not voicemail['name']:
+    if not voicemail.name:
         invalid_parameters.append('name')
-    if not voicemail['number'].isdigit():
+    if not voicemail.number.isdigit():
         invalid_parameters.append('number')
-    if not context_services.find_by_name(voicemail['context']):
+    if not context_services.find_by_name(voicemail.context):
         invalid_parameters.append('context')
     if invalid_parameters:
         raise InvalidParametersError(invalid_parameters)
 
 
-def _check_for_existing_voicemail(parameters):
-    if voicemail_dao.find_voicemail(parameters['number'], parameters['context']):
-        number_at_context = "%s@%s" % (parameters['number'], parameters['context'])
+def _check_for_existing_voicemail(voicemail):
+    if voicemail_dao.find_voicemail(voicemail.number, voicemail.context):
+        number_at_context = voicemail.number_at_context
         raise VoicemailExistsError(number_at_context)
