@@ -2,7 +2,7 @@ import unittest
 
 from mock import patch, Mock
 
-from xivo_dao.dao.voicemail_dao import Voicemail
+from xivo_dao.dao.voicemail_dao import Voicemail, VoicemailCreationError
 from xivo_dao.services import voicemail_services
 
 
@@ -143,3 +143,22 @@ class TestVoicemail(unittest.TestCase):
         mock.id = voicemail_id
 
         return mock
+
+    @patch('xivo_dao.services.context_services.find_by_name')
+    @patch('xivo_dao.services.voicemail_services.voicemail_dao')
+    def test_create_with_error_from_dao(self, voicemail_dao, context_find):
+        name = 'voicemail'
+        number = '42'
+        context = 'default'
+
+        voicemail = Voicemail(name=name,
+                              number=number,
+                              context=context)
+
+        context_find.return_value = Mock()
+        voicemail_dao.find_voicemail.return_value = None
+
+        error = Exception("message")
+        voicemail_dao.create.side_effect = VoicemailCreationError(error)
+
+        self.assertRaises(VoicemailCreationError, voicemail_services.create, voicemail)

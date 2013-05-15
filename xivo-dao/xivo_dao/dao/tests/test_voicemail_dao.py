@@ -1,6 +1,7 @@
 import unittest
-from mock import Mock
+from mock import Mock, patch
 
+from sqlalchemy.exc import SQLAlchemyError
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.voicemail import Voicemail as VoicemailSchema
 from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema
@@ -8,7 +9,7 @@ from xivo_dao.alchemy.sccpdevice import SCCPDevice as SCCPDeviceSchema
 from xivo_dao.alchemy.userfeatures import test_dependencies
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.dao import voicemail_dao
-from xivo_dao.dao.voicemail_dao import Voicemail
+from xivo_dao.dao.voicemail_dao import Voicemail, VoicemailCreationError
 
 
 class TestVoicemail(unittest.TestCase):
@@ -291,3 +292,17 @@ class TestCreateVoicemail(DAOTestCase):
         self.assertEquals(row.fullname, name)
         self.assertEquals(row.mailbox, number)
         self.assertEquals(row.context, context)
+
+    @patch('xivo_dao.helpers.db_manager.dbsession')
+    def test_create_with_database_error(self, dbsession):
+        dbsession.commit.side_effect = SQLAlchemyError()
+
+        name = 'voicemail'
+        number = '42'
+        context = 'default'
+
+        voicemail = Voicemail(name=name,
+                              number=number,
+                              context=context)
+
+        self.assertRaises(VoicemailCreationError, voicemail_dao.create, voicemail)

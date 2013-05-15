@@ -1,7 +1,15 @@
+from sqlalchemy.exc import SQLAlchemyError
 from xivo_dao.alchemy.voicemail import Voicemail as VoicemailSchema
 from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.helpers.db_manager import daosession
+
+
+class VoicemailCreationError(IOError):
+
+    def __init__(self, error):
+        message = "error while creating voicemail: %s" % error.message
+        IOError.__init__(self, message)
 
 
 class Voicemail(object):
@@ -68,7 +76,11 @@ def create(session, voicemail):
     )
     session.begin()
     session.add(voicemail_row)
-    session.commit()
+
+    try:
+        session.commit()
+    except SQLAlchemyError as e:
+        raise VoicemailCreationError(e)
 
     return voicemail_row.uniqueid
 
