@@ -13,6 +13,13 @@ class VoicemailCreationError(IOError):
         IOError.__init__(self, message)
 
 
+class VoicemailDeletionError(IOError):
+
+    def __init__(self, error):
+        message = "error while deleting voicemail: %s" % error.message
+        IOError.__init__(self, message)
+
+
 @daosession
 def find_voicemail(session, number, context):
 
@@ -40,6 +47,7 @@ def create(session, voicemail):
     try:
         session.commit()
     except SQLAlchemyError as e:
+        session.rollback()
         raise VoicemailCreationError(e)
 
     return voicemail_row.uniqueid
@@ -47,9 +55,15 @@ def create(session, voicemail):
 
 @daosession
 def delete(session, voicemail):
-    _unlink_user_sip(session, voicemail.number_at_context)
-    _unlink_user(session, voicemail.id)
-    _delete_voicemail(session, voicemail.id)
+    session.begin()
+    try:
+        _unlink_user_sip(session, voicemail.number_at_context)
+        _unlink_user(session, voicemail.id)
+        _delete_voicemail(session, voicemail.id)
+        session.commit()
+    except SQLAlchemyError as e:
+        session.rollback()
+        raise VoicemailDeletionError(e)
 
 
 def _unlink_user_sip(session, number_at_context):

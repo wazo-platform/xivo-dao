@@ -9,7 +9,7 @@ from xivo_dao.alchemy.sccpdevice import SCCPDevice as SCCPDeviceSchema
 from xivo_dao.alchemy.userfeatures import test_dependencies
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.dao import voicemail_dao
-from xivo_dao.dao.voicemail_dao import VoicemailCreationError
+from xivo_dao.dao.voicemail_dao import VoicemailCreationError, VoicemailDeletionError
 from xivo_dao.models.voicemail import Voicemail
 
 
@@ -155,6 +155,20 @@ class TestVoicemailDeleteSIP(DAOTestCase):
         self._check_user_table(user_id)
         self._check_user_sip_table(user_sip_id)
         self._check_voicemail_table(voicemail_id)
+
+    @patch('xivo_dao.helpers.db_manager.dbsession')
+    def test_delete_with_database_error(self, dbsession):
+        dbsession.commit.side_effect = SQLAlchemyError()
+
+        voicemail = Mock(voicemail_dao.Voicemail)
+        voicemail.number = '42'
+        voicemail.context = 'default'
+        voicemail.number_at_context = '42@default'
+        voicemail.id = 1
+
+        self.assertRaises(VoicemailDeletionError, voicemail_dao.delete, voicemail)
+        dbsession.begin.assert_called_once_with()
+        dbsession.rollback.assert_called_once_with()
 
     def _prepare_database(self, voicemail):
         voicemail_row = VoicemailSchema(context=voicemail.context,
@@ -307,3 +321,5 @@ class TestCreateVoicemail(DAOTestCase):
                               context=context)
 
         self.assertRaises(VoicemailCreationError, voicemail_dao.create, voicemail)
+        dbsession.begin.assert_called_once_with()
+        dbsession.rollback.assert_called_once_with()
