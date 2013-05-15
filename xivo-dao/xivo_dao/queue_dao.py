@@ -21,12 +21,13 @@ from xivo_dao.helpers.db_manager import daosession
 
 @daosession
 def all_queues(session, order='number'):
-    query = session.query(QueueFeatures).all()
+    query = session.query(QueueFeatures)
 
     if order == 'number':
         query = query.order_by(QueueFeatures.number)
 
     return query.all()
+
 
 @daosession
 def get(session, queue_id):
@@ -119,4 +120,3 @@ def delete_by_name(session, queue_name):
     session.query(QueueFeatures).filter(QueueFeatures.name == queue_name)\
                                 .delete()
     session.commit()
-
