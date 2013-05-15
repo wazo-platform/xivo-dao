@@ -2,7 +2,8 @@ from __future__ import unicode_literals
 
 from xivo_ws import XivoServer, User, UserLine, UserVoicemail
 
-from xivo_dao.services import voicemail
+from xivo_dao.services import voicemail_services
+from xivo_dao.dao.voicemail_dao import Voicemail
 
 import psycopg2
 
@@ -120,15 +121,15 @@ def check_voicemail_created(voicemail):
     query = "SELECT mailbox, context, fullname FROM voicemail WHERE mailbox = %s AND context = %s"
     cursor = connection.cursor()
 
-    cursor.execute(query, (voicemail['number'], voicemail['context']))
+    cursor.execute(query, (voicemail.number, voicemail.context))
 
     row = cursor.fetchone()
 
     assert row is not None, "voicemail was not created"
 
-    assert row[0] == voicemail['number'], "wrong voicemail number, %s instead of %s" % (row[0], voicemail['number'])
-    assert row[1] == voicemail['context'], "wrong voicemail context, %s instead of %s" % (row[1], voicemail['context'])
-    assert row[2] == voicemail['name'], "wrong voicemail name, %s instead of %s" % (row[2], voicemail['name'])
+    assert row[0] == voicemail.number, "wrong voicemail number, %s instead of %s" % (row[0], voicemail.number)
+    assert row[1] == voicemail.context, "wrong voicemail context, %s instead of %s" % (row[1], voicemail.context)
+    assert row[2] == voicemail.name, "wrong voicemail name, %s instead of %s" % (row[2], voicemail.name)
 
 if __name__ == "__main__":
     number_sip = '1300'
@@ -141,8 +142,8 @@ if __name__ == "__main__":
 
     print "creating user and voicemail..."
     (user_sip_id, user_sccp_id) = create_user_and_voicemail(number_sip, number_sccp)
-    voicemail.delete(number_sip, context)
-    voicemail.delete(number_sccp, context)
+    voicemail_services.delete(number_sip, context)
+    voicemail_services.delete(number_sccp, context)
 
     print "checking database tables..."
     check_database_tables(user_sip_id, number_sip)
@@ -156,14 +157,14 @@ if __name__ == "__main__":
     print "deleting voicemail"
     delete_voicemail(number)
 
-    properties = {
-        'number': number,
-        'context': context,
-        'name': name
-    }
+    voicemail = Voicemail(
+        number=number,
+        context=context,
+        name=name
+    )
 
     print "creating voicemail"
-    voicemail.create(properties)
+    voicemail_services.create(voicemail)
 
     print "checking database tables"
-    check_voicemail_created(properties)
+    check_voicemail_created(voicemail)
