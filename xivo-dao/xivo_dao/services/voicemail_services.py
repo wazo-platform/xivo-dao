@@ -1,4 +1,5 @@
 from xivo_dao.dao import voicemail_dao
+from xivo_dao.notifiers import sysconf_notifier
 from xivo_dao.services import context_services
 
 
@@ -34,11 +35,14 @@ def delete(number, context):
         raise VoicemailNotFoundError.from_number_and_context(number, context)
 
     voicemail_dao.delete(voicemail)
+    sysconf_notifier.delete_voicemail(voicemail.id)
 
 
 def create(voicemail):
     _validate(voicemail)
-    return voicemail_dao.create(voicemail)
+    voicemail_id = voicemail_dao.create(voicemail)
+    sysconf_notifier.create_voicemail(voicemail_id)
+    return voicemail_id
 
 
 def _validate(voicemail):

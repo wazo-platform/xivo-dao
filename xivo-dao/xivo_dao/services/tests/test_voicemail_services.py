@@ -21,10 +21,15 @@ class TestVoicemail(unittest.TestCase):
                           '42', 'default')
 
     @patch('xivo_dao.services.voicemail_services.voicemail_dao')
-    def test_delete(self, voicemail_dao):
+    @patch('xivo_dao.notifiers.sysconf_notifier.delete_voicemail')
+    def test_delete(self, sysconf_delete_voicemail, voicemail_dao):
+        voicemail_id = 12
         number = '42'
         context = 'default'
         voicemail = Mock(Voicemail)
+        voicemail.id = voicemail_id
+        voicemail.number = number
+        voicemail.context = context
 
         voicemail_dao.find_voicemail.return_value = voicemail
 
@@ -32,6 +37,7 @@ class TestVoicemail(unittest.TestCase):
 
         voicemail_dao.find_voicemail.assert_called_once_with(number, context)
         voicemail_dao.delete.assert_called_once_with(voicemail)
+        sysconf_delete_voicemail.assert_called_once_with(voicemail_id)
 
     @patch('xivo_dao.services.voicemail_services.voicemail_dao')
     def test_create_no_properties(self, voicemail_dao):
@@ -108,7 +114,8 @@ class TestVoicemail(unittest.TestCase):
 
     @patch('xivo_dao.services.context_services.find_by_name')
     @patch('xivo_dao.services.voicemail_services.voicemail_dao')
-    def test_create(self, voicemail_dao, context_find):
+    @patch('xivo_dao.notifiers.sysconf_notifier.create_voicemail')
+    def test_create(self, sysconf_create_voicemail, voicemail_dao, context_find):
         name = 'voicemail'
         number = '42'
         context = 'default'
@@ -120,15 +127,13 @@ class TestVoicemail(unittest.TestCase):
 
         context_find.return_value = Mock()
         voicemail_dao.find_voicemail.return_value = None
-
-        voicemail_mock_output = self._create_voicemail_mock(voicemail, voicemail_id)
-
-        voicemail_dao.create.return_value = voicemail_mock_output
+        voicemail_dao.create.return_value = voicemail_id
 
         result = voicemail_services.create(voicemail)
 
         voicemail_dao.create.assert_called_once_with(voicemail)
-        self._assert_voicemail_equals(voicemail_mock_output, result)
+        self.assertEquals(voicemail_id, result)
+        sysconf_create_voicemail.assert_called_once_with(voicemail_id)
 
     def _assert_voicemail_equals(self, voicemail_left, voicemail_right):
         self.assertEquals(voicemail_left.name, voicemail_right.name)
