@@ -35,6 +35,11 @@ def find_voicemail(session, number, context):
 
 
 @daosession
+def get_voicemail_by_id(session, voicemail_id):
+    pass
+
+
+@daosession
 def create(session, voicemail):
     voicemail_row = VoicemailSchema(
         fullname=voicemail.name,
@@ -51,6 +56,10 @@ def create(session, voicemail):
         raise VoicemailCreationError(e)
 
     return voicemail_row.uniqueid
+
+
+def edit(voicemail):
+    pass
 
 
 @daosession

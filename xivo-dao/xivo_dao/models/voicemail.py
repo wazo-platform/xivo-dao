@@ -9,6 +9,7 @@ class Voicemail(object):
         self.number = kwargs.get('number')
         self.context = kwargs.get('context')
         self.id = kwargs.get('id')
+        self.user = kwargs.get('user')
 
     def __eq__(self, other):
         if not isinstance(other, self.__class__):
@@ -16,7 +17,8 @@ class Voicemail(object):
         return (self.name == other.name
                 and self.number == other.number
                 and self.context == other.context
-                and self.id == other.id)
+                and self.id == other.id
+                and self.user == other.user)
 
     @classmethod
     def from_data_source(cls, properties):
