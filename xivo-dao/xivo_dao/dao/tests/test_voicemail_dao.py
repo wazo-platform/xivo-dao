@@ -111,6 +111,51 @@ class TestGetVoicemail(DAOTestCase):
         self.assertEquals(expected_voicemail, voicemail)
 
 
+class TestCreateVoicemail(DAOTestCase):
+
+    tables = [
+        VoicemailSchema,
+    ]
+
+    def setUp(self):
+        self.empty_tables()
+
+    def test_create(self):
+        name = 'voicemail'
+        number = '42'
+        context = 'default'
+
+        voicemail = Voicemail(name=name,
+                              number=number,
+                              context=context)
+
+        result = voicemail_dao.create(voicemail)
+
+        row = (self.session.query(VoicemailSchema)
+               .filter(VoicemailSchema.mailbox == number)
+               .first())
+        self.assertEquals(row.uniqueid, result)
+        self.assertEquals(row.fullname, name)
+        self.assertEquals(row.mailbox, number)
+        self.assertEquals(row.context, context)
+
+    @patch('xivo_dao.helpers.db_manager.dbsession')
+    def test_create_with_database_error(self, dbsession):
+        dbsession.commit.side_effect = SQLAlchemyError()
+
+        name = 'voicemail'
+        number = '42'
+        context = 'default'
+
+        voicemail = Voicemail(name=name,
+                              number=number,
+                              context=context)
+
+        self.assertRaises(VoicemailCreationError, voicemail_dao.create, voicemail)
+        dbsession.begin.assert_called_once_with()
+        dbsession.rollback.assert_called_once_with()
+
+
 class TestVoicemailDeleteSIP(DAOTestCase):
 
     tables = [
@@ -260,48 +305,3 @@ class TestVoicemailDeleteSCCP(DAOTestCase):
                          .first())
 
         self.assertEquals(voicemail_row, None)
-
-
-class TestCreateVoicemail(DAOTestCase):
-
-    tables = [
-        VoicemailSchema,
-    ]
-
-    def setUp(self):
-        self.empty_tables()
-
-    def test_create(self):
-        name = 'voicemail'
-        number = '42'
-        context = 'default'
-
-        voicemail = Voicemail(name=name,
-                              number=number,
-                              context=context)
-
-        result = voicemail_dao.create(voicemail)
-
-        row = (self.session.query(VoicemailSchema)
-               .filter(VoicemailSchema.mailbox == number)
-               .first())
-        self.assertEquals(row.uniqueid, result)
-        self.assertEquals(row.fullname, name)
-        self.assertEquals(row.mailbox, number)
-        self.assertEquals(row.context, context)
-
-    @patch('xivo_dao.helpers.db_manager.dbsession')
-    def test_create_with_database_error(self, dbsession):
-        dbsession.commit.side_effect = SQLAlchemyError()
-
-        name = 'voicemail'
-        number = '42'
-        context = 'default'
-
-        voicemail = Voicemail(name=name,
-                              number=number,
-                              context=context)
-
-        self.assertRaises(VoicemailCreationError, voicemail_dao.create, voicemail)
-        dbsession.begin.assert_called_once_with()
-        dbsession.rollback.assert_called_once_with()
