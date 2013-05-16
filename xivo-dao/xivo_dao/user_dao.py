@@ -118,7 +118,7 @@ def get_profile(user_id):
 @daosession
 def _get_included_contexts(session, context):
     return [line.include for line in (session.query(ContextInclude.include)
-                                       .filter(ContextInclude.context == context))]
+                                      .filter(ContextInclude.context == context))]
 
 
 def _get_nested_contexts(contexts):
