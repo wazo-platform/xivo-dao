@@ -9,14 +9,14 @@ from xivo_dao.models.voicemail import Voicemail
 class VoicemailCreationError(IOError):
 
     def __init__(self, error):
-        message = "error while creating voicemail: %s" % error.message
+        message = "error while creating voicemail: %s" % unicode(error)
         IOError.__init__(self, message)
 
 
 class VoicemailDeletionError(IOError):
 
     def __init__(self, error):
-        message = "error while deleting voicemail: %s" % error.message
+        message = "error while deleting voicemail: %s" % unicode(error)
         IOError.__init__(self, message)
 
 
