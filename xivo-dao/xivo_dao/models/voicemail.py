@@ -10,6 +10,14 @@ class Voicemail(object):
         self.context = kwargs.get('context')
         self.id = kwargs.get('id')
 
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            raise TypeError("Must compare Voicemail with another Voicemail")
+        return (self.name == other.name
+                and self.number == other.number
+                and self.context == other.context
+                and self.id == other.id)
+
     @classmethod
     def from_data_source(cls, properties):
         voicemail = cls()

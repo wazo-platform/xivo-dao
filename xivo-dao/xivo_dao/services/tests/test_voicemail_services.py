@@ -135,21 +135,6 @@ class TestVoicemail(unittest.TestCase):
         self.assertEquals(voicemail_id, result)
         sysconf_create_voicemail.assert_called_once_with(voicemail_id)
 
-    def _assert_voicemail_equals(self, voicemail_left, voicemail_right):
-        self.assertEquals(voicemail_left.name, voicemail_right.name)
-        self.assertEquals(voicemail_left.number, voicemail_right.number)
-        self.assertEquals(voicemail_left.context, voicemail_right.context)
-        self.assertEquals(voicemail_left.id, voicemail_right.id)
-
-    def _create_voicemail_mock(self, voicemail, voicemail_id):
-        mock = Mock(Voicemail)
-        mock.name = voicemail.name
-        mock.number = voicemail.number
-        mock.context = voicemail.context
-        mock.id = voicemail_id
-
-        return mock
-
     @patch('xivo_dao.services.context_services.find_by_name')
     @patch('xivo_dao.services.voicemail_services.voicemail_dao')
     def test_create_with_error_from_dao(self, voicemail_dao, context_find):

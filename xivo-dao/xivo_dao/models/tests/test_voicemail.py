@@ -5,6 +5,40 @@ from xivo_dao.models.voicemail import Voicemail
 
 
 class TestVoicemail(unittest.TestCase):
+
+    def test_equal(self):
+        user_1 = Mock()
+        user_2 = Mock()
+        voicemail_1 = Voicemail(
+            name='abc def',
+            number='42',
+            context='context 42',
+            id=42,
+            user=user_1
+        )
+
+        voicemail_2 = Voicemail(
+            name='abc defg',
+            number='43',
+            context='context 43',
+            id=43,
+            user=user_2
+        )
+
+        voicemail_clone_1 = Voicemail(
+            name='abc def',
+            number='42',
+            context='context 42',
+            id=42,
+            user=user_1
+        )
+
+        self.assertRaises(TypeError, lambda: voicemail_1 == 12)
+        self.assertNotEquals(voicemail_1, Voicemail())
+        self.assertEquals(voicemail_1, voicemail_1)
+        self.assertNotEquals(voicemail_1, voicemail_2)
+        self.assertEquals(voicemail_1, voicemail_clone_1)
+
     def test_from_data_source(self):
         name = 'voicemail name'
         number = '42'
