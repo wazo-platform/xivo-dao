@@ -75,6 +75,42 @@ class TestFindVoicemail(DAOTestCase):
         self.assertEquals(result.number_at_context, number_at_context)
 
 
+class TestGetVoicemail(DAOTestCase):
+
+    tables = [VoicemailSchema]
+
+    def setUp(self):
+        self.empty_tables()
+
+    def test_get_voicemail_by_id_with_no_voicemail(self):
+        voicemail_id = 42
+
+        self.assertRaises(LookupError, voicemail_dao.get_voicemail_by_id, voicemail_id)
+
+    def test_get_voicemail_by_id_with_one_voicemail(self):
+        name = 'voicemail name'
+        number = '42'
+        context = 'context-42'
+        voicemail_row = VoicemailSchema(
+            context=context,
+            mailbox=number,
+            fullname=name,
+        )
+        self.add_me(voicemail_row)
+        voicemail_id = voicemail_row.uniqueid
+
+        expected_voicemail = Voicemail(
+            name=name,
+            number=number,
+            context=context,
+            id=voicemail_id
+        )
+
+        voicemail = voicemail_dao.get_voicemail_by_id(voicemail_id)
+
+        self.assertEquals(expected_voicemail, voicemail)
+
+
 class TestVoicemailDeleteSIP(DAOTestCase):
 
     tables = [

@@ -36,7 +36,13 @@ def find_voicemail(session, number, context):
 
 @daosession
 def get_voicemail_by_id(session, voicemail_id):
-    pass
+    voicemail = (session.query(VoicemailSchema)
+                 .filter(VoicemailSchema.uniqueid == voicemail_id)
+                 .first())
+    if not voicemail:
+        raise LookupError()
+
+    return Voicemail.from_data_source(voicemail)
 
 
 @daosession
