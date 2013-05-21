@@ -103,16 +103,6 @@ class TestQueueMemberDAO(DAOTestCase):
         self.assertEqual(queue_member.category, 'queue')
         self.assertEqual(queue_member.position, 0)
 
-    def test_delete_by_userid(self):
-        self._insert_queue_member('test', 'sip/123', 'user', 1, True)
-        self._insert_queue_member('test', 'sip/456', 'agent', 1, True)
-
-        queue_member_dao.delete_by_userid(1)
-
-        result = self.session.query(QueueMember).all()
-        self.assertEquals(len(result), 1)
-        self.assertEquals(result[0].usertype, 'agent')
-
     def _insert_queue_member(self, queue_name, member_name, usertype='user', userid=1, is_queue=True):
         queue_member = QueueMember()
         queue_member.queue_name = queue_name

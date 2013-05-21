@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from hamcrest import *
 from xivo_dao import user_dao
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.contextinclude import ContextInclude
@@ -22,15 +23,15 @@ from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
 from xivo_dao.alchemy.ctipresences import CtiPresences
 from xivo_dao.alchemy.linefeatures import LineFeatures
+from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.tests.test_dao import DAOTestCase
-from hamcrest import *
 
 
 class TestUserFeaturesDAO(DAOTestCase):
 
     tables = [UserFeatures, LineFeatures, ContextInclude, AgentFeatures,
-              CtiPresences, CtiPhoneHintsGroup, CtiProfile]
+              CtiPresences, CtiPhoneHintsGroup, CtiProfile, QueueMember]
 
     def setUp(self):
         self.empty_tables()
@@ -406,6 +407,15 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         return user, line
 
+    def _add_user_to_queue(self, userid, queuename):
+        queuemember = QueueMember(usertype='user',
+                                  userid=userid,
+                                  category='queue',
+                                  queue_name=queuename,
+                                  interface='SIP/stuff',
+                                  channel='SIP')
+        self.add_me(queuemember)
+
     def test_get_reachable_contexts(self):
         context = 'my_context'
 
@@ -770,12 +780,18 @@ class TestUserFeaturesDAO(DAOTestCase):
     def test_delete(self):
         user1 = self._add_user('test1')
         generated_id1 = user1.id
-        user2 = self._add_user('test2')
-        generated_id2 = user2.id
+        queuename = "my_queue"
+        self._add_user_to_queue(user1.id, queuename)
+
         result = user_dao.delete(generated_id1)
+
         self.assertEqual(result, 1)
         self.assertRaises(LookupError, user_dao.get, generated_id1)
-        self.assertEqual(user2, user_dao.get(generated_id2))
+        queue_member_for_user = (self.session.query(QueueMember)
+                                             .filter(QueueMember.usertype == 'user')
+                                             .filter(QueueMember.userid == generated_id1)
+                                             .first())
+        self.assertEquals(None, queue_member_for_user)
 
     def test_delete_unexisting_user(self):
         result = user_dao.delete(1)

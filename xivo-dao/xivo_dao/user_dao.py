@@ -21,6 +21,7 @@ from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.contextinclude import ContextInclude
 from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.alchemy.linefeatures import LineFeatures
+from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.helpers.db_manager import daosession
 #the following import is necessary to laod CtiProfiles' definition:
@@ -260,10 +261,17 @@ def add_user(session, user):
 @daosession
 def delete(session, userid):
     session.begin()
-    result = session.query(UserFeatures).filter(UserFeatures.id == userid)\
-                                        .delete(synchronize_session=False)
-    session.commit()
-    return result
+    try:
+        result = session.query(UserFeatures).filter(UserFeatures.id == userid)\
+                                            .delete()
+        (session.query(QueueMember).filter(QueueMember.usertype == 'user')
+                                   .filter(QueueMember.userid == userid)
+                                   .delete())
+        session.commit()
+        return result
+    except Exception:
+        session.rollback()
+        raise
 
 
 @daosession
