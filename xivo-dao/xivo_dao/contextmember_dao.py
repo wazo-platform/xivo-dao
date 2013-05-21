@@ -29,18 +29,6 @@ def add(session, contextmember):
         session.rollback()
         raise
 
-
-@daosession
-def delete_by_type_typeval(session, typename, typeval):
-    session.begin()
-    try:
-        _request_type_typeval(session, typename, typeval).delete()
-        session.commit()
-    except Exception:
-        session.rollback()
-        raise
-
-
 @daosession
 def get_by_type_typeval(session, typename, typeval):
     return _request_type_typeval(session, typename, typeval).first()

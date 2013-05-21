@@ -20,11 +20,12 @@
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.voicemail import Voicemail
 from xivo_dao import voicemail_dao
+from xivo_dao.alchemy.contextmember import ContextMember
 
 
 class VoicemailDAOTestCase(DAOTestCase):
 
-    tables = [Voicemail]
+    tables = [Voicemail, ContextMember]
 
     def setUp(self):
         self.empty_tables()
@@ -39,6 +40,10 @@ class VoicemailDAOTestCase(DAOTestCase):
         self.session.commit()
 
         return voicemail.uniqueid
+
+    def _insert_contextmember(self, voicemailid):
+        member = ContextMember(context='default', type='voicemail', typeval=str(voicemailid), varname='context')
+        self.add_me(member)
 
     def test_get(self):
         voicemail_mailbox = 'mailbox'
@@ -98,5 +103,13 @@ class VoicemailDAOTestCase(DAOTestCase):
 
     def test_delete(self):
         generated_id = self._insert_voicemail("123", "default")
+        self._insert_contextmember(generated_id)
+
         impacted_rows = voicemail_dao.delete(generated_id)
+
         self.assertEquals(impacted_rows, 1)
+        inserted_contextmember = (self.session.query(ContextMember)
+                                             .filter(ContextMember.type == 'voicemail')
+                                             .filter(ContextMember.typeval == str(generated_id))
+                                             .first())
+        self.assertEquals(None, inserted_contextmember)

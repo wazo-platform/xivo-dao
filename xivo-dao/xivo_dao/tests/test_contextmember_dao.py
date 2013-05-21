@@ -38,15 +38,6 @@ class TestContextMemberDAO(DAOTestCase):
         result = self.session.query(ContextMember).first()
         self.assertEquals(contextmember, result)
 
-    def test_delete_by_type_typeval(self):
-        self._insert_contextmember('voicemail', '1')
-        self._insert_contextmember('voicemail', '2')
-        contextmember_dao.delete_by_type_typeval('voicemail', '1')
-
-        result = self.session.query(ContextMember).all()
-        self.assertEquals(1, len(result))
-        self.assertEquals('2', result[0].typeval)
-
     def _insert_contextmember(self, typename, typeval, context='default', varname='context'):
         contextmember = ContextMember(type=typename, typeval=typeval, context=context, varname=varname)
         self.add_me(contextmember)
