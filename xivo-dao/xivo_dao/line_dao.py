@@ -24,6 +24,7 @@ from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.usercustom import UserCustom
 from sqlalchemy import and_
 from xivo_dao.helpers.db_manager import daosession
+from xivo_dao.alchemy.extension import Extension
 
 
 @daosession
@@ -266,6 +267,7 @@ def delete(session, lineid):
     try:
         line = session.query(LineFeatures).filter(LineFeatures.id == lineid).first()
         session.query(UserSIP).filter(UserSIP.id == line.protocolid).delete()
+        session.query(Extension).filter(Extension.exten == line.number).delete()
         session.delete(line)
         session.commit()
     except Exception:

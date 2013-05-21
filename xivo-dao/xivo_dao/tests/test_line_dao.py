@@ -16,16 +16,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from mock import patch
-from xivo_dao.alchemy.linefeatures import LineFeatures
-from xivo_dao.alchemy.sccpline import SCCPLine
-from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao import line_dao
-from xivo_dao.alchemy.userfeatures import UserFeatures
-from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.cti_profile import CtiProfile
-from xivo_dao.alchemy.ctipresences import CtiPresences
 from xivo_dao.alchemy.ctiphonehints import CtiPhoneHints
 from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
+from xivo_dao.alchemy.ctipresences import CtiPresences
+from xivo_dao.alchemy.extension import Extension
+from xivo_dao.alchemy.linefeatures import LineFeatures
+from xivo_dao.alchemy.sccpline import SCCPLine
+from xivo_dao.alchemy.userfeatures import UserFeatures
+from xivo_dao.alchemy.usersip import UserSIP
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestLineFeaturesDAO(DAOTestCase):
@@ -42,6 +43,7 @@ class TestLineFeaturesDAO(DAOTestCase):
         CtiPresences,
         CtiPhoneHints,
         CtiPhoneHintsGroup,
+        Extension,
     ]
 
     def setUp(self):
@@ -126,6 +128,12 @@ class TestLineFeaturesDAO(DAOTestCase):
         self.session.commit()
 
         return sccpline
+
+    def _insert_extension(self, exten):
+        extension = Extension(context='default', exten=exten, priority=1,
+                          app='GoSub', appdata=('did,s,1(%s)' % exten))
+        self.add_me(extension)
+        return extension.id
 
     def test_all_with_protocol(self):
         first, last = 'Lord', 'Sanderson'
@@ -298,12 +306,15 @@ class TestLineFeaturesDAO(DAOTestCase):
         line.protocol = 'sip'
         line.protocolid = usersip_id
         self.add_me(line)
+        exten_id = self._insert_extension(self.line_number)
 
         line_dao.delete(line.id)
 
         self.assertFalse(line_dao.is_phone_exten(self.line_number))
         inserted_usersip = self.session.query(UserSIP).filter(UserSIP.id == usersip_id).first()
         self.assertEquals(None, inserted_usersip)
+        inserted_extension = self.session.query(Extension).filter(Extension.id == exten_id).first()
+        self.assertEquals(None, inserted_extension)
 
     def test_get(self):
         line = self._insert_line()

@@ -61,8 +61,3 @@ class TestExtensionsDAO(DAOTestCase):
 
     def _get_all(self):
         return self.session.query(Extension).all()
-
-    def test_delete_by_exten(self):
-        extensions_dao.delete_by_exten('*25')
-        self.assertFalse('*25' in [item.exten for item in self._get_all()])
-        self.assertTrue('_*735' in [item.exten for item in self._get_all()])

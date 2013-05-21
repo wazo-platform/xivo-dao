@@ -39,14 +39,3 @@ def create(session, exten):
 @daosession
 def get_by_exten(session, exten):
     return session.query(Extension).filter(Extension.exten == exten).first()
-
-
-@daosession
-def delete_by_exten(session, exten):
-    session.begin()
-    try:
-        session.query(Extension).filter(Extension.exten == exten).delete()
-        session.commit()
-    except Exception:
-        session.rollback()
-        raise
