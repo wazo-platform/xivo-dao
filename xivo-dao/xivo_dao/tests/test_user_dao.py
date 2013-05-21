@@ -26,12 +26,13 @@ from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao.alchemy.rightcallmember import RightCallMember
 
 
 class TestUserFeaturesDAO(DAOTestCase):
 
     tables = [UserFeatures, LineFeatures, ContextInclude, AgentFeatures,
-              CtiPresences, CtiPhoneHintsGroup, CtiProfile, QueueMember]
+              CtiPresences, CtiPhoneHintsGroup, CtiProfile, QueueMember, RightCallMember]
 
     def setUp(self):
         self.empty_tables()
@@ -416,6 +417,10 @@ class TestUserFeaturesDAO(DAOTestCase):
                                   channel='SIP')
         self.add_me(queuemember)
 
+    def _add_user_to_rightcall(self, userid, rightcallid):
+        member = RightCallMember(type='user', typeval=str(userid), rightcallid=rightcallid)
+        self.add_me(member)
+
     def test_get_reachable_contexts(self):
         context = 'my_context'
 
@@ -746,7 +751,8 @@ class TestUserFeaturesDAO(DAOTestCase):
         user1 = self._add_user('test_user_1')
         user2 = self._add_user('test_user_2')
         result = user_dao.get_all()
-        self.assertEqual(result, [user1, user2])
+        self.assertEqual(result[0].firstname, user1.firstname)
+        self.assertEqual(result[1].firstname, user2.firstname)
 
     def test_delete_all(self):
         self._add_user('test_user_1')
@@ -766,7 +772,10 @@ class TestUserFeaturesDAO(DAOTestCase):
         user = self._add_user('test')
         data = {'firstname': 'test_first',
                 'lastname': 'test_last'}
+
         result = user_dao.update(user.id, data)
+
+        user = user_dao.get(user.id)
         self.assertEqual(user.firstname, 'test_first')
         self.assertEqual(user.lastname, 'test_last')
         self.assertEqual(result, 1)
@@ -781,7 +790,9 @@ class TestUserFeaturesDAO(DAOTestCase):
         user1 = self._add_user('test1')
         generated_id1 = user1.id
         queuename = "my_queue"
+        rightcallid = 3
         self._add_user_to_queue(user1.id, queuename)
+        self._add_user_to_rightcall(user1.id, rightcallid)
 
         result = user_dao.delete(generated_id1)
 
@@ -792,6 +803,11 @@ class TestUserFeaturesDAO(DAOTestCase):
                                              .filter(QueueMember.userid == generated_id1)
                                              .first())
         self.assertEquals(None, queue_member_for_user)
+        rightcallmember_for_user = (self.session.query(RightCallMember)
+                                                .filter(RightCallMember.type == 'user')
+                                                .filter(RightCallMember.typeval == str(generated_id1))
+                                                .first())
+        self.assertEquals(None, rightcallmember_for_user)
 
     def test_delete_unexisting_user(self):
         result = user_dao.delete(1)
@@ -935,9 +951,10 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.add_me(user2)
         self.add_me(user3)
         result = user_dao.get_by_voicemailid(1)
-        self.assertTrue(user1 in result)
-        self.assertTrue(user2 in result)
-        self.assertFalse(user3 in result)
+        result = [user.id for user in result]
+        self.assertTrue(user1.id in result)
+        self.assertTrue(user2.id in result)
+        self.assertFalse(user3.id in result)
 
     def test_get_user_join_line(self):
         user, line = self._add_user_with_line("my_test", "default")
@@ -945,8 +962,8 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.add_me(line)
 
         resultuser, resultline = user_dao.get_user_join_line(user.id)
-        self.assertEqual(user, resultuser)
-        self.assertEqual(line, resultline)
+        self.assertEqual(user.firstname, resultuser.firstname)
+        self.assertEqual(line.id, resultline.id)
         self.assertEqual(resultline.number, "1234")
 
     def test_get_user_join_line_no_result(self):
@@ -956,7 +973,7 @@ class TestUserFeaturesDAO(DAOTestCase):
     def test_get_user_join_line_no_line(self):
         user = self._add_user("test")
         resultuser, resultline = user_dao.get_user_join_line(user.id)
-        self.assertEqual(user, resultuser)
+        self.assertEqual(user.firstname, resultuser.firstname)
         self.assertEqual(None, resultline)
 
     def test_get_all_join_lines(self):
@@ -964,4 +981,5 @@ class TestUserFeaturesDAO(DAOTestCase):
         user2, line2 = self._add_user_with_line("test2", "default")
 
         result = user_dao.get_all_join_line()
-        self.assertEqual([(user1, line1), (user2, line2)], result)
+        self.assertEqual((user1.firstname, line1.id), (result[0][0].firstname, result[0][1].id))
+        self.assertEqual((user2.firstname, line2.id), (result[1][0].firstname, result[1][1].id))
