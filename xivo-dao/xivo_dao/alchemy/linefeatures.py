@@ -34,7 +34,6 @@ class LineFeatures(Base):
     number = Column(String(40))
     context = Column(String(39), nullable=False)
     provisioningid = Column(Integer, nullable=False)
-    rules_group = Column(String(16))
     num = Column(Integer, default=0)
     line_num = Column(Integer, default=0)
     ipfrom = Column(String(15))
