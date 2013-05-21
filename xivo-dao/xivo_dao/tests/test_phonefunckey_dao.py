@@ -102,9 +102,3 @@ class TestPhoneFunckey(DAOTestCase):
         self.assertEquals(2, len(result))
         self.assertEquals(self._user_id, result[0].iduserfeatures)
         self.assertEquals(self._user_id, result[1].iduserfeatures)
-
-    def test_delete_by_userid(self):
-        phonefunckey_dao.delete_by_userid(self._user_id)
-        result = self.session.query(PhoneFunckey).all()
-        self.assertEquals(1, len(result))
-        self.assertEquals(self._user_id_no_dest, result[0].iduserfeatures)

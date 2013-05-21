@@ -23,6 +23,7 @@ from xivo_dao.alchemy.contextinclude import ContextInclude
 from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.linefeatures import LineFeatures
+from xivo_dao.alchemy.phonefunckey import PhoneFunckey
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.userfeatures import UserFeatures
@@ -279,6 +280,7 @@ def delete(session, userid):
         (session.query(Dialaction).filter(Dialaction.category == 'user')
                                   .filter(Dialaction.categoryval == str(userid))
                                   .delete())
+        (session.query(PhoneFunckey).filter(PhoneFunckey.iduserfeatures == userid).delete())
         session.commit()
         return result
     except Exception:

@@ -30,13 +30,15 @@ from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao.alchemy.phonefunckey import PhoneFunckey
 
 
 class TestUserFeaturesDAO(DAOTestCase):
 
     tables = [UserFeatures, LineFeatures, ContextInclude, AgentFeatures,
               CtiPresences, CtiPhoneHintsGroup, CtiProfile, QueueMember,
-              RightCallMember, Callfiltermember, Callfilter, Dialaction]
+              RightCallMember, Callfiltermember, Callfilter, Dialaction,
+              PhoneFunckey]
 
     def setUp(self):
         self.empty_tables()
@@ -436,6 +438,10 @@ class TestUserFeaturesDAO(DAOTestCase):
         dialaction = Dialaction(event='answer', category='user', categoryval=str(userid), action='none')
         self.add_me(dialaction)
 
+    def _add_function_key_to_user(self, userid):
+        key = PhoneFunckey(iduserfeatures=userid, fknum=1, typeextenumbersright='user')
+        self.add_me(key)
+
     def test_get_reachable_contexts(self):
         context = 'my_context'
 
@@ -812,6 +818,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.add_me(callfilter)
         self._add_user_to_callfilter(user1.id, callfilter.id)
         self._add_dialaction_to_user(user1.id)
+        self._add_function_key_to_user(user1.id)
 
         result = user_dao.delete(generated_id)
 
@@ -837,6 +844,8 @@ class TestUserFeaturesDAO(DAOTestCase):
                                .filter(Dialaction.categoryval == str(generated_id))
                                .first())
         self.assertEquals(None, user_dialaction)
+        user_key = self.session.query(PhoneFunckey).filter(PhoneFunckey.iduserfeatures == generated_id).first()
+        self.assertEquals(None, user_key)
 
     def test_delete_unexisting_user(self):
         result = user_dao.delete(1)
