@@ -15,17 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo import caller_id
-from xivo_dao.alchemy.linefeatures import LineFeatures
-from xivo_dao.alchemy.userfeatures import UserFeatures
-from xivo_dao.alchemy.sccpline import SCCPLine
-from xivo_dao.alchemy.usersip import UserSIP
-from xivo_dao.alchemy.useriax import UserIAX
-from xivo_dao.alchemy.usercustom import UserCustom
 from sqlalchemy import and_
-from xivo_dao.helpers.db_manager import daosession
+from xivo import caller_id
+from xivo_dao.alchemy.contextnummember import ContextNumMember
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.extenumber import ExteNumber
+from xivo_dao.alchemy.linefeatures import LineFeatures
+from xivo_dao.alchemy.sccpline import SCCPLine
+from xivo_dao.alchemy.usercustom import UserCustom
+from xivo_dao.alchemy.userfeatures import UserFeatures
+from xivo_dao.alchemy.useriax import UserIAX
+from xivo_dao.alchemy.usersip import UserSIP
+from xivo_dao.helpers.db_manager import daosession
 
 
 @daosession
@@ -270,6 +271,10 @@ def delete(session, lineid):
         session.query(UserSIP).filter(UserSIP.id == line.protocolid).delete()
         session.query(Extension).filter(Extension.exten == line.number).delete()
         session.query(ExteNumber).filter(ExteNumber.exten == line.number).delete()
+        (session.query(ContextNumMember).filter(ContextNumMember.type == 'user')
+                                        .filter(ContextNumMember.typeval == str(line.id))
+                                        .filter(ContextNumMember.context == 'default')
+                                        .delete())
         session.delete(line)
         session.commit()
     except Exception:

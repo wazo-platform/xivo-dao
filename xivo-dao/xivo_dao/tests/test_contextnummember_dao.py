@@ -59,11 +59,3 @@ class TestContextNumMemberDAO(DAOTestCase):
         result = contextnummember_dao.get_by_type_typeval_context('user', 1, 'default')
         self.assertEquals('user', result.type)
         self.assertEquals('1', result.typeval)
-
-    def test_delete_by_type_typeval_context(self):
-        self._insert('user', 1)
-        self._insert('user', 2)
-
-        contextnummember_dao.delete_by_type_typeval_context('user', 1, 'default')
-        self.assertFalse('1' in [item.typeval for item in self._get_all()])
-        self.assertTrue('2' in [item.typeval for item in self._get_all()])

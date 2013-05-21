@@ -37,17 +37,6 @@ def get_by_type_typeval_context(session, typename, typeval, context):
     return _request_type_typeval_context(session, typename, str(typeval), context).first()
 
 
-@daosession
-def delete_by_type_typeval_context(session, typename, typeval, context):
-    session.begin()
-    try:
-        _request_type_typeval_context(session, typename, str(typeval), context).delete()
-        session.commit()
-    except Exception:
-        session.rollback()
-        raise
-
-
 def _request_type_typeval_context(session, typename, typeval, context):
     return (session.query(ContextNumMember).filter(ContextNumMember.type == typename)
                                            .filter(ContextNumMember.typeval == typeval)
