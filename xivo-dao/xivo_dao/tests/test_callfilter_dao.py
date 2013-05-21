@@ -88,13 +88,3 @@ class TestCallFilterDAO(DAOTestCase):
         result = callfilter_dao.get_callfiltermembers_by_userid(2)
         self.assertEquals(1, len(result))
         self.assertEquals('2', result[0].typeval)
-
-    def test_delete_callfiltermember_by_userid(self):
-        filterid = self._insert_call_filter('test1')
-        self._add_user_to_filter(1, filterid)
-        self._add_user_to_filter(2, filterid)
-
-        callfilter_dao.delete_callfiltermember_by_userid(1)
-
-        self.assertEquals(None, self.session.query(Callfiltermember).filter(Callfiltermember.typeval == '1').first())
-        self.assertNotEquals(None, self.session.query(Callfiltermember).filter(Callfiltermember.typeval == '2').first())

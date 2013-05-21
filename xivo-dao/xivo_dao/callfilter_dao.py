@@ -141,17 +141,6 @@ def get_callfiltermembers_by_userid(session, userid):
     return _request_member_by_userid(session, userid).all()
 
 
-@daosession
-def delete_callfiltermember_by_userid(session, userid):
-    session.begin()
-    try:
-        _request_member_by_userid(session, userid).delete()
-        session.commit()
-    except Exception:
-        session.rollback()
-        raise
-
-
 def _request_member_by_userid(session, userid):
     return (session.query(Callfiltermember).filter(Callfiltermember.type == 'user')
                                            .filter(Callfiltermember.typeval == str(userid)))

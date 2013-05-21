@@ -18,21 +18,24 @@
 from hamcrest import *
 from xivo_dao import user_dao
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
+from xivo_dao.alchemy.callfilter import Callfilter
+from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from xivo_dao.alchemy.contextinclude import ContextInclude
 from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
 from xivo_dao.alchemy.ctipresences import CtiPresences
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
+from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao.alchemy.rightcallmember import RightCallMember
 
 
 class TestUserFeaturesDAO(DAOTestCase):
 
     tables = [UserFeatures, LineFeatures, ContextInclude, AgentFeatures,
-              CtiPresences, CtiPhoneHintsGroup, CtiProfile, QueueMember, RightCallMember]
+              CtiPresences, CtiPhoneHintsGroup, CtiProfile, QueueMember,
+              RightCallMember, Callfiltermember, Callfilter]
 
     def setUp(self):
         self.empty_tables()
@@ -421,6 +424,13 @@ class TestUserFeaturesDAO(DAOTestCase):
         member = RightCallMember(type='user', typeval=str(userid), rightcallid=rightcallid)
         self.add_me(member)
 
+    def _add_user_to_callfilter(self, userid, callfilterid):
+        member = Callfiltermember(type='user',
+                                  typeval=str(userid),
+                                  callfilterid=callfilterid,
+                                  bstype='boss')
+        self.add_me(member)
+
     def test_get_reachable_contexts(self):
         context = 'my_context'
 
@@ -793,6 +803,9 @@ class TestUserFeaturesDAO(DAOTestCase):
         rightcallid = 3
         self._add_user_to_queue(user1.id, queuename)
         self._add_user_to_rightcall(user1.id, rightcallid)
+        callfilter = Callfilter(type='bosssecretary', name='test', bosssecretary='secretary-simult', callfrom='all', description='')
+        self.add_me(callfilter)
+        self._add_user_to_callfilter(user1.id, callfilter.id)
 
         result = user_dao.delete(generated_id1)
 
@@ -808,6 +821,11 @@ class TestUserFeaturesDAO(DAOTestCase):
                                                 .filter(RightCallMember.typeval == str(generated_id1))
                                                 .first())
         self.assertEquals(None, rightcallmember_for_user)
+        callfiltermember_for_user = (self.session.query(Callfiltermember)
+                                                 .filter(Callfiltermember.type == 'user')
+                                                 .filter(Callfiltermember.typeval == str(generated_id1))
+                                                 .first())
+        self.assertEquals(None, callfiltermember_for_user)
 
     def test_delete_unexisting_user(self):
         result = user_dao.delete(1)
