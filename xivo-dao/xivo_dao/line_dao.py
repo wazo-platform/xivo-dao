@@ -264,7 +264,9 @@ def create(session, line):
 def delete(session, lineid):
     session.begin()
     try:
-        session.query(LineFeatures).filter(LineFeatures.id == lineid).delete()
+        line = session.query(LineFeatures).filter(LineFeatures.id == lineid).first()
+        session.query(UserSIP).filter(UserSIP.id == line.protocolid).delete()
+        session.delete(line)
         session.commit()
     except Exception:
         session.rollback()
