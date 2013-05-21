@@ -47,13 +47,5 @@ class TestExteNumberDAO(DAOTestCase):
     def test_get_by_exten(self):
         self._insert('2000')
 
-        result = extenumber_dao.get_by_exten('2000')
-        self.assertEquals('2000', result.exten)
-
-    def test_delete_by_exten(self):
-        self._insert('2000')
-        self._insert('3000')
-
-        extenumber_dao.delete_by_exten('2000')
-        self.assertFalse('2000' in [item.exten for item in self._get_all()])
-        self.assertTrue('3000' in [item.exten for item in self._get_all()])
+        result = extenumber_dao.get_by_exten("2000")
+        self.assertEquals("2000", result.exten)

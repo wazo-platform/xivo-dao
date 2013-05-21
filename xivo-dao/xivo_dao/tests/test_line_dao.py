@@ -22,6 +22,7 @@ from xivo_dao.alchemy.ctiphonehints import CtiPhoneHints
 from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
 from xivo_dao.alchemy.ctipresences import CtiPresences
 from xivo_dao.alchemy.extension import Extension
+from xivo_dao.alchemy.extenumber import ExteNumber
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.userfeatures import UserFeatures
@@ -44,6 +45,7 @@ class TestLineFeaturesDAO(DAOTestCase):
         CtiPhoneHints,
         CtiPhoneHintsGroup,
         Extension,
+        ExteNumber,
     ]
 
     def setUp(self):
@@ -134,6 +136,11 @@ class TestLineFeaturesDAO(DAOTestCase):
                           app='GoSub', appdata=('did,s,1(%s)' % exten))
         self.add_me(extension)
         return extension.id
+
+    def _insert_extenumber(self, exten):
+        extenumber = ExteNumber(exten=exten, context='default', type='user', typeval='1')
+        self.add_me(extenumber)
+        return extenumber.id
 
     def test_all_with_protocol(self):
         first, last = 'Lord', 'Sanderson'
@@ -307,6 +314,7 @@ class TestLineFeaturesDAO(DAOTestCase):
         line.protocolid = usersip_id
         self.add_me(line)
         exten_id = self._insert_extension(self.line_number)
+        extenumber_id = self._insert_extenumber(self.line_number)
 
         line_dao.delete(line.id)
 
@@ -315,6 +323,8 @@ class TestLineFeaturesDAO(DAOTestCase):
         self.assertEquals(None, inserted_usersip)
         inserted_extension = self.session.query(Extension).filter(Extension.id == exten_id).first()
         self.assertEquals(None, inserted_extension)
+        inserted_extenumber = self.session.query(ExteNumber).filter(ExteNumber.id == extenumber_id).first()
+        self.assertEquals(None, inserted_extenumber)
 
     def test_get(self):
         line = self._insert_line()
