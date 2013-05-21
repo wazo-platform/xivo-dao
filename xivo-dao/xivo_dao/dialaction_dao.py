@@ -34,18 +34,6 @@ def add(session, dialaction):
 def get_by_userid(session, userid):
     return _request_by_userid(session, userid).all()
 
-
-@daosession
-def delete_by_userid(session, userid):
-    session.begin()
-    try:
-        _request_by_userid(session, userid).delete()
-        session.commit()
-    except Exception:
-        session.rollback()
-        raise
-
-
 def _request_by_userid(session, userid):
     return (session.query(Dialaction).filter(Dialaction.category == 'user')
                                      .filter(Dialaction.categoryval == str(userid)))

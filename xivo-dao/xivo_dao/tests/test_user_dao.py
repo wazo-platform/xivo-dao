@@ -24,6 +24,7 @@ from xivo_dao.alchemy.contextinclude import ContextInclude
 from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
 from xivo_dao.alchemy.ctipresences import CtiPresences
+from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.rightcallmember import RightCallMember
@@ -35,7 +36,7 @@ class TestUserFeaturesDAO(DAOTestCase):
 
     tables = [UserFeatures, LineFeatures, ContextInclude, AgentFeatures,
               CtiPresences, CtiPhoneHintsGroup, CtiProfile, QueueMember,
-              RightCallMember, Callfiltermember, Callfilter]
+              RightCallMember, Callfiltermember, Callfilter, Dialaction]
 
     def setUp(self):
         self.empty_tables()
@@ -431,6 +432,10 @@ class TestUserFeaturesDAO(DAOTestCase):
                                   bstype='boss')
         self.add_me(member)
 
+    def _add_dialaction_to_user(self, userid):
+        dialaction = Dialaction(event='answer', category='user', categoryval=str(userid), action='none')
+        self.add_me(dialaction)
+
     def test_get_reachable_contexts(self):
         context = 'my_context'
 
@@ -798,7 +803,7 @@ class TestUserFeaturesDAO(DAOTestCase):
 
     def test_delete(self):
         user1 = self._add_user('test1')
-        generated_id1 = user1.id
+        generated_id = user1.id
         queuename = "my_queue"
         rightcallid = 3
         self._add_user_to_queue(user1.id, queuename)
@@ -806,26 +811,32 @@ class TestUserFeaturesDAO(DAOTestCase):
         callfilter = Callfilter(type='bosssecretary', name='test', bosssecretary='secretary-simult', callfrom='all', description='')
         self.add_me(callfilter)
         self._add_user_to_callfilter(user1.id, callfilter.id)
+        self._add_dialaction_to_user(user1.id)
 
-        result = user_dao.delete(generated_id1)
+        result = user_dao.delete(generated_id)
 
         self.assertEqual(result, 1)
-        self.assertRaises(LookupError, user_dao.get, generated_id1)
+        self.assertRaises(LookupError, user_dao.get, generated_id)
         queue_member_for_user = (self.session.query(QueueMember)
                                              .filter(QueueMember.usertype == 'user')
-                                             .filter(QueueMember.userid == generated_id1)
+                                             .filter(QueueMember.userid == generated_id)
                                              .first())
         self.assertEquals(None, queue_member_for_user)
         rightcallmember_for_user = (self.session.query(RightCallMember)
                                                 .filter(RightCallMember.type == 'user')
-                                                .filter(RightCallMember.typeval == str(generated_id1))
+                                                .filter(RightCallMember.typeval == str(generated_id))
                                                 .first())
         self.assertEquals(None, rightcallmember_for_user)
         callfiltermember_for_user = (self.session.query(Callfiltermember)
                                                  .filter(Callfiltermember.type == 'user')
-                                                 .filter(Callfiltermember.typeval == str(generated_id1))
+                                                 .filter(Callfiltermember.typeval == str(generated_id))
                                                  .first())
         self.assertEquals(None, callfiltermember_for_user)
+        user_dialaction = (self.session.query(Dialaction)
+                               .filter(Dialaction.category == 'user')
+                               .filter(Dialaction.categoryval == str(generated_id))
+                               .first())
+        self.assertEquals(None, user_dialaction)
 
     def test_delete_unexisting_user(self):
         result = user_dao.delete(1)

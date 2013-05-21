@@ -51,12 +51,3 @@ class TestDialactionDAO(DAOTestCase):
         dialaction.categoryval = str(categoryval)
         dialaction.event = event
         self.add_me(dialaction)
-
-    def test_delete_by_userid(self):
-        self._insert_dialaction(1)
-        self._insert_dialaction(2)
-        dialaction_dao.delete_by_userid(1)
-
-        result = self.session.query(Dialaction).all()
-        self.assertEquals(len(result), 1)
-        self.assertEquals(result[0].categoryval, '2')
