@@ -34,7 +34,6 @@ class LineFeatures(Base):
     number = Column(String(40))
     context = Column(String(39), nullable=False)
     provisioningid = Column(Integer, nullable=False)
-    rules_time = Column(String(8))
     rules_order = Column(Integer, default=0)
     rules_group = Column(String(16))
     num = Column(Integer, default=0)
