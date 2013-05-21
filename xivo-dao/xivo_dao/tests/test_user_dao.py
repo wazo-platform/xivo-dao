@@ -31,6 +31,7 @@ from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.phonefunckey import PhoneFunckey
+from xivo_dao.alchemy.schedulepath import SchedulePath
 
 
 class TestUserFeaturesDAO(DAOTestCase):
@@ -38,7 +39,7 @@ class TestUserFeaturesDAO(DAOTestCase):
     tables = [UserFeatures, LineFeatures, ContextInclude, AgentFeatures,
               CtiPresences, CtiPhoneHintsGroup, CtiProfile, QueueMember,
               RightCallMember, Callfiltermember, Callfilter, Dialaction,
-              PhoneFunckey]
+              PhoneFunckey, SchedulePath]
 
     def setUp(self):
         self.empty_tables()
@@ -442,6 +443,10 @@ class TestUserFeaturesDAO(DAOTestCase):
         key = PhoneFunckey(iduserfeatures=userid, fknum=1, typeextenumbersright='user')
         self.add_me(key)
 
+    def _add_schedule_to_user(self, userid, scheduleid):
+        path = SchedulePath(schedule_id=scheduleid, path='user', pathid=userid, order=0)
+        self.add_me(path)
+
     def test_get_reachable_contexts(self):
         context = 'my_context'
 
@@ -812,6 +817,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         generated_id = user1.id
         queuename = "my_queue"
         rightcallid = 3
+        scheduleid = 4
         self._add_user_to_queue(user1.id, queuename)
         self._add_user_to_rightcall(user1.id, rightcallid)
         callfilter = Callfilter(type='bosssecretary', name='test', bosssecretary='secretary-simult', callfrom='all', description='')
@@ -819,6 +825,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         self._add_user_to_callfilter(user1.id, callfilter.id)
         self._add_dialaction_to_user(user1.id)
         self._add_function_key_to_user(user1.id)
+        self._add_schedule_to_user(user1.id, scheduleid)
 
         result = user_dao.delete(generated_id)
 
@@ -846,6 +853,10 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.assertEquals(None, user_dialaction)
         user_key = self.session.query(PhoneFunckey).filter(PhoneFunckey.iduserfeatures == generated_id).first()
         self.assertEquals(None, user_key)
+        schedulepath = (self.session.query(SchedulePath).filter(SchedulePath.path == 'user')
+                                    .filter(SchedulePath.pathid == generated_id)
+                                    .first())
+        self.assertEquals(None, schedulepath)
 
     def test_delete_unexisting_user(self):
         result = user_dao.delete(1)

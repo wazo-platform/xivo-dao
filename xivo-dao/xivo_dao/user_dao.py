@@ -26,6 +26,7 @@ from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.phonefunckey import PhoneFunckey
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.rightcallmember import RightCallMember
+from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.helpers.db_manager import daosession
 #the following import is necessary to laod CtiProfiles' definition:
@@ -280,7 +281,10 @@ def delete(session, userid):
         (session.query(Dialaction).filter(Dialaction.category == 'user')
                                   .filter(Dialaction.categoryval == str(userid))
                                   .delete())
-        (session.query(PhoneFunckey).filter(PhoneFunckey.iduserfeatures == userid).delete())
+        session.query(PhoneFunckey).filter(PhoneFunckey.iduserfeatures == userid).delete()
+        (session.query(SchedulePath).filter(SchedulePath.path == 'user')
+                                    .filter(SchedulePath.pathid == userid)
+                                    .delete())
         session.commit()
         return result
     except Exception:

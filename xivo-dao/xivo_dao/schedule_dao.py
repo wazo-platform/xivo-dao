@@ -50,20 +50,7 @@ def add_user_to_schedule(session, userid, scheduleid, order=0):
 
 @daosession
 def get_schedules_for_user(session, userid):
-    return (session.query(Schedule).join((SchedulePath, SchedulePath.schedule_id == Schedule.id))
-                                   .filter(SchedulePath.path == 'user')
-                                   .filter(SchedulePath.pathid == userid)
-                                   .all())
-
-
-@daosession
-def remove_user_from_all_schedules(session, userid):
-    session.begin()
-    try:
-        (session.query(SchedulePath).filter(SchedulePath.path == 'user')
-                                    .filter(SchedulePath.pathid == userid)
-                                    .delete())
-        session.commit()
-    except Exception:
-        session.rollback()
-        raise
+    return session.query(Schedule).join((SchedulePath, SchedulePath.schedule_id == Schedule.id))\
+                                  .filter(SchedulePath.path == 'user')\
+                                  .filter(SchedulePath.pathid == userid)\
+                                  .all()
