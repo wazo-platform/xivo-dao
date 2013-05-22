@@ -25,7 +25,7 @@ class TestRightCallDAO(DAOTestCase):
     tables = [RightCall]
 
     def setUp(self):
-        self.cleanTables()
+        self.empty_tables()
 
     def test_add(self):
         right = RightCall(name='test')

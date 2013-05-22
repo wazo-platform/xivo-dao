@@ -26,7 +26,7 @@ class TestRightCallMemberDAO(DAOTestCase):
     tables = [RightCall, RightCallMember]
 
     def setUp(self):
-        self.cleanTables()
+        self.empty_tables()
 
     def test_add_user_to_rightcall(self):
         userid = 1

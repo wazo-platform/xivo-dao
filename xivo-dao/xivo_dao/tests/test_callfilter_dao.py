@@ -26,7 +26,7 @@ class TestCallFilterDAO(DAOTestCase):
     tables = [Callfilter, Callfiltermember]
 
     def setUp(self):
-        self.cleanTables()
+        self.empty_tables()
 
     def test_add(self):
         callfilter = Callfilter()
