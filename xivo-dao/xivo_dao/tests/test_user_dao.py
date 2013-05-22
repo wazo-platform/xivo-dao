@@ -429,10 +429,16 @@ class TestUserFeaturesDAO(DAOTestCase):
         member = RightCallMember(type='user', typeval=str(userid), rightcallid=rightcallid)
         self.add_me(member)
 
-    def _add_user_to_callfilter(self, userid, callfilterid):
+    def _add_user_to_boss_secretary_callfilter(self, userid, callfilter_name):
+        callfilter = Callfilter(type='bosssecretary',
+                                name=callfilter_name,
+                                bosssecretary='secretary-simult',
+                                callfrom='all',
+                                description='')
+        self.add_me(callfilter)
         member = Callfiltermember(type='user',
                                   typeval=str(userid),
-                                  callfilterid=callfilterid,
+                                  callfilterid=callfilter.id,
                                   bstype='boss')
         self.add_me(member)
 
@@ -822,9 +828,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         scheduleid = 4
         self._add_user_to_queue(user1.id, queuename)
         self._add_user_to_rightcall(user1.id, rightcallid)
-        callfilter = Callfilter(type='bosssecretary', name='test', bosssecretary='secretary-simult', callfrom='all', description='')
-        self.add_me(callfilter)
-        self._add_user_to_callfilter(user1.id, callfilter.id)
+        self._add_user_to_boss_secretary_callfilter(user1.id, callfilter_name='test')
         self._add_dialaction_to_user(user1.id)
         self._add_function_key_to_user(user1.id)
         self._add_schedule_to_user(user1.id, scheduleid)
