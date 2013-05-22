@@ -45,7 +45,8 @@ class TestExteNumberDAO(DAOTestCase):
         return ext.id
 
     def test_get_by_exten(self):
-        self._insert('2000')
+        extension = '2000'
+        self._insert(extension)
 
-        result = extenumber_dao.get_by_exten("2000")
-        self.assertEquals("2000", result.exten)
+        result = extenumber_dao.get_by_exten(extension)
+        self.assertEquals(extension, result.exten)
