@@ -833,9 +833,9 @@ class TestUserFeaturesDAO(DAOTestCase):
         self._add_function_key_to_user(user1.id)
         self._add_schedule_to_user(user1.id, scheduleid)
 
-        result = user_dao.delete(generated_id)
+        deleted_rows_count = user_dao.delete(generated_id)
 
-        self.assertEqual(result, 1)
+        self.assertEquals(deleted_rows_count, 1)
         self.assertRaises(LookupError, user_dao.get, generated_id)
         queue_member_for_user = (self.session.query(QueueMember)
                                              .filter(QueueMember.usertype == 'user')
