@@ -32,8 +32,7 @@ logging.basicConfig()
 def get_recordings(session, campaign_id, search, paginator):
     search['campaign_id'] = campaign_id
     logger.debug("Search search_pattern: " + str(search))
-    my_query = session.query(Recordings)\
-                                   .filter_by(**search)
+    my_query = session.query(Recordings).filter_by(**search)
     return paginate(my_query, paginator)
 
 
@@ -52,27 +51,24 @@ def add_recording(session, recording):
 
 @daosession
 def search_recordings(session, campaign_id, key, paginator):
-    logger.debug("campaign id = " + str(campaign_id)\
-                  + ", key = " + str(key))
-    # jointure interne:
-    # Recordings r inner join AgentFeatures a on r.agent_id = a.id
-    my_query = session.query(Recordings)\
-                .join((AgentFeatures, Recordings.agent_id == AgentFeatures.id))\
-                .filter(and_(Recordings.campaign_id == campaign_id, \
-                             or_(Recordings.caller == key,
-                                 AgentFeatures.number == key)))
+    logger.debug("campaign id = %s, key = %s" % (str(campaign_id), str(key)))
+    my_query = (session.query(Recordings)
+                       .join((AgentFeatures, Recordings.agent_id == AgentFeatures.id))
+                       .filter(and_(Recordings.campaign_id == campaign_id,
+                                    or_(Recordings.caller == key,
+                                        AgentFeatures.number == key))))
     return paginate(my_query, paginator)
 
 
 @daosession
 def delete(session, campaign_id, recording_id):
     logger.debug("Going to delete " + str(recording_id))
-    recording = session.query(Recordings)\
-                .filter(and_(Recordings.cid == recording_id,
-                             Recordings.campaign_id == campaign_id)) \
-                .first()
+    recording = (session.query(Recordings)
+                        .filter(and_(Recordings.cid == recording_id,
+                                     Recordings.campaign_id == campaign_id))
+                        .first())
 
-    if(recording == None):
+    if recording is None:
         return None
     else:
         filename = recording.filename
@@ -82,8 +78,7 @@ def delete(session, campaign_id, recording_id):
 
 @daosession
 def count_recordings(session, campaign_id):
-    return session.query(Recordings)\
-        .filter(Recordings.campaign_id == campaign_id).count()
+    return session.query(Recordings).filter(Recordings.campaign_id == campaign_id).count()
 
 
 @daosession

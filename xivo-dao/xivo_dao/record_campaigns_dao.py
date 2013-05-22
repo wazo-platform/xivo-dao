@@ -30,16 +30,14 @@ logging.basicConfig()
 @daosession
 def get_records(session, search, checkCurrentlyRunning, paginator):
     my_query = session.query(RecordCampaigns)
-    if search != None:
+    if search is not None:
         logger.debug("Search search_pattern: " + str(search))
         my_query = my_query.filter_by(**search)
 
     if checkCurrentlyRunning:
         now = datetime.now()
-        my_query = my_query.filter(
-                           and_(RecordCampaigns.start_date <= str(now),
-                                RecordCampaigns.end_date >= str(now)))
-
+        my_query = my_query.filter(and_(RecordCampaigns.start_date <= str(now),
+                                        RecordCampaigns.end_date >= str(now)))
     return paginate(my_query, paginator)
 
 
@@ -48,7 +46,7 @@ def id_from_name(session, name):
     result = session.query(RecordCampaigns)\
                 .filter_by(campaign_name=name)\
                 .first()
-    if result != None:
+    if result is not None:
         return result.id
     else:
         return None
@@ -60,20 +58,15 @@ def add_or_update(session, campaign):
         session.begin()
         session.add(campaign)
         session.commit()
-    except Exception as e:
-        try:
-            session.rollback()
-        except e:
-            logger.error("Rollback failed with exception " + str(e))
-        logger.error("RecordCampaignDbBinder - add or update: " + str(e))
-        raise e
+    except Exception:
+        session.rollback()
+        raise
     return campaign.id
 
 
 @daosession
 def get(session, campaign_id):
-    return session.query(RecordCampaigns)\
-        .filter(RecordCampaigns.id == campaign_id).first()
+    return session.query(RecordCampaigns).filter(RecordCampaigns.id == campaign_id).first()
 
 
 @daosession
@@ -96,5 +89,3 @@ def delete_all(session):
     except Exception as e:
         session.rollback()
         raise e
-
-
