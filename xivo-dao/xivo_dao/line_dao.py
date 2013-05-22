@@ -285,3 +285,11 @@ def delete(session, lineid):
 @daosession
 def get(session, lineid):
     return session.query(LineFeatures).filter(LineFeatures.id == lineid).first()
+
+
+@daosession
+def get_contextnummember(session, lineid):
+    return (session.query(ContextNumMember)
+                   .filter(ContextNumMember.typeval == str(lineid))
+                   .filter(ContextNumMember.type == 'user')
+                   .first())

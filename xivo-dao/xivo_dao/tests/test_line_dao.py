@@ -343,3 +343,11 @@ class TestLineFeaturesDAO(DAOTestCase):
         line = self._insert_line()
         result = line_dao.get(line.id)
         self.assertEquals(line, result)
+
+    def test_get_contextnummember(self):
+        line = self._insert_line()
+        self._insert_contextnummember(line.id, line.number)
+
+        member = line_dao.get_contextnummember(line.id)
+
+        self.assertEquals((member.type, member.typeval), ('user', str(line.id)))

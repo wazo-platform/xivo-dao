@@ -1033,13 +1033,3 @@ class TestUserFeaturesDAO(DAOTestCase):
         result = user_dao.get_all_join_line()
         self.assertEqual((user1.firstname, line1.id), (result[0][0].firstname, result[0][1].id))
         self.assertEqual((user2.firstname, line2.id), (result[1][0].firstname, result[1][1].id))
-
-    def test_get_contextnummember(self):
-        user, line = self._add_user_with_line('test', 'default')
-        member = ContextNumMember(type='user', typeval=str(line.id), context='default', number=line.number)
-        self.add_me(member)
-
-        returned_member = user_dao.get_contextnummember(user.id)
-
-        self.assertEquals((member.typeval, member.type, member.context, member.number),
-                          (returned_member.typeval, returned_member.type, returned_member.context, returned_member.number))

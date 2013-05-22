@@ -440,11 +440,3 @@ def get_all_join_line(session):
     return session.query(UserFeatures, LineFeatures)\
                   .outerjoin((LineFeatures, UserFeatures.id == LineFeatures.iduserfeatures))\
                   .all()
-
-@daosession
-def get_contextnummember(session, userid):
-    lineid = session.query(LineFeatures).filter(LineFeatures.iduserfeatures == userid).first().id
-    return (session.query(ContextNumMember)
-                  .filter(ContextNumMember.typeval == str(lineid))
-                  .filter(ContextNumMember.type == 'user')
-                  .first())
