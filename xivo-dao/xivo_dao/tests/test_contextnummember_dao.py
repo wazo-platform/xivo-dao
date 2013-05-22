@@ -49,7 +49,3 @@ class TestContextNumMemberDAO(DAOTestCase):
 
     def _get_all(self):
         return self.session.query(ContextNumMember).all()
-
-    def _insert(self, typename, typeval, context='default', number=''):
-        member = ContextNumMember(type=typename, typeval=typeval, context=context, number=number)
-        self.add_me(member)
