@@ -45,9 +45,9 @@ class TestRecordCampaignDao(DAOTestCase):
         self.session.commit()
 
         paginator = (1, 1)
-        (total, items) = record_campaigns_dao.get_records(None,
-                                                          False,
-                                                          paginator)
+        (total, items) = record_campaigns_dao.get_records(search=None,
+                                                          checkCurrentlyRunning=False,
+                                                          paginator=paginator)
         self.assertEquals([campaign], items)
         self.assertEqual(total, 1)
 
