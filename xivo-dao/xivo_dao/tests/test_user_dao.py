@@ -780,6 +780,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         result = user_dao.get_all()
         self.assertEqual(result[0].firstname, user1.firstname)
         self.assertEqual(result[1].firstname, user2.firstname)
+        self.assertEqual(2, len(result))
 
     def test_delete_all(self):
         self._add_user('test_user_1')
