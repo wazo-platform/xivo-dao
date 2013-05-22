@@ -29,6 +29,7 @@ from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.helpers.db_manager import daosession
+from xivo_dao.alchemy.contextnummember import ContextNumMember
 #the following import is necessary to laod CtiProfiles' definition:
 
 
@@ -440,4 +441,10 @@ def get_all_join_line(session):
                   .outerjoin((LineFeatures, UserFeatures.id == LineFeatures.iduserfeatures))\
                   .all()
 
-
+@daosession
+def get_contextnummember(session, userid):
+    lineid = session.query(LineFeatures).filter(LineFeatures.iduserfeatures == userid).first().id
+    return (session.query(ContextNumMember)
+                  .filter(ContextNumMember.typeval == str(lineid))
+                  .filter(ContextNumMember.type == 'user')
+                  .first())

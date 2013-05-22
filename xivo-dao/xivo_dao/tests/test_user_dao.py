@@ -21,17 +21,18 @@ from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.callfilter import Callfilter
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from xivo_dao.alchemy.contextinclude import ContextInclude
+from xivo_dao.alchemy.contextnummember import ContextNumMember
 from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
 from xivo_dao.alchemy.ctipresences import CtiPresences
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.linefeatures import LineFeatures
+from xivo_dao.alchemy.phonefunckey import PhoneFunckey
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.rightcallmember import RightCallMember
+from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao.alchemy.phonefunckey import PhoneFunckey
-from xivo_dao.alchemy.schedulepath import SchedulePath
 
 
 class TestUserFeaturesDAO(DAOTestCase):
@@ -39,7 +40,7 @@ class TestUserFeaturesDAO(DAOTestCase):
     tables = [UserFeatures, LineFeatures, ContextInclude, AgentFeatures,
               CtiPresences, CtiPhoneHintsGroup, CtiProfile, QueueMember,
               RightCallMember, Callfiltermember, Callfilter, Dialaction,
-              PhoneFunckey, SchedulePath]
+              PhoneFunckey, SchedulePath, ContextNumMember]
 
     def setUp(self):
         self.empty_tables()
@@ -1032,3 +1033,13 @@ class TestUserFeaturesDAO(DAOTestCase):
         result = user_dao.get_all_join_line()
         self.assertEqual((user1.firstname, line1.id), (result[0][0].firstname, result[0][1].id))
         self.assertEqual((user2.firstname, line2.id), (result[1][0].firstname, result[1][1].id))
+
+    def test_get_contextnummember(self):
+        user, line = self._add_user_with_line('test', 'default')
+        member = ContextNumMember(type='user', typeval=str(line.id), context='default', number=line.number)
+        self.add_me(member)
+
+        returned_member = user_dao.get_contextnummember(user.id)
+
+        self.assertEquals((member.typeval, member.type, member.context, member.number),
+                          (returned_member.typeval, returned_member.type, returned_member.context, returned_member.number))

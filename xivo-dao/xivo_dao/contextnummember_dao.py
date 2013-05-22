@@ -16,7 +16,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.alchemy.contextnummember import ContextNumMember
 
 
 @daosession
@@ -30,14 +29,3 @@ def create(session, member):
     except Exception:
         session.rollback()
         raise
-
-
-@daosession
-def get_by_type_typeval_context(session, typename, typeval, context):
-    return _request_type_typeval_context(session, typename, str(typeval), context).first()
-
-
-def _request_type_typeval_context(session, typename, typeval, context):
-    return (session.query(ContextNumMember).filter(ContextNumMember.type == typename)
-                                           .filter(ContextNumMember.typeval == typeval)
-                                           .filter(ContextNumMember.context == context))
