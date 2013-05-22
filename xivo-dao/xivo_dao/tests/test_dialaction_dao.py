@@ -35,7 +35,8 @@ class TestDialactionDAO(DAOTestCase):
         dialaction.event = 'answer'
 
         dialaction_dao.add(dialaction)
-        self.assertEquals('1', self.session.query(Dialaction).first().categoryval)
+
+        self.assertEquals(dialaction, self.session.query(Dialaction).first())
 
     def test_get_by_userid(self):
         self._insert_dialaction(1)
