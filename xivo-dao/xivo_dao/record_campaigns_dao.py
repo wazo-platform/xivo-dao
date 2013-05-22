@@ -36,8 +36,8 @@ def get_records(session, search, checkCurrentlyRunning, paginator):
 
     if checkCurrentlyRunning:
         now = datetime.now()
-        my_query = my_query.filter(and_(RecordCampaigns.start_date <= str(now),
-                                        RecordCampaigns.end_date >= str(now)))
+        my_query = my_query.filter(and_(RecordCampaigns.start_date <= now,
+                                        RecordCampaigns.end_date >= now))
     return paginate(my_query, paginator)
 
 
