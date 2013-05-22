@@ -88,7 +88,7 @@ class VoicemailDAOTestCase(DAOTestCase):
         contextmember = (self.session.query(ContextMember).filter(ContextMember.type == 'voicemail')
                                                           .filter(ContextMember.typeval == str(voicemail.uniqueid))
                                                           .first())
-        self.assertEquals(contextmember.context, 'default')
+        self.assertEquals(contextmember.context, voicemail.context)
 
     def test_update(self):
         voicemailid = self._insert_voicemail("123")
