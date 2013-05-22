@@ -31,7 +31,7 @@ logging.basicConfig()
 @daosession
 def get_recordings(session, campaign_id, search, paginator):
     search['campaign_id'] = campaign_id
-    logger.debug("Search search_pattern: " + str(search))
+    logger.debug("Search search_pattern: %s", search)
     my_query = session.query(Recordings).filter_by(**search)
     return paginate(my_query, paginator)
 
@@ -51,7 +51,7 @@ def add_recording(session, recording):
 
 @daosession
 def search_recordings(session, campaign_id, key, paginator):
-    logger.debug("campaign id = %s, key = %s" % (str(campaign_id), str(key)))
+    logger.debug("campaign id = %s, key = %s", campaign_id, key)
     my_query = (session.query(Recordings)
                        .join((AgentFeatures, Recordings.agent_id == AgentFeatures.id))
                        .filter(and_(Recordings.campaign_id == campaign_id,
@@ -62,7 +62,7 @@ def search_recordings(session, campaign_id, key, paginator):
 
 @daosession
 def delete(session, campaign_id, recording_id):
-    logger.debug("Going to delete " + str(recording_id))
+    logger.debug("Going to delete %s", recording_id)
     recording = (session.query(Recordings)
                         .filter(and_(Recordings.cid == recording_id,
                                      Recordings.campaign_id == campaign_id))

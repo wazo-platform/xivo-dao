@@ -31,7 +31,7 @@ logging.basicConfig()
 def get_records(session, search, checkCurrentlyRunning, paginator):
     my_query = session.query(RecordCampaigns)
     if search is not None:
-        logger.debug("Search search_pattern: " + str(search))
+        logger.debug("Search search_pattern: %s", search)
         my_query = my_query.filter_by(**search)
 
     if checkCurrentlyRunning:
