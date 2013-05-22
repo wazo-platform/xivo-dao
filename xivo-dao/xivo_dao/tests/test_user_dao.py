@@ -837,30 +837,50 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         self.assertEquals(deleted_rows_count, 1)
         self.assertRaises(LookupError, user_dao.get, generated_id)
+        self._assert_no_queue_member_for_user(generated_id)
+        self._assert_no_rightcall_for_user(generated_id)
+        self._assert_no_callfilter_for_user(generated_id)
+        self._assert_no_dialaction_for_user(generated_id)
+        self._assert_no_funckey_for_user(generated_id)
+        self._assert_no_schedule_for_user(generated_id)
+
+    def _assert_no_queue_member_for_user(self, user_id):
         queue_member_for_user = (self.session.query(QueueMember)
                                              .filter(QueueMember.usertype == 'user')
-                                             .filter(QueueMember.userid == generated_id)
+                                             .filter(QueueMember.userid == user_id)
                                              .first())
         self.assertEquals(None, queue_member_for_user)
+
+    def _assert_no_rightcall_for_user(self, user_id):
         rightcallmember_for_user = (self.session.query(RightCallMember)
                                                 .filter(RightCallMember.type == 'user')
-                                                .filter(RightCallMember.typeval == str(generated_id))
+                                                .filter(RightCallMember.typeval == str(user_id))
                                                 .first())
         self.assertEquals(None, rightcallmember_for_user)
+
+    def _assert_no_callfilter_for_user(self, user_id):
         callfiltermember_for_user = (self.session.query(Callfiltermember)
                                                  .filter(Callfiltermember.type == 'user')
-                                                 .filter(Callfiltermember.typeval == str(generated_id))
+                                                 .filter(Callfiltermember.typeval == str(user_id))
                                                  .first())
         self.assertEquals(None, callfiltermember_for_user)
+
+    def _assert_no_dialaction_for_user(self, user_id):
         user_dialaction = (self.session.query(Dialaction)
-                               .filter(Dialaction.category == 'user')
-                               .filter(Dialaction.categoryval == str(generated_id))
-                               .first())
+                                       .filter(Dialaction.category == 'user')
+                                       .filter(Dialaction.categoryval == str(user_id))
+                                       .first())
         self.assertEquals(None, user_dialaction)
-        user_key = self.session.query(PhoneFunckey).filter(PhoneFunckey.iduserfeatures == generated_id).first()
+
+    def _assert_no_funckey_for_user(self, user_id):
+        user_key = (self.session.query(PhoneFunckey)
+                                .filter(PhoneFunckey.iduserfeatures == user_id)
+                                .first())
         self.assertEquals(None, user_key)
+
+    def _assert_no_schedule_for_user(self, user_id):
         schedulepath = (self.session.query(SchedulePath).filter(SchedulePath.path == 'user')
-                                    .filter(SchedulePath.pathid == generated_id)
+                                    .filter(SchedulePath.pathid == user_id)
                                     .first())
         self.assertEquals(None, schedulepath)
 
