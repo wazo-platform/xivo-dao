@@ -78,10 +78,17 @@ class VoicemailDAOTestCase(DAOTestCase):
         voicemail = Voicemail()
         voicemail.mailbox = "123"
         voicemail.context = "default"
+
         voicemail_dao.add(voicemail)
+
         self.assertTrue(voicemail.uniqueid > 0)
-        returned_voicemail = voicemail_dao.get(voicemail.uniqueid)
-        self.assertEqual(returned_voicemail, voicemail)
+        returned_voicemail = (self.session.query(Voicemail).filter(Voicemail.uniqueid == voicemail.uniqueid)
+                                                           .first())
+        self.assertEquals(returned_voicemail, voicemail)
+        contextmember = (self.session.query(ContextMember).filter(ContextMember.type == 'voicemail')
+                                                          .filter(ContextMember.typeval == str(voicemail.uniqueid))
+                                                          .first())
+        self.assertEquals(contextmember.context, 'default')
 
     def test_update(self):
         voicemailid = self._insert_voicemail("123")
@@ -113,3 +120,11 @@ class VoicemailDAOTestCase(DAOTestCase):
                                              .filter(ContextMember.typeval == str(generated_id))
                                              .first())
         self.assertEquals(None, inserted_contextmember)
+
+    def test_get_contextmember(self):
+        voicemailid = self._insert_voicemail('123', 'default')
+        self._insert_contextmember(voicemailid)
+
+        member = voicemail_dao.get_contextmember(voicemailid)
+
+        self.assertNotEquals(None, member)
