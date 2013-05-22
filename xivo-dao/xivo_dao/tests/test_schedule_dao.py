@@ -49,6 +49,7 @@ class TestScheduleDAO(DAOTestCase):
         self._add_user_to_schedule(2, scheduleid)
         result = schedule_dao.get_schedules_for_user(1)
         self.assertEquals(1, len(result))
+        self.assertEquals(scheduleid, result[0].id)
 
     def _insert_schedule(self, name):
         schedule = Schedule()
