@@ -62,6 +62,7 @@ class TestUserMapping(unittest.TestCase):
         self.user_alchemy.rightcallcode = ''
 
         result = self.user_mapping.sdm_to_alchemy(self.user_sdm)
+
         self.assertEquals(self.user_alchemy.todict(), result.todict())
 
     def test_sdm_to_alchemy_dict(self):
