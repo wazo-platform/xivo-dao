@@ -86,6 +86,53 @@ class TestCtiUserStatusDAO(DAOTestCase):
 
         self.assertEqual(expected_result, result)
 
+    def test_get_config_status_with_inexistant_access_status(self):
+        expected_result = {
+            "test1": {
+                "available": {
+                    "longname": "available",
+                    "color": "#08FD20"
+                },
+                "invalid": {
+                    "longname": "invalid",
+                    "color": "#303030"
+                }
+            }
+        }
+
+        cti_presence_id_1 = self._add_presence('test1')
+        self._add_status(cti_presence_id_1, 'available', '', '#08FD20', '')
+        self._add_status(cti_presence_id_1, 'invalid', '', '#303030', '0')
+
+        result = cti_userstatus_dao.get_config()
+
+        self.assertEqual(expected_result, result)
+
+    def test_get_config_status_with_invalid_access_status(self):
+        expected_result = {
+            "test1": {
+                "available": {
+                    "longname": "available",
+                    "color": "#08FD20"
+                },
+                "away": {
+                    "longname": "away",
+                    "color": "#101010",
+                    "allowed": ["available"],
+                }
+            }
+        }
+
+        cti_presence_id_1 = self._add_presence('test1')
+        status_id_1 = self._add_status(cti_presence_id_1, 'available', '', '#08FD20', '')
+
+        invalid_access_status = '%s,0' % status_id_1
+        self._add_status(cti_presence_id_1, 'away', '', '#101010', invalid_access_status)
+
+        result = cti_userstatus_dao.get_config()
+
+        self.assertEqual(expected_result, result)
+
     def _add_presence(self, name):
         cti_presence = CtiPresences()
         cti_presence.name = name

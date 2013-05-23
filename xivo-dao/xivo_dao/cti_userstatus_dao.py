@@ -65,9 +65,11 @@ def _build_status_dict(statuses):
 
 def _build_status_allowed_for_status(status_list, status_dict):
     allowed = []
-    for statut_id in status_list:
-        if statut_id:
-            allowed.append(status_dict[int(statut_id)])
+    for status_id in status_list:
+        if status_id:
+            status_id = int(status_id)
+            if status_id in status_dict:
+                allowed.append(status_dict[status_id])
     return allowed
 
 
