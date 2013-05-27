@@ -314,7 +314,7 @@ class TestLineFeaturesDAO(DAOTestCase):
         self.assertTrue(line_dao.is_phone_exten('1234'))
 
     def test_delete(self):
-        line = self._insert_line()
+        line = self._insert_line(context='default')
         usersip_id = 2
         self._insert_usersip(usersip_id)
         line.protocol = 'sip'
