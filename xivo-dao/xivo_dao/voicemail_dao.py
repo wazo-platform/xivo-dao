@@ -35,9 +35,8 @@ def get(session, voicemail_id):
 def add(session, voicemail):
     session.begin()
     try:
-        if voicemail.uniqueid is None:
-            voicemail.uniqueid = _get_new_voicemail_id(session)
         session.add(voicemail)
+        session.flush()
         contextmember = ContextMember(context=voicemail.context,
                                       type='voicemail',
                                       typeval=str(voicemail.uniqueid),
@@ -48,9 +47,6 @@ def add(session, voicemail):
         session.rollback()
         raise
 
-def _get_new_voicemail_id(session):
-    return (session.execute('select nextval(:sequence)', {'sequence': 'voicemail_uniqueid_seq'})
-                   .fetchall())[0][0]
 
 @daosession
 def id_from_mailbox(session, mailbox, context):
