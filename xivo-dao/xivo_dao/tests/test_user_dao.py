@@ -15,22 +15,32 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from hamcrest import *
 from xivo_dao import user_dao
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
+from xivo_dao.alchemy.callfilter import Callfilter
+from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from xivo_dao.alchemy.contextinclude import ContextInclude
+from xivo_dao.alchemy.contextnummember import ContextNumMember
 from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
 from xivo_dao.alchemy.ctipresences import CtiPresences
+from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.linefeatures import LineFeatures
+from xivo_dao.alchemy.phonefunckey import PhoneFunckey
+from xivo_dao.alchemy.queuemember import QueueMember
+from xivo_dao.alchemy.rightcallmember import RightCallMember
+from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.tests.test_dao import DAOTestCase
-from hamcrest import *
 
 
 class TestUserFeaturesDAO(DAOTestCase):
 
     tables = [UserFeatures, LineFeatures, ContextInclude, AgentFeatures,
-              CtiPresences, CtiPhoneHintsGroup, CtiProfile]
+              CtiPresences, CtiPhoneHintsGroup, CtiProfile, QueueMember,
+              RightCallMember, Callfiltermember, Callfilter, Dialaction,
+              PhoneFunckey, SchedulePath, ContextNumMember]
 
     def setUp(self):
         self.empty_tables()
@@ -406,6 +416,44 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         return user, line
 
+    def _add_user_to_queue(self, userid, queuename):
+        queuemember = QueueMember(usertype='user',
+                                  userid=userid,
+                                  category='queue',
+                                  queue_name=queuename,
+                                  interface='SIP/stuff',
+                                  channel='SIP')
+        self.add_me(queuemember)
+
+    def _add_user_to_rightcall(self, userid, rightcallid):
+        member = RightCallMember(type='user', typeval=str(userid), rightcallid=rightcallid)
+        self.add_me(member)
+
+    def _add_user_to_boss_secretary_callfilter(self, userid, callfilter_name):
+        callfilter = Callfilter(type='bosssecretary',
+                                name=callfilter_name,
+                                bosssecretary='secretary-simult',
+                                callfrom='all',
+                                description='')
+        self.add_me(callfilter)
+        member = Callfiltermember(type='user',
+                                  typeval=str(userid),
+                                  callfilterid=callfilter.id,
+                                  bstype='boss')
+        self.add_me(member)
+
+    def _add_dialaction_to_user(self, userid):
+        dialaction = Dialaction(event='answer', category='user', categoryval=str(userid), action='none')
+        self.add_me(dialaction)
+
+    def _add_function_key_to_user(self, userid):
+        key = PhoneFunckey(iduserfeatures=userid, fknum=1, typeextenumbersright='user')
+        self.add_me(key)
+
+    def _add_schedule_to_user(self, userid, scheduleid):
+        path = SchedulePath(schedule_id=scheduleid, path='user', pathid=userid, order=0)
+        self.add_me(path)
+
     def test_get_reachable_contexts(self):
         context = 'my_context'
 
@@ -736,7 +784,9 @@ class TestUserFeaturesDAO(DAOTestCase):
         user1 = self._add_user('test_user_1')
         user2 = self._add_user('test_user_2')
         result = user_dao.get_all()
-        self.assertEqual(result, [user1, user2])
+        self.assertEqual(result[0].firstname, user1.firstname)
+        self.assertEqual(result[1].firstname, user2.firstname)
+        self.assertEqual(2, len(result))
 
     def test_delete_all(self):
         self._add_user('test_user_1')
@@ -756,7 +806,10 @@ class TestUserFeaturesDAO(DAOTestCase):
         user = self._add_user('test')
         data = {'firstname': 'test_first',
                 'lastname': 'test_last'}
+
         result = user_dao.update(user.id, data)
+
+        user = user_dao.get(user.id)
         self.assertEqual(user.firstname, 'test_first')
         self.assertEqual(user.lastname, 'test_last')
         self.assertEqual(result, 1)
@@ -769,13 +822,67 @@ class TestUserFeaturesDAO(DAOTestCase):
 
     def test_delete(self):
         user1 = self._add_user('test1')
-        generated_id1 = user1.id
-        user2 = self._add_user('test2')
-        generated_id2 = user2.id
-        result = user_dao.delete(generated_id1)
-        self.assertEqual(result, 1)
-        self.assertRaises(LookupError, user_dao.get, generated_id1)
-        self.assertEqual(user2, user_dao.get(generated_id2))
+        generated_id = user1.id
+        queuename = "my_queue"
+        rightcallid = 3
+        scheduleid = 4
+        self._add_user_to_queue(user1.id, queuename)
+        self._add_user_to_rightcall(user1.id, rightcallid)
+        self._add_user_to_boss_secretary_callfilter(user1.id, callfilter_name='test')
+        self._add_dialaction_to_user(user1.id)
+        self._add_function_key_to_user(user1.id)
+        self._add_schedule_to_user(user1.id, scheduleid)
+
+        deleted_rows_count = user_dao.delete(generated_id)
+
+        self.assertEquals(deleted_rows_count, 1)
+        self.assertRaises(LookupError, user_dao.get, generated_id)
+        self._assert_no_queue_member_for_user(generated_id)
+        self._assert_no_rightcall_for_user(generated_id)
+        self._assert_no_callfilter_for_user(generated_id)
+        self._assert_no_dialaction_for_user(generated_id)
+        self._assert_no_funckey_for_user(generated_id)
+        self._assert_no_schedule_for_user(generated_id)
+
+    def _assert_no_queue_member_for_user(self, user_id):
+        queue_member_for_user = (self.session.query(QueueMember)
+                                             .filter(QueueMember.usertype == 'user')
+                                             .filter(QueueMember.userid == user_id)
+                                             .first())
+        self.assertEquals(None, queue_member_for_user)
+
+    def _assert_no_rightcall_for_user(self, user_id):
+        rightcallmember_for_user = (self.session.query(RightCallMember)
+                                                .filter(RightCallMember.type == 'user')
+                                                .filter(RightCallMember.typeval == str(user_id))
+                                                .first())
+        self.assertEquals(None, rightcallmember_for_user)
+
+    def _assert_no_callfilter_for_user(self, user_id):
+        callfiltermember_for_user = (self.session.query(Callfiltermember)
+                                                 .filter(Callfiltermember.type == 'user')
+                                                 .filter(Callfiltermember.typeval == str(user_id))
+                                                 .first())
+        self.assertEquals(None, callfiltermember_for_user)
+
+    def _assert_no_dialaction_for_user(self, user_id):
+        user_dialaction = (self.session.query(Dialaction)
+                                       .filter(Dialaction.category == 'user')
+                                       .filter(Dialaction.categoryval == str(user_id))
+                                       .first())
+        self.assertEquals(None, user_dialaction)
+
+    def _assert_no_funckey_for_user(self, user_id):
+        user_key = (self.session.query(PhoneFunckey)
+                                .filter(PhoneFunckey.iduserfeatures == user_id)
+                                .first())
+        self.assertEquals(None, user_key)
+
+    def _assert_no_schedule_for_user(self, user_id):
+        schedulepath = (self.session.query(SchedulePath).filter(SchedulePath.path == 'user')
+                                    .filter(SchedulePath.pathid == user_id)
+                                    .first())
+        self.assertEquals(None, schedulepath)
 
     def test_delete_unexisting_user(self):
         result = user_dao.delete(1)
@@ -919,9 +1026,10 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.add_me(user2)
         self.add_me(user3)
         result = user_dao.get_by_voicemailid(1)
-        self.assertTrue(user1 in result)
-        self.assertTrue(user2 in result)
-        self.assertFalse(user3 in result)
+        result = [user.id for user in result]
+        self.assertTrue(user1.id in result)
+        self.assertTrue(user2.id in result)
+        self.assertFalse(user3.id in result)
 
     def test_get_user_join_line(self):
         user, line = self._add_user_with_line("my_test", "default")
@@ -929,8 +1037,8 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.add_me(line)
 
         resultuser, resultline = user_dao.get_user_join_line(user.id)
-        self.assertEqual(user, resultuser)
-        self.assertEqual(line, resultline)
+        self.assertEqual(user.firstname, resultuser.firstname)
+        self.assertEqual(line.id, resultline.id)
         self.assertEqual(resultline.number, "1234")
 
     def test_get_user_join_line_no_result(self):
@@ -940,7 +1048,7 @@ class TestUserFeaturesDAO(DAOTestCase):
     def test_get_user_join_line_no_line(self):
         user = self._add_user("test")
         resultuser, resultline = user_dao.get_user_join_line(user.id)
-        self.assertEqual(user, resultuser)
+        self.assertEqual(user.firstname, resultuser.firstname)
         self.assertEqual(None, resultline)
 
     def test_get_all_join_lines(self):
@@ -948,4 +1056,13 @@ class TestUserFeaturesDAO(DAOTestCase):
         user2, line2 = self._add_user_with_line("test2", "default")
 
         result = user_dao.get_all_join_line()
-        self.assertEqual([(user1, line1), (user2, line2)], result)
+
+        user1_firstname = result[0][0].firstname
+        user2_firstname = result[1][0].firstname
+        user1_line_id = result[0][1].id
+        user2_line_id = result[1][1].id
+
+        self.assertEqual(user1.firstname, user1_firstname)
+        self.assertEqual(user2.firstname, user2_firstname)
+        self.assertEqual(line1.id, user1_line_id)
+        self.assertEqual(line2.id, user2_line_id)

@@ -102,3 +102,45 @@ def is_activated_by_callfilter_id(session, callfilter_id):
 def update_callfiltermember_state(session, callfiltermember_id, new_state):
     data_dict = {'active': int(new_state)}
     session.query(Callfiltermember).filter(Callfiltermember.id == callfiltermember_id).update(data_dict)
+
+
+@daosession
+def add(session, callfilter):
+    session.begin()
+    try:
+        session.add(callfilter)
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+
+
+@daosession
+def get_by_name(session, name):
+    return session.query(Callfilter).filter(Callfilter.name == name).all()
+
+
+@daosession
+def add_user_to_filter(session, userid, filterid, role):
+    member = Callfiltermember()
+    member.type = 'user'
+    member.typeval = str(userid)
+    member.callfilterid = filterid
+    member.bstype = role
+    session.begin()
+    try:
+        session.add(member)
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+
+
+@daosession
+def get_callfiltermembers_by_userid(session, userid):
+    return _request_member_by_userid(session, userid).all()
+
+
+def _request_member_by_userid(session, userid):
+    return (session.query(Callfiltermember).filter(Callfiltermember.type == 'user')
+                                           .filter(Callfiltermember.typeval == str(userid)))

@@ -18,11 +18,18 @@
 from sqlalchemy import and_
 from sqlalchemy.sql.expression import func
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
+from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from xivo_dao.alchemy.contextinclude import ContextInclude
 from xivo_dao.alchemy.cti_profile import CtiProfile
+from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.linefeatures import LineFeatures
+from xivo_dao.alchemy.phonefunckey import PhoneFunckey
+from xivo_dao.alchemy.queuemember import QueueMember
+from xivo_dao.alchemy.rightcallmember import RightCallMember
+from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.helpers.db_manager import daosession
+from xivo_dao.alchemy.contextnummember import ContextNumMember
 #the following import is necessary to laod CtiProfiles' definition:
 
 
@@ -260,10 +267,30 @@ def add_user(session, user):
 @daosession
 def delete(session, userid):
     session.begin()
-    result = session.query(UserFeatures).filter(UserFeatures.id == userid)\
-                                        .delete(synchronize_session=False)
-    session.commit()
-    return result
+    try:
+        result = session.query(UserFeatures).filter(UserFeatures.id == userid)\
+                                            .delete()
+        (session.query(QueueMember).filter(QueueMember.usertype == 'user')
+                                   .filter(QueueMember.userid == userid)
+                                   .delete())
+        (session.query(RightCallMember).filter(RightCallMember.type == 'user')
+                                      .filter(RightCallMember.typeval == str(userid))
+                                      .delete())
+        (session.query(Callfiltermember).filter(Callfiltermember.type == 'user')
+                                        .filter(Callfiltermember.typeval == str(userid))
+                                        .delete())
+        (session.query(Dialaction).filter(Dialaction.category == 'user')
+                                  .filter(Dialaction.categoryval == str(userid))
+                                  .delete())
+        session.query(PhoneFunckey).filter(PhoneFunckey.iduserfeatures == userid).delete()
+        (session.query(SchedulePath).filter(SchedulePath.path == 'user')
+                                    .filter(SchedulePath.pathid == userid)
+                                    .delete())
+        session.commit()
+        return result
+    except Exception:
+        session.rollback()
+        raise
 
 
 @daosession
@@ -413,5 +440,3 @@ def get_all_join_line(session):
     return session.query(UserFeatures, LineFeatures)\
                   .outerjoin((LineFeatures, UserFeatures.id == LineFeatures.iduserfeatures))\
                   .all()
-
-

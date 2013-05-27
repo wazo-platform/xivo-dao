@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-
-# Copyright (C) 2007-2013 Avencall
+#
+# Copyright (C) 2013 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,27 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.alchemy.extension import Extension
-from xivo_dao.helpers.db_manager import daosession
+from sqlalchemy.schema import Column
+from sqlalchemy.types import String
+from xivo_dao.helpers.db_manager import Base
 
 
-@daosession
-def exten_by_name(session, funckey_name):
-    extens = [exten for exten, name in session.query(Extension.exten, Extension.name) if name == funckey_name]
-    return extens[0] if extens else ''
+class ContextNumMember(Base):
 
+    __tablename__ = 'contextnummember'
 
-@daosession
-def create(session, exten):
-    session.begin()
-    try:
-        session.add(exten)
-        session.commit()
-    except Exception:
-        session.rollback()
-        raise
-
-
-@daosession
-def get_by_exten(session, exten):
-    return session.query(Extension).filter(Extension.exten == exten).first()
+    context = Column(String(39), primary_key=True)
+    type = Column(String(6), nullable=False, primary_key=True)
+    typeval = Column(String(128), primary_key=True)
+    number = Column(String(40))

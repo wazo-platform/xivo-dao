@@ -20,11 +20,12 @@
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.voicemail import Voicemail
 from xivo_dao import voicemail_dao
+from xivo_dao.alchemy.contextmember import ContextMember
 
 
 class VoicemailDAOTestCase(DAOTestCase):
 
-    tables = [Voicemail]
+    tables = [Voicemail, ContextMember]
 
     def setUp(self):
         self.empty_tables()
@@ -39,6 +40,10 @@ class VoicemailDAOTestCase(DAOTestCase):
         self.session.commit()
 
         return voicemail.uniqueid
+
+    def _insert_contextmember(self, voicemailid):
+        member = ContextMember(context='default', type='voicemail', typeval=str(voicemailid), varname='context')
+        self.add_me(member)
 
     def test_get(self):
         voicemail_mailbox = 'mailbox'
@@ -73,10 +78,17 @@ class VoicemailDAOTestCase(DAOTestCase):
         voicemail = Voicemail()
         voicemail.mailbox = "123"
         voicemail.context = "default"
+
         voicemail_dao.add(voicemail)
+
         self.assertTrue(voicemail.uniqueid > 0)
-        returned_voicemail = voicemail_dao.get(voicemail.uniqueid)
-        self.assertEqual(returned_voicemail, voicemail)
+        returned_voicemail = (self.session.query(Voicemail).filter(Voicemail.uniqueid == voicemail.uniqueid)
+                                                           .first())
+        self.assertEquals(returned_voicemail, voicemail)
+        contextmember = (self.session.query(ContextMember).filter(ContextMember.type == 'voicemail')
+                                                          .filter(ContextMember.typeval == str(voicemail.uniqueid))
+                                                          .first())
+        self.assertEquals(contextmember.context, voicemail.context)
 
     def test_update(self):
         voicemailid = self._insert_voicemail("123")
@@ -98,5 +110,21 @@ class VoicemailDAOTestCase(DAOTestCase):
 
     def test_delete(self):
         generated_id = self._insert_voicemail("123", "default")
+        self._insert_contextmember(generated_id)
+
         impacted_rows = voicemail_dao.delete(generated_id)
+
         self.assertEquals(impacted_rows, 1)
+        inserted_contextmember = (self.session.query(ContextMember)
+                                             .filter(ContextMember.type == 'voicemail')
+                                             .filter(ContextMember.typeval == str(generated_id))
+                                             .first())
+        self.assertEquals(None, inserted_contextmember)
+
+    def test_get_contextmember(self):
+        voicemailid = self._insert_voicemail('123', 'default')
+        self._insert_contextmember(voicemailid)
+
+        member = voicemail_dao.get_contextmember(voicemailid)
+
+        self.assertNotEquals(None, member)

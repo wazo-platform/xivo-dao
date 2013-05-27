@@ -27,7 +27,7 @@ class Recordings(Base):
 
     __tablename__ = 'recording'
 
-    cid = Column(String(32), primary_key = True)
+    cid = Column(String(32), primary_key=True)
     start_time = Column(DateTime)
     end_time = Column(DateTime)
     caller = Column(String(32))

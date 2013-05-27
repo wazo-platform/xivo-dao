@@ -50,8 +50,7 @@ class TestRecordingDao(DAOTestCase):
 
         search = {'caller': '2002'}
         paginator = (1, 1)
-        (total, items) = recordings_dao\
-                     .get_recordings(self.campaign.id, search, paginator)
+        (total, items) = recordings_dao.get_recordings(self.campaign.id, search, paginator)
         self.assertEqual(total, 1)
         self.assertEquals(items, [my_recording1])
 
@@ -74,14 +73,12 @@ class TestRecordingDao(DAOTestCase):
 
         key = '3003'
         paginator = (1, 2)
-        (total, items) = recordings_dao\
-                     .search_recordings(self.campaign.id, key, paginator)
+        (total, items) = recordings_dao.search_recordings(self.campaign.id, key, paginator)
         self.assertEqual(total, 1)
         self.assertEquals([my_recording2], items)
 
         key = '1000'
-        (total, items) = recordings_dao\
-                     .search_recordings(self.campaign.id, key, paginator)
+        (total, items) = recordings_dao.search_recordings(self.campaign.id, key, paginator)
         self.assertEquals(total, 2)
         self.assertEquals(items, [my_recording1, my_recording2])
 
@@ -97,8 +94,7 @@ class TestRecordingDao(DAOTestCase):
         data = self.session.query(Recordings).all()
         self.assertEqual([my_recording], data)
         filename = my_recording.filename
-        result = recordings_dao.delete(self.campaign.id,
-                                                  my_recording.cid)
+        result = recordings_dao.delete(self.campaign.id, my_recording.cid)
         data = self.session.query(Recordings).all()
         self.assertEquals(data, [])
         self.assertEquals(result, filename)
@@ -141,10 +137,8 @@ class TestRecordingDao(DAOTestCase):
         campaign2.activated = True
         campaign2.base_filename = 'file'
         campaign2.campaign_name = 'name2'
-        campaign2.start_date = datetime.strptime('2012-01-31',
-                                              "%Y-%m-%d")
-        campaign2.end_date = datetime.strptime('2012-01-31',
-                                              "%Y-%m-%d")
+        campaign2.start_date = datetime.strptime('2012-01-31', '%Y-%m-%d')
+        campaign2.end_date = datetime.strptime('2012-01-31', '%Y-%m-%d')
         campaign2.queue_id = 1
 
         self.session.begin()
@@ -170,10 +164,8 @@ class TestRecordingDao(DAOTestCase):
         self.campaign.campaign_name = 'name'
         self.campaign.base_filename = 'file-'
         self.campaign.queue_id = 1
-        self.campaign.start_date = datetime.strptime('2012-01-31',
-                                              "%Y-%m-%d")
-        self.campaign.end_date = datetime.strptime('2012-01-31',
-                                              "%Y-%m-%d")
+        self.campaign.start_date = datetime.strptime('2012-01-31', '%Y-%m-%d')
+        self.campaign.end_date = datetime.strptime('2012-01-31', '%Y-%m-%d')
         self.campaign.activated = True
 
         self.session.begin()
@@ -188,8 +180,8 @@ class TestRecordingDao(DAOTestCase):
         self.sample_recording.agent_id = 1
         self.sample_recording.filename = 'file.wav'
         self.sample_recording.start_time = datetime.strptime('2012-01-01 00:00:00',
-                                                      "%Y-%m-%d %H:%M:%S")
+                                                             '%Y-%m-%d %H:%M:%S')
         self.sample_recording.end_time = datetime.strptime('2012-01-01 00:10:00',
-                                                      "%Y-%m-%d %H:%M:%S")
+                                                           '%Y-%m-%d %H:%M:%S')
         self.sample_recording.campaign_id = self.campaign.id
         self.sample_recording.client_id = ''

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-
-# Copyright (C) 2007-2013 Avencall
+#
+# Copyright (C) 2013 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,39 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.alchemy.phonefunckey import PhoneFunckey
-from sqlalchemy import and_
+from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.helpers.db_manager import daosession
 
 
 @daosession
-def _get_dest(session, user_id, fwd_type):
-    destinations = (session.query(PhoneFunckey.exten)
-                    .filter(and_(PhoneFunckey.iduserfeatures == user_id,
-                                 PhoneFunckey.typevalextenumbers == fwd_type)))
-
-    destinations = [d.exten if d.exten else '' for d in destinations.all()]
-
-    return destinations
-
-
-def get_dest_unc(user_id):
-    return _get_dest(user_id, 'fwdunc')
-
-
-def get_dest_rna(user_id):
-    return _get_dest(user_id, 'fwdrna')
-
-
-def get_dest_busy(user_id):
-    return _get_dest(user_id, 'fwdbusy')
-
-
-@daosession
-def add(session, key):
+def add(session, dialaction):
     session.begin()
     try:
-        session.add(key)
+        session.add(dialaction)
         session.commit()
     except Exception:
         session.rollback()
@@ -56,4 +32,8 @@ def add(session, key):
 
 @daosession
 def get_by_userid(session, userid):
-    return session.query(PhoneFunckey).filter(PhoneFunckey.iduserfeatures == userid).all()
+    return _request_by_userid(session, userid).all()
+
+def _request_by_userid(session, userid):
+    return (session.query(Dialaction).filter(Dialaction.category == 'user')
+                                     .filter(Dialaction.categoryval == str(userid)))

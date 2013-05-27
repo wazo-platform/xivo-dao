@@ -15,27 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.alchemy.extension import Extension
-from xivo_dao.helpers.db_manager import daosession
+from sqlalchemy.schema import Column
+from sqlalchemy.types import Integer, String
+from xivo_dao.helpers.db_manager import Base
 
 
-@daosession
-def exten_by_name(session, funckey_name):
-    extens = [exten for exten, name in session.query(Extension.exten, Extension.name) if name == funckey_name]
-    return extens[0] if extens else ''
+class SchedulePath(Base):
+    __tablename__ = 'schedule_path'
 
-
-@daosession
-def create(session, exten):
-    session.begin()
-    try:
-        session.add(exten)
-        session.commit()
-    except Exception:
-        session.rollback()
-        raise
-
-
-@daosession
-def get_by_exten(session, exten):
-    return session.query(Extension).filter(Extension.exten == exten).first()
+    schedule_id = Column(Integer, primary_key=True)
+    path = Column(String(9), primary_key=True)
+    pathid = Column(Integer, primary_key=True)
+    order = Column(Integer, nullable=False)

@@ -15,14 +15,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo import caller_id
-from xivo_dao.alchemy.linefeatures import LineFeatures
-from xivo_dao.alchemy.userfeatures import UserFeatures
-from xivo_dao.alchemy.sccpline import SCCPLine
-from xivo_dao.alchemy.usersip import UserSIP
-from xivo_dao.alchemy.useriax import UserIAX
-from xivo_dao.alchemy.usercustom import UserCustom
 from sqlalchemy import and_
+from xivo import caller_id
+from xivo_dao.alchemy.contextnummember import ContextNumMember
+from xivo_dao.alchemy.extension import Extension
+from xivo_dao.alchemy.extenumber import ExteNumber
+from xivo_dao.alchemy.linefeatures import LineFeatures
+from xivo_dao.alchemy.sccpline import SCCPLine
+from xivo_dao.alchemy.usercustom import UserCustom
+from xivo_dao.alchemy.userfeatures import UserFeatures
+from xivo_dao.alchemy.useriax import UserIAX
+from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.helpers.db_manager import daosession
 
 
@@ -255,7 +258,7 @@ def create(session, line):
     try:
         session.add(line)
         session.commit()
-    except:
+    except Exception:
         session.rollback()
         raise
 
@@ -264,8 +267,33 @@ def create(session, line):
 def delete(session, lineid):
     session.begin()
     try:
-        session.query(LineFeatures).filter(LineFeatures.id == lineid).delete()
+        line = session.query(LineFeatures).filter(LineFeatures.id == lineid).first()
+        session.query(UserSIP).filter(UserSIP.id == line.protocolid).delete()
+        (session.query(Extension).filter(Extension.exten == line.number)
+                                 .filter(Extension.context == line.context)
+                                 .delete())
+        (session.query(ExteNumber).filter(ExteNumber.exten == line.number)
+                                  .filter(ExteNumber.context == line.context)
+                                  .delete())
+        (session.query(ContextNumMember).filter(ContextNumMember.type == 'user')
+                                        .filter(ContextNumMember.typeval == str(line.id))
+                                        .filter(ContextNumMember.context == 'default')
+                                        .delete())
+        session.delete(line)
         session.commit()
-    except:
+    except Exception:
         session.rollback()
         raise
+
+
+@daosession
+def get(session, lineid):
+    return session.query(LineFeatures).filter(LineFeatures.id == lineid).first()
+
+
+@daosession
+def get_contextnummember(session, lineid):
+    return (session.query(ContextNumMember)
+                   .filter(ContextNumMember.typeval == str(lineid))
+                   .filter(ContextNumMember.type == 'user')
+                   .first())
