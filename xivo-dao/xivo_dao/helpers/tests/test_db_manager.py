@@ -27,14 +27,14 @@ class TestDBManager(unittest.TestCase):
         db_name = db_manager.XIVO_DB_NAME
         result = db_manager.connect(db_name)
 
-        create_engine_mock.assert_called_with(config.XIVO_DB_URI, echo=ANY, strategy=ANY)
+        create_engine_mock.assert_called_with(config.XIVO_DB_URI, echo=ANY)
         sessionmaker_mock.assert_called_with()
         self.assertEquals(result, session_mock)
 
         db_name = db_manager.ASTERISK_DB_NAME
         result = db_manager.connect(db_name)
 
-        create_engine_mock.assert_called_with(config.DB_URI, echo=ANY, strategy=ANY)
+        create_engine_mock.assert_called_with(config.DB_URI, echo=ANY)
         sessionmaker_mock.assert_called_with()
         self.assertEquals(result, session_mock)
 

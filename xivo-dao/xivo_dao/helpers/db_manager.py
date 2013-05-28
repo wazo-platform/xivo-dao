@@ -57,7 +57,7 @@ def connect(db_name=ASTERISK_DB_NAME):
         logger.error('Unknown database name provided: ' + str(db_name))
         return None
     logger.debug('Connecting to database: %s' % db_uri)
-    engine = create_engine(db_uri, echo=config.SQL_DEBUG, strategy='threadlocal')
+    engine = create_engine(db_uri, echo=config.SQL_DEBUG)
     Session = scoped_session(sessionmaker())
     Session.configure(bind=engine, autoflush=False, autocommit=True)
     return Session()
