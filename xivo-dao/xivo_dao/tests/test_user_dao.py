@@ -724,6 +724,26 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         self.assertEqual(result, device_id)
 
+    def test_get_device_id_no_device_one_line(self):
+        user = UserFeatures()
+        user.firstname = 'Toto'
+        user.lastname = 'Plop'
+
+        self.add_me(user)
+
+        line = LineFeatures()
+        line.number = '1234'
+        line.name = '12kjdhf'
+        line.context = 'context'
+        line.provisioningid = 1234
+        line.iduserfeatures = user.id
+        line.protocolid = 1
+        line.device = ''
+
+        self.add_me(line)
+
+        self.assertRaises(LookupError, user_dao.get_device_id, user.id)
+
     def test_get_device_id_with_two_users(self):
         device_id = 24
 
