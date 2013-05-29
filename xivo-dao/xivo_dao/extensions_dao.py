@@ -23,3 +23,19 @@ from xivo_dao.helpers.db_manager import daosession
 def exten_by_name(session, funckey_name):
     extens = [exten for exten, name in session.query(Extension.exten, Extension.name) if name == funckey_name]
     return extens[0] if extens else ''
+
+
+@daosession
+def create(session, exten):
+    session.begin()
+    try:
+        session.add(exten)
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+
+
+@daosession
+def get_by_exten(session, exten):
+    return session.query(Extension).filter(Extension.exten == exten).first()

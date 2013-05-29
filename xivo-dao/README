@@ -2,6 +2,8 @@ XiVO data access object
 
 Dependencies:
 -------------
+
+needs mock version >= 1.0
 lib-python (xivo-skaro)
 sqlalchemy >= 0.6.3
 postgresql
@@ -10,9 +12,9 @@ postgresql
 To Run Unittests:
 -------------------
 
-- Install postgres sql
+- Install PostgreSQL
 - Create a database asterisktest
-- Create a user asterisk / passwd asterisk
+- Create a user asterisk / password asterisk
         create DATABASE asterisktest;
         create USER asterisk with password 'asterisk';
         grant all ON DATABASE asterisktest to asterisk;

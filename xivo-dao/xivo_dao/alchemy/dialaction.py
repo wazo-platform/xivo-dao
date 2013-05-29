@@ -34,7 +34,6 @@ class Dialaction(Base):
                         'qwaitratio',
                         name='dialaction_event',
                         metadata=Type.metadata),
-                   nullable=False,
                    primary_key=True)
     category = Column(Enum('callfilter',
                            'group',
@@ -45,9 +44,8 @@ class Dialaction(Base):
                            'outcall',
                            name='dialaction_category',
                            metadata=Type.metadata),
-                   nullable=False,
-                   primary_key=True)
-    categoryval = Column(String(128), nullable=False, default='', primary_key=True)
+                      primary_key=True)
+    categoryval = Column(String(128), default='', primary_key=True)
     action = Column(Enum('none',
                          'endcall:busy',
                          'endcall:congestion',

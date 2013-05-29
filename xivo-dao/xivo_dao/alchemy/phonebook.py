@@ -24,10 +24,9 @@ class Phonebook(Base):
 
     __tablename__ = 'phonebook'
 
-    id = Column(Integer, nullable=False, primary_key=True)
+    id = Column(Integer, primary_key=True)
     title = Column(Enum(('mr', 'mrs', 'ms'), name='phonebook_title', metadata=Type.metadata),
-                  nullable=False,
-                  primary_key=True)
+                   nullable=False)
     firstname = Column(String(128), nullable=False, default='')
     lastname = Column(String(128), nullable=False, default='')
     displayname = Column(String(64), nullable=False, default='')

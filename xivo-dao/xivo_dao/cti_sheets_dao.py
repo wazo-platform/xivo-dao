@@ -35,13 +35,15 @@ def _build_sheetevents(session):
     events = {}
     ctisheetevents = session.query(CtiSheetEvents).first()
     if ctisheetevents:
-        for field_name, ctisheetevent in ctisheetevents.todict().iteritems():
-            if field_name == 'id' or not ctisheetevent:
+        for event_name in ['incomingdid', 'hangup', 'dial', 'link', 'unlink']:
+            model_name = getattr(ctisheetevents, event_name)
+            if not model_name:
                 continue
-            tmp = events[field_name] = {}
-            tmp["display"] = ctisheetevent
-            tmp["option"] = ctisheetevent
-            tmp["condition"] = ctisheetevent
+            events[event_name] = [{
+                'display': model_name,
+                'option': model_name,
+                'condition': model_name
+            }]
     return events
 
 
@@ -54,26 +56,27 @@ def _build_sheetactions(session):
     }
     ctisheactions = session.query(CtiSheetActions).all()
     for ctisheaction in ctisheactions:
+        try:
+            systray_info = json.loads(ctisheaction.systray_info)
+            sheet_info = json.loads(ctisheaction.sheet_info)
+            action_info = json.loads(ctisheaction.action_info)
+        except ValueError:
+            continue
         name = ctisheaction.name
-        res['options'][name] = {}
-        res['options'][name]['focus'] = 'yes' if ctisheaction.focus else 'no'
-        res['options'][name]['zip'] = 1
+        focus = 'yes' if ctisheaction.focus else 'no'
+        sheet_qtui = {'null': ctisheaction.sheet_qtui}
 
-        res['displays'][name] = {}
-        res['displays'][name]['systray_info'] = json.loads(ctisheaction.systray_info)
-        res['displays'][name]['sheet_info'] = json.loads(ctisheaction.sheet_info)
-        res['displays'][name]['action_info'] = json.loads(ctisheaction.action_info)
-        res['displays'][name]['sheet_qtui'] = {}
-        qtui = 'null'
-        sheet_info = json.loads(ctisheaction.sheet_info)
-        if sheet_info:
-            for sheet_info_value in sheet_info.itervalues():
-                siv = tuple(sheet_info_value)
-                if siv[1] == 'form':
-                    qtui = siv[3]
-
-        res['displays'][name]['sheet_qtui'][qtui] = ctisheaction.sheet_qtui
-
-        res['conditions'][name] = {}
-        res['conditions'][name]['whom'] = ctisheaction.whom
+        res['options'][name] = {
+            'focus': focus,
+            'zip': 1,
+        }
+        res['displays'][name] = {
+            'systray_info': systray_info,
+            'sheet_info': sheet_info,
+            'action_info': action_info,
+            'sheet_qtui': sheet_qtui,
+        }
+        res['conditions'][name] = {
+            'whom': ctisheaction.whom,
+        }
     return res

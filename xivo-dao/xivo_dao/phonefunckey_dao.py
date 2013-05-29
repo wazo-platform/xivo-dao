@@ -41,3 +41,19 @@ def get_dest_rna(user_id):
 
 def get_dest_busy(user_id):
     return _get_dest(user_id, 'fwdbusy')
+
+
+@daosession
+def add(session, key):
+    session.begin()
+    try:
+        session.add(key)
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+
+
+@daosession
+def get_by_userid(session, userid):
+    return session.query(PhoneFunckey).filter(PhoneFunckey.iduserfeatures == userid).all()

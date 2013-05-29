@@ -26,10 +26,10 @@ from xivo_dao.helpers.db_manager import Base
 class RecordCampaigns(Base):
     __tablename__ = 'record_campaign'
 
-    id = Column(Integer, primary_key = True)
-    campaign_name = Column(String(128), nullable = False)
-    activated = Column(Boolean, nullable = False)
-    base_filename = Column(String(64), nullable = False)
+    id = Column(Integer, primary_key=True)
+    campaign_name = Column(String(128), nullable=False)
+    activated = Column(Boolean, nullable=False)
+    base_filename = Column(String(64), nullable=False)
     queue_id = Column(Integer, ForeignKey('queuefeatures.id'))
     start_date = Column(DateTime)
     end_date = Column(DateTime)

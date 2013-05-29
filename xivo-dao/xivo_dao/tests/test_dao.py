@@ -67,9 +67,9 @@ class DAOTestCase(unittest.TestCase):
 
     def empty_tables(self):
         logger.debug("Emptying tables")
+        table_names = [table.__tablename__ for table in self.tables]
         self.session.begin()
-        for table in self.tables:
-            self.session.execute("TRUNCATE %s CASCADE;" % table.__tablename__)
+        self.session.execute("TRUNCATE %s CASCADE;" % ",".join(table_names))
         self.session.commit()
         logger.debug("Tables emptied")
 

@@ -23,8 +23,8 @@ from xivo_dao.helpers.db_manager import Base
 class PhoneFunckey(Base):
     __tablename__ = 'phonefunckey'
 
-    iduserfeatures = Column(Integer, nullable=False, primary_key=True)
-    fknum = Column(Integer, nullable=False, primary_key=True)
+    iduserfeatures = Column(Integer, primary_key=True)
+    fknum = Column(Integer, primary_key=True)
     exten = Column(String(40))
     typevalextenumbers = Column(String(255))
     typevalextenumbersright = Column(String(255))

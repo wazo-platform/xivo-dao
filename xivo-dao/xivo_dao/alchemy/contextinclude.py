@@ -25,6 +25,6 @@ class ContextInclude(Base):
 
     __tablename__ = 'contextinclude'
 
-    context = Column(String(39), nullable=False, primary_key=True)
-    include = Column(String(39), nullable=False, primary_key=True)
+    context = Column(String(39), primary_key=True)
+    include = Column(String(39), primary_key=True)
     priority = Column(Integer, nullable=False, default=0)
