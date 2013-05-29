@@ -76,8 +76,7 @@ class TestQueueMemberDAO(DAOTestCase):
         member_name = 'Agent/123'
         self._insert_queue_member(queue_name, member_name)
 
-        sess = db_manager.session()
-        position = queue_member_dao._get_next_position_for_queue(sess, queue_name)
+        position = queue_member_dao._get_next_position_for_queue(self.session, queue_name)
 
         self.assertEqual(position, 1)
 
