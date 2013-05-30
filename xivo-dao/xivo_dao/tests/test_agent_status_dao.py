@@ -80,6 +80,25 @@ class TestAgentStatusDao(DAOTestCase):
         agent_status = self.session.query(AgentLoginStatus).get(agent_id)
         self.assertEquals(agent_status, None)
 
+    def test_get_agent_id_from_extension_not_found(self):
+        extension = '100'
+        context = 'default'
+
+        self.assertRaises(LookupError, agent_status_dao.get_agent_id_from_extension, extension, context)
+
+    def test_get_agent_id_from_extension(self):
+        agent_id = 13
+        agent_interface = 'sip/asdf'
+        agent_number = 42
+        extension = '1000'
+        context = 'default'
+        agent = self._insert_agent(agent_id, agent_number)
+        self._insert_agent_login_status(agent.id, agent.number, extension, context, interface=agent_interface, state_interface=agent_interface)
+
+        result = agent_status_dao.get_agent_id_from_extension(extension, context)
+
+        self.assertEqual(result, agent_id)
+
     def test_get_status_with_unlogged_agent_returns_none(self):
         agent_id = 1
         agent_status = agent_status_dao.get_status(agent_id)

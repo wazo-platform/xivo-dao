@@ -78,6 +78,18 @@ def _get_queues_for_agent(session, agent_id):
 
 
 @daosession
+def get_agent_id_from_extension(session, extension, context):
+    login_status = (session
+                    .query(AgentLoginStatus)
+                    .filter(AgentLoginStatus.extension == extension)
+                    .filter(AgentLoginStatus.context == context)
+                    .first())
+    if not login_status:
+        raise LookupError('No agent logged onto extension %s@%s' % (extension, context))
+    return login_status.agent_id
+
+
+@daosession
 def get_statuses(session):
     return (session
         .query(AgentFeatures.id.label('agent_id'),
