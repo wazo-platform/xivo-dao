@@ -17,7 +17,21 @@
 
 from hamcrest import assert_that
 from hamcrest.core import equal_to
+from xivo_dao.alchemy.agentfeatures import AgentFeatures
+from xivo_dao.alchemy.callfilter import Callfilter
+from xivo_dao.alchemy.callfiltermember import Callfiltermember
+from xivo_dao.alchemy.contextinclude import ContextInclude
+from xivo_dao.alchemy.contextnummember import ContextNumMember
+from xivo_dao.alchemy.cti_profile import CtiProfile
+from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
+from xivo_dao.alchemy.ctipresences import CtiPresences
+from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
+from xivo_dao.alchemy.phonefunckey import PhoneFunckey
+from xivo_dao.alchemy.queuemember import QueueMember
+from xivo_dao.alchemy.rightcallmember import RightCallMember
+from xivo_dao.alchemy.schedulepath import SchedulePath
+from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.dao import line_dao
 from xivo_dao.models.line import Line
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -25,7 +39,42 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 class TestGetLineDao(DAOTestCase):
 
-    tables = [LineSchema]
+    tables = [
+        AgentFeatures,
+        Callfilter,
+        Callfiltermember,
+        ContextInclude,
+        ContextNumMember,
+        CtiPhoneHintsGroup,
+        CtiPresences,
+        CtiProfile,
+        Dialaction,
+        LineSchema,
+        PhoneFunckey,
+        QueueMember,
+        RightCallMember,
+        SchedulePath,
+        UserSchema,
+    ]
+
+    @classmethod
+    def setUpClass(cls):
+        super(TestGetLineDao, cls).setUpClass()
+        cls.engine.execute('''
+        CREATE OR REPLACE VIEW "user_line" AS
+            SELECT
+                "id",
+                "iduserfeatures" AS "user_id",
+                "id" AS "line_id",
+                true AS "main_user"
+            FROM "linefeatures"
+            WHERE "iduserfeatures" <> 0;
+        ''')
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.engine.execute('DROP VIEW "user_line"')
+        super(TestGetLineDao, cls).setUpClass()
 
     def setUp(self):
         self.empty_tables()

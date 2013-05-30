@@ -16,12 +16,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
+from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.models.line import Line
 
 
 def get_line_by_user_id(user_id):
-    line = _new_query().filter(LineSchema.iduserfeatures == user_id).first()
+    line = (_new_query()
+        .filter(UserLineSchema.user_id == user_id)
+        .filter(UserLineSchema.line_id == LineSchema.id)
+    ).first()
 
     if not line:
         raise LookupError('No line associated with user %s' % user_id)
@@ -30,8 +34,10 @@ def get_line_by_user_id(user_id):
 
 
 def get_line_by_number_context(number, context):
-    line = (_new_query().filter(LineSchema.number == number)
-                        .filter(LineSchema.context == context).first())
+    line = (_new_query()
+        .filter(LineSchema.number == number)
+        .filter(LineSchema.context == context)
+    ).first()
 
     if not line:
         raise LookupError('No line matching number %s in context %s' % (number, context))
