@@ -23,22 +23,29 @@ from xivo_dao.models.line import Line
 
 def get_line_by_user_id(user_id):
     user_id_filter = LineSchema.iduserfeatures == user_id
-    return _get_line_with_filter(user_id_filter)
+    err_msg = 'No line associated with user %s' % user_id
+
+    return _get_line_with_filter(user_id_filter, err_msg)
 
 
 def get_line_by_number_context(number, context):
     number_context_filter = and_(LineSchema.number == number,
                                  LineSchema.context == context)
-    return _get_line_with_filter(number_context_filter)
+    err_msg = 'No line matching number %s in context %s' % (number, context)
+
+    return _get_line_with_filter(number_context_filter, err_msg)
 
 
 @daosession
-def _get_line_with_filter(session, filter_):
-    line = (session.query(LineSchema)
-            .filter(and_(LineSchema.commented == 0, filter_))
-            .first())
+def _get_line_with_filter(session, filter_, err_msg):
+    line = (session
+        .query(LineSchema)
+        .filter(filter_)
+        .filter(LineSchema.commented == 0)
+        .first()
+    )
 
     if not line:
-        raise LookupError()
+        raise LookupError(err_msg)
 
     return Line.from_data_source(line)
