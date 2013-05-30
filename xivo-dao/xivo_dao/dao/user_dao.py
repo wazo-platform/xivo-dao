@@ -15,21 +15,35 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-
+from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.models.user import User
 
 
-@daosession
-def get_user_by_id(session, user_id):
-    user = (session
-        .query(UserSchema)
-        .filter(UserSchema.id == user_id)
-        .filter(UserSchema.commented == 0)
-        .first())
+def get_user_by_id(user_id):
+    user = _new_query().filter(UserSchema.id == user_id).first()
 
     if not user:
         raise LookupError('No user with id %s' % user_id)
 
     return User.from_data_source(user)
+
+
+def get_user_by_number_context(number, context):
+    user = (_new_query()
+        .filter(LineSchema.iduserfeatures == UserSchema.id)
+        .filter(LineSchema.context == context)
+        .filter(LineSchema.number == number)
+        .filter(LineSchema.commented == 0)
+        .first())
+
+    if not user:
+        raise LookupError('No user with number %s in context %s', (number, context))
+
+    return User.from_data_source(user)
+
+
+@daosession
+def _new_query(session):
+    return session.query(UserSchema).filter(UserSchema.commented == 0)
