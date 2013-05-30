@@ -78,6 +78,19 @@ def _get_queues_for_agent(session, agent_id):
 
 
 @daosession
+def get_extension_from_agent_id(session, agent_id):
+    login_status_row = (session
+                        .query(AgentLoginStatus.extension, AgentLoginStatus.context)
+                        .filter(AgentLoginStatus.agent_id == agent_id)
+                        .first())
+
+    if not login_status_row:
+        raise LookupError('agent with id %s is not logged' % agent_id)
+
+    return login_status_row.extension, login_status_row.context
+
+
+@daosession
 def get_agent_id_from_extension(session, extension, context):
     login_status = (session
                     .query(AgentLoginStatus)
