@@ -23,7 +23,7 @@ from xivo_dao.models.line import Line
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
-class GetLineDao(DAOTestCase):
+class TestGetLineDao(DAOTestCase):
 
     tables = [LineSchema]
 
