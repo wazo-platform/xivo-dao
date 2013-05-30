@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+#
 # Copyright (C) 2007-2013 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
@@ -191,7 +191,7 @@ class TestDeviceDAO(DAOTestCase):
         self.add_me(device)
 
         result = device_dao.get_deviceid(device.id)
-        self.assertEquals("sdfjhdf83498erw8", result)
+        self.assertEquals('sdfjhdf83498erw8', result)
 
     def test_get_deviceid_unexisting(self):
         self.assertEquals(None, device_dao.get_deviceid(1))

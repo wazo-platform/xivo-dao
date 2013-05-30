@@ -14,9 +14,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
+
 from xivo_dao import extenumber_dao
 from xivo_dao.alchemy.extenumber import ExteNumber
 from xivo_dao.tests.test_dao import DAOTestCase
+
 
 class TestExteNumberDAO(DAOTestCase):
 
@@ -27,8 +29,8 @@ class TestExteNumberDAO(DAOTestCase):
 
     def test_create(self):
         ext = ExteNumber()
-        ext.context = "default"
-        ext.type = "user"
+        ext.context = 'default'
+        ext.type = 'user'
 
         extenumber_dao.create(ext)
         self.assertTrue(ext.id > 0)
@@ -37,16 +39,17 @@ class TestExteNumberDAO(DAOTestCase):
     def _get_all(self):
         return self.session.query(ExteNumber).all()
 
-    def _insert(self, exten, context="default", typename="user"):
+    def _insert(self, exten, context='default', typename='user'):
         ext = ExteNumber(exten=exten, context=context, type=typename)
         self.add_me(ext)
         return ext.id
 
     def test_get_by_exten(self):
-        self._insert("2000")
+        extension = '2000'
+        self._insert(extension)
 
-        result = extenumber_dao.get_by_exten("2000")
-        self.assertEquals("2000", result.exten)
+        result = extenumber_dao.get_by_exten(extension)
+        self.assertEquals(extension, result.exten)
 
     def test_delete_by_exten(self):
         self._insert("2000")

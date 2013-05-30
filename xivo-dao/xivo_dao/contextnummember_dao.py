@@ -14,15 +14,17 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
+
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.contextnummember import ContextNumMember
+
 
 @daosession
 def create(session, member):
     session.begin()
     try:
-        if member.type == "line":
-            member.type = "user"
+        if member.type == 'line':
+            member.type = 'user'
         session.add(member)
         session.commit()
     except Exception:
@@ -44,6 +46,7 @@ def delete_by_type_typeval_context(session, typename, typeval, context):
     except Exception:
         session.rollback()
         raise
+
 
 def _request_type_typeval_context(session, typename, typeval, context):
     return session.query(ContextNumMember).filter(ContextNumMember.type == typename)\

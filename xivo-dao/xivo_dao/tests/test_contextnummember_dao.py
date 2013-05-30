@@ -14,9 +14,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
+
 from xivo_dao import contextnummember_dao
 from xivo_dao.alchemy.contextnummember import ContextNumMember
 from xivo_dao.tests.test_dao import DAOTestCase
+
 
 class TestContextNumMemberDAO(DAOTestCase):
 
@@ -27,23 +29,23 @@ class TestContextNumMemberDAO(DAOTestCase):
 
     def test_create(self):
         member = ContextNumMember()
-        member.context = "default"
-        member.number = "2000"
-        member.type = "user"
-        member.typeval = "1"
+        member.context = 'default'
+        member.number = '2000'
+        member.type = 'user'
+        member.typeval = '1'
 
         contextnummember_dao.create(member)
         self.assertTrue(member in self._get_all())
 
     def test_create_type_fix(self):
         member = ContextNumMember()
-        member.context = "default"
-        member.number = "2000"
-        member.type = "line"
-        member.typeval = "1"
+        member.context = 'default'
+        member.number = '2000'
+        member.type = 'line'
+        member.typeval = '1'
 
         contextnummember_dao.create(member)
-        self.assertEquals("user", member.type)
+        self.assertEquals('user', member.type)
 
     def _get_all(self):
         return self.session.query(ContextNumMember).all()

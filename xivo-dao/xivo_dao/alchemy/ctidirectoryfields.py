@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-#
-# Copyright (C) 2013 Avencall
+
+# Copyright (C) 2012-2013 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,10 +20,10 @@ from sqlalchemy.types import Integer, String
 from xivo_dao.helpers.db_manager import Base
 
 
-class RightCallMember(Base):
-    __tablename__ = 'rightcallmember'
+class CtiDirectoryFields(Base):
 
-    id = Column(Integer, primary_key=True)
-    rightcallid = Column(Integer)
-    type = Column(String(7))
-    typeval = Column(String(128))
+    __tablename__ = 'ctidirectoryfields'
+
+    dir_id = Column(Integer, primary_key=True)
+    fieldname = Column(String(255), primary_key=True)
+    value = Column(String(255))

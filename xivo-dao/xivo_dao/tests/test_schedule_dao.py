@@ -14,10 +14,12 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
+
 from xivo_dao import schedule_dao
 from xivo_dao.alchemy.schedule import Schedule
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.tests.test_dao import DAOTestCase
+
 
 class TestScheduleDAO(DAOTestCase):
 
@@ -28,7 +30,7 @@ class TestScheduleDAO(DAOTestCase):
 
     def test_add(self):
         schedule = Schedule()
-        schedule.name = "test"
+        schedule.name = 'test'
         schedule_dao.add(schedule)
 
         self.assertEquals(schedule, self.session.query(Schedule).first())
@@ -47,6 +49,7 @@ class TestScheduleDAO(DAOTestCase):
         self._add_user_to_schedule(2, scheduleid)
         result = schedule_dao.get_schedules_for_user(1)
         self.assertEquals(1, len(result))
+        self.assertEquals(scheduleid, result[0].id)
 
     def _insert_schedule(self, name):
         schedule = Schedule()

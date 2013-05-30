@@ -14,8 +14,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
+
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.helpers.db_manager import daosession
+
 
 @daosession
 def add(session, dialaction):
@@ -45,5 +47,5 @@ def delete_by_userid(session, userid):
 
 
 def _request_by_userid(session, userid):
-    return session.query(Dialaction).filter(Dialaction.category == 'user')\
-                                    .filter(Dialaction.categoryval == str(userid))
+    return (session.query(Dialaction).filter(Dialaction.category == 'user')
+                                     .filter(Dialaction.categoryval == str(userid)))

@@ -47,8 +47,8 @@ class TestExtensionsDAO(DAOTestCase):
 
     def test_create(self):
         exten = Extension()
-        exten.exten = "2000"
-        exten.context = "default"
+        exten.exten = '2000'
+        exten.context = 'default'
 
         extensions_dao.create(exten)
         self.assertTrue(exten.id)

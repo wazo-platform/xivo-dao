@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2013 Avencall
@@ -16,39 +15,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-# vim: set fileencoding=utf-8 :
-
-# Copyright (C) 2007-2012  Avencall
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3 of the License, or
-# (at your option) any later version.
-#
-# Alternatively, XiVO CTI Server is available under other licenses directly
-# contracted with Pro-formatique SARL. See the LICENSE file at top of the
-# source tree or delivered in the installable package in which XiVO CTI Server
-# is distributed for more details.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 from mock import patch
-from xivo_dao.alchemy.linefeatures import LineFeatures
-from xivo_dao.alchemy.sccpline import SCCPLine
-from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao import line_dao
-from xivo_dao.alchemy.userfeatures import UserFeatures
-from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.cti_profile import CtiProfile
-from xivo_dao.alchemy.ctipresences import CtiPresences
 from xivo_dao.alchemy.ctiphonehints import CtiPhoneHints
 from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
+from xivo_dao.alchemy.ctipresences import CtiPresences
+from xivo_dao.alchemy.extension import Extension
+from xivo_dao.alchemy.extenumber import ExteNumber
+from xivo_dao.alchemy.linefeatures import LineFeatures
+from xivo_dao.alchemy.sccpline import SCCPLine
+from xivo_dao.alchemy.userfeatures import UserFeatures
+from xivo_dao.alchemy.usersip import UserSIP
+from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao.alchemy.contextnummember import ContextNumMember
 
 
 class TestLineFeaturesDAO(DAOTestCase):
@@ -65,6 +45,9 @@ class TestLineFeaturesDAO(DAOTestCase):
         CtiPresences,
         CtiPhoneHints,
         CtiPhoneHintsGroup,
+        Extension,
+        ExteNumber,
+        ContextNumMember,
     ]
 
     def setUp(self):
@@ -149,6 +132,22 @@ class TestLineFeaturesDAO(DAOTestCase):
         self.session.commit()
 
         return sccpline
+
+    def _insert_extension(self, exten):
+        extension = Extension(context='default', exten=exten, priority=1,
+                          app='GoSub', appdata=('did,s,1(%s)' % exten))
+        self.add_me(extension)
+        return extension.id
+
+    def _insert_extenumber(self, exten):
+        extenumber = ExteNumber(exten=exten, context='default', type='user', typeval='1')
+        self.add_me(extenumber)
+        return extenumber.id
+
+    def _insert_contextnummember(self, lineid, number):
+        contextnummember = ContextNumMember(context='default', type='user',
+                                            typeval=str(lineid), number=number)
+        self.add_me(contextnummember)
 
     def test_all_with_protocol(self):
         first, last = 'Lord', 'Sanderson'
@@ -304,22 +303,52 @@ class TestLineFeaturesDAO(DAOTestCase):
 
     def test_create(self):
         line = LineFeatures()
-        line.number = "1234"
+        line.number = '1234'
         line.protocolid = 0
-        line.protocol = "sip"
-        line.name = "name"
-        line.context = "default"
+        line.protocol = 'sip'
+        line.name = 'name'
+        line.context = 'default'
         line.provisioningid = 0
 
         line_dao.create(line)
-        self.assertTrue(line_dao.is_phone_exten("1234"))
+        self.assertTrue(line_dao.is_phone_exten('1234'))
 
     def test_delete(self):
-        inserted_id = self._insert_line().id
-        line_dao.delete(inserted_id)
+        line = self._insert_line(context='default')
+        usersip_id = 2
+        self._insert_usersip(usersip_id)
+        line.protocol = 'sip'
+        line.protocolid = usersip_id
+        self.add_me(line)
+        exten_id = self._insert_extension(self.line_number)
+        extenumber_id = self._insert_extenumber(self.line_number)
+        self._insert_contextnummember(line.id, line.number)
+
+        line_dao.delete(line.id)
+
         self.assertFalse(line_dao.is_phone_exten(self.line_number))
+
+        inserted_usersip = self.session.query(UserSIP).filter(UserSIP.id == usersip_id).first()
+        self.assertEquals(None, inserted_usersip)
+        inserted_extension = self.session.query(Extension).filter(Extension.id == exten_id).first()
+        self.assertEquals(None, inserted_extension)
+        inserted_extenumber = self.session.query(ExteNumber).filter(ExteNumber.id == extenumber_id).first()
+        self.assertEquals(None, inserted_extenumber)
+        inserted_contextnummember = (self.session.query(ContextNumMember).filter(ContextNumMember.type == 'user')
+                                                                         .filter(ContextNumMember.typeval == str(line.id))
+                                                                         .filter(ContextNumMember.context == 'default')
+                                                                         .first())
+        self.assertEquals(None, inserted_contextnummember)
 
     def test_get(self):
         line = self._insert_line()
         result = line_dao.get(line.id)
         self.assertEquals(line, result)
+
+    def test_get_contextnummember(self):
+        line = self._insert_line()
+        self._insert_contextnummember(line.id, line.number)
+
+        member = line_dao.get_contextnummember(line.id)
+
+        self.assertEquals((member.type, member.typeval), ('user', str(line.id)))

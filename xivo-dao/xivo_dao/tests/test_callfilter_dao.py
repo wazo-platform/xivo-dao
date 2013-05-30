@@ -14,17 +14,19 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
+
 from xivo_dao import callfilter_dao
 from xivo_dao.alchemy.callfilter import Callfilter
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
+
 
 class TestCallFilterDAO(DAOTestCase):
 
     tables = [Callfilter, Callfiltermember]
 
     def setUp(self):
-        self.cleanTables()
+        self.empty_tables()
 
     def test_add(self):
         callfilter = Callfilter()

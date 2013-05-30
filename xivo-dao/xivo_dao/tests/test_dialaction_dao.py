@@ -14,9 +14,12 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+
 from xivo_dao import dialaction_dao
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.tests.test_dao import DAOTestCase
+
 
 class TestDialactionDAO(DAOTestCase):
 
@@ -33,7 +36,8 @@ class TestDialactionDAO(DAOTestCase):
         dialaction.event = 'answer'
 
         dialaction_dao.add(dialaction)
-        self.assertEquals('1', self.session.query(Dialaction).first().categoryval)
+
+        self.assertEquals(dialaction, self.session.query(Dialaction).first())
 
     def test_get_by_userid(self):
         self._insert_dialaction(1)

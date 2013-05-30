@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-#
-# Copyright (C) 2013 Avencall
+
+# Copyright (C) 2012-2013 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,15 +15,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column
-from sqlalchemy.types import Integer, String
-from xivo_dao.helpers.db_manager import Base
+
+from xivo_dao.helpers.db_manager import daosession, xivo_daosession
+from xivo_dao.alchemy.ldapfilter import LdapFilter
+from xivo_dao.alchemy.ldapserver import LdapServer
 
 
-class RightCallMember(Base):
-    __tablename__ = 'rightcallmember'
+@daosession
+def get_ldapfilter_with_name(session, ldap_name):
+    return session.query(LdapFilter).filter(LdapFilter.name == ldap_name).first()
 
-    id = Column(Integer, primary_key=True)
-    rightcallid = Column(Integer)
-    type = Column(String(7))
-    typeval = Column(String(128))
+
+@xivo_daosession
+def get_ldapserver_with_id(session, ldapserver_id):
+    return session.query(LdapServer).filter(LdapServer.id == ldapserver_id).first()

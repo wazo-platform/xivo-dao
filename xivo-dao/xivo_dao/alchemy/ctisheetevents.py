@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-#
-# Copyright (C) 2013 Avencall
+
+# Copyright (C) 2012-2013 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,15 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column
+from sqlalchemy.schema import Column, Sequence
 from sqlalchemy.types import Integer, String
 from xivo_dao.helpers.db_manager import Base
 
 
-class RightCallMember(Base):
-    __tablename__ = 'rightcallmember'
+class CtiSheetEvents(Base):
 
-    id = Column(Integer, primary_key=True)
-    rightcallid = Column(Integer)
-    type = Column(String(7))
-    typeval = Column(String(128))
+    __tablename__ = 'ctisheetevents'
+
+    id = Column(Integer, Sequence('ctisheetevents_id_seq'), primary_key=True)
+    incomingdid = Column(String(50))
+    hangup = Column(String(50))
+    dial = Column(String(50))
+    link = Column(String(50))
+    unlink = Column(String(50))

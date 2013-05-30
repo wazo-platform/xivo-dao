@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-#
-# Copyright (C) 2013 Avencall
+
+# Copyright (C) 2012-2013 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,15 +15,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column
-from sqlalchemy.types import Integer, String
+from sqlalchemy.schema import Column, Sequence
+from sqlalchemy.types import Integer, String, Text
 from xivo_dao.helpers.db_manager import Base
 
 
-class RightCallMember(Base):
-    __tablename__ = 'rightcallmember'
+class CtiSheetActions(Base):
 
-    id = Column(Integer, primary_key=True)
-    rightcallid = Column(Integer)
-    type = Column(String(7))
-    typeval = Column(String(128))
+    __tablename__ = 'ctisheetactions'
+
+    id = Column(Integer, Sequence('ctisheetactions_id_seq'), primary_key=True)
+    name = Column(String(50))
+    description = Column(Text, nullable=False)
+    whom = Column(String(50))
+    sheet_info = Column(Text)
+    systray_info = Column(Text)
+    sheet_qtui = Column(Text)
+    action_info = Column(Text)
+    focus = Column(Integer)
+    deletable = Column(Integer)
+    disable = Column(Integer)

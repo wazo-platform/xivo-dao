@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from sqlalchemy.sql.expression import and_
+from xivo_dao.alchemy.contextmember import ContextMember
 from xivo_dao.alchemy.voicemail import Voicemail
 from xivo_dao.helpers.db_manager import daosession
 
@@ -35,6 +36,12 @@ def add(session, voicemail):
     session.begin()
     try:
         session.add(voicemail)
+        session.flush()
+        contextmember = ContextMember(context=voicemail.context,
+                                      type='voicemail',
+                                      typeval=str(voicemail.uniqueid),
+                                      varname='context')
+        session.add(contextmember)
         session.commit()
     except Exception:
         session.rollback()
@@ -65,8 +72,17 @@ def delete(session, uniqueid):
     session.begin()
     try:
         impacted_rows = session.query(Voicemail).filter(Voicemail.uniqueid == uniqueid).delete()
+        (session.query(ContextMember).filter(ContextMember.type == 'voicemail')
+                                    .filter(ContextMember.typeval == str(uniqueid))
+                                    .delete())
         session.commit()
         return impacted_rows
     except Exception:
         session.rollback()
         raise
+
+@daosession
+def get_contextmember(session, voicemailid):
+    return (session.query(ContextMember).filter(ContextMember.type == 'voicemail')
+                                       .filter(ContextMember.typeval == str(voicemailid))
+                                       .first())

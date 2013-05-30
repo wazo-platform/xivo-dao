@@ -50,5 +50,3 @@ def delete_by_exten(session, exten):
     except Exception:
         session.rollback()
         raise
-
-

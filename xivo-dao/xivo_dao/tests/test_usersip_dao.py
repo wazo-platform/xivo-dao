@@ -19,6 +19,7 @@ from xivo_dao import usersip_dao
 from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.tests.test_dao import DAOTestCase
 
+
 class TestUserSIPDAO(DAOTestCase):
 
     tables = [UserSIP]
@@ -27,7 +28,7 @@ class TestUserSIPDAO(DAOTestCase):
         self.empty_tables()
 
     def test_create(self):
-        usersip = UserSIP(name="abcd", type="friend")
+        usersip = UserSIP(name='abcd', type='friend')
 
         usersip_dao.create(usersip)
         self.assertTrue(usersip.id > 0)
@@ -37,7 +38,7 @@ class TestUserSIPDAO(DAOTestCase):
     def _get_all(self):
         return self.session.query(UserSIP).all()
 
-    def _insert(self, name, typename="friend"):
+    def _insert(self, name, typename='friend'):
         usersip = UserSIP(name=name, type=typename)
         self.add_me(usersip)
         return usersip.id
