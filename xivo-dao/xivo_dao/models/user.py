@@ -17,11 +17,39 @@
 
 
 class User(object):
+
+    _FIELDS = [
+        'id',
+        'firstname',
+        'lastname',
+        'callerid',
+        'ringseconds',
+        'simultcalls',
+        'enablevoicemail',
+        'voicemailid',
+        'enablexfer',
+        'enableautomon',
+        'callrecord',
+        'incallfilter',
+        'enablednd',
+        'enableunc',
+        'destunc',
+        'enablerna',
+        'destrna',
+        'enablebusy',
+        'destbusy',
+        'musiconhold',
+        'outcallerid',
+        'preprocess_subroutine',
+        'mobilephonenumber',
+        'bsfilter',
+        'language',
+    ]
+
     def __init__(self, **kwargs):
-        pass
+        for field_name in self._FIELDS:
+            setattr(self, field_name, kwargs.get(field_name))
 
     @classmethod
     def from_data_source(cls, properties):
-        new_instance = cls()
-        new_instance.id = properties.id
-        return new_instance
+        return cls(**properties.__dict__)
