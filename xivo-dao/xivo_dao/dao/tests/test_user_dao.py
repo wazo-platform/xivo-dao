@@ -15,31 +15,64 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-import unittest
-
-from mock import Mock, patch
+from hamcrest import assert_that
+from hamcrest.core import equal_to
+from xivo_dao.alchemy.agentfeatures import AgentFeatures
+from xivo_dao.alchemy.callfilter import Callfilter
+from xivo_dao.alchemy.callfiltermember import Callfiltermember
+from xivo_dao.alchemy.contextinclude import ContextInclude
+from xivo_dao.alchemy.contextnummember import ContextNumMember
+from xivo_dao.alchemy.cti_profile import CtiProfile
+from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
+from xivo_dao.alchemy.ctipresences import CtiPresences
+from xivo_dao.alchemy.dialaction import Dialaction
+from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
+from xivo_dao.alchemy.phonefunckey import PhoneFunckey
+from xivo_dao.alchemy.queuemember import QueueMember
+from xivo_dao.alchemy.rightcallmember import RightCallMember
+from xivo_dao.alchemy.schedulepath import SchedulePath
+from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.dao import user_dao
-from xivo_dao.models.user import User
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
-class TestUserDAO(unittest.TestCase):
+class TestUserDAO(DAOTestCase):
 
-    @patch('xivo_dao.user_dao.get')
-    def test_get_user_by_id_inexistant(self, mock_get):
-        user_id = 42
-        mock_get.side_effect = LookupError()
+    tables = [
+        AgentFeatures,
+        Callfilter,
+        Callfiltermember,
+        ContextInclude,
+        ContextNumMember,
+        CtiPhoneHintsGroup,
+        CtiPresences,
+        CtiProfile,
+        Dialaction,
+        LineSchema,
+        PhoneFunckey,
+        QueueMember,
+        RightCallMember,
+        SchedulePath,
+        UserSchema,
+    ]
 
-        self.assertRaises(LookupError, user_dao.get_user_by_id, user_id)
+    def setUp(self):
+        self.empty_tables()
 
-    @patch('xivo_dao.user_dao.get')
-    def test_get_user_by_id(self, mock_get):
-        user_id = 42
-        expected_user = User()
-        expected_user.id = user_id
-        mock_user_row = Mock()
-        mock_user_row.id = user_id
-        mock_get.return_value = mock_user_row
+    def test_get_user_by_id_inexistant(self):
+        self.assertRaises(LookupError, user_dao.get_user_by_id, 42)
+
+    def test_get_user_by_id(self):
+        user_id = self._insert_user()
 
         user = user_dao.get_user_by_id(user_id)
 
-        self.assertEquals(expected_user.id, user.id)
+        assert_that(user.id, equal_to(user_id))
+
+    def _insert_user(self):
+        properties = {
+            'firstname': 'Paul',
+        }
+        user = UserSchema(**properties)
+        self.add_me(user)
+        return user.id
