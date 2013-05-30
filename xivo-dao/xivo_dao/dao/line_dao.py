@@ -15,37 +15,30 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.sql.expression import and_
 from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.models.line import Line
 
 
 def get_line_by_user_id(user_id):
-    user_id_filter = LineSchema.iduserfeatures == user_id
-    err_msg = 'No line associated with user %s' % user_id
+    line = _new_query().filter(LineSchema.iduserfeatures == user_id).first()
 
-    return _get_line_with_filter(user_id_filter, err_msg)
+    if not line:
+        raise LookupError('No line associated with user %s' % user_id)
+
+    return Line.from_data_source(line)
 
 
 def get_line_by_number_context(number, context):
-    number_context_filter = and_(LineSchema.number == number,
-                                 LineSchema.context == context)
-    err_msg = 'No line matching number %s in context %s' % (number, context)
+    line = (_new_query().filter(LineSchema.number == number)
+                        .filter(LineSchema.context == context).first())
 
-    return _get_line_with_filter(number_context_filter, err_msg)
+    if not line:
+        raise LookupError('No line matching number %s in context %s' % (number, context))
+
+    return Line.from_data_source(line)
 
 
 @daosession
-def _get_line_with_filter(session, filter_, err_msg):
-    line = (session
-        .query(LineSchema)
-        .filter(filter_)
-        .filter(LineSchema.commented == 0)
-        .first()
-    )
-
-    if not line:
-        raise LookupError(err_msg)
-
-    return Line.from_data_source(line)
+def _new_query(session):
+    return session.query(LineSchema).filter(LineSchema.commented == 0)
