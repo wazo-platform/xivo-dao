@@ -63,16 +63,18 @@ class TestUserDAO(DAOTestCase):
         self.assertRaises(LookupError, user_dao.get_user_by_id, 42)
 
     def test_get_user_by_id(self):
-        user_id = self._insert_user()
+        user_id = self._insert_user(firstname='Paul')
 
         user = user_dao.get_user_by_id(user_id)
 
         assert_that(user.id, equal_to(user_id))
 
-    def _insert_user(self):
-        properties = {
-            'firstname': 'Paul',
-        }
-        user = UserSchema(**properties)
+    def test_get_user_by_id_commented(self):
+        user_id = self._insert_user(firstname='Robert', commented=1)
+
+        self.assertRaises(LookupError, user_dao.get_user_by_id, user_id)
+
+    def _insert_user(self, **kwargs):
+        user = UserSchema(**kwargs)
         self.add_me(user)
         return user.id
