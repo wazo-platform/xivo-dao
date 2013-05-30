@@ -15,16 +15,27 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy.sql.expression import and_
 from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.models.line import Line
 
 
+def get_line_by_user_id(user_id):
+    user_id_filter = LineSchema.iduserfeatures == user_id
+    return _get_line_with_filter(user_id_filter)
+
+
+def get_line_by_number_context(number, context):
+    number_context_filter = and_(LineSchema.number == number,
+                                 LineSchema.context == context)
+    return _get_line_with_filter(number_context_filter)
+
+
 @daosession
-def get_line_by_user_id(session, user_id):
+def _get_line_with_filter(session, filter_):
     line = (session.query(LineSchema)
-            .filter(LineSchema.iduserfeatures == user_id)
-            .filter(LineSchema.commented == 0)
+            .filter(and_(LineSchema.commented == 0, filter_))
             .first())
 
     if not line:
