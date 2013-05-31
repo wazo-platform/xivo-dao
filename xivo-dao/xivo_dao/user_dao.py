@@ -218,6 +218,7 @@ def get_device_id(session, user_id):
     row = (session
            .query(LineFeatures.iduserfeatures, LineFeatures.device)
            .filter(LineFeatures.iduserfeatures == user_id)
+           .filter(LineFeatures.device != '')
            .first())
     if not row:
         raise LookupError('Cannot find a device from this user id %s' % user_id)
