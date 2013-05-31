@@ -44,6 +44,7 @@ class User(object):
         'mobilephonenumber',
         'bsfilter',
         'language',
+        'userfield',
     ]
 
     def __init__(self, **kwargs):
