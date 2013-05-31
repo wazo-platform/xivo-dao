@@ -52,6 +52,7 @@ class TestUser(unittest.TestCase):
         properties.mobilephonenumber = mobilephonenumber = '12345678'
         properties.bsfilter = bsfilter = 'no'
         properties.language = language = 'fr_FR'
+        properties.userfield = userfield = 'cp123yyx'
 
         user = User.from_data_source(properties)
 
@@ -80,3 +81,4 @@ class TestUser(unittest.TestCase):
         assert_that(user.mobilephonenumber, equal_to(mobilephonenumber))
         assert_that(user.bsfilter, equal_to(bsfilter))
         assert_that(user.language, equal_to(language))
+        assert_that(user.userfield, equal_to(userfield))
