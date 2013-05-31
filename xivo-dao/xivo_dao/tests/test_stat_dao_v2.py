@@ -54,8 +54,7 @@ class TestStatDAO(DAOTestCase):
 
         self._insert_queue_log_data(queue_log_data)
 
-        session = db_manager.session()
-        result = stat_dao._get_completed_logins(session, start, end)
+        result = stat_dao._get_completed_logins(self.session, start, end)
 
         expected = {
             agent_id_1: [

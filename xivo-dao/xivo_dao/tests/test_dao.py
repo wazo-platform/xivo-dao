@@ -33,7 +33,8 @@ class DAOTestCase(unittest.TestCase):
         logger.debug("Connecting to database")
         config.DB_URI = 'postgresql://asterisk:asterisk@localhost/asterisktest'
         config.XIVO_DB_URI = 'postgresql://asterisk:asterisk@localhost/asterisktest'
-        cls.session = db_manager.session()
+        db_manager._init()
+        cls.session = db_manager.AsteriskSession()
         cls.engine = cls.session.bind
         logger.debug("Connected to database")
         cls.cleanTables()

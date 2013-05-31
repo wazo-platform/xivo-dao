@@ -20,16 +20,11 @@ from functools import wraps
 from sqlalchemy.orm.session import sessionmaker
 from sqlalchemy.engine import create_engine
 from xivo_dao.helpers import config
-from sqlalchemy.exc import InvalidRequestError, OperationalError
+from sqlalchemy.exc import OperationalError, InterfaceError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session
 
 logger = logging.getLogger(__name__)
-
-dbsession = None
-xivo_dbsession = None
-ASTERISK_DB_NAME = 'asterisk'
-XIVO_DB_NAME = 'xivo'
 
 
 def todict(self):
@@ -46,73 +41,51 @@ Base.todict = todict
 
 Type = declarative_base()
 
-
-def connect(db_name=ASTERISK_DB_NAME):
-    db_uri = ''
-    if db_name == ASTERISK_DB_NAME:
-        db_uri = config.DB_URI
-    elif db_name == XIVO_DB_NAME:
-        db_uri = config.XIVO_DB_URI
-    else:
-        logger.error('Unknown database name provided: ' + str(db_name))
-        return None
-    logger.debug('Connecting to database: %s' % db_uri)
-    engine = create_engine(db_uri, echo=config.SQL_DEBUG, strategy='threadlocal')
-    Session = scoped_session(sessionmaker())
-    Session.configure(bind=engine, autoflush=False, autocommit=True)
-    return Session()
-
-
-def reconnect(db_name=ASTERISK_DB_NAME):
-    if db_name == ASTERISK_DB_NAME:
-        global dbsession
-        dbsession = connect(db_name)
-    elif db_name == XIVO_DB_NAME:
-        global xivo_dbsession
-        xivo_dbsession = connect(db_name)
-
-
-def session(db_name=ASTERISK_DB_NAME):
-    if db_name == ASTERISK_DB_NAME:
-        global dbsession
-        if not dbsession:
-            dbsession = connect(db_name)
-        return dbsession
-    if db_name == XIVO_DB_NAME:
-        global xivo_dbsession
-        if not xivo_dbsession:
-            xivo_dbsession = connect(db_name)
-        return xivo_dbsession
-
-
-def _execute_with_session(func, db_name, *args, **kwargs):
-    sess = session(db_name)
-    result = func(sess, *args, **kwargs)
-    sess.flush()
-    return result
+AsteriskSession = None
+XivoSession = None
 
 
 def daosession(func):
     @wraps(func)
     def wrapped(*args, **kwargs):
-        try:
-            return _execute_with_session(func, ASTERISK_DB_NAME, *args, **kwargs)
-        except (OperationalError, InvalidRequestError):
-            logger.info("Trying to reconnect to asterisk")
-            reconnect(ASTERISK_DB_NAME)
-            return _execute_with_session(func, ASTERISK_DB_NAME, *args, **kwargs)
-
+        return _execute_with_session(AsteriskSession, func, args, kwargs)
     return wrapped
 
 
 def xivo_daosession(func):
     @wraps(func)
     def wrapped(*args, **kwargs):
-        try:
-            return _execute_with_session(func, XIVO_DB_NAME, *args, **kwargs)
-        except (OperationalError, InvalidRequestError):
-            logger.info("Trying to reconnect to xivo")
-            reconnect(XIVO_DB_NAME)
-            return _execute_with_session(func, XIVO_DB_NAME, *args, **kwargs)
-
+        return _execute_with_session(XivoSession, func, args, kwargs)
     return wrapped
+
+
+def _execute_with_session(session_class, func, args, kwargs):
+    try:
+        session = session_class()
+        return _apply_and_flush(func, session, args, kwargs)
+    except (OperationalError, InterfaceError) as e:
+        logger.warning('error while executing request in DB: %s', e)
+        session_class.remove()
+        session = session_class()
+        return _apply_and_flush(func, session, args, kwargs)
+
+
+def _apply_and_flush(func, session, args, kwargs):
+    result = func(session, *args, **kwargs)
+    session.flush()
+    return result
+
+
+def _init():
+    global AsteriskSession
+    AsteriskSession = _new_scoped_session(config.DB_URI)
+    global XivoSession
+    XivoSession = _new_scoped_session(config.XIVO_DB_URI)
+
+
+def _new_scoped_session(url):
+    engine = create_engine(url, echo=config.SQL_DEBUG)
+    return scoped_session(sessionmaker(bind=engine, autoflush=False, autocommit=True))
+
+
+_init()
