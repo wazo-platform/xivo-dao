@@ -65,3 +65,13 @@ class TestScheduleDAO(DAOTestCase):
         schedulepath.order = order
 
         self.add_me(schedulepath)
+
+    def test_remove_user_from_all_schedules(self):
+        scheduleid = self._insert_schedule('test')
+        self._add_user_to_schedule(1, scheduleid)
+        self._add_user_to_schedule(2, scheduleid)
+
+        schedule_dao.remove_user_from_all_schedules(1)
+        result = self.session.query(SchedulePath).all()
+        self.assertEquals(1, len(result))
+        self.assertEquals(2, result[0].pathid)

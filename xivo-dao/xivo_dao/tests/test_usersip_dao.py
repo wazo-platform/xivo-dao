@@ -44,6 +44,11 @@ class TestUserSIPDAO(DAOTestCase):
         return usersip.id
 
     def test_get(self):
-        gen_id = self._insert('abcd')
+        gen_id = self._insert("abcd")
         result = usersip_dao.get(gen_id)
         self.assertEquals(result.id, gen_id)
+
+    def test_delete(self):
+        gen_id = self._insert("abcd")
+        usersip_dao.delete(gen_id)
+        self.assertFalse(gen_id in [item.id for item in self._get_all()])

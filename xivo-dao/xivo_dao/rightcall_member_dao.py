@@ -39,3 +39,16 @@ def get_by_userid(session, userid):
     return session.query(RightCallMember).filter(RightCallMember.type == 'user')\
                                          .filter(RightCallMember.typeval == str(userid))\
                                          .all()
+
+
+@daosession
+def delete_by_userid(session, userid):
+    session.begin()
+    try:
+        session.query(RightCallMember).filter(RightCallMember.type == 'user')\
+                                      .filter(RightCallMember.typeval == str(userid))\
+                                      .delete()
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise

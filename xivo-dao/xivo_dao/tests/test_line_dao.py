@@ -327,6 +327,7 @@ class TestLineFeaturesDAO(DAOTestCase):
         line_dao.delete(line.id)
 
         self.assertFalse(line_dao.is_phone_exten(self.line_number))
+
         inserted_usersip = self.session.query(UserSIP).filter(UserSIP.id == usersip_id).first()
         self.assertEquals(None, inserted_usersip)
         inserted_extension = self.session.query(Extension).filter(Extension.id == exten_id).first()

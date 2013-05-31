@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013 Avencall
+# Copyright (C) 2012-2013 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,32 +15,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.alchemy.usersip import UserSIP
-from xivo_dao.helpers.db_manager import daosession
+from xivo_dao.helpers.db_manager import Base
+from sqlalchemy.schema import Column
+from sqlalchemy.types import Integer, String
 
 
-@daosession
-def create(session, usersip):
-    session.begin()
-    try:
-        session.add(usersip)
-        session.commit()
-    except Exception:
-        session.rollback()
-        raise
+class SCCPDevice(Base):
 
+    __tablename__ = 'sccpdevice'
 
-@daosession
-def get(session, sipid):
-    return session.query(UserSIP).filter(UserSIP.id == sipid).first()
-
-
-@daosession
-def delete(session, usersip_id):
-    session.begin()
-    try:
-        session.query(UserSIP).filter(UserSIP.id == usersip_id).delete()
-        session.commit()
-    except Exception:
-        session.rollback()
-        raise
+    id = Column(Integer, primary_key=True)
+    name = Column(String(80), nullable=False)
+    device = Column(String(80), nullable=False)
+    line = Column(String(80), nullable=False, default='')
+    voicemail = Column(String(80), nullable=False, default='')

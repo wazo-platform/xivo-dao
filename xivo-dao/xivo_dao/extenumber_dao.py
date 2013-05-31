@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.extenumber import ExteNumber
 
@@ -32,3 +33,14 @@ def create(session, extenumber):
 @daosession
 def get_by_exten(session, exten):
     return session.query(ExteNumber).filter(ExteNumber.exten == exten).first()
+
+
+@daosession
+def delete_by_exten(session, exten):
+    session.begin()
+    try:
+        session.query(ExteNumber).filter(ExteNumber.exten == exten).delete()
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise

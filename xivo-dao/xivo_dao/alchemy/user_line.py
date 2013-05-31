@@ -15,32 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.alchemy.usersip import UserSIP
-from xivo_dao.helpers.db_manager import daosession
+from xivo_dao.helpers.db_manager import Base
+from sqlalchemy.types import Integer, Boolean
+from sqlalchemy.schema import Column, ForeignKey
 
 
-@daosession
-def create(session, usersip):
-    session.begin()
-    try:
-        session.add(usersip)
-        session.commit()
-    except Exception:
-        session.rollback()
-        raise
+class UserLine(Base):
 
+    __tablename__ = 'user_line'
 
-@daosession
-def get(session, sipid):
-    return session.query(UserSIP).filter(UserSIP.id == sipid).first()
-
-
-@daosession
-def delete(session, usersip_id):
-    session.begin()
-    try:
-        session.query(UserSIP).filter(UserSIP.id == usersip_id).delete()
-        session.commit()
-    except Exception:
-        session.rollback()
-        raise
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('userfeatures.id'), nullable=False)
+    line_id = Column(Integer, ForeignKey('linefeatures.id'), nullable=False)
+    main_user = Column(Boolean, nullable=False)
