@@ -45,10 +45,9 @@ class TestRecordCampaignDao(DAOTestCase):
         self.session.commit()
 
         paginator = (1, 1)
-        (total, items) = record_campaigns_dao.get_records(
-                                                None,
-                                                False,
-                                                paginator)
+        (total, items) = record_campaigns_dao.get_records(search=None,
+                                                          checkCurrentlyRunning=False,
+                                                          paginator=paginator)
         self.assertEquals([campaign], items)
         self.assertEqual(total, 1)
 
@@ -59,8 +58,7 @@ class TestRecordCampaignDao(DAOTestCase):
         self.session.add(campaign)
         self.session.commit()
 
-        retrieved_id = record_campaigns_dao\
-                .id_from_name(campaign.campaign_name)
+        retrieved_id = record_campaigns_dao.id_from_name(campaign.campaign_name)
         self.assertEquals(retrieved_id, campaign.id)
         self.assertEqual(None, record_campaigns_dao.id_from_name('test'))
 
@@ -179,6 +177,6 @@ class TestRecordCampaignDao(DAOTestCase):
         self.sample_campaign.queue_id = 1
         self.sample_campaign.base_filename = self.sample_campaign.campaign_name + "-"
         self.sample_campaign.start_date = datetime.strptime('2012-01-01 12:12:12',
-                                                            "%Y-%m-%d %H:%M:%S")
+                                                            '%Y-%m-%d %H:%M:%S')
         self.sample_campaign.end_date = datetime.strptime('2012-12-12 12:12:12',
-                                                            "%Y-%m-%d %H:%M:%S")
+                                                          '%Y-%m-%d %H:%M:%S')

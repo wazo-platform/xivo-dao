@@ -32,6 +32,11 @@ class TestStatDAO(DAOTestCase):
 
     tables = [StatAgent, StatQueue, QueueLog, StatCallOnQueue]
 
+    @classmethod
+    def setUpClass(cls):
+        super(TestStatDAO, cls).setUpClass()
+        cls._create_functions()
+
     def setUp(self):
         self.empty_tables()
         self.start = t(2012, 07, 01)

@@ -24,7 +24,7 @@ class Voicemail(Base):
 
     __tablename__ = 'voicemail'
 
-    uniqueid = Column(Integer, primary_key=True, nullable=False)
+    uniqueid = Column(Integer, primary_key=True)
     context = Column(String(39), nullable=False)
     mailbox = Column(String(40), nullable=False)
     password = Column(String(80), nullable=False, default='')
@@ -45,7 +45,7 @@ class Voicemail(Base):
     saydurationm = Column(Integer)
     sendvoicemail = Column(Integer)
     deletevoicemail = Column(Integer, nullable=False, default=0)
-    sendvoicemail = Column(Integer)
+    forcename = Column(Integer)
     forcegreetings = Column(Integer)
     hidefromdir = Column(Enum('yes', 'no', name='voicemail_hidefromdir', metadata=Type.metadata),
                          nullable=False,
@@ -70,3 +70,4 @@ class Voicemail(Base):
     volgain = Column(Float)
     passwordlocation = Column(Enum('spooldir', 'voicemail', name='voicemail_passwordlocation', metadata=Type.metadata))
     commented = Column(Integer, nullable=False, default=0)
+    skipcheckpass = Column(Integer, nullable=False, default=0)

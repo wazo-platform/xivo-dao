@@ -80,3 +80,32 @@ class TestPhoneFunckey(DAOTestCase):
         reply = phonefunckey_dao.get_dest_rna(self._user_id)
 
         self.assertEqual(reply, [self._destination_rna])
+
+    def test_add(self):
+        fwd_unc = PhoneFunckey()
+        fwd_unc.iduserfeatures = self._user_id
+        fwd_unc.fknum = 9
+        fwd_unc.exten = self._destination_unc
+        fwd_unc.typeextenumbers = 'extenfeatures'
+        fwd_unc.typevalextenumbers = 'fwdunc'
+        fwd_unc.supervision = 1
+        fwd_unc.progfunckey = 1
+        fwd_unc.label = 'my label for test_add'
+
+        phonefunckey_dao.add(fwd_unc)
+        new_funckey = (self.session.query(PhoneFunckey)
+                           .filter(PhoneFunckey.label == 'my label for test_add')
+                           .first())
+        self.assertEquals(fwd_unc, new_funckey)
+
+    def test_get_by_userid(self):
+        result = phonefunckey_dao.get_by_userid(self._user_id)
+        self.assertEquals(2, len(result))
+        self.assertEquals(self._user_id, result[0].iduserfeatures)
+        self.assertEquals(self._user_id, result[1].iduserfeatures)
+
+    def test_delete_by_userid(self):
+        phonefunckey_dao.delete_by_userid(self._user_id)
+        result = self.session.query(PhoneFunckey).all()
+        self.assertEquals(1, len(result))
+        self.assertEquals(self._user_id_no_dest, result[0].iduserfeatures)

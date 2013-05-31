@@ -42,6 +42,22 @@ from xivo_dao.helpers.db_manager import Base
 from sqlalchemy.schema import Column, ForeignKey
 from sqlalchemy.types import Integer, String, Text
 
+from xivo_dao.alchemy.linefeatures import LineFeatures
+from xivo_dao.alchemy.contextinclude import ContextInclude
+from xivo_dao.alchemy.agentfeatures import AgentFeatures
+from xivo_dao.alchemy.ctipresences import CtiPresences
+from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
+from xivo_dao.alchemy.cti_profile import CtiProfile
+
+test_dependencies = [
+    LineFeatures,
+    ContextInclude,
+    AgentFeatures,
+    CtiPresences,
+    CtiPhoneHintsGroup,
+    CtiProfile
+]
+
 
 class UserFeatures(Base):
     __tablename__ = 'userfeatures'
@@ -78,7 +94,8 @@ class UserFeatures(Base):
     outcallerid = Column(String(80), nullable=False, server_default='')
     mobilephonenumber = Column(String(128), nullable=False, server_default='')
     userfield = Column(String(128), nullable=False, server_default='')
-    bsfilter = Column(String(128), nullable=False, server_default='no')  # Should be Enum
+    #Should be Enum
+    bsfilter = Column(String(128), nullable=False, server_default='no')
     preprocess_subroutine = Column(String(39))
     timezone = Column(String(128))
     language = Column(String(20))

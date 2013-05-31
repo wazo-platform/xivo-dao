@@ -68,7 +68,7 @@ def get_secretaries_by_callfiltermember_id(session, callfiltermember_id):
             .join((UserFeatures, UserFeatures.id == cast(Callfiltermember.typeval, Integer)))
             .filter(and_(Callfilter.id == callfiltermember_id,
                          Callfiltermember.bstype == 'secretary'))
-            .order_by(Callfiltermember.priority.desc())
+            .order_by(Callfiltermember.priority.asc())
             .all())
 
 
@@ -102,3 +102,56 @@ def is_activated_by_callfilter_id(session, callfilter_id):
 def update_callfiltermember_state(session, callfiltermember_id, new_state):
     data_dict = {'active': int(new_state)}
     session.query(Callfiltermember).filter(Callfiltermember.id == callfiltermember_id).update(data_dict)
+
+
+@daosession
+def add(session, callfilter):
+    session.begin()
+    try:
+        session.add(callfilter)
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+
+
+@daosession
+def get_by_name(session, name):
+    return session.query(Callfilter).filter(Callfilter.name == name).all()
+
+
+@daosession
+def add_user_to_filter(session, userid, filterid, role):
+    member = Callfiltermember()
+    member.type = 'user'
+    member.typeval = str(userid)
+    member.callfilterid = filterid
+    member.bstype = role
+    session.begin()
+    try:
+        session.add(member)
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+
+
+@daosession
+def get_callfiltermembers_by_userid(session, userid):
+    return _request_member_by_userid(session, userid).all()
+
+
+@daosession
+def delete_callfiltermember_by_userid(session, userid):
+    session.begin()
+    try:
+        _request_member_by_userid(session, userid).delete()
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+
+
+def _request_member_by_userid(session, userid):
+    return (session.query(Callfiltermember).filter(Callfiltermember.type == 'user')
+                                           .filter(Callfiltermember.typeval == str(userid)))

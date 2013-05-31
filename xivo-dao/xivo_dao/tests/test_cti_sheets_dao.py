@@ -19,7 +19,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.ctisheetactions import CtiSheetActions
 from xivo_dao.alchemy.ctisheetevents import CtiSheetEvents
 from xivo_dao import cti_sheets_dao
-from pprint import pprint
 
 
 class TestCtiSheetsDAO(DAOTestCase):
@@ -54,7 +53,7 @@ class TestCtiSheetsDAO(DAOTestCase):
                                u'{xivo-origin}',
                                0]
                     },
-                    'sheet_qtui': {'null': u''},
+                    'sheet_qtui': {'null': u'file:///tmp/test.ui'},
                     'systray_info': {
                         u'10': [u'Nom',
                                u'title',
@@ -72,16 +71,16 @@ class TestCtiSheetsDAO(DAOTestCase):
                 }
             },
             'events': {
-                'dial': {
+                'dial': [{
                     'condition': u'XiVO',
                     'display': u'XiVO',
                     'option': u'XiVO'
-                },
-                'link': {
+                }],
+                'link': [{
                     'condition': u'XiVO',
                     'display': u'XiVO',
                     'option': u'XiVO'
-                }
+                }]
             },
             'options': {
                 u'XiVO': {
@@ -93,11 +92,9 @@ class TestCtiSheetsDAO(DAOTestCase):
 
         self._add_ctisheetevents()
         self._add_ctisheetactions()
+        self._add_bad_ctisheetactions()
 
         result = cti_sheets_dao.get_config()
-
-        pprint(result)
-        pprint(expected_result)
 
         self.assertEqual(expected_result, result)
 
@@ -121,8 +118,26 @@ class TestCtiSheetsDAO(DAOTestCase):
         cti_sheetaction.whom = 'dest'
         cti_sheetaction.sheet_info = '{"10": [ "Nom","title","","{xivo-calleridname}",0 ],"20": [ "Numéro","text","","{xivo-calleridnum}",0 ],"30": [ "Origine","text","","{xivo-origin}",0 ]}'
         cti_sheetaction.systray_info = '{"10": [ "Nom","title","","{xivo-calledidname}" ],"20": [ "Numéro","body","","{xivo-calleridnum}" ],"30": [ "Origine","body","","{xivo-origin}" ]}'
-        cti_sheetaction.sheet_qtui = ''
+        cti_sheetaction.sheet_qtui = 'file:///tmp/test.ui'
         cti_sheetaction.action_info = '{}'
+        cti_sheetaction.focus = 0
+        cti_sheetaction.deletable = 1
+        cti_sheetaction.disable = 1
+
+        self.session.begin()
+        self.session.add(cti_sheetaction)
+        self.session.commit()
+        return cti_sheetaction.id
+
+    def _add_bad_ctisheetactions(self):
+        cti_sheetaction = CtiSheetActions()
+        cti_sheetaction.name = 'bad'
+        cti_sheetaction.description = ''
+        cti_sheetaction.whom = 'dest'
+        cti_sheetaction.sheet_info = '{"bad}'
+        cti_sheetaction.systray_info = '{"bad}'
+        cti_sheetaction.sheet_qtui = ''
+        cti_sheetaction.action_info = '{"bad}'
         cti_sheetaction.focus = 0
         cti_sheetaction.deletable = 1
         cti_sheetaction.disable = 1

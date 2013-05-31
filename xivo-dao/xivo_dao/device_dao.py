@@ -15,10 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-
 from xivo_dao.alchemy.devicefeatures import DeviceFeatures
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.helpers.db_manager import daosession
+
 
 @daosession
 def get_peer_name(session, device_id):
@@ -42,3 +42,12 @@ def get_vendor_model(session, device_id):
         raise LookupError('No such device')
 
     return row.vendor, row.model
+
+
+@daosession
+def get_deviceid(session, db_id):
+    result = session.query(DeviceFeatures.deviceid).filter(DeviceFeatures.id == db_id).first()
+    if result is None:
+        return None
+    else:
+        return result.deviceid

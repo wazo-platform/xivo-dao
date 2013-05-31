@@ -29,8 +29,7 @@ class ContextNumbers(Base):
     type = Column(Enum('user', 'group', 'queue', 'meetme', 'incall',
                        name='contextnumbers_type',
                        metadata=Type.metadata),
-                  nullable=False,
                   primary_key=True)
-    numberbeg = Column(String(16), nullable=False, default=0, primary_key=True)
-    numberbeg = Column(String(16), nullable=False, default=0, primary_key=True)
+    numberbeg = Column(String(16), default=0, primary_key=True)
+    numberbeg = Column(String(16), default=0, primary_key=True)
     didlength = Column(Integer, nullable=False, default=0)

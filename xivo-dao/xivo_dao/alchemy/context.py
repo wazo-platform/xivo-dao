@@ -25,7 +25,7 @@ class Context(Base):
 
     __tablename__ = 'context'
 
-    name = Column(String(39), nullable=False, primary_key=True)
+    name = Column(String(39), primary_key=True)
     displayname = Column(String(128), nullable=False, default='')
     entity = Column(String(64))
     contexttype = Column(String(20), nullable=False, default='internal')

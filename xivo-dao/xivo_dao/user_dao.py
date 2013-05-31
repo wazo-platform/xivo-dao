@@ -15,14 +15,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.alchemy.agentfeatures import AgentFeatures
-from xivo_dao.alchemy.linefeatures import LineFeatures
-from xivo_dao.alchemy.contextinclude import ContextInclude
-from xivo_dao.alchemy.userfeatures import UserFeatures
 from sqlalchemy import and_
-from xivo_dao.helpers.db_manager import daosession
-#the following import is necessary to laod CtiProfiles' definition:
+from sqlalchemy.sql.expression import func
+from xivo_dao.alchemy.agentfeatures import AgentFeatures
+from xivo_dao.alchemy.callfiltermember import Callfiltermember
+from xivo_dao.alchemy.contextinclude import ContextInclude
 from xivo_dao.alchemy.cti_profile import CtiProfile
+from xivo_dao.alchemy.dialaction import Dialaction
+from xivo_dao.alchemy.linefeatures import LineFeatures
+from xivo_dao.alchemy.phonefunckey import PhoneFunckey
+from xivo_dao.alchemy.queuemember import QueueMember
+from xivo_dao.alchemy.rightcallmember import RightCallMember
+from xivo_dao.alchemy.schedulepath import SchedulePath
+from xivo_dao.alchemy.userfeatures import UserFeatures
+from xivo_dao.helpers.db_manager import daosession
+from xivo_dao.alchemy.contextnummember import ContextNumMember
+#the following import is necessary to laod CtiProfiles' definition:
 
 
 def enable_dnd(user_id):
@@ -63,6 +71,14 @@ def enable_busy_fwd(user_id, destination):
 
 def disable_busy_fwd(user_id, destination):
     update(user_id, {'enablebusy': 0, 'destbusy': destination})
+
+
+def enable_recording(user_id):
+    update(user_id, {'callrecord': 1})
+
+
+def disable_recording(user_id):
+    update(user_id, {'callrecord': 0})
 
 
 @daosession
@@ -109,7 +125,7 @@ def get_profile(user_id):
 @daosession
 def _get_included_contexts(session, context):
     return [line.include for line in (session.query(ContextInclude.include)
-                                       .filter(ContextInclude.context == context))]
+                                      .filter(ContextInclude.context == context))]
 
 
 def _get_nested_contexts(contexts):
@@ -202,6 +218,7 @@ def get_device_id(session, user_id):
     row = (session
            .query(LineFeatures.iduserfeatures, LineFeatures.device)
            .filter(LineFeatures.iduserfeatures == user_id)
+           .filter(LineFeatures.device != '')
            .first())
     if not row:
         raise LookupError('Cannot find a device from this user id %s' % user_id)
@@ -251,9 +268,30 @@ def add_user(session, user):
 @daosession
 def delete(session, userid):
     session.begin()
-    result = session.query(UserFeatures.id == userid).delete()
-    session.commit()
-    return result
+    try:
+        result = session.query(UserFeatures).filter(UserFeatures.id == userid)\
+                                            .delete()
+        (session.query(QueueMember).filter(QueueMember.usertype == 'user')
+                                   .filter(QueueMember.userid == userid)
+                                   .delete())
+        (session.query(RightCallMember).filter(RightCallMember.type == 'user')
+                                      .filter(RightCallMember.typeval == str(userid))
+                                      .delete())
+        (session.query(Callfiltermember).filter(Callfiltermember.type == 'user')
+                                        .filter(Callfiltermember.typeval == str(userid))
+                                        .delete())
+        (session.query(Dialaction).filter(Dialaction.category == 'user')
+                                  .filter(Dialaction.categoryval == str(userid))
+                                  .delete())
+        session.query(PhoneFunckey).filter(PhoneFunckey.iduserfeatures == userid).delete()
+        (session.query(SchedulePath).filter(SchedulePath.path == 'user')
+                                    .filter(SchedulePath.pathid == userid)
+                                    .delete())
+        session.commit()
+        return result
+    except Exception:
+        session.rollback()
+        raise
 
 
 @daosession
@@ -274,6 +312,11 @@ def get_users_config(session):
     session.commit()
 
     return dict((str(user.id), _format_user(user)) for user in users)
+
+
+@daosession
+def get_by_voicemailid(session, voicemailid):
+    return session.query(UserFeatures).filter(UserFeatures.voicemailid == voicemailid).all()
 
 
 def _user_config_query(session):
@@ -383,3 +426,18 @@ def _format_user(user):
         'voicemailid': user.voicemailid,
         'voicemailtype': user.voicemailtype,
     }
+
+
+@daosession
+def get_user_join_line(session, userid):
+    return session.query(UserFeatures, LineFeatures)\
+                  .filter(UserFeatures.id == userid)\
+                  .outerjoin((LineFeatures, UserFeatures.id == LineFeatures.iduserfeatures))\
+                  .first()
+
+
+@daosession
+def get_all_join_line(session):
+    return session.query(UserFeatures, LineFeatures)\
+                  .outerjoin((LineFeatures, UserFeatures.id == LineFeatures.iduserfeatures))\
+                  .all()

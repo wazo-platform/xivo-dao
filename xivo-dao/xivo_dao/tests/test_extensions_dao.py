@@ -32,14 +32,11 @@ class TestExtensionsDAO(DAOTestCase):
         exten = Extension()
         exten.name = 'enablednd'
         exten.exten = '*25'
-        self.session.add(exten)
+        self.add_me(exten)
         exten = Extension()
         exten.name = 'phoneprogfunckey'
         exten.exten = '_*735'
-
-        self.session.begin()
-        self.session.add(exten)
-        self.session.commit()
+        self.add_me(exten)
 
     def test_exten_by_name(self):
         enablednd = extensions_dao.exten_by_name('enablednd')
@@ -47,3 +44,25 @@ class TestExtensionsDAO(DAOTestCase):
 
         self.assertEqual(enablednd, '*25')
         self.assertEqual(phoneprogfunckey, '_*735')
+
+    def test_create(self):
+        exten = Extension()
+        exten.exten = '2000'
+        exten.context = 'default'
+
+        extensions_dao.create(exten)
+        self.assertTrue(exten.id)
+        self.assertTrue(exten in self._get_all())
+
+    def test_get_by_exten(self):
+        self._insert_extens()
+        result = extensions_dao.get_by_exten('*25')
+        self.assertEquals('*25', result.exten)
+
+    def _get_all(self):
+        return self.session.query(Extension).all()
+
+    def test_delete_by_exten(self):
+        extensions_dao.delete_by_exten("*25")
+        self.assertFalse("*25" in [item.exten for item in self._get_all()])
+        self.assertTrue("_*735" in [item.exten for item in self._get_all()])
