@@ -852,6 +852,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         self._add_dialaction_to_user(user1.id)
         self._add_function_key_to_user(user1.id)
         self._add_schedule_to_user(user1.id, scheduleid)
+        self.session.expunge_all()
 
         deleted_rows_count = user_dao.delete(generated_id)
 
