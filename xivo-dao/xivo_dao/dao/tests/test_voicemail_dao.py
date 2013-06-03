@@ -139,9 +139,11 @@ class TestCreateVoicemail(DAOTestCase):
         self.assertEquals(row.mailbox, number)
         self.assertEquals(row.context, context)
 
-    @patch('xivo_dao.helpers.db_manager.dbsession')
-    def test_create_with_database_error(self, dbsession):
-        dbsession.commit.side_effect = SQLAlchemyError()
+    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    def test_create_with_database_error(self, Session):
+        session = Mock()
+        session.commit.side_effect = SQLAlchemyError()
+        Session.return_value = session
 
         name = 'voicemail'
         number = '42'
@@ -152,8 +154,8 @@ class TestCreateVoicemail(DAOTestCase):
                               context=context)
 
         self.assertRaises(VoicemailCreationError, voicemail_dao.create, voicemail)
-        dbsession.begin.assert_called_once_with()
-        dbsession.rollback.assert_called_once_with()
+        session.begin.assert_called_once_with()
+        session.rollback.assert_called_once_with()
 
 
 class TestVoicemailDeleteSIP(DAOTestCase):
@@ -183,9 +185,11 @@ class TestVoicemailDeleteSIP(DAOTestCase):
         self._check_user_sip_table(user_sip_id)
         self._check_voicemail_table(voicemail_id)
 
-    @patch('xivo_dao.helpers.db_manager.dbsession')
-    def test_delete_with_database_error(self, dbsession):
-        dbsession.commit.side_effect = SQLAlchemyError()
+    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    def test_delete_with_database_error(self, Session):
+        session = Mock()
+        session.commit.side_effect = SQLAlchemyError()
+        Session.return_value = session
 
         voicemail = Mock(voicemail_dao.Voicemail)
         voicemail.number = '42'
@@ -194,8 +198,8 @@ class TestVoicemailDeleteSIP(DAOTestCase):
         voicemail.id = 1
 
         self.assertRaises(VoicemailDeletionError, voicemail_dao.delete, voicemail)
-        dbsession.begin.assert_called_once_with()
-        dbsession.rollback.assert_called_once_with()
+        session.begin.assert_called_once_with()
+        session.rollback.assert_called_once_with()
 
     def _prepare_database(self, voicemail):
         voicemail_row = VoicemailSchema(context=voicemail.context,
