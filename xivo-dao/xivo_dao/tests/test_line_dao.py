@@ -16,17 +16,18 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from mock import patch
+from xivo.asterisk.extension import Extension
+from xivo_dao.alchemy.linefeatures import LineFeatures
+from xivo_dao.alchemy.sccpline import SCCPLine
+from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao import line_dao
 from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.alchemy.ctiphonehints import CtiPhoneHints
 from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
 from xivo_dao.alchemy.ctipresences import CtiPresences
-from xivo_dao.alchemy.extension import Extension
+from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 from xivo_dao.alchemy.extenumber import ExteNumber
-from xivo_dao.alchemy.linefeatures import LineFeatures
-from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.userfeatures import UserFeatures
-from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.contextnummember import ContextNumMember
 
@@ -45,7 +46,7 @@ class TestLineFeaturesDAO(DAOTestCase):
         CtiPresences,
         CtiPhoneHints,
         CtiPhoneHintsGroup,
-        Extension,
+        ExtensionSchema,
         ExteNumber,
         ContextNumMember,
     ]
@@ -134,8 +135,8 @@ class TestLineFeaturesDAO(DAOTestCase):
         return sccpline
 
     def _insert_extension(self, exten):
-        extension = Extension(context='default', exten=exten, priority=1,
-                          app='GoSub', appdata=('did,s,1(%s)' % exten))
+        extension = ExtensionSchema(context='default', exten=exten, priority=1,
+                                    app='GoSub', appdata=('did,s,1(%s)' % exten))
         self.add_me(extension)
         return extension.id
 
@@ -209,6 +210,33 @@ class TestLineFeaturesDAO(DAOTestCase):
 
     def test_get_interface_no_matching_exten(self):
         self.assertRaises(LookupError, line_dao.get_interface_from_exten_and_context, '555', 'fijsifjsif')
+
+    def test_get_extension_from_protocol_interface_no_extension(self):
+        self.assertRaises(LookupError, line_dao.get_extension_from_protocol_interface, 'SIP', 'abcdef')
+
+    def test_get_extension_from_protocol_interface_sip(self):
+        protocol = 'SIP'
+        name = 'abcdef'
+        context = 'default'
+
+        expected_extension = Extension(self.line_number, context)
+        self._insert_line(context, name=name, protocol=protocol)
+
+        extension = line_dao.get_extension_from_protocol_interface(protocol, name)
+
+        self.assertEquals(extension, expected_extension)
+
+    def test_get_extension_from_protocol_interface_sccp(self):
+        protocol = 'SCCP'
+        name = self.line_number
+        context = 'default'
+
+        expected_extension = Extension(self.line_number, context)
+        self._insert_line(context, name=name, protocol=protocol)
+
+        extension = line_dao.get_extension_from_protocol_interface(protocol, name)
+
+        self.assertEquals(extension, expected_extension)
 
     def test_get_cid_from_sccp_channel(self):
         channel = 'sccp/1234@SEP0023EBC64F92-1'
@@ -330,7 +358,7 @@ class TestLineFeaturesDAO(DAOTestCase):
 
         inserted_usersip = self.session.query(UserSIP).filter(UserSIP.id == usersip_id).first()
         self.assertEquals(None, inserted_usersip)
-        inserted_extension = self.session.query(Extension).filter(Extension.id == exten_id).first()
+        inserted_extension = self.session.query(ExtensionSchema).filter(ExtensionSchema.id == exten_id).first()
         self.assertEquals(None, inserted_extension)
         inserted_extenumber = self.session.query(ExteNumber).filter(ExteNumber.id == extenumber_id).first()
         self.assertEquals(None, inserted_extenumber)

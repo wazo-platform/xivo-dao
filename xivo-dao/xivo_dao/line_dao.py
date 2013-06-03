@@ -15,17 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy import and_
 from xivo import caller_id
 from xivo_dao.alchemy.contextnummember import ContextNumMember
-from xivo_dao.alchemy.extension import Extension
+from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 from xivo_dao.alchemy.extenumber import ExteNumber
+from xivo.asterisk.extension import Extension
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.usersip import UserSIP
+from sqlalchemy import and_
 from xivo_dao.helpers.db_manager import daosession
 
 
@@ -50,6 +51,21 @@ def get_interface_from_exten_and_context(session, extension, context):
     if res is None:
         raise LookupError('no line with extension %s and context %s' % (extension, context))
     return _format_interface(res.protocol, res.name)
+
+
+@daosession
+def get_extension_from_protocol_interface(session, protocol, interface):
+    line_row = (session.query(LineFeatures.number, LineFeatures.context)
+                .filter(LineFeatures.protocol == protocol.lower())
+                .filter(LineFeatures.name == interface)
+                .first())
+
+    if not line_row:
+        message = 'no line with interface %s' % interface
+        raise LookupError(message)
+
+    extension = Extension(line_row[0], line_row[1])
+    return extension
 
 
 def _format_interface(protocol, name):
@@ -269,9 +285,9 @@ def delete(session, lineid):
     try:
         line = session.query(LineFeatures).filter(LineFeatures.id == lineid).first()
         session.query(UserSIP).filter(UserSIP.id == line.protocolid).delete()
-        (session.query(Extension).filter(Extension.exten == line.number)
-                                 .filter(Extension.context == line.context)
-                                 .delete())
+        (session.query(ExtensionSchema).filter(ExtensionSchema.exten == line.number)
+                                       .filter(ExtensionSchema.context == line.context)
+                                       .delete())
         (session.query(ExteNumber).filter(ExteNumber.exten == line.number)
                                   .filter(ExteNumber.context == line.context)
                                   .delete())
