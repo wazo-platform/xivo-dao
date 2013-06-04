@@ -41,7 +41,10 @@ Base.todict = todict
 
 Type = declarative_base()
 
+_asterisk_engine = None
 AsteriskSession = None
+
+_xivo_engine = None
 XivoSession = None
 
 
@@ -77,15 +80,40 @@ def _apply_and_flush(func, session, args, kwargs):
 
 
 def _init():
+    _init_asterisk()
+    _init_xivo()
+
+
+def _init_asterisk():
+    global _asterisk_engine
     global AsteriskSession
-    AsteriskSession = _new_scoped_session(config.DB_URI)
+    _asterisk_engine = _new_engine(config.DB_URI)
+    AsteriskSession = _new_scoped_session(_asterisk_engine)
+
+
+def _init_xivo():
+    global _xivo_engine
     global XivoSession
-    XivoSession = _new_scoped_session(config.XIVO_DB_URI)
+    _xivo_engine = _new_engine(config.XIVO_DB_URI)
+    XivoSession = _new_scoped_session(_xivo_engine)
 
 
-def _new_scoped_session(url):
-    engine = create_engine(url, echo=config.SQL_DEBUG)
+def _new_engine(url):
+    return create_engine(url, echo=config.SQL_DEBUG)
+
+
+def _new_scoped_session(engine):
     return scoped_session(sessionmaker(bind=engine, autoflush=False, autocommit=True))
+
+
+def reinit():
+    AsteriskSession.close()
+    _asterisk_engine.dispose()
+
+    XivoSession.close()
+    _xivo_engine.dispose()
+
+    _init()
 
 
 _init()
