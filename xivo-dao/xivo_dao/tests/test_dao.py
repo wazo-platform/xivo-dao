@@ -22,6 +22,10 @@ from xivo_dao.helpers.db_manager import Base
 from sqlalchemy.schema import MetaData
 from xivo_dao.helpers import config
 from xivo_dao.helpers import db_manager
+from xivo_dao.alchemy.linefeatures import LineFeatures
+from xivo_dao.alchemy.user_line import UserLine
+from xivo_dao.alchemy.userfeatures import UserFeatures
+from xivo_dao.alchemy.extenumber import ExteNumber
 
 logger = logging.getLogger(__name__)
 
@@ -75,8 +79,40 @@ class DAOTestCase(unittest.TestCase):
 
     def add_me(self, obj):
         self.session.begin()
-        self.session.add(obj)
-        self.session.commit()
+        try:
+            self.session.add(obj)
+            self.session.commit()
+        except Exception:
+            self.session.rollback()
+            raise
+
+    def add_line(self, **kwargs):
+        kwargs.setdefault('name', 'fooname')
+        kwargs.setdefault('context', 'foocontext')
+        kwargs.setdefault('protocolid', 1)
+        kwargs.setdefault('provisioningid', 1)
+
+        line = LineFeatures(**kwargs)
+        self.add_me(line)
+        return line.id
+
+    def add_user_line(self, **kwargs):
+        kwargs.setdefault('main_user', True)
+
+        user_line = UserLine(**kwargs)
+        self.add_me(user_line)
+
+    def add_extenumber(self, **kwargs):
+        kwargs.setdefault('type', 'user')
+
+        extenumber = ExteNumber(**kwargs)
+        self.add_me(extenumber)
+        return extenumber.id
+
+    def add_user(self, **kwargs):
+        user = UserFeatures(**kwargs)
+        self.add_me(user)
+        return user.id
 
     def add_me_all(self, obj_list):
         self.session.begin()

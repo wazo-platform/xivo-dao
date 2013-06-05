@@ -26,14 +26,15 @@ from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
 from xivo_dao.alchemy.ctipresences import CtiPresences
 from xivo_dao.alchemy.dialaction import Dialaction
+from xivo_dao.alchemy.extenumber import ExteNumber
 from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
 from xivo_dao.alchemy.phonefunckey import PhoneFunckey
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.schedulepath import SchedulePath
+from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.dao import line_dao
-from xivo_dao.models.line import Line
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -49,32 +50,15 @@ class TestGetLineDao(DAOTestCase):
         CtiPresences,
         CtiProfile,
         Dialaction,
+        ExteNumber,
         LineSchema,
         PhoneFunckey,
         QueueMember,
         RightCallMember,
         SchedulePath,
         UserSchema,
+        UserLine,
     ]
-
-    @classmethod
-    def setUpClass(cls):
-        super(TestGetLineDao, cls).setUpClass()
-        cls.engine.execute('''
-        CREATE OR REPLACE VIEW "user_line" AS
-            SELECT
-                "id",
-                "iduserfeatures" AS "user_id",
-                "id" AS "line_id",
-                true AS "main_user"
-            FROM "linefeatures"
-            WHERE "iduserfeatures" <> 0;
-        ''')
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.engine.execute('DROP VIEW "user_line"')
-        super(TestGetLineDao, cls).setUpClass()
 
     def setUp(self):
         self.empty_tables()
@@ -83,35 +67,22 @@ class TestGetLineDao(DAOTestCase):
         self.assertRaises(LookupError, line_dao.get_line_by_user_id, 666)
 
     def test_get_by_user_id(self):
-        user_id = 123
-        properties = {
-            'iduserfeatures': user_id,
-            'number': '1001',
-            'context': 'notdefault',
-            'name': 'sdklfj',
-            'protocolid': 123,
-            'provisioningid': 543,
-        }
-        self.add_me(LineSchema(**properties))
+        line_name = 'sdklfj'
 
-        expected_line = Line.from_user_data(properties)
+        line_id = self.add_line(name=line_name)
+        user_id = self.add_user()
+        self.add_user_line(user_id=user_id, line_id=line_id)
 
         line = line_dao.get_line_by_user_id(user_id)
 
-        assert_that(line, equal_to(expected_line))
+        assert_that(line.name, equal_to(line_name))
 
     def test_get_by_user_id_commented(self):
-        user_id = 123
-        properties = {
-            'iduserfeatures': user_id,
-            'number': '1001',
-            'context': 'notdefault',
-            'name': 'sdklfj',
-            'protocolid': 123,
-            'provisioningid': 543,
-            'commented': 1,
-        }
-        self.add_me(LineSchema(**properties))
+        line_name = 'sdklfj'
+
+        line_id = self.add_line(name=line_name, commented=1)
+        user_id = self.add_user()
+        self.add_user_line(user_id=user_id, line_id=line_id)
 
         self.assertRaises(LookupError, line_dao.get_line_by_user_id, user_id)
 
@@ -119,34 +90,23 @@ class TestGetLineDao(DAOTestCase):
         self.assertRaises(LookupError, line_dao.get_line_by_number_context, '1234', 'default')
 
     def test_get_by_number_context(self):
-        number, context = '1235', 'notdefault'
-        properties = {
-            'iduserfeatures': 1234,
-            'number': number,
-            'context': context,
-            'name': 'sdklfj',
-            'protocolid': 123,
-            'provisioningid': 543,
-        }
-        self.add_me(LineSchema(**properties))
+        line_name = 'sdklfj'
+        number = '1235'
+        context = 'notdefault'
 
-        expected_line = Line.from_user_data(properties)
+        line_id = self.add_line(name=line_name)
+        self.add_extenumber(exten=number, context=context, type='user', typeval=str(line_id))
 
         line = line_dao.get_line_by_number_context(number, context)
 
-        assert_that(line, equal_to(expected_line))
+        assert_that(line.name, equal_to(line_name))
 
     def test_get_by_number_context_commented(self):
-        number, context = '1235', 'notdefault'
-        properties = {
-            'iduserfeatures': 1234,
-            'number': number,
-            'context': context,
-            'name': 'sdklfj',
-            'protocolid': 123,
-            'provisioningid': 543,
-            'commented': 1,
-        }
-        self.add_me(LineSchema(**properties))
+        line_name = 'sdklfj'
+        number = '1235'
+        context = 'notdefault'
+
+        line_id = self.add_line(name=line_name, commented=1)
+        self.add_extenumber(exten=number, context=context, type='user', typeval=str(line_id))
 
         self.assertRaises(LookupError, line_dao.get_line_by_number_context, number, context)
