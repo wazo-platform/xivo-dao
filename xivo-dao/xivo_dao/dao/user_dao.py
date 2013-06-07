@@ -21,8 +21,9 @@ from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.models.user import User
 
 
-def get_user_by_id(user_id):
-    user = _new_query().filter(UserSchema.id == user_id).first()
+@daosession
+def get_user_by_id(session, user_id):
+    user = _new_query(session).filter(UserSchema.id == user_id).first()
 
     if not user:
         raise LookupError('No user with id %s' % user_id)
@@ -30,8 +31,9 @@ def get_user_by_id(user_id):
     return User.from_data_source(user)
 
 
-def get_user_by_number_context(number, context):
-    user = (_new_query()
+@daosession
+def get_user_by_number_context(session, number, context):
+    user = (_new_query(session)
         .filter(LineSchema.iduserfeatures == UserSchema.id)
         .filter(LineSchema.context == context)
         .filter(LineSchema.number == number)
@@ -44,6 +46,5 @@ def get_user_by_number_context(number, context):
     return User.from_data_source(user)
 
 
-@daosession
 def _new_query(session):
     return session.query(UserSchema).filter(UserSchema.commented == 0)
