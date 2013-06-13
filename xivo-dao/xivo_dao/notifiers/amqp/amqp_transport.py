@@ -21,30 +21,29 @@ import pika
 class AMQPTransport(object):
 
     @classmethod
-    def create_and_connect(cls, host, port, queue_name):
+    def create_and_connect(cls, host, port):
         connection_params = pika.ConnectionParameters(host=host, port=port)
-        return cls(connection_params, queue_name)
+        return cls(connection_params)
 
-    def __init__(self, connection_params, queue_name):
+    def __init__(self, connection_params):
         self._connect(connection_params)
-        self._queue_name = queue_name
-        self._setup_queue()
+        self._setup_exchange()
 
     def _connect(self, params):
         self._connection = pika.BlockingConnection(params)
         self._channel = self._connection.channel()
 
-    def _setup_queue(self):
-        self._channel.queue_declare(exclusive=True)
+    def _setup_exchange(self):
+        self._channel.exchange_declare(exchange='notifier',
+                                       type='fanout')
 
     def send(self, request):
-        self._send_request(request, None)
+        self._send_request(request)
 
-    def _send_request(self, request, properties):
+    def _send_request(self, request):
         self._channel.basic_publish(
-            exchange='',
-            routing_key=self._queue_name,
-            properties=properties,
+            exchange='notifier',
+            routing_key='',
             body=request
         )
 

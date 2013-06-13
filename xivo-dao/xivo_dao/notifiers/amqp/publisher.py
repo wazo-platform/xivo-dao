@@ -49,7 +49,7 @@ class AMQPPublisher(object):
         self._transport = self._new_transport(hostname, port)
 
     def _new_transport(self, hostname, port):
-        return AMQPTransport.create_and_connect(hostname, port, 'notifier')
+        return AMQPTransport.create_and_connect(hostname, port)
 
     def execute_command(self, cmd, fetch_response=False):
         request = self._marshaler.marshal_command(cmd)

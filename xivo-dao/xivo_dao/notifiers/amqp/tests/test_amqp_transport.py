@@ -39,7 +39,7 @@ class TestAMQPTransport(unittest.TestCase):
 
     @patch('pika.ConnectionParameters')
     def test_create_and_connect(self, connection_params):
-        AMQPTransport.create_and_connect('localhost', 5672, 'queue_name')
+        AMQPTransport.create_and_connect('localhost', 5672)
 
         connection_params.assert_called_once_with(host='localhost', port=5672)
 
@@ -49,7 +49,7 @@ class TestAMQPTransport(unittest.TestCase):
         self.blocking_connection.assert_called_once()
         self.connection.channel.assert_called_once()
 
-    def test_setup_queue(self):
+    def test_setup_exchange(self):
         result = Mock()
         result.method = Mock()
         result.method.queue = Mock()
@@ -57,16 +57,15 @@ class TestAMQPTransport(unittest.TestCase):
 
         self._new_transport()
 
-        self.channel.queue_declare.assert_called_once_with(exclusive=True)
+        self.channel.exchange_declare.assert_called_once_with(exchange='notifier', type='fanout')
 
     def test_send_request(self):
         transport = self._new_transport()
-        transport._send_request('blah', None)
+        transport._send_request('blah')
 
         self.channel.basic_publish.assert_called_once_with(
-            exchange='',
-            routing_key='queue_name',
-            properties=None,
+            exchange='notifier',
+            routing_key='',
             body='blah'
         )
 
@@ -77,7 +76,7 @@ class TestAMQPTransport(unittest.TestCase):
 
     def _new_transport(self):
         params = pika.ConnectionParameters(host='localhost')
-        transport = AMQPTransport(params, 'queue_name')
+        transport = AMQPTransport(params)
 
         return transport
 

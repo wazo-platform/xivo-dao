@@ -38,7 +38,7 @@ class TestAMQPPublisher(unittest.TestCase):
 
         publisher = AMQPPublisher()
         publisher.connect(hostname, port)
-        amqp_transport_constructor.create_and_connect.assert_called_once_with(hostname, port, ANY)
+        amqp_transport_constructor.create_and_connect.assert_called_once_with(hostname, port)
 
     def test_connect_already_connected(self):
         hostname = 'localhost'
@@ -63,7 +63,7 @@ class TestAMQPPublisher(unittest.TestCase):
         publisher.connect()
         publisher.close()
 
-        amqp_transport_constructor.create_and_connect.assert_called_once_with(ANY, ANY, ANY)
+        amqp_transport_constructor.create_and_connect.assert_called_once_with(ANY, ANY)
         transport.close.assert_called_once_with()
 
     def test_execute_command(self):
