@@ -16,11 +16,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from sqlalchemy import and_
-from sqlalchemy.sql.expression import func
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from xivo_dao.alchemy.contextinclude import ContextInclude
-from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.phonefunckey import PhoneFunckey
@@ -29,8 +27,7 @@ from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.alchemy.contextnummember import ContextNumMember
-#the following import is necessary to laod CtiProfiles' definition:
+# the following import is necessary to laod CtiProfiles' definition:
 
 
 def enable_dnd(user_id):
