@@ -15,53 +15,29 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from xivo_dao.models.abstract import AbstractModels
 
-class Voicemail(object):
 
-    MANDATORY = ['name',
-                 'number',
-                 'context']
+class Voicemail(AbstractModels):
 
-    def __init__(self, **kwargs):
-        self.name = kwargs.get('name')
-        self.number = kwargs.get('number')
-        self.context = kwargs.get('context')
-        self.id = kwargs.get('id')
-        self.user = kwargs.get('user')
+    MANDATORY = [
+        'name',
+        'number',
+        'context'
+    ]
 
-    def __eq__(self, other):
-        if not isinstance(other, self.__class__):
-            raise TypeError("Must compare Voicemail with another Voicemail")
-        return (self.name == other.name
-                and self.number == other.number
-                and self.context == other.context
-                and self.id == other.id
-                and self.user == other.user)
+    # mapping = {db_field: model_field}
+    _MAPPING = {
+        'uniqueid': 'id',
+        'fullname': 'name',
+        'mailbox': 'number',
+        'context': 'context',
+        'user': 'user'
+    }
 
-    @classmethod
-    def from_data_source(cls, properties):
-        voicemail = cls()
-        voicemail.name = properties.fullname
-        voicemail.number = properties.mailbox
-        voicemail.context = properties.context
-        voicemail.id = properties.uniqueid
-        return voicemail
-
-    @classmethod
-    def from_user_data(cls, properties):
-        voicemail = cls(**properties)
-        return voicemail
+    def __init__(self, *args, **kwargs):
+        AbstractModels.__init__(self, *args, **kwargs)
 
     @property
     def number_at_context(self):
         return '%s@%s' % (self.number, self.context)
-
-    def missing_parameters(self):
-        missing = []
-
-        for parameter in self.MANDATORY:
-            attribute = getattr(self, parameter)
-            if attribute is None:
-                missing.append(parameter)
-
-        return missing
