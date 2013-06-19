@@ -215,7 +215,7 @@ class TestLineFeaturesDAO(DAOTestCase):
         self.assertRaises(LookupError, line_dao.get_extension_from_protocol_interface, 'SIP', 'abcdef')
 
     def test_get_extension_from_protocol_interface_sip(self):
-        protocol = 'SIP'
+        protocol = 'sip'
         name = 'abcdef'
         context = 'default'
 
@@ -227,7 +227,7 @@ class TestLineFeaturesDAO(DAOTestCase):
         self.assertEquals(extension, expected_extension)
 
     def test_get_extension_from_protocol_interface_sccp(self):
-        protocol = 'SCCP'
+        protocol = 'sccp'
         name = self.line_number
         context = 'default'
 
