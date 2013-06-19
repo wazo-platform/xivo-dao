@@ -944,7 +944,7 @@ class TestUserFeaturesDAO(DAOTestCase):
                 'commented': 0,
                 'context': context,
                 'cti_profile_id': None,
-                'description': None,
+                'description': '',
                 'destbusy': u'',
                 'destrna': u'',
                 'destunc': u'',
