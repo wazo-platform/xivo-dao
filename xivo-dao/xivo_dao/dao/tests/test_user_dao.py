@@ -34,6 +34,10 @@ from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.dao import user_dao
 from xivo_dao.tests.test_dao import DAOTestCase
+from mock import patch, Mock
+from sqlalchemy.exc import SQLAlchemyError
+from xivo_dao.dao.user_dao import UserCreationError
+from xivo_dao.models.user import User
 
 
 class TestUserDAO(DAOTestCase):
@@ -53,7 +57,7 @@ class TestUserDAO(DAOTestCase):
         QueueMember,
         RightCallMember,
         SchedulePath,
-        UserSchema,
+        UserSchema
     ]
 
     def setUp(self):
@@ -104,3 +108,34 @@ class TestUserDAO(DAOTestCase):
         user = UserSchema(**kwargs)
         self.add_me(user)
         return user.id
+
+    def test_create(self):
+        user = User(firstname='toto',
+                    lastname='kiki',
+                    language='fr_FR')
+
+        result = user_dao.create(user)
+
+        row = (self.session.query(UserSchema)
+               .filter(UserSchema.firstname == user.firstname)
+               .filter(UserSchema.lastname == user.lastname)
+               .first())
+
+        self.assertEquals(row.id, result)
+        self.assertEquals(row.firstname, user.firstname)
+        self.assertEquals(row.lastname, user.lastname)
+        self.assertEquals(row.language, user.language)
+
+    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    def test_create_with_database_error(self, Session):
+        session = Mock()
+        session.commit.side_effect = SQLAlchemyError()
+        Session.return_value = session
+
+        user = User(firstname='toto',
+                    lastname='kiki',
+                    language='fr_FR')
+
+        self.assertRaises(UserCreationError, user_dao.create, user)
+        session.begin.assert_called_once_with()
+        session.rollback.assert_called_once_with()
