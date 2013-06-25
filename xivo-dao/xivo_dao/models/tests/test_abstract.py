@@ -27,6 +27,18 @@ from xivo_dao.models.line import Line
 
 class TestModelsAbstract(unittest.TestCase):
 
+    def test_instance_of_new_class(self):
+        firstname = 'toto'
+        lastname = 'kiki'
+        language = 'fr_FR'
+        user = User(firstname=firstname,
+                    lastname=lastname,
+                    language=language)
+
+        assert_that(user.firstname, equal_to(firstname))
+        assert_that(user.lastname, equal_to(lastname))
+        assert_that(user.language, equal_to(language))
+
     def test_equal_type_mismatch(self):
         line_1 = Line(
             name='test',
@@ -136,3 +148,18 @@ class TestModelsAbstract(unittest.TestCase):
         self.assertEquals(name, voicemail.name)
         self.assertEquals(number, voicemail.number)
         self.assertEquals(context, voicemail.context)
+
+    def test_update_from_data(self):
+        expected_lastname = 'Toi'
+        user = User()
+        user.id = 42
+        user.firstname = 'Moi'
+        user.lastname = 'Lastname'
+
+        data_update = {
+            'lastname': expected_lastname
+        }
+
+        user.update_from_data(data_update)
+
+        assert_that(user.lastname, equal_to(expected_lastname))

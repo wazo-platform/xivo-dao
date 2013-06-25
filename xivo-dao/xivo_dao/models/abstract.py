@@ -19,10 +19,7 @@
 class AbstractModels(object):
 
     def __init__(self, *args, **kwargs):
-        for model_field in self._MAPPING.itervalues():
-            model_field_value = kwargs.get(model_field)
-            if model_field_value is not None:
-                setattr(self, model_field, model_field_value)
+        self.update_from_data(kwargs)
 
     def __eq__(self, other):
         class_name = self.__class__.__name__
@@ -47,6 +44,12 @@ class AbstractModels(object):
                 field_value = getattr(self, model_field)
                 setattr(db_object, db_field, field_value)
         return db_object
+
+    def update_from_data(self, data):
+        for model_field in self._MAPPING.itervalues():
+            model_field_value = data.get(model_field)
+            if model_field_value is not None:
+                setattr(self, model_field, model_field_value)
 
     @classmethod
     def from_user_data(cls, properties):
