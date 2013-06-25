@@ -51,6 +51,14 @@ class AbstractModels(object):
             if model_field_value is not None:
                 setattr(self, model_field, model_field_value)
 
+    def to_data_dict(self):
+        data_dict = {}
+        for db_field, model_field in self._MAPPING.iteritems():
+            if hasattr(self, model_field):
+                field_value = getattr(self, model_field)
+                data_dict[db_field] = field_value
+        return data_dict
+
     @classmethod
     def from_user_data(cls, properties):
         return cls(**properties)

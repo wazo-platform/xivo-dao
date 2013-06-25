@@ -113,11 +113,10 @@ def create(session, user):
 
 @daosession
 def edit(session, user):
-    user_row = user.to_data_source(UserSchema)
     session.begin()
     nb_row_affected = (session.query(UserSchema)
                        .filter(UserSchema.id == user.id)
-                       .update(user_row.todict()))
+                       .update(user.to_data_dict()))
 
     try:
         session.commit()
