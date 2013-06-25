@@ -36,7 +36,7 @@ from xivo_dao.dao import user_dao
 from xivo_dao.tests.test_dao import DAOTestCase
 from mock import patch, Mock
 from sqlalchemy.exc import SQLAlchemyError
-from xivo_dao.dao.user_dao import UserCreationError
+from xivo_dao.dao.user_dao import UserCreationError, UserEditionnError
 from xivo_dao.models.user import User
 
 
@@ -137,5 +137,42 @@ class TestUserDAO(DAOTestCase):
                     language='fr_FR')
 
         self.assertRaises(UserCreationError, user_dao.create, user)
+        session.begin.assert_called_once_with()
+        session.rollback.assert_called_once_with()
+
+    def test_edit(self):
+        firstname = 'Robert'
+        lastname = 'Raleur'
+        expected_lastname = 'Lereu'
+        user_id = self._insert_user(firstname=firstname, lastname=lastname)
+
+        user = User(id=user_id, lastname=expected_lastname)
+
+        user_dao.edit(user)
+
+        row = (self.session.query(UserSchema)
+               .filter(UserSchema.id == user_id)
+               .first())
+
+        self.assertEquals(row.firstname, firstname)
+        self.assertEquals(row.lastname, expected_lastname)
+
+    def test_edit_with_unknown_user(self):
+        user = User(id=123, lastname='unknown')
+
+        self.assertRaises(UserEditionnError, user_dao.edit, user)
+
+    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    def test_edit_with_database_error(self, Session):
+        session = Mock()
+        session.commit.side_effect = SQLAlchemyError()
+        Session.return_value = session
+
+        user = User(id=123,
+                    firstname='toto',
+                    lastname='kiki',
+                    language='fr_FR')
+
+        self.assertRaises(UserEditionnError, user_dao.edit, user)
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()

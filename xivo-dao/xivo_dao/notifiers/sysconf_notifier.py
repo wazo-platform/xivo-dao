@@ -20,9 +20,17 @@ def create_voicemail(voicemail_id):
     print "Sysconf: Creating voicemail with id %s" % voicemail_id
 
 
+def edit_voicemail(voicemail_id):
+    print "Sysconf: Editing voicemail with id %s" % voicemail_id
+
+
 def delete_voicemail(voicemail_id):
     print "Sysconf: Deleting voicemail with id %s" % voicemail_id
 
 
 def create_user(user_id):
     print "Sysconf: Creating user with id %s" % user_id
+
+
+def edit_user(user_id):
+    print "Sysconf: Editing user with id %s" % user_id

@@ -73,3 +73,15 @@ class TestUser(unittest.TestCase):
         user_dao.create.side_effect = UserCreationError(error)
 
         self.assertRaises(UserCreationError, user_services.create, user)
+
+    @patch('xivo_dao.notifiers.bus_notifier.user_updated')
+    @patch('xivo_dao.notifiers.sysconf_notifier.edit_user')
+    @patch('xivo_dao.services.user_services.user_dao.edit')
+    def test_edit(self, user_dao_edit, sysconf_edit_user, bus_notifier_user_updated):
+        user = User(id=1, firstname='user', lastname='toto')
+
+        user_services.edit(user)
+
+        user_dao_edit.assert_called_once_with(user)
+        sysconf_edit_user.assert_called_once_with(user.id)
+        bus_notifier_user_updated.assert_called_once_with(user.id)

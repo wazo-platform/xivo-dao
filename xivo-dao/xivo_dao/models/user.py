@@ -44,3 +44,7 @@ class User(AbstractModels):
 
     def __init__(self, *args, **kwargs):
         AbstractModels.__init__(self, *args, **kwargs)
+
+    @property
+    def fullname(self):
+        return ' '.join([self.firstname, self.lastname])

@@ -19,6 +19,8 @@ from xivo_dao.dao import user_dao
 from xivo_dao.notifiers import bus_notifier, sysconf_notifier
 from xivo_dao.services.exception import MissingParametersError, \
     InvalidParametersError, ElementExistsError
+from xivo_dao.services import voicemail_services
+from xivo_dao.models.voicemail import Voicemail
 
 
 class UserNotFoundError(LookupError):
@@ -43,16 +45,23 @@ def find_by_firstname_lastname(firstname, lastname):
 
 def create(user):
     _validate(user)
+    _check_for_existing_user(user)
     user_id = user_dao.create(user)
     bus_notifier.user_created(user_id)
     sysconf_notifier.create_user(user_id)
     return user_id
 
 
+def edit(user):
+    _validate(user)
+    user_dao.edit(user)
+    bus_notifier.user_updated(user.id)
+    sysconf_notifier.edit_user(user.id)
+
+
 def _validate(user):
     _check_missing_parameters(user)
     _check_invalid_parameters(user)
-    _check_for_existing_user(user)
 
 
 def _check_missing_parameters(user):

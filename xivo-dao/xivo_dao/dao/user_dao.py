@@ -29,6 +29,13 @@ class UserCreationError(IOError):
         IOError.__init__(self, message)
 
 
+class UserEditionnError(IOError):
+
+    def __init__(self, error):
+        message = "error while editing user: %s" % unicode(error)
+        IOError.__init__(self, message)
+
+
 class UserDeletionError(IOError):
 
     def __init__(self, error):
@@ -106,7 +113,24 @@ def create(session, user):
 
 @daosession
 def edit(session, user):
-    pass
+    user_row = user.to_data_source(UserSchema)
+    session.begin()
+    nb_row_affected = (session.query(UserSchema)
+                       .filter(UserSchema.id == user.id)
+                       .update(user_row.todict()))
+
+    try:
+        session.commit()
+    except SQLAlchemyError as e:
+        session.rollback()
+        raise UserEditionnError(e)
+
+    if nb_row_affected == 0:
+        raise UserEditionnError('No now affected, probably user_id %s not exsit' % user.id)
+
+    return nb_row_affected
+
+
 
 
 def _new_query(session):
