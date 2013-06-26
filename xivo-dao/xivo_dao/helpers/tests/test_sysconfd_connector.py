@@ -14,13 +14,15 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
+
 from httplib import HTTPConnection
 from mock import Mock
 from unittest import TestCase
-from xivo_restapi.services.utils.sysconfd_connector import SysconfdConnector
+from xivo_dao.helpers.sysconfd_connector import SysconfdConnector
 
 
 class TestSysconfdConnector(TestCase):
+
     def setUp(self):
         self.connection = Mock(HTTPConnection)
         self.sysconfd_connector = SysconfdConnector()

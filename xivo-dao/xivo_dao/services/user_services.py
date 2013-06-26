@@ -61,11 +61,11 @@ def edit(user):
 
 def delete(user):
     user_dao.delete(user)
-    voicemail_services.delete(user.voicemail)
     bus_notifier.user_deleted(user.id)
     sysconf_notifier.delete_user(user.id)
 
 """
+    voicemail_services.delete(user.voicemail)
     try:
     except ProvdError as e:
         result = "The user was deleted but the device could not be reconfigured (%s)" % str(e)

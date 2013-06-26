@@ -160,7 +160,7 @@ class TestUserDAO(DAOTestCase):
     def test_edit_with_unknown_user(self):
         user = User(id=123, lastname='unknown')
 
-        self.assertRaises(UserEditionnError, user_dao.edit, user)
+        self.assertRaises(LookupError, user_dao.edit, user)
 
     @patch('xivo_dao.helpers.db_manager.AsteriskSession')
     def test_edit_with_database_error(self, Session):

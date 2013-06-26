@@ -137,8 +137,8 @@ def delete(session, user):
     session.begin()
     try:
         nb_row_affected = _delete_user(session, user.id)
-        _delete_line(session, user.id)
         """
+        _delete_line(session, user.id)
         (session.query(QueueMember).filter(QueueMember.usertype == 'user')
                                    .filter(QueueMember.userid == user.id)
                                    .delete())
