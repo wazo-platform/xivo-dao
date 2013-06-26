@@ -17,4 +17,4 @@
 
 DB_URI = 'postgresql://asterisk:proformatique@localhost/asterisk'
 XIVO_DB_URI = 'postgresql://xivo:proformatique@localhost/xivo'
-SQL_DEBUG = True
+SQL_DEBUG = False
