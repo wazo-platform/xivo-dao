@@ -176,3 +176,18 @@ class TestUserDAO(DAOTestCase):
         self.assertRaises(UserEditionnError, user_dao.edit, user)
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
+
+    def test_delete(self):
+        firstname = 'Gadou'
+        lastname = 'Pipo'
+        user_id = self._insert_user(firstname=firstname, lastname=lastname)
+
+        user = user_dao.get_user_by_id(user_id)
+
+        user_dao.delete(user)
+
+        row = (self.session.query(UserSchema)
+               .filter(UserSchema.id == user_id)
+               .first())
+
+        self.assertEquals(row, None)

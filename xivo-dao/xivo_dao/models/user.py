@@ -16,6 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.models.abstract import AbstractModels
+from xivo_dao.models.voicemail import Voicemail
+from xivo_dao.models.line import Line
 
 
 class User(AbstractModels):
@@ -41,6 +43,13 @@ class User(AbstractModels):
         'language': 'language',
         'description': 'description'
     }
+
+    _RELATIONS = {
+        'voicemail': 'voicemailid'
+    }
+
+    line = Line()
+    voicemail = Voicemail()
 
     def __init__(self, *args, **kwargs):
         AbstractModels.__init__(self, *args, **kwargs)

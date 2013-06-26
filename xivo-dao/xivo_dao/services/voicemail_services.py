@@ -41,15 +41,21 @@ def delete(number, context):
 
 def create(voicemail):
     _validate(voicemail)
+    _check_for_existing_voicemail(voicemail)
     voicemail_id = voicemail_dao.create(voicemail)
     sysconf_notifier.create_voicemail(voicemail_id)
     return voicemail_id
 
 
+def edit(voicemail_id, voicemail):
+    _validate(voicemail)
+    voicemail_dao.edit(voicemail_id, voicemail)
+    sysconf_notifier.edit_voicemail(voicemail_id)
+
+
 def _validate(voicemail):
     _check_missing_parameters(voicemail)
     _check_invalid_parameters(voicemail)
-    _check_for_existing_voicemail(voicemail)
 
 
 def _check_missing_parameters(voicemail):

@@ -34,3 +34,19 @@ def create_user(user_id):
 
 def edit_user(user_id):
     print "Sysconf: Editing user with id %s" % user_id
+
+
+def delete_user(user_id):
+    print "Sysconf: Deleting user with id %s" % user_id
+
+
+def create_line(line_id):
+    print "Sysconf: Creating line with id %s" % line_id
+
+
+def edit_line(line_id):
+    print "Sysconf: Editing line with id %s" % line_id
+
+
+def delete_line(line_id):
+    print "Sysconf: Deleting line with id %s" % line_id

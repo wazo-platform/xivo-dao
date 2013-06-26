@@ -32,3 +32,25 @@ class ElementExistsError(ValueError):
 
     def __init__(self, element, *args):
         ValueError.__init__(self, "%s %s already exists" % (element, ' '.join(args)))
+
+
+class VoicemailExistsException(ValueError):
+
+    def __init__(self):
+        ValueError.__init__(self, "Cannot remove a user with a voicemail. Delete the voicemail or dissociate it from the user.")
+
+
+class ProvdError(Exception):
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self):
+        return "provd error: %s" % self.value
+
+
+class SysconfdError(Exception):
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self):
+        return "sysconfd error: %s" % self.value

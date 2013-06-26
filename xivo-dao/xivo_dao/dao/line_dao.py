@@ -53,5 +53,43 @@ def get_line_by_number_context(session, number, context):
     return Line.from_data_source(line)
 
 
+@daosession
+def find_line(session, number, context):
+    line = (session.query(LineSchema)
+                 .filter(LineSchema.number == number)
+                 .filter(LineSchema.context == context)
+                 .first())
+
+    if not line:
+        return None
+
+    return Line.from_data_source(line)
+
+
+@daosession
+def delete(session, line_id):
+    session.begin()
+    try:
+        line = session.query(LineSchema).filter(LineSchema.id == line_id).first()
+        """
+        session.query(UserSIP).filter(UserSIP.id == line.protocolid).delete()
+        (session.query(Extension).filter(Extension.exten == line.number)
+                                 .filter(Extension.context == line.context)
+                                 .delete())
+        (session.query(ExteNumber).filter(ExteNumber.exten == line.number)
+                                  .filter(ExteNumber.context == line.context)
+                                  .delete())
+        (session.query(ContextNumMember).filter(ContextNumMember.type == 'user')
+                                        .filter(ContextNumMember.typeval == str(line.id))
+                                        .filter(ContextNumMember.context == 'default')
+                                        .delete())
+        """
+        session.delete(line)
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+
+
 def _new_query(session):
     return session.query(LineSchema).filter(LineSchema.commented == 0)

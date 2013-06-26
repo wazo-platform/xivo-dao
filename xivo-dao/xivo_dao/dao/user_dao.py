@@ -18,6 +18,8 @@
 from sqlalchemy.exc import SQLAlchemyError
 from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
+from xivo_dao.alchemy.voicemail import Voicemail as VoicemailSchema
+from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.models.user import User
 
@@ -125,11 +127,62 @@ def edit(session, user):
         raise UserEditionnError(e)
 
     if nb_row_affected == 0:
-        raise UserEditionnError('No now affected, probably user_id %s not exsit' % user.id)
+        raise LookupError('No now affected, probably user_id %s not exsit' % user.id)
 
     return nb_row_affected
 
 
+@daosession
+def delete(session, user):
+    session.begin()
+    try:
+        nb_row_affected = _delete_user(session, user.id)
+        _delete_line(session, user.id)
+        """
+        (session.query(QueueMember).filter(QueueMember.usertype == 'user')
+                                   .filter(QueueMember.userid == user.id)
+                                   .delete())
+        (session.query(RightCallMember).filter(RightCallMember.type == 'user')
+                                      .filter(RightCallMember.typeval == str(user.id))
+                                      .delete())
+        (session.query(Callfiltermember).filter(Callfiltermember.type == 'user')
+                                        .filter(Callfiltermember.typeval == str(user.id))
+                                        .delete())
+        (session.query(Dialaction).filter(Dialaction.category == 'user')
+                                  .filter(Dialaction.categoryval == str(user.id))
+                                  .delete())
+        session.query(PhoneFunckey).filter(PhoneFunckey.iduserfeatures == user.id).delete()
+        (session.query(SchedulePath).filter(SchedulePath.path == 'user')
+                                    .filter(SchedulePath.pathid == user.id)
+                                    .delete())
+        """
+        session.commit()
+    except SQLAlchemyError as e:
+        session.rollback()
+        raise UserDeletionError(e)
+
+    if nb_row_affected == 0:
+        raise UserDeletionError('No now affected, probably user_id %s not exsit' % user.id)
+
+    return nb_row_affected
+
+
+def _delete_user(session, user_id):
+    return (session.query(UserSchema)
+            .filter(UserSchema.id == user_id)
+            .delete())
+
+
+def _delete_line(session, user_id):
+    (session.query(UserSIPSchema)
+     .filter(UserSIPSchema.mailbox == user_id)
+     .delete())
+
+
+def _delete_voicemail(session, voicemail_id):
+    (session.query(VoicemailSchema)
+     .filter(VoicemailSchema.uniqueid == voicemail_id)
+     .delete())
 
 
 def _new_query(session):

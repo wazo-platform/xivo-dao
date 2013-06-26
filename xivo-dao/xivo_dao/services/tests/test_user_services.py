@@ -85,3 +85,15 @@ class TestUser(unittest.TestCase):
         user_dao_edit.assert_called_once_with(user)
         sysconf_edit_user.assert_called_once_with(user.id)
         bus_notifier_user_updated.assert_called_once_with(user.id)
+
+    @patch('xivo_dao.notifiers.bus_notifier.user_deleted')
+    @patch('xivo_dao.notifiers.sysconf_notifier.delete_user')
+    @patch('xivo_dao.services.user_services.user_dao.delete')
+    def test_delete(self, user_dao_delete, sysconf_delete_user, bus_notifier_user_deleted):
+        user = User(id=1, firstname='user', lastname='toto')
+
+        user_services.delete(user)
+
+        user_dao_delete.assert_called_once_with(user)
+        sysconf_delete_user.assert_called_once_with(user.id)
+        bus_notifier_user_deleted.assert_called_once_with(user.id)

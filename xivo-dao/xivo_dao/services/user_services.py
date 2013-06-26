@@ -59,6 +59,73 @@ def edit(user):
     sysconf_notifier.edit_user(user.id)
 
 
+def delete(user):
+    user_dao.delete(user)
+    voicemail_services.delete(user.voicemail)
+    bus_notifier.user_deleted(user.id)
+    sysconf_notifier.delete_user(user.id)
+
+"""
+    try:
+    except ProvdError as e:
+        result = "The user was deleted but the device could not be reconfigured (%s)" % str(e)
+        result = rest_encoder.encode([result])
+        return make_response(result, 500)
+    except VoicemailExistsException:
+        result = "Cannot remove a user with a voicemail. Delete the voicemail or dissociate it from the user."
+        result = rest_encoder.encode([result])
+        return make_response(result, 412)
+    except SysconfdError as e:
+        result = "The user was deleted but the voicemail content could not be removed (%s)" % str(e)
+        result = rest_encoder.encode([result])
+        return make_response(result, 500)
+
+
+def _provd_remove_line(self, deviceid, linenum):
+    config = self.config_manager.get(deviceid)
+    del config["raw_config"]["sip_lines"][str(linenum)]
+    if len(config["raw_config"]["sip_lines"]) == 0:
+        # then we reset to autoprov
+        self._reset_config(config)
+        self._reset_device_to_autoprov(deviceid)
+    self.config_manager.update(config)
+
+
+def _reset_config(self, config):
+    del config["raw_config"]["sip_lines"]
+    if "funckeys" in config["raw_config"]:
+        del config["raw_config"]["funckeys"]
+
+
+def _reset_device_to_autoprov(self, deviceid):
+    device = self.device_manager.get(deviceid)
+    new_configid = self.config_manager.autocreate()
+    device["config"] = new_configid
+    self.device_manager.update(device)
+
+
+def _remove_line(self, line):
+    device = line.device
+    line_dao.delete(line.id)
+    deviceid = device_dao.get_deviceid(device)
+    if deviceid is not None:
+        try:
+            self._provd_remove_line(deviceid, line.num)
+        except URLError as e:
+            raise ProvdError(str(e))
+
+
+def _delete_voicemail(self, voicemailid):
+    voicemail = voicemail_dao.get(voicemailid)
+    context, mailbox = voicemail.context, voicemail.mailbox
+    voicemail_dao.delete(voicemailid)
+    try:
+        self.sysconfd_connector.delete_voicemail_storage(context, mailbox)
+    except Exception as e:
+        raise SysconfdError(str(e))
+"""
+
+
 def _validate(user):
     _check_missing_parameters(user)
     _check_invalid_parameters(user)
@@ -81,3 +148,10 @@ def _check_invalid_parameters(user):
 def _check_for_existing_user(user):
     if user_dao.find_user(user.firstname, user.lastname):
         raise ElementExistsError('User', user.firstname, user.lastname)
+
+
+def _update_voicemail_fullname(user):
+    voicemail_id = user.voicemail
+    if voicemail_id is not None:
+        voicemail = Voicemail.from_user_data({'fullname': user.fullname})
+        voicemail_services.edit(voicemail_id, voicemail)
