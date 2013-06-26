@@ -15,33 +15,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from xivo_dao.models.abstract import AbstractModels
 
-class Line(object):
 
-    def __init__(self, **kwargs):
-        self.name = kwargs.get('name')
-        self.number = kwargs.get('number')
-        self.context = kwargs.get('context')
-        self.protocol = kwargs.get('protocol')
-        self.iduserfeatures = kwargs.get('iduserfeatures')
+class Line(AbstractModels):
 
-    def __eq__(self, other):
-        if not isinstance(other, self.__class__):
-            raise TypeError('Must compare a Line with another Line')
+    MANDATORY = [
+        'name',
+        'context',
+        'protocol'
+    ]
 
-        return self.__dict__ == other.__dict__
+    # mapping = {db_field: model_field}
+    _MAPPING = {
+        'name': 'name',
+        'number': 'number',
+        'context': 'context',
+        'protocol': 'protocol'
+    }
 
-    @classmethod
-    def from_data_source(cls, properties):
-        data = {
-            'number': properties.number,
-            'context': properties.context,
-            'protocol': properties.protocol,
-            'name': properties.name,
-            'iduserfeatures': properties.iduserfeatures,
-        }
-        return cls(**data)
-
-    @classmethod
-    def from_user_data(cls, properties):
-        return cls(**properties)
+    def __init__(self, *args, **kwargs):
+        AbstractModels.__init__(self, *args, **kwargs)

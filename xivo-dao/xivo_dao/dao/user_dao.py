@@ -15,10 +15,62 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy.exc import SQLAlchemyError
 from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
+from xivo_dao.alchemy.voicemail import Voicemail as VoicemailSchema
+from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.models.user import User
+
+
+class UserCreationError(IOError):
+
+    def __init__(self, error):
+        message = "error while creating user: %s" % unicode(error)
+        IOError.__init__(self, message)
+
+
+class UserEditionnError(IOError):
+
+    def __init__(self, error):
+        message = "error while editing user: %s" % unicode(error)
+        IOError.__init__(self, message)
+
+
+class UserDeletionError(IOError):
+
+    def __init__(self, error):
+        message = "error while deleting user: %s" % unicode(error)
+        IOError.__init__(self, message)
+
+
+@daosession
+def find_all(session):
+    res = session.query(UserSchema).all()
+
+    if not res:
+        return None
+
+    tmp = []
+    for user in res:
+        tmp.append(User.from_data_source(user))
+
+    return tmp
+
+
+@daosession
+def find_user(session, firstname, lastname):
+
+    user = (session.query(UserSchema)
+                 .filter(UserSchema.firstname == firstname)
+                 .filter(UserSchema.lastname == lastname)
+                 .first())
+
+    if not user:
+        return None
+
+    return User.from_data_source(user)
 
 
 @daosession
@@ -44,6 +96,93 @@ def get_user_by_number_context(session, number, context):
         raise LookupError('No user with number %s in context %s', (number, context))
 
     return User.from_data_source(user)
+
+
+@daosession
+def create(session, user):
+    user_row = user.to_data_source(UserSchema)
+    session.begin()
+    session.add(user_row)
+
+    try:
+        session.commit()
+    except SQLAlchemyError as e:
+        session.rollback()
+        raise UserCreationError(e)
+
+    return user_row.id
+
+
+@daosession
+def edit(session, user):
+    session.begin()
+    nb_row_affected = (session.query(UserSchema)
+                       .filter(UserSchema.id == user.id)
+                       .update(user.to_data_dict()))
+
+    try:
+        session.commit()
+    except SQLAlchemyError as e:
+        session.rollback()
+        raise UserEditionnError(e)
+
+    if nb_row_affected == 0:
+        raise LookupError('No now affected, probably user_id %s not exsit' % user.id)
+
+    return nb_row_affected
+
+
+@daosession
+def delete(session, user):
+    session.begin()
+    try:
+        nb_row_affected = _delete_user(session, user.id)
+        _delete_line(session, user.id)
+        """
+        (session.query(QueueMember).filter(QueueMember.usertype == 'user')
+                                   .filter(QueueMember.userid == user.id)
+                                   .delete())
+        (session.query(RightCallMember).filter(RightCallMember.type == 'user')
+                                      .filter(RightCallMember.typeval == str(user.id))
+                                      .delete())
+        (session.query(Callfiltermember).filter(Callfiltermember.type == 'user')
+                                        .filter(Callfiltermember.typeval == str(user.id))
+                                        .delete())
+        (session.query(Dialaction).filter(Dialaction.category == 'user')
+                                  .filter(Dialaction.categoryval == str(user.id))
+                                  .delete())
+        session.query(PhoneFunckey).filter(PhoneFunckey.iduserfeatures == user.id).delete()
+        (session.query(SchedulePath).filter(SchedulePath.path == 'user')
+                                    .filter(SchedulePath.pathid == user.id)
+                                    .delete())
+        """
+        session.commit()
+    except SQLAlchemyError as e:
+        session.rollback()
+        raise UserDeletionError(e)
+
+    if nb_row_affected == 0:
+        raise UserDeletionError('No now affected, probably user_id %s not exsit' % user.id)
+
+    return nb_row_affected
+
+
+def _delete_user(session, user_id):
+    return (session.query(UserSchema)
+            .filter(UserSchema.id == user_id)
+            .delete())
+
+
+def _delete_line(session, user_id):
+    (session.query(UserSIPSchema)
+     .filter(UserSIPSchema.mailbox == user_id)
+     .delete())
+
+
+def _delete_voicemail(session, voicemail_id):
+    (session.query(VoicemailSchema)
+     .filter(VoicemailSchema.uniqueid == voicemail_id)
+     .delete())
 
 
 def _new_query(session):

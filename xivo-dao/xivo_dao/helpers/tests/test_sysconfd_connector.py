@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+#
 # Copyright (C) 2013 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
@@ -14,30 +14,18 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
+from httplib import HTTPConnection
+from mock import Mock
+from unittest import TestCase
+from xivo_restapi.services.utils.sysconfd_connector import SysconfdConnector
 
-from xivo_dao.models.abstract import AbstractModels
 
+class TestSysconfdConnector(TestCase):
+    def setUp(self):
+        self.connection = Mock(HTTPConnection)
+        self.sysconfd_connector = SysconfdConnector()
+        self.sysconfd_connector.connection = self.connection
 
-class Voicemail(AbstractModels):
-
-    MANDATORY = [
-        'name',
-        'number',
-        'context'
-    ]
-
-    # mapping = {db_field: model_field}
-    _MAPPING = {
-        'uniqueid': 'id',
-        'fullname': 'name',
-        'mailbox': 'number',
-        'context': 'context',
-        'user': 'user'
-    }
-
-    def __init__(self, *args, **kwargs):
-        AbstractModels.__init__(self, *args, **kwargs)
-
-    @property
-    def number_at_context(self):
-        return '%s@%s' % (self.number, self.context)
+    def test_delete_voicemail_storage(self):
+        self.sysconfd_connector.delete_voicemail_storage("default", "123")
+        self.connection.request.assert_called_with('GET', '/delete_voicemail?context=default&name=123', '')

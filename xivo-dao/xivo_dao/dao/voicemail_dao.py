@@ -30,6 +30,13 @@ class VoicemailCreationError(IOError):
         IOError.__init__(self, message)
 
 
+class VoicemailEditionError(IOError):
+
+    def __init__(self, error):
+        message = "error while editing voicemail: %s" % unicode(error)
+        IOError.__init__(self, message)
+
+
 class VoicemailDeletionError(IOError):
 
     def __init__(self, error):
@@ -81,8 +88,24 @@ def create(session, voicemail):
     return voicemail_row.uniqueid
 
 
-def edit(voicemail):
-    pass
+@daosession
+def edit(session, voicemail_id, voicemail):
+    user_row = voicemail.to_data_source(VoicemailSchema)
+    session.begin()
+    nb_row_affected = (session.query(VoicemailSchema)
+                       .filter(VoicemailSchema.uniqueid == voicemail_id)
+                       .update(user_row.todict()))
+
+    try:
+        session.commit()
+    except SQLAlchemyError as e:
+        session.rollback()
+        raise VoicemailEditionError(e)
+
+    if nb_row_affected == 0:
+        raise VoicemailEditionError('No now affected, probably voicemail_id %s not exsit' % voicemail_id)
+
+    return nb_row_affected
 
 
 @daosession

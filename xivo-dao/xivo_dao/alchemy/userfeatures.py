@@ -94,7 +94,7 @@ class UserFeatures(Base):
     outcallerid = Column(String(80), nullable=False, server_default='')
     mobilephonenumber = Column(String(128), nullable=False, server_default='')
     userfield = Column(String(128), nullable=False, server_default='')
-    #Should be Enum
+    # Should be Enum
     bsfilter = Column(String(128), nullable=False, server_default='no')
     preprocess_subroutine = Column(String(39))
     timezone = Column(String(128))
@@ -105,7 +105,7 @@ class UserFeatures(Base):
     ringforward = Column(String(64))
     rightcallcode = Column(String(16))
     commented = Column(Integer, nullable=False, default=0)
-    description = Column(Text)
+    description = Column(Text, nullable=False, default='')
 
     @property
     def fullname(self):

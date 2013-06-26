@@ -18,6 +18,8 @@
 from xivo_dao.dao import voicemail_dao
 from xivo_dao.notifiers import sysconf_notifier
 from xivo_dao.services import context_services
+from xivo_dao.services.exception import MissingParametersError, \
+    InvalidParametersError, ElementExistsError
 
 
 class VoicemailNotFoundError(LookupError):
@@ -26,24 +28,6 @@ class VoicemailNotFoundError(LookupError):
     def from_number_and_context(cls, number, context):
         message = "Voicemail %s@%s does not exist" % (number, context)
         return cls(message)
-
-
-class MissingParametersError(ValueError):
-
-    def __init__(self, missing_parameters):
-        ValueError.__init__(self, "Missing parameters: %s" % ','.join(missing_parameters))
-
-
-class InvalidParametersError(ValueError):
-
-    def __init__(self, invalid_parameters):
-        ValueError.__init__(self, "Invalid parameters: %s" % ','.join(invalid_parameters))
-
-
-class VoicemailExistsError(ValueError):
-
-    def __init__(self, number_at_context):
-        ValueError.__init__(self, "Voicemail %s already exists" % number_at_context)
 
 
 def delete(number, context):
@@ -57,15 +41,21 @@ def delete(number, context):
 
 def create(voicemail):
     _validate(voicemail)
+    _check_for_existing_voicemail(voicemail)
     voicemail_id = voicemail_dao.create(voicemail)
     sysconf_notifier.create_voicemail(voicemail_id)
     return voicemail_id
 
 
+def edit(voicemail_id, voicemail):
+    _validate(voicemail)
+    voicemail_dao.edit(voicemail_id, voicemail)
+    sysconf_notifier.edit_voicemail(voicemail_id)
+
+
 def _validate(voicemail):
     _check_missing_parameters(voicemail)
     _check_invalid_parameters(voicemail)
-    _check_for_existing_voicemail(voicemail)
 
 
 def _check_missing_parameters(voicemail):
@@ -89,4 +79,4 @@ def _check_invalid_parameters(voicemail):
 def _check_for_existing_voicemail(voicemail):
     if voicemail_dao.find_voicemail(voicemail.number, voicemail.context):
         number_at_context = voicemail.number_at_context
-        raise VoicemailExistsError(number_at_context)
+        raise ElementExistsError('Voicemail', number_at_context)

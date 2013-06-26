@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2007-2013 Avencall
+# Copyright (C) 2013 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,42 +15,45 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from xivo_dao.models.abstract import AbstractModels
+from xivo_dao.models.voicemail import Voicemail
+from xivo_dao.models.line import Line
 
-class User(object):
 
-    _FIELDS = [
-        'id',
+class User(AbstractModels):
+
+    MANDATORY = [
         'firstname',
-        'lastname',
-        'callerid',
-        'ringseconds',
-        'simultcalls',
-        'enablevoicemail',
-        'voicemailid',
-        'enablexfer',
-        'enableautomon',
-        'callrecord',
-        'incallfilter',
-        'enablednd',
-        'enableunc',
-        'destunc',
-        'enablerna',
-        'destrna',
-        'enablebusy',
-        'destbusy',
-        'musiconhold',
-        'outcallerid',
-        'preprocess_subroutine',
-        'mobilephonenumber',
-        'bsfilter',
-        'language',
-        'userfield',
+        'lastname'
     ]
 
-    def __init__(self, **kwargs):
-        for field_name in self._FIELDS:
-            setattr(self, field_name, kwargs.get(field_name))
+    # mapping = {db_field: model_field}
+    _MAPPING = {
+        'id': 'id',
+        'firstname': 'firstname',
+        'lastname': 'lastname',
+        'callerid': 'callerid',
+        'outcallerid': 'outcallerid',
+        'loginclient': 'username',
+        'passwdclient': 'password',
+        'musiconhold': 'musiconhold',
+        'mobilephonenumber': 'mobilephonenumber',
+        'userfield': 'userfield',
+        'timezone': 'timezone',
+        'language': 'language',
+        'description': 'description'
+    }
 
-    @classmethod
-    def from_data_source(cls, properties):
-        return cls(**properties.__dict__)
+    _RELATIONS = {
+        'voicemail': 'voicemailid'
+    }
+
+    line = Line()
+    voicemail = Voicemail()
+
+    def __init__(self, *args, **kwargs):
+        AbstractModels.__init__(self, *args, **kwargs)
+
+    @property
+    def fullname(self):
+        return ' '.join([self.firstname, self.lastname])

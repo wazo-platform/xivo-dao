@@ -4,13 +4,10 @@ from mock import patch, Mock
 
 from xivo_dao.dao.voicemail_dao import VoicemailCreationError
 from xivo_dao.models.voicemail import Voicemail
-from xivo_dao.services import voicemail_services
+from xivo_dao.services import voicemail_services, exception
 
 
 class TestVoicemail(unittest.TestCase):
-
-    def setUp(self):
-        pass
 
     @patch('xivo_dao.services.voicemail_services.voicemail_dao')
     def test_delete_raises_exception(self, voicemail_dao):
@@ -39,11 +36,10 @@ class TestVoicemail(unittest.TestCase):
         voicemail_dao.delete.assert_called_once_with(voicemail)
         sysconf_delete_voicemail.assert_called_once_with(voicemail_id)
 
-    @patch('xivo_dao.services.voicemail_services.voicemail_dao')
-    def test_create_no_properties(self, voicemail_dao):
+    def test_create_no_properties(self):
         voicemail = Voicemail()
 
-        self.assertRaises(voicemail_services.MissingParametersError, voicemail_services.create, voicemail)
+        self.assertRaises(exception.MissingParametersError, voicemail_services.create, voicemail)
 
     @patch('xivo_dao.services.voicemail_services.voicemail_dao')
     @patch('xivo_dao.services.context_services.find_by_name')
@@ -59,7 +55,7 @@ class TestVoicemail(unittest.TestCase):
         context_find.return_value = Mock()
         voicemail_dao.find_voicemail.return_value = None
 
-        self.assertRaises(voicemail_services.InvalidParametersError, voicemail_services.create, voicemail)
+        self.assertRaises(exception.InvalidParametersError, voicemail_services.create, voicemail)
 
     @patch('xivo_dao.services.voicemail_services.voicemail_dao')
     @patch('xivo_dao.services.context_services.find_by_name')
@@ -75,7 +71,7 @@ class TestVoicemail(unittest.TestCase):
         context_find.return_value = Mock()
         voicemail_dao.find_voicemail.return_value = None
 
-        self.assertRaises(voicemail_services.InvalidParametersError, voicemail_services.create, voicemail)
+        self.assertRaises(exception.InvalidParametersError, voicemail_services.create, voicemail)
 
     @patch('xivo_dao.services.voicemail_services.voicemail_dao')
     @patch('xivo_dao.services.context_services.find_by_name')
@@ -91,7 +87,7 @@ class TestVoicemail(unittest.TestCase):
         context_find.return_value = None
         voicemail_dao.find_voicemail.return_value = None
 
-        self.assertRaises(voicemail_services.InvalidParametersError, voicemail_services.create, voicemail)
+        self.assertRaises(exception.InvalidParametersError, voicemail_services.create, voicemail)
 
     @patch('xivo_dao.services.voicemail_services.voicemail_dao')
     @patch('xivo_dao.services.context_services.find_by_name')
@@ -110,7 +106,7 @@ class TestVoicemail(unittest.TestCase):
         voicemail_mock.context = 'existing_context'
         voicemail_dao.find_voicemail.return_value = voicemail_mock
 
-        self.assertRaises(voicemail_services.VoicemailExistsError, voicemail_services.create, voicemail)
+        self.assertRaises(exception.ElementExistsError, voicemail_services.create, voicemail)
 
     @patch('xivo_dao.services.context_services.find_by_name')
     @patch('xivo_dao.services.voicemail_services.voicemail_dao')

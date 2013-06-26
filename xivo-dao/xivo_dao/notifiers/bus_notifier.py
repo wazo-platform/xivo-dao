@@ -1,6 +1,6 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2013  Avencall
+# Copyright (C) 2013 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,6 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-DB_URI = 'postgresql://asterisk:proformatique@localhost/asterisk'
-XIVO_DB_URI = 'postgresql://xivo:proformatique@localhost/xivo'
-SQL_DEBUG = True
+from xivo_dao.helpers.db_manager import BusPublisher
+from xivo_dao.notifiers.command.user.common import UpdateUserCommand, \
+    CreateUserCommand, DeleteUserCommand
+
+
+def user_created(user_id):
+    BusPublisher.execute_command(CreateUserCommand(user_id))
+
+
+def user_updated(user_id):
+    BusPublisher.execute_command(UpdateUserCommand(user_id))
+
+
+def user_deleted(user_id):
+    BusPublisher.execute_command(DeleteUserCommand(user_id))

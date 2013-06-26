@@ -1,6 +1,6 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2013  Avencall
+# Copyright (C) 2012-2013 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,6 +15,30 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-DB_URI = 'postgresql://asterisk:proformatique@localhost/asterisk'
-XIVO_DB_URI = 'postgresql://xivo:proformatique@localhost/xivo'
-SQL_DEBUG = True
+from __future__ import unicode_literals
+
+
+class AbstractNoDataParams(object):
+
+    def __init__(self):
+        pass
+
+    def marshal(self):
+        return None
+
+    @classmethod
+    def unmarshal(cls, msg):
+        return cls()
+
+
+class AbstractUserIDParams(object):
+
+    def __init__(self, user_id):
+        self.user_id = int(user_id)
+
+    def marshal(self):
+        return {'user_id': self.user_id}
+
+    @classmethod
+    def unmarshal(cls, msg):
+        return cls(msg['user_id'])

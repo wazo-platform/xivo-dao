@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013 Avencall
+# Copyright (C) 2012-2013 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,29 +15,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.models.abstract import AbstractModels
+import json
 
 
-class Voicemail(AbstractModels):
+class Marshaler(object):
 
-    MANDATORY = [
-        'name',
-        'number',
-        'context'
-    ]
+    def __init__(self, commands_registry=None):
+        self._commands_registry = commands_registry
 
-    # mapping = {db_field: model_field}
-    _MAPPING = {
-        'uniqueid': 'id',
-        'fullname': 'name',
-        'mailbox': 'number',
-        'context': 'context',
-        'user': 'user'
-    }
+    def marshal_command(self, command):
+        return json.dumps({'name': command.name, 'params': command.marshal()})
 
-    def __init__(self, *args, **kwargs):
-        AbstractModels.__init__(self, *args, **kwargs)
+    def marshal_response(self, response):
+        return json.dumps(response.marshal())
 
-    @property
-    def number_at_context(self):
-        return '%s@%s' % (self.number, self.context)
+    def unmarshal_command(self, data):
+        msg = json.loads(data)
+        msg_name = msg['name']
+        msg_cmd = msg['params']
+        cmd_class = self._commands_registry[msg_name]
+        return cmd_class.unmarshal(msg_cmd)

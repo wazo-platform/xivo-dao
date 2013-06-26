@@ -23,6 +23,7 @@ from xivo_dao.helpers import config
 from sqlalchemy.exc import OperationalError, InterfaceError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session
+from xivo_dao.notifiers.amqp.publisher import AMQPPublisher
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +47,8 @@ AsteriskSession = None
 
 _xivo_engine = None
 XivoSession = None
+
+BusPublisher = None
 
 
 def daosession(func):
@@ -82,6 +85,14 @@ def _apply_and_flush(func, session, args, kwargs):
 def _init():
     _init_asterisk()
     _init_xivo()
+    _init_bus()
+
+
+def _init_bus():
+    global BusPublisher
+    bus_publisher = AMQPPublisher()
+    bus_publisher.connect('localhost', 5672)
+    BusPublisher = bus_publisher
 
 
 def _init_asterisk():

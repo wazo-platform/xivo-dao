@@ -1,6 +1,6 @@
-# -*- coding: UTF-8 -*-
-
-# Copyright (C) 2012-2013  Avencall
+# -*- coding: utf-8 -*-
+#
+# Copyright (C) 2013 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,6 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-DB_URI = 'postgresql://asterisk:proformatique@localhost/asterisk'
-XIVO_DB_URI = 'postgresql://xivo:proformatique@localhost/xivo'
-SQL_DEBUG = True
+from httplib import HTTPConnection
+
+
+class SysconfdConnector(object):
+
+    SYSCONFD_SERVER = "localhost"
+    SYSCONFD_PORT = "8668"
+
+    def __init__(self):
+        self.connection = HTTPConnection("%s:%s" % (SysconfdConnector.SYSCONFD_SERVER, SysconfdConnector.SYSCONFD_PORT))
+
+    def delete_voicemail_storage(self, context, number):
+        self.connection.request('GET', '/delete_voicemail?context=%s&name=%s' % (context, number), '')
