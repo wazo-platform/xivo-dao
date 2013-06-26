@@ -16,10 +16,8 @@ setup(
         'xivo_dao.alchemy',
         'xivo_dao.dao',
         'xivo_dao.helpers',
-        'xivo_dao.mapping_alchemy_sdm',
         'xivo_dao.models',
         'xivo_dao.notifiers',
-        'xivo_dao.service_data_model',
         'xivo_dao.services',
     ]
 )
