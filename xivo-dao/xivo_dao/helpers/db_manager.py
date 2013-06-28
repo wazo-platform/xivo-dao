@@ -23,7 +23,7 @@ from xivo_dao.helpers import config
 from sqlalchemy.exc import OperationalError, InterfaceError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session
-from xivo_dao.notifiers.amqp.publisher import AMQPPublisher
+from xivo_dao.helpers.notifiers.amqp.publisher import AMQPPublisher
 
 logger = logging.getLogger(__name__)
 
@@ -63,6 +63,10 @@ def xivo_daosession(func):
     def wrapped(*args, **kwargs):
         return _execute_with_session(XivoSession, func, args, kwargs)
     return wrapped
+
+
+def give_me_a_session():
+    return AsteriskSession
 
 
 def _execute_with_session(session_class, func, args, kwargs):

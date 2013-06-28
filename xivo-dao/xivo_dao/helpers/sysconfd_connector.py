@@ -16,15 +16,33 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from httplib import HTTPConnection
+import json
+
+SYSCONFD_SERVER = "localhost"
+SYSCONFD_PORT = "8668"
 
 
-class SysconfdConnector(object):
+class SysconfdError(Exception):
+    def __init__(self, value):
+        self.value = value
 
-    SYSCONFD_SERVER = "localhost"
-    SYSCONFD_PORT = "8668"
+    def __str__(self):
+        return "sysconfd error: %s" % self.value
 
-    def __init__(self):
-        self.connection = HTTPConnection("%s:%s" % (SysconfdConnector.SYSCONFD_SERVER, SysconfdConnector.SYSCONFD_PORT))
 
-    def delete_voicemail_storage(self, context, number):
-        self.connection.request('GET', '/delete_voicemail?context=%s&name=%s' % (context, number), '')
+def sysconfd_conn_request(method, action, args):
+    conn = HTTPConnection("%s:%s" % (SYSCONFD_SERVER, SYSCONFD_PORT))
+    args = json.dumps(args)
+    conn.request(method, action, args)
+    res = conn.getresponse()
+    if res.status != 200:
+        raise SysconfdError('return status %s' % res.status)
+    conn.close()
+
+
+def exec_request_handlers(args):
+    sysconfd_conn_request('POST', '/exec_request_handlers', args)
+
+
+def delete_voicemail_storage(context, number):
+    sysconfd_conn_request('GET', '/delete_voicemail?context=%s&name=%s' % (context, number), '')
