@@ -83,7 +83,7 @@ def delete(session, line):
         raise ElementDeletionError('Line', e)
 
     if nb_row_affected == 0:
-        raise ElementDeletionError('Line', 'No now affected, probably line_id %s not exsit' % line.id)
+        raise ElementDeletionError('Line', 'line_id %s not exsit' % line.id)
 
     return nb_row_affected
 
