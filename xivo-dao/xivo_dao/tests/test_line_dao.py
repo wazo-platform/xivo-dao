@@ -230,7 +230,7 @@ class TestLineFeaturesDAO(DAOTestCase):
         name = 'abcdef'
         context = 'default'
 
-        expected_extension = Extension(LINE_NUMBER, context)
+        expected_extension = Extension(LINE_NUMBER, context, is_internal=True)
         self._insert_line(context, name=name, protocol=protocol)
 
         extension = line_dao.get_extension_from_protocol_interface(protocol, name)
@@ -242,7 +242,7 @@ class TestLineFeaturesDAO(DAOTestCase):
         name = LINE_NUMBER
         context = 'default'
 
-        expected_extension = Extension(LINE_NUMBER, context)
+        expected_extension = Extension(LINE_NUMBER, context, is_internal=True)
         self._insert_line(context, name=name, protocol=protocol)
 
         extension = line_dao.get_extension_from_protocol_interface(protocol, name)
