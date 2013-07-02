@@ -32,51 +32,51 @@ from xivo_dao.data_handler.exception import ElementNotExistsError, \
 
 @daosession
 def find_all(session):
-    res = session.query(UserSchema).all()
-    if not res:
+    user_rows = session.query(UserSchema).all()
+    if not user_rows:
         return None
 
-    tmp = []
-    for user in res:
-        tmp.append(User.from_data_source(user))
+    users = []
+    for user_row in user_rows:
+        users.append(User.from_data_source(user_row))
 
-    return tmp
+    return users
 
 
 @daosession
 def find_user(session, firstname, lastname):
-    res = (session.query(UserSchema)
+    user_row = (session.query(UserSchema)
                  .filter(UserSchema.firstname == firstname)
                  .filter(UserSchema.lastname == lastname)
                  .first())
-    if not res:
+    if not user_row:
         return None
 
-    return User.from_data_source(res)
+    return User.from_data_source(user_row)
 
 
 @daosession
 def get(session, user_id):
-    res = _new_query(session).filter(UserSchema.id == user_id).first()
-    if not res:
+    user_row = _new_query(session).filter(UserSchema.id == user_id).first()
+    if not user_row:
         raise ElementNotExistsError('User', id=user_id)
 
-    return User.from_data_source(res)
+    return User.from_data_source(user_row)
 
 
 @daosession
 def get_by_number_context(session, number, context):
-    res = (_new_query(session)
+    user_row = (_new_query(session)
            .filter(LineSchema.iduserfeatures == UserSchema.id)
            .filter(LineSchema.context == context)
            .filter(LineSchema.number == number)
            .filter(LineSchema.commented == 0)
            .first())
 
-    if not res:
+    if not user_row:
         raise ElementNotExistsError('User', number=number, context=context)
 
-    return User.from_data_source(res)
+    return User.from_data_source(user_row)
 
 
 @daosession
@@ -130,7 +130,7 @@ def delete(session, user):
 
 
 def _delete_user(session, user_id):
-    result = (session.query(UserSchema) .filter(UserSchema.id == user_id) .delete())
+    result = (session.query(UserSchema).filter(UserSchema.id == user_id).delete())
     (session.query(QueueMember).filter(QueueMember.usertype == 'user')
                                .filter(QueueMember.userid == user_id)
                                .delete())
