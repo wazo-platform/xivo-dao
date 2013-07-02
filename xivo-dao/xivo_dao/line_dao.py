@@ -62,7 +62,7 @@ def get_extension_from_protocol_interface(session, protocol, interface):
         message = 'no line with interface %s' % interface
         raise LookupError(message)
 
-    extension = Extension(line_row[0], line_row[1])
+    extension = Extension(number=line_row[0], context=line_row[1], is_internal=True)
     return extension
 
 
