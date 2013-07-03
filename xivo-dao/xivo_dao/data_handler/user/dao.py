@@ -56,15 +56,16 @@ def find_user(session, firstname, lastname):
 
 
 @daosession
-def get_user_by_id(session, user_id):
+def get(session, user_id):
     res = _new_query(session).filter(UserSchema.id == user_id).first()
     if not res:
-        raise LookupError('No user with id %s' % user_id)
-    return res
+        raise ElementNotExistsError('User', id=user_id)
+
+    return User.from_data_source(res)
 
 
 @daosession
-def get_user_by_number_context(session, number, context):
+def get_by_number_context(session, number, context):
     res = (_new_query(session)
            .filter(LineSchema.iduserfeatures == UserSchema.id)
            .filter(LineSchema.context == context)

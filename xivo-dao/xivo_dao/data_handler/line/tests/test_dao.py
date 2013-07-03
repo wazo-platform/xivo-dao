@@ -64,7 +64,7 @@ class TestGetLineDao(DAOTestCase):
         self.empty_tables()
 
     def test_get_by_user_id_no_line(self):
-        self.assertRaises(LookupError, line_dao.get_line_by_user_id, 666)
+        self.assertRaises(LookupError, line_dao.get_by_user_id, 666)
 
     def test_get_by_user_id(self):
         line_name = 'sdklfj'
@@ -73,7 +73,7 @@ class TestGetLineDao(DAOTestCase):
         user_id = self.add_user()
         self.add_user_line(user_id=user_id, line_id=line_id)
 
-        line = line_dao.get_line_by_user_id(user_id)
+        line = line_dao.get_by_user_id(user_id)
 
         assert_that(line.name, equal_to(line_name))
 
@@ -84,10 +84,10 @@ class TestGetLineDao(DAOTestCase):
         user_id = self.add_user()
         self.add_user_line(user_id=user_id, line_id=line_id)
 
-        self.assertRaises(LookupError, line_dao.get_line_by_user_id, user_id)
+        self.assertRaises(LookupError, line_dao.get_by_user_id, user_id)
 
     def test_get_by_number_context_no_line(self):
-        self.assertRaises(LookupError, line_dao.get_line_by_number_context, '1234', 'default')
+        self.assertRaises(LookupError, line_dao.get_by_number_context, '1234', 'default')
 
     def test_get_by_number_context(self):
         line_name = 'sdklfj'
@@ -97,7 +97,7 @@ class TestGetLineDao(DAOTestCase):
         line_id = self.add_line(name=line_name)
         self.add_extenumber(exten=number, context=context, type='user', typeval=str(line_id))
 
-        line = line_dao.get_line_by_number_context(number, context)
+        line = line_dao.get_by_number_context(number, context)
 
         assert_that(line.name, equal_to(line_name))
 
@@ -109,4 +109,4 @@ class TestGetLineDao(DAOTestCase):
         line_id = self.add_line(name=line_name, commented=1)
         self.add_extenumber(exten=number, context=context, type='user', typeval=str(line_id))
 
-        self.assertRaises(LookupError, line_dao.get_line_by_number_context, number, context)
+        self.assertRaises(LookupError, line_dao.get_by_number_context, number, context)

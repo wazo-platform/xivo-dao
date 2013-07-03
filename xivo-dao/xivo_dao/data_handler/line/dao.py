@@ -31,10 +31,10 @@ from xivo_dao.data_handler.exception import ElementNotExistsError, \
 
 
 @daosession
-def get_line_by_user_id(session, user_id):
+def get_by_user_id(session, user_id):
     line = (_new_query(session)
-        .filter(UserLineSchema.user_id == user_id)
-        .filter(UserLineSchema.line_id == LineSchema.id)
+            .filter(UserLineSchema.user_id == user_id)
+            .filter(UserLineSchema.line_id == LineSchema.id)
     ).first()
 
     if not line:
@@ -44,11 +44,11 @@ def get_line_by_user_id(session, user_id):
 
 
 @daosession
-def get_line_by_number_context(session, number, context):
+def get_by_number_context(session, number, context):
     line = (_new_query(session)
-        .join((ExteNumber, and_(
-            ExteNumber.type == 'user',
-            LineSchema.id == cast(ExteNumber.typeval, Integer))))
+            .join((ExteNumber, and_(
+                ExteNumber.type == 'user',
+                LineSchema.id == cast(ExteNumber.typeval, Integer))))
         .filter(ExteNumber.exten == number)
         .filter(ExteNumber.context == context)
     ).first()
@@ -62,9 +62,9 @@ def get_line_by_number_context(session, number, context):
 @daosession
 def find_line(session, number, context):
     line = (session.query(LineSchema)
-                 .filter(LineSchema.number == number)
-                 .filter(LineSchema.context == context)
-                 .first())
+            .filter(LineSchema.number == number)
+            .filter(LineSchema.context == context)
+            .first())
 
     if not line:
         return None

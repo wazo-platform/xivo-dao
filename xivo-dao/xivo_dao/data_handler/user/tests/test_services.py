@@ -57,7 +57,7 @@ class TestUser(unittest.TestCase):
 
         user_dao_create.assert_called_once_with(user)
         self.assertEquals(user_id, result)
-        user_notifier_created.assert_called_once_with(user_id)
+        user_notifier_created.assert_called_once_with(user)
 
     @patch('xivo_dao.data_handler.user.dao.find_user', Mock(return_value=None))
     @patch('xivo_dao.data_handler.user.dao.create')
@@ -80,7 +80,7 @@ class TestUser(unittest.TestCase):
         user_services.edit(user)
 
         user_dao_edit.assert_called_once_with(user)
-        user_notifier_edited.assert_called_once_with(user.id)
+        user_notifier_edited.assert_called_once_with(user)
 
     @patch('xivo_dao.data_handler.user.notifier.deleted')
     @patch('xivo_dao.data_handler.user.dao.delete')
@@ -90,4 +90,4 @@ class TestUser(unittest.TestCase):
         user_services.delete(user)
 
         user_dao_delete.assert_called_once_with(user)
-        user_notifier_deleted.assert_called_once_with(user.id)
+        user_notifier_deleted.assert_called_once_with(user)

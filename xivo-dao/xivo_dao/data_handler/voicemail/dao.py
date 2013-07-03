@@ -21,18 +21,23 @@ from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.data_handler.voicemail.model import Voicemail
+from xivo_dao.helpers import sysconfd_connector
 from xivo_dao.helpers.sysconfd_connector import SysconfdError
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementCreationError, ElementEditionError, ElementDeletionError
 
 
+@daosession
+def find_all(session):
+    res = session.query(VoicemailSchema).all()
+    if not res:
+        return None
 
-class VoicemailNotFoundError(LookupError):
+    tmp = []
+    for voicemail in res:
+        tmp.append(Voicemail.from_data_source(voicemail))
 
-    @classmethod
-    def from_number_and_context(cls, number, context):
-        message = "Voicemail %s@%s does not exist" % (number, context)
-        return cls(message)
+    return tmp
 
 
 @daosession

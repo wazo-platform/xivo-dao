@@ -15,12 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.dao import line_dao
-from xivo_dao.notifiers import sysconf_notifier
+from . import notifier
+from . import dao
 
 
+def get_by_user_id(user_id):
+    return dao.get_by_user_id(user_id)
 
 
 def delete(line):
-    line_dao.delete(line)
-    sysconf_notifier.delete_line(line.id)
+    dao.delete(line)
+    notifier.deleted(line)

@@ -15,18 +15,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from urllib2 import URLError
 from xivo_dao.data_handler.user import dao as user_dao, notifier
-from xivo_dao.helpers.services_exception import MissingParametersError, \
-    InvalidParametersError, ElementExistsError
-from xivo_dao.data_handler.voicemail.model import Voicemail
+from xivo_dao.data_handler.exception import MissingParametersError, \
+    InvalidParametersError, ElementAlreadyExistsError
+from xivo_dao.data_handler.line import services as line_services
 from xivo_dao.data_handler.voicemail import services as voicemail_services
+from xivo_dao.helpers import provd_connector
 
 
+def get(user_id):
+    return user_dao.get(user_id)
 
 
-
-def get_by_user_id(user_id):
-    return user_dao.get_user_by_id(user_id)
+def get_by_number_context(number, context):
+    return user_dao.get_by_number_context(number, context)
 
 
 def find_all():
@@ -41,78 +44,43 @@ def create(user):
     _validate(user)
     _check_for_existing_user(user)
     user_id = user_dao.create(user)
-    notifier.created(user_id)
+    notifier.created(user)
     return user_id
 
 
 def edit(user):
     _validate(user)
     user_dao.edit(user)
-    notifier.edited(user.id)
+    _update_voicemail_fullname(user)
+    notifier.edited(user)
 
 
 def delete(user):
     user_dao.delete(user)
-    notifier.deleted(user.id)
-"""
+    notifier.deleted(user)
+
+
+def delete_voicemail(user):
     try:
-    except ProvdError as e:
-        result = "The user was deleted but the device could not be reconfigured (%s)" % str(e)
-        result = rest_encoder.encode([result])
-        return make_response(result, 500)
-    except VoicemailExistsException:
-        result = "Cannot remove a user with a voicemail. Delete the voicemail or dissociate it from the user."
-        result = rest_encoder.encode([result])
-        return make_response(result, 412)
-    except SysconfdError as e:
-        result = "The user was deleted but the voicemail content could not be removed (%s)" % str(e)
-        result = rest_encoder.encode([result])
-        return make_response(result, 500)
+        voicemail = voicemail_services.get(user.voicemail_id)
+    except LookupError:
+        return
+    else:
+        voicemail_services.delete(voicemail)
 
 
-def _provd_remove_line(self, deviceid, linenum):
-    config = self.config_manager.get(deviceid)
-    del config["raw_config"]["sip_lines"][str(linenum)]
-    if len(config["raw_config"]["sip_lines"]) == 0:
-        # then we reset to autoprov
-        self._reset_config(config)
-        self._reset_device_to_autoprov(deviceid)
-    self.config_manager.update(config)
-
-
-def _reset_config(self, config):
-    del config["raw_config"]["sip_lines"]
-    if "funckeys" in config["raw_config"]:
-        del config["raw_config"]["funckeys"]
-
-
-def _reset_device_to_autoprov(self, deviceid):
-    device = self.device_manager.get(deviceid)
-    new_configid = self.config_manager.autocreate()
-    device["config"] = new_configid
-    self.device_manager.update(device)
-
-
-def _remove_line(self, line):
-    device = line.device
-    line_dao.delete(line.id)
-    deviceid = device_dao.get_deviceid(device)
-    if deviceid is not None:
-        try:
-            self._provd_remove_line(deviceid, line.num)
-        except URLError as e:
-            raise ProvdError(str(e))
-
-
-def _delete_voicemail(self, voicemailid):
-    voicemail = voicemail_dao.get(voicemailid)
-    context, mailbox = voicemail.context, voicemail.mailbox
-    voicemail_dao.delete(voicemailid)
+def delete_line(user):
     try:
-        self.sysconfd_connector.delete_voicemail_storage(context, mailbox)
-    except Exception as e:
-        raise SysconfdError(str(e))
-"""
+        line = line_services.get_by_user_id(user.id)
+    except LookupError:
+        return
+    else:
+        if line.deviceid is not None:
+            try:
+                _provd_remove_line(line.deviceid, line.num)
+            except URLError as e:
+                raise provd_connector.ProvdError(str(e))
+            line_services.delete(line)
 
 
 def _validate(user):
@@ -136,11 +104,34 @@ def _check_invalid_parameters(user):
 
 def _check_for_existing_user(user):
     if user_dao.find_user(user.firstname, user.lastname):
-        raise ElementExistsError('User', user.firstname, user.lastname)
+        raise ElementAlreadyExistsError('User', user.firstname, user.lastname)
 
 
 def _update_voicemail_fullname(user):
-    voicemail_id = user.voicemail
-    if voicemail_id is not None:
-        voicemail = Voicemail.from_user_data({'fullname': user.fullname})
-        voicemail_services.edit(voicemail_id, voicemail)
+    if hasattr(user, 'voicemail_id') and user.voicemail_id is not None:
+        voicemail = voicemail_services.get(user.voicemail_id)
+        voicemail.fullname = user.fullname
+        voicemail_services.edit(voicemail)
+
+
+def _provd_remove_line(deviceid, linenum):
+    config = provd_connector.config_manager.get(deviceid)
+    del config["raw_config"]["sip_lines"][str(linenum)]
+    if len(config["raw_config"]["sip_lines"]) == 0:
+        # then we reset to autoprov
+        _reset_config(config)
+        _reset_device_to_autoprov(deviceid)
+    provd_connector.config_manager.update(config)
+
+
+def _reset_config(config):
+    del config["raw_config"]["sip_lines"]
+    if "funckeys" in config["raw_config"]:
+        del config["raw_config"]["funckeys"]
+
+
+def _reset_device_to_autoprov(deviceid):
+    device = provd_connector.device_manager.get(deviceid)
+    new_configid = provd_connector.config_manager.autocreate()
+    device["config"] = new_configid
+    provd_connector.device_manager.update(device)

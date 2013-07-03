@@ -18,7 +18,7 @@
 import unittest
 
 from mock import Mock, patch, ANY
-from xivo_dao.data_handler.user import user_association
+from xivo_dao.data_handler.user import association as user_association
 from xivo_dao.data_handler.voicemail.model import Voicemail
 from xivo_dao.data_handler.user.model import User
 from xivo_dao.data_handler.exception import ElementNotExistsError
@@ -26,8 +26,8 @@ from xivo_dao.data_handler.exception import ElementNotExistsError
 
 class TestUserAssociation(unittest.TestCase):
 
-    @patch('xivo_dao.data_handler.voicemail.dao.get_voicemail_by_id')
-    @patch('xivo_dao.data_handler.user.services.user_dao.get_user_by_id')
+    @patch('xivo_dao.data_handler.voicemail.services.get')
+    @patch('xivo_dao.data_handler.user.services.get')
     def test_associate_voicemail_when_user_inexistant(self, get_user, get_voicemail):
         user_id = 21
         voicemail_id = 32
@@ -37,8 +37,8 @@ class TestUserAssociation(unittest.TestCase):
 
         self.assertRaises(ElementNotExistsError, user_association.associate_voicemail, user_id, voicemail_id)
 
-    @patch('xivo_dao.data_handler.voicemail.dao.get_voicemail_by_id')
-    @patch('xivo_dao.data_handler.user.services.user_dao.get_user_by_id')
+    @patch('xivo_dao.data_handler.voicemail.services.get')
+    @patch('xivo_dao.data_handler.user.services.get')
     def test_associate_voicemail_when_voicemail_inexistant(self, get_user, get_voicemail):
         user_id = 21
         voicemail_id = 32
@@ -48,20 +48,22 @@ class TestUserAssociation(unittest.TestCase):
 
         self.assertRaises(ElementNotExistsError, user_association.associate_voicemail, user_id, voicemail_id)
 
-    @patch('xivo_dao.data_handler.voicemail.dao.get_voicemail_by_id')
-    @patch('xivo_dao.data_handler.voicemail.dao.edit')
-    @patch('xivo_dao.data_handler.user.services.user_dao.get_user_by_id')
-    def test_associate_voicemail(self, get_user, edit_voicemail, get_voicemail):
+    @patch('xivo_dao.data_handler.voicemail.services.get')
+    @patch('xivo_dao.data_handler.user.services.edit')
+    @patch('xivo_dao.data_handler.user.services.get')
+    def test_associate_voicemail(self, get_user, edit_user, get_voicemail):
         user_id = 21
         voicemail_id = 32
 
         voicemail = Voicemail(
+            id=voicemail_id,
             number='42',
             context='super_context',
-            name='voicemail name',
+            name='Johnny Wilkins',
         )
 
         user = User(
+            id=user_id,
             firstname='Johnny',
             lastname='Wilkins',
         )
@@ -69,15 +71,7 @@ class TestUserAssociation(unittest.TestCase):
         get_user.return_value = user
         get_voicemail.return_value = voicemail
 
-        expected_voicemail = Voicemail(
-            number='42',
-            context='super_context',
-            name='voicemail name',
-            user=user
-        )
-
         user_association.associate_voicemail(user_id, voicemail_id)
 
-        edit_voicemail.assert_called_once_with(ANY)
-        passed_voicemail = edit_voicemail.call_args[0][0]
-        self.assertEquals(expected_voicemail, passed_voicemail)
+        edit_user.assert_called_once_with(ANY)
+        self.assertEquals(user.voicemail_id, voicemail_id)

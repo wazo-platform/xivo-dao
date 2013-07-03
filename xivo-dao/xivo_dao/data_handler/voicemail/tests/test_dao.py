@@ -100,12 +100,12 @@ class TestGetVoicemail(DAOTestCase):
     def setUp(self):
         self.empty_tables()
 
-    def test_get_voicemail_by_id_with_no_voicemail(self):
+    def test_get_with_no_voicemail(self):
         voicemail_id = 42
 
         self.assertRaises(LookupError, voicemail_dao.get, voicemail_id)
 
-    def test_get_voicemail_by_id_with_one_voicemail(self):
+    def test_get_with_one_voicemail(self):
         name = 'voicemail name'
         number = '42'
         context = 'context-42'
@@ -124,7 +124,7 @@ class TestGetVoicemail(DAOTestCase):
             id=voicemail_id
         )
 
-        voicemail = voicemail_dao.get_voicemail_by_id(voicemail_id)
+        voicemail = voicemail_dao.get(voicemail_id)
 
         self.assertEquals(expected_voicemail, voicemail)
 
@@ -188,7 +188,8 @@ class TestVoicemailDeleteSIP(DAOTestCase):
     def setUp(self):
         self.empty_tables()
 
-    def test_delete_from_sip_user(self):
+    @patch('xivo_dao.helpers.sysconfd_connector.delete_voicemail_storage')
+    def test_delete_from_sip_user(self, delete_voicemail_storage):
         voicemail = Mock(voicemail_dao.Voicemail)
         voicemail.number = '42'
         voicemail.context = 'default'
@@ -202,9 +203,11 @@ class TestVoicemailDeleteSIP(DAOTestCase):
         self._check_user_table(user_id)
         self._check_user_sip_table(user_sip_id)
         self._check_voicemail_table(voicemail_id)
+        delete_voicemail_storage.assert_called_once_with(voicemail.context, voicemail.number)
 
+    @patch('xivo_dao.helpers.sysconfd_connector.delete_voicemail_storage')
     @patch('xivo_dao.helpers.db_manager.AsteriskSession')
-    def test_delete_with_database_error(self, Session):
+    def test_delete_with_database_error(self, Session, delete_voicemail_storage):
         session = Mock()
         session.commit.side_effect = SQLAlchemyError()
         Session.return_value = session
@@ -218,6 +221,7 @@ class TestVoicemailDeleteSIP(DAOTestCase):
         self.assertRaises(ElementDeletionError, voicemail_dao.delete, voicemail)
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
+        delete_voicemail_storage.assert_called_once_with(voicemail.context, voicemail.number)
 
     def _prepare_database(self, voicemail):
         voicemail_row = VoicemailSchema(context=voicemail.context,
@@ -277,7 +281,8 @@ class TestVoicemailDeleteSCCP(DAOTestCase):
     def setUp(self):
         self.empty_tables()
 
-    def test_delete_from_sccp_user(self):
+    @patch('xivo_dao.helpers.sysconfd_connector.delete_voicemail_storage')
+    def test_delete_from_sccp_user(self, delete_voicemail_storage):
         voicemail = Mock(voicemail_dao.Voicemail)
         voicemail.number = '42'
         voicemail.context = 'default'

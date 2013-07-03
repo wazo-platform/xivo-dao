@@ -21,7 +21,7 @@ import unittest
 from xivo_dao.data_handler.user import command
 
 
-class ConcreteAgentIDParams(command.AbstractUserIDParams):
+class ConcreteUserIDParams(command.AbstractUserIDParams):
 
     name = 'foo'
 
@@ -29,18 +29,18 @@ class ConcreteAgentIDParams(command.AbstractUserIDParams):
 class TestAbstractUserIDParams(unittest.TestCase):
 
     def setUp(self):
-        self.user_id = 42
-        self.msg = {'user_id': self.user_id}
+        self.id = 42
+        self.msg = {'id': self.id}
 
     def test_marshal(self):
-        command = ConcreteAgentIDParams(self.user_id)
+        command = ConcreteUserIDParams(self.id)
 
         msg = command.marshal()
 
         self.assertEqual(msg, self.msg)
 
     def test_unmarshal(self):
-        command = ConcreteAgentIDParams.unmarshal(self.msg)
+        command = ConcreteUserIDParams.unmarshal(self.msg)
 
-        self.assertEqual(command.name, ConcreteAgentIDParams.name)
-        self.assertEqual(command.user_id, self.user_id)
+        self.assertEqual(command.name, ConcreteUserIDParams.name)
+        self.assertEqual(command.id, self.id)

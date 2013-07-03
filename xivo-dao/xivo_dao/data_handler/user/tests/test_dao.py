@@ -64,31 +64,31 @@ class TestUserDAO(DAOTestCase):
     def setUp(self):
         self.empty_tables()
 
-    def test_get_user_by_id_inexistant(self):
-        self.assertRaises(LookupError, user_dao.get_user_by_id, 42)
+    def test_get_inexistant(self):
+        self.assertRaises(LookupError, user_dao.get, 42)
 
-    def test_get_user_by_id(self):
+    def test_get(self):
         user_id = self._insert_user(firstname='Paul')
 
-        user = user_dao.get_user_by_id(user_id)
+        user = user_dao.get(user_id)
 
         assert_that(user.id, equal_to(user_id))
 
-    def test_get_user_by_id_commented(self):
+    def test_get_commented(self):
         user_id = self._insert_user(firstname='Robert', commented=1)
 
-        self.assertRaises(LookupError, user_dao.get_user_by_id, user_id)
+        self.assertRaises(LookupError, user_dao.get, user_id)
 
-    def test_get_user_by_number_context(self):
+    def test_get_by_number_context(self):
         context, number = 'default', '1234'
         user_id = self._insert_user(firstname='Robert')
         self._insert_line(iduserfeatures=user_id, number=number, context=context)
 
-        user = user_dao.get_user_by_number_context(number, context)
+        user = user_dao.get_by_number_context(number, context)
 
         assert_that(user.id, equal_to(user_id))
 
-    def test_get_user_by_number_context_line_commented(self):
+    def test_get_by_number_context_line_commented(self):
         context, number = 'default', '1234'
         user_id = self._insert_user(firstname='Robert')
         self._insert_line(iduserfeatures=user_id,
@@ -96,7 +96,7 @@ class TestUserDAO(DAOTestCase):
                           context=context,
                           commented=1)
 
-        self.assertRaises(LookupError, user_dao.get_user_by_number_context, number, context)
+        self.assertRaises(LookupError, user_dao.get_by_number_context, number, context)
 
     def _insert_line(self, **kwargs):
         kwargs.setdefault('protocolid', 0)
@@ -183,7 +183,7 @@ class TestUserDAO(DAOTestCase):
         lastname = 'Pipo'
         user_id = self._insert_user(firstname=firstname, lastname=lastname)
 
-        user = user_dao.get_user_by_id(user_id)
+        user = user_dao.get(user_id)
 
         user_dao.delete(user)
 

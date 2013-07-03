@@ -15,22 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.data_handler.user.services import UserNotFoundError
-from xivo_dao.data_handler.voicemail.dao import VoicemailNotFoundError
-from xivo_dao.data_handler.user import dao as user_dao
-from xivo_dao.data_handler.voicemail import dao as voicemail_dao
+from xivo_dao.data_handler.user import services as user_services
+from xivo_dao.data_handler.voicemail import services as voicemail_services
 
 
 def associate_voicemail(user_id, voicemail_id):
-    try:
-        user = user_dao.get_user_by_id(user_id)
-    except LookupError:
-        raise UserNotFoundError(user_id)
-    try:
-        voicemail = voicemail_dao.get_voicemail_by_id(voicemail_id)
-    except LookupError:
-        raise VoicemailNotFoundError(voicemail_id)
-
-    voicemail.user = user
-
-    voicemail_dao.edit(voicemail)
+    user = user_services.get(user_id)
+    voicemail = voicemail_services.get(voicemail_id)
+    user.voicemail_id = voicemail.id
+    user_services.edit(user)

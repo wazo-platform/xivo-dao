@@ -20,15 +20,15 @@ from __future__ import unicode_literals
 
 class AbstractVoicemailIDParams(object):
 
-    def __init__(self, user_id):
-        self.user_id = int(user_id)
+    def __init__(self, voicemail_id):
+        self.id = int(voicemail_id)
 
     def marshal(self):
-        return {'voicemail_id': self.user_id}
+        return {'id': self.id}
 
     @classmethod
     def unmarshal(cls, msg):
-        return cls(msg['voicemail_id'])
+        return cls(msg['id'])
 
 
 class EditVoicemailCommand(AbstractVoicemailIDParams):
