@@ -26,6 +26,7 @@ from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.alchemy.extenumber import ExteNumber
+from xivo_dao.alchemy.devicefeatures import DeviceFeatures
 
 logger = logging.getLogger(__name__)
 
@@ -113,6 +114,18 @@ class DAOTestCase(unittest.TestCase):
         user = UserFeatures(**kwargs)
         self.add_me(user)
         return user.id
+
+    def add_device(self, **kwargs):
+        kwargs.setdefault('deviceid', '8aada8aae3784957b6c160195c8fbcd7')
+        kwargs.setdefault('mac', '00:08:5d:13:ca:05')
+        kwargs.setdefault('vendor', 'Aastra')
+        kwargs.setdefault('model', '6739i')
+        kwargs.setdefault('plugin', 'xivo-aastra-3.2.2.1136')
+        kwargs.setdefault('proto', 'SIP')
+
+        device = DeviceFeatures(**kwargs)
+        self.add_me(device)
+        return device.id
 
     def add_me_all(self, obj_list):
         self.session.begin()
