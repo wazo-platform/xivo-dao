@@ -31,7 +31,10 @@ class Voicemail(AbstractModels):
         'uniqueid': 'id',
         'fullname': 'name',
         'mailbox': 'number',
-        'context': 'context',
+        'context': 'context'
+    }
+
+    _RELATION = {
         'user': 'user'
     }
 

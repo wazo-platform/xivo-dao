@@ -47,7 +47,6 @@ def find_voicemail(session, number, context):
                  .filter(VoicemailSchema.mailbox == number)
                  .filter(VoicemailSchema.context == context)
                  .first())
-
     if not voicemail:
         return None
 
@@ -55,23 +54,19 @@ def find_voicemail(session, number, context):
 
 
 @daosession
-def get_voicemail_by_id(session, voicemail_id):
+def get(session, voicemail_id):
     voicemail = (session.query(VoicemailSchema)
                  .filter(VoicemailSchema.uniqueid == voicemail_id)
                  .first())
     if not voicemail:
-        raise LookupError()
+        raise ElementNotExistsError('Voicemail', uniqueid=voicemail_id)
 
     return Voicemail.from_data_source(voicemail)
 
 
 @daosession
 def create(session, voicemail):
-    voicemail_row = VoicemailSchema(
-        fullname=voicemail.name,
-        mailbox=voicemail.number,
-        context=voicemail.context
-    )
+    voicemail_row = voicemail.to_data_source(VoicemailSchema)
     session.begin()
     session.add(voicemail_row)
 
@@ -85,12 +80,11 @@ def create(session, voicemail):
 
 
 @daosession
-def edit(session, voicemail_id, voicemail):
-    user_row = voicemail.to_data_source(VoicemailSchema)
+def edit(session, voicemail):
     session.begin()
     nb_row_affected = (session.query(VoicemailSchema)
-                       .filter(VoicemailSchema.uniqueid == voicemail_id)
-                       .update(user_row.todict()))
+                       .filter(VoicemailSchema.uniqueid == voicemail.id)
+                       .update(voicemail.to_data_dict()))
 
     try:
         session.commit()
@@ -111,7 +105,12 @@ def delete(session, voicemail):
         _unlink_user_sip(session, voicemail.number_at_context)
         _unlink_user(session, voicemail.id)
         nb_row_affected = _delete_voicemail(session, voicemail.id)
-        session.commit()
+        try:
+            sysconfd_connector.delete_voicemail_storage(voicemail.context, voicemail.number)
+        except Exception as e:
+            raise SysconfdError(str(e))
+        else:
+            session.commit()
     except SQLAlchemyError as e:
         session.rollback()
         raise ElementDeletionError('voicemail', e)

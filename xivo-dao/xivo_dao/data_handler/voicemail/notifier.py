@@ -21,26 +21,26 @@ from xivo_dao.data_handler.voicemail.command import CreateVoicemailCommand, \
 from xivo_dao.helpers import sysconfd_connector
 
 sysconfd_base_data = {
-    'ctibus': ['xivo[voicemail,edit,7]'],
+    'ctibus': [],
     'dird': [],
     'ipbx': ['voicemail reload'],
     'agentbus': []
 }
 
 
-def created(voicemail_id):
-    sysconfd_base_data['ctibus'].extend(['xivo[voicemail,create,%s]' % voicemail_id])
-    sysconfd_connector.SYSCONFD_CONN.request('POST', '/exec_request_handlers', sysconfd_base_data)
-    BusPublisher.execute_command(CreateVoicemailCommand(voicemail_id))
+def created(voicemail):
+    sysconfd_base_data['ctibus'].extend(['xivo[voicemail,create,%s]' % voicemail.id])
+    sysconfd_connector.exec_request_handlers(sysconfd_base_data)
+    BusPublisher.execute_command(CreateVoicemailCommand(voicemail))
 
 
-def edited(voicemail_id):
-    sysconfd_base_data['ctibus'].extend(['xivo[voicemail,edit,%s]' % voicemail_id])
-    sysconfd_connector.SYSCONFD_CONN.request('POST', '/exec_request_handlers', sysconfd_base_data)
-    BusPublisher.execute_command(EditVoicemailCommand(voicemail_id))
+def edited(voicemail):
+    sysconfd_base_data['ctibus'].extend(['xivo[voicemail,edit,%s]' % voicemail.id])
+    sysconfd_connector.exec_request_handlers(sysconfd_base_data)
+    BusPublisher.execute_command(EditVoicemailCommand(voicemail))
 
 
-def deleted(voicemail_id):
-    sysconfd_base_data['ctibus'].extend(['xivo[voicemail,delete,%s]' % voicemail_id])
-    sysconfd_connector.SYSCONFD_CONN.request('POST', '/exec_request_handlers', sysconfd_base_data)
-    BusPublisher.execute_command(DeleteVoicemailCommand(voicemail_id))
+def deleted(voicemail):
+    sysconfd_base_data['ctibus'].extend(['xivo[voicemail,delete,%s]' % voicemail.id])
+    sysconfd_connector.exec_request_handlers(sysconfd_base_data)
+    BusPublisher.execute_command(DeleteVoicemailCommand(voicemail))

@@ -20,27 +20,39 @@ from xivo_dao.helpers import sysconfd_connector
 from xivo_dao.data_handler.context import services as context_services
 from xivo_dao.data_handler.voicemail import notifier
 from xivo_dao.helpers.sysconfd_connector import SysconfdError
-from xivo_dao.helpers.services_exception import MissingParametersError, \
-    InvalidParametersError, ElementExistsError
+from xivo_dao.data_handler.exception import MissingParametersError, \
+    InvalidParametersError, ElementAlreadyExistsError
+
+
+def find_all():
+    return voicemail_dao.find_all()
+
+
+def find_by_number_context(number, context):
+    return voicemail_dao.find_voicemail(number, context)
+
+
+def get(voicemail_id):
+    return voicemail_dao.get(voicemail_id)
 
 
 def create(voicemail):
     _validate(voicemail)
     _check_for_existing_voicemail(voicemail)
     voicemail_id = voicemail_dao.create(voicemail)
-    notifier.created(voicemail_id)
+    notifier.created(voicemail)
     return voicemail_id
 
 
 def edit(voicemail):
     _validate(voicemail)
     voicemail_dao.edit(voicemail)
-    notifier.edited(voicemail.id)
+    notifier.edited(voicemail)
 
 
 def delete(voicemail):
     voicemail_dao.delete(voicemail)
-    notifier.deleted(voicemail.id)
+    notifier.deleted(voicemail)
     try:
         sysconfd_connector.delete_voicemail_storage(voicemail.number, voicemail.context)
     except Exception as e:

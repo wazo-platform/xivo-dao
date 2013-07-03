@@ -56,7 +56,7 @@ class TestVoicemail(unittest.TestCase):
 
         voicemail_dao_delete.assert_called_once_with(voicemail)
         sysconfd_connector_delete_voicemail_storage.assert_called_once_with(number, context)
-        voicemail_notifier_deleted.assert_called_once_with(voicemail_id)
+        voicemail_notifier_deleted.assert_called_once_with(voicemail)
 
     @patch('xivo_dao.data_handler.voicemail.notifier')
     def test_create_no_properties(self, voicemail_notifier):
@@ -150,7 +150,7 @@ class TestVoicemail(unittest.TestCase):
 
         voicemail_dao_create.assert_called_once_with(voicemail)
         self.assertEquals(voicemail_id, result)
-        voicemail_notifier_created.assert_called_once_with(voicemail_id)
+        voicemail_notifier_created.assert_called_once_with(voicemail)
 
     @patch('xivo_dao.data_handler.context.services.find_by_name', Mock(return_value=None))
     @patch('xivo_dao.data_handler.voicemail.dao.find_voicemail', Mock(return_value=None))

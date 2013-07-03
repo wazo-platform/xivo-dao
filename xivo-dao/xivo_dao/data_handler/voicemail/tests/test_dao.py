@@ -295,6 +295,7 @@ class TestVoicemailDeleteSCCP(DAOTestCase):
 
         self._check_user_table(user_id)
         self._check_voicemail_table(voicemail_id)
+        delete_voicemail_storage.assert_called_once_with(voicemail.context, voicemail.number)
 
     def _prepare_database(self, voicemail):
         voicemail_row = VoicemailSchema(context=voicemail.context,
