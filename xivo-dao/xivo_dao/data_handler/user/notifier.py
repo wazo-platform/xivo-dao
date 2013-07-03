@@ -30,19 +30,19 @@ sysconfd_base_data = {
 }
 
 
-def created(user_id):
-    sysconfd_base_data['ctibus'].extend(['xivo[user,create,%s]' % user_id])
+def created(user):
+    sysconfd_base_data['ctibus'].extend(['xivo[user,create,%s]' % user.id])
     sysconfd_connector.exec_request_handlers(sysconfd_base_data)
-    BusPublisher.execute_command(CreateUserCommand(user_id))
+    BusPublisher.execute_command(CreateUserCommand(user))
 
 
-def edited(user_id):
-    sysconfd_base_data['ctibus'].extend(['xivo[user,edit,%s]' % user_id])
+def edited(user):
+    sysconfd_base_data['ctibus'].extend(['xivo[user,edit,%s]' % user.id])
     sysconfd_connector.exec_request_handlers(sysconfd_base_data)
-    BusPublisher.execute_command(EditUserCommand(user_id))
+    BusPublisher.execute_command(EditUserCommand(user))
 
 
-def deleted(user_id):
-    sysconfd_base_data['ctibus'].extend(['xivo[user,delete,%s]' % user_id])
+def deleted(user):
+    sysconfd_base_data['ctibus'].extend(['xivo[user,delete,%s]' % user.id])
     sysconfd_connector.exec_request_handlers(sysconfd_base_data)
-    BusPublisher.execute_command(DeleteUserCommand(user_id))
+    BusPublisher.execute_command(DeleteUserCommand(user))
