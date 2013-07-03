@@ -138,18 +138,17 @@ class TestVoicemail(unittest.TestCase):
         name = 'voicemail'
         number = '42'
         context = 'default'
-        voicemail_id = 1
 
         voicemail = Voicemail(name=name,
                               number=number,
                               context=context)
 
-        voicemail_dao_create.return_value = voicemail_id
+        voicemail_dao_create.return_value = voicemail
 
         result = voicemail_services.create(voicemail)
 
         voicemail_dao_create.assert_called_once_with(voicemail)
-        self.assertEquals(voicemail_id, result)
+        self.assertEquals(type(result), Voicemail)
         voicemail_notifier_created.assert_called_once_with(voicemail)
 
     @patch('xivo_dao.data_handler.context.services.find_by_name', Mock(return_value=None))

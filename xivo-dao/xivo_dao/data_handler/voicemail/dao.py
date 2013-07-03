@@ -76,7 +76,9 @@ def create(session, voicemail):
         session.rollback()
         raise ElementCreationError('voicemail', e)
 
-    return voicemail_row.uniqueid
+    voicemail.id = voicemail_row.uniqueid
+
+    return voicemail
 
 
 @daosession

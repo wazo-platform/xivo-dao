@@ -39,9 +39,9 @@ def get(voicemail_id):
 def create(voicemail):
     _validate(voicemail)
     _check_for_existing_voicemail(voicemail)
-    voicemail_id = voicemail_dao.create(voicemail)
+    voicemail = voicemail_dao.create(voicemail)
     notifier.created(voicemail)
-    return voicemail_id
+    return voicemail
 
 
 def edit(voicemail):

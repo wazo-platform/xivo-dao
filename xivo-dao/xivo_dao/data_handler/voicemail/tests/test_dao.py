@@ -147,12 +147,12 @@ class TestCreateVoicemail(DAOTestCase):
                               number=number,
                               context=context)
 
-        result = voicemail_dao.create(voicemail)
+        created_voicemail = voicemail_dao.create(voicemail)
 
         row = (self.session.query(VoicemailSchema)
                .filter(VoicemailSchema.mailbox == number)
                .first())
-        self.assertEquals(row.uniqueid, result)
+        self.assertEquals(row.uniqueid, created_voicemail.id)
         self.assertEquals(row.fullname, name)
         self.assertEquals(row.mailbox, number)
         self.assertEquals(row.context, context)
