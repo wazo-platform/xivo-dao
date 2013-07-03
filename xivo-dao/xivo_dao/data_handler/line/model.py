@@ -29,10 +29,36 @@ class Line(AbstractModels):
     # mapping = {db_field: model_field}
     _MAPPING = {
         'name': 'name',
-        'number': 'number',
+        # 'number': 'number',
         'context': 'context',
-        'protocol': 'protocol'
+        'protocol': 'protocol',
+        'callerid': 'callerid',
+        'deviceid': 'deviceid',
+        'num': 'num'
     }
+
+    _RELATION = {}
 
     def __init__(self, *args, **kwargs):
         AbstractModels.__init__(self, *args, **kwargs)
+
+    @property
+    def interface(self):
+        return '%s/%s' % (self.protocol.upper(), self.name)
+
+
+class LineSIP(Line):
+
+    MANDATORY = [
+        'username',
+        'secret'
+    ]
+
+    # mapping = {db_field: model_field}
+    _MAPPING = {
+        'username': 'username',
+        'secret': 'secret'
+    }
+
+    def __init__(self, *args, **kwargs):
+        Line.__init__(self, *args, **kwargs)
