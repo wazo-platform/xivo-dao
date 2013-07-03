@@ -35,6 +35,10 @@ class AbstractModels(object):
             if hasattr(db_object, db_field):
                 model_field_value = getattr(db_object, db_field)
                 setattr(obj, model_field, model_field_value)
+        for db_field, model_field in obj._RELATION.iteritems():
+            if hasattr(db_object, db_field):
+                model_field_value = getattr(db_object, db_field)
+                setattr(obj, model_field, model_field_value)
         return obj
 
     def to_data_source(self, class_schema):
@@ -47,6 +51,10 @@ class AbstractModels(object):
 
     def update_from_data(self, data):
         for model_field in self._MAPPING.itervalues():
+            model_field_value = data.get(model_field)
+            if model_field_value is not None:
+                setattr(self, model_field, model_field_value)
+        for model_field in self._RELATION.itervalues():
             model_field_value = data.get(model_field)
             if model_field_value is not None:
                 setattr(self, model_field, model_field_value)
