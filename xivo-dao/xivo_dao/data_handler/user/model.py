@@ -41,9 +41,26 @@ class User(AbstractModels):
         'language': 'language',
         'description': 'description'
     }
+    _RELATION = {
+        'voicemailid': 'voicemail_id'
+    }
 
     def __init__(self, *args, **kwargs):
         AbstractModels.__init__(self, *args, **kwargs)
+
+    def to_data_source(self, class_schema):
+        self._build_callerid()
+        return AbstractModels.to_data_source(self, class_schema)
+
+    def to_data_dict(self):
+        self._build_callerid()
+        return AbstractModels.to_data_dict(self)
+
+    def _build_callerid(self):
+        try:
+            self.callerid = '"%s"' % self.fullname
+        except AttributeError:
+            return
 
     @property
     def fullname(self):
