@@ -115,14 +115,14 @@ class TestUserDAO(DAOTestCase):
                     lastname='kiki',
                     language='fr_FR')
 
-        result = user_dao.create(user)
+        created_user = user_dao.create(user)
 
         row = (self.session.query(UserSchema)
                .filter(UserSchema.firstname == user.firstname)
                .filter(UserSchema.lastname == user.lastname)
                .first())
 
-        self.assertEquals(row.id, result)
+        self.assertEquals(row.id, created_user.id)
         self.assertEquals(row.firstname, user.firstname)
         self.assertEquals(row.lastname, user.lastname)
         self.assertEquals(row.language, user.language)

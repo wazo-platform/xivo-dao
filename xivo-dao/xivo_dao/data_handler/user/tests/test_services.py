@@ -47,16 +47,15 @@ class TestUser(unittest.TestCase):
     def test_create(self, user_dao_create, user_notifier_created):
         firstname = 'user'
         lastname = 'toto'
-        user_id = 1
 
         user = User(firstname=firstname, lastname=lastname)
 
-        user_dao_create.return_value = user_id
+        user_dao_create.return_value = user
 
         result = user_services.create(user)
 
         user_dao_create.assert_called_once_with(user)
-        self.assertEquals(user_id, result)
+        self.assertEquals(type(result), User)
         user_notifier_created.assert_called_once_with(user)
 
     @patch('xivo_dao.data_handler.user.dao.find_user', Mock(return_value=None))

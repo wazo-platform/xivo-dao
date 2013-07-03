@@ -91,7 +91,9 @@ def create(session, user):
         session.rollback()
         raise ElementCreationError('User', e)
 
-    return user_row.id
+    user.id = user_row.id
+
+    return user
 
 
 @daosession

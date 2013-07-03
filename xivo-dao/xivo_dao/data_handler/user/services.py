@@ -43,9 +43,9 @@ def find_by_firstname_lastname(firstname, lastname):
 def create(user):
     _validate(user)
     _check_for_existing_user(user)
-    user_id = user_dao.create(user)
+    user = user_dao.create(user)
     notifier.created(user)
-    return user_id
+    return user
 
 
 def edit(user):
