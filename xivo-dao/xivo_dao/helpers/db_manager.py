@@ -65,10 +65,6 @@ def xivo_daosession(func):
     return wrapped
 
 
-def give_me_a_session():
-    return AsteriskSession
-
-
 def _execute_with_session(session_class, func, args, kwargs):
     try:
         session = session_class()
