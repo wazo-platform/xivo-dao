@@ -20,10 +20,9 @@ import unittest
 from mock import patch, Mock
 from xivo_dao.data_handler.voicemail import services as voicemail_services
 from xivo_dao.data_handler.voicemail.model import Voicemail
-from xivo_dao.helpers.services_exception import MissingParametersError, \
-    InvalidParametersError, ElementExistsError
-from xivo_dao.data_handler.voicemail.dao import VoicemailCreationError, \
-    VoicemailDeletionError
+from xivo_dao.data_handler.exception import MissingParametersError, \
+    InvalidParametersError, ElementAlreadyExistsError, ElementCreationError, \
+    ElementDeletionError
 
 
 class TestVoicemail(unittest.TestCase):
@@ -36,9 +35,9 @@ class TestVoicemail(unittest.TestCase):
         voicemail.number = '42'
         voicemail.context = 'default'
 
-        voicemail_dao_delete.side_effect = VoicemailDeletionError('')
+        voicemail_dao_delete.side_effect = ElementDeletionError('voicemail', '')
 
-        self.assertRaises(VoicemailDeletionError, voicemail_services.delete, voicemail)
+        self.assertRaises(ElementDeletionError, voicemail_services.delete, voicemail)
         self.assertEquals(voicemail_notifier_deleted.call_count, 0)
 
     @patch('xivo_dao.data_handler.voicemail.notifier.deleted')
@@ -128,7 +127,7 @@ class TestVoicemail(unittest.TestCase):
         voicemail_mock.number = '42'
         voicemail_mock.context = 'existing_context'
 
-        self.assertRaises(ElementExistsError, voicemail_services.create, voicemail)
+        self.assertRaises(ElementAlreadyExistsError, voicemail_services.create, voicemail)
         self.assertEquals(voicemail_notifier_created.call_count, 0)
 
     @patch('xivo_dao.data_handler.context.services.find_by_name', Mock(return_value=Mock()))
@@ -166,8 +165,7 @@ class TestVoicemail(unittest.TestCase):
                               number=number,
                               context=context)
 
-        error = Exception("message")
-        voicemail_dao_create.side_effect = VoicemailCreationError(error)
+        voicemail_dao_create.side_effect = ElementCreationError('voicemail', '')
 
-        self.assertRaises(VoicemailCreationError, voicemail_dao_create, voicemail)
+        self.assertRaises(ElementCreationError, voicemail_dao_create, voicemail)
         self.assertEquals(voicemail_notifier_created.call_count, 0)

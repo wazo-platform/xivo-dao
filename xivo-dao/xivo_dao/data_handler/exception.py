@@ -28,21 +28,37 @@ class InvalidParametersError(ValueError):
         ValueError.__init__(self, "Invalid parameters: %s" % ','.join(invalid_parameters))
 
 
-class ElementExistsError(ValueError):
+class ElementAlreadyExistsError(ValueError):
 
     def __init__(self, element, *args):
         ValueError.__init__(self, "%s %s already exists" % (element, ' '.join(args)))
 
 
-class VoicemailExistsException(ValueError):
+class ElementNotExistsError(LookupError):
 
-    def __init__(self):
-        ValueError.__init__(self, "Cannot remove a user with a voicemail. Delete the voicemail or dissociate it from the user.")
+    def __init__(self, element, **kwargs):
+        err = []
+        for key, value in kwargs.iteritems():
+            err.append('%s=%s' % (key, value))
+        LookupError.__init__(self, "%s with %s not exists" % (element, ' '.join(err)))
 
 
-class ProvdError(Exception):
-    def __init__(self, value):
-        self.value = value
+class ElementCreationError(IOError):
 
-    def __str__(self):
-        return "provd error: %s" % self.value
+    def __init__(self, element, error):
+        message = "error while creating %s: %s" % (element, unicode(error))
+        IOError.__init__(self, message)
+
+
+class ElementEditionError(IOError):
+
+    def __init__(self, element, error):
+        message = "error while editing %s: %s" % (element, unicode(error))
+        IOError.__init__(self, message)
+
+
+class ElementDeletionError(IOError):
+
+    def __init__(self, element, error):
+        message = "error while deleting %s: %s" % (element, unicode(error))
+        IOError.__init__(self, message)

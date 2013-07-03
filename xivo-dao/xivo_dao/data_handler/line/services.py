@@ -19,12 +19,6 @@ from xivo_dao.dao import line_dao
 from xivo_dao.notifiers import sysconf_notifier
 
 
-class LineNotFoundError(LookupError):
-
-    @classmethod
-    def from_number_and_context(cls, number, context):
-        message = "Line %s@%s does not exist" % (number, context)
-        return cls(message)
 
 
 def delete(line):

@@ -5,9 +5,8 @@ import unittest
 from mock import patch, Mock
 from xivo_dao.data_handler.user.model import User
 from xivo_dao.data_handler.user import services as user_services
-from xivo_dao.helpers.services_exception import MissingParametersError, \
-    ElementExistsError, InvalidParametersError
-from xivo_dao.data_handler.user.dao import UserCreationError
+from xivo_dao.data_handler.exception import MissingParametersError, \
+    ElementAlreadyExistsError, InvalidParametersError, ElementCreationError
 
 
 class TestUser(unittest.TestCase):
@@ -40,7 +39,7 @@ class TestUser(unittest.TestCase):
         user_mock.lastname = lastname
         find_user.return_value = user_mock
 
-        self.assertRaises(ElementExistsError, user_services.create, user)
+        self.assertRaises(ElementAlreadyExistsError, user_services.create, user)
 
     @patch('xivo_dao.data_handler.user.dao.find_user', Mock(return_value=None))
     @patch('xivo_dao.data_handler.user.notifier.created')
@@ -69,9 +68,9 @@ class TestUser(unittest.TestCase):
         user = User(firstname=firstname, lastname=lastname)
 
         error = Exception("message")
-        user_dao_create.side_effect = UserCreationError(error)
+        user_dao_create.side_effect = ElementCreationError(error, '')
 
-        self.assertRaises(UserCreationError, user_services.create, user)
+        self.assertRaises(ElementCreationError, user_services.create, user)
 
     @patch('xivo_dao.data_handler.user.notifier.edited')
     @patch('xivo_dao.data_handler.user.dao.edit')

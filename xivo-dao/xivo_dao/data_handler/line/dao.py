@@ -26,27 +26,8 @@ from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.contextnummember import ContextNumMember
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.data_handler.line.model import Line
-
-
-class LineCreationError(IOError):
-
-    def __init__(self, error):
-        message = "error while creating line: %s" % unicode(error)
-        IOError.__init__(self, message)
-
-
-class LineEditionnError(IOError):
-
-    def __init__(self, error):
-        message = "error while editing line: %s" % unicode(error)
-        IOError.__init__(self, message)
-
-
-class LineDeletionError(IOError):
-
-    def __init__(self, error):
-        message = "error while deleting line: %s" % unicode(error)
-        IOError.__init__(self, message)
+from xivo_dao.data_handler.exception import ElementNotExistsError, \
+    ElementDeletionError
 
 
 @daosession
@@ -57,7 +38,7 @@ def get_line_by_user_id(session, user_id):
     ).first()
 
     if not line:
-        raise LookupError('No line associated with user %s' % user_id)
+        raise ElementNotExistsError('Line', user_id=user_id)
 
     return Line.from_data_source(line)
 
@@ -73,7 +54,7 @@ def get_line_by_number_context(session, number, context):
     ).first()
 
     if not line:
-        raise LookupError('No line matching number %s in context %s' % (number, context))
+        raise ElementNotExistsError('Line', number=number, context=context)
 
     return Line.from_data_source(line)
 
@@ -99,10 +80,10 @@ def delete(session, line):
         session.commit()
     except SQLAlchemyError, e:
         session.rollback()
-        raise LineDeletionError(e)
+        raise ElementDeletionError('Line', e)
 
     if nb_row_affected == 0:
-        raise LineDeletionError('No now affected, probably line_id %s not exsit' % line.id)
+        raise ElementDeletionError('Line', 'No now affected, probably line_id %s not exsit' % line.id)
 
     return nb_row_affected
 

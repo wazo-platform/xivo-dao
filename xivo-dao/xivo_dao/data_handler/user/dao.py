@@ -26,27 +26,8 @@ from xivo_dao.alchemy.phonefunckey import PhoneFunckey
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.data_handler.user.model import User
-
-
-class UserCreationError(IOError):
-
-    def __init__(self, error):
-        message = "error while creating user: %s" % unicode(error)
-        IOError.__init__(self, message)
-
-
-class UserEditionError(IOError):
-
-    def __init__(self, error):
-        message = "error while editing user: %s" % unicode(error)
-        IOError.__init__(self, message)
-
-
-class UserDeletionError(IOError):
-
-    def __init__(self, error):
-        message = "error while deleting user: %s" % unicode(error)
-        IOError.__init__(self, message)
+from xivo_dao.data_handler.exception import ElementNotExistsError, \
+    ElementEditionError, ElementCreationError, ElementDeletionError
 
 
 @daosession
@@ -92,7 +73,7 @@ def get_user_by_number_context(session, number, context):
            .first())
 
     if not res:
-        raise LookupError('No user with number %s in context %s', (number, context))
+        raise ElementNotExistsError('User', number=number, context=context)
 
     return User.from_data_source(res)
 
@@ -107,7 +88,7 @@ def create(session, user):
         session.commit()
     except SQLAlchemyError as e:
         session.rollback()
-        raise UserCreationError(e)
+        raise ElementCreationError('User', e)
 
     return user_row.id
 
@@ -123,10 +104,10 @@ def edit(session, user):
         session.commit()
     except SQLAlchemyError as e:
         session.rollback()
-        raise UserEditionError(e)
+        raise ElementEditionError('User', e)
 
     if nb_row_affected == 0:
-        raise UserEditionError('No now affected, probably user_id %s not exsit' % user.id)
+        raise ElementEditionError('User', 'No now affected, probably user_id %s not exsit' % user.id)
 
     return nb_row_affected
 
@@ -139,10 +120,10 @@ def delete(session, user):
         session.commit()
     except SQLAlchemyError as e:
         session.rollback()
-        raise UserDeletionError(e)
+        raise ElementDeletionError('User', e)
 
     if nb_row_affected == 0:
-        raise UserDeletionError('No now affected, probably user_id %s not exsit' % user.id)
+        raise ElementDeletionError('User', 'No now affected, probably user_id %s not exsit' % user.id)
 
     return nb_row_affected
 

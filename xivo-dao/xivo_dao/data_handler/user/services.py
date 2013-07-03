@@ -22,12 +22,7 @@ from xivo_dao.data_handler.voicemail.model import Voicemail
 from xivo_dao.data_handler.voicemail import services as voicemail_services
 
 
-class UserNotFoundError(LookupError):
 
-    @classmethod
-    def from_user_id(cls, user_id):
-        message = "User %s does not exist" % (user_id)
-        return cls(message)
 
 
 def get_by_user_id(user_id):

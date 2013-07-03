@@ -73,4 +73,4 @@ def _check_invalid_parameters(voicemail):
 def _check_for_existing_voicemail(voicemail):
     if voicemail_dao.find_voicemail(voicemail.number, voicemail.context):
         number_at_context = voicemail.number_at_context
-        raise ElementExistsError('Voicemail', number_at_context)
+        raise ElementAlreadyExistsError('Voicemail', number_at_context)

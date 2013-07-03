@@ -21,27 +21,10 @@ from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.data_handler.voicemail.model import Voicemail
+from xivo_dao.helpers.sysconfd_connector import SysconfdError
+from xivo_dao.data_handler.exception import ElementNotExistsError, \
+    ElementCreationError, ElementEditionError, ElementDeletionError
 
-
-class VoicemailCreationError(IOError):
-
-    def __init__(self, error):
-        message = "error while creating voicemail: %s" % unicode(error)
-        IOError.__init__(self, message)
-
-
-class VoicemailEditionError(IOError):
-
-    def __init__(self, error):
-        message = "error while editing voicemail: %s" % unicode(error)
-        IOError.__init__(self, message)
-
-
-class VoicemailDeletionError(IOError):
-
-    def __init__(self, error):
-        message = "error while deleting voicemail: %s" % unicode(error)
-        IOError.__init__(self, message)
 
 
 class VoicemailNotFoundError(LookupError):
@@ -91,7 +74,7 @@ def create(session, voicemail):
         session.commit()
     except SQLAlchemyError as e:
         session.rollback()
-        raise VoicemailCreationError(e)
+        raise ElementCreationError('voicemail', e)
 
     return voicemail_row.uniqueid
 
@@ -108,10 +91,10 @@ def edit(session, voicemail_id, voicemail):
         session.commit()
     except SQLAlchemyError as e:
         session.rollback()
-        raise VoicemailEditionError(e)
+        raise ElementEditionError('voicemail', e)
 
     if nb_row_affected == 0:
-        raise VoicemailEditionError('No now affected, probably voicemail_id %s not exsit' % voicemail_id)
+        raise ElementEditionError('voicemail', 'No now affected, probably voicemail_id %s not exsit' % voicemail.id)
 
     return nb_row_affected
 
@@ -126,10 +109,10 @@ def delete(session, voicemail):
         session.commit()
     except SQLAlchemyError as e:
         session.rollback()
-        raise VoicemailDeletionError(e)
+        raise ElementDeletionError('voicemail', e)
 
     if nb_row_affected == 0:
-        raise VoicemailDeletionError('No now affected, probably voicemail_id %s not exsit' % voicemail.id)
+        raise ElementDeletionError('voicemail', 'No now affected, probably voicemail_id %s not exsit' % voicemail.id)
 
 
 def _unlink_user_sip(session, number_at_context):

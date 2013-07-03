@@ -26,8 +26,8 @@ from xivo_dao.alchemy.userfeatures import test_dependencies
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.data_handler.voicemail import dao as voicemail_dao
 from xivo_dao.data_handler.voicemail.model import Voicemail
-from xivo_dao.data_handler.voicemail.dao import VoicemailCreationError, \
-    VoicemailDeletionError
+from xivo_dao.data_handler.exception import ElementCreationError, \
+    ElementDeletionError
 
 
 class TestFindVoicemail(DAOTestCase):
@@ -103,7 +103,7 @@ class TestGetVoicemail(DAOTestCase):
     def test_get_voicemail_by_id_with_no_voicemail(self):
         voicemail_id = 42
 
-        self.assertRaises(LookupError, voicemail_dao.get_voicemail_by_id, voicemail_id)
+        self.assertRaises(LookupError, voicemail_dao.get, voicemail_id)
 
     def test_get_voicemail_by_id_with_one_voicemail(self):
         name = 'voicemail name'
@@ -171,7 +171,7 @@ class TestCreateVoicemail(DAOTestCase):
                               number=number,
                               context=context)
 
-        self.assertRaises(VoicemailCreationError, voicemail_dao.create, voicemail)
+        self.assertRaises(ElementCreationError, voicemail_dao.create, voicemail)
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
 
@@ -215,7 +215,7 @@ class TestVoicemailDeleteSIP(DAOTestCase):
         voicemail.number_at_context = '42@default'
         voicemail.id = 1
 
-        self.assertRaises(VoicemailDeletionError, voicemail_dao.delete, voicemail)
+        self.assertRaises(ElementDeletionError, voicemail_dao.delete, voicemail)
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
 
