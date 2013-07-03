@@ -21,14 +21,14 @@ from __future__ import unicode_literals
 class AbstractUserIDParams(object):
 
     def __init__(self, user_id):
-        self.user_id = int(user_id)
+        self.id = int(user_id)
 
     def marshal(self):
-        return {'user_id': self.user_id}
+        return {'id': self.id}
 
     @classmethod
     def unmarshal(cls, msg):
-        return cls(msg['user_id'])
+        return cls(msg['id'])
 
 
 class EditUserCommand(AbstractUserIDParams):
