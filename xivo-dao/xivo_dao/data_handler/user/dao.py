@@ -46,9 +46,9 @@ def find_all(session):
 @daosession
 def find_user(session, firstname, lastname):
     user_row = (session.query(UserSchema)
-                 .filter(UserSchema.firstname == firstname)
-                 .filter(UserSchema.lastname == lastname)
-                 .first())
+                .filter(UserSchema.firstname == firstname)
+                .filter(UserSchema.lastname == lastname)
+                .first())
     if not user_row:
         return None
 
@@ -67,11 +67,11 @@ def get(session, user_id):
 @daosession
 def get_by_number_context(session, number, context):
     user_row = (_new_query(session)
-           .filter(LineSchema.iduserfeatures == UserSchema.id)
-           .filter(LineSchema.context == context)
-           .filter(LineSchema.number == number)
-           .filter(LineSchema.commented == 0)
-           .first())
+                .filter(LineSchema.iduserfeatures == UserSchema.id)
+                .filter(LineSchema.context == context)
+                .filter(LineSchema.number == number)
+                .filter(LineSchema.commented == 0)
+                .first())
 
     if not user_row:
         raise ElementNotExistsError('User', number=number, context=context)
@@ -135,8 +135,8 @@ def _delete_user(session, user_id):
                                .filter(QueueMember.userid == user_id)
                                .delete())
     (session.query(RightCallMember).filter(RightCallMember.type == 'user')
-                                  .filter(RightCallMember.typeval == str(user_id))
-                                  .delete())
+                                   .filter(RightCallMember.typeval == str(user_id))
+                                   .delete())
     (session.query(Callfiltermember).filter(Callfiltermember.type == 'user')
                                     .filter(Callfiltermember.typeval == str(user_id))
                                     .delete())
