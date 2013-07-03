@@ -15,18 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.db_manager import BusPublisher
+from xivo_dao.helpers.bus_manager import send_bus_command
 from xivo_dao.data_handler.device.command import CreateDeviceCommand, \
     EditDeviceCommand, DeleteDeviceCommand
 
 
 def created(device):
-    BusPublisher.execute_command(CreateDeviceCommand(device))
+    send_bus_command(CreateDeviceCommand(device))
 
 
 def edited(device):
-    BusPublisher.execute_command(EditDeviceCommand(device))
+    send_bus_command(EditDeviceCommand(device))
 
 
 def deleted(device):
-    BusPublisher.execute_command(DeleteDeviceCommand(device))
+    send_bus_command(DeleteDeviceCommand(device))

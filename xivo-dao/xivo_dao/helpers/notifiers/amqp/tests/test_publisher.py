@@ -40,7 +40,8 @@ class TestAMQPPublisher(unittest.TestCase):
         publisher.connect(hostname, port)
         amqp_transport_constructor.create_and_connect.assert_called_once_with(hostname, port)
 
-    def test_connect_already_connected(self):
+    @patch('xivo_dao.helpers.notifiers.amqp.publisher.AMQPTransport')
+    def test_connect_already_connected(self, amqp_transport_constructor):
         hostname = 'localhost'
         port = 5672
 

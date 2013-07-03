@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.db_manager import BusPublisher
+from xivo_dao.helpers.bus_manager import send_bus_command
 from xivo_dao.data_handler.user.command import CreateUserCommand, \
     EditUserCommand, DeleteUserCommand
 from xivo_dao.helpers import sysconfd_connector
@@ -33,16 +33,16 @@ sysconfd_base_data = {
 def created(user):
     sysconfd_base_data['ctibus'].extend(['xivo[user,create,%s]' % user.id])
     sysconfd_connector.exec_request_handlers(sysconfd_base_data)
-    BusPublisher.execute_command(CreateUserCommand(user))
+    send_bus_command(CreateUserCommand(user))
 
 
 def edited(user):
     sysconfd_base_data['ctibus'].extend(['xivo[user,edit,%s]' % user.id])
     sysconfd_connector.exec_request_handlers(sysconfd_base_data)
-    BusPublisher.execute_command(EditUserCommand(user))
+    send_bus_command(EditUserCommand(user))
 
 
 def deleted(user):
     sysconfd_base_data['ctibus'].extend(['xivo[user,delete,%s]' % user.id])
     sysconfd_connector.exec_request_handlers(sysconfd_base_data)
-    BusPublisher.execute_command(DeleteUserCommand(user))
+    send_bus_command(DeleteUserCommand(user))

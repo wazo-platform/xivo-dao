@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.db_manager import BusPublisher
+from xivo_dao.helpers.bus_manager import send_bus_command
 from xivo_dao.data_handler.voicemail.command import CreateVoicemailCommand, \
     EditVoicemailCommand, DeleteVoicemailCommand
 from xivo_dao.helpers import sysconfd_connector
@@ -31,16 +31,16 @@ sysconfd_base_data = {
 def created(voicemail):
     sysconfd_base_data['ctibus'].extend(['xivo[voicemail,create,%s]' % voicemail.id])
     sysconfd_connector.exec_request_handlers(sysconfd_base_data)
-    BusPublisher.execute_command(CreateVoicemailCommand(voicemail))
+    send_bus_command(CreateVoicemailCommand(voicemail))
 
 
 def edited(voicemail):
     sysconfd_base_data['ctibus'].extend(['xivo[voicemail,edit,%s]' % voicemail.id])
     sysconfd_connector.exec_request_handlers(sysconfd_base_data)
-    BusPublisher.execute_command(EditVoicemailCommand(voicemail))
+    send_bus_command(EditVoicemailCommand(voicemail))
 
 
 def deleted(voicemail):
     sysconfd_base_data['ctibus'].extend(['xivo[voicemail,delete,%s]' % voicemail.id])
     sysconfd_connector.exec_request_handlers(sysconfd_base_data)
-    BusPublisher.execute_command(DeleteVoicemailCommand(voicemail))
+    send_bus_command(DeleteVoicemailCommand(voicemail))

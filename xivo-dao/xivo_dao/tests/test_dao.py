@@ -18,6 +18,7 @@
 import unittest
 import logging
 
+from mock import patch
 from xivo_dao.helpers.db_manager import Base
 from sqlalchemy.schema import MetaData
 from xivo_dao.helpers import config
@@ -34,7 +35,8 @@ logger = logging.getLogger(__name__)
 class DAOTestCase(unittest.TestCase):
 
     @classmethod
-    def setUpClass(cls):
+    @patch('xivo_dao.helpers.bus_manager.send_bus_command')
+    def setUpClass(cls, send_bus_command):
         logger.debug("Connecting to database")
         config.DB_URI = 'postgresql://asterisk:asterisk@localhost/asterisktest'
         config.XIVO_DB_URI = 'postgresql://asterisk:asterisk@localhost/asterisktest'

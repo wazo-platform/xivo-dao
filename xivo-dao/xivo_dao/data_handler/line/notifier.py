@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.db_manager import BusPublisher
+from xivo_dao.helpers.bus_manager import send_bus_command
 from xivo_dao.data_handler.line.command import CreateLineCommand, \
     EditLineCommand, DeleteLineCommand
 from xivo_dao.helpers import sysconfd_connector
@@ -32,16 +32,16 @@ sysconfd_base_data = {
 def created(line):
     sysconfd_base_data['ctibus'].extend(['xivo[phone,create,%s]' % line.id])
     sysconfd_connector.exec_request_handlers(sysconfd_base_data)
-    BusPublisher.execute_command(CreateLineCommand(line))
+    send_bus_command(CreateLineCommand(line))
 
 
 def edited(line):
     sysconfd_base_data['ctibus'].extend(['xivo[phone,edit,%s]' % line.id])
     sysconfd_connector.exec_request_handlers(sysconfd_base_data)
-    BusPublisher.execute_command(EditLineCommand(line))
+    send_bus_command(EditLineCommand(line))
 
 
 def deleted(line):
     sysconfd_base_data['ctibus'].extend(['xivo[phone,delete,%s]' % line.id])
     sysconfd_connector.exec_request_handlers(sysconfd_base_data)
-    BusPublisher.execute_command(DeleteLineCommand(line))
+    send_bus_command(DeleteLineCommand(line))
