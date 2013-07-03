@@ -31,16 +31,16 @@ sysconfd_base_data = {
 def created(voicemail):
     sysconfd_base_data['ctibus'].extend(['xivo[voicemail,create,%s]' % voicemail.id])
     sysconfd_connector.exec_request_handlers(sysconfd_base_data)
-    send_bus_command(CreateVoicemailCommand(voicemail))
+    send_bus_command(CreateVoicemailCommand(voicemail.id))
 
 
 def edited(voicemail):
     sysconfd_base_data['ctibus'].extend(['xivo[voicemail,edit,%s]' % voicemail.id])
     sysconfd_connector.exec_request_handlers(sysconfd_base_data)
-    send_bus_command(EditVoicemailCommand(voicemail))
+    send_bus_command(EditVoicemailCommand(voicemail.id))
 
 
 def deleted(voicemail):
     sysconfd_base_data['ctibus'].extend(['xivo[voicemail,delete,%s]' % voicemail.id])
     sysconfd_connector.exec_request_handlers(sysconfd_base_data)
-    send_bus_command(DeleteVoicemailCommand(voicemail))
+    send_bus_command(DeleteVoicemailCommand(voicemail.id))

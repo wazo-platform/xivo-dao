@@ -33,16 +33,16 @@ sysconfd_base_data = {
 def created(user):
     sysconfd_base_data['ctibus'].extend(['xivo[user,create,%s]' % user.id])
     sysconfd_connector.exec_request_handlers(sysconfd_base_data)
-    send_bus_command(CreateUserCommand(user))
+    send_bus_command(CreateUserCommand(user.id))
 
 
 def edited(user):
     sysconfd_base_data['ctibus'].extend(['xivo[user,edit,%s]' % user.id])
     sysconfd_connector.exec_request_handlers(sysconfd_base_data)
-    send_bus_command(EditUserCommand(user))
+    send_bus_command(EditUserCommand(user.id))
 
 
 def deleted(user):
     sysconfd_base_data['ctibus'].extend(['xivo[user,delete,%s]' % user.id])
     sysconfd_connector.exec_request_handlers(sysconfd_base_data)
-    send_bus_command(DeleteUserCommand(user))
+    send_bus_command(DeleteUserCommand(user.id))
