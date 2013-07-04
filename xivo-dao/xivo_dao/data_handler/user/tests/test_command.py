@@ -26,14 +26,16 @@ class ConcreteUserIDParams(command.AbstractUserIDParams):
     name = 'foo'
 
 
+USER_ID = 42
+
+
 class TestAbstractUserIDParams(unittest.TestCase):
 
     def setUp(self):
-        self.id = 42
-        self.msg = {'id': self.id}
+        self.msg = {'id': USER_ID}
 
     def test_marshal(self):
-        command = ConcreteUserIDParams(self.id)
+        command = ConcreteUserIDParams(USER_ID)
 
         msg = command.marshal()
 
@@ -43,4 +45,4 @@ class TestAbstractUserIDParams(unittest.TestCase):
         command = ConcreteUserIDParams.unmarshal(self.msg)
 
         self.assertEqual(command.name, ConcreteUserIDParams.name)
-        self.assertEqual(command.id, self.id)
+        self.assertEqual(command.id, USER_ID)

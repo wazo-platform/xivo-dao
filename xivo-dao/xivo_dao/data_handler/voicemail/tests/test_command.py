@@ -26,14 +26,16 @@ class ConcreteVoicemailIDParams(command.AbstractVoicemailIDParams):
     name = 'foo'
 
 
+VOICEMAIL_ID = 42
+
+
 class TestAbstractUserIDParams(unittest.TestCase):
 
     def setUp(self):
-        self.id = 42
-        self.msg = {'id': self.id}
+        self.msg = {'id': VOICEMAIL_ID}
 
     def test_marshal(self):
-        command = ConcreteVoicemailIDParams(self.id)
+        command = ConcreteVoicemailIDParams(VOICEMAIL_ID)
 
         msg = command.marshal()
 
@@ -43,4 +45,4 @@ class TestAbstractUserIDParams(unittest.TestCase):
         command = ConcreteVoicemailIDParams.unmarshal(self.msg)
 
         self.assertEqual(command.name, ConcreteVoicemailIDParams.name)
-        self.assertEqual(command.id, self.id)
+        self.assertEqual(command.id, VOICEMAIL_ID)

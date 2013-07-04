@@ -26,14 +26,16 @@ class ConcreteLineIDParams(command.AbstractLineIDParams):
     name = 'foo'
 
 
+LINE_ID = 42
+
+
 class TestAbstractLineIDParams(unittest.TestCase):
 
     def setUp(self):
-        self.id = 42
-        self.msg = {'id': self.id}
+        self.msg = {'id': LINE_ID}
 
     def test_marshal(self):
-        command = ConcreteLineIDParams(self.id)
+        command = ConcreteLineIDParams(LINE_ID)
 
         msg = command.marshal()
 
@@ -43,4 +45,4 @@ class TestAbstractLineIDParams(unittest.TestCase):
         command = ConcreteLineIDParams.unmarshal(self.msg)
 
         self.assertEqual(command.name, ConcreteLineIDParams.name)
-        self.assertEqual(command.id, self.id)
+        self.assertEqual(command.id, LINE_ID)

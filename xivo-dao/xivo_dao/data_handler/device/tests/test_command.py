@@ -25,19 +25,20 @@ class ConcreteDeviceIDParams(command.AbstractDeviceIDParams):
 
     name = 'foo'
 
+ID = 42
+DEVICE_ID = 24
+
 
 class TestAbstractDeviceIDParams(unittest.TestCase):
 
     def setUp(self):
-        self.id = 42
-        self.deviceid = 24
         self.msg = {
-            'id': self.id,
-            'deviceid': self.deviceid
+            'id': ID,
+            'deviceid': DEVICE_ID
         }
 
     def test_marshal(self):
-        command = ConcreteDeviceIDParams(self.id, self.deviceid)
+        command = ConcreteDeviceIDParams(ID, DEVICE_ID)
 
         msg = command.marshal()
 
@@ -47,5 +48,5 @@ class TestAbstractDeviceIDParams(unittest.TestCase):
         command = ConcreteDeviceIDParams.unmarshal(self.msg)
 
         self.assertEqual(command.name, ConcreteDeviceIDParams.name)
-        self.assertEqual(command.id, self.id)
-        self.assertEqual(command.deviceid, self.deviceid)
+        self.assertEqual(command.id, ID)
+        self.assertEqual(command.deviceid, DEVICE_ID)
