@@ -62,6 +62,32 @@ class TestUserFeaturesDAO(DAOTestCase):
     def test_get_no_result(self):
         self.assertRaises(LookupError, user_dao.get, 1)
 
+    def test_get_user_by_number_context(self):
+        context, number = 'default', '1234'
+        user_id = self._insert_user(firstname='Robert')
+        self._insert_line(iduserfeatures=user_id, number=number, context=context)
+
+        user = user_dao.get_user_by_number_context(number, context)
+
+        assert_that(user.id, equal_to(user_id))
+
+    def test_get_user_by_number_context_line_commented(self):
+        context, number = 'default', '1234'
+        user_id = self._insert_user(firstname='Robert')
+        self._insert_line(iduserfeatures=user_id,
+                          number=number,
+                          context=context,
+                          commented=1)
+
+        self.assertRaises(LookupError, user_dao.get_user_by_number_context, number, context)
+
+    def _insert_line(self, **kwargs):
+        kwargs.setdefault('protocolid', 0)
+        kwargs.setdefault('name', 'chaise')
+        kwargs.setdefault('provisioningid', 0)
+        line = LineFeatures(**kwargs)
+        self.add_me(line)
+
     def test_set_dnd(self):
         user_id = self._insert_user_dnd_not_set()
 

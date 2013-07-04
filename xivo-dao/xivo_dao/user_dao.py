@@ -95,6 +95,21 @@ def get(session, user_id):
 
 
 @daosession
+def get_user_by_number_context(session, number, context):
+    user = (session.query(UserFeatures)
+            .filter(LineFeatures.iduserfeatures == UserFeatures.id)
+            .filter(LineFeatures.context == context)
+            .filter(LineFeatures.number == number)
+            .filter(LineFeatures.commented == 0)
+            .first())
+
+    if not user:
+        raise LookupError('No user with number %s in context %s', (number, context))
+
+    return user
+
+
+@daosession
 def find_by_agent_id(session, agent_id):
     res = session.query(UserFeatures).filter(UserFeatures.agentid == int(agent_id))
     return [user.id for user in res]
