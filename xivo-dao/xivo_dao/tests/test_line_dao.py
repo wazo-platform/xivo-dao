@@ -72,6 +72,17 @@ class TestLineFeaturesDAO(DAOTestCase):
 
         self.assertEqual(number, line.number)
 
+    def test_get_number_by_user_id_not_found(self):
+        self.assertRaises(LookupError, line_dao.get_number_by_user_id, self.user_id)
+
+    def test_get_number_by_user_id_found(self):
+        self._insert_line()
+        expected_phone_number = self.line_number
+
+        phone_number = line_dao.get_number_by_user_id(self.user_id)
+
+        self.assertEquals(phone_number, expected_phone_number)
+
     def test_is_phone_exten(self):
         self.assertFalse(line_dao.is_phone_exten('12345'))
         self.assertFalse(line_dao.is_phone_exten(None))

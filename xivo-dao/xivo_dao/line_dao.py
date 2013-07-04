@@ -85,6 +85,15 @@ def number(session, line_id):
 
 
 @daosession
+def get_number_by_user_id(session, user_id):
+    res = session.query(LineFeatures).filter(LineFeatures.iduserfeatures == user_id)
+    if res.count() == 0:
+        raise LookupError
+    else:
+        return res[0].number
+
+
+@daosession
 def is_phone_exten(session, exten):
     return session.query(LineFeatures).filter(LineFeatures.number == exten).count() > 0
 

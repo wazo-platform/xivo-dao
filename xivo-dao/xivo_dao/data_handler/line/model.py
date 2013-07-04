@@ -29,7 +29,7 @@ class Line(AbstractModels):
     # mapping = {db_field: model_field}
     _MAPPING = {
         'name': 'name',
-        # 'number': 'number',
+        # 'number': 'number',  # TODO: implement a way to get the phone number
         'context': 'context',
         'protocol': 'protocol',
         'callerid': 'callerid',
