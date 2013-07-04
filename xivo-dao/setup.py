@@ -16,10 +16,12 @@ setup(
         'xivo_dao.alchemy',
         'xivo_dao.data_handler',
         'xivo_dao.data_handler.context',
+        'xivo_dao.data_handler.device',
         'xivo_dao.data_handler.line',
         'xivo_dao.data_handler.user',
         'xivo_dao.data_handler.voicemail',
         'xivo_dao.helpers',
         'xivo_dao.helpers.notifiers',
+        'xivo_dao.helpers.notifiers.amqp',
     ]
 )
