@@ -16,7 +16,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo import caller_id
-from xivo_dao.alchemy.contextnummember import ContextNumMember
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 from xivo_dao.alchemy.extenumber import ExteNumber
 from xivo.asterisk.extension import Extension
@@ -300,10 +299,6 @@ def delete(session, lineid):
         (session.query(ExteNumber).filter(ExteNumber.exten == line.number)
                                   .filter(ExteNumber.context == line.context)
                                   .delete())
-        (session.query(ContextNumMember).filter(ContextNumMember.type == 'user')
-                                        .filter(ContextNumMember.typeval == str(line.id))
-                                        .filter(ContextNumMember.context == 'default')
-                                        .delete())
         session.delete(line)
         session.commit()
     except Exception:
@@ -314,11 +309,3 @@ def delete(session, lineid):
 @daosession
 def get(session, lineid):
     return session.query(LineFeatures).filter(LineFeatures.id == lineid).first()
-
-
-@daosession
-def get_contextnummember(session, lineid):
-    return (session.query(ContextNumMember)
-                   .filter(ContextNumMember.typeval == str(lineid))
-                   .filter(ContextNumMember.type == 'user')
-                   .first())
