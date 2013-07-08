@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that
+from hamcrest import assert_that, has_length, has_property
 from hamcrest.core import equal_to
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.callfilter import Callfilter
@@ -63,6 +63,42 @@ class TestUserDAO(DAOTestCase):
 
     def setUp(self):
         self.empty_tables()
+
+    def test_find_all_no_users(self):
+        expected = []
+        users = user_dao.find_all()
+
+        assert_that(users, equal_to(expected))
+
+    def test_find_all_one_user(self):
+        firstname = 'Pascal'
+        user_id = self._insert_user(firstname=firstname)
+
+        users = user_dao.find_all()
+        assert_that(users, has_length(1))
+
+        user_found = users[0]
+        assert_that(user_found, has_property('id', user_id))
+        assert_that(user_found, has_property('firstname', firstname))
+
+    def test_find_all_two_users(self):
+        firstname1 = 'Pascal'
+        firstname2 = 'George'
+
+        user1_id = self._insert_user(firstname=firstname1)
+        user2_id = self._insert_user(firstname=firstname2)
+
+        users = user_dao.find_all()
+        assert_that(users, has_length(2))
+
+        user1_found = users[0]
+        user2_found = users[1]
+
+        assert_that(user1_found, has_property('id', user1_id))
+        assert_that(user1_found, has_property('firstname', firstname1))
+
+        assert_that(user2_found, has_property('id', user2_id))
+        assert_that(user2_found, has_property('firstname', firstname2))
 
     def test_get_inexistant(self):
         self.assertRaises(LookupError, user_dao.get, 42)

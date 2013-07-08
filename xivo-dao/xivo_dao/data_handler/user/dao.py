@@ -34,7 +34,7 @@ from xivo_dao.data_handler.exception import ElementNotExistsError, \
 def find_all(session):
     user_rows = session.query(UserSchema).all()
     if not user_rows:
-        return None
+        return []
 
     users = []
     for user_row in user_rows:
