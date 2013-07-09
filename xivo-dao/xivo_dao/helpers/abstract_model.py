@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from xivo_dao.data_handler.exception import InvalidParametersError
+
 
 class AbstractModels(object):
 
@@ -50,6 +52,12 @@ class AbstractModels(object):
         return db_object
 
     def update_from_data(self, data):
+        parameters = data.keys()
+        invalid = self.invalid_parameters(parameters)
+
+        if len(invalid) > 0:
+            raise InvalidParametersError(invalid)
+
         for model_field in self._MAPPING.itervalues():
             model_field_value = data.get(model_field)
             if model_field_value is not None:
@@ -70,6 +78,10 @@ class AbstractModels(object):
     @classmethod
     def from_user_data(cls, properties):
         return cls(**properties)
+
+    def invalid_parameters(self, parameters):
+        allowed = self._MAPPING.values() + self._RELATION.values()
+        return set(parameters).difference(set(allowed))
 
     def missing_parameters(self):
         missing = []

@@ -20,6 +20,7 @@ import unittest
 from hamcrest import assert_that
 from hamcrest.core import equal_to
 from mock import Mock
+from xivo_dao.data_handler.exception import InvalidParametersError
 from xivo_dao.data_handler.user.model import User
 from xivo_dao.data_handler.line.model import Line
 from xivo_dao.data_handler.voicemail.model import Voicemail
@@ -163,3 +164,12 @@ class TestModelsAbstract(unittest.TestCase):
         user.update_from_data(data_update)
 
         assert_that(user.lastname, equal_to(expected_lastname))
+
+    def test_update_from_data_invalid_properties(self):
+        user = User()
+
+        data_update = {
+            'toto': 'tata'
+        }
+
+        self.assertRaises(InvalidParametersError, user.update_from_data, data_update)
