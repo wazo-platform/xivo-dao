@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, equal_to, has_length, has_property, all_of, has_items
+from hamcrest import assert_that, equal_to, has_length, has_property, all_of, has_items, contains
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.callfilter import Callfilter
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
@@ -169,6 +169,77 @@ class TestUserDAO(DAOTestCase):
         result = user_dao.find_user(firstname, lastname)
 
         assert_that(result, has_property('id', user_id1))
+
+    def test_find_all_by_fullname_no_users(self):
+        result = user_dao.find_all_by_fullname('')
+
+        assert_that(result, has_length(0))
+
+    def test_find_all_by_fullname(self):
+        firstname = 'Lord'
+        lastname = 'Sanderson'
+        fullname = '%s %s' % (firstname, lastname)
+
+        user_id = self._insert_user(firstname=firstname, lastname=lastname)
+
+        result = user_dao.find_all_by_fullname(fullname)
+
+        assert_that(result, has_length(1))
+        assert_that(result, contains(
+            all_of(
+                has_property('id', user_id),
+                has_property('firstname', firstname),
+                has_property('lastname', lastname)
+            )))
+
+    def test_find_all_by_fullname_lowercase(self):
+        firstname = 'Lord'
+        lastname = 'Sanderson'
+        fullname = '%s %s' % (firstname, lastname)
+
+        user_id = self._insert_user(firstname=firstname, lastname=lastname)
+
+        result = user_dao.find_all_by_fullname(fullname.lower())
+
+        assert_that(result, has_length(1))
+        assert_that(result, contains(
+            all_of(
+                has_property('id', user_id),
+                has_property('firstname', firstname),
+                has_property('lastname', lastname)
+            )))
+
+    def test_find_all_by_fullname_partial(self):
+        firstname = 'Lord'
+        lastname = 'Sanderson'
+        partial_fullname = 'd san'
+
+        user_id = self._insert_user(firstname=firstname, lastname=lastname)
+
+        result = user_dao.find_all_by_fullname(partial_fullname)
+
+        assert_that(result, has_length(1))
+        assert_that(result, contains(
+            all_of(
+                has_property('id', user_id),
+                has_property('firstname', firstname),
+                has_property('lastname', lastname)
+            )))
+
+    def test_find_all_by_fullname_two_users_default_order(self):
+        search_term = 'lord'
+
+        user_id_last = self._insert_user(firstname='Lord', lastname='Sanderson')
+        user_id_first = self._insert_user(firstname='Great', lastname='Lord')
+        self._insert_user(firstname='Toto', lastname='Tata')
+
+        result = user_dao.find_all_by_fullname(search_term)
+
+        assert_that(result, has_length(2))
+        assert_that(result, contains(
+            has_property('id', user_id_first),
+            has_property('id', user_id_last),
+        ))
 
     def test_get_inexistant(self):
         self.assertRaises(LookupError, user_dao.get, 42)

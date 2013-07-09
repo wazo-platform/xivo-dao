@@ -35,13 +35,29 @@ DEFAULT_ORDER = [UserOrdering.lastname, UserOrdering.firstname]
 
 @daosession
 def find_all(session, order=None):
-    order = order or DEFAULT_ORDER
+    user_rows = _user_query(session, order).all()
 
-    user_rows = (session
-                 .query(UserSchema)
-                 .order_by(*order)
+    return _rows_to_user_model(user_rows)
+
+
+@daosession
+def find_all_by_fullname(session, fullname, order=None):
+    fullname_column = UserSchema.firstname + " " + UserSchema.lastname
+    search = '%%%s%%' % fullname.lower()
+
+    user_rows = (_user_query(session, order)
+                 .filter(fullname_column.ilike(search))
                  .all())
 
+    return _rows_to_user_model(user_rows)
+
+
+def _user_query(session, order=None):
+    order = order or DEFAULT_ORDER
+    return session.query(UserSchema).order_by(*order)
+
+
+def _rows_to_user_model(user_rows):
     if not user_rows:
         return []
 
