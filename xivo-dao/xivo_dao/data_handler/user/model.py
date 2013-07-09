@@ -22,7 +22,6 @@ class User(AbstractModels):
 
     MANDATORY = [
         'firstname',
-        'lastname'
     ]
 
     # mapping = {db_field: model_field}
