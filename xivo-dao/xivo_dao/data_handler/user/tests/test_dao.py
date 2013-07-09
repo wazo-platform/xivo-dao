@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, has_length, has_property
-from hamcrest.core import equal_to
+from hamcrest import assert_that, equal_to, has_length, has_property, all_of, has_items
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.callfilter import Callfilter
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
@@ -33,6 +32,7 @@ from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.data_handler.user import dao as user_dao
+from xivo_dao.data_handler.user.model import UserOrdering
 from xivo_dao.tests.test_dao import DAOTestCase
 from mock import patch, Mock
 from sqlalchemy.exc import SQLAlchemyError
@@ -91,14 +91,44 @@ class TestUserDAO(DAOTestCase):
         users = user_dao.find_all()
         assert_that(users, has_length(2))
 
-        user1_found = users[0]
-        user2_found = users[1]
+        assert_that(users, has_items(
+            all_of(
+                has_property('id', user1_id),
+                has_property('firstname', firstname1)),
+            all_of(
+                has_property('id', user2_id),
+                has_property('firstname', firstname2))
+        ))
 
-        assert_that(user1_found, has_property('id', user1_id))
-        assert_that(user1_found, has_property('firstname', firstname1))
+    def test_find_all_default_order_by_lastname_firstname(self):
+        user_id1 = self._insert_user(firstname='Jules', lastname='Santerre')
+        user_id2 = self._insert_user(firstname='Vicky', lastname='Bourbon')
+        user_id3 = self._insert_user(firstname='Anne', lastname='Bourbon')
 
-        assert_that(user2_found, has_property('id', user2_id))
-        assert_that(user2_found, has_property('firstname', firstname2))
+        users = user_dao.find_all()
+        assert_that(users, has_length(3))
+
+        assert_that(users[0].id, equal_to(user_id3))
+        assert_that(users[1].id, equal_to(user_id2))
+        assert_that(users[2].id, equal_to(user_id1))
+
+    def test_find_all_order_by_firstname(self):
+        user_id_last = self._insert_user(firstname='Bob', lastname='Alzard')
+        user_id_first = self._insert_user(firstname='Albert', lastname='Breton')
+
+        users = user_dao.find_all(order=[UserOrdering.firstname])
+
+        assert_that(users[0].id, equal_to(user_id_first))
+        assert_that(users[1].id, equal_to(user_id_last))
+
+    def test_find_all_order_by_lastname(self):
+        user_id_last = self._insert_user(firstname='Albert', lastname='Breton')
+        user_id_first = self._insert_user(firstname='Bob', lastname='Alzard')
+
+        users = user_dao.find_all(order=[UserOrdering.lastname])
+
+        assert_that(users[0].id, equal_to(user_id_first))
+        assert_that(users[1].id, equal_to(user_id_last))
 
     def test_get_inexistant(self):
         self.assertRaises(LookupError, user_dao.get, 42)

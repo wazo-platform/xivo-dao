@@ -65,3 +65,8 @@ class User(AbstractModels):
     @property
     def fullname(self):
         return ' '.join([self.firstname, self.lastname])
+
+
+class UserOrdering(object):
+    firstname = 'firstname'
+    lastname = 'lastname'

@@ -8,8 +8,42 @@ from xivo_dao.data_handler.user import services as user_services
 from xivo_dao.data_handler.exception import MissingParametersError, \
     ElementAlreadyExistsError, InvalidParametersError, ElementCreationError
 
+from xivo_dao.data_handler.user.model import UserOrdering
+
 
 class TestUser(unittest.TestCase):
+
+    @patch('xivo_dao.data_handler.user.dao.find_all')
+    def test_find_all(self, user_dao_find_all):
+        first_user = Mock(User)
+        second_user = Mock(User)
+        expected_order = None
+
+        expected = [first_user, second_user]
+
+        user_dao_find_all.return_value = expected
+
+        result = user_services.find_all()
+
+        self.assertEquals(result, expected)
+
+        user_dao_find_all.assert_called_once_with(order=expected_order)
+
+    @patch('xivo_dao.data_handler.user.dao.find_all')
+    def test_find_all_order_by_lastname(self, user_dao_find_all):
+        first_user = Mock(User)
+        second_user = Mock(User)
+        expected_order = [UserOrdering.lastname]
+
+        expected = [first_user, second_user]
+
+        user_dao_find_all.return_value = expected
+
+        result = user_services.find_all(order=[UserOrdering.lastname])
+
+        self.assertEquals(result, expected)
+
+        user_dao_find_all.assert_called_once_with(order=expected_order)
 
     def test_create_no_properties(self):
         user = User()

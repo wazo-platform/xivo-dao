@@ -25,14 +25,23 @@ from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.phonefunckey import PhoneFunckey
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.data_handler.user.model import User
+from xivo_dao.data_handler.user.model import User, UserOrdering
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementEditionError, ElementCreationError, ElementDeletionError
 
 
+DEFAULT_ORDER = [UserOrdering.lastname, UserOrdering.firstname]
+
+
 @daosession
-def find_all(session):
-    user_rows = session.query(UserSchema).all()
+def find_all(session, order=None):
+    order = order or DEFAULT_ORDER
+
+    user_rows = (session
+                 .query(UserSchema)
+                 .order_by(*order)
+                 .all())
+
     if not user_rows:
         return []
 

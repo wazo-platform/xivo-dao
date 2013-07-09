@@ -32,8 +32,8 @@ def get_by_number_context(number, context):
     return user_dao.get_by_number_context(number, context)
 
 
-def find_all():
-    return user_dao.find_all()
+def find_all(order=None):
+    return user_dao.find_all(order=order)
 
 
 def find_by_firstname_lastname(firstname, lastname):
