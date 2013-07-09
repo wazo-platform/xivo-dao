@@ -6,7 +6,7 @@ from mock import patch, Mock
 from xivo_dao.data_handler.user.model import User
 from xivo_dao.data_handler.user import services as user_services
 from xivo_dao.data_handler.exception import MissingParametersError, \
-    ElementAlreadyExistsError, InvalidParametersError, ElementCreationError
+    InvalidParametersError, ElementCreationError
 
 from xivo_dao.data_handler.user.model import UserOrdering
 
@@ -63,32 +63,14 @@ class TestUser(unittest.TestCase):
 
         self.assertRaises(MissingParametersError, user_services.create, user)
 
-    @patch('xivo_dao.data_handler.user.dao.find_user', Mock(return_value=None))
     @patch('xivo_dao.data_handler.user.dao.create')
     def test_create_empty_firstname(self, user_dao_create):
         firstname = ''
-        lastname = 'toto'
 
-        user = User(firstname=firstname, lastname=lastname)
+        user = User(firstname=firstname)
 
         self.assertRaises(InvalidParametersError, user_services.create, user)
 
-    @patch('xivo_dao.data_handler.user.dao.find_user')
-    @patch('xivo_dao.data_handler.user.dao.create')
-    def test_create_same_firtname_and_lastname(self, user_dao_create, find_user):
-        firstname = 'user'
-        lastname = 'toto'
-
-        user = User(firstname=firstname, lastname=lastname)
-
-        user_mock = Mock(User)
-        user_mock.firstname = firstname
-        user_mock.lastname = lastname
-        find_user.return_value = user_mock
-
-        self.assertRaises(ElementAlreadyExistsError, user_services.create, user)
-
-    @patch('xivo_dao.data_handler.user.dao.find_user', Mock(return_value=None))
     @patch('xivo_dao.data_handler.user.notifier.created')
     @patch('xivo_dao.data_handler.user.dao.create')
     def test_create(self, user_dao_create, user_notifier_created):
@@ -105,7 +87,6 @@ class TestUser(unittest.TestCase):
         self.assertEquals(type(result), User)
         user_notifier_created.assert_called_once_with(user)
 
-    @patch('xivo_dao.data_handler.user.dao.find_user', Mock(return_value=None))
     @patch('xivo_dao.data_handler.user.dao.create')
     def test_create_with_error_from_dao(self, user_dao_create):
         firstname = 'user'

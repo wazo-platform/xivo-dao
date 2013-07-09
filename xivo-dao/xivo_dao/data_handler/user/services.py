@@ -18,7 +18,7 @@
 from urllib2 import URLError
 from xivo_dao.data_handler.user import dao as user_dao, notifier
 from xivo_dao.data_handler.exception import MissingParametersError, \
-    InvalidParametersError, ElementAlreadyExistsError
+    InvalidParametersError
 from xivo_dao.data_handler.line import services as line_services
 from xivo_dao.data_handler.voicemail import services as voicemail_services
 from xivo_dao.helpers import provd_connector
@@ -42,7 +42,6 @@ def find_by_firstname_lastname(firstname, lastname):
 
 def create(user):
     _validate(user)
-    _check_for_existing_user(user)
     user = user_dao.create(user)
     notifier.created(user)
     return user
@@ -100,11 +99,6 @@ def _check_invalid_parameters(user):
         invalid_parameters.append('firstname')
     if invalid_parameters:
         raise InvalidParametersError(invalid_parameters)
-
-
-def _check_for_existing_user(user):
-    if user_dao.find_user(user.firstname, user.lastname):
-        raise ElementAlreadyExistsError('User', user.firstname, user.lastname)
 
 
 def _update_voicemail_fullname(user):
