@@ -45,6 +45,19 @@ class TestUser(unittest.TestCase):
 
         user_dao_find_all.assert_called_once_with(order=expected_order)
 
+    @patch('xivo_dao.data_handler.user.dao.find_user')
+    def test_find_user(self, user_dao_find_user):
+        user = Mock(User)
+        firstname = 'Lord'
+        lastname = 'Sanderson'
+
+        user_dao_find_user.return_value = user
+
+        result = user_services.find_by_firstname_lastname(firstname, lastname)
+
+        self.assertEquals(result, user)
+        user_dao_find_user.assert_called_once_with(firstname, lastname)
+
     def test_create_no_properties(self):
         user = User()
 

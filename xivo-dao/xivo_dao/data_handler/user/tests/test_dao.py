@@ -130,6 +130,46 @@ class TestUserDAO(DAOTestCase):
         assert_that(users[0].id, equal_to(user_id_first))
         assert_that(users[1].id, equal_to(user_id_last))
 
+    def test_find_user_no_user(self):
+        result = user_dao.find_user('abc', 'def')
+
+        assert_that(result, equal_to(None))
+
+    def test_find_user_not_right_firstname(self):
+        firstname = 'Lord'
+        lastname = 'Sanderson'
+        wrong_firstname = 'Gregory'
+
+        self._insert_user(firstname=firstname, lastname=lastname)
+
+        result = user_dao.find_user(wrong_firstname, lastname)
+
+        assert_that(result, equal_to(None))
+
+    def test_find_user(self):
+        firstname = 'Lord'
+        lastname = 'Sanderson'
+        user_id = self._insert_user(firstname=firstname, lastname=lastname)
+
+        result = user_dao.find_user('Lord', 'Sanderson')
+
+        assert_that(result, all_of(
+            has_property('id', user_id),
+            has_property('firstname', firstname),
+            has_property('lastname', lastname)
+        ))
+
+    def test_find_user_two_users_same_name(self):
+        firstname = 'Lord'
+        lastname = 'Sanderson'
+
+        user_id1 = self._insert_user(firstname=firstname, lastname=lastname)
+        self._insert_user(firstname=firstname, lastname=lastname)
+
+        result = user_dao.find_user(firstname, lastname)
+
+        assert_that(result, has_property('id', user_id1))
+
     def test_get_inexistant(self):
         self.assertRaises(LookupError, user_dao.get, 42)
 
