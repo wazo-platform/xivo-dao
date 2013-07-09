@@ -26,7 +26,7 @@ from xivo_dao.helpers import db_manager
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.userfeatures import UserFeatures
-from xivo_dao.alchemy.extenumber import ExteNumber
+from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.devicefeatures import DeviceFeatures
 
 logger = logging.getLogger(__name__)
@@ -105,12 +105,12 @@ class DAOTestCase(unittest.TestCase):
         user_line = UserLine(**kwargs)
         self.add_me(user_line)
 
-    def add_extenumber(self, **kwargs):
+    def add_extension(self, **kwargs):
         kwargs.setdefault('type', 'user')
 
-        extenumber = ExteNumber(**kwargs)
-        self.add_me(extenumber)
-        return extenumber.id
+        extension = Extension(**kwargs)
+        self.add_me(extension)
+        return extension.id
 
     def add_user(self, **kwargs):
         user = UserFeatures(**kwargs)

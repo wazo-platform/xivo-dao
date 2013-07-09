@@ -21,7 +21,7 @@ from xivo_dao.helpers.db_manager import daosession
 
 @daosession
 def exten_by_name(session, funckey_name):
-    extens = [exten for exten, name in session.query(Extension.exten, Extension.name) if name == funckey_name]
+    extens = [exten for exten, name in session.query(Extension.exten, Extension.typeval) if name == funckey_name]
     return extens[0] if extens else ''
 
 

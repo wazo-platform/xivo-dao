@@ -18,7 +18,6 @@
 from sqlalchemy import Integer
 from sqlalchemy.sql import and_, cast
 from sqlalchemy.exc import SQLAlchemyError
-from xivo_dao.alchemy.extenumber import ExteNumber
 from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
 from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema
 from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
@@ -45,11 +44,11 @@ def get_by_user_id(session, user_id):
 @daosession
 def get_by_number_context(session, number, context):
     line = (_new_query(session)
-            .join((ExteNumber, and_(
-                ExteNumber.type == 'user',
-                LineSchema.id == cast(ExteNumber.typeval, Integer))))
-        .filter(ExteNumber.exten == number)
-        .filter(ExteNumber.context == context)
+            .join((Extension, and_(
+                Extension.type == 'user',
+                LineSchema.id == cast(Extension.typeval, Integer))))
+        .filter(Extension.exten == number)
+        .filter(Extension.context == context)
     ).first()
 
     if not line:
@@ -92,9 +91,6 @@ def _delete_line(session, line):
     (session.query(Extension).filter(Extension.exten == line.number)
                              .filter(Extension.context == line.context)
                              .delete())
-    (session.query(ExteNumber).filter(ExteNumber.exten == line.number)
-                              .filter(ExteNumber.context == line.context)
-                              .delete())
     return result
 
 

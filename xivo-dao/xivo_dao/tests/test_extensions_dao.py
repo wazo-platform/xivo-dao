@@ -30,11 +30,13 @@ class TestExtensionsDAO(DAOTestCase):
 
     def _insert_extens(self):
         exten = Extension()
-        exten.name = 'enablednd'
+        exten.type = 'extenfeatures'
+        exten.typeval = 'enablednd'
         exten.exten = '*25'
         self.add_me(exten)
         exten = Extension()
-        exten.name = 'phoneprogfunckey'
+        exten.type = 'extenfeatures'
+        exten.typeval = 'phoneprogfunckey'
         exten.exten = '_*735'
         self.add_me(exten)
 
@@ -47,6 +49,7 @@ class TestExtensionsDAO(DAOTestCase):
 
     def test_create(self):
         exten = Extension()
+        exten.type = 'user'
         exten.exten = '2000'
         exten.context = 'default'
 
