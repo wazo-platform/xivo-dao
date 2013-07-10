@@ -34,3 +34,7 @@ class Extension(Base):
     appdata = Column(String(128), nullable=False, server_default='')
     type = Column(String(15), nullable=False)
     typeval = Column(String(255))
+
+    @property
+    def name(self):
+        return self.typeval
