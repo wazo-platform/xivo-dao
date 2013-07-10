@@ -40,6 +40,10 @@ def find_by_firstname_lastname(firstname, lastname):
     return user_dao.find_user(firstname, lastname)
 
 
+def find_all_by_fullname(fullname):
+    return user_dao.find_all_by_fullname(fullname)
+
+
 def create(user):
     _validate(user)
     user = user_dao.create(user)
