@@ -21,7 +21,6 @@ from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.callfilter import Callfilter
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from xivo_dao.alchemy.contextinclude import ContextInclude
-from xivo_dao.alchemy.contextnummember import ContextNumMember
 from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
 from xivo_dao.alchemy.ctipresences import CtiPresences
@@ -45,7 +44,6 @@ class TestGetLineDao(DAOTestCase):
         Callfilter,
         Callfiltermember,
         ContextInclude,
-        ContextNumMember,
         CtiPhoneHintsGroup,
         CtiPresences,
         CtiProfile,

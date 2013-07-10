@@ -29,7 +29,6 @@ from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 from xivo_dao.alchemy.extenumber import ExteNumber
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao.alchemy.contextnummember import ContextNumMember
 
 USER_ID = 5
 LINE_NUMBER = '1666'
@@ -47,8 +46,7 @@ class TestLineFeaturesDAO(DAOTestCase):
         CtiPhoneHints,
         CtiPhoneHintsGroup,
         ExtensionSchema,
-        ExteNumber,
-        ContextNumMember,
+        ExteNumber
     ]
 
     def setUp(self):
@@ -155,11 +153,6 @@ class TestLineFeaturesDAO(DAOTestCase):
         extenumber = ExteNumber(exten=exten, context='default', type='user', typeval='1')
         self.add_me(extenumber)
         return extenumber.id
-
-    def _insert_contextnummember(self, lineid, number):
-        contextnummember = ContextNumMember(context='default', type='user',
-                                            typeval=str(lineid), number=number)
-        self.add_me(contextnummember)
 
     def test_all_with_protocol(self):
         first, last = 'Lord', 'Sanderson'
@@ -361,7 +354,6 @@ class TestLineFeaturesDAO(DAOTestCase):
         self.add_me(line)
         exten_id = self._insert_extension(LINE_NUMBER)
         extenumber_id = self._insert_extenumber(LINE_NUMBER)
-        self._insert_contextnummember(line.id, line.number)
 
         line_dao.delete(line.id)
 
@@ -373,21 +365,8 @@ class TestLineFeaturesDAO(DAOTestCase):
         self.assertEquals(None, inserted_extension)
         inserted_extenumber = self.session.query(ExteNumber).filter(ExteNumber.id == extenumber_id).first()
         self.assertEquals(None, inserted_extenumber)
-        inserted_contextnummember = (self.session.query(ContextNumMember).filter(ContextNumMember.type == 'user')
-                                                                         .filter(ContextNumMember.typeval == str(line.id))
-                                                                         .filter(ContextNumMember.context == 'default')
-                                                                         .first())
-        self.assertEquals(None, inserted_contextnummember)
 
     def test_get(self):
         line = self._insert_line()
         result = line_dao.get(line.id)
         self.assertEquals(line, result)
-
-    def test_get_contextnummember(self):
-        line = self._insert_line()
-        self._insert_contextnummember(line.id, line.number)
-
-        member = line_dao.get_contextnummember(line.id)
-
-        self.assertEquals((member.type, member.typeval), ('user', str(line.id)))

@@ -23,7 +23,6 @@ from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
 from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema
 from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
 from xivo_dao.alchemy.extension import Extension
-from xivo_dao.alchemy.contextnummember import ContextNumMember
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.data_handler.line.model import Line
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
@@ -96,10 +95,6 @@ def _delete_line(session, line):
     (session.query(ExteNumber).filter(ExteNumber.exten == line.number)
                               .filter(ExteNumber.context == line.context)
                               .delete())
-    (session.query(ContextNumMember).filter(ContextNumMember.type == 'user')
-                                    .filter(ContextNumMember.typeval == str(line.id))
-                                    .filter(ContextNumMember.context == 'default')
-                                    .delete())
     return result
 
 
