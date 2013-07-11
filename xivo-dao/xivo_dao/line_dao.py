@@ -17,7 +17,6 @@
 
 from xivo import caller_id
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
-from xivo_dao.alchemy.extenumber import ExteNumber
 from xivo.asterisk.extension import Extension
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.sccpline import SCCPLine
@@ -296,9 +295,6 @@ def delete(session, lineid):
         (session.query(ExtensionSchema).filter(ExtensionSchema.exten == line.number)
                                        .filter(ExtensionSchema.context == line.context)
                                        .delete())
-        (session.query(ExteNumber).filter(ExteNumber.exten == line.number)
-                                  .filter(ExteNumber.context == line.context)
-                                  .delete())
         session.delete(line)
         session.commit()
     except Exception:

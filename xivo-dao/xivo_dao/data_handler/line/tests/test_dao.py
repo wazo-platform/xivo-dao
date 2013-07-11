@@ -25,7 +25,6 @@ from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
 from xivo_dao.alchemy.ctipresences import CtiPresences
 from xivo_dao.alchemy.dialaction import Dialaction
-from xivo_dao.alchemy.extenumber import ExteNumber
 from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
 from xivo_dao.alchemy.phonefunckey import PhoneFunckey
 from xivo_dao.alchemy.queuemember import QueueMember
@@ -35,6 +34,7 @@ from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.data_handler.line import dao as line_dao
 from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao.alchemy.extension import Extension
 
 
 class TestGetLineDao(DAOTestCase):
@@ -48,7 +48,7 @@ class TestGetLineDao(DAOTestCase):
         CtiPresences,
         CtiProfile,
         Dialaction,
-        ExteNumber,
+        Extension,
         LineSchema,
         PhoneFunckey,
         QueueMember,
@@ -93,7 +93,7 @@ class TestGetLineDao(DAOTestCase):
         context = 'notdefault'
 
         line_id = self.add_line(name=line_name)
-        self.add_extenumber(exten=number, context=context, type='user', typeval=str(line_id))
+        self.add_extension(exten=number, context=context, type='user', typeval=str(line_id))
 
         line = line_dao.get_by_number_context(number, context)
 
@@ -105,6 +105,6 @@ class TestGetLineDao(DAOTestCase):
         context = 'notdefault'
 
         line_id = self.add_line(name=line_name, commented=1)
-        self.add_extenumber(exten=number, context=context, type='user', typeval=str(line_id))
+        self.add_extension(exten=number, context=context, type='user', typeval=str(line_id))
 
         self.assertRaises(LookupError, line_dao.get_by_number_context, number, context)
