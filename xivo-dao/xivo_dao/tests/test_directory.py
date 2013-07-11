@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import *
-
 from xivo_dao.tests.test_dao import DAOTestCase
 
 from xivo_dao.alchemy.cti_contexts import CtiContexts

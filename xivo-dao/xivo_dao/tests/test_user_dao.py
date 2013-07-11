@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import *
+from hamcrest import assert_that, contains_inanyorder, equal_to, none
 from xivo_dao import user_dao
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.callfilter import Callfilter
@@ -482,7 +482,7 @@ class TestUserFeaturesDAO(DAOTestCase):
     def test_get_reachable_contexts(self):
         context = 'my_context'
 
-        user, line = self._add_user_with_line('Tester', context)
+        user, _ = self._add_user_with_line('Tester', context)
 
         result = user_dao.get_reachable_contexts(user.id)
 
@@ -506,7 +506,7 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         self.add_me(ctx_include)
 
-        user, line = self._add_user_with_line('Tester', context)
+        user, _ = self._add_user_with_line('Tester', context)
 
         result = user_dao.get_reachable_contexts(user.id)
 
@@ -531,7 +531,7 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         map(self.add_me, [ctx, ctx_include, ctx_loop])
 
-        user, line = self._add_user_with_line('Tester', context)
+        user, _ = self._add_user_with_line('Tester', context)
 
         result = user_dao.get_reachable_contexts(user.id)
 

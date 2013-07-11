@@ -20,7 +20,7 @@ from xivo_dao.data_handler.exception import InvalidParametersError
 
 class AbstractModels(object):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         self.update_from_data(kwargs)
 
     def __eq__(self, other):

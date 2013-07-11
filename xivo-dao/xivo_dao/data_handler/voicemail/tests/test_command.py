@@ -18,10 +18,10 @@
 from __future__ import unicode_literals
 
 import unittest
-from xivo_dao.data_handler.voicemail import command
+from xivo_dao.data_handler.voicemail.command import AbstractVoicemailIDParams
 
 
-class ConcreteVoicemailIDParams(command.AbstractVoicemailIDParams):
+class ConcreteVoicemailIDParams(AbstractVoicemailIDParams):
 
     name = 'foo'
 

@@ -18,10 +18,10 @@
 from __future__ import unicode_literals
 
 import unittest
-from xivo_dao.data_handler.device import command
+from xivo_dao.data_handler.device.command import AbstractDeviceIDParams
 
 
-class ConcreteDeviceIDParams(command.AbstractDeviceIDParams):
+class ConcreteDeviceIDParams(AbstractDeviceIDParams):
 
     name = 'foo'
 

@@ -62,9 +62,9 @@ class TestGroupDAO(DAOTestCase):
 
     def _insert_group(self, name, number, context):
         group = GroupFeatures()
-        group.name = 'test_name'
-        group.number = '1234'
-        group.context = 'my_ctx'
+        group.name = name
+        group.number = number
+        group.context = context
 
         self.session.begin()
         self.session.add(group)

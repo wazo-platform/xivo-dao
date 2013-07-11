@@ -18,10 +18,10 @@
 from __future__ import unicode_literals
 
 import unittest
-from xivo_dao.data_handler.line import command
+from xivo_dao.data_handler.line.command import AbstractLineIDParams
 
 
-class ConcreteLineIDParams(command.AbstractLineIDParams):
+class ConcreteLineIDParams(AbstractLineIDParams):
 
     name = 'foo'
 

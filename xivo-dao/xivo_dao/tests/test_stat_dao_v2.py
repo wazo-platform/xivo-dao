@@ -21,7 +21,6 @@ from xivo_dao.alchemy.queue_log import QueueLog
 from xivo_dao.alchemy.stat_call_on_queue import StatCallOnQueue
 from xivo_dao.alchemy.stat_agent import StatAgent
 from xivo_dao.alchemy.stat_queue import StatQueue
-from xivo_dao.helpers import db_manager
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao import stat_dao
 

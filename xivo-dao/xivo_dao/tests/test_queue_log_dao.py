@@ -69,16 +69,16 @@ class TestQueueLogDAO(DAOTestCase):
         self.session.add(queue_log)
         self.session.commit()
 
-    def _insert_entry_queue_full(self, t, callid, queuename, waittime=0):
+    def _insert_entry_queue_full(self, t, callid, queuename):
         self._insert_entry_queue('FULL', self._build_timestamp(t), callid, queuename)
 
-    def _insert_entry_queue_joinempty(self, t, callid, queuename, waittime=0):
+    def _insert_entry_queue_joinempty(self, t, callid, queuename):
         self._insert_entry_queue('JOINEMPTY', self._build_timestamp(t), callid, queuename)
 
-    def _insert_entry_queue_leaveempty(self, time, callid, queuename, waittime=0):
+    def _insert_entry_queue_leaveempty(self, time, callid, queuename):
         self._insert_entry_queue('LEAVEEMPTY', self._build_timestamp(time), callid, queuename)
 
-    def _insert_entry_queue_closed(self, t, callid, queuename, waittime=0):
+    def _insert_entry_queue_closed(self, t, callid, queuename):
         self._insert_entry_queue('CLOSED', self._build_timestamp(t), callid, queuename)
 
     def _insert_entry_queue_answered(self, time, callid, queuename, agent, waittime):
@@ -91,7 +91,7 @@ class TestQueueLogDAO(DAOTestCase):
     def _insert_entry_queue_timeout(self, time, callid, queuename, waittime):
         self._insert_entry_queue('EXITWITHTIMEOUT', self._build_timestamp(time), callid, queuename, d3=waittime)
 
-    def _insert_entry_queue_enterqueue(self, time, callid, queuename, waittime=0):
+    def _insert_entry_queue_enterqueue(self, time, callid, queuename):
         self._insert_entry_queue('ENTERQUEUE', self._build_timestamp(time), callid, queuename)
 
     def _insert_entry_queue_completeagent(self, time, callid, queuename, agent, talktime):
@@ -157,7 +157,7 @@ class TestQueueLogDAO(DAOTestCase):
         for minute in [0, 10, 20, 30, 40, 50]:
             datetimewithmicro = datetime(2012, 1, 1, 0, minute, 59)
             callid = str(12345678.123 + minute)
-            self._insert_entry_queue_full(datetimewithmicro, callid, queuename, 0)
+            self._insert_entry_queue_full(datetimewithmicro, callid, queuename)
 
         expected = datetime(2012, 01, 01, 0, 0, 59)
 
