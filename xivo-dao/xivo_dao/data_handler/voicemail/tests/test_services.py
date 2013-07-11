@@ -66,9 +66,9 @@ class TestVoicemail(unittest.TestCase):
         self.assertEquals(voicemail_notifier.created.call_count, 0)
 
     @patch('xivo_dao.data_handler.context.services.find_by_name', Mock(return_value=None))
-    @patch('xivo_dao.data_handler.voicemail.notifier')
-    @patch('xivo_dao.data_handler.voicemail.dao.delete')
-    def test_create_empty_name(self, voicemail_dao_delete, voicemail_notifier):
+    @patch('xivo_dao.data_handler.voicemail.notifier.created')
+    @patch('xivo_dao.data_handler.voicemail.dao.create')
+    def test_create_empty_name(self, voicemail_dao_create, voicemail_notifier_created):
         name = ''
         number = '42'
         context = 'default'
@@ -78,7 +78,8 @@ class TestVoicemail(unittest.TestCase):
                               context=context)
 
         self.assertRaises(InvalidParametersError, voicemail_services.create, voicemail)
-        self.assertEquals(voicemail_notifier.created.call_count, 0)
+        self.assertEquals(voicemail_dao_create.call_count, 0)
+        self.assertEquals(voicemail_notifier_created.call_count, 0)
 
     @patch('xivo_dao.data_handler.context.services.find_by_name', Mock(return_value=None))
     @patch('xivo_dao.data_handler.voicemail.notifier.created')
