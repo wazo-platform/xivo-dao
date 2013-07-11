@@ -35,7 +35,7 @@ class Callfiltermember(Base):
     ringseconds = Column(Integer, nullable=False, default=0)
     priority = Column(Integer, nullable=False, default=0)
     bstype = Column(Enum('boss', 'secretary',
-                       name='generic_bsfilter',
-                       metadata=Type.metadata),
-                  nullable=False)
+                         name='generic_bsfilter',
+                         metadata=Type.metadata),
+                    nullable=False)
     active = Column(Integer, nullable=False, default=0)

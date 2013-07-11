@@ -116,9 +116,9 @@ class VoicemailDAOTestCase(DAOTestCase):
 
         self.assertEquals(impacted_rows, 1)
         inserted_contextmember = (self.session.query(ContextMember)
-                                             .filter(ContextMember.type == 'voicemail')
-                                             .filter(ContextMember.typeval == str(generated_id))
-                                             .first())
+                                              .filter(ContextMember.type == 'voicemail')
+                                              .filter(ContextMember.typeval == str(generated_id))
+                                              .first())
         self.assertEquals(None, inserted_contextmember)
 
     def test_get_contextmember(self):

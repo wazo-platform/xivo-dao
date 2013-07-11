@@ -132,24 +132,24 @@ class TestCtiProfileDAO(DAOTestCase):
         xlet_layout_grid_id = self._add_xlet_layout('grid')
         xlet_tabber_id = self._add_xlet('tabber')
         self._add_xlet_to_profile(xlet_tabber_id,
-                             profile_id,
-                             xlet_layout_grid_id,
-                             floating=True,
-                             closable=True,
-                             movable=True,
-                             scrollable=True,
-                             order=1)
+                                  profile_id,
+                                  xlet_layout_grid_id,
+                                  floating=True,
+                                  closable=True,
+                                  movable=True,
+                                  scrollable=True,
+                                  order=1)
 
         xlet_agentdetails_id = self._add_xlet('agentdetails')
         xlet_layout_dock_id = self._add_xlet_layout('dock')
         self._add_xlet_to_profile(xlet_agentdetails_id,
-                             profile_id,
-                             xlet_layout_dock_id,
-                             floating=False,
-                             closable=True,
-                             movable=True,
-                             scrollable=True,
-                             order=0)
+                                  profile_id,
+                                  xlet_layout_dock_id,
+                                  floating=False,
+                                  closable=True,
+                                  movable=True,
+                                  scrollable=True,
+                                  order=0)
         expected_result = {
             profile_id: {
                 "id": profile_id,

@@ -51,7 +51,7 @@ def add(session, voicemail):
 @daosession
 def id_from_mailbox(session, mailbox, context):
     result = session.query(Voicemail.uniqueid).filter(and_(Voicemail.mailbox == mailbox,
-                                                         Voicemail.context == context)).first()
+                                                           Voicemail.context == context)).first()
     if(result is None):
         return None
     return result[0]
@@ -67,22 +67,26 @@ def update(session, voicemailid, data):
         session.rollback()
         raise
 
+
 @daosession
 def delete(session, uniqueid):
     session.begin()
     try:
         impacted_rows = session.query(Voicemail).filter(Voicemail.uniqueid == uniqueid).delete()
-        (session.query(ContextMember).filter(ContextMember.type == 'voicemail')
-                                    .filter(ContextMember.typeval == str(uniqueid))
-                                    .delete())
+        (session.query(ContextMember)
+                .filter(ContextMember.type == 'voicemail')
+                .filter(ContextMember.typeval == str(uniqueid))
+                .delete())
         session.commit()
         return impacted_rows
     except Exception:
         session.rollback()
         raise
 
+
 @daosession
 def get_contextmember(session, voicemailid):
-    return (session.query(ContextMember).filter(ContextMember.type == 'voicemail')
-                                       .filter(ContextMember.typeval == str(voicemailid))
-                                       .first())
+    return (session.query(ContextMember)
+                   .filter(ContextMember.type == 'voicemail')
+                   .filter(ContextMember.typeval == str(voicemailid))
+                   .first())

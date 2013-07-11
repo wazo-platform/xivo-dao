@@ -34,11 +34,11 @@ class LdapServer(Base):
                                 name='ldapserver_securitylayer',
                                 metadata=Type.metadata))
     protocolversion = Column(Enum('2',
-                                '3',
-                                name='ldapserver_protocolversion',
-                                metadata=Type.metadata),
-                           nullable=False,
-                           default='3')
+                                  '3',
+                                  name='ldapserver_protocolversion',
+                                  metadata=Type.metadata),
+                             nullable=False,
+                             default='3')
     disable = Column(Integer, nullable=False, default=0)
     dcreate = Column(Integer, nullable=False, default=0)
     description = Column(Text, nullable=False)

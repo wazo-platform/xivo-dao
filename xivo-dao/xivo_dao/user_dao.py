@@ -155,7 +155,7 @@ def _get_nested_contexts(contexts):
 @daosession
 def get_reachable_contexts(session, user_id):
     line_contexts = [line.context for line in (session.query(LineFeatures)
-                                                .filter(LineFeatures.iduserfeatures == user_id))]
+                                               .filter(LineFeatures.iduserfeatures == user_id))]
 
     return _get_nested_contexts(line_contexts)
 
@@ -168,10 +168,9 @@ def find_by_line_id(session, line_id):
 @daosession
 def get_line_identity(session, user_id):
     line = (session
-        .query(LineFeatures.protocol, LineFeatures.name)
-        .filter(LineFeatures.iduserfeatures == user_id)
-        .first()
-    )
+            .query(LineFeatures.protocol, LineFeatures.name)
+            .filter(LineFeatures.iduserfeatures == user_id)
+            .first())
     if not line:
         raise LookupError('Could not find a line for user %s', user_id)
     return '%s/%s' % (line.protocol, line.name)
@@ -179,10 +178,11 @@ def get_line_identity(session, user_id):
 
 @daosession
 def get_agent_number(session, user_id):
-    row = (session.query(AgentFeatures.number, UserFeatures.agentid)
-            .filter(and_(UserFeatures.id == user_id,
-                         AgentFeatures.id == UserFeatures.agentid))
-            .first())
+    row = (session
+           .query(AgentFeatures.number, UserFeatures.agentid)
+           .filter(and_(UserFeatures.id == user_id,
+                        AgentFeatures.id == UserFeatures.agentid))
+           .first())
     if not row:
         raise LookupError('Could not find a agent number for user %s', user_id)
     return row.number
@@ -287,8 +287,8 @@ def delete(session, userid):
                                    .filter(QueueMember.userid == userid)
                                    .delete())
         (session.query(RightCallMember).filter(RightCallMember.type == 'user')
-                                      .filter(RightCallMember.typeval == str(userid))
-                                      .delete())
+                                       .filter(RightCallMember.typeval == str(userid))
+                                       .delete())
         (session.query(Callfiltermember).filter(Callfiltermember.type == 'user')
                                         .filter(Callfiltermember.typeval == str(userid))
                                         .delete())

@@ -30,9 +30,10 @@ from xivo_dao.data_handler.exception import ElementNotExistsError, \
 
 @daosession
 def get_by_user_id(session, user_id):
-    line = (_new_query(session)
-            .filter(UserLineSchema.user_id == user_id)
-            .filter(UserLineSchema.line_id == LineSchema.id)
+    line = (
+        _new_query(session)
+        .filter(UserLineSchema.user_id == user_id)
+        .filter(UserLineSchema.line_id == LineSchema.id)
     ).first()
 
     if not line:
@@ -43,10 +44,11 @@ def get_by_user_id(session, user_id):
 
 @daosession
 def get_by_number_context(session, number, context):
-    line = (_new_query(session)
-            .join((Extension, and_(
-                Extension.type == 'user',
-                LineSchema.id == cast(Extension.typeval, Integer))))
+    line = (
+        _new_query(session)
+        .join((Extension,
+               and_(Extension.type == 'user',
+                    LineSchema.id == cast(Extension.typeval, Integer))))
         .filter(Extension.exten == number)
         .filter(Extension.context == context)
     ).first()

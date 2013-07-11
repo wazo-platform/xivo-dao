@@ -48,4 +48,3 @@ def get_by_type_typeval(session, typename, typeval):
 def _request_type_typeval(session, typename, typeval):
     return session.query(ContextMember).filter(ContextMember.type == typename)\
                                        .filter(ContextMember.typeval == typeval)
-

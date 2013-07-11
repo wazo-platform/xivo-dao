@@ -29,6 +29,7 @@ def _get(session, profile_id):
 def get_name(profile_id):
     return _get(profile_id).name
 
+
 @daosession
 def get_services(session):
     res = {}

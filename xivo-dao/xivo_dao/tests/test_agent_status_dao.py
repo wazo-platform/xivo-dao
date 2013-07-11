@@ -119,7 +119,6 @@ class TestAgentStatusDao(DAOTestCase):
 
         self.assertEqual(result, agent_id)
 
-
     def test_get_status_with_unlogged_agent_returns_none(self):
         agent_id = 1
         agent_status = agent_status_dao.get_status(agent_id)

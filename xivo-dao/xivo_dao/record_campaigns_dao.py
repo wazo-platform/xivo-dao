@@ -43,9 +43,9 @@ def get_records(session, search, checkCurrentlyRunning, paginator):
 
 @daosession
 def id_from_name(session, name):
-    result = session.query(RecordCampaigns)\
-                .filter_by(campaign_name=name)\
-                .first()
+    result = (session.query(RecordCampaigns)
+              .filter_by(campaign_name=name)
+              .first())
     if result is not None:
         return result.id
     else:

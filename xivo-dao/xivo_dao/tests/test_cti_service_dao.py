@@ -83,8 +83,8 @@ class TestCtiServiceDAO(DAOTestCase):
         return cti_profile.id
 
     def _add_service_to_profile(self,
-                             service_id,
-                             profile_id):
+                                service_id,
+                                profile_id):
         cti_profile_service = CtiProfileService()
         cti_profile_service.service_id = service_id
         cti_profile_service.profile_id = profile_id
@@ -107,7 +107,7 @@ class TestCtiServiceDAO(DAOTestCase):
         service3_id = self._add_service('fwdbusy')
         service4_id = self._add_service('fwdrna')
 
-        agent_profile_id = self._add_profile('agent')
+        self._add_profile('agent')
         test_profile_id = self._add_profile('test_profile')
 
         self._add_service_to_profile(service1_id, test_profile_id)

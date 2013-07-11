@@ -23,10 +23,11 @@ from xivo_dao.helpers.db_manager import xivo_daosession
 
 @xivo_daosession
 def get_password(session, login):
-    result = session.query(AccessWebService.passwd)\
-            .filter(and_(AccessWebService.login == login,
-                         AccessWebService.disable == 0)).first()
-    if result == None:
+    result = (session
+              .query(AccessWebService.passwd)
+              .filter(and_(AccessWebService.login == login,
+                           AccessWebService.disable == 0)).first())
+    if result is None:
         return None
     else:
         return result.passwd
@@ -34,8 +35,9 @@ def get_password(session, login):
 
 @xivo_daosession
 def get_allowed_hosts(session):
-    result = session.query(distinct(AccessWebService.host))\
-            .filter(and_(AccessWebService.host != None,
-                         AccessWebService.disable == 0)).all()
+    result = (session
+              .query(distinct(AccessWebService.host))
+              .filter(and_(AccessWebService.host != None,
+                           AccessWebService.disable == 0)).all())
     result = [item[0].encode('utf-8', 'ignore') for item in result]
     return result

@@ -21,6 +21,7 @@ from xivo_dao.alchemy.contexttype import ContextType
 from xivo_dao.alchemy.contextinclude import ContextInclude
 from xivo_dao.helpers.db_manager import daosession
 
+
 @daosession
 def get(session, context_name):
     return session.query(Context).filter(Context.name == context_name).first()

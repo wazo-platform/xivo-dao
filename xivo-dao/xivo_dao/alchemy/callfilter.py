@@ -30,10 +30,14 @@ class Callfilter(Base):
                        name='callfilter_type',
                        metadata=Type.metadata),
                   nullable=False)
-    bosssecretary = Column(Enum('bossfirst-serial', 'bossfirst-simult', 'secretary-serial', 'secretary-simult', 'all',
-                               name='callfilter_bosssecretary',
-                               metadata=Type.metadata),
-                          nullable=False)
+    bosssecretary = Column(Enum('bossfirst-serial',
+                                'bossfirst-simult',
+                                'secretary-serial',
+                                'secretary-simult',
+                                'all',
+                                name='callfilter_bosssecretary',
+                                metadata=Type.metadata),
+                           nullable=False)
     callfrom = Column(Enum('internal', 'external', 'all',
                            name='callfilter_callfrom',
                            metadata=Type.metadata),

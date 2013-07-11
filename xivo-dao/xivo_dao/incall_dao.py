@@ -26,24 +26,21 @@ from sqlalchemy.types import Integer
 def get(session, incall_id):
     query = _new_query(session)
     return (query
-        .filter(Incall.id == incall_id)
-        .first()
-    )
+            .filter(Incall.id == incall_id)
+            .first())
 
 
 @daosession
 def get_by_exten(session, incall_exten):
     query = _new_query(session)
     return (query
-        .filter(Incall.exten == incall_exten)
-        .first()
-    )
+            .filter(Incall.exten == incall_exten)
+            .first())
 
 
 def _new_query(session):
     return (session
-        .query(Incall.id, Dialaction.action, Dialaction.actionarg1)
-        .join((Dialaction, Incall.id == cast(Dialaction.categoryval, Integer)))
-        .filter(Dialaction.category == u'incall')
-        .filter(Dialaction.event == u'answer')
-    )
+            .query(Incall.id, Dialaction.action, Dialaction.actionarg1)
+            .join((Dialaction, Incall.id == cast(Dialaction.categoryval, Integer)))
+            .filter(Dialaction.category == u'incall')
+            .filter(Dialaction.event == u'answer'))

@@ -42,7 +42,7 @@ def get_profiles(session):
                   (CtiProfileXlet, CtiProfile.id == CtiProfileXlet.profile_id),
                   (CtiXlet, CtiProfileXlet.xlet_id == CtiXlet.id),
                   (CtiXletLayout, CtiProfileXlet.layout_id == CtiXletLayout.id))
-                  .order_by(asc(CtiProfileXlet.order))
+            .order_by(asc(CtiProfileXlet.order))
             .all())
 
     res = {}

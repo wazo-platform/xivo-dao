@@ -35,14 +35,14 @@ class LdapFilter(Base):
     attrdisplayname = Column(String(255), nullable=False, server_default='')
     attrphonenumber = Column(String(255), nullable=False, server_default='')
     additionaltype = Column(Enum('office',
-                                'home',
-                                'mobile',
-                                'fax',
-                                'other',
-                                'custom',
-                                name='ldapfilter_additionaltype',
-                                metadata=Type.metadata),
-                           nullable=False)
+                                 'home',
+                                 'mobile',
+                                 'fax',
+                                 'other',
+                                 'custom',
+                                 name='ldapfilter_additionaltype',
+                                 metadata=Type.metadata),
+                            nullable=False)
     additionaltext = Column(String(16), nullable=False, server_default='')
     commented = Column(Integer, nullable=False, default=0)
     description = Column(Text, nullable=False)

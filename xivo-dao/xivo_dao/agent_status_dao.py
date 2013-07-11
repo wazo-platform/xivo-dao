@@ -51,28 +51,25 @@ def get_status_by_number(session, agent_number):
 
 def _get_login_status_by_id(session, agent_id):
     login_status = (session
-        .query(AgentLoginStatus)
-        .get(agent_id)
-    )
+                    .query(AgentLoginStatus)
+                    .get(agent_id))
     return login_status
 
 
 def _get_login_status_by_number(session, agent_number):
     login_status = (session
-        .query(AgentLoginStatus)
-        .filter(AgentLoginStatus.agent_number == agent_number)
-        .first()
-    )
+                    .query(AgentLoginStatus)
+                    .filter(AgentLoginStatus.agent_number == agent_number)
+                    .first())
     return login_status
 
 
 def _get_queues_for_agent(session, agent_id):
     query = (session
-        .query(AgentMembershipStatus.queue_id.label('queue_id'),
-               AgentMembershipStatus.queue_name.label('queue_name'),
-               AgentMembershipStatus.penalty.label('penalty'))
-        .filter(AgentMembershipStatus.agent_id == agent_id)
-    )
+             .query(AgentMembershipStatus.queue_id.label('queue_id'),
+                    AgentMembershipStatus.queue_name.label('queue_name'),
+                    AgentMembershipStatus.penalty.label('penalty'))
+             .filter(AgentMembershipStatus.agent_id == agent_id))
 
     return [_Queue(q.queue_id, q.queue_name, q.penalty) for q in query]
 
@@ -105,14 +102,13 @@ def get_agent_id_from_extension(session, extension, context):
 @daosession
 def get_statuses(session):
     return (session
-        .query(AgentFeatures.id.label('agent_id'),
-               AgentFeatures.number.label('agent_number'),
-               AgentLoginStatus.extension.label('extension'),
-               AgentLoginStatus.context.label('context'),
-               case([(AgentLoginStatus.agent_id == None, False)], else_=True).label('logged'))
-        .outerjoin((AgentLoginStatus, AgentFeatures.id == AgentLoginStatus.agent_id))
-        .all()
-    )
+            .query(AgentFeatures.id.label('agent_id'),
+                   AgentFeatures.number.label('agent_number'),
+                   AgentLoginStatus.extension.label('extension'),
+                   AgentLoginStatus.context.label('context'),
+                   case([(AgentLoginStatus.agent_id == None, False)], else_=True).label('logged'))
+            .outerjoin((AgentLoginStatus, AgentFeatures.id == AgentLoginStatus.agent_id))
+            .all())
 
 
 @daosession
@@ -120,15 +116,13 @@ def get_statuses_for_queue(session, queue_id):
     session = session
 
     subquery = (session
-        .query(QueueMember.userid)
-        .filter(QueueFeatures.name == QueueMember.queue_name)
-        .filter(QueueFeatures.id == queue_id)
-        .filter(QueueMember.usertype == 'agent')
-    )
+                .query(QueueMember.userid)
+                .filter(QueueFeatures.name == QueueMember.queue_name)
+                .filter(QueueFeatures.id == queue_id)
+                .filter(QueueMember.usertype == 'agent'))
     query = (session
-        .query(AgentLoginStatus)
-        .filter(AgentLoginStatus.agent_id.in_(subquery))
-    )
+             .query(AgentLoginStatus)
+             .filter(AgentLoginStatus.agent_id.in_(subquery)))
 
     return [_to_agent_status(q, None) for q in query]
 
@@ -136,20 +130,17 @@ def get_statuses_for_queue(session, queue_id):
 @daosession
 def get_statuses_to_add_to_queue(session, queue_id):
     q1 = (session
-        .query(QueueMember.userid)
-        .filter(QueueFeatures.name == QueueMember.queue_name)
-        .filter(QueueFeatures.id == queue_id)
-        .filter(QueueMember.usertype == 'agent')
-    )
+          .query(QueueMember.userid)
+          .filter(QueueFeatures.name == QueueMember.queue_name)
+          .filter(QueueFeatures.id == queue_id)
+          .filter(QueueMember.usertype == 'agent'))
     q2 = (session
-        .query(AgentMembershipStatus.agent_id)
-        .filter(AgentMembershipStatus.queue_id == queue_id)
-    )
+          .query(AgentMembershipStatus.agent_id)
+          .filter(AgentMembershipStatus.queue_id == queue_id))
     agent_ids_to_add = q1.except_(q2)
     query = (session
-        .query(AgentLoginStatus)
-        .filter(AgentLoginStatus.agent_id.in_(agent_ids_to_add))
-    )
+             .query(AgentLoginStatus)
+             .filter(AgentLoginStatus.agent_id.in_(agent_ids_to_add)))
 
     return [_to_agent_status(q, None) for q in query]
 
@@ -157,20 +148,17 @@ def get_statuses_to_add_to_queue(session, queue_id):
 @daosession
 def get_statuses_to_remove_from_queue(session, queue_id):
     q1 = (session
-        .query(AgentMembershipStatus.agent_id)
-        .filter(AgentMembershipStatus.queue_id == queue_id)
-    )
+          .query(AgentMembershipStatus.agent_id)
+          .filter(AgentMembershipStatus.queue_id == queue_id))
     q2 = (session
-        .query(QueueMember.userid)
-        .filter(QueueFeatures.name == QueueMember.queue_name)
-        .filter(QueueFeatures.id == queue_id)
-        .filter(QueueMember.usertype == 'agent')
-    )
+          .query(QueueMember.userid)
+          .filter(QueueFeatures.name == QueueMember.queue_name)
+          .filter(QueueFeatures.id == queue_id)
+          .filter(QueueMember.usertype == 'agent'))
     agent_ids_to_remove = q1.except_(q2)
     query = (session
-        .query(AgentLoginStatus)
-        .filter(AgentLoginStatus.agent_id.in_(agent_ids_to_remove))
-    )
+             .query(AgentLoginStatus)
+             .filter(AgentLoginStatus.agent_id.in_(agent_ids_to_remove)))
 
     return [_to_agent_status(q, None) for q in query]
 
@@ -178,8 +166,7 @@ def get_statuses_to_remove_from_queue(session, queue_id):
 @daosession
 def get_logged_agent_ids(session):
     query = (session
-        .query(AgentLoginStatus.agent_id)
-    )
+             .query(AgentLoginStatus.agent_id))
 
     return [q.agent_id for q in query]
 
@@ -198,21 +185,19 @@ def _to_agent_status(agent_login_status, queues):
 @daosession
 def is_agent_logged_in(session, agent_id):
     count = (session
-        .query(AgentLoginStatus)
-        .filter(AgentLoginStatus.agent_id == agent_id)
-        .count()
-    )
+             .query(AgentLoginStatus)
+             .filter(AgentLoginStatus.agent_id == agent_id)
+             .count())
     return count > 0
 
 
 @daosession
 def is_extension_in_use(session, extension, context):
     count = (session
-        .query(AgentLoginStatus)
-        .filter(AgentLoginStatus.extension == extension)
-        .filter(AgentLoginStatus.context == context)
-        .count()
-    )
+             .query(AgentLoginStatus)
+             .filter(AgentLoginStatus.extension == extension)
+             .filter(AgentLoginStatus.context == context)
+             .count())
     return count > 0
 
 
