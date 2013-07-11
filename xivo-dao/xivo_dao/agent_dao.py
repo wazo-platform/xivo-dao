@@ -27,17 +27,20 @@ _Agent = namedtuple('_Agent', ['id', 'number', 'queues'])
 _Queue = namedtuple('_Queue', ['id', 'name', 'penalty'])
 
 
-def agent_number(agentid):
-    return _get_one(agentid).number
+@daosession
+def agent_number(session, agentid):
+    return _get_one(session, agentid).number
 
 
-def agent_context(agentid):
-    return _get_one(agentid).context
+@daosession
+def agent_context(session, agentid):
+    return _get_one(session, agentid).context
 
 
-def agent_interface(agentid):
+@daosession
+def agent_interface(session, agentid):
     try:
-        return 'Agent/%s' % _get_one(agentid).number
+        return 'Agent/%s' % _get_one(session, agentid).number
     except LookupError:
         return None
 
@@ -52,7 +55,6 @@ def agent_id(session, agent_number):
     return str(result.id)
 
 
-@daosession
 def _get_one(session, agentid):
     # field id != field agentid used only for joining with staticagent table.
     if agentid is None:
@@ -90,19 +92,20 @@ def del_agent(session, agentid):
         raise e
 
 
-def agent_with_id(agent_id):
-    agent = _get_agent(AgentFeatures.id == int(agent_id))
-    _add_queues_to_agent(agent)
-    return agent
-
-
-def agent_with_number(agent_number):
-    agent = _get_agent(AgentFeatures.number == agent_number)
-    _add_queues_to_agent(agent)
+@daosession
+def agent_with_id(session, agent_id):
+    agent = _get_agent(session, AgentFeatures.id == int(agent_id))
+    _add_queues_to_agent(session, agent)
     return agent
 
 
 @daosession
+def agent_with_number(session, agent_number):
+    agent = _get_agent(session, AgentFeatures.number == agent_number)
+    _add_queues_to_agent(session, agent)
+    return agent
+
+
 def _get_agent(session, whereclause):
     query = select([AgentFeatures.id, AgentFeatures.number], whereclause)
     row = session.execute(query).first()
@@ -111,7 +114,6 @@ def _get_agent(session, whereclause):
     return _Agent(row['id'], row['number'], [])
 
 
-@daosession
 def _add_queues_to_agent(session, agent):
     query = select([QueueFeatures.id, QueueMember.queue_name, QueueMember.penalty],
                    and_(QueueMember.usertype == u'agent',

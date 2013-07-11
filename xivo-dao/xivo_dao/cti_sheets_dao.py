@@ -25,12 +25,11 @@ import json
 @daosession
 def get_config(session):
     res = {}
-    res['events'] = _build_sheetevents()
-    res.update(_build_sheetactions())
+    res['events'] = _build_sheetevents(session)
+    res.update(_build_sheetactions(session))
     return res
 
 
-@daosession
 def _build_sheetevents(session):
     events = {}
     ctisheetevents = session.query(CtiSheetEvents).first()
@@ -47,7 +46,6 @@ def _build_sheetevents(session):
     return events
 
 
-@daosession
 def _build_sheetactions(session):
     res = {
         'options': {},
