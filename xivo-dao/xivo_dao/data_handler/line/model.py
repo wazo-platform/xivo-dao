@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+#
 # Copyright (C) 2013 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
@@ -30,9 +30,10 @@ class Line(AbstractModels):
     _MAPPING = {
         'id': 'id',
         'name': 'name',
-        # 'number': 'number',  # TODO: implement a way to get the phone number
+        'number': 'number',
         'context': 'context',
         'protocol': 'protocol',
+        'protocolid': 'protocolid',
         'callerid': 'callerid',
         'deviceid': 'deviceid',
         'num': 'num'
@@ -50,16 +51,59 @@ class Line(AbstractModels):
 
 class LineSIP(Line):
 
-    MANDATORY = [
+    MANDATORY = Line.MANDATORY + [
         'username',
         'secret'
     ]
 
     # mapping = {db_field: model_field}
-    _MAPPING = {
+    _MAPPING = dict(Line._MAPPING.items() + {
         'username': 'username',
         'secret': 'secret'
-    }
+    }.items())
 
     def __init__(self, *args, **kwargs):
+        self.protocol = 'sip'
+        Line.__init__(self, *args, **kwargs)
+
+
+class LineIAX(Line):
+
+    MANDATORY = Line.MANDATORY + [
+        'username',
+        'secret'
+    ]
+
+    # mapping = {db_field: model_field}
+    _MAPPING = dict(Line._MAPPING.items() + {
+        'username': 'username',
+        'secret': 'secret'
+    }.items())
+
+    def __init__(self, *args, **kwargs):
+        self.protocol = 'iax'
+        Line.__init__(self, *args, **kwargs)
+
+
+class LineSCCP(Line):
+
+    MANDATORY = Line.MANDATORY + []
+
+    # mapping = {db_field: model_field}
+    _MAPPING = dict(Line._MAPPING.items() + {}.items())
+
+    def __init__(self, *args, **kwargs):
+        self.protocol = 'sccp'
+        Line.__init__(self, *args, **kwargs)
+
+
+class LineCUSTOM(Line):
+
+    MANDATORY = Line.MANDATORY + []
+
+    # mapping = {db_field: model_field}
+    _MAPPING = dict(Line._MAPPING.items() + {}.items())
+
+    def __init__(self, *args, **kwargs):
+        self.protocol = 'custom'
         Line.__init__(self, *args, **kwargs)

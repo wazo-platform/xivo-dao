@@ -92,6 +92,7 @@ class DAOTestCase(unittest.TestCase):
     def add_line(self, **kwargs):
         kwargs.setdefault('name', 'fooname')
         kwargs.setdefault('context', 'foocontext')
+        kwargs.setdefault('protocol', 'sip')
         kwargs.setdefault('protocolid', 1)
         kwargs.setdefault('provisioningid', 1)
 
