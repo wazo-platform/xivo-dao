@@ -32,7 +32,7 @@ class Extension(Base):
     priority = Column(Integer, nullable=False, default=0)
     app = Column(String(128), nullable=False, server_default='')
     appdata = Column(String(128), nullable=False, server_default='')
-    type = Column(String(15), nullable=False)
+    type = Column(String(15), nullable=False, server_default='')
     typeval = Column(String(255))
 
     @property
