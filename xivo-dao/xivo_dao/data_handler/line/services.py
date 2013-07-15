@@ -17,12 +17,54 @@
 
 from . import notifier
 from . import dao
+from xivo_dao.data_handler.exception import MissingParametersError, \
+    InvalidParametersError
+from urllib2 import URLError
+from xivo_dao.helpers import provd_connector
+from xivo_dao.data_handler.device import services as device_services
+
+
+def get(line_id):
+    return dao.get(line_id)
 
 
 def get_by_user_id(user_id):
     return dao.get_by_user_id(user_id)
 
 
+def get_by_number_context(number, context):
+    return dao.get_by_number_context(number, context)
+
+
+def create(line):
+    _validate(line)
+    line = dao.create(line)
+    notifier.created(line)
+    return line
+
+
 def delete(line):
     dao.delete(line)
+    if hasattr(line, 'deviceid') and line.deviceid is not None:
+        try:
+            device_services.remove_line_from_device(line.deviceid, line.num)
+        except URLError as e:
+            raise provd_connector.ProvdError(str(e))
     notifier.deleted(line)
+
+
+def _validate(line):
+    _check_missing_parameters(line)
+    _check_invalid_parameters(line)
+
+
+def _check_missing_parameters(line):
+    missing = line.missing_parameters()
+    if missing:
+        raise MissingParametersError(missing)
+
+
+def _check_invalid_parameters(line):
+    invalid_parameters = []
+    if invalid_parameters:
+        raise InvalidParametersError(invalid_parameters)

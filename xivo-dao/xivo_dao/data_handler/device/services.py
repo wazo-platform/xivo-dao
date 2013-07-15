@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.data_handler.device import dao as device_dao
+from xivo_dao.helpers import provd_connector
 
 
 def get(device_id):
@@ -24,3 +25,26 @@ def get(device_id):
 
 def get_by_deviceid(session, device_id):
     return device_dao.get_by_deviceid(device_id)
+
+
+def remove_line_from_device(deviceid, linenum):
+    config = provd_connector.config_manager.get(deviceid)
+    del config["raw_config"]["sip_lines"][str(linenum)]
+    if len(config["raw_config"]["sip_lines"]) == 0:
+        # then we reset to autoprov
+        _reset_config(config)
+        reset_to_autoprov(deviceid)
+    provd_connector.config_manager.update(config)
+
+
+def reset_to_autoprov(deviceid):
+    device = provd_connector.device_manager.get(deviceid)
+    new_configid = provd_connector.config_manager.autocreate()
+    device["config"] = new_configid
+    provd_connector.device_manager.update(device)
+
+
+def _reset_config(config):
+    del config["raw_config"]["sip_lines"]
+    if "funckeys" in config["raw_config"]:
+        del config["raw_config"]["funckeys"]

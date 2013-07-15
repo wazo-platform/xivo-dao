@@ -3,90 +3,70 @@
 import unittest
 
 from mock import patch, Mock
-from xivo_dao.data_handler.user.model import User
-from xivo_dao.data_handler.user import services as user_services
+from xivo_dao.data_handler.line.model import LineSIP
+from xivo_dao.data_handler.line import services as line_services
 from xivo_dao.data_handler.exception import MissingParametersError, \
     ElementAlreadyExistsError, InvalidParametersError, ElementCreationError
 
 
 class TestLineServices(unittest.TestCase):
 
-    def test_create_no_properties(self):
-        user = User()
+    @patch('xivo_dao.data_handler.line.notifier.created')
+    @patch('xivo_dao.data_handler.line.dao.create')
+    def test_create(self, line_dao_create, line_notifier_created):
+        name = 'line'
+        context = 'toto'
+        secret = '1234'
 
-        self.assertRaises(MissingParametersError, user_services.create, user)
+        line = LineSIP(name=name, context=context, username=name, secret=secret)
 
-    @patch('xivo_dao.data_handler.user.dao.find_user', Mock(return_value=None))
-    @patch('xivo_dao.data_handler.user.dao.create')
-    def test_create_empty_firstname(self, user_dao_create):
-        firstname = ''
-        lastname = 'toto'
+        line_dao_create.return_value = line
 
-        user = User(firstname=firstname, lastname=lastname)
+        result = line_services.create(line)
 
-        self.assertRaises(InvalidParametersError, user_services.create, user)
+        line_dao_create.assert_called_once_with(line)
+        self.assertEquals(type(result), LineSIP)
+        line_notifier_created.assert_called_once_with(line)
 
-    @patch('xivo_dao.data_handler.user.dao.find_user')
-    @patch('xivo_dao.data_handler.user.dao.create')
-    def test_create_same_firtname_and_lastname(self, user_dao_create, find_user):
-        firstname = 'user'
-        lastname = 'toto'
+    @patch('xivo_dao.data_handler.line.dao.create')
+    def test_create_with_missing_attributes(self, line_dao_create):
+        line = LineSIP(name='lpko')
 
-        user = User(firstname=firstname, lastname=lastname)
+        self.assertRaises(MissingParametersError, line_services.create, line)
 
-        user_mock = Mock(User)
-        user_mock.firstname = firstname
-        user_mock.lastname = lastname
-        find_user.return_value = user_mock
+    @patch('xivo_dao.data_handler.line.dao.create')
+    def test_create_with_error_from_dao(self, line_dao_create):
+        name = 'line'
+        context = 'toto'
+        secret = '1234'
 
-        self.assertRaises(ElementAlreadyExistsError, user_services.create, user)
-
-    @patch('xivo_dao.data_handler.user.dao.find_user', Mock(return_value=None))
-    @patch('xivo_dao.data_handler.user.notifier.created')
-    @patch('xivo_dao.data_handler.user.dao.create')
-    def test_create(self, user_dao_create, user_notifier_created):
-        firstname = 'user'
-        lastname = 'toto'
-
-        user = User(firstname=firstname, lastname=lastname)
-
-        user_dao_create.return_value = user
-
-        result = user_services.create(user)
-
-        user_dao_create.assert_called_once_with(user)
-        self.assertEquals(type(result), User)
-        user_notifier_created.assert_called_once_with(user)
-
-    @patch('xivo_dao.data_handler.user.dao.find_user', Mock(return_value=None))
-    @patch('xivo_dao.data_handler.user.dao.create')
-    def test_create_with_error_from_dao(self, user_dao_create):
-        firstname = 'user'
-        lastname = 'toto'
-
-        user = User(firstname=firstname, lastname=lastname)
+        line = LineSIP(name=name, context=context, username=name, secret=secret)
 
         error = Exception("message")
-        user_dao_create.side_effect = ElementCreationError(error, '')
+        line_dao_create.side_effect = ElementCreationError(error, '')
 
-        self.assertRaises(ElementCreationError, user_services.create, user)
+        self.assertRaises(ElementCreationError, line_services.create, line)
 
-    @patch('xivo_dao.data_handler.user.notifier.edited')
-    @patch('xivo_dao.data_handler.user.dao.edit')
-    def test_edit(self, user_dao_edit, user_notifier_edited):
-        user = User(id=1, firstname='user', lastname='toto')
+    @patch('xivo_dao.data_handler.device.services.remove_line_from_device')
+    @patch('xivo_dao.data_handler.line.notifier.deleted')
+    @patch('xivo_dao.data_handler.line.dao.delete')
+    def test_delete(self, line_dao_delete, line_notifier_deleted, remove_line_from_device):
+        line = LineSIP(id=1, username='line', secret='toto')
 
-        user_services.edit(user)
+        line_services.delete(line)
 
-        user_dao_edit.assert_called_once_with(user)
-        user_notifier_edited.assert_called_once_with(user)
+        line_dao_delete.assert_called_once_with(line)
+        line_notifier_deleted.assert_called_once_with(line)
+        self.assertEquals(remove_line_from_device.call_count, 0)
 
-    @patch('xivo_dao.data_handler.user.notifier.deleted')
-    @patch('xivo_dao.data_handler.user.dao.delete')
-    def test_delete(self, user_dao_delete, user_notifier_deleted):
-        user = User(id=1, firstname='user', lastname='toto')
+    @patch('xivo_dao.data_handler.device.services.remove_line_from_device')
+    @patch('xivo_dao.data_handler.line.notifier.deleted')
+    @patch('xivo_dao.data_handler.line.dao.delete')
+    def test_delete_with_device(self, line_dao_delete, line_notifier_deleted, remove_line_from_device):
+        line = LineSIP(id=1, username='line', secret='toto', deviceid=15, num=1)
 
-        user_services.delete(user)
+        line_services.delete(line)
 
-        user_dao_delete.assert_called_once_with(user)
-        user_notifier_deleted.assert_called_once_with(user)
+        line_dao_delete.assert_called_once_with(line)
+        remove_line_from_device.assert_called_once_with(line.deviceid, line.num)
+        line_notifier_deleted.assert_called_once_with(line)
