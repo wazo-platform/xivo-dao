@@ -189,7 +189,7 @@ class TestLineFeaturesDAO(DAOTestCase):
         self.assertEqual('SIP/abcdef', interface)
 
     def test_get_interface_from_exten_and_context_sccp(self):
-        protocol = 'sccp'
+        protocol = 'SCCP'
         name = '1001'
         context = 'foobar'
         self._insert_line(context, name=name, protocol=protocol)
@@ -227,19 +227,19 @@ class TestLineFeaturesDAO(DAOTestCase):
         self.assertEquals(extension, expected_extension)
 
     def test_get_extension_from_protocol_interface_sccp(self):
-        protocol = 'sccp'
+        protocol = 'SCCP'
         name = LINE_NUMBER
         context = 'default'
 
         expected_extension = Extension(LINE_NUMBER, context, is_internal=True)
-        self._insert_line(context, name=name, protocol=protocol)
+        self._insert_line(context, name=name, protocol=protocol.lower())
 
         extension = line_dao.get_extension_from_protocol_interface(protocol, name)
 
         self.assertEquals(extension, expected_extension)
 
     def test_get_cid_from_sccp_channel(self):
-        channel = 'sccp/1234@SEP0023EBC64F92-1'
+        channel = 'SCCP/1234-000000001'
 
         self.assertRaises(LookupError, line_dao._get_cid_for_sccp_channel, channel)
 
@@ -297,7 +297,7 @@ class TestLineFeaturesDAO(DAOTestCase):
         self.assertEqual(result, cid)
 
         cid = ('"Tester One" <1111>', 'Tester Two', '1111')
-        channel = 'sccp/1300@SEP2897423897-12'
+        channel = 'SCCP/1300-00000000012'
 
         get_sccp_cid.return_value = cid
         result = line_dao.get_cid_for_channel(channel)

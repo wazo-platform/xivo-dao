@@ -26,6 +26,7 @@ from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.usersip import UserSIP
 from sqlalchemy import and_
 from xivo_dao.helpers.db_manager import daosession
+from xivo.asterisk import protocol_interface
 
 
 @daosession
@@ -249,14 +250,9 @@ def get_interface_from_user_id(session, user_id):
 
 @daosession
 def _get_cid_for_sccp_channel(session, channel):
-    try:
-        interesting_part = channel.split('@', 1)[0]
-        protocol, line_name = interesting_part.split('/', 1)
-        assert(protocol == 'sccp')
-    except (IndexError, AssertionError):
-        raise ValueError('Not an SCCP channel')
+    _, name = _get_proto_name(channel, 'sccp')
 
-    line = session.query(SCCPLine.cid_name, SCCPLine.cid_num).filter(SCCPLine.name == line_name)[0]
+    line = session.query(SCCPLine.cid_name, SCCPLine.cid_num).filter(SCCPLine.name == name)[0]
 
     cid_name, cid_num = line.cid_name, line.cid_num
 
@@ -265,14 +261,20 @@ def _get_cid_for_sccp_channel(session, channel):
 
 @daosession
 def _get_cid_for_sip_channel(session, channel):
-    protocol, name = channel.split('-', 1)[0].split('/', 1)
-    if protocol.lower() != 'sip':
-        raise ValueError('Not a SIP channel')
+    proto, name = _get_proto_name(channel, 'sip')
 
     cid_all = (session.query(UserSIP.callerid)
-               .filter(and_(UserSIP.name == name, UserSIP.protocol == protocol.lower()))[0].callerid)
+               .filter(and_(UserSIP.name == name, UserSIP.protocol == proto.lower()))[0].callerid)
 
     return caller_id.build_caller_id(cid_all, None, None)
+
+
+def _get_proto_name(channel, expected_proto):
+    proto_iface = protocol_interface.protocol_interface_from_channel(channel)
+    if proto_iface.protocol.lower() != expected_proto.lower():
+        raise ValueError('Not a %s channel' % expected_proto.upper())
+
+    return proto_iface.protocol, proto_iface.interface
 
 
 @daosession
