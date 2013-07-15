@@ -21,9 +21,25 @@ import string
 from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
 
 
-def make_provisioning_id(session):
-    provd_id = ''.join(random.choice(string.digits) for _ in range(6))
+def make_provisioning_id(session, provd_id=None):
+    if provd_id is None:
+        provd_id = ''.join(random.choice(string.digits) for _ in range(6))
+    if not _is_valid_provisioning_id(provd_id) or _is_exist_provisioning_id(session, provd_id):
+        return make_provisioning_id(session)
+    return int(provd_id)
+
+
+def _is_exist_provisioning_id(session, provd_id):
     line = session.query(LineSchema.id).filter(LineSchema.provisioningid == provd_id).count()
     if line > 0:
-        return make_provisioning_id(session)
-    return provd_id
+        return True
+    return False
+
+
+def _is_valid_provisioning_id(provd_id):
+    print provd_id
+    if str(provd_id).startswith('0'):
+        return False
+    elif len(str(provd_id)) != 6:
+        return False
+    return True
