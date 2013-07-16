@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that
+from hamcrest import assert_that, all_of, has_property, is_not
 from hamcrest.core import equal_to
 from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
@@ -125,12 +125,12 @@ class TestLineDao(DAOTestCase):
 
         result = line_dao.provisioning_id_exists(provd_id)
 
-        self.assertEquals(result, True)
+        assert_that(result, equal_to(True))
 
     def test_provisioning_id_does_not_exist(self):
         result = line_dao.provisioning_id_exists(123456)
 
-        self.assertEquals(result, False)
+        assert_that(result, equal_to(False))
 
     def test_create_sip_line_with_no_extension(self):
         line = LineSIP(protocol='sip',
@@ -139,7 +139,7 @@ class TestLineDao(DAOTestCase):
 
         line_created = line_dao.create(line)
 
-        assert_that(hasattr(line_created, 'number'), equal_to(False))
+        assert_that(line_created, is_not(has_property('number')))
 
     @patch('xivo_dao.helpers.db_manager.AsteriskSession')
     def test_create_sip_line_with_error_from_dao(self, Session):
@@ -178,15 +178,22 @@ class TestLineDao(DAOTestCase):
                                          Extension.exten == line_created.number))
                             .first())
 
-        self.assertEquals(result_line.protocol, 'sip')
-        self.assertEquals(result_line.protocolid, result_protocol.id)
-        self.assertEquals(result_line.context, 'default')
-        self.assertEquals(result_line.number, '1000')
-        self.assertEquals(result_extension.exten, '1000')
-        self.assertEquals(result_extension.context, 'default')
-        self.assertEquals(result_extension.type, 'user')
-        self.assertEquals(result_extension.commented, 0)
-        self.assertEquals(result_protocol.type, 'friend')
+        assert_that(result_line, all_of(
+            has_property('protocol', 'sip'),
+            has_property('protocolid', result_protocol.id),
+            has_property('context', 'default'),
+            has_property('number', '1000')
+        ))
+
+        assert_that(result_extension, all_of(
+            has_property('exten', '1000'),
+            has_property('context', 'default'),
+            has_property('type', 'user'),
+            has_property('commented', 0)
+        ))
+
+        assert_that(result_protocol, has_property('type', 'friend'))
+
 
     def test_delete_sip_line(self):
         number = '1234'
@@ -210,22 +217,26 @@ class TestLineDao(DAOTestCase):
         row = (self.session.query(LineSchema)
                .filter(LineSchema.id == line_id)
                .first())
-        self.assertEquals(row, None)
+
+        assert_that(row, equal_to(None))
 
         row = (self.session.query(UserSIPSchema)
                .filter(UserSIPSchema.id == line.protocolid)
                .first())
-        self.assertEquals(row, None)
+
+        assert_that(row, equal_to(None))
 
         row = (self.session.query(Extension)
                .filter(Extension.id == exten_id)
                .first())
-        self.assertEquals(row, None)
+
+        assert_that(row, equal_to(None))
 
         row = (self.session.query(UserSchema)
                .filter(UserSchema.id == user_id)
                .first())
-        self.assertNotEquals(row, None)
+
+        assert_that(row, is_not(None))
 
     def _insert_usersip(self, usersip_id):
         usersip = UserSIPSchema()
