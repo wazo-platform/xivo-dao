@@ -88,22 +88,12 @@ class LineIAX(Line):
 
 class LineSCCP(Line):
 
-    MANDATORY = Line.MANDATORY + []
-
-    # mapping = {db_field: model_field}
-    _MAPPING = dict(Line._MAPPING.items() + {}.items())
-
     def __init__(self, *args, **kwargs):
         Line.__init__(self, *args, **kwargs)
         self.protocol = 'sccp'
 
 
 class LineCUSTOM(Line):
-
-    MANDATORY = Line.MANDATORY + []
-
-    # mapping = {db_field: model_field}
-    _MAPPING = dict(Line._MAPPING.items() + {}.items())
 
     def __init__(self, *args, **kwargs):
         Line.__init__(self, *args, **kwargs)
