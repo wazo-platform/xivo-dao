@@ -23,7 +23,9 @@ from sqlalchemy.types import Integer, String, Enum
 
 class Extension(Base):
     __tablename__ = 'extensions'
-    __table_args__ = UniqueConstraint('exten', 'context')
+    __table_args__ = (
+        UniqueConstraint('exten', 'context'),
+    )
 
     id = Column(Integer, primary_key=True)
     commented = Column(Integer)
