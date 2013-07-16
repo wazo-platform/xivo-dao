@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-
-import uuid
+import string
+import random
 
 from sqlalchemy import Integer
 from sqlalchemy.sql import and_, cast
@@ -98,7 +98,7 @@ def provisioning_id_exists(session, provd_id):
 
 @daosession
 def create(session, line):
-    derived_line = _build_derived_line(line)
+    derived_line = _build_derived_line(session, line)
 
     session.begin()
     session.add(derived_line)
@@ -127,11 +127,11 @@ def create(session, line):
     return line
 
 
-def _build_derived_line(line):
+def _build_derived_line(session, line):
     protocol = line.protocol.lower()
 
     if protocol == 'sip':
-        derived_line = _create_sip_line(line)
+        derived_line = _create_sip_line(session, line)
     elif protocol == 'iax':
         derived_line = _create_iax_line(line)
     elif protocol == 'sccp':
@@ -157,14 +157,12 @@ def _create_extension(line):
     return exten
 
 
-def _create_sip_line(line):
+def _create_sip_line(session, line):
     if not hasattr(line, 'username'):
-        uid = uuid.uuid4()
-        line.username = uid.hex
+        line.username = generate_random_hash(session, UserSIPSchema.name)
 
     if not hasattr(line, 'secret'):
-        uid = uuid.uuid4()
-        line.secret = uid.hex
+        line.secret = generate_random_hash(session, UserSIPSchema.secret)
 
     line.name = line.username
     line_row = line.to_data_source(UserSIPSchema)
@@ -173,6 +171,23 @@ def _create_sip_line(line):
     line_row.type = 'friend'
 
     return line_row
+
+
+def generate_random_hash(session, column):
+    token = _random_hash()
+    query = session.query(column)
+
+    count = query.filter(column == token).count()
+    while count > 0:
+        token = _random_hash()
+        count = query.filter(column == token).count()
+
+    return token
+
+
+def _random_hash(length=8):
+    pool = string.ascii_letters + string.digits
+    return ''.join(random.choice(pool) for r in range(length))
 
 
 def _create_iax_line(line):

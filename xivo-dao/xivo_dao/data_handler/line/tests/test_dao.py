@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, all_of, has_property, is_not
+from hamcrest import assert_that, all_of, has_property, is_not, has_length
 from hamcrest.core import equal_to
 from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
@@ -140,6 +140,23 @@ class TestLineDao(DAOTestCase):
         line_created = line_dao.create(line)
 
         assert_that(line_created, is_not(has_property('number')))
+
+    def test_generate_random_hash_no_sip_user(self):
+        generated_hash = line_dao.generate_random_hash(self.session, UserSIPSchema.name)
+
+        assert_that(generated_hash, has_length(8))
+
+    @patch('xivo_dao.data_handler.line.dao._random_hash')
+    def test_generate_random_hash_same_sip_user(self, random_hash):
+        usersip_id = 1
+        existing_hash = 'abcd'
+        expected_hash = 'abcdefgh'
+        self._insert_usersip(usersip_id)
+
+        random_hash.side_effect = [existing_hash, expected_hash]
+
+        generated_hash = line_dao.generate_random_hash(self.session, UserSIPSchema.name)
+        assert_that(generated_hash, equal_to(expected_hash))
 
     @patch('xivo_dao.helpers.db_manager.AsteriskSession')
     def test_create_sip_line_with_error_from_dao(self, Session):
