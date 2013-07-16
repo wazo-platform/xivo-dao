@@ -51,28 +51,25 @@ class TestLineFeaturesDAO(DAOTestCase):
         self.empty_tables()
 
     def test_find_line_id_by_user_id(self):
-        user = UserFeatures()
-        user.id = USER_ID
-        user.firstname = 'test_line'
-
-        line = self._insert_line()
+        line = self.add_line(iduserfeatures=USER_ID)
 
         lines = line_dao.find_line_id_by_user_id(USER_ID)
 
         self.assertEqual(lines[0], line.id)
 
     def test_number(self):
-        line = self._insert_line()
+        line = self.add_line(number=LINE_NUMBER)
 
         number = line_dao.number(line.id)
 
-        self.assertEqual(number, line.number)
+        self.assertEqual(number, LINE_NUMBER)
 
     def test_get_number_by_user_id_not_found(self):
         self.assertRaises(LookupError, line_dao.get_number_by_user_id, USER_ID)
 
     def test_get_number_by_user_id_found(self):
-        self._insert_line()
+        self.add_line(number=LINE_NUMBER,
+                      iduserfeatures=USER_ID)
         expected_phone_number = LINE_NUMBER
 
         phone_number = line_dao.get_number_by_user_id(USER_ID)
@@ -83,49 +80,9 @@ class TestLineFeaturesDAO(DAOTestCase):
         self.assertFalse(line_dao.is_phone_exten('12345'))
         self.assertFalse(line_dao.is_phone_exten(None))
 
-        self._insert_line()
+        self.add_line(number=LINE_NUMBER)
 
         self.assertTrue(line_dao.is_phone_exten(LINE_NUMBER))
-
-    def _insert_line(self, context='test_context', name='tre321', protocol='sip', protocol_id=0):
-        line = LineFeatures()
-        line.protocolid = protocol_id
-        line.protocol = protocol
-        line.name = name
-        line.context = context
-        line.provisioningid = 0
-        line.number = LINE_NUMBER
-        line.iduserfeatures = USER_ID
-
-        self.session.begin()
-        self.session.add(line)
-        self.session.commit()
-
-        return line
-
-    def _insert_usersip(self, usersip_id):
-        usersip = UserSIP()
-        usersip.id = usersip_id
-        usersip.name = 'abcd'
-        usersip.type = 'friend'
-
-        self.session.begin()
-        self.session.add(usersip)
-        self.session.commit()
-
-        return usersip
-
-    def _insert_user(self, firstname, lastname):
-        user = UserFeatures(
-            id=USER_ID,
-            firstname=firstname,
-            lastname=lastname
-        )
-        self.session.begin()
-        self.session.add(user)
-        self.session.commit()
-
-        return user
 
     def _insert_sccpline(self, sccpline_id):
         sccpline = SCCPLine()
@@ -141,25 +98,24 @@ class TestLineFeaturesDAO(DAOTestCase):
 
         return sccpline
 
-    def _insert_extension(self, exten):
-        extension = ExtensionSchema(
-            context='default',
-            exten=exten,
-            type='user',
-        )
-        self.add_me(extension)
-        return extension.id
-
     def test_all_with_protocol(self):
-        first, last = 'Lord', 'Sanderson'
-        self._insert_user(first, last)
         protocol_id = 1
-        self._insert_usersip(protocol_id)
+        firstname = 'Lord'
+        lastname = 'Sanderson'
+
+        user = self.add_user(firstname=firstname,
+                      lastname=lastname)
+        self.add_usersip(id=protocol_id)
         self._insert_sccpline(protocol_id)
-        self._insert_line(protocol='sip', protocol_id=protocol_id)
-        line = self._insert_line(protocol='sccp', protocol_id=protocol_id)
+        self.add_line(protocol='sip',
+                      protocolid=protocol_id,
+                      iduserfeatures=user.id)
+        line = self.add_line(protocol='sccp',
+                             protocolid=protocol_id,
+                             iduserfeatures=user.id)
 
         results = line_dao.all_with_protocol('sccp')
+        print results
         result_line_id = results[0][0].id
         result_protocol = results[0][0].protocol
         result_firstname = results[0].firstname
@@ -168,11 +124,12 @@ class TestLineFeaturesDAO(DAOTestCase):
         self.assertEqual(len(results), 1)
         self.assertEqual(result_line_id, line.id)
         self.assertEqual(result_protocol, line.protocol)
-        self.assertEqual(result_firstname, first)
-        self.assertEqual(result_lastname, last)
+        self.assertEqual(result_firstname, firstname)
+        self.assertEqual(result_lastname, lastname)
 
     def test_find_context_by_user_id(self):
-        self._insert_line('falafel')
+        self.add_line(context='falafel',
+                      iduserfeatures=USER_ID)
 
         context = line_dao.find_context_by_user_id(USER_ID)
 
@@ -182,7 +139,10 @@ class TestLineFeaturesDAO(DAOTestCase):
         protocol = 'sip'
         name = 'abcdef'
         context = 'foobar'
-        self._insert_line(context, name=name, protocol=protocol)
+        self.add_line(context=context,
+                      name=name,
+                      protocol=protocol,
+                      number=LINE_NUMBER)
 
         interface = line_dao.get_interface_from_exten_and_context(LINE_NUMBER, context)
 
@@ -192,7 +152,10 @@ class TestLineFeaturesDAO(DAOTestCase):
         protocol = 'SCCP'
         name = '1001'
         context = 'foobar'
-        self._insert_line(context, name=name, protocol=protocol)
+        self.add_line(context=context,
+                      name=name,
+                      protocol=protocol,
+                      number=LINE_NUMBER)
 
         interface = line_dao.get_interface_from_exten_and_context(LINE_NUMBER, context)
 
@@ -202,7 +165,10 @@ class TestLineFeaturesDAO(DAOTestCase):
         protocol = 'custom'
         name = 'dahdi/g1/12345'
         context = 'foobar'
-        self._insert_line(context, name=name, protocol=protocol)
+        self.add_line(context=context,
+                      name=name,
+                      protocol=protocol,
+                      number=LINE_NUMBER)
 
         interface = line_dao.get_interface_from_exten_and_context(LINE_NUMBER, context)
 
@@ -219,8 +185,13 @@ class TestLineFeaturesDAO(DAOTestCase):
         name = 'abcdef'
         context = 'default'
 
-        expected_extension = Extension(LINE_NUMBER, context, is_internal=True)
-        self._insert_line(context, name=name, protocol=protocol)
+        expected_extension = Extension(number=LINE_NUMBER,
+                                       context=context,
+                                       is_internal=True)
+        self.add_line(context=context,
+                      name=name,
+                      protocol=protocol,
+                      number=LINE_NUMBER)
 
         extension = line_dao.get_extension_from_protocol_interface(protocol, name)
 
@@ -231,8 +202,13 @@ class TestLineFeaturesDAO(DAOTestCase):
         name = LINE_NUMBER
         context = 'default'
 
-        expected_extension = Extension(LINE_NUMBER, context, is_internal=True)
-        self._insert_line(context, name=name, protocol=protocol.lower())
+        expected_extension = Extension(number=LINE_NUMBER,
+                                       context=context,
+                                       is_internal=True)
+        self.add_line(context=context,
+                      name=name,
+                      protocol=protocol.lower(),
+                      number=LINE_NUMBER)
 
         extension = line_dao.get_extension_from_protocol_interface(protocol, name)
 
@@ -307,11 +283,9 @@ class TestLineFeaturesDAO(DAOTestCase):
     def test_get_interface_from_user_id(self):
         self.assertRaises(LookupError, line_dao.get_interface_from_user_id, 5)
 
-        line = self._insert_line()
+        line = self.add_line(iduserfeatures=USER_ID)
 
-        user_id = int(line.iduserfeatures)
-
-        interface = line_dao.get_interface_from_user_id(user_id)
+        interface = line_dao.get_interface_from_user_id(USER_ID)
 
         expected_iface = line.protocol + '/' + line.name
 
@@ -319,15 +293,12 @@ class TestLineFeaturesDAO(DAOTestCase):
 
     def test_get_interface_from_user_id_custom_line(self):
         protocol = 'custom'
-        name = 'dahdi/g1/12345'
-        context = 'foobar'
-        line = self._insert_line(context, name=name, protocol=protocol)
+        line = self.add_line(protocol=protocol,
+                             iduserfeatures=USER_ID)
 
-        user_id = int(line.iduserfeatures)
+        interface = line_dao.get_interface_from_user_id(USER_ID)
 
-        interface = line_dao.get_interface_from_user_id(user_id)
-
-        self.assertEqual(interface, name)
+        self.assertEqual(interface, line.name)
 
     def test_create(self):
         line = LineFeatures()
@@ -342,13 +313,14 @@ class TestLineFeaturesDAO(DAOTestCase):
         self.assertTrue(line_dao.is_phone_exten('1234'))
 
     def test_delete(self):
-        line = self._insert_line(context='default')
         usersip_id = 2
-        self._insert_usersip(usersip_id)
-        line.protocol = 'sip'
-        line.protocolid = usersip_id
-        self.add_me(line)
-        exten_id = self._insert_extension(LINE_NUMBER)
+        self.add_usersip(id=usersip_id)
+        line = self.add_line(number=LINE_NUMBER,
+                             context='default',
+                             protocol='sip',
+                             protocolid=usersip_id)
+        exten = self.add_extension(exten=LINE_NUMBER,
+                                   context='default')
 
         line_dao.delete(line.id)
 
@@ -356,10 +328,10 @@ class TestLineFeaturesDAO(DAOTestCase):
 
         inserted_usersip = self.session.query(UserSIP).filter(UserSIP.id == usersip_id).first()
         self.assertEquals(None, inserted_usersip)
-        inserted_extension = self.session.query(ExtensionSchema).filter(ExtensionSchema.id == exten_id).first()
+        inserted_extension = self.session.query(ExtensionSchema).filter(ExtensionSchema.id == exten.id).first()
         self.assertEquals(None, inserted_extension)
 
     def test_get(self):
-        line = self._insert_line()
+        line = self.add_line()
         result = line_dao.get(line.id)
         self.assertEquals(line, result)

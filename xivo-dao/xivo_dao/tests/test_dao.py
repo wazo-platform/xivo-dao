@@ -28,6 +28,9 @@ from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.devicefeatures import DeviceFeatures
+from xivo_dao.alchemy.sccpline import SCCPLine as SCCPLineSchema
+import random
+from xivo_dao.alchemy.usersip import UserSIP
 
 logger = logging.getLogger(__name__)
 
@@ -80,43 +83,36 @@ class DAOTestCase(unittest.TestCase):
         self.session.commit()
         logger.debug("Tables emptied")
 
-    def add_me(self, obj):
-        self.session.begin()
-        try:
-            self.session.add(obj)
-            self.session.commit()
-        except Exception:
-            self.session.rollback()
-            raise
-
     def add_line(self, **kwargs):
-        kwargs.setdefault('name', 'fooname')
+        kwargs.setdefault('name', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
         kwargs.setdefault('context', 'foocontext')
         kwargs.setdefault('protocol', 'sip')
-        kwargs.setdefault('protocolid', 1)
-        kwargs.setdefault('provisioningid', 1)
+        kwargs.setdefault('protocolid', int(''.join(random.choice('123456789') for _ in range(3))))
+        kwargs.setdefault('provisioningid', int(''.join(random.choice('123456789') for _ in range(6))))
 
         line = LineFeatures(**kwargs)
         self.add_me(line)
-        return line.id
+        return line
 
     def add_user_line(self, **kwargs):
         kwargs.setdefault('main_user', True)
 
         user_line = UserLine(**kwargs)
         self.add_me(user_line)
+        return user_line
 
     def add_extension(self, **kwargs):
         kwargs.setdefault('type', 'user')
+        kwargs.setdefault('context', 'default')
 
         extension = Extension(**kwargs)
         self.add_me(extension)
-        return extension.id
+        return extension
 
     def add_user(self, **kwargs):
         user = UserFeatures(**kwargs)
         self.add_me(user)
-        return user.id
+        return user
 
     def add_device(self, **kwargs):
         kwargs.setdefault('deviceid', '8aada8aae3784957b6c160195c8fbcd7')
@@ -128,7 +124,34 @@ class DAOTestCase(unittest.TestCase):
 
         device = DeviceFeatures(**kwargs)
         self.add_me(device)
-        return device.id
+        return device
+
+    def add_usersip(self, **kwargs):
+        kwargs.setdefault('name', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
+        kwargs.setdefault('type', 'friend')
+
+        usersip = UserSIP(**kwargs)
+        self.add_me(usersip)
+        return usersip
+
+    def add_sccpline(self, **kwargs):
+        kwargs.setdefault('name', '1234')
+        kwargs.setdefault('context', 'default')
+        kwargs.setdefault('cid_name', 'Tester One')
+        kwargs.setdefault('cid_num', '1234')
+
+        sccpline = SCCPLineSchema(**kwargs)
+        self.add_me(sccpline)
+        return sccpline
+
+    def add_me(self, obj):
+        self.session.begin()
+        try:
+            self.session.add(obj)
+            self.session.commit()
+        except Exception:
+            self.session.rollback()
+            raise
 
     def add_me_all(self, obj_list):
         self.session.begin()

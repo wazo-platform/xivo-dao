@@ -60,9 +60,9 @@ class TestLineDao(DAOTestCase):
     def test_get(self):
         line_name = 'sdklfj'
 
-        line_id = self.add_line(name=line_name)
+        line = self.add_line(name=line_name)
 
-        line = line_dao.get(line_id)
+        line = line_dao.get(line.id)
 
         assert_that(line.name, equal_to(line_name))
 
@@ -72,11 +72,12 @@ class TestLineDao(DAOTestCase):
     def test_get_by_user_id(self):
         line_name = 'sdklfj'
 
-        line_id = self.add_line(name=line_name)
-        user_id = self.add_user()
-        self.add_user_line(user_id=user_id, line_id=line_id)
+        line = self.add_line(name=line_name)
+        user = self.add_user()
+        self.add_user_line(user_id=user.id,
+                           line_id=line.id)
 
-        line = line_dao.get_by_user_id(user_id)
+        line = line_dao.get_by_user_id(user.id)
 
         assert_that(line.name, equal_to(line_name))
 
@@ -86,19 +87,22 @@ class TestLineDao(DAOTestCase):
     def test_get_by_user_id_commented(self):
         line_name = 'sdklfj'
 
-        line_id = self.add_line(name=line_name, commented=1)
-        user_id = self.add_user()
-        self.add_user_line(user_id=user_id, line_id=line_id)
+        line = self.add_line(name=line_name, commented=1)
+        user = self.add_user()
+        self.add_user_line(user_id=user.id, line_id=line.id)
 
-        self.assertRaises(ElementNotExistsError, line_dao.get_by_user_id, user_id)
+        self.assertRaises(ElementNotExistsError, line_dao.get_by_user_id, user.id)
 
     def test_get_by_number_context(self):
         line_name = 'sdklfj'
         number = '1235'
         context = 'notdefault'
 
-        line_id = self.add_line(name=line_name, number=number, context=context)
-        self.add_extension(exten=number, context=context, type='user', typeval=str(line_id))
+        line = self.add_line(name=line_name, number=number, context=context)
+        self.add_extension(exten=number,
+                           context=context,
+                           type='user',
+                           typeval=str(line.id))
 
         line = line_dao.get_by_number_context(number, context)
 
@@ -114,8 +118,11 @@ class TestLineDao(DAOTestCase):
         number = '1235'
         context = 'notdefault'
 
-        line_id = self.add_line(name=line_name, commented=1)
-        self.add_extension(exten=number, context=context, type='user', typeval=str(line_id))
+        line = self.add_line(name=line_name, commented=1)
+        self.add_extension(exten=number,
+                           context=context,
+                           type='user',
+                           typeval=str(line.id))
 
         self.assertRaises(ElementNotExistsError, line_dao.get_by_number_context, number, context)
 
@@ -148,14 +155,14 @@ class TestLineDao(DAOTestCase):
 
     @patch('xivo_dao.data_handler.line.dao._random_hash')
     def test_generate_random_hash_same_sip_user(self, random_hash):
-        usersip_id = 1
         existing_hash = 'abcd'
         expected_hash = 'abcdefgh'
-        self._insert_usersip(usersip_id)
+        self.add_usersip(name=existing_hash)
 
         random_hash.side_effect = [existing_hash, expected_hash]
 
         generated_hash = line_dao.generate_random_hash(self.session, UserSIPSchema.name)
+
         assert_that(generated_hash, equal_to(expected_hash))
 
     @patch('xivo_dao.helpers.db_manager.AsteriskSession')
@@ -252,24 +259,24 @@ class TestLineDao(DAOTestCase):
     def test_delete_sip_line(self):
         number = '1234'
         context = 'lakokj'
-        user_id = self.add_user(firstname='toto')
-        exten_id = self.add_extension(exten=number,
+        user = self.add_user(firstname='toto')
+        exten = self.add_extension(exten=number,
                                       context=context,
                                       type='user',
-                                      typeval=user_id)
-        line_sip = self._insert_usersip(3456)
-        line_id = self.add_line(protocol='sip',
+                                      typeval=user.id)
+        line_sip = self.add_usersip(id=3456)
+        line = self.add_line(protocol='sip',
                                 protocolid=line_sip.id,
-                                iduserfeatures=user_id,
+                                iduserfeatures=user.id,
                                 number=number,
                                 context=context)
 
-        line = line_dao.get(line_id)
+        line = line_dao.get(line.id)
 
         line_dao.delete(line)
 
         row = (self.session.query(LineSchema)
-               .filter(LineSchema.id == line_id)
+               .filter(LineSchema.id == line.id)
                .first())
 
         assert_that(row, equal_to(None))
@@ -281,39 +288,13 @@ class TestLineDao(DAOTestCase):
         assert_that(row, equal_to(None))
 
         row = (self.session.query(Extension)
-               .filter(Extension.id == exten_id)
+               .filter(Extension.id == exten.id)
                .first())
 
         assert_that(row, equal_to(None))
 
         row = (self.session.query(UserSchema)
-               .filter(UserSchema.id == user_id)
+               .filter(UserSchema.id == user.id)
                .first())
 
-        assert_that(row, is_not(None))
-
-    def _insert_usersip(self, usersip_id):
-        usersip = UserSIPSchema()
-        usersip.id = usersip_id
-        usersip.name = 'abcd'
-        usersip.type = 'friend'
-
-        self.session.begin()
-        self.session.add(usersip)
-        self.session.commit()
-
-        return usersip
-
-    def _insert_sccpline(self, sccpline_id):
-        sccpline = SCCPLineSchema()
-        sccpline.id = sccpline_id
-        sccpline.name = '1234'
-        sccpline.context = 'test'
-        sccpline.cid_name = 'Tester One'
-        sccpline.cid_num = '1234'
-
-        self.session.begin()
-        self.session.add(sccpline)
-        self.session.commit()
-
-        return sccpline
+        self.assertNotEquals(row, None)

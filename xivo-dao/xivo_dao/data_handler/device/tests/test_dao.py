@@ -37,9 +37,9 @@ class TestDeviceDao(DAOTestCase):
     def test_get(self):
         deviceid = 'sdklfj'
 
-        device_id = self.add_device(deviceid=deviceid)
+        expected_device = self.add_device(deviceid=deviceid)
 
-        device = device_dao.get(device_id)
+        device = device_dao.get(expected_device.id)
 
         assert_that(device.deviceid, equal_to(deviceid))
 
@@ -49,9 +49,9 @@ class TestDeviceDao(DAOTestCase):
     def test_get_by_deviceid(self):
         deviceid = 'sdklfj'
 
-        device_id = self.add_device(deviceid=deviceid)
+        expected_device = self.add_device(deviceid=deviceid)
 
         device = device_dao.get_by_deviceid(deviceid)
 
-        assert_that(device.id, equal_to(device_id))
+        assert_that(device.id, equal_to(expected_device.id))
         assert_that(device.deviceid, equal_to(deviceid))

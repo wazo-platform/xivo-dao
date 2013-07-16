@@ -45,71 +45,58 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.empty_tables()
 
     def test_get_one_result(self):
-        user_id = self._insert_user('first')
+        expected_user = self.add_user(firstname='first')
 
-        user = user_dao.get(user_id)
+        user = user_dao.get(expected_user.id)
 
-        self.assertEqual(user.id, user_id)
+        self.assertEqual(user.id, expected_user.id)
 
     def test_get_string_id(self):
-        user_id = self._insert_user('first')
+        expected_user = self.add_user(firstname='first')
 
-        user = user_dao.get(str(user_id))
+        user = user_dao.get(str(expected_user.id))
 
-        self.assertEqual(user.id, user_id)
+        self.assertEqual(user.id, user.id)
 
     def test_get_no_result(self):
         self.assertRaises(LookupError, user_dao.get, 1)
 
     def test_get_user_by_number_context(self):
         context, number = 'default', '1234'
-        user_id = self._insert_user(firstname='Robert')
-        self._insert_line(iduserfeatures=user_id, number=number, context=context)
+        expected_user = self.add_user(firstname='Robert')
+        self.add_line(iduserfeatures=expected_user.id,
+                      number=number,
+                      context=context)
 
         user = user_dao.get_user_by_number_context(number, context)
 
-        assert_that(user.id, equal_to(user_id))
+        assert_that(user.id, equal_to(expected_user.id))
 
     def test_get_user_by_number_context_line_commented(self):
         context, number = 'default', '1234'
-        user_id = self._insert_user(firstname='Robert')
-        self._insert_line(iduserfeatures=user_id,
-                          number=number,
-                          context=context,
-                          commented=1)
+        user = self.add_user(firstname='Robert')
+        self.add_line(iduserfeatures=user.id,
+                      number=number,
+                      context=context,
+                      commented=1)
 
         self.assertRaises(LookupError, user_dao.get_user_by_number_context, number, context)
 
-    def _insert_line(self, **kwargs):
-        kwargs.setdefault('protocolid', 0)
-        kwargs.setdefault('name', 'chaise')
-        kwargs.setdefault('provisioningid', 0)
-        line = LineFeatures(**kwargs)
-        self.add_me(line)
-
     def test_set_dnd(self):
-        user_id = self._insert_user_dnd_not_set()
+        user_id = self.add_user_dnd_not_set()
 
         user_dao.enable_dnd(user_id)
 
         self._check_dnd_is_set(user_id)
 
     def test_unset_dnd(self):
-        user_id = self._insert_user_dnd_set()
+        user_id = self.add_user_dnd_set()
 
         user_dao.disable_dnd(user_id)
 
         self._check_dnd_is_not_set(user_id)
 
-    def _insert_user(self, firstname):
-        user = UserFeatures()
-        user.firstname = firstname
-
-        self.add_me(user)
-
-        return user.id
-
-    def _insert_user_dnd_set(self):
+    def add_user_dnd_set(self):
         user_features = UserFeatures()
         user_features.enablednd = 1
         user_features.firstname = 'firstname_test'
@@ -119,7 +106,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         user_id = user_features.id
         return user_id
 
-    def _insert_user_dnd_not_set(self):
+    def add_user_dnd_not_set(self):
         user_features = UserFeatures()
         user_features.enablednd = 0
         user_features.firstname = 'firstname_dnd not set'
@@ -140,20 +127,20 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.assertFalse(user_features.enablednd)
 
     def test_enable_filter(self):
-        user_id = self._insert_user_with_filter(0)
+        user_id = self.add_user_with_filter(0)
 
         user_dao.enable_filter(user_id)
 
         self._check_filter_in_db(user_id, 1)
 
     def test_disable_filter(self):
-        user_id = self._insert_user_with_filter(1)
+        user_id = self.add_user_with_filter(1)
 
         user_dao.disable_filter(user_id)
 
         self._check_filter_in_db(user_id, 0)
 
-    def _insert_user_with_filter(self, filter_status):
+    def add_user_with_filter(self, filter_status):
         user_features = UserFeatures()
         user_features.incallfilter = filter_status
         user_features.firstname = 'firstname_filter not set'
@@ -164,12 +151,12 @@ class TestUserFeaturesDAO(DAOTestCase):
         return user_id
 
     def test_enable_recording(self):
-        user_id = self._insert_user_recording_disabled()
+        user_id = self.add_user_recording_disabled()
         user_dao.enable_recording(user_id)
         self._check_recording(user_id, 1)
 
     def test_disable_recording(self):
-        user_id = self._insert_user_recording_enabled()
+        user_id = self.add_user_recording_enabled()
         user_dao.disable_recording(user_id)
         self._check_recording(user_id, 0)
 
@@ -178,7 +165,7 @@ class TestUserFeaturesDAO(DAOTestCase):
                          .filter(UserFeatures.id == user_id))[0]
         self.assertEquals(user_features.callrecord, value)
 
-    def _insert_user_recording_disabled(self):
+    def add_user_recording_disabled(self):
         user_features = UserFeatures()
         user_features.callrecord = 0
         user_features.firstname = 'firstname_recording not set'
@@ -187,7 +174,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         user_id = user_features.id
         return user_id
 
-    def _insert_user_recording_enabled(self):
+    def add_user_recording_enabled(self):
         user_features = UserFeatures()
         user_features.callrecord = 1
         user_features.firstname = 'firstname_recording set'
@@ -203,14 +190,14 @@ class TestUserFeaturesDAO(DAOTestCase):
 
     def test_enable_unconditional_fwd(self):
         destination = '765'
-        user_id = self._insert_user_with_unconditional_fwd(destination, 0)
+        user_id = self.add_user_with_unconditional_fwd(destination, 0)
 
         user_dao.enable_unconditional_fwd(user_id, destination)
 
         self._check_unconditional_fwd_in_db(user_id, 1)
         self._check_unconditional_dest_in_db(user_id, destination)
 
-    def _insert_user_with_unconditional_fwd(self, destination, enabled):
+    def add_user_with_unconditional_fwd(self, destination, enabled):
         user_features = UserFeatures()
         user_features.enableunc = enabled
         user_features.destunc = destination
@@ -228,7 +215,7 @@ class TestUserFeaturesDAO(DAOTestCase):
 
     def test_unconditional_fwd_disabled(self):
         destination = '4321'
-        user_id = self._insert_user_with_unconditional_fwd('', 0)
+        user_id = self.add_user_with_unconditional_fwd('', 0)
 
         user_dao.disable_unconditional_fwd(user_id, destination)
 
@@ -242,7 +229,7 @@ class TestUserFeaturesDAO(DAOTestCase):
 
     def test_rna_fwd_enabled(self):
         destination = '4321'
-        user_id = self._insert_user_with_rna_fwd('', 1)
+        user_id = self.add_user_with_rna_fwd('', 1)
 
         user_dao.enable_rna_fwd(user_id, destination)
 
@@ -251,14 +238,14 @@ class TestUserFeaturesDAO(DAOTestCase):
 
     def test_rna_fwd_disabled(self):
         destination = '4325'
-        user_id = self._insert_user_with_rna_fwd('', 0)
+        user_id = self.add_user_with_rna_fwd('', 0)
 
         user_dao.disable_rna_fwd(user_id, destination)
 
         self._check_rna_fwd_in_db(user_id, 0)
         self._check_rna_dest_in_db(user_id, destination)
 
-    def _insert_user_with_rna_fwd(self, destination, enabled):
+    def add_user_with_rna_fwd(self, destination, enabled):
         user_features = UserFeatures()
         user_features.enablerna = enabled
         user_features.destrna = destination
@@ -279,7 +266,7 @@ class TestUserFeaturesDAO(DAOTestCase):
                          .filter(UserFeatures.id == user_id))[0]
         self.assertEquals(user_features.enablerna, value)
 
-    def _insert_user_with_busy_fwd(self, destination, enabled):
+    def add_user_with_busy_fwd(self, destination, enabled):
         user_features = UserFeatures()
         user_features.enablebusy = enabled
         user_features.destbusy = destination
@@ -302,7 +289,7 @@ class TestUserFeaturesDAO(DAOTestCase):
 
     def test_busy_fwd_disabled(self):
         destination = '435'
-        user_id = self._insert_user_with_busy_fwd('', 0)
+        user_id = self.add_user_with_busy_fwd('', 0)
 
         user_dao.disable_busy_fwd(user_id, destination)
 
@@ -311,7 +298,7 @@ class TestUserFeaturesDAO(DAOTestCase):
 
     def test_busy_fwd_enabled(self):
         destination = '435'
-        user_id = self._insert_user_with_busy_fwd('', 1)
+        user_id = self.add_user_with_busy_fwd('', 1)
 
         user_dao.enable_busy_fwd(user_id, destination)
 
@@ -418,30 +405,14 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         return cti_profile.id
 
-    def _add_user(self, firstname, lastname=''):
-        user = UserFeatures(
-            firstname=firstname,
-            lastname=lastname
-        )
-        self.add_me(user)
-
-        return user
-
-    def _add_user_with_line(self, name, context='default'):
-        user = self._add_user(name)
-
-        line = LineFeatures()
-        line.iduserfeatures = user.id
-        line.context = context
-        line.protocolid = 1
-        line.name = 'jk1j3'
-        line.provisioningid = '12345'
-
-        self.add_me(line)
+    def add_user_with_line(self, name, context='default'):
+        user = self.add_user(firstname=name)
+        line = self.add_line(iduserfeatures=user.id,
+                             context=context)
 
         return user, line
 
-    def _add_user_to_queue(self, userid, queuename):
+    def add_user_to_queue(self, userid, queuename):
         queuemember = QueueMember(usertype='user',
                                   userid=userid,
                                   category='queue',
@@ -450,11 +421,11 @@ class TestUserFeaturesDAO(DAOTestCase):
                                   channel='SIP')
         self.add_me(queuemember)
 
-    def _add_user_to_rightcall(self, userid, rightcallid):
+    def add_user_to_rightcall(self, userid, rightcallid):
         member = RightCallMember(type='user', typeval=str(userid), rightcallid=rightcallid)
         self.add_me(member)
 
-    def _add_user_to_boss_secretary_callfilter(self, userid, callfilter_name):
+    def add_user_to_boss_secretary_callfilter(self, userid, callfilter_name):
         callfilter = Callfilter(type='bosssecretary',
                                 name=callfilter_name,
                                 bosssecretary='secretary-simult',
@@ -482,7 +453,7 @@ class TestUserFeaturesDAO(DAOTestCase):
     def test_get_reachable_contexts(self):
         context = 'my_context'
 
-        user, _ = self._add_user_with_line('Tester', context)
+        user, _ = self.add_user_with_line('Tester', context)
 
         result = user_dao.get_reachable_contexts(user.id)
 
@@ -506,7 +477,7 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         self.add_me(ctx_include)
 
-        user, _ = self._add_user_with_line('Tester', context)
+        user, _ = self.add_user_with_line('Tester', context)
 
         result = user_dao.get_reachable_contexts(user.id)
 
@@ -531,7 +502,7 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         map(self.add_me, [ctx, ctx_include, ctx_loop])
 
-        user, _ = self._add_user_with_line('Tester', context)
+        user, _ = self.add_user_with_line('Tester', context)
 
         result = user_dao.get_reachable_contexts(user.id)
 
@@ -812,35 +783,35 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.assertRaises(LookupError, user_dao.get_device_id, 666)
 
     def test_get_context(self):
-        user, line = self._add_user_with_line('test_user1')
+        user, line = self.add_user_with_line('test_user1')
 
         context = user_dao.get_context(user.id)
 
         self.assertEquals(context, line.context)
 
     def test_get_context_no_line(self):
-        user = self._add_user('test_user1')
+        user = self.add_user(firstname='test_user1')
 
         context = user_dao.get_context(user.id)
 
         self.assertEqual(context, None)
 
     def test_get_all(self):
-        user1 = self._add_user('test_user_1')
-        user2 = self._add_user('test_user_2')
+        user1 = self.add_user(firstname='test_user_1')
+        user2 = self.add_user(firstname='test_user_2')
         result = user_dao.get_all()
         self.assertEqual(result[0].firstname, user1.firstname)
         self.assertEqual(result[1].firstname, user2.firstname)
         self.assertEqual(2, len(result))
 
     def test_delete_all(self):
-        self._add_user('test_user_1')
-        self._add_user('test_user_2')
+        self.add_user(firstname='test_user_1')
+        self.add_user(firstname='test_user_2')
         user_dao.delete_all()
         result = user_dao.get_all()
         self.assertEqual(result, [])
 
-    def test_add_user(self):
+    def testadd_user(self):
         user = UserFeatures()
         user.firstname = 'test_user'
         user_dao.add_user(user)
@@ -848,7 +819,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.assertEqual(result, [user])
 
     def test_update(self):
-        user = self._add_user('test')
+        user = self.add_user(firstname='test')
         data = {'firstname': 'test_first',
                 'lastname': 'test_last'}
 
@@ -866,14 +837,14 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.assertEqual(result, 0)
 
     def test_delete(self):
-        user1 = self._add_user('test1')
+        user1 = self.add_user(firstname='test1')
         generated_id = user1.id
         queuename = "my_queue"
         rightcallid = 3
         scheduleid = 4
-        self._add_user_to_queue(user1.id, queuename)
-        self._add_user_to_rightcall(user1.id, rightcallid)
-        self._add_user_to_boss_secretary_callfilter(user1.id, callfilter_name='test')
+        self.add_user_to_queue(user1.id, queuename)
+        self.add_user_to_rightcall(user1.id, rightcallid)
+        self.add_user_to_boss_secretary_callfilter(user1.id, callfilter_name='test')
         self._add_dialaction_to_user(user1.id)
         self._add_function_key_to_user(user1.id)
         self._add_schedule_to_user(user1.id, scheduleid)
@@ -1078,7 +1049,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.assertFalse(user3.id in result)
 
     def test_get_user_join_line(self):
-        user, line = self._add_user_with_line("my_test", "default")
+        user, line = self.add_user_with_line("my_test", "default")
         line.number = "1234"
         self.add_me(line)
 
@@ -1092,14 +1063,14 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.assertEqual(result, None)
 
     def test_get_user_join_line_no_line(self):
-        user = self._add_user("test")
+        user = self.add_user(firstname="test")
         resultuser, resultline = user_dao.get_user_join_line(user.id)
         self.assertEqual(user.firstname, resultuser.firstname)
         self.assertEqual(None, resultline)
 
     def test_get_all_join_lines(self):
-        user1, line1 = self._add_user_with_line("test1", "default")
-        user2, line2 = self._add_user_with_line("test2", "default")
+        user1, line1 = self.add_user_with_line("test1", "default")
+        user2, line2 = self.add_user_with_line("test2", "default")
 
         result = user_dao.get_all_join_line()
 
