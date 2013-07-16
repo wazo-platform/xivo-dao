@@ -28,7 +28,7 @@ class Extension(Base):
     )
 
     id = Column(Integer, primary_key=True)
-    commented = Column(Integer)
+    commented = Column(Integer, nullable=False, default=0)
     context = Column(String(39), nullable=False, server_default='')
     exten = Column(String(40), nullable=False, server_default='')
     type = Column(Enum('extenfeatures',
