@@ -43,9 +43,9 @@ class TestExtensionDao(DAOTestCase):
     def test_get(self):
         exten = 'sdklfj'
 
-        extension_id = self.add_extension(exten=exten)
+        expected_extension = self.add_extension(exten=exten)
 
-        extension = extension_dao.get(extension_id)
+        extension = extension_dao.get(expected_extension.id)
 
         assert_that(extension.exten, equal_to(exten))
 
@@ -56,12 +56,12 @@ class TestExtensionDao(DAOTestCase):
         exten = 'sdklfj'
         context = 'toto'
 
-        extension_id = self.add_extension(exten=exten,
+        expected_extension = self.add_extension(exten=exten,
                                           context=context)
 
         extension = extension_dao.get_by_exten_context(exten, context)
 
-        assert_that(extension.id, equal_to(extension_id))
+        assert_that(extension.id, equal_to(expected_extension.id))
         assert_that(extension.exten, equal_to(exten))
         assert_that(extension.context, equal_to(context))
 
@@ -74,14 +74,14 @@ class TestExtensionDao(DAOTestCase):
         type = 'user'
         typeval = '2'
 
-        extension_id = self.add_extension(exten=exten,
+        expected_extension = self.add_extension(exten=exten,
                                           context=context,
                                           type=type,
                                           typeval=typeval)
 
         extension = extension_dao.get_by_type_typeval(type, typeval)
 
-        assert_that(extension.id, equal_to(extension_id))
+        assert_that(extension.id, equal_to(expected_extension.id))
         assert_that(extension.exten, equal_to(exten))
         assert_that(extension.context, equal_to(context))
         assert_that(extension.type, equal_to(type))
@@ -147,16 +147,16 @@ class TestExtensionDao(DAOTestCase):
         type = 'user'
         typeval = '2'
 
-        extension_id = self.add_extension(exten=exten,
+        expected_extension = self.add_extension(exten=exten,
                                           context=context,
                                           type=type,
                                           typeval=typeval)
 
-        extension = extension_dao.get(extension_id)
+        extension = extension_dao.get(expected_extension.id)
 
         extension_dao.delete(extension)
 
-        row = self.session.query(ExtensionSchema).filter(ExtensionSchema.id == extension_id).first()
+        row = self.session.query(ExtensionSchema).filter(ExtensionSchema.id == expected_extension.id).first()
 
         self.assertEquals(row, None)
 
