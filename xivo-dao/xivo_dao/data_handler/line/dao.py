@@ -32,7 +32,6 @@ from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementDeletionError, ElementCreationError
 
-from helpers import make_provisioning_id
 from model import LineSIP, LineIAX, LineSCCP, LineCUSTOM
 
 
@@ -90,6 +89,14 @@ def _get_protocol_line(line):
 
 
 @daosession
+def is_exist_provisioning_id(session, provd_id):
+    line = session.query(LineSchema.id).filter(LineSchema.provisioningid == provd_id).count()
+    if line > 0:
+        return True
+    return False
+
+
+@daosession
 def create(session, line):
     session.begin()
     protocol = line.protocol.lower()
@@ -111,7 +118,6 @@ def create(session, line):
     session.begin()
     line.protocolid = proto.id
     line_row = line.to_data_source(LineSchema)
-    line_row.provisioningid = make_provisioning_id(session)
     session.add(line_row)
 
     _create_extension(session, line)

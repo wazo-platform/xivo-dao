@@ -15,8 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+import random
+
 from . import notifier
 from . import dao
+
 from xivo_dao.data_handler.exception import MissingParametersError, \
     InvalidParametersError
 from urllib2 import URLError
@@ -36,8 +39,17 @@ def get_by_number_context(number, context):
     return dao.get_by_number_context(number, context)
 
 
+def make_provisioning_id():
+    provd_id = ''.join(str(random.choice(range(1, 9))) for _ in range(6))
+    return int(provd_id)
+
+
 def create(line):
     _validate(line)
+    provd_id = make_provisioning_id()
+    while not _check_invalid_provisioning_id(provd_id):
+        provd_id = make_provisioning_id()
+    line.provisioningid = provd_id
     line = dao.create(line)
     notifier.created(line)
     return line
@@ -68,3 +80,9 @@ def _check_invalid_parameters(line):
     invalid_parameters = []
     if invalid_parameters:
         raise InvalidParametersError(invalid_parameters)
+
+
+def _check_invalid_provisioning_id(provd_id):
+    if dao.is_exist_provisioning_id(provd_id):
+        return False
+    return True

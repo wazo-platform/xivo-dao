@@ -6,14 +6,22 @@ from mock import patch, Mock
 from xivo_dao.data_handler.line.model import LineSIP
 from xivo_dao.data_handler.line import services as line_services
 from xivo_dao.data_handler.exception import MissingParametersError, \
-    ElementAlreadyExistsError, InvalidParametersError, ElementCreationError
+    ElementCreationError
 
 
 class TestLineServices(unittest.TestCase):
 
+    def test_make_provisioning_id(self):
+        provd_id = line_services.make_provisioning_id()
+
+        self.assertEquals(len(str(provd_id)), 6)
+        self.assertEquals(str(provd_id).startswith('0'), False)
+
+    @patch('xivo_dao.data_handler.line.dao.is_exist_provisioning_id', Mock(return_value=False))
+    @patch('xivo_dao.data_handler.line.services.make_provisioning_id')
     @patch('xivo_dao.data_handler.line.notifier.created')
     @patch('xivo_dao.data_handler.line.dao.create')
-    def test_create(self, line_dao_create, line_notifier_created):
+    def test_create(self, line_dao_create, line_notifier_created, make_provisioning_id):
         name = 'line'
         context = 'toto'
         secret = '1234'
@@ -27,15 +35,20 @@ class TestLineServices(unittest.TestCase):
         line_dao_create.assert_called_once_with(line)
         self.assertEquals(type(result), LineSIP)
         line_notifier_created.assert_called_once_with(line)
+        make_provisioning_id.assert_called_with()
 
+    @patch('xivo_dao.data_handler.line.services.make_provisioning_id')
     @patch('xivo_dao.data_handler.line.dao.create')
-    def test_create_with_missing_attributes(self, line_dao_create):
+    def test_create_with_missing_attributes(self, line_dao_create, make_provisioning_id):
         line = LineSIP(name='lpko')
 
         self.assertRaises(MissingParametersError, line_services.create, line)
+        self.assertEquals(make_provisioning_id.call_count, 0)
 
+    @patch('xivo_dao.data_handler.line.dao.is_exist_provisioning_id', Mock(return_value=False))
+    @patch('xivo_dao.data_handler.line.services.make_provisioning_id')
     @patch('xivo_dao.data_handler.line.dao.create')
-    def test_create_with_error_from_dao(self, line_dao_create):
+    def test_create_with_error_from_dao(self, line_dao_create, make_provisioning_id):
         name = 'line'
         context = 'toto'
         secret = '1234'
@@ -46,6 +59,7 @@ class TestLineServices(unittest.TestCase):
         line_dao_create.side_effect = ElementCreationError(error, '')
 
         self.assertRaises(ElementCreationError, line_services.create, line)
+        make_provisioning_id.assert_called_with()
 
     @patch('xivo_dao.data_handler.device.services.remove_line_from_device')
     @patch('xivo_dao.data_handler.line.notifier.deleted')

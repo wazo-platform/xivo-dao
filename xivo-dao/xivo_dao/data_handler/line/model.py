@@ -36,6 +36,7 @@ class Line(AbstractModels):
         'protocolid': 'protocolid',
         'callerid': 'callerid',
         'deviceid': 'deviceid',
+        'provisioningid': 'provisioningid',
         'num': 'num'
     }
 
