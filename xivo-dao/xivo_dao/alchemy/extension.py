@@ -16,19 +16,33 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 
-from xivo_dao.helpers.db_manager import Base
-from sqlalchemy.schema import Column
-from sqlalchemy.types import Integer, String
+from xivo_dao.helpers.db_manager import Base, Type
+from sqlalchemy.schema import Column, UniqueConstraint
+from sqlalchemy.types import Integer, String, Enum
 
 
 class Extension(Base):
     __tablename__ = 'extensions'
+    __table_args__ = (
+        UniqueConstraint('exten', 'context'),
+    )
 
     id = Column(Integer, primary_key=True)
     commented = Column(Integer)
     context = Column(String(39), nullable=False, server_default='')
     exten = Column(String(40), nullable=False, server_default='')
-    type = Column(String(15), nullable=False, server_default='')
+    type = Column(Enum('extenfeatures',
+                       'featuremap',
+                       'generalfeatures',
+                       'group',
+                       'incall',
+                       'meetme',
+                       'outcall',
+                       'queue',
+                       'user',
+                       name='extenumbers_type',
+                       metadata=Type.metadata),
+                    nullable=False)
     typeval = Column(String(255))
 
     @property
