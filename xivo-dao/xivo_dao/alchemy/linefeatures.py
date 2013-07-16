@@ -17,12 +17,15 @@
 
 from xivo_dao.helpers.db_manager import Base
 from sqlalchemy.types import Integer, String, Text
-from sqlalchemy.schema import Column
+from sqlalchemy.schema import Column, UniqueConstraint
 
 
 class LineFeatures(Base):
-
     __tablename__ = 'linefeatures'
+    __table_args__ = (
+        UniqueConstraint('name'),
+        UniqueConstraint('protocol', 'protocolid'),
+    )
 
     id = Column(Integer, primary_key=True)
     protocolid = Column(Integer, nullable=False)
