@@ -3,6 +3,9 @@
 import unittest
 
 from mock import patch, Mock
+from urllib2 import URLError
+from xivo_dao.helpers.provd_connector import ProvdError
+
 from xivo_dao.data_handler.line.model import LineSIP
 from xivo_dao.data_handler.line import services as line_services
 from xivo_dao.data_handler.exception import MissingParametersError, \
@@ -11,7 +14,47 @@ from xivo_dao.data_handler.exception import MissingParametersError, \
 
 class TestLineServices(unittest.TestCase):
 
-    def test_make_provisioning_id(self):
+    @patch('xivo_dao.data_handler.line.dao.get')
+    def test_get(self, mock_line_get):
+        line_id = 1
+
+        line = Mock()
+        mock_line_get.return_value = line
+
+        result = line_services.get(line_id)
+
+        mock_line_get.assert_called_once_with(line_id)
+        self.assertEquals(result, line)
+
+    @patch('xivo_dao.data_handler.line.dao.get_by_user_id')
+    def test_get_by_user_id(self, mock_get_by_user_id):
+        user_id = 1
+
+        line = Mock()
+        mock_get_by_user_id.return_value = line
+
+        result = line_services.get_by_user_id(user_id)
+
+        mock_get_by_user_id.assert_called_once_with(user_id)
+        self.assertEquals(result, line)
+
+    @patch('xivo_dao.data_handler.line.dao.get_by_number_context')
+    def test_get_by_number_context(self, mock_get_by_number_context):
+        number = '1000'
+        context = 'default'
+
+        line = Mock()
+        mock_get_by_number_context.return_value = line
+
+        result = line_services.get_by_number_context(number, context)
+
+        mock_get_by_number_context.assert_called_once_with(number, context)
+        self.assertEquals(result, line)
+
+    @patch('xivo_dao.data_handler.line.dao.provisioning_id_exists')
+    def test_make_provisioning_id(self, provd_id_exists):
+        provd_id_exists.return_value = False
+
         provd_id = line_services.make_provisioning_id()
 
         self.assertEquals(len(str(provd_id)), 6)
@@ -82,3 +125,23 @@ class TestLineServices(unittest.TestCase):
         line_dao_delete.assert_called_once_with(line)
         remove_line_from_device.assert_called_once_with(line.deviceid, line.num)
         line_notifier_deleted.assert_called_once_with(line)
+
+    @patch('xivo_dao.data_handler.device.services.remove_line_from_device')
+    @patch('xivo_dao.data_handler.line.notifier.deleted')
+    @patch('xivo_dao.data_handler.line.dao.delete')
+    def test_delete_with_device_error(self, line_dao_delete, line_notifier_deleted, remove_line_from_device):
+        line_id = 1
+        username = 'line'
+        secret = 'toto'
+        deviceid = 15
+        num = 1
+
+        line = LineSIP(id=line_id, username=username, secret=secret, deviceid=deviceid, num=num)
+
+        remove_line_from_device.side_effect = URLError('')
+
+        self.assertRaises(ProvdError, line_services.delete, line)
+
+        line_dao_delete.assert_called_once_with(line)
+        remove_line_from_device.assert_called_once_with(line.deviceid, line.num)
+        self.assertEquals(line_notifier_deleted.call_count, 0)
