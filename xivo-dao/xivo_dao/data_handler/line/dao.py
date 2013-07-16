@@ -89,7 +89,7 @@ def _get_protocol_line(line):
 
 
 @daosession
-def is_exist_provisioning_id(session, provd_id):
+def provisioning_id_exists(session, provd_id):
     line = session.query(LineSchema.id).filter(LineSchema.provisioningid == provd_id).count()
     if line > 0:
         return True

@@ -119,16 +119,16 @@ class TestLineDao(DAOTestCase):
 
         self.assertRaises(ElementNotExistsError, line_dao.get_by_number_context, number, context)
 
-    def test_is_exist_provisioning_id(self):
+    def test_provisioning_id_exists(self):
         provd_id = 123456
         self.add_line(provisioningid=provd_id)
 
-        result = line_dao.is_exist_provisioning_id(provd_id)
+        result = line_dao.provisioning_id_exists(provd_id)
 
         self.assertEquals(result, True)
 
-    def test_is_not_exist_provisioning_id(self):
-        result = line_dao.is_exist_provisioning_id(123456)
+    def test_provisioning_id_does_not_exist(self):
+        result = line_dao.provisioning_id_exists(123456)
 
         self.assertEquals(result, False)
 

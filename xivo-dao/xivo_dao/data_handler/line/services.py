@@ -39,13 +39,6 @@ def get_by_number_context(number, context):
     return dao.get_by_number_context(number, context)
 
 
-def make_provisioning_id():
-    provd_id = ''.join(str(random.choice(range(1, 9))) for _ in range(6))
-    while not _check_invalid_provisioning_id(provd_id):
-        provd_id = make_provisioning_id()
-    return int(provd_id)
-
-
 def create(line):
     _validate(line)
     line.provisioningid = make_provisioning_id()
@@ -63,6 +56,11 @@ def delete(line):
             raise provd_connector.ProvdError(str(e))
     notifier.deleted(line)
 
+def _generate_random_digits():
+    digitrange = range(1, 9)
+    digits = [str(random.choice(digitrange)) for r in range(6)]
+    provd_id = ''.join(digits)
+    return provd_id
 
 def _validate(line):
     _check_missing_parameters(line)
@@ -81,7 +79,18 @@ def _check_invalid_parameters(line):
         raise InvalidParametersError(invalid_parameters)
 
 
-def _check_invalid_provisioning_id(provd_id):
-    if dao.is_exist_provisioning_id(provd_id):
-        return False
-    return True
+def make_provisioning_id():
+    provd_id = _generate_random_digits()
+    while dao.provisioning_id_exists(provd_id):
+        provd_id = _generate_random_digits()
+    return int(provd_id)
+
+
+def delete(line):
+    dao.delete(line)
+    if hasattr(line, 'deviceid') and line.deviceid is not None:
+        try:
+            device_services.remove_line_from_device(line.deviceid, line.num)
+        except URLError as e:
+            raise provd_connector.ProvdError(str(e))
+    notifier.deleted(line)

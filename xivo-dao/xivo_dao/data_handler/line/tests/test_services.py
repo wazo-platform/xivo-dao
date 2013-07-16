@@ -17,7 +17,6 @@ class TestLineServices(unittest.TestCase):
         self.assertEquals(len(str(provd_id)), 6)
         self.assertEquals(str(provd_id).startswith('0'), False)
 
-    @patch('xivo_dao.data_handler.line.dao.is_exist_provisioning_id', Mock(return_value=False))
     @patch('xivo_dao.data_handler.line.services.make_provisioning_id')
     @patch('xivo_dao.data_handler.line.notifier.created')
     @patch('xivo_dao.data_handler.line.dao.create')
@@ -45,7 +44,6 @@ class TestLineServices(unittest.TestCase):
         self.assertRaises(MissingParametersError, line_services.create, line)
         self.assertEquals(make_provisioning_id.call_count, 0)
 
-    @patch('xivo_dao.data_handler.line.dao.is_exist_provisioning_id', Mock(return_value=False))
     @patch('xivo_dao.data_handler.line.services.make_provisioning_id')
     @patch('xivo_dao.data_handler.line.dao.create')
     def test_create_with_error_from_dao(self, line_dao_create, make_provisioning_id):
