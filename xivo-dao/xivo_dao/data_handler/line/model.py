@@ -64,8 +64,8 @@ class LineSIP(Line):
     }.items())
 
     def __init__(self, *args, **kwargs):
-        self.protocol = 'sip'
         Line.__init__(self, *args, **kwargs)
+        self.protocol = 'sip'
 
 
 class LineIAX(Line):
@@ -82,8 +82,8 @@ class LineIAX(Line):
     }.items())
 
     def __init__(self, *args, **kwargs):
-        self.protocol = 'iax'
         Line.__init__(self, *args, **kwargs)
+        self.protocol = 'iax'
 
 
 class LineSCCP(Line):
@@ -94,8 +94,8 @@ class LineSCCP(Line):
     _MAPPING = dict(Line._MAPPING.items() + {}.items())
 
     def __init__(self, *args, **kwargs):
-        self.protocol = 'sccp'
         Line.__init__(self, *args, **kwargs)
+        self.protocol = 'sccp'
 
 
 class LineCUSTOM(Line):
@@ -106,5 +106,5 @@ class LineCUSTOM(Line):
     _MAPPING = dict(Line._MAPPING.items() + {}.items())
 
     def __init__(self, *args, **kwargs):
-        self.protocol = 'custom'
         Line.__init__(self, *args, **kwargs)
+        self.protocol = 'custom'
