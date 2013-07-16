@@ -28,9 +28,6 @@ class Extension(Base):
     commented = Column(Integer)
     context = Column(String(39), nullable=False, server_default='')
     exten = Column(String(40), nullable=False, server_default='')
-    priority = Column(Integer, nullable=False, default=0)
-    app = Column(String(128), nullable=False, server_default='')
-    appdata = Column(String(128), nullable=False, server_default='')
     type = Column(String(15), nullable=False, server_default='')
     typeval = Column(String(255))
 

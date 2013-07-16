@@ -142,12 +142,11 @@ class TestLineFeaturesDAO(DAOTestCase):
         return sccpline
 
     def _insert_extension(self, exten):
-        extension = ExtensionSchema(context='default',
-                                    exten=exten,
-                                    priority=1,
-                                    app='GoSub',
-                                    type='user',
-                                    appdata=('did,s,1(%s)' % exten))
+        extension = ExtensionSchema(
+            context='default',
+            exten=exten,
+            type='user',
+        )
         self.add_me(extension)
         return extension.id
 
