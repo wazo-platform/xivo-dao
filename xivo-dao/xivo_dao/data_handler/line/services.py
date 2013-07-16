@@ -41,15 +41,14 @@ def get_by_number_context(number, context):
 
 def make_provisioning_id():
     provd_id = ''.join(str(random.choice(range(1, 9))) for _ in range(6))
+    while not _check_invalid_provisioning_id(provd_id):
+        provd_id = make_provisioning_id()
     return int(provd_id)
 
 
 def create(line):
     _validate(line)
-    provd_id = make_provisioning_id()
-    while not _check_invalid_provisioning_id(provd_id):
-        provd_id = make_provisioning_id()
-    line.provisioningid = provd_id
+    line.provisioningid = make_provisioning_id()
     line = dao.create(line)
     notifier.created(line)
     return line
