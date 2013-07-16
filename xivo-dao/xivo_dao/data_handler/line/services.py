@@ -46,6 +46,20 @@ def create(line):
     return line
 
 
+def edit(line):
+    pass
+
+
+def delete(line):
+    dao.delete(line)
+    if hasattr(line, 'deviceid') and line.deviceid is not None:
+        try:
+            device_services.remove_line_from_device(line.deviceid, line.num)
+        except URLError as e:
+            raise provd_connector.ProvdError(str(e))
+    notifier.deleted(line)
+
+
 def _validate(line):
     _check_missing_parameters(line)
 
@@ -68,13 +82,3 @@ def _generate_random_digits():
     digits = [str(random.choice(digitrange)) for r in range(6)]
     provd_id = ''.join(digits)
     return provd_id
-
-
-def delete(line):
-    dao.delete(line)
-    if hasattr(line, 'deviceid') and line.deviceid is not None:
-        try:
-            device_services.remove_line_from_device(line.deviceid, line.num)
-        except URLError as e:
-            raise provd_connector.ProvdError(str(e))
-    notifier.deleted(line)
