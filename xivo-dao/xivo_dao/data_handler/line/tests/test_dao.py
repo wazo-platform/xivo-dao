@@ -104,6 +104,7 @@ class TestLineDao(DAOTestCase):
                            type='user',
                            typeval=str(line.id))
 
+
         line = line_dao.get_by_number_context(number, context)
 
         assert_that(line.name, equal_to(line_name))
