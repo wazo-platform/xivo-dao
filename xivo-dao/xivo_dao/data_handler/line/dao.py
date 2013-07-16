@@ -98,16 +98,10 @@ def provisioning_id_exists(session, provd_id):
 
 @daosession
 def create(session, line):
+    derived_line = _build_derived_line(line)
+
     session.begin()
-    protocol = line.protocol.lower()
-    if protocol == 'sip':
-        proto = _create_sip_line(session, line)
-    elif protocol == 'iax':
-        proto = _create_iax_line(session, line)
-    elif protocol == 'sccp':
-        proto = _create_sccp_line(session, line)
-    elif protocol == 'custom':
-        proto = _create_custom_line(session, line)
+    session.add(derived_line)
 
     try:
         session.commit()
@@ -115,12 +109,12 @@ def create(session, line):
         session.rollback()
         raise ElementCreationError('Line', e)
 
-    session.begin()
-    line.protocolid = proto.id
-    line_row = line.to_data_source(LineSchema)
-    session.add(line_row)
+    line_row = _build_line_row(line, derived_line)
+    extension = _create_extension(line)
 
-    _create_extension(session, line)
+    session.begin()
+    session.add(line_row)
+    session.add(extension)
 
     try:
         session.commit()
@@ -133,16 +127,37 @@ def create(session, line):
     return line
 
 
-def _create_extension(session, line):
-    exten = Extension()
+def _build_derived_line(line):
+    protocol = line.protocol.lower()
+
+    if protocol == 'sip':
+        derived_line = _create_sip_line(line)
+    elif protocol == 'iax':
+        derived_line = _create_iax_line(line)
+    elif protocol == 'sccp':
+        derived_line = _create_sccp_line(line)
+    elif protocol == 'custom':
+        derived_line = _create_custom_line(line)
+
+    return derived_line
+
+
+def _build_line_row(line, derived_line):
+    line.protocolid = derived_line.id
+    line_row = line.to_data_source(LineSchema)
+    return line_row
+
+
+def _create_extension(line):
+    exten = Extension(context=line.context, type='user')
+
     if hasattr(line, 'number'):
         exten.exten = line.number
-    exten.context = line.context
-    exten.type = 'user'
-    session.add(exten)
+
+    return exten
 
 
-def _create_sip_line(session, line):
+def _create_sip_line(line):
     if not hasattr(line, 'username'):
         uid = uuid.uuid4()
         line.username = uid.hex
@@ -152,26 +167,23 @@ def _create_sip_line(session, line):
         line.secret = uid.hex
 
     line.name = line.username
-
     line_row = line.to_data_source(UserSIPSchema)
 
     line_row.name = line.username
     line_row.type = 'friend'
 
-    session.add(line_row)
-
     return line_row
 
 
-def _create_iax_line(session, line):
+def _create_iax_line(line):
     raise NotImplementedError
 
 
-def _create_sccp_line(session, line):
+def _create_sccp_line(line):
     raise NotImplementedError
 
 
-def _create_custom_line(session, line):
+def _create_custom_line(line):
     raise NotImplementedError
 
 
