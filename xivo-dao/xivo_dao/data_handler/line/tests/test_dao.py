@@ -30,7 +30,7 @@ from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema
 from xivo_dao.alchemy.useriax import UserIAX as UserIAXSchema
 from xivo_dao.alchemy.usercustom import UserCustom as UserCustomSchema
 from xivo_dao.alchemy.sccpline import SCCPLine as SCCPLineSchema
-from xivo_dao.data_handler.line.model import LineSIP
+from xivo_dao.data_handler.line.model import LineSIP, LineSCCP, LineIAX, LineCUSTOM
 from sqlalchemy.sql.expression import and_
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementCreationError
@@ -194,6 +194,43 @@ class TestLineDao(DAOTestCase):
 
         assert_that(result_protocol, has_property('type', 'friend'))
 
+    def test_create_sccp_not_implemented(self):
+        line = LineSCCP(protocol='sccp',
+                        context='default',
+                        number='1000')
+
+        self.assertRaises(NotImplementedError, line_dao.create, line)
+
+    def test_create_iax_not_implemented(self):
+        line = LineIAX(protocol='iax',
+                       context='default',
+                       number='1000')
+
+        self.assertRaises(NotImplementedError, line_dao.create, line)
+
+    def test_create_custom_not_implemented(self):
+        line = LineCUSTOM(protocol='custom',
+                          context='default',
+                          number='1000')
+
+        self.assertRaises(NotImplementedError, line_dao.create, line)
+
+    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    def test_create_database_error(self, Session):
+        session = Mock()
+        session.commit.side_effect = SQLAlchemyError()
+        Session.return_value = session
+
+        name = 'line'
+        context = 'toto'
+        secret = '1234'
+
+        line = LineSIP(name=name,
+                       context=context,
+                       username=name,
+                       secret=secret)
+
+        self.assertRaises(ElementCreationError, line_dao.create, line)
 
     def test_delete_sip_line(self):
         number = '1234'
