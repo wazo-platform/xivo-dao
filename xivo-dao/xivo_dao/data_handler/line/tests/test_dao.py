@@ -32,7 +32,10 @@ from xivo_dao.alchemy.usercustom import UserCustom as UserCustomSchema
 from xivo_dao.alchemy.sccpline import SCCPLine as SCCPLineSchema
 from xivo_dao.data_handler.line.model import LineSIP
 from sqlalchemy.sql.expression import and_
-from xivo_dao.data_handler.exception import ElementNotExistsError
+from xivo_dao.data_handler.exception import ElementNotExistsError, \
+    ElementCreationError
+from sqlalchemy.exc import SQLAlchemyError
+from mock import patch, Mock
 
 
 class TestLineDao(DAOTestCase):
@@ -77,7 +80,7 @@ class TestLineDao(DAOTestCase):
 
         assert_that(line.name, equal_to(line_name))
 
-    def test_get_by_user_id_no_line(self):
+    def test_get_by_user_id_no_user(self):
         self.assertRaises(ElementNotExistsError, line_dao.get_by_user_id, 666)
 
     def test_get_by_user_id_commented(self):
@@ -94,12 +97,14 @@ class TestLineDao(DAOTestCase):
         number = '1235'
         context = 'notdefault'
 
-        line_id = self.add_line(name=line_name)
+        line_id = self.add_line(name=line_name, number=number, context=context)
         self.add_extension(exten=number, context=context, type='user', typeval=str(line_id))
 
         line = line_dao.get_by_number_context(number, context)
 
         assert_that(line.name, equal_to(line_name))
+        assert_that(line.number, equal_to(number))
+        assert_that(line.context, equal_to(context))
 
     def test_get_by_number_context_no_line(self):
         self.assertRaises(ElementNotExistsError, line_dao.get_by_number_context, '1234', 'default')
@@ -114,28 +119,74 @@ class TestLineDao(DAOTestCase):
 
         self.assertRaises(ElementNotExistsError, line_dao.get_by_number_context, number, context)
 
-    def test_create_sip_line(self):
+    def test_is_exist_provisioning_id(self):
+        provd_id = 123456
+        self.add_line(provisioningid=provd_id)
+
+        result = line_dao.is_exist_provisioning_id(provd_id)
+
+        self.assertEquals(result, True)
+
+    def test_is_not_exist_provisioning_id(self):
+        result = line_dao.is_exist_provisioning_id(123456)
+
+        self.assertEquals(result, False)
+
+    def test_create_sip_line_with_no_extension(self):
         line = LineSIP(protocol='sip',
                        context='default',
-                       number='1000')
+                       provisioningid=123456)
 
         line_created = line_dao.create(line)
 
-        row = (self.session.query(LineSchema)
-               .filter(LineSchema.id == line_created.id)
-               .first())
-        self.assertNotEquals(row, None)
+        assert_that(hasattr(line_created, 'number'), equal_to(False))
 
-        row = (self.session.query(UserSIPSchema)
+    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    def test_create_sip_line_with_error_from_dao(self, Session):
+        session = Mock()
+        session.commit.side_effect = SQLAlchemyError()
+        Session.return_value = session
+
+        name = 'line'
+        context = 'toto'
+        secret = '1234'
+
+        line = LineSIP(name=name,
+                       context=context,
+                       username=name, secret=secret)
+
+        self.assertRaises(ElementCreationError, line_dao.create, line)
+        session.begin.assert_called_once_with()
+        session.rollback.assert_called_once_with()
+
+    def test_create_sip_line(self):
+        line = LineSIP(protocol='sip',
+                       context='default',
+                       number='1000',
+                       provisioningid=123456)
+
+        line_created = line_dao.create(line)
+
+        result_protocol = (self.session.query(UserSIPSchema)
                .filter(UserSIPSchema.id == line_created.protocolid)
                .first())
-        self.assertNotEquals(row, None)
-
-        row = (self.session.query(Extension)
+        result_line = (self.session.query(LineSchema)
+               .filter(LineSchema.id == line_created.id)
+               .first())
+        result_extension = (self.session.query(Extension)
                .filter(and_(Extension.context == line_created.context,
                             Extension.exten == line_created.number))
                .first())
-        self.assertNotEquals(row, None)
+
+        self.assertEquals(result_line.protocol, 'sip')
+        self.assertEquals(result_line.protocolid, result_protocol.id)
+        self.assertEquals(result_line.context, 'default')
+        self.assertEquals(result_line.number, '1000')
+        self.assertEquals(result_extension.exten, '1000')
+        self.assertEquals(result_extension.context, 'default')
+        self.assertEquals(result_extension.type, 'user')
+        self.assertEquals(result_extension.commented, 0)
+        self.assertEquals(result_protocol.type, 'friend')
 
     def test_delete_sip_line(self):
         number = '1234'

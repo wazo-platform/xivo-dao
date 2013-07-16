@@ -15,13 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from urllib2 import URLError
 from xivo_dao.data_handler.user import dao as user_dao, notifier
 from xivo_dao.data_handler.exception import MissingParametersError, \
     InvalidParametersError
 from xivo_dao.data_handler.line import services as line_services
 from xivo_dao.data_handler.voicemail import services as voicemail_services
-from xivo_dao.helpers import provd_connector
 
 
 def get(user_id):

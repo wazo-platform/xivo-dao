@@ -135,7 +135,8 @@ def create(session, line):
 
 def _create_extension(session, line):
     exten = Extension()
-    exten.exten = line.number
+    if hasattr(line, 'number'):
+        exten.exten = line.number
     exten.context = line.context
     exten.type = 'user'
     session.add(exten)
