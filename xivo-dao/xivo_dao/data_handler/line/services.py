@@ -20,8 +20,7 @@ import random
 from . import notifier
 from . import dao
 
-from xivo_dao.data_handler.exception import MissingParametersError, \
-    InvalidParametersError
+from xivo_dao.data_handler.exception import MissingParametersError
 from urllib2 import URLError
 from xivo_dao.helpers import provd_connector
 from xivo_dao.data_handler.device import services as device_services
@@ -64,19 +63,12 @@ def _generate_random_digits():
 
 def _validate(line):
     _check_missing_parameters(line)
-    _check_invalid_parameters(line)
 
 
 def _check_missing_parameters(line):
     missing = line.missing_parameters()
     if missing:
         raise MissingParametersError(missing)
-
-
-def _check_invalid_parameters(line):
-    invalid_parameters = []
-    if invalid_parameters:
-        raise InvalidParametersError(invalid_parameters)
 
 
 def make_provisioning_id():
