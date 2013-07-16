@@ -75,9 +75,9 @@ class TestLineServices(unittest.TestCase):
         result = line_services.create(line)
 
         line_dao_create.assert_called_once_with(line)
-        self.assertEquals(type(result), LineSIP)
         line_notifier_created.assert_called_once_with(line)
         make_provisioning_id.assert_called_with()
+        self.assertEquals(type(result), LineSIP)
 
     @patch('xivo_dao.data_handler.line.services.make_provisioning_id')
     @patch('xivo_dao.data_handler.line.dao.create')
@@ -106,7 +106,11 @@ class TestLineServices(unittest.TestCase):
     @patch('xivo_dao.data_handler.line.notifier.deleted')
     @patch('xivo_dao.data_handler.line.dao.delete')
     def test_delete(self, line_dao_delete, line_notifier_deleted, remove_line_from_device):
-        line = LineSIP(id=1, username='line', secret='toto')
+        line_id = 1
+        username = 'line'
+        secret = 'toto'
+
+        line = LineSIP(id=line_id, username=username, secret=secret)
 
         line_services.delete(line)
 
@@ -118,7 +122,13 @@ class TestLineServices(unittest.TestCase):
     @patch('xivo_dao.data_handler.line.notifier.deleted')
     @patch('xivo_dao.data_handler.line.dao.delete')
     def test_delete_with_device(self, line_dao_delete, line_notifier_deleted, remove_line_from_device):
-        line = LineSIP(id=1, username='line', secret='toto', deviceid=15, num=1)
+        line_id = 1
+        username = 'line'
+        secret = 'toto'
+        deviceid = 15
+        num = 1
+
+        line = LineSIP(id=line_id, username=username, secret=secret, deviceid=deviceid, num=num)
 
         line_services.delete(line)
 

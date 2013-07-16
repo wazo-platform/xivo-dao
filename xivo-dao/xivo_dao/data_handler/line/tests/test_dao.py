@@ -168,15 +168,15 @@ class TestLineDao(DAOTestCase):
         line_created = line_dao.create(line)
 
         result_protocol = (self.session.query(UserSIPSchema)
-               .filter(UserSIPSchema.id == line_created.protocolid)
-               .first())
+                           .filter(UserSIPSchema.id == line_created.protocolid)
+                           .first())
         result_line = (self.session.query(LineSchema)
-               .filter(LineSchema.id == line_created.id)
-               .first())
+                       .filter(LineSchema.id == line_created.id)
+                       .first())
         result_extension = (self.session.query(Extension)
-               .filter(and_(Extension.context == line_created.context,
-                            Extension.exten == line_created.number))
-               .first())
+                            .filter(and_(Extension.context == line_created.context,
+                                         Extension.exten == line_created.number))
+                            .first())
 
         self.assertEquals(result_line.protocol, 'sip')
         self.assertEquals(result_line.protocolid, result_protocol.id)
