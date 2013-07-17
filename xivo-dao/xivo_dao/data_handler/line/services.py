@@ -47,7 +47,7 @@ def create(line):
 
 
 def edit(line):
-    pass
+    raise NotImplementedError
 
 
 def delete(line):
