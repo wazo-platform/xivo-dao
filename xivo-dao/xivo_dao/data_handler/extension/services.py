@@ -61,7 +61,7 @@ def _check_missing_parameters(extension):
 
 def _check_invalid_parameters(extension):
     invalid_parameters = []
-    if len(extension.exten) == 0:
+    if len(str(extension.exten)) == 0:
         invalid_parameters.append('Exten required')
     if len(extension.context) == 0:
         invalid_parameters.append('Context required')
@@ -75,6 +75,8 @@ def _remove_exten_from_line_schema(extension):
     try:
         line = line_services.get_by_number_context(extension.exten, extension.context)
         line.number = ''
+        line.context = ''
+        line.provisioningid = 0
         line_services.edit(line)
     except ElementNotExistsError:
         return

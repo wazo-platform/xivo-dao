@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+#
 # Copyright (C) 2013 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,6 +17,9 @@
 
 from xivo_dao.data_handler.user import services as user_services
 from xivo_dao.data_handler.voicemail import services as voicemail_services
+from xivo_dao.data_handler.line import services as line_services
+from xivo_dao.data_handler.extension import services as extension_services
+from xivo_dao.data_handler.extension.model import Extension
 
 
 def associate_voicemail(user_id, voicemail_id):
@@ -24,3 +27,18 @@ def associate_voicemail(user_id, voicemail_id):
     voicemail = voicemail_services.get(voicemail_id)
     user.voicemail_id = voicemail.id
     user_services.edit(user)
+
+
+def associate_line(user_id, line_id, number):
+    user = user_services.get(user_id)
+    line = line_services.get(line_id)
+
+    extension = Extension(exten=number,
+                          context=line.context,
+                          type='user',
+                          typeval=user.id)
+    extension_services.create(extension)
+
+    line.iduserfeatures = user.id
+    line.number = number
+    line_services.edit(line)
