@@ -27,4 +27,6 @@ class UserLine(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('userfeatures.id'), nullable=False)
     line_id = Column(Integer, ForeignKey('linefeatures.id'), nullable=False)
+    extension_id = Column(Integer, ForeignKey('extensions.id'), nullable=False)
     main_user = Column(Boolean, nullable=False)
+    main_line = Column(Boolean, nullable=False)

@@ -30,6 +30,8 @@ from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
+from xivo_dao.alchemy.extension import Extension as ExtensionSchema
+from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.data_handler.user import dao as user_dao
 from xivo_dao.data_handler.user.model import UserOrdering
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -56,7 +58,9 @@ class TestUserDAO(DAOTestCase):
         QueueMember,
         RightCallMember,
         SchedulePath,
-        UserSchema
+        UserSchema,
+        ExtensionSchema,
+        UserLine
     ]
 
     def setUp(self):
@@ -70,63 +74,63 @@ class TestUserDAO(DAOTestCase):
 
     def test_find_all_one_user(self):
         firstname = 'Pascal'
-        user_id = self._insert_user(firstname=firstname)
+        user = self.add_user(firstname=firstname)
 
         users = user_dao.find_all()
         assert_that(users, has_length(1))
 
         user_found = users[0]
-        assert_that(user_found, has_property('id', user_id))
+        assert_that(user_found, has_property('id', user.id))
         assert_that(user_found, has_property('firstname', firstname))
 
     def test_find_all_two_users(self):
         firstname1 = 'Pascal'
         firstname2 = 'George'
 
-        user1_id = self._insert_user(firstname=firstname1)
-        user2_id = self._insert_user(firstname=firstname2)
+        user1 = self.add_user(firstname=firstname1)
+        user2 = self.add_user(firstname=firstname2)
 
         users = user_dao.find_all()
         assert_that(users, has_length(2))
 
         assert_that(users, has_items(
             all_of(
-                has_property('id', user1_id),
+                has_property('id', user1.id),
                 has_property('firstname', firstname1)),
             all_of(
-                has_property('id', user2_id),
+                has_property('id', user2.id),
                 has_property('firstname', firstname2))
         ))
 
     def test_find_all_default_order_by_lastname_firstname(self):
-        user_id1 = self._insert_user(firstname='Jules', lastname='Santerre')
-        user_id2 = self._insert_user(firstname='Vicky', lastname='Bourbon')
-        user_id3 = self._insert_user(firstname='Anne', lastname='Bourbon')
+        user1 = self.add_user(firstname='Jules', lastname='Santerre')
+        user2 = self.add_user(firstname='Vicky', lastname='Bourbon')
+        user3 = self.add_user(firstname='Anne', lastname='Bourbon')
 
         users = user_dao.find_all()
         assert_that(users, has_length(3))
 
-        assert_that(users[0].id, equal_to(user_id3))
-        assert_that(users[1].id, equal_to(user_id2))
-        assert_that(users[2].id, equal_to(user_id1))
+        assert_that(users[0].id, equal_to(user3.id))
+        assert_that(users[1].id, equal_to(user2.id))
+        assert_that(users[2].id, equal_to(user1.id))
 
     def test_find_all_order_by_firstname(self):
-        user_id_last = self._insert_user(firstname='Bob', lastname='Alzard')
-        user_id_first = self._insert_user(firstname='Albert', lastname='Breton')
+        user_last = self.add_user(firstname='Bob', lastname='Alzard')
+        user_first = self.add_user(firstname='Albert', lastname='Breton')
 
         users = user_dao.find_all(order=[UserOrdering.firstname])
 
-        assert_that(users[0].id, equal_to(user_id_first))
-        assert_that(users[1].id, equal_to(user_id_last))
+        assert_that(users[0].id, equal_to(user_first.id))
+        assert_that(users[1].id, equal_to(user_last.id))
 
     def test_find_all_order_by_lastname(self):
-        user_id_last = self._insert_user(firstname='Albert', lastname='Breton')
-        user_id_first = self._insert_user(firstname='Bob', lastname='Alzard')
+        user_last = self.add_user(firstname='Albert', lastname='Breton')
+        user_first = self.add_user(firstname='Bob', lastname='Alzard')
 
         users = user_dao.find_all(order=[UserOrdering.lastname])
 
-        assert_that(users[0].id, equal_to(user_id_first))
-        assert_that(users[1].id, equal_to(user_id_last))
+        assert_that(users[0].id, equal_to(user_first.id))
+        assert_that(users[1].id, equal_to(user_last.id))
 
     def test_find_user_no_user(self):
         result = user_dao.find_user('abc', 'def')
@@ -138,7 +142,7 @@ class TestUserDAO(DAOTestCase):
         lastname = 'Sanderson'
         wrong_firstname = 'Gregory'
 
-        self._insert_user(firstname=firstname, lastname=lastname)
+        self.add_user(firstname=firstname, lastname=lastname)
 
         result = user_dao.find_user(wrong_firstname, lastname)
 
@@ -147,12 +151,12 @@ class TestUserDAO(DAOTestCase):
     def test_find_user(self):
         firstname = 'Lord'
         lastname = 'Sanderson'
-        user_id = self._insert_user(firstname=firstname, lastname=lastname)
+        user = self.add_user(firstname=firstname, lastname=lastname)
 
         result = user_dao.find_user('Lord', 'Sanderson')
 
         assert_that(result, all_of(
-            has_property('id', user_id),
+            has_property('id', user.id),
             has_property('firstname', firstname),
             has_property('lastname', lastname)
         ))
@@ -161,12 +165,12 @@ class TestUserDAO(DAOTestCase):
         firstname = 'Lord'
         lastname = 'Sanderson'
 
-        user_id1 = self._insert_user(firstname=firstname, lastname=lastname)
-        self._insert_user(firstname=firstname, lastname=lastname)
+        user1 = self.add_user(firstname=firstname, lastname=lastname)
+        self.add_user(firstname=firstname, lastname=lastname)
 
         result = user_dao.find_user(firstname, lastname)
 
-        assert_that(result, has_property('id', user_id1))
+        assert_that(result, has_property('id', user1.id))
 
     def test_find_all_by_fullname_no_users(self):
         result = user_dao.find_all_by_fullname('')
@@ -178,14 +182,14 @@ class TestUserDAO(DAOTestCase):
         lastname = 'Sanderson'
         fullname = '%s %s' % (firstname, lastname)
 
-        user_id = self._insert_user(firstname=firstname, lastname=lastname)
+        user = self.add_user(firstname=firstname, lastname=lastname)
 
         result = user_dao.find_all_by_fullname(fullname)
 
         assert_that(result, has_length(1))
         assert_that(result, contains(
             all_of(
-                has_property('id', user_id),
+                has_property('id', user.id),
                 has_property('firstname', firstname),
                 has_property('lastname', lastname)
             )))
@@ -195,14 +199,14 @@ class TestUserDAO(DAOTestCase):
         lastname = 'Sanderson'
         fullname = '%s %s' % (firstname, lastname)
 
-        user_id = self._insert_user(firstname=firstname, lastname=lastname)
+        user = self.add_user(firstname=firstname, lastname=lastname)
 
         result = user_dao.find_all_by_fullname(fullname.lower())
 
         assert_that(result, has_length(1))
         assert_that(result, contains(
             all_of(
-                has_property('id', user_id),
+                has_property('id', user.id),
                 has_property('firstname', firstname),
                 has_property('lastname', lastname)
             )))
@@ -212,14 +216,14 @@ class TestUserDAO(DAOTestCase):
         lastname = 'Sanderson'
         partial_fullname = 'd san'
 
-        user_id = self._insert_user(firstname=firstname, lastname=lastname)
+        user = self.add_user(firstname=firstname, lastname=lastname)
 
         result = user_dao.find_all_by_fullname(partial_fullname)
 
         assert_that(result, has_length(1))
         assert_that(result, contains(
             all_of(
-                has_property('id', user_id),
+                has_property('id', user.id),
                 has_property('firstname', firstname),
                 has_property('lastname', lastname)
             )))
@@ -227,63 +231,49 @@ class TestUserDAO(DAOTestCase):
     def test_find_all_by_fullname_two_users_default_order(self):
         search_term = 'lord'
 
-        user_id_last = self._insert_user(firstname='Lord', lastname='Sanderson')
-        user_id_first = self._insert_user(firstname='Great', lastname='Lord')
-        self._insert_user(firstname='Toto', lastname='Tata')
+        user_last = self.add_user(firstname='Lord', lastname='Sanderson')
+        user_first = self.add_user(firstname='Great', lastname='Lord')
+        self.add_user(firstname='Toto', lastname='Tata')
 
         result = user_dao.find_all_by_fullname(search_term)
 
         assert_that(result, has_length(2))
         assert_that(result, contains(
-            has_property('id', user_id_first),
-            has_property('id', user_id_last),
+            has_property('id', user_first.id),
+            has_property('id', user_last.id),
         ))
 
     def test_get_inexistant(self):
         self.assertRaises(LookupError, user_dao.get, 42)
 
     def test_get(self):
-        user_id = self._insert_user(firstname='Paul')
+        user = self.add_user(firstname='Paul')
 
-        user = user_dao.get(user_id)
+        user = user_dao.get(user.id)
 
-        assert_that(user.id, equal_to(user_id))
+        assert_that(user.id, equal_to(user.id))
 
     def test_get_commented(self):
-        user_id = self._insert_user(firstname='Robert', commented=1)
+        user = self.add_user(firstname='Robert', commented=1)
 
-        self.assertRaises(LookupError, user_dao.get, user_id)
+        self.assertRaises(LookupError, user_dao.get, user.id)
 
     def test_get_by_number_context(self):
         context, number = 'default', '1234'
-        user_id = self._insert_user(firstname='Robert')
-        self._insert_line(iduserfeatures=user_id, number=number, context=context)
+        user_line = self.add_user_line_with_exten(exten=number,
+                                                  context=context)
 
         user = user_dao.get_by_number_context(number, context)
 
-        assert_that(user.id, equal_to(user_id))
+        assert_that(user.id, equal_to(user_line.user_id))
 
     def test_get_by_number_context_line_commented(self):
         context, number = 'default', '1234'
-        user_id = self._insert_user(firstname='Robert')
-        self._insert_line(iduserfeatures=user_id,
-                          number=number,
-                          context=context,
-                          commented=1)
+        self.add_user_line_with_exten(number=number,
+                                      context=context,
+                                      commented_line=1)
 
         self.assertRaises(LookupError, user_dao.get_by_number_context, number, context)
-
-    def _insert_line(self, **kwargs):
-        kwargs.setdefault('protocolid', 0)
-        kwargs.setdefault('name', 'chaise')
-        kwargs.setdefault('provisioningid', 0)
-        line = LineSchema(**kwargs)
-        self.add_me(line)
-
-    def _insert_user(self, **kwargs):
-        user = UserSchema(**kwargs)
-        self.add_me(user)
-        return user.id
 
     def test_create(self):
         user = User(firstname='toto',
@@ -320,14 +310,14 @@ class TestUserDAO(DAOTestCase):
         firstname = 'Robert'
         lastname = 'Raleur'
         expected_lastname = 'Lereu'
-        user_id = self._insert_user(firstname=firstname, lastname=lastname)
+        user = self.add_user(firstname=firstname, lastname=lastname)
 
-        user = User(id=user_id, lastname=expected_lastname)
+        user = User(id=user.id, lastname=expected_lastname)
 
         user_dao.edit(user)
 
         row = (self.session.query(UserSchema)
-               .filter(UserSchema.id == user_id)
+               .filter(UserSchema.id == user.id)
                .first())
 
         self.assertEquals(row.firstname, firstname)
@@ -356,14 +346,15 @@ class TestUserDAO(DAOTestCase):
     def test_delete(self):
         firstname = 'Gadou'
         lastname = 'Pipo'
-        user_id = self._insert_user(firstname=firstname, lastname=lastname)
+        user = self.add_user(firstname=firstname,
+                                lastname=lastname)
 
-        user = user_dao.get(user_id)
+        user = user_dao.get(user.id)
 
         user_dao.delete(user)
 
         row = (self.session.query(UserSchema)
-               .filter(UserSchema.id == user_id)
+               .filter(UserSchema.id == user.id)
                .first())
 
         self.assertEquals(row, None)

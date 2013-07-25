@@ -117,7 +117,6 @@ class TestDeviceDAO(DAOTestCase):
         line.device = str(device.id)
         line.protocolid = 0
         line.context = 'myctx'
-        line.iduserfeatures = 5
         line.number = '1002'
         line.name = name
         line.provisioningid = 123

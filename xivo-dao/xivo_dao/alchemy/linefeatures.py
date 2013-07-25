@@ -29,7 +29,6 @@ class LineFeatures(Base):
 
     id = Column(Integer, primary_key=True)
     protocolid = Column(Integer, nullable=False)
-    iduserfeatures = Column(Integer, default=0)
     config = Column(String(128))
     device = Column(String(32))
     configregistrar = Column(String(128))

@@ -49,9 +49,11 @@ def get(session, line_id):
 def get_by_user_id(session, user_id):
     line = (
         _new_query(session)
-        .filter(UserLineSchema.user_id == user_id)
-        .filter(UserLineSchema.line_id == LineSchema.id)
-    ).first()
+        .join(UserLineSchema, and_(UserLineSchema.user_id == user_id,
+                                   UserLineSchema.line_id == LineSchema.id,
+                                   UserLineSchema.main_line == True,
+                                   UserLineSchema.main_user == True))
+    .first())
 
     if not line:
         raise ElementNotExistsError('Line', user_id=user_id)
@@ -187,7 +189,7 @@ def generate_random_hash(session, column):
 
 def _random_hash(length=8):
     pool = string.ascii_letters + string.digits
-    return ''.join(random.choice(pool) for r in range(length))
+    return ''.join(random.choice(pool) for _ in range(length))
 
 
 def _create_iax_line(line):
@@ -206,7 +208,8 @@ def _create_custom_line(line):
 def delete(session, line):
     session.begin()
     try:
-        nb_row_affected = session.query(LineSchema).filter(LineSchema.id == line.id).delete()
+        nb_row_affected = session.query(UserLineSchema).filter(UserLineSchema.line_id == line.id).delete()
+        session.query(LineSchema).filter(LineSchema.id == line.id).delete()
         _delete_line(session, line)
         _delete_extension(session, line.number, line.context)
         session.commit()
