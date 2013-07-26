@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.helpers.abstract_model import AbstractModels
+from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 
 
 class Extension(AbstractModels):
@@ -23,7 +24,8 @@ class Extension(AbstractModels):
     MANDATORY = [
         'exten',
         'context',
-        'type'
+        'type',
+        'typeval'
     ]
 
     # mapping = {db_field: model_field}
@@ -40,3 +42,8 @@ class Extension(AbstractModels):
 
     def __init__(self, *args, **kwargs):
         AbstractModels.__init__(self, *args, **kwargs)
+
+
+class ExtensionOrdering(object):
+    exten = ExtensionSchema.exten
+    context = ExtensionSchema.context

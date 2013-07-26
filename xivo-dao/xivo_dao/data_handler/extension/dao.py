@@ -18,9 +18,13 @@
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
-    ElementCreationError, ElementDeletionError
-from xivo_dao.data_handler.extension.model import Extension
+    ElementCreationError, ElementDeletionError, ElementEditionError
+from xivo_dao.data_handler.extension.model import Extension, ExtensionOrdering
 from sqlalchemy.exc import SQLAlchemyError
+from _mysql_exceptions import IntegrityError
+
+
+DEFAULT_ORDER = [ExtensionOrdering.exten, ExtensionOrdering.context]
 
 
 @daosession
@@ -60,6 +64,44 @@ def get_by_type_typeval(session, type, typeval):
 
 
 @daosession
+def find_all(session, order=None):
+    line_rows = _new_query(session, order).all()
+
+    return _rows_to_extension_model(line_rows)
+
+
+@daosession
+def find_by_exten(session, exten, order=None):
+    search = '%%%s%%' % exten.lower()
+    return _find_by_search(search, order)
+
+
+@daosession
+def find_by_context(session, context, order=None):
+    search = '%%%s%%' % context.lower()
+    return _find_by_search(search, order)
+
+
+def _find_by_search(session, search, order):
+    line_rows = (_new_query(session, order)
+                 .filter(ExtensionSchema.name.ilike(search))
+                 .all())
+
+    return _rows_to_extension_model(line_rows)
+
+
+def _rows_to_extension_model(extension_rows):
+    if not extension_rows:
+        return []
+
+    extensions = []
+    for extension_row in extension_rows:
+        extensions.append(Extension.from_data_source(extension_row))
+
+    return extensions
+
+
+@daosession
 def create(session, extension):
     extension_row = extension.to_data_source(ExtensionSchema)
     session.begin()
@@ -70,10 +112,32 @@ def create(session, extension):
     except SQLAlchemyError as e:
         session.rollback()
         raise ElementCreationError('Extension', e)
+    except IntegrityError as e:
+        session.rollback()
+        raise ElementCreationError('Extension', e)
 
     extension.id = extension_row.id
 
     return extension
+
+
+@daosession
+def edit(session, extension):
+    session.begin()
+    nb_row_affected = (session.query(ExtensionSchema)
+                       .filter(ExtensionSchema.id == extension.id)
+                       .update(extension.to_data_dict()))
+
+    try:
+        session.commit()
+    except SQLAlchemyError as e:
+        session.rollback()
+        raise ElementEditionError('Extension', e)
+
+    if nb_row_affected == 0:
+        raise ElementEditionError('Extension', 'extension_id %s not exsit' % extension.id)
+
+    return nb_row_affected
 
 
 @daosession
@@ -92,5 +156,6 @@ def delete(session, extension):
     return nb_row_affected
 
 
-def _new_query(session):
-    return session.query(ExtensionSchema).filter(ExtensionSchema.commented == 0)
+def _new_query(session, order=None):
+    order = order or DEFAULT_ORDER
+    return session.query(ExtensionSchema).filter(ExtensionSchema.commented == 0).order_by(*order)

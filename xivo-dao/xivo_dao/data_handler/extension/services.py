@@ -35,11 +35,29 @@ def get_by_type_typeval(type, typeval):
     return dao.get_by_type_typeval(type, typeval)
 
 
+def find_all(order=None):
+    return dao.find_all(order=order)
+
+
+def find_by_exten(exten, order=None):
+    return dao.find_by_exten(exten, order=None)
+
+
+def find_by_context(context, order=None):
+    return dao.find_by_context(context, order=None)
+
+
 def create(extension):
     _validate(extension)
     extension = dao.create(extension)
     notifier.created(extension)
     return extension
+
+
+def edit(extension):
+    _validate(extension)
+    dao.edit(extension)
+    notifier.edited(extension)
 
 
 def delete(extension):
