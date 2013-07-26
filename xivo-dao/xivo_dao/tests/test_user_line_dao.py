@@ -141,16 +141,16 @@ class TestUserLineDAO(DAOTestCase):
 
         results = user_line_dao.all_with_protocol('sccp')
 
-        result_line_id = results[0][0].id
-        result_protocol = results[0][0].protocol
-        result_firstname = results[0].firstname
-        result_lastname = results[0].lastname
+        result_line, result_protocol, result_user = results[0]
+
+        result_line_id = result_line.id
+        result_protocol = result_protocol.protocol
 
         self.assertEqual(len(results), 1)
         self.assertEqual(result_line_id, user_line_sccp.line_id)
         self.assertEqual(result_protocol, user_line_sccp.line.protocol)
-        self.assertEqual(result_firstname, firstname)
-        self.assertEqual(result_lastname, lastname)
+        self.assertEqual(result_user.firstname, firstname)
+        self.assertEqual(result_user.lastname, lastname)
 
     def test_get_cid_from_sccp_channel(self):
         channel = 'SCCP/1234-000000001'
