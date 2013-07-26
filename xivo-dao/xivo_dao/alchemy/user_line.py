@@ -17,16 +17,19 @@
 
 from xivo_dao.helpers.db_manager import Base
 from sqlalchemy.types import Integer, Boolean
-from sqlalchemy.schema import Column, ForeignKey
+from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint
 
 
 class UserLine(Base):
 
     __tablename__ = 'user_line'
+    __table_args__ = (
+        UniqueConstraint('user_id', 'line_id'),
+    )
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('userfeatures.id'), nullable=False)
-    line_id = Column(Integer, ForeignKey('linefeatures.id'), nullable=False)
+    user_id = Column(Integer, ForeignKey('userfeatures.id'), nullable=False, primary_key=True)
+    line_id = Column(Integer, ForeignKey('linefeatures.id'), nullable=False, primary_key=True)
     extension_id = Column(Integer, ForeignKey('extensions.id'), nullable=False)
     main_user = Column(Boolean, nullable=False)
     main_line = Column(Boolean, nullable=False)
