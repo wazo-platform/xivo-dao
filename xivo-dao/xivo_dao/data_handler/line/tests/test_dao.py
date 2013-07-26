@@ -30,12 +30,15 @@ from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema
 from xivo_dao.alchemy.useriax import UserIAX as UserIAXSchema
 from xivo_dao.alchemy.usercustom import UserCustom as UserCustomSchema
 from xivo_dao.alchemy.sccpline import SCCPLine as SCCPLineSchema
-from xivo_dao.data_handler.line.model import LineSIP, LineSCCP, LineIAX, LineCUSTOM
+from xivo_dao.data_handler.line.model import LineSIP, LineSCCP, LineIAX, LineCUSTOM, \
+    LineOrdering
 from sqlalchemy.sql.expression import and_
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementCreationError
 from sqlalchemy.exc import SQLAlchemyError
 from mock import patch, Mock
+from hamcrest.library.collection.issequence_containinginorder import contains
+from hamcrest.library.collection.issequence_containing import has_items
 
 
 class TestLineDao(DAOTestCase):
@@ -122,6 +125,138 @@ class TestLineDao(DAOTestCase):
 
         self.assertRaises(ElementNotExistsError, line_dao.get_by_number_context, number, context)
 
+    def test_find_all_no_lines(self):
+        expected = []
+        lines = line_dao.find_all()
+
+        assert_that(lines, equal_to(expected))
+
+    def test_find_all_one_line(self):
+        name = 'Pascal'
+        line = self.add_line(name=name)
+
+        lines = line_dao.find_all()
+
+        assert_that(lines, has_length(1))
+        line_found = lines[0]
+        assert_that(line_found, has_property('id', line.id))
+        assert_that(line_found, has_property('name', name))
+
+    def test_find_all_two_lines(self):
+        name1 = 'Pascal'
+        name2 = 'George'
+
+        line1 = self.add_line(name=name1)
+        line2 = self.add_line(name=name2)
+
+        lines = line_dao.find_all()
+
+        assert_that(lines, has_length(2))
+        assert_that(lines, has_items(
+            all_of(
+                has_property('id', line1.id),
+                has_property('name', name1)),
+            all_of(
+                has_property('id', line2.id),
+                has_property('name', name2))
+        ))
+
+    def test_find_all_default_order_by_name_context(self):
+        line1 = self.add_line(name='xxx', context='f')
+        line2 = self.add_line(name='vvv', context='a')
+        line3 = self.add_line(name='aaa', context='a')
+
+        lines = line_dao.find_all()
+
+        assert_that(lines, has_length(3))
+        assert_that(lines[0].id, equal_to(line3.id))
+        assert_that(lines[1].id, equal_to(line2.id))
+        assert_that(lines[2].id, equal_to(line1.id))
+
+    def test_find_all_order_by_name(self):
+        line_last = self.add_line(name='Bob', context='Alzard')
+        line_first = self.add_line(name='Albert', context='Breton')
+
+        lines = line_dao.find_all(order=[LineOrdering.name])
+
+        assert_that(lines[0].id, equal_to(line_first.id))
+        assert_that(lines[1].id, equal_to(line_last.id))
+
+    def test_find_all_order_by_context(self):
+        line_last = self.add_line(name='Albert', context='Breton')
+        line_first = self.add_line(name='Bob', context='Alzard')
+
+        lines = line_dao.find_all(order=[LineOrdering.context])
+
+        assert_that(lines[0].id, equal_to(line_first.id))
+        assert_that(lines[1].id, equal_to(line_last.id))
+
+    def test_find_by_name_no_line(self):
+        result = line_dao.find_by_name('abc')
+
+        assert_that(result, equal_to([]))
+
+    def test_find_line_not_right_name(self):
+        name = 'Lord'
+        wrong_name = 'Gregory'
+
+        self.add_line(name=name)
+
+        result = line_dao.find_by_name(wrong_name)
+
+        assert_that(result, equal_to([]))
+
+    def test_find_by_name(self):
+        name = 'ddd'
+        line = self.add_line(name=name, context='sss')
+
+        result = line_dao.find_by_name(name)
+
+        assert_that(result, contains(
+            all_of(
+                has_property('id', line.id),
+                has_property('name', name)
+            )
+        ))
+
+    def test_find_by_name_no_lines(self):
+        result = line_dao.find_by_name('')
+
+        assert_that(result, has_length(0))
+
+    def test_find_all_by_name_partial(self):
+        name = 'Lord'
+        partial_fullname = 'rd'
+
+        line = self.add_line(name=name)
+
+        result = line_dao.find_by_name(partial_fullname)
+
+        assert_that(result, has_length(1))
+        assert_that(result, contains(
+            all_of(
+                has_property('id', line.id),
+                has_property('name', name),
+            )))
+
+    def test_find_all_by_name_two_lines_default_order(self):
+        search_term = 'lord'
+
+        line_last = self.add_line(name='Lordy', context='z')
+        line_first = self.add_line(name='lord', context='a')
+        self.add_line(name='Toto', context='a')
+
+        result = line_dao.find_by_name(search_term)
+
+        print result[0].to_data_dict()
+        print result[1].to_data_dict()
+
+        assert_that(result, has_length(2))
+        assert_that(result, contains(
+            has_property('id', line_first.id),
+            has_property('id', line_last.id),
+        ))
+
     def test_provisioning_id_exists(self):
         provd_id = 123456
         self.add_line(provisioningid=provd_id)
@@ -173,16 +308,15 @@ class TestLineDao(DAOTestCase):
 
         line = LineSIP(name=name,
                        context=context,
-                       username=name, secret=secret)
+                       username=name,
+                       secret=secret)
 
         self.assertRaises(ElementCreationError, line_dao.create, line)
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
 
     def test_create_sip_line(self):
-        line = LineSIP(protocol='sip',
-                       context='default',
-                       number='1000',
+        line = LineSIP(context='default',
                        provisioningid=123456)
 
         line_created = line_dao.create(line)
@@ -193,44 +327,30 @@ class TestLineDao(DAOTestCase):
         result_line = (self.session.query(LineSchema)
                        .filter(LineSchema.id == line_created.id)
                        .first())
-        result_extension = (self.session.query(Extension)
-                            .filter(and_(Extension.context == line_created.context,
-                                         Extension.exten == line_created.number))
-                            .first())
 
         assert_that(result_line, all_of(
             has_property('protocol', 'sip'),
             has_property('protocolid', result_protocol.id),
             has_property('context', 'default'),
-            has_property('number', '1000')
-        ))
-
-        assert_that(result_extension, all_of(
-            has_property('exten', '1000'),
-            has_property('context', 'default'),
-            has_property('type', 'user'),
-            has_property('commented', 0)
+            has_property('provisioningid', line.provisioningid)
         ))
 
         assert_that(result_protocol, has_property('type', 'friend'))
 
     def test_create_sccp_not_implemented(self):
-        line = LineSCCP(protocol='sccp',
-                        context='default',
+        line = LineSCCP(context='default',
                         number='1000')
 
         self.assertRaises(NotImplementedError, line_dao.create, line)
 
     def test_create_iax_not_implemented(self):
-        line = LineIAX(protocol='iax',
-                       context='default',
+        line = LineIAX(context='default',
                        number='1000')
 
         self.assertRaises(NotImplementedError, line_dao.create, line)
 
     def test_create_custom_not_implemented(self):
-        line = LineCUSTOM(protocol='custom',
-                          context='default',
+        line = LineCUSTOM(context='default',
                           number='1000')
 
         self.assertRaises(NotImplementedError, line_dao.create, line)

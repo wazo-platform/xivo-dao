@@ -20,7 +20,7 @@ import random
 
 from sqlalchemy import Integer
 from sqlalchemy.sql import and_, cast
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
 from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema
 from xivo_dao.alchemy.useriax import UserIAX as UserIAXSchema
@@ -31,8 +31,11 @@ from xivo_dao.alchemy.extension import Extension
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementDeletionError, ElementCreationError
-
 from model import LineSIP, LineIAX, LineSCCP, LineCUSTOM
+from xivo_dao.data_handler.line.model import LineOrdering
+
+
+DEFAULT_ORDER = [LineOrdering.name, LineOrdering.context]
 
 
 @daosession
@@ -91,6 +94,35 @@ def _get_protocol_line(line):
 
 
 @daosession
+def find_all(session, order=None):
+    line_rows = _new_query(session, order).all()
+
+    return _rows_to_line_model(line_rows)
+
+
+@daosession
+def find_by_name(session, name, order=None):
+    search = '%%%s%%' % name.lower()
+
+    line_rows = (_new_query(session, order)
+                 .filter(LineSchema.name.ilike(search))
+                 .all())
+
+    return _rows_to_line_model(line_rows)
+
+
+def _rows_to_line_model(line_rows):
+    if not line_rows:
+        return []
+
+    lines = []
+    for line_row in line_rows:
+        lines.append(_get_protocol_line(line_row))
+
+    return lines
+
+
+@daosession
 def provisioning_id_exists(session, provd_id):
     line = session.query(LineSchema.id).filter(LineSchema.provisioningid == provd_id).count()
     if line > 0:
@@ -110,13 +142,13 @@ def create(session, line):
     except SQLAlchemyError as e:
         session.rollback()
         raise ElementCreationError('Line', e)
-
-    line_row = _build_line_row(line, derived_line)
-    extension = _create_extension(line)
+    except IntegrityError as e:
+        session.rollback()
+        raise ElementCreationError('Line', e)
 
     session.begin()
+    line_row = _build_line_row(line, derived_line)
     session.add(line_row)
-    session.add(extension)
 
     try:
         session.commit()
@@ -150,15 +182,6 @@ def _build_line_row(line, derived_line):
     return line_row
 
 
-def _create_extension(line):
-    exten = Extension(context=line.context, type='user')
-
-    if hasattr(line, 'number'):
-        exten.exten = line.number
-
-    return exten
-
-
 def _create_sip_line(session, line):
     if not hasattr(line, 'username'):
         line.username = generate_random_hash(session, UserSIPSchema.name)
@@ -171,6 +194,8 @@ def _create_sip_line(session, line):
 
     line_row.name = line.username
     line_row.type = 'friend'
+    if line_row.category is None:
+        line_row.category = 'user'  # enum: (user,trunk)
 
     return line_row
 
@@ -258,5 +283,6 @@ def _delete_custom_line(session, protocolid):
     session.query(UserCustomSchema).filter(UserCustomSchema.id == protocolid).delete()
 
 
-def _new_query(session):
-    return session.query(LineSchema).filter(LineSchema.commented == 0)
+def _new_query(session, order=None):
+    order = order or DEFAULT_ORDER
+    return session.query(LineSchema).filter(LineSchema.commented == 0).order_by(*order)
