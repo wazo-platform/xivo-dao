@@ -20,8 +20,7 @@ from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementCreationError, ElementDeletionError, ElementEditionError
 from xivo_dao.data_handler.extension.model import Extension, ExtensionOrdering
-from sqlalchemy.exc import SQLAlchemyError
-from _mysql_exceptions import IntegrityError
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 
 
 DEFAULT_ORDER = [ExtensionOrdering.exten, ExtensionOrdering.context]
