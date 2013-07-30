@@ -30,6 +30,9 @@ class AbstractModels(object):
 
         return self.__dict__ == other.__dict__
 
+    def __ne__(self, other):
+        return not self == other
+
     @classmethod
     def from_data_source(cls, db_object):
         obj = cls()
