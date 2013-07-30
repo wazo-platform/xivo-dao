@@ -19,7 +19,7 @@ from . import dao
 from . import notifier
 
 from xivo_dao.data_handler.exception import MissingParametersError, \
-    InvalidParametersError
+    InvalidParametersError, ElementAlreadyExistsError
 
 from xivo_dao.data_handler.line import dao as line_dao
 
@@ -70,6 +70,7 @@ def delete(extension):
 def _validate(extension):
     _check_missing_parameters(extension)
     _check_invalid_parameters(extension)
+    _check_if_extension_already_exists(extension)
 
 
 def _check_missing_parameters(extension):
@@ -88,3 +89,10 @@ def _check_invalid_parameters(extension):
         invalid_parameters.append('Type required')
     if invalid_parameters:
         raise InvalidParametersError(invalid_parameters)
+
+
+def _check_if_extension_already_exists(extension):
+    extension = dao.find_by_exten_context(extension.exten, extension.context)
+    if extension:
+        exten_context = '%s@%s' % (extension.exten, extension.context)
+        raise ElementAlreadyExistsError('Extension', exten_context)

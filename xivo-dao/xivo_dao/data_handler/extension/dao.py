@@ -82,6 +82,19 @@ def find_all_by_context(session, context, order=None):
     return _find_all_by_search(session, search, order)
 
 
+@daosession
+def find_by_exten_context(session, exten, context):
+    extension_row = (session.query(ExtensionSchema)
+                     .filter(ExtensionSchema.exten == exten)
+                     .filter(ExtensionSchema.context == context)
+                     .first())
+
+    if not extension_row:
+        return None
+
+    return Extension.from_data_source(extension_row)
+
+
 def _find_all_by_search(session, search, order):
     line_rows = (_new_query(session, order)
                  .filter(or_(ExtensionSchema.exten.ilike(search),

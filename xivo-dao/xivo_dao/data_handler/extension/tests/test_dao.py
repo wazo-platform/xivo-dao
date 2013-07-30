@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that
-from hamcrest.core import equal_to
+from hamcrest import assert_that, equal_to, has_property, all_of
 from mock import patch, Mock
 
 from xivo_dao.data_handler.extension import dao as extension_dao
@@ -168,6 +167,33 @@ class TestExtensionDao(DAOTestCase):
         assert_that(extension.context, equal_to(context))
         assert_that(extension.type, equal_to(type))
         assert_that(extension.typeval, equal_to(typeval))
+
+    def test_find_by_exten_context_no_extensions(self):
+        expected = None
+        result = extension_dao.find_by_exten_context('1000', 'default')
+
+        assert_that(expected, equal_to(result))
+
+    def test_find_by_exten_context_one_extension(self):
+        exten = 'sdklfj'
+        context = 'toto'
+        type = 'user'
+        typeval = '2'
+
+        extension_row = self.add_extension(exten=exten,
+                                           context=context,
+                                           type=type,
+                                           typeval=typeval)
+
+        result = extension_dao.find_by_exten_context(exten, context)
+
+        assert_that(result, all_of(
+            has_property('id', extension_row.id),
+            has_property('exten', exten),
+            has_property('context', context),
+            has_property('type', type),
+            has_property('typeval', typeval)
+        ))
 
     def test_create(self):
         exten = 'extension'

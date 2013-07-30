@@ -2,11 +2,11 @@
 
 import unittest
 
-from mock import patch
+from mock import patch, Mock
 from xivo_dao.data_handler.extension.model import Extension
 from xivo_dao.data_handler.extension import services as extension_services
 from xivo_dao.data_handler.exception import MissingParametersError, \
-    InvalidParametersError, ElementCreationError
+    InvalidParametersError, ElementCreationError, ElementAlreadyExistsError
 
 
 class TestExtension(unittest.TestCase):
@@ -42,6 +42,7 @@ class TestExtension(unittest.TestCase):
 
         self.assertRaises(InvalidParametersError, extension_services.create, extension)
 
+    @patch('xivo_dao.data_handler.extension.dao.find_by_exten_context', Mock(return_value=None))
     @patch('xivo_dao.data_handler.extension.notifier.created')
     @patch('xivo_dao.data_handler.extension.dao.create')
     def test_create(self, extension_dao_create, extension_notifier_created):
@@ -61,6 +62,25 @@ class TestExtension(unittest.TestCase):
         self.assertEquals(type(result), Extension)
         extension_notifier_created.assert_called_once_with(extension)
 
+    @patch('xivo_dao.data_handler.extension.dao.find_by_exten_context')
+    @patch('xivo_dao.data_handler.extension.notifier.created')
+    @patch('xivo_dao.data_handler.extension.dao.create')
+    def test_create_when_extension_already_exists(self, extension_dao_create, extension_notifier_created, find_by_exten_context):
+        exten = 'extension'
+        context = 'toto'
+
+        extension = Extension(exten=exten,
+                              context=context,
+                              type='user',
+                              typeval='0')
+
+        find_by_exten_context.return_value = extension
+
+        self.assertRaises(ElementAlreadyExistsError, extension_services.create, extension)
+        self.assertEquals(extension_dao_create.call_count, 0)
+        self.assertEquals(extension_notifier_created.call_count, 0)
+
+    @patch('xivo_dao.data_handler.extension.dao.find_by_exten_context', Mock(return_value=None))
     @patch('xivo_dao.data_handler.extension.dao.create')
     def test_create_with_error_from_dao(self, extension_dao_create):
         exten = 'extension'
