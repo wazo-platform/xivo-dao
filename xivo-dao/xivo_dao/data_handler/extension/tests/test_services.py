@@ -24,7 +24,8 @@ class TestExtension(unittest.TestCase):
 
         extension = Extension(exten=exten,
                               context=context,
-                              type='user')
+                              type='user',
+                              typeval='0')
 
         self.assertRaises(InvalidParametersError, extension_services.create, extension)
 
@@ -36,7 +37,8 @@ class TestExtension(unittest.TestCase):
 
         extension = Extension(exten=exten,
                               context=context,
-                              type='user')
+                              type='user',
+                              typeval='0')
 
         self.assertRaises(InvalidParametersError, extension_services.create, extension)
 
@@ -48,7 +50,8 @@ class TestExtension(unittest.TestCase):
 
         extension = Extension(exten=exten,
                               context=context,
-                              type='user')
+                              type='user',
+                              typeval='0')
 
         extension_dao_create.return_value = extension
 
@@ -65,7 +68,8 @@ class TestExtension(unittest.TestCase):
 
         extension = Extension(exten=exten,
                               context=context,
-                              type='user')
+                              type='user',
+                              typeval='0')
 
         error = Exception("message")
         extension_dao_create.side_effect = ElementCreationError(error, '')
@@ -82,7 +86,8 @@ class TestExtension(unittest.TestCase):
         extension = Extension(id=1,
                               exten=exten,
                               context=context,
-                              type='user')
+                              type='user',
+                              typeval='0')
 
         extension_services.delete(extension)
 

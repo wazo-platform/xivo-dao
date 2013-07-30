@@ -30,7 +30,7 @@ from xivo_dao.data_handler.exception import ElementCreationError, \
     ElementDeletionError
 
 
-class TestFindVoicemail(DAOTestCase):
+class TestGetVoicemail(DAOTestCase):
 
     tables = [
         VoicemailSchema,
@@ -41,13 +41,10 @@ class TestFindVoicemail(DAOTestCase):
     def setUp(self):
         self.empty_tables()
 
-    def test_find_with_no_voicemail(self):
-        expected = None
-        result = voicemail_dao.find_voicemail('42', 'my_context')
+    def test_get_by_number_context_with_no_voicemail(self):
+        self.assertRaises(LookupError, voicemail_dao.get_by_number_context, '42', 'my_context')
 
-        self.assertEquals(expected, result)
-
-    def test_find_with_wrong_context(self):
+    def test_get_by_number_context_with_wrong_context(self):
         number = '42'
         context = 'default'
 
@@ -55,11 +52,9 @@ class TestFindVoicemail(DAOTestCase):
                                         mailbox=number)
         self.add_me(voicemail_row)
 
-        result = voicemail_dao.find_voicemail(number, 'bad_context')
+        self.assertRaises(LookupError, voicemail_dao.get_by_number_context, number, 'bad_context')
 
-        self.assertEquals(None, result)
-
-    def test_find_with_one_voicemail(self):
+    def test_get_by_number_context_with_one_voicemail(self):
         number = '42'
         context = 'default'
         number_at_context = '42@default'
@@ -68,13 +63,13 @@ class TestFindVoicemail(DAOTestCase):
                                         mailbox=number)
         self.add_me(voicemail_row)
 
-        result = voicemail_dao.find_voicemail(number, context)
+        result = voicemail_dao.get_by_number_context(number, context)
 
         self.assertEquals(result.number, number)
         self.assertEquals(result.context, context)
         self.assertEquals(result.number_at_context, number_at_context)
 
-    def test_find_with_two_voicemails(self):
+    def test_get_by_number_context_with_two_voicemails(self):
         number = '42'
         context = 'default'
         number_at_context = '42@default'
@@ -87,18 +82,10 @@ class TestFindVoicemail(DAOTestCase):
         self.add_me(first_voicemail)
         self.add_me(second_voicemail)
 
-        result = voicemail_dao.find_voicemail(number, context)
+        result = voicemail_dao.get_by_number_context(number, context)
         self.assertEquals(result.number, number)
         self.assertEquals(result.context, context)
         self.assertEquals(result.number_at_context, number_at_context)
-
-
-class TestGetVoicemail(DAOTestCase):
-
-    tables = [VoicemailSchema]
-
-    def setUp(self):
-        self.empty_tables()
 
     def test_get_with_no_voicemail(self):
         voicemail_id = 42

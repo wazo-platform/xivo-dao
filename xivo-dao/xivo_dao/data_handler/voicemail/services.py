@@ -21,15 +21,15 @@ from xivo_dao.data_handler.context import services as context_services
 from xivo_dao.data_handler.voicemail import notifier
 from xivo_dao.helpers.sysconfd_connector import SysconfdError
 from xivo_dao.data_handler.exception import MissingParametersError, \
-    InvalidParametersError, ElementAlreadyExistsError
+    InvalidParametersError, ElementAlreadyExistsError, ElementNotExistsError
 
 
 def find_all():
     return voicemail_dao.find_all()
 
 
-def find_by_number_context(number, context):
-    return voicemail_dao.find_voicemail(number, context)
+def get_by_number_context(number, context):
+    return voicemail_dao.get_by_number_context(number, context)
 
 
 def get(voicemail_id):
@@ -83,6 +83,9 @@ def _check_invalid_parameters(voicemail):
 
 
 def _check_for_existing_voicemail(voicemail):
-    if voicemail_dao.find_voicemail(voicemail.number, voicemail.context):
-        number_at_context = voicemail.number_at_context
-        raise ElementAlreadyExistsError('Voicemail', number_at_context)
+    try:
+        if voicemail_dao.get_by_number_context(voicemail.number, voicemail.context):
+            number_at_context = voicemail.number_at_context
+            raise ElementAlreadyExistsError('Voicemail', number_at_context)
+    except ElementNotExistsError:
+        return

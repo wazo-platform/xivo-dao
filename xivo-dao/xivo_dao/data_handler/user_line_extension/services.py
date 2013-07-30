@@ -29,6 +29,10 @@ def get(ule_id):
     return dao.get(ule_id)
 
 
+def find_all():
+    return dao.find_all()
+
+
 def create(ule):
     _validate(ule)
     extension = dao.create(ule)

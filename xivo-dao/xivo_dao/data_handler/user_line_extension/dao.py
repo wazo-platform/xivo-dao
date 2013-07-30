@@ -34,6 +34,19 @@ def get(session, ule_id):
 
 
 @daosession
+def find_all(session):
+    res = session.query(ULESchema).all()
+    if not res:
+        return []
+
+    tmp = []
+    for ule in res:
+        tmp.append(UserLineExtension.from_data_source(ule))
+
+    return tmp
+
+
+@daosession
 def create(session, user_line_extension):
     user_line_extension_row = user_line_extension.to_data_source(ULESchema)
     session.begin()

@@ -29,39 +29,38 @@ from xivo_dao.data_handler.exception import ElementNotExistsError, \
 
 @daosession
 def find_all(session):
-    res = session.query(VoicemailSchema).all()
-    if not res:
-        return None
+    rows = session.query(VoicemailSchema).all()
+    if not rows:
+        return []
 
     tmp = []
-    for voicemail in res:
-        tmp.append(Voicemail.from_data_source(voicemail))
+    for row in rows:
+        tmp.append(Voicemail.from_data_source(row))
 
     return tmp
 
 
 @daosession
-def find_voicemail(session, number, context):
-
-    voicemail = (session.query(VoicemailSchema)
+def get_by_number_context(session, number, context):
+    row = (session.query(VoicemailSchema)
                  .filter(VoicemailSchema.mailbox == number)
                  .filter(VoicemailSchema.context == context)
                  .first())
-    if not voicemail:
-        return None
+    if not row:
+        raise ElementNotExistsError('Voicemail', number=number, context=context)
 
-    return Voicemail.from_data_source(voicemail)
+    return Voicemail.from_data_source(row)
 
 
 @daosession
 def get(session, voicemail_id):
-    voicemail = (session.query(VoicemailSchema)
+    row = (session.query(VoicemailSchema)
                  .filter(VoicemailSchema.uniqueid == voicemail_id)
                  .first())
-    if not voicemail:
+    if not row:
         raise ElementNotExistsError('Voicemail', uniqueid=voicemail_id)
 
-    return Voicemail.from_data_source(voicemail)
+    return Voicemail.from_data_source(row)
 
 
 @daosession

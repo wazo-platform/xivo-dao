@@ -101,6 +101,15 @@ def find_all(session, order=None):
 
 
 @daosession
+def find_by_protocol(session, protocol, order=None):
+    line_rows = (_new_query(session, order)
+                 .filter(LineSchema.protocol == protocol.lower())
+                 .all())
+
+    return _rows_to_line_model(line_rows)
+
+
+@daosession
 def find_by_name(session, name, order=None):
     search = '%%%s%%' % name.lower()
 
