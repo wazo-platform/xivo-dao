@@ -41,7 +41,7 @@ def get_by_exten_context(session, exten, context):
     res = (_new_query(session)
            .filter(ExtensionSchema.exten == exten)
            .filter(ExtensionSchema.context == context)
-    ).first()
+           ).first()
 
     if not res:
         raise ElementNotExistsError('Extension', exten=exten, context=context)
@@ -54,7 +54,7 @@ def get_by_type_typeval(session, type, typeval):
     res = (_new_query(session)
            .filter(ExtensionSchema.type == type)
            .filter(ExtensionSchema.typeval == typeval)
-    ).first()
+           ).first()
 
     if not res:
         raise ElementNotExistsError('Extension', type=type, typeval=typeval)

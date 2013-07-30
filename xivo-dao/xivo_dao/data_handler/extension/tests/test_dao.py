@@ -57,7 +57,7 @@ class TestExtensionDao(DAOTestCase):
         context = 'toto'
 
         expected_extension = self.add_extension(exten=exten,
-                                          context=context)
+                                                context=context)
 
         extension = extension_dao.get_by_exten_context(exten, context)
 
@@ -75,9 +75,9 @@ class TestExtensionDao(DAOTestCase):
         typeval = '2'
 
         expected_extension = self.add_extension(exten=exten,
-                                          context=context,
-                                          type=type,
-                                          typeval=typeval)
+                                                context=context,
+                                                type=type,
+                                                typeval=typeval)
 
         extension = extension_dao.get_by_type_typeval(type, typeval)
 
@@ -148,9 +148,9 @@ class TestExtensionDao(DAOTestCase):
         typeval = '2'
 
         expected_extension = self.add_extension(exten=exten,
-                                          context=context,
-                                          type=type,
-                                          typeval=typeval)
+                                                context=context,
+                                                type=type,
+                                                typeval=typeval)
 
         extension = extension_dao.get(expected_extension.id)
 

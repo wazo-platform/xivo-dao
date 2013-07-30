@@ -56,7 +56,7 @@ def get_by_user_id(session, user_id):
                                    UserLineSchema.line_id == LineSchema.id,
                                    UserLineSchema.main_line == True,
                                    UserLineSchema.main_user == True))
-    .first())
+        .first())
 
     if not line:
         raise ElementNotExistsError('Line', user_id=user_id)

@@ -33,7 +33,6 @@ from xivo_dao.alchemy.usercustom import UserCustom as UserCustomSchema
 from xivo_dao.alchemy.sccpline import SCCPLine as SCCPLineSchema
 from xivo_dao.data_handler.line.model import LineSIP, LineSCCP, LineIAX, LineCUSTOM, \
     LineOrdering
-from sqlalchemy.sql.expression import and_
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementCreationError
 from sqlalchemy.exc import SQLAlchemyError
