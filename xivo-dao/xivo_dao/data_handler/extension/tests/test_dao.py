@@ -77,6 +77,12 @@ class TestExtensionDao(DAOTestCase):
                 has_property('exten', expected_exten2))
         ))
 
+    def test_find_by_exten_no_extens(self):
+        expected = []
+        extens = extension_dao.find_by_exten('123')
+
+        assert_that(extens, equal_to(expected))
+
     def test_find_by_exten(self):
         expected_exten = '1234'
 
@@ -92,6 +98,12 @@ class TestExtensionDao(DAOTestCase):
                 has_property('id', exten.id),
                 has_property('exten', expected_exten))
         ))
+
+    def test_find_by_context_no_extens(self):
+        expected = []
+        extens = extension_dao.find_by_context('fuh')
+
+        assert_that(extens, equal_to(expected))
 
     def test_find_by_context(self):
         expected_context = 'hhi'
