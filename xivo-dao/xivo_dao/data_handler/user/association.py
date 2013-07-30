@@ -18,6 +18,7 @@
 from xivo_dao.data_handler.user import services as user_services
 from xivo_dao.data_handler.voicemail import services as voicemail_services
 from xivo_dao.data_handler.line import services as line_services
+from xivo_dao.data_handler.line import dao as line_dao
 from xivo_dao.data_handler.extension import services as extension_services
 from xivo_dao.data_handler.user_line_extension import services as ule_services
 from xivo_dao.data_handler.user_line_extension.model import UserLineExtension
@@ -42,3 +43,5 @@ def associate_user_line_extension(user_id, line_id, extension_id, main_user=True
                             main_line=main_line)
 
     ule_services.create(ule)
+
+    line_dao.associate_extension(extension, line.id)

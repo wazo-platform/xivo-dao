@@ -158,11 +158,12 @@ class TestUserAssociation(unittest.TestCase):
 
         self.assertRaises(ElementCreationError, user_association.associate_user_line_extension, user_id, line_id, extension_id)
 
+    @patch('xivo_dao.data_handler.line.dao.associate_extension')
     @patch('xivo_dao.data_handler.user_line_extension.services.create')
     @patch('xivo_dao.data_handler.extension.services.get')
     @patch('xivo_dao.data_handler.line.services.get')
     @patch('xivo_dao.data_handler.user.services.get')
-    def test_associate_user_line_extension(self, get_user, get_line, get_extension, create_ule):
+    def test_associate_user_line_extension(self, get_user, get_line, get_extension, create_ule, line_associate_extension):
         user_id = 21
         line_id = 32
         extension_id = 1220
@@ -204,3 +205,4 @@ class TestUserAssociation(unittest.TestCase):
         user_association.associate_user_line_extension(user_id, line_id, extension_id)
 
         create_ule.assert_called_once_with(ule)
+        line_associate_extension.assert_called_once_with(extension, line.id)
