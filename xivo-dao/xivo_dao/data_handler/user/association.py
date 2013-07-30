@@ -45,3 +45,5 @@ def associate_user_line_extension(user_id, line_id, extension_id, main_user=True
     ule_services.create(ule)
 
     line_dao.associate_extension(extension, line.id)
+
+    return ule
