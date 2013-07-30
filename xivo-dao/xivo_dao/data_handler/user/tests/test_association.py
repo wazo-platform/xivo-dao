@@ -26,6 +26,7 @@ from xivo_dao.data_handler.exception import ElementNotExistsError, \
 from xivo_dao.data_handler.line.model import LineSIP
 from xivo_dao.data_handler.extension.model import Extension
 from xivo_dao.data_handler.user_line_extension.model import UserLineExtension
+from hamcrest.core import assert_that
 
 
 class TestUserAssociation(unittest.TestCase):

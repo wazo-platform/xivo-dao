@@ -21,6 +21,7 @@ from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementCreationError, ElementDeletionError, ElementEditionError
 from xivo_dao.data_handler.extension.model import Extension, ExtensionOrdering
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+from sqlalchemy.sql.expression import or_
 
 
 DEFAULT_ORDER = [ExtensionOrdering.exten, ExtensionOrdering.context]
@@ -72,18 +73,19 @@ def find_all(session, order=None):
 @daosession
 def find_by_exten(session, exten, order=None):
     search = '%%%s%%' % exten.lower()
-    return _find_by_search(search, order)
+    return _find_by_search(session, search, order)
 
 
 @daosession
 def find_by_context(session, context, order=None):
     search = '%%%s%%' % context.lower()
-    return _find_by_search(search, order)
+    return _find_by_search(session, search, order)
 
 
 def _find_by_search(session, search, order):
     line_rows = (_new_query(session, order)
-                 .filter(ExtensionSchema.name.ilike(search))
+                 .filter(or_(ExtensionSchema.exten.ilike(search),
+                             ExtensionSchema.context.ilike(search)))
                  .all())
 
     return _rows_to_extension_model(line_rows)
