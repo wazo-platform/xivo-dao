@@ -295,3 +295,20 @@ def _delete_custom_line(session, protocolid):
 def _new_query(session, order=None):
     order = order or DEFAULT_ORDER
     return session.query(LineSchema).filter(LineSchema.commented == 0).order_by(*order)
+
+
+@daosession
+def unassociate_extension(session, extension):
+    line_row = (session.query(LineSchema)
+                .filter(LineSchema.number == extension.exten)
+                .filter(LineSchema.context == extension.context)
+                .first())
+
+    if line_row:
+        line_row.number = ''
+        line_row.context = ''
+        line_row.provisioningid = 0
+
+        session.begin()
+        session.add(line_row)
+        session.commit()

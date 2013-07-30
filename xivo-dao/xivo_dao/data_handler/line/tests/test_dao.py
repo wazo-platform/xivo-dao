@@ -24,6 +24,7 @@ from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.data_handler.line import dao as line_dao
+from xivo_dao.data_handler.extension import dao as extension_dao
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema
@@ -406,3 +407,26 @@ class TestLineDao(DAOTestCase):
                .first())
 
         self.assertNotEquals(row, None)
+
+    def test_unassociate_extension(self):
+        exten = '1000'
+        context = 'default'
+        type = 'user'
+        provisioningid = 12
+
+        line_row = self.add_line(context=context, provisioningid=provisioningid, number=exten)
+
+        extension_row = self.add_extension(exten=exten,
+                                           context=context,
+                                           type=type,
+                                           typeval=str(line_row.id))
+
+        extension = extension_dao.get(extension_row.id)
+
+        line_dao.unassociate_extension(extension)
+
+        line_row = self.session.query(LineSchema).get(line_row.id)
+
+        self.assertEquals(line_row.number, '')
+        self.assertEquals(line_row.context, '')
+        self.assertEquals(line_row.provisioningid, 0)

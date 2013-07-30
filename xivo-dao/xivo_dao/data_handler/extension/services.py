@@ -19,8 +19,9 @@ from . import dao
 from . import notifier
 
 from xivo_dao.data_handler.exception import MissingParametersError, \
-    InvalidParametersError, ElementNotExistsError
-from xivo_dao.data_handler.line import services as line_services
+    InvalidParametersError
+
+from xivo_dao.data_handler.line import dao as line_dao
 
 
 def get(extension_id):
@@ -61,8 +62,8 @@ def edit(extension):
 
 
 def delete(extension):
+    line_dao.unassociate_extension(extension)
     dao.delete(extension)
-    _remove_exten_from_line_schema(extension)
     notifier.deleted(extension)
 
 
@@ -87,14 +88,3 @@ def _check_invalid_parameters(extension):
         invalid_parameters.append('Type required')
     if invalid_parameters:
         raise InvalidParametersError(invalid_parameters)
-
-
-def _remove_exten_from_line_schema(extension):
-    try:
-        line = line_services.get_by_number_context(extension.exten, extension.context)
-        line.number = ''
-        line.context = ''
-        line.provisioningid = 0
-        line_services.edit(line)
-    except ElementNotExistsError:
-        return

@@ -2,7 +2,7 @@
 
 import unittest
 
-from mock import patch, Mock
+from mock import patch
 from xivo_dao.data_handler.extension.model import Extension
 from xivo_dao.data_handler.extension import services as extension_services
 from xivo_dao.data_handler.exception import MissingParametersError, \
@@ -76,11 +76,10 @@ class TestExtension(unittest.TestCase):
 
         self.assertRaises(ElementCreationError, extension_services.create, extension)
 
-    @patch('xivo_dao.data_handler.line.services.edit', Mock(return_value=None))
-    @patch('xivo_dao.data_handler.line.services.get_by_number_context')
+    @patch('xivo_dao.data_handler.line.dao.unassociate_extension')
     @patch('xivo_dao.data_handler.extension.notifier.deleted')
     @patch('xivo_dao.data_handler.extension.dao.delete')
-    def test_delete(self, extension_dao_delete, extension_notifier_deleted, line_get_by_number_context):
+    def test_delete(self, extension_dao_delete, extension_notifier_deleted, unassociate_extension):
         exten = 'extension'
         context = 'toto'
         extension = Extension(id=1,
@@ -91,6 +90,6 @@ class TestExtension(unittest.TestCase):
 
         extension_services.delete(extension)
 
+        unassociate_extension.assert_called_once_with(extension)
         extension_dao_delete.assert_called_once_with(extension)
         extension_notifier_deleted.assert_called_once_with(extension)
-        line_get_by_number_context.assert_called_once_with(exten, context)
