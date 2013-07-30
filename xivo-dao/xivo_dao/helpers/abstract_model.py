@@ -43,6 +43,12 @@ class AbstractModels(object):
                 setattr(obj, model_field, model_field_value)
         return obj
 
+    def update_from_data_source(self, db_object):
+        for db_field, model_field in self._MAPPING.iteritems():
+            if hasattr(db_object, db_field):
+                model_field_value = getattr(db_object, db_field)
+                setattr(self, model_field, model_field_value)
+
     def to_data_source(self, class_schema):
         db_object = class_schema()
         for db_field, model_field in self._MAPPING.iteritems():
