@@ -27,7 +27,7 @@ from xivo_dao.alchemy.useriax import UserIAX as UserIAXSchema, UserIAX
 from xivo_dao.alchemy.usercustom import UserCustom as UserCustomSchema, \
     UserCustom
 from xivo_dao.alchemy.sccpline import SCCPLine as SCCPLineSchema, SCCPLine
-from xivo_dao.alchemy.user_line import UserLine as UserLineSchema, UserLine
+from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
@@ -42,12 +42,15 @@ DEFAULT_ORDER = [LineOrdering.name, LineOrdering.context]
 
 @daosession
 def get(session, line_id):
-    protocol = get_protocol(line_id)
+    try:
+        protocol = get_protocol(line_id)
+    except LookupError:
+        raise ElementNotExistsError('Line', line_id=line_id)
+
     protocol = protocol.lower()
     if protocol == 'sip':
         row = (
             session.query(LineSchema, UserSIP)
-            .join(UserLine, UserLine.line_id == LineSchema.id)
             .filter(LineSchema.id == int(line_id))
             .filter(LineSchema.protocolid == UserSIP.id)
             .first()
@@ -55,7 +58,6 @@ def get(session, line_id):
     elif protocol == 'iax':
         row = (
             session.query(LineSchema, UserIAX)
-            .join(UserLine, UserLine.line_id == LineSchema.id)
             .filter(LineSchema.id == int(line_id))
             .filter(LineSchema.protocolid == UserIAX.id)
             .first()
@@ -63,7 +65,6 @@ def get(session, line_id):
     elif protocol == 'sccp':
         row = (
             session.query(LineSchema, SCCPLine)
-            .join(UserLine, UserLine.line_id == LineSchema.id)
             .filter(LineSchema.id == int(line_id))
             .filter(LineSchema.protocolid == SCCPLine.id)
             .first()
@@ -71,16 +72,15 @@ def get(session, line_id):
     elif protocol == 'custom':
         row = (
             session.query(LineSchema, UserCustom)
-            .join(UserLine, UserLine.line_id == LineSchema.id)
             .filter(LineSchema.id == int(line_id))
             .filter(LineSchema.protocolid == UserCustom.id)
             .first()
         )
 
-    line, protocol_line = row
-
-    if not line:
+    if not row:
         raise ElementNotExistsError('Line', line_id=line_id)
+
+    line, protocol_line = row
 
     return _get_protocol_line(line, protocol_line)
 
@@ -237,6 +237,8 @@ def _build_derived_line(session, line):
 def _build_line_row(line, derived_line):
     line.protocolid = derived_line.id
     line_row = line.to_data_source(LineSchema)
+    if line_row.configregistrar is None:
+        line_row.configregistrar = 'default'
     return line_row
 
 
@@ -294,7 +296,6 @@ def delete(session, line):
         nb_row_affected = session.query(UserLineSchema).filter(UserLineSchema.line_id == line.id).delete()
         session.query(LineSchema).filter(LineSchema.id == line.id).delete()
         _delete_line(session, line)
-        _delete_extension(session, line.number, line.context)
         session.commit()
     except SQLAlchemyError, e:
         session.rollback()
@@ -319,12 +320,6 @@ def _delete_line(session, line):
         _delete_custom_line(session, protocolid)
 
 
-def _delete_extension(session, exten, context):
-    (session.query(Extension).filter(and_(Extension.exten == exten,
-                                          Extension.context == context))
-                             .delete())
-
-
 def _delete_sip_line(session, protocolid):
     session.query(UserSIPSchema).filter(UserSIPSchema.id == protocolid).delete()
 
@@ -344,6 +339,21 @@ def _delete_custom_line(session, protocolid):
 def _new_query(session, order=None):
     order = order or DEFAULT_ORDER
     return session.query(LineSchema).filter(LineSchema.commented == 0).order_by(*order)
+
+
+@daosession
+def associate_extension(session, extension, line_id):
+    line_row = (session.query(LineSchema)
+                .filter(LineSchema.id == line_id)
+                .first())
+
+    if line_row:
+        line_row.number = extension.exten
+        line_row.context = extension.context
+
+        session.begin()
+        session.add(line_row)
+        session.commit()
 
 
 @daosession

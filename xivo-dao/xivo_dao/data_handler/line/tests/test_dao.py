@@ -23,6 +23,7 @@ from xivo_dao.alchemy.ctipresences import CtiPresences
 from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
+from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
 from xivo_dao.data_handler.line import dao as line_dao
 from xivo_dao.data_handler.extension import dao as extension_dao
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -63,7 +64,9 @@ class TestLineDao(DAOTestCase):
     def test_get(self):
         line_name = 'sdklfj'
 
-        line = self.add_line(name=line_name)
+        line_sip = self.add_usersip(name=line_name)
+        line = self.add_line(protocolid=line_sip.id,
+                             name=line_name)
 
         line = line_dao.get(line.id)
 
@@ -97,7 +100,9 @@ class TestLineDao(DAOTestCase):
         number = '1235'
         context = 'notdefault'
 
-        line = self.add_line(name=line_name, number=number, context=context)
+        line = self.add_line(name=line_name,
+                             number=number,
+                             context=context)
         self.add_extension(exten=number,
                            context=context,
                            type='user',
@@ -376,7 +381,9 @@ class TestLineDao(DAOTestCase):
         number = '1234'
         context = 'lakokj'
 
-        user_line = self.add_user_line_with_exten(exten=number,
+        line_sip = self.add_usersip()
+        user_line = self.add_user_line_with_exten(protocolid=line_sip.id,
+                                                  exten=number,
                                                   context=context)
 
         line = line_dao.get(user_line.line.id)
@@ -395,17 +402,11 @@ class TestLineDao(DAOTestCase):
 
         assert_that(row, equal_to(None))
 
-        row = (self.session.query(Extension)
-               .filter(Extension.id == user_line.extension.id)
+        row = (self.session.query(UserLineSchema)
+               .filter(UserLineSchema.id == user_line.id)
                .first())
 
         assert_that(row, equal_to(None))
-
-        row = (self.session.query(UserSchema)
-               .filter(UserSchema.id == user_line.user.id)
-               .first())
-
-        self.assertNotEquals(row, None)
 
     def test_unassociate_extension(self):
         exten = '1000'
@@ -413,7 +414,9 @@ class TestLineDao(DAOTestCase):
         type = 'user'
         provisioningid = 12
 
-        line_row = self.add_line(context=context, provisioningid=provisioningid, number=exten)
+        line_row = self.add_line(context=context,
+                                 provisioningid=provisioningid,
+                                 number=exten)
 
         extension_row = self.add_extension(exten=exten,
                                            context=context,
@@ -429,3 +432,24 @@ class TestLineDao(DAOTestCase):
         self.assertEquals(line_row.number, '')
         self.assertEquals(line_row.context, '')
         self.assertEquals(line_row.provisioningid, 0)
+
+    def test_associate_extension(self):
+        exten = '1000'
+        context = 'default'
+        provisioningid = 123456
+
+        line_row = self.add_line(provisioningid=provisioningid)
+
+        extension_row = self.add_extension(exten=exten,
+                                           context=context,
+                                           typeval=str(line_row.id))
+
+        extension = extension_dao.get(extension_row.id)
+
+        line_dao.associate_extension(extension, line_row.id)
+
+        line_row = self.session.query(LineSchema).get(line_row.id)
+
+        self.assertEquals(line_row.number, exten)
+        self.assertEquals(line_row.context, context)
+        self.assertEquals(line_row.provisioningid, provisioningid)
