@@ -83,6 +83,41 @@ class DAOTestCase(unittest.TestCase):
         self.session.commit()
         logger.debug("Tables emptied")
 
+    def add_user_line_with_exten(self, **kwargs):
+        kwargs.setdefault('firstname', 'unittest')
+        kwargs.setdefault('lastname', 'unittest')
+        kwargs.setdefault('callerid', u'%s %s' % (kwargs['firstname'], kwargs['lastname']))
+        kwargs.setdefault('exten', '1000')
+        kwargs.setdefault('context', 'foocontext')
+        kwargs.setdefault('protocol', 'sip')
+        kwargs.setdefault('protocolid', int(''.join(random.choice('123456789') for _ in range(3))))
+        kwargs.setdefault('name_line', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
+        kwargs.setdefault('commented_line', 0)
+        kwargs.setdefault('device', 1)
+
+        user = self.add_user(firstname=kwargs['firstname'],
+                             lastname=kwargs['lastname'],
+                             callerid=kwargs['callerid'])
+        line = self.add_line(number=kwargs['exten'],
+                             context=kwargs['context'],
+                             protocol=kwargs['protocol'],
+                             protocolid=kwargs['protocolid'],
+                             name=kwargs['name_line'],
+                             device=kwargs['device'],
+                             commented=kwargs['commented_line'])
+        extension = self.add_extension(exten=kwargs['exten'],
+                                       context=kwargs['context'],
+                                       typeval=user.id)
+        user_line = self.add_user_line(line_id=line.id,
+                                       user_id=user.id,
+                                       extension_id=extension.id)
+
+        user_line.user = user
+        user_line.line = line
+        user_line.extension = extension
+
+        return user_line
+
     def add_line(self, **kwargs):
         kwargs.setdefault('name', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
         kwargs.setdefault('context', 'foocontext')
@@ -96,6 +131,7 @@ class DAOTestCase(unittest.TestCase):
 
     def add_user_line(self, **kwargs):
         kwargs.setdefault('main_user', True)
+        kwargs.setdefault('main_line', True)
 
         user_line = UserLine(**kwargs)
         self.add_me(user_line)

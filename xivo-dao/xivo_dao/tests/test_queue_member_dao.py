@@ -15,11 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from mock import Mock
-from xivo_dao import queue_member_dao, line_dao
+from mock import patch
+from xivo_dao import queue_member_dao
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
-from xivo_dao.helpers import db_manager
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -84,12 +83,12 @@ class TestQueueMemberDAO(DAOTestCase):
         self.assertEqual(queue_member.queue_name, 'queue1')
         self.assertEqual(queue_member.member_name, 'Agent/2')
 
-    def test_add_user_to_queue(self):
+    @patch('xivo_dao.user_line_dao.get_line_identity_by_user_id')
+    def test_add_user_to_queue(self, mock_get_line_identity):
         user_id = 1
         queue = 'queue1'
         interface = 'SIP/123'
-        line_dao.get_interface_from_user_id = Mock()
-        line_dao.get_interface_from_user_id.return_value = interface
+        mock_get_line_identity.return_value = interface
 
         queue_member_dao.add_user_to_queue(user_id, queue)
 

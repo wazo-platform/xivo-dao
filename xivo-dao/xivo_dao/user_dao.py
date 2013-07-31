@@ -27,6 +27,8 @@ from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.helpers.db_manager import daosession
+from xivo_dao.alchemy.user_line import UserLine
+from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 # the following import is necessary to laod CtiProfiles' definition:
 
 
@@ -95,16 +97,21 @@ def get(session, user_id):
 
 
 @daosession
-def get_user_by_number_context(session, number, context):
+def get_user_by_number_context(session, exten, context):
     user = (session.query(UserFeatures)
-            .filter(LineFeatures.iduserfeatures == UserFeatures.id)
-            .filter(LineFeatures.context == context)
-            .filter(LineFeatures.number == number)
-            .filter(LineFeatures.commented == 0)
+           .join(ExtensionSchema, and_(ExtensionSchema.context == context,
+                                       ExtensionSchema.exten == exten,
+                                       ExtensionSchema.commented == 0))
+           .join(LineFeatures, and_(LineFeatures.commented == 0))
+           .join(UserLine, and_(UserLine.user_id == UserFeatures.id,
+                                UserLine.extension_id == ExtensionSchema.id,
+                                UserLine.line_id == LineFeatures.id,
+                                UserLine.main_line == True,
+                                UserLine.main_line == True))
             .first())
 
     if not user:
-        raise LookupError('No user with number %s in context %s', (number, context))
+        raise LookupError('No user with number %s in context %s', (exten, context))
 
     return user
 
@@ -154,26 +161,14 @@ def _get_nested_contexts(contexts):
 
 @daosession
 def get_reachable_contexts(session, user_id):
-    line_contexts = [line.context for line in (session.query(LineFeatures)
-                                               .filter(LineFeatures.iduserfeatures == user_id))]
+    res = (session.query(ExtensionSchema.context)
+           .join(UserLine, and_(UserLine.extension_id == ExtensionSchema.id,
+                                 UserLine.user_id == int(user_id)))
+           .join(LineFeatures, UserLine.line_id == LineFeatures.id)
+           .all())
+    line_contexts = [context[0] for context in res]
 
     return _get_nested_contexts(line_contexts)
-
-
-@daosession
-def find_by_line_id(session, line_id):
-    return session.query(LineFeatures.iduserfeatures).filter(LineFeatures.id == line_id).first().iduserfeatures
-
-
-@daosession
-def get_line_identity(session, user_id):
-    line = (session
-            .query(LineFeatures.protocol, LineFeatures.name)
-            .filter(LineFeatures.iduserfeatures == user_id)
-            .first())
-    if not line:
-        raise LookupError('Could not find a line for user %s', user_id)
-    return '%s/%s' % (line.protocol, line.name)
 
 
 @daosession
@@ -220,17 +215,26 @@ def get_fwd_rna(session, user_id):
 
 @daosession
 def get_name_number(session, user_id):
-    res = (session.query(UserFeatures.firstname, UserFeatures.lastname, LineFeatures.number).
-           filter(and_(UserFeatures.id == LineFeatures.iduserfeatures, UserFeatures.id == user_id))).first()
-    return '%s %s' % (res.firstname, res.lastname), res.number
+    res = (session.query(UserFeatures.firstname, UserFeatures.lastname, ExtensionSchema.exten)
+           .join(UserLine, and_(UserLine.user_id == int(user_id),
+                                UserLine.main_line == True,
+                                UserLine.main_line == True))
+           .join(ExtensionSchema, UserLine.extension_id == ExtensionSchema.id)
+           .filter(UserFeatures.id == user_id)
+           .first())
+    if not res:
+        raise LookupError('Cannot find a line from this user id %s' % user_id)
+    return '%s %s' % (res.firstname, res.lastname), res.exten
 
 
 @daosession
 def get_device_id(session, user_id):
-    row = (session
-           .query(LineFeatures.iduserfeatures, LineFeatures.device)
-           .filter(LineFeatures.iduserfeatures == user_id)
-           .filter(LineFeatures.device != '')
+    row = (session.query(LineFeatures.device)
+           .join(UserLine, and_(UserLine.user_id == int(user_id),
+                                UserLine.main_line == True,
+                                UserLine.main_line == True))
+           .filter(and_(UserLine.line_id == LineFeatures.id,
+                        LineFeatures.device != ''))
            .first())
     if not row:
         raise LookupError('Cannot find a device from this user id %s' % user_id)
@@ -239,9 +243,11 @@ def get_device_id(session, user_id):
 
 @daosession
 def get_context(session, user_id):
-    res = (session
-           .query(LineFeatures.context)
-           .filter(LineFeatures.iduserfeatures == user_id)
+    res = (session.query(LineFeatures.context)
+           .join(UserLine, and_(UserLine.line_id == LineFeatures.id,
+                                UserLine.user_id == int(user_id),
+                                UserLine.main_line == True,
+                                UserLine.main_line == True))
            .first())
 
     if not res:
@@ -307,6 +313,11 @@ def delete(session, userid):
 
 
 @daosession
+def get_by_voicemailid(session, voicemailid):
+    return session.query(UserFeatures).filter(UserFeatures.voicemailid == voicemailid).all()
+
+
+@daosession
 def get_user_config(session, user_id):
     session.begin()
     query = _user_config_query(session)
@@ -326,13 +337,8 @@ def get_users_config(session):
     return dict((str(user.id), _format_user(user)) for user in users)
 
 
-@daosession
-def get_by_voicemailid(session, voicemailid):
-    return session.query(UserFeatures).filter(UserFeatures.voicemailid == voicemailid).all()
-
-
 def _user_config_query(session):
-    return session.query(
+    return (session.query(
         UserFeatures.agentid,
         UserFeatures.bsfilter,
         UserFeatures.callerid,
@@ -377,8 +383,11 @@ def _user_config_query(session):
         UserFeatures.voicemailid,
         UserFeatures.voicemailtype,
         LineFeatures.id.label('line_id'),
-        LineFeatures.context.label('line_context'),
-    ).outerjoin((LineFeatures, UserFeatures.id == LineFeatures.iduserfeatures))
+        LineFeatures.context.label('line_context'))
+    .outerjoin(UserLine, and_(UserLine.main_user == True,
+                              UserLine.main_line == True,
+                              UserLine.user_id == UserFeatures.id))
+    .outerjoin(LineFeatures, and_(LineFeatures.id == UserLine.line_id)))
 
 
 def _format_user(user):
@@ -442,14 +451,20 @@ def _format_user(user):
 
 @daosession
 def get_user_join_line(session, userid):
-    return session.query(UserFeatures, LineFeatures)\
-                  .filter(UserFeatures.id == userid)\
-                  .outerjoin((LineFeatures, UserFeatures.id == LineFeatures.iduserfeatures))\
-                  .first()
+    return (session.query(UserFeatures, LineFeatures)
+                    .outerjoin(UserLine, and_(UserFeatures.id == UserLine.user_id,
+                                              UserLine.main_user == True,
+                                              UserLine.main_line == True))
+                    .outerjoin(LineFeatures, LineFeatures.id == UserLine.line_id)
+                    .filter(UserFeatures.id == userid)
+                    .first())
 
 
 @daosession
 def get_all_join_line(session):
-    return session.query(UserFeatures, LineFeatures)\
-                  .outerjoin((LineFeatures, UserFeatures.id == LineFeatures.iduserfeatures))\
-                  .all()
+    return (session.query(UserFeatures, LineFeatures)
+                    .outerjoin(UserLine, and_(UserFeatures.id == UserLine.user_id,
+                                              UserLine.main_user == True,
+                                              UserLine.main_line == True))
+                    .outerjoin(LineFeatures, LineFeatures.id == UserLine.line_id)
+                    .all())

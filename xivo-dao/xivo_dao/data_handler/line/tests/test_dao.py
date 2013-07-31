@@ -72,12 +72,9 @@ class TestLineDao(DAOTestCase):
     def test_get_by_user_id(self):
         line_name = 'sdklfj'
 
-        line = self.add_line(name=line_name)
-        user = self.add_user()
-        self.add_user_line(user_id=user.id,
-                           line_id=line.id)
+        user_line = self.add_user_line_with_exten(name_line=line_name)
 
-        line = line_dao.get_by_user_id(user.id)
+        line = line_dao.get_by_user_id(user_line.user.id)
 
         assert_that(line.name, equal_to(line_name))
 
@@ -87,11 +84,10 @@ class TestLineDao(DAOTestCase):
     def test_get_by_user_id_commented(self):
         line_name = 'sdklfj'
 
-        line = self.add_line(name=line_name, commented=1)
-        user = self.add_user()
-        self.add_user_line(user_id=user.id, line_id=line.id)
+        user_line = self.add_user_line_with_exten(name_line=line_name,
+                                                  commented_line=1)
 
-        self.assertRaises(ElementNotExistsError, line_dao.get_by_user_id, user.id)
+        self.assertRaises(ElementNotExistsError, line_dao.get_by_user_id, user_line.user.id)
 
     def test_get_by_number_context(self):
         line_name = 'sdklfj'
@@ -103,7 +99,6 @@ class TestLineDao(DAOTestCase):
                            context=context,
                            type='user',
                            typeval=str(line.id))
-
 
         line = line_dao.get_by_number_context(number, context)
 
@@ -260,19 +255,11 @@ class TestLineDao(DAOTestCase):
     def test_delete_sip_line(self):
         number = '1234'
         context = 'lakokj'
-        user = self.add_user(firstname='toto')
-        exten = self.add_extension(exten=number,
-                                      context=context,
-                                      type='user',
-                                      typeval=user.id)
-        line_sip = self.add_usersip(id=3456)
-        line = self.add_line(protocol='sip',
-                                protocolid=line_sip.id,
-                                iduserfeatures=user.id,
-                                number=number,
-                                context=context)
 
-        line = line_dao.get(line.id)
+        user_line = self.add_user_line_with_exten(exten=number,
+                                                  context=context)
+
+        line = line_dao.get(user_line.line.id)
 
         line_dao.delete(line)
 
@@ -289,13 +276,13 @@ class TestLineDao(DAOTestCase):
         assert_that(row, equal_to(None))
 
         row = (self.session.query(Extension)
-               .filter(Extension.id == exten.id)
+               .filter(Extension.id == user_line.extension.id)
                .first())
 
         assert_that(row, equal_to(None))
 
         row = (self.session.query(UserSchema)
-               .filter(UserSchema.id == user.id)
+               .filter(UserSchema.id == user_line.user.id)
                .first())
 
         self.assertNotEquals(row, None)

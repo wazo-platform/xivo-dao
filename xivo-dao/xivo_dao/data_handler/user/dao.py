@@ -17,7 +17,9 @@
 
 from sqlalchemy.exc import SQLAlchemyError
 from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
+from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
+from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
@@ -28,6 +30,7 @@ from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.data_handler.user.model import User, UserOrdering
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementEditionError, ElementCreationError, ElementDeletionError
+from sqlalchemy.sql.expression import and_
 
 
 DEFAULT_ORDER = [UserOrdering.lastname, UserOrdering.firstname]
@@ -92,11 +95,16 @@ def get(session, user_id):
 @daosession
 def get_by_number_context(session, number, context):
     user_row = (_new_query(session)
-                .filter(LineSchema.iduserfeatures == UserSchema.id)
-                .filter(LineSchema.context == context)
-                .filter(LineSchema.number == number)
-                .filter(LineSchema.commented == 0)
-                .first())
+           .join(ExtensionSchema, and_(ExtensionSchema.context == context,
+                                       ExtensionSchema.exten == number,
+                                       ExtensionSchema.commented == 0))
+           .join(LineSchema, and_(LineSchema.commented == 0))
+           .join(UserLineSchema, and_(UserLineSchema.user_id == UserSchema.id,
+                                UserLineSchema.extension_id == ExtensionSchema.id,
+                                UserLineSchema.line_id == LineSchema.id,
+                                UserLineSchema.main_line == True,
+                                UserLineSchema.main_line == True))
+            .first())
 
     if not user_row:
         raise ElementNotExistsError('User', number=number, context=context)

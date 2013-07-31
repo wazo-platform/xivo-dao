@@ -32,6 +32,8 @@ from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao.alchemy.extension import Extension as ExtensionSchema
+from xivo_dao.alchemy.user_line import UserLine
 
 
 class TestUserFeaturesDAO(DAOTestCase):
@@ -39,7 +41,7 @@ class TestUserFeaturesDAO(DAOTestCase):
     tables = [UserFeatures, LineFeatures, ContextInclude, AgentFeatures,
               CtiPresences, CtiPhoneHintsGroup, CtiProfile, QueueMember,
               RightCallMember, Callfiltermember, Callfilter, Dialaction,
-              PhoneFunckey, SchedulePath]
+              PhoneFunckey, SchedulePath, ExtensionSchema, UserLine]
 
     def setUp(self):
         self.empty_tables()
@@ -63,22 +65,18 @@ class TestUserFeaturesDAO(DAOTestCase):
 
     def test_get_user_by_number_context(self):
         context, number = 'default', '1234'
-        expected_user = self.add_user(firstname='Robert')
-        self.add_line(iduserfeatures=expected_user.id,
-                      number=number,
-                      context=context)
+        user_line = self.add_user_line_with_exten(exten=number,
+                                                  context=context)
 
         user = user_dao.get_user_by_number_context(number, context)
 
-        assert_that(user.id, equal_to(expected_user.id))
+        assert_that(user.id, equal_to(user_line.user.id))
 
     def test_get_user_by_number_context_line_commented(self):
         context, number = 'default', '1234'
-        user = self.add_user(firstname='Robert')
-        self.add_line(iduserfeatures=user.id,
-                      number=number,
-                      context=context,
-                      commented=1)
+        user_line = self.add_user_line_with_exten(exten=number,
+                                                  context=context,
+                                                  commented_line=1)
 
         self.assertRaises(LookupError, user_dao.get_user_by_number_context, number, context)
 
@@ -405,13 +403,6 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         return cti_profile.id
 
-    def add_user_with_line(self, name, context='default'):
-        user = self.add_user(firstname=name)
-        line = self.add_line(iduserfeatures=user.id,
-                             context=context)
-
-        return user, line
-
     def add_user_to_queue(self, userid, queuename):
         queuemember = QueueMember(usertype='user',
                                   userid=userid,
@@ -453,9 +444,9 @@ class TestUserFeaturesDAO(DAOTestCase):
     def test_get_reachable_contexts(self):
         context = 'my_context'
 
-        user, _ = self.add_user_with_line('Tester', context)
+        user_line = self.add_user_line_with_exten(context=context)
 
-        result = user_dao.get_reachable_contexts(user.id)
+        result = user_dao.get_reachable_contexts(user_line.user.id)
 
         self.assertEqual(result, [context])
 
@@ -477,9 +468,9 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         self.add_me(ctx_include)
 
-        user, _ = self.add_user_with_line('Tester', context)
+        user_line = self.add_user_line_with_exten(context=context)
 
-        result = user_dao.get_reachable_contexts(user.id)
+        result = user_dao.get_reachable_contexts(user_line.user.id)
 
         self.assertEqual(result, [context, included_context])
 
@@ -502,54 +493,12 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         map(self.add_me, [ctx, ctx_include, ctx_loop])
 
-        user, _ = self.add_user_with_line('Tester', context)
+        user_line = self.add_user_line_with_exten(context=context)
 
-        result = user_dao.get_reachable_contexts(user.id)
+        result = user_dao.get_reachable_contexts(user_line.user.id)
 
         for context in [context, included_context, looping_context]:
             self.assertTrue(context in result)
-
-    def test_get_line_identity(self):
-        self.assertRaises(LookupError, user_dao.get_line_identity, 1234)
-
-        user = UserFeatures()
-        user.name = 'Tester'
-
-        self.add_me(user)
-
-        line = LineFeatures()
-        line.protocolid = 1
-        line.name = 'a1b2c3'
-        line.protocol = 'sip'
-        line.iduserfeatures = user.id
-        line.context = 'ctx'
-        line.provisioningid = 1234
-
-        self.add_me(line)
-
-        expected = 'sip/a1b2c3'
-        result = user_dao.get_line_identity(user.id)
-
-        self.assertEqual(result, expected)
-
-    def test_find_by_line_id(self):
-        user = UserFeatures()
-        user.firstname = 'test'
-
-        self.add_me(user)
-
-        line = LineFeatures()
-        line.protocolid = 1
-        line.name = 'abc'
-        line.context = 'test_ctx'
-        line.provisioningid = 2
-        line.iduserfeatures = user.id
-
-        self.add_me(line)
-
-        user_id = user_dao.find_by_line_id(line.id)
-
-        self.assertEqual(user_id, user.id)
 
     def test_get_agent_number(self):
         self.assertRaises(LookupError, user_dao.get_agent_number, 1)
@@ -675,48 +624,23 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.assertTrue(result)
 
     def test_get_name_number(self):
-        user = UserFeatures()
-        user.firstname = 'Toto'
-        user.lastname = 'Plop'
+        firstname = 'Toto'
+        lastname = 'Plop'
+        exten = '1234'
+        user_line = self.add_user_line_with_exten(exten=exten,
+                                                  firstname=firstname,
+                                                  lastname=lastname)
 
-        self.add_me(user)
+        name, number = user_dao.get_name_number(user_line.user.id)
 
-        line = LineFeatures()
-        line.number = '1234'
-        line.name = '12kjdhf'
-        line.context = 'context'
-        line.provisioningid = 1234
-        line.iduserfeatures = user.id
-        line.protocolid = 1
-
-        self.add_me(line)
-
-        name, number = user_dao.get_name_number(user.id)
-
-        self.assertEqual(name, '%s %s' % (user.firstname, user.lastname))
-        self.assertEqual(number, '1234')
+        self.assertEqual(name, '%s %s' % (user_line.user.firstname, user_line.user.lastname))
+        self.assertEqual(number, exten)
 
     def test_get_device_id_with_one_user(self):
         device_id = 8
+        user_line = self.add_user_line_with_exten(device=device_id)
 
-        user = UserFeatures()
-        user.firstname = 'Toto'
-        user.lastname = 'Plop'
-
-        self.add_me(user)
-
-        line = LineFeatures()
-        line.number = '1234'
-        line.name = '12kjdhf'
-        line.context = 'context'
-        line.provisioningid = 1234
-        line.iduserfeatures = user.id
-        line.protocolid = 1
-        line.device = str(8)
-
-        self.add_me(line)
-
-        result = user_dao.get_device_id(user.id)
+        result = user_dao.get_device_id(user_line.user.id)
 
         self.assertEqual(result, device_id)
 
@@ -732,7 +656,6 @@ class TestUserFeaturesDAO(DAOTestCase):
         line.name = '12kjdhf'
         line.context = 'context'
         line.provisioningid = 1234
-        line.iduserfeatures = user.id
         line.protocolid = 1
         line.device = ''
 
@@ -742,31 +665,11 @@ class TestUserFeaturesDAO(DAOTestCase):
 
     def test_get_device_id_with_two_users(self):
         device_id = 24
+        self.add_user_line_with_exten(exten='1002',
+                                      device=device_id)
+        user_line_2 = self.add_user_line_with_exten(device=device_id)
 
-        user1 = UserFeatures()
-        user1.firstname = 'Toto1'
-        user1.lastname = 'Plop1'
-
-        self.add_me(user1)
-
-        user2 = UserFeatures()
-        user2.firstname = 'Toto2'
-        user2.lastname = 'Plop2'
-
-        self.add_me(user2)
-
-        line = LineFeatures()
-        line.number = '1234'
-        line.name = '12kjdhf'
-        line.context = 'context'
-        line.provisioningid = 1234
-        line.iduserfeatures = user2.id
-        line.protocolid = 1
-        line.device = str(device_id)
-
-        self.add_me(line)
-
-        result = user_dao.get_device_id(user2.id)
+        result = user_dao.get_device_id(user_line_2.user.id)
 
         self.assertEqual(result, device_id)
 
@@ -783,11 +686,11 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.assertRaises(LookupError, user_dao.get_device_id, 666)
 
     def test_get_context(self):
-        user, line = self.add_user_with_line('test_user1')
+        user_line = self.add_user_line_with_exten()
 
-        context = user_dao.get_context(user.id)
+        context = user_dao.get_context(user_line.user.id)
 
-        self.assertEquals(context, line.context)
+        self.assertEquals(context, user_line.line.context)
 
     def test_get_context_no_line(self):
         user = self.add_user(firstname='test_user1')
@@ -909,28 +812,19 @@ class TestUserFeaturesDAO(DAOTestCase):
         firstname = u'Jack'
         lastname = u'Strap'
         fullname = u'%s %s' % (firstname, lastname)
-        callerid = u'"%s"' % fullname
+        callerid = u'%s' % fullname
         context = u'mycontext'
 
-        user = UserFeatures(
-            firstname=firstname,
-            lastname=lastname,
-            callerid=callerid,
-        )
-        self.add_me(user)
+        user_line = self.add_user_line_with_exten(firstname=firstname,
+                                                  lastname=lastname,
+                                                  context=context,
+                                                  exten='1234',
+                                                  name='12kjdhf',
+                                                  provisioningid=1234,
+                                                  protocolid=1)
 
-        line = LineFeatures(
-            iduserfeatures=user.id,
-            number='1234',
-            name='12kjdhf',
-            context=context,
-            provisioningid=1234,
-            protocolid=1,
-        )
-        self.add_me(line)
-
-        user_id = user.id
-        line_list = [str(line.id)]
+        user_id = user_line.user.id
+        line_list = [str(user_line.line.id)]
         expected = {
             str(user_id): {
                 'agentid': None,
@@ -1049,13 +943,11 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.assertFalse(user3.id in result)
 
     def test_get_user_join_line(self):
-        user, line = self.add_user_with_line("my_test", "default")
-        line.number = "1234"
-        self.add_me(line)
+        user_line = self.add_user_line_with_exten(exten="1234")
 
-        resultuser, resultline = user_dao.get_user_join_line(user.id)
-        self.assertEqual(user.firstname, resultuser.firstname)
-        self.assertEqual(line.id, resultline.id)
+        resultuser, resultline = user_dao.get_user_join_line(user_line.user.id)
+        self.assertEqual(user_line.user.firstname, resultuser.firstname)
+        self.assertEqual(user_line.line.id, resultline.id)
         self.assertEqual(resultline.number, "1234")
 
     def test_get_user_join_line_no_result(self):
@@ -1069,8 +961,8 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.assertEqual(None, resultline)
 
     def test_get_all_join_lines(self):
-        user1, line1 = self.add_user_with_line("test1", "default")
-        user2, line2 = self.add_user_with_line("test2", "default")
+        user_line1 = self.add_user_line_with_exten(exten="1234")
+        user_line2 = self.add_user_line_with_exten(exten="1235")
 
         result = user_dao.get_all_join_line()
 
@@ -1079,7 +971,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         user1_line_id = result[0][1].id
         user2_line_id = result[1][1].id
 
-        self.assertEqual(user1.firstname, user1_firstname)
-        self.assertEqual(user2.firstname, user2_firstname)
-        self.assertEqual(line1.id, user1_line_id)
-        self.assertEqual(line2.id, user2_line_id)
+        self.assertEqual(user_line1.user.firstname, user1_firstname)
+        self.assertEqual(user_line2.user.firstname, user2_firstname)
+        self.assertEqual(user_line1.line.id, user1_line_id)
+        self.assertEqual(user_line2.line.id, user2_line_id)
