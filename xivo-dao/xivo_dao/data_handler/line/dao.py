@@ -294,8 +294,7 @@ def _create_custom_line(line):
 def delete(session, line):
     session.begin()
     try:
-        nb_row_affected = session.query(UserLineSchema).filter(UserLineSchema.line_id == line.id).delete()
-        session.query(LineSchema).filter(LineSchema.id == line.id).delete()
+        nb_row_affected = session.query(LineSchema).filter(LineSchema.id == line.id).delete()
         _delete_line(session, line)
         session.commit()
     except SQLAlchemyError, e:
