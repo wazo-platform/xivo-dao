@@ -51,7 +51,7 @@ class UserFeatures(Base):
     callerid = Column(String(160))
     ringseconds = Column(Integer, nullable=False, default=30)
     simultcalls = Column(Integer, nullable=False, default=5)
-    enableclient = Column(Integer, nullable=False, default=1)
+    enableclient = Column(Integer, nullable=False, default=0)
     loginclient = Column(String(64), nullable=False, server_default='')
     passwdclient = Column(String(64), nullable=False, server_default='')
     cti_profile_id = Column(Integer, ForeignKey('cti_profile.id'))
