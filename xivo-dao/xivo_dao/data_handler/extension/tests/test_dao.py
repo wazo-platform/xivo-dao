@@ -74,20 +74,20 @@ class TestExtensionDao(DAOTestCase):
                 has_property('exten', expected_exten2))
         ))
 
-    def test_find_all_by_exten_no_extens(self):
+    def test_find_by_exten_no_extens(self):
         expected = []
-        extens = extension_dao.find_all_by_exten('123')
+        extens = extension_dao.find_by_exten('123')
 
         assert_that(extens, equal_to(expected))
 
-    def test_find_all_by_exten(self):
+    def test_find_by_exten(self):
         expected_exten = '1234'
 
         exten = self.add_extension(exten=expected_exten)
         self.add_extension(exten='1236')
         self.add_extension(exten='8652')
 
-        extens = extension_dao.find_all_by_exten(expected_exten)
+        extens = extension_dao.find_by_exten(expected_exten)
 
         assert_that(extens, has_length(1))
         assert_that(extens, has_items(
@@ -96,20 +96,20 @@ class TestExtensionDao(DAOTestCase):
                 has_property('exten', expected_exten))
         ))
 
-    def test_find_all_by_context_no_extens(self):
+    def test_find_by_context_no_extens(self):
         expected = []
-        extens = extension_dao.find_all_by_context('fuh')
+        extens = extension_dao.find_by_context('fuh')
 
         assert_that(extens, equal_to(expected))
 
-    def test_find_all_by_context(self):
+    def test_find_by_context(self):
         expected_context = 'hhi'
 
         exten = self.add_extension(context=expected_context)
         self.add_extension(context='guj')
         self.add_extension(context='asc')
 
-        extens = extension_dao.find_all_by_context(expected_context)
+        extens = extension_dao.find_by_context(expected_context)
 
         assert_that(extens, has_length(1))
         assert_that(extens, has_items(

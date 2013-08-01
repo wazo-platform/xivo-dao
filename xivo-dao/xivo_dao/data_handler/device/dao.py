@@ -23,7 +23,7 @@ from xivo_dao.data_handler.exception import ElementNotExistsError
 
 @daosession
 def get(session, device_id):
-    res = (session.query(DeviceSchema).filter(DeviceSchema.id == device_id)).first()
+    res = (session.query(DeviceSchema).filter(DeviceSchema.id == int(device_id))).first()
 
     if not res:
         raise ElementNotExistsError('Device', id=device_id)

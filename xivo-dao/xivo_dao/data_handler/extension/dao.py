@@ -71,13 +71,13 @@ def find_all(session, order=None):
 
 
 @daosession
-def find_all_by_exten(session, exten, order=None):
+def find_by_exten(session, exten, order=None):
     search = '%%%s%%' % exten.lower()
     return _find_all_by_search(session, search, order)
 
 
 @daosession
-def find_all_by_context(session, context, order=None):
+def find_by_context(session, context, order=None):
     search = '%%%s%%' % context.lower()
     return _find_all_by_search(session, search, order)
 
