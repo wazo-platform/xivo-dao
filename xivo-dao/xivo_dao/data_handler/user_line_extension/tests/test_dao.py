@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that
-from hamcrest.core import equal_to
+from hamcrest import assert_that, contains, equal_to
 from mock import patch, Mock
 
 from .. import dao as ule_dao
@@ -63,6 +62,40 @@ class TestUserLineExtensionDao(DAOTestCase):
         assert_that(ule.extension_id, equal_to(expected_ule.extension_id))
         assert_that(ule.main_user, equal_to(expected_ule.main_user))
         assert_that(ule.main_line, equal_to(expected_ule.main_line))
+
+    def test_find_all_by_user_id_not_found(self):
+        expected_result = []
+        user_id = 5676
+
+        result = ule_dao.find_all_by_user_id(user_id)
+
+        assert_that(result, equal_to(expected_result))
+
+    def test_find_all_by_user_id_found(self):
+        ule_row = self.add_user_line_with_exten()
+        user_id = ule_row.user_id
+        expected_ule = UserLineExtension.from_data_source(ule_row)
+
+        result = ule_dao.find_all_by_user_id(user_id)
+
+        assert_that(result, contains(expected_ule))
+
+    def test_find_all_by_extension_id_not_found(self):
+        expected_result = []
+        extension_id = 5676
+
+        result = ule_dao.find_all_by_extension_id(extension_id)
+
+        assert_that(result, equal_to(expected_result))
+
+    def test_find_all_by_extension_id_found(self):
+        ule_row = self.add_user_line_with_exten()
+        extension_id = ule_row.extension_id
+        expected_ule = UserLineExtension.from_data_source(ule_row)
+
+        result = ule_dao.find_all_by_extension_id(extension_id)
+
+        assert_that(result, contains(expected_ule))
 
     def test_create(self):
         expected_user = self.add_user()

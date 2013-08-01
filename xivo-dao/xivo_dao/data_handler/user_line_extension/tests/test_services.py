@@ -2,6 +2,7 @@
 
 import unittest
 
+from hamcrest import assert_that, equal_to
 from mock import patch, Mock
 from xivo_dao.data_handler.user_line_extension.model import UserLineExtension
 from xivo_dao.data_handler.user_line_extension import services as user_line_extension_services
@@ -10,6 +11,44 @@ from xivo_dao.data_handler.exception import MissingParametersError, \
 
 
 class TestUserLineExtensionServices(unittest.TestCase):
+
+    @patch('xivo_dao.data_handler.user_line_extension.dao.find_all_by_user_id', Mock(return_value=[]))
+    def test_find_all_by_user_id_not_found(self):
+        expected_result = []
+        user_id = 39847
+
+        result = user_line_extension_services.find_all_by_user_id(user_id)
+
+        assert_that(expected_result, equal_to(result))
+
+    @patch('xivo_dao.data_handler.user_line_extension.dao.find_all_by_user_id')
+    def test_find_all_by_user_id_found(self, mock_dao):
+        user_id = 39847
+        user_line_extension = UserLineExtension(user_id=user_id, line_id=1234, extension_id=4343)
+        mock_dao.return_value = user_line_extension
+
+        result = user_line_extension_services.find_all_by_user_id(user_id)
+
+        assert_that(result, equal_to(user_line_extension))
+
+    @patch('xivo_dao.data_handler.user_line_extension.dao.find_all_by_extension_id', Mock(return_value=[]))
+    def test_find_all_by_extension_id_not_found(self):
+        expected_result = []
+        extension_id = 39847
+
+        result = user_line_extension_services.find_all_by_extension_id(extension_id)
+
+        assert_that(expected_result, equal_to(result))
+
+    @patch('xivo_dao.data_handler.user_line_extension.dao.find_all_by_extension_id')
+    def test_find_all_by_extension_id_found(self, mock_dao):
+        extension_id = 39847
+        user_line_extension = UserLineExtension(user_id=extension_id, line_id=1234, extension_id=4343)
+        mock_dao.return_value = user_line_extension
+
+        result = user_line_extension_services.find_all_by_extension_id(extension_id)
+
+        assert_that(result, equal_to(user_line_extension))
 
     def test_create_no_properties(self):
         user_line_extension = UserLineExtension()

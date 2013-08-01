@@ -33,6 +33,14 @@ def find_all():
     return dao.find_all()
 
 
+def find_all_by_user_id(user_id):
+    return dao.find_all_by_user_id(user_id)
+
+
+def find_all_by_extension_id(extension_id):
+    return dao.find_all_by_extension_id(extension_id)
+
+
 def create(ule):
     _validate(ule)
     extension = dao.create(ule)
