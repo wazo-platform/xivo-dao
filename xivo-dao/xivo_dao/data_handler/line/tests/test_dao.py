@@ -23,7 +23,6 @@ from xivo_dao.alchemy.ctipresences import CtiPresences
 from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
-from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
 from xivo_dao.data_handler.line import dao as line_dao
 from xivo_dao.data_handler.extension import dao as extension_dao
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -35,7 +34,7 @@ from xivo_dao.alchemy.sccpline import SCCPLine as SCCPLineSchema
 from xivo_dao.data_handler.line.model import LineSIP, LineSCCP, LineIAX, LineCUSTOM, \
     LineOrdering
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
-    ElementCreationError
+    ElementCreationError, ElementDeletionError
 from sqlalchemy.exc import SQLAlchemyError
 from mock import patch, Mock
 from hamcrest.library.collection.issequence_containinginorder import contains
@@ -253,9 +252,6 @@ class TestLineDao(DAOTestCase):
 
         result = line_dao.find_by_name(search_term)
 
-        print result[0].to_data_dict()
-        print result[1].to_data_dict()
-
         assert_that(result, has_length(2))
         assert_that(result, contains(
             has_property('id', line_first.id),
@@ -377,7 +373,7 @@ class TestLineDao(DAOTestCase):
 
         self.assertRaises(ElementCreationError, line_dao.create, line)
 
-    def test_delete_sip_line(self):
+    def test_delete_sip_line_associated(self):
         number = '1234'
         context = 'lakokj'
 
@@ -387,6 +383,18 @@ class TestLineDao(DAOTestCase):
                                                   context=context)
 
         line = line_dao.get(user_line.line.id)
+
+        self.assertRaises(ElementDeletionError, line_dao.delete, line)
+
+    def test_delete_sip_line_not_associated(self):
+        number = '1234'
+        context = 'lakokj'
+
+        line_sip = self.add_usersip()
+        line = self.add_line(number=number,
+                             context=context,
+                             protocol='sip',
+                             protocolid=line_sip.id)
 
         line_dao.delete(line)
 
@@ -398,12 +406,6 @@ class TestLineDao(DAOTestCase):
 
         row = (self.session.query(UserSIPSchema)
                .filter(UserSIPSchema.id == line.protocolid)
-               .first())
-
-        assert_that(row, equal_to(None))
-
-        row = (self.session.query(UserLineSchema)
-               .filter(UserLineSchema.id == user_line.id)
                .first())
 
         assert_that(row, equal_to(None))
