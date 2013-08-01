@@ -19,8 +19,9 @@ from . import dao
 from . import notifier
 
 from xivo_dao.data_handler.exception import MissingParametersError, \
-    InvalidParametersError, ElementNotExistsError
-from xivo_dao.data_handler.line import services as line_services
+    InvalidParametersError, ElementAlreadyExistsError
+
+from xivo_dao.data_handler.line import dao as line_dao
 
 
 def get(extension_id):
@@ -35,6 +36,18 @@ def get_by_type_typeval(type, typeval):
     return dao.get_by_type_typeval(type, typeval)
 
 
+def find_all(order=None):
+    return dao.find_all(order=order)
+
+
+def find_by_exten(exten, order=None):
+    return dao.find_by_exten(exten, order=None)
+
+
+def find_by_context(context, order=None):
+    return dao.find_by_context(context, order=None)
+
+
 def create(extension):
     _validate(extension)
     extension = dao.create(extension)
@@ -42,15 +55,22 @@ def create(extension):
     return extension
 
 
+def edit(extension):
+    _validate(extension)
+    dao.edit(extension)
+    notifier.edited(extension)
+
+
 def delete(extension):
+    line_dao.unassociate_extension(extension)
     dao.delete(extension)
-    _remove_exten_from_line_schema(extension)
     notifier.deleted(extension)
 
 
 def _validate(extension):
     _check_missing_parameters(extension)
     _check_invalid_parameters(extension)
+    _check_if_extension_already_exists(extension)
 
 
 def _check_missing_parameters(extension):
@@ -71,12 +91,8 @@ def _check_invalid_parameters(extension):
         raise InvalidParametersError(invalid_parameters)
 
 
-def _remove_exten_from_line_schema(extension):
-    try:
-        line = line_services.get_by_number_context(extension.exten, extension.context)
-        line.number = ''
-        line.context = ''
-        line.provisioningid = 0
-        line_services.edit(line)
-    except ElementNotExistsError:
-        return
+def _check_if_extension_already_exists(extension):
+    extension = dao.find_by_exten_context(extension.exten, extension.context)
+    if extension:
+        exten_context = '%s@%s' % (extension.exten, extension.context)
+        raise ElementAlreadyExistsError('Extension', exten_context)

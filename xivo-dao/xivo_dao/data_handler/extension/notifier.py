@@ -18,21 +18,32 @@
 from xivo_dao.helpers.bus_manager import send_bus_command
 from xivo_dao.data_handler.extension.command import CreateExtensionCommand, \
     EditExtensionCommand, DeleteExtensionCommand
+from xivo_dao.helpers import sysconfd_connector
+
+sysconfd_base_data = {
+    'ctibus': [],
+    'dird': [],
+    'ipbx': ['dialplan reload'],
+    'agentbus': []
+}
 
 
 def created(extension):
+    sysconfd_connector.exec_request_handlers(sysconfd_base_data)
     send_bus_command(CreateExtensionCommand(extension.id,
                                             extension.exten,
                                             extension.context))
 
 
 def edited(extension):
+    sysconfd_connector.exec_request_handlers(sysconfd_base_data)
     send_bus_command(EditExtensionCommand(extension.id,
                                           extension.exten,
                                           extension.context))
 
 
 def deleted(extension):
+    sysconfd_connector.exec_request_handlers(sysconfd_base_data)
     send_bus_command(DeleteExtensionCommand(extension.id,
                                             extension.exten,
                                             extension.context))

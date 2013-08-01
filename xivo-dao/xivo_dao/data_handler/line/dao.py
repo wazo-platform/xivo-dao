@@ -20,29 +20,69 @@ import random
 
 from sqlalchemy import Integer
 from sqlalchemy.sql import and_, cast
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
-from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema
-from xivo_dao.alchemy.useriax import UserIAX as UserIAXSchema
-from xivo_dao.alchemy.usercustom import UserCustom as UserCustomSchema
-from xivo_dao.alchemy.sccpline import SCCPLine as SCCPLineSchema
+from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema, UserSIP
+from xivo_dao.alchemy.useriax import UserIAX as UserIAXSchema, UserIAX
+from xivo_dao.alchemy.usercustom import UserCustom as UserCustomSchema, \
+    UserCustom
+from xivo_dao.alchemy.sccpline import SCCPLine as SCCPLineSchema, SCCPLine
 from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementDeletionError, ElementCreationError
-
 from model import LineSIP, LineIAX, LineSCCP, LineCUSTOM
+from xivo_dao.data_handler.line.model import LineOrdering
+from xivo_dao.line_dao import get_protocol
+
+
+DEFAULT_ORDER = [LineOrdering.name, LineOrdering.context]
 
 
 @daosession
 def get(session, line_id):
-    line = session.query(LineSchema).filter(LineSchema.id == line_id).first()
-
-    if not line:
+    try:
+        protocol = get_protocol(line_id)
+    except LookupError:
         raise ElementNotExistsError('Line', line_id=line_id)
 
-    return _get_protocol_line(line)
+    protocol = protocol.lower()
+    if protocol == 'sip':
+        row = (
+            session.query(LineSchema, UserSIP)
+            .filter(LineSchema.id == int(line_id))
+            .filter(LineSchema.protocolid == UserSIP.id)
+            .first()
+        )
+    elif protocol == 'iax':
+        row = (
+            session.query(LineSchema, UserIAX)
+            .filter(LineSchema.id == int(line_id))
+            .filter(LineSchema.protocolid == UserIAX.id)
+            .first()
+        )
+    elif protocol == 'sccp':
+        row = (
+            session.query(LineSchema, SCCPLine)
+            .filter(LineSchema.id == int(line_id))
+            .filter(LineSchema.protocolid == SCCPLine.id)
+            .first()
+        )
+    elif protocol == 'custom':
+        row = (
+            session.query(LineSchema, UserCustom)
+            .filter(LineSchema.id == int(line_id))
+            .filter(LineSchema.protocolid == UserCustom.id)
+            .first()
+        )
+
+    if not row:
+        raise ElementNotExistsError('Line', line_id=line_id)
+
+    line, protocol_line = row
+
+    return _get_protocol_line(line, protocol_line)
 
 
 @daosession
@@ -53,7 +93,7 @@ def get_by_user_id(session, user_id):
                                    UserLineSchema.line_id == LineSchema.id,
                                    UserLineSchema.main_line == True,
                                    UserLineSchema.main_user == True))
-    .first())
+        .first())
 
     if not line:
         raise ElementNotExistsError('Line', user_id=user_id)
@@ -78,16 +118,66 @@ def get_by_number_context(session, number, context):
     return _get_protocol_line(line)
 
 
-def _get_protocol_line(line):
+def _get_protocol_line(line, protocol_line=None):
     protocol = line.protocol.lower()
     if protocol == 'sip':
-        return LineSIP.from_data_source(line)
+        line_sip = LineSIP.from_data_source(line)
+        if protocol_line is not None:
+            line_sip.update_from_data_source(protocol_line)
+        return line_sip
     elif protocol == 'iax':
-        return LineIAX.from_data_source(line)
+        line_iax = LineIAX.from_data_source(line)
+        if protocol_line is not None:
+            line_iax.update_from_data_source(protocol_line)
+        return line_iax
     elif protocol == 'sccp':
-        return LineSCCP.from_data_source(line)
+        line_sccp = LineSCCP.from_data_source(line)
+        if protocol_line is not None:
+            line_sccp.update_from_data_source(protocol_line)
+        return line_sccp
     elif protocol == 'custom':
-        return LineCUSTOM.from_data_source(line)
+        line_custom = LineCUSTOM.from_data_source(line)
+        if protocol_line is not None:
+            line_custom.update_from_data_source(protocol_line)
+        return line_custom
+
+
+@daosession
+def find_all(session, order=None):
+    line_rows = _new_query(session, order).all()
+
+    return _rows_to_line_model(line_rows)
+
+
+@daosession
+def find_by_protocol(session, protocol, order=None):
+    line_rows = (_new_query(session, order)
+                 .filter(LineSchema.protocol == protocol.lower())
+                 .all())
+
+    return _rows_to_line_model(line_rows)
+
+
+@daosession
+def find_by_name(session, name, order=None):
+    search = '%%%s%%' % name.lower()
+
+    line_rows = (_new_query(session, order)
+                 .filter(LineSchema.name.ilike(search))
+                 .all())
+
+    return _rows_to_line_model(line_rows)
+
+
+def _rows_to_line_model(line_rows):
+    if not line_rows:
+        return []
+
+    lines = []
+    for line_row in line_rows:
+        lines.append(_get_protocol_line(line_row))
+
+    return lines
 
 
 @daosession
@@ -110,13 +200,13 @@ def create(session, line):
     except SQLAlchemyError as e:
         session.rollback()
         raise ElementCreationError('Line', e)
-
-    line_row = _build_line_row(line, derived_line)
-    extension = _create_extension(line)
+    except IntegrityError as e:
+        session.rollback()
+        raise ElementCreationError('Line', e)
 
     session.begin()
+    line_row = _build_line_row(line, derived_line)
     session.add(line_row)
-    session.add(extension)
 
     try:
         session.commit()
@@ -147,16 +237,9 @@ def _build_derived_line(session, line):
 def _build_line_row(line, derived_line):
     line.protocolid = derived_line.id
     line_row = line.to_data_source(LineSchema)
+    if line_row.configregistrar is None:
+        line_row.configregistrar = 'default'
     return line_row
-
-
-def _create_extension(line):
-    exten = Extension(context=line.context, type='user')
-
-    if hasattr(line, 'number'):
-        exten.exten = line.number
-
-    return exten
 
 
 def _create_sip_line(session, line):
@@ -171,6 +254,8 @@ def _create_sip_line(session, line):
 
     line_row.name = line.username
     line_row.type = 'friend'
+    if line_row.category is None:
+        line_row.category = 'user'  # enum: (user,trunk)
 
     return line_row
 
@@ -211,7 +296,6 @@ def delete(session, line):
         nb_row_affected = session.query(UserLineSchema).filter(UserLineSchema.line_id == line.id).delete()
         session.query(LineSchema).filter(LineSchema.id == line.id).delete()
         _delete_line(session, line)
-        _delete_extension(session, line.number, line.context)
         session.commit()
     except SQLAlchemyError, e:
         session.rollback()
@@ -236,12 +320,6 @@ def _delete_line(session, line):
         _delete_custom_line(session, protocolid)
 
 
-def _delete_extension(session, exten, context):
-    (session.query(Extension).filter(and_(Extension.exten == exten,
-                                          Extension.context == context))
-                             .delete())
-
-
 def _delete_sip_line(session, protocolid):
     session.query(UserSIPSchema).filter(UserSIPSchema.id == protocolid).delete()
 
@@ -258,5 +336,38 @@ def _delete_custom_line(session, protocolid):
     session.query(UserCustomSchema).filter(UserCustomSchema.id == protocolid).delete()
 
 
-def _new_query(session):
-    return session.query(LineSchema).filter(LineSchema.commented == 0)
+def _new_query(session, order=None):
+    order = order or DEFAULT_ORDER
+    return session.query(LineSchema).filter(LineSchema.commented == 0).order_by(*order)
+
+
+@daosession
+def associate_extension(session, extension, line_id):
+    line_row = (session.query(LineSchema)
+                .filter(LineSchema.id == line_id)
+                .first())
+
+    if line_row:
+        line_row.number = extension.exten
+        line_row.context = extension.context
+
+        session.begin()
+        session.add(line_row)
+        session.commit()
+
+
+@daosession
+def unassociate_extension(session, extension):
+    line_row = (session.query(LineSchema)
+                .filter(LineSchema.number == extension.exten)
+                .filter(LineSchema.context == extension.context)
+                .first())
+
+    if line_row:
+        line_row.number = ''
+        line_row.context = ''
+        line_row.provisioningid = 0
+
+        session.begin()
+        session.add(line_row)
+        session.commit()

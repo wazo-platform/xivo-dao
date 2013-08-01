@@ -16,12 +16,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.helpers.abstract_model import AbstractModels
+from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
 
 
 class Line(AbstractModels):
 
     MANDATORY = [
-        'name',
         'context',
         'protocol'
     ]
@@ -50,12 +50,12 @@ class Line(AbstractModels):
         return '%s/%s' % (self.protocol.upper(), self.name)
 
 
-class LineSIP(Line):
+class LineOrdering(object):
+        name = LineSchema.name
+        context = LineSchema.context
 
-    MANDATORY = Line.MANDATORY + [
-        'username',
-        'secret'
-    ]
+
+class LineSIP(Line):
 
     # mapping = {db_field: model_field}
     _MAPPING = dict(Line._MAPPING.items() + {
@@ -69,11 +69,6 @@ class LineSIP(Line):
 
 
 class LineIAX(Line):
-
-    MANDATORY = Line.MANDATORY + [
-        'username',
-        'secret'
-    ]
 
     # mapping = {db_field: model_field}
     _MAPPING = dict(Line._MAPPING.items() + {

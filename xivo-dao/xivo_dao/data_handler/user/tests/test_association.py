@@ -25,6 +25,8 @@ from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementCreationError
 from xivo_dao.data_handler.line.model import LineSIP
 from xivo_dao.data_handler.extension.model import Extension
+from xivo_dao.data_handler.user_line_extension.model import UserLineExtension
+from hamcrest.core import assert_that
 
 
 class TestUserAssociation(unittest.TestCase):
@@ -79,72 +81,60 @@ class TestUserAssociation(unittest.TestCase):
         edit_user.assert_called_once_with(ANY)
         self.assertEquals(user.voicemail_id, voicemail_id)
 
+    @patch('xivo_dao.data_handler.extension.services.get')
     @patch('xivo_dao.data_handler.line.services.get')
     @patch('xivo_dao.data_handler.user.services.get')
-    def test_associate_line_when_user_inexistant(self, get_user, get_line):
+    def test_associate_user_line_extension_when_user_inexistant(self, get_user, get_line, get_extension):
         user_id = 21
         line_id = 32
-        number = 1220
+        extension_id = 1220
 
         get_user.side_effect = ElementNotExistsError('Line')
         get_line.return_value = Mock()
 
-        self.assertRaises(ElementNotExistsError, user_association.associate_line, user_id, line_id, number)
+        self.assertRaises(ElementNotExistsError, user_association.associate_user_line_extension, user_id, line_id, extension_id)
 
+    @patch('xivo_dao.data_handler.extension.services.get')
     @patch('xivo_dao.data_handler.line.services.get')
     @patch('xivo_dao.data_handler.user.services.get')
-    def test_associate_line_when_line_inexistant(self, get_user, get_line):
+    def test_associate_user_line_extension_when_line_inexistant(self, get_user, get_line, get_extension):
         user_id = 21
         line_id = 32
-        number = 1220
+        extension_id = 1220
 
         get_user.return_value = Mock()
         get_line.side_effect = ElementNotExistsError('Line')
 
-        self.assertRaises(ElementNotExistsError, user_association.associate_line, user_id, line_id, number)
+        self.assertRaises(ElementNotExistsError, user_association.associate_user_line_extension, user_id, line_id, extension_id)
 
-    @patch('xivo_dao.data_handler.line.services.edit')
-    @patch('xivo_dao.data_handler.extension.services.create')
+    @patch('xivo_dao.data_handler.extension.services.get')
     @patch('xivo_dao.data_handler.line.services.get')
     @patch('xivo_dao.data_handler.user.services.get')
-    def test_associate_line_with_number_already_exist(self, get_user, get_line, create_extension, edit_line):
+    def test_associate_user_line_extension_when_extension_inexistant(self, get_user, get_line, get_extension):
         user_id = 21
         line_id = 32
-        number = 1220
+        extension_id = 1220
+
+        get_user.return_value = Mock()
+        get_line.side_effect = ElementNotExistsError('Line')
+
+        self.assertRaises(ElementNotExistsError, user_association.associate_user_line_extension, user_id, line_id, extension_id)
+
+    @patch('xivo_dao.data_handler.user_line_extension.services.create')
+    @patch('xivo_dao.data_handler.extension.services.get')
+    @patch('xivo_dao.data_handler.line.services.get')
+    @patch('xivo_dao.data_handler.user.services.get')
+    def test_associate_user_line_extension_with_user_line_already_associated(self, get_user, get_line, get_extension, create_extension):
+        user_id = 21
+        line_id = 32
+        extension_id = 1220
+        exten = '42'
 
         create_extension.side_effect = ElementCreationError('Extension', 'error')
 
         line = LineSIP(
             id=line_id,
-            number='42',
-            context='super_context',
-            name='Johnny Wilkins',
-        )
-
-        user = User(
-            id=user_id,
-            firstname='Johnny',
-            lastname='Wilkins',
-        )
-
-        get_user.return_value = user
-        get_line.return_value = line
-
-        self.assertRaises(ElementCreationError, user_association.associate_line, user_id, line_id, number)
-        self.assertEquals(edit_line.call_count, 0)
-
-    @patch('xivo_dao.data_handler.line.services.edit')
-    @patch('xivo_dao.data_handler.extension.services.create')
-    @patch('xivo_dao.data_handler.line.services.get')
-    @patch('xivo_dao.data_handler.user.services.get')
-    def test_associate_line(self, get_user, get_line, create_extension, edit_line):
-        user_id = 21
-        line_id = 32
-        number = 1220
-
-        line = LineSIP(
-            id=line_id,
-            number='42',
+            number=exten,
             context='super_context',
             name='Johnny Wilkins',
         )
@@ -156,7 +146,8 @@ class TestUserAssociation(unittest.TestCase):
         )
 
         extension = Extension(
-            exten=number,
+            id=extension_id,
+            exten=exten,
             context=line.context,
             type='user',
             typeval=user.id
@@ -164,9 +155,55 @@ class TestUserAssociation(unittest.TestCase):
 
         get_user.return_value = user
         get_line.return_value = line
+        get_extension.return_value = extension
 
-        user_association.associate_line(user_id, line_id, number)
+        self.assertRaises(ElementCreationError, user_association.associate_user_line_extension, user_id, line_id, extension_id)
 
-        create_extension.assert_called_once_with(extension)
-        self.assertEquals(line.iduserfeatures, user_id)
-        edit_line.assert_called_once_with(line)
+    @patch('xivo_dao.data_handler.line.dao.associate_extension')
+    @patch('xivo_dao.data_handler.user_line_extension.services.create')
+    @patch('xivo_dao.data_handler.extension.services.get')
+    @patch('xivo_dao.data_handler.line.services.get')
+    @patch('xivo_dao.data_handler.user.services.get')
+    def test_associate_user_line_extension(self, get_user, get_line, get_extension, create_ule, line_associate_extension):
+        user_id = 21
+        line_id = 32
+        extension_id = 1220
+        exten = '42'
+
+        line = LineSIP(
+            id=line_id,
+            number=exten,
+            context='super_context',
+            name='Johnny Wilkins',
+        )
+
+        user = User(
+            id=user_id,
+            firstname='Johnny',
+            lastname='Wilkins',
+        )
+
+        extension = Extension(
+            id=extension_id,
+            exten=exten,
+            context=line.context,
+            type='user',
+            typeval=user.id
+        )
+
+        ule = UserLineExtension(
+            user_id=user_id,
+            line_id=line_id,
+            extension_id=extension_id,
+            main_line=True,
+            main_user=True
+        )
+
+        get_user.return_value = user
+        get_line.return_value = line
+        get_extension.return_value = extension
+
+        user_association.associate_user_line_extension(user_id, line_id, extension_id)
+
+        create_ule.assert_called_once_with(ule)
+        line_associate_extension.assert_called_once_with(extension, line.id)

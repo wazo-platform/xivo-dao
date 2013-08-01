@@ -16,34 +16,29 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.helpers.abstract_model import AbstractModels
-from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 
 
-class Extension(AbstractModels):
+class UserLineExtension(AbstractModels):
 
     MANDATORY = [
-        'exten',
-        'context',
-        'type',
-        'typeval'
+        'user_id',
+        'line_id',
+        'extension_id',
+        'main_user',
+        'main_line'
     ]
 
     # mapping = {db_field: model_field}
     _MAPPING = {
         'id': 'id',
-        'exten': 'exten',
-        'context': 'context',
-        'type': 'type',
-        'typeval': 'typeval',
-        'commented': 'commented'
+        'user_id': 'user_id',
+        'line_id': 'line_id',
+        'extension_id': 'extension_id',
+        'main_user': 'main_user',
+        'main_line': 'main_line'
     }
 
     _RELATION = {}
 
     def __init__(self, *args, **kwargs):
         AbstractModels.__init__(self, *args, **kwargs)
-
-
-class ExtensionOrdering(object):
-    exten = ExtensionSchema.exten
-    context = ExtensionSchema.context

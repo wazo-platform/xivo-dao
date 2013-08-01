@@ -38,6 +38,18 @@ def get_by_number_context(number, context):
     return dao.get_by_number_context(number, context)
 
 
+def find_all(order=None):
+    return dao.find_all(order=order)
+
+
+def find_by_name(name):
+    return dao.find_by_name(name)
+
+
+def find_by_protocol(protocol):
+    return dao.find_by_protocol(protocol)
+
+
 def create(line):
     _validate(line)
     line.provisioningid = make_provisioning_id()

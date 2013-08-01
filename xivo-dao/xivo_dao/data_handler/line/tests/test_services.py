@@ -6,7 +6,7 @@ from mock import patch, Mock
 from urllib2 import URLError
 from xivo_dao.helpers.provd_connector import ProvdError
 
-from xivo_dao.data_handler.line.model import LineSIP
+from xivo_dao.data_handler.line.model import LineSIP, LineOrdering, Line
 from xivo_dao.data_handler.line import services as line_services
 from xivo_dao.data_handler.exception import MissingParametersError, \
     ElementCreationError
@@ -50,6 +50,50 @@ class TestLineServices(unittest.TestCase):
 
         mock_get_by_number_context.assert_called_once_with(number, context)
         self.assertEquals(result, line)
+
+    @patch('xivo_dao.data_handler.line.dao.find_all')
+    def test_find_all(self, line_dao_find_all):
+        first_user = Mock(Line)
+        second_user = Mock(Line)
+        expected_order = None
+
+        expected = [first_user, second_user]
+
+        line_dao_find_all.return_value = expected
+
+        result = line_services.find_all()
+
+        self.assertEquals(result, expected)
+
+        line_dao_find_all.assert_called_once_with(order=expected_order)
+
+    @patch('xivo_dao.data_handler.line.dao.find_all')
+    def test_find_all_order_by_name(self, line_dao_find_all):
+        first_user = Mock(Line)
+        second_user = Mock(Line)
+        expected_order = [LineOrdering.name]
+
+        expected = [first_user, second_user]
+
+        line_dao_find_all.return_value = expected
+
+        result = line_services.find_all(order=[LineOrdering.name])
+
+        self.assertEquals(result, expected)
+
+        line_dao_find_all.assert_called_once_with(order=expected_order)
+
+    @patch('xivo_dao.data_handler.line.dao.find_by_name')
+    def test_find_user(self, line_dao_find_by_name):
+        user = Mock(Line)
+        name = 'Lord'
+
+        line_dao_find_by_name.return_value = user
+
+        result = line_services.find_by_name(name)
+
+        self.assertEquals(result, user)
+        line_dao_find_by_name.assert_called_once_with(name)
 
     @patch('xivo_dao.data_handler.line.dao.provisioning_id_exists')
     def test_make_provisioning_id(self, provd_id_exists):

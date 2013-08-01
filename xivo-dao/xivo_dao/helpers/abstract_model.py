@@ -30,6 +30,9 @@ class AbstractModels(object):
 
         return self.__dict__ == other.__dict__
 
+    def __ne__(self, other):
+        return not self == other
+
     @classmethod
     def from_data_source(cls, db_object):
         obj = cls()
@@ -42,6 +45,14 @@ class AbstractModels(object):
                 model_field_value = getattr(db_object, db_field)
                 setattr(obj, model_field, model_field_value)
         return obj
+
+    def update_from_data_source(self, db_object):
+        for db_field, model_field in self._MAPPING.iteritems():
+            if hasattr(db_object, db_field):
+                if db_field == 'id':
+                    continue
+                model_field_value = getattr(db_object, db_field)
+                setattr(self, model_field, model_field_value)
 
     def to_data_source(self, class_schema):
         db_object = class_schema()
