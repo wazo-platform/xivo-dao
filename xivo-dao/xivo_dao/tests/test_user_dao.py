@@ -840,7 +840,7 @@ class TestUserFeaturesDAO(DAOTestCase):
                 'destunc': u'',
                 'enableautomon': 0,
                 'enablebusy': 0,
-                'enableclient': 1,
+                'enableclient': 0,
                 'enablednd': 0,
                 'enablehint': 1,
                 'enablerna': 0,
