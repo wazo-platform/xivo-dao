@@ -253,6 +253,7 @@ def _create_sip_line(session, line):
     line_row = line.to_data_source(UserSIPSchema)
 
     line_row.name = line.username
+    line_row.username = ''
     line_row.type = 'friend'
     if line_row.category is None:
         line_row.category = 'user'  # enum: (user,trunk)
