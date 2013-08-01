@@ -30,7 +30,7 @@ sysconfd_base_data = {
 
 
 def created(line):
-    sysconfd_base_data['ctibus'].extend(['xivo[phone,create,%s]' % line.id])
+    sysconfd_base_data['ctibus'].extend(['xivo[phone,add,%s]' % line.id])
     sysconfd_connector.exec_request_handlers(sysconfd_base_data)
     send_bus_command(CreateLineCommand(line.id))
 
