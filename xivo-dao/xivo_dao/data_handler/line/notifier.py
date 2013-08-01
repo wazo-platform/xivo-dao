@@ -20,28 +20,30 @@ from xivo_dao.data_handler.line.command import CreateLineCommand, \
     EditLineCommand, DeleteLineCommand
 from xivo_dao.helpers import sysconfd_connector
 
-sysconfd_base_data = {
-    'ctibus': [],
-    'dird': [],
-    'ipbx': ['dialplan reload',
-             'sip reload'],
-    'agentbus': []
-}
+
+def _new_data(ctibus_command):
+    return {
+        'ctibus': [ctibus_command],
+        'dird': [],
+        'ipbx': ['dialplan reload',
+                 'sip reload'],
+        'agentbus': []
+    }
 
 
 def created(line):
-    sysconfd_base_data['ctibus'].extend(['xivo[phone,add,%s]' % line.id])
-    sysconfd_connector.exec_request_handlers(sysconfd_base_data)
+    data = _new_data('xivo[phone,add,%s]' % line.id)
+    sysconfd_connector.exec_request_handlers(data)
     send_bus_command(CreateLineCommand(line.id))
 
 
 def edited(line):
-    sysconfd_base_data['ctibus'].extend(['xivo[phone,edit,%s]' % line.id])
-    sysconfd_connector.exec_request_handlers(sysconfd_base_data)
+    data = _new_data('xivo[phone,edit,%s]' % line.id)
+    sysconfd_connector.exec_request_handlers(data)
     send_bus_command(EditLineCommand(line.id))
 
 
 def deleted(line):
-    sysconfd_base_data['ctibus'].extend(['xivo[phone,delete,%s]' % line.id])
-    sysconfd_connector.exec_request_handlers(sysconfd_base_data)
+    data = _new_data('xivo[phone,delete,%s]' % line.id)
+    sysconfd_connector.exec_request_handlers(data)
     send_bus_command(DeleteLineCommand(line.id))
