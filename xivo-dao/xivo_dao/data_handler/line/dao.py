@@ -18,8 +18,7 @@
 import string
 import random
 
-from sqlalchemy import Integer
-from sqlalchemy.sql import and_, cast
+from sqlalchemy.sql import and_
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
 from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema, UserSIP
@@ -93,7 +92,6 @@ def get_by_user_id(session, user_id):
                                    UserLineSchema.line_id == LineSchema.id,
                                    UserLineSchema.main_line == True,
                                    UserLineSchema.main_user == True))
-        .filter(LineSchema.id == UserLineSchema.line_id)
         .first())
 
     if not line:
@@ -109,9 +107,9 @@ def get_by_number_context(session, number, context):
         .join(Extension, and_(Extension.exten == number,
                               Extension.context == context))
         .join(UserLineSchema, and_(UserLineSchema.extension_id == Extension.id,
+                                   LineSchema.id == UserLineSchema.line_id,
                                    UserLineSchema.main_line == True,
                                    UserLineSchema.main_user == True))
-        .filter(LineSchema.id == UserLineSchema.line_id)
     ).first()
 
     if not line:
