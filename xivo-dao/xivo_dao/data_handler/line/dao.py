@@ -105,11 +105,11 @@ def get_by_user_id(session, user_id):
 def get_by_number_context(session, number, context):
     line = (
         _new_query(session)
-        .join((Extension,
-               and_(Extension.type == 'user',
-                    LineSchema.id == cast(Extension.typeval, Integer))))
-        .filter(Extension.exten == number)
-        .filter(Extension.context == context)
+        .join(Extension, and_(Extension.exten == number,
+                              Extension.context == context))
+        .join(UserLineSchema, and_(UserLineSchema.extension_id == Extension.id,
+                                   UserLineSchema.main_line == True,
+                                   UserLineSchema.main_user == True))
     ).first()
 
     if not line:

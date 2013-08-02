@@ -99,13 +99,9 @@ class TestLineDao(DAOTestCase):
         number = '1235'
         context = 'notdefault'
 
-        line = self.add_line(name=line_name,
-                             number=number,
-                             context=context)
-        self.add_extension(exten=number,
-                           context=context,
-                           type='user',
-                           typeval=str(line.id))
+        self.add_user_line_with_exten(name_line=line_name,
+                                      exten=number,
+                                      context=context)
 
         line = line_dao.get_by_number_context(number, context)
 
