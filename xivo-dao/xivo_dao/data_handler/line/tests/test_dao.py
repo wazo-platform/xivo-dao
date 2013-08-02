@@ -77,7 +77,9 @@ class TestLineDao(DAOTestCase):
     def test_get_by_user_id(self):
         line_name = 'sdklfj'
 
+        self.add_user_line_with_exten(exten='7777')
         user_line = self.add_user_line_with_exten(name_line=line_name)
+        self.add_user_line_with_exten(exten='6666')
 
         line = line_dao.get_by_user_id(user_line.user.id)
 
@@ -96,17 +98,19 @@ class TestLineDao(DAOTestCase):
 
     def test_get_by_number_context(self):
         line_name = 'sdklfj'
-        number = '1235'
+        exten = '1235'
         context = 'notdefault'
 
+        self.add_user_line_with_exten(exten='7777')
         self.add_user_line_with_exten(name_line=line_name,
-                                      exten=number,
+                                      exten=exten,
                                       context=context)
+        self.add_user_line_with_exten(exten='6666')
 
-        line = line_dao.get_by_number_context(number, context)
+        line = line_dao.get_by_number_context(exten, context)
 
         assert_that(line.name, equal_to(line_name))
-        assert_that(line.number, equal_to(number))
+        assert_that(line.number, equal_to(exten))
         assert_that(line.context, equal_to(context))
 
     def test_get_by_number_context_no_line(self):

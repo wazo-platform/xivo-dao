@@ -93,6 +93,7 @@ def get_by_user_id(session, user_id):
                                    UserLineSchema.line_id == LineSchema.id,
                                    UserLineSchema.main_line == True,
                                    UserLineSchema.main_user == True))
+        .filter(LineSchema.id == UserLineSchema.line_id)
         .first())
 
     if not line:
@@ -110,6 +111,7 @@ def get_by_number_context(session, number, context):
         .join(UserLineSchema, and_(UserLineSchema.extension_id == Extension.id,
                                    UserLineSchema.main_line == True,
                                    UserLineSchema.main_user == True))
+        .filter(LineSchema.id == UserLineSchema.line_id)
     ).first()
 
     if not line:
