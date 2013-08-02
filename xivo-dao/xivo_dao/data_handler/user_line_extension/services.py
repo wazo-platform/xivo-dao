@@ -56,6 +56,11 @@ def edit(ule):
 
 def delete(ule):
     dao.delete(ule)
+    notifier.deleted(ule)
+
+
+def delete_everything(ule):
+    dao.delete(ule)
     _remove_user(ule)
     _remove_line(ule)
     _remove_exten(ule)

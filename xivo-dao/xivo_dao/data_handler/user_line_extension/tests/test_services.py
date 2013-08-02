@@ -7,7 +7,7 @@ from mock import patch, Mock
 from xivo_dao.data_handler.user_line_extension.model import UserLineExtension
 from xivo_dao.data_handler.user_line_extension import services as user_line_extension_services
 from xivo_dao.data_handler.exception import MissingParametersError, \
-    InvalidParametersError, ElementCreationError
+    InvalidParametersError, ElementCreationError, ElementDeletionError
 
 
 class TestUserLineExtensionServices(unittest.TestCase):
@@ -142,9 +142,6 @@ class TestUserLineExtensionServices(unittest.TestCase):
         user_dao_edit.assert_called_once_with(ule)
         user_notifier_edited.assert_called_once_with(ule)
 
-    @patch('xivo_dao.data_handler.user.services.delete', Mock(return_value=None))
-    @patch('xivo_dao.data_handler.line.services.delete', Mock(return_value=None))
-    @patch('xivo_dao.data_handler.extension.services.delete', Mock(return_value=None))
     @patch('xivo_dao.data_handler.extension.services.get')
     @patch('xivo_dao.data_handler.user.services.get')
     @patch('xivo_dao.data_handler.line.services.get')
@@ -161,6 +158,64 @@ class TestUserLineExtensionServices(unittest.TestCase):
 
         user_line_extension_dao_delete.assert_called_once_with(ule)
         user_line_extension_notifier_deleted.assert_called_once_with(ule)
+
+    @patch('xivo_dao.data_handler.extension.services.get')
+    @patch('xivo_dao.data_handler.user.services.get')
+    @patch('xivo_dao.data_handler.line.services.get')
+    @patch('xivo_dao.data_handler.user_line_extension.notifier.deleted')
+    @patch('xivo_dao.data_handler.user_line_extension.dao.delete')
+    def test_delete_with_error_from_dao(self, user_line_extension_dao_delete, user_line_extension_notifier_deleted, line_get, user_get, extension_get):
+        ule = UserLineExtension(user_id=5898,
+                                line_id=52,
+                                extension_id=52,
+                                main_user=True,
+                                main_line=False)
+
+        error = Exception("message")
+        user_line_extension_dao_delete.side_effect = ElementDeletionError(error, '')
+
+        self.assertRaises(ElementDeletionError, user_line_extension_services.delete, ule)
+        self.assertEquals(user_line_extension_notifier_deleted.call_count, 0)
+
+    @patch('xivo_dao.data_handler.user.services.delete', Mock(return_value=None))
+    @patch('xivo_dao.data_handler.line.services.delete', Mock(return_value=None))
+    @patch('xivo_dao.data_handler.extension.services.delete', Mock(return_value=None))
+    @patch('xivo_dao.data_handler.extension.services.get')
+    @patch('xivo_dao.data_handler.user.services.get')
+    @patch('xivo_dao.data_handler.line.services.get')
+    @patch('xivo_dao.data_handler.user_line_extension.notifier.deleted')
+    @patch('xivo_dao.data_handler.user_line_extension.dao.delete')
+    def test_delete_everything(self, user_line_extension_dao_delete, user_line_extension_notifier_deleted, line_get, user_get, extension_get):
+        ule = UserLineExtension(user_id=5898,
+                                line_id=52,
+                                extension_id=52,
+                                main_user=True,
+                                main_line=False)
+
+        user_line_extension_services.delete_everything(ule)
+
+        user_line_extension_dao_delete.assert_called_once_with(ule)
+        user_line_extension_notifier_deleted.assert_called_once_with(ule)
         line_get.assert_called_once_with(ule.line_id)
         user_get.assert_called_once_with(ule.user_id)
         extension_get.assert_called_once_with(ule.extension_id)
+
+    @patch('xivo_dao.data_handler.extension.services.get')
+    @patch('xivo_dao.data_handler.user.services.get')
+    @patch('xivo_dao.data_handler.line.services.get')
+    @patch('xivo_dao.data_handler.user_line_extension.notifier.deleted')
+    @patch('xivo_dao.data_handler.user_line_extension.dao.delete')
+    def test_delete_everything_with_error_from_dao(self, user_line_extension_dao_delete, user_line_extension_notifier_deleted, line_get, user_get, extension_get):
+        ule = UserLineExtension(user_id=5898,
+                                line_id=52,
+                                extension_id=52,
+                                main_user=True,
+                                main_line=False)
+
+        error = Exception("message")
+        user_line_extension_dao_delete.side_effect = ElementDeletionError(error, '')
+
+        self.assertRaises(ElementDeletionError, user_line_extension_services.delete_everything, ule)
+        self.assertEquals(line_get.call_count, 0)
+        self.assertEquals(user_get.call_count, 0)
+        self.assertEquals(extension_get.call_count, 0)
