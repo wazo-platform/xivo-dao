@@ -109,6 +109,7 @@ def delete(session, voicemail):
         try:
             sysconfd_connector.delete_voicemail_storage(voicemail.context, voicemail.number)
         except Exception as e:
+            session.rollback()
             raise SysconfdError(str(e))
         else:
             session.commit()
