@@ -33,7 +33,6 @@ from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementDeletionError, ElementCreationError
 from model import LineSIP, LineIAX, LineSCCP, LineCUSTOM
 from xivo_dao.data_handler.line.model import LineOrdering
-from xivo_dao.line_dao import get_protocol
 
 
 DEFAULT_ORDER = [LineOrdering.name, LineOrdering.context]
@@ -41,47 +40,12 @@ DEFAULT_ORDER = [LineOrdering.name, LineOrdering.context]
 
 @daosession
 def get(session, line_id):
-    try:
-        protocol = get_protocol(line_id)
-    except LookupError:
+    line = _new_query(session).filter(LineSchema.id == line_id).first()
+
+    if not line:
         raise ElementNotExistsError('Line', line_id=line_id)
 
-    protocol = protocol.lower()
-    if protocol == 'sip':
-        row = (
-            session.query(LineSchema, UserSIP)
-            .filter(LineSchema.id == int(line_id))
-            .filter(LineSchema.protocolid == UserSIP.id)
-            .first()
-        )
-    elif protocol == 'iax':
-        row = (
-            session.query(LineSchema, UserIAX)
-            .filter(LineSchema.id == int(line_id))
-            .filter(LineSchema.protocolid == UserIAX.id)
-            .first()
-        )
-    elif protocol == 'sccp':
-        row = (
-            session.query(LineSchema, SCCPLine)
-            .filter(LineSchema.id == int(line_id))
-            .filter(LineSchema.protocolid == SCCPLine.id)
-            .first()
-        )
-    elif protocol == 'custom':
-        row = (
-            session.query(LineSchema, UserCustom)
-            .filter(LineSchema.id == int(line_id))
-            .filter(LineSchema.protocolid == UserCustom.id)
-            .first()
-        )
-
-    if not row:
-        raise ElementNotExistsError('Line', line_id=line_id)
-
-    line, protocol_line = row
-
-    return _get_protocol_line(line, protocol_line)
+    return _join_line_protocol(line)
 
 
 @daosession
@@ -97,7 +61,7 @@ def get_by_user_id(session, user_id):
     if not line:
         raise ElementNotExistsError('Line', user_id=user_id)
 
-    return _get_protocol_line(line)
+    return _join_line_protocol(line)
 
 
 @daosession
@@ -115,31 +79,7 @@ def get_by_number_context(session, number, context):
     if not line:
         raise ElementNotExistsError('Line', number=number, context=context)
 
-    return _get_protocol_line(line)
-
-
-def _get_protocol_line(line, protocol_line=None):
-    protocol = line.protocol.lower()
-    if protocol == 'sip':
-        line_sip = LineSIP.from_data_source(line)
-        if protocol_line is not None:
-            line_sip.update_from_data_source(protocol_line)
-        return line_sip
-    elif protocol == 'iax':
-        line_iax = LineIAX.from_data_source(line)
-        if protocol_line is not None:
-            line_iax.update_from_data_source(protocol_line)
-        return line_iax
-    elif protocol == 'sccp':
-        line_sccp = LineSCCP.from_data_source(line)
-        if protocol_line is not None:
-            line_sccp.update_from_data_source(protocol_line)
-        return line_sccp
-    elif protocol == 'custom':
-        line_custom = LineCUSTOM.from_data_source(line)
-        if protocol_line is not None:
-            line_custom.update_from_data_source(protocol_line)
-        return line_custom
+    return _join_line_protocol(line)
 
 
 @daosession
@@ -175,9 +115,46 @@ def _rows_to_line_model(line_rows):
 
     lines = []
     for line_row in line_rows:
-        lines.append(_get_protocol_line(line_row))
+        lines.append(_join_line_protocol(line_row))
 
     return lines
+
+
+def _join_line_protocol(line):
+    protocol = line.protocol.lower()
+    protocol_line = _get_protocol_line(line)
+    if protocol == 'sip':
+        line_protocol = LineSIP.from_data_source(line)
+        line_protocol.update_from_data_source(protocol_line)
+    elif protocol == 'iax':
+        line_protocol = LineIAX.from_data_source(line)
+        line_protocol.update_from_data_source(protocol_line)
+    elif protocol == 'sccp':
+        line_protocol = LineSCCP.from_data_source(line)
+        line_protocol.update_from_data_source(protocol_line)
+    elif protocol == 'custom':
+        line_protocol = LineCUSTOM.from_data_source(line)
+        line_protocol.update_from_data_source(protocol_line)
+
+    return line_protocol
+
+
+@daosession
+def _get_protocol_line(session, line):
+    protocol = line.protocol.lower()
+    if protocol == 'sip':
+        row = session.query(UserSIP).filter(line.protocolid == UserSIP.id).first()
+    elif protocol == 'iax':
+        row = session.query(UserIAX).filter(line.protocolid == UserIAX.id).first()
+    elif protocol == 'sccp':
+        row = session.query(SCCPLine).filter(line.protocolid == SCCPLine.id).first()
+    elif protocol == 'custom':
+        row = session.query(UserCustom).filter(line.protocolid == UserCustom.id).first()
+
+    if not row:
+        raise ElementNotExistsError('Line %s' % protocol, id=line.protocolid)
+
+    return row
 
 
 @daosession

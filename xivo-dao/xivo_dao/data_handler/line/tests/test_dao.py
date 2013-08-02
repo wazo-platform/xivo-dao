@@ -76,9 +76,11 @@ class TestLineDao(DAOTestCase):
 
     def test_get_by_user_id(self):
         line_name = 'sdklfj'
+        line_sip = self.add_usersip(name=line_name)
 
         self.add_user_line_with_exten(exten='7777')
-        user_line = self.add_user_line_with_exten(name_line=line_name)
+        user_line = self.add_user_line_with_exten(protocolid=line_sip.id,
+                                                  name_line=line_name)
         self.add_user_line_with_exten(exten='6666')
 
         line = line_dao.get_by_user_id(user_line.user.id)
@@ -102,9 +104,12 @@ class TestLineDao(DAOTestCase):
         line_name = 'sdklfj'
         exten = '1235'
         context = 'notdefault'
+        line_sip = self.add_usersip(name=line_name,
+                                    context=context)
 
         self.add_user_line_with_exten(exten='7777')
-        self.add_user_line_with_exten(name_line=line_name,
+        self.add_user_line_with_exten(protocolid=line_sip.id,
+                                      name_line=line_name,
                                       exten=exten,
                                       context=context)
         self.add_user_line_with_exten(exten='6666')
@@ -139,7 +144,9 @@ class TestLineDao(DAOTestCase):
 
     def test_find_all_one_line(self):
         name = 'Pascal'
-        line = self.add_line(name=name)
+        line_sip = self.add_usersip(name=name)
+        line = self.add_line(protocolid=line_sip.id,
+                             name=name)
 
         lines = line_dao.find_all()
 
@@ -152,8 +159,12 @@ class TestLineDao(DAOTestCase):
         name1 = 'Pascal'
         name2 = 'George'
 
-        line1 = self.add_line(name=name1)
-        line2 = self.add_line(name=name2)
+        line_sip1 = self.add_usersip(name=name1)
+        line1 = self.add_line(protocolid=line_sip1.id,
+                              name=name1)
+        line_sip1 = self.add_usersip(name=name2)
+        line2 = self.add_line(protocolid=line_sip1.id,
+                              name=name2)
 
         lines = line_dao.find_all()
 
@@ -168,9 +179,15 @@ class TestLineDao(DAOTestCase):
         ))
 
     def test_find_all_default_order_by_name_context(self):
-        line1 = self.add_line(name='xxx', context='f')
-        line2 = self.add_line(name='vvv', context='a')
-        line3 = self.add_line(name='aaa', context='a')
+        line_sip = self.add_usersip(name='xxx')
+        line1 = self.add_line(protocolid=line_sip.id,
+                              name='xxx', context='f')
+        line_sip = self.add_usersip(name='vvv')
+        line2 = self.add_line(protocolid=line_sip.id,
+                              name='vvv', context='a')
+        line_sip = self.add_usersip(name='aaa')
+        line3 = self.add_line(protocolid=line_sip.id,
+                              name='aaa', context='a')
 
         lines = line_dao.find_all()
 
@@ -180,8 +197,14 @@ class TestLineDao(DAOTestCase):
         assert_that(lines[2].id, equal_to(line1.id))
 
     def test_find_all_order_by_name(self):
-        line_last = self.add_line(name='Bob', context='Alzard')
-        line_first = self.add_line(name='Albert', context='Breton')
+        line_sip = self.add_usersip()
+        line_last = self.add_line(protocolid=line_sip.id,
+                                  name='Bob',
+                                  context='Alzard')
+        line_sip = self.add_usersip()
+        line_first = self.add_line(protocolid=line_sip.id,
+                                   name='Albert',
+                                   context='Breton')
 
         lines = line_dao.find_all(order=[LineOrdering.name])
 
@@ -189,8 +212,14 @@ class TestLineDao(DAOTestCase):
         assert_that(lines[1].id, equal_to(line_last.id))
 
     def test_find_all_order_by_context(self):
-        line_last = self.add_line(name='Albert', context='Breton')
-        line_first = self.add_line(name='Bob', context='Alzard')
+        line_sip = self.add_usersip()
+        line_last = self.add_line(protocolid=line_sip.id,
+                                  name='Albert',
+                                  context='Breton')
+        line_sip = self.add_usersip()
+        line_first = self.add_line(protocolid=line_sip.id,
+                                   name='Bob',
+                                   context='Alzard')
 
         lines = line_dao.find_all(order=[LineOrdering.context])
 
@@ -214,7 +243,10 @@ class TestLineDao(DAOTestCase):
 
     def test_find_by_name(self):
         name = 'ddd'
-        line = self.add_line(name=name, context='sss')
+        line_sip = self.add_usersip(name=name)
+        line = self.add_line(protocolid=line_sip.id,
+                             name=name,
+                             context='sss')
 
         result = line_dao.find_by_name(name)
 
@@ -234,7 +266,9 @@ class TestLineDao(DAOTestCase):
         name = 'Lord'
         partial_fullname = 'rd'
 
-        line = self.add_line(name=name)
+        line_sip = self.add_usersip(name=name)
+        line = self.add_line(protocolid=line_sip.id,
+                            name=name)
 
         result = line_dao.find_by_name(partial_fullname)
 
@@ -248,9 +282,18 @@ class TestLineDao(DAOTestCase):
     def test_find_all_by_name_two_lines_default_order(self):
         search_term = 'lord'
 
-        line_last = self.add_line(name='Lordy', context='z')
-        line_first = self.add_line(name='lord', context='a')
-        self.add_line(name='Toto', context='a')
+        line_sip = self.add_usersip(name='Lordy')
+        line_last = self.add_line(protocolid=line_sip.id,
+                                  name='Lordy',
+                                  context='z')
+        line_sip = self.add_usersip(name='lord')
+        line_first = self.add_line(protocolid=line_sip.id,
+                                  name='lord',
+                                  context='a')
+        line_sip = self.add_usersip(name='Toto')
+        self.add_line(protocolid=line_sip.id,
+                      name='Toto',
+                      context='a')
 
         result = line_dao.find_by_name(search_term)
 
