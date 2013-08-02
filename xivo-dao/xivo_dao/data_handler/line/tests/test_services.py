@@ -83,17 +83,17 @@ class TestLineServices(unittest.TestCase):
 
         line_dao_find_all.assert_called_once_with(order=expected_order)
 
-    @patch('xivo_dao.data_handler.line.dao.find_by_name')
-    def test_find_user(self, line_dao_find_by_name):
+    @patch('xivo_dao.data_handler.line.dao.find_all_by_name')
+    def test_find_all_by_name(self, line_dao_find_all_by_name):
         user = Mock(Line)
         name = 'Lord'
 
-        line_dao_find_by_name.return_value = user
+        line_dao_find_all_by_name.return_value = user
 
-        result = line_services.find_by_name(name)
+        result = line_services.find_all_by_name(name)
 
         self.assertEquals(result, user)
-        line_dao_find_by_name.assert_called_once_with(name)
+        line_dao_find_all_by_name.assert_called_once_with(name)
 
     @patch('xivo_dao.data_handler.line.dao.provisioning_id_exists')
     def test_make_provisioning_id(self, provd_id_exists):

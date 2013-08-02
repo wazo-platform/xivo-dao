@@ -226,29 +226,29 @@ class TestLineDao(DAOTestCase):
         assert_that(lines[0].id, equal_to(line_first.id))
         assert_that(lines[1].id, equal_to(line_last.id))
 
-    def test_find_by_name_no_line(self):
-        result = line_dao.find_by_name('abc')
+    def test_find_all_by_name_by_name_no_line(self):
+        result = line_dao.find_all_by_name('abc')
 
         assert_that(result, equal_to([]))
 
-    def test_find_line_not_right_name(self):
+    def test_find_all_by_name_not_right_name(self):
         name = 'Lord'
         wrong_name = 'Gregory'
 
         self.add_line(name=name)
 
-        result = line_dao.find_by_name(wrong_name)
+        result = line_dao.find_all_by_name(wrong_name)
 
         assert_that(result, equal_to([]))
 
-    def test_find_by_name(self):
+    def test_find_all_by_name(self):
         name = 'ddd'
         line_sip = self.add_usersip(name=name)
         line = self.add_line(protocolid=line_sip.id,
                              name=name,
                              context='sss')
 
-        result = line_dao.find_by_name(name)
+        result = line_dao.find_all_by_name(name)
 
         assert_that(result, contains(
             all_of(
@@ -257,8 +257,8 @@ class TestLineDao(DAOTestCase):
             )
         ))
 
-    def test_find_by_name_no_lines(self):
-        result = line_dao.find_by_name('')
+    def test_find_all_by_name_no_lines(self):
+        result = line_dao.find_all_by_name('')
 
         assert_that(result, has_length(0))
 
@@ -270,7 +270,7 @@ class TestLineDao(DAOTestCase):
         line = self.add_line(protocolid=line_sip.id,
                             name=name)
 
-        result = line_dao.find_by_name(partial_fullname)
+        result = line_dao.find_all_by_name(partial_fullname)
 
         assert_that(result, has_length(1))
         assert_that(result, contains(
@@ -295,7 +295,7 @@ class TestLineDao(DAOTestCase):
                       name='Toto',
                       context='a')
 
-        result = line_dao.find_by_name(search_term)
+        result = line_dao.find_all_by_name(search_term)
 
         assert_that(result, has_length(2))
         assert_that(result, contains(

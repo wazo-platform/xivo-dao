@@ -42,12 +42,12 @@ def find_all(order=None):
     return dao.find_all(order=order)
 
 
-def find_by_name(name):
-    return dao.find_by_name(name)
+def find_all_by_name(name):
+    return dao.find_all_by_name(name)
 
 
-def find_by_protocol(protocol):
-    return dao.find_by_protocol(protocol)
+def find_all_by_protocol(protocol):
+    return dao.find_all_by_protocol(protocol)
 
 
 def create(line):

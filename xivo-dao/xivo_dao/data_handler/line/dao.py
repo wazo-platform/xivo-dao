@@ -90,7 +90,7 @@ def find_all(session, order=None):
 
 
 @daosession
-def find_by_protocol(session, protocol, order=None):
+def find_all_by_protocol(session, protocol, order=None):
     line_rows = (_new_query(session, order)
                  .filter(LineSchema.protocol == protocol.lower())
                  .all())
@@ -99,7 +99,7 @@ def find_by_protocol(session, protocol, order=None):
 
 
 @daosession
-def find_by_name(session, name, order=None):
+def find_all_by_name(session, name, order=None):
     search = '%%%s%%' % name.lower()
 
     line_rows = (_new_query(session, order)
