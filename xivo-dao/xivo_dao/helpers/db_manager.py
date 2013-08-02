@@ -107,13 +107,16 @@ def _new_scoped_session(engine):
 
 
 def reinit():
+    close()
+    _init()
+
+
+def close():
     AsteriskSession.close()
     _asterisk_engine.dispose()
 
     XivoSession.close()
     _xivo_engine.dispose()
-
-    _init()
 
 
 _init()
