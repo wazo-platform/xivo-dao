@@ -21,8 +21,10 @@ import notifier
 from xivo_dao.data_handler.exception import MissingParametersError, \
     InvalidParametersError, ElementNotExistsError
 from xivo_dao.data_handler.line import services as line_services
+from xivo_dao.data_handler.line import dao as line_dao
 from xivo_dao.data_handler.user import services as user_services
 from xivo_dao.data_handler.extension import services as extension_services
+from xivo_dao.data_handler.extension import dao as extension_dao
 
 
 def get(ule_id):
@@ -43,9 +45,10 @@ def find_all_by_extension_id(extension_id):
 
 def create(ule):
     _validate(ule)
-    extension = dao.create(ule)
+    ule = dao.create(ule)
+    _make_secondary_associations(ule)
     notifier.created(ule)
-    return extension
+    return ule
 
 
 def edit(ule):
@@ -69,6 +72,7 @@ def delete_everything(ule):
 
 def _validate(ule):
     _check_missing_parameters(ule)
+    _fill_optional_parameters(ule)
     _check_invalid_parameters(ule)
 
 
@@ -98,6 +102,21 @@ def _check_invalid_parameters(ule_id):
         invalid_parameters.append('main_user must be boolean')
     if invalid_parameters:
         raise InvalidParametersError(invalid_parameters)
+
+
+def _fill_optional_parameters(ule):
+    if not hasattr(ule, 'main_line'):
+        ule.main_line = True
+    if not hasattr(ule, 'main_user'):
+        ule.main_user = True
+
+
+def _make_secondary_associations(ule):
+    extension = extension_dao.get(ule.extension_id)
+    line_dao.associate_extension(extension, ule.line_id)
+    extension.type = 'user'
+    extension.typeval = str(ule.user_id)
+    extension_dao.edit(extension)
 
 
 def _remove_user(ule):
