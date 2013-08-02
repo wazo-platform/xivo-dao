@@ -21,7 +21,7 @@ from xivo_dao.data_handler.line.command import CreateLineCommand, \
 from xivo_dao.helpers import sysconfd_connector
 
 
-def _new_data(ctibus_command):
+def _new_sysconfd_data(ctibus_command):
     return {
         'ctibus': [ctibus_command],
         'dird': [],
@@ -32,18 +32,18 @@ def _new_data(ctibus_command):
 
 
 def created(line):
-    data = _new_data('xivo[phone,add,%s]' % line.id)
+    data = _new_sysconfd_data('xivo[phone,add,%s]' % line.id)
     sysconfd_connector.exec_request_handlers(data)
     send_bus_command(CreateLineCommand(line.id))
 
 
 def edited(line):
-    data = _new_data('xivo[phone,edit,%s]' % line.id)
+    data = _new_sysconfd_data('xivo[phone,edit,%s]' % line.id)
     sysconfd_connector.exec_request_handlers(data)
     send_bus_command(EditLineCommand(line.id))
 
 
 def deleted(line):
-    data = _new_data('xivo[phone,delete,%s]' % line.id)
+    data = _new_sysconfd_data('xivo[phone,delete,%s]' % line.id)
     sysconfd_connector.exec_request_handlers(data)
     send_bus_command(DeleteLineCommand(line.id))

@@ -20,27 +20,29 @@ from xivo_dao.data_handler.voicemail.command import CreateVoicemailCommand, \
     EditVoicemailCommand, DeleteVoicemailCommand
 from xivo_dao.helpers import sysconfd_connector
 
-sysconfd_base_data = {
-    'ctibus': [],
-    'dird': [],
-    'ipbx': ['voicemail reload'],
-    'agentbus': []
-}
+
+def _new_sysconfd_data(ctibus_command):
+    return {
+        'ctibus': [ctibus_command],
+        'dird': [],
+        'ipbx': ['voicemail reload'],
+        'agentbus': []
+    }
 
 
 def created(voicemail):
-    sysconfd_base_data['ctibus'].extend(['xivo[voicemail,create,%s]' % voicemail.id])
-    sysconfd_connector.exec_request_handlers(sysconfd_base_data)
+    data = _new_sysconfd_data('xivo[voicemail,create,%s]' % voicemail.id)
+    sysconfd_connector.exec_request_handlers(data)
     send_bus_command(CreateVoicemailCommand(voicemail.id))
 
 
 def edited(voicemail):
-    sysconfd_base_data['ctibus'].extend(['xivo[voicemail,edit,%s]' % voicemail.id])
-    sysconfd_connector.exec_request_handlers(sysconfd_base_data)
+    data = _new_sysconfd_data('xivo[voicemail,edit,%s]' % voicemail.id)
+    sysconfd_connector.exec_request_handlers(data)
     send_bus_command(EditVoicemailCommand(voicemail.id))
 
 
 def deleted(voicemail):
-    sysconfd_base_data['ctibus'].extend(['xivo[voicemail,delete,%s]' % voicemail.id])
-    sysconfd_connector.exec_request_handlers(sysconfd_base_data)
+    data = _new_sysconfd_data('xivo[voicemail,delete,%s]' % voicemail.id)
+    sysconfd_connector.exec_request_handlers(data)
     send_bus_command(DeleteVoicemailCommand(voicemail.id))

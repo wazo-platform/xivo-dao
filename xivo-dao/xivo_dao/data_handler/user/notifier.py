@@ -20,29 +20,31 @@ from xivo_dao.data_handler.user.command import CreateUserCommand, \
     EditUserCommand, DeleteUserCommand
 from xivo_dao.helpers import sysconfd_connector
 
-sysconfd_base_data = {
-    'ctibus': [],
-    'dird': [],
-    'ipbx': ['dialplan reload',
-             'module reload app_queue.so',
-             'sip reload'],
-    'agentbus': []
-}
+
+def _new_sysconfd_data(ctibus_command):
+    return {
+        'ctibus': [ctibus_command],
+        'dird': [],
+        'ipbx': ['dialplan reload',
+                 'module reload app_queue.so',
+                 'sip reload'],
+        'agentbus': []
+    }
 
 
 def created(user):
-    sysconfd_base_data['ctibus'].extend(['xivo[user,create,%s]' % user.id])
-    sysconfd_connector.exec_request_handlers(sysconfd_base_data)
+    data = _new_sysconfd_data('xivo[user,create,%s]' % user.id)
+    sysconfd_connector.exec_request_handlers(data)
     send_bus_command(CreateUserCommand(user.id))
 
 
 def edited(user):
-    sysconfd_base_data['ctibus'].extend(['xivo[user,edit,%s]' % user.id])
-    sysconfd_connector.exec_request_handlers(sysconfd_base_data)
+    data = _new_sysconfd_data('xivo[user,edit,%s]' % user.id)
+    sysconfd_connector.exec_request_handlers(data)
     send_bus_command(EditUserCommand(user.id))
 
 
 def deleted(user):
-    sysconfd_base_data['ctibus'].extend(['xivo[user,delete,%s]' % user.id])
-    sysconfd_connector.exec_request_handlers(sysconfd_base_data)
+    data = _new_sysconfd_data('xivo[user,delete,%s]' % user.id)
+    sysconfd_connector.exec_request_handlers(data)
     send_bus_command(DeleteUserCommand(user.id))
