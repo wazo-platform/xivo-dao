@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, equal_to, has_length, has_property, all_of, has_items, contains
+from hamcrest import assert_that, equal_to, has_length, has_property, all_of, has_items, contains, is_, none
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.callfilter import Callfilter
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
@@ -274,6 +274,32 @@ class TestUserDAO(DAOTestCase):
                                       commented_line=1)
 
         self.assertRaises(LookupError, user_dao.get_by_number_context, number, context)
+
+    def test_find_by_number_context_inexistant(self):
+        context, number = 'default', '1234'
+
+        user = user_dao.find_by_number_context(number, context)
+
+        assert_that(user, is_(none()))
+
+    def test_find_by_number_context(self):
+        context, number = 'default', '1234'
+        user_line = self.add_user_line_with_exten(exten=number,
+                                                  context=context)
+
+        user = user_dao.find_by_number_context(number, context)
+
+        assert_that(user.id, equal_to(user_line.user_id))
+
+    def test_find_by_number_context_line_commented(self):
+        context, number = 'default', '1234'
+        self.add_user_line_with_exten(number=number,
+                                      context=context,
+                                      commented_line=1)
+
+        user = user_dao.find_by_number_context(number, context)
+
+        assert_that(user, is_(none()))
 
     def test_create(self):
         user = User(firstname='toto',

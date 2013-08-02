@@ -93,23 +93,34 @@ def get(session, user_id):
 
 
 @daosession
-def get_by_number_context(session, number, context):
+def find_by_number_context(session, number, context):
+    return _find_by_number_context(session, number, context)
+
+
+def _find_by_number_context(session, number, context):
     user_row = (_new_query(session)
-           .join(ExtensionSchema, and_(ExtensionSchema.context == context,
-                                       ExtensionSchema.exten == number,
-                                       ExtensionSchema.commented == 0))
-           .join(LineSchema, and_(LineSchema.commented == 0))
-           .join(UserLineSchema, and_(UserLineSchema.user_id == UserSchema.id,
-                                UserLineSchema.extension_id == ExtensionSchema.id,
-                                UserLineSchema.line_id == LineSchema.id,
-                                UserLineSchema.main_line == True,
-                                UserLineSchema.main_line == True))
-            .first())
+                .join(ExtensionSchema, and_(ExtensionSchema.context == context,
+                                            ExtensionSchema.exten == number,
+                                            ExtensionSchema.commented == 0))
+                .join(LineSchema, and_(LineSchema.commented == 0))
+                .join(UserLineSchema, and_(UserLineSchema.user_id == UserSchema.id,
+                                           UserLineSchema.extension_id == ExtensionSchema.id,
+                                           UserLineSchema.line_id == LineSchema.id,
+                                           UserLineSchema.main_line == True))
+                .first())
 
     if not user_row:
-        raise ElementNotExistsError('User', number=number, context=context)
+        return None
 
     return User.from_data_source(user_row)
+
+
+@daosession
+def get_by_number_context(session, number, context):
+    user = _find_by_number_context(session, number, context)
+    if not user:
+        raise ElementNotExistsError('User', number=number, context=context)
+    return user
 
 
 @daosession
