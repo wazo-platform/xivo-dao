@@ -24,8 +24,6 @@ class UserLineExtension(AbstractModels):
         'user_id',
         'line_id',
         'extension_id',
-        'main_user',
-        'main_line'
     ]
 
     # mapping = {db_field: model_field}

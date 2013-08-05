@@ -100,19 +100,35 @@ class TestUserLineExtensionServices(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.user_line_extension.notifier.created')
     @patch('xivo_dao.data_handler.user_line_extension.dao.create')
-    def test_create(self, user_line_extension_dao_create, user_line_extension_notifier_created):
-        ule = UserLineExtension(user_id=5898,
-                                line_id=52,
+    @patch('xivo_dao.data_handler.line.dao.associate_extension')
+    @patch('xivo_dao.data_handler.extension.dao.get')
+    @patch('xivo_dao.data_handler.extension.dao.edit')
+    def test_create(self, extension_edit, extension_get, line_associate_extension, user_line_extension_dao_create, user_line_extension_notifier_created):
+        ule_id = 63
+        line_id = 52
+        user_id = 5898
+        ule = UserLineExtension(user_id=user_id,
+                                line_id=line_id,
                                 extension_id=52,
                                 main_user=True,
                                 main_line=False)
+        extension = Mock()
+        extension_get.return_value = extension
 
-        user_line_extension_dao_create.return_value = ule
+        def mock_dao(ule):
+            ule.id = ule_id
+            return ule
+        user_line_extension_dao_create.side_effect = mock_dao
 
         result = user_line_extension_services.create(ule)
 
         user_line_extension_dao_create.assert_called_once_with(ule)
         self.assertEquals(type(result), UserLineExtension)
+        self.assertEquals(result.id, ule_id)
+        line_associate_extension.assert_called_once_with(extension, line_id)
+        self.assertEquals(extension.type, 'user')
+        self.assertEquals(extension.typeval, str(user_id))
+        extension_edit.assert_called_once_with(extension)
         user_line_extension_notifier_created.assert_called_once_with(ule)
 
     @patch('xivo_dao.data_handler.user_line_extension.dao.create')
