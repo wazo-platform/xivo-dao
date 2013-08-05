@@ -18,9 +18,22 @@
 from xivo_dao.helpers.bus_manager import send_bus_command
 from command import CreateUserLineExtensionCommand, \
     EditUserLineExtensionCommand, DeleteUserLineExtensionCommand
+from xivo_dao.helpers import sysconfd_connector
+
+
+def _new_sysconfd_data(ctibus_command):
+    return {
+        'ctibus': [ctibus_command],
+        'dird': [],
+        'ipbx': [],
+        'agentbus': []
+    }
 
 
 def created(user_line_extension):
+    data = _new_sysconfd_data('xivo[phone,add,%s]' % user_line_extension.line_id)
+    sysconfd_connector.exec_request_handlers(data)
+
     send_bus_command(CreateUserLineExtensionCommand(user_line_extension.id,
                                                     user_line_extension.user_id,
                                                     user_line_extension.line_id,
@@ -30,6 +43,9 @@ def created(user_line_extension):
 
 
 def edited(user_line_extension):
+    data = _new_sysconfd_data('xivo[phone,edit,%s]' % user_line_extension.line_id)
+    sysconfd_connector.exec_request_handlers(data)
+
     send_bus_command(EditUserLineExtensionCommand(user_line_extension.id,
                                                   user_line_extension.user_id,
                                                   user_line_extension.line_id,
@@ -39,6 +55,9 @@ def edited(user_line_extension):
 
 
 def deleted(user_line_extension):
+    data = _new_sysconfd_data('xivo[phone,delete,%s]' % user_line_extension.line_id)
+    sysconfd_connector.exec_request_handlers(data)
+
     send_bus_command(DeleteUserLineExtensionCommand(user_line_extension.id,
                                                     user_line_extension.user_id,
                                                     user_line_extension.line_id,
