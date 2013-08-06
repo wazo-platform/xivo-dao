@@ -91,4 +91,4 @@ def _channel_pattern_from_phone_sip(phone):
 
 
 def _channel_pattern_from_phone_sccp(phone):
-    return "sccp/%s@%%" % phone['name']
+    return "SCCP/%s-%%" % phone['name']
