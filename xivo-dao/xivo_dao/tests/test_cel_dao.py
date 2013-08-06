@@ -137,10 +137,10 @@ class TestCELDAO(DAOTestCase):
         phone = {'protocol': 'sccp',
                  'name': '101'}
         cels = [
-            _new_cel(eventtype='CHAN_START', channame=u'sccp/101@SEP001122334455-1', uniqueid=u'1',),
+            _new_cel(eventtype='CHAN_START', channame=u'SCCP/101-001122334455-1', uniqueid=u'1',),
             _new_cel(eventtype='HANGUP', uniqueid='1', linkedid=u'1'),
             _new_cel(eventtype='CHAN_END', uniqueid='1', linkedid=u'1'),
-            _new_cel(eventtype='CHAN_START', channame=u'sccp/102@SEP001122334455-1', uniqueid=u'2', linkedid=u'2'),
+            _new_cel(eventtype='CHAN_START', channame=u'SCCP/102-001122334466-1', uniqueid=u'2', linkedid=u'2'),
             _new_cel(eventtype='HANGUP', uniqueid='2', linkedid=u'2'),
             _new_cel(eventtype='CHAN_END', uniqueid='2', linkedid=u'2'),
         ]
