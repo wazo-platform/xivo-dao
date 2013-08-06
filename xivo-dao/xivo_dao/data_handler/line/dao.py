@@ -150,6 +150,7 @@ def _get_protocol_line(session, line):
         row = session.query(SCCPLine).filter(line.protocolid == SCCPLine.id).first()
     elif protocol == 'custom':
         row = session.query(UserCustom).filter(line.protocolid == UserCustom.id).first()
+        row.name = row.interface
 
     if not row:
         raise ElementNotExistsError('Line %s' % protocol, id=line.protocolid)
