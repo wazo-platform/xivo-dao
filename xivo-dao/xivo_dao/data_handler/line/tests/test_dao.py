@@ -284,7 +284,7 @@ class TestLineDao(DAOTestCase):
 
         line_sip = self.add_usersip(name=name)
         line = self.add_line(protocolid=line_sip.id,
-                            name=name)
+                             name=name)
 
         result = line_dao.find_all_by_name(partial_fullname)
 
@@ -304,8 +304,8 @@ class TestLineDao(DAOTestCase):
                                   context='z')
         line_sip = self.add_usersip(name='lord')
         line_first = self.add_line(protocolid=line_sip.id,
-                                  name='lord',
-                                  context='a')
+                                   name='lord',
+                                   context='a')
         line_sip = self.add_usersip(name='Toto')
         self.add_line(protocolid=line_sip.id,
                       name='Toto',
