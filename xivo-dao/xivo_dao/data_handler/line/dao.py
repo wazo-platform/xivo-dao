@@ -122,25 +122,26 @@ def _rows_to_line_model(line_rows):
 
 def _join_line_protocol(line):
     protocol = line.protocol.lower()
-    protocol_line = _get_protocol_line(line)
+    protocol_row = _get_protocol_row(line)
+
     if protocol == 'sip':
         line_protocol = LineSIP.from_data_source(line)
-        line_protocol.update_from_data_source(protocol_line)
+        line_protocol.update_from_data_source(protocol_row)
     elif protocol == 'iax':
         line_protocol = LineIAX.from_data_source(line)
-        line_protocol.update_from_data_source(protocol_line)
+        line_protocol.update_from_data_source(protocol_row)
     elif protocol == 'sccp':
         line_protocol = LineSCCP.from_data_source(line)
-        line_protocol.update_from_data_source(protocol_line)
+        line_protocol.update_from_data_source(protocol_row)
     elif protocol == 'custom':
         line_protocol = LineCUSTOM.from_data_source(line)
-        line_protocol.update_from_data_source(protocol_line)
+        line_protocol.update_from_data_source(protocol_row)
 
     return line_protocol
 
 
 @daosession
-def _get_protocol_line(session, line):
+def _get_protocol_row(session, line):
     protocol = line.protocol.lower()
     if protocol == 'sip':
         row = session.query(UserSIP).filter(line.protocolid == UserSIP.id).first()
