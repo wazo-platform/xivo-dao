@@ -154,7 +154,7 @@ def edit(session, user):
         raise ElementEditionError('User', e)
 
     if nb_row_affected == 0:
-        raise ElementEditionError('User', 'user_id %s not exsit' % user.id)
+        raise ElementEditionError('User', 'user_id %s not exist' % user.id)
 
     return nb_row_affected
 
@@ -170,7 +170,7 @@ def delete(session, user):
         raise ElementDeletionError('User', e)
 
     if nb_row_affected == 0:
-        raise ElementDeletionError('User', 'user_id %s not exsit' % user.id)
+        raise ElementDeletionError('User', 'user_id %s not exist' % user.id)
 
     return nb_row_affected
 

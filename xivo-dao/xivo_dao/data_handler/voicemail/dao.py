@@ -94,7 +94,7 @@ def edit(session, voicemail):
         raise ElementEditionError('voicemail', e)
 
     if nb_row_affected == 0:
-        raise ElementEditionError('voicemail', 'voicemail_id %s not exsit' % voicemail.id)
+        raise ElementEditionError('voicemail', 'voicemail_id %s not exist' % voicemail.id)
 
     return nb_row_affected
 
@@ -118,7 +118,7 @@ def delete(session, voicemail):
         raise ElementDeletionError('voicemail', e)
 
     if nb_row_affected == 0:
-        raise ElementDeletionError('voicemail', 'voicemail_id %s not exsit' % voicemail.id)
+        raise ElementDeletionError('voicemail', 'voicemail_id %s not exist' % voicemail.id)
 
 
 def _unlink_user_sip(session, number_at_context):

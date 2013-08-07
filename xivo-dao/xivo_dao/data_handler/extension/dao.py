@@ -165,7 +165,7 @@ def delete(session, extension):
         raise ElementDeletionError('Extension', e)
 
     if nb_row_affected == 0:
-        raise ElementDeletionError('Extension', 'extension_id %s not exsit' % extension.id)
+        raise ElementDeletionError('Extension', 'extension_id %s not exist' % extension.id)
 
     return nb_row_affected
 
