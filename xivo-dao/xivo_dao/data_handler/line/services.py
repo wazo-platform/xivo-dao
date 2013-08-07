@@ -66,7 +66,7 @@ def delete(line):
     dao.delete(line)
     if hasattr(line, 'device') and line.device is not None:
         try:
-            device_services.remove_line_from_device(line.device, line.num)
+            device_services.remove_line_from_device(line.device, line)
         except URLError as e:
             raise provd_connector.ProvdError(str(e))
     notifier.deleted(line)

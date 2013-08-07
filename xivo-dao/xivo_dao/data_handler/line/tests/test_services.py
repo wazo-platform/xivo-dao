@@ -177,7 +177,7 @@ class TestLineServices(unittest.TestCase):
         line_services.delete(line)
 
         line_dao_delete.assert_called_once_with(line)
-        remove_line_from_device.assert_called_once_with(line.device, line.num)
+        remove_line_from_device.assert_called_once_with(line.device, line)
         line_notifier_deleted.assert_called_once_with(line)
 
     @patch('xivo_dao.data_handler.device.services.remove_line_from_device')
@@ -197,5 +197,5 @@ class TestLineServices(unittest.TestCase):
         self.assertRaises(ProvdError, line_services.delete, line)
 
         line_dao_delete.assert_called_once_with(line)
-        remove_line_from_device.assert_called_once_with(line.device, line.num)
+        remove_line_from_device.assert_called_once_with(line.device, line)
         self.assertEquals(line_notifier_deleted.call_count, 0)

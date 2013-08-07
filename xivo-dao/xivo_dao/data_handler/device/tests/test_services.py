@@ -4,6 +4,7 @@ import unittest
 from xivo_dao.data_handler.device.services import remove_line_from_device
 from mock import patch
 from xivo_dao.data_handler.device.model import Device
+from xivo_dao.data_handler.line.model import LineSIP
 
 
 class Test(unittest.TestCase):
@@ -26,6 +27,7 @@ class Test(unittest.TestCase):
             }
         }
         config_manager.get.return_value = config_dict
+        line = LineSIP(num=2)
 
         device = Device(id=self.device_id,
                         deviceid=self.provd_deviceid)
@@ -40,7 +42,7 @@ class Test(unittest.TestCase):
             }
         }
 
-        remove_line_from_device(self.device_id, 2)
+        remove_line_from_device(self.device_id, line)
 
         config_manager.get.assert_called_with(self.provd_deviceid)
         config_manager.update.assert_called_with(expected_arg)
@@ -69,6 +71,7 @@ class Test(unittest.TestCase):
         config_manager.get.return_value = config_dict
         device_manager.get.return_value = device_dict
         config_manager.autocreate.return_value = autoprovid
+        line = LineSIP(num=1)
 
         device = Device(id=self.device_id,
                         deviceid=self.provd_deviceid)
@@ -82,7 +85,7 @@ class Test(unittest.TestCase):
            "id": self.device_id
         }
 
-        remove_line_from_device(self.device_id, 1)
+        remove_line_from_device(self.device_id, line)
 
         config_manager.get.assert_called_with(self.provd_deviceid)
         config_manager.autocreate.assert_called_with()
@@ -109,6 +112,7 @@ class Test(unittest.TestCase):
            "config": self.provd_deviceid,
            "id": self.device_id
         }
+        line = LineSIP(num=1)
 
         device = Device(id=self.device_id,
                         deviceid=self.provd_deviceid)
@@ -119,6 +123,6 @@ class Test(unittest.TestCase):
         device_dao_get.return_value = device
 
         try:
-            remove_line_from_device(self.device_id, 1)
+            remove_line_from_device(self.device_id, line)
         except:
             self.fail("An exception was raised whereas it should not")

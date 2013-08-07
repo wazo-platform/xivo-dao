@@ -27,10 +27,10 @@ def get_by_deviceid(session, device_id):
     return device_dao.get_by_deviceid(device_id)
 
 
-def remove_line_from_device(device_id, linenum):
+def remove_line_from_device(device_id, line):
     device = device_dao.get(device_id)
     config = provd_connector.config_manager.get(device.deviceid)
-    del config["raw_config"]["sip_lines"][str(linenum)]
+    del config["raw_config"]["sip_lines"][str(line.num)]
     if len(config["raw_config"]["sip_lines"]) == 0:
         # then we reset to autoprov
         _reset_config(config)
