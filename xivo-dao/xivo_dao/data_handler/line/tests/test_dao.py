@@ -71,6 +71,22 @@ class TestLineDao(DAOTestCase):
 
         assert_that(line.name, equal_to(line_name))
 
+    def test_get_custom_line(self):
+        line_interface = '123456789'
+        line_name = 'custom/abcd'
+
+        line_custom = self.add_usercustom(interface=line_interface,
+                                          protocol='custom',
+                                          context='default',
+                                          category='user',
+                                          commented=0)
+
+        line = self.add_line(protocol='custom', protocolid=line_custom.id, name=line_name)
+
+        line = line_dao.get(line.id)
+
+        assert_that(line.name, equal_to(line_interface))
+
     def test_get_no_line(self):
         self.assertRaises(ElementNotExistsError, line_dao.get, 666)
 

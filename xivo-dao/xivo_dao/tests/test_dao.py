@@ -29,6 +29,7 @@ from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.devicefeatures import DeviceFeatures
 from xivo_dao.alchemy.sccpline import SCCPLine as SCCPLineSchema
+from xivo_dao.alchemy.usercustom import UserCustom as UserCustomSchema
 import random
 from xivo_dao.alchemy.usersip import UserSIP
 
@@ -169,6 +170,12 @@ class DAOTestCase(unittest.TestCase):
         usersip = UserSIP(**kwargs)
         self.add_me(usersip)
         return usersip
+
+    def add_usercustom(self, **kwargs):
+        usercustom = UserCustomSchema(**kwargs)
+        self.add_me(usercustom)
+
+        return usercustom
 
     def add_sccpline(self, **kwargs):
         kwargs.setdefault('name', '1234')

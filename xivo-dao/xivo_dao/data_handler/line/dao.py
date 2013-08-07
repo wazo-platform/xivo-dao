@@ -136,6 +136,7 @@ def _join_line_protocol(line):
     elif protocol == 'custom':
         line_protocol = LineCUSTOM.from_data_source(line)
         line_protocol.update_from_data_source(protocol_row)
+        line_protocol.name = protocol_row.interface
 
     return line_protocol
 
@@ -151,7 +152,6 @@ def _get_protocol_row(session, line):
         row = session.query(SCCPLine).filter(line.protocolid == SCCPLine.id).first()
     elif protocol == 'custom':
         row = session.query(UserCustom).filter(line.protocolid == UserCustom.id).first()
-        row.name = row.interface
 
     if not row:
         raise ElementNotExistsError('Line %s' % protocol, id=line.protocolid)
