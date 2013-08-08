@@ -15,8 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-import unittest
 import logging
+import random
+import unittest
 
 from mock import patch
 from xivo_dao.helpers.db_manager import Base
@@ -125,6 +126,7 @@ class DAOTestCase(unittest.TestCase):
         kwargs.setdefault('protocol', 'sip')
         kwargs.setdefault('protocolid', int(''.join(random.choice('123456789') for _ in range(3))))
         kwargs.setdefault('provisioningid', int(''.join(random.choice('123456789') for _ in range(6))))
+        kwargs.setdefault('id', self._generate_id())
 
         line = LineFeatures(**kwargs)
         self.add_me(line)
@@ -133,6 +135,7 @@ class DAOTestCase(unittest.TestCase):
     def add_user_line(self, **kwargs):
         kwargs.setdefault('main_user', True)
         kwargs.setdefault('main_line', True)
+        kwargs.setdefault('id', self._generate_id())
 
         user_line = UserLine(**kwargs)
         self.add_me(user_line)
@@ -141,12 +144,14 @@ class DAOTestCase(unittest.TestCase):
     def add_extension(self, **kwargs):
         kwargs.setdefault('type', 'user')
         kwargs.setdefault('context', 'default')
+        kwargs.setdefault('id', self._generate_id())
 
         extension = Extension(**kwargs)
         self.add_me(extension)
         return extension
 
     def add_user(self, **kwargs):
+        kwargs.setdefault('id', self._generate_id())
         user = UserFeatures(**kwargs)
         self.add_me(user)
         return user
@@ -158,6 +163,7 @@ class DAOTestCase(unittest.TestCase):
         kwargs.setdefault('model', '6739i')
         kwargs.setdefault('plugin', 'xivo-aastra-3.2.2.1136')
         kwargs.setdefault('proto', 'SIP')
+        kwargs.setdefault('id', self._generate_id())
 
         device = DeviceFeatures(**kwargs)
         self.add_me(device)
@@ -166,12 +172,14 @@ class DAOTestCase(unittest.TestCase):
     def add_usersip(self, **kwargs):
         kwargs.setdefault('name', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
         kwargs.setdefault('type', 'friend')
+        kwargs.setdefault('id', self._generate_id())
 
         usersip = UserSIP(**kwargs)
         self.add_me(usersip)
         return usersip
 
     def add_usercustom(self, **kwargs):
+        kwargs.setdefault('id', self._generate_id())
         usercustom = UserCustomSchema(**kwargs)
         self.add_me(usercustom)
 
@@ -182,6 +190,7 @@ class DAOTestCase(unittest.TestCase):
         kwargs.setdefault('context', 'default')
         kwargs.setdefault('cid_name', 'Tester One')
         kwargs.setdefault('cid_num', '1234')
+        kwargs.setdefault('id', self._generate_id())
 
         sccpline = SCCPLineSchema(**kwargs)
         self.add_me(sccpline)
@@ -200,3 +209,6 @@ class DAOTestCase(unittest.TestCase):
         self.session.begin()
         self.session.add_all(obj_list)
         self.session.commit()
+
+    def _generate_id(self):
+        return random.randint(1, 1000000)
