@@ -407,6 +407,17 @@ class TestLineDao(DAOTestCase):
 
         assert_that(line_created, is_not(has_property('number')))
 
+    def test_reset_device(self):
+        line = self.add_line(device='1234')
+
+        line_dao.reset_device(line.device)
+
+        result = (self.session.query(LineSchema)
+                           .filter(LineSchema.id == line.id)
+                           .first())
+
+        assert_that(result.device, equal_to(''))
+
     def test_generate_random_hash_no_sip_user(self):
         generated_hash = line_dao.generate_random_hash(self.session, UserSIPSchema.name)
 

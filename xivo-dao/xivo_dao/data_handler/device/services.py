@@ -15,19 +15,81 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from . import dao
+from . import notifier
+import re
+
 from xivo_dao.helpers import provd_connector
-from xivo_dao.data_handler.device import dao as device_dao
 from xivo_dao.data_handler.user_line_extension import dao as user_line_extension_dao
 from xivo_dao.data_handler.extension import dao as extension_dao
 from xivo_dao.data_handler.line import dao as line_dao
+from xivo_dao.data_handler.exception import InvalidParametersError, \
+    ElementNotExistsError, ElementDeletionError
+
+IP_REGEX = re.compile(r'(1?\d{1,2}|2[0-5]{2})(\.(1?\d{1,2}|2[0-5]{2})){3}$')
 
 
 def get(device_id):
-    return device_dao.get(device_id)
+    return dao.get(device_id)
 
 
 def get_by_deviceid(session, device_id):
-    return device_dao.get_by_deviceid(device_id)
+    return dao.get_by_deviceid(device_id)
+
+
+def find_all():
+    return dao.find_all()
+
+
+def create(device):
+    _validate(device)
+    device.deviceid = _generate_new_deviceid()
+    device = dao.create(device)
+    notifier.created(device)
+    return device
+
+
+def delete(device):
+    try:
+        get(device.id)
+    except ElementNotExistsError:
+        raise ElementDeletionError('Device', 'device_id %s not exist' % device.id)
+    _remove_device_from_provd(device)
+    dao.delete(device)
+    line_dao.reset_device(device.id)
+    notifier.deleted(device)
+
+
+def _remove_device_from_provd(device):
+    provd_config_manager = provd_connector.config_manager()
+    provd_device_manager = provd_connector.device_manager()
+    provd_device_manager.remove(device.deviceid)
+    if len(device.config) > 0:
+        provd_config_manager.remove(device.deviceid)
+
+
+def _generate_new_deviceid():
+    provd_device_manager = provd_connector.device_manager()
+    deviceid = provd_device_manager.add({})
+    return deviceid
+
+
+def _validate(device):
+    _check_invalid_parameters(device)
+
+
+def _check_invalid_parameters(device):
+    invalid_parameters = []
+    if hasattr(device, 'ip') and not IP_REGEX.match(device.ip):
+        invalid_parameters.append('ip')
+    if invalid_parameters:
+        raise InvalidParametersError(invalid_parameters)
+
+
+def associate_line_to_device(device, line):
+    line_dao.device = str(device.id)
+    line_dao.edit(line)
+    rebuild_device_config(device)
 
 
 def rebuild_device_config(device):
@@ -77,7 +139,7 @@ def _populate_sccp_line(config, confregistrar):
 
 
 def remove_line_from_device(device_id, line):
-    device = device_dao.get(device_id)
+    device = dao.get(device_id)
     config = provd_connector.config_manager.get(device.deviceid)
     del config['raw_config']['sip_lines'][str(line.num)]
     if len(config['raw_config']['sip_lines']) == 0:

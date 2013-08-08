@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.helpers.abstract_model import AbstractModels
+from xivo_dao.alchemy.devicefeatures import DeviceFeatures as DeviceSchema
 
 
 class Device(AbstractModels):
@@ -35,10 +36,19 @@ class Device(AbstractModels):
         'vendor': 'vendor',
         'model': 'model',
         'version': 'version',
-        'proto': 'proto'
+        'proto': 'proto',
+        'internal': 'internal',
+        'configured': 'configured',
+        'commented': 'commented',
+        'description': 'description',
     }
 
     _RELATION = {}
 
     def __init__(self, *args, **kwargs):
         AbstractModels.__init__(self, *args, **kwargs)
+
+
+class DeviceOrdering(object):
+    ip = DeviceSchema.ip
+    mac = DeviceSchema.mac

@@ -169,6 +169,11 @@ def _get_protocol_row(session, line):
 
 
 @daosession
+def reset_device(session, device_id):
+    session.query(LineSchema).filter(LineSchema.device == str(device_id)).update({'device': ''})
+
+
+@daosession
 def provisioning_id_exists(session, provd_id):
     line = session.query(LineSchema.id).filter(LineSchema.provisioningid == provd_id).count()
     if line > 0:

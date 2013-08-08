@@ -17,8 +17,12 @@
 
 from xivo_dao.alchemy.devicefeatures import DeviceFeatures as DeviceSchema
 from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.data_handler.device.model import Device
-from xivo_dao.data_handler.exception import ElementNotExistsError
+from xivo_dao.data_handler.device.model import Device, DeviceOrdering
+from xivo_dao.data_handler.exception import ElementNotExistsError, \
+    ElementCreationError, ElementDeletionError
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+
+DEFAULT_ORDER = [DeviceOrdering.ip, DeviceOrdering.mac]
 
 
 @daosession
@@ -42,3 +46,46 @@ def get_by_deviceid(session, device_id):
         raise ElementNotExistsError('Device', deviceid=device_id)
 
     return Device.from_data_source(res)
+
+
+@daosession
+def find_all(session):
+    rows = (session.query(DeviceSchema).all())
+
+    return [Device.from_data_source(row) for row in rows]
+
+
+@daosession
+def create(session, device):
+    device_row = device.to_data_source(DeviceSchema)
+    session.begin()
+    session.add(device_row)
+
+    try:
+        session.commit()
+    except SQLAlchemyError as e:
+        session.rollback()
+        raise ElementCreationError('Device', e)
+    except IntegrityError as e:
+        session.rollback()
+        raise ElementCreationError('Device', e)
+
+    device.id = device_row.id
+
+    return device
+
+
+@daosession
+def delete(session, device):
+    session.begin()
+    try:
+        nb_row_affected = session.query(DeviceSchema).filter(DeviceSchema.id == device.id).delete()
+        session.commit()
+    except SQLAlchemyError, e:
+        session.rollback()
+        raise ElementDeletionError('Device', e)
+
+    if nb_row_affected == 0:
+        raise ElementDeletionError('Device', 'device_id %s not exist' % device.id)
+
+    return nb_row_affected
