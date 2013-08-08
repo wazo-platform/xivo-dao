@@ -20,9 +20,9 @@ import random
 from . import notifier
 from . import dao
 
-from xivo_dao.data_handler.exception import MissingParametersError
 from urllib2 import URLError
 from xivo_dao.helpers import provd_connector
+from xivo_dao.data_handler.exception import MissingParametersError
 from xivo_dao.data_handler.device import services as device_services
 
 

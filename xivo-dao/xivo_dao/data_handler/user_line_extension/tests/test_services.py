@@ -50,6 +50,25 @@ class TestUserLineExtensionServices(unittest.TestCase):
 
         assert_that(result, equal_to(user_line_extension))
 
+    @patch('xivo_dao.data_handler.user_line_extension.dao.find_all_by_extension_id', Mock(return_value=[]))
+    def test_find_all_by_line_id_not_found(self):
+        expected_result = []
+        line_id = 39847
+
+        result = user_line_extension_services.find_all_by_line_id(line_id)
+
+        assert_that(expected_result, equal_to(result))
+
+    @patch('xivo_dao.data_handler.user_line_extension.dao.find_all_by_line_id')
+    def test_find_all_by_line_id_found(self, mock_dao):
+        line_id = 39847
+        user_line_extension = UserLineExtension(user_id=1324, line_id=line_id, extension_id=4343)
+        mock_dao.return_value = user_line_extension
+
+        result = user_line_extension_services.find_all_by_line_id(line_id)
+
+        assert_that(result, equal_to(user_line_extension))
+
     def test_create_no_properties(self):
         user_line_extension = UserLineExtension()
 

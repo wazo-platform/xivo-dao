@@ -97,6 +97,23 @@ class TestUserLineExtensionDao(DAOTestCase):
 
         assert_that(result, contains(expected_ule))
 
+    def test_find_all_by_line_id_not_found(self):
+        expected_result = []
+        line_id = 5676
+
+        result = ule_dao.find_all_by_line_id(line_id)
+
+        assert_that(result, equal_to(expected_result))
+
+    def test_find_all_by_line_id_found(self):
+        ule_row = self.add_user_line_with_exten()
+        line_id = ule_row.line_id
+        expected_ule = UserLineExtension.from_data_source(ule_row)
+
+        result = ule_dao.find_all_by_line_id(line_id)
+
+        assert_that(result, contains(expected_ule))
+
     def test_create(self):
         expected_user = self.add_user()
         expected_line = self.add_line()

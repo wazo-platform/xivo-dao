@@ -43,6 +43,10 @@ def find_all_by_extension_id(extension_id):
     return dao.find_all_by_extension_id(extension_id)
 
 
+def find_all_by_line_id(line_id):
+    return dao.find_all_by_line_id(line_id)
+
+
 def create(ule):
     _validate(ule)
     ule = dao.create(ule)
