@@ -107,10 +107,16 @@ def _check_invalid_parameters(ule_id):
 
 def _check_nonexistent_parameters(ule):
     nonexistent = {}
+
     try:
         extension_dao.get(ule.extension_id)
     except ElementNotExistsError:
         nonexistent['extension_id'] = ule.extension_id
+
+    try:
+        line_dao.get(ule.line_id)
+    except ElementNotExistsError:
+        nonexistent['line_id'] = ule.line_id
 
     if len(nonexistent) > 0:
         raise NonexistentParametersError(**nonexistent)
