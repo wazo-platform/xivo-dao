@@ -7,7 +7,8 @@ from mock import patch, Mock
 from xivo_dao.data_handler.user_line_extension.model import UserLineExtension
 from xivo_dao.data_handler.user_line_extension import services as user_line_extension_services
 from xivo_dao.data_handler.exception import MissingParametersError, \
-    InvalidParametersError, ElementCreationError, ElementDeletionError
+    InvalidParametersError, ElementCreationError, ElementDeletionError, ElementNotExistsError, \
+    NonexistentParametersError
 
 
 class TestUserLineExtensionServices(unittest.TestCase):
@@ -65,6 +66,19 @@ class TestUserLineExtensionServices(unittest.TestCase):
                                 main_line=False)
 
         self.assertRaises(InvalidParametersError, user_line_extension_services.create, ule)
+
+    @patch('xivo_dao.data_handler.extension.dao.get', Mock(side_effect=ElementNotExistsError('')))
+    @patch('xivo_dao.data_handler.user_line_extension.notifier.created')
+    @patch('xivo_dao.data_handler.user_line_extension.dao.create')
+    def test_create_with_nonexistent_extension(self, user_line_extension_dao_create, user_line_extension_notifier_created):
+        ule = UserLineExtension(user_id=5898,
+                                line_id=52,
+                                extension_id=42,
+                                main_user=True,
+                                main_line=False)
+
+        self.assertRaises(NonexistentParametersError, user_line_extension_services.create, ule)
+        assert_that(user_line_extension_dao_create.call_count, equal_to(0))
 
     @patch('xivo_dao.data_handler.user_line_extension.notifier.created')
     @patch('xivo_dao.data_handler.user_line_extension.dao.create')
@@ -131,6 +145,7 @@ class TestUserLineExtensionServices(unittest.TestCase):
         extension_edit.assert_called_once_with(extension)
         user_line_extension_notifier_created.assert_called_once_with(ule)
 
+    @patch('xivo_dao.data_handler.extension.dao.get', Mock(return_value=Mock()))
     @patch('xivo_dao.data_handler.user_line_extension.dao.create')
     def test_create_with_error_from_dao(self, user_line_extension_dao_create):
         ule = UserLineExtension(user_id=5898,
@@ -144,6 +159,7 @@ class TestUserLineExtensionServices(unittest.TestCase):
 
         self.assertRaises(ElementCreationError, user_line_extension_services.create, ule)
 
+    @patch('xivo_dao.data_handler.extension.dao.get', Mock(return_value=Mock()))
     @patch('xivo_dao.data_handler.user_line_extension.notifier.edited')
     @patch('xivo_dao.data_handler.user_line_extension.dao.edit')
     def test_edit(self, user_dao_edit, user_notifier_edited):

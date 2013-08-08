@@ -28,6 +28,19 @@ class InvalidParametersError(ValueError):
         ValueError.__init__(self, "Invalid parameters: %s" % ','.join(invalid_parameters))
 
 
+class NonexistentParametersError(ValueError):
+
+    def __init__(self, **kwargs):
+        errors = []
+        for key, value in kwargs.iteritems():
+            message = '%s %s does not exist' % (key, value)
+            errors.append(message)
+
+        error = "Nonexistent parameters: %s" % ','.join(errors)
+
+        ValueError.__init__(self, error)
+
+
 class ElementAlreadyExistsError(ValueError):
 
     def __init__(self, element, *args):
