@@ -20,7 +20,7 @@ import random
 from . import notifier
 from . import dao
 
-from xivo_dao.data_handler.exception import MissingParametersError
+from xivo_dao.data_handler.exception import MissingParametersError, InvalidParametersError
 from urllib2 import URLError
 from xivo_dao.helpers import provd_connector
 from xivo_dao.data_handler.device import services as device_services
@@ -74,12 +74,22 @@ def delete(line):
 
 def _validate(line):
     _check_missing_parameters(line)
+    _check_invalid_parameters(line)
 
 
 def _check_missing_parameters(line):
     missing = line.missing_parameters()
     if missing:
         raise MissingParametersError(missing)
+
+
+def _check_invalid_parameters(line):
+    invalid = []
+    if line.context.strip() == '':
+        invalid.append('context cannot be empty')
+
+    if len(invalid) > 0:
+        raise InvalidParametersError(invalid)
 
 
 def make_provisioning_id():

@@ -9,7 +9,7 @@ from xivo_dao.helpers.provd_connector import ProvdError
 from xivo_dao.data_handler.line.model import LineSIP, LineOrdering, Line
 from xivo_dao.data_handler.line import services as line_services
 from xivo_dao.data_handler.exception import MissingParametersError, \
-    ElementCreationError
+    ElementCreationError, InvalidParametersError
 
 
 class TestLineServices(unittest.TestCase):
@@ -130,6 +130,15 @@ class TestLineServices(unittest.TestCase):
 
         self.assertRaises(MissingParametersError, line_services.create, line)
         self.assertEquals(make_provisioning_id.call_count, 0)
+
+    @patch('xivo_dao.data_handler.line.services.make_provisioning_id')
+    @patch('xivo_dao.data_handler.line.dao.create')
+    def test_create_with_empty_attributes(self, line_dao_create, make_provisioning_id):
+        line = LineSIP(context='')
+
+        self.assertRaises(InvalidParametersError, line_services.create, line)
+        self.assertEquals(make_provisioning_id.call_count, 0)
+
 
     @patch('xivo_dao.data_handler.line.services.make_provisioning_id')
     @patch('xivo_dao.data_handler.line.dao.create')
