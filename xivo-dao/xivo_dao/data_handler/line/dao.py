@@ -109,6 +109,15 @@ def find_all_by_name(session, name, order=None):
     return _rows_to_line_model(line_rows)
 
 
+@daosession
+def find_all_by_device_id(session, device_id, order=None):
+    line_rows = (_new_query(session, order)
+                 .filter(LineSchema.device == str(device_id))
+                 .all())
+
+    return _rows_to_line_model(line_rows)
+
+
 def _rows_to_line_model(line_rows):
     if not line_rows:
         return []

@@ -50,6 +50,10 @@ def find_all_by_protocol(protocol):
     return dao.find_all_by_protocol(protocol)
 
 
+def find_all_by_device_id(name):
+    return dao.find_all_by_device_id(name)
+
+
 def create(line):
     _validate(line)
     line.provisioningid = make_provisioning_id()

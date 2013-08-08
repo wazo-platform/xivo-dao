@@ -113,6 +113,42 @@ class TestLineServices(unittest.TestCase):
         self.assertEquals(result, expected_result)
         line_dao_find_all_by_name.assert_called_once_with(name)
 
+    @patch('xivo_dao.data_handler.line.dao.find_all_by_name')
+    def test_find_all_by_name_no_result(self, line_dao_find_all_by_name):
+        expected_result = []
+        name = 'Lord'
+
+        line_dao_find_all_by_name.return_value = expected_result
+
+        result = line_services.find_all_by_name(name)
+
+        self.assertEquals(result, expected_result)
+        line_dao_find_all_by_name.assert_called_once_with(name)
+
+    @patch('xivo_dao.data_handler.line.dao.find_all_by_device_id')
+    def test_find_all_by_device_id(self, line_dao_find_all_by_device_id):
+        expected_result = [Mock(Line)]
+        device_id = '222'
+
+        line_dao_find_all_by_device_id.return_value = expected_result
+
+        result = line_services.find_all_by_device_id(device_id)
+
+        self.assertEquals(result, expected_result)
+        line_dao_find_all_by_device_id.assert_called_once_with(device_id)
+
+    @patch('xivo_dao.data_handler.line.dao.find_all_by_device_id')
+    def test_find_all_by_device_id_no_result(self, line_dao_find_all_by_device_id):
+        expected_result = []
+        device_id = '222'
+
+        line_dao_find_all_by_device_id.return_value = expected_result
+
+        result = line_services.find_all_by_device_id(device_id)
+
+        self.assertEquals(result, expected_result)
+        line_dao_find_all_by_device_id.assert_called_once_with(device_id)
+
     @patch('xivo_dao.data_handler.line.dao.provisioning_id_exists')
     def test_make_provisioning_id(self, provd_id_exists):
         provd_id_exists.return_value = False

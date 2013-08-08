@@ -319,6 +319,72 @@ class TestLineDao(DAOTestCase):
             has_property('id', line_last.id),
         ))
 
+    def test_find_all_by_device_id_no_lines(self):
+        result = line_dao.find_all_by_device_id('1')
+
+        assert_that(result, has_length(0))
+
+    def test_find_all_by_device_id(self):
+        device_id = u'222'
+
+        line_sip = self.add_usersip(name='lord')
+        line = self.add_line(protocolid=line_sip.id,
+                             name=line_sip.name,
+                             context=line_sip.context,
+                             device=device_id)
+
+        result = line_dao.find_all_by_device_id(device_id)
+
+        assert_that(result, has_length(1))
+        assert_that(result, contains(
+            has_property('id', line.id)
+        ))
+        assert_that(result, contains(
+            has_property('device', device_id)
+        ))
+
+    def test_find_all_by_device_id_some_lines_no_device(self):
+
+        line_sip = self.add_usersip(name='Lordy')
+        self.add_line(protocolid=line_sip.id,
+                      name=line_sip.name,
+                      context=line_sip.context)
+        line_sip = self.add_usersip(name='Toto')
+        self.add_line(protocolid=line_sip.id,
+                      name=line_sip.name,
+                      context=line_sip.context)
+
+        result = line_dao.find_all_by_device_id('54')
+
+        assert_that(result, has_length(0))
+
+    def test_find_all_by_device_id_some_lines(self):
+        device_id = u'222'
+
+        line_sip = self.add_usersip(name='Lordy')
+        self.add_line(protocolid=line_sip.id,
+                      name=line_sip.name,
+                      context=line_sip.context)
+        line_sip = self.add_usersip(name='Toto')
+        self.add_line(protocolid=line_sip.id,
+                      name=line_sip.name,
+                      context=line_sip.context)
+        line_sip = self.add_usersip(name='lord')
+        line = self.add_line(protocolid=line_sip.id,
+                             name=line_sip.name,
+                             context=line_sip.context,
+                             device=device_id)
+
+        result = line_dao.find_all_by_device_id(device_id)
+
+        assert_that(result, has_length(1))
+        assert_that(result, contains(
+            has_property('id', line.id)
+        ))
+        assert_that(result, contains(
+            has_property('device', device_id)
+        ))
+
     def test_provisioning_id_exists(self):
         provd_id = 123456
         self.add_line(provisioningid=provd_id)
