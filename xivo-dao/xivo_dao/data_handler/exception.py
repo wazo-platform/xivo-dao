@@ -53,7 +53,7 @@ class ElementNotExistsError(LookupError):
         err = []
         for key, value in kwargs.iteritems():
             err.append('%s=%s' % (key, value))
-        LookupError.__init__(self, "%s with %s not exists" % (element, ' '.join(err)))
+        LookupError.__init__(self, "%s with %s does not exist" % (element, ' '.join(err)))
 
 
 class ElementCreationError(IOError):
