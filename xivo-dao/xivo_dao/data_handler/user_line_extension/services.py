@@ -23,6 +23,7 @@ from xivo_dao.data_handler.exception import MissingParametersError, \
 from xivo_dao.data_handler.line import services as line_services
 from xivo_dao.data_handler.line import dao as line_dao
 from xivo_dao.data_handler.user import services as user_services
+from xivo_dao.data_handler.user import dao as user_dao
 from xivo_dao.data_handler.extension import services as extension_services
 from xivo_dao.data_handler.extension import dao as extension_dao
 
@@ -117,6 +118,11 @@ def _check_nonexistent_parameters(ule):
         line_dao.get(ule.line_id)
     except ElementNotExistsError:
         nonexistent['line_id'] = ule.line_id
+
+    try:
+        user_dao.get(ule.user_id)
+    except ElementNotExistsError:
+        nonexistent['user_id'] = ule.user_id
 
     if len(nonexistent) > 0:
         raise NonexistentParametersError(**nonexistent)
