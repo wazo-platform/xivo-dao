@@ -66,6 +66,20 @@ class TestUserDAO(DAOTestCase):
     def setUp(self):
         self.empty_tables()
 
+    def test_get_main_user_by_line_id_not_found(self):
+        line_id = 654
+
+        self.assertRaises(LookupError, user_dao.get_main_user_by_line_id, line_id)
+
+    def test_get_main_user_by_line_id(self):
+        user_line = self.add_user_line_with_exten()
+        line_id = user_line.line.id
+        expected_result = User.from_data_source(user_line.user)
+
+        result = user_dao.get_main_user_by_line_id(line_id)
+
+        assert_that(result, equal_to(expected_result))
+
     def test_find_all_no_users(self):
         expected = []
         users = user_dao.find_all()

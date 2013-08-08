@@ -98,15 +98,6 @@ class TestUserLineDAO(DAOTestCase):
 
         self.assertEqual(result, expected)
 
-    def test_get_main_user_id_by_line_id(self):
-        self.add_user_line_with_exten(exten='445')
-        self.add_user_line_with_exten(exten='221')
-        user_line = self.add_user_line_with_exten(exten=LINE_NUMBER)
-
-        user_id = user_line_dao.get_main_user_id_by_line_id(user_line.line.id)
-
-        self.assertEqual(user_id, user_line.user.id)
-
     def test_is_phone_exten(self):
         self.add_user_line_with_exten(exten='445')
         self.add_user_line_with_exten(exten='221')
