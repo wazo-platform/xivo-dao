@@ -15,11 +15,45 @@ class Test(unittest.TestCase):
         self.device_id = 1
         self.provd_deviceid = "ad0a12fd5f244ae68a3c626789203698"
 
+    @patch('xivo_dao.data_handler.device.services.build_line_for_device')
+    @patch('xivo_dao.data_handler.line.dao.find_all_by_device_id')
+    def test_rebuild_device_config(self, line_find_all_by_device_id, build_line_for_device):
+        device = Device(id=self.device_id)
+        line1 = LineSIP(device=self.device_id)
+        line_find_all_by_device_id.return_value = [line1]
+
+        device_services.rebuild_device_config(device)
+
+        build_line_for_device.assert_called_once_with(device, line1)
+
+    @patch('xivo_dao.data_handler.device.services.build_line_for_device')
+    @patch('xivo_dao.data_handler.line.dao.find_all_by_device_id')
+    def test_rebuild_device_config_2_lines_same_device(self, line_find_all_by_device_id, build_line_for_device):
+        device = Device(id=self.device_id)
+        line1 = LineSIP(device=self.device_id)
+        line2 = LineSIP(device=self.device_id)
+        line_find_all_by_device_id.return_value = [line1, line2]
+
+        device_services.rebuild_device_config(device)
+
+        build_line_for_device.assert_called_with(device, line1)
+        build_line_for_device.assert_called_with(device, line2)
+
+    @patch('xivo_dao.data_handler.device.services.build_line_for_device')
+    @patch('xivo_dao.data_handler.line.dao.find_all_by_device_id')
+    def test_rebuild_device_config_no_result(self, line_find_all_by_device_id, build_line_for_device):
+        device = Device(id=self.device_id)
+        line_find_all_by_device_id.return_value = []
+
+        device_services.rebuild_device_config(device)
+
+        self.assertEquals(build_line_for_device.call_count, 0)
+
     @patch('xivo_dao.data_handler.extension.dao.get')
     @patch('xivo_dao.data_handler.user_line_extension.dao.find_all_by_line_id')
     @patch('xivo_dao.helpers.provd_connector.config_manager')
     @patch('xivo_dao.helpers.provd_connector.device_manager')
-    def test_add_line_to_device_with_a_sip_line(self, device_manager, config_manager, ule_find_all_by_line_id, extension_dao_get):
+    def test_build_line_for_device_with_a_sip_line(self, device_manager, config_manager, ule_find_all_by_line_id, extension_dao_get):
         username = '1234'
         secret = 'password'
         exten = '1250'
@@ -69,7 +103,7 @@ class Test(unittest.TestCase):
             }
         }
 
-        device_services.add_line_to_device(device, line)
+        device_services.build_line_for_device(device, line)
 
         config_manager.get.assert_any_call(self.provd_deviceid)
         config_manager.get.assert_any_call(configregistrar)
@@ -79,7 +113,7 @@ class Test(unittest.TestCase):
     @patch('xivo_dao.data_handler.user_line_extension.dao.find_all_by_line_id')
     @patch('xivo_dao.helpers.provd_connector.config_manager')
     @patch('xivo_dao.helpers.provd_connector.device_manager')
-    def test_add_line_to_device_with_a_sip_line_with_proxy_backup(self, device_manager, config_manager, ule_find_all_by_line_id, extension_dao_get):
+    def test_build_line_for_device_with_a_sip_line_with_proxy_backup(self, device_manager, config_manager, ule_find_all_by_line_id, extension_dao_get):
         username = '1234'
         secret = 'password'
         exten = '1250'
@@ -132,7 +166,7 @@ class Test(unittest.TestCase):
             }
         }
 
-        device_services.add_line_to_device(device, line)
+        device_services.build_line_for_device(device, line)
 
         config_manager.get.assert_any_call(self.provd_deviceid)
         config_manager.get.assert_any_call(configregistrar)
@@ -141,7 +175,7 @@ class Test(unittest.TestCase):
     @patch('xivo_dao.data_handler.user_line_extension.dao.find_all_by_line_id')
     @patch('xivo_dao.helpers.provd_connector.config_manager')
     @patch('xivo_dao.helpers.provd_connector.device_manager')
-    def test_add_line_to_device_with_a_sccp_line(self, device_manager, config_manager, ule_find_all_by_line_id):
+    def test_build_line_for_device_with_a_sccp_line(self, device_manager, config_manager, ule_find_all_by_line_id):
         exten = '1250'
         context = 'default'
         callerid = 'Francis Dagobert <%s>' % exten
@@ -176,7 +210,7 @@ class Test(unittest.TestCase):
             }
         }
 
-        device_services.add_line_to_device(device, line)
+        device_services.build_line_for_device(device, line)
 
         config_manager.get.assert_any_call(self.provd_deviceid)
         config_manager.get.assert_any_call(configregistrar)
@@ -185,7 +219,7 @@ class Test(unittest.TestCase):
     @patch('xivo_dao.data_handler.user_line_extension.dao.find_all_by_line_id')
     @patch('xivo_dao.helpers.provd_connector.config_manager')
     @patch('xivo_dao.helpers.provd_connector.device_manager')
-    def test_add_line_to_device_with_a_sccp_line_with_proxy_backup(self, device_manager, config_manager, ule_find_all_by_line_id):
+    def test_build_line_for_device_with_a_sccp_line_with_proxy_backup(self, device_manager, config_manager, ule_find_all_by_line_id):
         exten = '1250'
         context = 'default'
         callerid = 'Francis Dagobert <%s>' % exten
@@ -222,7 +256,7 @@ class Test(unittest.TestCase):
             }
         }
 
-        device_services.add_line_to_device(device, line)
+        device_services.build_line_for_device(device, line)
 
         config_manager.get.assert_any_call(self.provd_deviceid)
         config_manager.get.assert_any_call(configregistrar)
