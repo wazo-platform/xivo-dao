@@ -19,10 +19,11 @@ import dao
 import notifier
 
 from xivo_dao.data_handler.exception import MissingParametersError, \
-    InvalidParametersError, ElementNotExistsError
+    InvalidParametersError, ElementNotExistsError, NonexistentParametersError
 from xivo_dao.data_handler.line import services as line_services
 from xivo_dao.data_handler.line import dao as line_dao
 from xivo_dao.data_handler.user import services as user_services
+from xivo_dao.data_handler.user import dao as user_dao
 from xivo_dao.data_handler.extension import services as extension_services
 from xivo_dao.data_handler.extension import dao as extension_dao
 
@@ -78,6 +79,7 @@ def _validate(ule):
     _check_missing_parameters(ule)
     _fill_optional_parameters(ule)
     _check_invalid_parameters(ule)
+    _check_nonexistent_parameters(ule)
 
 
 def _check_missing_parameters(ule):
@@ -106,6 +108,28 @@ def _check_invalid_parameters(ule_id):
         invalid_parameters.append('main_user must be boolean')
     if invalid_parameters:
         raise InvalidParametersError(invalid_parameters)
+
+
+def _check_nonexistent_parameters(ule):
+    nonexistent = {}
+
+    try:
+        extension_dao.get(ule.extension_id)
+    except ElementNotExistsError:
+        nonexistent['extension_id'] = ule.extension_id
+
+    try:
+        line_dao.get(ule.line_id)
+    except ElementNotExistsError:
+        nonexistent['line_id'] = ule.line_id
+
+    try:
+        user_dao.get(ule.user_id)
+    except ElementNotExistsError:
+        nonexistent['user_id'] = ule.user_id
+
+    if len(nonexistent) > 0:
+        raise NonexistentParametersError(**nonexistent)
 
 
 def _fill_optional_parameters(ule):

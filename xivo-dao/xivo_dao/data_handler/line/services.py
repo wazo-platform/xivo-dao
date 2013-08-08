@@ -22,8 +22,9 @@ from . import dao
 
 from urllib2 import URLError
 from xivo_dao.helpers import provd_connector
-from xivo_dao.data_handler.exception import MissingParametersError
+from xivo_dao.data_handler.exception import MissingParametersError, InvalidParametersError
 from xivo_dao.data_handler.device import services as device_services
+from xivo_dao.data_handler.context import services as context_services
 
 
 def get(line_id):
@@ -78,12 +79,29 @@ def delete(line):
 
 def _validate(line):
     _check_missing_parameters(line)
+    _check_invalid_parameters(line)
+    _check_invalid_context(line)
 
 
 def _check_missing_parameters(line):
     missing = line.missing_parameters()
     if missing:
         raise MissingParametersError(missing)
+
+
+def _check_invalid_parameters(line):
+    invalid = []
+    if line.context.strip() == '':
+        invalid.append('context cannot be empty')
+
+    if len(invalid) > 0:
+        raise InvalidParametersError(invalid)
+
+
+def _check_invalid_context(line):
+    context = context_services.find_by_name(line.context)
+    if not context:
+        raise InvalidParametersError(['context %s does not exist' % line.context])
 
 
 def make_provisioning_id():
