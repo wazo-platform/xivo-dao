@@ -242,7 +242,7 @@ class TestLineDao(DAOTestCase):
         assert_that(lines[0].id, equal_to(line_first.id))
         assert_that(lines[1].id, equal_to(line_last.id))
 
-    def test_find_all_by_name_by_name_no_line(self):
+    def test_find_all_by_name_no_line(self):
         result = line_dao.find_all_by_name('abc')
 
         assert_that(result, equal_to([]))

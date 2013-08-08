@@ -9,7 +9,7 @@ from xivo_dao.helpers.provd_connector import ProvdError
 from xivo_dao.data_handler.line.model import LineSIP, LineOrdering, Line
 from xivo_dao.data_handler.line import services as line_services
 from xivo_dao.data_handler.exception import MissingParametersError, \
-    ElementCreationError
+    ElementCreationError, ElementNotExistsError
 
 
 class TestLineServices(unittest.TestCase):
@@ -26,6 +26,12 @@ class TestLineServices(unittest.TestCase):
         mock_line_get.assert_called_once_with(line_id)
         self.assertEquals(result, line)
 
+    @patch('xivo_dao.data_handler.line.dao.get')
+    def test_get_not_exist(self, mock_line_get):
+        mock_line_get.side_effect = ElementNotExistsError('Line')
+
+        self.assertRaises(ElementNotExistsError, line_services.get, 1)
+
     @patch('xivo_dao.data_handler.line.dao.get_by_user_id')
     def test_get_by_user_id(self, mock_get_by_user_id):
         user_id = 1
@@ -37,6 +43,12 @@ class TestLineServices(unittest.TestCase):
 
         mock_get_by_user_id.assert_called_once_with(user_id)
         self.assertEquals(result, line)
+
+    @patch('xivo_dao.data_handler.line.dao.get_by_user_id')
+    def test_get_by_user_id_not_exist(self, mock_get_by_user_id):
+        mock_get_by_user_id.side_effect = ElementNotExistsError('Line')
+
+        self.assertRaises(ElementNotExistsError, line_services.get_by_user_id, 1)
 
     @patch('xivo_dao.data_handler.line.dao.get_by_number_context')
     def test_get_by_number_context(self, mock_get_by_number_context):
@@ -51,13 +63,19 @@ class TestLineServices(unittest.TestCase):
         mock_get_by_number_context.assert_called_once_with(number, context)
         self.assertEquals(result, line)
 
+    @patch('xivo_dao.data_handler.line.dao.get_by_number_context')
+    def test_get_by_number_context_not_exist(self, mock_get_by_number_context):
+        mock_get_by_number_context.side_effect = ElementNotExistsError('Line')
+
+        self.assertRaises(ElementNotExistsError, line_services.get_by_number_context, '1000', 'default')
+
     @patch('xivo_dao.data_handler.line.dao.find_all')
     def test_find_all(self, line_dao_find_all):
-        first_user = Mock(Line)
-        second_user = Mock(Line)
+        first_line = Mock(Line)
+        second_line = Mock(Line)
         expected_order = None
 
-        expected = [first_user, second_user]
+        expected = [first_line, second_line]
 
         line_dao_find_all.return_value = expected
 
@@ -69,11 +87,11 @@ class TestLineServices(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.line.dao.find_all')
     def test_find_all_order_by_name(self, line_dao_find_all):
-        first_user = Mock(Line)
-        second_user = Mock(Line)
+        first_line = Mock(Line)
+        second_line = Mock(Line)
         expected_order = [LineOrdering.name]
 
-        expected = [first_user, second_user]
+        expected = [first_line, second_line]
 
         line_dao_find_all.return_value = expected
 
@@ -85,14 +103,14 @@ class TestLineServices(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.line.dao.find_all_by_name')
     def test_find_all_by_name(self, line_dao_find_all_by_name):
-        user = Mock(Line)
+        expected_result = [Mock(Line)]
         name = 'Lord'
 
-        line_dao_find_all_by_name.return_value = user
+        line_dao_find_all_by_name.return_value = expected_result
 
         result = line_services.find_all_by_name(name)
 
-        self.assertEquals(result, user)
+        self.assertEquals(result, expected_result)
         line_dao_find_all_by_name.assert_called_once_with(name)
 
     @patch('xivo_dao.data_handler.line.dao.provisioning_id_exists')
