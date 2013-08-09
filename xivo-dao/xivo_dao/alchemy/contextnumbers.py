@@ -31,5 +31,5 @@ class ContextNumbers(Base):
                        metadata=Type.metadata),
                   primary_key=True)
     numberbeg = Column(String(16), default=0, primary_key=True)
-    numberbeg = Column(String(16), default=0, primary_key=True)
+    numberend = Column(String(16), default=0, primary_key=True)
     didlength = Column(Integer, nullable=False, default=0)
