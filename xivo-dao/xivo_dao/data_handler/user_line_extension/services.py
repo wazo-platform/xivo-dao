@@ -49,9 +49,9 @@ def find_all_by_line_id(line_id):
 
 
 def create(ule):
-    _validate(ule)
+    user, line, extension = _validate(ule)
     ule = dao.create(ule)
-    _make_secondary_associations(ule)
+    _make_secondary_associations(ule, user, line, extension)
     notifier.created(ule)
     return ule
 
@@ -79,7 +79,7 @@ def _validate(ule):
     _check_missing_parameters(ule)
     _fill_optional_parameters(ule)
     _check_invalid_parameters(ule)
-    _check_nonexistent_parameters(ule)
+    return _check_nonexistent_parameters(ule)
 
 
 def _check_missing_parameters(ule):
@@ -114,22 +114,24 @@ def _check_nonexistent_parameters(ule):
     nonexistent = {}
 
     try:
-        extension_dao.get(ule.extension_id)
+        extension = extension_dao.get(ule.extension_id)
     except ElementNotExistsError:
         nonexistent['extension_id'] = ule.extension_id
 
     try:
-        line_dao.get(ule.line_id)
+        line = line_dao.get(ule.line_id)
     except ElementNotExistsError:
         nonexistent['line_id'] = ule.line_id
 
     try:
-        user_dao.get(ule.user_id)
+        user = user_dao.get(ule.user_id)
     except ElementNotExistsError:
         nonexistent['user_id'] = ule.user_id
 
     if len(nonexistent) > 0:
         raise NonexistentParametersError(**nonexistent)
+
+    return user, line, extension
 
 
 def _fill_optional_parameters(ule):
@@ -139,12 +141,14 @@ def _fill_optional_parameters(ule):
         ule.main_user = True
 
 
-def _make_secondary_associations(ule):
-    extension = extension_dao.get(ule.extension_id)
-    line_dao.associate_extension(extension, ule.line_id)
+def _make_secondary_associations(ule, user, line, extension):
     extension.type = 'user'
     extension.typeval = str(ule.user_id)
     extension_dao.edit(extension)
+    line.number = extension.exten
+    line.context = extension.context
+    line.callerid = user.callerid
+    line_dao.edit(line)
 
 
 def _remove_user(ule):

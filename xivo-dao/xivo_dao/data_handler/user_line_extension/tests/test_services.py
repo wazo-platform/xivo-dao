@@ -9,6 +9,9 @@ from xivo_dao.data_handler.user_line_extension import services as user_line_exte
 from xivo_dao.data_handler.exception import MissingParametersError, \
     InvalidParametersError, ElementCreationError, ElementDeletionError, ElementNotExistsError, \
     NonexistentParametersError
+from xivo_dao.data_handler.line.model import LineSIP
+from xivo_dao.data_handler.user.model import User
+from xivo_dao.data_handler.extension.model import Extension
 
 
 class TestUserLineExtensionServices(unittest.TestCase):
@@ -51,7 +54,7 @@ class TestUserLineExtensionServices(unittest.TestCase):
 
         assert_that(result, equal_to(user_line_extension))
 
-    @patch('xivo_dao.data_handler.user_line_extension.dao.find_all_by_extension_id', Mock(return_value=[]))
+    @patch('xivo_dao.data_handler.user_line_extension.dao.find_all_by_line_id', Mock(return_value=[]))
     def test_find_all_by_line_id_not_found(self):
         expected_result = []
         line_id = 39847
@@ -160,28 +163,50 @@ class TestUserLineExtensionServices(unittest.TestCase):
 
         self.assertRaises(MissingParametersError, user_line_extension_services.create, ule)
 
-    @patch('xivo_dao.data_handler.user.dao.get', Mock(return_value=Mock()))
-    @patch('xivo_dao.data_handler.line.dao.get', Mock(return_value=Mock()))
     @patch('xivo_dao.data_handler.user_line_extension.notifier.created')
     @patch('xivo_dao.data_handler.user_line_extension.dao.create')
-    @patch('xivo_dao.data_handler.line.dao.associate_extension')
+    @patch('xivo_dao.data_handler.line.dao.get')
+    @patch('xivo_dao.data_handler.user.dao.get')
+    @patch('xivo_dao.data_handler.line.dao.edit')
     @patch('xivo_dao.data_handler.extension.dao.get')
     @patch('xivo_dao.data_handler.extension.dao.edit')
-    def test_create(self, extension_edit, extension_get, line_associate_extension, user_line_extension_dao_create, user_line_extension_notifier_created):
+    def test_create(self,
+                    extension_edit,
+                    extension_get,
+                    line_edit,
+                    user_get,
+                    line_get,
+                    user_line_extension_dao_create,
+                    user_line_extension_notifier_created):
+        exten = '1000'
+        context = 'default'
         ule_id = 63
         line_id = 52
         user_id = 5898
+        extension_id = 52
+        callerid = 'Francis Dagobert'
         ule = UserLineExtension(user_id=user_id,
                                 line_id=line_id,
-                                extension_id=52,
+                                extension_id=extension_id,
                                 main_user=True,
                                 main_line=False)
-        extension = Mock()
-        extension_get.return_value = extension
+        user = User(id=user_id,
+                    callerid=callerid)
+        line = LineSIP(id=line_id,
+                       callerid=callerid,
+                       number=exten,
+                       context=context)
+        extension = Extension(id=extension_id,
+                              exten=exten,
+                              context=context)
 
         def mock_dao(ule):
             ule.id = ule_id
             return ule
+
+        extension_get.return_value = extension
+        user_get.return_value = user
+        line_get.return_value = line
         user_line_extension_dao_create.side_effect = mock_dao
 
         result = user_line_extension_services.create(ule)
@@ -189,11 +214,11 @@ class TestUserLineExtensionServices(unittest.TestCase):
         user_line_extension_dao_create.assert_called_once_with(ule)
         self.assertEquals(type(result), UserLineExtension)
         self.assertEquals(result.id, ule_id)
-        line_associate_extension.assert_called_once_with(extension, line_id)
         self.assertEquals(extension.type, 'user')
         self.assertEquals(extension.typeval, str(user_id))
         extension_edit.assert_called_once_with(extension)
         user_line_extension_notifier_created.assert_called_once_with(ule)
+        line_edit.assert_called_once_with(line)
 
     @patch('xivo_dao.data_handler.user.dao.get', Mock(return_value=Mock()))
     @patch('xivo_dao.data_handler.line.dao.get', Mock(return_value=Mock()))

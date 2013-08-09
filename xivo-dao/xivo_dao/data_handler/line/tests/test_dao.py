@@ -34,7 +34,7 @@ from xivo_dao.alchemy.sccpline import SCCPLine as SCCPLineSchema
 from xivo_dao.data_handler.line.model import LineSIP, LineSCCP, LineIAX, LineCUSTOM, \
     LineOrdering
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
-    ElementCreationError, ElementDeletionError
+    ElementCreationError, ElementDeletionError, ElementEditionError
 from sqlalchemy.exc import SQLAlchemyError
 from mock import patch, Mock
 from hamcrest.library.collection.issequence_containinginorder import contains
@@ -398,14 +398,60 @@ class TestLineDao(DAOTestCase):
 
         assert_that(result, equal_to(False))
 
-    def test_create_sip_line_with_no_extension(self):
-        line = LineSIP(protocol='sip',
-                       context='default',
-                       provisioningid=123456)
+    def test_edit(self):
+        username = 'toto'
+        secret = 'kiki'
+        expected_name = 'huhu'
+        expected_context = 'popo'
+        line_sip = self.add_usersip(name=username,
+                                    username=username,
+                                    secret=secret)
+        line = self.add_line(protocolid=line_sip.id,
+                             name=username,
+                             context=line_sip.context)
 
-        line_created = line_dao.create(line)
+        expected_line = line_dao.get(line.id)
+        expected_line.name = expected_name
+        expected_line.context = expected_context
 
-        assert_that(line_created, is_not(has_property('number')))
+        line_dao.edit(expected_line)
+
+        line_row = (self.session.query(LineSchema)
+                    .filter(LineSchema.id == expected_line.id)
+                    .first())
+
+        line_sip_row = (self.session.query(UserSIPSchema)
+                        .filter(UserSIPSchema.id == expected_line.protocolid)
+                        .first())
+
+        self.assertEquals(line_row.name, expected_name)
+        self.assertEquals(line_row.context, expected_context)
+        self.assertEquals(line_sip_row.name, expected_name)
+        self.assertEquals(line_sip_row.context, expected_context)
+
+    def test_edit_with_unknown_line(self):
+        line_sip = self.add_usersip()
+        line = LineSIP(id=123,
+                       username='unknown',
+                       protocolid=line_sip.id)
+
+        self.assertRaises(ElementNotExistsError, line_dao.edit, line)
+
+    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    def test_edit_with_database_error(self, Session):
+        session = Mock()
+        session.commit.side_effect = SQLAlchemyError()
+        Session.return_value = session
+
+        line_sip = self.add_usersip()
+        line = LineSIP(id=123,
+                       username='toto',
+                       secret='kiki',
+                       protocolid=line_sip.id)
+
+        self.assertRaises(ElementEditionError, line_dao.edit, line)
+        session.begin.assert_called_once_with()
+        session.rollback.assert_called_once_with()
 
     def test_reset_device(self):
         line = self.add_line(device='1234')
@@ -434,6 +480,15 @@ class TestLineDao(DAOTestCase):
         generated_hash = line_dao.generate_random_hash(self.session, UserSIPSchema.name)
 
         assert_that(generated_hash, equal_to(expected_hash))
+
+    def test_create_sip_line_with_no_extension(self):
+        line = LineSIP(protocol='sip',
+                       context='default',
+                       provisioningid=123456)
+
+        line_created = line_dao.create(line)
+
+        assert_that(line_created, is_not(has_property('number')))
 
     @patch('xivo_dao.helpers.db_manager.AsteriskSession')
     def test_create_sip_line_with_error_from_dao(self, Session):

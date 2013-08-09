@@ -30,7 +30,7 @@ from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
-    ElementDeletionError, ElementCreationError
+    ElementDeletionError, ElementCreationError, ElementEditionError
 from model import LineSIP, LineIAX, LineSCCP, LineCUSTOM
 from xivo_dao.data_handler.line.model import LineOrdering
 
@@ -212,17 +212,58 @@ def create(session, line):
     return line
 
 
+@daosession
+def edit(session, line):
+    session.begin()
+    derived_line = _fetch_derived_line(session, line)
+    if derived_line is None:
+        session.rollback()
+        raise ElementNotExistsError('Protocol Line', protocol_id=line.protocolid)
+    line.update_data_source(derived_line)
+    session.add(derived_line)
+
+    line_row = _fetch_line(session, line)
+    if line_row is None:
+        session.rollback()
+        raise ElementNotExistsError('Line', line_id=line.id)
+    line.update_data_source(line_row)
+    session.add(line_row)
+
+    try:
+        session.commit()
+    except SQLAlchemyError as e:
+        session.rollback()
+        raise ElementEditionError('Line', e)
+
+
+def _fetch_line(session, line):
+    return session.query(LineSchema).get(line.id)
+
+
+def _fetch_derived_line(session, line):
+    protocol = line.protocol.lower()
+
+    if protocol == 'sip':
+        return session.query(UserSIPSchema).get(line.protocolid)
+    elif protocol == 'iax':
+        return session.query(UserIAXSchema).get(line.protocolid)
+    elif protocol == 'sccp':
+        return session.query(SCCPLineSchema).get(line.protocolid)
+    elif protocol == 'custom':
+        return session.query(UserCustomSchema).get(line.protocolid)
+
+
 def _build_derived_line(session, line):
     protocol = line.protocol.lower()
 
     if protocol == 'sip':
-        derived_line = _create_sip_line(session, line)
+        derived_line = _build_sip_line(session, line)
     elif protocol == 'iax':
-        derived_line = _create_iax_line(line)
+        derived_line = _build_iax_line(line)
     elif protocol == 'sccp':
-        derived_line = _create_sccp_line(line)
+        derived_line = _build_sccp_line(line)
     elif protocol == 'custom':
-        derived_line = _create_custom_line(line)
+        derived_line = _build_custom_line(line)
 
     return derived_line
 
@@ -235,7 +276,7 @@ def _build_line_row(line, derived_line):
     return line_row
 
 
-def _create_sip_line(session, line):
+def _build_sip_line(session, line):
     if not hasattr(line, 'username'):
         line.username = generate_random_hash(session, UserSIPSchema.name)
 
@@ -271,15 +312,15 @@ def _random_hash(length=8):
     return ''.join(random.choice(pool) for _ in range(length))
 
 
-def _create_iax_line(line):
+def _build_iax_line(line):
     raise NotImplementedError
 
 
-def _create_sccp_line(line):
+def _build_sccp_line(line):
     raise NotImplementedError
 
 
-def _create_custom_line(line):
+def _build_custom_line(line):
     raise NotImplementedError
 
 

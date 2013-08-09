@@ -43,7 +43,7 @@ def find_all():
 
 def create(device):
     _validate(device)
-    device.deviceid = _generate_new_deviceid()
+    device.deviceid = _generate_new_deviceid(device)
     device = dao.create(device)
     notifier.created(device)
     return device
@@ -68,9 +68,10 @@ def _remove_device_from_provd(device):
         provd_config_manager.remove(device.deviceid)
 
 
-def _generate_new_deviceid():
+def _generate_new_deviceid(device):
     provd_device_manager = provd_connector.device_manager()
-    deviceid = provd_device_manager.add({})
+    device_dict = device.to_data_dict()
+    deviceid = provd_device_manager.add(device_dict)
     return deviceid
 
 
@@ -99,8 +100,9 @@ def rebuild_device_config(device):
 
 
 def build_line_for_device(device, line):
-    config = provd_connector.config_manager.get(device.deviceid)
-    confregistrar = provd_connector.config_manager.get(line.configregistrar)
+    provd_config_manager = provd_connector.config_manager()
+    config = provd_config_manager.get(device.deviceid)
+    confregistrar = provd_config_manager.get(line.configregistrar)
     ules = user_line_extension_dao.find_all_by_line_id(line.id)
     for ule in ules:
         if line.protocol == 'sip':
@@ -140,20 +142,23 @@ def _populate_sccp_line(config, confregistrar):
 
 def remove_line_from_device(device_id, line):
     device = dao.get(device_id)
-    config = provd_connector.config_manager.get(device.deviceid)
+    provd_config_manager = provd_connector.config_manager()
+    config = provd_config_manager.get(device.deviceid)
     del config['raw_config']['sip_lines'][str(line.num)]
     if len(config['raw_config']['sip_lines']) == 0:
         # then we reset to autoprov
         _reset_config(config)
         reset_to_autoprov(device.deviceid)
-    provd_connector.config_manager.update(config)
+    provd_config_manager.update(config)
 
 
 def reset_to_autoprov(deviceid):
-    device = provd_connector.device_manager.get(deviceid)
-    new_configid = provd_connector.config_manager.autocreate()
+    provd_device_manager = provd_connector.device_manager()
+    provd_config_manager = provd_connector.config_manager()
+    device = provd_device_manager.get(deviceid)
+    new_configid = provd_config_manager.autocreate()
     device['config'] = new_configid
-    provd_connector.device_manager.update(device)
+    provd_device_manager.update(device)
 
 
 def _reset_config(config):

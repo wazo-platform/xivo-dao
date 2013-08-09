@@ -155,12 +155,8 @@ class TestDeviceDao(DAOTestCase):
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
 
-    @patch('xivo_dao.data_handler.line.dao.reset_device')
-    def test_delete(self, line_dao_reset_device):
+    def test_delete(self):
         deviceid = 'sdklfj'
-
-        line = LineSIP(id=1)
-
         expected_extension = self.add_device(deviceid=deviceid)
 
         extension = device_dao.get(expected_extension.id)
@@ -170,7 +166,6 @@ class TestDeviceDao(DAOTestCase):
         row = self.session.query(DeviceSchema).filter(DeviceSchema.id == expected_extension.id).first()
 
         self.assertEquals(row, None)
-        line_dao_reset_device.assert_called_once_with(line)
 
     def test_delete_not_exist(self):
         extension = Device(id=1)
