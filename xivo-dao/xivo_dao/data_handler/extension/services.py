@@ -73,6 +73,7 @@ def _validate(extension):
     _check_invalid_parameters(extension)
     _check_if_extension_already_exists(extension)
     _check_if_context_exists(extension)
+    _check_if_exten_in_range(extension)
 
 
 def _check_missing_parameters(extension):
@@ -104,3 +105,10 @@ def _check_if_context_exists(extension):
     context = context_services.find_by_name(extension.context)
     if not context:
         raise NonexistentParametersError(context=extension.context)
+
+
+def _check_if_exten_in_range(extension):
+    if not context_services.is_extension_inside_range(extension):
+        raise InvalidParametersError(['exten %s not inside range of context %s' % (
+            extension.exten,
+            extension.context)])

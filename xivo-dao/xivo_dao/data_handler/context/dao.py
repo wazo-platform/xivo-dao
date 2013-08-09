@@ -14,8 +14,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
-
 from xivo_dao.alchemy.context import Context as ContextSchema
+from xivo_dao.alchemy.contextnumbers import ContextNumbers as ContextNumberSchema
 from xivo_dao.alchemy.entity import Entity as EntitySchema
 from xivo_dao.helpers.db_manager import daosession, xivo_daosession
 
@@ -36,3 +36,31 @@ def create(session, context):
 def _get_default_entity_name(session):
     entity = session.query(EntitySchema).first()
     return entity.name
+
+
+@daosession
+def context_ranges(session, context_name, context_type):
+    rows = (session.query(
+        ContextNumberSchema.numberbeg,
+        ContextNumberSchema.numberend)
+        .filter(ContextNumberSchema.context == context_name)
+        .filter(ContextNumberSchema.type == context_type)
+        .all())
+
+    ranges = []
+
+    for row in rows:
+        minimum, maximum = _convert_minimum_maximum(row)
+        ranges.append((minimum, maximum))
+
+    return ranges
+
+
+def _convert_minimum_maximum(row):
+    minimum = int(row.numberbeg)
+    if row.numberend:
+        maximum = int(row.numberend)
+    else:
+        maximum = None
+
+    return minimum, maximum

@@ -44,6 +44,7 @@ class TestExtension(unittest.TestCase):
 
         self.assertRaises(InvalidParametersError, extension_services.create, extension)
 
+    @patch('xivo_dao.data_handler.context.services.is_extension_inside_range', Mock(return_value=True))
     @patch('xivo_dao.data_handler.context.services.find_by_name', Mock(return_value=Mock()))
     @patch('xivo_dao.data_handler.extension.dao.find_by_exten_context', Mock(return_value=None))
     @patch('xivo_dao.data_handler.extension.notifier.created')
@@ -104,6 +105,33 @@ class TestExtension(unittest.TestCase):
         self.assertEquals(extension_dao_create.call_count, 0)
         self.assertEquals(extension_notifier_created.call_count, 0)
 
+    @patch('xivo_dao.data_handler.extension.dao.find_by_exten_context', Mock(return_value=None))
+    @patch('xivo_dao.data_handler.context.services.find_by_name')
+    @patch('xivo_dao.data_handler.context.services.is_extension_inside_range')
+    @patch('xivo_dao.data_handler.extension.notifier.created')
+    @patch('xivo_dao.data_handler.extension.dao.create')
+    def test_create_when_exten_outside_of_range(self, extension_dao_create, extension_notifier_created,
+                                                is_extension_inside_range, find_context_by_name):
+        exten = '9999'
+        context_name = 'toto'
+
+        context = Context(name=context_name)
+
+        extension = Extension(exten=exten,
+                              context=context_name,
+                              type='user',
+                              typeval='0')
+
+        is_extension_inside_range.return_value = False
+        find_context_by_name.return_value = context
+
+        self.assertRaises(InvalidParametersError, extension_services.create, extension)
+        self.assertEquals(extension_dao_create.call_count, 0)
+        self.assertEquals(extension_notifier_created.call_count, 0)
+        is_extension_inside_range.assert_called_once_with(extension)
+
+    @patch('xivo_dao.data_handler.context.services.is_extension_inside_range', Mock(return_value=True))
+    @patch('xivo_dao.data_handler.context.services.find_by_name', Mock(return_value=Mock()))
     @patch('xivo_dao.data_handler.extension.dao.find_by_exten_context', Mock(return_value=None))
     @patch('xivo_dao.data_handler.extension.dao.create')
     def test_create_with_error_from_dao(self, extension_dao_create):

@@ -32,6 +32,21 @@ def create(context):
     return created_context
 
 
+def is_extension_inside_range(extension):
+    if not extension.exten.isdigit():
+        raise InvalidParametersError(['Alphanumeric extensions are not supported'])
+
+    exten = int(extension.exten)
+    context_ranges = context_dao.context_ranges(extension.context, extension.type)
+
+    for minimum, maximum in context_ranges:
+        if not maximum and exten >= minimum:
+            return True
+        elif minimum <= exten <= maximum:
+            return True
+    return False
+
+
 def _validate(context):
     _validate_missing(context)
     _validate_empty(context)
