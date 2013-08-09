@@ -4,9 +4,11 @@ import unittest
 
 from mock import patch, Mock
 from xivo_dao.data_handler.extension.model import Extension
+from xivo_dao.data_handler.context.model import Context
 from xivo_dao.data_handler.extension import services as extension_services
 from xivo_dao.data_handler.exception import MissingParametersError, \
-    InvalidParametersError, ElementCreationError, ElementAlreadyExistsError
+    InvalidParametersError, ElementCreationError, ElementAlreadyExistsError, \
+    NonexistentParametersError
 
 
 class TestExtension(unittest.TestCase):
@@ -42,6 +44,7 @@ class TestExtension(unittest.TestCase):
 
         self.assertRaises(InvalidParametersError, extension_services.create, extension)
 
+    @patch('xivo_dao.data_handler.context.services.find_by_name', Mock(return_value=Mock()))
     @patch('xivo_dao.data_handler.extension.dao.find_by_exten_context', Mock(return_value=None))
     @patch('xivo_dao.data_handler.extension.notifier.created')
     @patch('xivo_dao.data_handler.extension.dao.create')
@@ -77,6 +80,27 @@ class TestExtension(unittest.TestCase):
         find_by_exten_context.return_value = extension
 
         self.assertRaises(ElementAlreadyExistsError, extension_services.create, extension)
+        self.assertEquals(extension_dao_create.call_count, 0)
+        self.assertEquals(extension_notifier_created.call_count, 0)
+
+    @patch('xivo_dao.data_handler.context.services.find_by_name')
+    @patch('xivo_dao.data_handler.extension.dao.find_by_exten_context')
+    @patch('xivo_dao.data_handler.extension.notifier.created')
+    @patch('xivo_dao.data_handler.extension.dao.create')
+    def test_create_when_context_does_not_exist(self, extension_dao_create, extension_notifier_created, find_by_exten_context,
+                                                find_context_by_name):
+        exten = 'extension'
+        context = 'toto'
+
+        extension = Extension(exten=exten,
+                              context=context,
+                              type='user',
+                              typeval='0')
+
+        find_by_exten_context.return_value = None
+        find_context_by_name.return_value = None
+
+        self.assertRaises(NonexistentParametersError, extension_services.create, extension)
         self.assertEquals(extension_dao_create.call_count, 0)
         self.assertEquals(extension_notifier_created.call_count, 0)
 

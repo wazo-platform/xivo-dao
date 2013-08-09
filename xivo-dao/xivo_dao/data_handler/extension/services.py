@@ -19,9 +19,10 @@ from . import dao
 from . import notifier
 
 from xivo_dao.data_handler.exception import MissingParametersError, \
-    InvalidParametersError, ElementAlreadyExistsError
+    InvalidParametersError, ElementAlreadyExistsError, NonexistentParametersError
 
 from xivo_dao.data_handler.line import dao as line_dao
+from xivo_dao.data_handler.context import services as context_services
 
 
 def get(extension_id):
@@ -71,6 +72,7 @@ def _validate(extension):
     _check_missing_parameters(extension)
     _check_invalid_parameters(extension)
     _check_if_extension_already_exists(extension)
+    _check_if_context_exists(extension)
 
 
 def _check_missing_parameters(extension):
@@ -96,3 +98,9 @@ def _check_if_extension_already_exists(extension):
     if extension:
         exten_context = '%s@%s' % (extension.exten, extension.context)
         raise ElementAlreadyExistsError('Extension', exten_context)
+
+
+def _check_if_context_exists(extension):
+    context = context_services.find_by_name(extension.context)
+    if not context:
+        raise NonexistentParametersError(context=extension.context)
