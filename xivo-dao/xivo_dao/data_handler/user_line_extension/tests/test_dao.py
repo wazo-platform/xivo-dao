@@ -224,3 +224,32 @@ class TestUserLineExtensionDao(DAOTestCase):
         extension = UserLineExtension(id=1)
 
         self.assertRaises(ElementDeletionError, ule_dao.delete, extension)
+
+    def test_already_linked_no_associations(self):
+        user_id = 1
+        line_id = 2
+
+        expected = False
+
+        result = ule_dao.already_linked(user_id, line_id)
+
+        assert_that(result, equal_to(expected))
+
+    def test_already_linked(self):
+        ule = self.add_user_line_with_exten()
+
+        expected = True
+
+        result = ule_dao.already_linked(ule.user_id, ule.line_id)
+
+        assert_that(result, equal_to(expected))
+
+    def test_already_linked_different_user(self):
+        ule = self.add_user_line_with_exten()
+        user = self.add_user()
+
+        expected = False
+
+        result = ule_dao.already_linked(user.id, ule.line_id)
+
+        assert_that(result, equal_to(expected))

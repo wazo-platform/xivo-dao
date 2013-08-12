@@ -119,5 +119,15 @@ def delete(session, user_line_extension):
     return nb_row_affected
 
 
+@daosession
+def already_linked(session, user_id, line_id):
+    count = (session.query(ULESchema)
+             .filter(ULESchema.user_id == user_id)
+             .filter(ULESchema.line_id == line_id)
+             .count())
+
+    return count > 0
+
+
 def _new_query(session):
     return session.query(ULESchema)
