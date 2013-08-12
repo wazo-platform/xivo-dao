@@ -48,12 +48,16 @@ def find_all_by_line_id(line_id):
 
 
 def create(ule):
+    _fill_optional_parameters(ule)
+
     user, line, extension = validator.validate(ule)
-    _adjust_optional_parameters(ule)
+    main_user = dao.find_main_user(ule)
+
+    _adjust_optional_parameters(ule, main_user)
 
     ule = dao.create(ule)
 
-    _make_secondary_associations(ule, user, line, extension)
+    _make_secondary_associations(user, main_user, line, extension)
     notifier.created(ule)
 
     return ule
@@ -80,25 +84,31 @@ def delete_everything(ule):
     notifier.deleted(ule)
 
 
+def _fill_optional_parameters(ule):
+    ule.main_line = True
+    ule.main_user = True
 
 
+def _adjust_optional_parameters(ule, main_user):
+    ule.main_line = True
+    ule.main_user = (ule.user_id == main_user.id)
 
 
-def _make_secondary_associations(ule, user, line, extension):
-    _associate_extension(ule, extension)
-    _associate_line(user, line, extension)
+def _make_secondary_associations(user, main_user, line, extension):
+    _associate_extension(user, extension)
+    _associate_line(line, extension, main_user)
 
 
-def _associate_extension(ule, extension):
+def _associate_extension(user, extension):
     extension.type = 'user'
-    extension.typeval = str(ule.user_id)
+    extension.typeval = str(user.id)
     extension_dao.edit(extension)
 
 
-def _associate_line(user, line, extension):
+def _associate_line(line, extension, main_user):
     line.number = extension.exten
     line.context = extension.context
-    line.callerid = user.callerid
+    line.callerid = main_user.callerid
     line_dao.edit(line)
 
 

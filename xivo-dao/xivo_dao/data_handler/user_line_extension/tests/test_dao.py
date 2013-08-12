@@ -253,3 +253,19 @@ class TestUserLineExtensionDao(DAOTestCase):
         result = ule_dao.already_linked(user.id, ule.line_id)
 
         assert_that(result, equal_to(expected))
+
+    def test_find_main_user_no_user(self):
+        user = self.add_user()
+
+        ule = UserLineExtension(user_id=user.id, line_id=2, extension_id=3)
+
+        result = ule_dao.find_main_user(ule)
+
+        assert_that(result.id, equal_to(user.id))
+
+    def test_find_main_user_one_user(self):
+        ule = self.add_user_line_with_exten()
+
+        result = ule_dao.find_main_user(ule)
+
+        assert_that(result.id, equal_to(ule.user_id))
