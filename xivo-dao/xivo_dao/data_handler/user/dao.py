@@ -93,6 +93,21 @@ def get(session, user_id):
 
 
 @daosession
+def get_main_user_by_line_id(session, line_id):
+    row = (session.query(UserSchema, UserLineSchema)
+           .filter(UserLineSchema.user_id == UserSchema.id)
+           .filter(UserLineSchema.line_id == line_id)
+           .filter(UserLineSchema.main_user == True)
+           .first())
+
+    if not row:
+        raise ElementNotExistsError('MainUser', line_id=line_id)
+
+    user_row, _ = row
+    return User.from_data_source(user_row)
+
+
+@daosession
 def find_by_number_context(session, number, context):
     return _find_by_number_context(session, number, context)
 

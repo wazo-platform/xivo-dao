@@ -67,19 +67,6 @@ def get_main_exten_by_user_id(session, user_id):
 
 
 @daosession
-def get_main_user_id_by_line_id(session, line_id):
-    res = (session.query(UserLine.user_id)
-           .filter(and_(UserLine.user_id == int(line_id),
-                        UserLine.main_user == True,
-                        UserLine.main_line == True))
-           .first())
-    if res is None:
-        raise LookupError('Could not get a main user id for line %s', line_id)
-    else:
-        return res.user_id
-
-
-@daosession
 def get_line_identity_by_user_id(session, user_id):
     row = (session.query(LineSchema.protocol,
                          LineSchema.name)

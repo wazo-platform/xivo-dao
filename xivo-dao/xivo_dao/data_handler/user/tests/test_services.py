@@ -2,16 +2,47 @@
 
 import unittest
 
+from hamcrest import assert_that, equal_to
 from mock import patch, Mock
 from xivo_dao.data_handler.user.model import User
 from xivo_dao.data_handler.user import services as user_services
 from xivo_dao.data_handler.exception import MissingParametersError, \
-    InvalidParametersError, ElementCreationError
+    InvalidParametersError, ElementCreationError, ElementNotExistsError
 
 from xivo_dao.data_handler.user.model import UserOrdering
 
 
 class TestUser(unittest.TestCase):
+
+    @patch('xivo_dao.data_handler.user.dao.get')
+    def test_get_not_found(self, user_dao_get):
+        user_id = 123
+        user_dao_get.side_effect = ElementNotExistsError('User', id=user_id)
+
+        self.assertRaises(LookupError, user_services.get, user_id)
+
+    @patch('xivo_dao.data_handler.user.dao.get')
+    def test_get(self, user_dao_get):
+        user_id = 123
+        expected_result = User(id=user_id)
+        user_dao_get.return_value = User(id=user_id)
+
+        result = user_services.get(user_id)
+
+        user_dao_get.assert_called_once_with(user_id)
+        assert_that(result, equal_to(expected_result))
+
+    @patch('xivo_dao.data_handler.user.dao.get_by_number_context')
+    def test_get_by_number_context(self, user_dao_get):
+        number, context = '9876', 'default'
+        user_id = 123
+        expected_result = User(id=user_id)
+        user_dao_get.return_value = User(id=user_id)
+
+        result = user_services.get_by_number_context(number, context)
+
+        user_dao_get.assert_called_once_with(number, context)
+        assert_that(result, equal_to(expected_result))
 
     @patch('xivo_dao.data_handler.user.dao.find_all')
     def test_find_all(self, user_dao_find_all):
