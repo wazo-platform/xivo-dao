@@ -61,10 +61,10 @@ def delete(device):
 
 
 def _remove_device_from_provd(device):
-    provd_config_manager = provd_connector.config_manager()
     provd_device_manager = provd_connector.device_manager()
     provd_device_manager.remove(device.deviceid)
     if len(device.config) > 0:
+        provd_config_manager = provd_connector.config_manager()
         provd_config_manager.remove(device.deviceid)
 
 
@@ -113,31 +113,33 @@ def build_line_for_device(device, line):
 
 
 def _populate_sip_line(config, confregistrar, line, extension):
-        if 'sip_lines' not in config['raw_config']:
-            config['raw_config']['sip_lines'] = dict()
-        config['raw_config']['sip_lines'][str(line.num)] = dict()
-        line_dict = config['raw_config']['sip_lines'][str(line.num)]
-        line_dict['auth_username'] = line.username
-        line_dict['username'] = line.username
-        line_dict['password'] = line.secret
-        line_dict['display_name'] = line.callerid
-        line_dict['number'] = extension.exten
-        line_dict['registrar_ip'] = confregistrar['registrar_main']
-        line_dict['proxy_ip'] = confregistrar['proxy_main']
-        if 'proxy_backup' in confregistrar and len(confregistrar['proxy_backup']) > 0:
-            line_dict['backup_registrar_ip'] = confregistrar['registrar_backup']
-            line_dict['backup_proxy_ip'] = confregistrar['proxy_backup']
-        provd_connector.config_manager.update(config)
+    provd_config_manager = provd_connector.config_manager()
+    if 'sip_lines' not in config['raw_config']:
+        config['raw_config']['sip_lines'] = dict()
+    config['raw_config']['sip_lines'][str(line.num)] = dict()
+    line_dict = config['raw_config']['sip_lines'][str(line.num)]
+    line_dict['auth_username'] = line.username
+    line_dict['username'] = line.username
+    line_dict['password'] = line.secret
+    line_dict['display_name'] = line.callerid
+    line_dict['number'] = extension.exten
+    line_dict['registrar_ip'] = confregistrar['registrar_main']
+    line_dict['proxy_ip'] = confregistrar['proxy_main']
+    if 'proxy_backup' in confregistrar and len(confregistrar['proxy_backup']) > 0:
+        line_dict['backup_registrar_ip'] = confregistrar['registrar_backup']
+        line_dict['backup_proxy_ip'] = confregistrar['proxy_backup']
+    provd_config_manager.update(config)
 
 
 def _populate_sccp_line(config, confregistrar):
-        config['raw_config']['sccp_call_managers'] = dict()
-        config['raw_config']['sccp_call_managers'][1] = dict()
-        config['raw_config']['sccp_call_managers'][1]['ip'] = confregistrar['proxy_main']
-        if 'proxy_backup' in confregistrar and len(confregistrar['proxy_backup']) > 0:
-            config['raw_config']['sccp_call_managers'][2] = dict()
-            config['raw_config']['sccp_call_managers'][2]['ip'] = confregistrar['proxy_backup']
-        provd_connector.config_manager.update(config)
+    provd_config_manager = provd_connector.config_manager()
+    config['raw_config']['sccp_call_managers'] = dict()
+    config['raw_config']['sccp_call_managers'][1] = dict()
+    config['raw_config']['sccp_call_managers'][1]['ip'] = confregistrar['proxy_main']
+    if 'proxy_backup' in confregistrar and len(confregistrar['proxy_backup']) > 0:
+        config['raw_config']['sccp_call_managers'][2] = dict()
+        config['raw_config']['sccp_call_managers'][2]['ip'] = confregistrar['proxy_backup']
+    provd_config_manager.update(config)
 
 
 def remove_line_from_device(device_id, line):
