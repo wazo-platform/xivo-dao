@@ -71,6 +71,8 @@ def _remove_device_from_provd(device):
 def _generate_new_deviceid(device):
     provd_device_manager = provd_connector.device_manager()
     device_dict = device.to_data_dict()
+    if 'id' in device_dict:
+        del device_dict['id']
     deviceid = provd_device_manager.add(device_dict)
     return deviceid
 
