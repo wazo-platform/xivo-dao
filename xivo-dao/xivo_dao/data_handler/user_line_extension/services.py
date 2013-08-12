@@ -17,13 +17,12 @@
 
 import dao
 import notifier
+import validator
 
-from xivo_dao.data_handler.exception import MissingParametersError, \
-    InvalidParametersError, ElementNotExistsError, NonexistentParametersError
+from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.data_handler.line import services as line_services
 from xivo_dao.data_handler.line import dao as line_dao
 from xivo_dao.data_handler.user import services as user_services
-from xivo_dao.data_handler.user import dao as user_dao
 from xivo_dao.data_handler.extension import services as extension_services
 from xivo_dao.data_handler.extension import dao as extension_dao
 
@@ -49,127 +48,76 @@ def find_all_by_line_id(line_id):
 
 
 def create(ule):
-    user, line, extension = _validate(ule)
+    user, line, extension = validator.validate(ule)
+    _adjust_optional_parameters(ule)
+
     ule = dao.create(ule)
+
     _make_secondary_associations(ule, user, line, extension)
     notifier.created(ule)
+
     return ule
 
 
 def edit(ule):
-    _validate(ule)
+    validator.validate(ule)
     dao.edit(ule)
     notifier.edited(ule)
 
 
 def delete(ule):
+    validator.validate(ule)
     dao.delete(ule)
     notifier.deleted(ule)
 
 
 def delete_everything(ule):
+    user, line, extension = validator.validate(ule)
     dao.delete(ule)
-    _remove_user(ule)
-    _remove_line(ule)
-    _remove_exten(ule)
+    _remove_user(user)
+    _remove_line(line)
+    _remove_exten(extension)
     notifier.deleted(ule)
 
 
-def _validate(ule):
-    _check_missing_parameters(ule)
-    _fill_optional_parameters(ule)
-    _check_invalid_parameters(ule)
-    return _check_nonexistent_parameters(ule)
 
 
-def _check_missing_parameters(ule):
-    missing = ule.missing_parameters()
-    if missing:
-        raise MissingParametersError(missing)
-
-
-def _check_invalid_parameters(ule_id):
-    invalid_parameters = []
-    if not isinstance(ule_id.user_id, int):
-        invalid_parameters.append('user_id must be integer')
-    if ule_id.user_id == 0:
-        invalid_parameters.append('user_id equal to 0')
-    if not isinstance(ule_id.line_id, int):
-        invalid_parameters.append('line_id must be integer')
-    if ule_id.line_id == 0:
-        invalid_parameters.append('line_id equal to 0')
-    if not isinstance(ule_id.extension_id, int):
-        invalid_parameters.append('extension_id must be integer')
-    if ule_id.extension_id == 0:
-        invalid_parameters.append('extension_id equal to 0')
-    if not isinstance(ule_id.main_line, bool):
-        invalid_parameters.append('main_line must be boolean')
-    if not isinstance(ule_id.main_user, bool):
-        invalid_parameters.append('main_user must be boolean')
-    if invalid_parameters:
-        raise InvalidParametersError(invalid_parameters)
-
-
-def _check_nonexistent_parameters(ule):
-    nonexistent = {}
-
-    try:
-        extension = extension_dao.get(ule.extension_id)
-    except ElementNotExistsError:
-        nonexistent['extension_id'] = ule.extension_id
-
-    try:
-        line = line_dao.get(ule.line_id)
-    except ElementNotExistsError:
-        nonexistent['line_id'] = ule.line_id
-
-    try:
-        user = user_dao.get(ule.user_id)
-    except ElementNotExistsError:
-        nonexistent['user_id'] = ule.user_id
-
-    if len(nonexistent) > 0:
-        raise NonexistentParametersError(**nonexistent)
-
-    return user, line, extension
-
-
-def _fill_optional_parameters(ule):
-    if not hasattr(ule, 'main_line'):
-        ule.main_line = True
-    if not hasattr(ule, 'main_user'):
-        ule.main_user = True
 
 
 def _make_secondary_associations(ule, user, line, extension):
+    _associate_extension(ule, extension)
+    _associate_line(user, line, extension)
+
+
+def _associate_extension(ule, extension):
     extension.type = 'user'
     extension.typeval = str(ule.user_id)
     extension_dao.edit(extension)
+
+
+def _associate_line(user, line, extension):
     line.number = extension.exten
     line.context = extension.context
     line.callerid = user.callerid
     line_dao.edit(line)
 
 
-def _remove_user(ule):
+def _remove_user(user):
     try:
-        user = user_services.get(ule.user_id)
         user_services.delete(user)
     except ElementNotExistsError:
         return
 
 
-def _remove_line(ule):
+def _remove_line(line):
     try:
-        line = line_services.get(ule.line_id)
         line_services.delete(line)
     except ElementNotExistsError:
         return
 
 
-def _remove_exten(ule):
+def _remove_exten(extension):
     try:
-        extension = extension_services.get(ule.extension_id)
         extension_services.delete(extension)
     except ElementNotExistsError:
         return
