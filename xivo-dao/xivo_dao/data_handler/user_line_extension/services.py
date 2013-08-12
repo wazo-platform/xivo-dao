@@ -66,13 +66,13 @@ def edit(ule):
 
 
 def delete(ule):
-    validator.validate(ule)
+    validator.validate_delete(ule)
     dao.delete(ule)
     notifier.deleted(ule)
 
 
 def delete_everything(ule):
-    user, line, extension = validator.validate(ule)
+    user, line, extension = validator.validate_delete(ule)
     dao.delete(ule)
     _remove_user(user)
     _remove_line(line)

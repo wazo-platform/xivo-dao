@@ -16,6 +16,13 @@ def validate(ule):
     return user, line, extension
 
 
+def validate_delete(ule):
+    _check_missing_parameters(ule)
+    _check_invalid_parameters(ule)
+    user, line, extension = _get_secondary_associations(ule)
+    return user, line, extension
+
+
 def _check_missing_parameters(ule):
     missing = ule.missing_parameters()
     if missing:

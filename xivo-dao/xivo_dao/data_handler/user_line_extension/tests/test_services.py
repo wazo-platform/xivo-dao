@@ -170,7 +170,7 @@ class TestUserLineExtensionServices(unittest.TestCase):
         user_dao_edit.assert_called_once_with(ule)
         user_notifier_edited.assert_called_once_with(ule)
 
-    @patch('xivo_dao.data_handler.user_line_extension.validator.validate')
+    @patch('xivo_dao.data_handler.user_line_extension.validator.validate_delete')
     @patch('xivo_dao.data_handler.user_line_extension.notifier.deleted')
     @patch('xivo_dao.data_handler.user_line_extension.dao.delete')
     def test_delete(self, user_line_extension_dao_delete, user_line_extension_notifier_deleted, ule_validate):
@@ -190,7 +190,7 @@ class TestUserLineExtensionServices(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.user_line_extension.notifier.deleted')
     @patch('xivo_dao.data_handler.user_line_extension.dao.delete')
-    @patch('xivo_dao.data_handler.user_line_extension.validator.validate')
+    @patch('xivo_dao.data_handler.user_line_extension.validator.validate_delete')
     def test_delete_with_error_from_dao(self, user_line_extension_dao_delete, user_line_extension_notifier_deleted, ule_validate):
         ule = UserLineExtension(user_id=5898,
                                 line_id=52,
@@ -209,7 +209,7 @@ class TestUserLineExtensionServices(unittest.TestCase):
     @patch('xivo_dao.data_handler.user.services.delete', Mock(return_value=None))
     @patch('xivo_dao.data_handler.line.services.delete', Mock(return_value=None))
     @patch('xivo_dao.data_handler.extension.services.delete', Mock(return_value=None))
-    @patch('xivo_dao.data_handler.user_line_extension.validator.validate')
+    @patch('xivo_dao.data_handler.user_line_extension.validator.validate_delete')
     @patch('xivo_dao.data_handler.user_line_extension.notifier.deleted')
     @patch('xivo_dao.data_handler.user_line_extension.dao.delete')
     def test_delete_everything(self, user_line_extension_dao_delete, user_line_extension_notifier_deleted, ule_validate):
@@ -229,7 +229,7 @@ class TestUserLineExtensionServices(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.user_line_extension.notifier.deleted')
     @patch('xivo_dao.data_handler.user_line_extension.dao.delete')
-    @patch('xivo_dao.data_handler.user_line_extension.validator.validate')
+    @patch('xivo_dao.data_handler.user_line_extension.validator.validate_delete')
     def test_delete_everything_with_error_from_dao(self, user_line_extension_dao_delete, user_line_extension_notifier_deleted, ule_validate):
         ule = UserLineExtension(user_id=5898,
                                 line_id=52,
