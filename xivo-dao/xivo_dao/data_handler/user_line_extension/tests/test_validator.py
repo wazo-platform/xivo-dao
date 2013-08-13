@@ -89,6 +89,22 @@ class TestUserLineExtensionValidator(unittest.TestCase):
 
         self.assertRaises(NonexistentParametersError, validator.validate, ule)
 
+    @patch('xivo_dao.data_handler.extension.dao.get', Mock(return_value=Mock()))
+    @patch('xivo_dao.data_handler.line.dao.get', Mock(return_value=Mock()))
+    @patch('xivo_dao.data_handler.user.dao.get', Mock(return_value=Mock()))
+    def test_validate_no_main_user_does_not_raise_error(self):
+        user_line_extension = UserLineExtension(user_id=1, line_id=2, extension_id=3, main_line=False)
+
+        validator.validate(user_line_extension)
+
+    @patch('xivo_dao.data_handler.extension.dao.get', Mock(return_value=Mock()))
+    @patch('xivo_dao.data_handler.line.dao.get', Mock(return_value=Mock()))
+    @patch('xivo_dao.data_handler.user.dao.get', Mock(return_value=Mock()))
+    def test_validate_no_main_line_does_not_raise_error(self):
+        user_line_extension = UserLineExtension(user_id=1, line_id=2, extension_id=3, main_user=False)
+
+        validator.validate(user_line_extension)
+
     @patch('xivo_dao.data_handler.extension.dao.get')
     @patch('xivo_dao.data_handler.line.dao.get')
     @patch('xivo_dao.data_handler.user.dao.get')

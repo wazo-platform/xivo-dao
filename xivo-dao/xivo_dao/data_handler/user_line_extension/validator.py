@@ -41,9 +41,9 @@ def _check_invalid_parameters(ule_id):
         invalid_parameters.append('extension_id must be integer')
     if ule_id.extension_id == 0:
         invalid_parameters.append('extension_id equal to 0')
-    if not isinstance(ule_id.main_user, bool):
+    if hasattr(ule_id, 'main_user') and not isinstance(ule_id.main_user, bool):
         invalid_parameters.append('main_user must be bool')
-    if not isinstance(ule_id.main_line, bool):
+    if hasattr(ule_id, 'main_line') and not isinstance(ule_id.main_line, bool):
         invalid_parameters.append('main_line must be bool')
 
     if invalid_parameters:

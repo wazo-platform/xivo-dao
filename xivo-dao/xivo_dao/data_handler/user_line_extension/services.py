@@ -48,11 +48,8 @@ def find_all_by_line_id(line_id):
 
 
 def create(ule):
-    _fill_optional_parameters(ule)
-
     user, line, extension = validator.validate_create(ule)
     main_user = dao.find_main_user(ule)
-
     _adjust_optional_parameters(ule, main_user)
 
     ule = dao.create(ule)
