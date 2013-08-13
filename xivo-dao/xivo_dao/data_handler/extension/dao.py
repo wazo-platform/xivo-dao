@@ -64,8 +64,8 @@ def get_by_type_typeval(session, type, typeval):
 
 
 @daosession
-def find_all(session, order=None):
-    line_rows = _new_query(session, order).all()
+def find_all(session, order=None, commented=False):
+    line_rows = _new_query(session, order, commented).all()
 
     return _rows_to_extension_model(line_rows)
 
@@ -173,6 +173,7 @@ def delete(session, extension):
     return nb_row_affected
 
 
-def _new_query(session, order=None):
+def _new_query(session, order=None, commented=False):
     order = order or DEFAULT_ORDER
-    return session.query(ExtensionSchema).filter(ExtensionSchema.commented == 0).order_by(*order)
+    commented = int(commented)
+    return session.query(ExtensionSchema).filter(ExtensionSchema.commented == commented).order_by(*order)

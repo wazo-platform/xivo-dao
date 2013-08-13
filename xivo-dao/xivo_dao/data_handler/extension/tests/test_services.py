@@ -13,6 +13,28 @@ from xivo_dao.data_handler.exception import MissingParametersError, \
 
 class TestExtension(unittest.TestCase):
 
+    @patch('xivo_dao.data_handler.extension.dao.find_all')
+    def test_find_all(self, find_all_dao):
+        expected = [Extension()]
+
+        find_all_dao.return_value = expected
+
+        result = extension_services.find_all()
+
+        find_all_dao.assert_called_once_with(order=None, commented=False)
+        self.assertEquals(result, expected)
+
+    @patch('xivo_dao.data_handler.extension.dao.find_all')
+    def test_find_all_with_commented(self, find_all_dao):
+        expected = [Extension()]
+
+        find_all_dao.return_value = expected
+
+        result = extension_services.find_all(commented=True)
+
+        find_all_dao.assert_called_once_with(order=None, commented=True)
+        self.assertEquals(result, expected)
+
     def test_create_no_properties(self):
         extension = Extension(exten='1234')
 

@@ -37,8 +37,8 @@ def get_by_type_typeval(type, typeval):
     return dao.get_by_type_typeval(type, typeval)
 
 
-def find_all(order=None):
-    return dao.find_all(order=order)
+def find_all(order=None, commented=False):
+    return dao.find_all(order=order, commented=commented)
 
 
 def find_by_exten(exten, order=None):
