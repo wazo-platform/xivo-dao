@@ -118,8 +118,6 @@ def _rows_to_extension_model(extension_rows):
 @daosession
 def create(session, extension):
     extension_row = extension.to_data_source(ExtensionSchema)
-    if extension_row.commented:
-        extension_row.commented = int(extension_row.commented)
 
     session.begin()
     session.add(extension_row)
