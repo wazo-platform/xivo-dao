@@ -71,16 +71,16 @@ class TestUserLineExtensionServices(unittest.TestCase):
 
         assert_that(result, equal_to(user_line_extension))
 
-    @patch('xivo_dao.data_handler.user_line_extension.validator.validate')
-    def test_create_with_invalid_ule(self, ule_validate):
+    @patch('xivo_dao.data_handler.user_line_extension.validator.validate_create')
+    def test_create_with_invalid_ule(self, ule_validate_create):
         user_line_extension = UserLineExtension()
 
-        ule_validate.side_effect = InvalidParametersError('')
+        ule_validate_create.side_effect = InvalidParametersError('')
 
         self.assertRaises(InvalidParametersError, user_line_extension_services.create, user_line_extension)
 
     @patch('xivo_dao.data_handler.user_line_extension.dao.find_main_user')
-    @patch('xivo_dao.data_handler.user_line_extension.validator.validate')
+    @patch('xivo_dao.data_handler.user_line_extension.validator.validate_create')
     @patch('xivo_dao.data_handler.user_line_extension.notifier.created')
     @patch('xivo_dao.data_handler.user_line_extension.dao.create')
     @patch('xivo_dao.data_handler.line.dao.edit')
@@ -90,7 +90,7 @@ class TestUserLineExtensionServices(unittest.TestCase):
                     line_edit,
                     user_line_extension_dao_create,
                     user_line_extension_notifier_created,
-                    ule_validate,
+                    ule_validate_create,
                     find_main_user):
 
         exten = '1000'
@@ -123,12 +123,12 @@ class TestUserLineExtensionServices(unittest.TestCase):
             return ule
 
         user_line_extension_dao_create.side_effect = mock_dao
-        ule_validate.return_value = (user, line, extension)
+        ule_validate_create.return_value = (user, line, extension)
         find_main_user.return_value = user
 
         result = user_line_extension_services.create(ule)
 
-        ule_validate.assert_called_once_with(ule)
+        ule_validate_create.assert_called_once_with(ule)
         user_line_extension_dao_create.assert_called_once_with(ule)
         extension_edit.assert_called_once_with(extension)
         line_edit.assert_called_once_with(line)
@@ -140,7 +140,7 @@ class TestUserLineExtensionServices(unittest.TestCase):
         self.assertEquals(extension.typeval, str(user_id))
 
     @patch('xivo_dao.data_handler.user_line_extension.dao.find_main_user')
-    @patch('xivo_dao.data_handler.user_line_extension.validator.validate')
+    @patch('xivo_dao.data_handler.user_line_extension.validator.validate_create')
     @patch('xivo_dao.data_handler.user_line_extension.notifier.created')
     @patch('xivo_dao.data_handler.user_line_extension.dao.create')
     @patch('xivo_dao.data_handler.line.dao.edit')
@@ -150,7 +150,7 @@ class TestUserLineExtensionServices(unittest.TestCase):
                                    line_edit,
                                    user_line_extension_dao_create,
                                    user_line_extension_notifier_created,
-                                   ule_validate,
+                                   ule_validate_create,
                                    find_main_user):
 
         exten = '1000'
@@ -194,12 +194,12 @@ class TestUserLineExtensionServices(unittest.TestCase):
             return ule
 
         user_line_extension_dao_create.side_effect = mock_dao
-        ule_validate.return_value = (user, line, extension)
+        ule_validate_create.return_value = (user, line, extension)
         find_main_user.return_value = main_user
 
         result = user_line_extension_services.create(ule)
 
-        ule_validate.assert_called_once_with(ule)
+        ule_validate_create.assert_called_once_with(ule)
         user_line_extension_dao_create.assert_called_once_with(ule)
         extension_edit.assert_called_once_with(extension)
         line_edit.assert_called_once_with(expected_line)
@@ -211,15 +211,15 @@ class TestUserLineExtensionServices(unittest.TestCase):
         self.assertEquals(extension.typeval, str(user_id))
 
     @patch('xivo_dao.data_handler.user_line_extension.dao.create')
-    @patch('xivo_dao.data_handler.user_line_extension.validator.validate')
-    def test_create_with_error_from_dao(self, user_line_extension_dao_create, ule_validate):
+    @patch('xivo_dao.data_handler.user_line_extension.validator.validate_create')
+    def test_create_with_error_from_dao(self, user_line_extension_dao_create, ule_validate_create):
         ule = UserLineExtension(user_id=5898,
                                 line_id=52,
                                 extension_id=52,
                                 main_user=True,
                                 main_line=False)
 
-        ule_validate.return_value = (Mock(), Mock(), Mock())
+        ule_validate_create.return_value = (Mock(), Mock(), Mock())
 
         error = Exception("message")
         user_line_extension_dao_create.side_effect = ElementCreationError(error, '')
@@ -244,7 +244,7 @@ class TestUserLineExtensionServices(unittest.TestCase):
         user_dao_edit.assert_called_once_with(ule)
         user_notifier_edited.assert_called_once_with(ule)
 
-    @patch('xivo_dao.data_handler.user_line_extension.validator.validate_delete')
+    @patch('xivo_dao.data_handler.user_line_extension.validator.validate')
     @patch('xivo_dao.data_handler.user_line_extension.notifier.deleted')
     @patch('xivo_dao.data_handler.user_line_extension.dao.delete')
     def test_delete(self, user_line_extension_dao_delete, user_line_extension_notifier_deleted, ule_validate):
@@ -264,7 +264,7 @@ class TestUserLineExtensionServices(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.user_line_extension.notifier.deleted')
     @patch('xivo_dao.data_handler.user_line_extension.dao.delete')
-    @patch('xivo_dao.data_handler.user_line_extension.validator.validate_delete')
+    @patch('xivo_dao.data_handler.user_line_extension.validator.validate')
     def test_delete_with_error_from_dao(self, user_line_extension_dao_delete, user_line_extension_notifier_deleted, ule_validate):
         ule = UserLineExtension(user_id=5898,
                                 line_id=52,
@@ -283,7 +283,7 @@ class TestUserLineExtensionServices(unittest.TestCase):
     @patch('xivo_dao.data_handler.user.services.delete', Mock(return_value=None))
     @patch('xivo_dao.data_handler.line.services.delete', Mock(return_value=None))
     @patch('xivo_dao.data_handler.extension.services.delete', Mock(return_value=None))
-    @patch('xivo_dao.data_handler.user_line_extension.validator.validate_delete')
+    @patch('xivo_dao.data_handler.user_line_extension.validator.validate')
     @patch('xivo_dao.data_handler.user_line_extension.notifier.deleted')
     @patch('xivo_dao.data_handler.user_line_extension.dao.delete')
     def test_delete_everything(self, user_line_extension_dao_delete, user_line_extension_notifier_deleted, ule_validate):
@@ -303,7 +303,7 @@ class TestUserLineExtensionServices(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.user_line_extension.notifier.deleted')
     @patch('xivo_dao.data_handler.user_line_extension.dao.delete')
-    @patch('xivo_dao.data_handler.user_line_extension.validator.validate_delete')
+    @patch('xivo_dao.data_handler.user_line_extension.validator.validate')
     def test_delete_everything_with_error_from_dao(self, user_line_extension_dao_delete, user_line_extension_notifier_deleted, ule_validate):
         ule = UserLineExtension(user_id=5898,
                                 line_id=52,

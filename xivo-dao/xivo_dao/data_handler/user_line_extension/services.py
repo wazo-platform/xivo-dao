@@ -50,7 +50,7 @@ def find_all_by_line_id(line_id):
 def create(ule):
     _fill_optional_parameters(ule)
 
-    user, line, extension = validator.validate(ule)
+    user, line, extension = validator.validate_create(ule)
     main_user = dao.find_main_user(ule)
 
     _adjust_optional_parameters(ule, main_user)
@@ -70,13 +70,13 @@ def edit(ule):
 
 
 def delete(ule):
-    validator.validate_delete(ule)
+    validator.validate(ule)
     dao.delete(ule)
     notifier.deleted(ule)
 
 
 def delete_everything(ule):
-    user, line, extension = validator.validate_delete(ule)
+    user, line, extension = validator.validate(ule)
     dao.delete(ule)
     _remove_user(user)
     _remove_line(line)

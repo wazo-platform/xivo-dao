@@ -8,15 +8,13 @@ from xivo_dao.data_handler.line import dao as line_dao
 from xivo_dao.data_handler.user import dao as user_dao
 
 
-def validate(ule):
-    _check_missing_parameters(ule)
-    _check_invalid_parameters(ule)
-    user, line, extension = _get_secondary_associations(ule)
+def validate_create(ule):
+    user, line, extension = validate(ule)
     _check_if_already_linked(user, line)
     return user, line, extension
 
 
-def validate_delete(ule):
+def validate(ule):
     _check_missing_parameters(ule)
     _check_invalid_parameters(ule)
     user, line, extension = _get_secondary_associations(ule)

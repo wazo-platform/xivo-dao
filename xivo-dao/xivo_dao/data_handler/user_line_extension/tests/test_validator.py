@@ -89,11 +89,40 @@ class TestUserLineExtensionValidator(unittest.TestCase):
 
         self.assertRaises(NonexistentParametersError, validator.validate, ule)
 
+    @patch('xivo_dao.data_handler.extension.dao.get')
+    @patch('xivo_dao.data_handler.line.dao.get')
+    @patch('xivo_dao.data_handler.user.dao.get')
+    def test_validate(self, user_dao_get, line_dao_get, extension_dao_get):
+
+        user_id = 1
+        line_id = 2
+        extension_id = 3
+
+        user = User(id=user_id)
+        line = LineSIP(id=line_id)
+        extension = Extension(id=extension_id)
+
+        ule = UserLineExtension(user_id=user_id,
+                                line_id=line_id,
+                                extension_id=extension_id,
+                                main_user=True,
+                                main_line=False)
+
+        user_dao_get.return_value = user
+        line_dao_get.return_value = line
+        extension_dao_get.return_value = extension
+
+        result_user, result_line, result_extension = validator.validate(ule)
+
+        assert_that(result_user, equal_to(user))
+        assert_that(result_line, equal_to(line))
+        assert_that(result_extension, equal_to(extension))
+
     @patch('xivo_dao.data_handler.extension.dao.get', Mock(return_value=Mock()))
     @patch('xivo_dao.data_handler.line.dao.get')
     @patch('xivo_dao.data_handler.user.dao.get')
     @patch('xivo_dao.data_handler.user_line_extension.dao.already_linked')
-    def test_validate_with_user_already_associated(self, already_linked, user_dao_get, line_dao_get):
+    def test_validate_create_with_user_already_associated(self, already_linked, user_dao_get, line_dao_get):
 
         user_id = 5898
         line_id = 52
@@ -110,14 +139,14 @@ class TestUserLineExtensionValidator(unittest.TestCase):
         line_dao_get.return_value = line
         already_linked.return_value = True
 
-        self.assertRaises(InvalidParametersError, validator.validate, ule)
+        self.assertRaises(InvalidParametersError, validator.validate_create, ule)
         already_linked.assert_called_once_with(user_id, line_id)
 
     @patch('xivo_dao.data_handler.extension.dao.get')
     @patch('xivo_dao.data_handler.line.dao.get')
     @patch('xivo_dao.data_handler.user.dao.get')
     @patch('xivo_dao.data_handler.user_line_extension.dao.already_linked')
-    def test_validate(self, already_linked, user_dao_get, line_dao_get, extension_dao_get):
+    def test_validate_create(self, already_linked, user_dao_get, line_dao_get, extension_dao_get):
 
         user_id = 1
         line_id = 2
@@ -138,7 +167,7 @@ class TestUserLineExtensionValidator(unittest.TestCase):
         extension_dao_get.return_value = extension
         already_linked.return_value = False
 
-        result_user, result_line, result_extension = validator.validate(ule)
+        result_user, result_line, result_extension = validator.validate_create(ule)
 
         already_linked.assert_called_once_with(user_id, line_id)
 
