@@ -31,7 +31,7 @@ def _new_sysconfd_data(ctibus_command):
 
 
 def created(user_line_extension):
-    data = _new_sysconfd_data('xivo[phone,add,%s]' % user_line_extension.line_id)
+    data = _build_edit_user_phone(user_line_extension)
     sysconfd_connector.exec_request_handlers(data)
 
     send_bus_command(CreateUserLineExtensionCommand(user_line_extension.id,
@@ -43,7 +43,7 @@ def created(user_line_extension):
 
 
 def edited(user_line_extension):
-    data = _new_sysconfd_data('xivo[phone,edit,%s]' % user_line_extension.line_id)
+    data = _build_edit_user_phone(user_line_extension)
     sysconfd_connector.exec_request_handlers(data)
 
     send_bus_command(EditUserLineExtensionCommand(user_line_extension.id,
@@ -55,7 +55,7 @@ def edited(user_line_extension):
 
 
 def deleted(user_line_extension):
-    data = _new_sysconfd_data('xivo[phone,delete,%s]' % user_line_extension.line_id)
+    data = _build_edit_user_phone(user_line_extension)
     sysconfd_connector.exec_request_handlers(data)
 
     send_bus_command(DeleteUserLineExtensionCommand(user_line_extension.id,
@@ -64,3 +64,10 @@ def deleted(user_line_extension):
                                                     user_line_extension.extension_id,
                                                     user_line_extension.main_user,
                                                     user_line_extension.main_line))
+
+
+def _build_edit_user_phone(user_line_extension):
+    return _new_sysconfd_data([
+        'xivo[user,edit,%s]' % user_line_extension.user_id,
+        'xivo[phone,edit,%s]' % user_line_extension.line_id
+    ])

@@ -31,7 +31,7 @@ def _new_sysconfd_data(ctibus_command):
 
 
 def created(voicemail):
-    data = _new_sysconfd_data('xivo[voicemail,create,%s]' % voicemail.id)
+    data = _new_sysconfd_data('xivo[voicemail,add,%s]' % voicemail.id)
     sysconfd_connector.exec_request_handlers(data)
     send_bus_command(CreateVoicemailCommand(voicemail.id))
 

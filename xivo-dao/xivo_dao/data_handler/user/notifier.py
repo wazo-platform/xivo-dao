@@ -33,7 +33,7 @@ def _new_sysconfd_data(ctibus_command):
 
 
 def created(user):
-    data = _new_sysconfd_data('xivo[user,create,%s]' % user.id)
+    data = _new_sysconfd_data('xivo[user,add,%s]' % user.id)
     sysconfd_connector.exec_request_handlers(data)
     send_bus_command(CreateUserCommand(user.id))
 
