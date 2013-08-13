@@ -200,11 +200,13 @@ class TestExtensionDao(DAOTestCase):
         context = 'toto'
         type = 'user'
         typeval = '4'
+        commented = True
 
         extension = Extension(exten=exten,
                               context=context,
                               type=type,
-                              typeval=typeval)
+                              typeval=typeval,
+                              commented=commented)
 
         created_extension = extension_dao.create(extension)
 
@@ -215,6 +217,7 @@ class TestExtensionDao(DAOTestCase):
         assert_that(row.context, equal_to(context))
         assert_that(row.type, equal_to(type))
         assert_that(row.typeval, equal_to(typeval))
+        assert_that(row.commented, equal_to(1))
 
     def test_create_same_exten_and_context(self):
         exten = 'extension'

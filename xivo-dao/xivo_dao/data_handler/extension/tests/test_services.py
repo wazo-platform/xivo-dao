@@ -44,6 +44,19 @@ class TestExtension(unittest.TestCase):
 
         self.assertRaises(InvalidParametersError, extension_services.create, extension)
 
+    def test_create_commented_wrong_type(self):
+        exten = '1234'
+        context = 'default'
+        commented = 0
+
+        extension = Extension(exten=exten,
+                              context=context,
+                              commented=commented,
+                              type='user',
+                              typeval='0')
+
+        self.assertRaises(InvalidParametersError, extension_services.create, extension)
+
     @patch('xivo_dao.data_handler.context.services.is_extension_inside_range', Mock(return_value=True))
     @patch('xivo_dao.data_handler.context.services.find_by_name', Mock(return_value=Mock()))
     @patch('xivo_dao.data_handler.extension.dao.find_by_exten_context', Mock(return_value=None))
