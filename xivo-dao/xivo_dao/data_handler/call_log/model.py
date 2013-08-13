@@ -20,10 +20,20 @@ from xivo_dao.helpers.abstract_model import AbstractModels
 
 class CallLog(AbstractModels):
     MANDATORY = [
+        'date',
+        'duration',
     ]
 
     # mapping = {db_field: model_field}
     _MAPPING = {
+        'date': 'date',
+        'source_name': 'source_name',
+        'source_exten': 'source_exten',
+        'destination_name': 'destination_name',
+        'destination_exten': 'destination_exten',
+        'user_field': 'user_field',
+        'answered': 'answered',
+        'duration': 'duration',
     }
 
     _RELATION = {
