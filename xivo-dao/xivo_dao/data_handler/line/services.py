@@ -20,7 +20,8 @@ import random
 from . import notifier
 from . import dao
 
-from xivo_dao.data_handler.exception import MissingParametersError, InvalidParametersError
+from xivo_dao.data_handler.exception import MissingParametersError, InvalidParametersError, \
+    ElementNotExistsError
 from urllib2 import URLError
 from xivo_dao.helpers import provd_connector
 from xivo_dao.data_handler.device import services as device_services
@@ -70,6 +71,8 @@ def delete(line):
             device_services.remove_line_from_device(line.device, line.num)
         except URLError as e:
             raise provd_connector.ProvdError(str(e))
+        except ElementNotExistsError:
+            pass
     notifier.deleted(line)
 
 
