@@ -52,6 +52,7 @@ class TestExtension(unittest.TestCase):
                               typeval='0')
 
         self.assertRaises(InvalidParametersError, extension_services.create, extension)
+        self.assertEquals(extension_notifier_created.call_count, 0)
 
     @patch('xivo_dao.data_handler.extension.notifier.created')
     @patch('xivo_dao.data_handler.extension.dao.create')
@@ -65,10 +66,14 @@ class TestExtension(unittest.TestCase):
                               typeval='0')
 
         self.assertRaises(InvalidParametersError, extension_services.create, extension)
+        self.assertEquals(extension_notifier_created.call_count, 0)
 
     @patch('xivo_dao.data_handler.context.services.find_by_name', Mock(return_value=Context()))
-    @patch('xivo_dao.data_handler.extension.dao.find_by_exten_context', Mock(return_value=None))
-    def test_create_commented_wrong_type(self):
+    @patch('xivo_dao.data_handler.context.services.is_extension_inside_range', Mock(return_value=True))
+    @patch('xivo_dao.data_handler.extension.dao.find_by_exten_context', Mock(return_value=False))
+    @patch('xivo_dao.data_handler.extension.notifier.created')
+    @patch('xivo_dao.data_handler.extension.dao.create')
+    def test_create_commented_wrong_type(self, extension_dao_create, extension_notifier_created):
         exten = '1234'
         context = 'default'
         commented = 0
@@ -78,8 +83,13 @@ class TestExtension(unittest.TestCase):
                               commented=commented,
                               type='user',
                               typeval='0')
+        extension_dao_create.return_value = extension
 
-        self.assertRaises(InvalidParametersError, extension_services.create, extension)
+        result = extension_services.create(extension)
+
+        extension_dao_create.assert_called_once_with(extension)
+        self.assertEquals(type(result), Extension)
+        extension_notifier_created.assert_called_once_with(extension)
 
     @patch('xivo_dao.data_handler.context.services.is_extension_inside_range', Mock(return_value=True))
     @patch('xivo_dao.data_handler.context.services.find_by_name', Mock(return_value=Mock()))
