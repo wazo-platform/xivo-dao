@@ -43,6 +43,28 @@ class Extension(AbstractModels):
     def __init__(self, *args, **kwargs):
         AbstractModels.__init__(self, *args, **kwargs)
 
+    @classmethod
+    def from_data_source(cls, db_object):
+        obj = super(Extension, cls).from_data_source(db_object)
+        if hasattr(obj, 'commented') and isinstance(obj.commented, int):
+            obj.commented = bool(obj.commented)
+        return obj
+
+    def to_data_source(self, class_schema):
+        if hasattr(self, 'commented') and isinstance(self.commented, bool):
+            self.commented = int(self.commented)
+        return AbstractModels.to_data_source(self, class_schema)
+
+    def to_data_dict(self):
+        if hasattr(self, 'commented') and isinstance(self.commented, bool):
+            self.commented = int(self.commented)
+        return AbstractModels.to_data_dict(self)
+
+    def update_from_data(self, data):
+        if 'commented' in data:
+            data['commented'] = bool(data['commented'])
+        AbstractModels.update_from_data(self, data)
+
 
 class ExtensionOrdering(object):
     exten = ExtensionSchema.exten

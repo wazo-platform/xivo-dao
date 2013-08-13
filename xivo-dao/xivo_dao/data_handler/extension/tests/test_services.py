@@ -66,6 +66,8 @@ class TestExtension(unittest.TestCase):
 
         self.assertRaises(InvalidParametersError, extension_services.create, extension)
 
+    @patch('xivo_dao.data_handler.context.services.find_by_name', Mock(return_value=Context()))
+    @patch('xivo_dao.data_handler.extension.dao.find_by_exten_context', Mock(return_value=None))
     def test_create_commented_wrong_type(self):
         exten = '1234'
         context = 'default'
