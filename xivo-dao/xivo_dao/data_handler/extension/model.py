@@ -60,11 +60,6 @@ class Extension(AbstractModels):
             self.commented = int(self.commented)
         return AbstractModels.to_data_dict(self)
 
-    def update_from_data(self, data):
-        if 'commented' in data:
-            data['commented'] = bool(data['commented'])
-        AbstractModels.update_from_data(self, data)
-
 
 class ExtensionOrdering(object):
     exten = ExtensionSchema.exten
