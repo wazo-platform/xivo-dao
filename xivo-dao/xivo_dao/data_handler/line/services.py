@@ -83,14 +83,16 @@ def _update_device(line):
     if hasattr(line, 'device') and line.device:
         device_id = int(line.device)
         device = device_dao.find(device_id)
-        device_services.rebuild_device_config(device)
+        if device:
+            device_services.rebuild_device_config(device)
 
 
 def _delete_line_from_device(line):
     if hasattr(line, 'device') and line.device:
         device_id = int(line.device)
         device = device_dao.find(device_id)
-        device_services.remove_line_from_device(device, line)
+        if device:
+            device_services.remove_line_from_device(device, line)
 
 
 def update_callerid(user):
