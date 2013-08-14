@@ -31,7 +31,6 @@ from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.devicefeatures import DeviceFeatures
 from xivo_dao.alchemy.sccpline import SCCPLine as SCCPLineSchema
 from xivo_dao.alchemy.usercustom import UserCustom as UserCustomSchema
-import random
 from xivo_dao.alchemy.usersip import UserSIP
 
 logger = logging.getLogger(__name__)

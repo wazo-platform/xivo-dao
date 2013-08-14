@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 
-import unittest
 from mock import patch, Mock
+from xivo_dao.alchemy.devicefeatures import DeviceFeatures as DeviceSchema
 from xivo_dao.data_handler.device import services as device_services
 from xivo_dao.data_handler.device.model import Device
 from xivo_dao.data_handler.extension.model import Extension
@@ -10,9 +10,14 @@ from xivo_dao.data_handler.user_line_extension.model import UserLineExtension
 from xivo_dao.data_handler.exception import ElementCreationError, \
     InvalidParametersError, ElementDeletionError
 from xivo_dao.helpers import provd_connector
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
-class Test(unittest.TestCase):
+class Test(DAOTestCase):
+
+    tables = [
+        DeviceSchema
+    ]
 
     def setUp(self):
         self.device_id = 1
