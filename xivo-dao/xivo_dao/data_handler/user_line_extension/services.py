@@ -81,11 +81,6 @@ def delete_everything(ule):
     notifier.deleted(ule)
 
 
-def _fill_optional_parameters(ule):
-    ule.main_line = True
-    ule.main_user = True
-
-
 def _adjust_optional_parameters(ule, main_user):
     ule.main_line = True
     ule.main_user = (ule.user_id == main_user.id)
