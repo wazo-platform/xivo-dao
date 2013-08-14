@@ -16,8 +16,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.helpers.db_manager import daosession
+from xivo_dao.alchemy.cel import CEL as CELSchema
 
 
 @daosession
-def find_all(session):
-    raise NotImplementedError()
+def find_all(session, limit):
+    cel_rows = (session
+                .query(CELSchema)
+                .order_by(CELSchema.eventtime.asc())
+                .limit(limit)
+                .all())
+    return cel_rows
