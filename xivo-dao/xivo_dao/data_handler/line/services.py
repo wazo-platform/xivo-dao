@@ -67,6 +67,14 @@ def create(line):
 def edit(line):
     _validate(line)
     dao.edit(line)
+    if hasattr(line, 'device') and line.device is not None:
+        try:
+            device = device_services.get(int(line.device))
+            device_services.rebuild_device_config(device)
+        except URLError as e:
+            raise provd_connector.ProvdError(str(e))
+        except ElementNotExistsError:
+            pass
     notifier.edited(line)
 
 
