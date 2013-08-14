@@ -48,19 +48,20 @@ class Test(unittest.TestCase):
         device_dao_find_all.assert_called_once_with()
 
     @patch('xivo_dao.data_handler.device.dao.create')
+    @patch('xivo_dao.data_handler.device.notifier.created')
     @patch('xivo_dao.helpers.provd_connector.device_manager')
-    def test_create_empty_device(self, device_manager, device_dao_create):
+    def test_create_empty_device(self, device_manager, notifier_created, device_dao_create):
         expected_id = 1
         expected_deviceid = '02aff2a361004aaf8a8a686a48dc980d'
         device = Device()
 
         device_manager().add.return_value = expected_deviceid
-        device_dao_create.return_value = Device(id=expected_id,
-                                                deviceid=expected_deviceid)
+        device_dao_create.return_value = Device(id=expected_id, deviceid=expected_deviceid)
 
         result = device_services.create(device)
 
         device_manager().add.assert_called_once_with({})
+        notifier_created.assert_called_once_with(result)
         self.assertEquals(result.id, expected_id)
         self.assertEquals(result.deviceid, expected_deviceid)
 
