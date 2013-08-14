@@ -49,6 +49,15 @@ def get_by_deviceid(session, device_id):
 
 
 @daosession
+def find(session, device_id):
+    device_row = session.query(DeviceSchema).filter(DeviceSchema.id == device_id).first()
+
+    if device_row:
+        return Device.from_data_source(device_row)
+    return None
+
+
+@daosession
 def find_all(session):
     rows = (session.query(DeviceSchema).all())
 

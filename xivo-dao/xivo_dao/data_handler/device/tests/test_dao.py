@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, all_of, equal_to, has_items, has_property, instance_of
+from hamcrest import assert_that, all_of, equal_to, has_items, has_property, instance_of, none
 from xivo_dao.data_handler.device import dao as device_dao
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.devicefeatures import DeviceFeatures as DeviceSchema
@@ -24,7 +24,6 @@ from sqlalchemy.exc import SQLAlchemyError
 from mock import Mock, patch
 from xivo_dao.data_handler.exception import ElementCreationError, \
     ElementDeletionError
-from xivo_dao.data_handler.line.model import LineSIP
 
 
 class TestDeviceDao(DAOTestCase):
@@ -66,6 +65,22 @@ class TestDeviceDao(DAOTestCase):
 
         assert_that(device.id, equal_to(expected_device.id))
         assert_that(device.deviceid, equal_to(deviceid))
+
+    def test_find_not_found(self):
+        device_id = 39784
+
+        result = device_dao.find(device_id)
+
+        assert_that(result, none())
+
+    def test_find_found(self):
+        device_id = 39784
+        device_row = self.add_device(deviceid=device_id)
+        expected_device = Device.from_data_source(device_row)
+
+        result = device_dao.find(expected_device.id)
+
+        assert_that(result, equal_to(expected_device))
 
     def test_find_all_no_devices(self):
         expected = []
