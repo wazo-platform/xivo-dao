@@ -25,6 +25,7 @@ from xivo_dao.data_handler.exception import MissingParametersError, InvalidParam
     ElementNotExistsError
 from xivo_dao.helpers import provd_connector
 from xivo_dao.data_handler.device import services as device_services
+from xivo_dao.data_handler.device import dao as device_dao
 from xivo_dao.data_handler.context import services as context_services
 from xivo import caller_id
 
@@ -80,24 +81,22 @@ def delete(line):
 
 def _update_device(line):
     if hasattr(line, 'device') and line.device:
+        device_id = int(line.device)
+        device = device_dao.find(device_id)
         try:
-            device = device_services.get(int(line.device))
             device_services.rebuild_device_config(device)
         except URLError as e:
             raise provd_connector.ProvdError(str(e))
-        except ElementNotExistsError:
-            pass
 
 
 def _delete_line_from_device(line):
     if hasattr(line, 'device') and line.device:
+        device_id = int(line.device)
+        device = device_dao.find(device_id)
         try:
-            device = device_services.get(int(line.device))
             device_services.remove_line_from_device(device, line)
         except URLError as e:
             raise provd_connector.ProvdError(str(e))
-        except ElementNotExistsError:
-            pass
 
 
 def update_callerid(user):
