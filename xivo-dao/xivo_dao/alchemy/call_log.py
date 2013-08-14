@@ -15,21 +15,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.exc import SQLAlchemyError
-from xivo_dao.alchemy.call_log import CallLog as CallLogSchema
-from xivo_dao.data_handler.exception import ElementCreationError
-from xivo_dao.helpers.db_manager import daosession
+from sqlalchemy.schema import Column
+from sqlalchemy.types import DateTime, Integer, String, Boolean, Interval
+from xivo_dao.helpers.db_manager import Base
 
 
-@daosession
-def create_all(session, call_logs):
-    session.begin()
-    for call_log in call_logs:
-        call_log_row = call_log.to_data_source(CallLogSchema)
-        session.add(call_log_row)
-        call_log.id = call_log_row.id
-    try:
-        session.commit()
-    except SQLAlchemyError as e:
-        session.rollback()
-        raise ElementCreationError('Call', e)
+class CallLog(Base):
+    __tablename__ = 'call_log'
+
+    id = Column(Integer, primary_key=True)
+    date = Column(DateTime, nullable=False)
+    source_name = Column(String(255))
+    source_exten = Column(String(255))
+    destination_name = Column(String(255))
+    destination_exten = Column(String(255))
+    user_field = Column(String(255))
+    answered = Column(Boolean)
+    duration = Column(Interval, nullable=False)
