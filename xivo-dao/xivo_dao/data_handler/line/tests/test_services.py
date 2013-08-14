@@ -9,7 +9,8 @@ from xivo_dao.helpers.provd_connector import ProvdError
 from xivo_dao.data_handler.line.model import LineSIP, LineOrdering, Line
 from xivo_dao.data_handler.line import services as line_services
 from xivo_dao.data_handler.exception import MissingParametersError, \
-    ElementCreationError, ElementNotExistsError, InvalidParametersError
+    ElementCreationError, ElementNotExistsError, InvalidParametersError, \
+    ElementEditionError
 
 
 class TestLineServices(unittest.TestCase):
@@ -219,6 +220,51 @@ class TestLineServices(unittest.TestCase):
 
         self.assertRaises(ElementCreationError, line_services.create, line)
         make_provisioning_id.assert_called_with()
+
+    @patch('xivo_dao.data_handler.context.services.find_by_name', Mock(return_value=Mock()))
+    @patch('xivo_dao.data_handler.line.notifier.edited')
+    @patch('xivo_dao.data_handler.line.dao.edit')
+    def test_edit(self, line_dao_edit, line_notifier_edited):
+        name = 'line'
+        context = 'toto'
+        secret = '1234'
+        line = LineSIP(name=name,
+                       context=context,
+                       username=name,
+                       secret=secret)
+
+        line_services.edit(line)
+
+        line_dao_edit.assert_called_once_with(line)
+        line_notifier_edited.assert_called_once_with(line)
+
+    @patch('xivo_dao.data_handler.line.notifier.edited')
+    @patch('xivo_dao.data_handler.line.dao.edit')
+    def test_edit_with_empty_attributes(self, line_dao_edit, line_notifier_edited):
+        line = LineSIP(context='')
+
+        self.assertRaises(InvalidParametersError, line_services.edit, line)
+        self.assertEquals(line_dao_edit.call_count, 0)
+        self.assertEquals(line_notifier_edited.call_count, 0)
+
+    @patch('xivo_dao.data_handler.context.services.find_by_name', Mock(return_value=Mock()))
+    @patch('xivo_dao.data_handler.line.notifier.edited')
+    @patch('xivo_dao.data_handler.line.dao.edit')
+    def test_edit_with_error_from_dao(self, line_dao_edit, line_notifier_edited):
+        name = 'line'
+        context = 'toto'
+        secret = '1234'
+
+        line = LineSIP(name=name,
+                       context=context,
+                       username=name,
+                       secret=secret)
+
+        error = Exception("message")
+        line_dao_edit.side_effect = ElementEditionError(error, '')
+
+        self.assertRaises(ElementEditionError, line_services.edit, line)
+        self.assertEquals(line_notifier_edited.call_count, 0)
 
     @patch('xivo_dao.data_handler.device.services.remove_line_from_device')
     @patch('xivo_dao.data_handler.line.notifier.deleted')

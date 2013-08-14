@@ -64,7 +64,9 @@ def create(line):
 
 
 def edit(line):
-    raise NotImplementedError
+    _validate(line)
+    dao.edit(line)
+    notifier.edited(line)
 
 
 def delete(line):
