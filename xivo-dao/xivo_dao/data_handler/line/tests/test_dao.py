@@ -412,6 +412,7 @@ class TestLineDao(DAOTestCase):
 
         expected_line = line_dao.get(line.id)
         expected_line.name = expected_name
+        expected_line.username = expected_name
         expected_line.context = expected_context
 
         line_dao.edit(expected_line)

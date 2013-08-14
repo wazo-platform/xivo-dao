@@ -68,6 +68,38 @@ class LineSIP(Line):
         Line.__init__(self, *args, **kwargs)
         self.protocol = 'sip'
 
+    @classmethod
+    def from_data_source(cls, db_object):
+        obj = super(LineSIP, cls).from_data_source(db_object)
+        if hasattr(obj, 'name'):
+            obj.username = db_object.name
+        return obj
+
+    def to_data_source(self, class_schema):
+        obj = AbstractModels.to_data_source(self, class_schema)
+        if hasattr(self, 'username'):
+            obj.name = self.username
+        del obj.username
+        return obj
+
+    def to_data_dict(self):
+        data_dict = AbstractModels.to_data_dict(self)
+        if hasattr(self, 'username'):
+            data_dict['name'] = self.username
+        del data_dict['username']
+        return data_dict
+
+    def update_from_data_source(self, db_object):
+        AbstractModels.update_from_data_source(self, db_object)
+        if hasattr(db_object, 'name'):
+            self.username = db_object.name
+
+    def update_data_source(self, db_object):
+        AbstractModels.update_data_source(self, db_object)
+        if hasattr(self, 'username'):
+            setattr(db_object, 'name', self.username)
+        setattr(db_object, 'username', '')
+
 
 class LineIAX(Line):
 
