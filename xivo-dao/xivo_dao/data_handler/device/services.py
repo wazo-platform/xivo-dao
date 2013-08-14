@@ -33,10 +33,6 @@ def get(device_id):
     return dao.get(device_id)
 
 
-def get_by_deviceid(session, device_id):
-    return dao.get_by_deviceid(device_id)
-
-
 def find_all():
     return dao.find_all()
 
