@@ -26,6 +26,7 @@ from xivo_dao.data_handler.exception import MissingParametersError, InvalidParam
 from xivo_dao.helpers import provd_connector
 from xivo_dao.data_handler.device import services as device_services
 from xivo_dao.data_handler.context import services as context_services
+from xivo import caller_id
 
 
 def get(line_id):
@@ -96,7 +97,8 @@ def update_callerid(user):
     except ElementNotExistsError:
         pass
     else:
-        line.callerid = user.callerid
+        callerid, cid_name, cid_number = caller_id.build_caller_id('', user.fullname, line.number)
+        line.callerid = callerid
         edit(line)
 
 

@@ -25,6 +25,7 @@ from xivo_dao.data_handler.line import dao as line_dao
 from xivo_dao.data_handler.user import services as user_services
 from xivo_dao.data_handler.extension import services as extension_services
 from xivo_dao.data_handler.extension import dao as extension_dao
+from xivo import caller_id
 
 
 def get(ule_id):
@@ -100,7 +101,8 @@ def _associate_extension(user, extension):
 def _associate_line(line, extension, main_user):
     line.number = extension.exten
     line.context = extension.context
-    line.callerid = main_user.callerid
+    callerid, _, _ = caller_id.build_caller_id('', main_user.fullname, extension.exten)
+    line.callerid = callerid
     line_dao.edit(line)
 
 

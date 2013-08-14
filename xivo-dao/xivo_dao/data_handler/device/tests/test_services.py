@@ -195,7 +195,8 @@ class Test(unittest.TestCase):
         secret = 'password'
         exten = '1250'
         context = 'default'
-        callerid = 'Francis Dagobert <%s>' % exten
+        display_name = 'Francis Dagobert'
+        callerid = '"%s" <%s>' % (display_name, exten)
         proxy_ip = '10.39.5.1'
         registrar_ip = proxy_ip
         configregistrar = 'default'
@@ -204,6 +205,7 @@ class Test(unittest.TestCase):
                        num=1,
                        context=context,
                        username=username,
+                       name=username,
                        secret=secret,
                        callerid=callerid,
                        configregistrar=configregistrar)
@@ -230,7 +232,7 @@ class Test(unittest.TestCase):
                     "1": {
                         'username': username,
                         'auth_username': username,
-                        'display_name': callerid,
+                        'display_name': display_name,
                         'number': exten,
                         'password': secret,
                         'proxy_ip': proxy_ip,
@@ -254,7 +256,8 @@ class Test(unittest.TestCase):
         secret = 'password'
         exten = '1250'
         context = 'default'
-        callerid = 'Francis Dagobert <%s>' % exten
+        display_name = 'Francis Dagobert'
+        callerid = '"%s" <%s>' % (display_name, exten)
         proxy_ip = '10.39.5.1'
         registrar_ip = proxy_ip
         proxy_backup = '10.39.5.2'
@@ -264,6 +267,7 @@ class Test(unittest.TestCase):
                        num=1,
                        context=context,
                        username=username,
+                       name=username,
                        secret=secret,
                        callerid=callerid,
                        configregistrar=configregistrar)
@@ -290,7 +294,7 @@ class Test(unittest.TestCase):
                     "1": {
                         'username': username,
                         'auth_username': username,
-                        'display_name': callerid,
+                        'display_name': display_name,
                         'number': exten,
                         'password': secret,
                         'proxy_ip': proxy_ip,

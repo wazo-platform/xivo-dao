@@ -107,6 +107,8 @@ class TestUserLineExtensionServices(unittest.TestCase):
                                 main_user=True,
                                 main_line=False)
         user = User(id=user_id,
+                    firstname='Francis',
+                    lastname='Dagobert',
                     callerid=callerid)
 
         line = LineSIP(id=line_id,
@@ -155,14 +157,16 @@ class TestUserLineExtensionServices(unittest.TestCase):
 
         exten = '1000'
         context = 'default'
+        firstname = 'Francis'
+        lastname = 'Dagobert'
         ule_id = 63
         line_id = 52
         user_id = 5898
         extension_id = 52
-        callerid = 'Francis Dagobert'
 
         main_user_id = 5999
-        main_callerid = 'Lord Master'
+        main_firstname = 'Lord'
+        main_lastname = 'Master'
 
         ule = UserLineExtension(user_id=user_id,
                                 line_id=line_id,
@@ -170,10 +174,18 @@ class TestUserLineExtensionServices(unittest.TestCase):
                                 main_user=True,
                                 main_line=False)
         user = User(id=user_id,
-                    callerid=callerid)
+                    firstname=firstname,
+                    lastname=lastname)
+
+        display_name = user.fullname
+        callerid = '"%s" <%s>' % (display_name, exten)
 
         main_user = User(id=main_user_id,
-                         callerid=main_callerid)
+                         firstname=main_firstname,
+                         lastname=main_lastname)
+
+        main_display_name = main_user.fullname
+        main_callerid = '"%s" <%s>' % (main_display_name, exten)
 
         line = LineSIP(id=line_id,
                        callerid=callerid,

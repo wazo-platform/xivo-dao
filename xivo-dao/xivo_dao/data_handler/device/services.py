@@ -24,6 +24,7 @@ from xivo_dao.data_handler.extension import dao as extension_dao
 from xivo_dao.data_handler.line import dao as line_dao
 from xivo_dao.data_handler.exception import InvalidParametersError, \
     ElementNotExistsError, ElementDeletionError
+from xivo import caller_id
 
 IP_REGEX = re.compile(r'(1?\d{1,2}|2[0-5]{2})(\.(1?\d{1,2}|2[0-5]{2})){3}$')
 
@@ -123,10 +124,10 @@ def _populate_sip_line(config, confregistrar, line, extension):
         config['raw_config']['sip_lines'] = dict()
     config['raw_config']['sip_lines'][str(line.num)] = dict()
     line_dict = config['raw_config']['sip_lines'][str(line.num)]
-    line_dict['auth_username'] = line.username
-    line_dict['username'] = line.username
+    line_dict['auth_username'] = line.name
+    line_dict['username'] = line.name
     line_dict['password'] = line.secret
-    line_dict['display_name'] = line.callerid
+    line_dict['display_name'] = caller_id.extract_displayname(line.callerid)
     line_dict['number'] = extension.exten
     line_dict['registrar_ip'] = confregistrar['registrar_main']
     line_dict['proxy_ip'] = confregistrar['proxy_main']

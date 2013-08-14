@@ -381,8 +381,11 @@ class TestLineServices(unittest.TestCase):
     def test_update_callerid(self, line_services_get_by_user_id, line_services_edit):
         expected_callerid = 'titi'
         user = User(id=1,
+                    firstname='titi',
                     callerid=expected_callerid)
-        line = LineSIP(callerid=expected_callerid)
+        line = LineSIP(callerid=expected_callerid,
+                       number='1000',
+                       name='toto')
 
         line_services_get_by_user_id.return_value = line
 
@@ -396,6 +399,7 @@ class TestLineServices(unittest.TestCase):
     def test_update_callerid_with_no_line(self, line_services_get_by_user_id, line_services_edit):
         expected_callerid = 'titi'
         user = User(id=1,
+                    firstname='titi',
                     callerid=expected_callerid)
 
         line_services_get_by_user_id.side_effect = ElementNotExistsError('')

@@ -63,6 +63,8 @@ class User(AbstractModels):
 
     @property
     def fullname(self):
+        if not hasattr(self, 'lastname'):
+            self.lastname = ''
         return ' '.join([self.firstname, self.lastname])
 
 
