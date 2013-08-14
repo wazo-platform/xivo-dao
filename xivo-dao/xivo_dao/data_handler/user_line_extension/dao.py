@@ -21,6 +21,7 @@ from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementCreationError, ElementDeletionError, ElementEditionError
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from model import UserLineExtension
+from xivo_dao.data_handler.user import dao as user_dao
 
 
 @daosession
@@ -62,6 +63,19 @@ def find_all_by_extension_id(session, extension_id):
 def find_all_by_line_id(session, line_id):
     ules = session.query(ULESchema).filter(ULESchema.line_id == line_id).all()
     return [UserLineExtension.from_data_source(ule) for ule in ules]
+
+
+@daosession
+def find_main_user(session, ule):
+    row = (session.query(ULESchema.user_id)
+           .filter(ULESchema.main_user == True)
+           .filter(ULESchema.line_id == ule.line_id)
+           .first())
+
+    if not row:
+        return user_dao.get(ule.user_id)
+
+    return user_dao.get(row[0])
 
 
 @daosession
@@ -117,6 +131,16 @@ def delete(session, user_line_extension):
         raise ElementDeletionError('UserLineExtension', 'user_line_extension_id %s not exsit' % user_line_extension.id)
 
     return nb_row_affected
+
+
+@daosession
+def already_linked(session, user_id, line_id):
+    count = (session.query(ULESchema)
+             .filter(ULESchema.user_id == user_id)
+             .filter(ULESchema.line_id == line_id)
+             .count())
+
+    return count > 0
 
 
 def _new_query(session):

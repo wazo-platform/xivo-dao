@@ -90,7 +90,7 @@ def _check_invalid_parameters(device):
 
 
 def associate_line_to_device(device, line):
-    line_dao.device = str(device.id)
+    line.device = str(device.id)
     line_dao.edit(line)
     rebuild_device_config(device)
 
