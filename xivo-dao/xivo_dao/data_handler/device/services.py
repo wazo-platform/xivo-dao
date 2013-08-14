@@ -18,12 +18,14 @@
 from . import dao
 from . import notifier
 import re
+from urllib2 import URLError
 from xivo_dao.helpers import provd_connector
 from xivo_dao.data_handler.user_line_extension import dao as user_line_extension_dao
 from xivo_dao.data_handler.extension import dao as extension_dao
 from xivo_dao.data_handler.line import dao as line_dao
 from xivo_dao.data_handler.exception import InvalidParametersError, \
     ElementNotExistsError, ElementDeletionError
+from xivo_dao.helpers.provd_connector import ProvdError
 from xivo import caller_id
 
 IP_REGEX = re.compile(r'(1?\d{1,2}|2[0-5]{2})(\.(1?\d{1,2}|2[0-5]{2})){3}$')
@@ -97,8 +99,11 @@ def associate_line_to_device(device, line):
 
 def rebuild_device_config(device):
     lines_device = line_dao.find_all_by_device_id(device.id)
-    for line in lines_device:
-        build_line_for_device(device, line)
+    try:
+        for line in lines_device:
+            build_line_for_device(device, line)
+    except URLError as e:
+        raise ProvdError(e)
 
 
 def build_line_for_device(device, line):

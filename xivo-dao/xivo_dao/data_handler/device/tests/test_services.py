@@ -2,6 +2,7 @@
 
 from mock import patch, Mock
 from xivo_dao.alchemy.devicefeatures import DeviceFeatures as DeviceSchema
+from urllib2 import URLError
 from xivo_dao.data_handler.device import services as device_services
 from xivo_dao.data_handler.device.model import Device
 from xivo_dao.data_handler.extension.model import Extension
@@ -10,6 +11,7 @@ from xivo_dao.data_handler.user_line_extension.model import UserLineExtension
 from xivo_dao.data_handler.exception import ElementCreationError, \
     InvalidParametersError, ElementDeletionError, ElementNotExistsError
 from xivo_dao.helpers import provd_connector
+from xivo_dao.helpers.provd_connector import ProvdError
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -175,6 +177,20 @@ class Test(DAOTestCase):
         line_find_all_by_device_id.return_value = [line1]
 
         device_services.rebuild_device_config(device)
+
+        build_line_for_device.assert_called_once_with(device, line1)
+
+    @patch('xivo_dao.data_handler.device.services.build_line_for_device')
+    @patch('xivo_dao.data_handler.line.dao.find_all_by_device_id')
+    def test_rebuild_device_config_provd_error(self,
+                                               line_find_all_by_device_id,
+                                               build_line_for_device):
+        device = Device(id=self.device_id)
+        line1 = LineSIP(device=self.device_id)
+        line_find_all_by_device_id.return_value = [line1]
+        build_line_for_device.side_effect = URLError('urlerror')
+
+        self.assertRaises(ProvdError, device_services.rebuild_device_config, device)
 
         build_line_for_device.assert_called_once_with(device, line1)
 

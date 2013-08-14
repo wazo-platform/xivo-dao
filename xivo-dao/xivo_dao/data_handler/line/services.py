@@ -83,10 +83,7 @@ def _update_device(line):
     if hasattr(line, 'device') and line.device:
         device_id = int(line.device)
         device = device_dao.find(device_id)
-        try:
-            device_services.rebuild_device_config(device)
-        except URLError as e:
-            raise provd_connector.ProvdError(str(e))
+        device_services.rebuild_device_config(device)
 
 
 def _delete_line_from_device(line):
