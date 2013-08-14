@@ -50,7 +50,7 @@ def find_by_context(context, order=None):
 
 
 def create(extension):
-    _validate(extension)
+    _validate_create(extension)
     extension = dao.create(extension)
     notifier.created(extension)
     return extension
@@ -71,9 +71,13 @@ def delete(extension):
 def _validate(extension):
     _check_missing_parameters(extension)
     _check_invalid_parameters(extension)
-    _check_if_extension_already_exists(extension)
     _check_if_context_exists(extension)
     _check_if_exten_in_range(extension)
+
+
+def _validate_create(extension):
+    _validate(extension)
+    _check_if_extension_already_exists(extension)
 
 
 def _check_missing_parameters(extension):

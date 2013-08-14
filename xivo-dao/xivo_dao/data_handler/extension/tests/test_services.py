@@ -105,6 +105,8 @@ class TestExtension(unittest.TestCase):
         self.assertEquals(type(result), Extension)
         extension_notifier_created.assert_called_once_with(extension)
 
+    @patch('xivo_dao.data_handler.context.services.is_extension_inside_range', Mock(return_value=True))
+    @patch('xivo_dao.data_handler.context.services.find_by_name', Mock(return_value=Mock()))
     @patch('xivo_dao.data_handler.extension.dao.find_by_exten_context')
     @patch('xivo_dao.data_handler.extension.notifier.created')
     @patch('xivo_dao.data_handler.extension.dao.create')
