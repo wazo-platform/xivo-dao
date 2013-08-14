@@ -8,7 +8,7 @@ from xivo_dao.data_handler.extension.model import Extension
 from xivo_dao.data_handler.line.model import LineSIP, LineSCCP
 from xivo_dao.data_handler.user_line_extension.model import UserLineExtension
 from xivo_dao.data_handler.exception import ElementCreationError, \
-    InvalidParametersError, ElementDeletionError
+    InvalidParametersError, ElementDeletionError, ElementNotExistsError
 from xivo_dao.helpers import provd_connector
 from xivo_dao.tests.test_dao import DAOTestCase
 
@@ -144,19 +144,28 @@ class Test(DAOTestCase):
     @patch('xivo_dao.helpers.provd_connector.config_manager')
     @patch('xivo_dao.helpers.provd_connector.device_manager')
     @patch('xivo_dao.data_handler.device.notifier.deleted')
+    @patch('xivo_dao.data_handler.device.dao.get')
     @patch('xivo_dao.data_handler.device.dao.delete')
-    def test_delete_when_device_does_not_exist(self, device_dao_delete, device_notifier_deleted, device_manager, config_manager):
+    @patch('xivo_dao.data_handler.line.dao.reset_device')
+    def test_delete_when_device_does_not_exist(self,
+                                               line_dao_reset,
+                                               device_dao_delete,
+                                               device_dao_get,
+                                               device_notifier_deleted,
+                                               device_manager,
+                                               config_manager):
         deviceid = '02aff2a361004aaf8a8a686a48dc980d'
         device = Device(id=1,
                         deviceid=deviceid,
                         ip='10.0.0.1')
-
-        device_dao_delete.side_effect = ElementDeletionError('Device', 'Not Exist')
+        device_dao_get.side_effect = ElementNotExistsError('Device')
 
         self.assertRaises(ElementDeletionError, device_services.delete, device)
+        self.assertEquals(device_manager.remove.call_count, 0)
+        self.assertEquals(config_manager.remove.call_count, 0)
+        self.assertEquals(device_dao_delete.call_count, 0)
+        self.assertEquals(line_dao_reset.call_count, 0)
         self.assertEquals(device_notifier_deleted.call_count, 0)
-        self.assertEquals(device_manager().remove.call_count, 0)
-        self.assertEquals(config_manager().remove.call_count, 0)
 
     @patch('xivo_dao.data_handler.device.services.build_line_for_device')
     @patch('xivo_dao.data_handler.line.dao.find_all_by_device_id')
