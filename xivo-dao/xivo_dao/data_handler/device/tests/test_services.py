@@ -462,6 +462,21 @@ class Test(DAOTestCase):
 
     @patch('xivo_dao.helpers.provd_connector.config_manager')
     @patch('xivo_dao.helpers.provd_connector.device_manager')
+    def test_remove_line_from_device_provd_error(self, device_manager, config_manager):
+        config_manager().get.side_effect = URLError('urlerror')
+        line = LineSIP(num=2)
+        device = Device(id=self.device_id,
+                        deviceid=self.provd_deviceid)
+
+        self.assertRaises(ProvdError, device_services.remove_line_from_device, device, line)
+
+        config_manager().get.assert_called_once_with(self.provd_deviceid)
+        self.assertEquals(config_manager.update.call_count, 0)
+        self.assertEquals(config_manager.autocreate.call_count, 0)
+        self.assertEquals(device_manager.call_count, 0)
+
+    @patch('xivo_dao.helpers.provd_connector.config_manager')
+    @patch('xivo_dao.helpers.provd_connector.device_manager')
     def test_remove_line_from_device_autoprov(self, device_manager, config_manager):
         autoprovid = "autoprov1234"
         config_dict = {

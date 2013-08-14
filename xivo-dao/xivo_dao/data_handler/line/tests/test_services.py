@@ -369,33 +369,6 @@ class TestLineServices(unittest.TestCase):
         remove_line_from_device.assert_called_once_with(device, line)
         line_notifier_deleted.assert_called_once_with(line)
 
-    @patch('xivo_dao.data_handler.device.services.remove_line_from_device')
-    @patch('xivo_dao.data_handler.device.dao.find')
-    @patch('xivo_dao.data_handler.line.notifier.deleted')
-    @patch('xivo_dao.data_handler.line.dao.delete')
-    def test_delete_with_device_error(self,
-                                      line_dao_delete,
-                                      line_notifier_deleted,
-                                      device_dao_find,
-                                      remove_line_from_device):
-        line_id = 1
-        username = 'line'
-        secret = 'toto'
-        device_id = 15
-        num = 1
-
-        line = LineSIP(id=line_id, username=username, secret=secret, device=device_id, num=num)
-        device = device_dao_find.return_value = Mock()
-
-        remove_line_from_device.side_effect = URLError('')
-
-        self.assertRaises(ProvdError, line_services.delete, line)
-
-        line_dao_delete.assert_called_once_with(line)
-        device_dao_find.assert_called_once_with(line.device)
-        remove_line_from_device.assert_called_once_with(device, line)
-        self.assertEquals(line_notifier_deleted.call_count, 0)
-
     @patch('xivo_dao.data_handler.line.services.edit')
     @patch('xivo_dao.data_handler.line.services.get_by_user_id')
     def test_update_callerid(self, line_services_get_by_user_id, line_services_edit):

@@ -90,10 +90,7 @@ def _delete_line_from_device(line):
     if hasattr(line, 'device') and line.device:
         device_id = int(line.device)
         device = device_dao.find(device_id)
-        try:
-            device_services.remove_line_from_device(device, line)
-        except URLError as e:
-            raise provd_connector.ProvdError(str(e))
+        device_services.remove_line_from_device(device, line)
 
 
 def update_callerid(user):

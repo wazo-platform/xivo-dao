@@ -151,13 +151,16 @@ def _populate_sccp_line(config, confregistrar):
 
 def remove_line_from_device(device, line):
     provd_config_manager = provd_connector.config_manager()
-    config = provd_config_manager.get(device.deviceid)
-    del config['raw_config']['sip_lines'][str(line.num)]
-    if len(config['raw_config']['sip_lines']) == 0:
-        # then we reset to autoprov
-        _reset_config(config)
-        reset_to_autoprov(device.deviceid)
-    provd_config_manager.update(config)
+    try:
+        config = provd_config_manager.get(device.deviceid)
+        del config['raw_config']['sip_lines'][str(line.num)]
+        if len(config['raw_config']['sip_lines']) == 0:
+            # then we reset to autoprov
+            _reset_config(config)
+            reset_to_autoprov(device.deviceid)
+        provd_config_manager.update(config)
+    except URLError as e:
+        raise ProvdError(e)
 
 
 def reset_to_autoprov(deviceid):
