@@ -22,7 +22,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from xivo_dao.alchemy.call_log import CallLog as CallLogSchema
 from xivo_dao.data_handler.call_log import dao as call_log_dao
 from xivo_dao.data_handler.call_log.model import CallLog
-from xivo_dao.data_handler.exception import ElementCreationError
+from xivo_dao.data_handler.exception import ElementCreationError, ElementDeletionError
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -57,5 +57,25 @@ class TestCallLogDAO(DAOTestCase):
                                               CallLog(date=datetime.today(), duration=timedelta(1))]
 
         self.assertRaises(ElementCreationError, call_log_dao.create_all, call_logs)
+        session.begin.assert_called_once_with()
+        session.rollback.assert_called_once_with()
+
+    def test_delete_all(self):
+        call_logs = [CallLog(date=datetime.today(), duration=timedelta(0)),
+                     CallLog(date=datetime.today(), duration=timedelta(1))]
+        call_log_dao.create_all(call_logs)
+
+        call_log_dao.delete_all()
+
+        call_log_rows = self.session.query(CallLogSchema).all()
+        assert_that(call_log_rows, has_length(0))
+
+    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    def test_delete_all_db_error(self, session_init):
+        session = Mock()
+        session.commit.side_effect = SQLAlchemyError()
+        session_init.return_value = session
+
+        self.assertRaises(ElementDeletionError, call_log_dao.delete_all)
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()

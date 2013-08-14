@@ -17,7 +17,7 @@
 
 from sqlalchemy.exc import SQLAlchemyError
 from xivo_dao.alchemy.call_log import CallLog as CallLogSchema
-from xivo_dao.data_handler.exception import ElementCreationError
+from xivo_dao.data_handler.exception import ElementCreationError, ElementDeletionError
 from xivo_dao.helpers.db_manager import daosession
 
 
@@ -32,4 +32,15 @@ def create_all(session, call_logs):
         session.commit()
     except SQLAlchemyError as e:
         session.rollback()
-        raise ElementCreationError('Call', e)
+        raise ElementCreationError('CallLog', e)
+
+
+@daosession
+def delete_all(session):
+    session.begin()
+    session.query(CallLogSchema).delete()
+    try:
+        session.commit()
+    except SQLAlchemyError as e:
+        session.rollback()
+        raise ElementDeletionError('CallLog', e)
