@@ -63,7 +63,6 @@ class AbstractModels(object):
         return db_object
 
     def update_data_source(self, db_object):
-        print db_object
         for db_field, model_field in self._MAPPING.iteritems():
             if hasattr(self, model_field):
                 if db_field == 'id':
