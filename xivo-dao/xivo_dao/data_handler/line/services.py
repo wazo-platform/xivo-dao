@@ -68,6 +68,17 @@ def create(line):
 def edit(line):
     _validate(line)
     dao.edit(line)
+    _update_device(line)
+    notifier.edited(line)
+
+
+def delete(line):
+    dao.delete(line)
+    _delete_line_from_device(line)
+    notifier.deleted(line)
+
+
+def _update_device(line):
     if hasattr(line, 'device') and line.device:
         try:
             device = device_services.get(int(line.device))
@@ -76,11 +87,9 @@ def edit(line):
             raise provd_connector.ProvdError(str(e))
         except ElementNotExistsError:
             pass
-    notifier.edited(line)
 
 
-def delete(line):
-    dao.delete(line)
+def _delete_line_from_device(line):
     if hasattr(line, 'device') and line.device:
         try:
             device = device_services.get(int(line.device))
@@ -89,7 +98,6 @@ def delete(line):
             raise provd_connector.ProvdError(str(e))
         except ElementNotExistsError:
             pass
-    notifier.deleted(line)
 
 
 def update_callerid(user):
