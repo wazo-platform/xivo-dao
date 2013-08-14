@@ -18,7 +18,6 @@
 from . import dao
 from . import notifier
 import re
-
 from xivo_dao.helpers import provd_connector
 from xivo_dao.data_handler.user_line_extension import dao as user_line_extension_dao
 from xivo_dao.data_handler.extension import dao as extension_dao
@@ -62,10 +61,14 @@ def delete(device):
 
 def _remove_device_from_provd(device):
     provd_device_manager = provd_connector.device_manager()
-    provd_device_manager.remove(device.deviceid)
-    if len(device.config) > 0:
-        provd_config_manager = provd_connector.config_manager()
-        provd_config_manager.remove(device.deviceid)
+    provd_device = provd_device_manager.find({'id': device.deviceid})
+    if provd_device:
+        provd_device_manager.remove(device.deviceid)
+        if len(device.config) > 0:
+            provd_config_manager = provd_connector.config_manager()
+            provd_config = provd_config_manager.find({'id': device.config})
+            if provd_config:
+                provd_config_manager.remove(device.deviceid)
 
 
 def _generate_new_deviceid(device):
