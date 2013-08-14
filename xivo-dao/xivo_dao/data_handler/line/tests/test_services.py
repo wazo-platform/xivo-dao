@@ -9,7 +9,8 @@ from xivo_dao.helpers.provd_connector import ProvdError
 from xivo_dao.data_handler.line.model import LineSIP, LineOrdering, Line
 from xivo_dao.data_handler.line import services as line_services
 from xivo_dao.data_handler.exception import MissingParametersError, \
-    ElementCreationError, InvalidParametersError
+    ElementCreationError, ElementNotExistsError, InvalidParametersError, \
+    ElementEditionError
 
 
 class TestLineServices(unittest.TestCase):
@@ -26,6 +27,12 @@ class TestLineServices(unittest.TestCase):
         mock_line_get.assert_called_once_with(line_id)
         self.assertEquals(result, line)
 
+    @patch('xivo_dao.data_handler.line.dao.get')
+    def test_get_not_exist(self, mock_line_get):
+        mock_line_get.side_effect = ElementNotExistsError('Line')
+
+        self.assertRaises(ElementNotExistsError, line_services.get, 1)
+
     @patch('xivo_dao.data_handler.line.dao.get_by_user_id')
     def test_get_by_user_id(self, mock_get_by_user_id):
         user_id = 1
@@ -37,6 +44,12 @@ class TestLineServices(unittest.TestCase):
 
         mock_get_by_user_id.assert_called_once_with(user_id)
         self.assertEquals(result, line)
+
+    @patch('xivo_dao.data_handler.line.dao.get_by_user_id')
+    def test_get_by_user_id_not_exist(self, mock_get_by_user_id):
+        mock_get_by_user_id.side_effect = ElementNotExistsError('Line')
+
+        self.assertRaises(ElementNotExistsError, line_services.get_by_user_id, 1)
 
     @patch('xivo_dao.data_handler.line.dao.get_by_number_context')
     def test_get_by_number_context(self, mock_get_by_number_context):
@@ -51,13 +64,19 @@ class TestLineServices(unittest.TestCase):
         mock_get_by_number_context.assert_called_once_with(number, context)
         self.assertEquals(result, line)
 
+    @patch('xivo_dao.data_handler.line.dao.get_by_number_context')
+    def test_get_by_number_context_not_exist(self, mock_get_by_number_context):
+        mock_get_by_number_context.side_effect = ElementNotExistsError('Line')
+
+        self.assertRaises(ElementNotExistsError, line_services.get_by_number_context, '1000', 'default')
+
     @patch('xivo_dao.data_handler.line.dao.find_all')
     def test_find_all(self, line_dao_find_all):
-        first_user = Mock(Line)
-        second_user = Mock(Line)
+        first_line = Mock(Line)
+        second_line = Mock(Line)
         expected_order = None
 
-        expected = [first_user, second_user]
+        expected = [first_line, second_line]
 
         line_dao_find_all.return_value = expected
 
@@ -69,11 +88,11 @@ class TestLineServices(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.line.dao.find_all')
     def test_find_all_order_by_name(self, line_dao_find_all):
-        first_user = Mock(Line)
-        second_user = Mock(Line)
+        first_line = Mock(Line)
+        second_line = Mock(Line)
         expected_order = [LineOrdering.name]
 
-        expected = [first_user, second_user]
+        expected = [first_line, second_line]
 
         line_dao_find_all.return_value = expected
 
@@ -85,15 +104,51 @@ class TestLineServices(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.line.dao.find_all_by_name')
     def test_find_all_by_name(self, line_dao_find_all_by_name):
-        user = Mock(Line)
+        expected_result = [Mock(Line)]
         name = 'Lord'
 
-        line_dao_find_all_by_name.return_value = user
+        line_dao_find_all_by_name.return_value = expected_result
 
         result = line_services.find_all_by_name(name)
 
-        self.assertEquals(result, user)
+        self.assertEquals(result, expected_result)
         line_dao_find_all_by_name.assert_called_once_with(name)
+
+    @patch('xivo_dao.data_handler.line.dao.find_all_by_name')
+    def test_find_all_by_name_no_result(self, line_dao_find_all_by_name):
+        expected_result = []
+        name = 'Lord'
+
+        line_dao_find_all_by_name.return_value = expected_result
+
+        result = line_services.find_all_by_name(name)
+
+        self.assertEquals(result, expected_result)
+        line_dao_find_all_by_name.assert_called_once_with(name)
+
+    @patch('xivo_dao.data_handler.line.dao.find_all_by_device_id')
+    def test_find_all_by_device_id(self, line_dao_find_all_by_device_id):
+        expected_result = [Mock(Line)]
+        device_id = '222'
+
+        line_dao_find_all_by_device_id.return_value = expected_result
+
+        result = line_services.find_all_by_device_id(device_id)
+
+        self.assertEquals(result, expected_result)
+        line_dao_find_all_by_device_id.assert_called_once_with(device_id)
+
+    @patch('xivo_dao.data_handler.line.dao.find_all_by_device_id')
+    def test_find_all_by_device_id_no_result(self, line_dao_find_all_by_device_id):
+        expected_result = []
+        device_id = '222'
+
+        line_dao_find_all_by_device_id.return_value = expected_result
+
+        result = line_services.find_all_by_device_id(device_id)
+
+        self.assertEquals(result, expected_result)
+        line_dao_find_all_by_device_id.assert_called_once_with(device_id)
 
     @patch('xivo_dao.data_handler.line.dao.provisioning_id_exists')
     def test_make_provisioning_id(self, provd_id_exists):
@@ -166,6 +221,51 @@ class TestLineServices(unittest.TestCase):
         self.assertRaises(ElementCreationError, line_services.create, line)
         make_provisioning_id.assert_called_with()
 
+    @patch('xivo_dao.data_handler.context.services.find_by_name', Mock(return_value=Mock()))
+    @patch('xivo_dao.data_handler.line.notifier.edited')
+    @patch('xivo_dao.data_handler.line.dao.edit')
+    def test_edit(self, line_dao_edit, line_notifier_edited):
+        name = 'line'
+        context = 'toto'
+        secret = '1234'
+        line = LineSIP(name=name,
+                       context=context,
+                       username=name,
+                       secret=secret)
+
+        line_services.edit(line)
+
+        line_dao_edit.assert_called_once_with(line)
+        line_notifier_edited.assert_called_once_with(line)
+
+    @patch('xivo_dao.data_handler.line.notifier.edited')
+    @patch('xivo_dao.data_handler.line.dao.edit')
+    def test_edit_with_empty_attributes(self, line_dao_edit, line_notifier_edited):
+        line = LineSIP(context='')
+
+        self.assertRaises(InvalidParametersError, line_services.edit, line)
+        self.assertEquals(line_dao_edit.call_count, 0)
+        self.assertEquals(line_notifier_edited.call_count, 0)
+
+    @patch('xivo_dao.data_handler.context.services.find_by_name', Mock(return_value=Mock()))
+    @patch('xivo_dao.data_handler.line.notifier.edited')
+    @patch('xivo_dao.data_handler.line.dao.edit')
+    def test_edit_with_error_from_dao(self, line_dao_edit, line_notifier_edited):
+        name = 'line'
+        context = 'toto'
+        secret = '1234'
+
+        line = LineSIP(name=name,
+                       context=context,
+                       username=name,
+                       secret=secret)
+
+        error = Exception("message")
+        line_dao_edit.side_effect = ElementEditionError(error, '')
+
+        self.assertRaises(ElementEditionError, line_services.edit, line)
+        self.assertEquals(line_notifier_edited.call_count, 0)
+
     @patch('xivo_dao.data_handler.device.services.remove_line_from_device')
     @patch('xivo_dao.data_handler.line.notifier.deleted')
     @patch('xivo_dao.data_handler.line.dao.delete')
@@ -197,7 +297,7 @@ class TestLineServices(unittest.TestCase):
         line_services.delete(line)
 
         line_dao_delete.assert_called_once_with(line)
-        remove_line_from_device.assert_called_once_with(line.device, line.num)
+        remove_line_from_device.assert_called_once_with(line.device, line)
         line_notifier_deleted.assert_called_once_with(line)
 
     @patch('xivo_dao.data_handler.device.services.remove_line_from_device')
@@ -217,5 +317,5 @@ class TestLineServices(unittest.TestCase):
         self.assertRaises(ProvdError, line_services.delete, line)
 
         line_dao_delete.assert_called_once_with(line)
-        remove_line_from_device.assert_called_once_with(line.device, line.num)
+        remove_line_from_device.assert_called_once_with(line.device, line)
         self.assertEquals(line_notifier_deleted.call_count, 0)

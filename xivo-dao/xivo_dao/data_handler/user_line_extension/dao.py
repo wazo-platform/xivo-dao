@@ -59,6 +59,12 @@ def find_all_by_extension_id(session, extension_id):
 
 
 @daosession
+def find_all_by_line_id(session, line_id):
+    ules = session.query(ULESchema).filter(ULESchema.line_id == line_id).all()
+    return [UserLineExtension.from_data_source(ule) for ule in ules]
+
+
+@daosession
 def create(session, user_line_extension):
     user_line_extension_row = user_line_extension.to_data_source(ULESchema)
     session.begin()

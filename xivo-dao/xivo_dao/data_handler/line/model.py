@@ -37,6 +37,7 @@ class Line(AbstractModels):
         'callerid': 'callerid',
         'device': 'device',
         'provisioningid': 'provisioningid',
+        'configregistrar': 'configregistrar',
         'num': 'num'
     }
 

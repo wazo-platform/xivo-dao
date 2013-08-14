@@ -20,9 +20,9 @@ import random
 from . import notifier
 from . import dao
 
+from urllib2 import URLError
 from xivo_dao.data_handler.exception import MissingParametersError, InvalidParametersError, \
     ElementNotExistsError
-from urllib2 import URLError
 from xivo_dao.helpers import provd_connector
 from xivo_dao.data_handler.device import services as device_services
 from xivo_dao.data_handler.context import services as context_services
@@ -52,6 +52,10 @@ def find_all_by_protocol(protocol):
     return dao.find_all_by_protocol(protocol)
 
 
+def find_all_by_device_id(name):
+    return dao.find_all_by_device_id(name)
+
+
 def create(line):
     _validate(line)
     line.provisioningid = make_provisioning_id()
@@ -61,14 +65,16 @@ def create(line):
 
 
 def edit(line):
-    raise NotImplementedError
+    _validate(line)
+    dao.edit(line)
+    notifier.edited(line)
 
 
 def delete(line):
     dao.delete(line)
     if hasattr(line, 'device') and line.device is not None:
         try:
-            device_services.remove_line_from_device(line.device, line.num)
+            device_services.remove_line_from_device(line.device, line)
         except URLError as e:
             raise provd_connector.ProvdError(str(e))
         except ElementNotExistsError:

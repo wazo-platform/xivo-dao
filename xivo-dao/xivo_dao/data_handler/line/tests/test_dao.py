@@ -34,7 +34,7 @@ from xivo_dao.alchemy.sccpline import SCCPLine as SCCPLineSchema
 from xivo_dao.data_handler.line.model import LineSIP, LineSCCP, LineIAX, LineCUSTOM, \
     LineOrdering
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
-    ElementCreationError, ElementDeletionError
+    ElementCreationError, ElementDeletionError, ElementEditionError
 from sqlalchemy.exc import SQLAlchemyError
 from mock import patch, Mock
 from hamcrest.library.collection.issequence_containinginorder import contains
@@ -242,7 +242,7 @@ class TestLineDao(DAOTestCase):
         assert_that(lines[0].id, equal_to(line_first.id))
         assert_that(lines[1].id, equal_to(line_last.id))
 
-    def test_find_all_by_name_by_name_no_line(self):
+    def test_find_all_by_name_no_line(self):
         result = line_dao.find_all_by_name('abc')
 
         assert_that(result, equal_to([]))
@@ -319,6 +319,72 @@ class TestLineDao(DAOTestCase):
             has_property('id', line_last.id),
         ))
 
+    def test_find_all_by_device_id_no_lines(self):
+        result = line_dao.find_all_by_device_id('1')
+
+        assert_that(result, has_length(0))
+
+    def test_find_all_by_device_id(self):
+        device_id = u'222'
+
+        line_sip = self.add_usersip(name='lord')
+        line = self.add_line(protocolid=line_sip.id,
+                             name=line_sip.name,
+                             context=line_sip.context,
+                             device=device_id)
+
+        result = line_dao.find_all_by_device_id(device_id)
+
+        assert_that(result, has_length(1))
+        assert_that(result, contains(
+            has_property('id', line.id)
+        ))
+        assert_that(result, contains(
+            has_property('device', device_id)
+        ))
+
+    def test_find_all_by_device_id_some_lines_no_device(self):
+
+        line_sip = self.add_usersip(name='Lordy')
+        self.add_line(protocolid=line_sip.id,
+                      name=line_sip.name,
+                      context=line_sip.context)
+        line_sip = self.add_usersip(name='Toto')
+        self.add_line(protocolid=line_sip.id,
+                      name=line_sip.name,
+                      context=line_sip.context)
+
+        result = line_dao.find_all_by_device_id('54')
+
+        assert_that(result, has_length(0))
+
+    def test_find_all_by_device_id_some_lines(self):
+        device_id = u'222'
+
+        line_sip = self.add_usersip(name='Lordy')
+        self.add_line(protocolid=line_sip.id,
+                      name=line_sip.name,
+                      context=line_sip.context)
+        line_sip = self.add_usersip(name='Toto')
+        self.add_line(protocolid=line_sip.id,
+                      name=line_sip.name,
+                      context=line_sip.context)
+        line_sip = self.add_usersip(name='lord')
+        line = self.add_line(protocolid=line_sip.id,
+                             name=line_sip.name,
+                             context=line_sip.context,
+                             device=device_id)
+
+        result = line_dao.find_all_by_device_id(device_id)
+
+        assert_that(result, has_length(1))
+        assert_that(result, contains(
+            has_property('id', line.id)
+        ))
+        assert_that(result, contains(
+            has_property('device', device_id)
+        ))
+
     def test_provisioning_id_exists(self):
         provd_id = 123456
         self.add_line(provisioningid=provd_id)
@@ -332,14 +398,71 @@ class TestLineDao(DAOTestCase):
 
         assert_that(result, equal_to(False))
 
-    def test_create_sip_line_with_no_extension(self):
-        line = LineSIP(protocol='sip',
-                       context='default',
-                       provisioningid=123456)
+    def test_edit(self):
+        username = 'toto'
+        secret = 'kiki'
+        expected_name = 'huhu'
+        expected_context = 'popo'
+        line_sip = self.add_usersip(name=username,
+                                    username=username,
+                                    secret=secret)
+        line = self.add_line(protocolid=line_sip.id,
+                             name=username,
+                             context=line_sip.context)
 
-        line_created = line_dao.create(line)
+        expected_line = line_dao.get(line.id)
+        expected_line.name = expected_name
+        expected_line.context = expected_context
 
-        assert_that(line_created, is_not(has_property('number')))
+        line_dao.edit(expected_line)
+
+        line_row = (self.session.query(LineSchema)
+                    .filter(LineSchema.id == expected_line.id)
+                    .first())
+
+        line_sip_row = (self.session.query(UserSIPSchema)
+                        .filter(UserSIPSchema.id == expected_line.protocolid)
+                        .first())
+
+        self.assertEquals(line_row.name, expected_name)
+        self.assertEquals(line_row.context, expected_context)
+        self.assertEquals(line_sip_row.name, expected_name)
+        self.assertEquals(line_sip_row.context, expected_context)
+
+    def test_edit_with_unknown_line(self):
+        line_sip = self.add_usersip()
+        line = LineSIP(id=123,
+                       username='unknown',
+                       protocolid=line_sip.id)
+
+        self.assertRaises(ElementNotExistsError, line_dao.edit, line)
+
+    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    def test_edit_with_database_error(self, Session):
+        session = Mock()
+        session.commit.side_effect = SQLAlchemyError()
+        Session.return_value = session
+
+        line_sip = self.add_usersip()
+        line = LineSIP(id=123,
+                       username='toto',
+                       secret='kiki',
+                       protocolid=line_sip.id)
+
+        self.assertRaises(ElementEditionError, line_dao.edit, line)
+        session.begin.assert_called_once_with()
+        session.rollback.assert_called_once_with()
+
+    def test_reset_device(self):
+        line = self.add_line(device='1234')
+
+        line_dao.reset_device(line.device)
+
+        result = (self.session.query(LineSchema)
+                           .filter(LineSchema.id == line.id)
+                           .first())
+
+        assert_that(result.device, equal_to(''))
 
     def test_generate_random_hash_no_sip_user(self):
         generated_hash = line_dao.generate_random_hash(self.session, UserSIPSchema.name)
@@ -357,6 +480,15 @@ class TestLineDao(DAOTestCase):
         generated_hash = line_dao.generate_random_hash(self.session, UserSIPSchema.name)
 
         assert_that(generated_hash, equal_to(expected_hash))
+
+    def test_create_sip_line_with_no_extension(self):
+        line = LineSIP(protocol='sip',
+                       context='default',
+                       provisioningid=123456)
+
+        line_created = line_dao.create(line)
+
+        assert_that(line_created, is_not(has_property('number')))
 
     @patch('xivo_dao.helpers.db_manager.AsteriskSession')
     def test_create_sip_line_with_error_from_dao(self, Session):

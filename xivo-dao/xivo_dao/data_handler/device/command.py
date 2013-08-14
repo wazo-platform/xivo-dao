@@ -22,7 +22,7 @@ class AbstractDeviceIDParams(object):
 
     def __init__(self, device_id, deviceid):
         self.id = int(device_id)
-        self.deviceid = int(deviceid)
+        self.deviceid = deviceid
 
     def marshal(self):
         return {

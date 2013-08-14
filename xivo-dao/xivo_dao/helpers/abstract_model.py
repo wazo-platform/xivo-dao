@@ -62,6 +62,15 @@ class AbstractModels(object):
                 setattr(db_object, db_field, field_value)
         return db_object
 
+    def update_data_source(self, db_object):
+        print db_object
+        for db_field, model_field in self._MAPPING.iteritems():
+            if hasattr(self, model_field):
+                if db_field == 'id':
+                    continue
+                model_field_value = getattr(self, model_field)
+                setattr(db_object, db_field, model_field_value)
+
     def update_from_data(self, data):
         parameters = data.keys()
         invalid = self.invalid_parameters(parameters)
