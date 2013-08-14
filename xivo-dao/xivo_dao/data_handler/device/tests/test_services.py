@@ -400,9 +400,8 @@ class Test(unittest.TestCase):
         config_manager().get.assert_any_call(configregistrar)
         config_manager().update.assert_called_with(expected_arg)
 
-    @patch('xivo_dao.data_handler.device.dao.get')
     @patch('xivo_dao.helpers.provd_connector.config_manager')
-    def test_remove_line_from_device(self, config_manager, device_dao_get):
+    def test_remove_line_from_device(self, config_manager):
         config_dict = {
             "raw_config": {
                 "sip_lines": {
@@ -416,7 +415,6 @@ class Test(unittest.TestCase):
 
         device = Device(id=self.device_id,
                         deviceid=self.provd_deviceid)
-        device_dao_get.return_value = device
 
         expected_arg = {
             "raw_config": {
@@ -426,16 +424,15 @@ class Test(unittest.TestCase):
             }
         }
 
-        device_services.remove_line_from_device(self.device_id, line)
+        device_services.remove_line_from_device(device, line)
 
         config_manager().get.assert_called_with(self.provd_deviceid)
         config_manager().update.assert_called_with(expected_arg)
         self.assertEquals(0, config_manager().autocreate.call_count)
 
-    @patch('xivo_dao.data_handler.device.dao.get')
     @patch('xivo_dao.helpers.provd_connector.config_manager')
     @patch('xivo_dao.helpers.provd_connector.device_manager')
-    def test_remove_line_from_device_autoprov(self, device_manager, config_manager, device_dao_get):
+    def test_remove_line_from_device_autoprov(self, device_manager, config_manager):
         autoprovid = "autoprov1234"
         config_dict = {
             "raw_config": {
@@ -466,7 +463,6 @@ class Test(unittest.TestCase):
 
         device = Device(id=self.device_id,
                         deviceid=self.provd_deviceid)
-        device_dao_get.return_value = device
 
         expected_arg_config = {"raw_config": {}}
         expected_arg_device = {
@@ -476,7 +472,7 @@ class Test(unittest.TestCase):
            "id": self.device_id
         }
 
-        device_services.remove_line_from_device(self.device_id, line)
+        device_services.remove_line_from_device(device, line)
 
         config_manager().get.assert_called_with(self.provd_deviceid)
         config_manager().autocreate.assert_called_with()
@@ -484,10 +480,9 @@ class Test(unittest.TestCase):
         device_manager().update.assert_called_with(expected_arg_device)
         config_manager().update.assert_called_with(expected_arg_config)
 
-    @patch('xivo_dao.data_handler.device.dao.get')
     @patch('xivo_dao.helpers.provd_connector.config_manager')
     @patch('xivo_dao.helpers.provd_connector.device_manager')
-    def test_remove_line_from_device_no_funckeys(self, device_manager, config_manager, device_dao_get):
+    def test_remove_line_from_device_no_funckeys(self, device_manager, config_manager):
         autoprovid = "autoprov1234"
         config_dict = {
             "raw_config": {
@@ -510,10 +505,9 @@ class Test(unittest.TestCase):
         config_manager().get.return_value = config_dict
         device_manager().get.return_value = device_dict
         config_manager().autocreate.return_value = autoprovid
-        device_dao_get.return_value = device
 
         try:
-            device_services.remove_line_from_device(self.device_id, line)
+            device_services.remove_line_from_device(device, line)
         except:
             self.fail("An exception was raised whereas it should not")
 

@@ -68,7 +68,7 @@ def create(line):
 def edit(line):
     _validate(line)
     dao.edit(line)
-    if hasattr(line, 'device') and line.device is not None:
+    if hasattr(line, 'device') and line.device:
         try:
             device = device_services.get(int(line.device))
             device_services.rebuild_device_config(device)
@@ -81,9 +81,10 @@ def edit(line):
 
 def delete(line):
     dao.delete(line)
-    if hasattr(line, 'device') and line.device is not None:
+    if hasattr(line, 'device') and line.device:
         try:
-            device_services.remove_line_from_device(line.device, line)
+            device = device_services.get(int(line.device))
+            device_services.remove_line_from_device(device, line)
         except URLError as e:
             raise provd_connector.ProvdError(str(e))
         except ElementNotExistsError:

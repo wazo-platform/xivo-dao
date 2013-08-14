@@ -144,8 +144,7 @@ def _populate_sccp_line(config, confregistrar):
     provd_config_manager.update(config)
 
 
-def remove_line_from_device(device_id, line):
-    device = dao.get(device_id)
+def remove_line_from_device(device, line):
     provd_config_manager = provd_connector.config_manager()
     config = provd_config_manager.get(device.deviceid)
     del config['raw_config']['sip_lines'][str(line.num)]
