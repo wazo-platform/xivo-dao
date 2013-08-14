@@ -90,6 +90,16 @@ def delete(line):
     notifier.deleted(line)
 
 
+def update_callerid(user):
+    try:
+        line = get_by_user_id(user.id)
+    except ElementNotExistsError:
+        pass
+    else:
+        line.callerid = user.callerid
+        edit(line)
+
+
 def _validate(line):
     _check_missing_parameters(line)
     _check_invalid_parameters(line)

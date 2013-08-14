@@ -12,6 +12,7 @@ from xivo_dao.data_handler.exception import MissingParametersError, \
     ElementCreationError, ElementNotExistsError, InvalidParametersError, \
     ElementEditionError
 from xivo_dao.data_handler.device.model import Device
+from xivo_dao.data_handler.user.model import User
 
 
 class TestLineServices(unittest.TestCase):
@@ -374,3 +375,32 @@ class TestLineServices(unittest.TestCase):
         line_dao_delete.assert_called_once_with(line)
         remove_line_from_device.assert_called_once_with(line.device, line)
         self.assertEquals(line_notifier_deleted.call_count, 0)
+
+    @patch('xivo_dao.data_handler.line.services.edit')
+    @patch('xivo_dao.data_handler.line.services.get_by_user_id')
+    def test_update_callerid(self, line_services_get_by_user_id, line_services_edit):
+        expected_callerid = 'titi'
+        user = User(id=1,
+                    callerid=expected_callerid)
+        line = LineSIP(callerid=expected_callerid)
+
+        line_services_get_by_user_id.return_value = line
+
+        line_services.update_callerid(user)
+
+        line_services_get_by_user_id.assert_called_once_with(user.id)
+        line_services_edit.assert_called_once_with(line)
+
+    @patch('xivo_dao.data_handler.line.services.edit')
+    @patch('xivo_dao.data_handler.line.services.get_by_user_id')
+    def test_update_callerid_with_no_line(self, line_services_get_by_user_id, line_services_edit):
+        expected_callerid = 'titi'
+        user = User(id=1,
+                    callerid=expected_callerid)
+
+        line_services_get_by_user_id.side_effect = ElementNotExistsError('')
+
+        line_services.update_callerid(user)
+
+        line_services_get_by_user_id.assert_called_once_with(user.id)
+        self.assertEquals(line_services_edit.call_count, 0)
