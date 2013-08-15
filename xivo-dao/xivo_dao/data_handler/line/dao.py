@@ -118,6 +118,21 @@ def find_all_by_device_id(session, device_id, order=None):
     return _rows_to_line_model(line_rows)
 
 
+@daosession
+def find_by_user_id(session, user_id, main_line=True, main_user=True):
+    line_row = (_new_query(session)
+                .join(UserLineSchema,
+                      and_(UserLineSchema.user_id == user_id,
+                           UserLineSchema.line_id == LineSchema.id,
+                           UserLineSchema.main_line == main_line,
+                           UserLineSchema.main_user == main_user))
+                .first())
+
+    if line_row:
+        return _join_line_protocol(line_row)
+    return None
+
+
 def _rows_to_line_model(line_rows):
     if not line_rows:
         return []

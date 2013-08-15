@@ -20,10 +20,8 @@ import random
 from . import notifier
 from . import dao
 
-from urllib2 import URLError
 from xivo_dao.data_handler.exception import MissingParametersError, InvalidParametersError, \
     ElementNotExistsError
-from xivo_dao.helpers import provd_connector
 from xivo_dao.data_handler.device import services as device_services
 from xivo_dao.data_handler.device import dao as device_dao
 from xivo_dao.data_handler.context import services as context_services
@@ -96,11 +94,8 @@ def _delete_line_from_device(line):
 
 
 def update_callerid(user):
-    try:
-        line = get_by_user_id(user.id)
-    except ElementNotExistsError:
-        pass
-    else:
+    line = dao.find_by_user_id(user.id)
+    if line:
         callerid, cid_name, cid_number = caller_id.build_caller_id('', user.fullname, line.number)
         line.callerid = callerid
         edit(line)

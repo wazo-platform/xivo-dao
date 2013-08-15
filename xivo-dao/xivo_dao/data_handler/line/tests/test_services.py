@@ -3,8 +3,6 @@
 import unittest
 
 from mock import patch, Mock
-from urllib2 import URLError
-from xivo_dao.helpers.provd_connector import ProvdError
 
 from xivo_dao.data_handler.line.model import LineSIP, LineOrdering, Line
 from xivo_dao.data_handler.line import services as line_services
@@ -424,8 +422,8 @@ class TestLineServices(unittest.TestCase):
         line_notifier_deleted.assert_called_once_with(line)
 
     @patch('xivo_dao.data_handler.line.services.edit')
-    @patch('xivo_dao.data_handler.line.services.get_by_user_id')
-    def test_update_callerid(self, line_services_get_by_user_id, line_services_edit):
+    @patch('xivo_dao.data_handler.line.dao.find_by_user_id')
+    def test_update_callerid(self, line_dao_find_by_user_id, line_services_edit):
         expected_callerid = 'titi'
         user = User(id=1,
                     firstname='titi',
@@ -434,24 +432,24 @@ class TestLineServices(unittest.TestCase):
                        number='1000',
                        name='toto')
 
-        line_services_get_by_user_id.return_value = line
+        line_dao_find_by_user_id.return_value = line
 
         line_services.update_callerid(user)
 
-        line_services_get_by_user_id.assert_called_once_with(user.id)
+        line_dao_find_by_user_id.assert_called_once_with(user.id)
         line_services_edit.assert_called_once_with(line)
 
     @patch('xivo_dao.data_handler.line.services.edit')
-    @patch('xivo_dao.data_handler.line.services.get_by_user_id')
-    def test_update_callerid_with_no_line(self, line_services_get_by_user_id, line_services_edit):
+    @patch('xivo_dao.data_handler.line.dao.find_by_user_id')
+    def test_update_callerid_with_no_line(self, line_dao_find_by_user_id, line_services_edit):
         expected_callerid = 'titi'
         user = User(id=1,
                     firstname='titi',
                     callerid=expected_callerid)
 
-        line_services_get_by_user_id.side_effect = ElementNotExistsError('')
+        line_dao_find_by_user_id.return_value = None
 
         line_services.update_callerid(user)
 
-        line_services_get_by_user_id.assert_called_once_with(user.id)
+        line_dao_find_by_user_id.assert_called_once_with(user.id)
         self.assertEquals(line_services_edit.call_count, 0)

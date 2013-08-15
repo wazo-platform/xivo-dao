@@ -812,7 +812,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         firstname = u'Jack'
         lastname = u'Strap'
         fullname = u'%s %s' % (firstname, lastname)
-        callerid = u'%s' % fullname
+        callerid = u'"%s"' % fullname
         context = u'mycontext'
 
         user_line = self.add_user_line_with_exten(firstname=firstname,
