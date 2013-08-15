@@ -58,7 +58,7 @@ def find_all_by_device_id(name):
 
 def create(line):
     _validate(line)
-    line.provisioningid = make_provisioning_id()
+    line.provisioning_extension = make_provisioning_id()
     line = dao.create(line)
     notifier.created(line)
     return line
