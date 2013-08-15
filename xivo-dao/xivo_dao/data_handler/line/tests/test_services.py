@@ -168,7 +168,11 @@ class TestLineServices(unittest.TestCase):
         context = 'toto'
         secret = '1234'
 
-        line = LineSIP(name=name, context=context, username=name, secret=secret)
+        line = LineSIP(name=name,
+                       context=context,
+                       username=name,
+                       secret=secret,
+                       device_slot=1)
 
         line_dao_create.return_value = line
 
@@ -190,16 +194,39 @@ class TestLineServices(unittest.TestCase):
     @patch('xivo_dao.data_handler.line.services.make_provisioning_id')
     @patch('xivo_dao.data_handler.line.dao.create')
     def test_create_with_empty_attributes(self, line_dao_create, make_provisioning_id):
-        line = LineSIP(context='')
+        line1 = LineSIP(context='',
+                       device_slot=1)
 
-        self.assertRaises(InvalidParametersError, line_services.create, line)
+        line2 = LineSIP(context='default',
+                       device_slot='')
+
+        self.assertRaises(InvalidParametersError, line_services.create, line1)
+        self.assertRaises(InvalidParametersError, line_services.create, line2)
+        self.assertEquals(make_provisioning_id.call_count, 0)
+
+    @patch('xivo_dao.data_handler.line.services.make_provisioning_id')
+    @patch('xivo_dao.data_handler.line.dao.create')
+    def test_create_with_invalid_attributes(self, line_dao_create, make_provisioning_id):
+        line1 = LineSIP(context='default',
+                       device_slot=0)
+
+        line2 = LineSIP(context='default',
+                       device_slot=-1)
+
+        line3 = LineSIP(context='default',
+                       device_slot='abcd')
+
+        self.assertRaises(InvalidParametersError, line_services.create, line1)
+        self.assertRaises(InvalidParametersError, line_services.create, line2)
+        self.assertRaises(InvalidParametersError, line_services.create, line3)
         self.assertEquals(make_provisioning_id.call_count, 0)
 
     @patch('xivo_dao.data_handler.context.services.find_by_name')
     @patch('xivo_dao.data_handler.line.services.make_provisioning_id')
     @patch('xivo_dao.data_handler.line.dao.create')
     def test_create_with_inexisting_context(self, line_dao_create, make_provisioning_id, find_context_by_name):
-        line = LineSIP(context='superdupercontext')
+        line = LineSIP(context='superdupercontext',
+                       device_slot=1)
         find_context_by_name.return_value = None
 
         self.assertRaises(InvalidParametersError, line_services.create, line)
@@ -213,7 +240,11 @@ class TestLineServices(unittest.TestCase):
         context = 'toto'
         secret = '1234'
 
-        line = LineSIP(name=name, context=context, username=name, secret=secret)
+        line = LineSIP(name=name,
+                       context=context,
+                       username=name,
+                       secret=secret,
+                       device_slot=1)
 
         error = Exception("message")
         line_dao_create.side_effect = ElementCreationError(error, '')
@@ -237,7 +268,8 @@ class TestLineServices(unittest.TestCase):
         line = LineSIP(name=name,
                        context=context,
                        username=name,
-                       secret=secret)
+                       secret=secret,
+                       device_slot=1)
 
         line_services.edit(line)
 
@@ -255,7 +287,8 @@ class TestLineServices(unittest.TestCase):
                                         line_notifier_edited,
                                         device_services_get,
                                         device_services_rebuild_device_config):
-        line = LineSIP(context='')
+        line = LineSIP(context='',
+                       device_slot=1)
 
         self.assertRaises(InvalidParametersError, line_services.edit, line)
         self.assertEquals(line_dao_edit.call_count, 0)
@@ -280,7 +313,8 @@ class TestLineServices(unittest.TestCase):
         line = LineSIP(name=name,
                        context=context,
                        username=name,
-                       secret=secret)
+                       secret=secret,
+                       device_slot=1)
 
         error = Exception("message")
         line_dao_edit.side_effect = ElementEditionError(error, '')
@@ -309,7 +343,8 @@ class TestLineServices(unittest.TestCase):
                        context=context,
                        username=name,
                        secret=secret,
-                       device=device_id)
+                       device=device_id,
+                       device_slot=1)
 
         device_dao_find.return_value = device
 
@@ -338,7 +373,8 @@ class TestLineServices(unittest.TestCase):
                        context=context,
                        username=name,
                        secret=secret,
-                       device=device_id)
+                       device=device_id,
+                       device_slot=1)
 
         device_dao_find.return_value = None
 

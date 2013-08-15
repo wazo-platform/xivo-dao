@@ -117,6 +117,12 @@ def _check_invalid_parameters(line):
     invalid = []
     if line.context.strip() == '':
         invalid.append('context cannot be empty')
+    try:
+        line.device_slot = int(line.device_slot)
+    except ValueError:
+        invalid.append('device_slot must be numeric')
+    if line.device_slot <= 0:
+        invalid.append('device_slot must be greater than 0')
 
     if len(invalid) > 0:
         raise InvalidParametersError(invalid)
