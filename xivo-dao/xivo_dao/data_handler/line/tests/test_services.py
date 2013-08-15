@@ -384,9 +384,9 @@ class TestLineServices(unittest.TestCase):
         username = 'line'
         secret = 'toto'
         device_id = 15
-        num = 1
+        device_slot = 1
 
-        line = LineSIP(id=line_id, username=username, secret=secret, device=device_id, num=num)
+        line = LineSIP(id=line_id, username=username, secret=secret, device=device_id, device_slot=device_slot)
         device = device_dao_find.return_value = Mock()
 
         line_services.delete(line)
@@ -409,9 +409,9 @@ class TestLineServices(unittest.TestCase):
         username = 'line'
         secret = 'toto'
         device_id = 15
-        num = 1
+        device_slot = 1
 
-        line = LineSIP(id=line_id, username=username, secret=secret, device=device_id, num=num)
+        line = LineSIP(id=line_id, username=username, secret=secret, device=device_id, device_slot=device_slot)
         device_dao_find.return_value = None
 
         line_services.delete(line)

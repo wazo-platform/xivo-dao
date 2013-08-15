@@ -123,8 +123,8 @@ def _populate_sip_line(config, confregistrar, line, extension):
     provd_config_manager = provd_connector.config_manager()
     if 'sip_lines' not in config['raw_config']:
         config['raw_config']['sip_lines'] = dict()
-    config['raw_config']['sip_lines'][str(line.num)] = dict()
-    line_dict = config['raw_config']['sip_lines'][str(line.num)]
+    config['raw_config']['sip_lines'][str(line.device_slot)] = dict()
+    line_dict = config['raw_config']['sip_lines'][str(line.device_slot)]
     line_dict['auth_username'] = line.name
     line_dict['username'] = line.name
     line_dict['password'] = line.secret
@@ -153,7 +153,7 @@ def remove_line_from_device(device, line):
     provd_config_manager = provd_connector.config_manager()
     try:
         config = provd_config_manager.get(device.deviceid)
-        del config['raw_config']['sip_lines'][str(line.num)]
+        del config['raw_config']['sip_lines'][str(line.device_slot)]
         if len(config['raw_config']['sip_lines']) == 0:
             # then we reset to autoprov
             _reset_config(config)

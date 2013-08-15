@@ -38,7 +38,7 @@ class Line(AbstractModels):
         'device': 'device',
         'provisioningid': 'provisioningid',
         'configregistrar': 'configregistrar',
-        'num': 'num'
+        'num': 'device_slot'
     }
 
     _RELATION = {}

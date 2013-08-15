@@ -232,7 +232,7 @@ class Test(DAOTestCase):
         configregistrar = 'default'
 
         line = LineSIP(id=1,
-                       num=1,
+                       device_slot=1,
                        context=context,
                        username=username,
                        name=username,
@@ -294,7 +294,7 @@ class Test(DAOTestCase):
         configregistrar = 'default'
 
         line = LineSIP(id=1,
-                       num=1,
+                       device_slot=1,
                        context=context,
                        username=username,
                        name=username,
@@ -352,7 +352,7 @@ class Test(DAOTestCase):
         configregistrar = 'default'
 
         line = LineSCCP(id=1,
-                       num=1,
+                       device_slot=1,
                        context=context,
                        callerid=callerid,
                        configregistrar=configregistrar)
@@ -396,7 +396,7 @@ class Test(DAOTestCase):
         configregistrar = 'default'
 
         line = LineSCCP(id=1,
-                       num=1,
+                       device_slot=1,
                        context=context,
                        callerid=callerid,
                        configregistrar=configregistrar)
@@ -441,7 +441,7 @@ class Test(DAOTestCase):
             }
         }
         config_manager().get.return_value = config_dict
-        line = LineSIP(num=2)
+        line = LineSIP(device_slot=2)
 
         device = Device(id=self.device_id,
                         deviceid=self.provd_deviceid)
@@ -464,7 +464,7 @@ class Test(DAOTestCase):
     @patch('xivo_dao.helpers.provd_connector.device_manager')
     def test_remove_line_from_device_provd_error(self, device_manager, config_manager):
         config_manager().get.side_effect = URLError('urlerror')
-        line = LineSIP(num=2)
+        line = LineSIP(device_slot=2)
         device = Device(id=self.device_id,
                         deviceid=self.provd_deviceid)
 
@@ -504,7 +504,7 @@ class Test(DAOTestCase):
         config_manager().get.return_value = config_dict
         device_manager().get.return_value = device_dict
         config_manager().autocreate.return_value = autoprovid
-        line = LineSIP(num=1)
+        line = LineSIP(device_slot=1)
 
         device = Device(id=self.device_id,
                         deviceid=self.provd_deviceid)
@@ -542,7 +542,7 @@ class Test(DAOTestCase):
            "config": self.provd_deviceid,
            "id": self.device_id
         }
-        line = LineSIP(num=1)
+        line = LineSIP(device_slot=1)
 
         device = Device(id=self.device_id,
                         deviceid=self.provd_deviceid)
