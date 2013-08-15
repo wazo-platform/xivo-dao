@@ -23,7 +23,8 @@ class Line(AbstractModels):
 
     MANDATORY = [
         'context',
-        'protocol'
+        'protocol',
+        'device_slot'
     ]
 
     # mapping = {db_field: model_field}
