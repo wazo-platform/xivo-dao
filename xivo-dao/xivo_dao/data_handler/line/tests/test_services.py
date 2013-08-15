@@ -3,14 +3,14 @@
 import unittest
 
 from mock import patch, Mock
-from urllib2 import URLError
-from xivo_dao.helpers.provd_connector import ProvdError
 
 from xivo_dao.data_handler.line.model import LineSIP, LineOrdering, Line
 from xivo_dao.data_handler.line import services as line_services
 from xivo_dao.data_handler.exception import MissingParametersError, \
     ElementCreationError, ElementNotExistsError, InvalidParametersError, \
     ElementEditionError
+from xivo_dao.data_handler.device.model import Device
+from xivo_dao.data_handler.user.model import User
 
 
 class TestLineServices(unittest.TestCase):
@@ -222,9 +222,15 @@ class TestLineServices(unittest.TestCase):
         make_provisioning_id.assert_called_with()
 
     @patch('xivo_dao.data_handler.context.services.find_by_name', Mock(return_value=Mock()))
+    @patch('xivo_dao.data_handler.device.services.rebuild_device_config')
+    @patch('xivo_dao.data_handler.device.dao.find')
     @patch('xivo_dao.data_handler.line.notifier.edited')
     @patch('xivo_dao.data_handler.line.dao.edit')
-    def test_edit(self, line_dao_edit, line_notifier_edited):
+    def test_edit(self,
+                  line_dao_edit,
+                  line_notifier_edited,
+                  device_dao_find,
+                  device_services_rebuild_device_config):
         name = 'line'
         context = 'toto'
         secret = '1234'
@@ -236,21 +242,37 @@ class TestLineServices(unittest.TestCase):
         line_services.edit(line)
 
         line_dao_edit.assert_called_once_with(line)
+        self.assertEquals(device_dao_find.call_count, 0)
+        self.assertEquals(device_services_rebuild_device_config.call_count, 0)
         line_notifier_edited.assert_called_once_with(line)
 
+    @patch('xivo_dao.data_handler.device.services.rebuild_device_config')
+    @patch('xivo_dao.data_handler.device.dao.find')
     @patch('xivo_dao.data_handler.line.notifier.edited')
     @patch('xivo_dao.data_handler.line.dao.edit')
-    def test_edit_with_empty_attributes(self, line_dao_edit, line_notifier_edited):
+    def test_edit_with_empty_attributes(self,
+                                        line_dao_edit,
+                                        line_notifier_edited,
+                                        device_services_get,
+                                        device_services_rebuild_device_config):
         line = LineSIP(context='')
 
         self.assertRaises(InvalidParametersError, line_services.edit, line)
         self.assertEquals(line_dao_edit.call_count, 0)
+        self.assertEquals(device_services_get.call_count, 0)
+        self.assertEquals(device_services_rebuild_device_config.call_count, 0)
         self.assertEquals(line_notifier_edited.call_count, 0)
 
     @patch('xivo_dao.data_handler.context.services.find_by_name', Mock(return_value=Mock()))
+    @patch('xivo_dao.data_handler.device.services.rebuild_device_config')
+    @patch('xivo_dao.data_handler.device.services.get')
     @patch('xivo_dao.data_handler.line.notifier.edited')
     @patch('xivo_dao.data_handler.line.dao.edit')
-    def test_edit_with_error_from_dao(self, line_dao_edit, line_notifier_edited):
+    def test_edit_with_error_from_dao(self,
+                                      line_dao_edit,
+                                      line_notifier_edited,
+                                      device_dao_find,
+                                      device_services_rebuild_device_config):
         name = 'line'
         context = 'toto'
         secret = '1234'
@@ -264,12 +286,78 @@ class TestLineServices(unittest.TestCase):
         line_dao_edit.side_effect = ElementEditionError(error, '')
 
         self.assertRaises(ElementEditionError, line_services.edit, line)
+        self.assertEquals(device_dao_find.call_count, 0)
+        self.assertEquals(device_services_rebuild_device_config.call_count, 0)
         self.assertEquals(line_notifier_edited.call_count, 0)
 
+    @patch('xivo_dao.data_handler.context.services.find_by_name', Mock(return_value=Mock()))
+    @patch('xivo_dao.data_handler.device.services.rebuild_device_config')
+    @patch('xivo_dao.data_handler.device.dao.find')
+    @patch('xivo_dao.data_handler.line.notifier.edited')
+    @patch('xivo_dao.data_handler.line.dao.edit')
+    def test_edit_with_a_device_associated(self,
+                                           line_dao_edit,
+                                           line_notifier_edited,
+                                           device_dao_find,
+                                           device_services_rebuild_device_config):
+        name = 'line'
+        context = 'toto'
+        secret = '1234'
+        device_id = '2'
+        device = Device(id=device_id)
+        line = LineSIP(name=name,
+                       context=context,
+                       username=name,
+                       secret=secret,
+                       device=device_id)
+
+        device_dao_find.return_value = device
+
+        line_services.edit(line)
+
+        line_dao_edit.assert_called_once_with(line)
+        line_notifier_edited.assert_called_once_with(line)
+        device_dao_find.assert_called_once_with(int(device_id))
+        device_services_rebuild_device_config.assert_called_once_with(device)
+
+    @patch('xivo_dao.data_handler.context.services.find_by_name', Mock(return_value=Mock()))
+    @patch('xivo_dao.data_handler.device.services.rebuild_device_config')
+    @patch('xivo_dao.data_handler.device.dao.find')
+    @patch('xivo_dao.data_handler.line.notifier.edited')
+    @patch('xivo_dao.data_handler.line.dao.edit')
+    def test_edit_with_a_device_associated_but_not_found(self,
+                                                         line_dao_edit,
+                                                         line_notifier_edited,
+                                                         device_dao_find,
+                                                         device_services_rebuild_device_config):
+        name = 'line'
+        context = 'toto'
+        secret = '1234'
+        device_id = '2'
+        line = LineSIP(name=name,
+                       context=context,
+                       username=name,
+                       secret=secret,
+                       device=device_id)
+
+        device_dao_find.return_value = None
+
+        line_services.edit(line)
+
+        line_dao_edit.assert_called_once_with(line)
+        line_notifier_edited.assert_called_once_with(line)
+        device_dao_find.assert_called_once_with(int(device_id))
+        self.assertEquals(device_services_rebuild_device_config.call_count, 0)
+
     @patch('xivo_dao.data_handler.device.services.remove_line_from_device')
+    @patch('xivo_dao.data_handler.device.dao.find')
     @patch('xivo_dao.data_handler.line.notifier.deleted')
     @patch('xivo_dao.data_handler.line.dao.delete')
-    def test_delete(self, line_dao_delete, line_notifier_deleted, remove_line_from_device):
+    def test_delete(self,
+                    line_dao_delete,
+                    line_notifier_deleted,
+                    device_dao_find,
+                    remove_line_from_device):
         line_id = 1
         username = 'line'
         secret = 'toto'
@@ -280,12 +368,18 @@ class TestLineServices(unittest.TestCase):
 
         line_dao_delete.assert_called_once_with(line)
         line_notifier_deleted.assert_called_once_with(line)
+        self.assertEquals(device_dao_find.call_count, 0)
         self.assertEquals(remove_line_from_device.call_count, 0)
 
     @patch('xivo_dao.data_handler.device.services.remove_line_from_device')
+    @patch('xivo_dao.data_handler.device.dao.find')
     @patch('xivo_dao.data_handler.line.notifier.deleted')
     @patch('xivo_dao.data_handler.line.dao.delete')
-    def test_delete_with_device(self, line_dao_delete, line_notifier_deleted, remove_line_from_device):
+    def test_delete_with_device(self,
+                                line_dao_delete,
+                                line_notifier_deleted,
+                                device_dao_find,
+                                remove_line_from_device):
         line_id = 1
         username = 'line'
         secret = 'toto'
@@ -293,17 +387,24 @@ class TestLineServices(unittest.TestCase):
         num = 1
 
         line = LineSIP(id=line_id, username=username, secret=secret, device=device_id, num=num)
+        device = device_dao_find.return_value = Mock()
 
         line_services.delete(line)
 
         line_dao_delete.assert_called_once_with(line)
-        remove_line_from_device.assert_called_once_with(line.device, line)
+        device_dao_find.assert_called_once_with(line.device)
+        remove_line_from_device.assert_called_once_with(device, line)
         line_notifier_deleted.assert_called_once_with(line)
 
     @patch('xivo_dao.data_handler.device.services.remove_line_from_device')
+    @patch('xivo_dao.data_handler.device.dao.find')
     @patch('xivo_dao.data_handler.line.notifier.deleted')
     @patch('xivo_dao.data_handler.line.dao.delete')
-    def test_delete_with_device_error(self, line_dao_delete, line_notifier_deleted, remove_line_from_device):
+    def test_delete_with_device_not_found(self,
+                                          line_dao_delete,
+                                          line_notifier_deleted,
+                                          device_dao_find,
+                                          remove_line_from_device):
         line_id = 1
         username = 'line'
         secret = 'toto'
@@ -311,11 +412,44 @@ class TestLineServices(unittest.TestCase):
         num = 1
 
         line = LineSIP(id=line_id, username=username, secret=secret, device=device_id, num=num)
+        device_dao_find.return_value = None
 
-        remove_line_from_device.side_effect = URLError('')
-
-        self.assertRaises(ProvdError, line_services.delete, line)
+        line_services.delete(line)
 
         line_dao_delete.assert_called_once_with(line)
-        remove_line_from_device.assert_called_once_with(line.device, line)
-        self.assertEquals(line_notifier_deleted.call_count, 0)
+        device_dao_find.assert_called_once_with(line.device)
+        self.assertEquals(remove_line_from_device.call_count, 0)
+        line_notifier_deleted.assert_called_once_with(line)
+
+    @patch('xivo_dao.data_handler.line.services.edit')
+    @patch('xivo_dao.data_handler.line.dao.find_by_user_id')
+    def test_update_callerid(self, line_dao_find_by_user_id, line_services_edit):
+        expected_callerid = 'titi'
+        user = User(id=1,
+                    firstname='titi',
+                    callerid=expected_callerid)
+        line = LineSIP(callerid=expected_callerid,
+                       number='1000',
+                       name='toto')
+
+        line_dao_find_by_user_id.return_value = line
+
+        line_services.update_callerid(user)
+
+        line_dao_find_by_user_id.assert_called_once_with(user.id)
+        line_services_edit.assert_called_once_with(line)
+
+    @patch('xivo_dao.data_handler.line.services.edit')
+    @patch('xivo_dao.data_handler.line.dao.find_by_user_id')
+    def test_update_callerid_with_no_line(self, line_dao_find_by_user_id, line_services_edit):
+        expected_callerid = 'titi'
+        user = User(id=1,
+                    firstname='titi',
+                    callerid=expected_callerid)
+
+        line_dao_find_by_user_id.return_value = None
+
+        line_services.update_callerid(user)
+
+        line_dao_find_by_user_id.assert_called_once_with(user.id)
+        self.assertEquals(line_services_edit.call_count, 0)

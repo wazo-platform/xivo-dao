@@ -1,18 +1,25 @@
 # -*- coding: UTF-8 -*-
 
-import unittest
 from mock import patch, Mock
+from xivo_dao.alchemy.devicefeatures import DeviceFeatures as DeviceSchema
+from urllib2 import URLError
 from xivo_dao.data_handler.device import services as device_services
 from xivo_dao.data_handler.device.model import Device
 from xivo_dao.data_handler.extension.model import Extension
 from xivo_dao.data_handler.line.model import LineSIP, LineSCCP
 from xivo_dao.data_handler.user_line_extension.model import UserLineExtension
 from xivo_dao.data_handler.exception import ElementCreationError, \
-    InvalidParametersError, ElementDeletionError
+    InvalidParametersError, ElementDeletionError, ElementNotExistsError
 from xivo_dao.helpers import provd_connector
+from xivo_dao.helpers.provd_connector import ProvdError
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
-class Test(unittest.TestCase):
+class Test(DAOTestCase):
+
+    tables = [
+        DeviceSchema
+    ]
 
     def setUp(self):
         self.device_id = 1
@@ -139,19 +146,28 @@ class Test(unittest.TestCase):
     @patch('xivo_dao.helpers.provd_connector.config_manager')
     @patch('xivo_dao.helpers.provd_connector.device_manager')
     @patch('xivo_dao.data_handler.device.notifier.deleted')
+    @patch('xivo_dao.data_handler.device.dao.get')
     @patch('xivo_dao.data_handler.device.dao.delete')
-    def test_delete_when_device_does_not_exist(self, device_dao_delete, device_notifier_deleted, device_manager, config_manager):
+    @patch('xivo_dao.data_handler.line.dao.reset_device')
+    def test_delete_when_device_does_not_exist(self,
+                                               line_dao_reset,
+                                               device_dao_delete,
+                                               device_dao_get,
+                                               device_notifier_deleted,
+                                               device_manager,
+                                               config_manager):
         deviceid = '02aff2a361004aaf8a8a686a48dc980d'
         device = Device(id=1,
                         deviceid=deviceid,
                         ip='10.0.0.1')
-
-        device_dao_delete.side_effect = ElementDeletionError('Device', 'Not Exist')
+        device_dao_get.side_effect = ElementNotExistsError('Device')
 
         self.assertRaises(ElementDeletionError, device_services.delete, device)
+        self.assertEquals(device_manager.remove.call_count, 0)
+        self.assertEquals(config_manager.remove.call_count, 0)
+        self.assertEquals(device_dao_delete.call_count, 0)
+        self.assertEquals(line_dao_reset.call_count, 0)
         self.assertEquals(device_notifier_deleted.call_count, 0)
-        self.assertEquals(device_manager().remove.call_count, 0)
-        self.assertEquals(config_manager().remove.call_count, 0)
 
     @patch('xivo_dao.data_handler.device.services.build_line_for_device')
     @patch('xivo_dao.data_handler.line.dao.find_all_by_device_id')
@@ -161,6 +177,20 @@ class Test(unittest.TestCase):
         line_find_all_by_device_id.return_value = [line1]
 
         device_services.rebuild_device_config(device)
+
+        build_line_for_device.assert_called_once_with(device, line1)
+
+    @patch('xivo_dao.data_handler.device.services.build_line_for_device')
+    @patch('xivo_dao.data_handler.line.dao.find_all_by_device_id')
+    def test_rebuild_device_config_provd_error(self,
+                                               line_find_all_by_device_id,
+                                               build_line_for_device):
+        device = Device(id=self.device_id)
+        line1 = LineSIP(device=self.device_id)
+        line_find_all_by_device_id.return_value = [line1]
+        build_line_for_device.side_effect = URLError('urlerror')
+
+        self.assertRaises(ProvdError, device_services.rebuild_device_config, device)
 
         build_line_for_device.assert_called_once_with(device, line1)
 
@@ -195,7 +225,8 @@ class Test(unittest.TestCase):
         secret = 'password'
         exten = '1250'
         context = 'default'
-        callerid = 'Francis Dagobert <%s>' % exten
+        display_name = 'Francis Dagobert'
+        callerid = '"%s" <%s>' % (display_name, exten)
         proxy_ip = '10.39.5.1'
         registrar_ip = proxy_ip
         configregistrar = 'default'
@@ -204,6 +235,7 @@ class Test(unittest.TestCase):
                        num=1,
                        context=context,
                        username=username,
+                       name=username,
                        secret=secret,
                        callerid=callerid,
                        configregistrar=configregistrar)
@@ -230,7 +262,7 @@ class Test(unittest.TestCase):
                     "1": {
                         'username': username,
                         'auth_username': username,
-                        'display_name': callerid,
+                        'display_name': display_name,
                         'number': exten,
                         'password': secret,
                         'proxy_ip': proxy_ip,
@@ -254,7 +286,8 @@ class Test(unittest.TestCase):
         secret = 'password'
         exten = '1250'
         context = 'default'
-        callerid = 'Francis Dagobert <%s>' % exten
+        display_name = 'Francis Dagobert'
+        callerid = '"%s" <%s>' % (display_name, exten)
         proxy_ip = '10.39.5.1'
         registrar_ip = proxy_ip
         proxy_backup = '10.39.5.2'
@@ -264,6 +297,7 @@ class Test(unittest.TestCase):
                        num=1,
                        context=context,
                        username=username,
+                       name=username,
                        secret=secret,
                        callerid=callerid,
                        configregistrar=configregistrar)
@@ -290,7 +324,7 @@ class Test(unittest.TestCase):
                     "1": {
                         'username': username,
                         'auth_username': username,
-                        'display_name': callerid,
+                        'display_name': display_name,
                         'number': exten,
                         'password': secret,
                         'proxy_ip': proxy_ip,
@@ -396,9 +430,8 @@ class Test(unittest.TestCase):
         config_manager().get.assert_any_call(configregistrar)
         config_manager().update.assert_called_with(expected_arg)
 
-    @patch('xivo_dao.data_handler.device.dao.get')
     @patch('xivo_dao.helpers.provd_connector.config_manager')
-    def test_remove_line_from_device(self, config_manager, device_dao_get):
+    def test_remove_line_from_device(self, config_manager):
         config_dict = {
             "raw_config": {
                 "sip_lines": {
@@ -412,7 +445,6 @@ class Test(unittest.TestCase):
 
         device = Device(id=self.device_id,
                         deviceid=self.provd_deviceid)
-        device_dao_get.return_value = device
 
         expected_arg = {
             "raw_config": {
@@ -422,16 +454,30 @@ class Test(unittest.TestCase):
             }
         }
 
-        device_services.remove_line_from_device(self.device_id, line)
+        device_services.remove_line_from_device(device, line)
 
         config_manager().get.assert_called_with(self.provd_deviceid)
         config_manager().update.assert_called_with(expected_arg)
         self.assertEquals(0, config_manager().autocreate.call_count)
 
-    @patch('xivo_dao.data_handler.device.dao.get')
     @patch('xivo_dao.helpers.provd_connector.config_manager')
     @patch('xivo_dao.helpers.provd_connector.device_manager')
-    def test_remove_line_from_device_autoprov(self, device_manager, config_manager, device_dao_get):
+    def test_remove_line_from_device_provd_error(self, device_manager, config_manager):
+        config_manager().get.side_effect = URLError('urlerror')
+        line = LineSIP(num=2)
+        device = Device(id=self.device_id,
+                        deviceid=self.provd_deviceid)
+
+        self.assertRaises(ProvdError, device_services.remove_line_from_device, device, line)
+
+        config_manager().get.assert_called_once_with(self.provd_deviceid)
+        self.assertEquals(config_manager.update.call_count, 0)
+        self.assertEquals(config_manager.autocreate.call_count, 0)
+        self.assertEquals(device_manager.call_count, 0)
+
+    @patch('xivo_dao.helpers.provd_connector.config_manager')
+    @patch('xivo_dao.helpers.provd_connector.device_manager')
+    def test_remove_line_from_device_autoprov(self, device_manager, config_manager):
         autoprovid = "autoprov1234"
         config_dict = {
             "raw_config": {
@@ -462,7 +508,6 @@ class Test(unittest.TestCase):
 
         device = Device(id=self.device_id,
                         deviceid=self.provd_deviceid)
-        device_dao_get.return_value = device
 
         expected_arg_config = {"raw_config": {}}
         expected_arg_device = {
@@ -472,7 +517,7 @@ class Test(unittest.TestCase):
            "id": self.device_id
         }
 
-        device_services.remove_line_from_device(self.device_id, line)
+        device_services.remove_line_from_device(device, line)
 
         config_manager().get.assert_called_with(self.provd_deviceid)
         config_manager().autocreate.assert_called_with()
@@ -480,10 +525,9 @@ class Test(unittest.TestCase):
         device_manager().update.assert_called_with(expected_arg_device)
         config_manager().update.assert_called_with(expected_arg_config)
 
-    @patch('xivo_dao.data_handler.device.dao.get')
     @patch('xivo_dao.helpers.provd_connector.config_manager')
     @patch('xivo_dao.helpers.provd_connector.device_manager')
-    def test_remove_line_from_device_no_funckeys(self, device_manager, config_manager, device_dao_get):
+    def test_remove_line_from_device_no_funckeys(self, device_manager, config_manager):
         autoprovid = "autoprov1234"
         config_dict = {
             "raw_config": {
@@ -506,10 +550,9 @@ class Test(unittest.TestCase):
         config_manager().get.return_value = config_dict
         device_manager().get.return_value = device_dict
         config_manager().autocreate.return_value = autoprovid
-        device_dao_get.return_value = device
 
         try:
-            device_services.remove_line_from_device(self.device_id, line)
+            device_services.remove_line_from_device(device, line)
         except:
             self.fail("An exception was raised whereas it should not")
 

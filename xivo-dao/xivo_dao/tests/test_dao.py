@@ -31,7 +31,6 @@ from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.devicefeatures import DeviceFeatures
 from xivo_dao.alchemy.sccpline import SCCPLine as SCCPLineSchema
 from xivo_dao.alchemy.usercustom import UserCustom as UserCustomSchema
-import random
 from xivo_dao.alchemy.usersip import UserSIP
 
 logger = logging.getLogger(__name__)
@@ -88,8 +87,8 @@ class DAOTestCase(unittest.TestCase):
     def add_user_line_with_exten(self, **kwargs):
         kwargs.setdefault('firstname', 'unittest')
         kwargs.setdefault('lastname', 'unittest')
-        kwargs.setdefault('callerid', u'%s %s' % (kwargs['firstname'], kwargs['lastname']))
-        kwargs.setdefault('exten', '1000')
+        kwargs.setdefault('callerid', u'"%s %s"' % (kwargs['firstname'], kwargs['lastname']))
+        kwargs.setdefault('exten', '%s' % random.randint(1000, 1999))
         kwargs.setdefault('context', 'foocontext')
         kwargs.setdefault('protocol', 'sip')
         kwargs.setdefault('protocolid', int(''.join(random.choice('123456789') for _ in range(3))))

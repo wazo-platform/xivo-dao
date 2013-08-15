@@ -18,22 +18,21 @@
 from . import dao
 from . import notifier
 import re
+from urllib2 import URLError
 from xivo_dao.helpers import provd_connector
 from xivo_dao.data_handler.user_line_extension import dao as user_line_extension_dao
 from xivo_dao.data_handler.extension import dao as extension_dao
 from xivo_dao.data_handler.line import dao as line_dao
 from xivo_dao.data_handler.exception import InvalidParametersError, \
     ElementNotExistsError, ElementDeletionError
+from xivo_dao.helpers.provd_connector import ProvdError
+from xivo import caller_id
 
 IP_REGEX = re.compile(r'(1?\d{1,2}|2[0-5]{2})(\.(1?\d{1,2}|2[0-5]{2})){3}$')
 
 
 def get(device_id):
     return dao.get(device_id)
-
-
-def get_by_deviceid(session, device_id):
-    return dao.get_by_deviceid(device_id)
 
 
 def find_all():
@@ -100,8 +99,11 @@ def associate_line_to_device(device, line):
 
 def rebuild_device_config(device):
     lines_device = line_dao.find_all_by_device_id(device.id)
-    for line in lines_device:
-        build_line_for_device(device, line)
+    try:
+        for line in lines_device:
+            build_line_for_device(device, line)
+    except URLError as e:
+        raise ProvdError(e)
 
 
 def build_line_for_device(device, line):
@@ -123,10 +125,10 @@ def _populate_sip_line(config, confregistrar, line, extension):
         config['raw_config']['sip_lines'] = dict()
     config['raw_config']['sip_lines'][str(line.num)] = dict()
     line_dict = config['raw_config']['sip_lines'][str(line.num)]
-    line_dict['auth_username'] = line.username
-    line_dict['username'] = line.username
+    line_dict['auth_username'] = line.name
+    line_dict['username'] = line.name
     line_dict['password'] = line.secret
-    line_dict['display_name'] = line.callerid
+    line_dict['display_name'] = caller_id.extract_displayname(line.callerid)
     line_dict['number'] = extension.exten
     line_dict['registrar_ip'] = confregistrar['registrar_main']
     line_dict['proxy_ip'] = confregistrar['proxy_main']
@@ -147,16 +149,18 @@ def _populate_sccp_line(config, confregistrar):
     provd_config_manager.update(config)
 
 
-def remove_line_from_device(device_id, line):
-    device = dao.get(device_id)
+def remove_line_from_device(device, line):
     provd_config_manager = provd_connector.config_manager()
-    config = provd_config_manager.get(device.deviceid)
-    del config['raw_config']['sip_lines'][str(line.num)]
-    if len(config['raw_config']['sip_lines']) == 0:
-        # then we reset to autoprov
-        _reset_config(config)
-        reset_to_autoprov(device.deviceid)
-    provd_config_manager.update(config)
+    try:
+        config = provd_config_manager.get(device.deviceid)
+        del config['raw_config']['sip_lines'][str(line.num)]
+        if len(config['raw_config']['sip_lines']) == 0:
+            # then we reset to autoprov
+            _reset_config(config)
+            reset_to_autoprov(device.deviceid)
+        provd_config_manager.update(config)
+    except URLError as e:
+        raise ProvdError(e)
 
 
 def reset_to_autoprov(deviceid):

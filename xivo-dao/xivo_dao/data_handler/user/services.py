@@ -53,6 +53,7 @@ def edit(user):
     _validate(user)
     user_dao.edit(user)
     _update_voicemail_fullname(user)
+    line_services.update_callerid(user)
     notifier.edited(user)
 
 

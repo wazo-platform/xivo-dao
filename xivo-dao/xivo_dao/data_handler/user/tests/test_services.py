@@ -147,15 +147,17 @@ class TestUser(unittest.TestCase):
 
         self.assertRaises(ElementCreationError, user_services.create, user)
 
+    @patch('xivo_dao.data_handler.line.services.update_callerid')
     @patch('xivo_dao.data_handler.user.notifier.edited')
     @patch('xivo_dao.data_handler.user.dao.edit')
-    def test_edit(self, user_dao_edit, user_notifier_edited):
+    def test_edit(self, user_dao_edit, user_notifier_edited, line_services_update_callerid):
         user = User(id=1, firstname='user', lastname='toto')
 
         user_services.edit(user)
 
         user_dao_edit.assert_called_once_with(user)
         user_notifier_edited.assert_called_once_with(user)
+        line_services_update_callerid.assert_called_once_with(user)
 
     @patch('xivo_dao.data_handler.user.notifier.deleted')
     @patch('xivo_dao.data_handler.user.dao.delete')

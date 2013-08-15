@@ -385,6 +385,45 @@ class TestLineDao(DAOTestCase):
             has_property('device', device_id)
         ))
 
+    def test_find_by_user_id_no_lines(self):
+        result = line_dao.find_by_user_id(1)
+
+        assert_that(result, equal_to(None))
+
+    def test_find_by_user_id_not_found(self):
+        line_sip = self.add_usersip()
+        self.add_user_line_with_exten(protocolid=line_sip.id,
+                                      name_line=line_sip.name,
+                                      context=line_sip.context)
+
+        line_sip = self.add_usersip()
+        self.add_user_line_with_exten(protocolid=line_sip.id,
+                                      name_line=line_sip.name,
+                                      context=line_sip.context)
+
+        result = line_dao.find_by_user_id(1)
+
+        assert_that(result, equal_to(None))
+
+    def test_find_by_user_id(self):
+        line_sip = self.add_usersip()
+        self.add_user_line_with_exten(protocolid=line_sip.id,
+                                      name_line=line_sip.name,
+                                      context=line_sip.context)
+
+        line_sip = self.add_usersip()
+        expected_ule = self.add_user_line_with_exten(protocolid=line_sip.id,
+                                                     name_line=line_sip.name,
+                                                     context=line_sip.context)
+
+        result = line_dao.find_by_user_id(expected_ule.user.id)
+
+        assert_that(result, all_of(
+            has_property('id', expected_ule.line.id),
+            has_property('name', expected_ule.line.name),
+            has_property('context', expected_ule.line.context)
+        ))
+
     def test_provisioning_id_exists(self):
         provd_id = 123456
         self.add_line(provisioningid=provd_id)
