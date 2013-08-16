@@ -55,7 +55,7 @@ def create(ule):
 
     ule = dao.create(ule)
 
-    _make_secondary_associations(user, main_user, line, extension)
+    _make_secondary_associations(main_user, line, extension)
     notifier.created(ule)
 
     return ule
@@ -87,14 +87,14 @@ def _adjust_optional_parameters(ule, main_user):
     ule.main_user = (ule.user_id == main_user.id)
 
 
-def _make_secondary_associations(user, main_user, line, extension):
-    _associate_extension(user, extension)
+def _make_secondary_associations(main_user, line, extension):
+    _associate_extension(main_user, extension)
     _associate_line(line, extension, main_user)
 
 
-def _associate_extension(user, extension):
+def _associate_extension(main_user, extension):
     extension.type = 'user'
-    extension.typeval = str(user.id)
+    extension.typeval = str(main_user.id)
     extension_dao.edit(extension)
 
 
