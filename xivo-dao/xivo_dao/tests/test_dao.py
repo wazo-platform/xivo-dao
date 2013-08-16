@@ -32,6 +32,7 @@ from xivo_dao.alchemy.devicefeatures import DeviceFeatures
 from xivo_dao.alchemy.sccpline import SCCPLine as SCCPLineSchema
 from xivo_dao.alchemy.usercustom import UserCustom as UserCustomSchema
 from xivo_dao.alchemy.usersip import UserSIP
+from xivo_dao.alchemy.dialpattern import DialPattern
 
 logger = logging.getLogger(__name__)
 
@@ -154,6 +155,15 @@ class DAOTestCase(unittest.TestCase):
         user = UserFeatures(**kwargs)
         self.add_me(user)
         return user
+
+    def add_dialpattern(self, **kwargs):
+        kwargs.setdefault('id', self._generate_id())
+        kwargs.setdefault('type', 'outcall')
+        kwargs.setdefault('typeid', self._generate_id())
+        kwargs.setdefault('exten', ''.join(random.choice('0123456789_*X.') for _ in range(6)))
+        dialpattern = DialPattern(**kwargs)
+        self.add_me(dialpattern)
+        return dialpattern
 
     def add_device(self, **kwargs):
         kwargs.setdefault('deviceid', '8aada8aae3784957b6c160195c8fbcd7')
