@@ -90,6 +90,11 @@ class LineSIP(Line):
         del data_dict['username']
         return data_dict
 
+    def update_from_data(self, data_dict):
+        AbstractModels.update_from_data(self, data_dict)
+        if 'name' in data_dict:
+            self.username = data_dict['name']
+
     def update_from_data_source(self, db_object):
         AbstractModels.update_from_data_source(self, db_object)
         if hasattr(db_object, 'name'):
