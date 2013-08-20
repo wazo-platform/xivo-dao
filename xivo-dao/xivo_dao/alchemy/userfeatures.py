@@ -57,7 +57,7 @@ class UserFeatures(Base):
     cti_profile_id = Column(Integer, ForeignKey('cti_profile.id'))
     enablehint = Column(Integer, nullable=False, default=1)
     enablevoicemail = Column(Integer, nullable=False, default=0)
-    enablexfer = Column(Integer, nullable=False, default=0)
+    enablexfer = Column(Integer, nullable=False, default=1)
     enableautomon = Column(Integer, nullable=False, default=0)
     callrecord = Column(Integer, nullable=False, default=0)
     incallfilter = Column(Integer, nullable=False, default=0)
