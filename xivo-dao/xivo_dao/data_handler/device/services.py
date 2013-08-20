@@ -153,12 +153,13 @@ def remove_line_from_device(device, line):
     provd_config_manager = provd_connector.config_manager()
     try:
         config = provd_config_manager.get(device.deviceid)
-        del config['raw_config']['sip_lines'][str(line.device_slot)]
-        if len(config['raw_config']['sip_lines']) == 0:
-            # then we reset to autoprov
-            _reset_config(config)
-            reset_to_autoprov(device.deviceid)
-        provd_config_manager.update(config)
+        if 'sip_lines' in config['raw_config']:
+            del config['raw_config']['sip_lines'][str(line.device_slot)]
+            if len(config['raw_config']['sip_lines']) == 0:
+                # then we reset to autoprov
+                _reset_config(config)
+                reset_to_autoprov(device.deviceid)
+            provd_config_manager.update(config)
     except URLError as e:
         raise ProvdError(e)
 

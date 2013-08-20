@@ -525,6 +525,25 @@ class Test(DAOTestCase):
         device_manager().update.assert_called_with(expected_arg_device)
         config_manager().update.assert_called_with(expected_arg_config)
 
+    @patch('xivo_dao.data_handler.device.services.reset_to_autoprov')
+    @patch('xivo_dao.helpers.provd_connector.config_manager')
+    def test_remove_line_from_device_no_sip_lines(self, config_manager, reset_to_autoprov):
+        config_dict = {
+            "raw_config": {}
+        }
+        config_manager().get.return_value = config_dict
+        line = LineSIP(device_slot=2)
+
+        device = Device(id=self.device_id,
+                        deviceid=self.provd_deviceid)
+
+        device_services.remove_line_from_device(device, line)
+
+        config_manager().get.assert_called_with(self.provd_deviceid)
+        self.assertEquals(config_manager().update.call_count, 0)
+        self.assertEquals(reset_to_autoprov.update.call_count, 0)
+        self.assertEquals(config_manager().autocreate.call_count, 0)
+
     @patch('xivo_dao.helpers.provd_connector.config_manager')
     @patch('xivo_dao.helpers.provd_connector.device_manager')
     def test_remove_line_from_device_no_funckeys(self, device_manager, config_manager):
