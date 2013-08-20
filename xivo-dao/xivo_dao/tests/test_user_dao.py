@@ -846,7 +846,7 @@ class TestUserFeaturesDAO(DAOTestCase):
                 'enablerna': 0,
                 'enableunc': 0,
                 'enablevoicemail': 0,
-                'enablexfer': 0,
+                'enablexfer': 1,
                 'entityid': None,
                 'firstname': firstname,
                 'fullname': fullname,
