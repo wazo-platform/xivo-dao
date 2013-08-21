@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
 from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
@@ -180,6 +180,9 @@ def delete(session, user):
     try:
         nb_row_affected = _delete_user(session, user.id)
         session.commit()
+    except IntegrityError as e:
+        session.rollback()
+        raise ElementDeletionError('User', 'user still has a link')
     except SQLAlchemyError as e:
         session.rollback()
         raise ElementDeletionError('User', e)
