@@ -269,3 +269,37 @@ class TestUserLineExtensionDao(DAOTestCase):
         result = ule_dao.find_main_user(ule)
 
         assert_that(result.id, equal_to(ule.user_id))
+
+    def test_main_user_is_allowed_to_delete(self):
+        main_user = self.add_user()
+        line = self.add_line()
+        extension = self.add_extension()
+        main_ule = self.add_user_line(user_id=main_user.id,
+                                      line_id=line.id,
+                                      extension_id=extension.id,
+                                      main_user=True,
+                                      main_line=False)
+
+        result = ule_dao.main_user_is_allowed_to_delete(main_ule.line_id)
+
+        assert_that(result, equal_to(True))
+
+    def test_main_user_is_allowed_to_delete_with_secondary_users(self):
+        main_user = self.add_user()
+        secondary_user = self.add_user()
+        line = self.add_line()
+        extension = self.add_extension()
+        main_ule = self.add_user_line(user_id=main_user.id,
+                                      line_id=line.id,
+                                      extension_id=extension.id,
+                                      main_user=True,
+                                      main_line=False)
+        self.add_user_line(user_id=secondary_user.id,
+                           line_id=line.id,
+                           extension_id=extension.id,
+                           main_user=False,
+                           main_line=False)
+
+        result = ule_dao.main_user_is_allowed_to_delete(main_ule.line_id)
+
+        assert_that(result, equal_to(False))

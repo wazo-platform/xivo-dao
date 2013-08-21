@@ -69,6 +69,7 @@ def edit(ule):
 
 def delete(ule):
     validator.validate(ule)
+    validator.is_allowed_to_delete(ule)
     dao.delete(ule)
     notifier.deleted(ule)
 

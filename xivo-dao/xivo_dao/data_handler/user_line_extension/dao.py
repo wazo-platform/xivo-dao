@@ -140,5 +140,14 @@ def already_linked(session, user_id, line_id):
     return count > 0
 
 
+@daosession
+def main_user_is_allowed_to_delete(session, main_line_id):
+    count = (session.query(ULESchema)
+             .filter(ULESchema.line_id == main_line_id)
+             .count())
+
+    return count == 1
+
+
 def _new_query(session):
     return session.query(ULESchema)
