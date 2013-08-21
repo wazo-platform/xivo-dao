@@ -19,7 +19,7 @@ from xivo_dao.alchemy.user_line import UserLine as ULESchema
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementCreationError, ElementDeletionError, ElementEditionError
-from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+from sqlalchemy.exc import SQLAlchemyError
 from model import UserLineExtension
 from xivo_dao.data_handler.user import dao as user_dao
 
@@ -87,9 +87,6 @@ def create(session, user_line_extension):
     try:
         session.commit()
     except SQLAlchemyError as e:
-        session.rollback()
-        raise ElementCreationError('UserLineExtension', e)
-    except IntegrityError as e:
         session.rollback()
         raise ElementCreationError('UserLineExtension', e)
 
