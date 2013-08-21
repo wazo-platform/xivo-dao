@@ -208,9 +208,6 @@ def create(session, line):
     except SQLAlchemyError as e:
         session.rollback()
         raise ElementCreationError('Line', e)
-    except IntegrityError as e:
-        session.rollback()
-        raise ElementCreationError('Line', e)
 
     session.begin()
     line_row = _build_line_row(line, derived_line)
@@ -346,6 +343,9 @@ def delete(session, line):
         nb_row_affected = session.query(LineSchema).filter(LineSchema.id == line.id).delete()
         _delete_line(session, line)
         session.commit()
+    except IntegrityError as e:
+        session.rollback()
+        raise ElementDeletionError('Line', 'line still has a link')
     except SQLAlchemyError, e:
         session.rollback()
         raise ElementDeletionError('Line', e)
