@@ -37,7 +37,6 @@ def create_all(session, call_logs):
     for call_log in call_logs:
         call_log_row = call_log.to_data_source(CallLogSchema)
         session.add(call_log_row)
-        call_log.id = call_log_row.id
     try:
         session.commit()
     except SQLAlchemyError as e:
