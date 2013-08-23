@@ -19,6 +19,16 @@ from sqlalchemy.exc import SQLAlchemyError
 from xivo_dao.alchemy.call_log import CallLog as CallLogSchema
 from xivo_dao.data_handler.exception import ElementCreationError, ElementDeletionError
 from xivo_dao.helpers.db_manager import daosession
+from xivo_dao.data_handler.call_log.model import CallLog
+
+
+@daosession
+def find_all(session):
+    call_log_rows = session.query(CallLogSchema).all()
+
+    if not call_log_rows:
+        return []
+    return map(CallLog.from_data_source, call_log_rows)
 
 
 @daosession

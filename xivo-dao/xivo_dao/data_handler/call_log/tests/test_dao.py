@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from datetime import datetime, timedelta
-from hamcrest import assert_that, has_length
+from hamcrest import assert_that, equal_to, has_length
 from mock import Mock, patch
 from sqlalchemy.exc import SQLAlchemyError
 from xivo_dao.alchemy.call_log import CallLog as CallLogSchema
@@ -37,6 +37,22 @@ class TestCallLogDAO(DAOTestCase):
 
     def tearDown(self):
         pass
+
+    def test_find_all_not_found(self):
+        expected_result = []
+
+        result = call_log_dao.find_all()
+
+        assert_that(result, equal_to(expected_result))
+
+    def test_find_all_found(self):
+        call_logs = call_log_1, call_log_2 = [CallLog(date=datetime.today(), duration=timedelta(0)),
+                                              CallLog(date=datetime.today(), duration=timedelta(1))]
+        call_log_dao.create_all(call_logs)
+
+        result = call_log_dao.find_all()
+
+        assert_that(result, has_length(2))
 
     def test_create_all(self):
         call_logs = call_log_1, call_log_2 = [CallLog(date=datetime.today(), duration=timedelta(0)),
