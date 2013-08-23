@@ -20,8 +20,7 @@ import random
 from . import notifier
 from . import dao
 
-from xivo_dao.data_handler.exception import MissingParametersError, InvalidParametersError, \
-    ElementNotExistsError
+from xivo_dao.data_handler.exception import MissingParametersError, InvalidParametersError
 from xivo_dao.data_handler.device import services as device_services
 from xivo_dao.data_handler.device import dao as device_dao
 from xivo_dao.data_handler.context import services as context_services
