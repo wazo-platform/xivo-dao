@@ -256,6 +256,7 @@ class TestUserLineExtensionServices(unittest.TestCase):
         user_dao_edit.assert_called_once_with(ule)
         user_notifier_edited.assert_called_once_with(ule)
 
+    @patch('xivo_dao.data_handler.user_line_extension.validator.is_allowed_to_delete', Mock(return_value=True))
     @patch('xivo_dao.data_handler.user_line_extension.validator.validate')
     @patch('xivo_dao.data_handler.user_line_extension.notifier.deleted')
     @patch('xivo_dao.data_handler.user_line_extension.dao.delete')
@@ -274,6 +275,27 @@ class TestUserLineExtensionServices(unittest.TestCase):
         user_line_extension_dao_delete.assert_called_once_with(ule)
         user_line_extension_notifier_deleted.assert_called_once_with(ule)
 
+    @patch('xivo_dao.data_handler.user_line_extension.validator.is_allowed_to_delete')
+    @patch('xivo_dao.data_handler.user_line_extension.validator.validate')
+    @patch('xivo_dao.data_handler.user_line_extension.notifier.deleted')
+    @patch('xivo_dao.data_handler.user_line_extension.dao.delete')
+    def test_delete_not_allowed(self, user_line_extension_dao_delete, user_line_extension_notifier_deleted, ule_validate, ule_is_allowed_to_delete):
+        ule = UserLineExtension(user_id=5898,
+                                line_id=52,
+                                extension_id=52,
+                                main_user=True,
+                                main_line=False)
+
+        ule_validate.return_value = (Mock(), Mock(), Mock())
+        ule_is_allowed_to_delete.side_effect = InvalidParametersError('')
+
+        self.assertRaises(InvalidParametersError, user_line_extension_services.delete, ule)
+
+        ule_validate.assert_called_once_with(ule)
+        ule_is_allowed_to_delete.assert_called_once_with(ule)
+        self.assertEquals(user_line_extension_notifier_deleted.call_count, 0)
+
+    @patch('xivo_dao.data_handler.user_line_extension.validator.is_allowed_to_delete', Mock(return_value=True))
     @patch('xivo_dao.data_handler.user_line_extension.notifier.deleted')
     @patch('xivo_dao.data_handler.user_line_extension.dao.delete')
     @patch('xivo_dao.data_handler.user_line_extension.validator.validate')

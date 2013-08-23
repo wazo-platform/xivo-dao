@@ -19,7 +19,7 @@ from xivo_dao.alchemy.user_line import UserLine as ULESchema
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementCreationError, ElementDeletionError, ElementEditionError
-from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+from sqlalchemy.exc import SQLAlchemyError
 from model import UserLineExtension
 from xivo_dao.data_handler.user import dao as user_dao
 
@@ -89,9 +89,6 @@ def create(session, user_line_extension):
     except SQLAlchemyError as e:
         session.rollback()
         raise ElementCreationError('UserLineExtension', e)
-    except IntegrityError as e:
-        session.rollback()
-        raise ElementCreationError('UserLineExtension', e)
 
     user_line_extension.id = user_line_extension_row.id
 
@@ -141,6 +138,15 @@ def already_linked(session, user_id, line_id):
              .count())
 
     return count > 0
+
+
+@daosession
+def main_user_is_allowed_to_delete(session, main_line_id):
+    count = (session.query(ULESchema)
+             .filter(ULESchema.line_id == main_line_id)
+             .count())
+
+    return count == 1
 
 
 def _new_query(session):

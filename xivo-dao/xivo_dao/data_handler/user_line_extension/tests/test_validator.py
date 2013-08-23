@@ -190,3 +190,27 @@ class TestUserLineExtensionValidator(unittest.TestCase):
         assert_that(result_user, equal_to(user))
         assert_that(result_line, equal_to(line))
         assert_that(result_extension, equal_to(extension))
+
+    @patch('xivo_dao.data_handler.user_line_extension.dao.main_user_is_allowed_to_delete')
+    def test_is_allowed_to_delete(self, is_allowed_to_delete):
+        ule_main_user = UserLineExtension(main_user=True,
+                                          line_id=34)
+        ule_secondary_user = UserLineExtension(main_user=False,
+                                               line_id=34)
+
+        is_allowed_to_delete.return_value = True
+
+        validator.is_allowed_to_delete(ule_main_user)
+        validator.is_allowed_to_delete(ule_secondary_user)
+
+    @patch('xivo_dao.data_handler.user_line_extension.dao.main_user_is_allowed_to_delete')
+    def test_is_allowed_to_delete_with_secondary_users(self, is_allowed_to_delete):
+        ule_main_user = UserLineExtension(main_user=True,
+                                          line_id=34)
+        ule_secondary_user = UserLineExtension(main_user=False,
+                                               line_id=34)
+
+        is_allowed_to_delete.return_value = False
+
+        self.assertRaises(InvalidParametersError, validator.is_allowed_to_delete, ule_main_user)
+        validator.is_allowed_to_delete(ule_secondary_user)

@@ -127,9 +127,6 @@ def create(session, extension):
     except SQLAlchemyError as e:
         session.rollback()
         raise ElementCreationError('Extension', e)
-    except IntegrityError as e:
-        session.rollback()
-        raise ElementCreationError('Extension', e)
 
     extension.id = extension_row.id
 
@@ -161,6 +158,9 @@ def delete(session, extension):
     try:
         nb_row_affected = session.query(ExtensionSchema).filter(ExtensionSchema.id == extension.id).delete()
         session.commit()
+    except IntegrityError as e:
+        session.rollback()
+        raise ElementDeletionError('Extension', 'extension still has a link')
     except SQLAlchemyError, e:
         session.rollback()
         raise ElementDeletionError('Extension', e)
