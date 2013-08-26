@@ -368,10 +368,10 @@ class Test(DAOTestCase):
         configregistrar = 'default'
 
         line = LineSCCP(id=1,
-                       device_slot=1,
-                       context=context,
-                       callerid=callerid,
-                       configregistrar=configregistrar)
+                        device_slot=1,
+                        context=context,
+                        callerid=callerid,
+                        configregistrar=configregistrar)
         device = Device(id=self.device_id,
                         deviceid=self.provd_deviceid)
 
@@ -412,10 +412,10 @@ class Test(DAOTestCase):
         configregistrar = 'default'
 
         line = LineSCCP(id=1,
-                       device_slot=1,
-                       context=context,
-                       callerid=callerid,
-                       configregistrar=configregistrar)
+                        device_slot=1,
+                        context=context,
+                        callerid=callerid,
+                        configregistrar=configregistrar)
         device = Device(id=self.device_id,
                         deviceid=self.provd_deviceid)
 
@@ -500,22 +500,22 @@ class Test(DAOTestCase):
                 "sip_lines": {
                     "1": {"username": "1234"}
                 },
-               'funckeys': {
+                'funckeys': {
                     '1': {
-                          'label': 'bob',
-                          'line': 1,
-                          'type': 'blf',
-                          'value': '1001'
-                          }
+                        'label': 'bob',
+                        'line': 1,
+                        'type': 'blf',
+                        'value': '1001'
+                    }
                 }
             }
         }
 
         device_dict = {
-           "ip": "10.60.0.109",
-           "version": "3.2.2.1136",
-           "config": self.provd_deviceid,
-           "id": self.device_id
+            "ip": "10.60.0.109",
+            "version": "3.2.2.1136",
+            "config": self.provd_deviceid,
+            "id": self.device_id
         }
         config_manager().get.return_value = config_dict
         device_manager().get.return_value = device_dict
@@ -527,10 +527,10 @@ class Test(DAOTestCase):
 
         expected_arg_config = {"raw_config": {}}
         expected_arg_device = {
-           "ip": "10.60.0.109",
-           "version": "3.2.2.1136",
-           "config": autoprovid,
-           "id": self.device_id
+            "ip": "10.60.0.109",
+            "version": "3.2.2.1136",
+            "config": autoprovid,
+            "id": self.device_id
         }
 
         device_services.remove_line_from_device(device, line)
@@ -572,10 +572,10 @@ class Test(DAOTestCase):
             }
         }
         device_dict = {
-           "ip": "10.60.0.109",
-           "version": "3.2.2.1136",
-           "config": self.provd_deviceid,
-           "id": self.device_id
+            "ip": "10.60.0.109",
+            "version": "3.2.2.1136",
+            "config": self.provd_deviceid,
+            "id": self.device_id
         }
         line = LineSIP(device_slot=1)
 
