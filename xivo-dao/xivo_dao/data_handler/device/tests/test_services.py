@@ -122,6 +122,22 @@ class Test(DAOTestCase):
         self.assertEquals(device_dao_create.call_count, 0)
         self.assertEquals(notifier_created.call_count, 0)
 
+    @patch('xivo_dao.data_handler.device.notifier.created')
+    @patch('xivo_dao.data_handler.device.dao.create')
+    @patch('xivo_dao.helpers.provd_connector.device_manager')
+    def test_create_ip_over_255(self, device_manager, device_dao_create, notifier_created):
+        device = {
+            'id': 1,
+            'deviceid': '02aff2a361004aaf8a8a686a48dc980d',
+            'ip': '10.259.0.0'
+        }
+        device = Device(**device)
+
+        self.assertRaises(InvalidParametersError, device_services.create, device)
+        self.assertEquals(device_manager().call_count, 0)
+        self.assertEquals(device_dao_create.call_count, 0)
+        self.assertEquals(notifier_created.call_count, 0)
+
     @patch('xivo_dao.data_handler.device.dao.get', Mock(return_value=None))
     @patch('xivo_dao.helpers.provd_connector.config_manager')
     @patch('xivo_dao.helpers.provd_connector.device_manager')

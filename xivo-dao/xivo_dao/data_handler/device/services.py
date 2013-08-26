@@ -28,7 +28,7 @@ from xivo_dao.data_handler.exception import InvalidParametersError, \
 from xivo_dao.helpers.provd_connector import ProvdError
 from xivo import caller_id
 
-IP_REGEX = re.compile(r'(1?\d{1,2}|2[0-5]{2})(\.(1?\d{1,2}|2[0-5]{2})){3}$')
+IP_REGEX = re.compile(r'(1?\d{1,2}|2([0-4][0-9]|5[0-5]))(\.1?\d{1,2}|2([0-4][0-9]|5[0-5])){3}$')
 
 
 def get(device_id):
