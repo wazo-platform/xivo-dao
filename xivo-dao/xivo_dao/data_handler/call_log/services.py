@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.data_handler.call_log import dao
+from xivo_dao.data_handler.exception import MissingParametersError
 
 
 def find_all():
@@ -25,3 +26,14 @@ def find_all():
 def find_all_in_period(start, end):
     _validate_datetimes(start, end)
     return dao.find_all_in_period(start, end)
+
+
+def _validate_datetimes(start, end):
+    missing_parameters = []
+    if not start:
+        missing_parameters.append('start_date')
+    if not end:
+        missing_parameters.append('end_date')
+
+    if missing_parameters:
+        raise MissingParametersError(missing_parameters)
