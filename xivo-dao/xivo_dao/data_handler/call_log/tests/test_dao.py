@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from datetime import datetime, timedelta
-from hamcrest import assert_that, equal_to, has_length
+from hamcrest import assert_that, contains_inanyorder, equal_to, has_length, has_property
 from mock import Mock, patch
 from sqlalchemy.exc import SQLAlchemyError
 from xivo_dao.alchemy.call_log import CallLog as CallLogSchema
@@ -53,6 +53,29 @@ class TestCallLogDAO(DAOTestCase):
         result = call_log_dao.find_all()
 
         assert_that(result, has_length(2))
+
+    def test_find_all_in_period_not_found(self):
+        expected_result = []
+        start, end = datetime(2013, 1, 1), datetime(2013, 2, 1)
+
+        result = call_log_dao.find_all_in_period(start, end)
+
+        assert_that(result, equal_to(expected_result))
+
+    def test_find_all_in_period_found(self):
+        call_logs = _, call_log_1, call_log_2, _ = (CallLog(date=datetime(2013, 1, 1), duration=timedelta(0)),
+                                                    CallLog(date=datetime(2013, 1, 2), duration=timedelta(1)),
+                                                    CallLog(date=datetime(2013, 1, 3), duration=timedelta(2)),
+                                                    CallLog(date=datetime(2013, 1, 4), duration=timedelta(3)))
+        start = datetime(2013, 1, 1, 12)
+        end = datetime(2013, 1, 3, 12)
+        call_log_dao.create_all(call_logs)
+
+        result = call_log_dao.find_all_in_period(start, end)
+
+        assert_that(result, has_length(2))
+        assert_that(result, contains_inanyorder(has_property('date', call_log_1.date),
+                                                has_property('date', call_log_2.date)))
 
     def test_create_all(self):
         call_logs = call_log_1, call_log_2 = [CallLog(date=datetime.today(), duration=timedelta(0)),

@@ -45,3 +45,24 @@ class TestCallLogServices(TestCase):
         result = services.find_all()
 
         assert_that(result, equal_to(expected_result))
+
+    @patch('xivo_dao.data_handler.call_log.dao.find_all_in_period')
+    def test_find_all_in_period_not_found(self, mock_dao):
+        expected_result = mock_dao.return_value = []
+        start, end = Mock(), Mock()
+
+        result = services.find_all_in_period(start, end)
+
+        mock_dao.assert_called_once_with(start, end)
+        assert_that(result, equal_to(expected_result))
+
+    @patch('xivo_dao.data_handler.call_log.dao.find_all_in_period')
+    def test_find_all_in_period_found(self, mock_dao):
+        expected_result = mock_dao.return_value = \
+            call_log_1, call_log_2 = [Mock(CallLog), Mock(CallLog)]
+        start, end = Mock(), Mock()
+
+        result = services.find_all_in_period(start, end)
+
+        mock_dao.assert_called_once_with(start, end)
+        assert_that(result, equal_to(expected_result))

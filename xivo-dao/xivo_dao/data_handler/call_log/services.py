@@ -20,3 +20,8 @@ from xivo_dao.data_handler.call_log import dao
 
 def find_all():
     return dao.find_all()
+
+
+def find_all_in_period(start, end):
+    _validate_datetimes(start, end)
+    return dao.find_all_in_period(start, end)

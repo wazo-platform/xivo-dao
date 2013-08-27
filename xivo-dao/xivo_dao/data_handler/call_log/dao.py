@@ -32,6 +32,18 @@ def find_all(session):
 
 
 @daosession
+def find_all_in_period(session, start, end):
+    call_log_rows = (session
+                     .query(CallLogSchema)
+                     .filter(CallLogSchema.date.between(start, end))
+                     .all())
+
+    if not call_log_rows:
+        return []
+    return map(CallLog.from_data_source, call_log_rows)
+
+
+@daosession
 def create_all(session, call_logs):
     session.begin()
     for call_log in call_logs:
