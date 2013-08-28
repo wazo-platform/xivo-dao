@@ -277,6 +277,9 @@ def _build_derived_line(session, line):
     elif protocol == 'custom':
         derived_line = _build_custom_line(line)
 
+    if hasattr(derived_line, 'id'):
+        del derived_line.id
+
     return derived_line
 
 
