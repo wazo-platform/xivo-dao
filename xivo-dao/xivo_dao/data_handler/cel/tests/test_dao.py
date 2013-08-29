@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import datetime
-from hamcrest import assert_that, contains, has_length
+from hamcrest import assert_that, contains, has_property
 
 from xivo_dao.alchemy.cel import CEL as CELSchema
 from xivo_dao.data_handler.cel import dao as cel_dao
@@ -35,22 +35,21 @@ class TestCELDAO(DAOTestCase):
     def tearDown(self):
         pass
 
-    def test_find_all_under_limit(self):
+    def test_find_last_under_limit(self):
         limit = 10
 
-        result = cel_dao.find_all(limit)
+        result = cel_dao.find_last(limit)
 
         assert_that(result, contains())
 
-    def test_find_all_over_limit(self):
+    def test_find_last_over_limit(self):
         limit = 2
-        self._add_cel()
-        self._add_cel()
-        self._add_cel()
+        _, cel_id_2, cel_id_3 = self._add_cel(), self._add_cel(), self._add_cel()
 
-        result = cel_dao.find_all(limit)
+        result = cel_dao.find_last(limit)
 
-        assert_that(result, has_length(2))
+        assert_that(result, contains(has_property('id', cel_id_2),
+                                     has_property('id', cel_id_3)))
 
     def _add_cel(self):
         cel = CELSchema(
@@ -76,3 +75,4 @@ class TestCELDAO(DAOTestCase):
             peer='peer',
         )
         self.add_me(cel)
+        return cel.id

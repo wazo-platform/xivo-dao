@@ -20,10 +20,11 @@ from xivo_dao.alchemy.cel import CEL as CELSchema
 
 
 @daosession
-def find_all(session, limit):
+def find_last(session, limit):
     cel_rows = (session
                 .query(CELSchema)
-                .order_by(CELSchema.eventtime.asc())
+                .order_by(CELSchema.eventtime.desc())
                 .limit(limit)
                 .all())
+    cel_rows.reverse()
     return cel_rows
