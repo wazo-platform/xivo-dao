@@ -14,13 +14,14 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
-
 from xivo_dao.alchemy.devicefeatures import DeviceFeatures as DeviceSchema
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.data_handler.device.model import Device, DeviceOrdering
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
-    ElementCreationError, ElementDeletionError
-from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+    ElementDeletionError, ElementCreationError
+from sqlalchemy.exc import SQLAlchemyError
+from xivo_dao.helpers import provd_connector
+
 
 DEFAULT_ORDER = [DeviceOrdering.ip, DeviceOrdering.mac]
 
@@ -98,3 +99,23 @@ def delete(session, device):
         raise ElementDeletionError('Device', 'device_id %s not exist' % device.id)
 
     return nb_row_affected
+
+
+def mac_exists(mac):
+    device_manager = provd_connector.device_manager()
+    existing_macs = device_manager.find({'mac': mac})
+    return len(existing_macs) > 0
+
+
+def plugin_exists(plugin):
+    plugin_manager = provd_connector.plugin_manager()
+    existing_plugins = plugin_manager.installed(plugin)
+    return len(existing_plugins) > 0
+
+
+def template_id_exists(plugin):
+    config_manager = provd_connector.config_manager()
+    existing_templates = config_manager.find({
+        'X_type': 'device',
+        'id': plugin})
+    return len(existing_templates) > 0

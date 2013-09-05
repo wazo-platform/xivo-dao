@@ -15,15 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, all_of, equal_to, has_items, has_property, instance_of, none
+from hamcrest import *
 from xivo_dao.data_handler.device import dao as device_dao
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.devicefeatures import DeviceFeatures as DeviceSchema
 from xivo_dao.data_handler.device.model import Device
-from sqlalchemy.exc import SQLAlchemyError
 from mock import Mock, patch
-from xivo_dao.data_handler.exception import ElementCreationError, \
-    ElementDeletionError
+from xivo_dao.data_handler.exception import ElementDeletionError, ElementCreationError
 
 
 class TestDeviceDao(DAOTestCase):
@@ -186,3 +184,101 @@ class TestDeviceDao(DAOTestCase):
         extension = Device(id=1)
 
         self.assertRaises(ElementDeletionError, device_dao.delete, extension)
+
+    @patch('xivo_dao.helpers.provd_connector.device_manager')
+    def test_mac_exists_no_mac(self, mock_device_manager):
+        device_manager = Mock()
+        mock_device_manager.return_value = device_manager
+        device_manager.find.return_value = []
+
+        mac = 'FF:FF:FF:FF:FF'
+
+        result = device_dao.mac_exists(mac)
+
+        assert_that(result, equal_to(False))
+        device_manager.find.assert_called_once_with({'mac': mac})
+
+    @patch('xivo_dao.helpers.provd_connector.device_manager')
+    def test_mac_exists_with_a_mac(self, mock_device_manager):
+        device_manager = Mock()
+        mock_device_manager.return_value = device_manager
+        device_manager.find.return_value = [{u'added': u'auto',
+                                             u'config': u'cb20ee7c27e2483ba737e8061b40113d',
+                                             u'configured': True,
+                                             u'id': u'cb20ee7c27e2483ba737e8061b40113d',
+                                             u'ip': u'10.0.0.1',
+                                             u'mac': u'FF:FF:FF:FF:FF:FF',
+                                             u'model': u'820',
+                                             u'plugin': u'xivo-snom-8.7.3.19',
+                                             u'vendor': u'Snom',
+                                             u'version': u'8.7.3.19'}]
+
+        mac = 'FF:FF:FF:FF:FF'
+
+        result = device_dao.mac_exists(mac)
+
+        assert_that(result, equal_to(True))
+        device_manager.find.assert_called_once_with({'mac': mac})
+
+    @patch('xivo_dao.helpers.provd_connector.plugin_manager')
+    def test_plugin_exists_no_plugin(self, mock_plugin_manager):
+        plugin_manager = Mock()
+        mock_plugin_manager.return_value = plugin_manager
+        plugin_manager.installed.return_value = {}
+
+        plugin = 'null'
+
+        result = device_dao.plugin_exists(plugin)
+
+        assert_that(result, equal_to(False))
+        plugin_manager.installed.assert_called_once_with(plugin)
+
+    @patch('xivo_dao.helpers.provd_connector.plugin_manager')
+    def test_plugin_exists_with_a_plugin_installed(self, mock_plugin_manager):
+        plugin_manager = Mock()
+        mock_plugin_manager.return_value = plugin_manager
+        plugin_manager.installed.return_value = {
+            u'null': {u'capabilities': {u'*, *, *': {u'sip.lines': 0}},
+            u'description': u'Plugin that offers no configuration service and rejects TFTP/HTTP requests.',
+            u'version': u'1.0-a'}}
+
+        plugin = 'null'
+
+        result = device_dao.plugin_exists(plugin)
+
+        assert_that(result, equal_to(True))
+        plugin_manager.installed.assert_called_once_with(plugin)
+
+    @patch('xivo_dao.helpers.provd_connector.config_manager')
+    def test_template_id_exists_no_template(self, mock_config_manager):
+        config_manager = Mock()
+        mock_config_manager.return_value = config_manager
+
+        config_manager.find.return_value = []
+
+        template_id = 'abcd1234'
+
+        result = device_dao.template_id_exists(template_id)
+
+        assert_that(result, equal_to(False))
+        config_manager.find.assert_called_once_with({'X_type': 'device', 'id': template_id})
+
+    @patch('xivo_dao.helpers.provd_connector.config_manager')
+    def test_template_id_exists_with_a_template(self, mock_config_manager):
+        config_manager = Mock()
+        mock_config_manager.return_value = config_manager
+
+        template_id = 'abcd1234'
+
+        config_manager.find.return_value = [{
+            u'X_type': u'device',
+            u'deletable': True,
+            u'id': template_id,
+            u'label': u'testtemplate',
+            u'parent_ids': [],
+            u'raw_config': {}}]
+
+        result = device_dao.template_id_exists(template_id)
+
+        assert_that(result, equal_to(True))
+        config_manager.find.assert_called_once_with({'X_type': 'device', 'id': template_id})
