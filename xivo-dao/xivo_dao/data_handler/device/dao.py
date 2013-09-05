@@ -120,8 +120,8 @@ def mac_exists(mac):
 
 def plugin_exists(plugin):
     plugin_manager = provd_connector.plugin_manager()
-    existing_plugins = plugin_manager.installed(plugin)
-    return len(existing_plugins) > 0
+    existing_plugins = plugin_manager.plugins()
+    return plugin in existing_plugins
 
 
 def template_id_exists(plugin):

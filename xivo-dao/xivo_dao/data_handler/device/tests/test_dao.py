@@ -335,30 +335,27 @@ class TestDeviceDao(DAOTestCase):
     def test_plugin_exists_no_plugin(self, mock_plugin_manager):
         plugin_manager = Mock()
         mock_plugin_manager.return_value = plugin_manager
-        plugin_manager.installed.return_value = {}
+        plugin_manager.plugins.return_value = []
 
         plugin = 'null'
 
         result = device_dao.plugin_exists(plugin)
 
         assert_that(result, equal_to(False))
-        plugin_manager.installed.assert_called_once_with(plugin)
+        plugin_manager.plugins.assert_called_once_with()
 
     @patch('xivo_dao.helpers.provd_connector.plugin_manager')
     def test_plugin_exists_with_a_plugin_installed(self, mock_plugin_manager):
         plugin_manager = Mock()
         mock_plugin_manager.return_value = plugin_manager
-        plugin_manager.installed.return_value = {
-            u'null': {u'capabilities': {u'*, *, *': {u'sip.lines': 0}},
-            u'description': u'Plugin that offers no configuration service and rejects TFTP/HTTP requests.',
-            u'version': u'1.0-a'}}
+        plugin_manager.plugins.return_value = ['null']
 
         plugin = 'null'
 
         result = device_dao.plugin_exists(plugin)
 
         assert_that(result, equal_to(True))
-        plugin_manager.installed.assert_called_once_with(plugin)
+        plugin_manager.plugins.assert_called_once_with()
 
     @patch('xivo_dao.helpers.provd_connector.config_manager')
     def test_template_id_exists_no_template(self, mock_config_manager):
