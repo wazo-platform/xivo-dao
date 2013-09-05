@@ -24,11 +24,13 @@ from xivo_dao.data_handler.user_line_extension import dao as user_line_extension
 from xivo_dao.data_handler.extension import dao as extension_dao
 from xivo_dao.data_handler.line import dao as line_dao
 from xivo_dao.data_handler.exception import InvalidParametersError, \
-    ElementNotExistsError, ElementDeletionError
+    ElementNotExistsError, ElementDeletionError, ElementAlreadyExistsError, \
+    NonexistentParametersError
 from xivo_dao.helpers.provd_connector import ProvdError
 from xivo import caller_id
 
 IP_REGEX = re.compile(r'(1?\d{1,2}|2([0-4][0-9]|5[0-5]))(\.1?\d{1,2}|2([0-4][0-9]|5[0-5])){3}$')
+MAC_REGEX = re.compile(r'^([0-9A-Fa-f]{2})(:[0-9A-Fa-f]{2}){5}$')
 
 
 def get(device_id):
@@ -81,12 +83,42 @@ def _generate_new_deviceid(device):
 
 def _validate(device):
     _check_invalid_parameters(device)
+    _check_mac_already_exists(device)
+    _check_plugin_exists(device)
+    _check_template_id_exists(device)
+
+
+def _check_mac_already_exists(device):
+    if not hasattr(device, 'mac'):
+        return
+
+    existing_device = dao.mac_exists(device.mac)
+    if existing_device:
+        raise ElementAlreadyExistsError('device', device.mac)
+
+
+def _check_plugin_exists(device):
+    if not hasattr(device, 'plugin'):
+        return
+
+    if not dao.plugin_exists(device.plugin):
+        raise NonexistentParametersError(plugin=device.plugin)
+
+
+def _check_template_id_exists(device):
+    if not hasattr(device, 'template_id'):
+        return
+
+    if not dao.template_id_exists(device.template_id):
+        raise NonexistentParametersError(template_id=device.template_id)
 
 
 def _check_invalid_parameters(device):
     invalid_parameters = []
     if hasattr(device, 'ip') and not IP_REGEX.match(device.ip):
         invalid_parameters.append('ip')
+    if hasattr(device, 'mac') and not MAC_REGEX.match(device.mac):
+        invalid_parameters.append('mac')
     if invalid_parameters:
         raise InvalidParametersError(invalid_parameters)
 
