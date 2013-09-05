@@ -60,14 +60,14 @@ def delete(device):
 
 def _remove_device_from_provd(device):
     provd_device_manager = provd_connector.device_manager()
-    provd_device = provd_device_manager.find({'id': device.deviceid})
+    provd_device = provd_device_manager.find({'id': device.id})
     if provd_device:
-        provd_device_manager.remove(device.deviceid)
+        provd_device_manager.remove(device.id)
         if len(device.config) > 0:
             provd_config_manager = provd_connector.config_manager()
             provd_config = provd_config_manager.find({'id': device.config})
             if provd_config:
-                provd_config_manager.remove(device.deviceid)
+                provd_config_manager.remove(device.id)
 
 
 def _generate_new_deviceid(device):
@@ -94,6 +94,10 @@ def _check_invalid_parameters(device):
 def associate_line_to_device(device, line):
     line.device = str(device.id)
     line_dao.edit(line)
+    provd_device_manager = provd_connector.device_manager()
+    provd_device = provd_device_manager.get(device.id)
+    provd_device['config'] = device.id
+    provd_device_manager.update(provd_device)
     rebuild_device_config(device)
 
 
@@ -108,7 +112,7 @@ def rebuild_device_config(device):
 
 def build_line_for_device(device, line):
     provd_config_manager = provd_connector.config_manager()
-    config = provd_config_manager.get(device.deviceid)
+    config = provd_config_manager.get(device.id)
     confregistrar = provd_config_manager.get(line.configregistrar)
     ules = user_line_extension_dao.find_all_by_line_id(line.id)
     for ule in ules:
@@ -152,13 +156,11 @@ def _populate_sccp_line(config, confregistrar):
 def remove_line_from_device(device, line):
     provd_config_manager = provd_connector.config_manager()
     try:
-        config = provd_config_manager.get(device.deviceid)
+        config = provd_config_manager.get(device.id)
         if 'sip_lines' in config['raw_config']:
             del config['raw_config']['sip_lines'][str(line.device_slot)]
             if len(config['raw_config']['sip_lines']) == 0:
-                # then we reset to autoprov
-                _reset_config(config)
-                reset_to_autoprov(device.deviceid)
+                reset_to_autoprov(device.id)
             provd_config_manager.update(config)
     except URLError as e:
         raise ProvdError(e)
@@ -168,12 +170,18 @@ def reset_to_autoprov(deviceid):
     provd_device_manager = provd_connector.device_manager()
     provd_config_manager = provd_connector.config_manager()
     device = provd_device_manager.get(deviceid)
+    config = provd_config_manager.get(device['config'])
+    _reset_config(config)
+    provd_config_manager.update(config)
     new_configid = provd_config_manager.autocreate()
     device['config'] = new_configid
     provd_device_manager.update(device)
 
 
 def _reset_config(config):
-    del config['raw_config']['sip_lines']
+    if 'sccp_call_managers' in config['raw_config']:
+        del config['raw_config']['sccp_call_managers']
+    if 'sip_lines' in config['raw_config']:
+        del config['raw_config']['sip_lines']
     if 'funckeys' in config['raw_config']:
         del config['raw_config']['funckeys']
