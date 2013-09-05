@@ -43,7 +43,6 @@ def find_all():
 
 def create(device):
     _validate(device)
-    device.deviceid = _generate_new_deviceid(device)
     device = dao.create(device)
     notifier.created(device)
     return device
