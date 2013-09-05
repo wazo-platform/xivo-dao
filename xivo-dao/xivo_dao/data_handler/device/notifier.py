@@ -21,12 +21,12 @@ from xivo_dao.data_handler.device.command import CreateDeviceCommand, \
 
 
 def created(device):
-    send_bus_command(CreateDeviceCommand(device.id, device.deviceid))
+    send_bus_command(CreateDeviceCommand(device.id))
 
 
 def edited(device):
-    send_bus_command(EditDeviceCommand(device.id, device.deviceid))
+    send_bus_command(EditDeviceCommand(device.id))
 
 
 def deleted(device):
-    send_bus_command(DeleteDeviceCommand(device.id, device.deviceid))
+    send_bus_command(DeleteDeviceCommand(device.id))

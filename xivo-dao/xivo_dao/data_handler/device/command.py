@@ -20,19 +20,17 @@ from __future__ import unicode_literals
 
 class AbstractDeviceIDParams(object):
 
-    def __init__(self, device_id, deviceid):
-        self.id = int(device_id)
-        self.deviceid = deviceid
+    def __init__(self, device_id):
+        self.id = device_id
 
     def marshal(self):
         return {
             'id': self.id,
-            'deviceid': self.deviceid
         }
 
     @classmethod
     def unmarshal(cls, msg):
-        return cls(msg['id'], msg['deviceid'])
+        return cls(msg['id'])
 
 
 class EditDeviceCommand(AbstractDeviceIDParams):
