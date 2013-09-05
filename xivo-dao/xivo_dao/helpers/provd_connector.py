@@ -38,5 +38,10 @@ def device_manager():
     return provisioning_client.device_manager()
 
 
+def plugin_manager():
+    provisioning_client = _provd_client()
+    return provisioning_client.plugin_manager()
+
+
 def _provd_client():
     return new_provisioning_client(PROVD_URL)

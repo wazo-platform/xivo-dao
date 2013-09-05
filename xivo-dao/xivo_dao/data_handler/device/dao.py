@@ -14,13 +14,14 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
-
 from xivo_dao.alchemy.devicefeatures import DeviceFeatures as DeviceSchema
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.data_handler.device.model import Device, DeviceOrdering
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
-    ElementCreationError, ElementDeletionError
-from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+    ElementDeletionError, ElementCreationError
+from sqlalchemy.exc import SQLAlchemyError
+from xivo_dao.helpers import provd_connector
+
 
 DEFAULT_ORDER = [DeviceOrdering.ip, DeviceOrdering.mac]
 
@@ -65,26 +66,6 @@ def find_all(session):
 
 
 @daosession
-def create(session, device):
-    device_row = device.to_data_source(DeviceSchema)
-    session.begin()
-    session.add(device_row)
-
-    try:
-        session.commit()
-    except SQLAlchemyError as e:
-        session.rollback()
-        raise ElementCreationError('Device', e)
-    except IntegrityError as e:
-        session.rollback()
-        raise ElementCreationError('Device', e)
-
-    device.id = device_row.id
-
-    return device
-
-
-@daosession
 def delete(session, device):
     session.begin()
     try:
@@ -98,3 +79,54 @@ def delete(session, device):
         raise ElementDeletionError('Device', 'device_id %s not exist' % device.id)
 
     return nb_row_affected
+
+
+def create(device):
+    _create_provd_device(device)
+    _create_provd_config(device)
+
+    return device
+
+
+def _create_provd_device(device):
+    device_manager = provd_connector.device_manager()
+    provd_device = device.to_provd_device()
+
+    try:
+        device_id = device_manager.add(provd_device)
+    except Exception as e:
+        raise ElementCreationError('device', e)
+
+    device.id = device_id
+
+
+def _create_provd_config(device):
+    config_manager = provd_connector.config_manager()
+    provd_config = device.to_provd_config()
+
+    try:
+        config_manager.add(provd_config)
+    except Exception as e:
+        device_manager = provd_connector.device_manager()
+        device_manager.remove(device.id)
+        raise ElementCreationError('device', e)
+
+
+def mac_exists(mac):
+    device_manager = provd_connector.device_manager()
+    existing_macs = device_manager.find({'mac': mac})
+    return len(existing_macs) > 0
+
+
+def plugin_exists(plugin):
+    plugin_manager = provd_connector.plugin_manager()
+    existing_plugins = plugin_manager.plugins()
+    return plugin in existing_plugins
+
+
+def template_id_exists(plugin):
+    config_manager = provd_connector.config_manager()
+    existing_templates = config_manager.find({
+        'X_type': 'device',
+        'id': plugin})
+    return len(existing_templates) > 0
