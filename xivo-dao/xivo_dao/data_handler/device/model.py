@@ -24,6 +24,15 @@ class Device(AbstractModels):
     MANDATORY = [
     ]
 
+    PROVD_KEYS = [
+        'id',
+        'ip',
+        'mac',
+        'plugin',
+        'vendor',
+        'model',
+    ]
+
     # mapping = {db_field: model_field}
     _MAPPING = {
         'id': 'id',
@@ -41,12 +50,43 @@ class Device(AbstractModels):
         'configured': 'configured',
         'commented': 'commented',
         'description': 'description',
+        'template_id': 'template_id',
     }
 
     _RELATION = {}
 
     def __init__(self, *args, **kwargs):
         AbstractModels.__init__(self, *args, **kwargs)
+
+    def to_provd_device(self):
+        provd_device = {
+            'commented': self._is_commented()
+        }
+        for key in self.PROVD_KEYS:
+            if hasattr(self, key):
+                provd_device[key] = getattr(self, key)
+
+        return provd_device
+
+    def to_provd_config(self):
+        template_id = getattr(self, 'template_id', 'defaultconfigdevice')
+
+        parent_ids = ['base', 'defaultconfigdevice']
+        if template_id not in parent_ids:
+            parent_ids.append(template_id)
+
+        return {
+            'id': self.id,
+            'configdevice': template_id,
+            'deletable': True,
+            'parent_ids': parent_ids,
+            'raw_config': {'X_key': ''}
+        }
+
+    def _is_commented(self):
+        if not hasattr(self, 'active'):
+            return 0
+        return bool(not self.active)
 
 
 class DeviceOrdering(object):

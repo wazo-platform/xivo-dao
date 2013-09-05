@@ -66,26 +66,6 @@ def find_all(session):
 
 
 @daosession
-def create(session, device):
-    device_row = device.to_data_source(DeviceSchema)
-    session.begin()
-    session.add(device_row)
-
-    try:
-        session.commit()
-    except SQLAlchemyError as e:
-        session.rollback()
-        raise ElementCreationError('Device', e)
-    except IntegrityError as e:
-        session.rollback()
-        raise ElementCreationError('Device', e)
-
-    device.id = device_row.id
-
-    return device
-
-
-@daosession
 def delete(session, device):
     session.begin()
     try:
@@ -99,6 +79,37 @@ def delete(session, device):
         raise ElementDeletionError('Device', 'device_id %s not exist' % device.id)
 
     return nb_row_affected
+
+
+def create(device):
+    _create_provd_device(device)
+    _create_provd_config(device)
+
+    return device
+
+
+def _create_provd_device(device):
+    device_manager = provd_connector.device_manager()
+    provd_device = device.to_provd_device()
+
+    try:
+        device_id = device_manager.add(provd_device)
+    except Exception as e:
+        raise ElementCreationError('device', e)
+
+    device.id = device_id
+
+
+def _create_provd_config(device):
+    config_manager = provd_connector.config_manager()
+    provd_config = device.to_provd_config()
+
+    try:
+        config_manager.add(provd_config)
+    except Exception as e:
+        device_manager = provd_connector.device_manager()
+        device_manager.remove(device.id)
+        raise ElementCreationError('device', e)
 
 
 def mac_exists(mac):
