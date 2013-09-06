@@ -39,6 +39,16 @@ class TestDeviceServices(unittest.TestCase):
         self.provd_config_manager = Mock(provd_connector.config_manager)
         self.provd_device_manager = Mock(provd_connector.device_manager)
 
+    @patch('xivo_dao.data_handler.device.dao.get')
+    def test_get(self, dao_get):
+        device = Mock(Device)
+        dao_get.return_value = device
+
+        result = device_services.get(self.provd_deviceid)
+
+        self.assertEquals(result, device)
+        dao_get.assert_called_once_with(self.provd_deviceid)
+
     @patch('xivo_dao.data_handler.device.dao.find_all')
     def test_find_all(self, device_dao_find_all):
         first_device = Mock(Device)
