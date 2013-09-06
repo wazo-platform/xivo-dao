@@ -59,9 +59,7 @@ class Device(AbstractModels):
         AbstractModels.__init__(self, *args, **kwargs)
 
     def to_provd_device(self):
-        provd_device = {
-            'commented': self._is_commented()
-        }
+        provd_device = {}
         for key in self.PROVD_KEYS:
             if hasattr(self, key):
                 provd_device[key] = getattr(self, key)
@@ -80,13 +78,8 @@ class Device(AbstractModels):
             'configdevice': template_id,
             'deletable': True,
             'parent_ids': parent_ids,
-            'raw_config': {'X_key': ''}
+            'raw_config': {}
         }
-
-    def _is_commented(self):
-        if not hasattr(self, 'active'):
-            return 0
-        return bool(not self.active)
 
 
 class DeviceOrdering(object):

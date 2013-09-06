@@ -161,13 +161,13 @@ class TestDeviceDao(DAOTestCase):
 
         device_manager.add.return_value = device_id
 
-        expected_provd_device = {'commented': 0}
+        expected_provd_device = {}
         expected_provd_config = {
             'configdevice': 'defaultconfigdevice',
             'deletable': True,
             'id': device_id,
             'parent_ids': ['base', 'defaultconfigdevice'],
-            'raw_config': {'X_key': ''}
+            'raw_config': {}
         }
 
         result = device_dao.create(device)
@@ -201,7 +201,6 @@ class TestDeviceDao(DAOTestCase):
             'plugin': device.plugin,
             'vendor': device.vendor,
             'model': device.model,
-            'commented': 0,
         }
 
         expected_provd_config = {
@@ -209,7 +208,7 @@ class TestDeviceDao(DAOTestCase):
             'deletable': True,
             'id': device_id,
             'parent_ids': ['base', 'defaultconfigdevice'],
-            'raw_config': {'X_key': ''}
+            'raw_config': {}
         }
 
         result = device_dao.create(device)
@@ -242,16 +241,14 @@ class TestDeviceDao(DAOTestCase):
 
         device_manager.add.return_value = device_id
 
-        expected_provd_device = {
-            'commented': 0
-        }
+        expected_provd_device = {}
 
         expected_provd_config = {
             'configdevice': template_id,
             'deletable': True,
             'id': device_id,
             'parent_ids': ['base', 'defaultconfigdevice', template_id],
-            'raw_config': {'X_key': ''}
+            'raw_config': {}
         }
 
         result = device_dao.create(device)
