@@ -181,8 +181,11 @@ class TestDeviceDao(DAOTestCase):
     @patch('xivo_dao.helpers.provd_connector.device_manager')
     def test_create_with_parameters(self, mock_device_manager, mock_config_manager):
         device_id = 'abcd1234'
+        device_mac = 'AB:11:22:33:44:55'
+        expected_mac = 'ab:11:22:33:44:55'
+
         device = Device(ip='10.0.0.1',
-                        mac='00:11:22:33:44:55',
+                        mac=device_mac,
                         plugin='xivo-aastra-3.2.2-SP3',
                         vendor='Aastra',
                         model='6731i')
@@ -197,7 +200,7 @@ class TestDeviceDao(DAOTestCase):
 
         expected_provd_device = {
             'ip': device.ip,
-            'mac': device.mac,
+            'mac': expected_mac,
             'plugin': device.plugin,
             'vendor': device.vendor,
             'model': device.model,

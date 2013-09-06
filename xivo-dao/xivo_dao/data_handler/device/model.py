@@ -59,12 +59,20 @@ class Device(AbstractModels):
         AbstractModels.__init__(self, *args, **kwargs)
 
     def to_provd_device(self):
-        provd_device = {}
+        parameters = self._filter_device_parameters()
+
+        if 'mac' in parameters:
+            parameters['mac'] = parameters['mac'].lower()
+
+        return parameters
+
+    def _filter_device_parameters(self):
+        parameters = {}
         for key in self.PROVD_KEYS:
             if hasattr(self, key):
-                provd_device[key] = getattr(self, key)
+                parameters[key] = getattr(self, key)
 
-        return provd_device
+        return parameters
 
     def to_provd_config(self):
         template_id = getattr(self, 'template_id', 'defaultconfigdevice')
