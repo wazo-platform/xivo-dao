@@ -314,6 +314,10 @@ class TestDeviceDao(DAOTestCase):
         device_manager.add.return_value = device_id
 
         expected_provd_device = {}
+        expected_device_update = {
+            'id': device_id,
+            'config': device_id
+        }
         expected_provd_config = {
             'configdevice': 'defaultconfigdevice',
             'deletable': True,
@@ -325,6 +329,7 @@ class TestDeviceDao(DAOTestCase):
         result = device_dao.create(device)
 
         device_manager.add.assert_called_once_with(expected_provd_device)
+        device_manager.update.assert_called_once_with(expected_device_update)
         config_manager.add.assert_called_once_with(expected_provd_config)
 
         assert_that(result.id, equal_to(device_id))
@@ -358,6 +363,16 @@ class TestDeviceDao(DAOTestCase):
             'model': device.model,
         }
 
+        expected_device_update = {
+            'id': device_id,
+            'ip': device.ip,
+            'mac': expected_mac,
+            'plugin': device.plugin,
+            'vendor': device.vendor,
+            'model': device.model,
+            'config': device_id,
+        }
+
         expected_provd_config = {
             'configdevice': 'defaultconfigdevice',
             'deletable': True,
@@ -370,6 +385,7 @@ class TestDeviceDao(DAOTestCase):
 
         device_manager.add.assert_called_once_with(expected_provd_device)
         config_manager.add.assert_called_once_with(expected_provd_config)
+        device_manager.update.assert_called_once_with(expected_device_update)
 
         assert_that(result, all_of(
             has_property('id', device_id),
@@ -397,6 +413,10 @@ class TestDeviceDao(DAOTestCase):
         device_manager.add.return_value = device_id
 
         expected_provd_device = {}
+        expected_device_update = {
+            'id': device_id,
+            'config': device_id
+        }
 
         expected_provd_config = {
             'configdevice': template_id,
@@ -409,6 +429,7 @@ class TestDeviceDao(DAOTestCase):
         result = device_dao.create(device)
 
         device_manager.add.assert_called_once_with(expected_provd_device)
+        device_manager.update.assert_called_once_with(expected_device_update)
         config_manager.add.assert_called_once_with(expected_provd_config)
 
         assert_that(result.template_id, equal_to(template_id))
@@ -425,6 +446,24 @@ class TestDeviceDao(DAOTestCase):
         mock_config_manager.return_value = config_manager
 
         device_manager.add.side_effect = Exception()
+
+        self.assertRaises(ElementCreationError, device_dao.create, device)
+
+        assert_that(config_manager.add.call_count, equal_to(0))
+
+    @patch('xivo_dao.helpers.provd_connector.config_manager')
+    @patch('xivo_dao.helpers.provd_connector.device_manager')
+    def test_create_with_device_manager_error_on_update(self, mock_device_manager, mock_config_manager):
+        device = Device()
+
+        device_manager = Mock()
+        mock_device_manager.return_value = device_manager
+
+        config_manager = Mock()
+        mock_config_manager.return_value = config_manager
+
+        device_manager.add.return_value = 'abcd1234'
+        device_manager.update.side_effect = Exception()
 
         self.assertRaises(ElementCreationError, device_dao.create, device)
 

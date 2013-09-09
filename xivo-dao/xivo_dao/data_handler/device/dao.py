@@ -111,6 +111,7 @@ def create(device):
 
 def _create_provd_device(device):
     device_manager = provd_connector.device_manager()
+
     provd_device = device.to_provd_device()
 
     try:
@@ -119,6 +120,16 @@ def _create_provd_device(device):
         raise ElementCreationError('device', e)
 
     device.id = device_id
+
+    provd_device = dict(provd_device)
+    provd_device['id'] = device_id
+    provd_device['config'] = device_id
+
+    try:
+        device_manager.update(provd_device)
+    except Exception as e:
+        device_manager.remove(device_id)
+        raise ElementCreationError('device', e)
 
 
 def _create_provd_config(device):
