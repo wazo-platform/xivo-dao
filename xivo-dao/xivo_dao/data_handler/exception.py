@@ -75,3 +75,10 @@ class ElementDeletionError(IOError):
     def __init__(self, element, error):
         message = "error while deleting %s: %s" % (element, unicode(error))
         IOError.__init__(self, message)
+
+
+class ElementSynchronizeError(IOError):
+
+    def __init__(self, element, error):
+        message = "error while synchronize %s: %s" % (element, unicode(error))
+        IOError.__init__(self, message)

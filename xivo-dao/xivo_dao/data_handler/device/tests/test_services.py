@@ -26,7 +26,8 @@ from xivo_dao.data_handler.line.model import LineSIP, LineSCCP
 from xivo_dao.data_handler.user_line_extension.model import UserLineExtension
 from xivo_dao.data_handler.exception import ElementCreationError, \
     InvalidParametersError, ElementDeletionError, ElementNotExistsError, \
-    ElementAlreadyExistsError, NonexistentParametersError
+    ElementAlreadyExistsError, NonexistentParametersError, \
+    ElementSynchronizeError
 from xivo_dao.helpers import provd_connector
 from xivo_dao.helpers.provd_connector import ProvdError
 
@@ -641,6 +642,25 @@ class TestDeviceServices(unittest.TestCase):
             device_services.remove_line_from_device(device, line)
         except:
             self.fail("An exception was raised whereas it should not")
+
+    @patch('xivo_dao.helpers.provd_connector.device_manager')
+    def test_synchronize(self, device_manager):
+        device = Device(id=self.device_id,
+                        deviceid=self.provd_deviceid)
+
+        device_services.synchronize(device)
+
+        device_manager().synchronize.assert_called_with(self.device_id)
+
+    @patch('xivo_dao.helpers.provd_connector.device_manager')
+    def test_synchronize_with_error(self, device_manager):
+        device = Device(id=self.device_id,
+                        deviceid=self.provd_deviceid)
+
+        device_manager().synchronize.side_effect = ElementSynchronizeError('device', '')
+
+        self.assertRaises(ElementSynchronizeError, device_services.synchronize, device)
+        device_manager().synchronize.assert_called_with(self.device_id)
 
     def _give_me_a_provd_configregistrar(self, proxy_main, proxy_backup=None):
         config_registrar_dict = {

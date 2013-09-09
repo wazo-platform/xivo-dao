@@ -25,7 +25,7 @@ from xivo_dao.data_handler.extension import dao as extension_dao
 from xivo_dao.data_handler.line import dao as line_dao
 from xivo_dao.data_handler.exception import InvalidParametersError, \
     ElementNotExistsError, ElementDeletionError, ElementAlreadyExistsError, \
-    NonexistentParametersError
+    NonexistentParametersError, ElementSynchronizeError
 from xivo_dao.helpers.provd_connector import ProvdError
 from xivo import caller_id
 
@@ -202,6 +202,14 @@ def reset_to_autoprov(device):
     new_configid = provd_config_manager.autocreate()
     device['config'] = new_configid
     provd_device_manager.update(device)
+
+
+def synchronize(device):
+    try:
+        provd_device_manager = provd_connector.device_manager()
+        provd_device_manager.synchronize(device.id)
+    except Exception as e:
+        raise ElementSynchronizeError('device', e)
 
 
 def _reset_config(config):
