@@ -305,15 +305,8 @@ class TestDeviceDao(DAOTestCase):
         device_id = 'abcd1234'
         device = Device()
 
-        device_manager = Mock()
-        mock_device_manager.return_value = device_manager
-
-        config_manager = Mock()
-        mock_config_manager.return_value = config_manager
-
-        device_manager.add.return_value = device_id
-
         expected_provd_device = {}
+
         expected_device_update = {
             'id': device_id,
             'config': device_id
@@ -326,13 +319,16 @@ class TestDeviceDao(DAOTestCase):
             'raw_config': {}
         }
 
-        result = device_dao.create(device)
+        with self.provd_managers() as (device_manager, config_manager, _):
+            device_manager.add.return_value = device_id
 
-        device_manager.add.assert_called_once_with(expected_provd_device)
-        device_manager.update.assert_called_once_with(expected_device_update)
-        config_manager.add.assert_called_once_with(expected_provd_config)
+            result = device_dao.create(device)
 
-        assert_that(result.id, equal_to(device_id))
+            device_manager.add.assert_called_once_with(expected_provd_device)
+            device_manager.update.assert_called_once_with(expected_device_update)
+            config_manager.add.assert_called_once_with(expected_provd_config)
+
+            assert_that(result.id, equal_to(device_id))
 
     @patch('xivo_dao.helpers.provd_connector.config_manager')
     @patch('xivo_dao.helpers.provd_connector.device_manager')
@@ -346,14 +342,6 @@ class TestDeviceDao(DAOTestCase):
                         plugin='xivo-aastra-3.2.2-SP3',
                         vendor='Aastra',
                         model='6731i')
-
-        device_manager = Mock()
-        mock_device_manager.return_value = device_manager
-
-        config_manager = Mock()
-        mock_config_manager.return_value = config_manager
-
-        device_manager.add.return_value = device_id
 
         expected_provd_device = {
             'ip': device.ip,
@@ -381,20 +369,23 @@ class TestDeviceDao(DAOTestCase):
             'raw_config': {}
         }
 
-        result = device_dao.create(device)
+        with self.provd_managers() as (device_manager, config_manager, _):
+            device_manager.add.return_value = device_id
 
-        device_manager.add.assert_called_once_with(expected_provd_device)
-        config_manager.add.assert_called_once_with(expected_provd_config)
-        device_manager.update.assert_called_once_with(expected_device_update)
+            result = device_dao.create(device)
 
-        assert_that(result, all_of(
-            has_property('id', device_id),
-            has_property('mac', device.mac),
-            has_property('ip', device.ip),
-            has_property('plugin', device.plugin),
-            has_property('vendor', device.vendor),
-            has_property('model', device.model)
-        ))
+            device_manager.add.assert_called_once_with(expected_provd_device)
+            config_manager.add.assert_called_once_with(expected_provd_config)
+            device_manager.update.assert_called_once_with(expected_device_update)
+
+            assert_that(result, all_of(
+                has_property('id', device_id),
+                has_property('mac', device.mac),
+                has_property('ip', device.ip),
+                has_property('plugin', device.plugin),
+                has_property('vendor', device.vendor),
+                has_property('model', device.model)
+            ))
 
     @patch('xivo_dao.helpers.provd_connector.config_manager')
     @patch('xivo_dao.helpers.provd_connector.device_manager')
@@ -404,15 +395,8 @@ class TestDeviceDao(DAOTestCase):
 
         device = Device(template_id=template_id)
 
-        device_manager = Mock()
-        mock_device_manager.return_value = device_manager
-
-        config_manager = Mock()
-        mock_config_manager.return_value = config_manager
-
-        device_manager.add.return_value = device_id
-
         expected_provd_device = {}
+
         expected_device_update = {
             'id': device_id,
             'config': device_id
@@ -426,48 +410,41 @@ class TestDeviceDao(DAOTestCase):
             'raw_config': {}
         }
 
-        result = device_dao.create(device)
+        with self.provd_managers() as (device_manager, config_manager, _):
+            device_manager.add.return_value = device_id
 
-        device_manager.add.assert_called_once_with(expected_provd_device)
-        device_manager.update.assert_called_once_with(expected_device_update)
-        config_manager.add.assert_called_once_with(expected_provd_config)
+            result = device_dao.create(device)
 
-        assert_that(result.template_id, equal_to(template_id))
+            device_manager.add.assert_called_once_with(expected_provd_device)
+            device_manager.update.assert_called_once_with(expected_device_update)
+            config_manager.add.assert_called_once_with(expected_provd_config)
+
+            assert_that(result.template_id, equal_to(template_id))
 
     @patch('xivo_dao.helpers.provd_connector.config_manager')
     @patch('xivo_dao.helpers.provd_connector.device_manager')
     def test_create_with_device_manager_error(self, mock_device_manager, mock_config_manager):
         device = Device()
 
-        device_manager = Mock()
-        mock_device_manager.return_value = device_manager
+        with self.provd_managers() as (device_manager, config_manager, _):
+            device_manager.add.side_effect = Exception()
 
-        config_manager = Mock()
-        mock_config_manager.return_value = config_manager
+            self.assertRaises(ElementCreationError, device_dao.create, device)
 
-        device_manager.add.side_effect = Exception()
-
-        self.assertRaises(ElementCreationError, device_dao.create, device)
-
-        assert_that(config_manager.add.call_count, equal_to(0))
+            assert_that(config_manager.add.call_count, equal_to(0))
 
     @patch('xivo_dao.helpers.provd_connector.config_manager')
     @patch('xivo_dao.helpers.provd_connector.device_manager')
     def test_create_with_device_manager_error_on_update(self, mock_device_manager, mock_config_manager):
         device = Device()
 
-        device_manager = Mock()
-        mock_device_manager.return_value = device_manager
+        with self.provd_managers() as (device_manager, config_manager, _):
+            device_manager.add.return_value = 'abcd1234'
+            device_manager.update.side_effect = Exception()
 
-        config_manager = Mock()
-        mock_config_manager.return_value = config_manager
+            self.assertRaises(ElementCreationError, device_dao.create, device)
 
-        device_manager.add.return_value = 'abcd1234'
-        device_manager.update.side_effect = Exception()
-
-        self.assertRaises(ElementCreationError, device_dao.create, device)
-
-        assert_that(config_manager.add.call_count, equal_to(0))
+            assert_that(config_manager.add.call_count, equal_to(0))
 
     @patch('xivo_dao.helpers.provd_connector.config_manager')
     @patch('xivo_dao.helpers.provd_connector.device_manager')
@@ -475,109 +452,96 @@ class TestDeviceDao(DAOTestCase):
         device_id = 'abcd1234'
         device = Device()
 
-        device_manager = Mock()
-        mock_device_manager.return_value = device_manager
+        with self.provd_managers() as (device_manager, config_manager, _):
+            device_manager.add.return_value = device_id
+            config_manager.add.side_effect = Exception()
 
-        config_manager = Mock()
-        mock_config_manager.return_value = config_manager
-
-        device_manager.add.return_value = device_id
-        config_manager.add.side_effect = Exception()
-
-        self.assertRaises(ElementCreationError, device_dao.create, device)
-        device_manager.remove.assert_called_once_with(device_id)
+            self.assertRaises(ElementCreationError, device_dao.create, device)
+            device_manager.remove.assert_called_once_with(device_id)
 
     @patch('xivo_dao.helpers.provd_connector.device_manager')
     def test_mac_exists_no_mac(self, mock_device_manager):
-        device_manager = Mock()
-        mock_device_manager.return_value = device_manager
-        device_manager.find.return_value = []
-
         mac = 'FF:FF:FF:FF:FF'
 
-        result = device_dao.mac_exists(mac)
+        with self.provd_managers() as (device_manager, _, _):
+            device_manager.find.return_value = []
 
-        assert_that(result, equal_to(False))
-        device_manager.find.assert_called_once_with({'mac': mac})
+            result = device_dao.mac_exists(mac)
+
+            assert_that(result, equal_to(False))
+            device_manager.find.assert_called_once_with({'mac': mac})
 
     @patch('xivo_dao.helpers.provd_connector.device_manager')
     def test_mac_exists_with_a_mac(self, mock_device_manager):
-        device_manager = Mock()
-        mock_device_manager.return_value = device_manager
-        device_manager.find.return_value = [{u'added': u'auto',
-                                             u'config': u'cb20ee7c27e2483ba737e8061b40113d',
-                                             u'configured': True,
-                                             u'id': u'cb20ee7c27e2483ba737e8061b40113d',
-                                             u'ip': u'10.0.0.1',
-                                             u'mac': u'FF:FF:FF:FF:FF:FF',
-                                             u'model': u'820',
-                                             u'plugin': u'xivo-snom-8.7.3.19',
-                                             u'vendor': u'Snom',
-                                             u'version': u'8.7.3.19'}]
-
         mac = 'FF:FF:FF:FF:FF'
 
-        result = device_dao.mac_exists(mac)
+        with self.provd_managers() as (device_manager, _, _):
+            device_manager.find.return_value = [{u'added': u'auto',
+                                                u'config': u'cb20ee7c27e2483ba737e8061b40113d',
+                                                u'configured': True,
+                                                u'id': u'cb20ee7c27e2483ba737e8061b40113d',
+                                                u'ip': u'10.0.0.1',
+                                                u'mac': u'FF:FF:FF:FF:FF:FF',
+                                                u'model': u'820',
+                                                u'plugin': u'xivo-snom-8.7.3.19',
+                                                u'vendor': u'Snom',
+                                                u'version': u'8.7.3.19'}]
 
-        assert_that(result, equal_to(True))
-        device_manager.find.assert_called_once_with({'mac': mac})
+            result = device_dao.mac_exists(mac)
+
+            assert_that(result, equal_to(True))
+            device_manager.find.assert_called_once_with({'mac': mac})
 
     @patch('xivo_dao.helpers.provd_connector.plugin_manager')
     def test_plugin_exists_no_plugin(self, mock_plugin_manager):
-        plugin_manager = Mock()
-        mock_plugin_manager.return_value = plugin_manager
-        plugin_manager.plugins.return_value = []
-
         plugin = 'null'
 
-        result = device_dao.plugin_exists(plugin)
+        with self.provd_managers() as (_, _, plugin_manager):
+            plugin_manager.plugins.return_value = []
 
-        assert_that(result, equal_to(False))
-        plugin_manager.plugins.assert_called_once_with()
+            result = device_dao.plugin_exists(plugin)
+
+            assert_that(result, equal_to(False))
+            plugin_manager.plugins.assert_called_once_with()
 
     @patch('xivo_dao.helpers.provd_connector.plugin_manager')
     def test_plugin_exists_with_a_plugin_installed(self, mock_plugin_manager):
-        plugin_manager = Mock()
-        mock_plugin_manager.return_value = plugin_manager
-        plugin_manager.plugins.return_value = ['null']
-
         plugin = 'null'
 
-        result = device_dao.plugin_exists(plugin)
+        with self.provd_managers() as (_, _, plugin_manager):
+            plugin_manager.plugins.return_value = ['null']
 
-        assert_that(result, equal_to(True))
-        plugin_manager.plugins.assert_called_once_with()
+            result = device_dao.plugin_exists(plugin)
+
+            assert_that(result, equal_to(True))
+            plugin_manager.plugins.assert_called_once_with()
 
     @patch('xivo_dao.helpers.provd_connector.config_manager')
     def test_template_id_exists_no_template(self, mock_config_manager):
-        config_manager = Mock()
-        mock_config_manager.return_value = config_manager
-
-        config_manager.find.return_value = []
-
         template_id = 'abcd1234'
 
-        result = device_dao.template_id_exists(template_id)
+        with self.provd_managers() as (_, config_manager, _):
+            config_manager.find.return_value = []
 
-        assert_that(result, equal_to(False))
-        config_manager.find.assert_called_once_with({'X_type': 'device', 'id': template_id})
+            result = device_dao.template_id_exists(template_id)
+
+            assert_that(result, equal_to(False))
+            config_manager.find.assert_called_once_with({'X_type': 'device', 'id': template_id})
 
     @patch('xivo_dao.helpers.provd_connector.config_manager')
     def test_template_id_exists_with_a_template(self, mock_config_manager):
-        config_manager = Mock()
-        mock_config_manager.return_value = config_manager
-
         template_id = 'abcd1234'
 
-        config_manager.find.return_value = [{
-            u'X_type': u'device',
-            u'deletable': True,
-            u'id': template_id,
-            u'label': u'testtemplate',
-            u'parent_ids': [],
-            u'raw_config': {}}]
+        with self.provd_managers() as (_, config_manager, _):
+            config_manager.find.return_value = [{
+                u'X_type': u'device',
+                u'deletable': True,
+                u'id': template_id,
+                u'label': u'testtemplate',
+                u'parent_ids': [],
+                u'raw_config': {}}]
 
-        result = device_dao.template_id_exists(template_id)
+            result = device_dao.template_id_exists(template_id)
 
-        assert_that(result, equal_to(True))
-        config_manager.find.assert_called_once_with({'X_type': 'device', 'id': template_id})
+            assert_that(result, equal_to(True))
+            config_manager.find.assert_called_once_with({'X_type': 'device', 'id': template_id})
