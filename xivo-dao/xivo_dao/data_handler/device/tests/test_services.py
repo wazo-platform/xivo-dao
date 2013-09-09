@@ -558,9 +558,9 @@ class TestDeviceServices(unittest.TestCase):
         self.assertEquals(config_manager.autocreate.call_count, 0)
         self.assertEquals(device_manager.call_count, 0)
 
+    @patch('xivo_dao.data_handler.device.services.reset_to_autoprov')
     @patch('xivo_dao.helpers.provd_connector.config_manager')
-    @patch('xivo_dao.helpers.provd_connector.device_manager')
-    def test_remove_line_from_device_autoprov(self, device_manager, config_manager):
+    def test_remove_line_from_device_autoprov(self, config_manager, reset_to_autoprov):
         autoprovid = "autoprov1234"
         config_dict = {
             "raw_config": {
@@ -578,14 +578,7 @@ class TestDeviceServices(unittest.TestCase):
             }
         }
 
-        device_dict = {
-            "ip": "10.60.0.109",
-            "version": "3.2.2.1136",
-            "config": self.provd_deviceid,
-            "id": self.device_id
-        }
         config_manager().get.return_value = config_dict
-        device_manager().get.return_value = device_dict
         config_manager().autocreate.return_value = autoprovid
         line = LineSIP(device_slot=1)
 
@@ -593,19 +586,11 @@ class TestDeviceServices(unittest.TestCase):
                         deviceid=self.provd_deviceid)
 
         expected_arg_config = {"raw_config": {}}
-        expected_arg_device = {
-            "ip": "10.60.0.109",
-            "version": "3.2.2.1136",
-            "config": autoprovid,
-            "id": self.device_id
-        }
 
         device_services.remove_line_from_device(device, line)
 
         config_manager().get.assert_called_with(self.provd_deviceid)
-        config_manager().autocreate.assert_called_with()
-        device_manager().get.assert_called_with(self.provd_deviceid)
-        device_manager().update.assert_called_with(expected_arg_device)
+        reset_to_autoprov.assert_called_with(device)
         config_manager().update.assert_called_with(expected_arg_config)
 
     @patch('xivo_dao.data_handler.device.services.reset_to_autoprov')
@@ -625,7 +610,6 @@ class TestDeviceServices(unittest.TestCase):
         config_manager().get.assert_called_with(self.provd_deviceid)
         self.assertEquals(config_manager().update.call_count, 0)
         self.assertEquals(reset_to_autoprov.update.call_count, 0)
-        self.assertEquals(config_manager().autocreate.call_count, 0)
 
     @patch('xivo_dao.helpers.provd_connector.config_manager')
     @patch('xivo_dao.helpers.provd_connector.device_manager')

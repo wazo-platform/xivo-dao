@@ -189,16 +189,16 @@ def remove_line_from_device(device, line):
             if len(config['raw_config']['sip_lines']) == 0:
                 # then we reset to autoprov
                 _reset_config(config)
-                reset_to_autoprov(device.deviceid)
+                reset_to_autoprov(device)
             provd_config_manager.update(config)
     except URLError as e:
         raise ProvdError(e)
 
 
-def reset_to_autoprov(deviceid):
+def reset_to_autoprov(device):
     provd_device_manager = provd_connector.device_manager()
     provd_config_manager = provd_connector.config_manager()
-    device = provd_device_manager.get(deviceid)
+    device = provd_device_manager.get(device.id)
     new_configid = provd_config_manager.autocreate()
     device['config'] = new_configid
     provd_device_manager.update(device)
