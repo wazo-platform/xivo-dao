@@ -14,6 +14,9 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
+from urllib2 import HTTPError
+
+
 from xivo_dao.alchemy.devicefeatures import DeviceFeatures as DeviceSchema
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.data_handler.device.model import Device, DeviceOrdering
@@ -26,17 +29,35 @@ from xivo_dao.helpers import provd_connector
 DEFAULT_ORDER = [DeviceOrdering.ip, DeviceOrdering.mac]
 
 
-@daosession
-def get(session, device_id):
+def get(device_id):
+    provd_device = _get_provd_device(device_id)
+    provd_config = _find_provd_config(provd_device)
+
+    return Device.from_provd(provd_device, provd_config)
+
+
+def _get_provd_device(device_id):
+    device_manager = provd_connector.device_manager()
+
     try:
-        res = (session.query(DeviceSchema).filter(DeviceSchema.id == int(device_id))).first()
-    except ValueError:
-        raise ElementNotExistsError('Device', id=device_id)
+        provd_device = device_manager.get(device_id)
+    except HTTPError as e:
+        if e.code == 404:
+            raise ElementNotExistsError('Device', id=device_id)
+        raise e
 
-    if not res:
-        raise ElementNotExistsError('Device', id=device_id)
+    return provd_device
 
-    return Device.from_data_source(res)
+
+def _find_provd_config(provd_device):
+    if 'config' not in provd_device:
+        return None
+
+    config_manager = provd_connector.config_manager()
+
+    provd_config = config_manager.get(provd_device['config'])
+
+    return provd_config
 
 
 @daosession

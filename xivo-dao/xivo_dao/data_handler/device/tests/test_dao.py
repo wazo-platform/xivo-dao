@@ -16,12 +16,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from hamcrest import *
+from mock import Mock, patch
+from urllib2 import HTTPError
+from StringIO import StringIO
+from contextlib import contextmanager
+
 from xivo_dao.data_handler.device import dao as device_dao
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.devicefeatures import DeviceFeatures as DeviceSchema
 from xivo_dao.data_handler.device.model import Device
-from mock import Mock, patch
-from xivo_dao.data_handler.exception import ElementDeletionError, ElementCreationError
+from xivo_dao.data_handler.exception import ElementDeletionError, ElementCreationError, \
+    ElementNotExistsError
 
 
 class TestDeviceDao(DAOTestCase):
@@ -38,31 +43,135 @@ class TestDeviceDao(DAOTestCase):
 
     def setUp(self):
         self.empty_tables()
+        self.deviceid = "ad0a12fd5f244ae68a3c626789203698"
+
+    @contextmanager
+    def provd_managers(self):
+        config_patcher = patch('xivo_dao.helpers.provd_connector.config_manager')
+        device_patcher = patch('xivo_dao.helpers.provd_connector.device_manager')
+        plugin_patcher = patch('xivo_dao.helpers.provd_connector.plugin_manager')
+
+        mock_device_manager = device_patcher.start()
+        mock_config_manager = config_patcher.start()
+        mock_plugin_manager = plugin_patcher.start()
+
+        device_manager = Mock()
+        config_manager = Mock()
+        plugin_manager = Mock()
+
+        mock_device_manager.return_value = device_manager
+        mock_config_manager.return_value = config_manager
+        mock_plugin_manager.return_value = plugin_manager
+
+        yield (device_manager, config_manager, plugin_manager)
+
+        config_patcher.stop()
+        device_patcher.stop()
+        plugin_patcher.stop()
 
     def test_get_no_device(self):
-        self.assertRaises(LookupError, device_dao.get, '666')
+        with self.provd_managers() as (device_manager, config_manager, _):
+
+            device_manager.get.side_effect = HTTPError('', 404, '', '', StringIO(''))
+
+            self.assertRaises(ElementNotExistsError, device_dao.get, self.deviceid)
+            device_manager.get.assert_called_once_with(self.deviceid)
+
+    def test_get_no_template(self):
+        expected_device = Device(
+            id=self.deviceid,
+            ip='10.0.0.1',
+            mac='00:11:22:33:44:55',
+            model='6731i',
+            vendor='Aastra',
+            version='3.2.2.3077',
+            plugin='xivo-aastra-3.2.2-SP3',
+        )
+
+        provd_device = {
+            u'added': u'auto',
+            u'configured': True,
+            u'id': expected_device.id,
+            u'ip': expected_device.ip,
+            u'mac': expected_device.mac,
+            u'model': expected_device.model,
+            u'plugin': expected_device.plugin,
+            u'vendor': expected_device.vendor,
+            u'version': expected_device.version,
+        }
+
+        with self.provd_managers() as (device_manager, config_manager, _):
+            device_manager.get.return_value = provd_device
+
+            device = device_dao.get(expected_device.id)
+
+            assert_that(device, all_of(
+                has_property('id', expected_device.id),
+                has_property('ip', expected_device.ip),
+                has_property('mac', expected_device.mac),
+                has_property('model', expected_device.model),
+                has_property('vendor', expected_device.vendor),
+                has_property('version', expected_device.version),
+                has_property('plugin', expected_device.plugin),
+            ))
+
+            device_manager.get.assert_called_once_with(expected_device.id)
+            assert_that(config_manager.get.call_count, equal_to(0))
 
     def test_get(self):
-        deviceid = 'sdklfj'
+        config_id = 'abcdefghijklmnopqurstuvwxyz123456'
 
-        expected_device = self.add_device(deviceid=deviceid)
+        expected_device = Device(
+            id=self.deviceid,
+            ip='10.0.0.1',
+            mac='00:11:22:33:44:55',
+            model='6731i',
+            vendor='Aastra',
+            version='3.2.2.3077',
+            plugin='xivo-aastra-3.2.2-SP3',
+            template_id='defaultconfigdevice'
+        )
 
-        device = device_dao.get(expected_device.id)
+        provd_device = {
+            u'added': u'auto',
+            u'config': config_id,
+            u'configured': True,
+            u'id': expected_device.id,
+            u'ip': expected_device.ip,
+            u'mac': expected_device.mac,
+            u'model': expected_device.model,
+            u'plugin': expected_device.plugin,
+            u'vendor': expected_device.vendor,
+            u'version': expected_device.version,
+        }
 
-        assert_that(device.deviceid, equal_to(deviceid))
+        provd_config = {
+            u'configdevice': u'defaultconfigdevice',
+            u'deletable': True,
+            u'id': config_id,
+            u'parent_ids': [u'base', u'defaultconfigdevice'],
+            u'raw_config': {}
+        }
 
-    def test_get_by_deviceid_no_device(self):
-        self.assertRaises(LookupError, device_dao.get_by_deviceid, '1234')
+        with self.provd_managers() as (device_manager, config_manager, _):
+            device_manager.get.return_value = provd_device
+            config_manager.get.return_value = provd_config
 
-    def test_get_by_deviceid(self):
-        deviceid = 'sdklfj'
+            device = device_dao.get(expected_device.id)
 
-        expected_device = self.add_device(deviceid=deviceid)
+            assert_that(device, all_of(
+                has_property('id', expected_device.id),
+                has_property('ip', expected_device.ip),
+                has_property('mac', expected_device.mac),
+                has_property('model', expected_device.model),
+                has_property('vendor', expected_device.vendor),
+                has_property('version', expected_device.version),
+                has_property('plugin', expected_device.plugin),
+                has_property('template_id', expected_device.template_id)
+            ))
 
-        device = device_dao.get_by_deviceid(deviceid)
-
-        assert_that(device.id, equal_to(expected_device.id))
-        assert_that(device.deviceid, equal_to(deviceid))
+            device_manager.get.assert_called_once_with(expected_device.id)
+            config_manager.get.assert_called_once_with(config_id)
 
     def test_find_not_found(self):
         device_id = 39784

@@ -31,7 +31,10 @@ class Device(AbstractModels):
         'plugin',
         'vendor',
         'model',
+        'version',
     ]
+
+    CONFIG_PARENTS = ['base', 'defaultconfigdevice']
 
     # mapping = {db_field: model_field}
     _MAPPING = {
@@ -58,6 +61,20 @@ class Device(AbstractModels):
     def __init__(self, *args, **kwargs):
         AbstractModels.__init__(self, *args, **kwargs)
 
+    @classmethod
+    def from_provd(cls, device, config=None):
+        filtered_device = dict((key, value) for key, value in device.iteritems() if key in cls.PROVD_KEYS)
+        obj = cls(**filtered_device)
+
+        if config:
+            parents = set(cls.CONFIG_PARENTS) - set(config['parent_ids'])
+            if len(parents) == 0:
+                obj.template_id = 'defaultconfigdevice'
+            else:
+                obj.template_id = parents.pop()
+
+        return obj
+
     def to_provd_device(self):
         parameters = self._filter_device_parameters()
 
@@ -77,7 +94,7 @@ class Device(AbstractModels):
     def to_provd_config(self):
         template_id = getattr(self, 'template_id', 'defaultconfigdevice')
 
-        parent_ids = ['base', 'defaultconfigdevice']
+        parent_ids = list(self.CONFIG_PARENTS)
         if template_id not in parent_ids:
             parent_ids.append(template_id)
 
