@@ -173,6 +173,61 @@ class TestDeviceDao(DAOTestCase):
             device_manager.get.assert_called_once_with(expected_device.id)
             config_manager.get.assert_called_once_with(config_id)
 
+    def test_get_custom_template(self):
+        config_id = 'abcdefghijklmnopqurstuvwxyz123456'
+
+        expected_device = Device(
+            id=self.deviceid,
+            ip='10.0.0.1',
+            mac='00:11:22:33:44:55',
+            model='6731i',
+            vendor='Aastra',
+            version='3.2.2.3077',
+            plugin='xivo-aastra-3.2.2-SP3',
+            template_id='mytemplate'
+        )
+
+        provd_device = {
+            u'added': u'auto',
+            u'config': config_id,
+            u'configured': True,
+            u'id': expected_device.id,
+            u'ip': expected_device.ip,
+            u'mac': expected_device.mac,
+            u'model': expected_device.model,
+            u'plugin': expected_device.plugin,
+            u'vendor': expected_device.vendor,
+            u'version': expected_device.version,
+        }
+
+        provd_config = {
+            u'configdevice': u'defaultconfigdevice',
+            u'deletable': True,
+            u'id': config_id,
+            u'parent_ids': [u'base', u'defaultconfigdevice', 'mytemplate'],
+            u'raw_config': {}
+        }
+
+        with self.provd_managers() as (device_manager, config_manager, _):
+            device_manager.get.return_value = provd_device
+            config_manager.get.return_value = provd_config
+
+            device = device_dao.get(expected_device.id)
+
+            assert_that(device, all_of(
+                has_property('id', expected_device.id),
+                has_property('ip', expected_device.ip),
+                has_property('mac', expected_device.mac),
+                has_property('model', expected_device.model),
+                has_property('vendor', expected_device.vendor),
+                has_property('version', expected_device.version),
+                has_property('plugin', expected_device.plugin),
+                has_property('template_id', expected_device.template_id)
+            ))
+
+            device_manager.get.assert_called_once_with(expected_device.id)
+            config_manager.get.assert_called_once_with(config_id)
+
     def test_find_not_found(self):
         device_id = 39784
 

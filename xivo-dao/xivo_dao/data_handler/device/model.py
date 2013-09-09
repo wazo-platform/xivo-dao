@@ -67,7 +67,7 @@ class Device(AbstractModels):
         obj = cls(**filtered_device)
 
         if config:
-            parents = set(cls.CONFIG_PARENTS) - set(config['parent_ids'])
+            parents = set(config['parent_ids']) - set(cls.CONFIG_PARENTS)
             if len(parents) == 0:
                 obj.template_id = 'defaultconfigdevice'
             else:
