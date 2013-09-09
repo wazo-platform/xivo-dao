@@ -239,18 +239,6 @@ class TestDeviceDao(DAOTestCase):
             self._has_properties(device2),
         ))
 
-    def test_delete(self):
-        deviceid = 'sdklfj'
-        expected_extension = self.add_device(deviceid=deviceid)
-
-        extension = device_dao.get(expected_extension.id)
-
-        device_dao.delete(extension)
-
-        row = self.session.query(DeviceSchema).filter(DeviceSchema.id == expected_extension.id).first()
-
-        self.assertEquals(row, None)
-
     def test_delete_not_exist(self):
         extension = Device(id=1)
 
