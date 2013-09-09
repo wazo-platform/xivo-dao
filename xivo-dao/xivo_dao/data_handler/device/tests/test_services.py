@@ -26,10 +26,8 @@ from xivo_dao.data_handler.line.model import LineSIP, LineSCCP
 from xivo_dao.data_handler.user_line_extension.model import UserLineExtension
 from xivo_dao.data_handler.exception import ElementCreationError, \
     InvalidParametersError, ElementDeletionError, ElementNotExistsError, \
-    ElementAlreadyExistsError, NonexistentParametersError, \
-    ElementSynchronizeError, ElementAutoprovError
+    ElementAlreadyExistsError, NonexistentParametersError, ProvdError
 from xivo_dao.helpers import provd_connector
-from xivo_dao.helpers.provd_connector import ProvdError
 
 
 class TestDeviceServices(unittest.TestCase):
@@ -735,9 +733,9 @@ class TestDeviceServices(unittest.TestCase):
     def test_synchronize_with_error(self, device_manager):
         device = Device(id=self.device_id)
 
-        device_manager().synchronize.side_effect = ElementSynchronizeError('device', '')
+        device_manager().synchronize.side_effect = ProvdError('device', '')
 
-        self.assertRaises(ElementSynchronizeError, device_services.synchronize, device)
+        self.assertRaises(ProvdError, device_services.synchronize, device)
         device_manager().synchronize.assert_called_with(self.device_id)
 
     @patch('xivo_dao.helpers.provd_connector.config_manager')
@@ -763,9 +761,9 @@ class TestDeviceServices(unittest.TestCase):
     def test_autoprov_with_error(self, device_manager, config_manager):
         device = Device(id=self.device_id)
 
-        device_manager().update.side_effect = ElementAutoprovError('device', '')
+        device_manager().update.side_effect = ProvdError('device', '')
 
-        self.assertRaises(ElementAutoprovError, device_services.reset_to_autoprov, device)
+        self.assertRaises(ProvdError, device_services.reset_to_autoprov, device)
 
     def _give_me_a_provd_configregistrar(self, proxy_main, proxy_backup=None):
         config_registrar_dict = {

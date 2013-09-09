@@ -77,15 +77,10 @@ class ElementDeletionError(IOError):
         IOError.__init__(self, message)
 
 
-class ElementSynchronizeError(IOError):
+class ProvdError(Exception):
+    def __init__(self, value, message):
+        self.value = value
+        self.message = message
 
-    def __init__(self, element, error):
-        message = "error while synchronize %s: %s" % (element, unicode(error))
-        IOError.__init__(self, message)
-
-
-class ElementAutoprovError(IOError):
-
-    def __init__(self, element, error):
-        message = "error while reset to autoprov %s: %s" % (element, unicode(error))
-        IOError.__init__(self, message)
+    def __str__(self):
+        return "provd: %s, %s" % (self.value, self.message)
