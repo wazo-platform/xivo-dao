@@ -82,3 +82,10 @@ class ElementSynchronizeError(IOError):
     def __init__(self, element, error):
         message = "error while synchronize %s: %s" % (element, unicode(error))
         IOError.__init__(self, message)
+
+
+class ElementAutoprovError(IOError):
+
+    def __init__(self, element, error):
+        message = "error while reset to autoprov %s: %s" % (element, unicode(error))
+        IOError.__init__(self, message)

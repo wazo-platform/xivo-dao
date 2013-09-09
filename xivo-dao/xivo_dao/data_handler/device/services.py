@@ -25,7 +25,7 @@ from xivo_dao.data_handler.extension import dao as extension_dao
 from xivo_dao.data_handler.line import dao as line_dao
 from xivo_dao.data_handler.exception import InvalidParametersError, \
     ElementNotExistsError, ElementDeletionError, ElementAlreadyExistsError, \
-    NonexistentParametersError, ElementSynchronizeError
+    NonexistentParametersError, ElementSynchronizeError, ElementAutoprovError
 from xivo_dao.helpers.provd_connector import ProvdError
 from xivo import caller_id
 
@@ -198,10 +198,13 @@ def remove_line_from_device(device, line):
 def reset_to_autoprov(device):
     provd_device_manager = provd_connector.device_manager()
     provd_config_manager = provd_connector.config_manager()
-    device = provd_device_manager.get(device.id)
-    new_configid = provd_config_manager.autocreate()
-    device['config'] = new_configid
-    provd_device_manager.update(device)
+    try:
+        device = provd_device_manager.get(device.id)
+        new_configid = provd_config_manager.autocreate()
+        device['config'] = new_configid
+        provd_device_manager.update(device)
+    except Exception as e:
+        raise ElementAutoprovError('device', e)
 
 
 def synchronize(device):
