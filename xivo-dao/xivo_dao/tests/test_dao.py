@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+import datetime
 import logging
 import random
 import unittest
@@ -33,6 +34,7 @@ from xivo_dao.alchemy.sccpline import SCCPLine as SCCPLineSchema
 from xivo_dao.alchemy.usercustom import UserCustom as UserCustomSchema
 from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.dialpattern import DialPattern
+from xivo_dao.alchemy.cel import CEL as CELSchema
 
 logger = logging.getLogger(__name__)
 
@@ -205,6 +207,33 @@ class DAOTestCase(unittest.TestCase):
         sccpline = SCCPLineSchema(**kwargs)
         self.add_me(sccpline)
         return sccpline
+
+    def add_cel(self):
+        cel = CELSchema(
+            id=self._generate_id(),
+            eventtype='eventtype',
+            eventtime=datetime.datetime.now(),
+            userdeftype='userdeftype',
+            cid_name='cid_name',
+            cid_num='cid_num',
+            cid_ani='cid_ani',
+            cid_rdnis='cid_rdnis',
+            cid_dnid='cid_dnid',
+            exten='exten',
+            context='context',
+            channame='channame',
+            appname='appname',
+            appdata='appdata',
+            amaflags=0,
+            accountcode='accountcode',
+            peeraccount='peeraccount',
+            uniqueid='uniqueid',
+            linkedid='linkedid',
+            userfield='userfield',
+            peer='peer',
+        )
+        self.add_me(cel)
+        return cel.id
 
     def add_me(self, obj):
         self.session.begin()
