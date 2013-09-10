@@ -21,7 +21,7 @@ from xivo_dao.alchemy.devicefeatures import DeviceFeatures as DeviceSchema
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.data_handler.device.model import Device, DeviceOrdering
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
-    ElementDeletionError, ElementCreationError, InvalidParametersError
+    ElementDeletionError, ElementCreationError, InvalidParametersError, ElementEditionError
 from sqlalchemy.exc import SQLAlchemyError
 from xivo_dao.helpers import provd_connector
 
@@ -163,7 +163,23 @@ def _create_provd_device(device):
 
 
 def edit(device):
-    raise NotImplementedError()
+    device_manager = provd_connector.device_manager()
+    config_manager = provd_connector.config_manager()
+
+    provd_device = device_manager.get(device.id)
+    provd_config = _find_provd_config(provd_device)
+
+    device.update_provd(provd_device, provd_config)
+
+    try:
+        config_manager.update(provd_config)
+    except Exception as e:
+        raise ElementEditionError('device', e)
+
+    try:
+        device_manager.update(provd_device)
+    except Exception as e:
+        raise ElementEditionError('device', e)
 
 
 def _create_provd_config(device):

@@ -35,7 +35,7 @@ class Device(AbstractModels):
         'description',
     ]
 
-    CONFIG_PARENTS = ['base', 'defaultconfigdevice']
+    CONFIG_PARENTS = ['base']
 
     # mapping = {db_field: model_field}
     _MAPPING = {
@@ -67,12 +67,8 @@ class Device(AbstractModels):
         filtered_device = dict((key, value) for key, value in device.iteritems() if key in cls.PROVD_KEYS)
         obj = cls(**filtered_device)
 
-        if config:
-            parents = set(config['parent_ids']) - set(cls.CONFIG_PARENTS)
-            if len(parents) == 0:
-                obj.template_id = 'defaultconfigdevice'
-            else:
-                obj.template_id = parents.pop()
+        if config and 'configdevice' in config:
+            obj.template_id = config['configdevice']
 
         return obj
 
@@ -84,6 +80,9 @@ class Device(AbstractModels):
 
         return parameters
 
+    def get_template_id(self):
+        return getattr(self, 'template_id', 'defaultconfigdevice')
+
     def _filter_device_parameters(self):
         parameters = {}
         for key in self.PROVD_KEYS:
@@ -93,19 +92,51 @@ class Device(AbstractModels):
         return parameters
 
     def to_provd_config(self):
-        template_id = getattr(self, 'template_id', 'defaultconfigdevice')
+        provd_config = {'id': self.id, 'deletable': True}
 
-        parent_ids = list(self.CONFIG_PARENTS)
+        self._update_base_config(provd_config)
+        provd_config['parent_ids'] = self._update_parent_ids(self.CONFIG_PARENTS)
+        provd_config['raw_config'] = self._update_raw_config({})
+
+        return provd_config
+
+    def update_provd(self, provd_device, provd_config=None):
+        self._update_provd_device(provd_device)
+        self._update_provd_config(provd_config)
+
+    def _update_provd_device(self, provd_device):
+        provd_device.update(self.to_provd_device())
+
+    def _update_provd_config(self, provd_config):
+        if not provd_config:
+            return
+
+        parent_ids = provd_config.pop('parent_ids', [])
+        raw_config = provd_config.pop('raw_config', {})
+
+        if 'configdevice' in provd_config:
+            self._remove_old_configdevice(provd_config['configdevice'], parent_ids)
+
+        self._update_base_config(provd_config)
+        provd_config['parent_ids'] = self._update_parent_ids(parent_ids)
+        provd_config['raw_config'] = self._update_raw_config(raw_config)
+
+    def _remove_old_configdevice(self, configdevice, parent_ids):
+        if configdevice in parent_ids:
+            parent_ids.remove(configdevice)
+
+    def _update_base_config(self, provd_config):
+        provd_config['configdevice'] = self.get_template_id()
+
+    def _update_parent_ids(self, parent_ids):
+        parent_ids = list(parent_ids)
+        template_id = self.get_template_id()
         if template_id not in parent_ids:
             parent_ids.append(template_id)
+        return parent_ids
 
-        return {
-            'id': self.id,
-            'configdevice': template_id,
-            'deletable': True,
-            'parent_ids': parent_ids,
-            'raw_config': {}
-        }
+    def _update_raw_config(self, raw_config):
+        return raw_config
 
 
 class DeviceOrdering(object):

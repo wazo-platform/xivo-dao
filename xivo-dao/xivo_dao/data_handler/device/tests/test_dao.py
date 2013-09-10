@@ -26,7 +26,7 @@ from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.devicefeatures import DeviceFeatures as DeviceSchema
 from xivo_dao.data_handler.device.model import Device
 from xivo_dao.data_handler.exception import ElementDeletionError, ElementCreationError, \
-    ElementNotExistsError
+    ElementNotExistsError, ElementEditionError
 
 
 class TestDeviceDao(DAOTestCase):
@@ -150,6 +150,8 @@ class TestDeviceDao(DAOTestCase):
 
             device = device_dao.get(expected_device.id)
 
+            print device.to_data_dict()
+            print expected_device.to_data_dict()
             assert_that(device, equal_to(expected_device))
             device_manager.get.assert_called_once_with(expected_device.id)
             config_manager.get.assert_called_once_with(self.deviceid)
@@ -454,6 +456,216 @@ class TestDeviceDao(DAOTestCase):
 
             self.assertRaises(ElementCreationError, device_dao.create, device)
             device_manager.remove.assert_called_once_with(device_id)
+
+    def test_edit_with_an_empty_device_and_no_config(self):
+        device = Device(id=self.deviceid)
+
+        expected_provd_device = {
+            'configured': False,
+            'id': self.deviceid
+        }
+
+        with self.provd_managers() as (device_manager, config_manager, _):
+            device_manager.get.return_value = expected_provd_device
+
+            device_dao.edit(device)
+
+            device_manager.update.assert_called_once_with(expected_provd_device)
+            assert_that(config_manager.call_count, equal_to(0))
+
+    def test_edit_with_new_properties_and_no_config(self):
+        device = Device(
+            id=self.deviceid,
+            ip='10.0.0.1',
+            mac='00:11:22:33:44:55',
+            plugin='aastraplugin',
+            model='6735i',
+            vendor='Aastra',
+            version='0.0.1'
+        )
+
+        provd_device = {
+            'configured': False,
+            'id': self.deviceid
+        }
+
+        expected_provd_device = {
+            'configured': False,
+            'id': self.deviceid,
+            'ip': '10.0.0.1',
+            'mac': '00:11:22:33:44:55',
+            'plugin': 'aastraplugin',
+            'model': '6735i',
+            'vendor': 'Aastra',
+            'version': '0.0.1'
+        }
+
+        with self.provd_managers() as (device_manager, config_manager, _):
+            device_manager.get.return_value = provd_device
+
+            device_dao.edit(device)
+
+            device_manager.update.assert_called_once_with(expected_provd_device)
+            assert_that(config_manager.call_count, equal_to(0))
+
+    def test_edit_with_a_template_id_and_a_bare_config(self):
+        config_id = 'abc123'
+
+        device = Device(
+            id=self.deviceid,
+            template_id='mytemplate'
+        )
+
+        provd_device = {
+            'configured': False,
+            'id': self.deviceid,
+            'config': config_id
+        }
+
+        provd_config = {
+            'configdevice': 'defaultconfigdevice',
+            'deletable': True,
+            'id': config_id,
+            'parent_ids': ['base', 'defaultconfigdevice'],
+            'raw_config': {}
+        }
+
+        expected_provd_device = {
+            'configured': False,
+            'id': self.deviceid,
+            'config': config_id
+        }
+
+        expected_provd_config = {
+            'configdevice': 'mytemplate',
+            'deletable': True,
+            'id': config_id,
+            'parent_ids': ['base', 'mytemplate'],
+            'raw_config': {}
+        }
+
+        with self.provd_managers() as (device_manager, config_manager, _):
+            device_manager.get.return_value = provd_device
+            config_manager.get.return_value = provd_config
+
+            device_dao.edit(device)
+
+            device_manager.update.assert_called_once_with(expected_provd_device)
+            config_manager.update.assert_called_once_with(expected_provd_config)
+
+    def test_edit_with_template_id_to_default(self):
+        config_id = 'abc123'
+
+        device = Device(
+            id=self.deviceid,
+            template_id='defaultconfigdevice'
+        )
+
+        provd_device = {
+            'configured': True,
+            'id': self.deviceid,
+            'config': config_id
+        }
+
+        provd_config = {
+            'configdevice': 'mytemplate',
+            'deletable': True,
+            'id': config_id,
+            'parent_ids': ['base', 'defaultconfigdevice', 'mytemplate'],
+            'raw_config': {
+            }
+        }
+
+        expected_provd_device = {
+            'configured': True,
+            'id': self.deviceid,
+            'config': config_id
+        }
+
+        expected_provd_config = {
+            'configdevice': 'defaultconfigdevice',
+            'deletable': True,
+            'id': config_id,
+            'parent_ids': ['base', 'defaultconfigdevice'],
+            'raw_config': {
+            }
+        }
+
+        with self.provd_managers() as (device_manager, config_manager, _):
+            device_manager.get.return_value = provd_device
+            config_manager.get.return_value = provd_config
+
+            device_dao.edit(device)
+
+            device_manager.update.assert_called_once_with(expected_provd_device)
+            config_manager.update.assert_called_once_with(expected_provd_config)
+
+    def test_edit_with_a_template_id_and_a_custom_config(self):
+        config_id = 'abc123'
+
+        device = Device(
+            id=self.deviceid,
+            template_id='mytemplate'
+        )
+
+        provd_device = {
+            'configured': True,
+            'id': self.deviceid,
+            'config': config_id
+        }
+
+        provd_config = {
+            'configdevice': 'defaultconfigdevice',
+            'deletable': True,
+            'id': config_id,
+            'parent_ids': ['base', 'defaultconfigdevice'],
+            'raw_config': {
+            }
+        }
+
+        expected_provd_device = {
+            'configured': True,
+            'id': self.deviceid,
+            'config': config_id
+        }
+
+        expected_provd_config = {
+            'configdevice': 'mytemplate',
+            'deletable': True,
+            'id': config_id,
+            'parent_ids': ['base', 'mytemplate'],
+            'raw_config': {
+            }
+        }
+
+        with self.provd_managers() as (device_manager, config_manager, _):
+            device_manager.get.return_value = provd_device
+            config_manager.get.return_value = provd_config
+
+            device_dao.edit(device)
+
+            device_manager.update.assert_called_once_with(expected_provd_device)
+            config_manager.update.assert_called_once_with(expected_provd_config)
+
+    def test_edit_with_error_on_config_update(self):
+        device = Device(id=self.deviceid)
+
+        with self.provd_managers() as (device_manager, config_manager, _):
+            device_manager.get.return_value = self.provd_device
+            config_manager.get.return_value = self.provd_config
+            config_manager.update.side_effect = Exception
+
+            self.assertRaises(ElementEditionError, device_dao.edit, device)
+
+    def test_edit_with_error_on_device_update(self):
+        device = Device(id=self.deviceid)
+
+        with self.provd_managers() as (device_manager, config_manager, _):
+            device_manager.get.return_value = self.provd_device
+            config_manager.get.return_value = self.provd_config
+            device_manager.update.side_effect = Exception
+
+            self.assertRaises(ElementEditionError, device_dao.edit, device)
 
     @patch('xivo_dao.helpers.provd_connector.device_manager')
     def test_mac_exists_no_mac(self, mock_device_manager):
