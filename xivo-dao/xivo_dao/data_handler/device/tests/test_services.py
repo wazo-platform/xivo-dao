@@ -199,8 +199,17 @@ class TestDeviceServices(unittest.TestCase):
         self.assertEquals(notifier_created.call_count, 0)
         validate_create.assert_called_once_with(device)
 
+    @patch('xivo_dao.data_handler.device.notifier.edited')
+    @patch('xivo_dao.data_handler.device.dao.edit')
+    @patch('xivo_dao.data_handler.device.validator.validate_edit')
+    def test_edit(self, device_validate, dao_edit, notifier_edit):
+        device = Mock(Device)
 
+        device_services.edit(device)
 
+        device_validate.assert_called_once_with(device)
+        dao_edit.assert_called_once_with(device)
+        notifier_edit.assert_called_once_with(device)
 
     @patch('xivo_dao.data_handler.device.dao.get', Mock(return_value=None))
     @patch('xivo_dao.helpers.provd_connector.config_manager')

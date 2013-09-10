@@ -66,6 +66,13 @@ def create(device):
     return device
 
 
+def edit(device):
+    validator.validate_edit(device)
+    dao.edit(device)
+    notifier.edited(device)
+    return device
+
+
 def delete(device):
     try:
         get(device.id)

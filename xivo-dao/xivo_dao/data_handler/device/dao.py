@@ -162,6 +162,10 @@ def _create_provd_device(device):
         raise ElementCreationError('device', e)
 
 
+def edit(device):
+    raise NotImplementedError()
+
+
 def _create_provd_config(device):
     config_manager = provd_connector.config_manager()
     provd_config = device.to_provd_config()
