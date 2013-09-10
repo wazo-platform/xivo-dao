@@ -140,6 +140,8 @@ class TestDeviceDao(DAOTestCase):
         expected_device = Device(**properties)
 
         provd_config = dict(self.provd_config)
+        provd_config['configdevice'] = 'mytemplate'
+        provd_config['parent_ids'].remove('defaultconfigdevice')
         provd_config['parent_ids'].append('mytemplate')
 
         with self.provd_managers() as (device_manager, config_manager, _):
@@ -400,7 +402,7 @@ class TestDeviceDao(DAOTestCase):
             'configdevice': template_id,
             'deletable': True,
             'id': device_id,
-            'parent_ids': ['base', 'defaultconfigdevice', template_id],
+            'parent_ids': ['base', template_id],
             'raw_config': {}
         }
 
