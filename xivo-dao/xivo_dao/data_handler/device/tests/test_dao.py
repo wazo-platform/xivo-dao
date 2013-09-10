@@ -23,7 +23,6 @@ from contextlib import contextmanager
 
 from xivo_dao.data_handler.device import dao as device_dao
 from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao.alchemy.devicefeatures import DeviceFeatures as DeviceSchema
 from xivo_dao.data_handler.device.model import Device
 from xivo_dao.data_handler.exception import ElementDeletionError, ElementCreationError, \
     ElementNotExistsError
@@ -31,12 +30,7 @@ from xivo_dao.data_handler.exception import ElementDeletionError, ElementCreatio
 
 class TestDeviceDao(DAOTestCase):
 
-    tables = [
-        DeviceSchema
-    ]
-
     def setUp(self):
-        self.empty_tables()
         self.deviceid = "ad0a12fd5f244ae68a3c626789203698"
 
         self.provd_device = {

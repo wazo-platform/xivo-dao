@@ -61,7 +61,7 @@ class DAOTestCase(unittest.TestCase):
         logger.debug("Cleaning tables")
         cls.session.begin()
 
-        if cls.tables:
+        if hasattr(cls, 'tables') and cls.tables:
             engine = cls.engine
 
             meta = MetaData(engine)
