@@ -733,7 +733,7 @@ class TestDeviceServices(unittest.TestCase):
     def test_synchronize_with_error(self, device_manager):
         device = Device(id=self.device_id)
 
-        device_manager().synchronize.side_effect = ProvdError('device', '')
+        device_manager().synchronize.side_effect = Exception('')
 
         self.assertRaises(ProvdError, device_services.synchronize, device)
         device_manager().synchronize.assert_called_with(self.device_id)
@@ -761,7 +761,7 @@ class TestDeviceServices(unittest.TestCase):
     def test_autoprov_with_error(self, device_manager, config_manager):
         device = Device(id=self.device_id)
 
-        device_manager().update.side_effect = ProvdError('device', '')
+        device_manager().update.side_effect = Exception('')
 
         self.assertRaises(ProvdError, device_services.reset_to_autoprov, device)
 
