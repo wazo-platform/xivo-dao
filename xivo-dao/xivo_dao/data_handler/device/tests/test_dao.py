@@ -45,6 +45,40 @@ class TestDeviceDao(DAOTestCase):
         self.empty_tables()
         self.deviceid = "ad0a12fd5f244ae68a3c626789203698"
 
+        self.provd_device = {
+            u'added': u'auto',
+            u'configured': True,
+            u'id': self.deviceid,
+            u'ip': '10.0.0.1',
+            u'config': self.deviceid,
+            u'mac': '00:11:22:33:44:55',
+            u'model': '6731i',
+            u'plugin': 'xivo-aastra-3.2.2-SP3',
+            u'vendor': 'Aastra',
+            u'version': '3.2.2.3077',
+        }
+
+        self.provd_config = {
+            u'configdevice': u'defaultconfigdevice',
+            u'deletable': True,
+            u'id': self.deviceid,
+            u'parent_ids': [u'base', u'defaultconfigdevice'],
+            u'raw_config': {}
+        }
+
+        self.device_properties = {
+            'id': self.deviceid,
+            'ip': '10.0.0.1',
+            'mac': '00:11:22:33:44:55',
+            'model': '6731i',
+            'plugin': 'xivo-aastra-3.2.2-SP3',
+            'vendor': 'Aastra',
+            'version': '3.2.2.3077',
+            'template_id': 'defaultconfigdevice',
+        }
+
+        self.expected_device = Device(**self.device_properties)
+
     @contextmanager
     def provd_managers(self):
         config_patcher = patch('xivo_dao.helpers.provd_connector.config_manager')
@@ -229,70 +263,140 @@ class TestDeviceDao(DAOTestCase):
             config_manager.get.assert_called_once_with(config_id)
 
     def test_find_not_found(self):
-        device_id = 39784
+        device_id = 'abcd'
 
-        result = device_dao.find(device_id)
+        with self.provd_managers() as (device_manager, _, _):
+            device_manager.find.return_value = []
 
-        assert_that(result, none())
+            result = device_dao.find(device_id)
+            device_manager.find.assert_called_once_with({'id': device_id})
+
+            assert_that(result, none())
 
     def test_find_found(self):
-        device_id = 39784
-        device_row = self.add_device(deviceid=device_id)
-        expected_device = Device.from_data_source(device_row)
+        with self.provd_managers() as (device_manager, config_manager, _):
+            device_manager.find.return_value = [self.provd_device]
+            config_manager.get.return_value = self.provd_config
 
-        result = device_dao.find(expected_device.id)
+            result = device_dao.find(self.deviceid)
 
-        assert_that(result, equal_to(expected_device))
+            assert_that(result, equal_to(self.expected_device))
+            device_manager.find.assert_called_once_with({'id': self.deviceid})
 
     def test_find_all_no_devices(self):
         expected = []
 
-        result = device_dao.find_all()
+        with self.provd_managers() as (device_manager, config_manager, _):
+            device_manager.find.return_value = []
 
-        assert_that(result, equal_to(expected))
+            result = device_dao.find_all()
+
+            assert_that(result, equal_to(expected))
+            device_manager.find.assert_called_once_with()
+
+    def test_find_all_with_parameters(self):
+        expected = [self.expected_device]
+
+        with self.provd_managers() as (device_manager, config_manager, _):
+            device_manager.find.return_value = [self.provd_device]
+            config_manager.get.return_value = self.provd_config
+
+            result = device_dao.find_all(order='ip', direction='desc', limit=1, skip=1)
+
+            assert_that(result, equal_to(expected))
+            device_manager.find.assert_called_once_with(sort=('ip', -1), limit=1, skip=1)
+
+    def test_find_all_with_sort(self):
+        expected = [self.expected_device]
+
+        with self.provd_managers() as (device_manager, config_manager, _):
+            device_manager.find.return_value = [self.provd_device]
+            config_manager.get.return_value = self.provd_config
+
+            result = device_dao.find_all(order='ip')
+
+            assert_that(result, equal_to(expected))
+            device_manager.find.assert_called_once_with(sort=('ip', 1))
+
+    def test_find_all_with_sort_and_order(self):
+        expected = [self.expected_device]
+
+        with self.provd_managers() as (device_manager, config_manager, _):
+            device_manager.find.return_value = [self.provd_device]
+            config_manager.get.return_value = self.provd_config
+
+            result = device_dao.find_all(order='ip', direction='asc')
+
+            assert_that(result, equal_to(expected))
+            device_manager.find.assert_called_once_with(sort=('ip', 1))
 
     def test_find_all(self):
         device1 = {
-            'deviceid': 'deviceid1',
-            'config': 'config1',
+            'id': 'id1',
             'plugin': 'plugin1',
             'ip': 'ip1',
             'mac': 'mac1',
-            'sn': 'sn1',
             'vendor': 'vendor1',
             'model': 'model1',
             'version': 'version1',
-            'proto': 'proto1',
-            'internal': 1,
-            'configured': 1,
-            'commented': 1,
-            'description': 'description1'
+            'description': 'description1',
+            'template_id': 'defaultconfigdevice',
         }
+
         device2 = {
-            'deviceid': 'deviceid2',
-            'config': 'config2',
+            'id': 'id2',
             'plugin': 'plugin2',
             'ip': 'ip2',
             'mac': 'mac2',
-            'sn': 'sn2',
             'vendor': 'vendor2',
             'model': 'model2',
             'version': 'version2',
-            'proto': 'proto2',
-            'internal': 2,
-            'configured': 2,
-            'commented': 2,
-            'description': 'description2'
+            'description': 'description2',
+            'template_id': 'defaultconfigdevice',
         }
-        self.add_device(**device1)
-        self.add_device(**device2)
 
-        result = device_dao.find_all()
+        provd_device1 = {
+            u'added': u'auto',
+            u'configured': True,
+            u'config': 'config1',
+            u'id': 'id1',
+            u'ip': 'ip1',
+            u'mac': 'mac1',
+            u'model': 'model1',
+            u'plugin': 'plugin1',
+            u'vendor': 'vendor1',
+            u'version': 'version1',
+            u'description': 'description1',
+        }
 
-        assert_that(result, has_items(
-            self._has_properties(device1),
-            self._has_properties(device2),
-        ))
+        provd_device2 = {
+            u'added': u'auto',
+            u'configured': True,
+            u'config': 'config2',
+            u'id': 'id2',
+            u'ip': 'ip2',
+            u'mac': 'mac2',
+            u'model': 'model2',
+            u'plugin': 'plugin2',
+            u'vendor': 'vendor2',
+            u'version': 'version2',
+            u'description': 'description2',
+        }
+
+        expected_device1 = Device(**device1)
+        expected_device2 = Device(**device2)
+
+        with self.provd_managers() as (device_manager, config_manager, _):
+            device_manager.find.return_value = [provd_device1, provd_device2]
+            config_manager.get.return_value = self.provd_config
+
+            result = device_dao.find_all()
+
+            assert_that(result, has_items(expected_device1, expected_device2))
+
+            device_manager.find.assert_called_once_with()
+            config_manager.get.assert_any_call(provd_device1['config'])
+            config_manager.get.assert_any_call(provd_device2['config'])
 
     def test_delete_not_exist(self):
         extension = Device(id=1)

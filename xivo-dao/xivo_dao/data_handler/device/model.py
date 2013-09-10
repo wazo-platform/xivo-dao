@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.helpers.abstract_model import AbstractModels
-from xivo_dao.alchemy.devicefeatures import DeviceFeatures as DeviceSchema
+from xivo_dao.data_handler.exception import InvalidParametersError
 
 
 class Device(AbstractModels):
@@ -32,6 +32,7 @@ class Device(AbstractModels):
         'vendor',
         'model',
         'version',
+        'description',
     ]
 
     CONFIG_PARENTS = ['base', 'defaultconfigdevice']
@@ -108,5 +109,36 @@ class Device(AbstractModels):
 
 
 class DeviceOrdering(object):
-    ip = DeviceSchema.ip
-    mac = DeviceSchema.mac
+    DIRECTIONS = ['desc', 'asc']
+
+    id = 'id'
+    ip = 'ip'
+    mac = 'mac'
+    plugin = 'plugin'
+    model = 'model'
+    vendor = 'vendor'
+    version = 'version'
+
+    @classmethod
+    def all_columns(cls):
+        return [cls.id, cls.ip, cls.mac, cls.plugin, cls.model, cls.vendor, cls.version]
+
+    @classmethod
+    def from_column_name(cls, column):
+        if column in cls.all_columns():
+            return column
+        return None
+
+    @classmethod
+    def directions(cls):
+        return cls.DIRECTIONS
+
+    @classmethod
+    def validate_order(cls, order):
+        if order not in cls.all_columns():
+            raise InvalidParametersError("ordering parameter '%s' does not exist" % order)
+
+    @classmethod
+    def validate_direction(cls, direction):
+        if direction not in cls.directions():
+            raise InvalidParametersError("direction parameter '%s' does not exist" % direction)

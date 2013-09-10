@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from . import dao
+from .model import DeviceOrdering
 from . import notifier
 import re
 from urllib2 import URLError
@@ -37,8 +38,29 @@ def get(device_id):
     return dao.get(device_id)
 
 
-def find_all():
-    return dao.find_all()
+def find_all(order=None, direction=None, skip=None, limit=None):
+    if order:
+        DeviceOrdering.validate_order(order)
+    if direction:
+        DeviceOrdering.validate_direction(direction)
+    if skip:
+        _validate_skip(skip)
+    if limit:
+        _validate_limit(limit)
+
+    return dao.find_all(order=order, direction=direction, skip=skip, limit=limit)
+
+
+def _validate_skip(skip):
+    if not (isinstance(skip, int) and skip > 0):
+        raise InvalidParametersError(["skip must be a positive number"])
+    return int(skip)
+
+
+def _validate_limit(limit):
+    if not (isinstance(limit, int) and limit > 0):
+        raise InvalidParametersError(["limit must be a positive number"])
+    return int(limit)
 
 
 def create(device):

@@ -21,7 +21,7 @@ from xivo_dao.alchemy.devicefeatures import DeviceFeatures as DeviceSchema
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.data_handler.device.model import Device, DeviceOrdering
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
-    ElementDeletionError, ElementCreationError
+    ElementDeletionError, ElementCreationError, InvalidParametersError
 from sqlalchemy.exc import SQLAlchemyError
 from xivo_dao.helpers import provd_connector
 
@@ -31,9 +31,7 @@ DEFAULT_ORDER = [DeviceOrdering.ip, DeviceOrdering.mac]
 
 def get(device_id):
     provd_device = _get_provd_device(device_id)
-    provd_config = _find_provd_config(provd_device)
-
-    return Device.from_provd(provd_device, provd_config)
+    return _build_device(provd_device)
 
 
 def _get_provd_device(device_id):
@@ -47,6 +45,11 @@ def _get_provd_device(device_id):
         raise e
 
     return provd_device
+
+
+def _build_device(provd_device):
+    provd_config = _find_provd_config(provd_device)
+    return Device.from_provd(provd_device, provd_config)
 
 
 def _find_provd_config(provd_device):
@@ -70,20 +73,57 @@ def get_by_deviceid(session, device_id):
     return Device.from_data_source(res)
 
 
-@daosession
-def find(session, device_id):
-    device_row = session.query(DeviceSchema).filter(DeviceSchema.id == device_id).first()
+def find(device_id):
+    device_manager = provd_connector.device_manager()
 
-    if device_row:
-        return Device.from_data_source(device_row)
-    return None
+    devices = device_manager.find({'id': device_id})
+    if len(devices) == 0:
+        return None
+
+    provd_device = devices[0]
+    return _build_device(provd_device)
 
 
-@daosession
-def find_all(session):
-    rows = (session.query(DeviceSchema).all())
+def find_all(order=None, direction=None, limit=None, skip=None):
+    parameters = _convert_provd_parameters(order, direction, limit, skip)
 
-    return [Device.from_data_source(row) for row in rows]
+    device_manager = provd_connector.device_manager()
+    provd_devices = device_manager.find(**parameters)
+
+    return [_build_device(d) for d in provd_devices]
+
+
+def _convert_provd_parameters(order, direction, limit, skip):
+    parameters = {}
+
+    sort = _convert_order_and_direction(order, direction)
+    if sort:
+        parameters['sort'] = sort
+
+    if limit:
+        parameters['limit'] = limit
+
+    if skip:
+        parameters['skip'] = skip
+
+    return parameters
+
+
+def _convert_order_and_direction(order, direction):
+    if direction and not order:
+        raise InvalidParametersError("cannot use a direction without an order")
+
+    if not order:
+        return None
+
+    if direction == 'asc':
+        sort_direction = 1
+    elif direction == 'desc':
+        sort_direction = -1
+    else:
+        sort_direction = 1
+
+    return (order, sort_direction)
 
 
 @daosession

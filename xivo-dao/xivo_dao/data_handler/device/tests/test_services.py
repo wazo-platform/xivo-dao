@@ -20,7 +20,7 @@ import unittest
 from mock import patch, Mock
 from urllib2 import URLError
 from xivo_dao.data_handler.device import services as device_services
-from xivo_dao.data_handler.device.model import Device
+from xivo_dao.data_handler.device.model import Device, DeviceOrdering
 from xivo_dao.data_handler.extension.model import Extension
 from xivo_dao.data_handler.line.model import LineSIP, LineSCCP
 from xivo_dao.data_handler.user_line_extension.model import UserLineExtension
@@ -50,6 +50,17 @@ class TestDeviceServices(unittest.TestCase):
         dao_get.assert_called_once_with(self.provd_deviceid)
 
     @patch('xivo_dao.data_handler.device.dao.find_all')
+    def test_find_all_no_devices(self, device_dao_find_all):
+        expected = []
+
+        device_dao_find_all.return_value = expected
+
+        result = device_services.find_all()
+
+        self.assertEquals(result, expected)
+        device_dao_find_all.assert_called_once_with(order=None, direction=None, skip=None, limit=None)
+
+    @patch('xivo_dao.data_handler.device.dao.find_all')
     def test_find_all(self, device_dao_find_all):
         first_device = Mock(Device)
         second_device = Mock(Device)
@@ -61,20 +72,79 @@ class TestDeviceServices(unittest.TestCase):
         result = device_services.find_all()
 
         self.assertEquals(result, expected)
-
-        device_dao_find_all.assert_called_once_with()
+        device_dao_find_all.assert_called_once_with(order=None, direction=None, skip=None, limit=None)
 
     @patch('xivo_dao.data_handler.device.dao.find_all')
-    def test_find_all_no_devices(self, device_dao_find_all):
-        expected = []
+    def test_find_all_with_invalid_order(self, device_dao_find_all):
+        self.assertRaises(InvalidParametersError, device_services.find_all, order='toto')
+        self.assertEquals(device_dao_find_all.call_count, 0)
+
+    @patch('xivo_dao.data_handler.device.dao.find_all')
+    def test_find_all_with_valid_order(self, device_dao_find_all):
+        device = Mock(Device)
+
+        expected = [device]
 
         device_dao_find_all.return_value = expected
 
-        result = device_services.find_all()
+        result = device_services.find_all(order=DeviceOrdering.ip)
 
         self.assertEquals(result, expected)
+        device_dao_find_all.assert_called_once_with(order=DeviceOrdering.ip, direction=None, skip=None, limit=None)
 
-        device_dao_find_all.assert_called_once_with()
+    @patch('xivo_dao.data_handler.device.dao.find_all')
+    def test_find_all_with_invalid_direction(self, device_dao_find_all):
+        self.assertRaises(InvalidParametersError, device_services.find_all, direction='toto')
+        self.assertEquals(device_dao_find_all.call_count, 0)
+
+    @patch('xivo_dao.data_handler.device.dao.find_all')
+    def test_find_all_with_valid_direction(self, device_dao_find_all):
+        device = Mock(Device)
+
+        expected = [device]
+
+        device_dao_find_all.return_value = expected
+
+        result = device_services.find_all(direction='desc')
+
+        self.assertEquals(result, expected)
+        device_dao_find_all.assert_called_once_with(order=None, direction='desc', skip=None, limit=None)
+
+    @patch('xivo_dao.data_handler.device.dao.find_all')
+    def test_find_all_with_invalid_limit(self, device_dao_find_all):
+        self.assertRaises(InvalidParametersError, device_services.find_all, limit=-1)
+        self.assertEquals(device_dao_find_all.call_count, 0)
+
+    @patch('xivo_dao.data_handler.device.dao.find_all')
+    def test_find_all_with_valid_limit(self, device_dao_find_all):
+        device = Mock(Device)
+
+        expected = [device]
+
+        device_dao_find_all.return_value = expected
+
+        result = device_services.find_all(limit=1)
+
+        self.assertEquals(result, expected)
+        device_dao_find_all.assert_called_once_with(order=None, direction=None, skip=None, limit=1)
+
+    @patch('xivo_dao.data_handler.device.dao.find_all')
+    def test_find_all_with_invalid_skip(self, device_dao_find_all):
+        self.assertRaises(InvalidParametersError, device_services.find_all, skip=-1)
+        self.assertEquals(device_dao_find_all.call_count, 0)
+
+    @patch('xivo_dao.data_handler.device.dao.find_all')
+    def test_find_all_with_valid_skip(self, device_dao_find_all):
+        device = Mock(Device)
+
+        expected = [device]
+
+        device_dao_find_all.return_value = expected
+
+        result = device_services.find_all(skip=1)
+
+        self.assertEquals(result, expected)
+        device_dao_find_all.assert_called_once_with(order=None, direction=None, skip=1, limit=None)
 
     @patch('xivo_dao.data_handler.device.dao.create')
     @patch('xivo_dao.data_handler.device.notifier.created')
