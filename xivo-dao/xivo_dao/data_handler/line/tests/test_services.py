@@ -352,7 +352,7 @@ class TestLineServices(unittest.TestCase):
 
         line_dao_edit.assert_called_once_with(line)
         line_notifier_edited.assert_called_once_with(line)
-        device_dao_find.assert_called_once_with(int(device_id))
+        device_dao_find.assert_called_once_with(device_id)
         device_services_rebuild_device_config.assert_called_once_with(device)
 
     @patch('xivo_dao.data_handler.context.services.find_by_name', Mock(return_value=Mock()))
@@ -382,7 +382,7 @@ class TestLineServices(unittest.TestCase):
 
         line_dao_edit.assert_called_once_with(line)
         line_notifier_edited.assert_called_once_with(line)
-        device_dao_find.assert_called_once_with(int(device_id))
+        device_dao_find.assert_called_once_with(device_id)
         self.assertEquals(device_services_rebuild_device_config.call_count, 0)
 
     @patch('xivo_dao.data_handler.device.services.remove_line_from_device')

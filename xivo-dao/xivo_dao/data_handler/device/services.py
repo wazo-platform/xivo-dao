@@ -146,7 +146,18 @@ def _check_invalid_parameters(device):
 def associate_line_to_device(device, line):
     line.device = str(device.id)
     line_dao.edit(line)
+    _link_device_config(device)
     rebuild_device_config(device)
+
+
+def _link_device_config(device):
+    provd_device_manager = provd_connector.device_manager()
+    try:
+        provd_device = provd_device_manager.get(device.id)
+        provd_device['config'] = device.id
+        provd_device_manager.update(provd_device)
+    except Exception as e:
+        raise ProvdError('error while linking config to device.', e)
 
 
 def rebuild_device_config(device):

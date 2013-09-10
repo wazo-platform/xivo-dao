@@ -33,8 +33,7 @@ from xivo_dao.helpers import provd_connector
 class TestDeviceServices(unittest.TestCase):
 
     def setUp(self):
-        self.device_id = 1
-        self.provd_deviceid = "ad0a12fd5f244ae68a3c626789203698"
+        self.device_id = 'ad0a12fd5f244ae68a3c626789203698'
         self.provd_config_manager = Mock(provd_connector.config_manager)
         self.provd_device_manager = Mock(provd_connector.device_manager)
 
@@ -43,10 +42,10 @@ class TestDeviceServices(unittest.TestCase):
         device = Mock(Device)
         dao_get.return_value = device
 
-        result = device_services.get(self.provd_deviceid)
+        result = device_services.get(self.device_id)
 
         self.assertEquals(result, device)
-        dao_get.assert_called_once_with(self.provd_deviceid)
+        dao_get.assert_called_once_with(self.device_id)
 
     @patch('xivo_dao.data_handler.device.dao.find_all')
     def test_find_all_no_devices(self, device_dao_find_all):
@@ -291,10 +290,8 @@ class TestDeviceServices(unittest.TestCase):
     @patch('xivo_dao.data_handler.line.dao.reset_device')
     @patch('xivo_dao.data_handler.device.dao.delete')
     def test_delete(self, device_dao_delete, line_dao_reset_device, device_notifier_deleted, device_manager, config_manager):
-        deviceid = '02aff2a361004aaf8a8a686a48dc980d'
-        device = Device(id=1,
-                        config=deviceid,
-                        deviceid=deviceid,
+        device = Device(id=self.device_id,
+                        config=self.device_id,
                         ip='10.0.0.1')
 
         device_services.delete(device)
@@ -302,8 +299,8 @@ class TestDeviceServices(unittest.TestCase):
         device_dao_delete.assert_called_once_with(device)
         line_dao_reset_device.assert_called_once_with(device.id)
         device_notifier_deleted.assert_called_once_with(device)
-        device_manager().remove.assert_called_once_with(deviceid)
-        config_manager().remove.assert_called_once_with(deviceid)
+        device_manager().remove.assert_called_once_with(device.id)
+        config_manager().remove.assert_called_once_with(device.id)
 
     @patch('xivo_dao.helpers.provd_connector.config_manager')
     @patch('xivo_dao.helpers.provd_connector.device_manager')
@@ -318,9 +315,7 @@ class TestDeviceServices(unittest.TestCase):
                                                device_notifier_deleted,
                                                device_manager,
                                                config_manager):
-        deviceid = '02aff2a361004aaf8a8a686a48dc980d'
-        device = Device(id=1,
-                        deviceid=deviceid,
+        device = Device(id=self.device_id,
                         ip='10.0.0.1')
         device_dao_get.side_effect = ElementNotExistsError('Device')
 
@@ -401,8 +396,7 @@ class TestDeviceServices(unittest.TestCase):
                        secret=secret,
                        callerid=callerid,
                        configregistrar=configregistrar)
-        device = Device(id=self.device_id,
-                        deviceid=self.provd_deviceid)
+        device = Device(id=self.device_id)
 
         provd_base_config = {
             "raw_config": {}
@@ -436,7 +430,7 @@ class TestDeviceServices(unittest.TestCase):
 
         device_services.build_line_for_device(device, line)
 
-        config_manager().get.assert_any_call(self.provd_deviceid)
+        config_manager().get.assert_any_call(self.device_id)
         config_manager().get.assert_any_call(configregistrar)
         config_manager().update.assert_called_with(expected_arg)
 
@@ -463,8 +457,7 @@ class TestDeviceServices(unittest.TestCase):
                        secret=secret,
                        callerid=callerid,
                        configregistrar=configregistrar)
-        device = Device(id=self.device_id,
-                        deviceid=self.provd_deviceid)
+        device = Device(id=self.device_id)
 
         provd_base_config = {
             "raw_config": {}
@@ -500,7 +493,7 @@ class TestDeviceServices(unittest.TestCase):
 
         device_services.build_line_for_device(device, line)
 
-        config_manager().get.assert_any_call(self.provd_deviceid)
+        config_manager().get.assert_any_call(self.device_id)
         config_manager().get.assert_any_call(configregistrar)
         config_manager().update.assert_called_with(expected_arg)
 
@@ -518,8 +511,7 @@ class TestDeviceServices(unittest.TestCase):
                         context=context,
                         callerid=callerid,
                         configregistrar=configregistrar)
-        device = Device(id=self.device_id,
-                        deviceid=self.provd_deviceid)
+        device = Device(id=self.device_id)
 
         provd_base_config = {
             "raw_config": {}
@@ -543,7 +535,7 @@ class TestDeviceServices(unittest.TestCase):
 
         device_services.build_line_for_device(device, line)
 
-        config_manager().get.assert_any_call(self.provd_deviceid)
+        config_manager().get.assert_any_call(self.device_id)
         config_manager().get.assert_any_call(configregistrar)
         config_manager().update.assert_called_with(expected_arg)
 
@@ -562,8 +554,7 @@ class TestDeviceServices(unittest.TestCase):
                         context=context,
                         callerid=callerid,
                         configregistrar=configregistrar)
-        device = Device(id=self.device_id,
-                        deviceid=self.provd_deviceid)
+        device = Device(id=self.device_id)
 
         provd_base_config = {
             "raw_config": {}
@@ -588,7 +579,7 @@ class TestDeviceServices(unittest.TestCase):
 
         device_services.build_line_for_device(device, line)
 
-        config_manager().get.assert_any_call(self.provd_deviceid)
+        config_manager().get.assert_any_call(self.device_id)
         config_manager().get.assert_any_call(configregistrar)
         config_manager().update.assert_called_with(expected_arg)
 
@@ -605,8 +596,7 @@ class TestDeviceServices(unittest.TestCase):
         config_manager().get.return_value = config_dict
         line = LineSIP(device_slot=2)
 
-        device = Device(id=self.device_id,
-                        deviceid=self.provd_deviceid)
+        device = Device(id=self.device_id)
 
         expected_arg = {
             "raw_config": {
@@ -618,7 +608,7 @@ class TestDeviceServices(unittest.TestCase):
 
         device_services.remove_line_from_device(device, line)
 
-        config_manager().get.assert_called_with(self.provd_deviceid)
+        config_manager().get.assert_called_with(self.device_id)
         config_manager().update.assert_called_with(expected_arg)
         self.assertEquals(0, config_manager().autocreate.call_count)
 
@@ -627,12 +617,11 @@ class TestDeviceServices(unittest.TestCase):
     def test_remove_line_from_device_provd_error(self, device_manager, config_manager):
         config_manager().get.side_effect = URLError('urlerror')
         line = LineSIP(device_slot=2)
-        device = Device(id=self.device_id,
-                        deviceid=self.provd_deviceid)
+        device = Device(id=self.device_id)
 
         self.assertRaises(ProvdError, device_services.remove_line_from_device, device, line)
 
-        config_manager().get.assert_called_once_with(self.provd_deviceid)
+        config_manager().get.assert_called_once_with(self.device_id)
         self.assertEquals(config_manager.update.call_count, 0)
         self.assertEquals(config_manager.autocreate.call_count, 0)
         self.assertEquals(device_manager.call_count, 0)
@@ -661,14 +650,13 @@ class TestDeviceServices(unittest.TestCase):
         config_manager().autocreate.return_value = autoprovid
         line = LineSIP(device_slot=1)
 
-        device = Device(id=self.device_id,
-                        deviceid=self.provd_deviceid)
+        device = Device(id=self.device_id)
 
         expected_arg_config = {"raw_config": {}}
 
         device_services.remove_line_from_device(device, line)
 
-        config_manager().get.assert_called_with(self.provd_deviceid)
+        config_manager().get.assert_called_with(self.device_id)
         reset_to_autoprov.assert_called_with(device)
         config_manager().update.assert_called_with(expected_arg_config)
 
@@ -681,12 +669,11 @@ class TestDeviceServices(unittest.TestCase):
         config_manager().get.return_value = config_dict
         line = LineSIP(device_slot=2)
 
-        device = Device(id=self.device_id,
-                        deviceid=self.provd_deviceid)
+        device = Device(id=self.device_id)
 
         device_services.remove_line_from_device(device, line)
 
-        config_manager().get.assert_called_with(self.provd_deviceid)
+        config_manager().get.assert_called_with(self.device_id)
         self.assertEquals(config_manager().update.call_count, 0)
         self.assertEquals(reset_to_autoprov.update.call_count, 0)
 
@@ -704,13 +691,12 @@ class TestDeviceServices(unittest.TestCase):
         device_dict = {
             "ip": "10.60.0.109",
             "version": "3.2.2.1136",
-            "config": self.provd_deviceid,
+            "config": self.device_id,
             "id": self.device_id
         }
         line = LineSIP(device_slot=1)
 
-        device = Device(id=self.device_id,
-                        deviceid=self.provd_deviceid)
+        device = Device(id=self.device_id)
 
         config_manager().get.return_value = config_dict
         device_manager().get.return_value = device_dict
