@@ -21,7 +21,6 @@ from xivo_dao.data_handler.device.model import Device, DeviceOrdering
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementCreationError, ElementDeletionError
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
-from xivo_dao.helpers import provd_connector
 
 DEFAULT_ORDER = [DeviceOrdering.ip, DeviceOrdering.mac]
 
@@ -29,17 +28,24 @@ DEFAULT_ORDER = [DeviceOrdering.ip, DeviceOrdering.mac]
 @daosession
 def get(session, device_id):
     try:
-        provd_device_manager = provd_connector.device_manager()
-        res = provd_device_manager.get(device_id)
+        res = (session.query(DeviceSchema).filter(DeviceSchema.id == int(device_id))).first()
     except ValueError:
         raise ElementNotExistsError('Device', id=device_id)
 
     if not res:
         raise ElementNotExistsError('Device', id=device_id)
 
-    del res['added']
+    return Device.from_data_source(res)
 
-    return Device.from_user_data(res)
+
+@daosession
+def get_by_deviceid(session, device_id):
+    res = (session.query(DeviceSchema).filter(DeviceSchema.deviceid == device_id)).first()
+
+    if not res:
+        raise ElementNotExistsError('Device', deviceid=device_id)
+
+    return Device.from_data_source(res)
 
 
 @daosession
@@ -47,16 +53,15 @@ def find(session, device_id):
     device_row = session.query(DeviceSchema).filter(DeviceSchema.id == device_id).first()
 
     if device_row:
-        return Device.from_user_data(device_row)
+        return Device.from_data_source(device_row)
     return None
 
 
 @daosession
 def find_all(session):
-    provd_device_manager = provd_connector.device_manager()
-    rows = provd_device_manager.find()
+    rows = (session.query(DeviceSchema).all())
 
-    return [Device.from_user_data(row) for row in rows]
+    return [Device.from_data_source(row) for row in rows]
 
 
 @daosession
