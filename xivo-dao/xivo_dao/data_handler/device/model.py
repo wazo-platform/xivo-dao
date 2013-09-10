@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.helpers.abstract_model import AbstractModels
-from xivo_dao.alchemy.devicefeatures import DeviceFeatures as DeviceSchema
+from xivo_dao.data_handler.exception import InvalidParametersError
 
 
 class Device(AbstractModels):
@@ -31,7 +31,11 @@ class Device(AbstractModels):
         'plugin',
         'vendor',
         'model',
+        'version',
+        'description',
     ]
+
+    CONFIG_PARENTS = ['base', 'defaultconfigdevice']
 
     # mapping = {db_field: model_field}
     _MAPPING = {
@@ -58,20 +62,40 @@ class Device(AbstractModels):
     def __init__(self, *args, **kwargs):
         AbstractModels.__init__(self, *args, **kwargs)
 
+    @classmethod
+    def from_provd(cls, device, config=None):
+        filtered_device = dict((key, value) for key, value in device.iteritems() if key in cls.PROVD_KEYS)
+        obj = cls(**filtered_device)
+
+        if config:
+            parents = set(config['parent_ids']) - set(cls.CONFIG_PARENTS)
+            if len(parents) == 0:
+                obj.template_id = 'defaultconfigdevice'
+            else:
+                obj.template_id = parents.pop()
+
+        return obj
+
     def to_provd_device(self):
-        provd_device = {
-            'commented': self._is_commented()
-        }
+        parameters = self._filter_device_parameters()
+
+        if 'mac' in parameters:
+            parameters['mac'] = parameters['mac'].lower()
+
+        return parameters
+
+    def _filter_device_parameters(self):
+        parameters = {}
         for key in self.PROVD_KEYS:
             if hasattr(self, key):
-                provd_device[key] = getattr(self, key)
+                parameters[key] = getattr(self, key)
 
-        return provd_device
+        return parameters
 
     def to_provd_config(self):
         template_id = getattr(self, 'template_id', 'defaultconfigdevice')
 
-        parent_ids = ['base', 'defaultconfigdevice']
+        parent_ids = list(self.CONFIG_PARENTS)
         if template_id not in parent_ids:
             parent_ids.append(template_id)
 
@@ -80,15 +104,41 @@ class Device(AbstractModels):
             'configdevice': template_id,
             'deletable': True,
             'parent_ids': parent_ids,
-            'raw_config': {'X_key': ''}
+            'raw_config': {}
         }
-
-    def _is_commented(self):
-        if not hasattr(self, 'active'):
-            return 0
-        return bool(not self.active)
 
 
 class DeviceOrdering(object):
-    ip = DeviceSchema.ip
-    mac = DeviceSchema.mac
+    DIRECTIONS = ['desc', 'asc']
+
+    id = 'id'
+    ip = 'ip'
+    mac = 'mac'
+    plugin = 'plugin'
+    model = 'model'
+    vendor = 'vendor'
+    version = 'version'
+
+    @classmethod
+    def all_columns(cls):
+        return [cls.id, cls.ip, cls.mac, cls.plugin, cls.model, cls.vendor, cls.version]
+
+    @classmethod
+    def from_column_name(cls, column):
+        if column in cls.all_columns():
+            return column
+        return None
+
+    @classmethod
+    def directions(cls):
+        return cls.DIRECTIONS
+
+    @classmethod
+    def validate_order(cls, order):
+        if order not in cls.all_columns():
+            raise InvalidParametersError("ordering parameter '%s' does not exist" % order)
+
+    @classmethod
+    def validate_direction(cls, direction):
+        if direction not in cls.directions():
+            raise InvalidParametersError("direction parameter '%s' does not exist" % direction)
