@@ -63,16 +63,6 @@ def _find_provd_config(provd_device):
     return provd_config
 
 
-@daosession
-def get_by_deviceid(session, device_id):
-    res = (session.query(DeviceSchema).filter(DeviceSchema.deviceid == device_id)).first()
-
-    if not res:
-        raise ElementNotExistsError('Device', deviceid=device_id)
-
-    return Device.from_data_source(res)
-
-
 def find(device_id):
     device_manager = provd_connector.device_manager()
 
