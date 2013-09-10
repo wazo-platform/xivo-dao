@@ -35,12 +35,6 @@ class TestDeviceDao(DAOTestCase):
         DeviceSchema
     ]
 
-    def _has_properties(self, properties):
-        matchers = []
-        for key, value in properties.iteritems():
-            matchers.append(has_property(key, value))
-        return all_of(*matchers)
-
     def setUp(self):
         self.empty_tables()
         self.deviceid = "ad0a12fd5f244ae68a3c626789203698"
@@ -105,162 +99,58 @@ class TestDeviceDao(DAOTestCase):
 
     def test_get_no_device(self):
         with self.provd_managers() as (device_manager, config_manager, _):
-
             device_manager.get.side_effect = HTTPError('', 404, '', '', StringIO(''))
 
             self.assertRaises(ElementNotExistsError, device_dao.get, self.deviceid)
             device_manager.get.assert_called_once_with(self.deviceid)
 
     def test_get_no_template(self):
-        expected_device = Device(
-            id=self.deviceid,
-            ip='10.0.0.1',
-            mac='00:11:22:33:44:55',
-            model='6731i',
-            vendor='Aastra',
-            version='3.2.2.3077',
-            plugin='xivo-aastra-3.2.2-SP3',
-        )
+        properties = dict(self.device_properties)
+        del properties['template_id']
 
-        provd_device = {
-            u'added': u'auto',
-            u'configured': True,
-            u'id': expected_device.id,
-            u'ip': expected_device.ip,
-            u'mac': expected_device.mac,
-            u'model': expected_device.model,
-            u'plugin': expected_device.plugin,
-            u'vendor': expected_device.vendor,
-            u'version': expected_device.version,
-        }
+        provd_device = dict(self.provd_device)
+        del provd_device['config']
+
+        expected_device = Device(**properties)
 
         with self.provd_managers() as (device_manager, config_manager, _):
             device_manager.get.return_value = provd_device
 
             device = device_dao.get(expected_device.id)
 
-            assert_that(device, all_of(
-                has_property('id', expected_device.id),
-                has_property('ip', expected_device.ip),
-                has_property('mac', expected_device.mac),
-                has_property('model', expected_device.model),
-                has_property('vendor', expected_device.vendor),
-                has_property('version', expected_device.version),
-                has_property('plugin', expected_device.plugin),
-            ))
-
+            assert_that(device, equal_to(expected_device))
             device_manager.get.assert_called_once_with(expected_device.id)
             assert_that(config_manager.get.call_count, equal_to(0))
 
     def test_get(self):
-        config_id = 'abcdefghijklmnopqurstuvwxyz123456'
-
-        expected_device = Device(
-            id=self.deviceid,
-            ip='10.0.0.1',
-            mac='00:11:22:33:44:55',
-            model='6731i',
-            vendor='Aastra',
-            version='3.2.2.3077',
-            plugin='xivo-aastra-3.2.2-SP3',
-            template_id='defaultconfigdevice'
-        )
-
-        provd_device = {
-            u'added': u'auto',
-            u'config': config_id,
-            u'configured': True,
-            u'id': expected_device.id,
-            u'ip': expected_device.ip,
-            u'mac': expected_device.mac,
-            u'model': expected_device.model,
-            u'plugin': expected_device.plugin,
-            u'vendor': expected_device.vendor,
-            u'version': expected_device.version,
-        }
-
-        provd_config = {
-            u'configdevice': u'defaultconfigdevice',
-            u'deletable': True,
-            u'id': config_id,
-            u'parent_ids': [u'base', u'defaultconfigdevice'],
-            u'raw_config': {}
-        }
-
         with self.provd_managers() as (device_manager, config_manager, _):
-            device_manager.get.return_value = provd_device
-            config_manager.get.return_value = provd_config
+            device_manager.get.return_value = self.provd_device
+            config_manager.get.return_value = self.provd_config
 
-            device = device_dao.get(expected_device.id)
+            device = device_dao.get(self.deviceid)
 
-            assert_that(device, all_of(
-                has_property('id', expected_device.id),
-                has_property('ip', expected_device.ip),
-                has_property('mac', expected_device.mac),
-                has_property('model', expected_device.model),
-                has_property('vendor', expected_device.vendor),
-                has_property('version', expected_device.version),
-                has_property('plugin', expected_device.plugin),
-                has_property('template_id', expected_device.template_id)
-            ))
-
-            device_manager.get.assert_called_once_with(expected_device.id)
-            config_manager.get.assert_called_once_with(config_id)
+            assert_that(device, equal_to(self.expected_device))
+            device_manager.get.assert_called_once_with(self.deviceid)
+            config_manager.get.assert_called_once_with(self.deviceid)
 
     def test_get_custom_template(self):
-        config_id = 'abcdefghijklmnopqurstuvwxyz123456'
+        properties = dict(self.device_properties)
+        properties['template_id'] = 'mytemplate'
 
-        expected_device = Device(
-            id=self.deviceid,
-            ip='10.0.0.1',
-            mac='00:11:22:33:44:55',
-            model='6731i',
-            vendor='Aastra',
-            version='3.2.2.3077',
-            plugin='xivo-aastra-3.2.2-SP3',
-            template_id='mytemplate'
-        )
+        expected_device = Device(**properties)
 
-        provd_device = {
-            u'added': u'auto',
-            u'config': config_id,
-            u'configured': True,
-            u'id': expected_device.id,
-            u'ip': expected_device.ip,
-            u'mac': expected_device.mac,
-            u'model': expected_device.model,
-            u'plugin': expected_device.plugin,
-            u'vendor': expected_device.vendor,
-            u'version': expected_device.version,
-        }
-
-        provd_config = {
-            u'configdevice': u'defaultconfigdevice',
-            u'deletable': True,
-            u'id': config_id,
-            u'parent_ids': [u'base', u'defaultconfigdevice', 'mytemplate'],
-            u'raw_config': {}
-        }
+        provd_config = dict(self.provd_config)
+        provd_config['parent_ids'].append('mytemplate')
 
         with self.provd_managers() as (device_manager, config_manager, _):
-            device_manager.get.return_value = provd_device
+            device_manager.get.return_value = self.provd_device
             config_manager.get.return_value = provd_config
 
             device = device_dao.get(expected_device.id)
 
-            assert_that(device, all_of(
-                has_property('id', expected_device.id),
-                has_property('ip', expected_device.ip),
-                has_property('mac', expected_device.mac),
-                has_property('model', expected_device.model),
-                has_property('vendor', expected_device.vendor),
-                has_property('version', expected_device.version),
-                has_property('plugin', expected_device.plugin),
-                has_property('template_id', expected_device.template_id)
-            ))
-
+            assert_that(device, equal_to(expected_device))
             device_manager.get.assert_called_once_with(expected_device.id)
-            config_manager.get.assert_called_once_with(config_id)
+            config_manager.get.assert_called_once_with(self.deviceid)
 
     def test_find_not_found(self):
         device_id = 'abcd'
