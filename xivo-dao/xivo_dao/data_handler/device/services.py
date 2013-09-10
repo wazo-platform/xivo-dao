@@ -16,22 +16,18 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from . import dao
+from . import validator
 from .model import DeviceOrdering
 from . import notifier
-import re
 from urllib2 import URLError
 from xivo_dao.helpers import provd_connector
 from xivo_dao.data_handler.user_line_extension import dao as user_line_extension_dao
 from xivo_dao.data_handler.extension import dao as extension_dao
 from xivo_dao.data_handler.line import dao as line_dao
 from xivo_dao.data_handler.exception import InvalidParametersError, \
-    ElementNotExistsError, ElementDeletionError, ElementAlreadyExistsError, \
-    NonexistentParametersError
+    ElementNotExistsError, ElementDeletionError
 from xivo_dao.helpers.provd_connector import ProvdError
 from xivo import caller_id
-
-IP_REGEX = re.compile(r'(1?\d{1,2}|2([0-4][0-9]|5[0-5]))(\.1?\d{1,2}|2([0-4][0-9]|5[0-5])){3}$')
-MAC_REGEX = re.compile(r'^([0-9A-Fa-f]{2})(:[0-9A-Fa-f]{2}){5}$')
 
 
 def get(device_id):
@@ -64,7 +60,7 @@ def _validate_limit(limit):
 
 
 def create(device):
-    _validate(device)
+    validator.validate_create(device)
     device = dao.create(device)
     notifier.created(device)
     return device
@@ -100,48 +96,6 @@ def _generate_new_deviceid(device):
         del device_dict['id']
     deviceid = provd_device_manager.add(device_dict)
     return deviceid
-
-
-def _validate(device):
-    _check_invalid_parameters(device)
-    _check_mac_already_exists(device)
-    _check_plugin_exists(device)
-    _check_template_id_exists(device)
-
-
-def _check_mac_already_exists(device):
-    if not hasattr(device, 'mac'):
-        return
-
-    existing_device = dao.mac_exists(device.mac)
-    if existing_device:
-        raise ElementAlreadyExistsError('device', device.mac)
-
-
-def _check_plugin_exists(device):
-    if not hasattr(device, 'plugin'):
-        return
-
-    if not dao.plugin_exists(device.plugin):
-        raise NonexistentParametersError(plugin=device.plugin)
-
-
-def _check_template_id_exists(device):
-    if not hasattr(device, 'template_id'):
-        return
-
-    if not dao.template_id_exists(device.template_id):
-        raise NonexistentParametersError(template_id=device.template_id)
-
-
-def _check_invalid_parameters(device):
-    invalid_parameters = []
-    if hasattr(device, 'ip') and not IP_REGEX.match(device.ip):
-        invalid_parameters.append('ip')
-    if hasattr(device, 'mac') and not MAC_REGEX.match(device.mac):
-        invalid_parameters.append('mac')
-    if invalid_parameters:
-        raise InvalidParametersError(invalid_parameters)
 
 
 def associate_line_to_device(device, line):
