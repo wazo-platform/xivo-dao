@@ -27,8 +27,6 @@ from xivo_dao.helpers import provd_connector
 from xivo_dao.data_handler.user_line_extension import dao as user_line_extension_dao
 from xivo_dao.data_handler.extension import dao as extension_dao
 from xivo_dao.data_handler.line import dao as line_dao
-from xivo_dao.data_handler.exception import InvalidParametersError, \
-    ElementNotExistsError, ElementDeletionError, ProvdError
 from xivo_dao.data_handler.exception import InvalidParametersError, ProvdError
 
 
