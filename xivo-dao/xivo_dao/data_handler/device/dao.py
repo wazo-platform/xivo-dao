@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+#
 # Copyright (C) 2013 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
@@ -14,16 +14,15 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+
 from urllib2 import HTTPError
 
-
-from xivo_dao.alchemy.devicefeatures import DeviceFeatures as DeviceSchema
-from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.data_handler.device.model import Device, DeviceOrdering
 from xivo_dao.data_handler.device import provd_builder
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
-    ElementDeletionError, ElementCreationError, InvalidParametersError, ElementEditionError
-from sqlalchemy.exc import SQLAlchemyError
+    ElementDeletionError, ElementCreationError, InvalidParametersError, \
+    ElementEditionError
 from xivo_dao.helpers import provd_connector
 
 
@@ -117,20 +116,29 @@ def _convert_order_and_direction(order, direction):
     return (order, sort_direction)
 
 
-@daosession
-def delete(session, device):
-    session.begin()
+def delete(device):
+    _delete_provd_device(device)
+    _delete_provd_config(device)
+
+
+def _delete_provd_device(device):
+    provd_device_manager = provd_connector.device_manager()
     try:
-        nb_row_affected = session.query(DeviceSchema).filter(DeviceSchema.id == device.id).delete()
-        session.commit()
-    except SQLAlchemyError, e:
-        session.rollback()
+        provd_device_manager.remove(device.id)
+    except HTTPError as e:
+        if e.code == 404:
+            raise ElementNotExistsError('Device', id=device.id)
+        raise e
+    except Exception as e:
         raise ElementDeletionError('Device', e)
 
-    if nb_row_affected == 0:
-        raise ElementDeletionError('Device', 'device_id %s not exist' % device.id)
 
-    return nb_row_affected
+def _delete_provd_config(device):
+    provd_config_manager = provd_connector.config_manager()
+    try:
+        provd_config_manager.remove(device.id)
+    except Exception as e:
+        pass
 
 
 def create(device):

@@ -211,14 +211,11 @@ class TestDeviceServices(unittest.TestCase):
         notifier_edit.assert_called_once_with(device)
 
     @patch('xivo_dao.data_handler.device.dao.get', Mock(return_value=None))
-    @patch('xivo_dao.helpers.provd_connector.config_manager')
-    @patch('xivo_dao.helpers.provd_connector.device_manager')
     @patch('xivo_dao.data_handler.device.notifier.deleted')
     @patch('xivo_dao.data_handler.line.dao.reset_device')
     @patch('xivo_dao.data_handler.device.dao.delete')
-    def test_delete(self, device_dao_delete, line_dao_reset_device, device_notifier_deleted, device_manager, config_manager):
+    def test_delete(self, device_dao_delete, line_dao_reset_device, device_notifier_deleted):
         device = Device(id=self.device_id,
-                        config=self.device_id,
                         ip='10.0.0.1')
 
         device_services.delete(device)
@@ -226,31 +223,16 @@ class TestDeviceServices(unittest.TestCase):
         device_dao_delete.assert_called_once_with(device)
         line_dao_reset_device.assert_called_once_with(device.id)
         device_notifier_deleted.assert_called_once_with(device)
-        device_manager().remove.assert_called_once_with(device.id)
-        config_manager().remove.assert_called_once_with(device.id)
 
-    @patch('xivo_dao.helpers.provd_connector.config_manager')
-    @patch('xivo_dao.helpers.provd_connector.device_manager')
     @patch('xivo_dao.data_handler.device.notifier.deleted')
-    @patch('xivo_dao.data_handler.device.dao.get')
     @patch('xivo_dao.data_handler.device.dao.delete')
     @patch('xivo_dao.data_handler.line.dao.reset_device')
-    def test_delete_when_device_does_not_exist(self,
-                                               line_dao_reset,
-                                               device_dao_delete,
-                                               device_dao_get,
-                                               device_notifier_deleted,
-                                               device_manager,
-                                               config_manager):
+    def test_delete_with_error(self, ine_dao_reset, device_dao_delete, device_notifier_deleted):
         device = Device(id=self.device_id,
                         ip='10.0.0.1')
-        device_dao_get.side_effect = ElementNotExistsError('Device')
+        device_dao_delete.side_effect = ElementDeletionError('Device', 'Not Exist')
 
         self.assertRaises(ElementDeletionError, device_services.delete, device)
-        self.assertEquals(device_manager.remove.call_count, 0)
-        self.assertEquals(config_manager.remove.call_count, 0)
-        self.assertEquals(device_dao_delete.call_count, 0)
-        self.assertEquals(line_dao_reset.call_count, 0)
         self.assertEquals(device_notifier_deleted.call_count, 0)
 
     @patch('xivo_dao.data_handler.device.services.build_line_for_device')

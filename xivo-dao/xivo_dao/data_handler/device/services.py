@@ -73,26 +73,9 @@ def edit(device):
 
 
 def delete(device):
-    try:
-        get(device.id)
-    except ElementNotExistsError:
-        raise ElementDeletionError('Device', 'device_id %s not exist' % device.id)
-    _remove_device_from_provd(device)
     dao.delete(device)
     line_dao.reset_device(device.id)
     notifier.deleted(device)
-
-
-def _remove_device_from_provd(device):
-    provd_device_manager = provd_connector.device_manager()
-    provd_device = provd_device_manager.find({'id': device.id})
-    if provd_device:
-        provd_device_manager.remove(device.id)
-        if len(device.config) > 0:
-            provd_config_manager = provd_connector.config_manager()
-            provd_config = provd_config_manager.find({'id': device.config})
-            if provd_config:
-                provd_config_manager.remove(device.id)
 
 
 def _generate_new_deviceid(device):
