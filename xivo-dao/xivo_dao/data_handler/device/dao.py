@@ -17,7 +17,6 @@
 from urllib2 import HTTPError
 
 
-from xivo_dao.alchemy.devicefeatures import DeviceFeatures as DeviceSchema
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.data_handler.device.model import Device, DeviceOrdering
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
@@ -118,18 +117,7 @@ def _convert_order_and_direction(order, direction):
 
 @daosession
 def delete(session, device):
-    session.begin()
-    try:
-        nb_row_affected = session.query(DeviceSchema).filter(DeviceSchema.id == device.id).delete()
-        session.commit()
-    except SQLAlchemyError, e:
-        session.rollback()
-        raise ElementDeletionError('Device', e)
-
-    if nb_row_affected == 0:
-        raise ElementDeletionError('Device', 'device_id %s not exist' % device.id)
-
-    return nb_row_affected
+    raise NotImplemented
 
 
 def create(device):
