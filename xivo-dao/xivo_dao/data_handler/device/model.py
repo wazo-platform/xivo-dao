@@ -28,11 +28,12 @@ class Device(AbstractModels):
         'id',
         'ip',
         'mac',
+        'sn',
         'plugin',
         'vendor',
         'model',
         'version',
-        'description',
+        'description'
     ]
 
     CONFIG_PARENTS = ['base', 'defaultconfigdevice']
@@ -40,20 +41,16 @@ class Device(AbstractModels):
     # mapping = {db_field: model_field}
     _MAPPING = {
         'id': 'id',
-        'config': 'config',
-        'plugin': 'plugin',
         'ip': 'ip',
         'mac': 'mac',
         'sn': 'sn',
+        'plugin': 'plugin',
         'vendor': 'vendor',
         'model': 'model',
         'version': 'version',
-        'proto': 'proto',
-        'internal': 'internal',
-        'configured': 'configured',
-        'commented': 'commented',
         'description': 'description',
-        'template_id': 'template_id',
+        'status': 'status',
+        'template_id': 'template_id'
     }
 
     _RELATION = {}
@@ -72,6 +69,14 @@ class Device(AbstractModels):
                 obj.template_id = 'defaultconfigdevice'
             else:
                 obj.template_id = parents.pop()
+
+            if device['configured'] == True:
+                if device['config'].startswith('autoprov'):
+                    obj.status = 'autoprov'
+                else:
+                    obj.status = 'configured'
+            else:
+                obj.status = 'not_configured'
 
         return obj
 
