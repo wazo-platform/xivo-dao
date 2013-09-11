@@ -63,6 +63,7 @@ class TestDeviceDao(DAOTestCase):
             'vendor': 'Aastra',
             'version': '3.2.2.3077',
             'template_id': 'defaultconfigdevice',
+            'status': 'configured',
         }
 
         self.expected_device = Device(**self.device_properties)
@@ -101,6 +102,7 @@ class TestDeviceDao(DAOTestCase):
     def test_get_no_template(self):
         properties = dict(self.device_properties)
         del properties['template_id']
+        del properties['status']
 
         provd_device = dict(self.provd_device)
         del provd_device['config']
@@ -229,6 +231,7 @@ class TestDeviceDao(DAOTestCase):
             'version': 'version1',
             'description': 'description1',
             'template_id': 'defaultconfigdevice',
+            'status': 'configured'
         }
 
         device2 = {
@@ -241,6 +244,7 @@ class TestDeviceDao(DAOTestCase):
             'version': 'version2',
             'description': 'description2',
             'template_id': 'defaultconfigdevice',
+            'status': 'configured'
         }
 
         provd_device1 = {
@@ -285,11 +289,6 @@ class TestDeviceDao(DAOTestCase):
             device_manager.find.assert_called_once_with()
             config_manager.get.assert_any_call(provd_device1['config'])
             config_manager.get.assert_any_call(provd_device2['config'])
-
-    def test_delete_not_exist(self):
-        extension = Device(id=1)
-
-        self.assertRaises(ElementDeletionError, device_dao.delete, extension)
 
     @patch('xivo_dao.data_handler.device.provd_builder.build_create')
     @patch('xivo_dao.data_handler.device.dao.generate_device_id')
@@ -531,3 +530,39 @@ class TestDeviceDao(DAOTestCase):
 
             assert_that(result, equal_to(True))
             config_manager.find.assert_called_once_with({'X_type': 'device', 'id': template_id})
+
+    @patch('xivo_dao.helpers.provd_connector.device_manager')
+    @patch('xivo_dao.helpers.provd_connector.config_manager')
+    def test_delete(self, mock_config_manager, mock_device_manager):
+        device_id = 'abc1234'
+        device = Device(id=device_id)
+
+        with self.provd_managers() as (device_manager, config_manager, _):
+            device_dao.delete(device)
+
+            device_manager.remove.assert_called_once_with(device_id)
+            config_manager.remove.assert_called_once_with(device_id)
+
+    @patch('xivo_dao.helpers.provd_connector.device_manager')
+    @patch('xivo_dao.helpers.provd_connector.config_manager')
+    def test_delete_not_exist(self, mock_config_manager, mock_device_manager):
+        device = Device(id='abcd')
+
+        with self.provd_managers() as (device_manager, config_manager, _):
+            device_manager.remove.side_effect = HTTPError('', 404, '', '', StringIO(''))
+
+            self.assertRaises(ElementNotExistsError, device_dao.delete, device)
+            device_manager.remove.assert_called_once_with(device.id)
+            self.assertEquals(config_manager.remove.call_count, 0)
+
+    @patch('xivo_dao.helpers.provd_connector.device_manager')
+    @patch('xivo_dao.helpers.provd_connector.config_manager')
+    def test_delete_with_error(self, mock_config_manager, mock_device_manager):
+        device = Device(id='abcd')
+
+        with self.provd_managers() as (device_manager, config_manager, _):
+            device_manager.remove.side_effect = Exception
+
+            self.assertRaises(ElementDeletionError, device_dao.delete, device)
+            device_manager.remove.assert_called_once_with(device.id)
+            self.assertEquals(config_manager.remove.call_count, 0)

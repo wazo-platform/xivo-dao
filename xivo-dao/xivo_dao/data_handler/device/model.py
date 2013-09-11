@@ -28,30 +28,27 @@ class Device(AbstractModels):
         'id',
         'ip',
         'mac',
+        'sn',
         'plugin',
         'vendor',
         'model',
         'version',
-        'description',
+        'description'
     ]
 
     # mapping = {db_field: model_field}
     _MAPPING = {
         'id': 'id',
-        'config': 'config',
-        'plugin': 'plugin',
         'ip': 'ip',
         'mac': 'mac',
         'sn': 'sn',
+        'plugin': 'plugin',
         'vendor': 'vendor',
         'model': 'model',
         'version': 'version',
-        'proto': 'proto',
-        'internal': 'internal',
-        'configured': 'configured',
-        'commented': 'commented',
         'description': 'description',
-        'template_id': 'template_id',
+        'status': 'status',
+        'template_id': 'template_id'
     }
 
     _RELATION = {}
@@ -66,6 +63,14 @@ class Device(AbstractModels):
 
         if config and 'configdevice' in config:
             obj.template_id = config['configdevice']
+
+            if device['configured'] == True:
+                if device['config'].startswith('autoprov'):
+                    obj.status = 'autoprov'
+                else:
+                    obj.status = 'configured'
+            else:
+                obj.status = 'not_configured'
 
         return obj
 

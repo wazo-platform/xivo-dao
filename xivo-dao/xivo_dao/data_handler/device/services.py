@@ -19,14 +19,17 @@ from . import dao
 from . import validator
 from .model import DeviceOrdering
 from . import notifier
+
 from urllib2 import URLError
+
+from xivo import caller_id
 from xivo_dao.helpers import provd_connector
 from xivo_dao.data_handler.user_line_extension import dao as user_line_extension_dao
 from xivo_dao.data_handler.extension import dao as extension_dao
 from xivo_dao.data_handler.line import dao as line_dao
 from xivo_dao.data_handler.exception import InvalidParametersError, \
     ElementNotExistsError, ElementDeletionError, ProvdError
-from xivo import caller_id
+from xivo_dao.data_handler.exception import InvalidParametersError, ProvdError
 
 
 def get(device_id):
@@ -73,26 +76,9 @@ def edit(device):
 
 
 def delete(device):
-    try:
-        get(device.id)
-    except ElementNotExistsError:
-        raise ElementDeletionError('Device', 'device_id %s not exist' % device.id)
-    _remove_device_from_provd(device)
     dao.delete(device)
     line_dao.reset_device(device.id)
     notifier.deleted(device)
-
-
-def _remove_device_from_provd(device):
-    provd_device_manager = provd_connector.device_manager()
-    provd_device = provd_device_manager.find({'id': device.id})
-    if provd_device:
-        provd_device_manager.remove(device.id)
-        if len(device.config) > 0:
-            provd_config_manager = provd_connector.config_manager()
-            provd_config = provd_config_manager.find({'id': device.config})
-            if provd_config:
-                provd_config_manager.remove(device.id)
 
 
 def _generate_new_deviceid(device):

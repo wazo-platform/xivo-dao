@@ -28,7 +28,6 @@ from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.alchemy.extension import Extension
-from xivo_dao.alchemy.devicefeatures import DeviceFeatures
 from xivo_dao.alchemy.sccpline import SCCPLine as SCCPLineSchema
 from xivo_dao.alchemy.usercustom import UserCustom as UserCustomSchema
 from xivo_dao.alchemy.usersip import UserSIP
@@ -164,19 +163,6 @@ class DAOTestCase(unittest.TestCase):
         dialpattern = DialPattern(**kwargs)
         self.add_me(dialpattern)
         return dialpattern
-
-    def add_device(self, **kwargs):
-        kwargs.setdefault('deviceid', '8aada8aae3784957b6c160195c8fbcd7')
-        kwargs.setdefault('mac', '00:08:5d:13:ca:05')
-        kwargs.setdefault('vendor', 'Aastra')
-        kwargs.setdefault('model', '6739i')
-        kwargs.setdefault('plugin', 'xivo-aastra-3.2.2.1136')
-        kwargs.setdefault('proto', 'SIP')
-        kwargs.setdefault('id', self._generate_id())
-
-        device = DeviceFeatures(**kwargs)
-        self.add_me(device)
-        return device
 
     def add_usersip(self, **kwargs):
         kwargs.setdefault('name', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
