@@ -1,15 +1,21 @@
+# -*- coding: utf-8 -*-
 
-PROVD_KEYS = [
-    'id',
-    'ip',
-    'mac',
-    'sn',
-    'plugin',
-    'vendor',
-    'model',
-    'version',
-    'description',
-]
+# Copyright (C) 2013 Avencall
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+from xivo_dao.data_handler.device.model import Device
 
 
 def build_create(device):
@@ -21,11 +27,7 @@ def build_create(device):
 
 def _create_provd_device(device):
     parameters = _filter_device_parameters(device)
-
     parameters['config'] = device.id
-
-    if 'mac' in parameters:
-        parameters['mac'] = parameters['mac'].lower()
 
     return parameters
 
@@ -33,9 +35,12 @@ def _create_provd_device(device):
 def _filter_device_parameters(device):
     parameters = {}
 
-    for key in PROVD_KEYS:
+    for key in Device.PROVD_KEYS:
         if hasattr(device, key):
             parameters[key] = getattr(device, key)
+
+    if 'mac' in parameters:
+        parameters['mac'] = parameters['mac'].lower()
 
     return parameters
 
@@ -57,40 +62,42 @@ def _build_parent_ids(device):
     return parent_ids
 
 
-#def update_provd(self, provd_device, provd_config=None):
-#    self._update_provd_device(provd_device)
-#    self._update_provd_config(provd_config)
-#
-#def _update_provd_device(self, provd_device):
-#    provd_device.update(self.to_provd_device())
-#
-#def _update_provd_config(self, provd_config):
-#    if not provd_config:
-#        return
-#
-#    parent_ids = provd_config.pop('parent_ids', [])
-#    raw_config = provd_config.pop('raw_config', {})
-#
-#    if 'configdevice' in provd_config:
-#        self._remove_old_configdevice(provd_config['configdevice'], parent_ids)
-#
-#    self._update_base_config(provd_config)
-#    provd_config['parent_ids'] = self._update_parent_ids(parent_ids)
-#    provd_config['raw_config'] = self._update_raw_config(raw_config)
-#
-#def _remove_old_configdevice(self, configdevice, parent_ids):
-#    if configdevice in parent_ids:
-#        parent_ids.remove(configdevice)
-#
-#def _update_base_config(self, provd_config):
-#    provd_config['configdevice'] = self.get_template_id()
-#
-#def _update_parent_ids(self, parent_ids):
-#    parent_ids = list(parent_ids)
-#    template_id = self.get_template_id()
-#    if template_id not in parent_ids:
-#        parent_ids.append(template_id)
-#    return parent_ids
-#
-#def _update_raw_config(self, raw_config):
-#    return raw_config
+def build_edit(device, provd_device, provd_config):
+    new_provd_device = _update_provd_device(device, provd_device)
+    new_provd_config = _update_provd_config(device, provd_config)
+
+    return (new_provd_device, new_provd_config)
+
+
+def _update_provd_device(device, provd_device):
+    parameters = _filter_device_parameters(device)
+    provd_device.update(parameters)
+    return provd_device
+
+
+def _update_provd_config(device, provd_config):
+    if not provd_config:
+        return
+
+    if 'configdevice' in provd_config and 'parent_ids' in provd_config:
+        _remove_old_parent_ids(device, provd_config)
+        _update_template_id(device, provd_config)
+        _update_parent_ids(device, provd_config)
+    else:
+        _update_template_id(device, provd_config)
+
+    return provd_config
+
+
+def _remove_old_parent_ids(device, provd_device):
+    if provd_device['configdevice'] in provd_device['parent_ids']:
+        provd_device['parent_ids'].remove(provd_device['configdevice'])
+
+
+def _update_template_id(device, provd_device):
+    provd_device['configdevice'] = getattr(device, 'template_id', 'defaultconfigdevice')
+
+
+def _update_parent_ids(device, provd_device):
+    if device.template_id not in provd_device['parent_ids']:
+        provd_device['parent_ids'].append(device.template_id)

@@ -174,18 +174,28 @@ def generate_device_id():
 
 def edit(device):
     device_manager = provd_connector.device_manager()
-    config_manager = provd_connector.config_manager()
 
     provd_device = device_manager.get(device.id)
     provd_config = _find_provd_config(provd_device)
 
-    device.update_provd(provd_device, provd_config)
+    provd_device, provd_config = provd_builder.build_edit(device, provd_device, provd_config)
 
+    if provd_config:
+        _update_provd_config(provd_config)
+
+    _update_provd_device(provd_device)
+
+
+def _update_provd_config(provd_config):
+    config_manager = provd_connector.config_manager()
     try:
         config_manager.update(provd_config)
     except Exception as e:
         raise ElementEditionError('device', e)
 
+
+def _update_provd_device(provd_device):
+    device_manager = provd_connector.device_manager()
     try:
         device_manager.update(provd_device)
     except Exception as e:
