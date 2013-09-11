@@ -142,7 +142,9 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         self.assertTrue(datetime.datetime(2012, 1, 1, 1) in stats)
         self.assertTrue(datetime.datetime(2012, 1, 1, 2) in stats)
 
-        self.assertEqual(stats[start][queue_id]['full'], 4)
+        self.assertEqual(stats[start][queue_id]['full'], 1)
+        self.assertEqual(stats[start + datetime.timedelta(minutes=15)][queue_id]['full'], 2)
+        self.assertEqual(stats[start + datetime.timedelta(minutes=30)][queue_id]['full'], 1)
 
     def test_get_periodic_stats_closed(self):
         start = datetime.datetime(2012, 01, 01, 00, 00, 00)
@@ -161,7 +163,9 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         self.assertTrue(datetime.datetime(2012, 1, 1, 1) in stats)
         self.assertTrue(datetime.datetime(2012, 1, 1, 2) in stats)
 
-        self.assertEqual(stats[start][queue_id]['closed'], 4)
+        self.assertEqual(stats[start][queue_id]['closed'], 1)
+        self.assertEqual(stats[start + datetime.timedelta(minutes=15)][queue_id]['closed'], 2)
+        self.assertEqual(stats[start + datetime.timedelta(minutes=30)][queue_id]['closed'], 1)
 
     def test_get_periodic_stats_total(self):
         start = datetime.datetime(2012, 01, 01, 00, 00, 00)
@@ -195,7 +199,9 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         self.assertTrue(datetime.datetime(2012, 1, 1, 1) in stats)
         self.assertTrue(datetime.datetime(2012, 1, 1, 2) in stats)
 
-        self.assertEqual(stats[start][queue_id]['total'], 9)
+        self.assertEqual(stats[start][queue_id]['total'], 3)
+        self.assertEqual(stats[start + datetime.timedelta(minutes=15)][queue_id]['total'], 4)
+        self.assertEqual(stats[start + datetime.timedelta(minutes=30)][queue_id]['total'], 2)
 
     def test_clean_table(self):
         start = datetime.datetime(2012, 01, 01, 00, 00, 00)

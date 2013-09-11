@@ -18,6 +18,9 @@
 from xivo_dao.alchemy.stat_call_on_queue import StatCallOnQueue
 from xivo_dao import stat_queue_dao
 from sqlalchemy import func, between, literal
+from sqlalchemy.sql.expression import extract, cast
+from sqlalchemy.types import Integer
+from datetime import timedelta
 
 
 def _add_call(session, callid, time, queue_name, event, waittime=None):
@@ -63,11 +66,13 @@ def get_periodic_stats(session, start, end):
     stats = {}
 
     rows = (session
-            .query(func.date_trunc(literal('hour'), StatCallOnQueue.time),
+            .query((func.date_trunc(literal('hour'), StatCallOnQueue.time) +
+                        (cast(extract('minute', StatCallOnQueue.time), Integer) / 15) * timedelta(minutes=15))
+                        .label('the_time'),
                    StatCallOnQueue.queue_id,
                    StatCallOnQueue.status,
                    func.count(StatCallOnQueue.status))
-            .group_by(func.date_trunc(literal('hour'), StatCallOnQueue.time),
+            .group_by('the_time',
                       StatCallOnQueue.queue_id,
                       StatCallOnQueue.status)
             .filter(between(StatCallOnQueue.time, start, end)))
