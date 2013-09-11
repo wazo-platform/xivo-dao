@@ -65,7 +65,8 @@ class TestCELDAO(DAOTestCase):
 
     def test_find_last_unprocessed_with_only_processed(self):
         limit = 10
-        cel_id_1, cel_id_2 = self._add_processed_cel(), self._add_processed_cel()
+        self._add_processed_cel()
+        self._add_processed_cel()
 
         result = cel_dao.find_last_unprocessed(limit)
 
@@ -73,7 +74,8 @@ class TestCELDAO(DAOTestCase):
 
     def test_find_last_unprocessed_with_processed_and_unprocessed(self):
         limit = 10
-        cel_id_1, cel_id_2 = self._add_processed_cel(), self._add_processed_cel()
+        self._add_processed_cel()
+        self._add_processed_cel()
         cel_id_3, cel_id_4 = self.add_cel(), self.add_cel()
 
         result = cel_dao.find_last_unprocessed(limit)
