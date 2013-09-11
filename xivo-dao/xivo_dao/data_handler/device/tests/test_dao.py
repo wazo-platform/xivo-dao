@@ -297,165 +297,82 @@ class TestDeviceDao(DAOTestCase):
 
         self.assertRaises(ElementDeletionError, device_dao.delete, extension)
 
-    @patch('xivo_dao.helpers.provd_connector.config_manager')
-    @patch('xivo_dao.helpers.provd_connector.device_manager')
-    def test_create_empty_device(self, mock_device_manager, mock_config_manager):
+    @patch('xivo_dao.data_handler.device.provd_builder.build_create')
+    @patch('xivo_dao.data_handler.device.dao.generate_device_id')
+    def test_create_device(self, generate_device_id, provd_build_create):
         device_id = 'abcd1234'
         device = Device()
 
-        expected_provd_device = {}
+        provd_device = Mock()
+        provd_config = Mock()
 
-        expected_device_update = {
-            'id': device_id,
-            'config': device_id
-        }
-        expected_provd_config = {
-            'configdevice': 'defaultconfigdevice',
-            'deletable': True,
-            'id': device_id,
-            'parent_ids': ['base', 'defaultconfigdevice'],
-            'raw_config': {}
-        }
+        generate_device_id.return_value = device_id
+        provd_build_create.return_value = (provd_device, provd_config)
 
         with self.provd_managers() as (device_manager, config_manager, _):
-            device_manager.add.return_value = device_id
-
             result = device_dao.create(device)
 
-            device_manager.add.assert_called_once_with(expected_provd_device)
-            device_manager.update.assert_called_once_with(expected_device_update)
-            config_manager.add.assert_called_once_with(expected_provd_config)
+            generate_device_id.assert_called_once_with()
+            provd_build_create.assert_called_once_with(device)
+            device_manager.update.assert_called_once_with(provd_device)
+            config_manager.add.assert_called_once_with(provd_config)
 
             assert_that(result.id, equal_to(device_id))
 
-    @patch('xivo_dao.helpers.provd_connector.config_manager')
-    @patch('xivo_dao.helpers.provd_connector.device_manager')
-    def test_create_with_parameters(self, mock_device_manager, mock_config_manager):
+    @patch('xivo_dao.data_handler.device.provd_builder.build_create')
+    @patch('xivo_dao.data_handler.device.dao.generate_device_id')
+    def test_create_with_device_manager_error(self, generate_device_id, provd_build_create):
         device_id = 'abcd1234'
-        device_mac = 'AB:11:22:33:44:55'
-        expected_mac = 'ab:11:22:33:44:55'
-
-        device = Device(ip='10.0.0.1',
-                        mac=device_mac,
-                        plugin='xivo-aastra-3.2.2-SP3',
-                        vendor='Aastra',
-                        model='6731i')
-
-        expected_provd_device = {
-            'ip': device.ip,
-            'mac': expected_mac,
-            'plugin': device.plugin,
-            'vendor': device.vendor,
-            'model': device.model,
-        }
-
-        expected_device_update = {
-            'id': device_id,
-            'ip': device.ip,
-            'mac': expected_mac,
-            'plugin': device.plugin,
-            'vendor': device.vendor,
-            'model': device.model,
-            'config': device_id,
-        }
-
-        expected_provd_config = {
-            'configdevice': 'defaultconfigdevice',
-            'deletable': True,
-            'id': device_id,
-            'parent_ids': ['base', 'defaultconfigdevice'],
-            'raw_config': {}
-        }
-
-        with self.provd_managers() as (device_manager, config_manager, _):
-            device_manager.add.return_value = device_id
-
-            result = device_dao.create(device)
-
-            device_manager.add.assert_called_once_with(expected_provd_device)
-            config_manager.add.assert_called_once_with(expected_provd_config)
-            device_manager.update.assert_called_once_with(expected_device_update)
-
-            assert_that(result, all_of(
-                has_property('id', device_id),
-                has_property('mac', device.mac),
-                has_property('ip', device.ip),
-                has_property('plugin', device.plugin),
-                has_property('vendor', device.vendor),
-                has_property('model', device.model)
-            ))
-
-    @patch('xivo_dao.helpers.provd_connector.config_manager')
-    @patch('xivo_dao.helpers.provd_connector.device_manager')
-    def test_create_with_template_id(self, mock_device_manager, mock_config_manager):
-        device_id = 'abcd1234'
-        template_id = 'efgh5678'
-
-        device = Device(template_id=template_id)
-
-        expected_provd_device = {}
-
-        expected_device_update = {
-            'id': device_id,
-            'config': device_id
-        }
-
-        expected_provd_config = {
-            'configdevice': template_id,
-            'deletable': True,
-            'id': device_id,
-            'parent_ids': ['base', template_id],
-            'raw_config': {}
-        }
-
-        with self.provd_managers() as (device_manager, config_manager, _):
-            device_manager.add.return_value = device_id
-
-            result = device_dao.create(device)
-
-            device_manager.add.assert_called_once_with(expected_provd_device)
-            device_manager.update.assert_called_once_with(expected_device_update)
-            config_manager.add.assert_called_once_with(expected_provd_config)
-
-            assert_that(result.template_id, equal_to(template_id))
-
-    @patch('xivo_dao.helpers.provd_connector.config_manager')
-    @patch('xivo_dao.helpers.provd_connector.device_manager')
-    def test_create_with_device_manager_error(self, mock_device_manager, mock_config_manager):
         device = Device()
 
-        with self.provd_managers() as (device_manager, config_manager, _):
-            device_manager.add.side_effect = Exception()
+        provd_device = Mock()
+        provd_config = Mock()
 
-            self.assertRaises(ElementCreationError, device_dao.create, device)
-
-            assert_that(config_manager.add.call_count, equal_to(0))
-
-    @patch('xivo_dao.helpers.provd_connector.config_manager')
-    @patch('xivo_dao.helpers.provd_connector.device_manager')
-    def test_create_with_device_manager_error_on_update(self, mock_device_manager, mock_config_manager):
-        device = Device()
+        generate_device_id.return_value = device_id
+        provd_build_create.return_value = (provd_device, provd_config)
 
         with self.provd_managers() as (device_manager, config_manager, _):
-            device_manager.add.return_value = 'abcd1234'
             device_manager.update.side_effect = Exception()
 
             self.assertRaises(ElementCreationError, device_dao.create, device)
 
             assert_that(config_manager.add.call_count, equal_to(0))
 
-    @patch('xivo_dao.helpers.provd_connector.config_manager')
-    @patch('xivo_dao.helpers.provd_connector.device_manager')
-    def test_create_with_config_manager_error(self, mock_device_manager, mock_config_manager):
+    @patch('xivo_dao.data_handler.device.provd_builder.build_create')
+    @patch('xivo_dao.data_handler.device.dao.generate_device_id')
+    def test_create_with_config_manager_error(self, generate_device_id, provd_build_create):
         device_id = 'abcd1234'
         device = Device()
 
+        provd_device = Mock()
+        provd_config = Mock()
+
+        generate_device_id.return_value = device_id
+        provd_build_create.return_value = (provd_device, provd_config)
+
         with self.provd_managers() as (device_manager, config_manager, _):
-            device_manager.add.return_value = device_id
             config_manager.add.side_effect = Exception()
 
             self.assertRaises(ElementCreationError, device_dao.create, device)
             device_manager.remove.assert_called_once_with(device_id)
+
+    def test_generate_device_id(self):
+        device_id = 'abc1234'
+
+        with self.provd_managers() as (device_manager, config_manager, _):
+            device_manager.add.return_value = device_id
+
+            result = device_dao.generate_device_id()
+
+            self.assertEquals(result, device_id)
+            device_manager.add.assert_called_once_with({})
+
+    def test_generate_device_id_with_error(self):
+        with self.provd_managers() as (device_manager, config_manager, _):
+            device_manager.add.side_effect = Exception()
+
+            self.assertRaises(ElementCreationError, device_dao.generate_device_id)
+            device_manager.add.assert_called_once_with({})
 
     def test_edit_with_an_empty_device_and_no_config(self):
         device = Device(id=self.deviceid)
