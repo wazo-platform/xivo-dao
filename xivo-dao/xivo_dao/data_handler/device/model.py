@@ -36,8 +36,6 @@ class Device(AbstractModels):
         'description'
     ]
 
-    CONFIG_PARENTS = ['base', 'defaultconfigdevice']
-
     # mapping = {db_field: model_field}
     _MAPPING = {
         'id': 'id',
@@ -63,12 +61,8 @@ class Device(AbstractModels):
         filtered_device = dict((key, value) for key, value in device.iteritems() if key in cls.PROVD_KEYS)
         obj = cls(**filtered_device)
 
-        if config:
-            parents = set(config['parent_ids']) - set(cls.CONFIG_PARENTS)
-            if len(parents) == 0:
-                obj.template_id = 'defaultconfigdevice'
-            else:
-                obj.template_id = parents.pop()
+        if config and 'configdevice' in config:
+            obj.template_id = config['configdevice']
 
             if device['configured'] == True:
                 if device['config'].startswith('autoprov'):
@@ -79,37 +73,6 @@ class Device(AbstractModels):
                 obj.status = 'not_configured'
 
         return obj
-
-    def to_provd_device(self):
-        parameters = self._filter_device_parameters()
-
-        if 'mac' in parameters:
-            parameters['mac'] = parameters['mac'].lower()
-
-        return parameters
-
-    def _filter_device_parameters(self):
-        parameters = {}
-        for key in self.PROVD_KEYS:
-            if hasattr(self, key):
-                parameters[key] = getattr(self, key)
-
-        return parameters
-
-    def to_provd_config(self):
-        template_id = getattr(self, 'template_id', 'defaultconfigdevice')
-
-        parent_ids = list(self.CONFIG_PARENTS)
-        if template_id not in parent_ids:
-            parent_ids.append(template_id)
-
-        return {
-            'id': self.id,
-            'configdevice': template_id,
-            'deletable': True,
-            'parent_ids': parent_ids,
-            'raw_config': {}
-        }
 
 
 class DeviceOrdering(object):

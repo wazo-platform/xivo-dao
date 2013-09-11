@@ -26,7 +26,7 @@ from xivo_dao.data_handler.line.model import LineSIP, LineSCCP
 from xivo_dao.data_handler.user_line_extension.model import UserLineExtension
 from xivo_dao.data_handler.exception import ElementCreationError, \
     InvalidParametersError, ElementDeletionError, ElementNotExistsError, \
-    ElementAlreadyExistsError, NonexistentParametersError, ProvdError
+    ProvdError
 from xivo_dao.helpers import provd_connector
 
 
@@ -158,12 +158,10 @@ class TestDeviceServices(unittest.TestCase):
         device_dao_create.assert_called_once_with(device)
         notifier_created.assert_called_once_with(result)
 
-    @patch('xivo_dao.data_handler.device.dao.mac_exists', Mock(return_value=False))
-    @patch('xivo_dao.data_handler.device.dao.plugin_exists', Mock(return_value=True))
-    @patch('xivo_dao.data_handler.device.dao.template_id_exists', Mock(return_value=True))
     @patch('xivo_dao.data_handler.device.notifier.created')
     @patch('xivo_dao.data_handler.device.dao.create')
-    def test_create(self, device_dao_create, notifier_created):
+    @patch('xivo_dao.data_handler.device.validator.validate_create')
+    def test_create(self, validate_create, device_dao_create, notifier_created):
         expected_device = {
             'ip': '10.9.0.5',
             'mac': '00:11:22:33:44:55',
@@ -178,6 +176,7 @@ class TestDeviceServices(unittest.TestCase):
 
         result = device_services.create(device)
 
+        validate_create.assert_called_with(device)
         device_dao_create.assert_called_once_with(device)
         notifier_created.assert_called_once_with(result)
         self.assertEquals(result.mac, expected_device['mac'])
@@ -189,99 +188,27 @@ class TestDeviceServices(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.device.notifier.created')
     @patch('xivo_dao.data_handler.device.dao.create')
-    @patch('xivo_dao.data_handler.device.dao.mac_exists')
-    def test_create_mac_already_exists(self, dao_mac_exists, device_dao_create, notifier_created):
-        device = Device(mac='00:11:22:33:44:55')
-
-        dao_mac_exists.return_value = True
-
-        self.assertRaises(ElementAlreadyExistsError, device_services.create, device)
-
-        dao_mac_exists.assert_called_once_with(device.mac)
-        self.assertEquals(device_dao_create.call_count, 0)
-        self.assertEquals(notifier_created.call_count, 0)
-
-    @patch('xivo_dao.data_handler.device.notifier.created')
-    @patch('xivo_dao.data_handler.device.dao.create')
-    def test_create_with_dao_error(self, device_dao_create, notifier_created):
+    @patch('xivo_dao.data_handler.device.validator.validate_create')
+    def test_create_with_dao_error(self, validate_create, device_dao_create, notifier_created):
         device = Device()
 
         device_dao_create.side_effect = ElementCreationError('Device', '')
 
         self.assertRaises(ElementCreationError, device_services.create, device)
         self.assertEquals(notifier_created.call_count, 0)
+        validate_create.assert_called_once_with(device)
 
-    @patch('xivo_dao.data_handler.device.notifier.created')
-    @patch('xivo_dao.data_handler.device.dao.create')
-    def test_create_invalid_ip(self, device_dao_create, notifier_created):
-        device = {
-            'id': '02aff2a361004aaf8a8a686a48dc980d',
-            'ip': '10.9.0.5156'
-        }
-        device = Device(**device)
+    @patch('xivo_dao.data_handler.device.notifier.edited')
+    @patch('xivo_dao.data_handler.device.dao.edit')
+    @patch('xivo_dao.data_handler.device.validator.validate_edit')
+    def test_edit(self, device_validate, dao_edit, notifier_edit):
+        device = Mock(Device)
 
-        self.assertRaises(InvalidParametersError, device_services.create, device)
-        self.assertEquals(device_dao_create.call_count, 0)
-        self.assertEquals(notifier_created.call_count, 0)
+        device_services.edit(device)
 
-    @patch('xivo_dao.data_handler.device.notifier.created')
-    @patch('xivo_dao.data_handler.device.dao.create')
-    def test_create_ip_over_255(self, device_dao_create, notifier_created):
-        device = {
-            'id': '02aff2a361004aaf8a8a686a48dc980d',
-            'ip': '10.259.0.0'
-        }
-        device = Device(**device)
-
-        self.assertRaises(InvalidParametersError, device_services.create, device)
-        self.assertEquals(device_dao_create.call_count, 0)
-        self.assertEquals(notifier_created.call_count, 0)
-
-    @patch('xivo_dao.data_handler.device.notifier.created')
-    @patch('xivo_dao.data_handler.device.dao.create')
-    def test_create_invalid_mac(self, device_dao_create, notifier_created):
-        device = {
-            'id': '02aff2a361004aaf8a8a686a48dc980d',
-            'mac': 'ZA:22:33:44:55:66'
-        }
-        device = Device(**device)
-
-        self.assertRaises(InvalidParametersError, device_services.create, device)
-        self.assertEquals(device_dao_create.call_count, 0)
-        self.assertEquals(notifier_created.call_count, 0)
-
-    @patch('xivo_dao.data_handler.device.dao.mac_exists', Mock(return_value=False))
-    @patch('xivo_dao.data_handler.device.notifier.created')
-    @patch('xivo_dao.data_handler.device.dao.create')
-    @patch('xivo_dao.data_handler.device.dao.plugin_exists')
-    def test_create_plugin_does_not_exist(self, dao_plugin_exists, device_dao_create, notifier_created):
-        device = {
-            'plugin': 'superduperplugin',
-        }
-        device = Device(**device)
-
-        dao_plugin_exists.return_value = False
-
-        self.assertRaises(NonexistentParametersError, device_services.create, device)
-        self.assertEquals(device_dao_create.call_count, 0)
-        self.assertEquals(notifier_created.call_count, 0)
-
-    @patch('xivo_dao.data_handler.device.dao.mac_exists', Mock(return_value=False))
-    @patch('xivo_dao.data_handler.device.dao.plugin_exists', Mock(return_value=True))
-    @patch('xivo_dao.data_handler.device.notifier.created')
-    @patch('xivo_dao.data_handler.device.dao.create')
-    @patch('xivo_dao.data_handler.device.dao.template_id_exists')
-    def test_create_template_does_not_exist(self, dao_template_id_exists, device_dao_create, notifier_created):
-        device = {
-            'template_id': 'mysuperdupertemplate',
-        }
-        device = Device(**device)
-
-        dao_template_id_exists.return_value = False
-
-        self.assertRaises(NonexistentParametersError, device_services.create, device)
-        self.assertEquals(device_dao_create.call_count, 0)
-        self.assertEquals(notifier_created.call_count, 0)
+        device_validate.assert_called_once_with(device)
+        dao_edit.assert_called_once_with(device)
+        notifier_edit.assert_called_once_with(device)
 
     @patch('xivo_dao.data_handler.device.dao.get', Mock(return_value=None))
     @patch('xivo_dao.helpers.provd_connector.config_manager')
