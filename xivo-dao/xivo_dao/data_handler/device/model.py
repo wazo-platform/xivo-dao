@@ -40,7 +40,6 @@ class Device(AbstractModels):
     # mapping = {db_field: model_field}
     _MAPPING = {
         'id': 'id',
-        'deviceid': 'deviceid',
         'config': 'config',
         'plugin': 'plugin',
         'ip': 'ip',

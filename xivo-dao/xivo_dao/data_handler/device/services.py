@@ -26,8 +26,7 @@ from xivo_dao.data_handler.extension import dao as extension_dao
 from xivo_dao.data_handler.line import dao as line_dao
 from xivo_dao.data_handler.exception import InvalidParametersError, \
     ElementNotExistsError, ElementDeletionError, ElementAlreadyExistsError, \
-    NonexistentParametersError, ElementSynchronizeError, ElementAutoprovError
-from xivo_dao.helpers.provd_connector import ProvdError
+    NonexistentParametersError, ProvdError
 from xivo import caller_id
 
 IP_REGEX = re.compile(r'(1?\d{1,2}|2([0-4][0-9]|5[0-5]))(\.1?\d{1,2}|2([0-4][0-9]|5[0-5])){3}$')
@@ -83,14 +82,14 @@ def delete(device):
 
 def _remove_device_from_provd(device):
     provd_device_manager = provd_connector.device_manager()
-    provd_device = provd_device_manager.find({'id': device.deviceid})
+    provd_device = provd_device_manager.find({'id': device.id})
     if provd_device:
-        provd_device_manager.remove(device.deviceid)
+        provd_device_manager.remove(device.id)
         if len(device.config) > 0:
             provd_config_manager = provd_connector.config_manager()
             provd_config = provd_config_manager.find({'id': device.config})
             if provd_config:
-                provd_config_manager.remove(device.deviceid)
+                provd_config_manager.remove(device.id)
 
 
 def _generate_new_deviceid(device):
@@ -147,7 +146,18 @@ def _check_invalid_parameters(device):
 def associate_line_to_device(device, line):
     line.device = str(device.id)
     line_dao.edit(line)
+    _link_device_config(device)
     rebuild_device_config(device)
+
+
+def _link_device_config(device):
+    provd_device_manager = provd_connector.device_manager()
+    try:
+        provd_device = provd_device_manager.get(device.id)
+        provd_device['config'] = device.id
+        provd_device_manager.update(provd_device)
+    except Exception as e:
+        raise ProvdError('error while linking config to device.', e)
 
 
 def rebuild_device_config(device):
@@ -155,13 +165,13 @@ def rebuild_device_config(device):
     try:
         for line in lines_device:
             build_line_for_device(device, line)
-    except URLError as e:
-        raise ProvdError(e)
+    except Exception as e:
+        raise ProvdError('error while rebuilding config device.', e)
 
 
 def build_line_for_device(device, line):
     provd_config_manager = provd_connector.config_manager()
-    config = provd_config_manager.get(device.deviceid)
+    config = provd_config_manager.get(device.id)
     confregistrar = provd_config_manager.get(line.configregistrar)
     ules = user_line_extension_dao.find_all_by_line_id(line.id)
     for ule in ules:
@@ -205,7 +215,7 @@ def _populate_sccp_line(config, confregistrar):
 def remove_line_from_device(device, line):
     provd_config_manager = provd_connector.config_manager()
     try:
-        config = provd_config_manager.get(device.deviceid)
+        config = provd_config_manager.get(device.id)
         if 'sip_lines' in config['raw_config']:
             del config['raw_config']['sip_lines'][str(line.device_slot)]
             if len(config['raw_config']['sip_lines']) == 0:
@@ -214,7 +224,7 @@ def remove_line_from_device(device, line):
                 reset_to_autoprov(device)
             provd_config_manager.update(config)
     except URLError as e:
-        raise ProvdError(e)
+        raise ProvdError('error during remove line %s from device %s' % (line.device_slot, device.id), e)
 
 
 def reset_to_autoprov(device):
@@ -226,7 +236,7 @@ def reset_to_autoprov(device):
         device['config'] = new_configid
         provd_device_manager.update(device)
     except Exception as e:
-        raise ElementAutoprovError('device', e)
+        raise ProvdError('error while synchronize device.', e)
 
 
 def synchronize(device):
@@ -234,7 +244,7 @@ def synchronize(device):
         provd_device_manager = provd_connector.device_manager()
         provd_device_manager.synchronize(device.id)
     except Exception as e:
-        raise ElementSynchronizeError('device', e)
+        raise ProvdError('error while reset to autoprov.', e)
 
 
 def _reset_config(config):

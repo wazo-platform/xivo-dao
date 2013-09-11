@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from mock import patch
 from xivo.asterisk.extension import Extension
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.sccpline import SCCPLine
@@ -63,6 +62,54 @@ class TestLineFeaturesDAO(DAOTestCase):
         self.session.commit()
 
         return sccpline
+
+    def test_get_peer_name_abcde(self):
+        protocol = 'SIP'
+        name = 'abcde'
+        expected_name = '/'.join([protocol, name])
+
+        line = LineFeatures()
+        line.device = '1232'
+        line.protocolid = 0
+        line.context = 'myctx'
+        line.number = '1002'
+        line.name = name
+        line.provisioningid = 123
+        line.protocol = protocol
+
+        self.session.begin()
+        self.session.add(line)
+        self.session.commit()
+
+        peer_name = line_dao.get_peer_name(line.device)
+
+        self.assertEqual(peer_name, expected_name)
+
+    def test_get_peer_name_qwerty(self):
+        protocol = 'SIP'
+        name = 'qwerty'
+        expected_name = '/'.join([protocol, name])
+
+        line = LineFeatures()
+        line.device = '213'
+        line.protocolid = 0
+        line.context = 'myctx'
+        line.iduserfeatures = 5
+        line.number = '1002'
+        line.name = name
+        line.provisioningid = 123
+        line.protocol = protocol
+
+        self.session.begin()
+        self.session.add(line)
+        self.session.commit()
+
+        peer_name = line_dao.get_peer_name(line.device)
+
+        self.assertEqual(peer_name, expected_name)
+
+    def test_get_peer_name_no_matching_line(self):
+        self.assertRaises(LookupError, line_dao.get_peer_name, '222')
 
     def test_get_interface_from_exten_and_context_sip(self):
         protocol = 'sip'

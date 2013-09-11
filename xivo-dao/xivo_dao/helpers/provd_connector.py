@@ -20,14 +20,6 @@ from provd.rest.client.client import new_provisioning_client
 PROVD_URL = "http://localhost:8666/provd"
 
 
-class ProvdError(Exception):
-    def __init__(self, value):
-        self.value = value
-
-    def __str__(self):
-        return "provd error: %s" % self.value
-
-
 def config_manager():
     provisioning_client = _provd_client()
     return provisioning_client.config_manager()
