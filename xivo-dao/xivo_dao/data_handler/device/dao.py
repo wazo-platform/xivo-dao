@@ -19,8 +19,9 @@ from urllib2 import HTTPError
 
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.data_handler.device.model import Device, DeviceOrdering
+from xivo_dao.data_handler.device import provd_builder
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
-    ElementDeletionError, ElementCreationError, InvalidParametersError
+    ElementDeletionError, ElementCreationError, InvalidParametersError, ElementEditionError
 from sqlalchemy.exc import SQLAlchemyError
 from xivo_dao.helpers import provd_connector
 
@@ -121,27 +122,17 @@ def delete(session, device):
 
 
 def create(device):
-    _create_provd_device(device)
-    _create_provd_config(device)
+    device.id = generate_device_id()
+
+    provd_device, provd_config = provd_builder.build_create(device)
+    _create_provd_device(device.id, provd_device)
+    _create_provd_config(device.id, provd_config)
 
     return device
 
 
-def _create_provd_device(device):
+def _create_provd_device(device_id, provd_device):
     device_manager = provd_connector.device_manager()
-
-    provd_device = device.to_provd_device()
-
-    try:
-        device_id = device_manager.add(provd_device)
-    except Exception as e:
-        raise ElementCreationError('device', e)
-
-    device.id = device_id
-
-    provd_device = dict(provd_device)
-    provd_device['id'] = device_id
-    provd_device['config'] = device_id
 
     try:
         device_manager.update(provd_device)
@@ -150,16 +141,53 @@ def _create_provd_device(device):
         raise ElementCreationError('device', e)
 
 
-def _create_provd_config(device):
+def _create_provd_config(device_id, provd_config):
     config_manager = provd_connector.config_manager()
-    provd_config = device.to_provd_config()
 
     try:
         config_manager.add(provd_config)
     except Exception as e:
         device_manager = provd_connector.device_manager()
-        device_manager.remove(device.id)
+        device_manager.remove(device_id)
         raise ElementCreationError('device', e)
+
+
+def generate_device_id():
+    device_manager = provd_connector.device_manager()
+    try:
+        return device_manager.add({})
+    except Exception as e:
+        raise ElementCreationError('device', e)
+
+
+def edit(device):
+    device_manager = provd_connector.device_manager()
+
+    provd_device = device_manager.get(device.id)
+    provd_config = _find_provd_config(provd_device)
+
+    provd_device, provd_config = provd_builder.build_edit(device, provd_device, provd_config)
+
+    if provd_config:
+        _update_provd_config(provd_config)
+
+    _update_provd_device(provd_device)
+
+
+def _update_provd_config(provd_config):
+    config_manager = provd_connector.config_manager()
+    try:
+        config_manager.update(provd_config)
+    except Exception as e:
+        raise ElementEditionError('device', e)
+
+
+def _update_provd_device(provd_device):
+    device_manager = provd_connector.device_manager()
+    try:
+        device_manager.update(provd_device)
+    except Exception as e:
+        raise ElementEditionError('device', e)
 
 
 def mac_exists(mac):
