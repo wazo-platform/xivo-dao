@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column
+from sqlalchemy.orm import relationship
+from sqlalchemy.schema import Column, ForeignKey
 from sqlalchemy.types import DateTime, Integer, String
 from xivo_dao.helpers.db_manager import Base
 
@@ -44,3 +45,5 @@ class CEL(Base):
     linkedid = Column(String(150), nullable=False)
     userfield = Column(String(255), nullable=False)
     peer = Column(String(80), nullable=False)
+    call_log_id = Column(Integer, ForeignKey('call_log.id'))
+    call_log = relationship('CallLog', backref='cels')

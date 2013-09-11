@@ -19,9 +19,10 @@ from datetime import datetime, timedelta
 from hamcrest import assert_that, contains_inanyorder, equal_to, has_length, has_property
 from mock import Mock, patch
 from sqlalchemy.exc import SQLAlchemyError
+
 from xivo_dao.alchemy.call_log import CallLog as CallLogSchema
+from xivo_dao.alchemy.cel import CEL as CELSchema
 from xivo_dao.data_handler.call_log import dao as call_log_dao
-from xivo_dao.data_handler.call_log.model import CallLog
 from xivo_dao.data_handler.exception import ElementCreationError, ElementDeletionError
 from xivo_dao.tests.test_dao import DAOTestCase
 
@@ -30,6 +31,7 @@ class TestCallLogDAO(DAOTestCase):
 
     tables = [
         CallLogSchema,
+        CELSchema
     ]
 
     def setUp(self):
@@ -46,8 +48,7 @@ class TestCallLogDAO(DAOTestCase):
         assert_that(result, equal_to(expected_result))
 
     def test_find_all_found(self):
-        call_logs = call_log_1, call_log_2 = [CallLog(date=datetime.today(), duration=timedelta(0)),
-                                              CallLog(date=datetime.today(), duration=timedelta(1))]
+        call_logs = (self._mock_call_log(), self._mock_call_log())
         call_log_dao.create_all(call_logs)
 
         result = call_log_dao.find_all()
@@ -63,10 +64,10 @@ class TestCallLogDAO(DAOTestCase):
         assert_that(result, equal_to(expected_result))
 
     def test_find_all_in_period_found(self):
-        call_logs = _, call_log_1, call_log_2, _ = (CallLog(date=datetime(2013, 1, 1), duration=timedelta(0)),
-                                                    CallLog(date=datetime(2013, 1, 2), duration=timedelta(1)),
-                                                    CallLog(date=datetime(2013, 1, 3), duration=timedelta(2)),
-                                                    CallLog(date=datetime(2013, 1, 4), duration=timedelta(3)))
+        call_logs = _, call_log_1, call_log_2, _ = (self._mock_call_log(date=datetime(2012, 1, 1, 13)),
+                                                    self._mock_call_log(date=datetime(2013, 1, 1, 13)),
+                                                    self._mock_call_log(date=datetime(2013, 1, 2, 13)),
+                                                    self._mock_call_log(date=datetime(2014, 1, 1, 13)))
         start = datetime(2013, 1, 1, 12)
         end = datetime(2013, 1, 3, 12)
         call_log_dao.create_all(call_logs)
@@ -78,13 +79,24 @@ class TestCallLogDAO(DAOTestCase):
                                                 has_property('date', call_log_2.date)))
 
     def test_create_all(self):
-        call_logs = call_log_1, call_log_2 = [CallLog(date=datetime.today(), duration=timedelta(0)),
-                                              CallLog(date=datetime.today(), duration=timedelta(1))]
+        cel_id_1, cel_id_2 = self.add_cel(), self.add_cel()
+        cel_id_3, cel_id_4 = self.add_cel(), self.add_cel()
+        call_logs = call_log_1, call_log_2 = (self._mock_call_log((cel_id_1, cel_id_2)),
+                                              self._mock_call_log((cel_id_3, cel_id_4)))
 
         call_log_dao.create_all(call_logs)
 
         call_log_rows = self.session.query(CallLogSchema).all()
         assert_that(call_log_rows, has_length(2))
+
+        call_log_id_1, call_log_id_2 = [call_log.id for call_log in call_log_rows]
+
+        cel_rows = self.session.query(CELSchema).all()
+        assert_that(cel_rows, contains_inanyorder(has_property('call_log_id', call_log_id_1),
+                                                  has_property('call_log_id', call_log_id_1),
+                                                  has_property('call_log_id', call_log_id_2),
+                                                  has_property('call_log_id', call_log_id_2),
+                                                  ))
 
     @patch('xivo_dao.helpers.db_manager.AsteriskSession')
     def test_create_all_db_error(self, session_init):
@@ -92,16 +104,14 @@ class TestCallLogDAO(DAOTestCase):
         session.commit.side_effect = SQLAlchemyError()
         session_init.return_value = session
 
-        call_logs = call_log_1, call_log_2 = [CallLog(date=datetime.today(), duration=timedelta(0)),
-                                              CallLog(date=datetime.today(), duration=timedelta(1))]
+        call_logs = (self._mock_call_log(), self._mock_call_log())
 
         self.assertRaises(ElementCreationError, call_log_dao.create_all, call_logs)
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
 
     def test_delete_all(self):
-        call_logs = [CallLog(date=datetime.today(), duration=timedelta(0)),
-                     CallLog(date=datetime.today(), duration=timedelta(1))]
+        call_logs = (self._mock_call_log(), self._mock_call_log())
         call_log_dao.create_all(call_logs)
 
         call_log_dao.delete_all()
@@ -118,3 +128,14 @@ class TestCallLogDAO(DAOTestCase):
         self.assertRaises(ElementDeletionError, call_log_dao.delete_all)
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
+
+    def _mock_call_log(self, cel_ids=None, date=None):
+        if cel_ids is None:
+            cel_ids = ()
+        if date is None:
+            date = datetime.now()
+        call_log = Mock()
+        call_log.to_data_source.return_value = CallLogSchema(date=date, duration=timedelta(3))
+        call_log.get_related_cels.return_value = cel_ids
+        call_log.date = date
+        return call_log
