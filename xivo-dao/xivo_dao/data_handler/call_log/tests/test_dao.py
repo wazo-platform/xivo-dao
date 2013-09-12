@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from datetime import datetime, timedelta
-from hamcrest import assert_that, contains, contains_inanyorder, equal_to, has_length, has_property
+from hamcrest import all_of, assert_that, contains, contains_inanyorder, equal_to, has_length, has_property
 from mock import Mock, patch
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -92,11 +92,11 @@ class TestCallLogDAO(DAOTestCase):
         call_log_id_1, call_log_id_2 = [call_log.id for call_log in call_log_rows]
 
         cel_rows = self.session.query(CELSchema).all()
-        assert_that(cel_rows, contains_inanyorder(has_property('call_log_id', call_log_id_1),
-                                                  has_property('call_log_id', call_log_id_1),
-                                                  has_property('call_log_id', call_log_id_2),
-                                                  has_property('call_log_id', call_log_id_2),
-                                                  ))
+        assert_that(cel_rows, contains_inanyorder(
+                all_of(has_property('id', cel_id_1), has_property('call_log_id', call_log_id_1)),
+                all_of(has_property('id', cel_id_2), has_property('call_log_id', call_log_id_1)),
+                all_of(has_property('id', cel_id_3), has_property('call_log_id', call_log_id_2)),
+                all_of(has_property('id', cel_id_4), has_property('call_log_id', call_log_id_2))))
 
     @patch('xivo_dao.helpers.db_manager.AsteriskSession')
     def test_create_from_list_db_error(self, session_init):
