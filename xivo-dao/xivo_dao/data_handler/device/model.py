@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.helpers.abstract_model import AbstractModels
-from xivo_dao.data_handler.exception import InvalidParametersError
+from xivo_dao.alchemy.devicefeatures import DeviceFeatures as DeviceSchema
 
 
 class Device(AbstractModels):
@@ -28,27 +28,29 @@ class Device(AbstractModels):
         'id',
         'ip',
         'mac',
-        'sn',
         'plugin',
         'vendor',
         'model',
-        'version',
-        'description'
     ]
 
     # mapping = {db_field: model_field}
     _MAPPING = {
         'id': 'id',
+        'deviceid': 'deviceid',
+        'config': 'config',
+        'plugin': 'plugin',
         'ip': 'ip',
         'mac': 'mac',
         'sn': 'sn',
-        'plugin': 'plugin',
         'vendor': 'vendor',
         'model': 'model',
         'version': 'version',
+        'proto': 'proto',
+        'internal': 'internal',
+        'configured': 'configured',
+        'commented': 'commented',
         'description': 'description',
-        'status': 'status',
-        'template_id': 'template_id'
+        'template_id': 'template_id',
     }
 
     _RELATION = {}
@@ -56,56 +58,37 @@ class Device(AbstractModels):
     def __init__(self, *args, **kwargs):
         AbstractModels.__init__(self, *args, **kwargs)
 
-    @classmethod
-    def from_provd(cls, device, config=None):
-        filtered_device = dict((key, value) for key, value in device.iteritems() if key in cls.PROVD_KEYS)
-        obj = cls(**filtered_device)
+    def to_provd_device(self):
+        provd_device = {
+            'commented': self._is_commented()
+        }
+        for key in self.PROVD_KEYS:
+            if hasattr(self, key):
+                provd_device[key] = getattr(self, key)
 
-        if config and 'configdevice' in config:
-            obj.template_id = config['configdevice']
+        return provd_device
 
-            if device['configured'] == True:
-                if device['config'].startswith('autoprov'):
-                    obj.status = 'autoprov'
-                else:
-                    obj.status = 'configured'
-            else:
-                obj.status = 'not_configured'
+    def to_provd_config(self):
+        template_id = getattr(self, 'template_id', 'defaultconfigdevice')
 
-        return obj
+        parent_ids = ['base', 'defaultconfigdevice']
+        if template_id not in parent_ids:
+            parent_ids.append(template_id)
+
+        return {
+            'id': self.id,
+            'configdevice': template_id,
+            'deletable': True,
+            'parent_ids': parent_ids,
+            'raw_config': {'X_key': ''}
+        }
+
+    def _is_commented(self):
+        if not hasattr(self, 'active'):
+            return 0
+        return bool(not self.active)
 
 
 class DeviceOrdering(object):
-    DIRECTIONS = ['desc', 'asc']
-
-    id = 'id'
-    ip = 'ip'
-    mac = 'mac'
-    plugin = 'plugin'
-    model = 'model'
-    vendor = 'vendor'
-    version = 'version'
-
-    @classmethod
-    def all_columns(cls):
-        return [cls.id, cls.ip, cls.mac, cls.plugin, cls.model, cls.vendor, cls.version]
-
-    @classmethod
-    def from_column_name(cls, column):
-        if column in cls.all_columns():
-            return column
-        return None
-
-    @classmethod
-    def directions(cls):
-        return cls.DIRECTIONS
-
-    @classmethod
-    def validate_order(cls, order):
-        if order not in cls.all_columns():
-            raise InvalidParametersError("ordering parameter '%s' does not exist" % order)
-
-    @classmethod
-    def validate_direction(cls, direction):
-        if direction not in cls.directions():
-            raise InvalidParametersError("direction parameter '%s' does not exist" % direction)
+    ip = DeviceSchema.ip
+    mac = DeviceSchema.mac

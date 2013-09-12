@@ -48,18 +48,6 @@ def get_extension_from_protocol_interface(session, protocol, interface):
 
 
 @daosession
-def get_peer_name(session, device_id):
-    row = (session
-           .query(LineFeatures.name, LineFeatures.protocol)
-           .filter(LineFeatures.device == str(device_id))).first()
-
-    if not row:
-        raise LookupError('No such device')
-
-    return '/'.join([row.protocol, row.name])
-
-
-@daosession
 def get_protocol(session, line_id):
     row = session.query(LineFeatures).filter(LineFeatures.id == line_id).first()
     if not row:
