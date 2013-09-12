@@ -25,7 +25,7 @@ from xivo_dao.data_handler.extension.model import Extension
 from xivo_dao.data_handler.line.model import LineSIP, LineSCCP
 from xivo_dao.data_handler.user_line_extension.model import UserLineExtension
 from xivo_dao.data_handler.exception import ElementCreationError, \
-    InvalidParametersError, ElementDeletionError, ElementNotExistsError, \
+    InvalidParametersError, ElementDeletionError, \
     ProvdError
 from xivo_dao.helpers import provd_connector
 
@@ -46,6 +46,16 @@ class TestDeviceServices(unittest.TestCase):
 
         self.assertEquals(result, device)
         dao_get.assert_called_once_with(self.device_id)
+
+    @patch('xivo_dao.data_handler.device.dao.total')
+    def test_total(self, dao_total):
+        total = 10
+        dao_total.return_value = total
+
+        result = device_services.total()
+
+        self.assertEquals(result, total)
+        dao_total.assert_called_once_with()
 
     @patch('xivo_dao.data_handler.device.dao.find_all')
     def test_find_all_no_devices(self, device_dao_find_all):
