@@ -220,6 +220,22 @@ class TestDeviceDao(DAOTestCase):
             assert_that(result, equal_to(expected))
             device_manager.find.assert_called_once_with(sort=('ip', 1))
 
+    @patch('xivo_dao.data_handler.device.dao.filter_list')
+    def test_find_all_with_search(self, filter_list):
+        expected = []
+        search_term = 'search'
+
+        with self.provd_managers() as (device_manager, config_manager, _):
+            device_manager.find.return_value = [self.provd_device]
+            config_manager.get.return_value = self.provd_config
+            filter_list.return_value = []
+
+            result = device_dao.find_all(search=search_term)
+
+            assert_that(result, equal_to(expected))
+            filter_list.assert_called_once_with(search_term, [self.provd_device])
+            device_manager.find.assert_called_once_with()
+
     def test_find_all_with_sort_and_order(self):
         expected = [self.expected_device]
 
@@ -301,6 +317,46 @@ class TestDeviceDao(DAOTestCase):
             device_manager.find.assert_called_once_with()
             config_manager.get.assert_any_call(provd_device1['config'])
             config_manager.get.assert_any_call(provd_device2['config'])
+
+    def test_filter_list_empty_list(self):
+        devices = []
+        expected = []
+        search = 'toto'
+
+        result = device_dao.filter_list(search, devices)
+        assert_that(result, equal_to(expected))
+
+    def test_filter_list_one_device_wrong_search(self):
+        devices = [self.provd_device]
+        expected = []
+        search = 'toto'
+
+        result = device_dao.filter_list(search, devices)
+        assert_that(result, equal_to(expected))
+
+    def test_filter_list_one_device_right_search(self):
+        devices = [self.provd_device]
+        expected = [self.provd_device]
+        search = self.deviceid[0:5]
+
+        result = device_dao.filter_list(search, devices)
+        assert_that(result, equal_to(expected))
+
+    def test_filter_list_one_device_uppercase_search(self):
+        devices = [self.provd_device]
+        expected = [self.provd_device]
+        search = self.deviceid.upper()
+
+        result = device_dao.filter_list(search, devices)
+        assert_that(result, equal_to(expected))
+
+    def test_filter_list_one_device_trailing_spaces(self):
+        devices = [self.provd_device]
+        expected = [self.provd_device]
+        search = ' %s ' % self.deviceid
+
+        result = device_dao.filter_list(search, devices)
+        assert_that(result, equal_to(expected))
 
     @patch('xivo_dao.data_handler.device.provd_builder.build_create')
     @patch('xivo_dao.data_handler.device.dao.generate_device_id')

@@ -80,13 +80,34 @@ def find(device_id):
     return _build_device(provd_device)
 
 
-def find_all(order=None, direction=None, limit=None, skip=None):
+def find_all(order=None, direction=None, limit=None, skip=None, search=None):
     parameters = _convert_provd_parameters(order, direction, limit, skip)
 
     device_manager = provd_connector.device_manager()
     provd_devices = device_manager.find(**parameters)
 
+    if search:
+        provd_devices = filter_list(search, provd_devices)
+
     return [_build_device(d) for d in provd_devices]
+
+
+def filter_list(search, devices):
+    found = []
+    search = search.lower().strip()
+
+    for device in devices:
+        if _device_matches_search(search, device):
+            found.append(device)
+
+    return found
+
+
+def _device_matches_search(search, device):
+    for key in Device.PROVD_KEYS:
+        if key in device and search in unicode(device[key]).lower():
+            return True
+    return False
 
 
 def _convert_provd_parameters(order, direction, limit, skip):
