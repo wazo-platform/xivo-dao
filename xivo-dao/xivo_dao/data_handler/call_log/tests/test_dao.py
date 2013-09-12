@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from datetime import datetime, timedelta
-from hamcrest import assert_that, contains_inanyorder, equal_to, has_length, has_property
+from hamcrest import assert_that, contains, contains_inanyorder, equal_to, has_length, has_property
 from mock import Mock, patch
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -129,13 +129,33 @@ class TestCallLogDAO(DAOTestCase):
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
 
-    def _mock_call_log(self, cel_ids=None, date=None):
+    def test_delete_from_list(self):
+        id_1, id_2, id_3 = [42, 43, 44]
+        call_logs = (self._mock_call_log(id=id_1), self._mock_call_log(id=id_2), self._mock_call_log(id=id_3))
+        call_log_dao.create_from_list(call_logs)
+
+        call_log_dao.delete_from_list([id_1, id_3])
+
+        call_log_rows = self.session.query(CallLogSchema).all()
+        assert_that(call_log_rows, contains(has_property('id', id_2)))
+
+    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    def test_delete_from_list_db_error(self, session_init):
+        session = Mock()
+        session.commit.side_effect = SQLAlchemyError()
+        session_init.return_value = session
+
+        self.assertRaises(ElementDeletionError, call_log_dao.delete_from_list, [1, 2])
+        session.begin.assert_called_once_with()
+        session.rollback.assert_called_once_with()
+
+    def _mock_call_log(self, cel_ids=None, date=None, id=None):
         if cel_ids is None:
             cel_ids = ()
         if date is None:
             date = datetime.now()
         call_log = Mock()
-        call_log.to_data_source.return_value = CallLogSchema(date=date, duration=timedelta(3))
+        call_log.to_data_source.return_value = CallLogSchema(id=id, date=date, duration=timedelta(3))
         call_log.get_related_cels.return_value = cel_ids
         call_log.date = date
         return call_log

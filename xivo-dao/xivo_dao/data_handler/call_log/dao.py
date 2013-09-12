@@ -79,3 +79,18 @@ def delete_all(session):
     except SQLAlchemyError as e:
         session.rollback()
         raise ElementDeletionError('CallLog', e)
+
+
+@daosession
+def delete_from_list(session, call_log_ids):
+    session.begin()
+    for call_log_id in call_log_ids:
+        (session
+         .query(CallLogSchema)
+         .filter(CallLogSchema.id == call_log_id)
+         .delete())
+    try:
+        session.commit()
+    except SQLAlchemyError as e:
+        session.rollback()
+        raise ElementDeletionError('CallLog', e)
