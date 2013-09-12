@@ -26,6 +26,7 @@ class CallLog(AbstractModels):
 
     # mapping = {db_field: model_field}
     _MAPPING = {
+        'id': 'id',
         'date': 'date',
         'source_name': 'source_name',
         'source_exten': 'source_exten',
