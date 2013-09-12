@@ -208,30 +208,30 @@ class DAOTestCase(unittest.TestCase):
         self.add_me(sccpline)
         return sccpline
 
-    def add_cel(self):
-        cel = CELSchema(
-            id=self._generate_id(),
-            eventtype='eventtype',
-            eventtime=datetime.datetime.now(),
-            userdeftype='userdeftype',
-            cid_name='cid_name',
-            cid_num='cid_num',
-            cid_ani='cid_ani',
-            cid_rdnis='cid_rdnis',
-            cid_dnid='cid_dnid',
-            exten='exten',
-            context='context',
-            channame='channame',
-            appname='appname',
-            appdata='appdata',
-            amaflags=0,
-            accountcode='accountcode',
-            peeraccount='peeraccount',
-            uniqueid='uniqueid',
-            linkedid='linkedid',
-            userfield='userfield',
-            peer='peer',
-        )
+    def add_cel(self, **kwargs):
+        kwargs.setdefault('id', self._generate_id())
+        kwargs.setdefault('eventtype', 'eventtype')
+        kwargs.setdefault('eventtime', datetime.datetime.now())
+        kwargs.setdefault('userdeftype', 'userdeftype')
+        kwargs.setdefault('cid_name', 'cid_name')
+        kwargs.setdefault('cid_num', 'cid_num')
+        kwargs.setdefault('cid_ani', 'cid_ani')
+        kwargs.setdefault('cid_rdnis', 'cid_rdnis')
+        kwargs.setdefault('cid_dnid', 'cid_dnid')
+        kwargs.setdefault('exten', 'exten')
+        kwargs.setdefault('context', 'context')
+        kwargs.setdefault('channame', 'channame')
+        kwargs.setdefault('appname', 'appname')
+        kwargs.setdefault('appdata', 'appdata')
+        kwargs.setdefault('amaflags', 0)
+        kwargs.setdefault('accountcode', 'accountcode')
+        kwargs.setdefault('peeraccount', 'peeraccount')
+        kwargs.setdefault('uniqueid', 'uniqueid')
+        kwargs.setdefault('linkedid', 'linkedid')
+        kwargs.setdefault('userfield', 'userfield')
+        kwargs.setdefault('peer', 'peer')
+
+        cel = CELSchema(**kwargs)
         self.add_me(cel)
         return cel.id
 

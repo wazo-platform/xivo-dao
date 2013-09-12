@@ -47,7 +47,7 @@ class TestCELDAO(DAOTestCase):
 
     def test_find_last_unprocessed_over_limit(self):
         limit = 2
-        _, cel_id_2, cel_id_3 = self.add_cel(), self.add_cel(), self.add_cel()
+        _, cel_id_2, cel_id_3 = self.add_cel(linkedid='1'), self.add_cel(linkedid='2'), self.add_cel(linkedid='3')
 
         result = cel_dao.find_last_unprocessed(limit)
 
@@ -56,16 +56,38 @@ class TestCELDAO(DAOTestCase):
 
     def test_find_last_unprocessed_under_limit(self):
         limit = 10
-        cel_id_1, cel_id_2 = self.add_cel(), self.add_cel()
+        cel_id_1, cel_id_2 = self.add_cel(linkedid='1'), self.add_cel(linkedid='2')
 
         result = cel_dao.find_last_unprocessed(limit)
 
         assert_that(result, contains(has_property('id', cel_id_1),
                                      has_property('id', cel_id_2)))
 
+    def test_find_last_unprocessed_under_limit_exceeding_limit_to_complete_call(self):
+        limit = 1
+        cel_id_1, cel_id_2 = self.add_cel(linkedid='1'), self.add_cel(linkedid='1')
+
+        result = cel_dao.find_last_unprocessed(limit)
+
+        assert_that(result, contains(has_property('id', cel_id_1),
+                                     has_property('id', cel_id_2)))
+
+    def test_find_last_unprocessed_under_limit_exceeding_limit_to_reprocess_partially_processed_call(self):
+        limit = 2
+        cel_id_1, cel_id_2 = self._add_processed_cel(linkedid='1'), self.add_cel(linkedid='1')
+        cel_id_3, cel_id_4 = self._add_processed_cel(linkedid='2'), self.add_cel(linkedid='2')
+
+        result = cel_dao.find_last_unprocessed(limit)
+
+        assert_that(result, contains(has_property('id', cel_id_1),
+                                     has_property('id', cel_id_2),
+                                     has_property('id', cel_id_3),
+                                     has_property('id', cel_id_4)))
+
     def test_find_last_unprocessed_with_only_processed(self):
         limit = 10
-        cel_id_1, cel_id_2 = self._add_processed_cel(), self._add_processed_cel()
+        self._add_processed_cel()
+        self._add_processed_cel()
 
         result = cel_dao.find_last_unprocessed(limit)
 
@@ -73,18 +95,33 @@ class TestCELDAO(DAOTestCase):
 
     def test_find_last_unprocessed_with_processed_and_unprocessed(self):
         limit = 10
-        cel_id_1, cel_id_2 = self._add_processed_cel(), self._add_processed_cel()
-        cel_id_3, cel_id_4 = self.add_cel(), self.add_cel()
+        self._add_processed_cel(linkedid='1')
+        self._add_processed_cel(linkedid='1')
+        cel_id_3, cel_id_4 = self.add_cel(linkedid='2'), self.add_cel(linkedid='2')
 
         result = cel_dao.find_last_unprocessed(limit)
 
         assert_that(result, contains(has_property('id', cel_id_3),
                                      has_property('id', cel_id_4)))
 
-    def _add_processed_cel(self):
+    def test_find_last_unprocessed_with_partially_processed(self):
+        limit = 10
+        cel_id_1, cel_id_2 = self.add_cel(linkedid='1'), self._add_processed_cel(linkedid='1')
+        cel_id_3, cel_id_4 = self._add_processed_cel(linkedid='2'), self.add_cel(linkedid='2')
+
+        result = cel_dao.find_last_unprocessed(limit)
+
+        assert_that(result, contains(has_property('id', cel_id_1),
+                                     has_property('id', cel_id_2),
+                                     has_property('id', cel_id_3),
+                                     has_property('id', cel_id_4)))
+
+    def _add_processed_cel(self, **kwargs):
         call_log_id = self._add_call()
-        cel_id = self.add_cel()
+        cel_id = self.add_cel(**kwargs)
         self._link_call_to_cel(call_log_id, cel_id)
+
+        return cel_id
 
     def _add_call(self, duration=datetime.timedelta(seconds=5)):
         call_log = CallLog(date=datetime.datetime.now(), duration=duration)

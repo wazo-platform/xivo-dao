@@ -21,12 +21,16 @@ from xivo_dao.alchemy.cel import CEL as CELSchema
 
 @daosession
 def find_last_unprocessed(session, limit):
+    linked_ids = (session
+                  .query(CELSchema.linkedid)
+                  .filter(CELSchema.call_log_id == None)
+                  .order_by(CELSchema.eventtime.desc())
+                  .limit(limit)
+                  .subquery())
     cel_rows = (session
                 .query(CELSchema)
-                .filter(CELSchema.call_log_id == None)
+                .filter(CELSchema.linkedid.in_(linked_ids))
                 .order_by(CELSchema.eventtime.desc())
-                .limit(limit)
-                .all()
-                )
+                .all())
     cel_rows.reverse()
     return cel_rows
