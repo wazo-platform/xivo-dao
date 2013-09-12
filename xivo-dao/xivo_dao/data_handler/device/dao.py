@@ -36,7 +36,8 @@ def get(device_id):
 
 def total():
     device_manager = provd_connector.device_manager()
-    return device_manager.count()
+    devices = device_manager.find(fields=['id'])
+    return len(devices)
 
 
 def _get_provd_device(device_id):
