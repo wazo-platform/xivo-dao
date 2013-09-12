@@ -61,8 +61,9 @@ class Device(AbstractModels):
         filtered_device = dict((key, value) for key, value in device.iteritems() if key in cls.PROVD_KEYS)
         obj = cls(**filtered_device)
 
-        if config and 'configdevice' in config:
-            obj.template_id = config['configdevice']
+        if config:
+            if 'configdevice' in config:
+                obj.template_id = config['configdevice']
 
             if device['configured'] == True:
                 if device['config'].startswith('autoprov'):
