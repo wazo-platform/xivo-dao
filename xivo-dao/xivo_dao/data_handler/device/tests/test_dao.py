@@ -99,6 +99,16 @@ class TestDeviceDao(DAOTestCase):
             self.assertRaises(ElementNotExistsError, device_dao.get, self.deviceid)
             device_manager.get.assert_called_once_with(self.deviceid)
 
+    def test_total(self):
+        total = 10
+
+        with self.provd_managers() as (device_manager, _, _):
+            device_manager.count.return_value = total
+
+            result = device_dao.total()
+            assert_that(result, equal_to(total))
+            device_manager.count.assert_called_once_with()
+
     def test_get_no_template(self):
         properties = dict(self.device_properties)
         del properties['template_id']

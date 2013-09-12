@@ -34,6 +34,11 @@ def get(device_id):
     return _build_device(provd_device)
 
 
+def total():
+    device_manager = provd_connector.device_manager()
+    return device_manager.count()
+
+
 def _get_provd_device(device_id):
     device_manager = provd_connector.device_manager()
 
