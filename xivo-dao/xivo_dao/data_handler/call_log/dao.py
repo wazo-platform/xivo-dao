@@ -45,7 +45,7 @@ def find_all_in_period(session, start, end):
 
 
 @daosession
-def create_all(session, call_logs):
+def create_from_list(session, call_logs):
     session.begin()
     for call_log in call_logs:
         call_log_row = _create_call_log(session, call_log)

@@ -49,7 +49,7 @@ class TestCallLogDAO(DAOTestCase):
 
     def test_find_all_found(self):
         call_logs = (self._mock_call_log(), self._mock_call_log())
-        call_log_dao.create_all(call_logs)
+        call_log_dao.create_from_list(call_logs)
 
         result = call_log_dao.find_all()
 
@@ -70,7 +70,7 @@ class TestCallLogDAO(DAOTestCase):
                                                     self._mock_call_log(date=datetime(2014, 1, 1, 13)))
         start = datetime(2013, 1, 1, 12)
         end = datetime(2013, 1, 3, 12)
-        call_log_dao.create_all(call_logs)
+        call_log_dao.create_from_list(call_logs)
 
         result = call_log_dao.find_all_in_period(start, end)
 
@@ -78,13 +78,13 @@ class TestCallLogDAO(DAOTestCase):
         assert_that(result, contains_inanyorder(has_property('date', call_log_1.date),
                                                 has_property('date', call_log_2.date)))
 
-    def test_create_all(self):
+    def test_create_from_list(self):
         cel_id_1, cel_id_2 = self.add_cel(), self.add_cel()
         cel_id_3, cel_id_4 = self.add_cel(), self.add_cel()
         call_logs = call_log_1, call_log_2 = (self._mock_call_log((cel_id_1, cel_id_2)),
                                               self._mock_call_log((cel_id_3, cel_id_4)))
 
-        call_log_dao.create_all(call_logs)
+        call_log_dao.create_from_list(call_logs)
 
         call_log_rows = self.session.query(CallLogSchema).all()
         assert_that(call_log_rows, has_length(2))
@@ -99,20 +99,20 @@ class TestCallLogDAO(DAOTestCase):
                                                   ))
 
     @patch('xivo_dao.helpers.db_manager.AsteriskSession')
-    def test_create_all_db_error(self, session_init):
+    def test_create_from_list_db_error(self, session_init):
         session = Mock()
         session.commit.side_effect = SQLAlchemyError()
         session_init.return_value = session
 
         call_logs = (self._mock_call_log(), self._mock_call_log())
 
-        self.assertRaises(ElementCreationError, call_log_dao.create_all, call_logs)
+        self.assertRaises(ElementCreationError, call_log_dao.create_from_list, call_logs)
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
 
     def test_delete_all(self):
         call_logs = (self._mock_call_log(), self._mock_call_log())
-        call_log_dao.create_all(call_logs)
+        call_log_dao.create_from_list(call_logs)
 
         call_log_dao.delete_all()
 
