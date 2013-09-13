@@ -238,7 +238,7 @@ def get_device_id(session, user_id):
            .first())
     if not row:
         raise LookupError('Cannot find a device from this user id %s' % user_id)
-    return int(row.device)
+    return row.device
 
 
 @daosession
