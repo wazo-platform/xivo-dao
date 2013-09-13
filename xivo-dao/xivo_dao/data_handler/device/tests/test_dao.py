@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
+import unittest
 
 from hamcrest import *
 from mock import Mock, patch
@@ -22,13 +23,12 @@ from StringIO import StringIO
 from contextlib import contextmanager
 
 from xivo_dao.data_handler.device import dao as device_dao
-from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.data_handler.device.model import Device
 from xivo_dao.data_handler.exception import ElementDeletionError, ElementCreationError, \
     ElementNotExistsError, ElementEditionError
 
 
-class TestDeviceDao(DAOTestCase):
+class TestDeviceDao(unittest.TestCase):
 
     def setUp(self):
         self.deviceid = "ad0a12fd5f244ae68a3c626789203698"
