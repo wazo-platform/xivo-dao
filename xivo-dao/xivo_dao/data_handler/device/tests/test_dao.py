@@ -194,17 +194,49 @@ class TestDeviceDao(unittest.TestCase):
             assert_that(result, equal_to(expected))
             device_manager.find.assert_called_once_with()
 
-    def test_find_all_with_parameters(self):
-        expected = [self.expected_device]
+    def test_find_all_with_search_and_limit(self):
+        device1 = dict(self.provd_device)
+        device2 = dict(self.provd_device)
+        device3 = dict(self.provd_device)
+
+        device1['ip'] = '10.1.0.1'
+        device2['ip'] = '10.0.0.1'
+        device3['ip'] = '10.1.0.2'
+
+        expected = [Device.from_provd(device1), Device.from_provd(device3)]
 
         with self.provd_managers() as (device_manager, config_manager, _):
-            device_manager.find.return_value = [self.provd_device]
-            config_manager.get.return_value = self.provd_config
+            device_manager.find.return_value = [device1, device2, device3]
+            config_manager.get.return_value = None
 
-            result = device_dao.find_all(order='ip', direction='desc', limit=1, skip=1)
+            result = device_dao.find_all(search='10.1', limit=2)
 
             assert_that(result, equal_to(expected))
-            device_manager.find.assert_called_once_with(sort=('ip', -1), limit=1, skip=1)
+            device_manager.find.assert_called_once_with()
+
+    def test_find_all_with_search_limit_and_skip(self):
+        device1 = dict(self.provd_device)
+        device2 = dict(self.provd_device)
+        device3 = dict(self.provd_device)
+        device4 = dict(self.provd_device)
+        device5 = dict(self.provd_device)
+
+        device1['ip'] = '10.0.0.1'
+        device2['ip'] = '10.1.0.2'
+        device3['ip'] = '10.1.0.3'
+        device4['ip'] = '10.1.0.4'
+        device5['ip'] = '10.1.0.5'
+
+        expected = [Device.from_provd(device3), Device.from_provd(device4)]
+
+        with self.provd_managers() as (device_manager, config_manager, _):
+            device_manager.find.return_value = [device1, device2, device3, device4, device5]
+            config_manager.get.return_value = None
+
+            result = device_dao.find_all(search='10.1', limit=2, skip=1)
+
+            assert_that(result, equal_to(expected))
+            device_manager.find.assert_called_once_with()
 
     def test_find_all_with_sort(self):
         expected = [self.expected_device]

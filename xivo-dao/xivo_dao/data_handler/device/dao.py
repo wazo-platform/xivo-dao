@@ -89,6 +89,12 @@ def find_all(order=None, direction=None, limit=None, skip=None, search=None):
     if search:
         provd_devices = filter_list(search, provd_devices)
 
+    skip = skip or 0
+    if limit:
+        provd_devices = provd_devices[skip:skip+limit]
+    else:
+        provd_devices = provd_devices[skip:]
+
     return [_build_device(d) for d in provd_devices]
 
 
@@ -116,12 +122,6 @@ def _convert_provd_parameters(order, direction, limit, skip):
     sort = _convert_order_and_direction(order, direction)
     if sort:
         parameters['sort'] = sort
-
-    if limit:
-        parameters['limit'] = limit
-
-    if skip:
-        parameters['skip'] = skip
 
     return parameters
 
