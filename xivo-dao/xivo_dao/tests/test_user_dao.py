@@ -637,7 +637,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.assertEqual(number, exten)
 
     def test_get_device_id_with_one_user(self):
-        device_id = 8
+        device_id = 'qwertyuiopasdfghjklzxcvbnm'
         user_line = self.add_user_line_with_exten(device=device_id)
 
         result = user_dao.get_device_id(user_line.user.id)
@@ -664,7 +664,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.assertRaises(LookupError, user_dao.get_device_id, user.id)
 
     def test_get_device_id_with_two_users(self):
-        device_id = 24
+        device_id = 'qwertyuiopasdfghjklzxcvbnm'
         self.add_user_line_with_exten(exten='1002',
                                       device=device_id)
         user_line_2 = self.add_user_line_with_exten(device=device_id)
