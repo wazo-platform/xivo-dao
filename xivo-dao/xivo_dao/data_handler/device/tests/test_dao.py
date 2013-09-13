@@ -158,8 +158,6 @@ class TestDeviceDao(unittest.TestCase):
 
             device = device_dao.get(expected_device.id)
 
-            print device.to_data_dict()
-            print expected_device.to_data_dict()
             assert_that(device, equal_to(expected_device))
             device_manager.get.assert_called_once_with(expected_device.id)
             config_manager.get.assert_called_once_with(self.deviceid)
