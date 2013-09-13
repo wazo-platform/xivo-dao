@@ -38,7 +38,7 @@ def total():
     return dao.total()
 
 
-def find_all(order=None, direction=None, skip=None, limit=None):
+def find_all(order=None, direction=None, skip=None, limit=None, search=None):
     if order:
         DeviceOrdering.validate_order(order)
     if direction:
@@ -48,7 +48,7 @@ def find_all(order=None, direction=None, skip=None, limit=None):
     if limit:
         _validate_limit(limit)
 
-    return dao.find_all(order=order, direction=direction, skip=skip, limit=limit)
+    return dao.find_all(order=order, direction=direction, skip=skip, limit=limit, search=search)
 
 
 def _validate_skip(skip):

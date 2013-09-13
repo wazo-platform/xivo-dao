@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
+import unittest
 
 from hamcrest import *
 from mock import Mock, patch
@@ -22,13 +23,12 @@ from StringIO import StringIO
 from contextlib import contextmanager
 
 from xivo_dao.data_handler.device import dao as device_dao
-from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.data_handler.device.model import Device
 from xivo_dao.data_handler.exception import ElementDeletionError, ElementCreationError, \
     ElementNotExistsError, ElementEditionError
 
 
-class TestDeviceDao(DAOTestCase):
+class TestDeviceDao(unittest.TestCase):
 
     def setUp(self):
         self.deviceid = "ad0a12fd5f244ae68a3c626789203698"
@@ -158,8 +158,6 @@ class TestDeviceDao(DAOTestCase):
 
             device = device_dao.get(expected_device.id)
 
-            print device.to_data_dict()
-            print expected_device.to_data_dict()
             assert_that(device, equal_to(expected_device))
             device_manager.get.assert_called_once_with(expected_device.id)
             config_manager.get.assert_called_once_with(self.deviceid)
@@ -196,17 +194,49 @@ class TestDeviceDao(DAOTestCase):
             assert_that(result, equal_to(expected))
             device_manager.find.assert_called_once_with()
 
-    def test_find_all_with_parameters(self):
-        expected = [self.expected_device]
+    def test_find_all_with_search_and_limit(self):
+        device1 = dict(self.provd_device)
+        device2 = dict(self.provd_device)
+        device3 = dict(self.provd_device)
+
+        device1['ip'] = '10.1.0.1'
+        device2['ip'] = '10.0.0.1'
+        device3['ip'] = '10.1.0.2'
+
+        expected = [Device.from_provd(device1), Device.from_provd(device3)]
 
         with self.provd_managers() as (device_manager, config_manager, _):
-            device_manager.find.return_value = [self.provd_device]
-            config_manager.get.return_value = self.provd_config
+            device_manager.find.return_value = [device1, device2, device3]
+            config_manager.get.return_value = None
 
-            result = device_dao.find_all(order='ip', direction='desc', limit=1, skip=1)
+            result = device_dao.find_all(search='10.1', limit=2)
 
             assert_that(result, equal_to(expected))
-            device_manager.find.assert_called_once_with(sort=('ip', -1), limit=1, skip=1)
+            device_manager.find.assert_called_once_with()
+
+    def test_find_all_with_search_limit_and_skip(self):
+        device1 = dict(self.provd_device)
+        device2 = dict(self.provd_device)
+        device3 = dict(self.provd_device)
+        device4 = dict(self.provd_device)
+        device5 = dict(self.provd_device)
+
+        device1['ip'] = '10.0.0.1'
+        device2['ip'] = '10.1.0.2'
+        device3['ip'] = '10.1.0.3'
+        device4['ip'] = '10.1.0.4'
+        device5['ip'] = '10.1.0.5'
+
+        expected = [Device.from_provd(device3), Device.from_provd(device4)]
+
+        with self.provd_managers() as (device_manager, config_manager, _):
+            device_manager.find.return_value = [device1, device2, device3, device4, device5]
+            config_manager.get.return_value = None
+
+            result = device_dao.find_all(search='10.1', limit=2, skip=1)
+
+            assert_that(result, equal_to(expected))
+            device_manager.find.assert_called_once_with()
 
     def test_find_all_with_sort(self):
         expected = [self.expected_device]
@@ -219,6 +249,22 @@ class TestDeviceDao(DAOTestCase):
 
             assert_that(result, equal_to(expected))
             device_manager.find.assert_called_once_with(sort=('ip', 1))
+
+    @patch('xivo_dao.data_handler.device.dao.filter_list')
+    def test_find_all_with_search(self, filter_list):
+        expected = []
+        search_term = 'search'
+
+        with self.provd_managers() as (device_manager, config_manager, _):
+            device_manager.find.return_value = [self.provd_device]
+            config_manager.get.return_value = self.provd_config
+            filter_list.return_value = []
+
+            result = device_dao.find_all(search=search_term)
+
+            assert_that(result, equal_to(expected))
+            filter_list.assert_called_once_with(search_term, [self.provd_device])
+            device_manager.find.assert_called_once_with()
 
     def test_find_all_with_sort_and_order(self):
         expected = [self.expected_device]
@@ -301,6 +347,46 @@ class TestDeviceDao(DAOTestCase):
             device_manager.find.assert_called_once_with()
             config_manager.get.assert_any_call(provd_device1['config'])
             config_manager.get.assert_any_call(provd_device2['config'])
+
+    def test_filter_list_empty_list(self):
+        devices = []
+        expected = []
+        search = 'toto'
+
+        result = device_dao.filter_list(search, devices)
+        assert_that(result, equal_to(expected))
+
+    def test_filter_list_one_device_wrong_search(self):
+        devices = [self.provd_device]
+        expected = []
+        search = 'toto'
+
+        result = device_dao.filter_list(search, devices)
+        assert_that(result, equal_to(expected))
+
+    def test_filter_list_one_device_right_search(self):
+        devices = [self.provd_device]
+        expected = [self.provd_device]
+        search = self.deviceid[0:5]
+
+        result = device_dao.filter_list(search, devices)
+        assert_that(result, equal_to(expected))
+
+    def test_filter_list_one_device_uppercase_search(self):
+        devices = [self.provd_device]
+        expected = [self.provd_device]
+        search = self.deviceid.upper()
+
+        result = device_dao.filter_list(search, devices)
+        assert_that(result, equal_to(expected))
+
+    def test_filter_list_one_device_trailing_spaces(self):
+        devices = [self.provd_device]
+        expected = [self.provd_device]
+        search = ' %s ' % self.deviceid
+
+        result = device_dao.filter_list(search, devices)
+        assert_that(result, equal_to(expected))
 
     @patch('xivo_dao.data_handler.device.provd_builder.build_create')
     @patch('xivo_dao.data_handler.device.dao.generate_device_id')
