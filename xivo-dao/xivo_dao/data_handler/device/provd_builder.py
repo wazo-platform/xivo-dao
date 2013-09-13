@@ -16,6 +16,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.data_handler.device.model import Device
+from xivo_dao.helpers import provd_connector
+from xivo import caller_id
+from xivo_dao.data_handler.exception import ProvdError
 
 
 def build_create(device):
@@ -62,11 +65,72 @@ def _build_parent_ids(device):
     return parent_ids
 
 
+def link_device_config(device):
+    provd_device_manager = provd_connector.device_manager()
+    try:
+        provd_device = provd_device_manager.get(device.id)
+        provd_device['config'] = device.id
+        provd_device_manager.update(provd_device)
+    except Exception as e:
+        raise ProvdError('error while linking config to device.', e)
+
+
+def populate_sip_line(config, confregistrar, line, extension):
+    provd_config_manager = provd_connector.config_manager()
+    if 'sip_lines' not in config['raw_config']:
+        config['raw_config']['sip_lines'] = dict()
+    config['raw_config']['sip_lines'][str(line.device_slot)] = dict()
+    line_dict = config['raw_config']['sip_lines'][str(line.device_slot)]
+    line_dict['auth_username'] = line.name
+    line_dict['username'] = line.name
+    line_dict['password'] = line.secret
+    line_dict['display_name'] = caller_id.extract_displayname(line.callerid)
+    line_dict['number'] = extension.exten
+    line_dict['registrar_ip'] = confregistrar['registrar_main']
+    line_dict['proxy_ip'] = confregistrar['proxy_main']
+    if 'proxy_backup' in confregistrar and len(confregistrar['proxy_backup']) > 0:
+        line_dict['backup_registrar_ip'] = confregistrar['registrar_backup']
+        line_dict['backup_proxy_ip'] = confregistrar['proxy_backup']
+    provd_config_manager.update(config)
+
+
+def populate_sccp_line(config, confregistrar):
+    provd_config_manager = provd_connector.config_manager()
+    config['raw_config']['sccp_call_managers'] = dict()
+    config['raw_config']['sccp_call_managers'][1] = dict()
+    config['raw_config']['sccp_call_managers'][1]['ip'] = confregistrar['proxy_main']
+    if 'proxy_backup' in confregistrar and len(confregistrar['proxy_backup']) > 0:
+        config['raw_config']['sccp_call_managers'][2] = dict()
+        config['raw_config']['sccp_call_managers'][2]['ip'] = confregistrar['proxy_backup']
+    provd_config_manager.update(config)
+
+
 def build_edit(device, provd_device, provd_config):
     new_provd_device = _update_provd_device(device, provd_device)
     new_provd_config = _update_provd_config(device, provd_config)
 
     return (new_provd_device, new_provd_config)
+
+
+def generate_autoprov_config():
+    provd_config_manager = provd_connector.config_manager()
+    new_configid = provd_config_manager.autocreate()
+    return new_configid
+
+
+def reset_config(config):
+    _reset_funckeys_config(config)
+    _reset_sip_config(config)
+
+
+def _reset_funckeys_config(config):
+    if 'funckeys' in config['raw_config']:
+        del config['raw_config']['funckeys']
+
+
+def _reset_sip_config(config):
+    if 'sip_lines' in config['raw_config']:
+        del config['raw_config']['sip_lines']
 
 
 def _update_provd_device(device, provd_device):

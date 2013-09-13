@@ -589,9 +589,11 @@ class TestDeviceServices(unittest.TestCase):
         self.assertEquals(config_manager().update.call_count, 0)
         self.assertEquals(reset_to_autoprov.update.call_count, 0)
 
+    @patch('xivo_dao.data_handler.device.services.reset_to_autoprov')
+    @patch('xivo_dao.data_handler.device.provd_builder.reset_config')
     @patch('xivo_dao.helpers.provd_connector.config_manager')
     @patch('xivo_dao.helpers.provd_connector.device_manager')
-    def test_remove_line_from_device_no_funckeys(self, device_manager, config_manager):
+    def test_remove_line_from_device_no_funckeys(self, device_manager, config_manager, reset_config, reset_to_autoprov):
         autoprovid = "autoprov1234"
         config_dict = {
             "raw_config": {
@@ -619,6 +621,9 @@ class TestDeviceServices(unittest.TestCase):
         except:
             self.fail("An exception was raised whereas it should not")
 
+        reset_config.assert_called_once_with(config_dict)
+        reset_to_autoprov.assert_called_once_with(device)
+
     @patch('xivo_dao.helpers.provd_connector.device_manager')
     def test_synchronize(self, device_manager):
         device = Device(id=self.device_id)
@@ -636,21 +641,24 @@ class TestDeviceServices(unittest.TestCase):
         self.assertRaises(ProvdError, device_services.synchronize, device)
         device_manager().synchronize.assert_called_with(self.device_id)
 
+    @patch('xivo_dao.data_handler.line.dao.reset_device', Mock(return_value=None))
+    @patch('xivo_dao.data_handler.device.provd_builder.generate_autoprov_config')
     @patch('xivo_dao.helpers.provd_connector.config_manager')
     @patch('xivo_dao.helpers.provd_connector.device_manager')
-    def test_autoprov(self, device_manager, config_manager):
+    def test_autoprov(self, device_manager, config_manager, generate_autoprov_config):
         device = Device(id=self.device_id)
 
         config_device = {}
         config_device['id'] = device.id
         config_device['config'] = 'qwerty'
 
+        generate_autoprov_config.return_value = 'autoprov123'
         device_manager().get.return_value = config_device
         config_manager().autocreate.return_value = 'autocreate123'
 
         device_services.reset_to_autoprov(device)
 
-        config_manager().autocreate.assert_called_once_with()
+        generate_autoprov_config.assert_called_once_with()
         device_manager().get.assert_called_with(self.device_id)
         device_manager().update.assert_called_with(config_device)
 

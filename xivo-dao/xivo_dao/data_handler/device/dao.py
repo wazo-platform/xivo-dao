@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-
 from urllib2 import HTTPError
 
 from xivo_dao.data_handler.device.model import Device, DeviceOrdering, SearchResult
@@ -24,7 +23,6 @@ from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementDeletionError, ElementCreationError, InvalidParametersError, \
     ElementEditionError
 from xivo_dao.helpers import provd_connector
-
 
 DEFAULT_ORDER = [DeviceOrdering.ip, DeviceOrdering.mac]
 
