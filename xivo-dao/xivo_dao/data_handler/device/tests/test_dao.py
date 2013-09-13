@@ -23,7 +23,7 @@ from StringIO import StringIO
 from contextlib import contextmanager
 
 from xivo_dao.data_handler.device import dao as device_dao
-from xivo_dao.data_handler.device.model import Device
+from xivo_dao.data_handler.device.model import Device, SearchResult
 from xivo_dao.data_handler.exception import ElementDeletionError, ElementCreationError, \
     ElementNotExistsError, ElementEditionError
 
@@ -99,18 +99,6 @@ class TestDeviceDao(unittest.TestCase):
             self.assertRaises(ElementNotExistsError, device_dao.get, self.deviceid)
             device_manager.get.assert_called_once_with(self.deviceid)
 
-    def test_total(self):
-        total = 2
-
-        devices = [Mock(), Mock()]
-
-        with self.provd_managers() as (device_manager, _, _):
-            device_manager.find.return_value = devices
-
-            result = device_dao.total()
-            assert_that(result, equal_to(total))
-            device_manager.find.assert_called_once_with(fields=['id'])
-
     def test_get_no_template(self):
         properties = dict(self.device_properties)
         del properties['template_id']
@@ -184,12 +172,25 @@ class TestDeviceDao(unittest.TestCase):
             device_manager.find.assert_called_once_with({'id': self.deviceid})
 
     def test_find_all_no_devices(self):
-        expected = []
+        expected = SearchResult(items=[], total=0)
 
         with self.provd_managers() as (device_manager, config_manager, _):
             device_manager.find.return_value = []
 
             result = device_dao.find_all()
+
+            assert_that(result, equal_to(expected))
+            device_manager.find.assert_called_once_with()
+
+    def test_find_all_with_search_returning_no_results(self):
+        expected = SearchResult(items=[], total=0)
+        search_term = 'search'
+
+        with self.provd_managers() as (device_manager, config_manager, _):
+            device_manager.find.return_value = [self.provd_device]
+            config_manager.get.return_value = self.provd_config
+
+            result = device_dao.find_all(search=search_term)
 
             assert_that(result, equal_to(expected))
             device_manager.find.assert_called_once_with()
@@ -203,13 +204,14 @@ class TestDeviceDao(unittest.TestCase):
         device2['ip'] = '10.0.0.1'
         device3['ip'] = '10.1.0.2'
 
-        expected = [Device.from_provd(device1), Device.from_provd(device3)]
+        devices = [Device.from_provd(device1)]
+        expected = SearchResult(items=devices, total=2)
 
         with self.provd_managers() as (device_manager, config_manager, _):
             device_manager.find.return_value = [device1, device2, device3]
             config_manager.get.return_value = None
 
-            result = device_dao.find_all(search='10.1', limit=2)
+            result = device_dao.find_all(search='10.1', limit=1)
 
             assert_that(result, equal_to(expected))
             device_manager.find.assert_called_once_with()
@@ -227,7 +229,8 @@ class TestDeviceDao(unittest.TestCase):
         device4['ip'] = '10.1.0.4'
         device5['ip'] = '10.1.0.5'
 
-        expected = [Device.from_provd(device3), Device.from_provd(device4)]
+        devices = [Device.from_provd(device3), Device.from_provd(device4)]
+        expected = SearchResult(items=devices, total=4)
 
         with self.provd_managers() as (device_manager, config_manager, _):
             device_manager.find.return_value = [device1, device2, device3, device4, device5]
@@ -239,7 +242,7 @@ class TestDeviceDao(unittest.TestCase):
             device_manager.find.assert_called_once_with()
 
     def test_find_all_with_sort(self):
-        expected = [self.expected_device]
+        expected = SearchResult(items=[self.expected_device], total=1)
 
         with self.provd_managers() as (device_manager, config_manager, _):
             device_manager.find.return_value = [self.provd_device]
@@ -250,24 +253,8 @@ class TestDeviceDao(unittest.TestCase):
             assert_that(result, equal_to(expected))
             device_manager.find.assert_called_once_with(sort=('ip', 1))
 
-    @patch('xivo_dao.data_handler.device.dao.filter_list')
-    def test_find_all_with_search(self, filter_list):
-        expected = []
-        search_term = 'search'
-
-        with self.provd_managers() as (device_manager, config_manager, _):
-            device_manager.find.return_value = [self.provd_device]
-            config_manager.get.return_value = self.provd_config
-            filter_list.return_value = []
-
-            result = device_dao.find_all(search=search_term)
-
-            assert_that(result, equal_to(expected))
-            filter_list.assert_called_once_with(search_term, [self.provd_device])
-            device_manager.find.assert_called_once_with()
-
     def test_find_all_with_sort_and_order(self):
-        expected = [self.expected_device]
+        expected = SearchResult(items=[self.expected_device], total=1)
 
         with self.provd_managers() as (device_manager, config_manager, _):
             device_manager.find.return_value = [self.provd_device]
@@ -336,13 +323,16 @@ class TestDeviceDao(unittest.TestCase):
         expected_device1 = Device(**device1)
         expected_device2 = Device(**device2)
 
+        total_devices = 2
+
         with self.provd_managers() as (device_manager, config_manager, _):
             device_manager.find.return_value = [provd_device1, provd_device2]
             config_manager.get.return_value = self.provd_config
 
             result = device_dao.find_all()
 
-            assert_that(result, has_items(expected_device1, expected_device2))
+            assert_that(result.total, equal_to(total_devices))
+            assert_that(result.items, has_items(expected_device1, expected_device2))
 
             device_manager.find.assert_called_once_with()
             config_manager.get.assert_any_call(provd_device1['config'])

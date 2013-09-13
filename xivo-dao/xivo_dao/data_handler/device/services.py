@@ -34,10 +34,6 @@ def get(device_id):
     return dao.get(device_id)
 
 
-def total():
-    return dao.total()
-
-
 def find_all(order=None, direction=None, skip=None, limit=None, search=None):
     if order:
         DeviceOrdering.validate_order(order)

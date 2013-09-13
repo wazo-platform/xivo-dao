@@ -18,7 +18,7 @@
 
 from urllib2 import HTTPError
 
-from xivo_dao.data_handler.device.model import Device, DeviceOrdering
+from xivo_dao.data_handler.device.model import Device, DeviceOrdering, SearchResult
 from xivo_dao.data_handler.device import provd_builder
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementDeletionError, ElementCreationError, InvalidParametersError, \
@@ -32,12 +32,6 @@ DEFAULT_ORDER = [DeviceOrdering.ip, DeviceOrdering.mac]
 def get(device_id):
     provd_device = _get_provd_device(device_id)
     return _build_device(provd_device)
-
-
-def total():
-    device_manager = provd_connector.device_manager()
-    devices = device_manager.find(fields=['id'])
-    return len(devices)
 
 
 def _get_provd_device(device_id):
@@ -89,13 +83,17 @@ def find_all(order=None, direction=None, limit=None, skip=None, search=None):
     if search:
         provd_devices = filter_list(search, provd_devices)
 
+    total = len(provd_devices)
+
     skip = skip or 0
     if limit:
-        provd_devices = provd_devices[skip:skip+limit]
+        provd_devices = provd_devices[skip:skip + limit]
     else:
         provd_devices = provd_devices[skip:]
 
-    return [_build_device(d) for d in provd_devices]
+    items = [_build_device(d) for d in provd_devices]
+
+    return SearchResult(total=total, items=items)
 
 
 def filter_list(search, devices):
@@ -164,7 +162,7 @@ def _delete_provd_config(device):
     provd_config_manager = provd_connector.config_manager()
     try:
         provd_config_manager.remove(device.id)
-    except Exception as e:
+    except Exception:
         pass
 
 

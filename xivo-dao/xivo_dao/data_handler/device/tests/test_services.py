@@ -20,7 +20,7 @@ import unittest
 from mock import patch, Mock
 from urllib2 import URLError
 from xivo_dao.data_handler.device import services as device_services
-from xivo_dao.data_handler.device.model import Device, DeviceOrdering
+from xivo_dao.data_handler.device.model import Device, DeviceOrdering, SearchResult
 from xivo_dao.data_handler.extension.model import Extension
 from xivo_dao.data_handler.line.model import LineSIP, LineSCCP
 from xivo_dao.data_handler.user_line_extension.model import UserLineExtension
@@ -47,19 +47,9 @@ class TestDeviceServices(unittest.TestCase):
         self.assertEquals(result, device)
         dao_get.assert_called_once_with(self.device_id)
 
-    @patch('xivo_dao.data_handler.device.dao.total')
-    def test_total(self, dao_total):
-        total = 10
-        dao_total.return_value = total
-
-        result = device_services.total()
-
-        self.assertEquals(result, total)
-        dao_total.assert_called_once_with()
-
     @patch('xivo_dao.data_handler.device.dao.find_all')
     def test_find_all_no_devices(self, device_dao_find_all):
-        expected = []
+        expected = Mock(SearchResult)
 
         device_dao_find_all.return_value = expected
 
@@ -70,10 +60,7 @@ class TestDeviceServices(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.device.dao.find_all')
     def test_find_all(self, device_dao_find_all):
-        first_device = Mock(Device)
-        second_device = Mock(Device)
-
-        expected = [first_device, second_device]
+        expected = Mock(SearchResult)
 
         device_dao_find_all.return_value = expected
 
@@ -89,9 +76,7 @@ class TestDeviceServices(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.device.dao.find_all')
     def test_find_all_with_valid_order(self, device_dao_find_all):
-        device = Mock(Device)
-
-        expected = [device]
+        expected = Mock(SearchResult)
 
         device_dao_find_all.return_value = expected
 
@@ -107,9 +92,7 @@ class TestDeviceServices(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.device.dao.find_all')
     def test_find_all_with_valid_direction(self, device_dao_find_all):
-        device = Mock(Device)
-
-        expected = [device]
+        expected = Mock(SearchResult)
 
         device_dao_find_all.return_value = expected
 
@@ -125,9 +108,7 @@ class TestDeviceServices(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.device.dao.find_all')
     def test_find_all_with_valid_limit(self, device_dao_find_all):
-        device = Mock(Device)
-
-        expected = [device]
+        expected = Mock(SearchResult)
 
         device_dao_find_all.return_value = expected
 
@@ -143,9 +124,7 @@ class TestDeviceServices(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.device.dao.find_all')
     def test_find_all_with_valid_skip(self, device_dao_find_all):
-        device = Mock(Device)
-
-        expected = [device]
+        expected = Mock(SearchResult)
 
         device_dao_find_all.return_value = expected
 
