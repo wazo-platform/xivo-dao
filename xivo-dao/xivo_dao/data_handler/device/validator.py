@@ -22,7 +22,7 @@ from xivo_dao.data_handler.exception import ElementAlreadyExistsError, InvalidPa
     NonexistentParametersError
 
 
-IP_REGEX = re.compile(r'(1?\d{1,2}|2([0-4][0-9]|5[0-5]))(\.1?\d{1,2}|2([0-4][0-9]|5[0-5])){3}$')
+IP_REGEX = re.compile(r'(1?\d{1,2}|2([0-4][0-9]|5[0-5]))(\.(1?\d{1,2}|2([0-4][0-9]|5[0-5]))){3}$')
 MAC_REGEX = re.compile(r'^([0-9A-Fa-f]{2})(:[0-9A-Fa-f]{2}){5}$')
 
 
