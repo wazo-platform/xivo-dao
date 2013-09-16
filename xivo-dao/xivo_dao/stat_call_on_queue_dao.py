@@ -62,7 +62,7 @@ def add_timeout_call(dao_sess, callid, time, queue_name, waittime):
     _add_call(dao_sess, callid, time, queue_name, 'timeout', waittime)
 
 
-def get_periodic_stats(session, start, end):
+def get_periodic_stats_quarter_hour(session, start, end):
     stats = {}
 
     rows = (session
