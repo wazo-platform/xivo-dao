@@ -98,6 +98,15 @@ class AbstractModels(object):
     def from_user_data(cls, properties):
         return cls(**properties)
 
+    def to_user_data(self):
+        data_dict = {}
+        for model_field in self._MAPPING.values():
+            if hasattr(self, model_field):
+                field_value = getattr(self, model_field)
+                data_dict[model_field] = field_value
+
+        return data_dict
+
     def invalid_parameters(self, parameters):
         allowed = self._MAPPING.values() + self._RELATION.values()
         return set(parameters).difference(set(allowed))
