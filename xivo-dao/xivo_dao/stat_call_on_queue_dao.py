@@ -63,33 +63,19 @@ def add_timeout_call(dao_sess, callid, time, queue_name, waittime):
 
 
 def get_periodic_stats_quarter_hour(session, start, end):
-    stats = {}
-
-    rows = (session
-            .query(_round_time_to_previous_quarter_hour().label('the_time'),
-                   StatCallOnQueue.queue_id,
-                   StatCallOnQueue.status,
-                   func.count(StatCallOnQueue.status))
-            .group_by('the_time',
-                      StatCallOnQueue.queue_id,
-                      StatCallOnQueue.status)
-            .filter(between(StatCallOnQueue.time, start, end)))
-
-    for period, queue_id, status, number in rows.all():
-        if period not in stats:
-            stats[period] = {}
-        if queue_id not in stats[period]:
-            stats[period][queue_id] = {'total': 0}
-        stats[period][queue_id][status] = number
-        stats[period][queue_id]['total'] += number
-
-    return stats
+    quarter_hour_step = func.date_trunc(literal('hour'), StatCallOnQueue.time) + \
+                        (cast(extract('minute', StatCallOnQueue.time), Integer) / 15) * timedelta(minutes=15)
+    return _get_periodic_stat_by_step(session, start, end, quarter_hour_step)
 
 def get_periodic_stats_hour(session, start, end):
+    one_hour_step = func.date_trunc(literal('hour'), StatCallOnQueue.time)
+    return _get_periodic_stat_by_step(session, start, end, one_hour_step)
+
+def _get_periodic_stat_by_step(session, start, end, step):
     stats = {}
 
     rows = (session
-            .query(func.date_trunc(literal('hour'), StatCallOnQueue.time).label('the_time'),
+            .query(step.label('the_time'),
                    StatCallOnQueue.queue_id,
                    StatCallOnQueue.status,
                    func.count(StatCallOnQueue.status))
@@ -107,11 +93,6 @@ def get_periodic_stats_hour(session, start, end):
         stats[period][queue_id]['total'] += number
 
     return stats
-
-def _round_time_to_previous_quarter_hour():
-    return func.date_trunc(literal('hour'), StatCallOnQueue.time) + \
-           (cast(extract('minute', StatCallOnQueue.time), Integer) / 15) * timedelta(minutes=15)
-
 
 def clean_table(session):
     session.query(StatCallOnQueue).delete()
