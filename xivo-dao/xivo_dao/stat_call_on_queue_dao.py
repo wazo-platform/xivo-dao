@@ -85,6 +85,29 @@ def get_periodic_stats_quarter_hour(session, start, end):
 
     return stats
 
+def get_periodic_stats_hour(session, start, end):
+    stats = {}
+
+    rows = (session
+            .query(func.date_trunc(literal('hour'), StatCallOnQueue.time).label('the_time'),
+                   StatCallOnQueue.queue_id,
+                   StatCallOnQueue.status,
+                   func.count(StatCallOnQueue.status))
+            .group_by('the_time',
+                      StatCallOnQueue.queue_id,
+                      StatCallOnQueue.status)
+            .filter(between(StatCallOnQueue.time, start, end)))
+
+    for period, queue_id, status, number in rows.all():
+        if period not in stats:
+            stats[period] = {}
+        if queue_id not in stats[period]:
+            stats[period][queue_id] = {'total': 0}
+        stats[period][queue_id][status] = number
+        stats[period][queue_id]['total'] += number
+
+    return stats
+
 def _round_time_to_previous_quarter_hour():
     return func.date_trunc(literal('hour'), StatCallOnQueue.time) + \
            (cast(extract('minute', StatCallOnQueue.time), Integer) / 15) * timedelta(minutes=15)

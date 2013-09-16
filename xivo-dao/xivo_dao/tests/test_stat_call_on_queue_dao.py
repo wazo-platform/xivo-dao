@@ -125,7 +125,7 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         self.assertEqual(res[0].callid, 'callid')
         self.assertEqual(res[0].waittime, 27)
 
-    def test_get_periodic_stats_quarter_hour_full(self):
+    def test_get_periodic_stats_full(self):
         start = datetime.datetime(2012, 01, 01, 00, 00, 00)
         end = datetime.datetime(2012, 01, 01, 3, 0, 0)
 
@@ -136,17 +136,25 @@ class TestStatCallOnQueueDAO(DAOTestCase):
             time = start + delta
             stat_call_on_queue_dao.add_full_call(self.session, 'callid%s' % minute_increment, time, queue_name)
 
-        stats = stat_call_on_queue_dao.get_periodic_stats_quarter_hour(self.session, start, end)
+        stats_quarter_hour = stat_call_on_queue_dao.get_periodic_stats_quarter_hour(self.session, start, end)
 
-        self.assertTrue(datetime.datetime(2012, 1, 1) in stats)
-        self.assertTrue(datetime.datetime(2012, 1, 1, 1) in stats)
-        self.assertTrue(datetime.datetime(2012, 1, 1, 2) in stats)
+        self.assertTrue(datetime.datetime(2012, 1, 1) in stats_quarter_hour)
+        self.assertTrue(datetime.datetime(2012, 1, 1, 1) in stats_quarter_hour)
+        self.assertTrue(datetime.datetime(2012, 1, 1, 2) in stats_quarter_hour)
 
-        self.assertEqual(stats[start][queue_id]['full'], 1)
-        self.assertEqual(stats[start + datetime.timedelta(minutes=15)][queue_id]['full'], 2)
-        self.assertEqual(stats[start + datetime.timedelta(minutes=30)][queue_id]['full'], 1)
+        self.assertEqual(stats_quarter_hour[start][queue_id]['full'], 1)
+        self.assertEqual(stats_quarter_hour[start + datetime.timedelta(minutes=15)][queue_id]['full'], 2)
+        self.assertEqual(stats_quarter_hour[start + datetime.timedelta(minutes=30)][queue_id]['full'], 1)
 
-    def test_get_periodic_stats_quarter_hour_closed(self):
+        stats_hour = stat_call_on_queue_dao.get_periodic_stats_hour(self.session, start, end)
+
+        self.assertTrue(datetime.datetime(2012, 1, 1) in stats_hour)
+        self.assertTrue(datetime.datetime(2012, 1, 1, 1) in stats_hour)
+        self.assertTrue(datetime.datetime(2012, 1, 1, 2) in stats_hour)
+
+        self.assertEqual(stats_hour[start][queue_id]['full'], 4)
+
+    def test_get_periodic_stats_closed(self):
         start = datetime.datetime(2012, 01, 01, 00, 00, 00)
         end = datetime.datetime(2012, 01, 31, 23, 59, 59, 999999)
 
@@ -157,17 +165,25 @@ class TestStatCallOnQueueDAO(DAOTestCase):
             time = start + delta
             stat_call_on_queue_dao.add_closed_call(self.session, 'callid%s' % minute_increment, time, queue_name)
 
-        stats = stat_call_on_queue_dao.get_periodic_stats_quarter_hour(self.session, start, end)
+        stats_quarter_hour = stat_call_on_queue_dao.get_periodic_stats_quarter_hour(self.session, start, end)
 
-        self.assertTrue(datetime.datetime(2012, 1, 1) in stats)
-        self.assertTrue(datetime.datetime(2012, 1, 1, 1) in stats)
-        self.assertTrue(datetime.datetime(2012, 1, 1, 2) in stats)
+        self.assertTrue(datetime.datetime(2012, 1, 1) in stats_quarter_hour)
+        self.assertTrue(datetime.datetime(2012, 1, 1, 1) in stats_quarter_hour)
+        self.assertTrue(datetime.datetime(2012, 1, 1, 2) in stats_quarter_hour)
 
-        self.assertEqual(stats[start][queue_id]['closed'], 1)
-        self.assertEqual(stats[start + datetime.timedelta(minutes=15)][queue_id]['closed'], 2)
-        self.assertEqual(stats[start + datetime.timedelta(minutes=30)][queue_id]['closed'], 1)
+        self.assertEqual(stats_quarter_hour[start][queue_id]['closed'], 1)
+        self.assertEqual(stats_quarter_hour[start + datetime.timedelta(minutes=15)][queue_id]['closed'], 2)
+        self.assertEqual(stats_quarter_hour[start + datetime.timedelta(minutes=30)][queue_id]['closed'], 1)
 
-    def test_get_periodic_stats_quarter_hour_total(self):
+        stats_hour = stat_call_on_queue_dao.get_periodic_stats_hour(self.session, start, end)
+
+        self.assertTrue(datetime.datetime(2012, 1, 1) in stats_hour)
+        self.assertTrue(datetime.datetime(2012, 1, 1, 1) in stats_hour)
+        self.assertTrue(datetime.datetime(2012, 1, 1, 2) in stats_hour)
+
+        self.assertEqual(stats_hour[start][queue_id]['closed'], 4)
+
+    def test_get_periodic_stats_total(self):
         start = datetime.datetime(2012, 01, 01, 00, 00, 00)
         end = datetime.datetime(2012, 01, 31, 23, 59, 59, 999999)
 
@@ -193,15 +209,23 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         self.session.add(other_call)
         self.session.commit()
 
-        stats = stat_call_on_queue_dao.get_periodic_stats_quarter_hour(self.session, start, end)
+        stats_quarter_hour = stat_call_on_queue_dao.get_periodic_stats_quarter_hour(self.session, start, end)
 
-        self.assertTrue(datetime.datetime(2012, 1, 1) in stats)
-        self.assertTrue(datetime.datetime(2012, 1, 1, 1) in stats)
-        self.assertTrue(datetime.datetime(2012, 1, 1, 2) in stats)
+        self.assertTrue(datetime.datetime(2012, 1, 1) in stats_quarter_hour)
+        self.assertTrue(datetime.datetime(2012, 1, 1, 1) in stats_quarter_hour)
+        self.assertTrue(datetime.datetime(2012, 1, 1, 2) in stats_quarter_hour)
 
-        self.assertEqual(stats[start][queue_id]['total'], 3)
-        self.assertEqual(stats[start + datetime.timedelta(minutes=15)][queue_id]['total'], 4)
-        self.assertEqual(stats[start + datetime.timedelta(minutes=30)][queue_id]['total'], 2)
+        self.assertEqual(stats_quarter_hour[start][queue_id]['total'], 3)
+        self.assertEqual(stats_quarter_hour[start + datetime.timedelta(minutes=15)][queue_id]['total'], 4)
+        self.assertEqual(stats_quarter_hour[start + datetime.timedelta(minutes=30)][queue_id]['total'], 2)
+
+        stats_hour = stat_call_on_queue_dao.get_periodic_stats_hour(self.session, start, end)
+
+        self.assertTrue(datetime.datetime(2012, 1, 1) in stats_hour)
+        self.assertTrue(datetime.datetime(2012, 1, 1, 1) in stats_hour)
+        self.assertTrue(datetime.datetime(2012, 1, 1, 2) in stats_hour)
+
+        self.assertEqual(stats_hour[start][queue_id]['total'], 9)
 
     def test_clean_table(self):
         start = datetime.datetime(2012, 01, 01, 00, 00, 00)
