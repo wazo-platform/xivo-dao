@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+import datetime
 import logging
 import random
 import unittest
@@ -28,11 +29,11 @@ from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.alchemy.extension import Extension
-from xivo_dao.alchemy.devicefeatures import DeviceFeatures
 from xivo_dao.alchemy.sccpline import SCCPLine as SCCPLineSchema
 from xivo_dao.alchemy.usercustom import UserCustom as UserCustomSchema
 from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.dialpattern import DialPattern
+from xivo_dao.alchemy.cel import CEL as CELSchema
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +62,7 @@ class DAOTestCase(unittest.TestCase):
         logger.debug("Cleaning tables")
         cls.session.begin()
 
-        if cls.tables:
+        if hasattr(cls, 'tables') and cls.tables:
             engine = cls.engine
 
             meta = MetaData(engine)
@@ -165,19 +166,6 @@ class DAOTestCase(unittest.TestCase):
         self.add_me(dialpattern)
         return dialpattern
 
-    def add_device(self, **kwargs):
-        kwargs.setdefault('deviceid', '8aada8aae3784957b6c160195c8fbcd7')
-        kwargs.setdefault('mac', '00:08:5d:13:ca:05')
-        kwargs.setdefault('vendor', 'Aastra')
-        kwargs.setdefault('model', '6739i')
-        kwargs.setdefault('plugin', 'xivo-aastra-3.2.2.1136')
-        kwargs.setdefault('proto', 'SIP')
-        kwargs.setdefault('id', self._generate_id())
-
-        device = DeviceFeatures(**kwargs)
-        self.add_me(device)
-        return device
-
     def add_usersip(self, **kwargs):
         kwargs.setdefault('name', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
         kwargs.setdefault('context', 'default')
@@ -205,6 +193,33 @@ class DAOTestCase(unittest.TestCase):
         sccpline = SCCPLineSchema(**kwargs)
         self.add_me(sccpline)
         return sccpline
+
+    def add_cel(self, **kwargs):
+        kwargs.setdefault('id', self._generate_id())
+        kwargs.setdefault('eventtype', 'eventtype')
+        kwargs.setdefault('eventtime', datetime.datetime.now())
+        kwargs.setdefault('userdeftype', 'userdeftype')
+        kwargs.setdefault('cid_name', 'cid_name')
+        kwargs.setdefault('cid_num', 'cid_num')
+        kwargs.setdefault('cid_ani', 'cid_ani')
+        kwargs.setdefault('cid_rdnis', 'cid_rdnis')
+        kwargs.setdefault('cid_dnid', 'cid_dnid')
+        kwargs.setdefault('exten', 'exten')
+        kwargs.setdefault('context', 'context')
+        kwargs.setdefault('channame', 'channame')
+        kwargs.setdefault('appname', 'appname')
+        kwargs.setdefault('appdata', 'appdata')
+        kwargs.setdefault('amaflags', 0)
+        kwargs.setdefault('accountcode', 'accountcode')
+        kwargs.setdefault('peeraccount', 'peeraccount')
+        kwargs.setdefault('uniqueid', 'uniqueid')
+        kwargs.setdefault('linkedid', 'linkedid')
+        kwargs.setdefault('userfield', 'userfield')
+        kwargs.setdefault('peer', 'peer')
+
+        cel = CELSchema(**kwargs)
+        self.add_me(cel)
+        return cel.id
 
     def add_me(self, obj):
         self.session.begin()

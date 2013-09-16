@@ -15,31 +15,25 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from __future__ import unicode_literals
+from xivo_dao.data_handler.call_log import dao
+from xivo_dao.data_handler.exception import MissingParametersError
 
 
-class AbstractDeviceIDParams(object):
-
-    def __init__(self, device_id):
-        self.id = device_id
-
-    def marshal(self):
-        return {
-            'id': self.id,
-        }
-
-    @classmethod
-    def unmarshal(cls, msg):
-        return cls(msg['id'])
+def find_all():
+    return dao.find_all()
 
 
-class EditDeviceCommand(AbstractDeviceIDParams):
-    name = 'device_edited'
+def find_all_in_period(start, end):
+    _validate_datetimes(start, end)
+    return dao.find_all_in_period(start, end)
 
 
-class CreateDeviceCommand(AbstractDeviceIDParams):
-    name = 'device_created'
+def _validate_datetimes(start, end):
+    missing_parameters = []
+    if not start:
+        missing_parameters.append('start_date')
+    if not end:
+        missing_parameters.append('end_date')
 
-
-class DeleteDeviceCommand(AbstractDeviceIDParams):
-    name = 'device_deleted'
+    if missing_parameters:
+        raise MissingParametersError(missing_parameters)

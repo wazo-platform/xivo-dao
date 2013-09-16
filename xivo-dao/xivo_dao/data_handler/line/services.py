@@ -78,7 +78,7 @@ def delete(line):
 
 def _update_device(line):
     if hasattr(line, 'device') and line.device:
-        device_id = int(line.device)
+        device_id = line.device
         device = device_dao.find(device_id)
         if device:
             device_services.rebuild_device_config(device)
@@ -86,7 +86,7 @@ def _update_device(line):
 
 def _delete_line_from_device(line):
     if hasattr(line, 'device') and line.device:
-        device_id = int(line.device)
+        device_id = line.device
         device = device_dao.find(device_id)
         if device:
             device_services.remove_line_from_device(device, line)

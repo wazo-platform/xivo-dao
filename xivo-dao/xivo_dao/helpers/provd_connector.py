@@ -17,16 +17,6 @@
 
 from provd.rest.client.client import new_provisioning_client
 
-PROVD_URL = "http://localhost:8666/provd"
-
-
-class ProvdError(Exception):
-    def __init__(self, value):
-        self.value = value
-
-    def __str__(self):
-        return "provd error: %s" % self.value
-
 
 def config_manager():
     provisioning_client = _provd_client()
@@ -38,5 +28,22 @@ def device_manager():
     return provisioning_client.device_manager()
 
 
+def plugin_manager():
+    provisioning_client = _provd_client()
+    return provisioning_client.plugin_manager()
+
+
 def _provd_client():
-    return new_provisioning_client(PROVD_URL)
+    provd_config = _get_provd_config()
+    provd_url = "http://%s:%s/provd" % (provd_config['XIVO_PROVD_REST_NET4_IP'], provd_config['XIVO_PROVD_REST_PORT'])
+    return new_provisioning_client(provd_url)
+
+
+def _get_provd_config():
+    config = {}
+    with open('/etc/pf-xivo/common.conf', 'r') as fobj:
+        for line in fobj:
+            if not line.startswith('#') and line.startswith('XIVO_PROVD'):
+                (key, _, value) = line.partition("=")
+                config[key] = value.replace('"','')
+    return config

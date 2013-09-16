@@ -26,6 +26,7 @@ class CallLog(AbstractModels):
 
     # mapping = {db_field: model_field}
     _MAPPING = {
+        'id': 'id',
         'date': 'date',
         'source_name': 'source_name',
         'source_exten': 'source_exten',
@@ -38,3 +39,13 @@ class CallLog(AbstractModels):
 
     _RELATION = {
     }
+
+    def __init__(self, *args, **kwargs):
+        AbstractModels.__init__(self, *args, **kwargs)
+        self._related_cels = []
+
+    def get_related_cels(self):
+        return self._related_cels
+
+    def add_related_cels(self, cel_ids):
+        self._related_cels.extend(cel_ids)
