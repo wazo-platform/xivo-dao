@@ -55,6 +55,10 @@ class User(AbstractModels):
         self._build_callerid()
         return AbstractModels.to_data_dict(self)
 
+    def to_user_data(self):
+        self._build_callerid()
+        return AbstractModels.to_user_data(self)
+
     def _build_callerid(self):
         try:
             self.callerid = '"%s"' % self.fullname
