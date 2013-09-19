@@ -20,15 +20,6 @@ from xivo_dao import helpers
 from xivo_dao.helpers import bus_manager
 
 
-def _new_sysconfd_data(ctibus_command):
-    return {
-        'ctibus': [ctibus_command],
-        'dird': [],
-        'ipbx': ['dialplan reload'],
-        'agentbus': []
-    }
-
-
 def created(user_line_extension):
     data = _build_edit_user_phone(user_line_extension)
     helpers.sysconfd_connector.exec_request_handlers(data)
@@ -70,3 +61,12 @@ def _build_edit_user_phone(user_line_extension):
         'xivo[user,edit,%s]' % user_line_extension.user_id,
         'xivo[phone,edit,%s]' % user_line_extension.line_id
     ])
+
+
+def _new_sysconfd_data(ctibus_commands):
+    return {
+        'ctibus': ctibus_commands,
+        'dird': [],
+        'ipbx': ['dialplan reload'],
+        'agentbus': []
+    }

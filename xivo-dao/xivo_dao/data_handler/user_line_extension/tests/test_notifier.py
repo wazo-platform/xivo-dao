@@ -27,10 +27,10 @@ MAIN_USER = True
 MAIN_LINE = True
 
 SYSCONFD_DATA = {
-    'ctibus': [[
+    'ctibus': [
         'xivo[user,edit,%s]' % USER_ID,
         'xivo[phone,edit,%s]' % LINE_ID
-    ]],
+    ],
     'dird': [],
     'ipbx': ['dialplan reload'],
     'agentbus': []
