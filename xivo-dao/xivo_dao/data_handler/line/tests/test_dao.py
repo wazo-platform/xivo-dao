@@ -493,6 +493,50 @@ class TestLineDao(DAOTestCase):
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
 
+    def test_update_xivo_userid_sip(self):
+        username = 'toto'
+        secret = 'kiki'
+        line_sip = self.add_usersip(name=username,
+                                    username=username,
+                                    secret=secret)
+        line = self.add_line(protocolid=line_sip.id,
+                             name=username,
+                             context=line_sip.context)
+        main_user = Mock(id=12)
+
+        line_dao.update_xivo_userid(line, main_user)
+
+        line_sip_row = (self.session.query(UserSIPSchema)
+                        .filter(UserSIPSchema.id == line_sip.id)
+                        .first())
+        self.assertEquals(line_sip_row.setvar, 'XIVO_USERID=12')
+
+    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    def test_update_xivo_userid_sip_db_error(self, Session):
+        session = Session.return_value = Mock()
+        session.commit.side_effect = SQLAlchemyError()
+        username = 'toto'
+        secret = 'kiki'
+        line_sip = self.add_usersip(name=username,
+                                    username=username,
+                                    secret=secret)
+        line = self.add_line(protocolid=line_sip.id,
+                             name=username,
+                             context=line_sip.context)
+        main_user = Mock(id=12)
+
+        self.assertRaises(ElementEditionError, line_dao.update_xivo_userid, line, main_user)
+
+    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    def test_update_xivo_userid_not_sip(self, Session):
+        session = Session.return_value = Mock()
+        line = Mock(protocol='sccp')
+        main_user = Mock(id=12)
+
+        line_dao.update_xivo_userid(line, main_user)
+
+        assert_that(session.commit.call_count, equal_to(0))
+
     def test_reset_device(self):
         line = self.add_line(device='1234')
 
