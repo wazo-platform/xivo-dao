@@ -105,6 +105,7 @@ def _associate_line(line, extension, main_user):
     callerid, _, _ = caller_id.build_caller_id('', main_user.fullname, extension.exten)
     line.callerid = callerid
     line_dao.edit(line)
+    line_dao.update_xivo_userid(line, main_user)
 
 
 def _remove_user(user):

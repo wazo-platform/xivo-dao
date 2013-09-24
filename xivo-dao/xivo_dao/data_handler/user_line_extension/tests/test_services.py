@@ -84,9 +84,11 @@ class TestUserLineExtensionServices(unittest.TestCase):
     @patch('xivo_dao.data_handler.user_line_extension.notifier.created')
     @patch('xivo_dao.data_handler.user_line_extension.dao.create')
     @patch('xivo_dao.data_handler.line.dao.edit')
+    @patch('xivo_dao.data_handler.line.dao.update_xivo_userid')
     @patch('xivo_dao.data_handler.extension.dao.edit')
     def test_create(self,
                     extension_edit,
+                    line_update_xivo_userid,
                     line_edit,
                     user_line_extension_dao_create,
                     user_line_extension_notifier_created,
@@ -134,6 +136,7 @@ class TestUserLineExtensionServices(unittest.TestCase):
         user_line_extension_dao_create.assert_called_once_with(ule)
         extension_edit.assert_called_once_with(extension)
         line_edit.assert_called_once_with(line)
+        line_update_xivo_userid.assert_called_once_with(line, user)
         user_line_extension_notifier_created.assert_called_once_with(ule)
 
         self.assertEquals(type(result), UserLineExtension)
@@ -146,9 +149,11 @@ class TestUserLineExtensionServices(unittest.TestCase):
     @patch('xivo_dao.data_handler.user_line_extension.notifier.created')
     @patch('xivo_dao.data_handler.user_line_extension.dao.create')
     @patch('xivo_dao.data_handler.line.dao.edit')
+    @patch('xivo_dao.data_handler.line.dao.update_xivo_userid')
     @patch('xivo_dao.data_handler.extension.dao.edit')
     def test_create_secondary_user(self,
                                    extension_edit,
+                                   line_update_xivo_userid,
                                    line_edit,
                                    user_line_extension_dao_create,
                                    user_line_extension_notifier_created,
@@ -215,6 +220,7 @@ class TestUserLineExtensionServices(unittest.TestCase):
         user_line_extension_dao_create.assert_called_once_with(ule)
         extension_edit.assert_called_once_with(extension)
         line_edit.assert_called_once_with(expected_line)
+        line_update_xivo_userid.assert_called_once_with(expected_line, main_user)
         user_line_extension_notifier_created.assert_called_once_with(ule)
 
         self.assertEquals(type(result), UserLineExtension)

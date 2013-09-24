@@ -248,6 +248,21 @@ def edit(session, line):
         raise ElementEditionError('Line', e)
 
 
+@daosession
+def update_xivo_userid(session, line, main_user):
+    if line.protocol.lower() == 'sip':
+        session.begin()
+        sip_line = _fetch_derived_line(session, line)
+        sip_line.setvar = 'XIVO_USERID=%s' % main_user.id
+        session.add(sip_line)
+
+        try:
+            session.commit()
+        except SQLAlchemyError as e:
+            session.rollback()
+            raise ElementEditionError('Line', e)
+
+
 def _fetch_line(session, line):
     return session.query(LineSchema).get(line.id)
 
