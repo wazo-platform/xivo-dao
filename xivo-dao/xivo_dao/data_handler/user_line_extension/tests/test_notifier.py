@@ -32,7 +32,7 @@ SYSCONFD_DATA = {
         'xivo[phone,edit,%s]' % LINE_ID
     ],
     'dird': [],
-    'ipbx': ['dialplan reload'],
+    'ipbx': ['dialplan reload', 'sip reload'],
     'agentbus': []
 }
 

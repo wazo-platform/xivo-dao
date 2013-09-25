@@ -67,6 +67,6 @@ def _new_sysconfd_data(ctibus_commands):
     return {
         'ctibus': ctibus_commands,
         'dird': [],
-        'ipbx': ['dialplan reload'],
+        'ipbx': ['dialplan reload', 'sip reload'],
         'agentbus': []
     }
