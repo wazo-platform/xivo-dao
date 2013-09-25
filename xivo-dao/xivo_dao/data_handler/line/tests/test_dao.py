@@ -543,8 +543,8 @@ class TestLineDao(DAOTestCase):
         line_dao.reset_device(line.device)
 
         result = (self.session.query(LineSchema)
-                           .filter(LineSchema.id == line.id)
-                           .first())
+                  .filter(LineSchema.id == line.id)
+                  .first())
 
         assert_that(result.device, equal_to(''))
 
