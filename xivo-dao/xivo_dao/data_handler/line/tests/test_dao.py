@@ -553,7 +553,7 @@ class TestLineDao(DAOTestCase):
 
         assert_that(generated_hash, has_length(8))
 
-    @patch('xivo_dao.data_handler.line.dao._random_hash')
+    @patch('xivo_dao.data_handler.line.dao.random_hash')
     def test_generate_random_hash_same_sip_user(self, random_hash):
         existing_hash = 'abcd'
         expected_hash = 'abcdefgh'
@@ -564,6 +564,13 @@ class TestLineDao(DAOTestCase):
         generated_hash = line_dao.generate_random_hash(self.session, UserSIPSchema.name)
 
         assert_that(generated_hash, equal_to(expected_hash))
+
+    def test_random_hash_no_uppercase_letters(self):
+        generated_hash = line_dao.random_hash()
+
+        uppercase = [x for x in generated_hash if x.isupper()]
+        assert_that(uppercase, contains(), "generated hash isn't supposed to have uppercase characters")
+        assert_that(generated_hash, has_length(8))
 
     def test_create_sip_line_with_no_extension(self):
         line = LineSIP(protocol='sip',
