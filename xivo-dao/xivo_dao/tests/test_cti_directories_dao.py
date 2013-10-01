@@ -152,6 +152,15 @@ class TestCtiSheetsDAO(DAOTestCase):
 
         self.assertEqual(ldap_uri, None)
 
+    def test_build_ldap_uri_no_username_no_passwd(self):
+        ldap_server = self._insert_ldapserver('foo-server', securitylayer=None)
+        ldap_filter = self._insert_ldapfilter(ldap_server.id, 'foo-filter', user=None, passwd=None)
+
+        uri = cti_directories_dao._build_ldap_uri(ldap_filter.name)
+
+        expected_uri = 'ldap://:@%s:%s/%s???' % (ldap_server.host, ldap_server.port, ldap_filter.basedn)
+        self.assertEqual(expected_uri, uri)
+
     def _insert_ctidirectoryfields(self, dir_id, fieldname, value):
         ctidirectoryfields = CtiDirectoryFields()
         ctidirectoryfields.dir_id = dir_id
@@ -175,12 +184,12 @@ class TestCtiSheetsDAO(DAOTestCase):
 
         return ctidirectory
 
-    def _insert_ldapfilter(self, ldapserver_id, name):
+    def _insert_ldapfilter(self, ldapserver_id, name, user='user', passwd='pass'):
         ldap = LdapFilter()
         ldap.ldapserverid = ldapserver_id
         ldap.name = name
-        ldap.user = 'user'
-        ldap.passwd = 'pass'
+        ldap.user = user
+        ldap.passwd = passwd
         ldap.additionaltype = 'office'
         ldap.basedn = 'dc=lan-quebec,dc=avencall,dc=com'
         ldap.description = 'description'
@@ -191,12 +200,12 @@ class TestCtiSheetsDAO(DAOTestCase):
 
         return ldap
 
-    def _insert_ldapserver(self, name):
+    def _insert_ldapserver(self, name, securitylayer='tls'):
         ldapserver = LdapServer()
         ldapserver.name = name
         ldapserver.host = name
         ldapserver.port = 389
-        ldapserver.securitylayer = 'tls'
+        ldapserver.securitylayer = securitylayer
         ldapserver.protocolversion = '3'
         ldapserver.description = 'description'
 
