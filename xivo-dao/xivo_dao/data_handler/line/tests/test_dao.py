@@ -493,14 +493,58 @@ class TestLineDao(DAOTestCase):
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
 
+    def test_update_xivo_userid_sip(self):
+        username = 'toto'
+        secret = 'kiki'
+        line_sip = self.add_usersip(name=username,
+                                    username=username,
+                                    secret=secret)
+        line = self.add_line(protocolid=line_sip.id,
+                             name=username,
+                             context=line_sip.context)
+        main_user = Mock(id=12)
+
+        line_dao.update_xivo_userid(line, main_user)
+
+        line_sip_row = (self.session.query(UserSIPSchema)
+                        .filter(UserSIPSchema.id == line_sip.id)
+                        .first())
+        self.assertEquals(line_sip_row.setvar, 'XIVO_USERID=12')
+
+    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    def test_update_xivo_userid_sip_db_error(self, Session):
+        session = Session.return_value = Mock()
+        session.commit.side_effect = SQLAlchemyError()
+        username = 'toto'
+        secret = 'kiki'
+        line_sip = self.add_usersip(name=username,
+                                    username=username,
+                                    secret=secret)
+        line = self.add_line(protocolid=line_sip.id,
+                             name=username,
+                             context=line_sip.context)
+        main_user = Mock(id=12)
+
+        self.assertRaises(ElementEditionError, line_dao.update_xivo_userid, line, main_user)
+
+    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    def test_update_xivo_userid_not_sip(self, Session):
+        session = Session.return_value = Mock()
+        line = Mock(protocol='sccp')
+        main_user = Mock(id=12)
+
+        line_dao.update_xivo_userid(line, main_user)
+
+        assert_that(session.commit.call_count, equal_to(0))
+
     def test_reset_device(self):
         line = self.add_line(device='1234')
 
         line_dao.reset_device(line.device)
 
         result = (self.session.query(LineSchema)
-                           .filter(LineSchema.id == line.id)
-                           .first())
+                  .filter(LineSchema.id == line.id)
+                  .first())
 
         assert_that(result.device, equal_to(''))
 
@@ -509,7 +553,7 @@ class TestLineDao(DAOTestCase):
 
         assert_that(generated_hash, has_length(8))
 
-    @patch('xivo_dao.data_handler.line.dao._random_hash')
+    @patch('xivo_dao.data_handler.line.dao.random_hash')
     def test_generate_random_hash_same_sip_user(self, random_hash):
         existing_hash = 'abcd'
         expected_hash = 'abcdefgh'
@@ -520,6 +564,13 @@ class TestLineDao(DAOTestCase):
         generated_hash = line_dao.generate_random_hash(self.session, UserSIPSchema.name)
 
         assert_that(generated_hash, equal_to(expected_hash))
+
+    def test_random_hash_no_uppercase_letters(self):
+        generated_hash = line_dao.random_hash()
+
+        uppercase = [x for x in generated_hash if x.isupper()]
+        assert_that(uppercase, contains(), "generated hash isn't supposed to have uppercase characters")
+        assert_that(generated_hash, has_length(8))
 
     def test_create_sip_line_with_no_extension(self):
         line = LineSIP(protocol='sip',

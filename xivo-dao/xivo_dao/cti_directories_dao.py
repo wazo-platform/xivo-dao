@@ -68,8 +68,8 @@ def _build_ldap_uri(ldap_name):
 
     secure = 'ldaps' if ldapserver.securitylayer == 'ssl' else 'ldap'
     uri = '%s://%s:%s@%s:%s/%s???%s' % (secure,
-                                        ldapfilter.user,
-                                        ldapfilter.passwd,
+                                        ldapfilter.user or '',
+                                        ldapfilter.passwd or '',
                                         ldapserver.host,
                                         ldapserver.port,
                                         ldapfilter.basedn,

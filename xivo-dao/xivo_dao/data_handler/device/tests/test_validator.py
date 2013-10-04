@@ -100,7 +100,7 @@ class TestDeviceValidator(unittest.TestCase):
 
         device = {
             'mac': '00:11:22:33:44:55',
-            'ip': '10.0.0.1',
+            'ip': '10.40.0.210',
             'template_id': 'defaultconfigdevice',
             'plugin': 'null',
         }

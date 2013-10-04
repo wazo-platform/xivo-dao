@@ -17,12 +17,12 @@
 
 import unittest
 
-from hamcrest import assert_that
+from hamcrest import all_of, assert_that, has_entries, has_key, is_not
 from hamcrest.core import equal_to
 from mock import Mock
 from xivo_dao.data_handler.exception import InvalidParametersError
 from xivo_dao.data_handler.user.model import User
-from xivo_dao.data_handler.line.model import Line
+from xivo_dao.data_handler.line.model import Line, LineSIP
 from xivo_dao.data_handler.voicemail.model import Voicemail
 
 
@@ -149,6 +149,21 @@ class TestModelsAbstract(unittest.TestCase):
         self.assertEquals(name, voicemail.name)
         self.assertEquals(number, voicemail.number)
         self.assertEquals(context, voicemail.context)
+
+    def test_to_user_data(self):
+        line_sip = LineSIP()
+        line_sip.private_value = 'private_value'
+        provisioning_extension = line_sip.provisioning_extension = '192837'
+        username = line_sip.username = 'username'
+
+        line_sip_dict = line_sip.to_user_data()
+
+        assert_that(line_sip_dict, has_entries({
+            'provisioning_extension': provisioning_extension,
+            'username': username,
+        }))
+        assert_that(line_sip_dict, all_of(is_not(has_key('private_value')),  # not mapped
+                                          is_not(has_key('secret'))))  # not set
 
     def test_update_from_data(self):
         expected_lastname = 'Toi'

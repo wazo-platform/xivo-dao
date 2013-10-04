@@ -248,6 +248,21 @@ def edit(session, line):
         raise ElementEditionError('Line', e)
 
 
+@daosession
+def update_xivo_userid(session, line, main_user):
+    if line.protocol.lower() == 'sip':
+        session.begin()
+        sip_line = _fetch_derived_line(session, line)
+        sip_line.setvar = 'XIVO_USERID=%s' % main_user.id
+        session.add(sip_line)
+
+        try:
+            session.commit()
+        except SQLAlchemyError as e:
+            session.rollback()
+            raise ElementEditionError('Line', e)
+
+
 def _fetch_line(session, line):
     return session.query(LineSchema).get(line.id)
 
@@ -311,19 +326,19 @@ def _build_sip_line(session, line):
 
 
 def generate_random_hash(session, column):
-    token = _random_hash()
+    token = random_hash()
     query = session.query(column)
 
     count = query.filter(column == token).count()
     while count > 0:
-        token = _random_hash()
+        token = random_hash()
         count = query.filter(column == token).count()
 
     return token
 
 
-def _random_hash(length=8):
-    pool = string.ascii_letters + string.digits
+def random_hash(length=8):
+    pool = string.lowercase + string.digits
     return ''.join(random.choice(pool) for _ in range(length))
 
 
