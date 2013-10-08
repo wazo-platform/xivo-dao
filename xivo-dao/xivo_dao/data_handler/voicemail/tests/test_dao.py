@@ -40,9 +40,20 @@ class TestFindAllVoicemail(DAOTestCase):
     def setUp(self):
         self.empty_tables()
 
+    def _has_voicemail(self, voicemail):
+        matchers = []
+        for field in Voicemail.FIELDS:
+            matcher = has_property(field, getattr(voicemail, field))
+            matchers.append(matcher)
+
+        return all_of(instance_of(Voicemail), *matchers)
+
     def test_find_all_no_voicemails(self):
         result = voicemail_dao.find_all()
-        self.assertEquals(len(result), 0)
+
+        assert_that(result, all_of(
+            has_property('total', 0),
+            has_property('items', [])))
 
     def test_find_all_one_voicemail(self):
         name = 'myvoicemail'
@@ -66,15 +77,8 @@ class TestFindAllVoicemail(DAOTestCase):
 
         result = voicemail_dao.find_all()
 
-        assert_that(result, contains(self._has_voicemail(expected_voicemail)))
-
-    def _has_voicemail(self, voicemail):
-        matchers = []
-        for field in Voicemail.FIELDS:
-            matcher = has_property(field, getattr(voicemail, field))
-            matchers.append(matcher)
-
-        return all_of(*matchers)
+        assert_that(result.total, equal_to(1))
+        assert_that(result.items, contains(self._has_voicemail(expected_voicemail)))
 
     def test_find_all_two_voicemails(self):
         context = 'default'
@@ -111,7 +115,8 @@ class TestFindAllVoicemail(DAOTestCase):
 
         result = voicemail_dao.find_all()
 
-        assert_that(result, contains_inanyorder(
+        assert_that(result.total, equal_to(2))
+        assert_that(result.items, contains_inanyorder(
             self._has_voicemail(expected_voicemail1),
             self._has_voicemail(expected_voicemail2)
         ))
@@ -132,7 +137,8 @@ class TestFindAllVoicemail(DAOTestCase):
 
         result = voicemail_dao.find_all(limit=1)
 
-        assert_that(result, has_length(1))
+        assert_that(result.total, equal_to(2))
+        assert_that(result.items, contains(instance_of(Voicemail)))
 
     def test_find_all_with_order(self):
         context = 'default'
@@ -170,8 +176,9 @@ class TestFindAllVoicemail(DAOTestCase):
 
         result = voicemail_dao.find_all(order=VoicemailOrder.name)
 
-        assert_that(result, contains(self._has_voicemail(expected_voicemail1),
-                                     self._has_voicemail(expected_voicemail2)))
+        assert_that(result.total, equal_to(2))
+        assert_that(result.items, contains(self._has_voicemail(expected_voicemail1),
+                                           self._has_voicemail(expected_voicemail2)))
 
     def test_find_all_with_order_and_direction(self):
         context = 'default'
@@ -209,8 +216,9 @@ class TestFindAllVoicemail(DAOTestCase):
 
         result = voicemail_dao.find_all(order=VoicemailOrder.name, direction='desc')
 
-        assert_that(result, contains(self._has_voicemail(expected_voicemail2),
-                                     self._has_voicemail(expected_voicemail1)))
+        assert_that(result.total, equal_to(2))
+        assert_that(result.items, contains(self._has_voicemail(expected_voicemail2),
+                                           self._has_voicemail(expected_voicemail1)))
 
     def test_find_all_with_skip_and_order(self):
         context = 'default'
@@ -238,7 +246,8 @@ class TestFindAllVoicemail(DAOTestCase):
 
         result = voicemail_dao.find_all(skip=1, order=VoicemailOrder.name)
 
-        assert_that(result, contains(self._has_voicemail(expected_voicemail2)))
+        assert_that(result.total, equal_to(2))
+        assert_that(result.items, contains(self._has_voicemail(expected_voicemail2)))
 
     def test_find_all_with_skip_and_limit(self):
         context = 'default'
@@ -271,7 +280,8 @@ class TestFindAllVoicemail(DAOTestCase):
 
         result = voicemail_dao.find_all(skip=1, limit=1, order=VoicemailOrder.name)
 
-        assert_that(result, contains(self._has_voicemail(expected_voicemail2)))
+        assert_that(result.total, equal_to(3))
+        assert_that(result.items, contains(self._has_voicemail(expected_voicemail2)))
 
     def test_find_all_with_search(self):
         context = 'default'
@@ -284,8 +294,13 @@ class TestFindAllVoicemail(DAOTestCase):
                                          context=context,
                                          mailbox='1000')
 
+        voicemail_row3 = VoicemailSchema(fullname='voicemail3',
+                                         context=context,
+                                         mailbox='1002')
+
         self.add_me(voicemail_row1)
         self.add_me(voicemail_row2)
+        self.add_me(voicemail_row3)
 
         expected_voicemail1 = Voicemail(
             id=voicemail_row1.uniqueid,
@@ -297,9 +312,22 @@ class TestFindAllVoicemail(DAOTestCase):
             ask_password=False,
         )
 
+        expected_voicemail3 = Voicemail(
+            id=voicemail_row3.uniqueid,
+            name='voicemail3',
+            context=context,
+            number='1002',
+            attach_audio=False,
+            delete_messages=False,
+            ask_password=False,
+        )
+
         result = voicemail_dao.find_all(search='VOICEMAIL')
 
-        assert_that(result, contains(self._has_voicemail(expected_voicemail1)))
+        assert_that(result.total, equal_to(2))
+        assert_that(result.items, contains(
+            self._has_voicemail(expected_voicemail1),
+            self._has_voicemail(expected_voicemail3)))
 
     def test_find_all_with_all_parameters(self):
         context = 'default'
@@ -356,7 +384,8 @@ class TestFindAllVoicemail(DAOTestCase):
                                         skip=1,
                                         limit=2)
 
-        assert_that(result, contains(
+        assert_that(result.total, equal_to(4))
+        assert_that(result.items, contains(
             self._has_voicemail(expected_voicemail4),
             self._has_voicemail(expected_voicemail3)))
 

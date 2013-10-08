@@ -18,6 +18,7 @@
 import unittest
 
 from mock import patch, Mock
+from xivo_dao.helpers.abstract_model import SearchResult
 from xivo_dao.data_handler.voicemail import services as voicemail_services
 from xivo_dao.data_handler.voicemail.model import Voicemail, VoicemailOrder
 from xivo_dao.data_handler.exception import MissingParametersError, \
@@ -29,7 +30,7 @@ class TestVoicemail(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.voicemail.dao.find_all')
     def test_find_all(self, mock_find_all):
-        voicemails = [Mock(Voicemail)]
+        voicemails = Mock(SearchResult)
         mock_find_all.return_value = voicemails
 
         result = voicemail_services.find_all()
@@ -39,7 +40,7 @@ class TestVoicemail(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.voicemail.dao.find_all')
     def test_find_all_with_parameters(self, mock_find_all):
-        voicemails = [Mock(Voicemail)]
+        voicemails = Mock(SearchResult)
         mock_find_all.return_value = voicemails
 
         result = voicemail_services.find_all(skip=1,
