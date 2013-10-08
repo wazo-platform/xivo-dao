@@ -19,8 +19,9 @@ import unittest
 
 from mock import patch, Mock
 from urllib2 import URLError
+from xivo_dao.helpers.abstract_model import SearchResult
 from xivo_dao.data_handler.device import services as device_services
-from xivo_dao.data_handler.device.model import Device, DeviceOrdering, SearchResult
+from xivo_dao.data_handler.device.model import Device, DeviceOrdering
 from xivo_dao.data_handler.extension.model import Extension
 from xivo_dao.data_handler.line.model import LineSIP, LineSCCP
 from xivo_dao.data_handler.user_line_extension.model import UserLineExtension
