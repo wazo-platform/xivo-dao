@@ -70,11 +70,18 @@ class VoicemailDBConverter(DatabaseConverter):
     }
 
     def __init__(self):
-        DatabaseConverter.__init__(self.DB_TO_MODEL_MAPPING, VoicemailSchema, Voicemail)
+        DatabaseConverter.__init__(self, self.DB_TO_MODEL_MAPPING, VoicemailSchema, Voicemail)
 
     def to_model(self, db_row):
         model = DatabaseConverter.to_model(self, db_row)
         model.attach_audio = bool(model.attach_audio)
         model.delete_messages = bool(model.delete_messages)
         model.ask_password = bool(model.ask_password)
+
+        if model.password == '':
+            model.password = None
+
         return model
+
+
+db_converter = VoicemailDBConverter()
