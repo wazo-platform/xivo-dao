@@ -115,6 +115,42 @@ class TestGetVoicemail(DAOTestCase):
 
         self.assertEquals(expected_voicemail, voicemail)
 
+    def test_get_with_one_voicemail_and_all_properties(self):
+        name = 'voicemail name'
+        number = '42'
+        context = 'context-42'
+
+        voicemail_row = VoicemailSchema(
+            fullname=name,
+            mailbox=number,
+            context=context,
+            password='password',
+            email='email',
+            language='fr_FR',
+            tz='eu-fr',
+            maxmsg=1,
+            attach=1,
+            deletevoicemail=None,
+            skipcheckpass=0
+        )
+
+        self.add_me(voicemail_row)
+
+        voicemail = voicemail_dao.get(voicemail_row.uniqueid)
+
+        self.assertEquals(voicemail.id, voicemail_row.uniqueid)
+        self.assertEquals(voicemail.name, voicemail_row.fullname)
+        self.assertEquals(voicemail.number, voicemail_row.mailbox)
+        self.assertEquals(voicemail.context, voicemail_row.context)
+        self.assertEquals(voicemail.password, voicemail_row.password)
+        self.assertEquals(voicemail.email, voicemail_row.email)
+        self.assertEquals(voicemail.language, voicemail_row.language)
+        self.assertEquals(voicemail.timezone, voicemail_row.tz)
+        self.assertEquals(voicemail.max_messages, voicemail_row.maxmsg)
+        self.assertEquals(voicemail.attach_audio, True)
+        self.assertEquals(voicemail.delete_messages, False)
+        self.assertEquals(voicemail.ask_password, False)
+
 
 class TestCreateVoicemail(DAOTestCase):
 
