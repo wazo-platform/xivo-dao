@@ -24,8 +24,8 @@ from xivo_dao.data_handler.exception import MissingParametersError, \
     InvalidParametersError, ElementAlreadyExistsError, ElementNotExistsError
 
 
-def find_all():
-    return voicemail_dao.find_all()
+def find_all(skip=None, limit=None, order=None, direction=None, search=None):
+    return voicemail_dao.find_all(skip=skip, limit=limit, order=order, direction=direction, search=search)
 
 
 def get_by_number_context(number, context):

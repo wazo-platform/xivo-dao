@@ -19,13 +19,41 @@ import unittest
 
 from mock import patch, Mock
 from xivo_dao.data_handler.voicemail import services as voicemail_services
-from xivo_dao.data_handler.voicemail.model import Voicemail
+from xivo_dao.data_handler.voicemail.model import Voicemail, VoicemailOrder
 from xivo_dao.data_handler.exception import MissingParametersError, \
     InvalidParametersError, ElementAlreadyExistsError, ElementCreationError, \
     ElementDeletionError
 
 
 class TestVoicemail(unittest.TestCase):
+
+    @patch('xivo_dao.data_handler.voicemail.dao.find_all')
+    def test_find_all(self, mock_find_all):
+        voicemails = [Mock(Voicemail)]
+        mock_find_all.return_value = voicemails
+
+        result = voicemail_services.find_all()
+
+        mock_find_all.assert_called_once_with(skip=None, limit=None, order=None, direction=None, search=None)
+        self.assertEquals(result, voicemails)
+
+    @patch('xivo_dao.data_handler.voicemail.dao.find_all')
+    def test_find_all_with_parameters(self, mock_find_all):
+        voicemails = [Mock(Voicemail)]
+        mock_find_all.return_value = voicemails
+
+        result = voicemail_services.find_all(skip=1,
+                                             limit=2,
+                                             order=VoicemailOrder.number,
+                                             direction='asc',
+                                             search='toto')
+
+        mock_find_all.assert_called_once_with(skip=1, limit=2,
+                                              order=VoicemailOrder.number,
+                                              direction='asc',
+                                              search='toto')
+
+        self.assertEquals(result, voicemails)
 
     @patch('xivo_dao.data_handler.voicemail.notifier.deleted')
     @patch('xivo_dao.data_handler.voicemail.dao.delete')
