@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from collections import namedtuple
-
 from xivo_dao.helpers.abstract_model import AbstractModels
 from xivo_dao.data_handler.exception import InvalidParametersError
 
@@ -67,7 +65,7 @@ class Device(AbstractModels):
             if 'configdevice' in config:
                 obj.template_id = config['configdevice']
 
-            if device['configured'] == True:
+            if device['configured'] is True:
                 if device['config'].startswith('autoprov'):
                     obj.status = 'autoprov'
                 else:
@@ -111,6 +109,3 @@ class DeviceOrdering(object):
     def validate_direction(cls, direction):
         if direction not in cls.directions():
             raise InvalidParametersError("direction parameter '%s' does not exist" % direction)
-
-
-SearchResult = namedtuple('SearchResult', ['total', 'items'])

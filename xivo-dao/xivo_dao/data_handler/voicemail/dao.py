@@ -15,57 +15,114 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy.sql.expression import desc, asc, or_
 from sqlalchemy.exc import SQLAlchemyError
 from xivo_dao.alchemy.voicemail import Voicemail as VoicemailSchema
 from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.data_handler.voicemail.model import Voicemail
+from xivo_dao.data_handler.voicemail.model import db_converter, VoicemailOrder, Voicemail
 from xivo_dao.helpers import sysconfd_connector
 from xivo_dao.helpers.sysconfd_connector import SysconfdError
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementCreationError, ElementEditionError, ElementDeletionError
+from xivo_dao.helpers.abstract_model import SearchResult
 
 
 @daosession
-def find_all(session):
-    rows = session.query(VoicemailSchema).all()
+def find_all(session, limit=None, skip=None, order=None, direction='asc', search=None):
+    query = session.query(VoicemailSchema)
+
+    query = count_query = _apply_search_criteria(query, search)
+    query = _apply_order_and_direction(query, order, direction)
+    query = _apply_skip_and_limit(query, skip, limit)
+
+    items = _generate_items(query)
+    total = _generate_total(count_query)
+
+    return SearchResult(total, items)
+
+
+def _generate_items(query):
+    rows = query.all()
+
     if not rows:
         return []
 
-    tmp = []
-    for row in rows:
-        tmp.append(Voicemail.from_data_source(row))
+    return [db_converter.to_model(row) for row in rows]
 
-    return tmp
+
+def _generate_total(query):
+    return query.count()
+
+
+def _apply_search_criteria(query, search):
+    if search is None:
+        return query
+
+    criteria = []
+    for column in Voicemail.SEARCH_COLUMNS:
+        criteria.append(column.ilike('%%%s%%' % search))
+
+    query = query.filter(or_(*criteria))
+    return query
+
+
+def _apply_order_and_direction(query, order, direction):
+    if order is None:
+        order = VoicemailOrder.number
+
+    if direction == 'desc':
+        order_expression = desc(order)
+    else:
+        order_expression = asc(order)
+
+    query = query.order_by(order_expression)
+    return query
+
+
+def _apply_skip_and_limit(query, skip, limit):
+    if skip is not None:
+        query = query.offset(skip)
+
+    if limit is not None:
+        query = query.limit(limit)
+
+    return query
 
 
 @daosession
 def get_by_number_context(session, number, context):
     row = (session.query(VoicemailSchema)
-                 .filter(VoicemailSchema.mailbox == number)
-                 .filter(VoicemailSchema.context == context)
-                 .first())
+           .filter(VoicemailSchema.mailbox == number)
+           .filter(VoicemailSchema.context == context)
+           .first())
     if not row:
         raise ElementNotExistsError('Voicemail', number=number, context=context)
 
-    return Voicemail.from_data_source(row)
+    return db_converter.to_model(row)
 
 
 @daosession
 def get(session, voicemail_id):
+    row = _get_voicemail_row(session, voicemail_id)
+    return db_converter.to_model(row)
+
+
+def _get_voicemail_row(session, voicemail_id):
     row = (session.query(VoicemailSchema)
-                 .filter(VoicemailSchema.uniqueid == voicemail_id)
-                 .first())
+           .filter(VoicemailSchema.uniqueid == voicemail_id)
+           .first())
+
     if not row:
         raise ElementNotExistsError('Voicemail', uniqueid=voicemail_id)
 
-    return Voicemail.from_data_source(row)
+    return row
 
 
 @daosession
 def create(session, voicemail):
-    voicemail_row = voicemail.to_data_source(VoicemailSchema)
+    voicemail_row = db_converter.to_source(voicemail)
     session.begin()
     session.add(voicemail_row)
 
@@ -83,20 +140,18 @@ def create(session, voicemail):
 @daosession
 def edit(session, voicemail):
     session.begin()
-    nb_row_affected = (session.query(VoicemailSchema)
-                       .filter(VoicemailSchema.uniqueid == voicemail.id)
-                       .update(voicemail.to_data_dict()))
+
+    voicemail_row = _get_voicemail_row(voicemail.id)
+    db_converter.update_source(voicemail_row, voicemail)
+
+    session.begin()
+    session.add(voicemail_row)
 
     try:
         session.commit()
     except SQLAlchemyError as e:
         session.rollback()
         raise ElementEditionError('voicemail', e)
-
-    if nb_row_affected == 0:
-        raise ElementEditionError('voicemail', 'voicemail_id %s not exist' % voicemail.id)
-
-    return nb_row_affected
 
 
 @daosession

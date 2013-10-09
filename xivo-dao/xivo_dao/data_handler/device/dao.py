@@ -17,12 +17,13 @@
 
 from urllib2 import HTTPError
 
-from xivo_dao.data_handler.device.model import Device, DeviceOrdering, SearchResult
+from xivo_dao.data_handler.device.model import Device, DeviceOrdering
 from xivo_dao.data_handler.device import provd_builder
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementDeletionError, ElementCreationError, InvalidParametersError, \
     ElementEditionError
 from xivo_dao.helpers import provd_connector
+from xivo_dao.helpers.abstract_model import SearchResult
 
 DEFAULT_ORDER = [DeviceOrdering.ip, DeviceOrdering.mac]
 

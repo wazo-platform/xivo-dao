@@ -15,10 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.abstract_model import AbstractModels
+from xivo_dao.helpers.new_model import NewModel
+from xivo_dao.converters.database_converter import DatabaseConverter
+from xivo_dao.alchemy.voicemail import Voicemail as VoicemailSchema
 
 
-class Voicemail(AbstractModels):
+class Voicemail(NewModel):
 
     MANDATORY = [
         'name',
@@ -26,21 +28,75 @@ class Voicemail(AbstractModels):
         'context'
     ]
 
-    # mapping = {db_field: model_field}
-    _MAPPING = {
-        'uniqueid': 'id',
-        'fullname': 'name',
-        'mailbox': 'number',
-        'context': 'context'
-    }
+    FIELDS = [
+        'id',
+        'name',
+        'number',
+        'context',
+        'password',
+        'email',
+        'language',
+        'timezone',
+        'max_messages',
+        'attach_audio',
+        'delete_messages',
+        'ask_password'
+    ]
+
+    SEARCH_COLUMNS = [
+        VoicemailSchema.fullname,
+        VoicemailSchema.mailbox,
+        VoicemailSchema.email
+    ]
 
     _RELATION = {
         'user': 'user'
     }
 
-    def __init__(self, *args, **kwargs):
-        AbstractModels.__init__(self, *args, **kwargs)
-
     @property
     def number_at_context(self):
         return '%s@%s' % (self.number, self.context)
+
+
+class VoicemailDBConverter(DatabaseConverter):
+
+    DB_TO_MODEL_MAPPING = {
+        'uniqueid': 'id',
+        'fullname': 'name',
+        'mailbox': 'number',
+        'context': 'context',
+        'password': 'password',
+        'email': 'email',
+        'language': 'language',
+        'tz': 'timezone',
+        'maxmsg': 'max_messages',
+        'attach': 'attach_audio',
+        'deletevoicemail': 'delete_messages',
+        'skipcheckpass': 'ask_password'
+    }
+
+    def __init__(self):
+        DatabaseConverter.__init__(self, self.DB_TO_MODEL_MAPPING, VoicemailSchema, Voicemail)
+
+    def to_model(self, db_row):
+        model = DatabaseConverter.to_model(self, db_row)
+        model.attach_audio = bool(model.attach_audio)
+        model.delete_messages = bool(model.delete_messages)
+        model.ask_password = bool(model.ask_password)
+
+        if model.password == '':
+            model.password = None
+
+        return model
+
+
+db_converter = VoicemailDBConverter()
+
+
+class VoicemailOrder(object):
+    name = VoicemailSchema.fullname
+    number = VoicemailSchema.mailbox
+    context = VoicemailSchema.context
+    email = VoicemailSchema.email
+    language = VoicemailSchema.language
+    timezone = VoicemailSchema.tz
