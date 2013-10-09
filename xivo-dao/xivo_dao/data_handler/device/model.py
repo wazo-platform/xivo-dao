@@ -81,7 +81,6 @@ class Device(AbstractModels):
 class DeviceOrdering(object):
     DIRECTIONS = ['desc', 'asc']
 
-    id = 'id'
     ip = 'ip'
     mac = 'mac'
     plugin = 'plugin'
@@ -91,7 +90,7 @@ class DeviceOrdering(object):
 
     @classmethod
     def all_columns(cls):
-        return [cls.id, cls.ip, cls.mac, cls.plugin, cls.model, cls.vendor, cls.version]
+        return [cls.ip, cls.mac, cls.plugin, cls.model, cls.vendor, cls.version]
 
     @classmethod
     def from_column_name(cls, column):
