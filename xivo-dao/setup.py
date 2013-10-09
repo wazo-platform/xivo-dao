@@ -14,6 +14,7 @@ setup(
     packages=[
         'xivo_dao',
         'xivo_dao.alchemy',
+        'xivo_dao.converters',
         'xivo_dao.data_handler',
         'xivo_dao.data_handler.cel',
         'xivo_dao.data_handler.call_log',
