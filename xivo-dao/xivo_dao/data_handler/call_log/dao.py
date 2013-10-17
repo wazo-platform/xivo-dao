@@ -20,7 +20,7 @@ from xivo_dao.alchemy.call_log import CallLog as CallLogSchema
 from xivo_dao.alchemy.cel import CEL as CELSchema
 from xivo_dao.data_handler.exception import ElementCreationError, ElementDeletionError
 from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.data_handler.call_log.model import CallLog
+from xivo_dao.data_handler.call_log.model import db_converter
 
 
 @daosession
@@ -29,7 +29,7 @@ def find_all(session):
 
     if not call_log_rows:
         return []
-    return map(CallLog.from_data_source, call_log_rows)
+    return map(db_converter.to_model, call_log_rows)
 
 
 @daosession
@@ -41,7 +41,7 @@ def find_all_in_period(session, start, end):
 
     if not call_log_rows:
         return []
-    return map(CallLog.from_data_source, call_log_rows)
+    return map(db_converter.to_model, call_log_rows)
 
 
 @daosession
@@ -59,7 +59,7 @@ def create_from_list(session, call_logs):
 
 
 def _create_call_log(session, call_log):
-    call_log_row = call_log.to_data_source(CallLogSchema)
+    call_log_row = db_converter.to_source(call_log)
     session.add(call_log_row)
     return call_log_row
 

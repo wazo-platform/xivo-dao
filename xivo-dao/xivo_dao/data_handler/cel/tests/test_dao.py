@@ -20,7 +20,7 @@ from hamcrest import assert_that, contains, has_property
 
 from xivo_dao.alchemy.call_log import CallLog as CallLogSchema
 from xivo_dao.alchemy.cel import CEL as CELSchema
-from xivo_dao.data_handler.call_log.model import CallLog
+from xivo_dao.data_handler.call_log.model import CallLog, db_converter
 from xivo_dao.data_handler.cel import dao as cel_dao
 from xivo_dao.tests.test_dao import DAOTestCase
 
@@ -125,7 +125,7 @@ class TestCELDAO(DAOTestCase):
 
     def _add_call(self, duration=datetime.timedelta(seconds=5)):
         call_log = CallLog(date=datetime.datetime.now(), duration=duration)
-        call_log_row = call_log.to_data_source(CallLogSchema)
+        call_log_row = db_converter.to_source(call_log)
         self.add_me(call_log_row)
         return call_log_row.id
 

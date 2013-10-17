@@ -23,6 +23,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from xivo_dao.alchemy.call_log import CallLog as CallLogSchema
 from xivo_dao.alchemy.cel import CEL as CELSchema
 from xivo_dao.data_handler.call_log import dao as call_log_dao
+from xivo_dao.data_handler.call_log.model import CallLog
 from xivo_dao.data_handler.exception import ElementCreationError, ElementDeletionError
 from xivo_dao.tests.test_dao import DAOTestCase
 
@@ -36,9 +37,13 @@ class TestCallLogDAO(DAOTestCase):
 
     def setUp(self):
         self.empty_tables()
+        self.db_converter_patcher = patch('xivo_dao.data_handler.call_log.model.db_converter')
+        self.db_converter = self.db_converter_patcher.start()
+        self.call_log_rows = []
+        self.db_converter.to_source.side_effect = lambda: self.call_log_rows.pop(0)
 
     def tearDown(self):
-        pass
+        self.db_converter_patcher.stop()
 
     def test_find_all_not_found(self):
         expected_result = []
@@ -93,10 +98,10 @@ class TestCallLogDAO(DAOTestCase):
 
         cel_rows = self.session.query(CELSchema).all()
         assert_that(cel_rows, contains_inanyorder(
-                all_of(has_property('id', cel_id_1), has_property('call_log_id', call_log_id_1)),
-                all_of(has_property('id', cel_id_2), has_property('call_log_id', call_log_id_1)),
-                all_of(has_property('id', cel_id_3), has_property('call_log_id', call_log_id_2)),
-                all_of(has_property('id', cel_id_4), has_property('call_log_id', call_log_id_2))))
+            all_of(has_property('id', cel_id_1), has_property('call_log_id', call_log_id_1)),
+            all_of(has_property('id', cel_id_2), has_property('call_log_id', call_log_id_1)),
+            all_of(has_property('id', cel_id_3), has_property('call_log_id', call_log_id_2)),
+            all_of(has_property('id', cel_id_4), has_property('call_log_id', call_log_id_2))))
 
     @patch('xivo_dao.helpers.db_manager.AsteriskSession')
     def test_create_from_list_db_error(self, session_init):
@@ -154,8 +159,7 @@ class TestCallLogDAO(DAOTestCase):
             cel_ids = ()
         if date is None:
             date = datetime.now()
-        call_log = Mock()
-        call_log.to_data_source.return_value = CallLogSchema(id=id, date=date, duration=timedelta(3))
-        call_log.get_related_cels.return_value = cel_ids
-        call_log.date = date
+        call_log = CallLog(id=id, date=date, duration=timedelta(0))
+        call_log.add_related_cels(cel_ids)
+        self.call_log_rows.append(CallLogSchema(id=id, date=date, duration=timedelta(3)))
         return call_log
