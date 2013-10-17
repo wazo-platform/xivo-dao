@@ -14,18 +14,17 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
-from xivo_dao.alchemy.context import Context as ContextSchema
+
 from xivo_dao.alchemy.contextnumbers import ContextNumbers as ContextNumberSchema
 from xivo_dao.alchemy.entity import Entity as EntitySchema
+from xivo_dao.data_handler.context.model import db_converter
 from xivo_dao.helpers.db_manager import daosession, xivo_daosession
 
 
 @daosession
 def create(session, context):
-    context_row = context.to_data_source(ContextSchema)
+    context_row = db_converter.to_source(context)
     context_row.entity = _get_default_entity_name()
-    context_row.commented = 0
-    context_row.description = getattr(context, 'description', '')
 
     session.begin()
     session.add(context_row)
