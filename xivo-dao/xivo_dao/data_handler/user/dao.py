@@ -27,7 +27,7 @@ from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.phonefunckey import PhoneFunckey
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.data_handler.user.model import User, UserOrdering
+from xivo_dao.data_handler.user.model import UserOrdering, db_converter
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementEditionError, ElementCreationError, ElementDeletionError
 from sqlalchemy.sql.expression import and_
@@ -66,7 +66,8 @@ def _rows_to_user_model(user_rows):
 
     users = []
     for user_row in user_rows:
-        users.append(User.from_data_source(user_row))
+        user_model = db_converter.to_model(user_row)
+        users.append(user_model)
 
     return users
 
@@ -80,16 +81,30 @@ def find_user(session, firstname, lastname):
     if not user_row:
         return None
 
-    return User.from_data_source(user_row)
+    return db_converter.to_model(user_row)
 
 
 @daosession
 def get(session, user_id):
-    user_row = _new_query(session).filter(UserSchema.id == user_id).first()
+    user_row = _fetch_user_row(session, user_id)
+    return db_converter.to_model(user_row)
+
+
+def _fetch_commented_user_row(session, user_id):
+    query = session.query(UserSchema).filter(UserSchema.id == user_id)
+    return _user_row_from_query(query, user_id)
+
+
+def _fetch_user_row(session, user_id):
+    query = _new_query(session).filter(UserSchema.id == user_id)
+    return _user_row_from_query(query, user_id)
+
+
+def _user_row_from_query(query, user_id):
+    user_row = query.first()
     if not user_row:
         raise ElementNotExistsError('User', id=user_id)
-
-    return User.from_data_source(user_row)
+    return user_row
 
 
 @daosession
@@ -104,7 +119,7 @@ def get_main_user_by_line_id(session, line_id):
         raise ElementNotExistsError('MainUser', line_id=line_id)
 
     user_row, _ = row
-    return User.from_data_source(user_row)
+    return db_converter.to_model(user_row)
 
 
 @daosession
@@ -127,7 +142,7 @@ def _find_by_number_context(session, number, context):
     if not user_row:
         return None
 
-    return User.from_data_source(user_row)
+    return db_converter.to_model(user_row)
 
 
 @daosession
@@ -140,7 +155,7 @@ def get_by_number_context(session, number, context):
 
 @daosession
 def create(session, user):
-    user_row = user.to_data_source(UserSchema)
+    user_row = db_converter.to_source(user)
     session.begin()
     session.add(user_row)
 
@@ -157,21 +172,17 @@ def create(session, user):
 
 @daosession
 def edit(session, user):
+    user_row = _fetch_commented_user_row(session, user.id)
+
     session.begin()
-    nb_row_affected = (session.query(UserSchema)
-                       .filter(UserSchema.id == user.id)
-                       .update(user.to_data_dict()))
+    db_converter.update_source(user_row, user)
+    session.add(user_row)
 
     try:
         session.commit()
     except SQLAlchemyError as e:
         session.rollback()
         raise ElementEditionError('User', e)
-
-    if nb_row_affected == 0:
-        raise ElementEditionError('User', 'user_id %s not exist' % user.id)
-
-    return nb_row_affected
 
 
 @daosession

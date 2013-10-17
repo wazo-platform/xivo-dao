@@ -39,7 +39,7 @@ from mock import patch, Mock
 from sqlalchemy.exc import SQLAlchemyError
 from xivo_dao.data_handler.user.model import User
 from xivo_dao.data_handler.exception import ElementEditionError, \
-    ElementCreationError
+    ElementCreationError, ElementNotExistsError
 
 
 class TestUserDAO(DAOTestCase):
@@ -74,11 +74,10 @@ class TestUserDAO(DAOTestCase):
     def test_get_main_user_by_line_id(self):
         user_line = self.add_user_line_with_exten()
         line_id = user_line.line.id
-        expected_result = User.from_data_source(user_line.user)
 
         result = user_dao.get_main_user_by_line_id(line_id)
 
-        assert_that(result, equal_to(expected_result))
+        assert_that(result, has_property('id', user_line.user.id))
 
     def test_find_all_no_users(self):
         expected = []
@@ -352,7 +351,8 @@ class TestUserDAO(DAOTestCase):
         expected_lastname = 'Lereu'
         user = self.add_user(firstname=firstname, lastname=lastname)
 
-        user = User(id=user.id, lastname=expected_lastname)
+        user = user_dao.get(user.id)
+        user.lastname = expected_lastname
 
         user_dao.edit(user)
 
@@ -366,7 +366,7 @@ class TestUserDAO(DAOTestCase):
     def test_edit_with_unknown_user(self):
         user = User(id=123, lastname='unknown')
 
-        self.assertRaises(ElementEditionError, user_dao.edit, user)
+        self.assertRaises(ElementNotExistsError, user_dao.edit, user)
 
     @patch('xivo_dao.helpers.db_manager.AsteriskSession')
     def test_edit_with_database_error(self, Session):
@@ -387,7 +387,7 @@ class TestUserDAO(DAOTestCase):
         firstname = 'Gadou'
         lastname = 'Pipo'
         user = self.add_user(firstname=firstname,
-                                lastname=lastname)
+                             lastname=lastname)
 
         user = user_dao.get(user.id)
 
