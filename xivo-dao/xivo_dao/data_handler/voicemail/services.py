@@ -21,7 +21,8 @@ from xivo_dao.data_handler.context import services as context_services
 from xivo_dao.data_handler.voicemail import notifier
 from xivo_dao.helpers.sysconfd_connector import SysconfdError
 from xivo_dao.data_handler.exception import MissingParametersError, \
-    InvalidParametersError, ElementAlreadyExistsError, ElementNotExistsError
+    InvalidParametersError, ElementAlreadyExistsError, ElementNotExistsError, \
+    ElementDeletionError
 
 
 def find_all(skip=None, limit=None, order=None, direction=None, search=None):
@@ -51,6 +52,9 @@ def edit(voicemail):
 
 
 def delete(voicemail):
+    if voicemail_dao.is_voicemail_linked(voicemail):
+        raise ElementDeletionError('voicemail', 'Linked to a user')
+
     voicemail_dao.delete(voicemail)
     notifier.deleted(voicemail)
     try:
