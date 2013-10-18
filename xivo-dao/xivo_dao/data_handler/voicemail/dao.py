@@ -17,13 +17,12 @@
 
 from sqlalchemy.sql.expression import desc, asc, or_
 from sqlalchemy.exc import SQLAlchemyError
+
 from xivo_dao.alchemy.voicemail import Voicemail as VoicemailSchema
-from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema
+from xivo_dao.alchemy.dialaction import Dialaction as DialactionSchema
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.data_handler.voicemail.model import db_converter, VoicemailOrder, Voicemail
-from xivo_dao.helpers import sysconfd_connector
-from xivo_dao.helpers.sysconfd_connector import SysconfdError
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementCreationError, ElementEditionError, ElementDeletionError
 from xivo_dao.helpers.abstract_model import SearchResult
@@ -158,37 +157,26 @@ def edit(session, voicemail):
 def delete(session, voicemail):
     session.begin()
     try:
-        _unlink_user_sip(session, voicemail.number_at_context)
-        _unlink_user(session, voicemail.id)
-        nb_row_affected = _delete_voicemail(session, voicemail.id)
-        try:
-            sysconfd_connector.delete_voicemail_storage(voicemail.context, voicemail.number)
-        except Exception as e:
-            session.rollback()
-            raise SysconfdError(str(e))
-        else:
-            session.commit()
+        _delete_voicemail(session, voicemail.id)
+        _unlink_dialactions(session, voicemail.id)
+        session.commit()
     except SQLAlchemyError as e:
         session.rollback()
         raise ElementDeletionError('voicemail', e)
-
-    if nb_row_affected == 0:
-        raise ElementDeletionError('voicemail', 'voicemail_id %s not exist' % voicemail.id)
-
-
-def _unlink_user_sip(session, number_at_context):
-    (session.query(UserSIPSchema)
-     .filter(UserSIPSchema.mailbox == number_at_context)
-     .update({'mailbox': None}))
-
-
-def _unlink_user(session, voicemail_id):
-    (session.query(UserSchema)
-     .filter(UserSchema.voicemailid == voicemail_id)
-     .update({'voicemailid': None}))
 
 
 def _delete_voicemail(session, voicemail_id):
     return (session.query(VoicemailSchema)
             .filter(VoicemailSchema.uniqueid == voicemail_id)
             .delete())
+
+
+def _unlink_dialactions(session, voicemail_id):
+    (session.query(DialactionSchema)
+     .filter(DialactionSchema.action == 'voicemail')
+     .filter(DialactionSchema.actionarg1 == str(voicemail_id))
+     .update({'linked': 0}))
+
+
+
+

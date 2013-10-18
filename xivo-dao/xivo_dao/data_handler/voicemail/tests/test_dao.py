@@ -22,9 +22,10 @@ from sqlalchemy.exc import SQLAlchemyError
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.voicemail import Voicemail as VoicemailSchema
 from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema
-from xivo_dao.alchemy.sccpdevice import SCCPDevice as SCCPDeviceSchema
 from xivo_dao.alchemy.userfeatures import test_dependencies
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
+from xivo_dao.alchemy.incall import Incall as IncallSchema
+from xivo_dao.alchemy.dialaction import Dialaction as DialactionSchema
 from xivo_dao.data_handler.voicemail import dao as voicemail_dao
 from xivo_dao.data_handler.voicemail.model import Voicemail, VoicemailOrder
 from xivo_dao.data_handler.exception import ElementCreationError, \
@@ -562,160 +563,96 @@ class TestCreateVoicemail(DAOTestCase):
         session.rollback.assert_called_once_with()
 
 
-class TestVoicemailDeleteSIP(DAOTestCase):
-
-    tables = [
-        VoicemailSchema,
-        UserSIPSchema,
-        SCCPDeviceSchema,
-        UserSchema,
-    ] + test_dependencies
+class VoicemailTestCase(DAOTestCase):
 
     def setUp(self):
         self.empty_tables()
 
-    @patch('xivo_dao.helpers.sysconfd_connector.delete_voicemail_storage')
-    def test_delete_from_sip_user(self, delete_voicemail_storage):
-        voicemail = Mock(Voicemail)
-        voicemail.number = '42'
-        voicemail.context = 'default'
-        voicemail.number_at_context = '42@default'
-
-        user_id, user_sip_id, voicemail_id = self._prepare_database(voicemail)
+    def create_voicemail(self, number, context):
+        voicemail = self.mock_voicemail(number, context)
+        voicemail_id = self.prepare_database(voicemail)
         voicemail.id = voicemail_id
+
+        return voicemail
+
+    def mock_voicemail(self, number, context):
+        voicemail = Mock(Voicemail)
+        voicemail.number = number
+        voicemail.context = context
+        voicemail.number_at_context = '%s@%s' % (number, context)
+        return voicemail
+
+    def prepare_database(self, voicemail):
+        voicemail_row = VoicemailSchema(context=voicemail.context,
+                                        mailbox=voicemail.number)
+
+        self.add_me(voicemail_row)
+
+
+class TestVoicemailDelete(VoicemailTestCase):
+
+    tables = [
+        VoicemailSchema,
+        IncallSchema,
+        DialactionSchema
+    ]
+
+    def test_delete(self):
+        voicemail = self.create_voicemail(number='42', context='default')
+        voicemail_dao.delete(voicemail)
+
+        self.check_voicemail_table(voicemail.id)
+
+    def test_delete_with_dialaction(self):
+        voicemail = self.create_voicemail(number='42', context='default')
+        incall = self.create_incall_for_voicemail(voicemail, did='42', context='from-extern')
 
         voicemail_dao.delete(voicemail)
 
-        self._check_user_table(user_id)
-        self._check_user_sip_table(user_sip_id)
-        self._check_voicemail_table(voicemail_id)
-        delete_voicemail_storage.assert_called_once_with(voicemail.context, voicemail.number)
+        self.check_voicemail_table(voicemail.id)
+        self.check_incall_associated_to_nothing(incall.id)
 
-    @patch('xivo_dao.helpers.sysconfd_connector.delete_voicemail_storage')
     @patch('xivo_dao.helpers.db_manager.AsteriskSession')
-    def test_delete_with_database_error(self, Session, delete_voicemail_storage):
+    def test_delete_with_database_error(self, Session):
         session = Mock()
         session.commit.side_effect = SQLAlchemyError()
         Session.return_value = session
 
-        voicemail = Mock(Voicemail)
-        voicemail.number = '42'
-        voicemail.context = 'default'
-        voicemail.number_at_context = '42@default'
+        voicemail = self.mock_voicemail(number='42', context='default')
         voicemail.id = 1
 
         self.assertRaises(ElementDeletionError, voicemail_dao.delete, voicemail)
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
-        delete_voicemail_storage.assert_called_once_with(voicemail.context, voicemail.number)
 
-    def _prepare_database(self, voicemail):
-        voicemail_row = VoicemailSchema(context=voicemail.context,
-                                        mailbox=voicemail.number)
+    def create_incall_for_voicemail(self, voicemail, did, context):
+        incall_row = IncallSchema(exten=did,
+                                  context=context,
+                                  description='')
+        self.add_me(incall_row)
 
-        self.add_me(voicemail_row)
+        dial_action_row = DialactionSchema(event='answer',
+                                           category='incall',
+                                           categoryval=str(incall_row.id),
+                                           action='voicemail',
+                                           actionarg1=str(voicemail.id),
+                                           linked=1)
+        self.add_me(dial_action_row)
 
-        user_row = UserSchema(firstname='John',
-                              lastname='Doe',
-                              voicemailtype='asterisk',
-                              voicemailid=voicemail_row.uniqueid,
-                              language='fr_FR')
+        return incall_row
 
-        self.add_me(user_row)
-
-        user_sip_row = UserSIPSchema(name='bla',
-                                     type='friend',
-                                     mailbox='42@default')
-
-        self.add_me(user_sip_row)
-
-        return (user_row.id, user_sip_row.id, voicemail_row.uniqueid)
-
-    def _check_user_table(self, user_id):
-        user_row = (self.session.query(UserSchema)
-                    .filter(UserSchema.id == user_id)
-                    .first())
-
-        self.assertEquals(user_row.voicemailid, None)
-
-    def _check_user_sip_table(self, user_sip_id):
-
-        user_sip_row = (self.session.query(UserSIPSchema)
-                        .filter(UserSIPSchema.id == user_sip_id)
-                        .first())
-
-        self.assertEquals(user_sip_row.mailbox, None)
-
-    def _check_voicemail_table(self, voicemail_id):
-
+    def check_voicemail_table(self, voicemail_id):
         voicemail_row = (self.session.query(VoicemailSchema)
                          .filter(VoicemailSchema.uniqueid == voicemail_id)
                          .first())
 
         self.assertEquals(voicemail_row, None)
 
+    def check_incall_associated_to_nothing(self, incall_id):
+        count = (self.session.query(DialactionSchema)
+                 .filter(DialactionSchema.category == 'incall')
+                 .filter(DialactionSchema.categoryval == str(incall_id))
+                 .filter(DialactionSchema.linked == 0)
+                 .count())
 
-class TestVoicemailDeleteSCCP(DAOTestCase):
-
-    tables = [
-        VoicemailSchema,
-        UserSIPSchema,
-        SCCPDeviceSchema,
-        UserSchema,
-    ] + test_dependencies
-
-    def setUp(self):
-        self.empty_tables()
-
-    @patch('xivo_dao.helpers.sysconfd_connector.delete_voicemail_storage')
-    def test_delete_from_sccp_user(self, delete_voicemail_storage):
-        voicemail = Mock(Voicemail)
-        voicemail.number = '42'
-        voicemail.context = 'default'
-        voicemail.number_at_context = '42@default'
-
-        user_id, sccp_device_id, voicemail_id = self._prepare_database(voicemail)
-        voicemail.id = voicemail_id
-
-        voicemail_dao.delete(voicemail)
-
-        self._check_user_table(user_id)
-        self._check_voicemail_table(voicemail_id)
-        delete_voicemail_storage.assert_called_once_with(voicemail.context, voicemail.number)
-
-    def _prepare_database(self, voicemail):
-        voicemail_row = VoicemailSchema(context=voicemail.context,
-                                        mailbox=voicemail.number)
-
-        self.add_me(voicemail_row)
-
-        user_row = UserSchema(firstname='John',
-                              lastname='Doe',
-                              voicemailtype='asterisk',
-                              voicemailid=voicemail_row.uniqueid,
-                              language='fr_FR')
-
-        self.add_me(user_row)
-
-        sccp_device_row = SCCPDeviceSchema(name='SEPabcd',
-                                           device='SEPabcd',
-                                           voicemail='42')
-
-        self.add_me(sccp_device_row)
-
-        return (user_row.id, sccp_device_row.id, voicemail_row.uniqueid)
-
-    def _check_user_table(self, user_id):
-        user_row = (self.session.query(UserSchema)
-                    .filter(UserSchema.id == user_id)
-                    .first())
-
-        self.assertEquals(user_row.voicemailid, None)
-
-    def _check_voicemail_table(self, voicemail_id):
-
-        voicemail_row = (self.session.query(VoicemailSchema)
-                         .filter(VoicemailSchema.uniqueid == voicemail_id)
-                         .first())
-
-        self.assertEquals(voicemail_row, None)
+        self.assertTrue(count > 0, "incall still associated to a dialaction")
