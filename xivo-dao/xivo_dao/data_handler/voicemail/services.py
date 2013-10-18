@@ -97,7 +97,7 @@ def _check_nonexistent_parameters(voicemail):
         nonexistent_parameters['context'] = voicemail.context
     if voicemail.language is not None and voicemail.language not in language_dao.find_all():
         nonexistent_parameters['language'] = voicemail.language
-    if voicemail.timezone is not None and voicemail.timezone not in find_all_timezone():
+    if voicemail.timezone is not None and voicemail.timezone not in voicemail_dao.find_all_timezone():
         nonexistent_parameters['timezone'] = voicemail.timezone
     if nonexistent_parameters:
         raise NonexistentParametersError(**nonexistent_parameters)
