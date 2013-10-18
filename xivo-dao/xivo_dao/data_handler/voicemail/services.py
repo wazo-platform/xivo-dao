@@ -53,7 +53,7 @@ def edit(voicemail):
 
 def delete(voicemail):
     if voicemail_dao.is_voicemail_linked(voicemail):
-        raise ElementDeletionError('voicemail', 'Linked to a user')
+        raise ElementDeletionError('voicemail', 'Cannot delete a voicemail associated to a user')
 
     voicemail_dao.delete(voicemail)
     notifier.deleted(voicemail)
