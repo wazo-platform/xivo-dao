@@ -59,21 +59,21 @@ class ElementNotExistsError(LookupError):
 class ElementCreationError(IOError):
 
     def __init__(self, element, error):
-        message = "error while creating %s: %s" % (element, unicode(error))
+        message = "Error while creating %s: %s" % (element, unicode(error))
         IOError.__init__(self, message)
 
 
 class ElementEditionError(IOError):
 
     def __init__(self, element, error):
-        message = "error while editing %s: %s" % (element, unicode(error))
+        message = "Error while editing %s: %s" % (element, unicode(error))
         IOError.__init__(self, message)
 
 
 class ElementDeletionError(IOError):
 
     def __init__(self, element, error):
-        message = "error while deleting %s: %s" % (element, unicode(error))
+        message = "Error while deleting %s: %s" % (element, unicode(error))
         IOError.__init__(self, message)
 
 
