@@ -23,7 +23,7 @@ from xivo_dao.helpers.sysconfd_connector import SysconfdError
 from xivo_dao.data_handler.exception import MissingParametersError, \
     InvalidParametersError, ElementAlreadyExistsError, ElementNotExistsError, \
     NonexistentParametersError
-from xivo_dao.helpers.validator import is_positive_number, is_existing_context
+from xivo_dao.helpers import validator
 
 
 def find_all(skip=None, limit=None, order=None, direction=None, search=None):
@@ -81,11 +81,11 @@ def _check_invalid_parameters(voicemail):
     invalid_parameters = []
     if voicemail.name is not None and not voicemail.name:
         invalid_parameters.append('name')
-    if voicemail.number is not None and not is_positive_number(voicemail.number):
+    if voicemail.number is not None and not validator.is_positive_number(voicemail.number):
         invalid_parameters.append('number')
-    if voicemail.max_messages is not None and not is_positive_number(voicemail.max_messages):
+    if voicemail.max_messages is not None and not validator.is_positive_number(voicemail.max_messages):
         invalid_parameters.append('max_messages')
-    if voicemail.password is not None and not is_positive_number(voicemail.password):
+    if voicemail.password is not None and not validator.is_positive_number(voicemail.password):
         invalid_parameters.append('password')
     if invalid_parameters:
         raise InvalidParametersError(invalid_parameters)
@@ -93,7 +93,7 @@ def _check_invalid_parameters(voicemail):
 
 def _check_nonexistent_parameters(voicemail):
     nonexistent_parameters = {}
-    if not is_existing_context(voicemail.context):
+    if not validator.is_existing_context(voicemail.context):
         nonexistent_parameters['context'] = voicemail.context
     if voicemail.language is not None and voicemail.language not in language_dao.find_all():
         nonexistent_parameters['language'] = voicemail.language

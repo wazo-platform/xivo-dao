@@ -94,7 +94,7 @@ class TestVoicemail(unittest.TestCase):
         self.assertRaises(MissingParametersError, voicemail_services.create, voicemail)
         self.assertEquals(voicemail_notifier.created.call_count, 0)
 
-    @patch('xivo_dao.data_handler.context.services.find_by_name', Mock(return_value=True))
+    @patch('xivo_dao.helpers.validator.is_existing_context', Mock(return_value=True))
     @patch('xivo_dao.data_handler.voicemail.notifier.created')
     @patch('xivo_dao.data_handler.voicemail.dao.create')
     def test_create_empty_name(self, voicemail_dao_create, voicemail_notifier_created):
@@ -110,7 +110,7 @@ class TestVoicemail(unittest.TestCase):
         self.assertEquals(voicemail_dao_create.call_count, 0)
         self.assertEquals(voicemail_notifier_created.call_count, 0)
 
-    @patch('xivo_dao.data_handler.context.services.find_by_name', Mock(return_value=None))
+    @patch('xivo_dao.helpers.validator.is_existing_context', Mock(return_value=True))
     @patch('xivo_dao.data_handler.voicemail.notifier.created')
     @patch('xivo_dao.data_handler.voicemail.dao.create')
     def test_create_invalid_number(self, voicemail_dao_create, voicemail_notifier_created):
@@ -126,7 +126,7 @@ class TestVoicemail(unittest.TestCase):
         self.assertEquals(voicemail_dao_create.call_count, 0)
         self.assertEquals(voicemail_notifier_created.call_count, 0)
 
-    @patch('xivo_dao.data_handler.context.services.find_by_name', Mock(return_value=None))
+    @patch('xivo_dao.helpers.validator.is_existing_context', Mock(return_value=False))
     @patch('xivo_dao.data_handler.voicemail.notifier.created')
     @patch('xivo_dao.data_handler.voicemail.dao.create')
     def test_create_invalid_context(self, voicemail_dao_create, voicemail_notifier_created):
@@ -142,7 +142,7 @@ class TestVoicemail(unittest.TestCase):
         self.assertEquals(voicemail_dao_create.call_count, 0)
         self.assertEquals(voicemail_notifier_created.call_count, 0)
 
-    @patch('xivo_dao.data_handler.context.services.find_by_name', Mock(return_value=Mock()))
+    @patch('xivo_dao.helpers.validator.is_existing_context', Mock(return_value=True))
     @patch('xivo_dao.data_handler.voicemail.dao.get_by_number_context', Mock(return_value=Mock()))
     @patch('xivo_dao.data_handler.voicemail.notifier.created')
     @patch('xivo_dao.data_handler.voicemail.dao.create')
@@ -162,7 +162,7 @@ class TestVoicemail(unittest.TestCase):
         self.assertRaises(ElementAlreadyExistsError, voicemail_services.create, voicemail)
         self.assertEquals(voicemail_notifier_created.call_count, 0)
 
-    @patch('xivo_dao.data_handler.context.services.find_by_name', Mock(return_value=Mock()))
+    @patch('xivo_dao.helpers.validator.is_existing_context', Mock(return_value=True))
     @patch('xivo_dao.data_handler.voicemail.dao.get_by_number_context', Mock(return_value=None))
     @patch('xivo_dao.data_handler.voicemail.notifier.created')
     @patch('xivo_dao.data_handler.voicemail.dao.create')
@@ -183,7 +183,7 @@ class TestVoicemail(unittest.TestCase):
         self.assertEquals(type(result), Voicemail)
         voicemail_notifier_created.assert_called_once_with(voicemail)
 
-    @patch('xivo_dao.data_handler.context.services.find_by_name', Mock(return_value=None))
+    @patch('xivo_dao.helpers.validator.is_existing_context', Mock(return_value=True))
     @patch('xivo_dao.data_handler.voicemail.dao.get_by_number_context', Mock(return_value=None))
     @patch('xivo_dao.data_handler.voicemail.notifier.created')
     @patch('xivo_dao.data_handler.voicemail.dao.create')
