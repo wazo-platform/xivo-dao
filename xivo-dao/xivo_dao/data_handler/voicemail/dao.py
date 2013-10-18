@@ -95,14 +95,10 @@ def _apply_skip_and_limit(query, skip, limit):
 @daosession
 def find_all_timezone(session):
     rows = (session.query(StaticVoicemail.var_name)
-           .filter(StaticVoicemail.category == 'zonemessages')
-           .all())
+            .filter(StaticVoicemail.category == 'zonemessages')
+            .all())
 
-    res = []
-    for row in rows:
-        res.append(row[0])
-
-    return res
+    return [row.var_name for row in rows]
 
 
 @daosession
