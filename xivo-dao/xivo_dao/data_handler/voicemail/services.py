@@ -23,7 +23,7 @@ from xivo_dao.helpers.sysconfd_connector import SysconfdError
 from xivo_dao.data_handler.exception import MissingParametersError, \
     InvalidParametersError, ElementAlreadyExistsError, ElementNotExistsError, \
     NonexistentParametersError
-from xivo_dao.helpers.validator import is_positive_number, is_context_exist
+from xivo_dao.helpers.validator import is_positive_number, is_existing_context
 
 
 def find_all(skip=None, limit=None, order=None, direction=None, search=None):
@@ -93,7 +93,7 @@ def _check_invalid_parameters(voicemail):
 
 def _check_nonexistent_parameters(voicemail):
     nonexistent_parameters = {}
-    if not is_context_exist(voicemail.context):
+    if not is_existing_context(voicemail.context):
         nonexistent_parameters['context'] = voicemail.context
     if voicemail.language is not None and voicemail.language not in language_dao.find_all():
         nonexistent_parameters['language'] = voicemail.language

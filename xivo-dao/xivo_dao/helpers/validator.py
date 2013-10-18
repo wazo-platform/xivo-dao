@@ -25,5 +25,5 @@ def is_positive_number(string):
         return False
 
 
-def is_context_exist(context_name):
+def is_existing_context(context_name):
     return context_services.find_by_name(context_name)
