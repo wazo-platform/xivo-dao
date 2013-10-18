@@ -178,5 +178,14 @@ def _unlink_dialactions(session, voicemail_id):
      .update({'linked': 0}))
 
 
+@daosession
+def is_voicemail_linked(session, voicemail):
+    user_links = _count_user_links(session, voicemail)
+    return user_links > 0
 
 
+def _count_user_links(session, voicemail):
+    count = (session.query(UserSchema)
+             .filter(UserSchema.voicemailid == voicemail.id)
+             .count())
+    return count

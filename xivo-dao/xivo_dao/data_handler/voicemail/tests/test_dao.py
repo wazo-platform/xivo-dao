@@ -656,3 +656,35 @@ class TestVoicemailDelete(VoicemailTestCase):
                  .count())
 
         self.assertTrue(count > 0, "incall still associated to a dialaction")
+
+
+class TestIsVoicemailLinked(VoicemailTestCase):
+
+    tables = [
+        VoicemailSchema,
+        UserSchema,
+    ] + test_dependencies
+
+    def test_is_voicemail_linked_no_links(self):
+        voicemail = self.create_voicemail(number='42', context='default')
+
+        result = voicemail_dao.is_voicemail_linked(voicemail)
+
+        self.assertFalse(result)
+
+    def test_is_voicemail_linked_with_user(self):
+        voicemail = self.create_voicemail(number='42', context='default')
+        self.create_user_with_voicemail(voicemail,
+                                        firstname='Joe')
+
+        result = voicemail_dao.is_voicemail_linked(voicemail)
+
+        self.assertTrue(result)
+
+    def create_user_with_voicemail(self, voicemail, firstname):
+        user_row = UserSchema(firstname='John',
+                              lastname='Doe',
+                              voicemailtype='asterisk',
+                              voicemailid=voicemail.id,
+                              language='fr_FR')
+        self.add_me(user_row)
