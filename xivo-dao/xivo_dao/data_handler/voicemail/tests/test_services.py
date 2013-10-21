@@ -56,19 +56,20 @@ class TestVoicemail(unittest.TestCase):
 
         self.assertEquals(result, voicemails)
 
+    @patch('xivo_dao.data_handler.voicemail.dao.is_voicemail_linked', Mock(return_value=False))
     @patch('xivo_dao.data_handler.voicemail.notifier.deleted')
     @patch('xivo_dao.data_handler.voicemail.dao.delete')
-    def test_delete_raises_exception(self, voicemail_dao_delete, voicemail_notifier_deleted):
+    @patch('xivo_dao.helpers.sysconfd_connector.delete_voicemail_storage')
+    def test_delete_raises_exception(self, sysconf_delete_voicemail, voicemail_dao_delete, voicemail_notifier_deleted):
         voicemail = Mock(Voicemail)
-        voicemail.id = 12
-        voicemail.number = '42'
-        voicemail.context = 'default'
 
         voicemail_dao_delete.side_effect = ElementDeletionError('voicemail', '')
 
         self.assertRaises(ElementDeletionError, voicemail_services.delete, voicemail)
         self.assertEquals(voicemail_notifier_deleted.call_count, 0)
+        self.assertEquals(sysconf_delete_voicemail.call_count, 0)
 
+    @patch('xivo_dao.data_handler.voicemail.dao.is_voicemail_linked', Mock(return_value=False))
     @patch('xivo_dao.data_handler.voicemail.notifier.deleted')
     @patch('xivo_dao.data_handler.voicemail.dao.delete')
     @patch('xivo_dao.helpers.sysconfd_connector.delete_voicemail_storage')
@@ -76,6 +77,7 @@ class TestVoicemail(unittest.TestCase):
         voicemail_id = 12
         number = '42'
         context = 'default'
+
         voicemail = Mock(Voicemail)
         voicemail.id = voicemail_id
         voicemail.number = number
@@ -86,6 +88,19 @@ class TestVoicemail(unittest.TestCase):
         voicemail_dao_delete.assert_called_once_with(voicemail)
         sysconfd_connector_delete_voicemail_storage.assert_called_once_with(number, context)
         voicemail_notifier_deleted.assert_called_once_with(voicemail)
+
+    @patch('xivo_dao.data_handler.voicemail.notifier.deleted')
+    @patch('xivo_dao.data_handler.voicemail.dao.delete')
+    @patch('xivo_dao.helpers.sysconfd_connector.delete_voicemail_storage')
+    @patch('xivo_dao.data_handler.voicemail.dao.is_voicemail_linked')
+    def test_delete_with_link(self, is_voicemail_linked, sysconf_delete_voicemail, voicemail_dao_delete, voicemail_notifier_deleted):
+        voicemail = Mock(Voicemail)
+
+        is_voicemail_linked.return_value = True
+
+        self.assertRaises(ElementDeletionError, voicemail_services.delete, voicemail)
+        self.assertEquals(voicemail_notifier_deleted.call_count, 0)
+        self.assertEquals(sysconf_delete_voicemail.call_count, 0)
 
     @patch('xivo_dao.data_handler.voicemail.notifier')
     def test_create_no_properties(self, voicemail_notifier):
