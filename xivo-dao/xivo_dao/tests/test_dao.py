@@ -34,6 +34,7 @@ from xivo_dao.alchemy.usercustom import UserCustom as UserCustomSchema
 from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.dialpattern import DialPattern
 from xivo_dao.alchemy.cel import CEL as CELSchema
+from xivo_dao.alchemy.voicemail import Voicemail as VoicemailSchema
 
 logger = logging.getLogger(__name__)
 
@@ -220,6 +221,24 @@ class DAOTestCase(unittest.TestCase):
         cel = CELSchema(**kwargs)
         self.add_me(cel)
         return cel.id
+
+    def add_voicemail(self, number, context, **kwargs):
+        kwargs.setdefault('mailbox', number)
+        kwargs.setdefault('context', context)
+
+        voicemail_row = VoicemailSchema(**kwargs)
+
+        self.add_me(voicemail_row)
+        return voicemail_row
+
+    def link_user_and_voicemail(self, user_row, voicemail_id):
+        user_row.voicemailtype = 'asterisk'
+        user_row.voicemailid = voicemail_id
+
+        if not user_row.language:
+            user_row.language = 'fr_FR'
+
+        self.add_me(user_row)
 
     def add_me(self, obj):
         self.session.begin()

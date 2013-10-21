@@ -681,10 +681,7 @@ class TestIsVoicemailLinked(VoicemailTestCase):
 
         self.assertTrue(result)
 
-    def create_user_with_voicemail(self, voicemail, firstname):
-        user_row = UserSchema(firstname='John',
-                              lastname='Doe',
-                              voicemailtype='asterisk',
-                              voicemailid=voicemail.id,
-                              language='fr_FR')
-        self.add_me(user_row)
+    def create_user_with_voicemail(self, voicemail, firstname='John', lastname='Doe'):
+        user_row = self.add_user(firstname=firstname,
+                                 lastname=lastname)
+        self.link_user_and_voicemail(user_row, voicemail.id)
