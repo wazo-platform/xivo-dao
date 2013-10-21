@@ -32,6 +32,7 @@ from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 from xivo_dao.alchemy.user_line import UserLine
+from xivo_dao.alchemy.voicemail import Voicemail as VoicemailSchema
 from xivo_dao.data_handler.user import dao as user_dao
 from xivo_dao.data_handler.user.model import UserOrdering
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -60,7 +61,8 @@ class TestUserDAO(DAOTestCase):
         SchedulePath,
         UserSchema,
         ExtensionSchema,
-        UserLine
+        UserLine,
+        VoicemailSchema
     ]
 
     def setUp(self):
@@ -259,12 +261,45 @@ class TestUserDAO(DAOTestCase):
     def test_get_inexistant(self):
         self.assertRaises(LookupError, user_dao.get, 42)
 
-    def test_get(self):
-        user = self.add_user(firstname='Paul')
+    def test_get_required_fields(self):
+        user_row = self.add_user(firstname='Paul')
 
-        user = user_dao.get(user.id)
+        user = user_dao.get(user_row.id)
+
+        assert_that(user.id, equal_to(user_row.id))
+        assert_that(user.firstname, equal_to(user_row.firstname))
+
+    def test_get_all_fields(self):
+        user_row = self.add_user(firstname='Paul',
+                                 lastname='Rogers',
+                                 callerid='"Cool dude"',
+                                 outcallerid='"Cool dude going out"',
+                                 loginclient='paulrogers',
+                                 passwdclient='paulrogers',
+                                 musiconhold='mymusic',
+                                 mobilephonenumber='4185551234',
+                                 userfield='userfield',
+                                 timezone='America/Montreal',
+                                 language='fr_FR',
+                                 description='Really cool dude')
+        voicemail_row = self.add_voicemail(number='1234', context='default')
+        self.link_user_and_voicemail(user_row, voicemail_row.uniqueid)
+
+        user = user_dao.get(user_row.id)
 
         assert_that(user.id, equal_to(user.id))
+        assert_that(user.lastname, equal_to(user_row.lastname))
+        assert_that(user.callerid, equal_to(user_row.callerid))
+        assert_that(user.outcallerid, equal_to(user_row.outcallerid))
+        assert_that(user.username, equal_to(user_row.loginclient))
+        assert_that(user.password, equal_to(user_row.passwdclient))
+        assert_that(user.musiconhold, equal_to(user_row.musiconhold))
+        assert_that(user.mobilephonenumber, equal_to(user_row.mobilephonenumber))
+        assert_that(user.userfield, equal_to(user_row.userfield))
+        assert_that(user.timezone, equal_to(user_row.timezone))
+        assert_that(user.language, equal_to(user_row.language))
+        assert_that(user.description, equal_to(user_row.description))
+        assert_that(user.voicemail_id, equal_to(voicemail_row.uniqueid))
 
     def test_get_commented(self):
         user = self.add_user(firstname='Robert', commented=1)

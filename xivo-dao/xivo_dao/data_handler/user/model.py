@@ -35,7 +35,8 @@ class UserDbConverter(DatabaseConverter):
         'userfield': 'userfield',
         'timezone': 'timezone',
         'language': 'language',
-        'description': 'description'
+        'description': 'description',
+        'voicemailid': 'voicemail_id'
     }
 
     def __init__(self):
@@ -70,7 +71,7 @@ class User(NewModel):
         'userfield',
         'timezone',
         'language',
-        'description'
+        'description',
     ]
 
     _RELATION = {
