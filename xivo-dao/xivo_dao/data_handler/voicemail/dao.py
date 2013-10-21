@@ -26,6 +26,7 @@ from xivo_dao.data_handler.voicemail.model import db_converter, VoicemailOrder, 
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementCreationError, ElementEditionError, ElementDeletionError
 from xivo_dao.helpers.abstract_model import SearchResult
+from xivo_dao.alchemy.staticvoicemail import StaticVoicemail
 
 
 @daosession
@@ -88,6 +89,15 @@ def _apply_skip_and_limit(query, skip, limit):
         query = query.limit(limit)
 
     return query
+
+
+@daosession
+def find_all_timezone(session):
+    rows = (session.query(StaticVoicemail.var_name)
+            .filter(StaticVoicemail.category == 'zonemessages')
+            .all())
+
+    return [row.var_name for row in rows]
 
 
 @daosession

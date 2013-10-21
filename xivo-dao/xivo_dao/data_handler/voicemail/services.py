@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+#
 # Copyright (C) 2013 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
@@ -15,18 +15,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from xivo_dao.data_handler.language import dao as language_dao
 from xivo_dao.data_handler.voicemail import dao as voicemail_dao
 from xivo_dao.helpers import sysconfd_connector
-from xivo_dao.data_handler.context import services as context_services
 from xivo_dao.data_handler.voicemail import notifier
 from xivo_dao.helpers.sysconfd_connector import SysconfdError
 from xivo_dao.data_handler.exception import MissingParametersError, \
     InvalidParametersError, ElementAlreadyExistsError, ElementNotExistsError, \
-    ElementDeletionError
+    ElementDeletionError, NonexistentParametersError
+from xivo_dao.helpers import validator
 
 
 def find_all(skip=None, limit=None, order=None, direction=None, search=None):
     return voicemail_dao.find_all(skip=skip, limit=limit, order=order, direction=direction, search=search)
+
+
+def find_all_timezone():
+    return voicemail_dao.find_all_timezone()
 
 
 def get_by_number_context(number, context):
@@ -66,6 +71,7 @@ def delete(voicemail):
 def _validate(voicemail):
     _check_missing_parameters(voicemail)
     _check_invalid_parameters(voicemail)
+    _check_nonexistent_parameters(voicemail)
 
 
 def _check_missing_parameters(voicemail):
@@ -76,14 +82,28 @@ def _check_missing_parameters(voicemail):
 
 def _check_invalid_parameters(voicemail):
     invalid_parameters = []
-    if not voicemail.name:
+    if voicemail.name is not None and not voicemail.name:
         invalid_parameters.append('name')
-    if not voicemail.number.isdigit():
+    if voicemail.number is not None and not validator.is_positive_number(voicemail.number):
         invalid_parameters.append('number')
-    if not context_services.find_by_name(voicemail.context):
-        invalid_parameters.append('context')
+    if voicemail.max_messages is not None and not validator.is_positive_number(voicemail.max_messages):
+        invalid_parameters.append('max_messages')
+    if voicemail.password is not None and not validator.is_positive_number(voicemail.password):
+        invalid_parameters.append('password')
     if invalid_parameters:
         raise InvalidParametersError(invalid_parameters)
+
+
+def _check_nonexistent_parameters(voicemail):
+    nonexistent_parameters = {}
+    if not validator.is_existing_context(voicemail.context):
+        nonexistent_parameters['context'] = voicemail.context
+    if voicemail.language is not None and voicemail.language not in language_dao.find_all():
+        nonexistent_parameters['language'] = voicemail.language
+    if voicemail.timezone is not None and voicemail.timezone not in voicemail_dao.find_all_timezone():
+        nonexistent_parameters['timezone'] = voicemail.timezone
+    if nonexistent_parameters:
+        raise NonexistentParametersError(**nonexistent_parameters)
 
 
 def _check_for_existing_voicemail(voicemail):
