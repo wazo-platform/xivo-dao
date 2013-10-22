@@ -310,7 +310,7 @@ class TestVoicemail(unittest.TestCase):
 
     @patch('xivo_dao.helpers.validator.is_existing_context', Mock(return_value=True))
     @patch('xivo_dao.data_handler.voicemail.dao.get', Mock(return_value=Mock(Voicemail)))
-    @patch('xivo_dao.data_handler.voicemail.dao.get_by_number_context', Mock(return_value=True))
+    @patch('xivo_dao.data_handler.voicemail.dao.get_by_number_context', Mock(return_value=Mock(Voicemail)))
     @patch('xivo_dao.data_handler.voicemail.notifier.edited')
     @patch('xivo_dao.data_handler.voicemail.dao.edit')
     def test_edit_same_context_and_number(self, voicemail_dao_edit, voicemail_notifier_edited):
