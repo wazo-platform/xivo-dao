@@ -29,7 +29,7 @@ from xivo_dao.alchemy.dialaction import Dialaction as DialactionSchema
 from xivo_dao.data_handler.voicemail import dao as voicemail_dao
 from xivo_dao.data_handler.voicemail.model import Voicemail, VoicemailOrder
 from xivo_dao.data_handler.exception import ElementCreationError, \
-    ElementDeletionError
+    ElementDeletionError, ElementEditionError
 
 
 class TestFindAllVoicemail(DAOTestCase):
@@ -559,6 +559,56 @@ class TestCreateVoicemail(DAOTestCase):
                               context=context)
 
         self.assertRaises(ElementCreationError, voicemail_dao.create, voicemail)
+        session.begin.assert_called_once_with()
+        session.rollback.assert_called_once_with()
+
+
+class TestEditVoicemail(DAOTestCase):
+
+    tables = [
+        VoicemailSchema,
+    ]
+
+    def setUp(self):
+        self.empty_tables()
+
+    def test_edit(self):
+        number = '42'
+        context = 'default'
+        expected_name = 'totitu'
+
+        voicemail = self.add_voicemail(number=number,
+                                       context=context)
+
+        voicemail = voicemail_dao.get(voicemail.uniqueid)
+        voicemail.name = expected_name
+
+        voicemail_dao.edit(voicemail)
+
+        row = (self.session.query(VoicemailSchema)
+               .filter(VoicemailSchema.uniqueid == voicemail.id)
+               .first())
+
+        self.assertEquals(row.uniqueid, voicemail.id)
+        self.assertEquals(row.fullname, expected_name)
+        self.assertEquals(row.mailbox, number)
+        self.assertEquals(row.context, context)
+
+    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    def test_edit_with_database_error(self, Session):
+        session = Mock()
+        session.commit.side_effect = SQLAlchemyError()
+        Session.return_value = session
+
+        name = 'voicemail'
+        number = '42'
+        context = 'default'
+
+        voicemail = Voicemail(name=name,
+                              number=number,
+                              context=context)
+
+        self.assertRaises(ElementEditionError, voicemail_dao.edit, voicemail)
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
 

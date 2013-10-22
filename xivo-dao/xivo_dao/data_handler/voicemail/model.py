@@ -80,6 +80,11 @@ class VoicemailDBConverter(DatabaseConverter):
 
     def to_model(self, db_row):
         model = DatabaseConverter.to_model(self, db_row)
+        self._convert_model_fields(model)
+
+        return model
+
+    def _convert_model_fields(self, model):
         model.attach_audio = bool(model.attach_audio)
         model.delete_messages = bool(model.delete_messages)
         model.ask_password = bool(model.ask_password)
@@ -87,7 +92,25 @@ class VoicemailDBConverter(DatabaseConverter):
         if model.password == '':
             model.password = None
 
-        return model
+    def to_source(self, model):
+        source = DatabaseConverter.to_source(self, model)
+        self._convert_source_fields(source)
+
+        return source
+
+    def update_source(self, db_row, model):
+        DatabaseConverter.update_source(self, db_row, model)
+        self._convert_source_fields(db_row)
+
+    def _convert_source_fields(self, source):
+        if source.attach is not None:
+            source.attach = int(bool(source.attach))
+        if source.deletevoicemail is not None:
+            source.deletevoicemail = int(bool(source.deletevoicemail))
+        if source.skipcheckpass is not None:
+            source.skipcheckpass = int(bool(source.skipcheckpass))
+        if source.password is None:
+            source.password = ''
 
     def to_source(self, model):
         source = DatabaseConverter.to_source(self, model)

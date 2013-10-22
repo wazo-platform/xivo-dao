@@ -52,6 +52,7 @@ def create(voicemail):
 
 def edit(voicemail):
     _validate(voicemail)
+    _check_for_edit_existing_voicemail(voicemail)
     voicemail_dao.edit(voicemail)
     notifier.edited(voicemail)
 
@@ -90,6 +91,12 @@ def _check_invalid_parameters(voicemail):
         invalid_parameters.append('max_messages')
     if voicemail.password is not None and not validator.is_positive_number(voicemail.password):
         invalid_parameters.append('password')
+    if voicemail.attach_audio is not None and not isinstance(voicemail.attach_audio, bool):
+        invalid_parameters.append('attach_audio')
+    if voicemail.delete_messages is not None and not isinstance(voicemail.delete_messages, bool):
+        invalid_parameters.append('delete_messages')
+    if voicemail.ask_password is not None and not isinstance(voicemail.ask_password, bool):
+        invalid_parameters.append('ask_password')
     if invalid_parameters:
         raise InvalidParametersError(invalid_parameters)
 
@@ -111,5 +118,14 @@ def _check_for_existing_voicemail(voicemail):
         if voicemail_dao.get_by_number_context(voicemail.number, voicemail.context):
             number_at_context = voicemail.number_at_context
             raise ElementAlreadyExistsError('Voicemail', number_at_context)
+    except ElementNotExistsError:
+        return
+
+
+def _check_for_edit_existing_voicemail(voicemail):
+    try:
+        existing_voicemail = voicemail_dao.get(voicemail.id)
+        if voicemail.number_at_context != existing_voicemail.number_at_context:
+            _check_for_existing_voicemail(voicemail)
     except ElementNotExistsError:
         return

@@ -148,9 +148,7 @@ def create(session, voicemail):
 
 @daosession
 def edit(session, voicemail):
-    session.begin()
-
-    voicemail_row = _get_voicemail_row(voicemail.id)
+    voicemail_row = _get_voicemail_row(session, voicemail.id)
     db_converter.update_source(voicemail_row, voicemail)
 
     session.begin()

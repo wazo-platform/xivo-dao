@@ -23,7 +23,7 @@ from xivo_dao.data_handler.voicemail import services as voicemail_services
 from xivo_dao.data_handler.voicemail.model import Voicemail, VoicemailOrder
 from xivo_dao.data_handler.exception import MissingParametersError, \
     InvalidParametersError, ElementAlreadyExistsError, ElementCreationError, \
-    ElementDeletionError, NonexistentParametersError
+    ElementDeletionError, NonexistentParametersError, ElementEditionError
 
 
 class TestVoicemail(unittest.TestCase):
@@ -215,3 +215,112 @@ class TestVoicemail(unittest.TestCase):
 
         self.assertRaises(ElementCreationError, voicemail_dao_create, voicemail)
         self.assertEquals(voicemail_notifier_created.call_count, 0)
+
+    @patch('xivo_dao.helpers.validator.is_existing_context', Mock(return_value=True))
+    @patch('xivo_dao.data_handler.voicemail.dao.get', Mock(return_value=Mock(Voicemail)))
+    @patch('xivo_dao.data_handler.voicemail.dao.get_by_number_context', Mock(return_value=None))
+    @patch('xivo_dao.data_handler.voicemail.notifier.edited')
+    @patch('xivo_dao.data_handler.voicemail.dao.edit')
+    def test_edit(self, voicemail_dao_edit, voicemail_notifier_edited):
+        name = 'voicemail'
+        number = '25880'
+        context = 'default'
+
+        voicemail = Voicemail(name=name,
+                              number=number,
+                              context=context)
+
+        voicemail_services.edit(voicemail)
+
+        voicemail_dao_edit.assert_called_once_with(voicemail)
+        voicemail_notifier_edited.assert_called_once_with(voicemail)
+
+    @patch('xivo_dao.helpers.validator.is_existing_context', Mock(return_value=True))
+    @patch('xivo_dao.data_handler.voicemail.dao.get', Mock(return_value=Mock(Voicemail)))
+    @patch('xivo_dao.data_handler.voicemail.dao.get_by_number_context', Mock(return_value=None))
+    @patch('xivo_dao.data_handler.voicemail.notifier.edited')
+    @patch('xivo_dao.data_handler.voicemail.dao.edit')
+    def test_edit_with_error_from_dao(self, voicemail_dao_edit, voicemail_notifier_edited):
+        name = 'voicemail'
+        number = '25880'
+        context = 'default'
+
+        voicemail = Voicemail(name=name,
+                              number=number,
+                              context=context)
+
+        voicemail_dao_edit.side_effect = ElementEditionError('voicemail', '')
+
+        self.assertRaises(ElementEditionError, voicemail_dao_edit, voicemail)
+        self.assertEquals(voicemail_notifier_edited.call_count, 0)
+
+    @patch('xivo_dao.helpers.validator.is_existing_context', Mock(return_value=True))
+    @patch('xivo_dao.data_handler.voicemail.dao.get', Mock(return_value=Mock(Voicemail)))
+    @patch('xivo_dao.data_handler.voicemail.dao.get_by_number_context', Mock(return_value=None))
+    @patch('xivo_dao.data_handler.voicemail.notifier.edited')
+    @patch('xivo_dao.data_handler.voicemail.dao.edit')
+    def test_edit_empty_name(self, voicemail_dao_edit, voicemail_notifier_edited):
+        name = ''
+        number = '42'
+        context = 'default'
+
+        voicemail = Voicemail(name=name,
+                              number=number,
+                              context=context)
+
+        self.assertRaises(InvalidParametersError, voicemail_services.edit, voicemail)
+        self.assertEquals(voicemail_dao_edit.call_count, 0)
+        self.assertEquals(voicemail_notifier_edited.call_count, 0)
+
+    @patch('xivo_dao.helpers.validator.is_existing_context', Mock(return_value=True))
+    @patch('xivo_dao.data_handler.voicemail.dao.get', Mock(return_value=Mock(Voicemail)))
+    @patch('xivo_dao.data_handler.voicemail.dao.get_by_number_context', Mock(return_value=None))
+    @patch('xivo_dao.data_handler.voicemail.notifier.edited')
+    @patch('xivo_dao.data_handler.voicemail.dao.edit')
+    def test_edit_invalid_number(self, voicemail_dao_edit, voicemail_notifier_edited):
+        name = 'voicemail'
+        number = 'wrong_number'
+        context = 'default'
+
+        voicemail = Voicemail(name=name,
+                              number=number,
+                              context=context)
+
+        self.assertRaises(InvalidParametersError, voicemail_services.edit, voicemail)
+        self.assertEquals(voicemail_dao_edit.call_count, 0)
+        self.assertEquals(voicemail_notifier_edited.call_count, 0)
+
+    @patch('xivo_dao.helpers.validator.is_existing_context', Mock(return_value=False))
+    @patch('xivo_dao.data_handler.voicemail.dao.get', Mock(return_value=Mock(Voicemail)))
+    @patch('xivo_dao.data_handler.voicemail.dao.get_by_number_context', Mock(return_value=None))
+    @patch('xivo_dao.data_handler.voicemail.notifier.edited')
+    @patch('xivo_dao.data_handler.voicemail.dao.edit')
+    def test_edit_invalid_context(self, voicemail_dao_edit, voicemail_notifier_edited):
+        name = 'voicemail'
+        number = '42'
+        context = 'inexistant_context'
+
+        voicemail = Voicemail(name=name,
+                              number=number,
+                              context=context)
+
+        self.assertRaises(NonexistentParametersError, voicemail_services.edit, voicemail)
+        self.assertEquals(voicemail_dao_edit.call_count, 0)
+        self.assertEquals(voicemail_notifier_edited.call_count, 0)
+
+    @patch('xivo_dao.helpers.validator.is_existing_context', Mock(return_value=True))
+    @patch('xivo_dao.data_handler.voicemail.dao.get', Mock(return_value=Mock(Voicemail)))
+    @patch('xivo_dao.data_handler.voicemail.dao.get_by_number_context', Mock(return_value=True))
+    @patch('xivo_dao.data_handler.voicemail.notifier.edited')
+    @patch('xivo_dao.data_handler.voicemail.dao.edit')
+    def test_edit_same_context_and_number(self, voicemail_dao_edit, voicemail_notifier_edited):
+        name = 'voicemail'
+        number = '42'
+        context = 'existing_context'
+
+        voicemail = Voicemail(name=name,
+                              number=number,
+                              context=context)
+
+        self.assertRaises(ElementAlreadyExistsError, voicemail_services.edit, voicemail)
+        self.assertEquals(voicemail_notifier_edited.call_count, 0)
