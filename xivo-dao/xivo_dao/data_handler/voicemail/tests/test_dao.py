@@ -594,6 +594,52 @@ class TestEditVoicemail(DAOTestCase):
         self.assertEquals(row.mailbox, number)
         self.assertEquals(row.context, context)
 
+    def test_edit_with_all_parameters(self):
+        voicemail_row = self.add_voicemail(
+            number='1000',
+            context='default',
+            password='password',
+            email='email@email',
+            language='fr_FR',
+            tz='eu-fr',
+            attach=0,
+            deletevoicemail=0,
+            maxmsg=0,
+            skipcheckpass=0
+        )
+
+        voicemail = voicemail_dao.get(voicemail_row.uniqueid)
+
+        voicemail.name = 'newname'
+        voicemail.number = '1001'
+        voicemail.password = 'newpassword'
+        voicemail.email = 'newemail@email.com'
+        voicemail.language = 'en_US'
+        voicemail.timezone = 'en-ca'
+        voicemail.max_messages = 10
+        voicemail.attach_audio = True
+        voicemail.delete_messages = True
+        voicemail.ask_password = True
+
+        voicemail_dao.edit(voicemail)
+
+        row = (self.session.query(VoicemailSchema)
+               .filter(VoicemailSchema.uniqueid == voicemail.id)
+               .first())
+
+        self.assertEquals(row.uniqueid, voicemail.id)
+        self.assertEquals(row.fullname, voicemail.name)
+        self.assertEquals(row.mailbox, voicemail.number)
+        self.assertEquals(row.context, voicemail.context)
+        self.assertEquals(row.password, voicemail.password)
+        self.assertEquals(row.email, voicemail.email)
+        self.assertEquals(row.language, voicemail.language)
+        self.assertEquals(row.tz, voicemail.timezone)
+        self.assertEquals(row.maxmsg, voicemail.max_messages)
+        self.assertEquals(row.attach, voicemail.attach_audio)
+        self.assertEquals(row.deletevoicemail, voicemail.delete_messages)
+        self.assertEquals(row.skipcheckpass, voicemail.ask_password)
+
     @patch('xivo_dao.helpers.db_manager.AsteriskSession')
     def test_edit_with_database_error(self, Session):
         session = Mock()
