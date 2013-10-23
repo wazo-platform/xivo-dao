@@ -138,9 +138,9 @@ class TestUserLineExtensionValidator(unittest.TestCase):
     @patch('xivo_dao.data_handler.user_line_extension.validator.validate')
     @patch('xivo_dao.data_handler.user_line_extension.validator.check_if_extension_in_context_range')
     @patch('xivo_dao.data_handler.user_line_extension.validator.check_if_user_and_line_already_linked')
-    @patch('xivo_dao.data_handler.user_line_extension.validator.check_if_extension_already_linked_to_a_line')
+    @patch('xivo_dao.data_handler.user_line_extension.validator.check_line_links_for_extension')
     def test_validate_create(self,
-                             check_if_extension_already_linked_to_a_line,
+                             check_line_links_for_extension,
                              check_if_user_and_line_already_linked,
                              check_if_extension_in_context_range,
                              ule_validate):
@@ -157,7 +157,7 @@ class TestUserLineExtensionValidator(unittest.TestCase):
         ule_validate.assert_called_once_with(ule)
         check_if_user_and_line_already_linked.assert_called_once_with(user_mock, line_mock)
         check_if_extension_in_context_range.assert_called_once_with(extension_mock)
-        check_if_extension_already_linked_to_a_line.assert_called_once_with(extension_mock)
+        check_line_links_for_extension.assert_called_once_with(line_mock, extension_mock)
 
     @patch('xivo_dao.data_handler.user_line_extension.dao.already_linked')
     def test_check_if_user_and_line_already_linked_when_linked(self, already_linked):
@@ -196,22 +196,35 @@ class TestUserLineExtensionValidator(unittest.TestCase):
         is_extension_in_specific_range.assert_called_once_with(extension, ContextRange.users)
 
     @patch('xivo_dao.data_handler.user_line_extension.dao.find_all_by_extension_id')
-    def test_check_if_extension_already_linked_to_a_line_when_not_linked(self, find_all_by_extension_id):
+    def test_check_line_links_for_extension_when_not_linked(self, find_all_by_extension_id):
         extension = Mock(Extension, id=1)
+        line = Mock(LineSIP, id=10)
 
         find_all_by_extension_id.return_value = []
 
-        validator.check_if_extension_already_linked_to_a_line(extension)
+        validator.check_line_links_for_extension(line, extension)
 
         find_all_by_extension_id.assert_called_once_with(extension.id)
 
     @patch('xivo_dao.data_handler.user_line_extension.dao.find_all_by_extension_id')
-    def test_check_if_extension_already_linked_to_a_line_when_already_linked(self, find_all_by_extension_id):
+    def test_check_line_links_for_extension_when_linked_to_same_line(self, find_all_by_extension_id):
         extension = Mock(Extension, id=1, exten='1000', context='default')
+        line = Mock(LineSIP, id=10)
+        user_line = Mock(UserLineExtension, user_id=1, line_id=line.id, extension_id=extension.id)
 
-        find_all_by_extension_id.return_value = [extension]
+        find_all_by_extension_id.return_value = [user_line]
+        validator.check_line_links_for_extension(line, extension)
 
-        self.assertRaises(InvalidParametersError, validator.check_if_extension_already_linked_to_a_line, extension)
+        find_all_by_extension_id.assert_called_once_with(extension.id)
+
+    @patch('xivo_dao.data_handler.user_line_extension.dao.find_all_by_extension_id')
+    def test_check_line_links_for_extension_when_linked_to_different_line(self, find_all_by_extension_id):
+        extension = Mock(Extension, id=1, exten='1000', context='default')
+        line = Mock(LineSIP, id=10)
+        user_line = Mock(UserLineExtension, user_id=1, line_id=11, extension_id=extension.id)
+
+        find_all_by_extension_id.return_value = [user_line]
+        self.assertRaises(InvalidParametersError, validator.check_line_links_for_extension, line, extension)
 
         find_all_by_extension_id.assert_called_once_with(extension.id)
 

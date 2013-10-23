@@ -30,7 +30,7 @@ def validate_create(ule):
     user, line, extension = validate(ule)
     check_if_user_and_line_already_linked(user, line)
     check_if_extension_in_context_range(extension)
-    check_if_extension_already_linked_to_a_line(extension)
+    check_line_links_for_extension(line, extension)
     return user, line, extension
 
 
@@ -109,7 +109,8 @@ def check_if_extension_in_context_range(extension):
         raise InvalidParametersError(['Exten %s not inside user range of context %s' % (extension.exten, extension.context)])
 
 
-def check_if_extension_already_linked_to_a_line(extension):
-    extensions = ule_dao.find_all_by_extension_id(extension.id)
-    if len(extensions) > 0:
-        raise InvalidParametersError(['Extension %s@%s already linked to a line' % (extension.exten, extension.context)])
+def check_line_links_for_extension(line, extension):
+    user_lines = ule_dao.find_all_by_extension_id(extension.id)
+    for user_line in user_lines:
+        if user_line.line_id != line.id:
+            raise InvalidParametersError(['Extension %s@%s already linked to a line' % (extension.exten, extension.context)])
