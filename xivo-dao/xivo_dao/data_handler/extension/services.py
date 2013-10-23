@@ -114,7 +114,7 @@ def _check_if_context_exists(extension):
 
 
 def _check_if_exten_in_range(extension):
-    if not context_services.is_extension_inside_range(extension):
+    if not context_services.is_extension_valid_for_context(extension):
         raise InvalidParametersError(['exten %s not inside range of context %s' % (
             extension.exten,
             extension.context)])
