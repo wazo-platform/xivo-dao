@@ -155,6 +155,97 @@ class TestContextDao(DAOTestCase):
 
         assert_that(result, equal_to(expected))
 
+    def test_find_all_specific_context_ranges_no_range(self):
+        expected = []
+
+        result = context_dao.find_all_specific_context_ranges('default', 'user')
+
+        assert_that(result, equal_to(expected))
+
+    def test_find_all_specific_context_ranges_inexisting_context(self):
+        self._insert_contextnumber(context='default',
+                                   type='queue',
+                                   numberbeg='1000',
+                                   numberend='2000',
+                                   didlength=0)
+
+        expected = []
+
+        result = context_dao.find_all_specific_context_ranges('othercontext', 'user')
+
+        assert_that(result, equal_to(expected))
+
+    def test_find_all_specific_context_ranges_wrong_type(self):
+        self._insert_contextnumber(context='default',
+                                   type='queue',
+                                   numberbeg='1000',
+                                   numberend='2000',
+                                   didlength=0)
+
+        expected = []
+
+        result = context_dao.find_all_specific_context_ranges('default', 'user')
+
+        assert_that(result, equal_to(expected))
+
+    def test_find_all_specific_context_ranges_wrong_context(self):
+        self._insert_contextnumber(context='default',
+                                   type='queue',
+                                   numberbeg='1000',
+                                   numberend='2000',
+                                   didlength=0)
+
+        expected = []
+
+        result = context_dao.find_all_specific_context_ranges('othercontext', 'user')
+
+        assert_that(result, equal_to(expected))
+
+    def test_find_all_specific_context_ranges_with_one_range(self):
+        self._insert_contextnumber(context='default',
+                                   type='user',
+                                   numberbeg='1000',
+                                   numberend='2000',
+                                   didlength=0)
+
+        expected = [(1000, 2000)]
+
+        result = context_dao.find_all_specific_context_ranges('default', 'user')
+
+        assert_that(result, equal_to(expected))
+
+    def test_find_all_specific_context_ranges_with_only_minimum(self):
+        self._insert_contextnumber(context='default',
+                                   type='user',
+                                   numberbeg='1000',
+                                   numberend='',
+                                   didlength=0)
+
+        expected = [(1000, None)]
+
+        result = context_dao.find_all_specific_context_ranges('default', 'user')
+
+        assert_that(result, equal_to(expected))
+
+    def test_find_all_specific_context_ranges_with_two_ranges(self):
+        self._insert_contextnumber(context='default',
+                                   type='user',
+                                   numberbeg='1000',
+                                   numberend='1999',
+                                   didlength=0)
+
+        self._insert_contextnumber(context='default',
+                                   type='user',
+                                   numberbeg='2000',
+                                   numberend='2999',
+                                   didlength=0)
+
+        expected = [(1000, 1999), (2000, 2999)]
+
+        result = context_dao.find_all_specific_context_ranges('default', 'user')
+
+        assert_that(result, equal_to(expected))
+
     def _insert_contextnumber(self, **kwargs):
         context_number = ContextNumberSchema(**kwargs)
 

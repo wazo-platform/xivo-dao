@@ -56,7 +56,20 @@ def find_all_context_ranges(session, context_name):
 
 @daosession
 def find_all_specific_context_ranges(session, context_name, context_range):
-    raise NotImplementedError()
+    rows = (session.query(
+        ContextNumberSchema.numberbeg,
+        ContextNumberSchema.numberend)
+        .filter(ContextNumberSchema.context == context_name)
+        .filter(ContextNumberSchema.type == context_range)
+        .all())
+
+    ranges = []
+
+    for row in rows:
+        minimum, maximum = _convert_minimum_maximum(row)
+        ranges.append((minimum, maximum))
+
+    return ranges
 
 
 def _convert_minimum_maximum(row):
