@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-import dao as ule_dao
-
 from xivo_dao.data_handler.exception import MissingParametersError, \
     InvalidParametersError, ElementNotExistsError, NonexistentParametersError
 
@@ -25,12 +23,14 @@ from xivo_dao.data_handler.context.services import ContextRange
 from xivo_dao.data_handler.extension import dao as extension_dao
 from xivo_dao.data_handler.line import dao as line_dao
 from xivo_dao.data_handler.user import dao as user_dao
+from xivo_dao.data_handler.user_line_extension import dao as ule_dao
 
 
 def validate_create(ule):
     user, line, extension = validate(ule)
     check_if_user_and_line_already_linked(user, line)
     check_if_extension_in_context_range(extension)
+    check_if_extension_already_linked_to_a_line(extension)
     return user, line, extension
 
 
@@ -107,3 +107,9 @@ def check_if_user_and_line_already_linked(user, line):
 def check_if_extension_in_context_range(extension):
     if not context_services.is_extension_in_specific_range(extension, ContextRange.users):
         raise InvalidParametersError(['Exten %s not inside user range of context %s' % (extension.exten, extension.context)])
+
+
+def check_if_extension_already_linked_to_a_line(extension):
+    extensions = ule_dao.find_all_by_extension_id(extension.id)
+    if len(extensions) > 0:
+        raise InvalidParametersError(['Extension %s@%s already linked to a line' % (extension.exten, extension.context)])
