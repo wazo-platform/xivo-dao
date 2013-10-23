@@ -17,6 +17,7 @@
 
 import unittest
 
+from hamcrest import assert_that, equal_to
 from mock import patch, Mock
 from urllib2 import URLError
 from xivo_dao.helpers.abstract_model import SearchResult
@@ -214,11 +215,11 @@ class TestDeviceServices(unittest.TestCase):
         dao_edit.assert_called_once_with(device)
         notifier_edit.assert_called_once_with(device)
 
-    @patch('xivo_dao.data_handler.device.dao.get', Mock(return_value=None))
     @patch('xivo_dao.data_handler.device.notifier.deleted')
     @patch('xivo_dao.data_handler.line.dao.reset_device')
     @patch('xivo_dao.data_handler.device.dao.delete')
-    def test_delete(self, device_dao_delete, line_dao_reset_device, device_notifier_deleted):
+    @patch('xivo_dao.data_handler.device.validator.validate_delete', Mock())
+    def test_delete_unassociated(self, device_dao_delete, line_dao_reset_device, device_notifier_deleted):
         device = Device(id=self.device_id,
                         ip='10.0.0.1')
 
@@ -229,8 +230,24 @@ class TestDeviceServices(unittest.TestCase):
         device_notifier_deleted.assert_called_once_with(device)
 
     @patch('xivo_dao.data_handler.device.notifier.deleted')
+    @patch('xivo_dao.data_handler.line.dao.reset_device')
+    @patch('xivo_dao.data_handler.device.dao.delete')
+    @patch('xivo_dao.data_handler.device.validator.validate_delete')
+    def test_delete_associated(self, device_validate, device_dao_delete, line_dao_reset_device, device_notifier_deleted):
+        device = Device(id=self.device_id,
+                        ip='10.0.0.1')
+        device_validate.side_effect = ElementDeletionError('Device', 'device is still linked')
+
+        self.assertRaises(ElementDeletionError, device_services.delete, device)
+
+        assert_that(device_dao_delete.call_count, equal_to(0))
+        assert_that(line_dao_reset_device.call_count, equal_to(0))
+        assert_that(device_notifier_deleted.call_count, equal_to(0))
+
+    @patch('xivo_dao.data_handler.device.notifier.deleted')
     @patch('xivo_dao.data_handler.device.dao.delete')
     @patch('xivo_dao.data_handler.line.dao.reset_device')
+    @patch('xivo_dao.data_handler.device.validator.validate_delete', Mock())
     def test_delete_with_error(self, ine_dao_reset, device_dao_delete, device_notifier_deleted):
         device = Device(id=self.device_id,
                         ip='10.0.0.1')

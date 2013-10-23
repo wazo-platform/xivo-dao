@@ -18,9 +18,11 @@
 import re
 
 from . import dao
-from xivo_dao.data_handler.exception import ElementAlreadyExistsError, InvalidParametersError, \
-    NonexistentParametersError
-
+from xivo_dao.data_handler.line import dao as line_dao
+from xivo_dao.data_handler.exception import ElementAlreadyExistsError
+from xivo_dao.data_handler.exception import ElementDeletionError
+from xivo_dao.data_handler.exception import InvalidParametersError
+from xivo_dao.data_handler.exception import NonexistentParametersError
 
 IP_REGEX = re.compile(r'(1?\d{1,2}|2([0-4][0-9]|5[0-5]))(\.(1?\d{1,2}|2([0-4][0-9]|5[0-5]))){3}$')
 MAC_REGEX = re.compile(r'^([0-9A-Fa-f]{2})(:[0-9A-Fa-f]{2}){5}$')
@@ -39,6 +41,10 @@ def validate_edit(device):
     _check_if_mac_was_modified(device_found, device)
     _check_plugin_exists(device)
     _check_template_id_exists(device)
+
+
+def validate_delete(device):
+    _check_device_is_not_linked_to_line(device)
 
 
 def _check_mac_already_exists(device):
@@ -82,3 +88,9 @@ def _check_if_mac_was_modified(device_found, device):
 
     if device_found.mac != device.mac:
         _check_mac_already_exists(device)
+
+
+def _check_device_is_not_linked_to_line(device):
+    linked_lines = line_dao.find_all_by_device_id(device.id)
+    if linked_lines:
+        raise ElementDeletionError('device', 'device is still linked to a line')

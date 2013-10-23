@@ -20,9 +20,10 @@ from mock import patch, Mock
 from hamcrest import *
 
 from xivo_dao.data_handler.device import validator
-from xivo_dao.data_handler.exception import ElementAlreadyExistsError, InvalidParametersError, \
-    NonexistentParametersError
-
+from xivo_dao.data_handler.exception import ElementAlreadyExistsError
+from xivo_dao.data_handler.exception import ElementDeletionError
+from xivo_dao.data_handler.exception import InvalidParametersError
+from xivo_dao.data_handler.exception import NonexistentParametersError
 from xivo_dao.data_handler.device.model import Device
 
 
@@ -257,3 +258,21 @@ class TestDeviceValidator(unittest.TestCase):
         self.assertRaises(ElementAlreadyExistsError, validator.validate_edit, device)
         dao_find.assert_called_once_with(device_id)
         mac_exists.assert_called_once_with(new_mac)
+
+    @patch('xivo_dao.data_handler.line.dao.find_all_by_device_id')
+    def test_validate_delete_ok(self, find_all_by_device_id):
+        device = Mock(id='abc123')
+        find_all_by_device_id.return_value = []
+
+        validator.validate_delete(device)
+
+        find_all_by_device_id.assert_called_once_with(device.id)
+
+    @patch('xivo_dao.data_handler.line.dao.find_all_by_device_id')
+    def test_validate_delete_linked_to_line(self, find_all_by_device_id):
+        device = Mock(id='abc123')
+        find_all_by_device_id.return_value = [Mock()]
+
+        self.assertRaises(ElementDeletionError, validator.validate_delete, device)
+
+        find_all_by_device_id.assert_called_once_with(device.id)
