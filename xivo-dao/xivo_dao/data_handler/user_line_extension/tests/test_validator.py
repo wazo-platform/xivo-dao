@@ -7,6 +7,7 @@ from xivo_dao.data_handler.user_line_extension.model import UserLineExtension
 from xivo_dao.data_handler.line.model import LineSIP
 from xivo_dao.data_handler.user.model import User
 from xivo_dao.data_handler.extension.model import Extension
+from xivo_dao.data_handler.context.services import ContextRange
 from xivo_dao.data_handler.exception import MissingParametersError, InvalidParametersError, \
     NonexistentParametersError, ElementNotExistsError
 
@@ -135,9 +136,11 @@ class TestUserLineExtensionValidator(unittest.TestCase):
         assert_that(result_extension, equal_to(extension))
 
     @patch('xivo_dao.data_handler.user_line_extension.validator.validate')
+    @patch('xivo_dao.data_handler.user_line_extension.validator.check_if_extension_in_context_range')
     @patch('xivo_dao.data_handler.user_line_extension.validator.check_if_user_and_line_already_linked')
     def test_validate_create(self,
                              check_if_user_and_line_already_linked,
+                             check_if_extension_in_context_range,
                              ule_validate):
 
         user_mock, line_mock, extension_mock = Mock(), Mock(), Mock()
@@ -151,6 +154,7 @@ class TestUserLineExtensionValidator(unittest.TestCase):
 
         ule_validate.assert_called_once_with(ule)
         check_if_user_and_line_already_linked.assert_called_once_with(user_mock, line_mock)
+        check_if_extension_in_context_range.assert_called_once_with(extension_mock)
 
     @patch('xivo_dao.data_handler.user_line_extension.dao.already_linked')
     def test_check_if_user_and_line_already_linked_when_linked(self, already_linked):
@@ -169,6 +173,24 @@ class TestUserLineExtensionValidator(unittest.TestCase):
 
         validator.check_if_user_and_line_already_linked(user, line)
         already_linked.assert_called_once_with(user.id, line.id)
+
+    @patch('xivo_dao.data_handler.context.services.is_extension_in_specific_range')
+    def test_check_if_extension_in_context_range_when_context_outside_of_range(self, is_extension_in_specific_range):
+        extension = Mock(Extension, exten='1000', context='default')
+        is_extension_in_specific_range.return_value = False
+
+        self.assertRaises(InvalidParametersError, validator.check_if_extension_in_context_range, extension)
+
+        is_extension_in_specific_range.assert_called_once_with(extension, ContextRange.users)
+
+    @patch('xivo_dao.data_handler.context.services.is_extension_in_specific_range')
+    def test_check_if_extension_in_context_range_when_context_inside_of_range(self, is_extension_in_specific_range):
+        extension = Mock(Extension, exten='1000', context='default')
+        is_extension_in_specific_range.return_value = True
+
+        validator.check_if_extension_in_context_range(extension)
+
+        is_extension_in_specific_range.assert_called_once_with(extension, ContextRange.users)
 
     @patch('xivo_dao.data_handler.user_line_extension.dao.main_user_is_allowed_to_delete')
     def test_is_allowed_to_delete(self, is_allowed_to_delete):

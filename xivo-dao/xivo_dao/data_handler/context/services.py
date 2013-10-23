@@ -22,6 +22,14 @@ from xivo_dao.data_handler.context.model import Context, ContextType
 from xivo_dao.data_handler.context import dao as context_dao
 
 
+class ContextRange(object):
+    users = 'user'
+    queues = 'queue'
+    groups = 'group'
+    conference_rooms = 'meetme'
+    incalls = 'incall'
+
+
 def find_by_name(context_name):
     return old_context_dao.get(context_name)
 
@@ -45,6 +53,10 @@ def is_extension_inside_range(extension):
         elif minimum <= exten <= maximum:
             return True
     return False
+
+
+def is_extension_in_specific_range(extension, context_range):
+    raise NotImplementedError
 
 
 def _validate(context):

@@ -20,6 +20,8 @@ import dao as ule_dao
 from xivo_dao.data_handler.exception import MissingParametersError, \
     InvalidParametersError, ElementNotExistsError, NonexistentParametersError
 
+from xivo_dao.data_handler.context import services as context_services
+from xivo_dao.data_handler.context.services import ContextRange
 from xivo_dao.data_handler.extension import dao as extension_dao
 from xivo_dao.data_handler.line import dao as line_dao
 from xivo_dao.data_handler.user import dao as user_dao
@@ -28,6 +30,7 @@ from xivo_dao.data_handler.user import dao as user_dao
 def validate_create(ule):
     user, line, extension = validate(ule)
     check_if_user_and_line_already_linked(user, line)
+    check_if_extension_in_context_range(extension)
     return user, line, extension
 
 
@@ -99,3 +102,8 @@ def _get_secondary_associations(ule):
 def check_if_user_and_line_already_linked(user, line):
     if ule_dao.already_linked(user.id, line.id):
         raise InvalidParametersError(['user is already associated to this line'])
+
+
+def check_if_extension_in_context_range(extension):
+    if not context_services.is_extension_in_specific_range(extension, ContextRange.users):
+        raise InvalidParametersError(['Exten %s not inside user range of %s' % (extension.exten, extension.context)])
