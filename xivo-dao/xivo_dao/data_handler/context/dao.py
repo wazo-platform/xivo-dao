@@ -54,6 +54,11 @@ def find_all_context_ranges(session, context_name):
     return ranges
 
 
+@daosession
+def find_all_specific_context_ranges(session, context_name, context_range):
+    raise NotImplementedError()
+
+
 def _convert_minimum_maximum(row):
     minimum = int(row.numberbeg)
     if row.numberend:
