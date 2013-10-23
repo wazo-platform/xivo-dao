@@ -25,7 +25,7 @@ from xivo_dao.data_handler.exception import MissingParametersError, InvalidParam
     ElementAlreadyExistsError
 
 
-from hamcrest import *
+from hamcrest import all_of, assert_that, equal_to, has_property
 
 
 class TestContext(unittest.TestCase):
@@ -119,31 +119,28 @@ class TestContext(unittest.TestCase):
             has_property('display_name', context_name),
             has_property('type', ContextType.internal)))
 
-    @patch('xivo_dao.data_handler.context.dao.context_ranges')
+    @patch('xivo_dao.data_handler.context.dao.find_all_context_ranges')
     def test_is_extension_inside_range_no_ranges(self, context_ranges):
         expected = False
 
-        exten_type = 'user'
         context_name = 'default'
 
         extension = Extension(exten='1000',
-                              context=context_name,
-                              type='user')
+                              context=context_name)
 
         context_ranges.return_value = []
 
         result = context_services.is_extension_inside_range(extension)
 
         assert_that(result, equal_to(expected))
-        context_ranges.assert_called_once_with(context_name, exten_type)
+        context_ranges.assert_called_once_with(context_name)
 
-    @patch('xivo_dao.data_handler.context.dao.context_ranges')
-    def test_is_extension_inside_range_when_outside_of_range(self, context_ranges):
+    @patch('xivo_dao.data_handler.context.dao.find_all_context_ranges')
+    def test_is_extension_inside_range_when_below_minimum(self, context_ranges):
         expected = False
 
         extension = Extension(exten='1000',
-                              context='default',
-                              type='user')
+                              context='default')
 
         expected_ranges = [(2000, 3000)]
         context_ranges.return_value = expected_ranges
@@ -151,14 +148,29 @@ class TestContext(unittest.TestCase):
         result = context_services.is_extension_inside_range(extension)
 
         assert_that(result, equal_to(expected))
+        context_ranges.assert_called_once_with(extension.context)
 
-    @patch('xivo_dao.data_handler.context.dao.context_ranges')
+    @patch('xivo_dao.data_handler.context.dao.find_all_context_ranges')
+    def test_is_extension_inside_range_when_above_maximum(self, context_ranges):
+        expected = False
+
+        extension = Extension(exten='9999',
+                              context='default')
+
+        expected_ranges = [(2000, 3000)]
+        context_ranges.return_value = expected_ranges
+
+        result = context_services.is_extension_inside_range(extension)
+
+        assert_that(result, equal_to(expected))
+        context_ranges.assert_called_once_with(extension.context)
+
+    @patch('xivo_dao.data_handler.context.dao.find_all_context_ranges')
     def test_is_extension_inside_range_when_inside_of_range(self, context_ranges):
         expected = True
 
         extension = Extension(exten='1000',
-                              context='default',
-                              type='user')
+                              context='default')
 
         expected_ranges = [(1000, 3000)]
         context_ranges.return_value = expected_ranges
@@ -166,14 +178,14 @@ class TestContext(unittest.TestCase):
         result = context_services.is_extension_inside_range(extension)
 
         assert_that(result, equal_to(expected))
+        context_ranges.assert_called_once_with(extension.context)
 
-    @patch('xivo_dao.data_handler.context.dao.context_ranges')
+    @patch('xivo_dao.data_handler.context.dao.find_all_context_ranges')
     def test_is_extension_inside_range_when_inside_second_range(self, context_ranges):
         expected = True
 
         extension = Extension(exten='2000',
-                              context='default',
-                              type='user')
+                              context='default')
 
         expected_ranges = [(1000, 1999),
                            (2000, 2999)]
@@ -182,14 +194,14 @@ class TestContext(unittest.TestCase):
         result = context_services.is_extension_inside_range(extension)
 
         assert_that(result, equal_to(expected))
+        context_ranges.assert_called_once_with(extension.context)
 
-    @patch('xivo_dao.data_handler.context.dao.context_ranges')
+    @patch('xivo_dao.data_handler.context.dao.find_all_context_ranges')
     def test_is_extension_inside_range_when_ranges_overlap(self, context_ranges):
         expected = True
 
         extension = Extension(exten='1450',
-                              context='default',
-                              type='user')
+                              context='default')
 
         expected_ranges = [(1400, 2000),
                            (1000, 1500)]
@@ -198,14 +210,14 @@ class TestContext(unittest.TestCase):
         result = context_services.is_extension_inside_range(extension)
 
         assert_that(result, equal_to(expected))
+        context_ranges.assert_called_once_with(extension.context)
 
-    @patch('xivo_dao.data_handler.context.dao.context_ranges')
-    def test_is_extension_inside_range_when_no_maximum(self, context_ranges):
-        expected = True
+    @patch('xivo_dao.data_handler.context.dao.find_all_context_ranges')
+    def test_is_extension_inside_range_with_single_value_using_wrong_value(self, context_ranges):
+        expected = False
 
         extension = Extension(exten='1450',
-                              context='default',
-                              type='user')
+                              context='default')
 
         expected_ranges = [(1000, None)]
         context_ranges.return_value = expected_ranges
@@ -213,11 +225,26 @@ class TestContext(unittest.TestCase):
         result = context_services.is_extension_inside_range(extension)
 
         assert_that(result, equal_to(expected))
+        context_ranges.assert_called_once_with(extension.context)
 
-    @patch('xivo_dao.data_handler.context.dao.context_ranges')
+    @patch('xivo_dao.data_handler.context.dao.find_all_context_ranges')
+    def test_is_extension_inside_range_with_single_value_using_right_value(self, context_ranges):
+        expected = True
+
+        extension = Extension(exten='1000',
+                              context='default')
+
+        expected_ranges = [(1000, None)]
+        context_ranges.return_value = expected_ranges
+
+        result = context_services.is_extension_inside_range(extension)
+
+        assert_that(result, equal_to(expected))
+        context_ranges.assert_called_once_with(extension.context)
+
+    @patch('xivo_dao.data_handler.context.dao.find_all_context_ranges')
     def test_is_extension_inside_range_when_extension_is_alphanumeric(self, context_ranges):
         extension = Extension(exten='ABC123',
-                              context='default',
-                              type='user')
+                              context='default')
 
         self.assertRaises(InvalidParametersError, context_services.is_extension_inside_range, extension)

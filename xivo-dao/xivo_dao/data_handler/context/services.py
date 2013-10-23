@@ -37,10 +37,10 @@ def is_extension_inside_range(extension):
         raise InvalidParametersError(['Alphanumeric extensions are not supported'])
 
     exten = int(extension.exten)
-    context_ranges = context_dao.context_ranges(extension.context, extension.type)
+    context_ranges = context_dao.find_all_context_ranges(extension.context)
 
     for minimum, maximum in context_ranges:
-        if not maximum and exten >= minimum:
+        if not maximum and exten == minimum:
             return True
         elif minimum <= exten <= maximum:
             return True

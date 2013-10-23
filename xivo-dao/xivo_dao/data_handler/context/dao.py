@@ -38,12 +38,11 @@ def _get_default_entity_name(session):
 
 
 @daosession
-def context_ranges(session, context_name, context_type):
+def find_all_context_ranges(session, context_name):
     rows = (session.query(
         ContextNumberSchema.numberbeg,
         ContextNumberSchema.numberend)
         .filter(ContextNumberSchema.context == context_name)
-        .filter(ContextNumberSchema.type == context_type)
         .all())
 
     ranges = []
