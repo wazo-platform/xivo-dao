@@ -1,6 +1,6 @@
 import unittest
 from mock import patch, Mock
-from hamcrest import assert_that, equal_to
+from hamcrest import assert_that, equal_to, contains
 
 from xivo_dao.data_handler.user_line_extension import validator
 from xivo_dao.data_handler.user_line_extension.model import UserLineExtension
@@ -134,62 +134,41 @@ class TestUserLineExtensionValidator(unittest.TestCase):
         assert_that(result_line, equal_to(line))
         assert_that(result_extension, equal_to(extension))
 
-    @patch('xivo_dao.data_handler.extension.dao.get', Mock(return_value=Mock()))
-    @patch('xivo_dao.data_handler.line.dao.get')
-    @patch('xivo_dao.data_handler.user.dao.get')
+    @patch('xivo_dao.data_handler.user_line_extension.validator.validate')
+    @patch('xivo_dao.data_handler.user_line_extension.validator.check_if_user_and_line_already_linked')
+    def test_validate_create(self,
+                             check_if_user_and_line_already_linked,
+                             ule_validate):
+
+        user_mock, line_mock, extension_mock = Mock(), Mock(), Mock()
+        ule_validate.return_value = (user_mock, line_mock, extension_mock)
+
+        ule = Mock(UserLineExtension)
+
+        result = validator.validate_create(ule)
+
+        assert_that(result, contains(user_mock, line_mock, extension_mock))
+
+        ule_validate.assert_called_once_with(ule)
+        check_if_user_and_line_already_linked.assert_called_once_with(user_mock, line_mock)
+
     @patch('xivo_dao.data_handler.user_line_extension.dao.already_linked')
-    def test_validate_create_with_user_already_associated(self, already_linked, user_dao_get, line_dao_get):
-
-        user_id = 5898
-        line_id = 52
-
-        user = User(id=user_id)
-        line = LineSIP(id=line_id)
-        ule = UserLineExtension(user_id=user_id,
-                                line_id=line_id,
-                                extension_id=42,
-                                main_user=True,
-                                main_line=False)
-
-        user_dao_get.return_value = user
-        line_dao_get.return_value = line
+    def test_check_if_user_and_line_already_linked_when_linked(self, already_linked):
+        user = Mock(User, id=1)
+        line = Mock(LineSIP, id=2)
         already_linked.return_value = True
 
-        self.assertRaises(InvalidParametersError, validator.validate_create, ule)
-        already_linked.assert_called_once_with(user_id, line_id)
+        self.assertRaises(InvalidParametersError, validator.check_if_user_and_line_already_linked, user, line)
+        already_linked.assert_called_once_with(user.id, line.id)
 
-    @patch('xivo_dao.data_handler.extension.dao.get')
-    @patch('xivo_dao.data_handler.line.dao.get')
-    @patch('xivo_dao.data_handler.user.dao.get')
     @patch('xivo_dao.data_handler.user_line_extension.dao.already_linked')
-    def test_validate_create(self, already_linked, user_dao_get, line_dao_get, extension_dao_get):
-
-        user_id = 1
-        line_id = 2
-        extension_id = 3
-
-        user = User(id=user_id)
-        line = LineSIP(id=line_id)
-        extension = Extension(id=extension_id)
-
-        ule = UserLineExtension(user_id=user_id,
-                                line_id=line_id,
-                                extension_id=extension_id,
-                                main_user=True,
-                                main_line=False)
-
-        user_dao_get.return_value = user
-        line_dao_get.return_value = line
-        extension_dao_get.return_value = extension
+    def test_check_if_user_and_line_already_linked_when_not_linked(self, already_linked):
+        user = Mock(User, id=1)
+        line = Mock(LineSIP, id=2)
         already_linked.return_value = False
 
-        result_user, result_line, result_extension = validator.validate_create(ule)
-
-        already_linked.assert_called_once_with(user_id, line_id)
-
-        assert_that(result_user, equal_to(user))
-        assert_that(result_line, equal_to(line))
-        assert_that(result_extension, equal_to(extension))
+        validator.check_if_user_and_line_already_linked(user, line)
+        already_linked.assert_called_once_with(user.id, line.id)
 
     @patch('xivo_dao.data_handler.user_line_extension.dao.main_user_is_allowed_to_delete')
     def test_is_allowed_to_delete(self, is_allowed_to_delete):

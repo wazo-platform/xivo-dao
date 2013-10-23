@@ -27,7 +27,7 @@ from xivo_dao.data_handler.user import dao as user_dao
 
 def validate_create(ule):
     user, line, extension = validate(ule)
-    _check_if_already_linked(user, line)
+    check_if_user_and_line_already_linked(user, line)
     return user, line, extension
 
 
@@ -39,7 +39,7 @@ def validate(ule):
 
 
 def is_allowed_to_delete(ule):
-    if ule.main_user == True and not ule_dao.main_user_is_allowed_to_delete(ule.line_id):
+    if ule.main_user is True and not ule_dao.main_user_is_allowed_to_delete(ule.line_id):
         raise InvalidParametersError(['There are secondary users associated to this link'])
 
 
@@ -96,6 +96,6 @@ def _get_secondary_associations(ule):
     return user, line, extension
 
 
-def _check_if_already_linked(user, line):
+def check_if_user_and_line_already_linked(user, line):
     if ule_dao.already_linked(user.id, line.id):
         raise InvalidParametersError(['user is already associated to this line'])
