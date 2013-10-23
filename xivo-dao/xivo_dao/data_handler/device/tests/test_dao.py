@@ -533,8 +533,7 @@ class TestDeviceDao(unittest.TestCase):
 
             self.assertRaises(ElementEditionError, device_dao.edit, device)
 
-    @patch('xivo_dao.helpers.provd_connector.device_manager')
-    def test_mac_exists_no_mac(self, mock_device_manager):
+    def test_mac_exists_no_mac(self):
         mac = 'FF:FF:FF:FF:FF'
 
         with self.provd_managers() as (device_manager, _, _):
@@ -545,8 +544,7 @@ class TestDeviceDao(unittest.TestCase):
             assert_that(result, equal_to(False))
             device_manager.find.assert_called_once_with({'mac': mac})
 
-    @patch('xivo_dao.helpers.provd_connector.device_manager')
-    def test_mac_exists_with_a_mac(self, mock_device_manager):
+    def test_mac_exists_with_a_mac(self):
         mac = 'FF:FF:FF:FF:FF'
 
         with self.provd_managers() as (device_manager, _, _):
@@ -566,8 +564,7 @@ class TestDeviceDao(unittest.TestCase):
             assert_that(result, equal_to(True))
             device_manager.find.assert_called_once_with({'mac': mac})
 
-    @patch('xivo_dao.helpers.provd_connector.plugin_manager')
-    def test_plugin_exists_no_plugin(self, mock_plugin_manager):
+    def test_plugin_exists_no_plugin(self):
         plugin = 'null'
 
         with self.provd_managers() as (_, _, plugin_manager):
@@ -578,8 +575,7 @@ class TestDeviceDao(unittest.TestCase):
             assert_that(result, equal_to(False))
             plugin_manager.plugins.assert_called_once_with()
 
-    @patch('xivo_dao.helpers.provd_connector.plugin_manager')
-    def test_plugin_exists_with_a_plugin_installed(self, mock_plugin_manager):
+    def test_plugin_exists_with_a_plugin_installed(self):
         plugin = 'null'
 
         with self.provd_managers() as (_, _, plugin_manager):
@@ -590,8 +586,7 @@ class TestDeviceDao(unittest.TestCase):
             assert_that(result, equal_to(True))
             plugin_manager.plugins.assert_called_once_with()
 
-    @patch('xivo_dao.helpers.provd_connector.config_manager')
-    def test_template_id_exists_no_template(self, mock_config_manager):
+    def test_template_id_exists_no_template(self):
         template_id = 'abcd1234'
 
         with self.provd_managers() as (_, config_manager, _):
@@ -602,8 +597,7 @@ class TestDeviceDao(unittest.TestCase):
             assert_that(result, equal_to(False))
             config_manager.find.assert_called_once_with({'X_type': 'device', 'id': template_id})
 
-    @patch('xivo_dao.helpers.provd_connector.config_manager')
-    def test_template_id_exists_with_a_template(self, mock_config_manager):
+    def test_template_id_exists_with_a_template(self):
         template_id = 'abcd1234'
 
         with self.provd_managers() as (_, config_manager, _):
@@ -620,9 +614,7 @@ class TestDeviceDao(unittest.TestCase):
             assert_that(result, equal_to(True))
             config_manager.find.assert_called_once_with({'X_type': 'device', 'id': template_id})
 
-    @patch('xivo_dao.helpers.provd_connector.device_manager')
-    @patch('xivo_dao.helpers.provd_connector.config_manager')
-    def test_delete(self, mock_config_manager, mock_device_manager):
+    def test_delete(self):
         device_id = 'abc1234'
         device = Device(id=device_id)
 
@@ -632,9 +624,7 @@ class TestDeviceDao(unittest.TestCase):
             device_manager.remove.assert_called_once_with(device_id)
             config_manager.remove.assert_called_once_with(device_id)
 
-    @patch('xivo_dao.helpers.provd_connector.device_manager')
-    @patch('xivo_dao.helpers.provd_connector.config_manager')
-    def test_delete_not_exist(self, mock_config_manager, mock_device_manager):
+    def test_delete_not_exist(self):
         device = Device(id='abcd')
 
         with self.provd_managers() as (device_manager, config_manager, _):
@@ -644,9 +634,7 @@ class TestDeviceDao(unittest.TestCase):
             device_manager.remove.assert_called_once_with(device.id)
             self.assertEquals(config_manager.remove.call_count, 0)
 
-    @patch('xivo_dao.helpers.provd_connector.device_manager')
-    @patch('xivo_dao.helpers.provd_connector.config_manager')
-    def test_delete_with_error(self, mock_config_manager, mock_device_manager):
+    def test_delete_with_error(self):
         device = Device(id='abcd')
 
         with self.provd_managers() as (device_manager, config_manager, _):

@@ -74,6 +74,7 @@ def edit(device):
 
 
 def delete(device):
+    validator.validate_delete(device)
     dao.delete(device)
     line_dao.reset_device(device.id)
     notifier.deleted(device)
