@@ -22,7 +22,7 @@ from xivo_dao.data_handler.voicemail import notifier
 from xivo_dao.helpers.sysconfd_connector import SysconfdError
 from xivo_dao.data_handler.exception import MissingParametersError, \
     InvalidParametersError, ElementAlreadyExistsError, ElementNotExistsError, \
-    ElementDeletionError, NonexistentParametersError
+    ElementDeletionError, ElementEditionError, NonexistentParametersError
 from xivo_dao.helpers import validator
 
 
@@ -53,14 +53,13 @@ def create(voicemail):
 def edit(voicemail):
     _validate(voicemail)
     _check_for_edit_existing_voicemail(voicemail)
+    _check_if_voicemail_linked_on_edit(voicemail)
     voicemail_dao.edit(voicemail)
     notifier.edited(voicemail)
 
 
 def delete(voicemail):
-    if voicemail_dao.is_voicemail_linked(voicemail):
-        raise ElementDeletionError('voicemail', 'Cannot delete a voicemail associated to a user')
-
+    _check_if_voicemail_linked_on_delete(voicemail)
     voicemail_dao.delete(voicemail)
     notifier.deleted(voicemail)
     try:
@@ -129,3 +128,13 @@ def _check_for_edit_existing_voicemail(voicemail):
             _check_for_existing_voicemail(voicemail)
     except ElementNotExistsError:
         return
+
+
+def _check_if_voicemail_linked_on_delete(voicemail):
+    if voicemail_dao.is_voicemail_linked(voicemail):
+        raise ElementDeletionError('voicemail', 'Cannot delete a voicemail associated to a user')
+
+
+def _check_if_voicemail_linked_on_edit(voicemail):
+    if voicemail_dao.is_voicemail_linked(voicemail):
+        raise ElementEditionError('voicemail', 'Cannot edit a voicemail associated to a user')
