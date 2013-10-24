@@ -95,8 +95,6 @@ class User(NewModel):
         return ' '.join([self.firstname, self.lastname])
 
     def determine_callerid(self):
-        if not self.lastname:
-            return self.callerid
         return self._generate_callerid()
 
     def _generate_callerid(self):
