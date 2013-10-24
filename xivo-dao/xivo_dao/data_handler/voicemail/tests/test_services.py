@@ -216,6 +216,7 @@ class TestVoicemail(unittest.TestCase):
         self.assertRaises(ElementCreationError, voicemail_dao_create, voicemail)
         self.assertEquals(voicemail_notifier_created.call_count, 0)
 
+    @patch('xivo_dao.data_handler.voicemail.dao.is_voicemail_linked', Mock(return_value=False))
     @patch('xivo_dao.helpers.validator.is_existing_context', Mock(return_value=True))
     @patch('xivo_dao.data_handler.voicemail.dao.get', Mock(return_value=Mock(Voicemail)))
     @patch('xivo_dao.data_handler.voicemail.dao.get_by_number_context', Mock(return_value=None))
@@ -235,6 +236,7 @@ class TestVoicemail(unittest.TestCase):
         voicemail_dao_edit.assert_called_once_with(voicemail)
         voicemail_notifier_edited.assert_called_once_with(voicemail)
 
+    @patch('xivo_dao.data_handler.voicemail.dao.is_voicemail_linked', Mock(return_value=False))
     @patch('xivo_dao.helpers.validator.is_existing_context', Mock(return_value=True))
     @patch('xivo_dao.data_handler.voicemail.dao.get', Mock(return_value=Mock(Voicemail)))
     @patch('xivo_dao.data_handler.voicemail.dao.get_by_number_context', Mock(return_value=None))
@@ -254,6 +256,7 @@ class TestVoicemail(unittest.TestCase):
         self.assertRaises(ElementEditionError, voicemail_dao_edit, voicemail)
         self.assertEquals(voicemail_notifier_edited.call_count, 0)
 
+    @patch('xivo_dao.data_handler.voicemail.dao.is_voicemail_linked', Mock(return_value=False))
     @patch('xivo_dao.helpers.validator.is_existing_context', Mock(return_value=True))
     @patch('xivo_dao.data_handler.voicemail.dao.get', Mock(return_value=Mock(Voicemail)))
     @patch('xivo_dao.data_handler.voicemail.dao.get_by_number_context', Mock(return_value=None))
@@ -272,6 +275,7 @@ class TestVoicemail(unittest.TestCase):
         self.assertEquals(voicemail_dao_edit.call_count, 0)
         self.assertEquals(voicemail_notifier_edited.call_count, 0)
 
+    @patch('xivo_dao.data_handler.voicemail.dao.is_voicemail_linked', Mock(return_value=False))
     @patch('xivo_dao.helpers.validator.is_existing_context', Mock(return_value=True))
     @patch('xivo_dao.data_handler.voicemail.dao.get', Mock(return_value=Mock(Voicemail)))
     @patch('xivo_dao.data_handler.voicemail.dao.get_by_number_context', Mock(return_value=None))
@@ -290,6 +294,7 @@ class TestVoicemail(unittest.TestCase):
         self.assertEquals(voicemail_dao_edit.call_count, 0)
         self.assertEquals(voicemail_notifier_edited.call_count, 0)
 
+    @patch('xivo_dao.data_handler.voicemail.dao.is_voicemail_linked', Mock(return_value=False))
     @patch('xivo_dao.helpers.validator.is_existing_context', Mock(return_value=False))
     @patch('xivo_dao.data_handler.voicemail.dao.get', Mock(return_value=Mock(Voicemail)))
     @patch('xivo_dao.data_handler.voicemail.dao.get_by_number_context', Mock(return_value=None))
@@ -308,6 +313,7 @@ class TestVoicemail(unittest.TestCase):
         self.assertEquals(voicemail_dao_edit.call_count, 0)
         self.assertEquals(voicemail_notifier_edited.call_count, 0)
 
+    @patch('xivo_dao.data_handler.voicemail.dao.is_voicemail_linked', Mock(return_value=False))
     @patch('xivo_dao.helpers.validator.is_existing_context', Mock(return_value=True))
     @patch('xivo_dao.data_handler.voicemail.dao.get', Mock(return_value=Mock(Voicemail)))
     @patch('xivo_dao.data_handler.voicemail.dao.get_by_number_context', Mock(return_value=Mock(Voicemail)))
@@ -323,4 +329,26 @@ class TestVoicemail(unittest.TestCase):
                               context=context)
 
         self.assertRaises(ElementAlreadyExistsError, voicemail_services.edit, voicemail)
+        self.assertEquals(voicemail_notifier_edited.call_count, 0)
+
+    @patch('xivo_dao.helpers.validator.is_existing_context', Mock(return_value=True))
+    @patch('xivo_dao.data_handler.voicemail.dao.get', Mock(return_value=Mock(Voicemail)))
+    @patch('xivo_dao.data_handler.voicemail.dao.get_by_number_context', Mock(return_value=None))
+    @patch('xivo_dao.data_handler.voicemail.notifier.edited')
+    @patch('xivo_dao.data_handler.voicemail.dao.edit')
+    @patch('xivo_dao.data_handler.voicemail.dao.is_voicemail_linked')
+    def test_edit_linked_to_a_user(self, is_voicemail_linked, voicemail_dao_edit, voicemail_notifier_edited):
+        name = 'voicemail'
+        number = '42'
+        context = 'existing_context'
+
+        voicemail = Voicemail(name=name,
+                              number=number,
+                              context=context)
+
+        is_voicemail_linked.return_value = True
+
+        self.assertRaises(ElementEditionError, voicemail_services.edit, voicemail)
+
+        is_voicemail_linked.assert_called_once_with(voicemail)
         self.assertEquals(voicemail_notifier_edited.call_count, 0)
