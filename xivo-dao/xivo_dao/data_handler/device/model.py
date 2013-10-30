@@ -15,11 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.abstract_model import AbstractModels
+from xivo_dao.helpers.new_model import NewModel
 from xivo_dao.data_handler.exception import InvalidParametersError
 
 
-class Device(AbstractModels):
+class Device(NewModel):
 
     MANDATORY = [
     ]
@@ -36,25 +36,24 @@ class Device(AbstractModels):
         'description'
     ]
 
-    # mapping = {db_field: model_field}
-    _MAPPING = {
-        'id': 'id',
-        'ip': 'ip',
-        'mac': 'mac',
-        'sn': 'sn',
-        'plugin': 'plugin',
-        'vendor': 'vendor',
-        'model': 'model',
-        'version': 'version',
-        'description': 'description',
-        'status': 'status',
-        'template_id': 'template_id'
-    }
+    FIELDS = [
+        'id',
+        'ip',
+        'mac',
+        'sn',
+        'plugin',
+        'vendor',
+        'model',
+        'version',
+        'description',
+        'status',
+        'template_id',
+    ]
 
     _RELATION = {}
 
     def __init__(self, *args, **kwargs):
-        AbstractModels.__init__(self, *args, **kwargs)
+        NewModel.__init__(self, *args, **kwargs)
 
     @classmethod
     def from_provd(cls, device, config=None):
@@ -79,6 +78,7 @@ class Device(AbstractModels):
 class DeviceOrdering(object):
     DIRECTIONS = ['desc', 'asc']
 
+    id = 'id'
     ip = 'ip'
     mac = 'mac'
     plugin = 'plugin'
@@ -88,7 +88,7 @@ class DeviceOrdering(object):
 
     @classmethod
     def all_columns(cls):
-        return [cls.ip, cls.mac, cls.plugin, cls.model, cls.vendor, cls.version]
+        return [cls.id, cls.ip, cls.mac, cls.plugin, cls.model, cls.vendor, cls.version]
 
     @classmethod
     def from_column_name(cls, column):

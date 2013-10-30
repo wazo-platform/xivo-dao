@@ -39,8 +39,9 @@ def _filter_device_parameters(device):
     parameters = {}
 
     for key in Device.PROVD_KEYS:
-        if hasattr(device, key):
-            parameters[key] = getattr(device, key)
+        value = getattr(device, key)
+        if value is not None:
+            parameters[key] = value
 
     if 'mac' in parameters:
         parameters['mac'] = parameters['mac'].lower()
@@ -53,7 +54,7 @@ def _create_provd_config(device):
         'id': device.id,
         'deletable': True,
         'parent_ids': _build_parent_ids(device),
-        'configdevice': getattr(device, 'template_id', 'defaultconfigdevice'),
+        'configdevice': device.template_id or 'defaultconfigdevice',
         'raw_config': {}
     }
 
@@ -61,7 +62,7 @@ def _create_provd_config(device):
 
 
 def _build_parent_ids(device):
-    parent_ids = ['base', getattr(device, 'template_id', 'defaultconfigdevice')]
+    parent_ids = ['base', device.template_id or 'defaultconfigdevice']
     return parent_ids
 
 
@@ -159,7 +160,7 @@ def _remove_old_parent_ids(device, provd_device):
 
 
 def _update_template_id(device, provd_device):
-    provd_device['configdevice'] = getattr(device, 'template_id', 'defaultconfigdevice')
+    provd_device['configdevice'] = device.template_id or 'defaultconfigdevice'
 
 
 def _update_parent_ids(device, provd_device):

@@ -48,7 +48,7 @@ def validate_delete(device):
 
 
 def _check_mac_already_exists(device):
-    if not hasattr(device, 'mac'):
+    if not device.mac:
         return
 
     existing_device = dao.mac_exists(device.mac)
@@ -57,7 +57,7 @@ def _check_mac_already_exists(device):
 
 
 def _check_plugin_exists(device):
-    if not hasattr(device, 'plugin'):
+    if not device.plugin:
         return
 
     if not dao.plugin_exists(device.plugin):
@@ -65,7 +65,7 @@ def _check_plugin_exists(device):
 
 
 def _check_template_id_exists(device):
-    if not hasattr(device, 'template_id'):
+    if not device.template_id:
         return
 
     if not dao.template_id_exists(device.template_id):
@@ -74,16 +74,16 @@ def _check_template_id_exists(device):
 
 def _check_invalid_parameters(device):
     invalid_parameters = []
-    if hasattr(device, 'ip') and not IP_REGEX.match(device.ip):
+    if device.ip and not IP_REGEX.match(device.ip):
         invalid_parameters.append('ip')
-    if hasattr(device, 'mac') and not MAC_REGEX.match(device.mac):
+    if device.mac and not MAC_REGEX.match(device.mac):
         invalid_parameters.append('mac')
     if invalid_parameters:
         raise InvalidParametersError(invalid_parameters)
 
 
 def _check_if_mac_was_modified(device_found, device):
-    if not hasattr(device, 'mac') or not hasattr(device_found, 'mac'):
+    if not device.mac or not device_found.mac:
         return
 
     if device_found.mac != device.mac:
