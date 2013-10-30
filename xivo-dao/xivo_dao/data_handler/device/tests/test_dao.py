@@ -25,7 +25,7 @@ from StringIO import StringIO
 from contextlib import contextmanager
 
 from xivo_dao.data_handler.device import dao as device_dao
-from xivo_dao.data_handler.device import provd_builder
+from xivo_dao.data_handler.device import provd_converter
 from xivo_dao.data_handler.device.model import Device
 from xivo_dao.data_handler.exception import ElementDeletionError
 from xivo_dao.data_handler.exception import ElementCreationError
@@ -104,7 +104,7 @@ class TestDeviceDao(unittest.TestCase):
 
 class TestDeviceDaoGetFind(TestDeviceDao):
 
-    @patch('xivo_dao.data_handler.device.provd_builder.convert_to_model')
+    @patch('xivo_dao.data_handler.device.provd_converter.to_model')
     @patch('xivo_dao.data_handler.device.dao.fetch_device_and_config')
     def test_get_no_device(self, fetch_device_and_config, to_model):
         fetch_device_and_config.return_value = None, None
@@ -113,7 +113,7 @@ class TestDeviceDaoGetFind(TestDeviceDao):
         fetch_device_and_config.assert_called_once_with(self.deviceid)
         assert_that(to_model.call_count, equal_to(0))
 
-    @patch('xivo_dao.data_handler.device.provd_builder.convert_to_model')
+    @patch('xivo_dao.data_handler.device.provd_converter.to_model')
     @patch('xivo_dao.data_handler.device.dao.fetch_device_and_config')
     def test_get(self, fetch_device_and_config, to_model):
         fetch_device_and_config.return_value = self.provd_device, self.provd_config
@@ -170,7 +170,7 @@ class TestDeviceDaoGetFind(TestDeviceDao):
             device_manager.get.assert_called_once_with(self.deviceid)
             assert_that(config_manager.find.call_count, equal_to(0))
 
-    @patch('xivo_dao.data_handler.device.provd_builder.convert_to_model')
+    @patch('xivo_dao.data_handler.device.provd_converter.to_model')
     @patch('xivo_dao.data_handler.device.dao.fetch_device_and_config')
     def test_find_not_found(self, fetch_device_and_config, to_model):
         fetch_device_and_config.return_value = None, None
@@ -182,7 +182,7 @@ class TestDeviceDaoGetFind(TestDeviceDao):
         assert_that(to_model.call_count, equal_to(0))
         assert_that(result, none())
 
-    @patch('xivo_dao.data_handler.device.provd_builder.convert_to_model')
+    @patch('xivo_dao.data_handler.device.provd_converter.to_model')
     @patch('xivo_dao.data_handler.device.dao.fetch_device_and_config')
     def test_find_found(self, fetch_device_and_config, to_model):
         device, config = fetch_device_and_config.return_value = (Mock(), Mock())
@@ -293,7 +293,7 @@ class TestDeviceDaoFindAll(TestDeviceDao):
 
         assert_that(result, contains(device2))
 
-    @patch('xivo_dao.data_handler.device.provd_builder.convert_to_model')
+    @patch('xivo_dao.data_handler.device.provd_converter.to_model')
     def test_convert_devices_to_model(self, to_model):
         with self.provd_managers() as (_, config_manager, _):
             devices = [device1, device2] = [{'config': self.config_id},
@@ -362,9 +362,9 @@ class TestDeviceDaoFilterList(TestDeviceDao):
 
 class TestDeviceDaoCreate(TestDeviceDao):
 
-    @patch('xivo_dao.data_handler.device.provd_builder.build_create')
+    @patch('xivo_dao.data_handler.device.provd_converter.to_source')
     @patch('xivo_dao.data_handler.device.dao.generate_device_id')
-    def test_create_device(self, generate_device_id, provd_build_create):
+    def test_create_device(self, generate_device_id, provd_to_source):
         device_id = 'abcd1234'
         device = Device()
 
@@ -372,21 +372,21 @@ class TestDeviceDaoCreate(TestDeviceDao):
         provd_config = Mock()
 
         generate_device_id.return_value = device_id
-        provd_build_create.return_value = (provd_device, provd_config)
+        provd_to_source.return_value = (provd_device, provd_config)
 
         with self.provd_managers() as (device_manager, config_manager, _):
             result = device_dao.create(device)
 
             generate_device_id.assert_called_once_with()
-            provd_build_create.assert_called_once_with(device)
+            provd_to_source.assert_called_once_with(device)
             device_manager.update.assert_called_once_with(provd_device)
             config_manager.add.assert_called_once_with(provd_config)
 
             assert_that(result.id, equal_to(device_id))
 
-    @patch('xivo_dao.data_handler.device.provd_builder.build_create')
+    @patch('xivo_dao.data_handler.device.provd_converter.to_source')
     @patch('xivo_dao.data_handler.device.dao.generate_device_id')
-    def test_create_with_device_manager_error(self, generate_device_id, provd_build_create):
+    def test_create_with_device_manager_error(self, generate_device_id, provd_to_source):
         device_id = 'abcd1234'
         device = Device()
 
@@ -394,7 +394,7 @@ class TestDeviceDaoCreate(TestDeviceDao):
         provd_config = Mock()
 
         generate_device_id.return_value = device_id
-        provd_build_create.return_value = (provd_device, provd_config)
+        provd_to_source.return_value = (provd_device, provd_config)
 
         with self.provd_managers() as (device_manager, config_manager, _):
             device_manager.update.side_effect = Exception()
@@ -403,9 +403,9 @@ class TestDeviceDaoCreate(TestDeviceDao):
 
             assert_that(config_manager.add.call_count, equal_to(0))
 
-    @patch('xivo_dao.data_handler.device.provd_builder.build_create')
+    @patch('xivo_dao.data_handler.device.provd_converter.to_source')
     @patch('xivo_dao.data_handler.device.dao.generate_device_id')
-    def test_create_with_config_manager_error(self, generate_device_id, provd_build_create):
+    def test_create_with_config_manager_error(self, generate_device_id, provd_to_source):
         device_id = 'abcd1234'
         device = Device()
 
@@ -413,7 +413,7 @@ class TestDeviceDaoCreate(TestDeviceDao):
         provd_config = Mock()
 
         generate_device_id.return_value = device_id
-        provd_build_create.return_value = (provd_device, provd_config)
+        provd_to_source.return_value = (provd_device, provd_config)
 
         with self.provd_managers() as (device_manager, config_manager, _):
             config_manager.add.side_effect = Exception()
@@ -442,7 +442,7 @@ class TestDeviceDaoCreate(TestDeviceDao):
 
 class TestDeviceDaoEdit(TestDeviceDao):
 
-    @patch('xivo_dao.data_handler.device.provd_builder.build_edit')
+    @patch('xivo_dao.data_handler.device.provd_converter.build_edit')
     def test_edit(self, provd_build_edit):
         device_id = 'abc1234'
         config_id = 'def5678'
@@ -465,7 +465,7 @@ class TestDeviceDaoEdit(TestDeviceDao):
             device_manager.update.assert_called_once_with(provd_device)
             config_manager.update.assert_called_once_with(provd_config)
 
-    @patch('xivo_dao.data_handler.device.provd_builder.build_edit')
+    @patch('xivo_dao.data_handler.device.provd_converter.build_edit')
     def test_edit_only_device(self, provd_build_edit):
         device_id = 'abc1234'
         device = Device(id=device_id)
@@ -487,7 +487,7 @@ class TestDeviceDaoEdit(TestDeviceDao):
             assert_that(config_manager.get.call_count, equal_to(0))
             assert_that(config_manager.update.call_count, equal_to(0))
 
-    @patch('xivo_dao.data_handler.device.provd_builder.build_edit')
+    @patch('xivo_dao.data_handler.device.provd_converter.build_edit')
     def test_edit_with_error_on_config_update(self, provd_build_edit):
         device_id = 'abc1234'
         config_id = 'def456'
@@ -505,7 +505,7 @@ class TestDeviceDaoEdit(TestDeviceDao):
 
             self.assertRaises(ElementEditionError, device_dao.edit, device)
 
-    @patch('xivo_dao.data_handler.device.provd_builder.build_edit')
+    @patch('xivo_dao.data_handler.device.provd_converter.build_edit')
     def test_edit_with_error_on_device_update(self, provd_build_edit):
         device_id = 'abc1234'
         device = Device(id=device_id)

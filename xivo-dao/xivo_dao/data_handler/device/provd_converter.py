@@ -33,7 +33,7 @@ PROVD_DEVICE_KEYS = [
 ]
 
 
-def build_create(device):
+def to_source(device):
     provd_device = _create_provd_device(device)
     provd_config = _create_provd_config(device)
 
@@ -180,7 +180,7 @@ def _update_parent_ids(device, provd_device):
         provd_device['parent_ids'].append(device.template_id)
 
 
-def convert_to_model(device, config=None):
+def to_model(device, config=None):
     filtered_device = dict((key, value) for key, value in device.iteritems() if key in PROVD_DEVICE_KEYS)
     new_model = Device(**filtered_device)
 

@@ -18,7 +18,7 @@
 from urllib2 import HTTPError
 
 from xivo_dao.data_handler.device.model import DeviceOrdering
-from xivo_dao.data_handler.device import provd_builder
+from xivo_dao.data_handler.device import provd_converter
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementDeletionError, ElementCreationError, InvalidParametersError, \
     ElementEditionError
@@ -32,7 +32,7 @@ def get(device_id):
     device, config = fetch_device_and_config(device_id)
     if not device:
         raise ElementNotExistsError('device', id=device_id)
-    return provd_builder.convert_to_model(device, config)
+    return provd_converter.to_model(device, config)
 
 
 def fetch_device_and_config(device_id):
@@ -83,7 +83,7 @@ def _find_provd_config(provd_device):
 def find(device_id):
     device, config = fetch_device_and_config(device_id)
     if device:
-        return provd_builder.convert_to_model(device, config)
+        return provd_converter.to_model(device, config)
     return None
 
 
@@ -115,7 +115,7 @@ def paginate_devices(skip, limit, devices):
 
 def convert_devices_to_model(devices):
     devices_configs = [(device, _find_config_from_device(device)) for device in devices]
-    return [provd_builder.convert_to_model(device, config) for device, config in devices_configs]
+    return [provd_converter.to_model(device, config) for device, config in devices_configs]
 
 
 def filter_list(search, devices):
@@ -133,7 +133,7 @@ def filter_list(search, devices):
 
 
 def _device_matches_search(search, device):
-    for key in provd_builder.PROVD_DEVICE_KEYS:
+    for key in provd_converter.PROVD_DEVICE_KEYS:
         if key in device and search in unicode(device[key]).lower():
             return True
     return False
@@ -194,7 +194,7 @@ def _delete_provd_config(device):
 def create(device):
     device.id = generate_device_id()
 
-    provd_device, provd_config = provd_builder.build_create(device)
+    provd_device, provd_config = provd_converter.to_source(device)
     _create_provd_device(device.id, provd_device)
     _create_provd_config(device.id, provd_config)
 
@@ -236,7 +236,7 @@ def edit(device):
     provd_device = device_manager.get(device.id)
     provd_config = _find_provd_config(provd_device)
 
-    provd_device, provd_config = provd_builder.build_edit(device, provd_device, provd_config)
+    provd_device, provd_config = provd_converter.build_edit(device, provd_device, provd_config)
 
     if provd_config:
         _update_provd_config(provd_config)
