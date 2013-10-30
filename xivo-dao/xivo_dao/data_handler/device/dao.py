@@ -30,6 +30,8 @@ DEFAULT_ORDER = [DeviceOrdering.ip, DeviceOrdering.mac]
 
 def get(device_id):
     device, config = fetch_device_and_config(device_id)
+    if not device:
+        raise ElementNotExistsError('device', id=device_id)
     return provd_builder.convert_to_model(device, config)
 
 
@@ -52,20 +54,37 @@ def _build_device(provd_device):
 
 
 def fetch_device_and_config(device_id):
+    device = _find_device_from_provd(device_id)
+
+    config = None
+    if device:
+        config = _find_config_from_device(device)
+    return device, config
+
+
+def _find_config_from_device(device):
+    config = None
+    if 'config' in device:
+        config_id = device['config']
+        config = _get_config_from_provd(config_id)
+    return config
+
+
+def _find_device_from_provd(device_id):
     try:
         device = provd_connector.device_manager().get(device_id)
     except HTTPError as e:
         if e.code == 404:
-            raise ElementNotExistsError('device', id=device_id)
+            return None
         raise
+    return device
 
-    config = None
-    if 'config' in device:
-        config_id = device['config']
-        config = provd_connector.config_manager().find({'id': config_id})
-        if not config:
-            raise ElementNotExistsError('device config', id=config_id)
-    return device, config
+
+def _get_config_from_provd(config_id):
+    config = provd_connector.config_manager().find({'id': config_id})
+    if not config:
+        raise ElementNotExistsError('device config', id=config_id)
+    return config[0]
 
 
 def _find_provd_config(provd_device):

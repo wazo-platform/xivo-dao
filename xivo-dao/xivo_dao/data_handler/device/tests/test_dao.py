@@ -104,7 +104,7 @@ class TestDeviceDaoGetFind(TestDeviceDao):
     @patch('xivo_dao.data_handler.device.provd_builder.convert_to_model')
     @patch('xivo_dao.data_handler.device.dao.fetch_device_and_config')
     def test_get_no_device(self, fetch_device_and_config, to_model):
-        fetch_device_and_config.side_effect = ElementNotExistsError('device', id=self.deviceid)
+        fetch_device_and_config.return_value = None, None
 
         self.assertRaises(ElementNotExistsError, device_dao.get, self.deviceid)
         fetch_device_and_config.assert_called_once_with(self.deviceid)
@@ -126,7 +126,7 @@ class TestDeviceDaoGetFind(TestDeviceDao):
         with self.provd_managers() as (device_manager, config_manager, _):
             expected_device = device_manager.get.return_value = {'id': self.deviceid,
                                                                  'config': self.config_id}
-            expected_config = config_manager.find.return_value = Mock()
+            [expected_config] = config_manager.find.return_value = [Mock()]
             device, config = device_dao.fetch_device_and_config(self.deviceid)
 
             assert_that(device, same_instance(expected_device))
@@ -160,8 +160,10 @@ class TestDeviceDaoGetFind(TestDeviceDao):
         with self.provd_managers() as (device_manager, config_manager, _):
             device_manager.get.side_effect = HTTPError('', 404, '', '', StringIO(''))
 
-            self.assertRaises(ElementNotExistsError, device_dao.fetch_device_and_config, self.deviceid)
+            device, config = device_dao.fetch_device_and_config(self.deviceid)
 
+            assert_that(device, none())
+            assert_that(config, none())
             device_manager.get.assert_called_once_with(self.deviceid)
             assert_that(config_manager.find.call_count, equal_to(0))
 
