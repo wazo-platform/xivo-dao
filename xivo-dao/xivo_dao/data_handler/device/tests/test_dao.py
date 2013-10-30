@@ -14,6 +14,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+
 import unittest
 
 from hamcrest import *
@@ -94,63 +96,74 @@ class TestDeviceDao(unittest.TestCase):
         device_patcher.stop()
         plugin_patcher.stop()
 
-    def test_get_no_device(self):
+
+class TestDeviceDaoGetFind(TestDeviceDao):
+
+    config_id = 'ad0a12fd5f244ae68a3c626789203699'
+
+    @patch('xivo_dao.data_handler.device.provd_builder.convert_to_model')
+    @patch('xivo_dao.data_handler.device.dao.fetch_device_and_config')
+    def test_get_no_device(self, fetch_device_and_config, to_model):
+        fetch_device_and_config.side_effect = ElementNotExistsError('device', id=self.deviceid)
+
+        self.assertRaises(ElementNotExistsError, device_dao.get, self.deviceid)
+        fetch_device_and_config.assert_called_once_with(self.deviceid)
+        assert_that(to_model.call_count, equal_to(0))
+
+    @patch('xivo_dao.data_handler.device.provd_builder.convert_to_model')
+    @patch('xivo_dao.data_handler.device.dao.fetch_device_and_config')
+    def test_get(self, fetch_device_and_config, to_model):
+        fetch_device_and_config.return_value = self.provd_device, self.provd_config
+        expected_device = to_model.return_value = Mock(Device)
+
+        device = device_dao.get(self.deviceid)
+
+        fetch_device_and_config.assert_called_once_with(self.deviceid)
+        to_model.assert_called_once_with(self.provd_device, self.provd_config)
+        assert_that(device, same_instance(expected_device))
+
+    def test_fetch_device_and_config_when_device_and_config_exist(self):
+        with self.provd_managers() as (device_manager, config_manager, _):
+            expected_device = device_manager.get.return_value = {'id': self.deviceid,
+                                                                 'config': self.config_id}
+            expected_config = config_manager.find.return_value = Mock()
+            device, config = device_dao.fetch_device_and_config(self.deviceid)
+
+            assert_that(device, same_instance(expected_device))
+            assert_that(config, same_instance(expected_config))
+            device_manager.get.assert_called_once_with(self.deviceid)
+            config_manager.find.assert_called_once_with({'id': self.config_id})
+
+    def test_fetch_device_and_config_when_device_exists_and_references_inexistant_config(self):
+        with self.provd_managers() as (device_manager, config_manager, _):
+            device_manager.get.return_value = {'id': self.deviceid,
+                                               'config': self.config_id}
+            config_manager.find.return_value = []
+
+            self.assertRaises(ElementNotExistsError, device_dao.fetch_device_and_config, self.deviceid)
+
+            device_manager.get.assert_called_once_with(self.deviceid)
+            config_manager.find.assert_called_once_with({'id': self.config_id})
+
+    def test_fetch_device_and_config_when_device_exists_and_references_no_config(self):
+        with self.provd_managers() as (device_manager, config_manager, _):
+            expected_device = device_manager.get.return_value = {'id': self.deviceid}
+
+            device, config = device_dao.fetch_device_and_config(self.deviceid)
+
+            assert_that(device, same_instance(expected_device))
+            assert_that(config, none())
+            device_manager.get.assert_called_once_with(self.deviceid)
+            assert_that(config_manager.find.call_count, equal_to(0))
+
+    def test_fetch_device_and_config_when_device_does_not_exist(self):
         with self.provd_managers() as (device_manager, config_manager, _):
             device_manager.get.side_effect = HTTPError('', 404, '', '', StringIO(''))
 
-            self.assertRaises(ElementNotExistsError, device_dao.get, self.deviceid)
+            self.assertRaises(ElementNotExistsError, device_dao.fetch_device_and_config, self.deviceid)
+
             device_manager.get.assert_called_once_with(self.deviceid)
-
-    def test_get_no_template(self):
-        properties = dict(self.device_properties)
-        del properties['template_id']
-        del properties['status']
-
-        provd_device = dict(self.provd_device)
-        del provd_device['config']
-
-        expected_device = Device(**properties)
-
-        with self.provd_managers() as (device_manager, config_manager, _):
-            device_manager.get.return_value = provd_device
-
-            device = device_dao.get(expected_device.id)
-
-            assert_that(device, equal_to(expected_device))
-            device_manager.get.assert_called_once_with(expected_device.id)
-            assert_that(config_manager.get.call_count, equal_to(0))
-
-    def test_get(self):
-        with self.provd_managers() as (device_manager, config_manager, _):
-            device_manager.get.return_value = self.provd_device
-            config_manager.get.return_value = self.provd_config
-
-            device = device_dao.get(self.deviceid)
-
-            assert_that(device, equal_to(self.expected_device))
-            device_manager.get.assert_called_once_with(self.deviceid)
-            config_manager.get.assert_called_once_with(self.deviceid)
-
-    def test_get_custom_template(self):
-        properties = dict(self.device_properties)
-        properties['template_id'] = 'mytemplate'
-
-        expected_device = Device(**properties)
-
-        provd_config = dict(self.provd_config)
-        provd_config['configdevice'] = 'mytemplate'
-        provd_config['parent_ids'].remove('defaultconfigdevice')
-        provd_config['parent_ids'].append('mytemplate')
-
-        with self.provd_managers() as (device_manager, config_manager, _):
-            device_manager.get.return_value = self.provd_device
-            config_manager.get.return_value = provd_config
-
-            device = device_dao.get(expected_device.id)
-
-            assert_that(device, equal_to(expected_device))
-            device_manager.get.assert_called_once_with(expected_device.id)
-            config_manager.get.assert_called_once_with(self.deviceid)
+            assert_that(config_manager.find.call_count, equal_to(0))
 
     def test_find_not_found(self):
         device_id = 'abcd'
@@ -340,6 +353,9 @@ class TestDeviceDao(unittest.TestCase):
             config_manager.get.assert_any_call(provd_device1['config'])
             config_manager.get.assert_any_call(provd_device2['config'])
 
+
+class TestDeviceDaoFilterList(TestDeviceDao):
+
     def test_filter_list_empty_list(self):
         devices = []
         expected = []
@@ -379,6 +395,9 @@ class TestDeviceDao(unittest.TestCase):
 
         result = device_dao.filter_list(search, devices)
         assert_that(result, equal_to(expected))
+
+
+class TestDeviceDaoCreate(TestDeviceDao):
 
     @patch('xivo_dao.data_handler.device.provd_builder.build_create')
     @patch('xivo_dao.data_handler.device.dao.generate_device_id')
@@ -457,6 +476,9 @@ class TestDeviceDao(unittest.TestCase):
             self.assertRaises(ElementCreationError, device_dao.generate_device_id)
             device_manager.add.assert_called_once_with({})
 
+
+class TestDeviceDaoEdit(TestDeviceDao):
+
     @patch('xivo_dao.data_handler.device.provd_builder.build_edit')
     def test_edit(self, provd_build_edit):
         device_id = 'abc1234'
@@ -534,6 +556,9 @@ class TestDeviceDao(unittest.TestCase):
 
             self.assertRaises(ElementEditionError, device_dao.edit, device)
 
+
+class TestDeviceDaoMacExists(TestDeviceDao):
+
     def test_mac_exists_no_mac(self):
         mac = 'FF:FF:FF:FF:FF'
 
@@ -565,6 +590,9 @@ class TestDeviceDao(unittest.TestCase):
             assert_that(result, equal_to(True))
             device_manager.find.assert_called_once_with({'mac': mac})
 
+
+class TestDeviceDaoPluginExists(TestDeviceDao):
+
     def test_plugin_exists_no_plugin(self):
         plugin = 'null'
 
@@ -586,6 +614,9 @@ class TestDeviceDao(unittest.TestCase):
 
             assert_that(result, equal_to(True))
             plugin_manager.plugins.assert_called_once_with()
+
+
+class TestDeviceDaoTemplateExists(TestDeviceDao):
 
     def test_template_id_exists_no_template(self):
         template_id = 'abcd1234'
@@ -615,6 +646,8 @@ class TestDeviceDao(unittest.TestCase):
             assert_that(result, equal_to(True))
             config_manager.find.assert_called_once_with({'X_type': 'device', 'id': template_id})
 
+
+class TestDeviceDaoDelete(TestDeviceDao):
     def test_delete(self):
         device_id = 'abc1234'
         device = Device(id=device_id)

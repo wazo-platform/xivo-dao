@@ -29,8 +29,8 @@ DEFAULT_ORDER = [DeviceOrdering.ip, DeviceOrdering.mac]
 
 
 def get(device_id):
-    provd_device = _get_provd_device(device_id)
-    return _build_device(provd_device)
+    device, config = fetch_device_and_config(device_id)
+    return provd_builder.convert_to_model(device, config)
 
 
 def _get_provd_device(device_id):
@@ -49,6 +49,23 @@ def _get_provd_device(device_id):
 def _build_device(provd_device):
     provd_config = _find_provd_config(provd_device)
     return provd_builder.convert_to_model(provd_device, provd_config)
+
+
+def fetch_device_and_config(device_id):
+    try:
+        device = provd_connector.device_manager().get(device_id)
+    except HTTPError as e:
+        if e.code == 404:
+            raise ElementNotExistsError('device', id=device_id)
+        raise
+
+    config = None
+    if 'config' in device:
+        config_id = device['config']
+        config = provd_connector.config_manager().find({'id': config_id})
+        if not config:
+            raise ElementNotExistsError('device config', id=config_id)
+    return device, config
 
 
 def _find_provd_config(provd_device):
