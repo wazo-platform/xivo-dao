@@ -167,26 +167,29 @@ class TestDeviceDaoGetFind(TestDeviceDao):
             device_manager.get.assert_called_once_with(self.deviceid)
             assert_that(config_manager.find.call_count, equal_to(0))
 
-    def test_find_not_found(self):
-        device_id = 'abcd'
+    @patch('xivo_dao.data_handler.device.provd_builder.convert_to_model')
+    @patch('xivo_dao.data_handler.device.dao.fetch_device_and_config')
+    def test_find_not_found(self, fetch_device_and_config, to_model):
+        fetch_device_and_config.return_value = None, None
+        to_model.return_value = Mock(Device)
 
-        with self.provd_managers() as (device_manager, _, _):
-            device_manager.find.return_value = []
+        result = device_dao.find(self.deviceid)
 
-            result = device_dao.find(device_id)
-            device_manager.find.assert_called_once_with({'id': device_id})
+        fetch_device_and_config.assert_called_once_with(self.deviceid)
+        assert_that(to_model.call_count, equal_to(0))
+        assert_that(result, none())
 
-            assert_that(result, none())
+    @patch('xivo_dao.data_handler.device.provd_builder.convert_to_model')
+    @patch('xivo_dao.data_handler.device.dao.fetch_device_and_config')
+    def test_find_found(self, fetch_device_and_config, to_model):
+        device, config = fetch_device_and_config.return_value = (Mock(), Mock())
+        model = to_model.return_value = Mock(Device)
 
-    def test_find_found(self):
-        with self.provd_managers() as (device_manager, config_manager, _):
-            device_manager.find.return_value = [self.provd_device]
-            config_manager.get.return_value = self.provd_config
+        result = device_dao.find(self.deviceid)
 
-            result = device_dao.find(self.deviceid)
-
-            assert_that(result, equal_to(self.expected_device))
-            device_manager.find.assert_called_once_with({'id': self.deviceid})
+        assert_that(result, same_instance(model))
+        fetch_device_and_config.assert_called_once_with(self.deviceid)
+        to_model.assert_called_once_with(device, config)
 
     def test_find_all_no_devices(self):
         expected = SearchResult(items=[], total=0)

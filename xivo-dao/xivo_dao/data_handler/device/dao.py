@@ -99,14 +99,10 @@ def _find_provd_config(provd_device):
 
 
 def find(device_id):
-    device_manager = provd_connector.device_manager()
-
-    devices = device_manager.find({'id': device_id})
-    if len(devices) == 0:
-        return None
-
-    provd_device = devices[0]
-    return _build_device(provd_device)
+    device, config = fetch_device_and_config(device_id)
+    if device:
+        return provd_builder.convert_to_model(device, config)
+    return None
 
 
 def find_all(order=None, direction=None, limit=None, skip=None, search=None):
