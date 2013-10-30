@@ -35,24 +35,6 @@ def get(device_id):
     return provd_builder.convert_to_model(device, config)
 
 
-def _get_provd_device(device_id):
-    device_manager = provd_connector.device_manager()
-
-    try:
-        provd_device = device_manager.get(device_id)
-    except HTTPError as e:
-        if e.code == 404:
-            raise ElementNotExistsError('Device', id=device_id)
-        raise e
-
-    return provd_device
-
-
-def _build_device(provd_device):
-    provd_config = _find_provd_config(provd_device)
-    return provd_builder.convert_to_model(provd_device, provd_config)
-
-
 def fetch_device_and_config(device_id):
     device = _find_device_from_provd(device_id)
 
@@ -106,28 +88,40 @@ def find(device_id):
 
 
 def find_all(order=None, direction=None, limit=None, skip=None, search=None):
-    parameters = _convert_provd_parameters(order, direction, limit, skip)
-
-    device_manager = provd_connector.device_manager()
-    provd_devices = device_manager.find(**parameters)
-
-    if search:
-        provd_devices = filter_list(search, provd_devices)
-
+    provd_devices = find_devices_ordered(order, direction)
+    provd_devices = filter_list(search, provd_devices)
     total = len(provd_devices)
-
-    skip = skip or 0
-    if limit:
-        provd_devices = provd_devices[skip:skip + limit]
-    else:
-        provd_devices = provd_devices[skip:]
-
-    items = [_build_device(d) for d in provd_devices]
+    provd_devices = paginate_devices(skip, limit, provd_devices)
+    items = convert_devices_to_model(provd_devices)
 
     return SearchResult(total=total, items=items)
 
 
+def find_devices_ordered(order, direction):
+    parameters = _convert_provd_parameters(order, direction)
+
+    device_manager = provd_connector.device_manager()
+    return device_manager.find(**parameters)
+
+
+def paginate_devices(skip, limit, devices):
+    skip = skip or 0
+    if limit:
+        devices = devices[skip:skip + limit]
+    else:
+        devices = devices[skip:]
+    return devices
+
+
+def convert_devices_to_model(devices):
+    devices_configs = [(device, _find_config_from_device(device)) for device in devices]
+    return [provd_builder.convert_to_model(device, config) for device, config in devices_configs]
+
+
 def filter_list(search, devices):
+    if search is None:
+        return devices
+
     found = []
     search = search.lower().strip()
 
@@ -145,7 +139,7 @@ def _device_matches_search(search, device):
     return False
 
 
-def _convert_provd_parameters(order, direction, limit, skip):
+def _convert_provd_parameters(order, direction):
     parameters = {}
 
     sort = _convert_order_and_direction(order, direction)
