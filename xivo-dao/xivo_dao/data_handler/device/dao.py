@@ -17,7 +17,7 @@
 
 from urllib2 import HTTPError
 
-from xivo_dao.data_handler.device.model import Device, DeviceOrdering
+from xivo_dao.data_handler.device.model import DeviceOrdering
 from xivo_dao.data_handler.device import provd_builder
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementDeletionError, ElementCreationError, InvalidParametersError, \
@@ -48,7 +48,7 @@ def _get_provd_device(device_id):
 
 def _build_device(provd_device):
     provd_config = _find_provd_config(provd_device)
-    return Device.from_provd(provd_device, provd_config)
+    return provd_builder.convert_to_model(provd_device, provd_config)
 
 
 def _find_provd_config(provd_device):
@@ -107,7 +107,7 @@ def filter_list(search, devices):
 
 
 def _device_matches_search(search, device):
-    for key in Device.PROVD_KEYS:
+    for key in provd_builder.PROVD_DEVICE_KEYS:
         if key in device and search in unicode(device[key]).lower():
             return True
     return False

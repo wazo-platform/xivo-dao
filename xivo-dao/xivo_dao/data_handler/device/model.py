@@ -24,18 +24,6 @@ class Device(NewModel):
     MANDATORY = [
     ]
 
-    PROVD_KEYS = [
-        'id',
-        'ip',
-        'mac',
-        'sn',
-        'plugin',
-        'vendor',
-        'model',
-        'version',
-        'description'
-    ]
-
     FIELDS = [
         'id',
         'ip',
@@ -51,28 +39,6 @@ class Device(NewModel):
     ]
 
     _RELATION = {}
-
-    def __init__(self, *args, **kwargs):
-        NewModel.__init__(self, *args, **kwargs)
-
-    @classmethod
-    def from_provd(cls, device, config=None):
-        filtered_device = dict((key, value) for key, value in device.iteritems() if key in cls.PROVD_KEYS)
-        obj = cls(**filtered_device)
-
-        if config:
-            if 'configdevice' in config:
-                obj.template_id = config['configdevice']
-
-            if device['configured'] is True:
-                if device['config'].startswith('autoprov'):
-                    obj.status = 'autoprov'
-                else:
-                    obj.status = 'configured'
-            else:
-                obj.status = 'not_configured'
-
-        return obj
 
 
 class DeviceOrdering(object):

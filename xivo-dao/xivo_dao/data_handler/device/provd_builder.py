@@ -20,6 +20,18 @@ from xivo_dao.helpers import provd_connector
 from xivo import caller_id
 from xivo_dao.data_handler.exception import ProvdError
 
+PROVD_DEVICE_KEYS = [
+    'id',
+    'ip',
+    'mac',
+    'sn',
+    'plugin',
+    'vendor',
+    'model',
+    'version',
+    'description'
+]
+
 
 def build_create(device):
     provd_device = _create_provd_device(device)
@@ -38,7 +50,7 @@ def _create_provd_device(device):
 def _filter_device_parameters(device):
     parameters = {}
 
-    for key in Device.PROVD_KEYS:
+    for key in PROVD_DEVICE_KEYS:
         value = getattr(device, key)
         if value is not None:
             parameters[key] = value
@@ -166,3 +178,22 @@ def _update_template_id(device, provd_device):
 def _update_parent_ids(device, provd_device):
     if device.template_id not in provd_device['parent_ids']:
         provd_device['parent_ids'].append(device.template_id)
+
+
+def convert_to_model(device, config=None):
+    filtered_device = dict((key, value) for key, value in device.iteritems() if key in PROVD_DEVICE_KEYS)
+    new_model = Device(**filtered_device)
+
+    if config:
+        if 'configdevice' in config:
+            new_model.template_id = config['configdevice']
+
+        if device['configured'] is True:
+            if device['config'].startswith('autoprov'):
+                new_model.status = 'autoprov'
+            else:
+                new_model.status = 'configured'
+        else:
+            new_model.status = 'not_configured'
+
+    return new_model

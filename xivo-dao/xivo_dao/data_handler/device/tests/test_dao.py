@@ -23,6 +23,7 @@ from StringIO import StringIO
 from contextlib import contextmanager
 
 from xivo_dao.data_handler.device import dao as device_dao
+from xivo_dao.data_handler.device import provd_builder
 from xivo_dao.data_handler.device.model import Device
 from xivo_dao.data_handler.exception import ElementDeletionError, ElementCreationError, \
     ElementNotExistsError, ElementEditionError
@@ -205,7 +206,7 @@ class TestDeviceDao(unittest.TestCase):
         device2['ip'] = '10.0.0.1'
         device3['ip'] = '10.1.0.2'
 
-        devices = [Device.from_provd(device1)]
+        devices = [provd_builder.convert_to_model(device1)]
         expected = SearchResult(items=devices, total=2)
 
         with self.provd_managers() as (device_manager, config_manager, _):
@@ -230,7 +231,7 @@ class TestDeviceDao(unittest.TestCase):
         device4['ip'] = '10.1.0.4'
         device5['ip'] = '10.1.0.5'
 
-        devices = [Device.from_provd(device3), Device.from_provd(device4)]
+        devices = [provd_builder.convert_to_model(device3), provd_builder.convert_to_model(device4)]
         expected = SearchResult(items=devices, total=4)
 
         with self.provd_managers() as (device_manager, config_manager, _):
