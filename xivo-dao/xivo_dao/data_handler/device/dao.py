@@ -17,8 +17,8 @@
 
 from urllib2 import HTTPError
 
-from xivo_dao.data_handler.device.model import Device, DeviceOrdering
-from xivo_dao.data_handler.device import provd_builder
+from xivo_dao.data_handler.device.model import DeviceOrdering
+from xivo_dao.data_handler.device import provd_converter
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementDeletionError, ElementCreationError, InvalidParametersError, \
     ElementEditionError
@@ -29,26 +29,44 @@ DEFAULT_ORDER = [DeviceOrdering.ip, DeviceOrdering.mac]
 
 
 def get(device_id):
-    provd_device = _get_provd_device(device_id)
-    return _build_device(provd_device)
+    device, config = fetch_device_and_config(device_id)
+    if not device:
+        raise ElementNotExistsError('device', id=device_id)
+    return provd_converter.to_model(device, config)
 
 
-def _get_provd_device(device_id):
-    device_manager = provd_connector.device_manager()
+def fetch_device_and_config(device_id):
+    device = _find_device_from_provd(device_id)
 
+    config = None
+    if device:
+        config = _find_config_from_device(device)
+    return device, config
+
+
+def _find_config_from_device(device):
+    config = None
+    if 'config' in device:
+        config_id = device['config']
+        config = _get_config_from_provd(config_id)
+    return config
+
+
+def _find_device_from_provd(device_id):
     try:
-        provd_device = device_manager.get(device_id)
+        device = provd_connector.device_manager().get(device_id)
     except HTTPError as e:
         if e.code == 404:
-            raise ElementNotExistsError('Device', id=device_id)
-        raise e
+            return None
+        raise
+    return device
 
-    return provd_device
 
-
-def _build_device(provd_device):
-    provd_config = _find_provd_config(provd_device)
-    return Device.from_provd(provd_device, provd_config)
+def _get_config_from_provd(config_id):
+    config = provd_connector.config_manager().find({'id': config_id})
+    if not config:
+        raise ElementNotExistsError('device config', id=config_id)
+    return config[0]
 
 
 def _find_provd_config(provd_device):
@@ -63,39 +81,47 @@ def _find_provd_config(provd_device):
 
 
 def find(device_id):
-    device_manager = provd_connector.device_manager()
-
-    devices = device_manager.find({'id': device_id})
-    if len(devices) == 0:
-        return None
-
-    provd_device = devices[0]
-    return _build_device(provd_device)
+    device, config = fetch_device_and_config(device_id)
+    if device:
+        return provd_converter.to_model(device, config)
+    return None
 
 
 def find_all(order=None, direction=None, limit=None, skip=None, search=None):
-    parameters = _convert_provd_parameters(order, direction, limit, skip)
-
-    device_manager = provd_connector.device_manager()
-    provd_devices = device_manager.find(**parameters)
-
-    if search:
-        provd_devices = filter_list(search, provd_devices)
-
+    provd_devices = find_devices_ordered(order, direction)
+    provd_devices = filter_list(search, provd_devices)
     total = len(provd_devices)
-
-    skip = skip or 0
-    if limit:
-        provd_devices = provd_devices[skip:skip + limit]
-    else:
-        provd_devices = provd_devices[skip:]
-
-    items = [_build_device(d) for d in provd_devices]
+    provd_devices = paginate_devices(skip, limit, provd_devices)
+    items = convert_devices_to_model(provd_devices)
 
     return SearchResult(total=total, items=items)
 
 
+def find_devices_ordered(order, direction):
+    parameters = _convert_provd_parameters(order, direction)
+
+    device_manager = provd_connector.device_manager()
+    return device_manager.find(**parameters)
+
+
+def paginate_devices(skip, limit, devices):
+    skip = skip or 0
+    if limit:
+        devices = devices[skip:skip + limit]
+    else:
+        devices = devices[skip:]
+    return devices
+
+
+def convert_devices_to_model(devices):
+    devices_configs = [(device, _find_config_from_device(device)) for device in devices]
+    return [provd_converter.to_model(device, config) for device, config in devices_configs]
+
+
 def filter_list(search, devices):
+    if search is None:
+        return devices
+
     found = []
     search = search.lower().strip()
 
@@ -107,13 +133,13 @@ def filter_list(search, devices):
 
 
 def _device_matches_search(search, device):
-    for key in Device.PROVD_KEYS:
+    for key in provd_converter.PROVD_DEVICE_KEYS:
         if key in device and search in unicode(device[key]).lower():
             return True
     return False
 
 
-def _convert_provd_parameters(order, direction, limit, skip):
+def _convert_provd_parameters(order, direction):
     parameters = {}
 
     sort = _convert_order_and_direction(order, direction)
@@ -168,7 +194,7 @@ def _delete_provd_config(device):
 def create(device):
     device.id = generate_device_id()
 
-    provd_device, provd_config = provd_builder.build_create(device)
+    provd_device, provd_config = provd_converter.to_source(device)
     _create_provd_device(device.id, provd_device)
     _create_provd_config(device.id, provd_config)
 
@@ -210,7 +236,7 @@ def edit(device):
     provd_device = device_manager.get(device.id)
     provd_config = _find_provd_config(provd_device)
 
-    provd_device, provd_config = provd_builder.build_edit(device, provd_device, provd_config)
+    provd_device, provd_config = provd_converter.build_edit(device, provd_device, provd_config)
 
     if provd_config:
         _update_provd_config(provd_config)

@@ -199,7 +199,7 @@ class TestDeviceValidator(unittest.TestCase):
         new_mac = '00:11:22:33:44:56'
         device_id = '123abc'
 
-        device_found = Mock(Device)
+        device_found = Mock(Device, mac=None)
         dao_find.return_value = device_found
 
         device = {

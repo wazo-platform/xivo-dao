@@ -15,16 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.abstract_model import AbstractModels
+from xivo_dao.helpers.new_model import NewModel
 from xivo_dao.data_handler.exception import InvalidParametersError
 
 
-class Device(AbstractModels):
+class Device(NewModel):
 
     MANDATORY = [
     ]
 
-    PROVD_KEYS = [
+    FIELDS = [
         'id',
         'ip',
         'mac',
@@ -33,52 +33,18 @@ class Device(AbstractModels):
         'vendor',
         'model',
         'version',
-        'description'
+        'description',
+        'status',
+        'template_id',
     ]
 
-    # mapping = {db_field: model_field}
-    _MAPPING = {
-        'id': 'id',
-        'ip': 'ip',
-        'mac': 'mac',
-        'sn': 'sn',
-        'plugin': 'plugin',
-        'vendor': 'vendor',
-        'model': 'model',
-        'version': 'version',
-        'description': 'description',
-        'status': 'status',
-        'template_id': 'template_id'
-    }
-
     _RELATION = {}
-
-    def __init__(self, *args, **kwargs):
-        AbstractModels.__init__(self, *args, **kwargs)
-
-    @classmethod
-    def from_provd(cls, device, config=None):
-        filtered_device = dict((key, value) for key, value in device.iteritems() if key in cls.PROVD_KEYS)
-        obj = cls(**filtered_device)
-
-        if config:
-            if 'configdevice' in config:
-                obj.template_id = config['configdevice']
-
-            if device['configured'] is True:
-                if device['config'].startswith('autoprov'):
-                    obj.status = 'autoprov'
-                else:
-                    obj.status = 'configured'
-            else:
-                obj.status = 'not_configured'
-
-        return obj
 
 
 class DeviceOrdering(object):
     DIRECTIONS = ['desc', 'asc']
 
+    id = 'id'
     ip = 'ip'
     mac = 'mac'
     plugin = 'plugin'
@@ -88,7 +54,7 @@ class DeviceOrdering(object):
 
     @classmethod
     def all_columns(cls):
-        return [cls.ip, cls.mac, cls.plugin, cls.model, cls.vendor, cls.version]
+        return [cls.id, cls.ip, cls.mac, cls.plugin, cls.model, cls.vendor, cls.version]
 
     @classmethod
     def from_column_name(cls, column):
