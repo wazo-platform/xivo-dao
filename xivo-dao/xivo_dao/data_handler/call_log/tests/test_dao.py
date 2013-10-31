@@ -83,6 +83,18 @@ class TestCallLogDAO(DAOTestCase):
         assert_that(result, contains_inanyorder(has_property('date', call_log_1.date),
                                                 has_property('date', call_log_2.date)))
 
+    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    def test_create_call_log(self, session_init):
+        session = Mock()
+        session_init.return_value = session
+        expected_id = 13
+        call_log = self._mock_call_log(id=expected_id)
+        call_log_id = call_log_dao.create_call_log(session, call_log)
+
+        session.add.assert_called_once()
+        session.flush.assert_called_once()
+        assert_that(call_log_id, equal_to(expected_id))
+
     def test_create_from_list(self):
         cel_id_1, cel_id_2 = self.add_cel(), self.add_cel()
         cel_id_3, cel_id_4 = self.add_cel(), self.add_cel()
@@ -103,11 +115,13 @@ class TestCallLogDAO(DAOTestCase):
             all_of(has_property('id', cel_id_3), has_property('call_log_id', call_log_id_2)),
             all_of(has_property('id', cel_id_4), has_property('call_log_id', call_log_id_2))))
 
+    @patch('xivo_dao.data_handler.call_log.dao.create_call_log')
     @patch('xivo_dao.helpers.db_manager.AsteriskSession')
-    def test_create_from_list_db_error(self, session_init):
+    def test_create_from_list_db_error(self, session_init, create_call_log):
         session = Mock()
         session.commit.side_effect = SQLAlchemyError()
         session_init.return_value = session
+        create_call_log.return_value = 13
 
         call_logs = (self._mock_call_log(), self._mock_call_log())
 
