@@ -22,6 +22,14 @@ from xivo_dao.data_handler.context.model import Context, ContextType
 from xivo_dao.data_handler.context import dao as context_dao
 
 
+class ContextRange(object):
+    users = 'user'
+    queues = 'queue'
+    groups = 'group'
+    conference_rooms = 'meetme'
+    incalls = 'incall'
+
+
 def find_by_name(context_name):
     return old_context_dao.get(context_name)
 
@@ -33,18 +41,30 @@ def create(context):
 
 
 def is_extension_inside_range(extension):
+    exten = _validate_exten(extension)
+    context_ranges = context_dao.find_all_context_ranges(extension.context)
+    return _is_exten_in_ranges(exten, context_ranges)
+
+
+def _validate_exten(extension):
     if not extension.exten.isdigit():
         raise InvalidParametersError(['Alphanumeric extensions are not supported'])
+    return int(extension.exten)
 
-    exten = int(extension.exten)
-    context_ranges = context_dao.find_all_context_ranges(extension.context)
 
+def _is_exten_in_ranges(exten, context_ranges):
     for minimum, maximum in context_ranges:
         if not maximum and exten == minimum:
             return True
         elif minimum <= exten <= maximum:
             return True
     return False
+
+
+def is_extension_in_specific_range(extension, context_range):
+    exten = _validate_exten(extension)
+    context_ranges = context_dao.find_all_specific_context_ranges(extension.context, context_range)
+    return _is_exten_in_ranges(exten, context_ranges)
 
 
 def _validate(context):

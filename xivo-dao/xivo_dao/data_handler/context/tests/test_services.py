@@ -17,15 +17,15 @@
 
 import unittest
 from mock import Mock, patch
+from hamcrest import all_of, assert_that, equal_to, has_property
 
 from xivo_dao.data_handler.context import services as context_services
+from xivo_dao.data_handler.context.services import ContextRange
+
 from xivo_dao.data_handler.context.model import Context, ContextType
 from xivo_dao.data_handler.extension.model import Extension
 from xivo_dao.data_handler.exception import MissingParametersError, InvalidParametersError, \
     ElementAlreadyExistsError
-
-
-from hamcrest import all_of, assert_that, equal_to, has_property
 
 
 class TestContext(unittest.TestCase):
@@ -248,3 +248,82 @@ class TestContext(unittest.TestCase):
                               context='default')
 
         self.assertRaises(InvalidParametersError, context_services.is_extension_inside_range, extension)
+
+    @patch('xivo_dao.data_handler.context.dao.find_all_specific_context_ranges')
+    def test_is_extension_in_specific_range_when_no_ranges(self, find_all_specific_context_ranges):
+        extension = Extension(exten='1000',
+                              context='default')
+
+        find_all_specific_context_ranges.return_value = []
+
+        result = context_services.is_extension_in_specific_range(extension, ContextRange.users)
+
+        assert_that(result, equal_to(False))
+
+    @patch('xivo_dao.data_handler.context.dao.find_all_specific_context_ranges')
+    def test_is_extension_in_specific_range_with_one_range(self, find_all_specific_context_ranges):
+        extension = Extension(exten='1000',
+                              context='default')
+
+        find_all_specific_context_ranges.return_value = [(1000, 2000)]
+
+        result = context_services.is_extension_in_specific_range(extension, ContextRange.users)
+
+        assert_that(result, equal_to(True))
+
+    @patch('xivo_dao.data_handler.context.dao.find_all_specific_context_ranges')
+    def test_is_extension_in_specific_range_with_two_ranges(self, find_all_specific_context_ranges):
+        extension = Extension(exten='1501',
+                              context='default')
+
+        find_all_specific_context_ranges.return_value = [(1000, 1500),
+                                                         (1501, 2000)]
+
+        result = context_services.is_extension_in_specific_range(extension, ContextRange.users)
+
+        assert_that(result, equal_to(True))
+
+    @patch('xivo_dao.data_handler.context.dao.find_all_specific_context_ranges')
+    def test_is_extension_in_specific_range_when_outside_of_range(self, find_all_specific_context_ranges):
+        extension = Extension(exten='2001',
+                              context='default')
+
+        find_all_specific_context_ranges.return_value = [(1000, 2000)]
+
+        result = context_services.is_extension_in_specific_range(extension, ContextRange.users)
+
+        assert_that(result, equal_to(False))
+
+    @patch('xivo_dao.data_handler.context.dao.find_all_specific_context_ranges')
+    def test_is_extension_in_specific_range_with_overlapping_ranges(self, find_all_specific_context_ranges):
+        extension = Extension(exten='1450',
+                              context='default')
+
+        find_all_specific_context_ranges.return_value = [(1000, 1500),
+                                                         (1400, 2000)]
+
+        result = context_services.is_extension_in_specific_range(extension, ContextRange.users)
+
+        assert_that(result, equal_to(True))
+
+    @patch('xivo_dao.data_handler.context.dao.find_all_specific_context_ranges')
+    def test_is_extension_in_specific_range_with_single_value_right_value(self, find_all_specific_context_ranges):
+        extension = Extension(exten='1000',
+                              context='default')
+
+        find_all_specific_context_ranges.return_value = [(1000, None)]
+
+        result = context_services.is_extension_in_specific_range(extension, ContextRange.users)
+
+        assert_that(result, equal_to(True))
+
+    @patch('xivo_dao.data_handler.context.dao.find_all_specific_context_ranges')
+    def test_is_extension_in_specific_range_with_single_value_wrong_value(self, find_all_specific_context_ranges):
+        extension = Extension(exten='1001',
+                              context='default')
+
+        find_all_specific_context_ranges.return_value = [(1000, None)]
+
+        result = context_services.is_extension_in_specific_range(extension, ContextRange.users)
+
+        assert_that(result, equal_to(False))

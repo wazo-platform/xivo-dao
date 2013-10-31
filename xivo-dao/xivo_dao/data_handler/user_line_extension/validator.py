@@ -15,19 +15,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-import dao as ule_dao
-
 from xivo_dao.data_handler.exception import MissingParametersError, \
     InvalidParametersError, ElementNotExistsError, NonexistentParametersError
 
+from xivo_dao.data_handler.context import services as context_services
+from xivo_dao.data_handler.context.services import ContextRange
 from xivo_dao.data_handler.extension import dao as extension_dao
 from xivo_dao.data_handler.line import dao as line_dao
 from xivo_dao.data_handler.user import dao as user_dao
+from xivo_dao.data_handler.user_line_extension import dao as ule_dao
 
 
 def validate_create(ule):
     user, line, extension = validate(ule)
-    _check_if_already_linked(user, line)
+    check_if_user_and_line_already_linked(user, line)
+    check_if_extension_in_context_range(extension)
+    check_line_links_for_extension(line, extension)
     return user, line, extension
 
 
@@ -39,7 +42,7 @@ def validate(ule):
 
 
 def is_allowed_to_delete(ule):
-    if ule.main_user == True and not ule_dao.main_user_is_allowed_to_delete(ule.line_id):
+    if ule.main_user is True and not ule_dao.main_user_is_allowed_to_delete(ule.line_id):
         raise InvalidParametersError(['There are secondary users associated to this link'])
 
 
@@ -96,6 +99,18 @@ def _get_secondary_associations(ule):
     return user, line, extension
 
 
-def _check_if_already_linked(user, line):
+def check_if_user_and_line_already_linked(user, line):
     if ule_dao.already_linked(user.id, line.id):
         raise InvalidParametersError(['user is already associated to this line'])
+
+
+def check_if_extension_in_context_range(extension):
+    if not context_services.is_extension_in_specific_range(extension, ContextRange.users):
+        raise InvalidParametersError(['Exten %s not inside user range of context %s' % (extension.exten, extension.context)])
+
+
+def check_line_links_for_extension(line, extension):
+    user_lines = ule_dao.find_all_by_extension_id(extension.id)
+    for user_line in user_lines:
+        if user_line.line_id != line.id:
+            raise InvalidParametersError(['Extension %s@%s already linked to a line' % (extension.exten, extension.context)])
