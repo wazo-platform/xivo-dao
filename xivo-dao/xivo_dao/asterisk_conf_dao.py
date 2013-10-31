@@ -47,6 +47,11 @@ from xivo_dao.alchemy.musiconhold import MusicOnHold
 from xivo_dao.alchemy.queueskillrule import QueueSkillRule
 from xivo_dao.alchemy.staticqueue import StaticQueue
 from xivo_dao.alchemy.queue import Queue
+from xivo_dao.alchemy.queuepenalty import QueuePenalty
+from xivo_dao.alchemy.agentfeatures import AgentFeatures
+from xivo_dao.alchemy.queueskill import QueueSkill
+from xivo_dao.alchemy.agentqueueskill import AgentQueueSkill
+from xivo_dao.alchemy.queuepenaltychange import QueuePenaltyChange
 
 
 @daosession
@@ -577,5 +582,76 @@ def find_queue_skillrule_settings(session):
     res = []
     for row in rows:
         res.append(row.todict())
+
+    return res
+
+
+@daosession
+def find_queue_penalty_settings(session):
+    rows = session.query(QueuePenalty).filter(QueuePenalty.commented == 0).all()
+
+    res = []
+    for row in rows:
+        res.append(row.todict())
+
+    return res
+
+
+@daosession
+def find_queue_members_settings(session, queue_name):
+    rows = (session.query(QueueMember)
+            .filter(and_(QueueMember.commented == 0,
+                         QueueMember.queue_name == queue_name,
+                         QueueMember.usertype == 'user'))
+            .order_by(QueueMember.position)
+            .all())
+
+    res = []
+    for row in rows:
+        res.append(row.todict())
+
+    return res
+
+
+@daosession
+def find_agent_queue_skills_settings(session):
+    rows = (session.query(AgentFeatures.id, QueueSkill.name, AgentQueueSkill.weight)
+            .filter(and_(AgentQueueSkill.agentid == AgentFeatures.id,
+                         AgentQueueSkill.skillid == QueueSkill.id))
+            .order_by(AgentFeatures.id)
+            .all())
+
+    res = []
+    for row in rows:
+        agent_id, queueskill_name, agent_queue_skill_weight = row
+        tmp = {}
+        tmp['id'] = agent_id
+        tmp['name'] = queueskill_name
+        tmp['weight'] = agent_queue_skill_weight
+        res.append(tmp)
+
+    return res
+
+
+@daosession
+def find_queue_penalties_settings(session):
+    rows = (session.query(QueuePenalty.name,
+                          QueuePenaltyChange)
+            .filter(and_(QueuePenalty.id == QueuePenaltyChange.queuepenalty_id,
+                         QueuePenalty.commented == 0))
+            .order_by(QueuePenalty.name)
+            .all())
+
+    res = []
+    for row in rows:
+        queue_name, queue_penalty_change = row
+        tmp = {}
+        tmp['name'] = queue_name
+        tmp['seconds'] = queue_penalty_change.seconds
+        tmp['maxp_sign'] = queue_penalty_change.maxp_sign
+        tmp['maxp_value'] = queue_penalty_change.maxp_value
+        tmp['minp_sign'] = queue_penalty_change.minp_sign
+        tmp['minp_value'] = queue_penalty_change.minp_value
+        res.append(tmp)
 
     return res
