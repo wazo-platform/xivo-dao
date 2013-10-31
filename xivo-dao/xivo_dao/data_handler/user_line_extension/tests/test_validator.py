@@ -177,23 +177,23 @@ class TestUserLineExtensionValidator(unittest.TestCase):
         validator.check_if_user_and_line_already_linked(user, line)
         already_linked.assert_called_once_with(user.id, line.id)
 
-    @patch('xivo_dao.data_handler.context.services.is_extension_in_specific_range')
-    def test_check_if_extension_in_context_range_when_context_outside_of_range(self, is_extension_in_specific_range):
+    @patch('xivo_dao.data_handler.context.services.is_extension_valid_for_context_range')
+    def test_check_if_extension_in_context_range_when_context_outside_of_range(self, is_extension_valid_for_context_range):
         extension = Mock(Extension, exten='1000', context='default')
-        is_extension_in_specific_range.return_value = False
+        is_extension_valid_for_context_range.return_value = False
 
         self.assertRaises(InvalidParametersError, validator.check_if_extension_in_context_range, extension)
 
-        is_extension_in_specific_range.assert_called_once_with(extension, ContextRange.users)
+        is_extension_valid_for_context_range.assert_called_once_with(extension, ContextRange.users)
 
-    @patch('xivo_dao.data_handler.context.services.is_extension_in_specific_range')
-    def test_check_if_extension_in_context_range_when_context_inside_of_range(self, is_extension_in_specific_range):
+    @patch('xivo_dao.data_handler.context.services.is_extension_valid_for_context_range')
+    def test_check_if_extension_in_context_range_when_context_inside_of_range(self, is_extension_valid_for_context_range):
         extension = Mock(Extension, exten='1000', context='default')
-        is_extension_in_specific_range.return_value = True
+        is_extension_valid_for_context_range.return_value = True
 
         validator.check_if_extension_in_context_range(extension)
 
-        is_extension_in_specific_range.assert_called_once_with(extension, ContextRange.users)
+        is_extension_valid_for_context_range.assert_called_once_with(extension, ContextRange.users)
 
     @patch('xivo_dao.data_handler.user_line_extension.dao.find_all_by_extension_id')
     def test_check_line_links_for_extension_when_not_linked(self, find_all_by_extension_id):

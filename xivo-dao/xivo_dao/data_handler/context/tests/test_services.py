@@ -120,210 +120,174 @@ class TestContext(unittest.TestCase):
             has_property('type', ContextType.internal)))
 
     @patch('xivo_dao.data_handler.context.dao.find_all_context_ranges')
-    def test_is_extension_inside_range_no_ranges(self, context_ranges):
+    @patch('xivo_dao.data_handler.context.services.is_extension_included_in_ranges')
+    def test_is_extension_valid_for_context(self, is_extension_included_in_ranges, find_all_context_ranges):
+        extension = Mock(Extension, exten='1000', context='default')
+
+        context_ranges = find_all_context_ranges.return_value = Mock()
+        is_extension_included_in_ranges.return_value = True
+
+        result = context_services.is_extension_valid_for_context(extension)
+
+        assert_that(result, equal_to(True))
+        find_all_context_ranges.assert_called_once_with(extension.context)
+        is_extension_included_in_ranges.assert_called_once_with(1000, context_ranges)
+
+    def test_is_extension_included_in_ranges_when_no_ranges(self):
         expected = False
 
-        context_name = 'default'
+        exten = 1000
+        context_ranges = []
 
-        extension = Extension(exten='1000',
-                              context=context_name)
-
-        context_ranges.return_value = []
-
-        result = context_services.is_extension_inside_range(extension)
+        result = context_services.is_extension_included_in_ranges(exten, context_ranges)
 
         assert_that(result, equal_to(expected))
-        context_ranges.assert_called_once_with(context_name)
 
-    @patch('xivo_dao.data_handler.context.dao.find_all_context_ranges')
-    def test_is_extension_inside_range_when_below_minimum(self, context_ranges):
+    def test_is_extension_included_in_ranges_when_below_minimum(self):
         expected = False
 
-        extension = Extension(exten='1000',
-                              context='default')
+        exten = 1000
+        context_ranges = [(2000, 3000)]
 
-        expected_ranges = [(2000, 3000)]
-        context_ranges.return_value = expected_ranges
-
-        result = context_services.is_extension_inside_range(extension)
+        result = context_services.is_extension_included_in_ranges(exten, context_ranges)
 
         assert_that(result, equal_to(expected))
-        context_ranges.assert_called_once_with(extension.context)
 
-    @patch('xivo_dao.data_handler.context.dao.find_all_context_ranges')
-    def test_is_extension_inside_range_when_above_maximum(self, context_ranges):
+    def test_is_extension_included_in_ranges_when_above_maximum(self):
         expected = False
 
-        extension = Extension(exten='9999',
-                              context='default')
+        exten = 9999
+        context_ranges = [(2000, 3000)]
 
-        expected_ranges = [(2000, 3000)]
-        context_ranges.return_value = expected_ranges
-
-        result = context_services.is_extension_inside_range(extension)
+        result = context_services.is_extension_included_in_ranges(exten, context_ranges)
 
         assert_that(result, equal_to(expected))
-        context_ranges.assert_called_once_with(extension.context)
 
-    @patch('xivo_dao.data_handler.context.dao.find_all_context_ranges')
-    def test_is_extension_inside_range_when_inside_of_range(self, context_ranges):
+    def test_is_extension_included_in_ranges_when_inside_of_range_lower_limit(self):
         expected = True
 
-        extension = Extension(exten='1000',
-                              context='default')
+        exten = 1000
+        context_ranges = [(1000, 3000)]
 
-        expected_ranges = [(1000, 3000)]
-        context_ranges.return_value = expected_ranges
-
-        result = context_services.is_extension_inside_range(extension)
+        result = context_services.is_extension_included_in_ranges(exten, context_ranges)
 
         assert_that(result, equal_to(expected))
-        context_ranges.assert_called_once_with(extension.context)
 
-    @patch('xivo_dao.data_handler.context.dao.find_all_context_ranges')
-    def test_is_extension_inside_range_when_inside_second_range(self, context_ranges):
+    def test_is_extension_included_in_ranges_when_inside_of_range_upper_limit(self):
         expected = True
 
-        extension = Extension(exten='2000',
-                              context='default')
+        exten = 3000
+        context_ranges = [(1000, 3000)]
 
-        expected_ranges = [(1000, 1999),
-                           (2000, 2999)]
-        context_ranges.return_value = expected_ranges
-
-        result = context_services.is_extension_inside_range(extension)
+        result = context_services.is_extension_included_in_ranges(exten, context_ranges)
 
         assert_that(result, equal_to(expected))
-        context_ranges.assert_called_once_with(extension.context)
 
-    @patch('xivo_dao.data_handler.context.dao.find_all_context_ranges')
-    def test_is_extension_inside_range_when_ranges_overlap(self, context_ranges):
+    def test_is_extension_included_in_ranges_when_inside_second_range(self):
         expected = True
 
-        extension = Extension(exten='1450',
-                              context='default')
+        exten = 2000
+        context_ranges = [(1000, 1999),
+                          (2000, 2999)]
 
-        expected_ranges = [(1400, 2000),
-                           (1000, 1500)]
-        context_ranges.return_value = expected_ranges
-
-        result = context_services.is_extension_inside_range(extension)
+        result = context_services.is_extension_included_in_ranges(exten, context_ranges)
 
         assert_that(result, equal_to(expected))
-        context_ranges.assert_called_once_with(extension.context)
 
-    @patch('xivo_dao.data_handler.context.dao.find_all_context_ranges')
-    def test_is_extension_inside_range_with_single_value_using_wrong_value(self, context_ranges):
+    def test_is_extension_included_in_ranges_when_ranges_overlap(self):
+        expected = True
+
+        exten = 1450
+        context_ranges = [(1400, 2000),
+                          (1000, 1500)]
+
+        result = context_services.is_extension_included_in_ranges(exten, context_ranges)
+
+        assert_that(result, equal_to(expected))
+
+    def test_is_extension_included_in_ranges_with_single_value_using_lesser_value(self):
         expected = False
 
-        extension = Extension(exten='1450',
-                              context='default')
+        exten = 500
+        context_ranges = [(1000, None)]
 
-        expected_ranges = [(1000, None)]
-        context_ranges.return_value = expected_ranges
-
-        result = context_services.is_extension_inside_range(extension)
+        result = context_services.is_extension_included_in_ranges(exten, context_ranges)
 
         assert_that(result, equal_to(expected))
-        context_ranges.assert_called_once_with(extension.context)
 
-    @patch('xivo_dao.data_handler.context.dao.find_all_context_ranges')
-    def test_is_extension_inside_range_with_single_value_using_right_value(self, context_ranges):
+    def test_is_extension_included_in_ranges_with_single_value_using_greater_value(self):
+        expected = False
+
+        exten = 1450
+        context_ranges = [(1000, None)]
+
+        result = context_services.is_extension_included_in_ranges(exten, context_ranges)
+
+        assert_that(result, equal_to(expected))
+
+    def test_is_extension_included_in_ranges_with_single_value_using_right_value(self):
         expected = True
 
-        extension = Extension(exten='1000',
-                              context='default')
+        exten = 1000
+        context_ranges = [(1000, None)]
 
-        expected_ranges = [(1000, None)]
-        context_ranges.return_value = expected_ranges
-
-        result = context_services.is_extension_inside_range(extension)
+        result = context_services.is_extension_included_in_ranges(exten, context_ranges)
 
         assert_that(result, equal_to(expected))
-        context_ranges.assert_called_once_with(extension.context)
+
+    def test_is_extension_included_in_ranges_with_single_value_and_range_when_extension_in_range(self):
+        expected = True
+
+        exten = 2000
+        context_ranges = [(1000, None),
+                          (2000, 3000)]
+
+        result = context_services.is_extension_included_in_ranges(exten, context_ranges)
+
+        assert_that(result, equal_to(expected))
+
+    def test_is_extension_included_in_ranges_with_single_value_and_range_when_extension_on_value(self):
+        expected = True
+
+        exten = 1000
+        context_ranges = [(2000, 3000),
+                          (1000, None)]
+
+        result = context_services.is_extension_included_in_ranges(exten, context_ranges)
+
+        assert_that(result, equal_to(expected))
 
     @patch('xivo_dao.data_handler.context.dao.find_all_context_ranges')
-    def test_is_extension_inside_range_when_extension_is_alphanumeric(self, context_ranges):
+    def test_is_extension_valid_for_context_when_extension_is_alphanumeric(self, context_ranges):
         extension = Extension(exten='ABC123',
                               context='default')
 
-        self.assertRaises(InvalidParametersError, context_services.is_extension_inside_range, extension)
+        self.assertRaises(InvalidParametersError, context_services.is_extension_valid_for_context, extension)
 
     @patch('xivo_dao.data_handler.context.dao.find_all_specific_context_ranges')
-    def test_is_extension_in_specific_range_when_no_ranges(self, find_all_specific_context_ranges):
+    @patch('xivo_dao.data_handler.context.services.is_extension_included_in_ranges')
+    def test_is_extension_valid_for_context_range(self,
+                                                  is_extension_included_in_ranges,
+                                                  find_all_specific_context_ranges):
         extension = Extension(exten='1000',
                               context='default')
 
-        find_all_specific_context_ranges.return_value = []
+        context_range = find_all_specific_context_ranges.return_value = Mock()
+        is_extension_included_in_ranges.return_value = True
 
-        result = context_services.is_extension_in_specific_range(extension, ContextRange.users)
+        result = context_services.is_extension_valid_for_context_range(extension, ContextRange.users)
 
-        assert_that(result, equal_to(False))
-
-    @patch('xivo_dao.data_handler.context.dao.find_all_specific_context_ranges')
-    def test_is_extension_in_specific_range_with_one_range(self, find_all_specific_context_ranges):
-        extension = Extension(exten='1000',
-                              context='default')
-
-        find_all_specific_context_ranges.return_value = [(1000, 2000)]
-
-        result = context_services.is_extension_in_specific_range(extension, ContextRange.users)
+        find_all_specific_context_ranges.assert_called_once_with(extension.context, ContextRange.users)
+        is_extension_included_in_ranges.assert_called_once_with(1000, context_range)
 
         assert_that(result, equal_to(True))
 
-    @patch('xivo_dao.data_handler.context.dao.find_all_specific_context_ranges')
-    def test_is_extension_in_specific_range_with_two_ranges(self, find_all_specific_context_ranges):
-        extension = Extension(exten='1501',
+    @patch('xivo_dao.data_handler.context.dao.find_all_context_ranges')
+    def test_is_extension_valid_for_context_range_when_extension_is_alphanumeric(self, context_ranges):
+        extension = Extension(exten='ABC123',
                               context='default')
 
-        find_all_specific_context_ranges.return_value = [(1000, 1500),
-                                                         (1501, 2000)]
-
-        result = context_services.is_extension_in_specific_range(extension, ContextRange.users)
-
-        assert_that(result, equal_to(True))
-
-    @patch('xivo_dao.data_handler.context.dao.find_all_specific_context_ranges')
-    def test_is_extension_in_specific_range_when_outside_of_range(self, find_all_specific_context_ranges):
-        extension = Extension(exten='2001',
-                              context='default')
-
-        find_all_specific_context_ranges.return_value = [(1000, 2000)]
-
-        result = context_services.is_extension_in_specific_range(extension, ContextRange.users)
-
-        assert_that(result, equal_to(False))
-
-    @patch('xivo_dao.data_handler.context.dao.find_all_specific_context_ranges')
-    def test_is_extension_in_specific_range_with_overlapping_ranges(self, find_all_specific_context_ranges):
-        extension = Extension(exten='1450',
-                              context='default')
-
-        find_all_specific_context_ranges.return_value = [(1000, 1500),
-                                                         (1400, 2000)]
-
-        result = context_services.is_extension_in_specific_range(extension, ContextRange.users)
-
-        assert_that(result, equal_to(True))
-
-    @patch('xivo_dao.data_handler.context.dao.find_all_specific_context_ranges')
-    def test_is_extension_in_specific_range_with_single_value_right_value(self, find_all_specific_context_ranges):
-        extension = Extension(exten='1000',
-                              context='default')
-
-        find_all_specific_context_ranges.return_value = [(1000, None)]
-
-        result = context_services.is_extension_in_specific_range(extension, ContextRange.users)
-
-        assert_that(result, equal_to(True))
-
-    @patch('xivo_dao.data_handler.context.dao.find_all_specific_context_ranges')
-    def test_is_extension_in_specific_range_with_single_value_wrong_value(self, find_all_specific_context_ranges):
-        extension = Extension(exten='1001',
-                              context='default')
-
-        find_all_specific_context_ranges.return_value = [(1000, None)]
-
-        result = context_services.is_extension_in_specific_range(extension, ContextRange.users)
-
-        assert_that(result, equal_to(False))
+        self.assertRaises(InvalidParametersError,
+                          context_services.is_extension_valid_for_context_range,
+                          extension,
+                          ContextRange.users)

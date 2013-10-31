@@ -105,7 +105,7 @@ def check_if_user_and_line_already_linked(user, line):
 
 
 def check_if_extension_in_context_range(extension):
-    if not context_services.is_extension_in_specific_range(extension, ContextRange.users):
+    if not context_services.is_extension_valid_for_context_range(extension, ContextRange.users):
         raise InvalidParametersError(['Exten %s not inside user range of context %s' % (extension.exten, extension.context)])
 
 

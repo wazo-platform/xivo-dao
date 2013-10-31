@@ -40,10 +40,10 @@ def create(context):
     return created_context
 
 
-def is_extension_inside_range(extension):
+def is_extension_valid_for_context(extension):
     exten = _validate_exten(extension)
     context_ranges = context_dao.find_all_context_ranges(extension.context)
-    return _is_exten_in_ranges(exten, context_ranges)
+    return is_extension_included_in_ranges(exten, context_ranges)
 
 
 def _validate_exten(extension):
@@ -52,7 +52,7 @@ def _validate_exten(extension):
     return int(extension.exten)
 
 
-def _is_exten_in_ranges(exten, context_ranges):
+def is_extension_included_in_ranges(exten, context_ranges):
     for minimum, maximum in context_ranges:
         if not maximum and exten == minimum:
             return True
@@ -61,10 +61,10 @@ def _is_exten_in_ranges(exten, context_ranges):
     return False
 
 
-def is_extension_in_specific_range(extension, context_range):
+def is_extension_valid_for_context_range(extension, context_range):
     exten = _validate_exten(extension)
     context_ranges = context_dao.find_all_specific_context_ranges(extension.context, context_range)
-    return _is_exten_in_ranges(exten, context_ranges)
+    return is_extension_included_in_ranges(exten, context_ranges)
 
 
 def _validate(context):
