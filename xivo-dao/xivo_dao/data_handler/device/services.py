@@ -27,7 +27,7 @@ from xivo_dao.data_handler.user_line_extension import dao as user_line_extension
 from xivo_dao.data_handler.extension import dao as extension_dao
 from xivo_dao.data_handler.line import dao as line_dao
 from xivo_dao.data_handler.exception import InvalidParametersError, ProvdError
-from xivo_dao.data_handler.device import provd_builder
+from xivo_dao.data_handler.device import provd_converter
 
 
 def get(device_id):
@@ -83,7 +83,7 @@ def delete(device):
 def associate_line_to_device(device, line):
     line.device = str(device.id)
     line_dao.edit(line)
-    provd_builder.link_device_config(device)
+    provd_converter.link_device_config(device)
     rebuild_device_config(device)
 
 
@@ -104,9 +104,9 @@ def build_line_for_device(device, line):
     for ule in ules:
         if line.protocol == 'sip':
             extension = extension_dao.get(ule.extension_id)
-            provd_builder.populate_sip_line(config, confregistrar, line, extension)
+            provd_converter.populate_sip_line(config, confregistrar, line, extension)
         elif line.protocol == 'sccp':
-            provd_builder.populate_sccp_line(config, confregistrar)
+            provd_converter.populate_sccp_line(config, confregistrar)
 
 
 def remove_line_from_device(device, line):
@@ -116,7 +116,7 @@ def remove_line_from_device(device, line):
         if 'sip_lines' in config['raw_config']:
             del config['raw_config']['sip_lines'][str(line.device_slot)]
             if len(config['raw_config']['sip_lines']) == 0:
-                provd_builder.reset_config(config)
+                provd_converter.reset_config(config)
                 reset_to_autoprov(device)
             provd_config_manager.update(config)
     except URLError as e:
@@ -127,7 +127,7 @@ def remove_all_line_from_device(device):
     provd_config_manager = provd_connector.config_manager()
     try:
         config = provd_config_manager.get(device.id)
-        provd_builder.reset_config(config)
+        provd_converter.reset_config(config)
         provd_config_manager.update(config)
     except URLError as e:
         raise ProvdError('error during remove all lines from device %s' % (device.id), e)
@@ -137,7 +137,7 @@ def reset_to_autoprov(device):
     provd_device_manager = provd_connector.device_manager()
     try:
         provd_device = provd_device_manager.get(device.id)
-        provd_device['config'] = provd_builder.generate_autoprov_config()
+        provd_device['config'] = provd_converter.generate_autoprov_config()
         provd_device_manager.update(provd_device)
     except Exception as e:
         raise ProvdError('error while synchronize device.', e)

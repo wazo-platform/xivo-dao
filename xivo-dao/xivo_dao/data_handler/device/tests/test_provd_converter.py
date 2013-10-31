@@ -1,13 +1,13 @@
 import unittest
 
 from hamcrest import *
-from xivo_dao.data_handler.device import provd_builder
+from xivo_dao.data_handler.device import provd_converter
 from xivo_dao.data_handler.device.model import Device
 
 
-class TestProvdBuilder(unittest.TestCase):
+class TestProvdConverter(unittest.TestCase):
 
-    def test_build_create_empty_device(self):
+    def test_to_source_empty_device(self):
         device_id = 'abcd1234'
         device = Device(id=device_id)
 
@@ -24,11 +24,11 @@ class TestProvdBuilder(unittest.TestCase):
             'raw_config': {}
         }
 
-        provd_device, provd_config = provd_builder.build_create(device)
+        provd_device, provd_config = provd_converter.to_source(device)
         assert_that(provd_device, equal_to(expected_provd_device))
         assert_that(provd_config, equal_to(expected_provd_config))
 
-    def test_build_create_with_parameters(self):
+    def test_to_source_with_parameters(self):
         device_id = 'abcd1234'
         device_mac = 'AB:11:22:33:44:55'
         expected_mac = 'ab:11:22:33:44:55'
@@ -58,11 +58,11 @@ class TestProvdBuilder(unittest.TestCase):
             'raw_config': {}
         }
 
-        provd_device, provd_config = provd_builder.build_create(device)
+        provd_device, provd_config = provd_converter.to_source(device)
         assert_that(provd_device, equal_to(expected_provd_device))
         assert_that(provd_config, equal_to(expected_provd_config))
 
-    def test_build_create_with_template_id(self):
+    def test_to_source_with_template_id(self):
         device_id = 'abcd1234'
         template_id = 'efgh5678'
 
@@ -81,7 +81,7 @@ class TestProvdBuilder(unittest.TestCase):
             'raw_config': {}
         }
 
-        provd_device, provd_config = provd_builder.build_create(device)
+        provd_device, provd_config = provd_converter.to_source(device)
         assert_that(provd_device, equal_to(expected_provd_device))
         assert_that(provd_config, equal_to(expected_provd_config))
 
@@ -99,7 +99,7 @@ class TestProvdBuilder(unittest.TestCase):
             'id': device_id,
         }
 
-        result_device, result_config = provd_builder.build_edit(device, provd_device, None)
+        result_device, result_config = provd_converter.build_edit(device, provd_device, None)
 
         assert_that(result_device, equal_to(expected_provd_device))
 
@@ -132,7 +132,7 @@ class TestProvdBuilder(unittest.TestCase):
             'version': '0.0.1'
         }
 
-        result_device, result_config = provd_builder.build_edit(device, provd_device, None)
+        result_device, result_config = provd_converter.build_edit(device, provd_device, None)
 
         assert_that(result_device, equal_to(expected_provd_device))
 
@@ -173,7 +173,7 @@ class TestProvdBuilder(unittest.TestCase):
             'raw_config': {}
         }
 
-        result_device, result_config = provd_builder.build_edit(device, provd_device, provd_config)
+        result_device, result_config = provd_converter.build_edit(device, provd_device, provd_config)
 
         assert_that(result_device, equal_to(expected_provd_device))
         assert_that(result_config, equal_to(expected_provd_config))
@@ -217,7 +217,7 @@ class TestProvdBuilder(unittest.TestCase):
             }
         }
 
-        result_device, result_config = provd_builder.build_edit(device, provd_device, provd_config)
+        result_device, result_config = provd_converter.build_edit(device, provd_device, provd_config)
 
         assert_that(result_device, equal_to(expected_provd_device))
         assert_that(result_config, equal_to(expected_provd_config))
@@ -261,7 +261,7 @@ class TestProvdBuilder(unittest.TestCase):
             }
         }
 
-        result_device, result_config = provd_builder.build_edit(device, provd_device, provd_config)
+        result_device, result_config = provd_converter.build_edit(device, provd_device, provd_config)
 
         assert_that(result_device, equal_to(expected_provd_device))
         assert_that(result_config, equal_to(expected_provd_config))

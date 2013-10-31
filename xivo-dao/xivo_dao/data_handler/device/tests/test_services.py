@@ -608,7 +608,7 @@ class TestDeviceServices(unittest.TestCase):
         self.assertEquals(reset_to_autoprov.update.call_count, 0)
 
     @patch('xivo_dao.data_handler.device.services.reset_to_autoprov')
-    @patch('xivo_dao.data_handler.device.provd_builder.reset_config')
+    @patch('xivo_dao.data_handler.device.provd_converter.reset_config')
     @patch('xivo_dao.helpers.provd_connector.config_manager')
     @patch('xivo_dao.helpers.provd_connector.device_manager')
     def test_remove_line_from_device_no_funckeys(self, device_manager, config_manager, reset_config, reset_to_autoprov):
@@ -660,7 +660,7 @@ class TestDeviceServices(unittest.TestCase):
         device_manager().synchronize.assert_called_with(self.device_id)
 
     @patch('xivo_dao.data_handler.line.dao.reset_device', Mock(return_value=None))
-    @patch('xivo_dao.data_handler.device.provd_builder.generate_autoprov_config')
+    @patch('xivo_dao.data_handler.device.provd_converter.generate_autoprov_config')
     @patch('xivo_dao.helpers.provd_connector.config_manager')
     @patch('xivo_dao.helpers.provd_connector.device_manager')
     def test_autoprov(self, device_manager, config_manager, generate_autoprov_config):
