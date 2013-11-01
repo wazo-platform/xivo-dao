@@ -282,7 +282,7 @@ class TestUserDAO(DAOTestCase):
                                  timezone='America/Montreal',
                                  language='fr_FR',
                                  description='Really cool dude')
-        voicemail_row = self.add_voicemail(number='1234', context='default')
+        voicemail_row = self.add_voicemail(mailbox='1234', context='default')
         self.link_user_and_voicemail(user_row, voicemail_row.uniqueid)
 
         user = user_dao.get(user_row.id)

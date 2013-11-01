@@ -29,7 +29,7 @@ from xivo_dao.alchemy.pickupmember import PickupMember
 from xivo_dao.alchemy.groupfeatures import GroupFeatures
 from xivo_dao.alchemy.staticsip import StaticSIP
 from xivo_dao.alchemy.sipauthentication import SIPAuthentication
-from xivo_dao.alchemy.staticvoicemail import StaticVociemail
+from xivo_dao.alchemy.staticvoicemail import StaticVoicemail
 from xivo_dao.alchemy.voicemail import Voicemail
 from xivo_dao.alchemy.context import Context
 from xivo_dao.alchemy.contextinclude import ContextInclude
@@ -112,12 +112,7 @@ def find_sccp_device_settings(session):
 
     res = []
     for row in rows:
-        tmp = {}
-        tmp['name'] = row.name
-        tmp['device'] = row.device
-        tmp['line'] = row.line
-        tmp['voicemail'] = row.voicemail
-        res.append(tmp)
+        res.append(row.todict())
 
     return res
 
@@ -348,7 +343,7 @@ def find_voicemail_activated(session):
 
 @daosession
 def find_voicemail_general_settings(session):
-    rows = session.query(StaticVociemail).filter(Voicemail.commented == 0).all()
+    rows = session.query(StaticVoicemail).filter(StaticVoicemail.commented == 0).all()
 
     res = []
     for row in rows:
@@ -389,7 +384,7 @@ def find_sip_authentication_settings(session):
 @daosession
 def find_sip_trunk_settings(session):
     rows = session.query(UserSIP).filter(and_(UserSIP.category == 'trunk',
-                                              StaticSIP.commented == 0)).all()
+                                              UserSIP.commented == 0)).all()
 
     res = []
     for row in rows:
@@ -404,7 +399,6 @@ def find_sip_user_settings(session):
                          LineFeatures.number).filter(
             and_(UserSIP.category == 'user',
                  UserSIP.commented == 0,
-                 StaticSIP.commented == 0,
                  LineFeatures.protocol == 'sip',
                  LineFeatures.protocolid == UserSIP.id)).all()
 
@@ -422,8 +416,8 @@ def find_sip_user_settings(session):
 def find_sip_pickup_settings(session):
     # simple users
     q1 = (session.query(UserSIP.name,
-                       PickupMember.category,
-                       Pickup.id)
+                        PickupMember.category,
+                        Pickup.id)
           .filter(and_(Pickup.commented == 0,
                        Pickup.id == PickupMember.pickupid,
                        PickupMember.membertype == 'user',
@@ -435,8 +429,8 @@ def find_sip_pickup_settings(session):
 
     # groups
     q2 = (session.query(UserSIP.name,
-                       PickupMember.
-                       category, Pickup.id)
+                        PickupMember.category,
+                        Pickup.id)
           .filter(and_(Pickup.commented == 0,
                        Pickup.id == PickupMember.pickupid,
                        PickupMember.membertype == 'group',
@@ -451,8 +445,8 @@ def find_sip_pickup_settings(session):
 
     # queues
     q3 = (session.query(UserSIP.name,
-                       PickupMember.
-                       category, Pickup.id)
+                        PickupMember.category,
+                        Pickup.id)
           .filter(and_(Pickup.commented == 0,
                        Pickup.id == PickupMember.pickupid,
                        PickupMember.membertype == 'queue',

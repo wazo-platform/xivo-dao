@@ -30,11 +30,22 @@ from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.sccpline import SCCPLine as SCCPLineSchema
+from xivo_dao.alchemy.sccpdevice import SCCPDevice as SCCPDeviceSchema
 from xivo_dao.alchemy.usercustom import UserCustom as UserCustomSchema
 from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.dialpattern import DialPattern
 from xivo_dao.alchemy.cel import CEL as CELSchema
+from xivo_dao.alchemy.sccpgeneralsettings import SCCPGeneralSettings
+from xivo_dao.alchemy.phonefunckey import PhoneFunckey
 from xivo_dao.alchemy.voicemail import Voicemail as VoicemailSchema
+from xivo_dao.alchemy.context import Context
+from xivo_dao.alchemy.contextinclude import ContextInclude
+from xivo_dao.alchemy.staticvoicemail import StaticVoicemail
+from xivo_dao.alchemy.staticsip import StaticSIP
+from xivo_dao.alchemy.sipauthentication import SIPAuthentication
+from xivo_dao.alchemy.pickup import Pickup
+from xivo_dao.alchemy.pickupmember import PickupMember
+from xivo_dao.alchemy.queuemember import QueueMember
 
 logger = logging.getLogger(__name__)
 
@@ -98,10 +109,12 @@ class DAOTestCase(unittest.TestCase):
         kwargs.setdefault('name_line', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
         kwargs.setdefault('commented_line', 0)
         kwargs.setdefault('device', 1)
+        kwargs.setdefault('voicemail_id', None)
 
         user = self.add_user(firstname=kwargs['firstname'],
                              lastname=kwargs['lastname'],
-                             callerid=kwargs['callerid'])
+                             callerid=kwargs['callerid'],
+                             voicemailid=kwargs['voicemail_id'])
         line = self.add_line(number=kwargs['exten'],
                              context=kwargs['context'],
                              protocol=kwargs['protocol'],
@@ -134,6 +147,25 @@ class DAOTestCase(unittest.TestCase):
         self.add_me(line)
         return line
 
+    def add_context(self, **kwargs):
+        kwargs.setdefault('entity', 'entity_id')
+        kwargs.setdefault('name', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+        kwargs.setdefault('displayname', kwargs['name'].capitalize())
+        kwargs.setdefault('description', 'Auto create context')
+
+        context = Context(**kwargs)
+        self.add_me(context)
+        return context
+
+    def add_context_include(self, **kwargs):
+        kwargs.setdefault('context', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+        kwargs.setdefault('include', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+        kwargs.setdefault('priority', 0)
+
+        context_include = ContextInclude(**kwargs)
+        self.add_me(context_include)
+        return context_include
+
     def add_user_line(self, **kwargs):
         kwargs.setdefault('main_user', True)
         kwargs.setdefault('main_line', True)
@@ -157,6 +189,36 @@ class DAOTestCase(unittest.TestCase):
         user = UserFeatures(**kwargs)
         self.add_me(user)
         return user
+
+    def add_pickup(self, **kwargs):
+        kwargs.setdefault('id', self._generate_id())
+        kwargs.setdefault('name', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+
+        pickup = Pickup(**kwargs)
+        self.add_me(pickup)
+        return pickup
+
+    def add_pickup_member(self, **kwargs):
+        kwargs.setdefault('pickupid', self._generate_id())
+        kwargs.setdefault('category', random.choice(['pickup', 'member']))
+        kwargs.setdefault('membertype', random.choice(['group', 'queue', 'user']))
+        kwargs.setdefault('memberid', self._generate_id())
+
+        pickup_member = PickupMember(**kwargs)
+        self.add_me(pickup_member)
+        return pickup_member
+
+    def add_queue_member(self, **kwargs):
+        kwargs.setdefault('queue_name', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+        kwargs.setdefault('interface', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+        kwargs.setdefault('usertype', random.choice(['user', 'agent']))
+        kwargs.setdefault('category', random.choice(['group', 'queue']))
+        kwargs.setdefault('channel', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+        kwargs.setdefault('userid', self._generate_id())
+
+        queue_member = QueueMember(**kwargs)
+        self.add_me(queue_member)
+        return queue_member
 
     def add_dialpattern(self, **kwargs):
         kwargs.setdefault('id', self._generate_id())
@@ -184,6 +246,17 @@ class DAOTestCase(unittest.TestCase):
 
         return usercustom
 
+    def add_sccpdevice(self, **kwargs):
+        kwargs.setdefault('id', self._generate_id())
+        kwargs.setdefault('name', '1234')
+        kwargs.setdefault('device', 'toto')
+        kwargs.setdefault('line', '1')
+        kwargs.setdefault('voicemail', '1234')
+
+        sccpdevice = SCCPDeviceSchema(**kwargs)
+        self.add_me(sccpdevice)
+        return sccpdevice
+
     def add_sccpline(self, **kwargs):
         kwargs.setdefault('name', '1234')
         kwargs.setdefault('context', 'default')
@@ -194,6 +267,30 @@ class DAOTestCase(unittest.TestCase):
         sccpline = SCCPLineSchema(**kwargs)
         self.add_me(sccpline)
         return sccpline
+
+    def add_function_key_to_user(self, **kwargs):
+        kwargs.setdefault('iduserfeatures', self._generate_id())
+        kwargs.setdefault('fknum', '1')
+        kwargs.setdefault('exten', ''.join(random.choice('0123456789_*X.') for _ in range(6)))
+        kwargs.setdefault('supervision', '0')
+        kwargs.setdefault('label', 'toto')
+        kwargs.setdefault('typeextenumbersright', 'user')
+        kwargs.setdefault('typeextenumbers', None)
+        kwargs.setdefault('typevalextenumbers', None)
+        kwargs.setdefault('progfunckey', '1')
+
+        phone_func_key = PhoneFunckey(**kwargs)
+        self.add_me(phone_func_key)
+        return phone_func_key
+
+    def add_sccp_general_settings(self, **kwargs):
+        kwargs.setdefault('id', self._generate_id())
+        kwargs.setdefault('option_name', 'directmedia')
+        kwargs.setdefault('option_value', 'no')
+
+        sccp_general_settings = SCCPGeneralSettings(**kwargs)
+        self.add_me(sccp_general_settings)
+        return sccp_general_settings
 
     def add_cel(self, **kwargs):
         kwargs.setdefault('id', self._generate_id())
@@ -222,14 +319,15 @@ class DAOTestCase(unittest.TestCase):
         self.add_me(cel)
         return cel.id
 
-    def add_voicemail(self, number, context, **kwargs):
-        kwargs.setdefault('mailbox', number)
-        kwargs.setdefault('context', context)
+    def add_voicemail(self, **kwargs):
+        kwargs.setdefault('fullname', 'Auto Voicemail')
+        kwargs.setdefault('mailbox', ''.join(random.choice('0123456789_*X.') for _ in range(6)))
+        kwargs.setdefault('context', 'unittest')
+        kwargs.setdefault('uniqueid', self._generate_id())
 
-        voicemail_row = VoicemailSchema(**kwargs)
-
-        self.add_me(voicemail_row)
-        return voicemail_row
+        voicemail = VoicemailSchema(**kwargs)
+        self.add_me(voicemail)
+        return voicemail
 
     def link_user_and_voicemail(self, user_row, voicemail_id):
         user_row.voicemailtype = 'asterisk'
@@ -239,6 +337,46 @@ class DAOTestCase(unittest.TestCase):
             user_row.language = 'fr_FR'
 
         self.add_me(user_row)
+
+    def add_voicemail_general_settings(self, **kwargs):
+        kwargs.setdefault('id', self._generate_id())
+        kwargs.setdefault('cat_metric', 0)
+        kwargs.setdefault('var_metric', 0)
+        kwargs.setdefault('commented', 0)
+        kwargs.setdefault('filename', 'voicemail.conf')
+        kwargs.setdefault('category', 'general')
+        kwargs.setdefault('var_name', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+        kwargs.setdefault('var_val', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+
+        static_voicemail = StaticVoicemail(**kwargs)
+        self.add_me(static_voicemail)
+        return static_voicemail
+
+    def add_sip_general_settings(self, **kwargs):
+        kwargs.setdefault('id', self._generate_id())
+        kwargs.setdefault('cat_metric', 0)
+        kwargs.setdefault('var_metric', 0)
+        kwargs.setdefault('commented', 0)
+        kwargs.setdefault('filename', 'sip.conf')
+        kwargs.setdefault('category', 'general')
+        kwargs.setdefault('var_name', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+        kwargs.setdefault('var_val', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+
+        static_sip = StaticSIP(**kwargs)
+        self.add_me(static_sip)
+        return static_sip
+
+    def add_sip_authentication(self, **kwargs):
+        kwargs.setdefault('id', self._generate_id())
+        kwargs.setdefault('usersip_id', self._generate_id())
+        kwargs.setdefault('user', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+        kwargs.setdefault('secretmode', 'md5')
+        kwargs.setdefault('secret', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+        kwargs.setdefault('realm', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+
+        sip_authentication = SIPAuthentication(**kwargs)
+        self.add_me(sip_authentication)
+        return sip_authentication
 
     def add_me(self, obj):
         self.session.begin()
