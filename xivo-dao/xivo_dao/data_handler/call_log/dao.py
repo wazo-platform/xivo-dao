@@ -48,8 +48,8 @@ def find_all_in_period(session, start, end):
 def create_from_list(session, call_logs):
     session.begin()
     for call_log in call_logs:
-        call_log_row = _create_call_log(session, call_log)
-        _link_call_log(session, call_log, call_log_row)
+        call_log_id = create_call_log(session, call_log)
+        _link_call_log(session, call_log, call_log_id)
 
     try:
         session.commit()
@@ -58,16 +58,16 @@ def create_from_list(session, call_logs):
         raise ElementCreationError('CallLog', e)
 
 
-def _create_call_log(session, call_log):
+def create_call_log(session, call_log):
     call_log_row = db_converter.to_source(call_log)
     session.add(call_log_row)
-    return call_log_row
+    session.flush()
+    return call_log_row.id
 
 
-def _link_call_log(session, call_log, call_log_row):
-    for cel_id in call_log.get_related_cels():
-        cel_row = session.query(CELSchema).get(cel_id)
-        call_log_row.cels.append(cel_row)
+def _link_call_log(session, call_log, call_log_id):
+    data_dict = {'call_log_id': int(call_log_id)}
+    session.query(CELSchema).filter(CELSchema.id.in_(call_log.get_related_cels())).update(data_dict, synchronize_session=False)
 
 
 @daosession
