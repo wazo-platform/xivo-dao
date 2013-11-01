@@ -490,7 +490,11 @@ class TestAsteriskConfDAO(DAOTestCase):
     def test_find_voicemail_general_settings(self):
         vms1 = self.add_voicemail_general_settings()
         vms2 = self.add_voicemail_general_settings()
+<<<<<<< HEAD
         self.add_voicemail_general_settings(commented=0)
+=======
+        self.add_voicemail_general_settings(commented=1)
+>>>>>>> add unittests for asterisk_conf_dao
 
         expected_result = [
             {'category': u'general',
@@ -508,7 +512,11 @@ class TestAsteriskConfDAO(DAOTestCase):
     def test_find_sip_general_settings(self):
         sip1 = self.add_sip_general_settings()
         sip2 = self.add_sip_general_settings()
+<<<<<<< HEAD
         self.add_sip_general_settings(commented=0)
+=======
+        self.add_sip_general_settings(commented=1)
+>>>>>>> add unittests for asterisk_conf_dao
 
         expected_result = [
             {'var_name': sip1.var_name,
@@ -751,6 +759,10 @@ class TestAsteriskConfDAO(DAOTestCase):
         assert_that(sip_user, has_items(*expected_result))
 
     def test_find_sip_pickup_settings(self):
+<<<<<<< HEAD
+=======
+        # res1
+>>>>>>> add unittests for asterisk_conf_dao
         pickup = self.add_pickup()
         usersip = self.add_usersip(category='user')
         ule = self.add_user_line_with_exten(protocol='sip',
@@ -760,11 +772,443 @@ class TestAsteriskConfDAO(DAOTestCase):
         pickup_member = self.add_pickup_member(pickupid=pickup.id,
                                                membertype='user',
                                                memberid=ule.user_id)
+<<<<<<< HEAD
 
         self.add_queue_member()
 
         expected_result = [(usersip.name, pickup_member.category, pickup.id)]
+=======
+        self.add_queue_member()
+
+        res1 = (usersip.name, pickup_member.category, pickup.id)
+
+        # res2
+        group = self.add_group()
+        usersip = self.add_usersip(category='user')
+        ule = self.add_user_line_with_exten(protocol='sip',
+                                            protocolid=usersip.id,
+                                            name_line=usersip.name,
+                                            context=usersip.context)
+        pickup_member = self.add_pickup_member(pickupid=pickup.id,
+                                               membertype='group',
+                                               memberid=group.id)
+        self.add_queue_member(queue_name=group.name,
+                              usertype='user',
+                              userid=ule.user_id)
+
+        res2 = (usersip.name, pickup_member.category, pickup.id)
+
+        # res3
+        queue = self.add_queuefeatures()
+        usersip = self.add_usersip(category='user')
+        ule = self.add_user_line_with_exten(protocol='sip',
+                                            protocolid=usersip.id,
+                                            name_line=usersip.name,
+                                            context=usersip.context)
+        pickup_member = self.add_pickup_member(pickupid=pickup.id,
+                                               membertype='queue',
+                                               memberid=queue.id)
+        self.add_queue_member(queue_name=queue.name,
+                              usertype='user',
+                              userid=ule.user_id)
+
+        res3 = (usersip.name, pickup_member.category, pickup.id)
+
+        expected_result = [res1, res2, res3]
+>>>>>>> add unittests for asterisk_conf_dao
 
         sip_pickup = asterisk_conf_dao.find_sip_pickup_settings()
 
         assert_that(sip_pickup, has_items(*expected_result))
+<<<<<<< HEAD
+=======
+
+    def test_find_iax_general_settings(self):
+        iax1 = self.add_iax_general_settings()
+        iax2 = self.add_iax_general_settings()
+        self.add_iax_general_settings(commented=1)
+
+        expected_result = [
+            {'var_name': iax1.var_name,
+             'var_val': iax1.var_val},
+            {'var_name': iax2.var_name,
+             'var_val': iax2.var_val},
+        ]
+
+        iax_settings = asterisk_conf_dao.find_iax_general_settings()
+
+        assert_that(iax_settings, has_items(*expected_result))
+
+    def test_find_iax_trunk_settings(self):
+        self.add_iax_general_settings(category='user')
+        iax1 = self.add_iax_general_settings(category='trunk')
+        iax2 = self.add_iax_general_settings(category='trunk')
+        self.add_iax_general_settings(commented=1)
+
+        expected_result = [
+            {'category': u'trunk',
+             'cat_metric': 0,
+             'filename': u'sip.conf',
+             'var_metric': 0,
+             'var_name': iax1.var_name,
+             'var_val': iax1.var_val,
+             'id': iax1.id,
+             'commented': 0},
+            {'category': u'trunk',
+             'cat_metric': 0,
+             'filename': u'sip.conf',
+             'var_metric': 0,
+             'var_name': iax2.var_name,
+             'var_val': iax2.var_val,
+             'id': iax2.id,
+             'commented': 0},
+        ]
+
+        iax_settings = asterisk_conf_dao.find_iax_trunk_settings()
+
+        assert_that(iax_settings, has_items(*expected_result))
+
+    def test_find_iax_user_settings(self):
+        self.add_iax_general_settings(category='trunk')
+        iax1 = self.add_iax_general_settings(category='user')
+        iax2 = self.add_iax_general_settings(category='user')
+        self.add_iax_general_settings(category='user', commented=1)
+
+        expected_result = [
+            {'category': u'user',
+             'cat_metric': 0,
+             'filename': u'sip.conf',
+             'var_metric': 0,
+             'var_name': iax1.var_name,
+             'var_val': iax1.var_val,
+             'id': iax1.id,
+             'commented': 0},
+            {'category': u'user',
+             'cat_metric': 0,
+             'filename': u'sip.conf',
+             'var_metric': 0,
+             'var_name': iax2.var_name,
+             'var_val': iax2.var_val,
+             'id': iax2.id,
+             'commented': 0}
+        ]
+
+        iax_settings = asterisk_conf_dao.find_iax_user_settings()
+
+        assert_that(iax_settings, has_items(*expected_result))
+
+    def test_find_iax_calllimits_settings(self):
+        iax_call_number_limits = IAXCallNumberLimits(destination='toto',
+                                                     netmask='',
+                                                     calllimits=5)
+        self.add_me(iax_call_number_limits)
+
+        expected_result = [
+            {'id': iax_call_number_limits.id,
+             'destination': iax_call_number_limits.destination,
+             'netmask': iax_call_number_limits.netmask,
+             'calllimits': iax_call_number_limits.calllimits}
+        ]
+
+        iax_settings = asterisk_conf_dao.find_iax_calllimits_settings()
+
+        assert_that(iax_settings, has_items(*expected_result))
+
+    def test_find_meetme_general_settings(self):
+        self.add_meetme_general_settings(category='toto')
+        meetme1 = self.add_meetme_general_settings(category='general')
+        meetme2 = self.add_meetme_general_settings(category='general')
+        self.add_meetme_general_settings(category='general', commented=1)
+
+        expected_result = [
+            {'category': u'general',
+             'cat_metric': 0,
+             'filename': u'meetme.conf',
+             'var_metric': 0,
+             'var_name': meetme1.var_name,
+             'var_val': meetme1.var_val,
+             'id': meetme1.id,
+             'commented': 0},
+            {'category': u'general',
+             'cat_metric': 0,
+             'filename': u'meetme.conf',
+             'var_metric': 0,
+             'var_name': meetme2.var_name,
+             'var_val': meetme2.var_val,
+             'id': meetme2.id,
+             'commented': 0}
+        ]
+
+        meetme_settings = asterisk_conf_dao.find_meetme_general_settings()
+
+        assert_that(meetme_settings, has_items(*expected_result))
+
+    def test_find_meetme_rooms_settings(self):
+        self.add_meetme_general_settings(category='toto')
+        meetme1 = self.add_meetme_general_settings(category='rooms')
+        meetme2 = self.add_meetme_general_settings(category='rooms')
+        self.add_meetme_general_settings(category='rooms', commented=1)
+
+        expected_result = [
+            {'category': u'rooms',
+             'cat_metric': 0,
+             'filename': u'meetme.conf',
+             'var_metric': 0,
+             'var_name': meetme1.var_name,
+             'var_val': meetme1.var_val,
+             'id': meetme1.id,
+             'commented': 0},
+            {'category': u'rooms',
+             'cat_metric': 0,
+             'filename': u'meetme.conf',
+             'var_metric': 0,
+             'var_name': meetme2.var_name,
+             'var_val': meetme2.var_val,
+             'id': meetme2.id,
+             'commented': 0}
+        ]
+
+        meetme_settings = asterisk_conf_dao.find_meetme_rooms_settings()
+
+        assert_that(meetme_settings, has_items(*expected_result))
+
+    def test_find_musiconhold_settings(self):
+        self.add_musiconhold(category='toto')
+        musiconhold1 = self.add_musiconhold(category='default')
+        musiconhold2 = self.add_musiconhold(category='default')
+        self.add_musiconhold(category='default', commented=1)
+
+        expected_result = [
+            {'category': u'default',
+             'cat_metric': 0,
+             'filename': u'musiconhold.conf',
+             'var_metric': 0,
+             'var_name': musiconhold1.var_name,
+             'var_val': musiconhold1.var_val,
+             'id': musiconhold1.id,
+             'commented': 0},
+            {'category': u'default',
+             'cat_metric': 0,
+             'filename': u'musiconhold.conf',
+             'var_metric': 0,
+             'var_name': musiconhold2.var_name,
+             'var_val': musiconhold2.var_val,
+             'id': musiconhold2.id,
+             'commented': 0}
+        ]
+
+        meetme_settings = asterisk_conf_dao.find_musiconhold_settings()
+
+        assert_that(meetme_settings, has_items(*expected_result))
+
+    def test_find_queue_general_settings(self):
+        self.add_queue_general_settings(category='toto')
+        queue_settings1 = self.add_queue_general_settings(category='general')
+        queue_settings2 = self.add_queue_general_settings(category='general')
+        self.add_queue_general_settings(category='general', commented=1)
+
+        expected_result = [
+            {'category': u'general',
+             'cat_metric': 0,
+             'filename': u'queues.conf',
+             'var_metric': 0,
+             'var_name': queue_settings1.var_name,
+             'var_val': queue_settings1.var_val,
+             'id': queue_settings1.id,
+             'commented': 0},
+            {'category': u'general',
+             'cat_metric': 0,
+             'filename': u'queues.conf',
+             'var_metric': 0,
+             'var_name': queue_settings2.var_name,
+             'var_val': queue_settings2.var_val,
+             'id': queue_settings2.id,
+             'commented': 0}
+        ]
+
+        meetme_settings = asterisk_conf_dao.find_queue_general_settings()
+
+        assert_that(meetme_settings, has_items(*expected_result))
+
+    def test_find_queue_settings(self):
+        queue1 = self.add_queue()
+
+        expected_result = [
+            {'autopause': 1,
+            'weight': None,
+            'autofill': 1,
+            'queue-holdtime': None,
+            'monitor-type': None,
+            'joinempty': None,
+            'eventwhencalled': 0,
+            'announce-frequency': None,
+            'category': queue1.category,
+            'retry': None,
+            'setqueueentryvar': 0,
+            'periodic-announce-frequency': None,
+            'defaultrule': None,
+            'strategy': None,
+            'queue-thankyou': None,
+            'random-periodic-announce': 0,
+            'setinterfacevar': 0,
+            'queue-callswaiting': None,
+            'announce': None,
+            'wrapuptime': None,
+            'leavewhenempty': None,
+            'reportholdtime': 0,
+            'queue-reporthold': None,
+            'queue-youarenext': None,
+            'timeout': 0,
+            'announce-position': u'yes',
+            'setqueuevar': 0,
+            'periodic-announce': None,
+            'announce-position-limit': 5,
+            'min-announce-frequency': 60,
+            'queue-thereare': None,
+            'membermacro': None,
+            'timeoutpriority': u'app',
+            'announce-round-seconds': None,
+            'memberdelay': None,
+            'musicclass': None,
+            'ringinuse': 0,
+            'timeoutrestart': 0,
+            'monitor-format': None,
+            'name': queue1.name,
+            'queue-minutes': None,
+            'servicelevel': None,
+            'maxlen': None,
+            'eventmemberstatus': 0,
+            'context': None,
+            'queue-seconds': None,
+            'commented': 0,
+            'announce-holdtime': None}
+        ]
+
+        queue = asterisk_conf_dao.find_queue_settings()
+
+        assert_that(queue, has_items(*expected_result))
+
+    def test_find_queue_skillrule_settings(self):
+        queue_skill_rule1 = self.add_queue_skill_rule()
+
+        expected_result = [
+            {'id': queue_skill_rule1.id,
+             'rule': queue_skill_rule1.rule,
+             'name': queue_skill_rule1.name}
+        ]
+
+        queue_skill_rule = asterisk_conf_dao.find_queue_skillrule_settings()
+
+        assert_that(queue_skill_rule, has_items(*expected_result))
+
+    def test_find_queue_penalty_settings(self):
+        queue_penalty1 = QueuePenalty(name='toto',
+                                      commented=1,
+                                      description='')
+        queue_penalty2 = QueuePenalty(name='toto',
+                                      commented=0,
+                                      description='')
+        queue_penalty3 = QueuePenalty(name='toto',
+                                      commented=0,
+                                      description='')
+        self.add_me_all([queue_penalty1,
+                         queue_penalty2,
+                         queue_penalty3])
+
+        expected_result = [
+            {'id': queue_penalty2.id,
+             'name': queue_penalty2.name,
+             'commented': queue_penalty2.commented,
+             'description': queue_penalty2.description},
+            {'id': queue_penalty3.id,
+             'name': queue_penalty3.name,
+             'commented': queue_penalty3.commented,
+             'description': queue_penalty3.description}
+        ]
+
+        queue_penalty = asterisk_conf_dao.find_queue_penalty_settings()
+
+        assert_that(queue_penalty, has_items(*expected_result))
+
+    def test_find_queue_members_settings(self):
+        queue_name = 'toto'
+        queue_member = self.add_queue_member(queue_name=queue_name,
+                                             usertype='user',
+                                             commented=0)
+        self.add_queue_member(queue_name='titi',
+                              usertype='user',
+                              commented=1)
+
+        expected_result = [
+            {'category': queue_member.category,
+            'queue_name': queue_name,
+            'userid': queue_member.userid,
+            'penalty': 0,
+            'usertype': 'user',
+            'interface': queue_member.interface,
+            'position': 0,
+            'commented': 0,
+            'channel': queue_member.channel
+        }
+        ]
+
+        result = asterisk_conf_dao.find_queue_members_settings(queue_name)
+
+        assert_that(result, has_items(*expected_result))
+
+    def test_find_agent_queue_skills_settings(self):
+        agent1 = self.add_agent()
+        queue_skill1 = self.add_queue_skill()
+        agent_queue_skill1 = AgentQueueSkill(agentid=agent1.id,
+                                             skillid=queue_skill1.id,
+                                             weight=1)
+        agent2 = self.add_agent()
+        queue_skill2 = self.add_queue_skill()
+        agent_queue_skill2 = AgentQueueSkill(agentid=agent2.id,
+                                             skillid=queue_skill2.id,
+                                             weight=1)
+        self.add_me_all([agent_queue_skill1,
+                         agent_queue_skill2])
+
+        expected_result = [
+            {'id': agent2.id,
+             'weight': 1,
+             'name': queue_skill2.name},
+            {'id': agent1.id,
+             'weight': 1,
+             'name': queue_skill1.name}
+        ]
+
+        result = asterisk_conf_dao.find_agent_queue_skills_settings()
+
+        assert_that(result, has_items(*expected_result))
+
+    def test_find_queue_penalties_settings(self):
+        queue_penalty1 = QueuePenalty(name='toto',
+                                      commented=1,
+                                      description='')
+        queue_penalty_change1 = QueuePenaltyChange(queuepenalty_id=queue_penalty1.id)
+        queue_penalty2 = QueuePenalty(name='toto',
+                                      commented=0,
+                                      description='')
+        queue_penalty_change2 = QueuePenaltyChange(queuepenalty_id=queue_penalty2.id)
+        self.add_me_all([queue_penalty1,
+                         queue_penalty_change1,
+                         queue_penalty2,
+                         queue_penalty_change2])
+
+        expected_result = [
+            {
+                'name': queue_penalty2.name,
+                'maxp_sign': None,
+                'seconds': 0,
+                'minp_sign': None,
+                'minp_value': None,
+                'maxp_value': None
+            }
+        ]
+
+        result = asterisk_conf_dao.find_queue_penalties_settings()
+
+        assert_that(result, has_items(*expected_result))
+>>>>>>> add unittests for asterisk_conf_dao

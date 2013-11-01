@@ -477,17 +477,6 @@ def find_iax_general_settings(session):
 
 
 @daosession
-def find_iax_calllimits_settings(session):
-    rows = session.query(IAXCallNumberLimits).all()
-
-    res = []
-    for row in rows:
-        res.append(row.todict())
-
-    return res
-
-
-@daosession
 def find_iax_trunk_settings(session):
     rows = session.query(StaticIAX).filter(and_(StaticIAX.commented == 0,
                                                 StaticIAX.category == 'trunk')).all()
@@ -503,6 +492,17 @@ def find_iax_trunk_settings(session):
 def find_iax_user_settings(session):
     rows = session.query(StaticIAX).filter(and_(StaticIAX.commented == 0,
                                                 StaticIAX.category == 'user')).all()
+
+    res = []
+    for row in rows:
+        res.append(row.todict())
+
+    return res
+
+
+@daosession
+def find_iax_calllimits_settings(session):
+    rows = session.query(IAXCallNumberLimits).all()
 
     res = []
     for row in rows:
@@ -609,7 +609,9 @@ def find_queue_members_settings(session, queue_name):
 
 @daosession
 def find_agent_queue_skills_settings(session):
-    rows = (session.query(AgentFeatures.id, QueueSkill.name, AgentQueueSkill.weight)
+    rows = (session.query(AgentFeatures.id,
+                          QueueSkill.name,
+                          AgentQueueSkill.weight)
             .filter(and_(AgentQueueSkill.agentid == AgentFeatures.id,
                          AgentQueueSkill.skillid == QueueSkill.id))
             .order_by(AgentFeatures.id)
