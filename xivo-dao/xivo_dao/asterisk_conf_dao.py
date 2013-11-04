@@ -116,11 +116,7 @@ def find_sccp_line_settings(session):
 def find_sccp_device_settings(session):
     rows = session.query(SCCPDevice).all()
 
-    res = []
-    for row in rows:
-        res.append(row.todict())
-
-    return res
+    return [row.todict() for row in rows]
 
 
 @daosession
@@ -154,22 +150,14 @@ def find_sccp_speeddial_settings(session):
 def find_featuremap_features_settings(session):
     rows = session.query(Features).filter(and_(Features.commented == 0, Features.category == 'featuremap')).all()
 
-    res = []
-    for row in rows:
-        res.append(row.todict())
-
-    return res
+    return [row.todict() for row in rows]
 
 
 @daosession
 def find_general_features_settings(session):
     rows = session.query(Features).filter(and_(Features.commented == 0, Features.category == 'general')).all()
 
-    res = []
-    for row in rows:
-        res.append(row.todict())
-
-    return res
+    return [row.todict() for row in rows]
 
 
 @daosession
@@ -249,11 +237,7 @@ def find_exten_xivofeatures_setting(session):
                          Extension.commented == 0)).order_by('exten')
             .all())
 
-    res = []
-    for row in rows:
-        res.append(row.todict())
-
-    return res
+    return [row.todict() for row in rows]
 
 
 @daosession
@@ -264,11 +248,7 @@ def find_extenfeatures_settings(session, features=[]):
                          Extension.typeval.in_(features))).order_by('exten')
             .all())
 
-    res = []
-    for row in rows:
-        res.append(row.todict())
-
-    return res
+    return [row.todict() for row in rows]
 
 
 @daosession
@@ -278,11 +258,7 @@ def find_exten_settings(session, context_name):
                          Extension.commented == 0)).order_by('exten')
             .all())
 
-    res = []
-    for row in rows:
-        res.append(row.todict())
-
-    return res
+    return [row.todict() for row in rows]
 
 
 @daosession
@@ -321,33 +297,21 @@ def find_exten_hints_settings(session, context_name):
 def find_context_settings(session):
     rows = session.query(Context).filter(Context.commented == 0).order_by('name').all()
 
-    res = []
-    for row in rows:
-        res.append(row.todict())
-
-    return res
+    return [row.todict() for row in rows]
 
 
 @daosession
 def find_contextincludes_settings(session, context_name):
     rows = session.query(ContextInclude).filter(ContextInclude.context == context_name).order_by('priority').all()
 
-    res = []
-    for row in rows:
-        res.append(row.todict())
-
-    return res
+    return [row.todict() for row in rows]
 
 
 @daosession
 def find_voicemail_activated(session):
     rows = session.query(Voicemail).filter(Voicemail.commented == 0).all()
 
-    res = []
-    for row in rows:
-        res.append(row.todict())
-
-    return res
+    return [row.todict() for row in rows]
 
 
 @daosession
@@ -383,11 +347,7 @@ def find_sip_general_settings(session):
 def find_sip_authentication_settings(session):
     rows = session.query(SIPAuthentication).all()
 
-    res = []
-    for row in rows:
-        res.append(row.todict())
-
-    return res
+    return [row.todict() for row in rows]
 
 
 @daosession
@@ -395,11 +355,7 @@ def find_sip_trunk_settings(session):
     rows = session.query(UserSIP).filter(and_(UserSIP.category == 'trunk',
                                               UserSIP.commented == 0)).all()
 
-    res = []
-    for row in rows:
-        res.append(row.todict())
-
-    return res
+    return [row.todict() for row in rows]
 
 
 @daosession
@@ -485,11 +441,7 @@ def find_iax_trunk_settings(session):
     rows = session.query(StaticIAX).filter(and_(StaticIAX.commented == 0,
                                                 StaticIAX.category == 'trunk')).all()
 
-    res = []
-    for row in rows:
-        res.append(row.todict())
-
-    return res
+    return [row.todict() for row in rows]
 
 
 @daosession
@@ -497,22 +449,14 @@ def find_iax_user_settings(session):
     rows = session.query(StaticIAX).filter(and_(StaticIAX.commented == 0,
                                                 StaticIAX.category == 'user')).all()
 
-    res = []
-    for row in rows:
-        res.append(row.todict())
-
-    return res
+    return [row.todict() for row in rows]
 
 
 @daosession
 def find_iax_calllimits_settings(session):
     rows = session.query(IAXCallNumberLimits).all()
 
-    res = []
-    for row in rows:
-        res.append(row.todict())
-
-    return res
+    return [row.todict() for row in rows]
 
 
 @daosession
@@ -520,11 +464,7 @@ def find_meetme_general_settings(session):
     rows = session.query(StaticMeetme).filter(and_(StaticMeetme.commented == 0,
                                                    StaticMeetme.category == 'general')).all()
 
-    res = []
-    for row in rows:
-        res.append(row.todict())
-
-    return res
+    return [row.todict() for row in rows]
 
 
 @daosession
@@ -532,22 +472,14 @@ def find_meetme_rooms_settings(session):
     rows = session.query(StaticMeetme).filter(and_(StaticMeetme.commented == 0,
                                                    StaticMeetme.category == 'rooms')).all()
 
-    res = []
-    for row in rows:
-        res.append(row.todict())
-
-    return res
+    return [row.todict() for row in rows]
 
 
 @daosession
 def find_musiconhold_settings(session):
     rows = session.query(MusicOnHold).filter(MusicOnHold.commented == 0).order_by('category').all()
 
-    res = []
-    for row in rows:
-        res.append(row.todict())
-
-    return res
+    return [row.todict() for row in rows]
 
 
 @daosession
@@ -555,44 +487,28 @@ def find_queue_general_settings(session):
     rows = session.query(StaticQueue).filter(and_(StaticQueue.commented == 0,
                                                   StaticQueue.category == 'general')).all()
 
-    res = []
-    for row in rows:
-        res.append(row.todict())
-
-    return res
+    return [row.todict() for row in rows]
 
 
 @daosession
 def find_queue_settings(session):
     rows = session.query(Queue).filter(Queue.commented == 0).order_by('name').all()
 
-    res = []
-    for row in rows:
-        res.append(row.todict())
-
-    return res
+    return [row.todict() for row in rows]
 
 
 @daosession
 def find_queue_skillrule_settings(session):
     rows = session.query(QueueSkillRule).all()
 
-    res = []
-    for row in rows:
-        res.append(row.todict())
-
-    return res
+    return [row.todict() for row in rows]
 
 
 @daosession
 def find_queue_penalty_settings(session):
     rows = session.query(QueuePenalty).filter(QueuePenalty.commented == 0).all()
 
-    res = []
-    for row in rows:
-        res.append(row.todict())
-
-    return res
+    return [row.todict() for row in rows]
 
 
 @daosession
@@ -604,11 +520,7 @@ def find_queue_members_settings(session, queue_name):
             .order_by(QueueMember.position)
             .all())
 
-    res = []
-    for row in rows:
-        res.append(row.todict())
-
-    return res
+    return [row.todict() for row in rows]
 
 
 @daosession
