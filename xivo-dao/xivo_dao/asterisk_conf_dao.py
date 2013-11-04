@@ -58,10 +58,11 @@ from xivo_dao.alchemy.queuepenaltychange import QueuePenaltyChange
 def find_sccp_general_settings(session):
     rows = session.query(SCCPGeneralSettings).all()
 
-    row2 = session.query(literal('vmexten').label('option_name'),
-                         Extension.exten.label('option_value')).filter(
-                    and_(Extension.type == 'extenfeatures',
-                         Extension.typeval == 'vmusermsg')).first()
+    row2 = (session.query(literal('vmexten').label('option_name'),
+                          Extension.exten.label('option_value'))
+            .filter(and_(Extension.type == 'extenfeatures',
+                         Extension.typeval == 'vmusermsg'))
+            .first())
 
     res = []
     for row in rows:
@@ -120,8 +121,8 @@ def find_sccp_device_settings(session):
 @daosession
 def find_sccp_speeddial_settings(session):
     rows = (session.query(PhoneFunckey,
-                         UserLine.user_id,
-                         SCCPDevice.device)
+                          UserLine.user_id,
+                          SCCPDevice.device)
             .filter(and_(UserLine.user_id == PhoneFunckey.iduserfeatures,
                          UserLine.line_id == LineFeatures.id,
                          UserLine.main_user == True,
@@ -238,9 +239,10 @@ def find_exten_phonefunckeys_settings(session, context_name):
 
 @daosession
 def find_exten_xivofeatures_setting(session):
-    rows = session.query(Extension).filter(
-            and_(Extension.context == 'xivo-features',
-                 Extension.commented == 0)).order_by('exten').all()
+    rows = (session.query(Extension)
+            .filter(and_(Extension.context == 'xivo-features',
+                         Extension.commented == 0)).order_by('exten')
+            .all())
 
     res = []
     for row in rows:
@@ -251,10 +253,11 @@ def find_exten_xivofeatures_setting(session):
 
 @daosession
 def find_extenfeatures_settings(session, features=[]):
-    rows = session.query(Extension).filter(
-            and_(Extension.context == 'xivo-features',
-                 Extension.type == 'extenfeatures',
-                 Extension.typeval.in_(features))).order_by('exten').all()
+    rows = (session.query(Extension)
+            .filter(and_(Extension.context == 'xivo-features',
+                         Extension.type == 'extenfeatures',
+                         Extension.typeval.in_(features))).order_by('exten')
+            .all())
 
     res = []
     for row in rows:
@@ -265,9 +268,10 @@ def find_extenfeatures_settings(session, features=[]):
 
 @daosession
 def find_exten_settings(session, context_name):
-    rows = session.query(Extension).filter(
-                        and_(Extension.context == context_name,
-                             Extension.commented == 0)).order_by('exten').all()
+    rows = (session.query(Extension)
+            .filter(and_(Extension.context == context_name,
+                         Extension.commented == 0)).order_by('exten')
+            .all())
 
     res = []
     for row in rows:
@@ -395,12 +399,13 @@ def find_sip_trunk_settings(session):
 
 @daosession
 def find_sip_user_settings(session):
-    rows = session.query(UserSIP,
-                         LineFeatures.number).filter(
-            and_(UserSIP.category == 'user',
-                 UserSIP.commented == 0,
-                 LineFeatures.protocol == 'sip',
-                 LineFeatures.protocolid == UserSIP.id)).all()
+    rows = (session.query(UserSIP,
+                          LineFeatures.number)
+            .filter(and_(UserSIP.category == 'user',
+                         UserSIP.commented == 0,
+                         LineFeatures.protocol == 'sip',
+                         LineFeatures.protocolid == UserSIP.id))
+            .all())
 
     res = []
     for row in rows:
@@ -456,8 +461,7 @@ def find_sip_pickup_settings(session):
                        QueueMember.userid == UserLine.user_id,
                        LineFeatures.id == UserLine.line_id,
                        LineFeatures.protocol == 'sip',
-                       LineFeatures.protocolid == UserSIP.id))
-        )
+                       LineFeatures.protocolid == UserSIP.id)))
 
     return q1.union(q2.union(q3)).all()
 
