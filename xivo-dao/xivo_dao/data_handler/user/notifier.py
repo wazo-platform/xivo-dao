@@ -16,8 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.helpers.bus_manager import send_bus_command
-from xivo_dao.data_handler.user.command import CreateUserCommand, \
-    EditUserCommand, DeleteUserCommand
+from xivo_bus.resources.user.event import CreateUserEvent, \
+    EditUserEvent, DeleteUserEvent
 from xivo_dao.helpers import sysconfd_connector
 
 
@@ -35,16 +35,16 @@ def _new_sysconfd_data(ctibus_command):
 def created(user):
     data = _new_sysconfd_data('xivo[user,add,%s]' % user.id)
     sysconfd_connector.exec_request_handlers(data)
-    send_bus_command(CreateUserCommand(user.id))
+    send_bus_command(CreateUserEvent(user.id))
 
 
 def edited(user):
     data = _new_sysconfd_data('xivo[user,edit,%s]' % user.id)
     sysconfd_connector.exec_request_handlers(data)
-    send_bus_command(EditUserCommand(user.id))
+    send_bus_command(EditUserEvent(user.id))
 
 
 def deleted(user):
     data = _new_sysconfd_data('xivo[user,delete,%s]' % user.id)
     sysconfd_connector.exec_request_handlers(data)
-    send_bus_command(DeleteUserCommand(user.id))
+    send_bus_command(DeleteUserEvent(user.id))
