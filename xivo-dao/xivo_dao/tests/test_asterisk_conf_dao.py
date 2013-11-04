@@ -119,7 +119,7 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         sccp_general_settings = asterisk_conf_dao.find_sccp_general_settings()
 
-        assert_that(sccp_general_settings, has_items(*expected_result))
+        assert_that(sccp_general_settings, contains_inanyorder(*expected_result))
 
     def test_find_sccp_line_settings(self):
         number = '1234'
@@ -139,7 +139,7 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         sccp_line = asterisk_conf_dao.find_sccp_line_settings()
 
-        assert_that(sccp_line, has_items(*expected_result))
+        assert_that(sccp_line, contains_inanyorder(*expected_result))
 
     def test_find_sccp_device_settings(self):
         sccp_device = self.add_sccpdevice()
@@ -154,7 +154,7 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         sccp_device = asterisk_conf_dao.find_sccp_device_settings()
 
-        assert_that(sccp_device, has_items(*expected_result))
+        assert_that(sccp_device, contains_inanyorder(*expected_result))
 
     def test_find_sccp_speeddial_settings(self):
         number = '4567'
@@ -177,7 +177,7 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         sccp_device = asterisk_conf_dao.find_sccp_speeddial_settings()
 
-        assert_that(sccp_device, has_items(*expected_result))
+        assert_that(sccp_device, contains_inanyorder(*expected_result))
 
     def test_find_featuremap_features_settings(self):
         features = Features(id=1,
@@ -215,7 +215,7 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         featuremap = asterisk_conf_dao.find_featuremap_features_settings()
 
-        assert_that(featuremap, has_items(*expected_result))
+        assert_that(featuremap, contains_inanyorder(*expected_result))
 
     def test_find_general_features_settings(self):
         features = Features(id=1,
@@ -253,7 +253,7 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         featuremap = asterisk_conf_dao.find_general_features_settings()
 
-        assert_that(featuremap, has_items(*expected_result))
+        assert_that(featuremap, contains_inanyorder(*expected_result))
 
     def test_find_exten_progfunckeys_settings(self):
         number = '4567'
@@ -277,7 +277,7 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         funckeys = asterisk_conf_dao.find_exten_progfunckeys_settings(ule.line.context)
 
-        assert_that(funckeys, has_items(*expected_result))
+        assert_that(funckeys, contains_inanyorder(*expected_result))
 
     def test_find_exten_phonefunckeys_settings(self):
         number = '4567'
@@ -299,7 +299,7 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         funckeys = asterisk_conf_dao.find_exten_phonefunckeys_settings(ule.line.context)
 
-        assert_that(funckeys, has_items(*expected_result))
+        assert_that(funckeys, contains_inanyorder(*expected_result))
 
     def test_find_exten_xivofeatures_setting(self):
         exten1 = self.add_extension(exten='*25', context='xivo-features')
@@ -323,7 +323,7 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         extensions = asterisk_conf_dao.find_exten_xivofeatures_setting()
 
-        assert_that(extensions, has_items(*expected_result))
+        assert_that(extensions, contains_inanyorder(*expected_result))
 
     def test_find_extenfeatures_settings(self):
         exten1 = self.add_extension(exten='*98', context='xivo-features', type='extenfeatures', typeval='vmusermsg')
@@ -347,7 +347,7 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         extensions = asterisk_conf_dao.find_extenfeatures_settings(['vmusermsg', 'vmuserpurge'])
 
-        assert_that(extensions, has_items(*expected_result))
+        assert_that(extensions, contains_inanyorder(*expected_result))
 
     def test_find_exten_settings(self):
         exten1 = self.add_extension(exten='12', context='default')
@@ -371,7 +371,7 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         extensions = asterisk_conf_dao.find_exten_settings('default')
 
-        assert_that(extensions, has_items(*expected_result))
+        assert_that(extensions, contains_inanyorder(*expected_result))
 
     def test_find_exten_hints_settings(self):
         context = 'tyoyoi'
@@ -390,7 +390,7 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         extensions = asterisk_conf_dao.find_exten_hints_settings(context)
 
-        assert_that(extensions, has_items(*expected_result))
+        assert_that(extensions, contains_inanyorder(*expected_result))
 
     def test_find_context_settings(self):
         context1 = self.add_context()
@@ -413,7 +413,7 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         context = asterisk_conf_dao.find_context_settings()
 
-        assert_that(context, has_items(*expected_result))
+        assert_that(context, contains_inanyorder(*expected_result))
 
     def test_find_contextincludes_settings(self):
         context = 'default'
@@ -429,11 +429,11 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         context = asterisk_conf_dao.find_contextincludes_settings(context)
 
-        assert_that(context, has_items(*expected_result))
+        assert_that(context, contains_inanyorder(*expected_result))
 
     def test_find_voicemail_activated(self):
         vm = self.add_voicemail()
-        self.add_voicemail(commented=0)
+        self.add_voicemail(commented=1)
 
         expected_result = [
             {'imapuser': None,
@@ -485,7 +485,7 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         voicemails = asterisk_conf_dao.find_voicemail_activated()
 
-        assert_that(voicemails, has_items(*expected_result))
+        assert_that(voicemails, contains_inanyorder(*expected_result))
 
     def test_find_voicemail_general_settings(self):
         vms1 = self.add_voicemail_general_settings()
@@ -503,7 +503,7 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         voicemail_settings = asterisk_conf_dao.find_voicemail_general_settings()
 
-        assert_that(voicemail_settings, has_items(*expected_result))
+        assert_that(voicemail_settings, contains_inanyorder(*expected_result))
 
     def test_find_sip_general_settings(self):
         sip1 = self.add_sip_general_settings()
@@ -519,7 +519,7 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         sip_settings = asterisk_conf_dao.find_sip_general_settings()
 
-        assert_that(sip_settings, has_items(*expected_result))
+        assert_that(sip_settings, contains_inanyorder(*expected_result))
 
     def test_find_sip_authentication_settings(self):
         sip1 = self.add_sip_authentication()
@@ -542,7 +542,7 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         sip_authentication = asterisk_conf_dao.find_sip_authentication_settings()
 
-        assert_that(sip_authentication, has_items(*expected_result))
+        assert_that(sip_authentication, contains_inanyorder(*expected_result))
 
     def test_find_sip_trunk_settings(self):
         sip1 = self.add_usersip(category='trunk')
@@ -643,7 +643,7 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         sip_trunk = asterisk_conf_dao.find_sip_trunk_settings()
 
-        assert_that(sip_trunk, has_items(*expected_result))
+        assert_that(sip_trunk, contains_inanyorder(*expected_result))
 
     def test_find_sip_user_settings(self):
         usersip = self.add_usersip(category='user')
@@ -748,7 +748,7 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         sip_user = asterisk_conf_dao.find_sip_user_settings()
 
-        assert_that(sip_user, has_items(*expected_result))
+        assert_that(sip_user, contains_inanyorder(*expected_result))
 
     def test_find_sip_pickup_settings(self):
         pickup = self.add_pickup()
@@ -760,7 +760,7 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         sip_pickup = asterisk_conf_dao.find_sip_pickup_settings()
 
-        assert_that(sip_pickup, has_items(*expected_result))
+        assert_that(sip_pickup, contains_inanyorder(*expected_result))
 
     def _add_pickup_member_user(self, pickup):
         sip_name, user_id = self._create_user_with_usersip()
@@ -799,7 +799,7 @@ class TestAsteriskConfDAO(DAOTestCase):
                                             protocolid=usersip.id,
                                             name_line=usersip.name,
                                             context=usersip.context)
-        return sip_name, ule.user_id
+        return usersip.name, ule.user_id
 
     def test_find_iax_general_settings(self):
         iax1 = self.add_iax_general_settings()
@@ -815,7 +815,7 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         iax_settings = asterisk_conf_dao.find_iax_general_settings()
 
-        assert_that(iax_settings, has_items(*expected_result))
+        assert_that(iax_settings, contains_inanyorder(*expected_result))
 
     def test_find_iax_trunk_settings(self):
         self.add_iax_general_settings(category='user')
@@ -844,7 +844,7 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         iax_settings = asterisk_conf_dao.find_iax_trunk_settings()
 
-        assert_that(iax_settings, has_items(*expected_result))
+        assert_that(iax_settings, contains_inanyorder(*expected_result))
 
     def test_find_iax_user_settings(self):
         self.add_iax_general_settings(category='trunk')
@@ -873,7 +873,7 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         iax_settings = asterisk_conf_dao.find_iax_user_settings()
 
-        assert_that(iax_settings, has_items(*expected_result))
+        assert_that(iax_settings, contains_inanyorder(*expected_result))
 
     def test_find_iax_calllimits_settings(self):
         iax_call_number_limits = IAXCallNumberLimits(destination='toto',
@@ -890,7 +890,7 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         iax_settings = asterisk_conf_dao.find_iax_calllimits_settings()
 
-        assert_that(iax_settings, has_items(*expected_result))
+        assert_that(iax_settings, contains_inanyorder(*expected_result))
 
     def test_find_meetme_general_settings(self):
         self.add_meetme_general_settings(category='toto')
@@ -919,7 +919,7 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         meetme_settings = asterisk_conf_dao.find_meetme_general_settings()
 
-        assert_that(meetme_settings, has_items(*expected_result))
+        assert_that(meetme_settings, contains_inanyorder(*expected_result))
 
     def test_find_meetme_rooms_settings(self):
         self.add_meetme_general_settings(category='toto')
@@ -948,12 +948,12 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         meetme_settings = asterisk_conf_dao.find_meetme_rooms_settings()
 
-        assert_that(meetme_settings, has_items(*expected_result))
+        assert_that(meetme_settings, contains_inanyorder(*expected_result))
 
     def test_find_musiconhold_settings(self):
-        self.add_musiconhold(category='toto')
         musiconhold1 = self.add_musiconhold(category='default')
         musiconhold2 = self.add_musiconhold(category='default')
+        musiconhold3 = self.add_musiconhold(category='toto')
         self.add_musiconhold(category='default', commented=1)
 
         expected_result = [
@@ -972,12 +972,20 @@ class TestAsteriskConfDAO(DAOTestCase):
              'var_name': musiconhold2.var_name,
              'var_val': musiconhold2.var_val,
              'id': musiconhold2.id,
+             'commented': 0},
+            {'category': u'toto',
+             'cat_metric': 0,
+             'filename': u'musiconhold.conf',
+             'var_metric': 0,
+             'var_name': musiconhold3.var_name,
+             'var_val': musiconhold3.var_val,
+             'id': musiconhold3.id,
              'commented': 0}
         ]
 
-        meetme_settings = asterisk_conf_dao.find_musiconhold_settings()
+        musiconhold_settings = asterisk_conf_dao.find_musiconhold_settings()
 
-        assert_that(meetme_settings, has_items(*expected_result))
+        assert_that(musiconhold_settings, contains_inanyorder(*expected_result))
 
     def test_find_queue_general_settings(self):
         self.add_queue_general_settings(category='toto')
@@ -1006,7 +1014,7 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         meetme_settings = asterisk_conf_dao.find_queue_general_settings()
 
-        assert_that(meetme_settings, has_items(*expected_result))
+        assert_that(meetme_settings, contains_inanyorder(*expected_result))
 
     def test_find_queue_settings(self):
         queue1 = self.add_queue()
@@ -1066,7 +1074,7 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         queue = asterisk_conf_dao.find_queue_settings()
 
-        assert_that(queue, has_items(*expected_result))
+        assert_that(queue, contains_inanyorder(*expected_result))
 
     def test_find_queue_skillrule_settings(self):
         queue_skill_rule1 = self.add_queue_skill_rule()
@@ -1079,7 +1087,7 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         queue_skill_rule = asterisk_conf_dao.find_queue_skillrule_settings()
 
-        assert_that(queue_skill_rule, has_items(*expected_result))
+        assert_that(queue_skill_rule, contains_inanyorder(*expected_result))
 
     def test_find_queue_penalty_settings(self):
         queue_penalty1 = QueuePenalty(name='toto',
@@ -1108,7 +1116,7 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         queue_penalty = asterisk_conf_dao.find_queue_penalty_settings()
 
-        assert_that(queue_penalty, has_items(*expected_result))
+        assert_that(queue_penalty, contains_inanyorder(*expected_result))
 
     def test_find_queue_members_settings(self):
         queue_name = 'toto'
@@ -1135,7 +1143,7 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         result = asterisk_conf_dao.find_queue_members_settings(queue_name)
 
-        assert_that(result, has_items(*expected_result))
+        assert_that(result, contains_inanyorder(*expected_result))
 
     def test_find_agent_queue_skills_settings(self):
         agent1 = self.add_agent()
@@ -1162,7 +1170,7 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         result = asterisk_conf_dao.find_agent_queue_skills_settings()
 
-        assert_that(result, has_items(*expected_result))
+        assert_that(result, contains_inanyorder(*expected_result))
 
     def test_find_queue_penalties_settings(self):
         queue_penalty1 = QueuePenalty(name='toto',
@@ -1191,4 +1199,4 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         result = asterisk_conf_dao.find_queue_penalties_settings()
 
-        assert_that(result, has_items(*expected_result))
+        assert_that(result, contains_inanyorder(*expected_result))
