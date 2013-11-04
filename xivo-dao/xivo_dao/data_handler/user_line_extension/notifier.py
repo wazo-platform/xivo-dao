@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from . import command
+from xivo_bus.resources.user_line_extension import event
 from xivo_dao import helpers
 from xivo_dao.helpers import bus_manager
 
@@ -24,36 +24,36 @@ def created(user_line_extension):
     data = _build_edit_user_phone(user_line_extension)
     helpers.sysconfd_connector.exec_request_handlers(data)
 
-    bus_manager.send_bus_command(command.CreateUserLineExtensionCommand(user_line_extension.id,
-                                                                        user_line_extension.user_id,
-                                                                        user_line_extension.line_id,
-                                                                        user_line_extension.extension_id,
-                                                                        user_line_extension.main_user,
-                                                                        user_line_extension.main_line))
+    bus_manager.send_bus_command(event.CreateUserLineExtensionEvent(user_line_extension.id,
+                                                                    user_line_extension.user_id,
+                                                                    user_line_extension.line_id,
+                                                                    user_line_extension.extension_id,
+                                                                    user_line_extension.main_user,
+                                                                    user_line_extension.main_line))
 
 
 def edited(user_line_extension):
     data = _build_edit_user_phone(user_line_extension)
     helpers.sysconfd_connector.exec_request_handlers(data)
 
-    bus_manager.send_bus_command(command.EditUserLineExtensionCommand(user_line_extension.id,
-                                                                      user_line_extension.user_id,
-                                                                      user_line_extension.line_id,
-                                                                      user_line_extension.extension_id,
-                                                                      user_line_extension.main_user,
-                                                                      user_line_extension.main_line))
+    bus_manager.send_bus_command(event.EditUserLineExtensionEvent(user_line_extension.id,
+                                                                  user_line_extension.user_id,
+                                                                  user_line_extension.line_id,
+                                                                  user_line_extension.extension_id,
+                                                                  user_line_extension.main_user,
+                                                                  user_line_extension.main_line))
 
 
 def deleted(user_line_extension):
     data = _build_edit_user_phone(user_line_extension)
     helpers.sysconfd_connector.exec_request_handlers(data)
 
-    bus_manager.send_bus_command(command.DeleteUserLineExtensionCommand(user_line_extension.id,
-                                                                        user_line_extension.user_id,
-                                                                        user_line_extension.line_id,
-                                                                        user_line_extension.extension_id,
-                                                                        user_line_extension.main_user,
-                                                                        user_line_extension.main_line))
+    bus_manager.send_bus_command(event.DeleteUserLineExtensionEvent(user_line_extension.id,
+                                                                    user_line_extension.user_id,
+                                                                    user_line_extension.line_id,
+                                                                    user_line_extension.extension_id,
+                                                                    user_line_extension.main_user,
+                                                                    user_line_extension.main_line))
 
 
 def _build_edit_user_phone(user_line_extension):
