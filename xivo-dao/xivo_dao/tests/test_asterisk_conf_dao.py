@@ -751,57 +751,55 @@ class TestAsteriskConfDAO(DAOTestCase):
         assert_that(sip_user, has_items(*expected_result))
 
     def test_find_sip_pickup_settings(self):
-        # res1
         pickup = self.add_pickup()
-        usersip = self.add_usersip(category='user')
-        ule = self.add_user_line_with_exten(protocol='sip',
-                                            protocolid=usersip.id,
-                                            name_line=usersip.name,
-                                            context=usersip.context)
+        user_member = self._add_pickup_member_user(pickup)
+        group_member = self._add_pickup_member_group(pickup)
+        queue_member = self._add_pickup_member_queue(pickup)
+
+        expected_result = [user_member, group_member, queue_member]
+
+        sip_pickup = asterisk_conf_dao.find_sip_pickup_settings()
+
+        assert_that(sip_pickup, has_items(*expected_result))
+
+    def _add_pickup_member_user(self, pickup):
+        sip_name, user_id = self._create_user_with_usersip()
         pickup_member = self.add_pickup_member(pickupid=pickup.id,
                                                membertype='user',
-                                               memberid=ule.user_id)
-        self.add_queue_member()
+                                               memberid=user_id)
+        return sip_name, pickup_member.category, pickup.id
 
-        res1 = (usersip.name, pickup_member.category, pickup.id)
-
-        # res2
+    def _add_pickup_member_group(self, pickup):
+        sip_name, user_id = self._create_user_with_usersip()
         group = self.add_group()
-        usersip = self.add_usersip(category='user')
-        ule = self.add_user_line_with_exten(protocol='sip',
-                                            protocolid=usersip.id,
-                                            name_line=usersip.name,
-                                            context=usersip.context)
         pickup_member = self.add_pickup_member(pickupid=pickup.id,
                                                membertype='group',
                                                memberid=group.id)
         self.add_queue_member(queue_name=group.name,
                               usertype='user',
-                              userid=ule.user_id)
+                              userid=user_id)
 
-        res2 = (usersip.name, pickup_member.category, pickup.id)
+        return sip_name, pickup_member.category, pickup.id
 
-        # res3
+    def _add_pickup_member_queue(self, pickup):
+        sip_name, user_id = self._create_user_with_usersip()
         queue = self.add_queuefeatures()
-        usersip = self.add_usersip(category='user')
-        ule = self.add_user_line_with_exten(protocol='sip',
-                                            protocolid=usersip.id,
-                                            name_line=usersip.name,
-                                            context=usersip.context)
         pickup_member = self.add_pickup_member(pickupid=pickup.id,
                                                membertype='queue',
                                                memberid=queue.id)
         self.add_queue_member(queue_name=queue.name,
                               usertype='user',
-                              userid=ule.user_id)
+                              userid=user_id)
 
-        res3 = (usersip.name, pickup_member.category, pickup.id)
+        return sip_name, pickup_member.category, pickup.id
 
-        expected_result = [res1, res2, res3]
-
-        sip_pickup = asterisk_conf_dao.find_sip_pickup_settings()
-
-        assert_that(sip_pickup, has_items(*expected_result))
+    def _create_user_with_usersip(self):
+        usersip = self.add_usersip(category='user')
+        ule = self.add_user_line_with_exten(protocol='sip',
+                                            protocolid=usersip.id,
+                                            name_line=usersip.name,
+                                            context=usersip.context)
+        return sip_name, ule.user_id
 
     def test_find_iax_general_settings(self):
         iax1 = self.add_iax_general_settings()
