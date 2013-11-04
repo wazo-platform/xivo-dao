@@ -16,8 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.helpers.bus_manager import send_bus_command
-from xivo_dao.data_handler.extension.command import CreateExtensionCommand, \
-    EditExtensionCommand, DeleteExtensionCommand
+from xivo_bus.resources.extension.event import CreateExtensionEvent, \
+    EditExtensionEvent, DeleteExtensionEvent
 from xivo_dao.helpers import sysconfd_connector
 
 sysconfd_base_data = {
@@ -30,20 +30,20 @@ sysconfd_base_data = {
 
 def created(extension):
     sysconfd_connector.exec_request_handlers(sysconfd_base_data)
-    send_bus_command(CreateExtensionCommand(extension.id,
-                                            extension.exten,
-                                            extension.context))
-
-
-def edited(extension):
-    sysconfd_connector.exec_request_handlers(sysconfd_base_data)
-    send_bus_command(EditExtensionCommand(extension.id,
+    send_bus_command(CreateExtensionEvent(extension.id,
                                           extension.exten,
                                           extension.context))
 
 
+def edited(extension):
+    sysconfd_connector.exec_request_handlers(sysconfd_base_data)
+    send_bus_command(EditExtensionEvent(extension.id,
+                                        extension.exten,
+                                        extension.context))
+
+
 def deleted(extension):
     sysconfd_connector.exec_request_handlers(sysconfd_base_data)
-    send_bus_command(DeleteExtensionCommand(extension.id,
-                                            extension.exten,
-                                            extension.context))
+    send_bus_command(DeleteExtensionEvent(extension.id,
+                                          extension.exten,
+                                          extension.context))

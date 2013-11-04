@@ -51,53 +51,53 @@ class TestUserLinkNotifier(TestCase):
     def tearDown(self):
         pass
 
-    @patch('xivo_dao.data_handler.user_line_extension.command.CreateUserLineExtensionCommand')
+    @patch('xivo_bus.resources.user_line_extension.event.CreateUserLineExtensionEvent')
     @patch('xivo_dao.helpers.sysconfd_connector.exec_request_handlers')
     @patch('xivo_dao.helpers.bus_manager.send_bus_command')
-    def test_created(self, send_bus_command, exec_request_handlers, command_init):
-        new_command = command_init.return_value = Mock()
+    def test_created(self, send_bus_command, exec_request_handlers, event_init):
+        new_command = event_init.return_value = Mock()
 
         notifier.created(ULE)
 
         exec_request_handlers.assert_called_once_with(SYSCONFD_DATA)
-        command_init.assert_called_once_with(ULE_ID,
-                                             USER_ID,
-                                             LINE_ID,
-                                             EXTENSION_ID,
-                                             MAIN_USER,
-                                             MAIN_LINE)
+        event_init.assert_called_once_with(ULE_ID,
+                                           USER_ID,
+                                           LINE_ID,
+                                           EXTENSION_ID,
+                                           MAIN_USER,
+                                           MAIN_LINE)
         send_bus_command.assert_called_once_with(new_command)
 
-    @patch('xivo_dao.data_handler.user_line_extension.command.EditUserLineExtensionCommand')
+    @patch('xivo_bus.resources.user_line_extension.event.EditUserLineExtensionEvent')
     @patch('xivo_dao.helpers.sysconfd_connector.exec_request_handlers')
     @patch('xivo_dao.helpers.bus_manager.send_bus_command')
-    def test_edited(self, send_bus_command, exec_request_handlers, command_init):
-        new_command = command_init.return_value = Mock()
+    def test_edited(self, send_bus_command, exec_request_handlers, event_init):
+        new_command = event_init.return_value = Mock()
 
         notifier.edited(ULE)
 
         exec_request_handlers.assert_called_once_with(SYSCONFD_DATA)
-        command_init.assert_called_once_with(ULE_ID,
-                                             USER_ID,
-                                             LINE_ID,
-                                             EXTENSION_ID,
-                                             MAIN_USER,
-                                             MAIN_LINE)
+        event_init.assert_called_once_with(ULE_ID,
+                                           USER_ID,
+                                           LINE_ID,
+                                           EXTENSION_ID,
+                                           MAIN_USER,
+                                           MAIN_LINE)
         send_bus_command.assert_called_once_with(new_command)
 
-    @patch('xivo_dao.data_handler.user_line_extension.command.DeleteUserLineExtensionCommand')
+    @patch('xivo_bus.resources.user_line_extension.event.DeleteUserLineExtensionEvent')
     @patch('xivo_dao.helpers.sysconfd_connector.exec_request_handlers')
     @patch('xivo_dao.helpers.bus_manager.send_bus_command')
-    def test_deleted(self, send_bus_command, exec_request_handlers, command_init):
-        new_command = command_init.return_value = Mock()
+    def test_deleted(self, send_bus_command, exec_request_handlers, event_init):
+        new_command = event_init.return_value = Mock()
 
         notifier.deleted(ULE)
 
         exec_request_handlers.assert_called_once_with(SYSCONFD_DATA)
-        command_init.assert_called_once_with(ULE_ID,
-                                             USER_ID,
-                                             LINE_ID,
-                                             EXTENSION_ID,
-                                             MAIN_USER,
-                                             MAIN_LINE)
+        event_init.assert_called_once_with(ULE_ID,
+                                           USER_ID,
+                                           LINE_ID,
+                                           EXTENSION_ID,
+                                           MAIN_USER,
+                                           MAIN_LINE)
         send_bus_command.assert_called_once_with(new_command)

@@ -16,17 +16,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.helpers.bus_manager import send_bus_command
-from xivo_dao.data_handler.device.command import CreateDeviceCommand, \
-    EditDeviceCommand, DeleteDeviceCommand
+from xivo_bus.resources.device.event import CreateDeviceEvent, \
+    EditDeviceEvent, DeleteDeviceEvent
 
 
 def created(device):
-    send_bus_command(CreateDeviceCommand(device.id))
+    send_bus_command(CreateDeviceEvent(device.id))
 
 
 def edited(device):
-    send_bus_command(EditDeviceCommand(device.id))
+    send_bus_command(EditDeviceEvent(device.id))
 
 
 def deleted(device):
-    send_bus_command(DeleteDeviceCommand(device.id))
+    send_bus_command(DeleteDeviceEvent(device.id))

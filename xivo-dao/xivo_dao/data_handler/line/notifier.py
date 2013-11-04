@@ -16,8 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.helpers.bus_manager import send_bus_command
-from xivo_dao.data_handler.line.command import CreateLineCommand, \
-    EditLineCommand, DeleteLineCommand
+from xivo_bus.resources.line.event import CreateLineEvent, \
+    EditLineEvent, DeleteLineEvent
 from xivo_dao.helpers import sysconfd_connector
 
 
@@ -33,16 +33,16 @@ def _new_sysconfd_data():
 def created(line):
     data = _new_sysconfd_data()
     sysconfd_connector.exec_request_handlers(data)
-    send_bus_command(CreateLineCommand(line.id))
+    send_bus_command(CreateLineEvent(line.id))
 
 
 def edited(line):
     data = _new_sysconfd_data()
     sysconfd_connector.exec_request_handlers(data)
-    send_bus_command(EditLineCommand(line.id))
+    send_bus_command(EditLineEvent(line.id))
 
 
 def deleted(line):
     data = _new_sysconfd_data()
     sysconfd_connector.exec_request_handlers(data)
-    send_bus_command(DeleteLineCommand(line.id))
+    send_bus_command(DeleteLineEvent(line.id))
