@@ -490,11 +490,7 @@ class TestAsteriskConfDAO(DAOTestCase):
     def test_find_voicemail_general_settings(self):
         vms1 = self.add_voicemail_general_settings()
         vms2 = self.add_voicemail_general_settings()
-<<<<<<< HEAD
-        self.add_voicemail_general_settings(commented=0)
-=======
         self.add_voicemail_general_settings(commented=1)
->>>>>>> add unittests for asterisk_conf_dao
 
         expected_result = [
             {'category': u'general',
@@ -512,11 +508,7 @@ class TestAsteriskConfDAO(DAOTestCase):
     def test_find_sip_general_settings(self):
         sip1 = self.add_sip_general_settings()
         sip2 = self.add_sip_general_settings()
-<<<<<<< HEAD
-        self.add_sip_general_settings(commented=0)
-=======
         self.add_sip_general_settings(commented=1)
->>>>>>> add unittests for asterisk_conf_dao
 
         expected_result = [
             {'var_name': sip1.var_name,
@@ -759,10 +751,7 @@ class TestAsteriskConfDAO(DAOTestCase):
         assert_that(sip_user, has_items(*expected_result))
 
     def test_find_sip_pickup_settings(self):
-<<<<<<< HEAD
-=======
         # res1
->>>>>>> add unittests for asterisk_conf_dao
         pickup = self.add_pickup()
         usersip = self.add_usersip(category='user')
         ule = self.add_user_line_with_exten(protocol='sip',
@@ -772,12 +761,6 @@ class TestAsteriskConfDAO(DAOTestCase):
         pickup_member = self.add_pickup_member(pickupid=pickup.id,
                                                membertype='user',
                                                memberid=ule.user_id)
-<<<<<<< HEAD
-
-        self.add_queue_member()
-
-        expected_result = [(usersip.name, pickup_member.category, pickup.id)]
-=======
         self.add_queue_member()
 
         res1 = (usersip.name, pickup_member.category, pickup.id)
@@ -815,13 +798,10 @@ class TestAsteriskConfDAO(DAOTestCase):
         res3 = (usersip.name, pickup_member.category, pickup.id)
 
         expected_result = [res1, res2, res3]
->>>>>>> add unittests for asterisk_conf_dao
 
         sip_pickup = asterisk_conf_dao.find_sip_pickup_settings()
 
         assert_that(sip_pickup, has_items(*expected_result))
-<<<<<<< HEAD
-=======
 
     def test_find_iax_general_settings(self):
         iax1 = self.add_iax_general_settings()
@@ -1211,4 +1191,3 @@ class TestAsteriskConfDAO(DAOTestCase):
         result = asterisk_conf_dao.find_queue_penalties_settings()
 
         assert_that(result, has_items(*expected_result))
->>>>>>> add unittests for asterisk_conf_dao
