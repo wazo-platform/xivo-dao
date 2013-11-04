@@ -16,8 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.helpers.bus_manager import send_bus_command
-from xivo_dao.data_handler.voicemail.command import CreateVoicemailCommand, \
-    EditVoicemailCommand, DeleteVoicemailCommand
+from xivo_bus.resources.voicemail.event import CreateVoicemailEvent, \
+    EditVoicemailEvent, DeleteVoicemailEvent
 from xivo_dao.helpers import sysconfd_connector
 
 
@@ -33,16 +33,16 @@ def _new_sysconfd_data(ctibus_command):
 def created(voicemail):
     data = _new_sysconfd_data('xivo[voicemail,add,%s]' % voicemail.id)
     sysconfd_connector.exec_request_handlers(data)
-    send_bus_command(CreateVoicemailCommand(voicemail.id))
+    send_bus_command(CreateVoicemailEvent(voicemail.id))
 
 
 def edited(voicemail):
     data = _new_sysconfd_data('xivo[voicemail,edit,%s]' % voicemail.id)
     sysconfd_connector.exec_request_handlers(data)
-    send_bus_command(EditVoicemailCommand(voicemail.id))
+    send_bus_command(EditVoicemailEvent(voicemail.id))
 
 
 def deleted(voicemail):
     data = _new_sysconfd_data('xivo[voicemail,delete,%s]' % voicemail.id)
     sysconfd_connector.exec_request_handlers(data)
-    send_bus_command(DeleteVoicemailCommand(voicemail.id))
+    send_bus_command(DeleteVoicemailEvent(voicemail.id))
