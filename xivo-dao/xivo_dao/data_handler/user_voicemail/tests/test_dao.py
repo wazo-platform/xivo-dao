@@ -57,6 +57,22 @@ class TestCase(DAOTestCase):
     def setUp(self):
         self.empty_tables()
 
+    def test_associate(self):
+        user_line_row = self.add_user_line_with_exten(firstname='King', exten='1000', context='default')
+        user_row = self.session.query(UserFeatures).get(user_line_row.user_id)
+        voicemail_row = self.add_voicemail('1000', 'default')
+
+        user_id = user_row.id
+        voicemail_id = voicemail_row.uniqueid
+
+        user_voicemail = UserVoicemail(user_id=user_id, voicemail_id=voicemail_id)
+
+        user_voicemail_dao.associate(user_voicemail)
+
+        result_user_row = self.session.query(UserFeatures).get(user_row.id)
+
+        self.assertEquals(result_user_row.voicemailid, voicemail_row.uniqueid)
+
     def test_find_all_by_user_id_no_users_or_voicemail(self):
         result = user_voicemail_dao.find_all_by_user_id(1)
 

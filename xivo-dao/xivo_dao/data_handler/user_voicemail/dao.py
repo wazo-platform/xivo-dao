@@ -17,11 +17,22 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 from xivo_dao.alchemy.userfeatures import UserFeatures
-from xivo_dao.data_handler.user_voicemail.model import UserVoicemail, db_converter
+from xivo_dao.data_handler.user_voicemail.model import db_converter
 from xivo_dao.helpers.db_manager import daosession
 
-def associate(user_voicemail):
-    raise NotImplementedError()
+
+@daosession
+def associate(session, user_voicemail):
+    user_row = (session.query(UserFeatures)
+                .filter(UserFeatures.id == user_voicemail.user_id)
+                .first())
+
+    if user_row:
+        user_row.voicemailid = user_voicemail.voicemail_id
+
+        session.begin()
+        session.add(user_row)
+        session.commit()
 
 
 @daosession
