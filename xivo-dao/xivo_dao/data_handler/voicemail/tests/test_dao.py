@@ -577,7 +577,7 @@ class TestEditVoicemail(DAOTestCase):
         context = 'default'
         expected_name = 'totitu'
 
-        voicemail = self.add_voicemail(number=number,
+        voicemail = self.add_voicemail(mailbox=number,
                                        context=context)
 
         voicemail = voicemail_dao.get(voicemail.uniqueid)
@@ -596,7 +596,7 @@ class TestEditVoicemail(DAOTestCase):
 
     def test_edit_with_all_parameters(self):
         voicemail_row = self.add_voicemail(
-            number='1000',
+            mailbox='1000',
             context='default',
             password='password',
             email='email@email',

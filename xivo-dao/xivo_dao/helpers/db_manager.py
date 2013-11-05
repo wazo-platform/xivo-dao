@@ -68,7 +68,7 @@ def _execute_with_session(session_class, func, args, kwargs):
         return _apply_and_flush(func, session, args, kwargs)
     except (OperationalError, InterfaceError) as e:
         logger.warning('error while executing request in DB: %s', e)
-        session_class.remove()
+        reinit()
         session = session_class()
         return _apply_and_flush(func, session, args, kwargs)
 
