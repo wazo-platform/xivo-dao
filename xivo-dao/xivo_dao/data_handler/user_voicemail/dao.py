@@ -42,6 +42,7 @@ def _associate_voicemail_with_user(session, user_voicemail):
     if user_row:
         user_row.voicemailid = user_voicemail.voicemail_id
         user_row.voicemailtype = 'asterisk'
+        user_row.enablevoicemail = int(user_voicemail.enabled)
         session.add(user_row)
 
 
@@ -72,8 +73,10 @@ def _associate_voicemail_with_protocol(session, voicemail, line_id):
 @daosession
 def find_all_by_user_id(session, user_id):
     query = (session.query(UserSchema.id.label('user_id'),
-                           UserSchema.voicemailid.label('voicemail_id'))
+                           UserSchema.voicemailid.label('voicemail_id'),
+                           UserSchema.enablevoicemail)
              .filter(UserSchema.id == user_id)
-             .filter(UserSchema.voicemailid != None))
+             .filter(UserSchema.voicemailid != None)
+             .filter(UserSchema.voicemailid != 0))
 
     return [db_converter.to_model(row) for row in query]

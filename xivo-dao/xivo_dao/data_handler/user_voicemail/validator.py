@@ -26,6 +26,7 @@ from xivo_dao.data_handler.voicemail import dao as voicemail_dao
 
 def validate_association(user_voicemail):
     _validate_missing_parameters(user_voicemail)
+    _validate_invalid_parameters(user_voicemail)
     _validate_user_id(user_voicemail)
     _validate_voicemail_id(user_voicemail)
     _validate_user_has_line(user_voicemail)
@@ -37,6 +38,10 @@ def _validate_missing_parameters(user_voicemail):
     if len(missing) > 0:
         raise MissingParametersError(missing)
 
+
+def _validate_invalid_parameters(user_voicemail):
+    if not isinstance(user_voicemail.enabled, bool):
+        raise InvalidParametersError(['enabled must be a boolean'])
 
 def _validate_user_id(user_voicemail):
     try:

@@ -21,15 +21,22 @@ from xivo_dao.helpers.new_model import NewModel
 
 DB_TO_MODEL_MAPPING = {
     'user_id': 'user_id',
-    'voicemail_id': 'voicemail_id'
+    'voicemail_id': 'voicemail_id',
+    'enablevoicemail': 'enabled',
 }
 
 
 class UserVoicemail(NewModel):
 
+    def __init__(self, *args, **kwargs):
+        NewModel.__init__(self, *args, **kwargs)
+        if self.enabled is None:
+            self.enabled = True
+
     FIELDS = [
         'user_id',
-        'voicemail_id'
+        'voicemail_id',
+        'enabled'
     ]
 
     MANDATORY = [
@@ -40,4 +47,20 @@ class UserVoicemail(NewModel):
     _RELATION = {}
 
 
-db_converter = DatabaseConverter(DB_TO_MODEL_MAPPING, None, UserVoicemail)
+class UserVoicemailDbConverter(DatabaseConverter):
+
+    def __init__(self):
+        DatabaseConverter.__init__(self, DB_TO_MODEL_MAPPING, None, UserVoicemail)
+
+    def to_model(self, db_row):
+        model = DatabaseConverter.to_model(self, db_row)
+        model.enabled = bool(model.enabled)
+        return model
+
+    def to_source(self, model):
+        db_row = DatabaseConverter.to_source(self, model)
+        db_row.enablevoicemail = int(db_row.enablevoicemail)
+        return db_row
+
+
+db_converter = UserVoicemailDbConverter()

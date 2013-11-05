@@ -34,6 +34,11 @@ class TestValidator(unittest.TestCase):
 
         self.assertRaises(MissingParametersError, validator.validate_association, user_voicemail)
 
+    def test_validate_association_wrong_parameter_type_for_enabled(self):
+        user_voicemail = UserVoicemail(user_id=1, voicemail_id=2, enabled=1)
+
+        self.assertRaises(InvalidParametersError, validator.validate_association, user_voicemail)
+
     @patch('xivo_dao.data_handler.user.dao.get')
     def test_validate_association_when_user_does_not_exist(self, user_get):
         user_voicemail = UserVoicemail(user_id=1, voicemail_id=2)

@@ -16,7 +16,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from hamcrest import assert_that, has_length, all_of, has_property, instance_of, contains, equal_to
+from hamcrest import assert_that, has_length, all_of, has_property, instance_of, contains, equal_to, none
 
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.callfilter import Callfilter
@@ -68,7 +68,18 @@ class TestCase(DAOTestCase):
         user_voicemail = UserVoicemail(user_id=user_id, voicemail_id=voicemail_id)
         user_voicemail_dao.associate(user_voicemail)
 
-        self.assert_user_was_associated_with_voicemail(user_id, voicemail_id)
+        self.assert_user_was_associated_with_voicemail(user_id, voicemail_id, enabled=True)
+        self.assert_sip_line_was_associated_with_voicemail(protocol_id, voicemail_id)
+
+    def test_associate_with_sip_line_when_voicemail_disabled(self):
+        extension = '1000'
+        user_id, line_id, protocol_id = self.prepare_user_and_line(extension, 'sip')
+        voicemail_id = self.prepare_voicemail(extension)
+
+        user_voicemail = UserVoicemail(user_id=user_id, voicemail_id=voicemail_id, enabled=False)
+        user_voicemail_dao.associate(user_voicemail)
+
+        self.assert_user_was_associated_with_voicemail(user_id, voicemail_id, enabled=False)
         self.assert_sip_line_was_associated_with_voicemail(protocol_id, voicemail_id)
 
     def test_associate_with_sccp_line(self):
@@ -79,7 +90,7 @@ class TestCase(DAOTestCase):
         user_voicemail = UserVoicemail(user_id=user_id, voicemail_id=voicemail_id)
         user_voicemail_dao.associate(user_voicemail)
 
-        self.assert_user_was_associated_with_voicemail(user_id, voicemail_id)
+        self.assert_user_was_associated_with_voicemail(user_id, voicemail_id, enabled=True)
         self.assert_sccp_line_was_associated_with_voicemail(extension, voicemail_id)
 
     def prepare_user_line_and_voicemail(self, exten, protocol):
@@ -102,6 +113,7 @@ class TestCase(DAOTestCase):
 
         assert_that(result_user_row.voicemailid, equal_to(voicemail_id))
         assert_that(result_user_row.voicemailtype, equal_to('asterisk'))
+        assert_that(result_user_row.enablevoicemail, equal_to(int(enabled)))
 
     def assert_sip_line_was_associated_with_voicemail(self, protocol_id, voicemail_id):
         result_usersip_row = self.session.query(UserSIPSchema).get(protocol_id)
