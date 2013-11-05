@@ -279,6 +279,24 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         assert_that(funckeys, contains_inanyorder(*expected_result))
 
+    def test_find_exten_progfunckeys_custom_settings(self):
+        number = '4567'
+        ule = self.add_user_line_with_exten(exten=number)
+        self.add_function_key_to_user(iduserfeatures=ule.user_id,
+                                      exten=number,
+                                      typeextenumbers=None,
+                                      typevalextenumbers=None,
+                                      supervision=1,
+                                      progfunckey=0)
+
+        expected_result = [
+            {'exten': number}
+        ]
+
+        funckeys = asterisk_conf_dao.find_exten_progfunckeys_custom_settings(ule.line.context)
+
+        assert_that(funckeys, contains_inanyorder(*expected_result))
+
     def test_find_exten_phonefunckeys_settings(self):
         number = '4567'
         ule = self.add_user_line_with_exten(exten=number)

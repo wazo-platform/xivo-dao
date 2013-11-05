@@ -199,6 +199,23 @@ def find_exten_progfunckeys_settings(session, context_name):
 
 
 @daosession
+def find_exten_progfunckeys_custom_settings(session, context_name):
+    rows = (session.query(PhoneFunckey.exten)
+            .filter(and_(UserLine.user_id == PhoneFunckey.iduserfeatures,
+                         UserLine.line_id == LineFeatures.id,
+                         UserLine.main_user == True,
+                         UserLine.main_line == True,
+                         LineFeatures.context == context_name,
+                         PhoneFunckey.typeextenumbers == None,
+                         PhoneFunckey.typevalextenumbers == None,
+                         PhoneFunckey.supervision == 1,
+                         PhoneFunckey.progfunckey == 0))
+            .all())
+
+    return [{'exten': exten} for (exten,) in rows]
+
+
+@daosession
 def find_exten_phonefunckeys_settings(session, context_name):
     """get all supervised user/group/queue/meetme
     """
