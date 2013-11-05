@@ -74,10 +74,10 @@ class TestValidator(unittest.TestCase):
         user_voicemail = UserVoicemail(user_id=1, voicemail_id=2)
 
         ule_find_all_by_user_id.return_value = [Mock()]
-        voicemail_find_all_by_user_id.return_value = []
+        voicemail_find_all_by_user_id.return_value = [Mock()]
 
         self.assertRaises(InvalidParametersError, validator.validate_association, user_voicemail)
-        voicemail_find_all_by_user_id.assert_called_once_with(user_voicemail.voicemail_id)
+        voicemail_find_all_by_user_id.assert_called_once_with(user_voicemail.user_id)
 
     @patch('xivo_dao.data_handler.user.dao.get')
     @patch('xivo_dao.data_handler.voicemail.dao.get')
@@ -91,10 +91,10 @@ class TestValidator(unittest.TestCase):
         user_voicemail = UserVoicemail(user_id=1, voicemail_id=2)
 
         ule_find_all_by_user_id.return_value = [Mock()]
-        voicemail_find_all_by_user_id.return_value = [Mock()]
+        voicemail_find_all_by_user_id.return_value = []
 
         validator.validate_association(user_voicemail)
         user_get.assert_called_once_with(user_voicemail.user_id)
         voicemail_get.assert_called_once_with(user_voicemail.voicemail_id)
         ule_find_all_by_user_id.assert_called_once_with(user_voicemail.user_id)
-        voicemail_find_all_by_user_id.assert_called_once_with(user_voicemail.voicemail_id)
+        voicemail_find_all_by_user_id.assert_called_once_with(user_voicemail.user_id)
