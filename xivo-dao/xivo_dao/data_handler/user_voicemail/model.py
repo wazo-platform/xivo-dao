@@ -15,9 +15,10 @@
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-from xivo_dao.converters.database_converter import DatabaseConverter
 
+from xivo_dao.converters.database_converter import DatabaseConverter
 from xivo_dao.helpers.new_model import NewModel
+
 
 DB_TO_MODEL_MAPPING = {
     'user_id': 'user_id',

@@ -65,36 +65,36 @@ class TestValidator(unittest.TestCase):
     @patch('xivo_dao.data_handler.user.dao.get')
     @patch('xivo_dao.data_handler.voicemail.dao.get')
     @patch('xivo_dao.data_handler.user_line_extension.dao.find_all_by_user_id')
-    @patch('xivo_dao.data_handler.user_voicemail.dao.find_all_by_user_id')
+    @patch('xivo_dao.data_handler.user_voicemail.dao.get_by_user_id')
     def test_validate_association_voicemail_when_user_already_has_a_voicemail(self,
-                                                                              voicemail_find_all_by_user_id,
+                                                                              voicemail_get_by_user_id,
                                                                               ule_find_all_by_user_id,
                                                                               voicemail_get,
                                                                               user_get):
         user_voicemail = UserVoicemail(user_id=1, voicemail_id=2)
 
         ule_find_all_by_user_id.return_value = [Mock()]
-        voicemail_find_all_by_user_id.return_value = []
+        voicemail_get_by_user_id.side_effect = ElementNotExistsError('')
 
         self.assertRaises(InvalidParametersError, validator.validate_association, user_voicemail)
-        voicemail_find_all_by_user_id.assert_called_once_with(user_voicemail.voicemail_id)
+        voicemail_get_by_user_id.assert_called_once_with(user_voicemail.voicemail_id)
 
     @patch('xivo_dao.data_handler.user.dao.get')
     @patch('xivo_dao.data_handler.voicemail.dao.get')
     @patch('xivo_dao.data_handler.user_line_extension.dao.find_all_by_user_id')
-    @patch('xivo_dao.data_handler.user_voicemail.dao.find_all_by_user_id')
+    @patch('xivo_dao.data_handler.user_voicemail.dao.get_by_user_id')
     def test_validate_association(self,
-                                  voicemail_find_all_by_user_id,
+                                  voicemail_get_by_user_id,
                                   ule_find_all_by_user_id,
                                   voicemail_get,
                                   user_get):
         user_voicemail = UserVoicemail(user_id=1, voicemail_id=2)
 
         ule_find_all_by_user_id.return_value = [Mock()]
-        voicemail_find_all_by_user_id.return_value = [Mock()]
+        voicemail_get_by_user_id.return_value = [Mock()]
 
         validator.validate_association(user_voicemail)
         user_get.assert_called_once_with(user_voicemail.user_id)
         voicemail_get.assert_called_once_with(user_voicemail.voicemail_id)
         ule_find_all_by_user_id.assert_called_once_with(user_voicemail.user_id)
-        voicemail_find_all_by_user_id.assert_called_once_with(user_voicemail.voicemail_id)
+        voicemail_get_by_user_id.assert_called_once_with(user_voicemail.voicemail_id)

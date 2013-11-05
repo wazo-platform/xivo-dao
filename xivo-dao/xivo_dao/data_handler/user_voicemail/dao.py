@@ -19,6 +19,7 @@
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.data_handler.user_voicemail.model import db_converter
 from xivo_dao.helpers.db_manager import daosession
+from xivo_dao.data_handler.exception import ElementNotExistsError
 
 
 @daosession
@@ -36,10 +37,13 @@ def associate(session, user_voicemail):
 
 
 @daosession
-def find_all_by_user_id(session, user_id):
-    query = (session.query(UserFeatures.id.label('user_id'),
+def get_by_user_id(session, user_id):
+    row = (session.query(UserFeatures.id.label('user_id'),
                            UserFeatures.voicemailid.label('voicemail_id'))
              .filter(UserFeatures.id == user_id)
-             .filter(UserFeatures.voicemailid != None))
+             .filter(UserFeatures.voicemailid != None)
+             .first())
+    if not row:
+        raise ElementNotExistsError('Voicemail', user_id=user_id)
 
-    return [db_converter.to_model(row) for row in query]
+    return db_converter.to_model(row)

@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
 from xivo_dao.data_handler.user_voicemail import validator, dao, notifier
 
 
@@ -23,3 +24,7 @@ def associate(user_voicemail):
     dao.associate(user_voicemail)
     notifier.associated(user_voicemail)
     return user_voicemail
+
+
+def get_by_user_id(user_id):
+    return dao.get_by_user_id(user_id)

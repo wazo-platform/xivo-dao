@@ -16,7 +16,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from hamcrest import assert_that, has_length, all_of, has_property, instance_of, contains
+from hamcrest import *
 
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.callfilter import Callfilter
@@ -39,6 +39,7 @@ from xivo_dao.alchemy.voicemail import Voicemail as VoicemailSchema
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.data_handler.user_voicemail import dao as user_voicemail_dao
 from xivo_dao.data_handler.user_voicemail.model import UserVoicemail
+from xivo_dao.data_handler.exception import ElementNotExistsError
 
 
 USER_TABLES = [UserFeatures, LineFeatures, ContextInclude, AgentFeatures,
@@ -73,35 +74,29 @@ class TestCase(DAOTestCase):
 
         self.assertEquals(result_user_row.voicemailid, voicemail_row.uniqueid)
 
-    def test_find_all_by_user_id_no_users_or_voicemail(self):
-        result = user_voicemail_dao.find_all_by_user_id(1)
+    def test_get_by_user_id_no_users_or_voicemail(self):
+        self.assertRaises(ElementNotExistsError, user_voicemail_dao.get_by_user_id, 1)
 
-        assert_that(result, has_length(0))
-
-    def test_find_all_by_user_id_with_user_without_line_or_voicemail(self):
+    def test_get_by_user_id_with_user_without_line_or_voicemail(self):
         user_row = self.add_user(firstname='King')
 
-        result = user_voicemail_dao.find_all_by_user_id(user_row.id)
+        self.assertRaises(ElementNotExistsError, user_voicemail_dao.get_by_user_id, user_row.id)
 
-        assert_that(result, has_length(0))
-
-    def test_find_all_by_user_id_with_user_without_voicemail(self):
+    def test_get_by_user_id_with_user_without_voicemail(self):
         user_row = self.add_user_line_with_exten(firstname='King', exten='1000', context='default')
 
-        result = user_voicemail_dao.find_all_by_user_id(user_row.id)
+        self.assertRaises(ElementNotExistsError, user_voicemail_dao.get_by_user_id, user_row.id)
 
-        assert_that(result, has_length(0))
-
-    def test_find_all_by_user_id_with_voicemail(self):
+    def test_get_by_user_id_with_voicemail(self):
         user_row, voicemail_row = self.create_user_and_voicemail(firstname='King', exten='1000', context='default')
 
-        result = user_voicemail_dao.find_all_by_user_id(user_row.id)
+        result = user_voicemail_dao.get_by_user_id(user_row.id)
 
-        assert_that(result, contains(all_of(
-            instance_of(UserVoicemail),
+        assert_that(result, instance_of(UserVoicemail))
+        assert_that(result,
             has_property('user_id', user_row.id),
             has_property('voicemail_id', voicemail_row.uniqueid)
-        )))
+        )
 
     def create_user_and_voicemail(self, firstname, exten, context):
         user_line_row = self.add_user_line_with_exten(firstname='King', exten='1000', context='default')

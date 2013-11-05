@@ -59,7 +59,7 @@ def _validate_user_has_line(user_voicemail):
 
 
 def _validate_user_does_not_have_a_voicemail(user_voicemail):
-    user_voicemails = user_voicemail_dao.find_all_by_user_id(user_voicemail.voicemail_id)
-    if len(user_voicemails) == 0:
+    try:
+        user_voicemail_dao.get_by_user_id(user_voicemail.voicemail_id)
+    except ElementNotExistsError:
         raise InvalidParametersError(['user with id %s already has a voicemail' % user_voicemail.user_id])
-
