@@ -48,9 +48,15 @@ def _associate_voicemail_with_user(session, user_voicemail):
 
 def _associate_voicemail_with_line(session, user_voicemail):
     voicemail = voicemail_dao.get(user_voicemail.voicemail_id)
-    user_lines = user_line_dao.find_all_by_user_id(user_voicemail.user_id)
+    user_lines = _find_main_user_lines(user_voicemail)
+
     for user_line in user_lines:
         _associate_voicemail_with_protocol(session, voicemail, user_line.line_id)
+
+
+def _find_main_user_lines(user_voicemail):
+    user_lines = user_line_dao.find_all_by_user_id(user_voicemail.user_id)
+    return [user_line for user_line in  user_lines if user_line.main_user]
 
 
 def _associate_voicemail_with_protocol(session, voicemail, line_id):

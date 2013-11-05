@@ -82,6 +82,17 @@ class TestAssociate(DAOTestCase):
         self.assert_user_was_associated_with_voicemail(user_id, voicemail_id, enabled=False)
         self.assert_sip_line_was_associated_with_voicemail(protocol_id, voicemail_id)
 
+    def test_associate_with_sip_line_when_secondary_user(self):
+        extension = '1000'
+        main_user_id, secondary_user_id, line_id, protocol_id = self.prepare_main_and_secondary_user(extension, 'sip')
+        voicemail_id = self.prepare_voicemail(extension)
+
+        user_voicemail = UserVoicemail(user_id=secondary_user_id, voicemail_id=voicemail_id)
+        user_voicemail_dao.associate(user_voicemail)
+
+        self.assert_user_was_associated_with_voicemail(secondary_user_id, voicemail_id, enabled=True)
+        self.assert_sip_line_was_not_associated_with_voicemail(protocol_id, voicemail_id)
+
     def test_associate_with_sccp_line(self):
         extension = '1000'
         user_id, line_id, protocol_id = self.prepare_user_and_line(extension, 'sccp')
@@ -148,6 +159,12 @@ class TestAssociate(DAOTestCase):
         voicemail_row = self.session.query(VoicemailSchema).get(voicemail_id)
 
         assert_that(result_usersip_row.mailbox, equal_to('%s@%s' % (voicemail_row.mailbox, voicemail_row.context)))
+
+    def assert_sip_line_was_not_associated_with_voicemail(self, protocol_id, voicemail_id):
+        result_usersip_row = self.session.query(UserSIPSchema).get(protocol_id)
+        voicemail_row = self.session.query(VoicemailSchema).get(voicemail_id)
+
+        assert_that(result_usersip_row.mailbox, none())
 
     def assert_sccp_line_was_associated_with_voicemail(self, extension, voicemail_id):
         sccp_device_row = self.session.query(SCCPDeviceSchema).filter(SCCPDeviceSchema.line == extension).first()
