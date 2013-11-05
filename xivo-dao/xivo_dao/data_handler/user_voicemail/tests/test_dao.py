@@ -16,7 +16,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from hamcrest import assert_that, has_length, all_of, has_property, instance_of, contains
+from hamcrest import assert_that, has_length, all_of, has_property, instance_of, contains, equal_to
 
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.callfilter import Callfilter
@@ -27,12 +27,14 @@ from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
 from xivo_dao.alchemy.ctipresences import CtiPresences
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
-from xivo_dao.alchemy.linefeatures import LineFeatures
+from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.phonefunckey import PhoneFunckey
 from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.schedulepath import SchedulePath
+from xivo_dao.alchemy.sccpdevice import SCCPDevice as SCCPDeviceSchema
 from xivo_dao.alchemy.userfeatures import UserFeatures
+from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.voicemail import Voicemail as VoicemailSchema
 
@@ -41,37 +43,80 @@ from xivo_dao.data_handler.user_voicemail import dao as user_voicemail_dao
 from xivo_dao.data_handler.user_voicemail.model import UserVoicemail
 
 
-USER_TABLES = [UserFeatures, LineFeatures, ContextInclude, AgentFeatures,
+USER_TABLES = [UserFeatures, LineSchema, ContextInclude, AgentFeatures,
                CtiPresences, CtiPhoneHintsGroup, CtiProfile, QueueMember,
                RightCallMember, Callfiltermember, Callfilter, Dialaction,
-               PhoneFunckey, SchedulePath, ExtensionSchema, UserLine]
+               PhoneFunckey, SchedulePath, ExtensionSchema, UserLine, UserSIPSchema,
+               SCCPDeviceSchema]
 
 
 class TestCase(DAOTestCase):
 
     tables = USER_TABLES + [
         VoicemailSchema,
-        LineFeatures
+        LineSchema
     ]
 
     def setUp(self):
         self.empty_tables()
 
-    def test_associate(self):
-        user_line_row = self.add_user_line_with_exten(firstname='King', exten='1000', context='default')
-        user_row = self.session.query(UserFeatures).get(user_line_row.user_id)
-        voicemail_row = self.add_voicemail('1000', 'default')
-
-        user_id = user_row.id
-        voicemail_id = voicemail_row.uniqueid
+    def test_associate_with_sip_line(self):
+        extension = '1000'
+        user_id, voicemail_id, line_id, protocol_id = self.prepare_user_line_and_voicemail(extension, 'sip')
+        self.add_usersip(id=protocol_id, context='default')
 
         user_voicemail = UserVoicemail(user_id=user_id, voicemail_id=voicemail_id)
-
         user_voicemail_dao.associate(user_voicemail)
 
-        result_user_row = self.session.query(UserFeatures).get(user_row.id)
+        self.assert_user_was_associated_with_voicemail(user_id, voicemail_id)
+        self.assert_sip_line_was_associated_with_voicemail(protocol_id, voicemail_id)
 
-        self.assertEquals(result_user_row.voicemailid, voicemail_row.uniqueid)
+    def test_associate_with_sccp_line(self):
+        extension = '1000'
+        user_id, voicemail_id, line_id, protocol_id = self.prepare_user_line_and_voicemail(extension, 'sccp')
+        self.add_sccpdevice(id=protocol_id, name='SEP001122334455', device='SEP001122334455', line=extension)
+
+        user_voicemail = UserVoicemail(user_id=user_id, voicemail_id=voicemail_id)
+        user_voicemail_dao.associate(user_voicemail)
+
+        self.assert_user_was_associated_with_voicemail(user_id, voicemail_id)
+        self.assert_sccp_line_was_associated_with_voicemail(extension, voicemail_id)
+
+    def prepare_user_line_and_voicemail(self, exten, protocol):
+        user_line_row = self.add_user_line_with_exten(firstname='King',
+                                                      exten=exten,
+                                                      context='default',
+                                                      protocol=protocol)
+
+        voicemail_row = self.add_voicemail(exten, 'default')
+
+        user_id = user_line_row.user_id
+        voicemail_id = voicemail_row.uniqueid
+        line_id = user_line_row.line_id
+        protocol_id = self.session.query(LineSchema).get(user_line_row.line_id).protocolid
+
+        return user_id, voicemail_id, line_id, protocol_id
+
+    def assert_user_was_associated_with_voicemail(self, user_id, voicemail_id):
+        result_user_row = self.session.query(UserFeatures).get(user_id)
+
+        assert_that(result_user_row.voicemailid, equal_to(voicemail_id))
+        assert_that(result_user_row.voicemailtype, equal_to('asterisk'))
+
+    def assert_sip_line_was_associated_with_voicemail(self, protocol_id, voicemail_id):
+        result_usersip_row = self.session.query(UserSIPSchema).get(protocol_id)
+        voicemail_row = self.session.query(VoicemailSchema).get(voicemail_id)
+
+        assert_that(result_usersip_row.mailbox, equal_to('%s@%s' % (voicemail_row.mailbox, voicemail_row.context)))
+
+    def assert_sccp_line_was_associated_with_voicemail(self, extension, voicemail_id):
+        sccp_device_row = self.session.query(SCCPDeviceSchema).filter(SCCPDeviceSchema.line == extension).first()
+        voicemail_row = self.session.query(VoicemailSchema).get(voicemail_id)
+
+        assert_that(sccp_device_row.voicemail, equal_to(voicemail_row.mailbox))
+
+
+
 
     def test_find_all_by_user_id_no_users_or_voicemail(self):
         result = user_voicemail_dao.find_all_by_user_id(1)
