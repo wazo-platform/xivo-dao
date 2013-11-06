@@ -189,7 +189,7 @@ class TestUserVoicemailGetByUserId(DAOTestCase):
     def test_get_by_user_id_with_user_without_line_or_voicemail(self):
         user_row = self.add_user(firstname='King')
 
-        self.assertRaises(ElementNotExistsError, user_voicemail_dao.get_by_user_id, user_row.id)
+        self.assertRaises(UserVoicemailNotExistsError, user_voicemail_dao.get_by_user_id, user_row.id)
 
     def test_get_by_user_id_with_user_without_voicemail(self):
         user_row = self.add_user_line_with_exten(firstname='King', exten='1000', context='default')

@@ -83,7 +83,7 @@ class TestValidator(unittest.TestCase):
         voicemail_get_by_user_id.side_effect = Mock(UserVoicemail)
 
         self.assertRaises(InvalidParametersError, validator.validate_association, user_voicemail)
-        voicemail_get_by_user_id.assert_called_once_with(user_voicemail.voicemail_id)
+        voicemail_get_by_user_id.assert_called_once_with(user_voicemail.user_id)
         ule_find_all_by_user_id.assert_called_once_with(user_voicemail.user_id)
 
     @patch('xivo_dao.data_handler.user.dao.get')
@@ -105,4 +105,4 @@ class TestValidator(unittest.TestCase):
         user_get.assert_called_once_with(user_voicemail.user_id)
         voicemail_get.assert_called_once_with(user_voicemail.voicemail_id)
         ule_find_all_by_user_id.assert_called_once_with(user_voicemail.user_id)
-        voicemail_get_by_user_id.assert_called_once_with(user_voicemail.voicemail_id)
+        voicemail_get_by_user_id.assert_called_once_with(user_voicemail.user_id)
