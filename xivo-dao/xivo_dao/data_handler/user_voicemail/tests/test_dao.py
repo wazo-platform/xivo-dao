@@ -42,6 +42,7 @@ from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.data_handler.user_voicemail import dao as user_voicemail_dao
 from xivo_dao.data_handler.user_voicemail.model import UserVoicemail
 from xivo_dao.data_handler.exception import ElementNotExistsError
+from xivo_dao.data_handler.user_voicemail.exception import UserVoicemailNotExistsError
 
 
 USER_TABLES = [UserFeatures, LineSchema, ContextInclude, AgentFeatures,
