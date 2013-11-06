@@ -43,6 +43,7 @@ def _validate_invalid_parameters(user_voicemail):
     if not isinstance(user_voicemail.enabled, bool):
         raise InvalidParametersError(['enabled must be a boolean'])
 
+
 def _validate_user_id(user_voicemail):
     try:
         return user_dao.get(user_voicemail.user_id)
@@ -64,7 +65,8 @@ def _validate_user_has_line(user_voicemail):
 
 
 def _validate_user_does_not_have_a_voicemail(user_voicemail):
-    user_voicemails = user_voicemail_dao.find_all_by_user_id(user_voicemail.user_id)
-    if len(user_voicemails) > 0:
+    try:
+        user_voicemail_dao.get_by_user_id(user_voicemail.voicemail_id)
         raise InvalidParametersError(['user with id %s already has a voicemail' % user_voicemail.user_id])
-
+    except ElementNotExistsError:
+        pass

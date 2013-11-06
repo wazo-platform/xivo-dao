@@ -16,7 +16,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from hamcrest import assert_that, has_length, all_of, has_property, instance_of, contains, equal_to, none
+from hamcrest import assert_that, has_property, instance_of, equal_to, none
 
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.callfilter import Callfilter
@@ -41,6 +41,7 @@ from xivo_dao.alchemy.voicemail import Voicemail as VoicemailSchema
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.data_handler.user_voicemail import dao as user_voicemail_dao
 from xivo_dao.data_handler.user_voicemail.model import UserVoicemail
+from xivo_dao.data_handler.exception import ElementNotExistsError
 
 
 USER_TABLES = [UserFeatures, LineSchema, ContextInclude, AgentFeatures,
@@ -50,7 +51,7 @@ USER_TABLES = [UserFeatures, LineSchema, ContextInclude, AgentFeatures,
                SCCPDeviceSchema]
 
 
-class TestAssociate(DAOTestCase):
+class TestAssociateUserVoicemail(DAOTestCase):
 
     tables = USER_TABLES + [
         VoicemailSchema,
@@ -125,7 +126,7 @@ class TestAssociate(DAOTestCase):
         return user_id, line_id, protocol_id
 
     def prepare_voicemail(self, number):
-        voicemail_row = self.add_voicemail(number, 'default')
+        voicemail_row = self.add_voicemail(mailbox=number, context='default')
         return voicemail_row.uniqueid
 
     def prepare_main_and_secondary_user(self, number, protocol):
@@ -133,17 +134,17 @@ class TestAssociate(DAOTestCase):
         secondary_user_row = self.add_user(firstname='Secondary')
         line_row = self.add_line(number=number)
         extension_row = self.add_extension(exten=number)
-        usersip_row = self.add_usersip(id=line_row.protocolid, context='default')
+        self.add_usersip(id=line_row.protocolid, context='default')
 
-        main_user_line_row = self.add_user_line(user_id=main_user_row.id,
-                                                line_id=line_row.id,
-                                                extension_id=extension_row.id,
-                                                main_user=True)
+        self.add_user_line(user_id=main_user_row.id,
+                           line_id=line_row.id,
+                           extension_id=extension_row.id,
+                           main_user=True)
 
-        secondary_user_line_row = self.add_user_line(user_id = secondary_user_row.id,
-                                                     line_id=line_row.id,
-                                                     extension_id=extension_row.id,
-                                                     main_user=False)
+        self.add_user_line(user_id=secondary_user_row.id,
+                           line_id=line_row.id,
+                           extension_id=extension_row.id,
+                           main_user=False)
 
         return main_user_row.id, secondary_user_row.id, line_row.id, line_row.protocolid
 
@@ -162,7 +163,6 @@ class TestAssociate(DAOTestCase):
 
     def assert_sip_line_was_not_associated_with_voicemail(self, protocol_id, voicemail_id):
         result_usersip_row = self.session.query(UserSIPSchema).get(protocol_id)
-        voicemail_row = self.session.query(VoicemailSchema).get(voicemail_id)
 
         assert_that(result_usersip_row.mailbox, none())
 
@@ -172,7 +172,8 @@ class TestAssociate(DAOTestCase):
 
         assert_that(sccp_device_row.voicemail, equal_to(voicemail_row.mailbox))
 
-class TestFindAllByUserId(DAOTestCase):
+
+class TestUserVoicemailGetByUserId(DAOTestCase):
 
     tables = USER_TABLES + [
         VoicemailSchema,
@@ -182,48 +183,32 @@ class TestFindAllByUserId(DAOTestCase):
     def setUp(self):
         self.empty_tables()
 
-    def test_find_all_by_user_id_no_users_or_voicemail(self):
-        result = user_voicemail_dao.find_all_by_user_id(1)
+    def test_get_by_user_id_no_users_or_voicemail(self):
+        self.assertRaises(ElementNotExistsError, user_voicemail_dao.get_by_user_id, 1)
 
-        assert_that(result, has_length(0))
-
-    def test_find_all_by_user_id_with_user_without_line_or_voicemail(self):
+    def test_get_by_user_id_with_user_without_line_or_voicemail(self):
         user_row = self.add_user(firstname='King')
 
-        result = user_voicemail_dao.find_all_by_user_id(user_row.id)
+        self.assertRaises(ElementNotExistsError, user_voicemail_dao.get_by_user_id, user_row.id)
 
-        assert_that(result, has_length(0))
-
-    def test_find_all_by_user_id_with_user_without_voicemail(self):
+    def test_get_by_user_id_with_user_without_voicemail(self):
         user_row = self.add_user_line_with_exten(firstname='King', exten='1000', context='default')
 
-        result = user_voicemail_dao.find_all_by_user_id(user_row.id)
+        self.assertRaises(ElementNotExistsError, user_voicemail_dao.get_by_user_id, user_row.id)
 
-        assert_that(result, has_length(0))
-
-    def test_find_all_by_user_id_with_voicemail(self):
+    def test_get_by_user_id_with_voicemail(self):
         user_row, voicemail_row = self.create_user_and_voicemail(firstname='King', exten='1000', context='default')
 
-        result = user_voicemail_dao.find_all_by_user_id(user_row.id)
+        result = user_voicemail_dao.get_by_user_id(user_row.id)
 
-        assert_that(result, contains(all_of(
-            instance_of(UserVoicemail),
-            has_property('user_id', user_row.id),
-            has_property('voicemail_id', voicemail_row.uniqueid)
-        )))
-
-    def test_find_all_by_user_id_with_unassociated_voicemail(self):
-        user_row = self.add_user(firstname='King', voicemailid=0)
-
-        result = user_voicemail_dao.find_all_by_user_id(user_row.id)
-
-        assert_that(result, has_length(0))
+        assert_that(result, instance_of(UserVoicemail))
+        assert_that(result,
+                    has_property('user_id', user_row.id),
+                    has_property('voicemail_id', voicemail_row.uniqueid))
 
     def create_user_and_voicemail(self, firstname, exten, context):
-        user_row = self.add_user(firstname='King')
-        line_row = self.add_line(number='1000', context='default')
-        extension_row = self.add_extension(exten='1000', context='default')
-        user_line_row = self.add_user_line(user_id=user_row.id, line_id=line_row.id, extension_id=extension_row.id)
-        voicemail_row = self.add_voicemail('1000', 'default')
+        user_line_row = self.add_user_line_with_exten(firstname='King', exten='1000', context='default')
+        user_row = self.session.query(UserFeatures).get(user_line_row.user_id)
+        voicemail_row = self.add_voicemail(mailbox='1000', context='default')
         self.link_user_and_voicemail(user_row, voicemail_row.uniqueid)
         return user_row, voicemail_row

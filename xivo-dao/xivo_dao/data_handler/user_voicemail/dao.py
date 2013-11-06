@@ -20,10 +20,13 @@ from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema
 from xivo_dao.alchemy.sccpdevice import SCCPDevice as SCCPDeviceSchema
 from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
+
 from xivo_dao.data_handler.user_voicemail.model import db_converter
-from xivo_dao.helpers.db_manager import daosession
+from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.data_handler.user_line_extension import dao as user_line_dao
 from xivo_dao.data_handler.voicemail import dao as voicemail_dao
+
+from xivo_dao.helpers.db_manager import daosession
 
 
 @daosession
@@ -56,13 +59,13 @@ def _associate_voicemail_with_line(session, user_voicemail):
 
 def _find_main_user_lines(user_voicemail):
     user_lines = user_line_dao.find_all_by_user_id(user_voicemail.user_id)
-    return [user_line for user_line in  user_lines if user_line.main_user]
+    return [user_line for user_line in user_lines if user_line.main_user]
 
 
 def _associate_voicemail_with_protocol(session, voicemail, line_id):
     line_row = (session.query(LineSchema.protocol, LineSchema.protocolid)
-                              .filter(LineSchema.id == line_id)
-                              .first())
+                .filter(LineSchema.id == line_id)
+                .first())
 
     if line_row.protocol == 'sip':
         (session
@@ -86,3 +89,17 @@ def find_all_by_user_id(session, user_id):
              .filter(UserSchema.voicemailid != 0))
 
     return [db_converter.to_model(row) for row in query]
+
+
+@daosession
+def get_by_user_id(session, user_id):
+    row = (session.query(UserSchema.id.label('user_id'),
+                         UserSchema.voicemailid.label('voicemail_id'),
+                         UserSchema.enablevoicemail)
+           .filter(UserSchema.id == user_id)
+           .filter(UserSchema.voicemailid != None)
+           .first())
+    if not row:
+        raise ElementNotExistsError('Voicemail', user_id=user_id)
+
+    return db_converter.to_model(row)

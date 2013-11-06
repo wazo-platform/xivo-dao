@@ -23,6 +23,7 @@ from hamcrest import assert_that, equal_to
 from xivo_dao.data_handler.user_voicemail.model import UserVoicemail
 from xivo_dao.data_handler.user_voicemail import services as user_voicemail_services
 
+
 class TestUserVoicemail(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.user_voicemail.validator.validate_association')
@@ -37,3 +38,17 @@ class TestUserVoicemail(unittest.TestCase):
         validate_association.assert_called_once_with(user_voicemail)
         dao_associate.assert_called_once_with(user_voicemail)
         notifier_associated.assert_called_once_with(user_voicemail)
+
+    @patch('xivo_dao.data_handler.user_voicemail.dao.get_by_user_id')
+    def test_get_by_user_id(self, user_voicemail_get_by_user_id):
+        user_id = 123
+        voicemail_id = 42
+        expected_result = UserVoicemail(user_id=user_id,
+                                        voicemail_id=voicemail_id)
+        user_voicemail_get_by_user_id.return_value = UserVoicemail(user_id=user_id,
+                                                                   voicemail_id=voicemail_id)
+
+        result = user_voicemail_services.get_by_user_id(user_id)
+
+        user_voicemail_get_by_user_id.assert_called_once_with(user_id)
+        assert_that(result, equal_to(expected_result))
