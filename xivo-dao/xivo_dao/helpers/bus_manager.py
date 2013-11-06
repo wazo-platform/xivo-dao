@@ -1,22 +1,19 @@
-from xivo_dao.helpers.notifiers.amqp import publisher
+# -*- coding: utf-8 -*-
 
-BusPublisher = None
+from xivo_bus.ctl.client import BusCtlClient
+
+bus_client = None
 
 
 def _init_bus():
-    global BusPublisher
-    bus_publisher = publisher.AMQPPublisher()
-    bus_publisher.connect('localhost', 5672)
-    BusPublisher = bus_publisher
-
-
-def get_publisher():
-    global BusPublisher
-    if not BusPublisher:
-        _init_bus()
-    return BusPublisher
+    global bus_client
+    bus_client = BusCtlClient()
+    bus_client.connect()
+    bus_client.declare_xivo_exchange()
 
 
 def send_bus_command(command):
-    publisher = get_publisher()
-    publisher.execute_command(command)
+    # TODO rename to send_bus_event
+    if bus_client is None:
+        _init_bus()
+    bus_client.publish_xivo_event(command)
