@@ -17,6 +17,8 @@
 
 from hamcrest import assert_that, contains_inanyorder, equal_to, none
 from xivo_dao import user_dao
+from xivo_dao.tests.test_dao import DAOTestCase
+
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.callfilter import Callfilter
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
@@ -31,7 +33,6 @@ from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.userfeatures import UserFeatures
-from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 from xivo_dao.alchemy.user_line import UserLine
 

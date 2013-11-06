@@ -56,6 +56,10 @@ class ElementNotExistsError(LookupError):
         LookupError.__init__(self, "%s with %s does not exist" % (element, ' '.join(err)))
 
 
+class AssociationNotExistsError(LookupError):
+    pass
+
+
 class ElementCreationError(IOError):
 
     def __init__(self, element, error):
