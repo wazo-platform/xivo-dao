@@ -27,7 +27,5 @@ setup(
         'xivo_dao.data_handler.user_line_extension',
         'xivo_dao.data_handler.voicemail',
         'xivo_dao.helpers',
-        'xivo_dao.helpers.notifiers',
-        'xivo_dao.helpers.notifiers.amqp',
     ]
 )
