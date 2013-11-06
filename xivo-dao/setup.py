@@ -16,8 +16,8 @@ setup(
         'xivo_dao.alchemy',
         'xivo_dao.converters',
         'xivo_dao.data_handler',
-        'xivo_dao.data_handler.cel',
         'xivo_dao.data_handler.call_log',
+        'xivo_dao.data_handler.cel',
         'xivo_dao.data_handler.context',
         'xivo_dao.data_handler.device',
         'xivo_dao.data_handler.extension',
@@ -25,6 +25,7 @@ setup(
         'xivo_dao.data_handler.line',
         'xivo_dao.data_handler.user',
         'xivo_dao.data_handler.user_line_extension',
+        'xivo_dao.data_handler.user_voicemail',
         'xivo_dao.data_handler.voicemail',
         'xivo_dao.helpers',
     ]
