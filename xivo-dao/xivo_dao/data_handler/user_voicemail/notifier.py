@@ -16,8 +16,10 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+from xivo_bus.resources.user_voicemail import event
 from xivo_dao.data_handler.user_line_extension import dao as user_line_dao
 from xivo_dao.helpers import sysconfd_connector
+from xivo_dao.helpers import bus_manager
 
 
 def associated(user_voicemail):
@@ -46,5 +48,7 @@ def _generate_ctibus_commands(user_voicemail):
 
 
 def bus_event_associated(user_voicemail):
-    #raise NotImplementedError()
-    pass
+    bus_event = event.UserVoicemailAssociatedEvent(user_voicemail.user_id,
+                                                   user_voicemail.voicemail_id,
+                                                   user_voicemail.enabled)
+    bus_manager.send_bus_command(bus_event)
