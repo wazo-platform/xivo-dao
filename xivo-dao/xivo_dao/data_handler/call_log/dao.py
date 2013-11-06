@@ -67,7 +67,11 @@ def create_call_log(session, call_log):
 
 def _link_call_log(session, call_log, call_log_id):
     data_dict = {'call_log_id': int(call_log_id)}
-    session.query(CELSchema).filter(CELSchema.id.in_(call_log.get_related_cels())).update(data_dict, synchronize_session=False)
+    related_cels = call_log.get_related_cels()
+    if related_cels:
+        session.query(CELSchema).filter(
+            CELSchema.id.in_(related_cels)
+        ).update(data_dict, synchronize_session=False)
 
 
 @daosession
