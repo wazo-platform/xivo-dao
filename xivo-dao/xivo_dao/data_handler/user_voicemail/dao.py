@@ -52,14 +52,14 @@ def _associate_voicemail_with_user(session, user_voicemail):
 
 def _associate_voicemail_with_line(session, user_voicemail):
     voicemail = voicemail_dao.get(user_voicemail.voicemail_id)
-    user_lines = _find_main_user_lines(user_voicemail)
+    user_lines = _find_main_user_lines(user_voicemail.user_id)
 
     for user_line in user_lines:
         _associate_voicemail_with_protocol(session, voicemail, user_line.line_id)
 
 
-def _find_main_user_lines(user_voicemail):
-    user_lines = user_line_dao.find_all_by_user_id(user_voicemail.user_id)
+def _find_main_user_lines(user_id):
+    user_lines = user_line_dao.find_all_by_user_id(user_id)
     return [user_line for user_line in user_lines if user_line.main_user]
 
 
@@ -95,3 +95,39 @@ def get_by_user_id(session, user_id):
         raise UserVoicemailNotExistsError.from_user_id(user_id)
 
     return db_converter.to_model(row)
+
+@daosession
+def dissociate(session, user_id):
+    _dissociate_voicemail_from_user(session, user_id)
+    _dissociate_voicemail_from_line(session, user_id)
+
+def _dissociate_voicemail_from_user(session, user_id):
+    user_row = (session.query(UserSchema)
+                .filter(UserSchema.id == user_id)
+                .first())
+    if user_row:
+        user_row.voicemailid = None
+        user_row.voicemailtype = None
+        user_row.enablevoicemail = 0
+        session.add(user_row)
+
+def _dissociate_voicemail_from_line(session, user_id):
+    user_lines = _find_main_user_lines(user_id)
+    for user_line in user_lines:
+        _dissociate_voicemail_from_protocol(session, user_line.line_id)
+
+def _dissociate_voicemail_from_protocol(session, line_id):
+    line_row = (session.query(LineSchema.protocol, LineSchema.protocolid)
+                .filter(LineSchema.id == line_id)
+                .first())
+
+    if line_row.protocol == 'sip':
+        (session
+         .query(UserSIPSchema)
+         .filter(UserSIPSchema.id == line_row.protocolid)
+         .update({'mailbox': None}))
+    elif line_row.protocol == 'sccp':
+        (session
+         .query(SCCPDeviceSchema)
+         .filter(SCCPDeviceSchema.id == line_row.protocolid)
+         .update({'voicemail': ''}))

@@ -29,7 +29,7 @@ class TestUserVoicemail(unittest.TestCase):
     @patch('xivo_dao.data_handler.user_voicemail.validator.validate_association')
     @patch('xivo_dao.data_handler.user_voicemail.dao.associate')
     @patch('xivo_dao.data_handler.user_voicemail.notifier.associated')
-    def test_associate(self, notifier_associated, validate_association, dao_associate):
+    def test_associate(self, notifier_associated, dao_associate, validate_association):
         user_voicemail = Mock(UserVoicemail)
 
         result = user_voicemail_services.associate(user_voicemail)
@@ -52,3 +52,16 @@ class TestUserVoicemail(unittest.TestCase):
 
         user_voicemail_get_by_user_id.assert_called_once_with(user_id)
         assert_that(result, equal_to(expected_result))
+
+    @patch('xivo_dao.data_handler.user_voicemail.dao.dissociate')
+    @patch('xivo_dao.data_handler.user_voicemail.notifier.dissociated')
+    @patch('xivo_dao.data_handler.user_voicemail.validator.validate_dissociation')
+    def test_dissociate(self, validate_dissociation, notifier_dissociated, dao_dissociate):
+        user_voicemail = Mock(UserVoicemail)
+        validate_dissociation.return_value = user_voicemail
+        
+        user_voicemail_services.dissociate_by_user_id(3)
+
+        validate_dissociation.assert_called_once_with(3)
+        dao_dissociate.assert_called_once_with(3)
+        notifier_dissociated.assert_called_once_with(user_voicemail)
