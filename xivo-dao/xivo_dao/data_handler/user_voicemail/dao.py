@@ -98,8 +98,10 @@ def get_by_user_id(session, user_id):
 
 @daosession
 def dissociate(session, user_id):
+    session.begin()
     _dissociate_voicemail_from_user(session, user_id)
     _dissociate_voicemail_from_line(session, user_id)
+    session.commit()
 
 def _dissociate_voicemail_from_user(session, user_id):
     user_row = (session.query(UserSchema)
