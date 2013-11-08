@@ -57,5 +57,6 @@ def bus_event_associated(user_voicemail):
 
 def bus_event_dissociated(user_voicemail):
     bus_event = event.UserVoicemailDissociatedEvent(user_voicemail.user_id,
-                                                   user_voicemail.voicemail_id)
+                                                   user_voicemail.voicemail_id,
+                                                   False)
     bus_manager.send_bus_command(bus_event)
