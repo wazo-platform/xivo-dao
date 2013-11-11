@@ -16,10 +16,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao import context_dao as old_context_dao
-from xivo_dao.data_handler.exception import MissingParametersError, InvalidParametersError, \
-    ElementAlreadyExistsError
-from xivo_dao.data_handler.context.model import Context, ContextType
+from xivo_dao.data_handler.exception import InvalidParametersError
 from xivo_dao.data_handler.context import dao as context_dao
+from xivo_dao.data_handler.context import validator
 
 
 class ContextRange(object):
@@ -35,7 +34,7 @@ def find_by_name(context_name):
 
 
 def create(context):
-    _validate(context)
+    validator.validate_create(context)
     created_context = context_dao.create(context)
     return created_context
 
@@ -65,37 +64,3 @@ def is_extension_valid_for_context_range(extension, context_range):
     exten = _validate_exten(extension)
     context_ranges = context_dao.find_all_specific_context_ranges(extension.context, context_range)
     return is_extension_included_in_ranges(exten, context_ranges)
-
-
-def _validate(context):
-    _validate_missing(context)
-    _validate_empty(context)
-    _validate_context_type(context)
-    _validate_exists_already(context)
-
-
-def _validate_missing(context):
-    missing = context.missing_parameters()
-    if len(missing) > 0:
-        raise MissingParametersError(missing)
-
-
-def _validate_empty(context):
-    empty = []
-    for parameter in Context.MANDATORY:
-        if getattr(context, parameter).strip() == '':
-            empty.append(parameter)
-
-    if len(empty) > 0:
-        raise InvalidParametersError(empty)
-
-
-def _validate_context_type(context):
-    if context.type not in ContextType.all():
-        raise InvalidParametersError(['type'])
-
-
-def _validate_exists_already(context):
-    existing_context = find_by_name(context.name)
-    if existing_context:
-        raise ElementAlreadyExistsError('context')
