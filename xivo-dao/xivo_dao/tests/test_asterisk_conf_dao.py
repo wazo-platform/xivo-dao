@@ -52,6 +52,7 @@ from xivo_dao.alchemy.staticvoicemail import StaticVoicemail
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.alchemy.usersip import UserSIP
+from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.voicemail import Voicemail
 from xivo_dao.tests.test_dao import DAOTestCase
 
@@ -93,6 +94,7 @@ class TestAsteriskConfDAO(DAOTestCase):
               UserLine,
               UserFeatures,
               UserSIP,
+              UserIAX,
               Voicemail]
 
     def setUp(self):
@@ -836,28 +838,66 @@ class TestAsteriskConfDAO(DAOTestCase):
         assert_that(iax_settings, contains_inanyorder(*expected_result))
 
     def test_find_iax_trunk_settings(self):
-        self.add_iax_general_settings(category='user')
-        iax1 = self.add_iax_general_settings(category='trunk')
-        iax2 = self.add_iax_general_settings(category='trunk')
-        self.add_iax_general_settings(commented=1)
+        self.add_useriax(category='user')
+        iax = self.add_useriax(category='trunk')
+        self.add_useriax(commented=1)
 
         expected_result = [
-            {'category': u'trunk',
-             'cat_metric': 0,
-             'filename': u'sip.conf',
-             'var_metric': 0,
-             'var_name': iax1.var_name,
-             'var_val': iax1.var_val,
-             'id': iax1.id,
-             'commented': 0},
-            {'category': u'trunk',
-             'cat_metric': 0,
-             'filename': u'sip.conf',
-             'var_metric': 0,
-             'var_name': iax2.var_name,
-             'var_val': iax2.var_val,
-             'id': iax2.id,
-             'commented': 0},
+            {'accountcode': None,
+             'adsi': None,
+             'allow': None,
+             'amaflags': u'default',
+             'auth': u'plaintext,md5',
+             'callerid': None,
+             'category': iax.category,
+             'cid_number': None,
+             'codecpriority': None,
+             'commented': 0,
+             'context': iax.context,
+             'dbsecret': u'',
+             'defaultip': None,
+             'deny': None,
+             'disallow': None,
+             'encryption': None,
+             'forceencryption': None,
+             'forcejitterbuffer': None,
+             'fullname': None,
+             'host': u'dynamic',
+             'id': iax.id,
+             'immediate': None,
+             'inkeys': None,
+             'ipaddr': u'',
+             'jitterbuffer': None,
+             'keyrotate': None,
+             'language': None,
+             'mailbox': None,
+             'mask': None,
+             'maxauthreq': None,
+             'mohinterpret': None,
+             'mohsuggest': None,
+             'name': iax.name,
+             'outkey': None,
+             'parkinglot': None,
+             'peercontext': None,
+             'permit': None,
+             'port': None,
+             'protocol': u'iax',
+             'qualify': u'no',
+             'qualifyfreqnotok': 10000,
+             'qualifyfreqok': 60000,
+             'qualifysmoothing': 0,
+             'regexten': None,
+             'regseconds': 0,
+             'requirecalltoken': u'no',
+             'secret': u'',
+             'sendani': 0,
+             'setvar': u'',
+             'sourceaddress': None,
+             'timezone': None,
+             'transfer': None,
+             'trunk': 0,
+             'type': iax.type,
+             'username': None}
         ]
 
         iax_settings = asterisk_conf_dao.find_iax_trunk_settings()
@@ -865,28 +905,66 @@ class TestAsteriskConfDAO(DAOTestCase):
         assert_that(iax_settings, contains_inanyorder(*expected_result))
 
     def test_find_iax_user_settings(self):
-        self.add_iax_general_settings(category='trunk')
-        iax1 = self.add_iax_general_settings(category='user')
-        iax2 = self.add_iax_general_settings(category='user')
-        self.add_iax_general_settings(category='user', commented=1)
+        self.add_useriax(category='trunk')
+        iax = self.add_useriax(category='user')
+        self.add_useriax(category='user', commented=1)
 
         expected_result = [
-            {'category': u'user',
-             'cat_metric': 0,
-             'filename': u'sip.conf',
-             'var_metric': 0,
-             'var_name': iax1.var_name,
-             'var_val': iax1.var_val,
-             'id': iax1.id,
-             'commented': 0},
-            {'category': u'user',
-             'cat_metric': 0,
-             'filename': u'sip.conf',
-             'var_metric': 0,
-             'var_name': iax2.var_name,
-             'var_val': iax2.var_val,
-             'id': iax2.id,
-             'commented': 0}
+            {'accountcode': None,
+             'adsi': None,
+             'allow': None,
+             'amaflags': u'default',
+             'auth': u'plaintext,md5',
+             'callerid': None,
+             'category': iax.category,
+             'cid_number': None,
+             'codecpriority': None,
+             'commented': 0,
+             'context': iax.context,
+             'dbsecret': u'',
+             'defaultip': None,
+             'deny': None,
+             'disallow': None,
+             'encryption': None,
+             'forceencryption': None,
+             'forcejitterbuffer': None,
+             'fullname': None,
+             'host': u'dynamic',
+             'id': iax.id,
+             'immediate': None,
+             'inkeys': None,
+             'ipaddr': u'',
+             'jitterbuffer': None,
+             'keyrotate': None,
+             'language': None,
+             'mailbox': None,
+             'mask': None,
+             'maxauthreq': None,
+             'mohinterpret': None,
+             'mohsuggest': None,
+             'name': iax.name,
+             'outkey': None,
+             'parkinglot': None,
+             'peercontext': None,
+             'permit': None,
+             'port': None,
+             'protocol': u'iax',
+             'qualify': u'no',
+             'qualifyfreqnotok': 10000,
+             'qualifyfreqok': 60000,
+             'qualifysmoothing': 0,
+             'regexten': None,
+             'regseconds': 0,
+             'requirecalltoken': u'no',
+             'secret': u'',
+             'sendani': 0,
+             'setvar': u'',
+             'sourceaddress': None,
+             'timezone': None,
+             'transfer': None,
+             'trunk': 0,
+             'type': iax.type,
+             'username': None}
         ]
 
         iax_settings = asterisk_conf_dao.find_iax_user_settings()

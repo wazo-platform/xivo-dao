@@ -20,6 +20,7 @@ from sqlalchemy.types import VARCHAR
 
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.usersip import UserSIP
+from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.queuemember import QueueMember
@@ -455,16 +456,16 @@ def find_iax_general_settings(session):
 
 @daosession
 def find_iax_trunk_settings(session):
-    rows = session.query(StaticIAX).filter(and_(StaticIAX.commented == 0,
-                                                StaticIAX.category == 'trunk')).all()
+    rows = session.query(UserIAX).filter(and_(UserIAX.commented == 0,
+                                              UserIAX.category == 'trunk')).all()
 
     return [row.todict() for row in rows]
 
 
 @daosession
 def find_iax_user_settings(session):
-    rows = session.query(StaticIAX).filter(and_(StaticIAX.commented == 0,
-                                                StaticIAX.category == 'user')).all()
+    rows = session.query(UserIAX).filter(and_(UserIAX.commented == 0,
+                                              UserIAX.category == 'user')).all()
 
     return [row.todict() for row in rows]
 

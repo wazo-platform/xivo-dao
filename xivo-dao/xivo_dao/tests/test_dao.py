@@ -33,6 +33,7 @@ from xivo_dao.alchemy.sccpline import SCCPLine as SCCPLineSchema
 from xivo_dao.alchemy.sccpdevice import SCCPDevice as SCCPDeviceSchema
 from xivo_dao.alchemy.usercustom import UserCustom as UserCustomSchema
 from xivo_dao.alchemy.usersip import UserSIP
+from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.dialpattern import DialPattern
 from xivo_dao.alchemy.cel import CEL as CELSchema
 from xivo_dao.alchemy.sccpgeneralsettings import SCCPGeneralSettings
@@ -312,6 +313,16 @@ class DAOTestCase(unittest.TestCase):
         usersip = UserSIP(**kwargs)
         self.add_me(usersip)
         return usersip
+
+    def add_useriax(self, **kwargs):
+        kwargs.setdefault('id', self._generate_id())
+        kwargs.setdefault('name', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
+        kwargs.setdefault('context', 'default')
+        kwargs.setdefault('type', 'friend')
+
+        useriax = UserIAX(**kwargs)
+        self.add_me(useriax)
+        return useriax
 
     def add_usercustom(self, **kwargs):
         kwargs.setdefault('id', self._generate_id())
