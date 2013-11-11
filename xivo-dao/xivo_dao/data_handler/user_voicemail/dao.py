@@ -96,12 +96,14 @@ def get_by_user_id(session, user_id):
 
     return db_converter.to_model(row)
 
+
 @daosession
-def dissociate(session, user_id):
+def dissociate(session, user_voicemail):
     session.begin()
-    _dissociate_voicemail_from_user(session, user_id)
-    _dissociate_voicemail_from_line(session, user_id)
+    _dissociate_voicemail_from_user(session, user_voicemail.user_id)
+    _dissociate_voicemail_from_line(session, user_voicemail.user_id)
     session.commit()
+
 
 def _dissociate_voicemail_from_user(session, user_id):
     user_row = (session.query(UserSchema)
@@ -113,10 +115,12 @@ def _dissociate_voicemail_from_user(session, user_id):
         user_row.enablevoicemail = 0
         session.add(user_row)
 
+
 def _dissociate_voicemail_from_line(session, user_id):
     user_lines = _find_main_user_lines(user_id)
     for user_line in user_lines:
         _dissociate_voicemail_from_protocol(session, user_line.line_id)
+
 
 def _dissociate_voicemail_from_protocol(session, line_id):
     line_row = (session.query(LineSchema.protocol, LineSchema.protocolid)

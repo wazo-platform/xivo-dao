@@ -230,7 +230,8 @@ class TestDissociateUserVoicemail(DAOTestCase):
         voicemail = self.prepare_voicemail(extension)
         user_id, _, protocol_id = self.prepare_user_and_line(extension, voicemail, 'sip')
 
-        user_voicemail_dao.dissociate(user_id)
+        user_voicemail = UserVoicemail(user_id=user_id, voicemail_id=voicemail.uniqueid)
+        user_voicemail_dao.dissociate(user_voicemail)
 
         self.assert_user_was_dissociated_from_voicemail(user_id)
         self.assert_sip_line_was_dissociated_from_voicemail(protocol_id)
@@ -241,9 +242,10 @@ class TestDissociateUserVoicemail(DAOTestCase):
         voicemail_main = self.prepare_voicemail(extension_main)
         voicemail_secondary = self.prepare_voicemail(extension_secondary)
         _, secondary_user_id, _, protocol_id = self.prepare_main_and_secondary_user(extension_main, voicemail_main, voicemail_secondary, 'sip')
- 
-        user_voicemail_dao.dissociate(secondary_user_id)
- 
+
+        user_voicemail = UserVoicemail(user_id=secondary_user_id, voicemail_id=voicemail_secondary.uniqueid)
+        user_voicemail_dao.dissociate(user_voicemail)
+
         self.assert_user_was_dissociated_from_voicemail(secondary_user_id)
         self.assert_sip_line_was_not_dissociated_from_voicemail(protocol_id, voicemail_main)
 
@@ -251,9 +253,10 @@ class TestDissociateUserVoicemail(DAOTestCase):
         extension = '1000'
         voicemail = self.prepare_voicemail(extension)
         user_id, _, _ = self.prepare_user_and_line(extension, voicemail, 'sccp')
- 
-        user_voicemail_dao.dissociate(user_id)
- 
+
+        user_voicemail = UserVoicemail(user_id=user_id, voicemail_id=voicemail.uniqueid)
+        user_voicemail_dao.dissociate(user_voicemail)
+
         self.assert_user_was_dissociated_from_voicemail(user_id)
         self.assert_sccp_line_was_dissociated_from_voicemail(extension)
 
@@ -323,4 +326,3 @@ class TestDissociateUserVoicemail(DAOTestCase):
         sccp_device_row = self.session.query(SCCPDeviceSchema).filter(SCCPDeviceSchema.line == extension).first()
 
         assert_that(sccp_device_row.voicemail, equal_to(''))
-        
