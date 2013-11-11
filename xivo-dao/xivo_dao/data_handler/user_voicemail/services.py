@@ -29,7 +29,8 @@ def associate(user_voicemail):
 def get_by_user_id(user_id):
     return dao.get_by_user_id(user_id)
 
-def dissociate_by_user_id(user_id):
-    user_voicemail = validator.validate_dissociation(user_id)
-    dao.dissociate(user_id)
+
+def dissociate(user_voicemail):
+    validator.validate_dissociation(user_voicemail)
+    dao.dissociate(user_voicemail)
     notifier.dissociated(user_voicemail)

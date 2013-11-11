@@ -58,10 +58,9 @@ class TestUserVoicemail(unittest.TestCase):
     @patch('xivo_dao.data_handler.user_voicemail.validator.validate_dissociation')
     def test_dissociate(self, validate_dissociation, notifier_dissociated, dao_dissociate):
         user_voicemail = Mock(UserVoicemail)
-        validate_dissociation.return_value = user_voicemail
-        
-        user_voicemail_services.dissociate_by_user_id(3)
 
-        validate_dissociation.assert_called_once_with(3)
-        dao_dissociate.assert_called_once_with(3)
+        user_voicemail_services.dissociate(user_voicemail)
+
+        validate_dissociation.assert_called_once_with(user_voicemail)
+        dao_dissociate.assert_called_once_with(user_voicemail)
         notifier_dissociated.assert_called_once_with(user_voicemail)
