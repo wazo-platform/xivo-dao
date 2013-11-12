@@ -79,7 +79,7 @@ class DAOTestCase(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         logger.debug("Closing connection")
-        cls.session.close()
+        db_manager.close()
 
     @classmethod
     def cleanTables(cls):
