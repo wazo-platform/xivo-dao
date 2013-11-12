@@ -15,15 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.data_handler.language import dao as language_dao
+
 from xivo_dao.data_handler.voicemail import dao as voicemail_dao
-from xivo_dao.helpers import sysconfd_connector
 from xivo_dao.data_handler.voicemail import notifier
+from xivo_dao.data_handler.voicemail import validator
+
+from xivo_dao.helpers import sysconfd_connector
 from xivo_dao.helpers.sysconfd_connector import SysconfdError
-from xivo_dao.data_handler.exception import MissingParametersError, \
-    InvalidParametersError, ElementAlreadyExistsError, ElementNotExistsError, \
-    ElementDeletionError, ElementEditionError, NonexistentParametersError
-from xivo_dao.helpers import validator
 
 
 def find_all(skip=None, limit=None, order=None, direction=None, search=None):
@@ -43,98 +41,23 @@ def get(voicemail_id):
 
 
 def create(voicemail):
-    _validate(voicemail)
-    _check_for_existing_voicemail(voicemail)
+    validator.validate_create(voicemail)
     voicemail = voicemail_dao.create(voicemail)
     notifier.created(voicemail)
     return voicemail
 
 
 def edit(voicemail):
-    _validate(voicemail)
-    _check_for_edit_existing_voicemail(voicemail)
-    _check_if_voicemail_linked_on_edit(voicemail)
+    validator.validate_edit(voicemail)
     voicemail_dao.edit(voicemail)
     notifier.edited(voicemail)
 
 
 def delete(voicemail):
-    _check_if_voicemail_linked_on_delete(voicemail)
+    validator.validate_delete(voicemail)
     voicemail_dao.delete(voicemail)
     notifier.deleted(voicemail)
     try:
         sysconfd_connector.delete_voicemail_storage(voicemail.number, voicemail.context)
     except Exception as e:
         raise SysconfdError(str(e))
-
-
-def _validate(voicemail):
-    _check_missing_parameters(voicemail)
-    _check_invalid_parameters(voicemail)
-    _check_nonexistent_parameters(voicemail)
-
-
-def _check_missing_parameters(voicemail):
-    missing = voicemail.missing_parameters()
-    if missing:
-        raise MissingParametersError(missing)
-
-
-def _check_invalid_parameters(voicemail):
-    invalid_parameters = []
-    if voicemail.name is not None and not voicemail.name:
-        invalid_parameters.append('name')
-    if voicemail.number is not None and not validator.is_positive_number(voicemail.number):
-        invalid_parameters.append('number')
-    if voicemail.max_messages is not None and not validator.is_positive_number(voicemail.max_messages):
-        invalid_parameters.append('max_messages')
-    if voicemail.password is not None and not validator.is_positive_number(voicemail.password):
-        invalid_parameters.append('password')
-    if voicemail.attach_audio is not None and not isinstance(voicemail.attach_audio, bool):
-        invalid_parameters.append('attach_audio')
-    if voicemail.delete_messages is not None and not isinstance(voicemail.delete_messages, bool):
-        invalid_parameters.append('delete_messages')
-    if voicemail.ask_password is not None and not isinstance(voicemail.ask_password, bool):
-        invalid_parameters.append('ask_password')
-    if invalid_parameters:
-        raise InvalidParametersError(invalid_parameters)
-
-
-def _check_nonexistent_parameters(voicemail):
-    nonexistent_parameters = {}
-    if not validator.is_existing_context(voicemail.context):
-        nonexistent_parameters['context'] = voicemail.context
-    if voicemail.language is not None and voicemail.language not in language_dao.find_all():
-        nonexistent_parameters['language'] = voicemail.language
-    if voicemail.timezone is not None and voicemail.timezone not in voicemail_dao.find_all_timezone():
-        nonexistent_parameters['timezone'] = voicemail.timezone
-    if nonexistent_parameters:
-        raise NonexistentParametersError(**nonexistent_parameters)
-
-
-def _check_for_existing_voicemail(voicemail):
-    try:
-        if voicemail_dao.get_by_number_context(voicemail.number, voicemail.context):
-            number_at_context = voicemail.number_at_context
-            raise ElementAlreadyExistsError('Voicemail', number_at_context)
-    except ElementNotExistsError:
-        return
-
-
-def _check_for_edit_existing_voicemail(voicemail):
-    try:
-        existing_voicemail = voicemail_dao.get(voicemail.id)
-        if voicemail.number_at_context != existing_voicemail.number_at_context:
-            _check_for_existing_voicemail(voicemail)
-    except ElementNotExistsError:
-        return
-
-
-def _check_if_voicemail_linked_on_delete(voicemail):
-    if voicemail_dao.is_voicemail_linked(voicemail):
-        raise ElementDeletionError('voicemail', 'Cannot delete a voicemail associated to a user')
-
-
-def _check_if_voicemail_linked_on_edit(voicemail):
-    if voicemail_dao.is_voicemail_linked(voicemail):
-        raise ElementEditionError('voicemail', 'Cannot edit a voicemail associated to a user')
