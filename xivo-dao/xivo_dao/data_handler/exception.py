@@ -63,21 +63,21 @@ class AssociationNotExistsError(LookupError):
 class ElementCreationError(IOError):
 
     def __init__(self, element, error):
-        message = "Error while creating %s: %s" % (element, unicode(error))
+        message = "Error while creating %s: %s" % (element, unicode(str(error), 'utf8'))
         IOError.__init__(self, message)
 
 
 class ElementEditionError(IOError):
 
     def __init__(self, element, error):
-        message = "Error while editing %s: %s" % (element, unicode(error))
+        message = "Error while editing %s: %s" % (element, unicode(str(error), 'utf8'))
         IOError.__init__(self, message)
 
 
 class ElementDeletionError(IOError):
 
     def __init__(self, element, error):
-        message = "Error while deleting %s: %s" % (element, unicode(error))
+        message = "Error while deleting %s: %s" % (element, unicode(str(error), 'utf8'))
         IOError.__init__(self, message)
 
 
