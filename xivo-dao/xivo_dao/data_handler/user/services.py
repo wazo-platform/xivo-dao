@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 # Copyright (C) 2013 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,8 +16,8 @@
 
 from xivo_dao.data_handler.user import dao as user_dao, notifier
 from xivo_dao.data_handler.line import services as line_services
-from xivo_dao.data_handler.voicemail import services as voicemail_services
 from xivo_dao.data_handler.user import validator
+from xivo_dao.data_handler.voicemail import dao as voicemail_dao
 
 
 def get(user_id):
@@ -51,7 +50,7 @@ def create(user):
 def edit(user):
     validator.validate_edit(user)
     user_dao.edit(user)
-    _update_voicemail_fullname(user)
+    update_voicemail_fullname(user)
     line_services.update_callerid(user)
     notifier.edited(user)
 
@@ -63,11 +62,11 @@ def delete(user):
 
 def delete_voicemail(user):
     try:
-        voicemail = voicemail_services.get(user.voicemail_id)
+        voicemail = voicemail_dao.get(user.voicemail_id)
     except LookupError:
         return
     else:
-        voicemail_services.delete(voicemail)
+        voicemail_dao.delete(voicemail)
 
 
 def delete_line(user):
@@ -79,8 +78,8 @@ def delete_line(user):
         line_services.delete(line)
 
 
-def _update_voicemail_fullname(user):
+def update_voicemail_fullname(user):
     if hasattr(user, 'voicemail_id') and user.voicemail_id is not None:
-        voicemail = voicemail_services.get(user.voicemail_id)
-        voicemail.fullname = user.fullname
-        voicemail_services.edit(voicemail)
+        voicemail = voicemail_dao.get(user.voicemail_id)
+        voicemail.name = user.fullname
+        voicemail_dao.edit(voicemail)
