@@ -19,13 +19,12 @@
 import unittest
 
 from mock import patch, Mock
-
-from xivo_dao.data_handler.exception import NonexistentParametersError, ElementNotExistsError
-from xivo_dao.data_handler.exception import MissingParametersError
-from xivo_dao.data_handler.exception import InvalidParametersError
-from xivo_dao.data_handler.user_voicemail.model import UserVoicemail
+from xivo_dao.data_handler.exception import InvalidParametersError, \
+    MissingParametersError, NonexistentParametersError, ElementNotExistsError
 from xivo_dao.data_handler.user_line_extension.model import UserLineExtension
+
 from xivo_dao.data_handler.user_voicemail import validator
+from xivo_dao.data_handler.user_voicemail.model import UserVoicemail
 
 
 class TestValidator(unittest.TestCase):
@@ -106,3 +105,30 @@ class TestValidator(unittest.TestCase):
         voicemail_get.assert_called_once_with(user_voicemail.voicemail_id)
         ule_find_all_by_user_id.assert_called_once_with(user_voicemail.user_id)
         voicemail_get_by_user_id.assert_called_once_with(user_voicemail.user_id)
+
+    @patch('xivo_dao.data_handler.user.dao.get')
+    def test_validate_dissociation_user_not_exists(self, patch_dao):
+        user_voicemail = Mock(UserVoicemail, user_id=3)
+
+        patch_dao.side_effect = ElementNotExistsError('User', id=user_voicemail.user_id)
+
+        self.assertRaises(NonexistentParametersError, validator.validate_dissociation, user_voicemail)
+
+    @patch('xivo_dao.data_handler.voicemail.dao.get')
+    @patch('xivo_dao.data_handler.user.dao.get')
+    def test_validate_dissociation_no_voicemail(self, user_dao_get, voicemail_dao_get):
+        user_voicemail = Mock(UserVoicemail, user_id=3, voicemail_id=4)
+
+        user_dao_get.return_value = Mock()
+        voicemail_dao_get.side_effect = ElementNotExistsError('Voicemail', id=user_voicemail.voicemail_id)
+
+        self.assertRaises(NonexistentParametersError, validator.validate_dissociation, user_voicemail)
+
+    @patch('xivo_dao.data_handler.voicemail.dao.get')
+    @patch('xivo_dao.data_handler.user.dao.get')
+    def test_validate_dissociation(self, user_dao_get, voicemail_dao_get):
+        user_voicemail = Mock(UserVoicemail, user_id=3, voicemail_id=4)
+
+        validator.validate_dissociation(user_voicemail)
+        user_dao_get.assert_called_once_with(user_voicemail.user_id)
+        voicemail_dao_get.assert_called_once_with(user_voicemail.voicemail_id)

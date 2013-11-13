@@ -70,3 +70,8 @@ def _validate_user_does_not_have_a_voicemail(user_voicemail):
         raise InvalidParametersError(['user with id %s already has a voicemail' % user_voicemail.user_id])
     except ElementNotExistsError:
         pass
+
+
+def validate_dissociation(user_voicemail):
+    _validate_user_id(user_voicemail)
+    _validate_voicemail_id(user_voicemail)

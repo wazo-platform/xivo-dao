@@ -23,11 +23,14 @@ from xivo_dao.helpers import bus_manager
 
 
 def associated(user_voicemail):
-    sysconf_command_associated(user_voicemail)
+    sysconf_command_association_updated(user_voicemail)
     bus_event_associated(user_voicemail)
 
+def dissociated(user_voicemail):
+    sysconf_command_association_updated(user_voicemail)
+    bus_event_dissociated(user_voicemail)
 
-def sysconf_command_associated(user_voicemail):
+def sysconf_command_association_updated(user_voicemail):
     command = {
         'dird': [],
         'ipbx': ['sip reload'],
@@ -35,7 +38,6 @@ def sysconf_command_associated(user_voicemail):
         'ctibus': _generate_ctibus_commands(user_voicemail)
     }
     sysconfd_connector.exec_request_handlers(command)
-
 
 def _generate_ctibus_commands(user_voicemail):
     ctibus = ['xivo[user,edit,%d]' % user_voicemail.user_id]
@@ -51,4 +53,10 @@ def bus_event_associated(user_voicemail):
     bus_event = event.UserVoicemailAssociatedEvent(user_voicemail.user_id,
                                                    user_voicemail.voicemail_id,
                                                    user_voicemail.enabled)
+    bus_manager.send_bus_command(bus_event)
+
+def bus_event_dissociated(user_voicemail):
+    bus_event = event.UserVoicemailDissociatedEvent(user_voicemail.user_id,
+                                                   user_voicemail.voicemail_id,
+                                                   False)
     bus_manager.send_bus_command(bus_event)
