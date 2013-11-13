@@ -16,10 +16,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.data_handler.user import dao as user_dao, notifier
-from xivo_dao.data_handler.exception import MissingParametersError, \
-    InvalidParametersError
 from xivo_dao.data_handler.line import services as line_services
 from xivo_dao.data_handler.voicemail import services as voicemail_services
+from xivo_dao.data_handler.user import validator
 
 
 def get(user_id):
@@ -43,14 +42,14 @@ def find_all_by_fullname(fullname):
 
 
 def create(user):
-    _validate(user)
+    validator.validate_create(user)
     user = user_dao.create(user)
     notifier.created(user)
     return user
 
 
 def edit(user):
-    _validate(user)
+    validator.validate_edit(user)
     user_dao.edit(user)
     _update_voicemail_fullname(user)
     line_services.update_callerid(user)
@@ -78,25 +77,6 @@ def delete_line(user):
         return
     else:
         line_services.delete(line)
-
-
-def _validate(user):
-    _check_missing_parameters(user)
-    _check_invalid_parameters(user)
-
-
-def _check_missing_parameters(user):
-    missing = user.missing_parameters()
-    if missing:
-        raise MissingParametersError(missing)
-
-
-def _check_invalid_parameters(user):
-    invalid_parameters = []
-    if not user.firstname:
-        invalid_parameters.append('firstname')
-    if invalid_parameters:
-        raise InvalidParametersError(invalid_parameters)
 
 
 def _update_voicemail_fullname(user):

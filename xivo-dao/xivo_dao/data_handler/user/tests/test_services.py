@@ -4,11 +4,11 @@ import unittest
 
 from hamcrest import assert_that, equal_to
 from mock import patch, Mock
-from xivo_dao.data_handler.user.model import User
-from xivo_dao.data_handler.user import services as user_services
-from xivo_dao.data_handler.exception import MissingParametersError, \
-    InvalidParametersError, ElementCreationError, ElementNotExistsError
 
+from xivo_dao.data_handler.exception import ElementCreationError
+from xivo_dao.data_handler.exception import ElementNotExistsError
+from xivo_dao.data_handler.user import services as user_services
+from xivo_dao.data_handler.user.model import User
 from xivo_dao.data_handler.user.model import UserOrdering
 
 
@@ -106,22 +106,10 @@ class TestUser(unittest.TestCase):
         self.assertEquals(expected_result, result)
         user_dao_find_all_by_fullname.assert_called_once_with(fullname)
 
-    def test_create_no_properties(self):
-        user = User()
-
-        self.assertRaises(MissingParametersError, user_services.create, user)
-
-    @patch('xivo_dao.data_handler.user.dao.create')
-    def test_create_empty_firstname(self, user_dao_create):
-        firstname = ''
-
-        user = User(firstname=firstname)
-
-        self.assertRaises(InvalidParametersError, user_services.create, user)
-
     @patch('xivo_dao.data_handler.user.notifier.created')
     @patch('xivo_dao.data_handler.user.dao.create')
-    def test_create(self, user_dao_create, user_notifier_created):
+    @patch('xivo_dao.data_handler.user.validator.validate_create')
+    def test_create(self, user_validate_create, user_dao_create, user_notifier_created):
         firstname = 'user'
         lastname = 'toto'
 
@@ -131,12 +119,14 @@ class TestUser(unittest.TestCase):
 
         result = user_services.create(user)
 
+        user_validate_create.assert_called_once_with(user)
         user_dao_create.assert_called_once_with(user)
         self.assertEquals(type(result), User)
         user_notifier_created.assert_called_once_with(user)
 
     @patch('xivo_dao.data_handler.user.dao.create')
-    def test_create_with_error_from_dao(self, user_dao_create):
+    @patch('xivo_dao.data_handler.user.validator.validate_create')
+    def test_create_with_error_from_dao(self, user_validate_create, user_dao_create):
         firstname = 'user'
         lastname = 'toto'
 
@@ -146,15 +136,18 @@ class TestUser(unittest.TestCase):
         user_dao_create.side_effect = ElementCreationError(error, '')
 
         self.assertRaises(ElementCreationError, user_services.create, user)
+        user_validate_create.assert_called_once_with(user)
 
     @patch('xivo_dao.data_handler.line.services.update_callerid')
     @patch('xivo_dao.data_handler.user.notifier.edited')
     @patch('xivo_dao.data_handler.user.dao.edit')
-    def test_edit(self, user_dao_edit, user_notifier_edited, line_services_update_callerid):
+    @patch('xivo_dao.data_handler.user.validator.validate_edit')
+    def test_edit(self, user_validate_edit, user_dao_edit, user_notifier_edited, line_services_update_callerid):
         user = User(id=1, firstname='user', lastname='toto')
 
         user_services.edit(user)
 
+        user_validate_edit.assert_called_once_with(user)
         user_dao_edit.assert_called_once_with(user)
         user_notifier_edited.assert_called_once_with(user)
         line_services_update_callerid.assert_called_once_with(user)
