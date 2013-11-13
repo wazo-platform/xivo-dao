@@ -19,7 +19,7 @@ from xivo_dao.data_handler.user import dao as user_dao, notifier
 from xivo_dao.data_handler.exception import MissingParametersError, \
     InvalidParametersError
 from xivo_dao.data_handler.line import services as line_services
-from xivo_dao.data_handler.voicemail import services as voicemail_services
+from xivo_dao.data_handler.voicemail import dao as voicemail_dao
 
 
 def get(user_id):
@@ -52,7 +52,7 @@ def create(user):
 def edit(user):
     _validate(user)
     user_dao.edit(user)
-    _update_voicemail_fullname(user)
+    update_voicemail_fullname(user)
     line_services.update_callerid(user)
     notifier.edited(user)
 
@@ -64,11 +64,11 @@ def delete(user):
 
 def delete_voicemail(user):
     try:
-        voicemail = voicemail_services.get(user.voicemail_id)
+        voicemail = voicemail_dao.get(user.voicemail_id)
     except LookupError:
         return
     else:
-        voicemail_services.delete(voicemail)
+        voicemail_dao.delete(voicemail)
 
 
 def delete_line(user):
@@ -99,8 +99,8 @@ def _check_invalid_parameters(user):
         raise InvalidParametersError(invalid_parameters)
 
 
-def _update_voicemail_fullname(user):
+def update_voicemail_fullname(user):
     if hasattr(user, 'voicemail_id') and user.voicemail_id is not None:
-        voicemail = voicemail_services.get(user.voicemail_id)
-        voicemail.fullname = user.fullname
-        voicemail_services.edit(voicemail)
+        voicemail = voicemail_dao.get(user.voicemail_id)
+        voicemail.name = user.fullname
+        voicemail_dao.edit(voicemail)

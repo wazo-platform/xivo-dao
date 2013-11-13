@@ -147,17 +147,23 @@ class TestUser(unittest.TestCase):
 
         self.assertRaises(ElementCreationError, user_services.create, user)
 
+    @patch('xivo_dao.data_handler.user.services.update_voicemail_fullname')
     @patch('xivo_dao.data_handler.line.services.update_callerid')
     @patch('xivo_dao.data_handler.user.notifier.edited')
     @patch('xivo_dao.data_handler.user.dao.edit')
-    def test_edit(self, user_dao_edit, user_notifier_edited, line_services_update_callerid):
-        user = User(id=1, firstname='user', lastname='toto')
+    def test_edit(self,
+                  user_dao_edit,
+                  user_notifier_edited,
+                  line_services_update_callerid,
+                  update_voicemail_fullname):
+        user = User(id=1, firstname='user', lastname='toto', voicemail_id=3)
 
         user_services.edit(user)
 
         user_dao_edit.assert_called_once_with(user)
         user_notifier_edited.assert_called_once_with(user)
         line_services_update_callerid.assert_called_once_with(user)
+        update_voicemail_fullname.assert_called_once_with(user)
 
     @patch('xivo_dao.data_handler.user.notifier.deleted')
     @patch('xivo_dao.data_handler.user.dao.delete')
@@ -168,3 +174,26 @@ class TestUser(unittest.TestCase):
 
         user_dao_delete.assert_called_once_with(user)
         user_notifier_deleted.assert_called_once_with(user)
+
+    @patch('xivo_dao.data_handler.voicemail.dao.edit')
+    @patch('xivo_dao.data_handler.voicemail.dao.get')
+    def test_update_voicemail_fullname_no_voicemail(self, voicemail_dao_get, voicemail_dao_edit):
+        user = User(firstname='firstname', lastname='lastname')
+
+        user_services.update_voicemail_fullname(user)
+        assert_that(voicemail_dao_get.call_count, equal_to(0))
+        assert_that(voicemail_dao_edit.call_count, equal_to(0))
+
+    @patch('xivo_dao.data_handler.voicemail.dao.edit')
+    @patch('xivo_dao.data_handler.voicemail.dao.get')
+    def test_update_voicemail_fullname(self, voicemail_dao_get, voicemail_dao_edit):
+        user = User(firstname='firstname', lastname='lastname', voicemail_id=3)
+        fullname = '%s %s' % (user.firstname, user.lastname)
+
+        voicemail = voicemail_dao_get.return_value = Mock()
+
+        user_services.update_voicemail_fullname(user)
+
+        voicemail_dao_get.assert_called_once_with(user.voicemail_id)
+        assert_that(voicemail.name, equal_to(fullname))
+        voicemail_dao_edit.assert_called_once_with(voicemail)
