@@ -45,11 +45,11 @@ class UserDbConverter(DatabaseConverter):
 
     def update_source(self, source, model):
         DatabaseConverter.update_source(self, source, model)
-        source.callerid = model.determine_caller_id()
+        source.callerid = model.generate_caller_id()
 
     def to_source(self, model):
         source = DatabaseConverter.to_source(self, model)
-        source.callerid = model.determine_caller_id()
+        source.callerid = model.generate_caller_id()
         return source
 
 
@@ -81,14 +81,8 @@ class User(NewModel):
     }
 
     def to_user_data(self):
-        self._build_caller_id()
+        self.caller_id = self.generate_caller_id()
         return NewModel.to_user_data(self)
-
-    def _build_caller_id(self):
-        try:
-            self.caller_id = self._generate_caller_id()
-        except AttributeError:
-            return
 
     @property
     def fullname(self):
@@ -96,11 +90,16 @@ class User(NewModel):
             self.lastname = ''
         return ' '.join([self.firstname, self.lastname])
 
-    def determine_caller_id(self):
-        return self._generate_caller_id()
+    def generate_caller_id(self):
+        return '"%s"' % self.determine_caller_id()
 
-    def _generate_caller_id(self):
-        return '"%s"' % self.fullname
+    def determine_caller_id(self):
+        if self.caller_id:
+            return self.clean_caller_id()
+        return self.fullname
+
+    def clean_caller_id(self):
+        return self.caller_id.strip('"')
 
 
 class UserOrdering(object):

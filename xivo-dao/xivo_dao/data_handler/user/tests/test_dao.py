@@ -366,6 +366,59 @@ class TestUserDAO(DAOTestCase):
         self.assertEquals(row.lastname, user.lastname)
         self.assertEquals(row.language, user.language)
 
+    def test_create_with_custom_caller_id(self):
+        caller_id = '"caller_id"'
+        user = User(firstname='firstname',
+                    lastname='lastname',
+                    caller_id='caller_id')
+
+        created_user = user_dao.create(user)
+
+        row = (self.session.query(UserSchema)
+               .filter(UserSchema.firstname == user.firstname)
+               .filter(UserSchema.lastname == user.lastname)
+               .first())
+
+        self.assertEquals(row.id, created_user.id)
+        self.assertEquals(row.firstname, user.firstname)
+        self.assertEquals(row.lastname, user.lastname)
+        self.assertEquals(row.callerid, caller_id)
+
+    def test_create_with_custom_caller_id_including_quotes(self):
+        caller_id = '"caller_id"'
+        user = User(firstname='firstname',
+                    lastname='lastname',
+                    caller_id='"caller_id"')
+
+        created_user = user_dao.create(user)
+
+        row = (self.session.query(UserSchema)
+               .filter(UserSchema.firstname == user.firstname)
+               .filter(UserSchema.lastname == user.lastname)
+               .first())
+
+        self.assertEquals(row.id, created_user.id)
+        self.assertEquals(row.firstname, user.firstname)
+        self.assertEquals(row.lastname, user.lastname)
+        self.assertEquals(row.callerid, caller_id)
+
+    def test_create_with_default_caller_id(self):
+        caller_id = '"firstname lastname"'
+        user = User(firstname='firstname',
+                    lastname='lastname')
+
+        created_user = user_dao.create(user)
+
+        row = (self.session.query(UserSchema)
+               .filter(UserSchema.firstname == user.firstname)
+               .filter(UserSchema.lastname == user.lastname)
+               .first())
+
+        self.assertEquals(row.id, created_user.id)
+        self.assertEquals(row.firstname, user.firstname)
+        self.assertEquals(row.lastname, user.lastname)
+        self.assertEquals(row.callerid, caller_id)
+
     @patch('xivo_dao.helpers.db_manager.AsteriskSession')
     def test_create_with_database_error(self, Session):
         session = Mock()
