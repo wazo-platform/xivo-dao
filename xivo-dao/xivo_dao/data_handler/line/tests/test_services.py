@@ -460,11 +460,11 @@ class TestLineServices(unittest.TestCase):
     @patch('xivo_dao.data_handler.line.services.edit')
     @patch('xivo_dao.data_handler.line.dao.find_by_user_id')
     def test_update_callerid(self, line_dao_find_by_user_id, line_services_edit):
-        expected_callerid = 'titi'
+        expected_caller_id = 'titi'
         user = User(id=1,
                     firstname='titi',
-                    callerid=expected_callerid)
-        line = LineSIP(callerid=expected_callerid,
+                    caller_id=expected_caller_id)
+        line = LineSIP(callerid=expected_caller_id,
                        number='1000',
                        name='toto')
 
@@ -478,10 +478,10 @@ class TestLineServices(unittest.TestCase):
     @patch('xivo_dao.data_handler.line.services.edit')
     @patch('xivo_dao.data_handler.line.dao.find_by_user_id')
     def test_update_callerid_with_no_line(self, line_dao_find_by_user_id, line_services_edit):
-        expected_callerid = 'titi'
+        expected_caller_id = 'titi'
         user = User(id=1,
                     firstname='titi',
-                    callerid=expected_callerid)
+                    caller_id=expected_caller_id)
 
         line_dao_find_by_user_id.return_value = None
 

@@ -26,12 +26,12 @@ class UserDbConverter(DatabaseConverter):
         'id': 'id',
         'firstname': 'firstname',
         'lastname': 'lastname',
-        'callerid': 'callerid',
-        'outcallerid': 'outcallerid',
+        'callerid': 'caller_id',
+        'outcallerid': 'outgoing_caller_id',
         'loginclient': 'username',
         'passwdclient': 'password',
-        'musiconhold': 'musiconhold',
-        'mobilephonenumber': 'mobilephonenumber',
+        'musiconhold': 'music_on_hold',
+        'mobilephonenumber': 'mobile_phone_number',
         'userfield': 'userfield',
         'timezone': 'timezone',
         'language': 'language',
@@ -44,11 +44,11 @@ class UserDbConverter(DatabaseConverter):
 
     def update_source(self, source, model):
         DatabaseConverter.update_source(self, source, model)
-        source.callerid = model.determine_callerid()
+        source.callerid = model.determine_caller_id()
 
     def to_source(self, model):
         source = DatabaseConverter.to_source(self, model)
-        source.callerid = model.determine_callerid()
+        source.callerid = model.determine_caller_id()
         return source
 
 
@@ -62,12 +62,12 @@ class User(NewModel):
         'id',
         'firstname',
         'lastname',
-        'callerid',
-        'outcallerid',
+        'caller_id',
+        'outgoing_caller_id',
         'username',
         'password',
-        'musiconhold',
-        'mobilephonenumber',
+        'music_on_hold',
+        'mobile_phone_number',
         'userfield',
         'timezone',
         'language',
@@ -79,12 +79,12 @@ class User(NewModel):
     }
 
     def to_user_data(self):
-        self._build_callerid()
+        self._build_caller_id()
         return NewModel.to_user_data(self)
 
-    def _build_callerid(self):
+    def _build_caller_id(self):
         try:
-            self.callerid = self._generate_callerid()
+            self.caller_id = self._generate_caller_id()
         except AttributeError:
             return
 
@@ -94,10 +94,10 @@ class User(NewModel):
             self.lastname = ''
         return ' '.join([self.firstname, self.lastname])
 
-    def determine_callerid(self):
-        return self._generate_callerid()
+    def determine_caller_id(self):
+        return self._generate_caller_id()
 
-    def _generate_callerid(self):
+    def _generate_caller_id(self):
         return '"%s"' % self.fullname
 
 
