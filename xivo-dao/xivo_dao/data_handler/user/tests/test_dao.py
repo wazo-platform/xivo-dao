@@ -361,10 +361,10 @@ class TestUserDAO(DAOTestCase):
                .filter(UserSchema.lastname == user.lastname)
                .first())
 
-        self.assertEquals(row.id, created_user.id)
-        self.assertEquals(row.firstname, user.firstname)
-        self.assertEquals(row.lastname, user.lastname)
-        self.assertEquals(row.language, user.language)
+        assert_that(row.id, equal_to(created_user.id))
+        assert_that(row.firstname, equal_to(user.firstname))
+        assert_that(row.lastname, equal_to(user.lastname))
+        assert_that(row.language, equal_to(user.language))
 
     def test_create_with_custom_caller_id(self):
         caller_id = '"caller_id"'
@@ -379,10 +379,10 @@ class TestUserDAO(DAOTestCase):
                .filter(UserSchema.lastname == user.lastname)
                .first())
 
-        self.assertEquals(row.id, created_user.id)
-        self.assertEquals(row.firstname, user.firstname)
-        self.assertEquals(row.lastname, user.lastname)
-        self.assertEquals(row.callerid, caller_id)
+        assert_that(row.id, equal_to(created_user.id))
+        assert_that(row.firstname, equal_to(user.firstname))
+        assert_that(row.lastname, equal_to(user.lastname))
+        assert_that(row.callerid, equal_to(caller_id))
 
     def test_create_with_custom_caller_id_including_quotes(self):
         caller_id = '"caller_id"'
@@ -397,10 +397,10 @@ class TestUserDAO(DAOTestCase):
                .filter(UserSchema.lastname == user.lastname)
                .first())
 
-        self.assertEquals(row.id, created_user.id)
-        self.assertEquals(row.firstname, user.firstname)
-        self.assertEquals(row.lastname, user.lastname)
-        self.assertEquals(row.callerid, caller_id)
+        assert_that(row.id, equal_to(created_user.id))
+        assert_that(row.firstname, equal_to(user.firstname))
+        assert_that(row.lastname, equal_to(user.lastname))
+        assert_that(row.callerid, equal_to(caller_id))
 
     def test_create_with_default_caller_id(self):
         caller_id = '"firstname lastname"'
@@ -414,10 +414,10 @@ class TestUserDAO(DAOTestCase):
                .filter(UserSchema.lastname == user.lastname)
                .first())
 
-        self.assertEquals(row.id, created_user.id)
-        self.assertEquals(row.firstname, user.firstname)
-        self.assertEquals(row.lastname, user.lastname)
-        self.assertEquals(row.callerid, caller_id)
+        assert_that(row.id, equal_to(created_user.id))
+        assert_that(row.firstname, equal_to(user.firstname))
+        assert_that(row.lastname, equal_to(user.lastname))
+        assert_that(row.callerid, equal_to(caller_id))
 
     def test_create_with_all_fields(self):
         caller_id = '"caller_id"'
@@ -486,8 +486,8 @@ class TestUserDAO(DAOTestCase):
                .filter(UserSchema.id == user.id)
                .first())
 
-        self.assertEquals(row.firstname, firstname)
-        self.assertEquals(row.lastname, expected_lastname)
+        assert_that(row.firstname, equal_to(firstname))
+        assert_that(row.lastname, equal_to(expected_lastname))
 
     def test_edit_all_fields(self):
         user_row = self.add_user(firstname='Paul',
@@ -574,4 +574,4 @@ class TestUserDAO(DAOTestCase):
                .filter(UserSchema.id == user.id)
                .first())
 
-        self.assertEquals(row, None)
+        assert_that(row, equal_to(None))
