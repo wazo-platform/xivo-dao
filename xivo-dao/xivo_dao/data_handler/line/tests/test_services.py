@@ -195,10 +195,10 @@ class TestLineServices(unittest.TestCase):
     @patch('xivo_dao.data_handler.line.dao.create')
     def test_create_with_empty_attributes(self, line_dao_create, make_provisioning_id):
         line1 = LineSIP(context='',
-                       device_slot=1)
+                        device_slot=1)
 
         line2 = LineSIP(context='default',
-                       device_slot='')
+                        device_slot='')
 
         self.assertRaises(InvalidParametersError, line_services.create, line1)
         self.assertRaises(InvalidParametersError, line_services.create, line2)
@@ -208,13 +208,13 @@ class TestLineServices(unittest.TestCase):
     @patch('xivo_dao.data_handler.line.dao.create')
     def test_create_with_invalid_attributes(self, line_dao_create, make_provisioning_id):
         line1 = LineSIP(context='default',
-                       device_slot=0)
+                        device_slot=0)
 
         line2 = LineSIP(context='default',
-                       device_slot=-1)
+                        device_slot=-1)
 
         line3 = LineSIP(context='default',
-                       device_slot='abcd')
+                        device_slot='abcd')
 
         self.assertRaises(InvalidParametersError, line_services.create, line1)
         self.assertRaises(InvalidParametersError, line_services.create, line2)
