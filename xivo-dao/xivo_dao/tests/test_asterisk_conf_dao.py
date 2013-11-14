@@ -55,6 +55,7 @@ from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.voicemail import Voicemail
 from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao.alchemy.usercustom import UserCustom
 
 
 class TestAsteriskConfDAO(DAOTestCase):
@@ -93,6 +94,7 @@ class TestAsteriskConfDAO(DAOTestCase):
               StaticVoicemail,
               UserLine,
               UserFeatures,
+              UserCustom,
               UserSIP,
               UserIAX,
               Voicemail]
@@ -1216,27 +1218,63 @@ class TestAsteriskConfDAO(DAOTestCase):
 
     def test_find_queue_members_settings(self):
         queue_name = 'toto'
-        queue_member = self.add_queue_member(queue_name=queue_name,
-                                             usertype='user',
-                                             commented=0)
-        self.add_queue_member(queue_name='titi',
+
+        # SIP
+        usersip = self.add_usersip()
+        ule = self.add_user_line_with_exten(protocolid=usersip.id,
+                                            name_line=usersip.name)
+        self.add_queue_member(queue_name=queue_name,
                               usertype='user',
+                              userid=ule.user_id,
+                              penalty=1,
+                              commented=0)
+
+        # CUSTOM
+        usercustom = self.add_usercustom()
+        ule = self.add_user_line_with_exten(protocol='custom',
+                                            protocolid=usercustom.id,
+                                            name_line=usercustom.interface)
+        self.add_queue_member(queue_name=queue_name,
+                              usertype='user',
+                              userid=ule.user_id,
+                              penalty=5,
+                              commented=0)
+
+        # SCCP
+        sccpline = self.add_sccpline()
+        ule = self.add_user_line_with_exten(protocol='sccp',
+                                            protocolid=sccpline.id,
+                                            name_line=sccpline.name)
+        self.add_queue_member(queue_name=queue_name,
+                              usertype='user',
+                              userid=ule.user_id,
+                              penalty=15,
+                              commented=0)
+
+        # DISABLE
+        usersip2 = self.add_usersip()
+        ule = self.add_user_line_with_exten(protocolid=usersip2.id,
+                                            name_line=usersip2.name)
+        self.add_queue_member(queue_name=queue_name,
+                              usertype='user',
+                              userid=ule.user_id,
+                              penalty=42,
                               commented=1)
 
         expected_result = [
             {
-                'category': queue_member.category,
-                'queue_name': queue_name,
-                'userid': queue_member.userid,
-                'penalty': 0,
-                'usertype': 'user',
-                'interface': queue_member.interface,
-                'position': 0,
-                'commented': 0,
-                'channel': queue_member.channel
+                'penalty': 1,
+                'interface': 'sip/%s' % usersip.name
+            },
+            {
+                'penalty': 5,
+                'interface': usercustom.interface
+            },
+            {
+                'penalty': 15,
+                'interface': 'sccp/%s' % sccpline.name
             }
         ]
-
         result = asterisk_conf_dao.find_queue_members_settings(queue_name)
 
         assert_that(result, contains_inanyorder(*expected_result))

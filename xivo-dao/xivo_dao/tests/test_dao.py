@@ -326,9 +326,10 @@ class DAOTestCase(unittest.TestCase):
 
     def add_usercustom(self, **kwargs):
         kwargs.setdefault('id', self._generate_id())
+        kwargs.setdefault('interface', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+
         usercustom = UserCustomSchema(**kwargs)
         self.add_me(usercustom)
-
         return usercustom
 
     def add_sccpdevice(self, **kwargs):
