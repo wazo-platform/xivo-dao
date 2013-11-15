@@ -1,0 +1,220 @@
+# -*- coding: utf-8 -*-
+#
+# Copyright (C) 2013 Avencall
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+from hamcrest import *
+
+from xivo_dao.alchemy.agentfeatures import AgentFeatures
+from xivo_dao.alchemy.callfilter import Callfilter
+from xivo_dao.alchemy.callfiltermember import Callfiltermember
+from xivo_dao.alchemy.contextinclude import ContextInclude
+from xivo_dao.alchemy.cti_profile import CtiProfile
+from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
+from xivo_dao.alchemy.ctipresences import CtiPresences
+from xivo_dao.alchemy.dialaction import Dialaction
+from xivo_dao.alchemy.extension import Extension as ExtensionSchema
+from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
+from xivo_dao.alchemy.phonefunckey import PhoneFunckey
+from xivo_dao.alchemy.queuemember import QueueMember
+from xivo_dao.alchemy.rightcallmember import RightCallMember
+from xivo_dao.alchemy.schedulepath import SchedulePath
+from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
+from xivo_dao.alchemy.userfeatures import UserFeatures
+from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema
+from xivo_dao.data_handler.exception import ElementNotExistsError, \
+    ElementDeletionError, ElementCreationError
+from xivo_dao.data_handler.user_line import dao as user_line_dao
+from xivo_dao.data_handler.user_line.model import UserLine
+from xivo_dao.tests.test_dao import DAOTestCase
+
+
+class TestUserLineDao(DAOTestCase):
+
+    tables = [
+        UserFeatures,
+        LineSchema,
+        ContextInclude,
+        AgentFeatures,
+        CtiPresences,
+        CtiPhoneHintsGroup,
+        CtiProfile,
+        QueueMember,
+        RightCallMember,
+        Callfiltermember,
+        Callfilter,
+        Dialaction,
+        PhoneFunckey,
+        SchedulePath,
+        ExtensionSchema,
+        UserLineSchema,
+        UserSIPSchema
+    ]
+
+    def setUp(self):
+        self.empty_tables()
+
+
+class TestUserLineGetByUserIdAndLineId(TestUserLineDao):
+
+    def test_get_by_user_id_no_users_or_line(self):
+        self.assertRaises(ElementNotExistsError, user_line_dao.get_by_user_id_and_line_id, 1, 1)
+
+    def test_get_by_user_id_with_line(self):
+        user_line = self.add_user_line_without_exten(firstname='King')
+
+        result = user_line_dao.get_by_user_id_and_line_id(user_line.user_id, user_line.line_id)
+
+        assert_that(result, instance_of(UserLine))
+        assert_that(result,
+            has_property('user_id', user_line.user_id),
+            has_property('line_id', user_line.line_id)
+        )
+
+
+class TestAssociateUserLine(TestUserLineDao):
+
+    def test_associate_user_with_line(self):
+        user = self.add_user()
+        line = self.add_line()
+
+        user_line = UserLine(user_id=user.id,
+                             line_id=line.id)
+
+        expected_user_line = user_line_dao.associate(user_line)
+
+        result = (self.session.query(UserLineSchema)
+                  .filter(UserLineSchema.id == expected_user_line.id)
+                  .first())
+
+        assert_that(result.user_id, equal_to(user_line.user_id))
+        assert_that(result.line_id, equal_to(user_line.line_id))
+
+    def test_associate_user_with_line_not_exist(self):
+        user = self.add_user()
+
+        user_line = UserLine(user_id=user.id,
+                             line_id=42)
+
+        self.assertRaises(ElementCreationError, user_line_dao.associate, user_line)
+
+    def test_associate_user_not_exist_with_line(self):
+        line = self.add_line()
+
+        user_line = UserLine(user_id=41,
+                             line_id=line.id)
+
+        self.assertRaises(ElementCreationError, user_line_dao.associate, user_line)
+
+    def test_associate_user_not_exist_with_line_not_exist(self):
+        user_line = UserLine(user_id=41,
+                             line_id=12)
+
+        self.assertRaises(ElementCreationError, user_line_dao.associate, user_line)
+
+
+class TestDissociateUserLine(TestUserLineDao):
+
+    def test_dissociate_user_with_line(self):
+        user_line = self.add_user_line_without_exten()
+
+        nb_row_affected = user_line_dao.dissociate(user_line)
+
+        result = (self.session.query(UserLineSchema)
+                  .filter(UserLineSchema.id == user_line.id)
+                  .first())
+
+        assert_that(result, equal_to(None))
+        assert_that(nb_row_affected, equal_to(1))
+
+    def test_dissociate_not_exist(self):
+        user_line = UserLineSchema(id=1)
+
+        self.assertRaises(ElementDeletionError, user_line_dao.dissociate, user_line)
+
+
+class TestFindMainUser(TestUserLineDao):
+
+    def test_find_main_user_no_line(self):
+        user = self.add_user()
+
+        user_line = UserLine(user_id=user.id,
+                             line_id=2)
+
+        result = user_line_dao.find_main_user(user_line)
+
+        assert_that(result, equal_to(None))
+
+    def test_find_main_user_one_user(self):
+        user_line = self.add_user_line_without_exten()
+
+        result = user_line_dao.find_main_user(user_line)
+
+        assert_that(result.user_id, equal_to(user_line.user_id))
+
+
+class TestFindMainUserISallowedToDelete(TestUserLineDao):
+
+    def test_main_user_is_allowed_to_delete(self):
+        main_user = self.add_user()
+        line = self.add_line()
+        extension = self.add_extension()
+        user_line = self.add_user_line(user_id=main_user.id,
+                                       line_id=line.id,
+                                       extension_id=extension.id,
+                                       main_user=True,
+                                       main_line=False)
+
+        result = user_line_dao.main_user_is_allowed_to_delete(user_line)
+
+        assert_that(result, equal_to(True))
+
+    def test_main_user_is_allowed_to_delete_with_secondary_users(self):
+        main_user = self.add_user()
+        secondary_user = self.add_user()
+        line = self.add_line()
+        extension = self.add_extension()
+        user_line = self.add_user_line(user_id=main_user.id,
+                                       line_id=line.id,
+                                       extension_id=extension.id,
+                                       main_user=True,
+                                       main_line=False)
+        self.add_user_line(user_id=secondary_user.id,
+                           line_id=line.id,
+                           extension_id=extension.id,
+                           main_user=False,
+                           main_line=False)
+
+        result = user_line_dao.main_user_is_allowed_to_delete(user_line)
+
+        assert_that(result, equal_to(False))
+
+
+class TestExtensionAssociatedToThisUserLine(TestUserLineDao):
+
+    def test_extension_associated_to_this_user_line(self):
+        user_line = self.add_user_line_with_exten()
+
+        result = user_line_dao.extension_associated_to_this_user_line(user_line)
+
+        assert_that(result, equal_to(True))
+
+    def test_extension_associated_to_this_user_line_no_exten(self):
+        user_line = self.add_user_line_without_exten()
+
+        result = user_line_dao.extension_associated_to_this_user_line(user_line)
+
+        assert_that(result, equal_to(False))

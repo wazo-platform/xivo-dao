@@ -15,21 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.db_manager import Base
-from sqlalchemy.types import Integer, Boolean
-from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint
+from xivo_dao.data_handler.exception import ElementNotExistsError
 
 
-class UserLine(Base):
+class UserLineNotExistsError(ElementNotExistsError):
 
-    __tablename__ = 'user_line'
-    __table_args__ = (
-        UniqueConstraint('user_id', 'line_id'),
-    )
-
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('userfeatures.id'), nullable=False, primary_key=True)
-    line_id = Column(Integer, ForeignKey('linefeatures.id'), nullable=False, primary_key=True)
-    extension_id = Column(Integer, ForeignKey('extensions.id'))
-    main_user = Column(Boolean, nullable=False)
-    main_line = Column(Boolean, nullable=False)
+    @classmethod
+    def from_user_id(cls, user_id):
+        return cls('UserLine', user_id=user_id)
