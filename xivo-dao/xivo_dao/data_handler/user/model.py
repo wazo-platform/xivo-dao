@@ -81,8 +81,9 @@ class User(NewModel):
     }
 
     def to_user_data(self):
-        self.caller_id = self.generate_caller_id()
-        return NewModel.to_user_data(self)
+        user_data = NewModel.to_user_data(self)
+        user_data['caller_id'] = self.generate_caller_id()
+        return user_data
 
     @property
     def fullname(self):
@@ -90,16 +91,24 @@ class User(NewModel):
             self.lastname = ''
         return ' '.join([self.firstname, self.lastname])
 
+    def update_caller_id(self, original):
+        if self.cleaned_caller_id() != original.cleaned_caller_id():
+            self.caller_id = self.cleaned_caller_id()
+        elif self.fullname != original.fullname:
+            self.caller_id = self.caller_id_from_fullname()
+        else:
+            self.caller_id = self.cleaned_caller_id()
+
+    def cleaned_caller_id(self):
+        return '"%s"' % self.caller_id.strip('"')
+
+    def caller_id_from_fullname(self):
+        return '"%s"' % self.fullname
+
     def generate_caller_id(self):
-        return '"%s"' % self.determine_caller_id()
-
-    def determine_caller_id(self):
         if self.caller_id:
-            return self.clean_caller_id()
-        return self.fullname
-
-    def clean_caller_id(self):
-        return self.caller_id.strip('"')
+            return self.cleaned_caller_id()
+        return self.caller_id_from_fullname()
 
 
 class UserOrdering(object):
