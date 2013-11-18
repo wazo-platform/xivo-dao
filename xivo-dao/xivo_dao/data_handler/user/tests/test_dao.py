@@ -281,7 +281,8 @@ class TestUserDAO(DAOTestCase):
                                  userfield='userfield',
                                  timezone='America/Montreal',
                                  language='fr_FR',
-                                 description='Really cool dude')
+                                 description='Really cool dude',
+                                 preprocess_subroutine='preprocess_subroutine')
         voicemail_row = self.add_voicemail(mailbox='1234', context='default')
         self.link_user_and_voicemail(user_row, voicemail_row.uniqueid)
 
@@ -299,6 +300,7 @@ class TestUserDAO(DAOTestCase):
         assert_that(user.timezone, equal_to(user_row.timezone))
         assert_that(user.language, equal_to(user_row.language))
         assert_that(user.description, equal_to(user_row.description))
+        assert_that(user.preprocess_subroutine, equal_to(user_row.preprocess_subroutine))
         assert_that(user.voicemail_id, equal_to(voicemail_row.uniqueid))
 
     def test_get_commented(self):
@@ -352,7 +354,9 @@ class TestUserDAO(DAOTestCase):
     def test_create(self):
         user = User(firstname='toto',
                     lastname='kiki',
-                    language='fr_FR')
+                    language='fr_FR',
+                    musiconhold='musiconhold',
+                    preprocess_subroutine='preprocess_subroutine')
 
         created_user = user_dao.create(user)
 
@@ -365,6 +369,8 @@ class TestUserDAO(DAOTestCase):
         self.assertEquals(row.firstname, user.firstname)
         self.assertEquals(row.lastname, user.lastname)
         self.assertEquals(row.language, user.language)
+        self.assertEquals(row.musiconhold, user.musiconhold)
+        self.assertEquals(row.preprocess_subroutine, user.preprocess_subroutine)
 
     @patch('xivo_dao.helpers.db_manager.AsteriskSession')
     def test_create_with_database_error(self, Session):
@@ -383,11 +389,22 @@ class TestUserDAO(DAOTestCase):
     def test_edit(self):
         firstname = 'Robert'
         lastname = 'Raleur'
+        musiconhold = 'musiconhold'
+        preprocess_subroutine = 'preprocess_subroutine'
+
         expected_lastname = 'Lereu'
-        user = self.add_user(firstname=firstname, lastname=lastname)
+        expected_musiconhold = 'expected_musiconhold'
+        expected_preprocess_subroutine = 'expected_preprocess_subroutine'
+
+        user = self.add_user(firstname=firstname,
+                             lastname=lastname,
+                             musiconhold=musiconhold,
+                             preprocess_subroutine=preprocess_subroutine)
 
         user = user_dao.get(user.id)
         user.lastname = expected_lastname
+        user.musiconhold = expected_musiconhold
+        user.preprocess_subroutine = expected_preprocess_subroutine
 
         user_dao.edit(user)
 
@@ -397,6 +414,8 @@ class TestUserDAO(DAOTestCase):
 
         self.assertEquals(row.firstname, firstname)
         self.assertEquals(row.lastname, expected_lastname)
+        self.assertEquals(row.musiconhold, expected_musiconhold)
+        self.assertEquals(row.preprocess_subroutine, expected_preprocess_subroutine)
 
     def test_edit_with_unknown_user(self):
         user = User(id=123, lastname='unknown')
