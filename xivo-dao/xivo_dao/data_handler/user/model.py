@@ -26,17 +26,18 @@ class UserDbConverter(DatabaseConverter):
         'id': 'id',
         'firstname': 'firstname',
         'lastname': 'lastname',
-        'callerid': 'callerid',
-        'outcallerid': 'outcallerid',
+        'callerid': 'caller_id',
+        'outcallerid': 'outgoing_caller_id',
         'loginclient': 'username',
         'passwdclient': 'password',
-        'musiconhold': 'musiconhold',
-        'mobilephonenumber': 'mobilephonenumber',
+        'musiconhold': 'music_on_hold',
+        'mobilephonenumber': 'mobile_phone_number',
         'userfield': 'userfield',
         'timezone': 'timezone',
         'language': 'language',
         'description': 'description',
-        'voicemailid': 'voicemail_id'
+        'voicemailid': 'voicemail_id',
+        'preprocess_subroutine': 'preprocess_subroutine',
     }
 
     def __init__(self):
@@ -44,11 +45,11 @@ class UserDbConverter(DatabaseConverter):
 
     def update_source(self, source, model):
         DatabaseConverter.update_source(self, source, model)
-        source.callerid = model.determine_callerid()
+        source.callerid = model.generate_caller_id()
 
     def to_source(self, model):
         source = DatabaseConverter.to_source(self, model)
-        source.callerid = model.determine_callerid()
+        source.callerid = model.generate_caller_id()
         return source
 
 
@@ -62,16 +63,17 @@ class User(NewModel):
         'id',
         'firstname',
         'lastname',
-        'callerid',
-        'outcallerid',
+        'caller_id',
+        'outgoing_caller_id',
         'username',
         'password',
-        'musiconhold',
-        'mobilephonenumber',
+        'music_on_hold',
+        'mobile_phone_number',
         'userfield',
         'timezone',
         'language',
         'description',
+        'preprocess_subroutine',
     ]
 
     _RELATION = {
@@ -79,14 +81,9 @@ class User(NewModel):
     }
 
     def to_user_data(self):
-        self._build_callerid()
-        return NewModel.to_user_data(self)
-
-    def _build_callerid(self):
-        try:
-            self.callerid = self._generate_callerid()
-        except AttributeError:
-            return
+        user_data = NewModel.to_user_data(self)
+        user_data['caller_id'] = self.generate_caller_id()
+        return user_data
 
     @property
     def fullname(self):
@@ -94,11 +91,24 @@ class User(NewModel):
             self.lastname = ''
         return ' '.join([self.firstname, self.lastname])
 
-    def determine_callerid(self):
-        return self._generate_callerid()
+    def update_caller_id(self, original):
+        if self.cleaned_caller_id() != original.cleaned_caller_id():
+            self.caller_id = self.cleaned_caller_id()
+        elif self.fullname != original.fullname:
+            self.caller_id = self.caller_id_from_fullname()
+        else:
+            self.caller_id = self.cleaned_caller_id()
 
-    def _generate_callerid(self):
+    def cleaned_caller_id(self):
+        return '"%s"' % self.caller_id.strip('"')
+
+    def caller_id_from_fullname(self):
         return '"%s"' % self.fullname
+
+    def generate_caller_id(self):
+        if self.caller_id:
+            return self.cleaned_caller_id()
+        return self.caller_id_from_fullname()
 
 
 class UserOrdering(object):

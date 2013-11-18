@@ -289,12 +289,12 @@ class TestUserDAO(DAOTestCase):
 
         assert_that(user.id, equal_to(user.id))
         assert_that(user.lastname, equal_to(user_row.lastname))
-        assert_that(user.callerid, equal_to(user_row.callerid))
-        assert_that(user.outcallerid, equal_to(user_row.outcallerid))
+        assert_that(user.caller_id, equal_to(user_row.callerid))
+        assert_that(user.outgoing_caller_id, equal_to(user_row.outcallerid))
         assert_that(user.username, equal_to(user_row.loginclient))
         assert_that(user.password, equal_to(user_row.passwdclient))
-        assert_that(user.musiconhold, equal_to(user_row.musiconhold))
-        assert_that(user.mobilephonenumber, equal_to(user_row.mobilephonenumber))
+        assert_that(user.music_on_hold, equal_to(user_row.musiconhold))
+        assert_that(user.mobile_phone_number, equal_to(user_row.mobilephonenumber))
         assert_that(user.userfield, equal_to(user_row.userfield))
         assert_that(user.timezone, equal_to(user_row.timezone))
         assert_that(user.language, equal_to(user_row.language))
@@ -361,10 +361,101 @@ class TestUserDAO(DAOTestCase):
                .filter(UserSchema.lastname == user.lastname)
                .first())
 
-        self.assertEquals(row.id, created_user.id)
-        self.assertEquals(row.firstname, user.firstname)
-        self.assertEquals(row.lastname, user.lastname)
-        self.assertEquals(row.language, user.language)
+        assert_that(row.id, equal_to(created_user.id))
+        assert_that(row.firstname, equal_to(user.firstname))
+        assert_that(row.lastname, equal_to(user.lastname))
+        assert_that(row.language, equal_to(user.language))
+
+    def test_create_with_custom_caller_id(self):
+        caller_id = '"caller_id"'
+        user = User(firstname='firstname',
+                    lastname='lastname',
+                    caller_id='caller_id')
+
+        created_user = user_dao.create(user)
+
+        row = (self.session.query(UserSchema)
+               .filter(UserSchema.firstname == user.firstname)
+               .filter(UserSchema.lastname == user.lastname)
+               .first())
+
+        assert_that(row.id, equal_to(created_user.id))
+        assert_that(row.firstname, equal_to(user.firstname))
+        assert_that(row.lastname, equal_to(user.lastname))
+        assert_that(row.callerid, equal_to(caller_id))
+
+    def test_create_with_custom_caller_id_including_quotes(self):
+        caller_id = '"caller_id"'
+        user = User(firstname='firstname',
+                    lastname='lastname',
+                    caller_id='"caller_id"')
+
+        created_user = user_dao.create(user)
+
+        row = (self.session.query(UserSchema)
+               .filter(UserSchema.firstname == user.firstname)
+               .filter(UserSchema.lastname == user.lastname)
+               .first())
+
+        assert_that(row.id, equal_to(created_user.id))
+        assert_that(row.firstname, equal_to(user.firstname))
+        assert_that(row.lastname, equal_to(user.lastname))
+        assert_that(row.callerid, equal_to(caller_id))
+
+    def test_create_with_default_caller_id(self):
+        caller_id = '"firstname lastname"'
+        user = User(firstname='firstname',
+                    lastname='lastname')
+
+        created_user = user_dao.create(user)
+
+        row = (self.session.query(UserSchema)
+               .filter(UserSchema.firstname == user.firstname)
+               .filter(UserSchema.lastname == user.lastname)
+               .first())
+
+        assert_that(row.id, equal_to(created_user.id))
+        assert_that(row.firstname, equal_to(user.firstname))
+        assert_that(row.lastname, equal_to(user.lastname))
+        assert_that(row.callerid, equal_to(caller_id))
+
+    def test_create_with_all_fields(self):
+        caller_id = '"caller_id"'
+        user = User(firstname='firstname',
+                    lastname='lastname',
+                    timezone='America/Montreal',
+                    language='en_US',
+                    description='description',
+                    caller_id='caller_id',
+                    outgoing_caller_id='outgoing_caller_id',
+                    mobile_phone_number='1234567890',
+                    username='username',
+                    password='password',
+                    music_on_hold='music_on_hold',
+                    preprocess_subroutine='preprocess_subroutine',
+                    userfield='userfield')
+
+        created_user = user_dao.create(user)
+
+        row = (self.session.query(UserSchema)
+               .filter(UserSchema.firstname == user.firstname)
+               .filter(UserSchema.lastname == user.lastname)
+               .first())
+
+        assert_that(row.id, equal_to(created_user.id))
+        assert_that(row.firstname, equal_to(user.firstname))
+        assert_that(row.lastname, equal_to(user.lastname))
+        assert_that(row.timezone, equal_to(user.timezone))
+        assert_that(row.language, equal_to(user.language))
+        assert_that(row.description, equal_to(user.description))
+        assert_that(row.callerid, equal_to(caller_id))
+        assert_that(row.outcallerid, equal_to(user.outgoing_caller_id))
+        assert_that(row.mobilephonenumber, equal_to(user.mobile_phone_number))
+        assert_that(row.loginclient, equal_to(user.username))
+        assert_that(row.passwdclient, equal_to(user.password))
+        assert_that(row.musiconhold, equal_to(user.music_on_hold))
+        assert_that(row.preprocess_subroutine, equal_to(user.preprocess_subroutine))
+        assert_that(row.userfield, equal_to(user.userfield))
 
     @patch('xivo_dao.helpers.db_manager.AsteriskSession')
     def test_create_with_database_error(self, Session):
@@ -395,8 +486,59 @@ class TestUserDAO(DAOTestCase):
                .filter(UserSchema.id == user.id)
                .first())
 
-        self.assertEquals(row.firstname, firstname)
-        self.assertEquals(row.lastname, expected_lastname)
+        assert_that(row.firstname, equal_to(firstname))
+        assert_that(row.lastname, equal_to(expected_lastname))
+
+    def test_edit_all_fields(self):
+        user_row = self.add_user(firstname='Paul',
+                                 lastname='Rogers',
+                                 callerid='"Cool dude"',
+                                 outcallerid='"Cool dude going out"',
+                                 loginclient='paulrogers',
+                                 passwdclient='paulrogers',
+                                 musiconhold='mymusic',
+                                 mobilephonenumber='4185551234',
+                                 userfield='userfield',
+                                 timezone='America/Montreal',
+                                 language='fr_FR',
+                                 description='Really cool dude')
+
+        caller_id = '"caller_id"'
+        user = user_dao.get(user_row.id)
+        user.firstname = 'firstname'
+        user.lastname = 'lastname'
+        user.timezone = 'America/Montreal'
+        user.language = 'en_US'
+        user.description = 'description'
+        user.caller_id = 'caller_id'
+        user.outgoing_caller_id = 'outgoing_caller_id'
+        user.mobile_phone_number = '1234567890'
+        user.username = 'username'
+        user.password = 'password'
+        user.music_on_hold = 'music_on_hold'
+        user.preprocess_subroutine = 'preprocess_subroutine'
+        user.userfield = 'userfield'
+
+        user_dao.edit(user)
+
+        row = (self.session.query(UserSchema)
+               .filter(UserSchema.id == user.id)
+               .first())
+
+        assert_that(row.id, equal_to(user.id))
+        assert_that(row.firstname, equal_to(user.firstname))
+        assert_that(row.lastname, equal_to(user.lastname))
+        assert_that(row.timezone, equal_to(user.timezone))
+        assert_that(row.language, equal_to(user.language))
+        assert_that(row.description, equal_to(user.description))
+        assert_that(row.callerid, equal_to(caller_id))
+        assert_that(row.outcallerid, equal_to(user.outgoing_caller_id))
+        assert_that(row.mobilephonenumber, equal_to(user.mobile_phone_number))
+        assert_that(row.loginclient, equal_to(user.username))
+        assert_that(row.passwdclient, equal_to(user.password))
+        assert_that(row.musiconhold, equal_to(user.music_on_hold))
+        assert_that(row.preprocess_subroutine, equal_to(user.preprocess_subroutine))
+        assert_that(row.userfield, equal_to(user.userfield))
 
     def test_edit_with_unknown_user(self):
         user = User(id=123, lastname='unknown')
@@ -432,4 +574,4 @@ class TestUserDAO(DAOTestCase):
                .filter(UserSchema.id == user.id)
                .first())
 
-        self.assertEquals(row, None)
+        assert_that(row, equal_to(None))
