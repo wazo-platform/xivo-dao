@@ -195,10 +195,10 @@ class TestLineServices(unittest.TestCase):
     @patch('xivo_dao.data_handler.line.dao.create')
     def test_create_with_empty_attributes(self, line_dao_create, make_provisioning_id):
         line1 = LineSIP(context='',
-                        device_slot=1)
+                       device_slot=1)
 
         line2 = LineSIP(context='default',
-                        device_slot='')
+                       device_slot='')
 
         self.assertRaises(InvalidParametersError, line_services.create, line1)
         self.assertRaises(InvalidParametersError, line_services.create, line2)
@@ -208,13 +208,13 @@ class TestLineServices(unittest.TestCase):
     @patch('xivo_dao.data_handler.line.dao.create')
     def test_create_with_invalid_attributes(self, line_dao_create, make_provisioning_id):
         line1 = LineSIP(context='default',
-                        device_slot=0)
+                       device_slot=0)
 
         line2 = LineSIP(context='default',
-                        device_slot=-1)
+                       device_slot=-1)
 
         line3 = LineSIP(context='default',
-                        device_slot='abcd')
+                       device_slot='abcd')
 
         self.assertRaises(InvalidParametersError, line_services.create, line1)
         self.assertRaises(InvalidParametersError, line_services.create, line2)
@@ -460,11 +460,11 @@ class TestLineServices(unittest.TestCase):
     @patch('xivo_dao.data_handler.line.services.edit')
     @patch('xivo_dao.data_handler.line.dao.find_by_user_id')
     def test_update_callerid(self, line_dao_find_by_user_id, line_services_edit):
-        expected_caller_id = 'titi'
+        expected_callerid = 'titi'
         user = User(id=1,
                     firstname='titi',
-                    caller_id=expected_caller_id)
-        line = LineSIP(callerid=expected_caller_id,
+                    callerid=expected_callerid)
+        line = LineSIP(callerid=expected_callerid,
                        number='1000',
                        name='toto')
 
@@ -478,10 +478,10 @@ class TestLineServices(unittest.TestCase):
     @patch('xivo_dao.data_handler.line.services.edit')
     @patch('xivo_dao.data_handler.line.dao.find_by_user_id')
     def test_update_callerid_with_no_line(self, line_dao_find_by_user_id, line_services_edit):
-        expected_caller_id = 'titi'
+        expected_callerid = 'titi'
         user = User(id=1,
                     firstname='titi',
-                    caller_id=expected_caller_id)
+                    callerid=expected_callerid)
 
         line_dao_find_by_user_id.return_value = None
 
