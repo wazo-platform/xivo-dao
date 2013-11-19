@@ -51,10 +51,16 @@ class TestValidateAssociate(unittest.TestCase):
         not_associated_to_extension.assert_called_once_with(line_extension)
         validate_user_association.assert_called_once_with(line_extension)
 
+
+class TestValidateModel(unittest.TestCase):
+
     def test_validate_model_no_parameters(self):
         line_extension = LineExtension()
 
         self.assertRaises(MissingParametersError, validator.validate_model, line_extension)
+
+
+class TestValidateLine(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.line.dao.get')
     def test_validate_line_when_no_line(self, line_get):
@@ -74,6 +80,9 @@ class TestValidateAssociate(unittest.TestCase):
         validator.validate_line(line_extension)
         line_get.assert_called_once_with(line_extension.line_id)
 
+
+class TestValidateExtension(unittest.TestCase):
+
     @patch('xivo_dao.data_handler.extension.dao.get')
     def test_validate_extension_when_no_extension(self, extension_get):
         line_extension = Mock(LineExtension, line_id=1, extension_id=2)
@@ -92,6 +101,9 @@ class TestValidateAssociate(unittest.TestCase):
         validator.validate_extension(line_extension)
         extension_get.assert_called_once_with(line_extension.extension_id)
 
+
+class TestValidateNotAssociatedToExtension(unittest.TestCase):
+
     @patch('xivo_dao.data_handler.user_line_extension.dao.find_all_by_extension_id')
     def test_validate_not_associated_to_extension_with_extension(self, find_all_by_extension_id):
         line_extension = Mock(LineExtension, line_id=1, extension_id=2)
@@ -109,6 +121,8 @@ class TestValidateAssociate(unittest.TestCase):
 
         validator.validate_not_associated_to_extension(line_extension)
         find_all_by_extension_id.assert_called_once_with(line_extension.extension_id)
+
+class TestValidateUserAssociation(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.user_line_extension.dao.find_all_by_line_id')
     def test_validate_user_association_no_associations(self, find_all_by_line_id):
