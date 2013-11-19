@@ -99,12 +99,13 @@ def dissociate(session, user_line):
 
 
 @daosession
-def main_user_is_allowed_to_delete(session, user_line):
+def line_has_secondary_user(session, user_line):
     count = (session.query(UserLineSchema)
              .filter(UserLineSchema.line_id == user_line.line_id)
+             .filter(UserLineSchema.main_user == False)
              .count())
 
-    return count == 1
+    return count > 0
 
 
 @daosession

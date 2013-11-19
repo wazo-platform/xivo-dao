@@ -298,9 +298,9 @@ class TestFindMainUser(TestUserLineDao):
         assert_that(result.user_id, equal_to(user_line.user_id))
 
 
-class TestFindMainUserISallowedToDelete(TestUserLineDao):
+class TestLineHasSecondaryUser(TestUserLineDao):
 
-    def test_main_user_is_allowed_to_delete(self):
+    def test_line_has_secondary_user(self):
         main_user = self.add_user()
         line = self.add_line()
         extension = self.add_extension()
@@ -310,11 +310,11 @@ class TestFindMainUserISallowedToDelete(TestUserLineDao):
                                        main_user=True,
                                        main_line=False)
 
-        result = user_line_dao.main_user_is_allowed_to_delete(user_line)
+        result = user_line_dao.line_has_secondary_user(user_line)
 
-        assert_that(result, equal_to(True))
+        assert_that(result, equal_to(False))
 
-    def test_main_user_is_allowed_to_delete_with_secondary_users(self):
+    def test_line_has_secondary_user_with_secondary_user(self):
         main_user = self.add_user()
         secondary_user = self.add_user()
         line = self.add_line()
@@ -330,9 +330,9 @@ class TestFindMainUserISallowedToDelete(TestUserLineDao):
                            main_user=False,
                            main_line=False)
 
-        result = user_line_dao.main_user_is_allowed_to_delete(user_line)
+        result = user_line_dao.line_has_secondary_user(user_line)
 
-        assert_that(result, equal_to(False))
+        assert_that(result, equal_to(True))
 
 
 class TestExtensionAssociatedToThisUserLine(TestUserLineDao):

@@ -99,7 +99,7 @@ class TestValidator(unittest.TestCase):
         self.assertRaises(NonexistentParametersError, validator.validate_dissociation, user_line)
 
     @patch('xivo_dao.data_handler.user_line.dao.extension_associated_to_this_user_line')
-    @patch('xivo_dao.data_handler.user_line.dao.main_user_is_allowed_to_delete')
+    @patch('xivo_dao.data_handler.user_line.dao.line_has_secondary_user')
     @patch('xivo_dao.data_handler.user_line.dao.find_all_by_user_id')
     @patch('xivo_dao.data_handler.line.dao.get')
     @patch('xivo_dao.data_handler.user.dao.get')
@@ -107,25 +107,25 @@ class TestValidator(unittest.TestCase):
                                    user_dao_get,
                                    line_dao_get,
                                    user_line_dao_find_all_by_user_id,
-                                   main_user_is_allowed_to_delete,
+                                   line_has_secondary_user,
                                    extension_associated_to_this_user_line):
         user_line = UserLine(user_id=3,
                              line_id=4,
                              main_user=True)
 
         user_line_dao_find_all_by_user_id.return_value = [user_line]
-        main_user_is_allowed_to_delete.return_value = True
+        line_has_secondary_user.return_value = False
         extension_associated_to_this_user_line.return_value = False
 
         validator.validate_dissociation(user_line)
         user_dao_get.assert_called_once_with(user_line.user_id)
         line_dao_get.assert_called_once_with(user_line.line_id)
         user_line_dao_find_all_by_user_id.assert_called_once_with(user_line.user_id)
-        main_user_is_allowed_to_delete.assert_called_once_with(user_line)
+        line_has_secondary_user.assert_called_once_with(user_line)
         extension_associated_to_this_user_line.assert_called_once_with(user_line)
 
     @patch('xivo_dao.data_handler.user_line.dao.extension_associated_to_this_user_line')
-    @patch('xivo_dao.data_handler.user_line.dao.main_user_is_allowed_to_delete')
+    @patch('xivo_dao.data_handler.user_line.dao.line_has_secondary_user')
     @patch('xivo_dao.data_handler.user_line.dao.find_all_by_user_id')
     @patch('xivo_dao.data_handler.line.dao.get')
     @patch('xivo_dao.data_handler.user.dao.get')
@@ -133,23 +133,23 @@ class TestValidator(unittest.TestCase):
                                                         user_dao_get,
                                                         line_dao_get,
                                                         user_line_dao_find_all_by_user_id,
-                                                        main_user_is_allowed_to_delete,
+                                                        line_has_secondary_user,
                                                         extension_associated_to_this_user_line):
         user_line = UserLine(user_id=3,
                              line_id=4,
                              main_user=False)
 
         user_line_dao_find_all_by_user_id.return_value = [user_line]
-        main_user_is_allowed_to_delete.return_value = False
+        line_has_secondary_user.return_value = False
         extension_associated_to_this_user_line.return_value = True
 
         self.assertRaises(InvalidParametersError, validator.validate_dissociation, user_line)
         user_line_dao_find_all_by_user_id.assert_called_once_with(user_line.user_id)
         extension_associated_to_this_user_line.assert_called_once_with(user_line)
-        self.assertEquals(main_user_is_allowed_to_delete.call_count, 0)
+        self.assertEquals(line_has_secondary_user.call_count, 0)
 
     @patch('xivo_dao.data_handler.user_line.dao.extension_associated_to_this_user_line')
-    @patch('xivo_dao.data_handler.user_line.dao.main_user_is_allowed_to_delete')
+    @patch('xivo_dao.data_handler.user_line.dao.line_has_secondary_user')
     @patch('xivo_dao.data_handler.user_line.dao.find_all_by_user_id')
     @patch('xivo_dao.data_handler.line.dao.get')
     @patch('xivo_dao.data_handler.user.dao.get')
@@ -157,14 +157,14 @@ class TestValidator(unittest.TestCase):
                                                   user_dao_get,
                                                   line_dao_get,
                                                   user_line_dao_find_all_by_user_id,
-                                                  main_user_is_allowed_to_delete,
+                                                  line_has_secondary_user,
                                                   extension_associated_to_this_user_line):
         user_line = UserLine(user_id=3,
                              line_id=4,
                              main_user=True)
 
         user_line_dao_find_all_by_user_id.return_value = [user_line]
-        main_user_is_allowed_to_delete.return_value = False
+        line_has_secondary_user.return_value = True
         extension_associated_to_this_user_line.return_value = False
 
         self.assertRaises(InvalidParametersError, validator.validate_dissociation, user_line)
@@ -172,4 +172,4 @@ class TestValidator(unittest.TestCase):
         line_dao_get.assert_called_once_with(user_line.line_id)
         user_line_dao_find_all_by_user_id.assert_called_once_with(user_line.user_id)
         self.assertEquals(extension_associated_to_this_user_line.call_count, 0)
-        main_user_is_allowed_to_delete.assert_called_once_with(user_line)
+        line_has_secondary_user.assert_called_once_with(user_line)

@@ -89,7 +89,7 @@ def _validate_user_not_associated_with_line(user_line):
 
 
 def _is_allowed_to_dissociate(user_line):
-    if user_line.main_user is True and not user_line_dao.main_user_is_allowed_to_delete(user_line):
+    if user_line.main_user is True and user_line_dao.line_has_secondary_user(user_line):
         raise InvalidParametersError(['There are secondary users associated to this user_line'])
 
     if user_line_dao.extension_associated_to_this_user_line(user_line):
