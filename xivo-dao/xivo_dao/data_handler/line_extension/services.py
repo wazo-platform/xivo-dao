@@ -29,3 +29,10 @@ def associate(line_extension):
 
 def get_by_line_id(line_id):
     return dao.get_by_line_id(line_id)
+
+
+def dissociate(line_extension):
+    validator.validate_dissociation(line_extension)
+    dao.dissociate(line_extension)
+    notifier.dissociated(line_extension)
+    return line_extension
