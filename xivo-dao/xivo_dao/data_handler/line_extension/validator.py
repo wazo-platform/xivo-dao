@@ -63,3 +63,7 @@ def validate_user_association(line_extension):
     user_lines = user_line_dao.find_all_by_line_id(line_extension.line_id)
     if len(user_lines) == 0:
         raise InvalidParametersError(['line with id %s does not have any user associated' % line_extension.line_id])
+
+
+def validate_dissociation(line_extension):
+    validate_extension(line_extension)

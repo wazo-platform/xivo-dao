@@ -142,3 +142,13 @@ class TestValidateUserAssociation(unittest.TestCase):
 
         validator.validate_user_association(line_extension)
         find_all_by_line_id.assert_called_once_with(line_extension.line_id)
+
+
+class TestValidateDissociation(unittest.TestCase):
+
+    @patch('xivo_dao.data_handler.line_extension.validator.validate_extension')
+    def test_validate_dissociation(self, validate_extension):
+        line_extension = Mock(LineExtension, line_id=1)
+
+        validator.validate_dissociation(line_extension)
+        validate_extension.assert_called_once_with(line_extension)
