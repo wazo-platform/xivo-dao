@@ -153,6 +153,35 @@ class TestUserLineFindAllByUserId(TestUserLineDao):
         ))
 
 
+class TestUserLineFindMainUser(TestUserLineDao):
+
+    def test_find_main_user_no_user(self):
+        user_line = UserLine(line_id=33)
+
+        self.assertRaises(ElementNotExistsError, user_line_dao.find_main_user(user_line))
+
+    def test_find_main_user(self):
+        user = self.add_user()
+        line1 = self.add_line()
+        line2 = self.add_line()
+        main_user_line = self.add_user_line(user_id=user.id,
+                                            line_id=line1.id,
+                                            main_user=True,
+                                            main_line=True)
+        self.add_user_line(user_id=user.id,
+                           line_id=line2.id,
+                           main_user=True,
+                           main_line=False)
+
+        result = user_line_dao.find_main_user(main_user_line)
+
+        assert_that(result, instance_of(UserLine))
+        assert_that(result,
+            has_property('user_id', main_user_line.user_id),
+            has_property('line_id', main_user_line.line_id)
+        )
+
+
 class TestAssociateUserLine(TestUserLineDao):
 
     def test_associate_user_with_line(self):
