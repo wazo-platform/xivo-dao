@@ -48,12 +48,8 @@ def _validate_invalid_parameters(user_line):
     invalid_parameters = []
     if not isinstance(user_line.user_id, int):
         invalid_parameters.append('user_id must be integer')
-    if user_line.user_id == 0:
-        invalid_parameters.append('user_id equal to 0')
     if not isinstance(user_line.line_id, int):
         invalid_parameters.append('line_id must be integer')
-    if user_line.line_id == 0:
-        invalid_parameters.append('line_id equal to 0')
     if hasattr(user_line, 'main_user') and not isinstance(user_line.main_user, bool):
         invalid_parameters.append('main_user must be boolean')
     if hasattr(user_line, 'main_line') and not isinstance(user_line.main_line, bool):
