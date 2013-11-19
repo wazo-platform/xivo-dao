@@ -58,17 +58,17 @@ class TestUserLineNotifier(unittest.TestCase):
 
     @patch('xivo_bus.resources.user_line.event.UserLineAssociatedEvent')
     @patch('xivo_dao.helpers.bus_manager.send_bus_command')
-    def test_bus_event_associated(self, send_bus_command, UserLineDissociatedEvent):
-        new_event = UserLineDissociatedEvent.return_value = Mock()
+    def test_bus_event_associated(self, send_bus_command, UserLineAssociatedEvent):
+        new_event = UserLineAssociatedEvent.return_value = Mock()
 
         user_line = UserLine(user_id=1, line_id=2)
 
         notifier.bus_event_associated(user_line)
 
-        UserLineDissociatedEvent.assert_called_once_with(user_line.user_id,
-                                                            user_line.line_id,
-                                                             False,
-                                                             False)
+        UserLineAssociatedEvent.assert_called_once_with(user_line.user_id,
+                                                        user_line.line_id,
+                                                        True,
+                                                        True)
         send_bus_command.assert_called_once_with(new_event)
 
     @patch('xivo_dao.data_handler.user_line.notifier.sysconf_command_association_updated')
@@ -91,7 +91,7 @@ class TestUserLineNotifier(unittest.TestCase):
         notifier.bus_event_dissociated(user_line)
 
         UserLineDissociatedEvent.assert_called_once_with(user_line.user_id,
-                                                             user_line.line_id,
-                                                             False,
-                                                             False)
+                                                         user_line.line_id,
+                                                         True,
+                                                         True)
         send_bus_command.assert_called_once_with(new_event)
