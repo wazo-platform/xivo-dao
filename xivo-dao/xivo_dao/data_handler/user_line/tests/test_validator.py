@@ -66,20 +66,6 @@ class TestValidator(unittest.TestCase):
     @patch('xivo_dao.data_handler.user.dao.get')
     @patch('xivo_dao.data_handler.line.dao.get')
     @patch('xivo_dao.data_handler.user_line.dao.get_by_user_id_and_line_id')
-    def test_validate_association_line_when_user_already_has_a_line(self,
-                                                                    user_line_get_by_user_id_and_line_id,
-                                                                    line_get,
-                                                                    user_get):
-        user_line = UserLine(user_id=1, line_id=2)
-
-        user_line_get_by_user_id_and_line_id.side_effect = Mock(UserLine)
-
-        self.assertRaises(InvalidParametersError, validator.validate_association, user_line)
-        user_line_get_by_user_id_and_line_id.assert_called_once_with(user_line.user_id, user_line.line_id)
-
-    @patch('xivo_dao.data_handler.user.dao.get')
-    @patch('xivo_dao.data_handler.line.dao.get')
-    @patch('xivo_dao.data_handler.user_line.dao.get_by_user_id_and_line_id')
     def test_validate_association(self,
                                   user_line_get_by_user_id_and_line_id,
                                   line_get,
