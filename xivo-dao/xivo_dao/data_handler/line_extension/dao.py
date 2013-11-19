@@ -61,3 +61,16 @@ def find_by_extension_id(session, extension_id):
         return None
 
     return db_converter.to_model(user_line_row)
+
+
+@daosession
+def dissociate(session, line_extension):
+    session.begin()
+    _dissociate_ule(session, line_extension)
+    session.commit()
+
+
+def _dissociate_ule(session, line_extension):
+    (session.query(UserLine)
+     .filter(UserLine.line_id == line_extension.line_id)
+     .update({'extension_id': None}))

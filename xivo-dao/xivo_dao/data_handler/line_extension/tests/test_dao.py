@@ -177,5 +177,35 @@ class TestFindAllByExtensionId(TestLineExtensionDAO):
             has_property('line_id', main_ule.line_id),
             has_property('extension_id', main_ule.extension_id)))
 
+
+class TestDissociateLineExtension(TestLineExtensionDAO):
+
+    def test_dissociate_one_association(self):
         user_line_row = self.add_user_line_with_exten()
 
+        line_extension = LineExtension(line_id=user_line_row.line_id,
+                                       extension_id=user_line_row.extension_id)
+
+        dao.dissociate(line_extension)
+
+        self.assert_no_extensions_associated(user_line_row)
+
+    def test_dissociate_multiple_users(self):
+        main_ule = self.add_user_line_with_exten()
+        secondary_ule = self.prepare_secondary_user_associated(main_ule)
+
+        line_extension = LineExtension(line_id=secondary_ule.line_id,
+                                       extension_id=secondary_ule.extension_id)
+
+        dao.dissociate(line_extension)
+
+        self.assert_no_extensions_associated(main_ule)
+        self.assert_no_extensions_associated(secondary_ule)
+
+    def assert_no_extensions_associated(self, user_line_row):
+        updated_row = (self.session.query(UserLine)
+                       .filter(UserLine.user_id == user_line_row.user_id)
+                       .filter(UserLine.line_id == user_line_row.line_id)
+                       .first())
+
+        assert_that(updated_row.extension_id, none())
