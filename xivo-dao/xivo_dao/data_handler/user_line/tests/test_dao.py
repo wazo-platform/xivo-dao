@@ -83,6 +83,75 @@ class TestUserLineGetByUserIdAndLineId(TestUserLineDao):
             has_property('line_id', user_line.line_id)
         )
 
+    def test_get_by_user_id_with_line_and_secondary_user(self):
+        main_user = self.add_user()
+        secondary_user = self.add_user()
+        line = self.add_line()
+        main_user_line = self.add_user_line(user_id=main_user.id,
+                                            line_id=line.id,
+                                            main_user=True,
+                                            main_line=False)
+        self.add_user_line(user_id=secondary_user.id,
+                           line_id=line.id,
+                           main_user=False,
+                           main_line=False)
+
+        result = user_line_dao.get_by_user_id_and_line_id(main_user_line.user_id, main_user_line.line_id)
+
+        assert_that(result, instance_of(UserLine))
+        assert_that(result,
+            all_of(
+               has_property('user_id', main_user_line.user_id),
+               has_property('line_id', main_user_line.line_id),
+               has_property('main_user', True),
+               has_property('main_line', False)
+            )
+        )
+
+
+class TestUserLineFindAllByUserId(TestUserLineDao):
+
+    def test_find_all_by_user_id_no_user_line(self):
+        expected_result = []
+        result = user_line_dao.find_all_by_user_id(1)
+
+        assert_that(result, equal_to(expected_result))
+
+    def test_find_all_by_user_id(self):
+        user_line = self.add_user_line_without_exten()
+
+        result = user_line_dao.find_all_by_user_id(user_line.user_id)
+
+        assert_that(result, has_items(
+            all_of(
+                has_property('user_id', user_line.user_id),
+                has_property('line_id', user_line.line_id))
+        ))
+
+    def test_find_all_by_user_id_two_users(self):
+        user = self.add_user()
+        line1 = self.add_line()
+        line2 = self.add_line()
+        self.add_user_line(user_id=user.id,
+                           line_id=line1.id,
+                           main_user=True,
+                           main_line=True)
+        self.add_user_line(user_id=user.id,
+                           line_id=line2.id,
+                           main_user=True,
+                           main_line=False)
+
+        result = user_line_dao.find_all_by_user_id(user.id)
+
+        assert_that(result, has_items(
+            all_of(
+                has_property('user_id', user.id),
+                has_property('line_id', line2.id)),
+            all_of(
+                has_property('user_id', user.id),
+                has_property('line_id', line1.id))
+        ))
+
 
 class TestAssociateUserLine(TestUserLineDao):
 
@@ -101,6 +170,47 @@ class TestAssociateUserLine(TestUserLineDao):
 
         assert_that(result.user_id, equal_to(user_line.user_id))
         assert_that(result.line_id, equal_to(user_line.line_id))
+
+    def test_associate_main_user_with_line(self):
+        main_user = self.add_user()
+        line = self.add_line()
+
+        user_line = UserLine(user_id=main_user.id,
+                             line_id=line.id)
+
+        expected_user_line = user_line_dao.associate(user_line)
+
+        result = (self.session.query(UserLineSchema)
+                  .filter(UserLineSchema.id == expected_user_line.id)
+                  .first())
+
+        assert_that(result.user_id, equal_to(user_line.user_id))
+        assert_that(result.line_id, equal_to(user_line.line_id))
+
+    def test_associate_secondary_user_with_line(self):
+        main_user = self.add_user()
+        secondary_user = self.add_user()
+        line = self.add_line()
+
+        main_user_line = UserLine(user_id=main_user.id,
+                                  line_id=line.id,
+                                  main_user=True)
+        user_line_dao.associate(main_user_line)
+
+        secondary_user_line = UserLine(user_id=secondary_user.id,
+                                       line_id=line.id,
+                                       main_user=False)
+        user_line_dao.associate(secondary_user_line)
+
+        result = self.session.query(UserLineSchema).filter(UserLineSchema.line_id == line.id).all()
+
+        assert_that(result, contains_inanyorder(
+            all_of(has_property('user_id', main_user.id),
+                   has_property('line_id', line.id),
+                   has_property('main_user', True)),
+            all_of(has_property('user_id', secondary_user.id),
+                   has_property('line_id', line.id),
+                   has_property('main_user', False))))
 
     def test_associate_user_with_line_not_exist(self):
         user = self.add_user()
