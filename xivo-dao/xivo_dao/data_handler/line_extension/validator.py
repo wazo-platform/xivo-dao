@@ -17,7 +17,8 @@
 
 from xivo_dao.data_handler.line import dao as line_dao
 from xivo_dao.data_handler.extension import dao as extension_dao
-from xivo_dao.data_handler.user_line_extension import dao as ule_dao
+from xivo_dao.data_handler.user_line import dao as user_line_dao
+from xivo_dao.data_handler.line_extension import dao as line_extension_dao
 from xivo_dao.data_handler.exception import MissingParametersError
 from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.data_handler.exception import NonexistentParametersError
@@ -53,12 +54,12 @@ def validate_extension(line_extension):
 
 
 def validate_not_associated_to_extension(line_extension):
-    links = ule_dao.find_all_by_extension_id(line_extension.extension_id)
-    if len(links) > 0:
+    line_extension = line_extension_dao.find_by_extension_id(line_extension.extension_id)
+    if line_extension:
         raise InvalidParametersError(['line with id %s already has an extension' % line_extension.line_id])
 
 
 def validate_user_association(line_extension):
-    links = ule_dao.find_all_by_line_id(line_extension.line_id)
-    if len(links) == 0:
+    user_lines = user_line_dao.find_all_by_line_id(line_extension.line_id)
+    if len(user_lines) == 0:
         raise InvalidParametersError(['line with id %s does not have any user associated' % line_extension.line_id])
