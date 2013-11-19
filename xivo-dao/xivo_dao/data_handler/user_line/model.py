@@ -33,9 +33,9 @@ class UserLine(NewModel):
     def __init__(self, *args, **kwargs):
         NewModel.__init__(self, *args, **kwargs)
         if self.main_user is None:
-            self.main_user = False
+            self.main_user = True
         if self.main_line is None:
-            self.main_line = False
+            self.main_line = True
 
     FIELDS = [
         'user_id',

@@ -24,21 +24,7 @@ from xivo_dao.data_handler.user_line.model import UserLine
 from xivo_dao.data_handler.user_line import services as user_line_services
 
 
-class TestUserLine(unittest.TestCase):
-
-    @patch('xivo_dao.data_handler.user_line.dao.find_main_user', Mock(return_value=None))
-    @patch('xivo_dao.data_handler.user_line.validator.validate_association')
-    @patch('xivo_dao.data_handler.user_line.dao.associate')
-    @patch('xivo_dao.data_handler.user_line.notifier.associated')
-    def test_associate(self, notifier_associated, dao_associate, validate_association):
-        user_line = Mock(UserLine)
-
-        result = user_line_services.associate(user_line)
-
-        assert_that(result, equal_to(user_line))
-        validate_association.assert_called_once_with(user_line)
-        dao_associate.assert_called_once_with(user_line)
-        notifier_associated.assert_called_once_with(user_line)
+class TestUserLineGetByUserIdAndLineId(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.user_line.dao.get_by_user_id_and_line_id')
     def test_get_by_user_id_and_line_id(self, user_line_get_by_user_id):
@@ -53,6 +39,74 @@ class TestUserLine(unittest.TestCase):
 
         user_line_get_by_user_id.assert_called_once_with(user_id, line_id)
         assert_that(result, equal_to(expected_result))
+
+
+class TestUserLineAssociate(unittest.TestCase):
+
+    @patch('xivo_dao.data_handler.user_line.dao.find_main_user', Mock(return_value=None))
+    @patch('xivo_dao.data_handler.user_line.validator.validate_association')
+    @patch('xivo_dao.data_handler.user_line.dao.associate')
+    @patch('xivo_dao.data_handler.user_line.notifier.associated')
+    def test_associate(self, notifier_associated, dao_associate, validate_association):
+        user_line = UserLine(user_id=1,
+                             line_id=2)
+
+        result = user_line_services.associate(user_line)
+
+        assert_that(result, equal_to(user_line))
+        validate_association.assert_called_once_with(user_line)
+        dao_associate.assert_called_once_with(user_line)
+        notifier_associated.assert_called_once_with(user_line)
+
+    @patch('xivo_dao.data_handler.user_line.dao.find_main_user')
+    @patch('xivo_dao.data_handler.user_line.validator.validate_association')
+    @patch('xivo_dao.data_handler.user_line.dao.associate')
+    @patch('xivo_dao.data_handler.user_line.notifier.associated')
+    def test_associate_main_user(self, notifier_associated, dao_associate, validate_association, dao_find_main_user):
+        user_line = UserLine(user_id=1,
+                             line_id=2)
+        expected_user_line = UserLine(user_id=1,
+                                      line_id=2,
+                                      main_user=True)
+
+        dao_find_main_user.return_value = user_line
+
+        result = user_line_services.associate(user_line)
+
+        assert_that(result, equal_to(expected_user_line))
+        validate_association.assert_called_once_with(user_line)
+        dao_associate.assert_called_once_with(user_line)
+        notifier_associated.assert_called_once_with(user_line)
+
+    @patch('xivo_dao.data_handler.user_line.dao.find_main_user')
+    @patch('xivo_dao.data_handler.user_line.validator.validate_association')
+    @patch('xivo_dao.data_handler.user_line.dao.associate')
+    @patch('xivo_dao.data_handler.user_line.notifier.associated')
+    def test_associate_with_main_user_already_associated_to_this_line(self,
+                                                                      notifier_associated,
+                                                                      dao_associate,
+                                                                      validate_association,
+                                                                      dao_find_main_user):
+        main_user_line = UserLine(user_id=1,
+                                  line_id=2)
+        secondary_user_line = UserLine(user_id=2,
+                                       line_id=2)
+
+        expected_user_line = UserLine(user_id=2,
+                                      line_id=2,
+                                      main_user=False)
+
+        dao_find_main_user.return_value = main_user_line
+
+        result = user_line_services.associate(secondary_user_line)
+
+        assert_that(result, equal_to(expected_user_line))
+        validate_association.assert_called_once_with(secondary_user_line)
+        dao_associate.assert_called_once_with(secondary_user_line)
+        notifier_associated.assert_called_once_with(secondary_user_line)
+
+
+class TestUserLineDissociate(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.user_line.dao.dissociate')
     @patch('xivo_dao.data_handler.user_line.notifier.dissociated')
