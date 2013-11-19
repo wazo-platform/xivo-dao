@@ -16,6 +16,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.helpers.new_model import NewModel
+from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
+from xivo_dao.converters.database_converter import DatabaseConverter
+
+DB_TO_MODEL_MAPPING = {
+    'line_id': 'line_id',
+    'extension_id': 'extension_id',
+}
 
 
 class LineExtension(NewModel):
@@ -31,3 +38,6 @@ class LineExtension(NewModel):
         'line_id',
         'extension_id',
     ]
+
+
+db_converter = DatabaseConverter(DB_TO_MODEL_MAPPING, UserLineSchema, LineExtension)

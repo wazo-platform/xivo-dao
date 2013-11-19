@@ -25,3 +25,7 @@ def associate(line_extension):
     line_extension = dao.associate(line_extension)
     notifier.associated(line_extension)
     return line_extension
+
+
+def get_by_line_id(line_id):
+    return dao.get_by_line_id(line_id)

@@ -16,11 +16,13 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from hamcrest import assert_that, equal_to
+from hamcrest import assert_that, equal_to, all_of, has_property
 
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.data_handler.line_extension import dao
 from xivo_dao.data_handler.line_extension.model import LineExtension
+from xivo_dao.data_handler.line_extension.exception import LineExtensionNotExistsError
+from xivo_dao.data_handler.exception import ElementNotExistsError
 
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.callfilter import Callfilter
@@ -108,3 +110,50 @@ class TestAssociateLineExtension(TestLineExtensionDAO):
                        .filter(UserLine.line_id == ule_row.line_id)
                        .first())
         assert_that(updated_ule.extension_id, equal_to(extension_row.id))
+
+
+class TestGetByLineId(TestLineExtensionDAO):
+
+    def test_get_by_line_id_no_line(self):
+        self.assertRaises(ElementNotExistsError, dao.get_by_line_id, 1)
+
+    def test_get_by_line_id_no_extension(self):
+        user_line_row = self.prepare_user_line_without_extension()
+
+        self.assertRaises(LineExtensionNotExistsError, dao.get_by_line_id, user_line_row.line_id)
+
+    def test_get_by_line_id_with_extension(self):
+        user_line_row = self.prepare_user_line_with_extension()
+
+        line_extension = dao.get_by_line_id(user_line_row.line_id)
+
+        assert_that(line_extension, all_of(
+            has_property('line_id', user_line_row.line_id),
+            has_property('extension_id', user_line_row.extension_id)))
+
+    def test_get_by_line_id_with_multiple_users(self):
+        user_line_row_1 = self.prepare_user_line_with_extension()
+        user_row = self.add_user()
+        user_line_row_2 = self.associate_secondary_user(user_line_row_1, user_row)
+
+        line_extension = dao.get_by_line_id(user_line_row_2.line_id)
+
+        assert_that(line_extension, all_of(
+            has_property('line_id', user_line_row_1.line_id),
+            has_property('extension_id', user_line_row_1.extension_id)))
+
+    def prepare_user_line_without_extension(self):
+        user_line_row = self.add_user_line_without_exten()
+        return user_line_row
+
+    def prepare_user_line_with_extension(self):
+        user_line_row = self.add_user_line_with_exten()
+        return user_line_row
+
+    def associate_secondary_user(self, user_line_row, user_row):
+        user_line_row = self.add_user_line(user_id=user_row.id,
+                                           line_id=user_line_row.line_id,
+                                           extension_id=user_line_row.extension_id,
+                                           main_user=False,
+                                           main_line=True)
+        return user_line_row
