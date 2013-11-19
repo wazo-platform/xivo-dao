@@ -26,11 +26,11 @@ from xivo_dao.data_handler.line_extension.model import db_converter
 @daosession
 def associate(session, line_extension):
     session.begin()
-    _update_ule(session, line_extension)
+    _associate_ule(session, line_extension)
     session.commit()
 
 
-def _update_ule(session, line_extension):
+def _associate_ule(session, line_extension):
     (session.query(UserLine)
      .filter(UserLine.line_id == line_extension.line_id)
      .update({'extension_id': line_extension.extension_id}))
