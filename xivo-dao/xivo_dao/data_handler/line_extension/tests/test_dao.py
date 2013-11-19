@@ -16,7 +16,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from hamcrest import assert_that, equal_to, all_of, has_property
+from hamcrest import assert_that, equal_to, all_of, has_property, none
 
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.data_handler.line_extension import dao
@@ -58,12 +58,24 @@ class TestLineExtensionDAO(DAOTestCase):
     def setUp(self):
         self.empty_tables()
 
+    def prepare_secondary_user_associated(self, user_line_row):
+        user_row = self.add_user()
+        return self.associate_secondary_user(user_line_row, user_row)
+
+    def associate_secondary_user(self, user_line_row, user_row):
+        user_line_row = self.add_user_line(user_id=user_row.id,
+                                           line_id=user_line_row.line_id,
+                                           extension_id=user_line_row.extension_id,
+                                           main_user=False,
+                                           main_line=True)
+        return user_line_row
+
 
 class TestAssociateLineExtension(TestLineExtensionDAO):
 
     def test_associate_main_user(self):
-        ule_row = self.prepare_user_and_line()
-        extension_row = self.prepare_extension()
+        ule_row = self.add_user_line_without_exten()
+        extension_row = self.add_extension()
 
         line_extension = LineExtension(line_id=ule_row.line_id,
                                        extension_id=extension_row.id)
@@ -73,9 +85,10 @@ class TestAssociateLineExtension(TestLineExtensionDAO):
         self.assert_extension_is_associated(ule_row, extension_row)
 
     def test_associate_main_and_secondary_user(self):
-        main_ule = self.prepare_user_and_line()
-        secondary_ule = self.prepare_secondary_user_and_line(line_id=main_ule.line_id)
-        extension_row = self.prepare_extension()
+        main_ule = self.add_user_line_without_exten()
+        secondary_user = self.add_user()
+        secondary_ule = self.associate_secondary_user(main_ule, secondary_user)
+        extension_row = self.add_extension()
 
         line_extension = LineExtension(line_id=main_ule.line_id,
                                        extension_id=extension_row.id)
@@ -84,24 +97,6 @@ class TestAssociateLineExtension(TestLineExtensionDAO):
 
         self.assert_extension_is_associated(main_ule, extension_row)
         self.assert_extension_is_associated(secondary_ule, extension_row)
-
-    def prepare_user_and_line(self):
-        ule_row = self.add_user_line_without_exten(main_user=True,
-                                                   main_line=True)
-        return ule_row
-
-    def prepare_secondary_user_and_line(self, line_id):
-        user_row = self.add_user()
-        ule_row = self.add_user_line(user_id=user_row.id,
-                                     line_id=line_id,
-                                     extension_id=None,
-                                     main_user=False,
-                                     main_line=True)
-        return ule_row
-
-    def prepare_extension(self):
-        extension_row = self.add_extension()
-        return extension_row
 
     def assert_extension_is_associated(self, ule_row, extension_row):
         updated_ule = (self.session.query(UserLine)
@@ -118,12 +113,12 @@ class TestGetByLineId(TestLineExtensionDAO):
         self.assertRaises(ElementNotExistsError, dao.get_by_line_id, 1)
 
     def test_get_by_line_id_no_extension(self):
-        user_line_row = self.prepare_user_line_without_extension()
+        user_line_row = self.add_user_line_without_exten()
 
         self.assertRaises(LineExtensionNotExistsError, dao.get_by_line_id, user_line_row.line_id)
 
     def test_get_by_line_id_with_extension(self):
-        user_line_row = self.prepare_user_line_with_extension()
+        user_line_row = self.add_user_line_with_exten()
 
         line_extension = dao.get_by_line_id(user_line_row.line_id)
 
@@ -132,28 +127,15 @@ class TestGetByLineId(TestLineExtensionDAO):
             has_property('extension_id', user_line_row.extension_id)))
 
     def test_get_by_line_id_with_multiple_users(self):
-        user_line_row_1 = self.prepare_user_line_with_extension()
-        user_row = self.add_user()
-        user_line_row_2 = self.associate_secondary_user(user_line_row_1, user_row)
+        main_ule = self.add_user_line_with_exten()
+        secondary_ule = self.prepare_secondary_user_associated(main_ule)
 
-        line_extension = dao.get_by_line_id(user_line_row_2.line_id)
+        line_extension = dao.get_by_line_id(secondary_ule.line_id)
 
         assert_that(line_extension, all_of(
-            has_property('line_id', user_line_row_1.line_id),
-            has_property('extension_id', user_line_row_1.extension_id)))
+            has_property('line_id', main_ule.line_id),
+            has_property('extension_id', main_ule.extension_id)))
 
-    def prepare_user_line_without_extension(self):
-        user_line_row = self.add_user_line_without_exten()
-        return user_line_row
 
-    def prepare_user_line_with_extension(self):
         user_line_row = self.add_user_line_with_exten()
-        return user_line_row
 
-    def associate_secondary_user(self, user_line_row, user_row):
-        user_line_row = self.add_user_line(user_id=user_row.id,
-                                           line_id=user_line_row.line_id,
-                                           extension_id=user_line_row.extension_id,
-                                           main_user=False,
-                                           main_line=True)
-        return user_line_row
