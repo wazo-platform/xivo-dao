@@ -23,9 +23,10 @@ from xivo_dao.data_handler.line_extension.model import LineExtension
 from xivo_dao.data_handler.user_line.model import UserLine
 from xivo_dao.data_handler.line_extension import notifier
 
+
 class TestLineExtensionNotifier(unittest.TestCase):
 
-    @patch('xivo_dao.data_handler.line_extension.notifier.send_sysconf_association_commands')
+    @patch('xivo_dao.data_handler.line_extension.notifier.send_sysconf_commands')
     @patch('xivo_dao.data_handler.line_extension.notifier.send_bus_association_events')
     def test_associated(self, send_bus_association_events, send_sysconf_association_commands):
         line_extension = LineExtension(line_id=1, extension_id=2)
@@ -37,9 +38,9 @@ class TestLineExtensionNotifier(unittest.TestCase):
 
     @patch('xivo_dao.helpers.sysconfd_connector.exec_request_handlers')
     @patch('xivo_dao.data_handler.user_line.dao.find_all_by_line_id')
-    def test_send_sysconf_association_commands(self,
-                                               find_all_by_line_id,
-                                               exec_request_handlers):
+    def test_send_sysconf_commands(self,
+                                   find_all_by_line_id,
+                                   exec_request_handlers):
         line_extension = LineExtension(line_id=1, extension_id=2)
         user_line_1 = Mock(UserLine, line_id=1, user_id=3)
         user_line_2 = Mock(UserLine, line_id=1, user_id=4)
@@ -53,7 +54,7 @@ class TestLineExtensionNotifier(unittest.TestCase):
             'agentbus': []
         }
 
-        notifier.send_sysconf_association_commands(line_extension)
+        notifier.send_sysconf_commands(line_extension)
 
         exec_request_handlers.assert_called_once_with(expected_sysconf_command)
         find_all_by_line_id.assert_called_once_with(line_extension.line_id)
@@ -68,5 +69,28 @@ class TestLineExtensionNotifier(unittest.TestCase):
         notifier.send_bus_association_events(line_extension)
 
         LineExtensionAssociatedEvent.assert_called_once_with(line_extension.line_id,
-                                                            line_extension.extension_id)
+                                                             line_extension.extension_id)
+        send_bus_command.assert_called_once_with(new_event)
+
+    @patch('xivo_dao.data_handler.line_extension.notifier.send_bus_dissociation_events')
+    @patch('xivo_dao.data_handler.line_extension.notifier.send_sysconf_commands')
+    def test_dissociated(self, send_sysconf_commands, send_bus_dissociation_events):
+        line_extension = LineExtension(line_id=1, extension_id=2)
+
+        notifier.dissociated(line_extension)
+
+        send_sysconf_commands.assert_called_once_with(line_extension)
+        send_bus_dissociation_events.assert_called_once_with(line_extension)
+
+    @patch('xivo_bus.resources.line_extension.event.LineExtensionDissociatedEvent')
+    @patch('xivo_dao.helpers.bus_manager.send_bus_command')
+    def test_send_bus_dissociation_events(self, send_bus_command, LineExtensionDissociatedEvent):
+        new_event = LineExtensionDissociatedEvent.return_value = Mock()
+
+        line_extension = LineExtension(line_id=1, extension_id=2)
+
+        notifier.send_bus_dissociation_events(line_extension)
+
+        LineExtensionDissociatedEvent.assert_called_once_with(line_extension.line_id,
+                                                              line_extension.extension_id)
         send_bus_command.assert_called_once_with(new_event)
