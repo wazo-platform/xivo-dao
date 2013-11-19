@@ -19,7 +19,7 @@
 from hamcrest import assert_that, equal_to
 
 from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao.data_handler.line_extension import dao as line_extension_dao
+from xivo_dao.data_handler.line_extension import dao
 from xivo_dao.data_handler.line_extension.model import LineExtension
 
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
@@ -48,12 +48,16 @@ USER_TABLES = [UserFeatures, LineSchema, ContextInclude, AgentFeatures,
                PhoneFunckey, SchedulePath, ExtensionSchema, UserLine, UserSIPSchema,
                SCCPDeviceSchema]
 
-class TestAssociateUserVoicemail(DAOTestCase):
+
+class TestLineExtensionDAO(DAOTestCase):
 
     tables = USER_TABLES
 
     def setUp(self):
         self.empty_tables()
+
+
+class TestAssociateLineExtension(TestLineExtensionDAO):
 
     def test_associate_main_user(self):
         ule_row = self.prepare_user_and_line()
@@ -62,7 +66,7 @@ class TestAssociateUserVoicemail(DAOTestCase):
         line_extension = LineExtension(line_id=ule_row.line_id,
                                        extension_id=extension_row.id)
 
-        line_extension_dao.associate(line_extension)
+        dao.associate(line_extension)
 
         self.assert_extension_is_associated(ule_row, extension_row)
 
@@ -74,14 +78,14 @@ class TestAssociateUserVoicemail(DAOTestCase):
         line_extension = LineExtension(line_id=main_ule.line_id,
                                        extension_id=extension_row.id)
 
-        line_extension_dao.associate(line_extension)
+        dao.associate(line_extension)
 
         self.assert_extension_is_associated(main_ule, extension_row)
         self.assert_extension_is_associated(secondary_ule, extension_row)
 
     def prepare_user_and_line(self):
         ule_row = self.add_user_line_without_exten(main_user=True,
-                                                    main_line=True)
+                                                   main_line=True)
         return ule_row
 
     def prepare_secondary_user_and_line(self, line_id):
