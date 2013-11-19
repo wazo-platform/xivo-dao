@@ -49,3 +49,15 @@ def get_by_line_id(session, line_id):
         raise LineExtensionNotExistsError.from_line_id(line_id)
 
     return db_converter.to_model(user_line_row)
+
+
+@daosession
+def find_by_extension_id(session, extension_id):
+    user_line_row = (session.query(UserLine)
+                     .filter(UserLine.extension_id == extension_id)
+                     .first())
+
+    if not user_line_row:
+        return None
+
+    return db_converter.to_model(user_line_row)
