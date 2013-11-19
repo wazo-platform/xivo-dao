@@ -88,19 +88,14 @@ def associate(session, user_line):
 def dissociate(session, user_line):
     session.begin()
     try:
-        nb_row_affected = (session.query(UserLineSchema)
-                          .filter(UserLineSchema.user_id == user_line.user_id)
-                          .filter(UserLineSchema.line_id == user_line.line_id)
-                          .delete())
+        (session.query(UserLineSchema)
+                .filter(UserLineSchema.user_id == user_line.user_id)
+                .filter(UserLineSchema.line_id == user_line.line_id)
+                .delete())
         session.commit()
     except SQLAlchemyError, e:
         session.rollback()
         raise ElementDeletionError('UserLine', e)
-
-    if nb_row_affected == 0:
-        raise ElementDeletionError('UserLine', 'user_line_id %s not exsit' % user_line.id)
-
-    return nb_row_affected
 
 
 @daosession

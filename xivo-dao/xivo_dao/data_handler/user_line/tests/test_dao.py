@@ -35,8 +35,7 @@ from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema
-from xivo_dao.data_handler.exception import ElementNotExistsError, \
-    ElementDeletionError, ElementCreationError
+from xivo_dao.data_handler.exception import ElementNotExistsError, ElementCreationError
 from xivo_dao.data_handler.user_line import dao as user_line_dao
 from xivo_dao.data_handler.user_line.model import UserLine
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -131,19 +130,13 @@ class TestDissociateUserLine(TestUserLineDao):
     def test_dissociate_user_with_line(self):
         user_line = self.add_user_line_without_exten()
 
-        nb_row_affected = user_line_dao.dissociate(user_line)
+        user_line_dao.dissociate(user_line)
 
         result = (self.session.query(UserLineSchema)
                   .filter(UserLineSchema.id == user_line.id)
                   .first())
 
         assert_that(result, equal_to(None))
-        assert_that(nb_row_affected, equal_to(1))
-
-    def test_dissociate_not_exist(self):
-        user_line = UserLineSchema(id=1)
-
-        self.assertRaises(ElementDeletionError, user_line_dao.dissociate, user_line)
 
 
 class TestFindMainUser(TestUserLineDao):
