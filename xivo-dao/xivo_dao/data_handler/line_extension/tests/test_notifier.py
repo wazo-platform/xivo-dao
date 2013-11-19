@@ -1,0 +1,72 @@
+# -*- coding: utf-8 -*-
+#
+# Copyright (C) 2013 Avencall
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+import unittest
+from mock import patch, Mock
+
+from xivo_dao.data_handler.line_extension.model import LineExtension
+from xivo_dao.data_handler.user_line.model import UserLine
+from xivo_dao.data_handler.line_extension import notifier
+
+class TestLineExtensionNotifier(unittest.TestCase):
+
+    @patch('xivo_dao.data_handler.line_extension.notifier.send_sysconf_association_commands')
+    @patch('xivo_dao.data_handler.line_extension.notifier.send_bus_association_events')
+    def test_associated(self, send_bus_association_events, send_sysconf_association_commands):
+        line_extension = LineExtension(line_id=1, extension_id=2)
+
+        notifier.associated(line_extension)
+
+        send_sysconf_association_commands.assert_called_once_with(line_extension)
+        send_bus_association_events.assert_called_once_with(line_extension)
+
+    @patch('xivo_dao.helpers.sysconfd_connector.exec_request_handlers')
+    @patch('xivo_dao.data_handler.user_line.dao.find_all_by_line_id')
+    def test_send_sysconf_association_commands(self,
+                                               find_all_by_line_id,
+                                               exec_request_handlers):
+        line_extension = LineExtension(line_id=1, extension_id=2)
+        user_line_1 = Mock(UserLine, line_id=1, user_id=3)
+        user_line_2 = Mock(UserLine, line_id=1, user_id=4)
+
+        find_all_by_line_id.return_value = [user_line_1, user_line_2]
+
+        expected_sysconf_command = {
+            'ctibus': ['xivo[phone,edit,1]', 'xivo[user,edit,3]', 'xivo[user,edit,4]'],
+            'dird': [],
+            'ipbx': ['dialplan reload', 'sip reload'],
+            'agentbus': []
+        }
+
+        notifier.send_sysconf_association_commands(line_extension)
+
+        exec_request_handlers.assert_called_once_with(expected_sysconf_command)
+        find_all_by_line_id.assert_called_once_with(line_extension.line_id)
+
+    @patch('xivo_bus.resources.line_extension.event.LineExtensionAssociatedEvent')
+    @patch('xivo_dao.helpers.bus_manager.send_bus_command')
+    def test_send_bus_association_events(self, send_bus_command, LineExtensionAssociatedEvent):
+        new_event = LineExtensionAssociatedEvent.return_value = Mock()
+
+        line_extension = LineExtension(line_id=1, extension_id=2)
+
+        notifier.send_bus_association_events(line_extension)
+
+        LineExtensionAssociatedEvent.assert_called_once_with(line_extension.line_id,
+                                                            line_extension.extension_id)
+        send_bus_command.assert_called_once_with(new_event)
