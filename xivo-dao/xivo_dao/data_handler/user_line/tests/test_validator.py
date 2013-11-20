@@ -80,23 +80,50 @@ class TestValidator(unittest.TestCase):
         line_get.assert_called_once_with(user_line.line_id)
         user_line_get_by_user_id_and_line_id.assert_called_once_with(user_line.user_id, user_line.line_id)
 
-    @patch('xivo_dao.data_handler.user.dao.get')
-    def test_validate_dissociation_user_not_exists(self, patch_dao):
-        user_line = Mock(UserLine, user_id=3)
-
-        patch_dao.side_effect = ElementNotExistsError('User', id=user_line.user_id)
-
-        self.assertRaises(NonexistentParametersError, validator.validate_dissociation, user_line)
-
+    @patch('xivo_dao.data_handler.user_line.dao.extension_associated_to_this_user_line')
+    @patch('xivo_dao.data_handler.user_line.dao.line_has_secondary_user')
+    @patch('xivo_dao.data_handler.user_line.dao.find_all_by_user_id')
     @patch('xivo_dao.data_handler.line.dao.get')
     @patch('xivo_dao.data_handler.user.dao.get')
-    def test_validate_dissociation_no_line(self, user_dao_get, line_dao_get):
+    def test_validate_dissociation_user_not_exists(self,
+                                                   user_dao_get,
+                                                   line_dao_get,
+                                                   user_line_dao_find_all_by_user_id,
+                                                   line_has_secondary_user,
+                                                   extension_associated_to_this_user_line):
+        user_line = Mock(UserLine, user_id=3)
+
+        user_dao_get.side_effect = ElementNotExistsError('User', id=user_line.user_id)
+
+        self.assertRaises(NonexistentParametersError, validator.validate_dissociation, user_line)
+        user_dao_get.assert_called_once_with(user_line.user_id)
+        self.assertEquals(line_dao_get.call_count, 0)
+        self.assertEquals(user_line_dao_find_all_by_user_id.call_count, 0)
+        self.assertEquals(extension_associated_to_this_user_line.call_count, 0)
+        self.assertEquals(line_has_secondary_user.call_count, 0)
+
+    @patch('xivo_dao.data_handler.user_line.dao.extension_associated_to_this_user_line')
+    @patch('xivo_dao.data_handler.user_line.dao.line_has_secondary_user')
+    @patch('xivo_dao.data_handler.user_line.dao.find_all_by_user_id')
+    @patch('xivo_dao.data_handler.line.dao.get')
+    @patch('xivo_dao.data_handler.user.dao.get')
+    def test_validate_dissociation_no_line(self,
+                                           user_dao_get,
+                                           line_dao_get,
+                                           user_line_dao_find_all_by_user_id,
+                                           line_has_secondary_user,
+                                           extension_associated_to_this_user_line):
         user_line = Mock(UserLine, user_id=3, line_id=4)
 
         user_dao_get.return_value = Mock()
         line_dao_get.side_effect = ElementNotExistsError('Line', id=user_line.line_id)
 
         self.assertRaises(NonexistentParametersError, validator.validate_dissociation, user_line)
+        user_dao_get.assert_called_once_with(user_line.user_id)
+        line_dao_get.assert_called_once_with(user_line.line_id)
+        self.assertEquals(user_line_dao_find_all_by_user_id.call_count, 0)
+        self.assertEquals(extension_associated_to_this_user_line.call_count, 0)
+        self.assertEquals(line_has_secondary_user.call_count, 0)
 
     @patch('xivo_dao.data_handler.user_line.dao.extension_associated_to_this_user_line')
     @patch('xivo_dao.data_handler.user_line.dao.line_has_secondary_user')
@@ -144,6 +171,8 @@ class TestValidator(unittest.TestCase):
         extension_associated_to_this_user_line.return_value = True
 
         self.assertRaises(InvalidParametersError, validator.validate_dissociation, user_line)
+        user_dao_get.assert_called_once_with(user_line.user_id)
+        line_dao_get.assert_called_once_with(user_line.line_id)
         user_line_dao_find_all_by_user_id.assert_called_once_with(user_line.user_id)
         extension_associated_to_this_user_line.assert_called_once_with(user_line)
         self.assertEquals(line_has_secondary_user.call_count, 0)
