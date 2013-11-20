@@ -33,10 +33,6 @@ def get_by_exten_context(exten, context):
     return dao.get_by_exten_context(exten, context)
 
 
-def get_by_type_typeval(type, typeval):
-    return dao.get_by_type_typeval(type, typeval)
-
-
 def find_all(order=None, commented=False):
     return dao.find_all(order=order, commented=commented)
 
@@ -92,8 +88,6 @@ def _check_invalid_parameters(extension):
         invalid_parameters.append('Exten required')
     if len(extension.context) == 0:
         invalid_parameters.append('Context required')
-    if len(extension.type) == 0:
-        invalid_parameters.append('Type required')
     if hasattr(extension, 'commented') and not isinstance(extension.commented, bool):
         invalid_parameters.append('Commented must be a bool')
     if invalid_parameters:

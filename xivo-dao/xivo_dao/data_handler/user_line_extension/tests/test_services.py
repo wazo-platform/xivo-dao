@@ -225,8 +225,6 @@ class TestUserLineExtensionServices(unittest.TestCase):
 
         self.assertEquals(type(result), UserLineExtension)
         self.assertEquals(result.id, ule_id)
-        self.assertEquals(extension.type, 'user')
-        self.assertEquals(extension.typeval, str(main_user_id))
 
     @patch('xivo_dao.data_handler.user_line_extension.dao.create')
     @patch('xivo_dao.data_handler.user_line_extension.validator.validate_create')

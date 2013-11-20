@@ -24,8 +24,6 @@ class Extension(AbstractModels):
     MANDATORY = [
         'exten',
         'context',
-        'type',
-        'typeval'
     ]
 
     # mapping = {db_field: model_field}
@@ -33,8 +31,6 @@ class Extension(AbstractModels):
         'id': 'id',
         'exten': 'exten',
         'context': 'context',
-        'type': 'type',
-        'typeval': 'typeval',
         'commented': 'commented'
     }
 
