@@ -38,6 +38,9 @@ class TestExtensionDao(DAOTestCase):
     def setUp(self):
         self.empty_tables()
 
+
+class TestFindAll(TestExtensionDao):
+
     def test_find_all_no_extens(self):
         expected = []
         extens = extension_dao.find_all()
@@ -95,6 +98,9 @@ class TestExtensionDao(DAOTestCase):
             )
         ))
 
+
+class TestFindByExten(TestExtensionDao):
+
     def test_find_by_exten_no_extens(self):
         expected = []
         extens = extension_dao.find_by_exten('123')
@@ -116,6 +122,9 @@ class TestExtensionDao(DAOTestCase):
                 has_property('id', exten.id),
                 has_property('exten', expected_exten))
         ))
+
+
+class TestFindByContext(TestExtensionDao):
 
     def test_find_by_context_no_extens(self):
         expected = []
@@ -139,6 +148,9 @@ class TestExtensionDao(DAOTestCase):
                 has_property('context', expected_context))
         ))
 
+
+class TestGet(TestExtensionDao):
+
     def test_get_no_exist(self):
         self.assertRaises(LookupError, extension_dao.get, 666)
 
@@ -150,6 +162,9 @@ class TestExtensionDao(DAOTestCase):
         extension = extension_dao.get(expected_extension.id)
 
         assert_that(extension.exten, equal_to(exten))
+
+
+class TestGetByExten(TestExtensionDao):
 
     def test_get_by_exten_context_no_exist(self):
         self.assertRaises(LookupError, extension_dao.get_by_exten_context, '1234', 'default')
@@ -166,6 +181,9 @@ class TestExtensionDao(DAOTestCase):
         assert_that(extension.id, equal_to(expected_extension.id))
         assert_that(extension.exten, equal_to(exten))
         assert_that(extension.context, equal_to(context))
+
+
+class TestFindByExtenContext(TestExtensionDao):
 
     def test_find_by_exten_context_no_extensions(self):
         expected = None
@@ -186,6 +204,9 @@ class TestExtensionDao(DAOTestCase):
             has_property('exten', exten),
             has_property('context', context)
         ))
+
+
+class TestCreate(TestExtensionDao):
 
     def test_create(self):
         exten = 'extension'
@@ -236,6 +257,9 @@ class TestExtensionDao(DAOTestCase):
         self.assertRaises(ElementCreationError, extension_dao.create, extension)
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
+
+
+class TestDelete(TestExtensionDao):
 
     def test_delete(self):
         exten = 'sdklfj'
