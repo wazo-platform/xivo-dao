@@ -69,5 +69,9 @@ class ExtensionDatabaseConverter(DatabaseConverter):
         source.commented = int(source.commented)
         return source
 
+    def update_source(self, source, model):
+        DatabaseConverter.update_source(self, source, model)
+        source.commented = int(source.commented)
+
 
 db_converter = ExtensionDatabaseConverter()

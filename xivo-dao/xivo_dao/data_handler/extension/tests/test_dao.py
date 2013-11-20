@@ -261,6 +261,47 @@ class TestCreate(TestExtensionDao):
         session.rollback.assert_called_once_with()
 
 
+class TestEdit(TestExtensionDao):
+
+    def setUp(self):
+        TestExtensionDao.setUp(self)
+        self.existing_extension = self.add_extension(exten='1635', context='my_context', type='user', typeval='0')
+
+    def test_edit(self):
+        exten = 'extension'
+        context = 'toto'
+        commented = True
+
+        extension = Extension(id=self.existing_extension.id,
+                              exten=exten,
+                              context=context,
+                              commented=commented)
+
+        extension_dao.edit(extension)
+
+        row = self.session.query(ExtensionSchema).get(extension.id)
+
+        assert_that(row.id, equal_to(extension.id))
+        assert_that(row.exten, equal_to(exten))
+        assert_that(row.context, equal_to(context))
+        assert_that(row.commented, equal_to(1))
+        assert_that(row.type, equal_to('user'))
+        assert_that(row.typeval, equal_to('0'))
+
+    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    def test_edit_extension_with_error_from_dao(self, Session):
+        session = Mock()
+        session.commit.side_effect = SQLAlchemyError()
+        Session.return_value = session
+
+        extension = Extension(exten='extension',
+                              context='context')
+
+        self.assertRaises(ElementEditionError, extension_dao.edit, extension)
+        session.begin.assert_called_once_with()
+        session.rollback.assert_called_once_with()
+
+
 class TestDelete(TestExtensionDao):
 
     def test_delete(self):
