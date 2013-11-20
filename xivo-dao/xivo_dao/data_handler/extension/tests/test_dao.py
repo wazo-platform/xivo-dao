@@ -15,18 +15,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, equal_to, has_property, all_of
+from hamcrest import assert_that, all_of, equal_to, has_items, has_length, has_property
 from mock import patch, Mock
-
-from xivo_dao.data_handler.extension import dao as extension_dao
-from xivo_dao.tests.test_dao import DAOTestCase
 from sqlalchemy.exc import SQLAlchemyError
-from xivo_dao.data_handler.exception import ElementCreationError, \
-    ElementDeletionError
-from xivo_dao.data_handler.extension.model import Extension
+
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
-from hamcrest.library.object.haslength import has_length
-from hamcrest.library.collection.issequence_containing import has_items
+from xivo_dao.alchemy.userfeatures import test_dependencies as user_test_dependencies
+from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
+from xivo_dao.data_handler.exception import ElementCreationError
+from xivo_dao.data_handler.exception import ElementDeletionError
+from xivo_dao.data_handler.exception import ElementEditionError
+from xivo_dao.data_handler.extension import dao as extension_dao
+from xivo_dao.data_handler.extension.model import Extension
+from xivo_dao.data_handler.user.model import User
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestExtensionDao(DAOTestCase):
@@ -280,3 +282,44 @@ class TestDelete(TestExtensionDao):
         extension = Extension(id=1)
 
         self.assertRaises(ElementDeletionError, extension_dao.delete, extension)
+
+
+class TestAssociateToUser(TestExtensionDao):
+
+    tables = TestExtensionDao.tables + user_test_dependencies + [UserSchema]
+
+    def test_associate_to_user(self):
+        extension = self.prepare_extension()
+        user = self.prepare_user()
+
+        extension_dao.associate_to_user(user, extension)
+
+        self.assert_extension_is_associated_to_user(user, extension)
+
+    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    def test_associate_to_user_with_database_error(self, Session):
+        session = Mock()
+        session.commit.side_effect = SQLAlchemyError()
+        Session.return_value = session
+
+        extension = Mock(Extension, id=1)
+        user = Mock(User, id=2)
+
+        self.assertRaises(ElementEditionError, extension_dao.associate_to_user, user, extension)
+        session.commit.assert_called_once_with()
+        session.rollback.assert_called_once_with()
+
+    def prepare_extension(self):
+        extension_row = self.add_extension()
+        extension = Mock(Extension, id=extension_row.id)
+        return extension
+
+    def prepare_user(self):
+        user_row = self.add_user()
+        user = Mock(User, id=user_row.id)
+        return user
+
+    def assert_extension_is_associated_to_user(self, user, extension):
+        updated_extension = self.session.query(ExtensionSchema).get(extension.id)
+        assert_that(updated_extension.type, equal_to('user'))
+        assert_that(updated_extension.typeval, equal_to(str(user.id)))

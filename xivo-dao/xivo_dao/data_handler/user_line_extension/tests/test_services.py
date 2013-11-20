@@ -85,9 +85,9 @@ class TestUserLineExtensionServices(unittest.TestCase):
     @patch('xivo_dao.data_handler.user_line_extension.dao.create')
     @patch('xivo_dao.data_handler.line.dao.edit')
     @patch('xivo_dao.data_handler.line.dao.update_xivo_userid')
-    @patch('xivo_dao.data_handler.extension.dao.edit')
+    @patch('xivo_dao.data_handler.extension.dao.associate_to_user')
     def test_create(self,
-                    extension_edit,
+                    extension_associate_to_user,
                     line_update_xivo_userid,
                     line_edit,
                     user_line_extension_dao_create,
@@ -134,15 +134,13 @@ class TestUserLineExtensionServices(unittest.TestCase):
 
         ule_validate_create.assert_called_once_with(ule)
         user_line_extension_dao_create.assert_called_once_with(ule)
-        extension_edit.assert_called_once_with(extension)
+        extension_associate_to_user.assert_called_once_with(user, extension)
         line_edit.assert_called_once_with(line)
         line_update_xivo_userid.assert_called_once_with(line, user)
         user_line_extension_notifier_created.assert_called_once_with(ule)
 
         self.assertEquals(type(result), UserLineExtension)
         self.assertEquals(result.id, ule_id)
-        self.assertEquals(extension.type, 'user')
-        self.assertEquals(extension.typeval, str(user_id))
 
     @patch('xivo_dao.data_handler.user_line_extension.dao.find_main_user')
     @patch('xivo_dao.data_handler.user_line_extension.validator.validate_create')
@@ -150,9 +148,9 @@ class TestUserLineExtensionServices(unittest.TestCase):
     @patch('xivo_dao.data_handler.user_line_extension.dao.create')
     @patch('xivo_dao.data_handler.line.dao.edit')
     @patch('xivo_dao.data_handler.line.dao.update_xivo_userid')
-    @patch('xivo_dao.data_handler.extension.dao.edit')
+    @patch('xivo_dao.data_handler.extension.dao.associate_to_user')
     def test_create_secondary_user(self,
-                                   extension_edit,
+                                   extension_associate_to_user,
                                    line_update_xivo_userid,
                                    line_edit,
                                    user_line_extension_dao_create,
@@ -218,7 +216,7 @@ class TestUserLineExtensionServices(unittest.TestCase):
 
         ule_validate_create.assert_called_once_with(ule)
         user_line_extension_dao_create.assert_called_once_with(ule)
-        extension_edit.assert_called_once_with(extension)
+        extension_associate_to_user.assert_called_once_with(main_user, extension)
         line_edit.assert_called_once_with(expected_line)
         line_update_xivo_userid.assert_called_once_with(expected_line, main_user)
         user_line_extension_notifier_created.assert_called_once_with(ule)

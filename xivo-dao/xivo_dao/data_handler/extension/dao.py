@@ -164,3 +164,18 @@ def _new_query(session, order=None, commented=False):
     order = order or DEFAULT_ORDER
     commented = int(commented)
     return session.query(ExtensionSchema).filter(ExtensionSchema.commented == commented).order_by(*order)
+
+
+@daosession
+def associate_to_user(session, user, extension):
+    session.begin()
+    (session.query(ExtensionSchema)
+     .filter(ExtensionSchema.id == extension.id)
+     .update({'type': 'user',
+              'typeval': str(user.id)}))
+
+    try:
+        session.commit()
+    except SQLAlchemyError:
+        session.rollback()
+        raise ElementEditionError('Extension', 'error while associating extension with user %d' % user.id)
