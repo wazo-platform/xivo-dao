@@ -53,7 +53,7 @@ class TestCtiSheetsDAO(DAOTestCase):
                                 u'{xivo-origin}',
                                 0]
                     },
-                    'sheet_qtui': {'null': u'file:///tmp/test.ui'},
+                    'sheet_qtui': u'file:///tmp/test.ui',
                     'systray_info': {
                         u'10': [u'Nom',
                                 u'title',
@@ -98,6 +98,15 @@ class TestCtiSheetsDAO(DAOTestCase):
 
         self.assertEqual(expected_result, result)
 
+    def test_no_qtui(self):
+        self._add_ctisheetevents()
+        self._add_ctisheetactions(qt_ui='')
+
+        result = cti_sheets_dao.get_config()
+
+        self.assertTrue('sheet_qtui' not in result['displays']['XiVO'],
+                        'sheet_qtui is in the displays')
+
     def _add_ctisheetevents(self):
         cti_sheetevent = CtiSheetEvents()
         cti_sheetevent.incomingdid = ''
@@ -111,14 +120,14 @@ class TestCtiSheetsDAO(DAOTestCase):
         self.session.commit()
         return cti_sheetevent.id
 
-    def _add_ctisheetactions(self):
+    def _add_ctisheetactions(self, qt_ui='file:///tmp/test.ui'):
         cti_sheetaction = CtiSheetActions()
         cti_sheetaction.name = 'XiVO'
         cti_sheetaction.description = 'Modèle de fiche de base.'
         cti_sheetaction.whom = 'dest'
         cti_sheetaction.sheet_info = '{"10": [ "Nom","title","","{xivo-calleridname}",0 ],"20": [ "Numéro","text","","{xivo-calleridnum}",0 ],"30": [ "Origine","text","","{xivo-origin}",0 ]}'
         cti_sheetaction.systray_info = '{"10": [ "Nom","title","","{xivo-calledidname}" ],"20": [ "Numéro","body","","{xivo-calleridnum}" ],"30": [ "Origine","body","","{xivo-origin}" ]}'
-        cti_sheetaction.sheet_qtui = 'file:///tmp/test.ui'
+        cti_sheetaction.sheet_qtui = qt_ui
         cti_sheetaction.action_info = '{}'
         cti_sheetaction.focus = 0
         cti_sheetaction.deletable = 1

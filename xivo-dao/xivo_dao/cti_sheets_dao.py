@@ -62,7 +62,6 @@ def _build_sheetactions(session):
             continue
         name = ctisheaction.name
         focus = 'yes' if ctisheaction.focus else 'no'
-        sheet_qtui = {'null': ctisheaction.sheet_qtui}
 
         res['options'][name] = {
             'focus': focus,
@@ -72,8 +71,9 @@ def _build_sheetactions(session):
             'systray_info': systray_info,
             'sheet_info': sheet_info,
             'action_info': action_info,
-            'sheet_qtui': sheet_qtui,
         }
+        if ctisheaction.sheet_qtui:
+            res['displays'][name]['sheet_qtui'] = ctisheaction.sheet_qtui
         res['conditions'][name] = {
             'whom': ctisheaction.whom,
         }
