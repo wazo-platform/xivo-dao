@@ -79,9 +79,9 @@ class TestUserLineGetByUserIdAndLineId(TestUserLineDao):
 
         assert_that(result, instance_of(UserLine))
         assert_that(result,
-            has_property('user_id', user_line.user_id),
-            has_property('line_id', user_line.line_id)
-        )
+                    has_property('user_id', user_line.user_id),
+                    has_property('line_id', user_line.line_id)
+                    )
 
     def test_get_by_user_id_with_line_and_secondary_user(self):
         main_user = self.add_user()
@@ -100,13 +100,13 @@ class TestUserLineGetByUserIdAndLineId(TestUserLineDao):
 
         assert_that(result, instance_of(UserLine))
         assert_that(result,
-            all_of(
-               has_property('user_id', main_user_line.user_id),
-               has_property('line_id', main_user_line.line_id),
-               has_property('main_user', True),
-               has_property('main_line', False)
-            )
-        )
+                    all_of(
+                        has_property('user_id', main_user_line.user_id),
+                        has_property('line_id', main_user_line.line_id),
+                        has_property('main_user', True),
+                        has_property('main_line', False)
+                    )
+                    )
 
 
 class TestUserLineFindAllByUserId(TestUserLineDao):
@@ -177,9 +177,9 @@ class TestUserLineFindMainUser(TestUserLineDao):
 
         assert_that(result, instance_of(UserLine))
         assert_that(result,
-            has_property('user_id', main_user_line.user_id),
-            has_property('line_id', main_user_line.line_id)
-        )
+                    has_property('user_id', main_user_line.user_id),
+                    has_property('line_id', main_user_line.line_id)
+                    )
 
 
 class TestAssociateUserLine(TestUserLineDao):

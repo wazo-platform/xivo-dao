@@ -29,9 +29,9 @@ from xivo_dao.helpers.db_manager import daosession
 @daosession
 def get_by_user_id_and_line_id(session, user_id, line_id):
     row = (session.query(UserLineSchema)
-          .filter(UserLineSchema.user_id == user_id)
-          .filter(UserLineSchema.line_id == line_id)
-          .first())
+           .filter(UserLineSchema.user_id == user_id)
+           .filter(UserLineSchema.line_id == line_id)
+           .first())
 
     if not row:
         raise UserLineNotExistsError('UserLine', user_id=user_id, line_id=line_id)
@@ -42,8 +42,8 @@ def get_by_user_id_and_line_id(session, user_id, line_id):
 @daosession
 def find_all_by_user_id(session, user_id):
     rows = (session.query(UserLineSchema)
-           .filter(UserLineSchema.user_id == user_id)
-           .all())
+            .filter(UserLineSchema.user_id == user_id)
+            .all())
 
     if not rows:
         return []
@@ -58,9 +58,9 @@ def find_all_by_user_id(session, user_id):
 @daosession
 def find_main_user_line(session, user_line):
     row = (session.query(UserLineSchema)
-          .filter(UserLineSchema.main_user == True)
-          .filter(UserLineSchema.line_id == user_line.line_id)
-          .first())
+           .filter(UserLineSchema.main_user == True)
+           .filter(UserLineSchema.line_id == user_line.line_id)
+           .first())
 
     if not row:
         return None
@@ -111,8 +111,8 @@ def line_has_secondary_user(session, user_line):
 @daosession
 def extension_associated_to_this_user_line(session, user_line):
     row = (session.query(UserLineSchema.extension_id)
-             .filter(UserLineSchema.user_id == user_line.user_id)
-             .filter(UserLineSchema.line_id == user_line.line_id)
-             .first())
+           .filter(UserLineSchema.user_id == user_line.user_id)
+           .filter(UserLineSchema.line_id == user_line.line_id)
+           .first())
 
     return row.extension_id is not None
