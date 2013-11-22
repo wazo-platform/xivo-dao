@@ -155,12 +155,12 @@ class TestUserLineFindAllByUserId(TestUserLineDao):
 
 class TestUserLineFindMainUser(TestUserLineDao):
 
-    def test_find_main_user_no_user(self):
+    def test_find_main_user_line_no_user(self):
         user_line = UserLine(line_id=33)
 
-        self.assertRaises(ElementNotExistsError, user_line_dao.find_main_user(user_line))
+        self.assertRaises(ElementNotExistsError, user_line_dao.find_main_user_line(user_line))
 
-    def test_find_main_user(self):
+    def test_find_main_user_line(self):
         user = self.add_user()
         line1 = self.add_line()
         line2 = self.add_line()
@@ -173,7 +173,7 @@ class TestUserLineFindMainUser(TestUserLineDao):
                            main_user=True,
                            main_line=False)
 
-        result = user_line_dao.find_main_user(main_user_line)
+        result = user_line_dao.find_main_user_line(main_user_line)
 
         assert_that(result, instance_of(UserLine))
         assert_that(result,
@@ -280,20 +280,20 @@ class TestDissociateUserLine(TestUserLineDao):
 
 class TestFindMainUser(TestUserLineDao):
 
-    def test_find_main_user_no_line(self):
+    def test_find_main_user_line_no_line(self):
         user = self.add_user()
 
         user_line = UserLine(user_id=user.id,
                              line_id=2)
 
-        result = user_line_dao.find_main_user(user_line)
+        result = user_line_dao.find_main_user_line(user_line)
 
         assert_that(result, equal_to(None))
 
-    def test_find_main_user_one_user(self):
+    def test_find_main_user_line_one_user(self):
         user_line = self.add_user_line_without_exten()
 
-        result = user_line_dao.find_main_user(user_line)
+        result = user_line_dao.find_main_user_line(user_line)
 
         assert_that(result.user_id, equal_to(user_line.user_id))
 

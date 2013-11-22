@@ -56,7 +56,7 @@ def find_all_by_user_id(session, user_id):
 
 
 @daosession
-def find_main_user(session, user_line):
+def find_main_user_line(session, user_line):
     row = (session.query(UserLineSchema)
           .filter(UserLineSchema.main_user == True)
           .filter(UserLineSchema.line_id == user_line.line_id)
