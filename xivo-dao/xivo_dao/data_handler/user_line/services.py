@@ -42,6 +42,6 @@ def dissociate(user_line):
 
 
 def _adjust_optional_parameters(user_line):
-    user_line_main_user = dao.find_main_user(user_line)
+    user_line_main_user = dao.find_main_user_line(user_line)
     if user_line_main_user is not None:
         user_line.main_user = (user_line.user_id == user_line_main_user.user_id)

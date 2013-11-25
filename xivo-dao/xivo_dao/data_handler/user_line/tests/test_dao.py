@@ -153,7 +153,7 @@ class TestUserLineFindAllByUserId(TestUserLineDao):
         ))
 
 
-class TestUserLineFindMainUser(TestUserLineDao):
+class TestUserLineFindMainUserLine(TestUserLineDao):
 
     def test_find_main_user_line_no_user(self):
         user_line = UserLine(line_id=33)
