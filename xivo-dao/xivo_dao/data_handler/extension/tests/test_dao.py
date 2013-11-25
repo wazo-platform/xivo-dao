@@ -15,18 +15,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, equal_to, has_property, all_of
+from hamcrest import assert_that, all_of, equal_to, has_items, has_length, has_property
 from mock import patch, Mock
-
-from xivo_dao.data_handler.extension import dao as extension_dao
-from xivo_dao.tests.test_dao import DAOTestCase
 from sqlalchemy.exc import SQLAlchemyError
-from xivo_dao.data_handler.exception import ElementCreationError, \
-    ElementDeletionError
-from xivo_dao.data_handler.extension.model import Extension
+
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
-from hamcrest.library.object.haslength import has_length
-from hamcrest.library.collection.issequence_containing import has_items
+from xivo_dao.alchemy.userfeatures import test_dependencies as user_test_dependencies
+from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
+from xivo_dao.data_handler.exception import ElementCreationError
+from xivo_dao.data_handler.exception import ElementDeletionError
+from xivo_dao.data_handler.exception import ElementEditionError
+from xivo_dao.data_handler.extension import dao as extension_dao
+from xivo_dao.data_handler.extension.model import Extension
+from xivo_dao.data_handler.user.model import User
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestExtensionDao(DAOTestCase):
@@ -37,6 +39,9 @@ class TestExtensionDao(DAOTestCase):
 
     def setUp(self):
         self.empty_tables()
+
+
+class TestFindAll(TestExtensionDao):
 
     def test_find_all_no_extens(self):
         expected = []
@@ -95,6 +100,9 @@ class TestExtensionDao(DAOTestCase):
             )
         ))
 
+
+class TestFindByExten(TestExtensionDao):
+
     def test_find_by_exten_no_extens(self):
         expected = []
         extens = extension_dao.find_by_exten('123')
@@ -116,6 +124,9 @@ class TestExtensionDao(DAOTestCase):
                 has_property('id', exten.id),
                 has_property('exten', expected_exten))
         ))
+
+
+class TestFindByContext(TestExtensionDao):
 
     def test_find_by_context_no_extens(self):
         expected = []
@@ -139,6 +150,9 @@ class TestExtensionDao(DAOTestCase):
                 has_property('context', expected_context))
         ))
 
+
+class TestGet(TestExtensionDao):
+
     def test_get_no_exist(self):
         self.assertRaises(LookupError, extension_dao.get, 666)
 
@@ -150,6 +164,9 @@ class TestExtensionDao(DAOTestCase):
         extension = extension_dao.get(expected_extension.id)
 
         assert_that(extension.exten, equal_to(exten))
+
+
+class TestGetByExten(TestExtensionDao):
 
     def test_get_by_exten_context_no_exist(self):
         self.assertRaises(LookupError, extension_dao.get_by_exten_context, '1234', 'default')
@@ -167,27 +184,8 @@ class TestExtensionDao(DAOTestCase):
         assert_that(extension.exten, equal_to(exten))
         assert_that(extension.context, equal_to(context))
 
-    def test_test_get_by_type_typeval_no_exist(self):
-        self.assertRaises(LookupError, extension_dao.get_by_type_typeval, 'user', '1')
 
-    def test_get_by_type_typeval(self):
-        exten = 'sdklfj'
-        context = 'toto'
-        type = 'user'
-        typeval = '2'
-
-        expected_extension = self.add_extension(exten=exten,
-                                                context=context,
-                                                type=type,
-                                                typeval=typeval)
-
-        extension = extension_dao.get_by_type_typeval(type, typeval)
-
-        assert_that(extension.id, equal_to(expected_extension.id))
-        assert_that(extension.exten, equal_to(exten))
-        assert_that(extension.context, equal_to(context))
-        assert_that(extension.type, equal_to(type))
-        assert_that(extension.typeval, equal_to(typeval))
+class TestFindByExtenContext(TestExtensionDao):
 
     def test_find_by_exten_context_no_extensions(self):
         expected = None
@@ -198,35 +196,27 @@ class TestExtensionDao(DAOTestCase):
     def test_find_by_exten_context_one_extension(self):
         exten = 'sdklfj'
         context = 'toto'
-        type = 'user'
-        typeval = '2'
-
         extension_row = self.add_extension(exten=exten,
-                                           context=context,
-                                           type=type,
-                                           typeval=typeval)
+                                           context=context)
 
         result = extension_dao.find_by_exten_context(exten, context)
 
         assert_that(result, all_of(
             has_property('id', extension_row.id),
             has_property('exten', exten),
-            has_property('context', context),
-            has_property('type', type),
-            has_property('typeval', typeval)
+            has_property('context', context)
         ))
+
+
+class TestCreate(TestExtensionDao):
 
     def test_create(self):
         exten = 'extension'
         context = 'toto'
-        type = 'user'
-        typeval = '4'
         commented = True
 
         extension = Extension(exten=exten,
                               context=context,
-                              type=type,
-                              typeval=typeval,
                               commented=commented)
 
         created_extension = extension_dao.create(extension)
@@ -236,23 +226,21 @@ class TestExtensionDao(DAOTestCase):
         assert_that(row.id, equal_to(created_extension.id))
         assert_that(row.exten, equal_to(exten))
         assert_that(row.context, equal_to(context))
-        assert_that(row.type, equal_to(type))
-        assert_that(row.typeval, equal_to(typeval))
         assert_that(row.commented, equal_to(1))
+        assert_that(row.type, equal_to('user'))
+        assert_that(row.typeval, equal_to('0'))
 
     def test_create_same_exten_and_context(self):
         exten = 'extension'
         context = 'toto'
 
         extension = Extension(exten=exten,
-                              context=context,
-                              type='user')
+                              context=context)
 
         extension_dao.create(extension)
 
         extension = Extension(exten=exten,
-                              context=context,
-                              type='user')
+                              context=context)
 
         self.assertRaises(ElementCreationError, extension_dao.create, extension)
 
@@ -266,23 +254,21 @@ class TestExtensionDao(DAOTestCase):
         context = 'toto'
 
         extension = Extension(exten=exten,
-                              context=context,
-                              type='user')
+                              context=context)
 
         self.assertRaises(ElementCreationError, extension_dao.create, extension)
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
 
+
+class TestDelete(TestExtensionDao):
+
     def test_delete(self):
         exten = 'sdklfj'
         context = 'toto'
-        type = 'user'
-        typeval = '2'
 
         expected_extension = self.add_extension(exten=exten,
-                                                context=context,
-                                                type=type,
-                                                typeval=typeval)
+                                                context=context)
 
         extension = extension_dao.get(expected_extension.id)
 
@@ -296,3 +282,44 @@ class TestExtensionDao(DAOTestCase):
         extension = Extension(id=1)
 
         self.assertRaises(ElementDeletionError, extension_dao.delete, extension)
+
+
+class TestAssociateToUser(TestExtensionDao):
+
+    tables = TestExtensionDao.tables + user_test_dependencies + [UserSchema]
+
+    def test_associate_to_user(self):
+        extension = self.prepare_extension()
+        user = self.prepare_user()
+
+        extension_dao.associate_to_user(user, extension)
+
+        self.assert_extension_is_associated_to_user(user, extension)
+
+    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    def test_associate_to_user_with_database_error(self, Session):
+        session = Mock()
+        session.commit.side_effect = SQLAlchemyError()
+        Session.return_value = session
+
+        extension = Mock(Extension, id=1)
+        user = Mock(User, id=2)
+
+        self.assertRaises(ElementEditionError, extension_dao.associate_to_user, user, extension)
+        session.commit.assert_called_once_with()
+        session.rollback.assert_called_once_with()
+
+    def prepare_extension(self):
+        extension_row = self.add_extension()
+        extension = Mock(Extension, id=extension_row.id)
+        return extension
+
+    def prepare_user(self):
+        user_row = self.add_user()
+        user = Mock(User, id=user_row.id)
+        return user
+
+    def assert_extension_is_associated_to_user(self, user, extension):
+        updated_extension = self.session.query(ExtensionSchema).get(extension.id)
+        assert_that(updated_extension.type, equal_to('user'))
+        assert_that(updated_extension.typeval, equal_to(str(user.id)))

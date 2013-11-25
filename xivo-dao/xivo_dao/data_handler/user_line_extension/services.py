@@ -94,9 +94,7 @@ def _make_secondary_associations(main_user, line, extension):
 
 
 def _associate_extension(main_user, extension):
-    extension.type = 'user'
-    extension.typeval = str(main_user.id)
-    extension_dao.edit(extension)
+    extension_dao.associate_to_user(main_user, extension)
 
 
 def _associate_line(line, extension, main_user):

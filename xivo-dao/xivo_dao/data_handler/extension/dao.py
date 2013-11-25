@@ -51,19 +51,6 @@ def get_by_exten_context(session, exten, context):
 
 
 @daosession
-def get_by_type_typeval(session, type, typeval):
-    res = (_new_query(session)
-           .filter(ExtensionSchema.type == type)
-           .filter(ExtensionSchema.typeval == typeval)
-           ).first()
-
-    if not res:
-        raise ElementNotExistsError('Extension', type=type, typeval=typeval)
-
-    return Extension.from_data_source(res)
-
-
-@daosession
 def find_all(session, order=None, commented=False):
     line_rows = _new_query(session, order, commented).all()
 
@@ -118,6 +105,8 @@ def _rows_to_extension_model(extension_rows):
 @daosession
 def create(session, extension):
     extension_row = extension.to_data_source(ExtensionSchema)
+    extension_row.type = 'user'
+    extension_row.typeval = '0'
 
     session.begin()
     session.add(extension_row)
@@ -175,3 +164,18 @@ def _new_query(session, order=None, commented=False):
     order = order or DEFAULT_ORDER
     commented = int(commented)
     return session.query(ExtensionSchema).filter(ExtensionSchema.commented == commented).order_by(*order)
+
+
+@daosession
+def associate_to_user(session, user, extension):
+    session.begin()
+    (session.query(ExtensionSchema)
+     .filter(ExtensionSchema.id == extension.id)
+     .update({'type': 'user',
+              'typeval': str(user.id)}))
+
+    try:
+        session.commit()
+    except SQLAlchemyError:
+        session.rollback()
+        raise ElementEditionError('Extension', 'error while associating extension with user %d' % user.id)
