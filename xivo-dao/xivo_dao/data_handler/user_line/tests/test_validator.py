@@ -183,11 +183,11 @@ class TestValidator(unittest.TestCase):
     @patch('xivo_dao.data_handler.line.dao.get')
     @patch('xivo_dao.data_handler.user.dao.get')
     def test_validate_dissociation_main_user_with_secondary_user(self,
-                                                  user_dao_get,
-                                                  line_dao_get,
-                                                  user_line_dao_find_all_by_user_id,
-                                                  line_has_secondary_user,
-                                                  extension_associated_to_this_user_line):
+                                                                 user_dao_get,
+                                                                 line_dao_get,
+                                                                 user_line_dao_find_all_by_user_id,
+                                                                 line_has_secondary_user,
+                                                                 extension_associated_to_this_user_line):
         user_line = UserLine(user_id=3,
                              line_id=4,
                              main_user=True)
