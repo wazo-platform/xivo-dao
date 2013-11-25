@@ -158,7 +158,8 @@ class TestUserLineFindMainUserLine(TestUserLineDao):
     def test_find_main_user_line_no_user(self):
         user_line = UserLine(line_id=33)
 
-        self.assertRaises(ElementNotExistsError, user_line_dao.find_main_user_line(user_line))
+        result = user_line_dao.find_main_user_line(user_line)
+        assert_that(result, equal_to(None))
 
     def test_find_main_user_line(self):
         user = self.add_user()
