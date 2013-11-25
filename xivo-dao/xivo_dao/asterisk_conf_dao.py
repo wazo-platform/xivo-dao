@@ -464,14 +464,6 @@ def find_iax_trunk_settings(session):
 
 
 @daosession
-def find_iax_user_settings(session):
-    rows = session.query(UserIAX).filter(and_(UserIAX.commented == 0,
-                                              UserIAX.category == 'user')).all()
-
-    return [row.todict() for row in rows]
-
-
-@daosession
 def find_iax_calllimits_settings(session):
     rows = session.query(IAXCallNumberLimits).all()
 
