@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 
-from hamcrest import assert_that, none, has_entries
+from hamcrest import assert_that, has_entries
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.ldapfilter import LdapFilter
 from xivo_dao.alchemy.ldapserver import LdapServer
@@ -45,7 +45,67 @@ class TestLdapDAO(DAOTestCase):
 
         self.assertEqual(ldapfilter.name, ldapfilter_result.name)
 
-    def _insert_ldapfilter(self, ldapserver_id, name='ldapfilter_test'):
+    def test_build_ldapinfo_from_ldapfilter_minimum_fields(self):
+        filter_name = 'filtername'
+        ldap_server = self._insert_ldapserver(name='ldapserver_test')
+        ldap_filter = self._insert_ldapfilter(ldap_server.id, name=filter_name)
+
+        result = ldap_dao.build_ldapinfo_from_ldapfilter(ldap_filter.name)
+
+        assert_that(result, has_entries({
+            'username': '',
+            'password': '',
+            'basedn': None,
+            'filter': None,
+            'host': 'localhost',
+            'port': 389,
+            'ssl': False,
+            'uri': 'ldap://localhost:389'
+        }))
+
+    def test_build_ldapinfo_from_ldapfilter_ssl(self):
+        filter_name = 'filtername'
+        ldap_server = self._insert_ldapserver(name='ldapserver_test', securitylayer='ssl', port=636)
+        ldap_filter = self._insert_ldapfilter(ldap_server.id, name=filter_name)
+
+        result = ldap_dao.build_ldapinfo_from_ldapfilter(ldap_filter.name)
+
+        assert_that(result, has_entries({
+            'username': '',
+            'password': '',
+            'basedn': None,
+            'filter': None,
+            'host': 'localhost',
+            'port': 636,
+            'ssl': True,
+            'uri': 'ldaps://localhost:636'
+        }))
+
+    def test_build_ldapinfo_from_ldapfilter_all_fields(self):
+        ldap_server = self._insert_ldapserver(name='ldapserver_test',
+                                              securitylayer='ssl',
+                                              host='myhost',
+                                              port=1234)
+        ldap_filter = self._insert_ldapfilter(ldap_server.id,
+                                              user='username',
+                                              passwd='password',
+                                              basedn='cn=User,dc=company,dc=com',
+                                              filter='sn=*')
+
+        result = ldap_dao.build_ldapinfo_from_ldapfilter(ldap_filter.name)
+
+        assert_that(result, has_entries({
+            'username': ldap_filter.user,
+            'password': ldap_filter.passwd,
+            'basedn': ldap_filter.basedn,
+            'filter': ldap_filter.filter,
+            'host': ldap_server.host,
+            'port': ldap_server.port,
+            'ssl': True,
+            'uri': 'ldaps://%s:%s' % (ldap_server.host, ldap_server.port)
+        }))
+
+    def _insert_ldapfilter(self, ldapserver_id, **kwargs):
         ldap = LdapFilter()
         ldap.ldapserverid = ldapserver_id
         ldap.name = kwargs.get('name', None)

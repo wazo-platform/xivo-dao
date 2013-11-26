@@ -29,3 +29,51 @@ def find_ldapfilter_with_name(session, ldap_name):
 @xivo_daosession
 def find_ldapserver_with_id(session, ldapserver_id):
     return session.query(LdapServer).filter(LdapServer.id == ldapserver_id).first()
+
+
+def build_ldapinfo_from_ldapfilter(ldap_filter_name):
+    ldapfilter = find_ldapfilter_with_name(ldap_filter_name)
+    ldapserver = find_ldapserver_with_id(ldapfilter.ldapserverid)
+
+    ssl = ldapserver.securitylayer == 'ssl'
+    host = ldapserver.host or 'localhost'
+    port = ldapserver.port or _determine_default_port(ssl)
+
+    username = u''
+    password = u''
+    basedn = None
+    basefilter = None
+
+    if ldapfilter.user:
+        username = ldapfilter.user.encode('utf8').replace('\\', '\\\\')
+
+    if ldapfilter.passwd:
+        password = ldapfilter.passwd.encode('utf8')
+
+    if ldapfilter.basedn:
+        basedn = ldapfilter.basedn.encode('utf8')
+
+    if ldapfilter.filter:
+        basefilter = ldapfilter.filter.encode('utf8')
+
+    ldapinfo = {'username': username,
+                'password': password,
+                'basedn': basedn,
+                'filter': basefilter,
+                'host': host,
+                'port': port,
+                'ssl': ssl,
+                'uri': _build_uri(ssl, host, port)}
+
+    return ldapinfo
+
+
+def _determine_default_port(ssl):
+    if ssl:
+        return 636
+    return 389
+
+
+def _build_uri(ssl, host, port):
+    scheme = 'ldaps' if ssl else 'ldap'
+    return u"%s://%s:%s" % (scheme, host, port)
