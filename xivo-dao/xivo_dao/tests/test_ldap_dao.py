@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 
+from hamcrest import assert_that, none, has_entries
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.ldapfilter import LdapFilter
 from xivo_dao.alchemy.ldapserver import LdapServer
@@ -47,11 +48,13 @@ class TestLdapDAO(DAOTestCase):
     def _insert_ldapfilter(self, ldapserver_id, name='ldapfilter_test'):
         ldap = LdapFilter()
         ldap.ldapserverid = ldapserver_id
-        ldap.name = name
-        ldap.user = 'user'
-        ldap.passwd = 'passwd'
-        ldap.additionaltype = 'office'
-        ldap.description = 'description'
+        ldap.name = kwargs.get('name', None)
+        ldap.user = kwargs.get('user', None)
+        ldap.passwd = kwargs.get('passwd', None)
+        ldap.basedn = kwargs.get('basedn', None)
+        ldap.filter = kwargs.get('filter', None)
+        ldap.additionaltype = kwargs.get('additionaltype', 'office')
+        ldap.description = kwargs.get('description', '')
 
         self.session.begin()
         self.session.add(ldap)
@@ -59,14 +62,14 @@ class TestLdapDAO(DAOTestCase):
 
         return ldap
 
-    def _insert_ldapserver(self, name='ldapserver_test'):
+    def _insert_ldapserver(self, name, **kwargs):
         ldapserver = LdapServer()
         ldapserver.name = name
-        ldapserver.host = 'test-ldap-server'
-        ldapserver.port = 389
-        ldapserver.securitylayer = 'tls'
-        ldapserver.protocolversion = '3'
-        ldapserver.description = 'description'
+        ldapserver.host = kwargs.get('host', None)
+        ldapserver.port = kwargs.get('port', 389)
+        ldapserver.securitylayer = kwargs.get('securitylayer', None)
+        ldapserver.protocolversion = kwargs.get('protocolversion', None)
+        ldapserver.description = kwargs.get('description', '')
 
         self.session.begin()
         self.session.add(ldapserver)
