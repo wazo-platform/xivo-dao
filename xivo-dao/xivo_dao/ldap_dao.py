@@ -22,10 +22,10 @@ from xivo_dao.alchemy.ldapserver import LdapServer
 
 
 @daosession
-def get_ldapfilter_with_name(session, ldap_name):
+def find_ldapfilter_with_name(session, ldap_name):
     return session.query(LdapFilter).filter(LdapFilter.name == ldap_name).first()
 
 
 @xivo_daosession
-def get_ldapserver_with_id(session, ldapserver_id):
+def find_ldapserver_with_id(session, ldapserver_id):
     return session.query(LdapServer).filter(LdapServer.id == ldapserver_id).first()
