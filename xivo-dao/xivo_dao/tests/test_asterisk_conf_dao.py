@@ -58,46 +58,21 @@ from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.usercustom import UserCustom
 
 
-class TestAsteriskConfDAO(DAOTestCase):
+class TestSccpConfDAO(DAOTestCase):
 
-    tables = [AgentFeatures,
-              AgentQueueSkill,
-              Context,
-              ContextInclude,
-              CtiPhoneHintsGroup,
-              CtiPresences,
-              CtiProfile,
-              Extension,
-              Features,
-              GroupFeatures,
-              IAXCallNumberLimits,
-              LineFeatures,
-              MusicOnHold,
-              PhoneFunckey,
-              Pickup,
-              PickupMember,
-              Queue,
-              QueueFeatures,
-              QueueMember,
-              QueuePenalty,
-              QueuePenaltyChange,
-              QueueSkill,
-              QueueSkillRule,
-              SCCPDevice,
-              SCCPGeneralSettings,
-              SCCPLine,
-              SIPAuthentication,
-              StaticIAX,
-              StaticMeetme,
-              StaticQueue,
-              StaticSIP,
-              StaticVoicemail,
-              UserLine,
-              UserFeatures,
-              UserCustom,
-              UserSIP,
-              UserIAX,
-              Voicemail]
+    tables = [
+        CtiPhoneHintsGroup,
+        CtiPresences,
+        CtiProfile,
+        Extension,
+        LineFeatures,
+        PhoneFunckey,
+        SCCPLine,
+        SCCPDevice,
+        SCCPGeneralSettings,
+        UserFeatures,
+        UserLine,
+    ]
 
     def setUp(self):
         self.empty_tables()
@@ -182,6 +157,49 @@ class TestAsteriskConfDAO(DAOTestCase):
         sccp_device = asterisk_conf_dao.find_sccp_speeddial_settings()
 
         assert_that(sccp_device, contains_inanyorder(*expected_result))
+
+
+class TestAsteriskConfDAO(DAOTestCase):
+
+    tables = [AgentFeatures,
+              AgentQueueSkill,
+              Context,
+              ContextInclude,
+              CtiPhoneHintsGroup,
+              CtiPresences,
+              CtiProfile,
+              Extension,
+              Features,
+              GroupFeatures,
+              IAXCallNumberLimits,
+              LineFeatures,
+              MusicOnHold,
+              PhoneFunckey,
+              Pickup,
+              PickupMember,
+              Queue,
+              QueueFeatures,
+              QueueMember,
+              QueuePenalty,
+              QueuePenaltyChange,
+              QueueSkill,
+              QueueSkillRule,
+              SCCPLine,
+              SIPAuthentication,
+              StaticIAX,
+              StaticMeetme,
+              StaticQueue,
+              StaticSIP,
+              StaticVoicemail,
+              UserLine,
+              UserFeatures,
+              UserCustom,
+              UserSIP,
+              UserIAX,
+              Voicemail]
+
+    def setUp(self):
+        self.empty_tables()
 
     def test_find_featuremap_features_settings(self):
         features = Features(id=1,
