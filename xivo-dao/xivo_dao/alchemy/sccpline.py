@@ -17,7 +17,7 @@
 
 from xivo_dao.helpers.db_manager import Base
 from sqlalchemy.schema import Column
-from sqlalchemy.types import Integer, String
+from sqlalchemy.types import Integer, String, Text
 
 
 class SCCPLine(Base):
@@ -30,4 +30,5 @@ class SCCPLine(Base):
     cid_name = Column(String(80), nullable=False)
     cid_num = Column(String(80), nullable=False)
     protocol = Column(String(8), nullable=False, default='sccp')
+    allow = Column(Text)
     commented = Column(Integer, nullable=False, default=0)

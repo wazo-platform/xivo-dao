@@ -105,6 +105,8 @@ def find_sccp_line_settings(session):
         tmp['name'] = sccpline.name
         tmp['cid_name'] = sccpline.cid_name
         tmp['cid_num'] = sccpline.cid_num
+        if sccpline.allow:
+            tmp['allow'] = sccpline.allow
         tmp['user_id'] = user_id
         tmp['number'] = number
         tmp['context'] = context
