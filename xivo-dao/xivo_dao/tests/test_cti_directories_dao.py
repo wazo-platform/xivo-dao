@@ -15,13 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, equal_to
+from hamcrest import assert_that, equal_to, has_entries
 from xivo_dao import cti_directories_dao
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.ldapfilter import LdapFilter
 from xivo_dao.alchemy.ldapserver import LdapServer
 from xivo_dao.alchemy.ctidirectories import CtiDirectories
 from xivo_dao.alchemy.ctidirectoryfields import CtiDirectoryFields
+from mock import Mock, patch
 
 
 class TestCtiSheetsDAO(DAOTestCase):
@@ -90,7 +91,7 @@ class TestCtiSheetsDAO(DAOTestCase):
                 ]
             },
             "ldap1": {
-                "uri": u"ldap://user:pass@test-ldap-server:389/dc=lan-quebec,dc=avencall,dc=com???",
+                "uri": u"ldapfilter://test-ldap-filter",
                 "delimiter": "",
                 "name": "",
                 "match_direct": [
@@ -111,9 +112,6 @@ class TestCtiSheetsDAO(DAOTestCase):
             }
         }
 
-        ldapserver = self._insert_ldapserver('test-ldap-server')
-        self._insert_ldapfilter(ldapserver.id, 'test-ldap-filter')
-
         match_direct = '["userfeatures.firstname","userfeatures.lastname"]'
         ctidirectory = self._insert_ctidirectory('internal', 'internal', match_direct, '')
         self._insert_ctidirectoryfields(ctidirectory.id, 'firstname', 'userfeatures.firstname')
@@ -132,34 +130,49 @@ class TestCtiSheetsDAO(DAOTestCase):
         self._insert_ctidirectoryfields(ctidirectory.id, 'reverse', 'phonebook.fullname')
 
         match_direct = '["cn","phoneNumber","email"]'
+        ldapserver = self._insert_ldapserver('test-ldap-server')
+        self._insert_ldapfilter(ldapserver.id, 'test-ldap-filter')
+
         ctidirectory = self._insert_ctidirectory('ldap1', 'ldapfilter://test-ldap-filter', match_direct, '')
         self._insert_ctidirectoryfields(ctidirectory.id, 'mail', 'email')
         self._insert_ctidirectoryfields(ctidirectory.id, 'lastname', 'sn')
         self._insert_ctidirectoryfields(ctidirectory.id, 'phone', 'telephoneNumber')
 
-        match_direct = '["cn","phoneNumber","email"]'
         ctidirectory = self._insert_ctidirectory('ldap2', 'ldapfilter://foobar', '', '')
 
         result = cti_directories_dao.get_config()
 
-        assert_that(result, equal_to(expected_result))
+        assert_that(result, has_entries(expected_result))
 
-    def test_build_ldap_uri_no_server(self):
+    def test_valid_uri_normal_uri(self):
+        uri = "internal"
+
+        valid_uri = cti_directories_dao._valid_uri(uri)
+
+        assert_that(valid_uri, equal_to(True))
+
+    @patch('xivo_dao.ldap_dao.find_ldapfilter_with_name')
+    def test_valid_uri_no_server(self, find_ldapfilter_with_name):
         ldap_name = 'test-ldap-filter'
-        self._insert_ldapfilter(42, ldap_name)
+        find_ldapfilter_with_name.return_value = None
 
-        ldap_uri = cti_directories_dao._build_ldap_uri(ldap_name)
+        valid_uri = cti_directories_dao._valid_uri("ldapfilter://%s" % ldap_name)
 
-        self.assertEqual(ldap_uri, None)
+        assert_that(valid_uri, equal_to(False))
+        find_ldapfilter_with_name.assert_called_once_with(ldap_name)
 
-    def test_build_ldap_uri_no_username_no_passwd(self):
-        ldap_server = self._insert_ldapserver('foo-server', securitylayer=None)
-        ldap_filter = self._insert_ldapfilter(ldap_server.id, 'foo-filter', user=None, passwd=None)
+    @patch('xivo_dao.ldap_dao.find_ldapserver_with_id')
+    @patch('xivo_dao.ldap_dao.find_ldapfilter_with_name')
+    def test_valid_uri_with_server(self, find_ldapfilter_with_name, find_ldapserver_with_id):
+        ldap_name = 'foo-server'
+        ldapserverid = 1
+        find_ldapfilter_with_name.return_value = Mock(ldapserverid=ldapserverid)
+        find_ldapserver_with_id.return_value = Mock()
 
-        uri = cti_directories_dao._build_ldap_uri(ldap_filter.name)
+        valid_uri = cti_directories_dao._valid_uri("ldapfilter://%s" % ldap_name)
+        find_ldapserver_with_id.assert_called_once_with(ldapserverid)
 
-        expected_uri = 'ldap://:@%s:%s/%s???' % (ldap_server.host, ldap_server.port, ldap_filter.basedn)
-        self.assertEqual(expected_uri, uri)
+        assert_that(valid_uri, equal_to(True))
 
     def _insert_ctidirectoryfields(self, dir_id, fieldname, value):
         ctidirectoryfields = CtiDirectoryFields()

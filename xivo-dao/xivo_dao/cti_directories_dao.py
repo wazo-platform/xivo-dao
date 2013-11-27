@@ -17,27 +17,25 @@
 
 
 import json
+
 from xivo_dao.helpers.db_manager import daosession
+from xivo_dao import ldap_dao
 from xivo_dao.alchemy.ctidirectories import CtiDirectories
 from xivo_dao.alchemy.ctidirectoryfields import CtiDirectoryFields
-from xivo_dao import ldap_dao
 
 
 @daosession
 def get_config(session):
     res = {}
-    ctidirectories = session.query(CtiDirectories).all()
+    ctidirectories = _find_valid_directories(session)
     for directory in ctidirectories:
-        uri = _build_uri(directory.uri)
-        if uri is None:
-            continue
 
         dird_match_direct = json.loads(directory.match_direct) if directory.match_direct else []
         dird_match_reverse = json.loads(directory.match_reverse) if directory.match_reverse else []
 
         dir_id = directory.name
         res[dir_id] = {}
-        res[dir_id]['uri'] = uri
+        res[dir_id]['uri'] = directory.uri
         res[dir_id]['delimiter'] = directory.delimiter if directory.delimiter else ''
         res[dir_id]['name'] = directory.description if directory.description else ''
         res[dir_id]['match_direct'] = dird_match_direct
@@ -49,32 +47,28 @@ def get_config(session):
     return res
 
 
-def _build_uri(uri):
-    if uri.startswith('ldapfilter://'):
-        ldap_name = uri.replace('ldapfilter://', '')
-        return _build_ldap_uri(ldap_name)
-    else:
-        return uri
+def _find_valid_directories(session):
+    ctidirectories = session.query(CtiDirectories)
+    valid = []
+
+    for directory in ctidirectories:
+        if _valid_uri(directory.uri):
+            valid.append(directory)
+
+    return valid
 
 
-def _build_ldap_uri(ldap_name):
-    ldapfilter = ldap_dao.get_ldapfilter_with_name(ldap_name)
-    if ldapfilter is None:
-        return None
+def _valid_uri(uri):
+    if not uri.startswith('ldapfilter://'):
+        return True
 
-    ldapserver = ldap_dao.get_ldapserver_with_id(ldapfilter.ldapserverid)
-    if ldapserver is None:
-        return None
+    ldap_name = uri.replace('ldapfilter://', '', 1)
+    ldap_filter = ldap_dao.find_ldapfilter_with_name(ldap_name)
+    if not ldap_filter:
+        return False
 
-    secure = 'ldaps' if ldapserver.securitylayer == 'ssl' else 'ldap'
-    uri = '%s://%s:%s@%s:%s/%s???%s' % (secure,
-                                        ldapfilter.user or '',
-                                        ldapfilter.passwd or '',
-                                        ldapserver.host,
-                                        ldapserver.port,
-                                        ldapfilter.basedn,
-                                        ldapfilter.filter)
-    return uri
+    ldap_server = ldap_dao.find_ldapserver_with_id(ldap_filter.ldapserverid)
+    return ldap_server is not None
 
 
 @daosession
