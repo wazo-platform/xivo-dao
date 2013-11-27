@@ -85,6 +85,25 @@ def find_sccp_general_settings(session):
 
 @daosession
 def find_sccp_line_settings(session):
+
+    def line_config(sccpline, language, user_id, context, number):
+        line = {
+            'name': sccpline.name,
+            'cid_name': sccpline.cid_name,
+            'cid_num': sccpline.cid_num,
+            'user_id': user_id,
+            'number': number,
+            'context': context,
+            'language': language,
+        }
+
+        if sccpline.allow:
+            line['allow'] = sccpline.allow
+        if sccpline.disallow:
+            line['disallow'] = sccpline.disallow
+
+        return line
+
     rows = (session.query(SCCPLine,
                           UserFeatures.language,
                           UserLine.user_id,
@@ -98,20 +117,8 @@ def find_sccp_line_settings(session):
                          LineFeatures.protocolid == SCCPLine.id))
             .all())
 
-    res = []
     for row in rows:
-        sccpline, language, user_id, context, number = row
-        tmp = {}
-        tmp['name'] = sccpline.name
-        tmp['cid_name'] = sccpline.cid_name
-        tmp['cid_num'] = sccpline.cid_num
-        tmp['user_id'] = user_id
-        tmp['number'] = number
-        tmp['context'] = context
-        tmp['language'] = language
-        res.append(tmp)
-
-    return res
+        yield line_config(*row)
 
 
 @daosession

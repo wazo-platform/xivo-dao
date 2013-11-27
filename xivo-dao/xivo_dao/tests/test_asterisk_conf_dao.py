@@ -58,46 +58,21 @@ from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.usercustom import UserCustom
 
 
-class TestAsteriskConfDAO(DAOTestCase):
+class TestSccpConfDAO(DAOTestCase):
 
-    tables = [AgentFeatures,
-              AgentQueueSkill,
-              Context,
-              ContextInclude,
-              CtiPhoneHintsGroup,
-              CtiPresences,
-              CtiProfile,
-              Extension,
-              Features,
-              GroupFeatures,
-              IAXCallNumberLimits,
-              LineFeatures,
-              MusicOnHold,
-              PhoneFunckey,
-              Pickup,
-              PickupMember,
-              Queue,
-              QueueFeatures,
-              QueueMember,
-              QueuePenalty,
-              QueuePenaltyChange,
-              QueueSkill,
-              QueueSkillRule,
-              SCCPDevice,
-              SCCPGeneralSettings,
-              SCCPLine,
-              SIPAuthentication,
-              StaticIAX,
-              StaticMeetme,
-              StaticQueue,
-              StaticSIP,
-              StaticVoicemail,
-              UserLine,
-              UserFeatures,
-              UserCustom,
-              UserSIP,
-              UserIAX,
-              Voicemail]
+    tables = [
+        CtiPhoneHintsGroup,
+        CtiPresences,
+        CtiProfile,
+        Extension,
+        LineFeatures,
+        PhoneFunckey,
+        SCCPLine,
+        SCCPDevice,
+        SCCPGeneralSettings,
+        UserFeatures,
+        UserLine,
+    ]
 
     def setUp(self):
         self.empty_tables()
@@ -145,6 +120,49 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         assert_that(sccp_line, contains_inanyorder(*expected_result))
 
+    def test_find_sccp_line_allow(self):
+        number = '1234'
+        sccp_line = self.add_sccpline(cid_num=number, allow='g729')
+        ule = self.add_user_line_with_exten(protocol='sccp',
+                                            protocolid=sccp_line.id,
+                                            exten=number)
+        expected_result = {
+            'user_id': ule.user_id,
+            'name': sccp_line.name,
+            'language': None,
+            'number': number,
+            'cid_name': u'Tester One',
+            'context': u'foocontext',
+            'cid_num': number,
+            'allow': 'g729',
+        }
+
+        sccp_line = asterisk_conf_dao.find_sccp_line_settings()
+
+        assert_that(sccp_line, contains(expected_result))
+
+    def test_find_sccp_line_disallow(self):
+        number = '1234'
+        sccp_line = self.add_sccpline(cid_num=number, allow='g729', disallow='all')
+        ule = self.add_user_line_with_exten(protocol='sccp',
+                                            protocolid=sccp_line.id,
+                                            exten=number)
+        expected_result = {
+            'user_id': ule.user_id,
+            'name': sccp_line.name,
+            'language': None,
+            'number': number,
+            'cid_name': u'Tester One',
+            'context': u'foocontext',
+            'cid_num': number,
+            'allow': 'g729',
+            'disallow': 'all',
+        }
+
+        sccp_line = asterisk_conf_dao.find_sccp_line_settings()
+
+        assert_that(sccp_line, contains(expected_result))
+
     def test_find_sccp_device_settings(self):
         sccp_device = self.add_sccpdevice()
 
@@ -182,6 +200,49 @@ class TestAsteriskConfDAO(DAOTestCase):
         sccp_device = asterisk_conf_dao.find_sccp_speeddial_settings()
 
         assert_that(sccp_device, contains_inanyorder(*expected_result))
+
+
+class TestAsteriskConfDAO(DAOTestCase):
+
+    tables = [AgentFeatures,
+              AgentQueueSkill,
+              Context,
+              ContextInclude,
+              CtiPhoneHintsGroup,
+              CtiPresences,
+              CtiProfile,
+              Extension,
+              Features,
+              GroupFeatures,
+              IAXCallNumberLimits,
+              LineFeatures,
+              MusicOnHold,
+              PhoneFunckey,
+              Pickup,
+              PickupMember,
+              Queue,
+              QueueFeatures,
+              QueueMember,
+              QueuePenalty,
+              QueuePenaltyChange,
+              QueueSkill,
+              QueueSkillRule,
+              SCCPLine,
+              SIPAuthentication,
+              StaticIAX,
+              StaticMeetme,
+              StaticQueue,
+              StaticSIP,
+              StaticVoicemail,
+              UserLine,
+              UserFeatures,
+              UserCustom,
+              UserSIP,
+              UserIAX,
+              Voicemail]
+
+    def setUp(self):
+        self.empty_tables()
 
     def test_find_featuremap_features_settings(self):
         features = Features(id=1,
