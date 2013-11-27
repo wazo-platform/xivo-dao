@@ -31,4 +31,5 @@ class SCCPLine(Base):
     cid_num = Column(String(80), nullable=False)
     protocol = Column(String(8), nullable=False, default='sccp')
     allow = Column(Text)
+    disallow = Column(String(100))
     commented = Column(Integer, nullable=False, default=0)

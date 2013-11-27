@@ -141,6 +141,28 @@ class TestSccpConfDAO(DAOTestCase):
 
         assert_that(sccp_line, contains(expected_result))
 
+    def test_find_sccp_line_disallow(self):
+        number = '1234'
+        sccp_line = self.add_sccpline(cid_num=number, allow='g729', disallow='all')
+        ule = self.add_user_line_with_exten(protocol='sccp',
+                                            protocolid=sccp_line.id,
+                                            exten=number)
+        expected_result = {
+            'user_id': ule.user_id,
+            'name': sccp_line.name,
+            'language': None,
+            'number': number,
+            'cid_name': u'Tester One',
+            'context': u'foocontext',
+            'cid_num': number,
+            'allow': 'g729',
+            'disallow': 'all',
+        }
+
+        sccp_line = asterisk_conf_dao.find_sccp_line_settings()
+
+        assert_that(sccp_line, contains(expected_result))
+
     def test_find_sccp_device_settings(self):
         sccp_device = self.add_sccpdevice()
 
