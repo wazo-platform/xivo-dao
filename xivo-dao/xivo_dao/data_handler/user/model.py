@@ -43,14 +43,34 @@ class UserDbConverter(DatabaseConverter):
     def __init__(self):
         DatabaseConverter.__init__(self, self.DB_TO_MODEL_MAPPING, UserSchema, User)
 
+    def to_model(self, source):
+        model = DatabaseConverter.to_model(self, source)
+        self._convert_model_fields(model)
+
+        return model
+
+    def _convert_model_fields(self, model):
+        if model.password == '':
+            model.password = None
+
+        if model.mobilephonenumber== '':
+            model.mobilephonenumber = None
+
     def update_source(self, source, model):
         DatabaseConverter.update_source(self, source, model)
-        source.callerid = model.determine_callerid()
+        self._convert_source_fields(source, model)
 
     def to_source(self, model):
         source = DatabaseConverter.to_source(self, model)
-        source.callerid = model.determine_callerid()
+        self._convert_source_fields(source, model)
         return source
+
+    def _convert_source_fields(self, source, model):
+        source.callerid = model.determine_callerid()
+        if source.passwdclient is None:
+            source.passwdclient = ''
+        if source.mobilephonenumber is None:
+            source.mobilephonenumber = ''
 
 
 class User(NewModel):
