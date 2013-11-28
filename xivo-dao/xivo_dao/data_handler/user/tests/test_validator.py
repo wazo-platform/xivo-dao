@@ -54,7 +54,7 @@ class TestUserValidator(unittest.TestCase):
         self.assertRaises(InvalidParametersError, validator.validate_model, user)
 
     def test_validate_model_invalid_password(self):
-        password = 'ewrd'
+        password = 'ewr'
 
         user = User(firstname='toto',
                     password=password)
