@@ -78,8 +78,8 @@ class VoicemailDBConverter(DatabaseConverter):
     def __init__(self):
         DatabaseConverter.__init__(self, self.DB_TO_MODEL_MAPPING, VoicemailSchema, Voicemail)
 
-    def to_model(self, db_row):
-        model = DatabaseConverter.to_model(self, db_row)
+    def to_model(self, source):
+        model = DatabaseConverter.to_model(self, source)
         self._convert_model_fields(model)
 
         return model
@@ -98,9 +98,9 @@ class VoicemailDBConverter(DatabaseConverter):
 
         return source
 
-    def update_source(self, db_row, model):
-        DatabaseConverter.update_source(self, db_row, model)
-        self._convert_source_fields(db_row)
+    def update_source(self, source, model):
+        DatabaseConverter.update_source(self, source, model)
+        self._convert_source_fields(source)
 
     def _convert_source_fields(self, source):
         if source.attach is not None:
@@ -111,17 +111,6 @@ class VoicemailDBConverter(DatabaseConverter):
             source.skipcheckpass = int(bool(source.skipcheckpass))
         if source.password is None:
             source.password = ''
-
-    def to_source(self, model):
-        source = DatabaseConverter.to_source(self, model)
-        if source.attach is not None:
-            source.attach = int(bool(source.attach))
-        if source.deletevoicemail is not None:
-            source.deletevoicemail = int(bool(source.deletevoicemail))
-        if source.skipcheckpass is not None:
-            source.skipcheckpass = int(bool(source.skipcheckpass))
-
-        return source
 
 
 db_converter = VoicemailDBConverter()

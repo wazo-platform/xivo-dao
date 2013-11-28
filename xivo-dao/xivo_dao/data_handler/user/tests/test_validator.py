@@ -52,3 +52,37 @@ class TestUserValidator(unittest.TestCase):
         user = User(firstname=firstname)
 
         self.assertRaises(InvalidParametersError, validator.validate_model, user)
+
+    def test_validate_model_invalid_password(self):
+        password = 'ewr'
+
+        user = User(firstname='toto',
+                    password=password)
+
+        self.assertRaises(InvalidParametersError, validator.validate_model, user)
+
+    def test_validate_model_valid_password(self):
+        password = 'ewree'
+
+        user = User(firstname='toto',
+                    password=password)
+
+        validator.validate_model(user)
+
+    def test_validate_model_invalid_mobilephonenumber_alpha(self):
+        user = User(firstname='toto')
+
+        user.mobilephonenumber = 'mobilephonenumber'
+        self.assertRaises(InvalidParametersError, validator.validate_model, user)
+
+    def test_validate_model_invalid_mobilephonenumber_alphanum(self):
+        user = User(firstname='toto')
+
+        user.mobilephonenumber = 'abcd1234'
+        self.assertRaises(InvalidParametersError, validator.validate_model, user)
+
+    def test_validate_model_valid_mobilephonenumber(self):
+        user = User(firstname='toto')
+        user.mobilephonenumber = '1234'
+
+        validator.validate_model(user)
