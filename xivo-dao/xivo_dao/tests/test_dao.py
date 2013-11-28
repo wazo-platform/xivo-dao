@@ -146,6 +146,36 @@ class DAOTestCase(unittest.TestCase):
 
         return user_line
 
+    def add_user_line_without_exten(self, **kwargs):
+        kwargs.setdefault('firstname', 'unittest')
+        kwargs.setdefault('lastname', 'unittest')
+        kwargs.setdefault('callerid', u'"%s %s"' % (kwargs['firstname'], kwargs['lastname']))
+        kwargs.setdefault('context', 'foocontext')
+        kwargs.setdefault('protocol', 'sip')
+        kwargs.setdefault('protocolid', int(''.join(random.choice('123456789') for _ in range(3))))
+        kwargs.setdefault('name_line', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
+        kwargs.setdefault('commented_line', 0)
+        kwargs.setdefault('device', 1)
+        kwargs.setdefault('voicemail_id', None)
+
+        user = self.add_user(firstname=kwargs['firstname'],
+                             lastname=kwargs['lastname'],
+                             callerid=kwargs['callerid'],
+                             voicemailid=kwargs['voicemail_id'])
+        line = self.add_line(context=kwargs['context'],
+                             protocol=kwargs['protocol'],
+                             protocolid=kwargs['protocolid'],
+                             name=kwargs['name_line'],
+                             device=kwargs['device'],
+                             commented=kwargs['commented_line'])
+        user_line = self.add_user_line(line_id=line.id,
+                                       user_id=user.id)
+
+        user_line.user = user
+        user_line.line = line
+
+        return user_line
+
     def add_line(self, **kwargs):
         kwargs.setdefault('name', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
         kwargs.setdefault('context', 'foocontext')
