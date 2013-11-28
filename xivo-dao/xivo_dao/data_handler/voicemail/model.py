@@ -112,17 +112,6 @@ class VoicemailDBConverter(DatabaseConverter):
         if source.password is None:
             source.password = ''
 
-    def to_source(self, model):
-        source = DatabaseConverter.to_source(self, model)
-        if source.attach is not None:
-            source.attach = int(bool(source.attach))
-        if source.deletevoicemail is not None:
-            source.deletevoicemail = int(bool(source.deletevoicemail))
-        if source.skipcheckpass is not None:
-            source.skipcheckpass = int(bool(source.skipcheckpass))
-
-        return source
-
 
 db_converter = VoicemailDBConverter()
 
