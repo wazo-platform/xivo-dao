@@ -28,7 +28,7 @@ class UserLine(Base):
     )
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('userfeatures.id'), nullable=False, primary_key=True)
+    user_id = Column(Integer, ForeignKey('userfeatures.id'))
     line_id = Column(Integer, ForeignKey('linefeatures.id'), nullable=False, primary_key=True)
     extension_id = Column(Integer, ForeignKey('extensions.id'))
     main_user = Column(Boolean, nullable=False)

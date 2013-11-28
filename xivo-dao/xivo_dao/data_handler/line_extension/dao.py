@@ -17,7 +17,7 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.alchemy.user_line import UserLine
+from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
 from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.data_handler.line_extension.exception import LineExtensionNotExistsError
 from xivo_dao.data_handler.line_extension.model import db_converter
@@ -31,15 +31,15 @@ def associate(session, line_extension):
 
 
 def _associate_ule(session, line_extension):
-    (session.query(UserLine)
-     .filter(UserLine.line_id == line_extension.line_id)
+    (session.query(UserLineSchema)
+     .filter(UserLineSchema.line_id == line_extension.line_id)
      .update({'extension_id': line_extension.extension_id}))
 
 
 @daosession
 def get_by_line_id(session, line_id):
-    user_line_row = (session.query(UserLine)
-                     .filter(UserLine.line_id == line_id)
+    user_line_row = (session.query(UserLineSchema)
+                     .filter(UserLineSchema.line_id == line_id)
                      .first())
 
     if not user_line_row:
@@ -53,8 +53,8 @@ def get_by_line_id(session, line_id):
 
 @daosession
 def find_by_extension_id(session, extension_id):
-    user_line_row = (session.query(UserLine)
-                     .filter(UserLine.extension_id == extension_id)
+    user_line_row = (session.query(UserLineSchema)
+                     .filter(UserLineSchema.extension_id == extension_id)
                      .first())
 
     if not user_line_row:
@@ -67,10 +67,18 @@ def find_by_extension_id(session, extension_id):
 def dissociate(session, line_extension):
     session.begin()
     _dissociate_ule(session, line_extension)
+    delete_association_if_necessary(session)
     session.commit()
 
 
+def delete_association_if_necessary(session):
+    query = (session.query(UserLineSchema)
+             .filter(UserLineSchema.user_id == None)
+             .filter(UserLineSchema.extension_id == None))
+    query.delete()
+
+
 def _dissociate_ule(session, line_extension):
-    (session.query(UserLine)
-     .filter(UserLine.line_id == line_extension.line_id)
+    (session.query(UserLineSchema)
+     .filter(UserLineSchema.line_id == line_extension.line_id)
      .update({'extension_id': None}))

@@ -290,6 +290,51 @@ class TestAssociateUserLine(TestUserLineDao):
         self.assertRaises(ElementCreationError, user_line_dao.associate, user_line)
 
 
+class TestDissociateUserLine(TestUserLineDao):
+
+    def test_dissociate_user_with_line_without_exten(self):
+        user_line = self.add_user_line_without_exten()
+
+        user_line_dao.dissociate(user_line)
+
+        result = (self.session.query(UserLineSchema)
+                  .filter(UserLineSchema.id == user_line.id)
+                  .first())
+
+        assert_that(result, equal_to(None))
+
+    def test_dissociate_user_line_with_exten(self):
+        user_line = self.add_user_line_with_exten()
+
+        user_line_dao.dissociate(user_line)
+
+        result = (self.session.query(UserLineSchema)
+                  .filter(UserLineSchema.id == user_line.id)
+                  .first())
+
+        assert_that(result.user_id, equal_to(None))
+
+
+class TestFindMainUser(TestUserLineDao):
+
+    def test_find_main_user_line_no_line(self):
+        user = self.add_user()
+
+        user_line = UserLine(user_id=user.id,
+                             line_id=2)
+
+        result = user_line_dao.find_main_user_line(user_line)
+
+        assert_that(result, equal_to(None))
+
+    def test_find_main_user_line_one_user(self):
+        user_line = self.add_user_line_without_exten()
+
+        result = user_line_dao.find_main_user_line(user_line)
+
+        assert_that(result.user_id, equal_to(user_line.user_id))
+
+
 class TestLineHasSecondaryUser(TestUserLineDao):
 
     def test_line_has_secondary_user(self):

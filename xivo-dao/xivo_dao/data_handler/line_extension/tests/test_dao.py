@@ -180,7 +180,7 @@ class TestFindAllByExtensionId(TestLineExtensionDAO):
 
 class TestDissociateLineExtension(TestLineExtensionDAO):
 
-    def test_dissociate_one_association(self):
+    def test_dissociate_one_association_with_user(self):
         user_line_row = self.add_user_line_with_exten()
 
         line_extension = LineExtension(line_id=user_line_row.line_id,
@@ -189,6 +189,16 @@ class TestDissociateLineExtension(TestLineExtensionDAO):
         dao.dissociate(line_extension)
 
         self.assert_no_extensions_associated(user_line_row)
+
+    def test_dissociate_one_association_without_user(self):
+        user_line_row = self.add_user_line_without_user()
+
+        line_extension = LineExtension(line_id=user_line_row.line_id,
+                                       extension_id=user_line_row.extension_id)
+
+        dao.dissociate(line_extension)
+
+        self.assert_user_line_deleted(user_line_row)
 
     def test_dissociate_multiple_users(self):
         main_ule = self.add_user_line_with_exten()
@@ -202,10 +212,24 @@ class TestDissociateLineExtension(TestLineExtensionDAO):
         self.assert_no_extensions_associated(main_ule)
         self.assert_no_extensions_associated(secondary_ule)
 
+    def add_user_line_without_user(self):
+        line_row = self.add_line()
+        extension_row = self.add_extension()
+        user_line_row = self.add_user_line(line_id=line_row.id, extension_id=extension_row.id)
+        return user_line_row
+
     def assert_no_extensions_associated(self, user_line_row):
         updated_row = (self.session.query(UserLine)
                        .filter(UserLine.user_id == user_line_row.user_id)
                        .filter(UserLine.line_id == user_line_row.line_id)
                        .first())
 
-        assert_that(updated_row.extension_id, none())
+        assert_that(updated_row, has_property('extension_id', none()))
+
+    def assert_user_line_deleted(self, user_line_row):
+        updated_row = (self.session.query(UserLine)
+                       .filter(UserLine.user_id == user_line_row.user_id)
+                       .filter(UserLine.line_id == user_line_row.line_id)
+                       .first())
+
+        assert_that(updated_row, none())
