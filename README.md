@@ -22,3 +22,4 @@ You can create the database by running these SQL commands:
     GRANT ALL ON DATABASE asterisktest TO asterisk;
 
 On debian based systems you can access the psql console with ```sudo -u postgres psql```
+
