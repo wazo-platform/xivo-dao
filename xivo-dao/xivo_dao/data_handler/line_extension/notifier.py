@@ -44,7 +44,8 @@ def _generate_ctibus_commands(line_extension):
 
     user_lines = user_line_dao.find_all_by_line_id(line_extension.line_id)
     for user_line in user_lines:
-        commands.append('xivo[user,edit,%d]' % user_line.user_id)
+        if user_line.user_id:
+            commands.append('xivo[user,edit,%d]' % user_line.user_id)
 
     return commands
 

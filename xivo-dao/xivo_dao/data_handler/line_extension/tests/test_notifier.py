@@ -43,12 +43,12 @@ class TestLineExtensionNotifier(unittest.TestCase):
                                    exec_request_handlers):
         line_extension = LineExtension(line_id=1, extension_id=2)
         user_line_1 = Mock(UserLine, line_id=1, user_id=3)
-        user_line_2 = Mock(UserLine, line_id=1, user_id=4)
+        user_line_2 = Mock(UserLine, line_id=1, user_id=None)
 
         find_all_by_line_id.return_value = [user_line_1, user_line_2]
 
         expected_sysconf_command = {
-            'ctibus': ['xivo[phone,edit,1]', 'xivo[user,edit,3]', 'xivo[user,edit,4]'],
+            'ctibus': ['xivo[phone,edit,1]', 'xivo[user,edit,3]'],
             'dird': [],
             'ipbx': ['dialplan reload', 'sip reload'],
             'agentbus': []
