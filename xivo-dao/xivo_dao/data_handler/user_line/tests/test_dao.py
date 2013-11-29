@@ -267,6 +267,24 @@ class TestAssociateUserLine(TestUserLineDao):
                    has_property('main_user', False),
                    has_property('main_line', True))))
 
+    def test_associate_user_with_line_and_extension(self):
+        user = self.add_user()
+        line = self.add_line()
+        extension = self.add_extension()
+        user_line_row = self.add_user_line(line_id=line.id, extension_id=extension.id)
+
+        user_line = UserLine(user_id=user.id,
+                             line_id=line.id)
+
+        user_line_dao.associate(user_line)
+
+        result = self.session.query(UserLineSchema).filter(UserLineSchema.id == user_line_row.id).first()
+
+        assert_that(result, all_of(
+            has_property('user_id', user.id),
+            has_property('line_id', line.id),
+            has_property('extension_id', extension.id)))
+
     def test_associate_user_with_line_not_exist(self):
         user = self.add_user()
 
