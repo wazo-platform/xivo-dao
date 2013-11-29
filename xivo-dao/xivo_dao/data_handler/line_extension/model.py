@@ -40,4 +40,17 @@ class LineExtension(NewModel):
     ]
 
 
-db_converter = DatabaseConverter(DB_TO_MODEL_MAPPING, UserLineSchema, LineExtension)
+class LineExtensionDbConverter(DatabaseConverter):
+
+    def __init__(self):
+        DatabaseConverter.__init__(self, DB_TO_MODEL_MAPPING, UserLineSchema, LineExtension)
+
+    def to_source(self, model):
+        source = DatabaseConverter.to_source(self, model)
+        if not source.main_line:
+            source.main_line = True
+        if not source.main_user:
+            source.main_user = True
+        return source
+
+db_converter = LineExtensionDbConverter()

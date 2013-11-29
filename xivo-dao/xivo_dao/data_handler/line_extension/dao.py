@@ -32,24 +32,49 @@ def associate(session, line_extension):
 
 
 def _associate_ule(session, line_extension):
+    count = (session.query(UserLineSchema)
+             .filter(UserLineSchema.line_id == line_extension.line_id)
+             .count())
+
+    if count > 0:
+        _update_ules(session, line_extension)
+    else:
+        _create_ule(session, line_extension)
+
+
+def _update_ules(session, line_extension):
     (session.query(UserLineSchema)
      .filter(UserLineSchema.line_id == line_extension.line_id)
      .update({'extension_id': line_extension.extension_id}))
 
 
+def _create_ule(session, line_extension):
+    user_line_row = db_converter.to_source(line_extension)
+    session.add(user_line_row)
+
+
 @daosession
-def get_by_line_id(session, line_id):
+def find_by_line_id(session, line_id):
     user_line_row = (session.query(UserLineSchema)
                      .filter(UserLineSchema.line_id == line_id)
                      .first())
 
     if not user_line_row:
-        raise ElementNotExistsError('Line', id=line_id)
-
-    if not user_line_row.extension_id:
-        raise LineExtensionNotExistsError.from_line_id(line_id)
+        return None
 
     return db_converter.to_model(user_line_row)
+
+
+def get_by_line_id(line_id):
+    line_extension = find_by_line_id(line_id)
+
+    if not line_extension:
+        raise ElementNotExistsError('Line', id=line_id)
+
+    if not line_extension.extension_id:
+        raise LineExtensionNotExistsError.from_line_id(line_id)
+
+    return line_extension
 
 
 @daosession
