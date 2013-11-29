@@ -28,6 +28,7 @@ def associate(session, line_extension):
     session.begin()
     _associate_ule(session, line_extension)
     session.commit()
+    return line_extension
 
 
 def _associate_ule(session, line_extension):

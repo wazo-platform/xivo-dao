@@ -16,7 +16,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from hamcrest import assert_that, equal_to, all_of, has_property, none
+from hamcrest import assert_that, all_of, has_property, none, is_not
 
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.data_handler.line_extension import dao
@@ -80,9 +80,10 @@ class TestAssociateLineExtension(TestLineExtensionDAO):
         line_extension = LineExtension(line_id=ule_row.line_id,
                                        extension_id=extension_row.id)
 
-        dao.associate(line_extension)
+        result = dao.associate(line_extension)
 
         self.assert_extension_is_associated(ule_row, extension_row)
+        self.assert_line_extension_has_ids(result, ule_row.line_id, ule_row.extension_id)
 
     def test_associate_main_and_secondary_user(self):
         main_ule = self.add_user_line_without_exten()
@@ -93,10 +94,16 @@ class TestAssociateLineExtension(TestLineExtensionDAO):
         line_extension = LineExtension(line_id=main_ule.line_id,
                                        extension_id=extension_row.id)
 
-        dao.associate(line_extension)
+        result = dao.associate(line_extension)
 
         self.assert_extension_is_associated(main_ule, extension_row)
         self.assert_extension_is_associated(secondary_ule, extension_row)
+        self.assert_line_extension_has_ids(result, main_ule.line_id, extension_row.id)
+
+    def assert_line_extension_has_ids(self, line_extension, line_id, extension_id):
+        assert_that(line_extension, all_of(
+            has_property('line_id', line_id),
+            has_property('extension_id', extension_id)))
 
     def assert_extension_is_associated(self, ule_row, extension_row):
         updated_ule = (self.session.query(UserLine)
