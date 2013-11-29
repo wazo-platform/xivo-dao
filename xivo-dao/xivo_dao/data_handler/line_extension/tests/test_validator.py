@@ -29,7 +29,6 @@ from xivo_dao.data_handler.exception import InvalidParametersError
 
 class TestValidateAssociate(unittest.TestCase):
 
-    @patch('xivo_dao.data_handler.line_extension.validator.validate_user_association')
     @patch('xivo_dao.data_handler.line_extension.validator.validate_not_associated_to_extension')
     @patch('xivo_dao.data_handler.line_extension.validator.validate_extension')
     @patch('xivo_dao.data_handler.line_extension.validator.validate_line')
@@ -38,8 +37,7 @@ class TestValidateAssociate(unittest.TestCase):
                                 validate_model,
                                 validate_line,
                                 validate_extension,
-                                not_associated_to_extension,
-                                validate_user_association):
+                                not_associated_to_extension):
 
         line_extension = Mock(LineExtension, line_id=1, extension_id=2)
 
@@ -49,7 +47,6 @@ class TestValidateAssociate(unittest.TestCase):
         validate_line.assert_called_once_with(line_extension)
         validate_extension.assert_called_once_with(line_extension)
         not_associated_to_extension.assert_called_once_with(line_extension)
-        validate_user_association.assert_called_once_with(line_extension)
 
 
 class TestValidateModel(unittest.TestCase):
@@ -121,27 +118,6 @@ class TestValidateNotAssociatedToExtension(unittest.TestCase):
 
         validator.validate_not_associated_to_extension(line_extension)
         find_by_extension_id.assert_called_once_with(line_extension.extension_id)
-
-
-class TestValidateUserAssociation(unittest.TestCase):
-
-    @patch('xivo_dao.data_handler.user_line.dao.find_all_by_line_id')
-    def test_validate_user_association_no_associations(self, find_all_by_line_id):
-        line_extension = Mock(LineExtension, line_id=1)
-
-        find_all_by_line_id.return_value = []
-
-        self.assertRaises(InvalidParametersError, validator.validate_user_association, line_extension)
-        find_all_by_line_id.assert_called_once_with(line_extension.line_id)
-
-    @patch('xivo_dao.data_handler.user_line.dao.find_all_by_line_id')
-    def test_validate_user_association_one_association(self, find_all_by_line_id):
-        line_extension = Mock(LineExtension, line_id=1)
-
-        find_all_by_line_id.return_value = [Mock()]
-
-        validator.validate_user_association(line_extension)
-        find_all_by_line_id.assert_called_once_with(line_extension.line_id)
 
 
 class TestValidateDissociation(unittest.TestCase):
