@@ -45,6 +45,10 @@ def find_by_context(context, order=None):
     return dao.find_by_context(context, order=None)
 
 
+def find_by_exten_context(exten, context):
+    return dao.find_by_exten_context(exten, context)
+
+
 def create(extension):
     _validate_create(extension)
     extension = dao.create(extension)
