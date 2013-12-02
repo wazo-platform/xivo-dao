@@ -19,7 +19,7 @@ from xivo_dao.data_handler.context import services as context_services
 
 
 def is_positive_number(string):
-    if str(string).isdigit() and int(string) > 0:
+    if str(string).isdigit():
         return True
     else:
         return False
