@@ -25,14 +25,12 @@ from StringIO import StringIO
 from contextlib import contextmanager
 
 from xivo_dao.data_handler.device import dao as device_dao
-from xivo_dao.data_handler.device import provd_converter
 from xivo_dao.data_handler.device.model import Device
 from xivo_dao.data_handler.exception import ElementDeletionError
 from xivo_dao.data_handler.exception import ElementCreationError
 from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.data_handler.exception import ElementEditionError
 from xivo_dao.data_handler.exception import InvalidParametersError
-from xivo_dao.helpers.abstract_model import SearchResult
 
 
 class TestDeviceDao(unittest.TestCase):
