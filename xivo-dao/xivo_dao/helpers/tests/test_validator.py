@@ -38,7 +38,7 @@ class TestValidator(TestCase):
         assert_that(res, equal_to(False))
 
         res = validator.is_positive_number('0000')
-        assert_that(res, equal_to(False))
+        assert_that(res, equal_to(True))
 
         res = validator.is_positive_number('12345')
         assert_that(res, equal_to(True))
