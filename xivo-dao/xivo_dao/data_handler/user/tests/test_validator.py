@@ -72,13 +72,13 @@ class TestUserValidator(unittest.TestCase):
     def test_validate_model_invalid_mobilephonenumber_alpha(self):
         user = User(firstname='toto')
 
-        user.mobilephonenumber = 'mobilephonenumber'
+        user.mobile_phone_number = 'mobilephonenumber'
         self.assertRaises(InvalidParametersError, validator.validate_model, user)
 
     def test_validate_model_invalid_mobilephonenumber_alphanum(self):
         user = User(firstname='toto')
 
-        user.mobilephonenumber = 'abcd1234'
+        user.mobile_phone_number = 'abcd1234'
         self.assertRaises(InvalidParametersError, validator.validate_model, user)
 
     def test_validate_model_valid_mobilephonenumber(self):

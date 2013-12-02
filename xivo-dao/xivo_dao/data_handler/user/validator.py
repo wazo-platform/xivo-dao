@@ -42,8 +42,8 @@ def _check_invalid_parameters(user):
     invalid_parameters = []
     if not user.firstname:
         invalid_parameters.append('firstname')
-    if user.mobilephonenumber is not None and not unicode(user.mobilephonenumber).isnumeric():
-        invalid_parameters.append('mobilephonenumber')
+    if user.mobile_phone_number is not None and not unicode(user.mobile_phone_number).isnumeric():
+        invalid_parameters.append('mobile_phone_number')
     if user.password is not None and len(user.password) < 4:
         invalid_parameters.append('password')
     if invalid_parameters:
