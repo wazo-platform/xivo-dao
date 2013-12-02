@@ -25,14 +25,12 @@ from StringIO import StringIO
 from contextlib import contextmanager
 
 from xivo_dao.data_handler.device import dao as device_dao
-from xivo_dao.data_handler.device import provd_converter
 from xivo_dao.data_handler.device.model import Device
 from xivo_dao.data_handler.exception import ElementDeletionError
 from xivo_dao.data_handler.exception import ElementCreationError
 from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.data_handler.exception import ElementEditionError
 from xivo_dao.data_handler.exception import InvalidParametersError
-from xivo_dao.helpers.abstract_model import SearchResult
 
 
 class TestDeviceDao(unittest.TestCase):
@@ -129,24 +127,24 @@ class TestDeviceDaoGetFind(TestDeviceDao):
         with self.provd_managers() as (device_manager, config_manager, _):
             expected_device = device_manager.get.return_value = {'id': self.deviceid,
                                                                  'config': self.config_id}
-            [expected_config] = config_manager.find.return_value = [Mock()]
+            expected_config = config_manager.get.return_value = Mock()
             device, config = device_dao.fetch_device_and_config(self.deviceid)
 
             assert_that(device, same_instance(expected_device))
             assert_that(config, same_instance(expected_config))
             device_manager.get.assert_called_once_with(self.deviceid)
-            config_manager.find.assert_called_once_with({'id': self.config_id})
+            config_manager.get.assert_called_once_with(self.config_id)
 
     def test_fetch_device_and_config_when_device_exists_and_references_inexistant_config(self):
         with self.provd_managers() as (device_manager, config_manager, _):
             device_manager.get.return_value = {'id': self.deviceid,
                                                'config': self.config_id}
-            config_manager.find.return_value = []
+            config_manager.get.side_effect = HTTPError('', 404, '', '', StringIO(''))
 
             self.assertRaises(ElementNotExistsError, device_dao.fetch_device_and_config, self.deviceid)
 
             device_manager.get.assert_called_once_with(self.deviceid)
-            config_manager.find.assert_called_once_with({'id': self.config_id})
+            config_manager.get.assert_called_once_with(self.config_id)
 
     def test_fetch_device_and_config_when_device_exists_and_references_no_config(self):
         with self.provd_managers() as (device_manager, config_manager, _):
@@ -298,7 +296,7 @@ class TestDeviceDaoFindAll(TestDeviceDao):
         with self.provd_managers() as (_, config_manager, _):
             devices = [device1, device2] = [{'config': self.config_id},
                                             {}]
-            [config1] = config_manager.find.return_value = [Mock()]
+            config1 = config_manager.get.return_value = Mock()
             models = to_model.side_effect = [Mock(), Mock()]
 
             result = device_dao.convert_devices_to_model(devices)
