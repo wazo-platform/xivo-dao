@@ -52,32 +52,24 @@ def _find_config_from_device(device):
     return config
 
 
-def _find_device_from_provd(device_id):
+def _get_config_from_provd(config_id):
+    config_manager = provd_connector.config_manager()
     try:
-        device = provd_connector.device_manager().get(device_id)
+        return config_manager.get(config_id)
+    except HTTPError as e:
+        if e.code == 404:
+            raise ElementNotExistsError('device config', id=config_id)
+        raise
+
+
+def _find_device_from_provd(device_id):
+    device_manager = provd_connector.device_manager()
+    try:
+        return device_manager.get(device_id)
     except HTTPError as e:
         if e.code == 404:
             return None
         raise
-    return device
-
-
-def _get_config_from_provd(config_id):
-    config = provd_connector.config_manager().find({'id': config_id})
-    if not config:
-        raise ElementNotExistsError('device config', id=config_id)
-    return config[0]
-
-
-def _find_provd_config(provd_device):
-    if 'config' not in provd_device:
-        return None
-
-    config_manager = provd_connector.config_manager()
-
-    provd_config = config_manager.get(provd_device['config'])
-
-    return provd_config
 
 
 def find(device_id):
@@ -231,10 +223,8 @@ def generate_device_id():
 
 
 def edit(device):
-    device_manager = provd_connector.device_manager()
-
-    provd_device = device_manager.get(device.id)
-    provd_config = _find_provd_config(provd_device)
+    provd_device = _find_device_from_provd(device.id)
+    provd_config = _find_config_from_device(provd_device)
 
     provd_device, provd_config = provd_converter.build_edit(device, provd_device, provd_config)
 
