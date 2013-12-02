@@ -101,23 +101,23 @@ class TestValidateExtension(unittest.TestCase):
 
 class TestValidateNotAssociatedToExtension(unittest.TestCase):
 
-    @patch('xivo_dao.data_handler.line_extension.dao.find_by_extension_id')
-    def test_validate_not_associated_to_extension_with_extension(self, find_by_extension_id):
+    @patch('xivo_dao.data_handler.line_extension.dao.find_by_line_id')
+    def test_validate_not_associated_to_extension_with_extension(self, find_by_line_id):
         line_extension = Mock(LineExtension, line_id=1, extension_id=2)
 
-        find_by_extension_id.return_value = Mock()
+        find_by_line_id.return_value = Mock()
 
         self.assertRaises(InvalidParametersError, validator.validate_not_associated_to_extension, line_extension)
-        find_by_extension_id.assert_called_once_with(line_extension.extension_id)
+        find_by_line_id.assert_called_once_with(line_extension.line_id)
 
-    @patch('xivo_dao.data_handler.line_extension.dao.find_by_extension_id')
-    def test_validate_not_associated_to_extension_with_no_extension(self, find_by_extension_id):
+    @patch('xivo_dao.data_handler.line_extension.dao.find_by_line_id')
+    def test_validate_not_associated_to_extension_with_no_extension(self, find_by_line_id):
         line_extension = Mock(LineExtension, line_id=1, extension_id=2)
 
-        find_by_extension_id.return_value = None
+        find_by_line_id.return_value = None
 
         validator.validate_not_associated_to_extension(line_extension)
-        find_by_extension_id.assert_called_once_with(line_extension.extension_id)
+        find_by_line_id.assert_called_once_with(line_extension.line_id)
 
 
 class TestValidateDissociation(unittest.TestCase):

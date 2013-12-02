@@ -52,7 +52,7 @@ def validate_extension(line_extension):
 
 
 def validate_not_associated_to_extension(line_extension):
-    line_extension = line_extension_dao.find_by_extension_id(line_extension.extension_id)
+    line_extension = line_extension_dao.find_by_line_id(line_extension.line_id)
     if line_extension:
         raise InvalidParametersError(['line with id %s already has an extension' % line_extension.line_id])
 
