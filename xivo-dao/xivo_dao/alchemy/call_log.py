@@ -32,3 +32,5 @@ class CallLog(Base):
     user_field = Column(String(255))
     answered = Column(Boolean)
     duration = Column(Interval, nullable=False)
+    source_line_identity = Column(String(255))
+    destination_line_identity = Column(String(255))

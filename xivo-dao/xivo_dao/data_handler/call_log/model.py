@@ -36,6 +36,8 @@ class CallLog(NewModel):
         'user_field',
         'answered',
         'duration',
+        'source_line_identity',
+        'destination_line_identity',
     ]
 
     _RELATION = {
@@ -62,6 +64,8 @@ DB_TO_MODEL_MAPPING = {
     'user_field': 'user_field',
     'answered': 'answered',
     'duration': 'duration',
+    'source_line_identity': 'source_line_identity',
+    'destination_line_identity': 'destination_line_identity',
 }
 
 
