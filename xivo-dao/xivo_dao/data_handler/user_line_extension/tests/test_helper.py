@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, equal_to, has_property, is_not
+from hamcrest import assert_that, equal_to, has_property
 from mock import Mock, patch, sentinel
 from unittest import TestCase
 
@@ -23,11 +23,6 @@ from .. import helper
 
 
 class TestULEHelper(TestCase):
-    def setUp(self):
-        pass
-
-    def tearDown(self):
-        pass
 
     @patch('xivo.caller_id.assemble_caller_id')
     @patch('xivo_dao.data_handler.extension.dao.find')
@@ -51,10 +46,10 @@ class TestULEHelper(TestCase):
 
         helper.make_associations(sentinel.user_id, sentinel.line_id, sentinel.extension_id)
 
-        extension_associate.assert_called_once_with(user, extension)
         assert_that(line, has_property('number', extension.exten))
         assert_that(line, has_property('context', extension.context))
         assert_that(line, has_property('callerid', sentinel.caller_id))
+        extension_associate.assert_called_once_with(user, extension)
         line_edit.assert_called_once_with(line)
         line_update_xivo_userid.assert_called_once_with(line, user)
         caller_id.assert_called_once_with(user.fullname, extension.exten)
