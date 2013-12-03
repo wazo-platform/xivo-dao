@@ -31,7 +31,7 @@ def delete_association_if_necessary(session):
 
 def make_associations(main_user_id, line_id, extension_id):
     main_user = user_dao.get(main_user_id)
-    line = line_dao.get(line_id)
+    line = line_dao.get(main_user_id)
     extension = extension_dao.find(extension_id) if extension_id else None
     exten = extension.exten if extension else None
 
