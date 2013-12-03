@@ -159,6 +159,7 @@ class TestUserLineFindMainUserLine(TestUserLineDao):
         line_id = 33
 
         result = user_line_dao.find_main_user_line(line_id)
+
         assert_that(result, equal_to(None))
 
     def test_find_main_user_line_no_line(self):
@@ -331,26 +332,6 @@ class TestDissociateUserLine(TestUserLineDao):
                   .first())
 
         assert_that(result.user_id, equal_to(None))
-
-
-class TestFindMainUser(TestUserLineDao):
-
-    def test_find_main_user_line_no_line(self):
-        user = self.add_user()
-
-        user_line = UserLine(user_id=user.id,
-                             line_id=2)
-
-        result = user_line_dao.find_main_user_line(user_line)
-
-        assert_that(result, equal_to(None))
-
-    def test_find_main_user_line_one_user(self):
-        user_line = self.add_user_line_without_exten()
-
-        result = user_line_dao.find_main_user_line(user_line)
-
-        assert_that(result.user_id, equal_to(user_line.user_id))
 
 
 class TestLineHasSecondaryUser(TestUserLineDao):
