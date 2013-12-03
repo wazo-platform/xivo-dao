@@ -54,6 +54,18 @@ def get_by_exten_context(session, exten, context):
 
 
 @daosession
+def find(session, extension_id):
+    extension_row = (session.query(ExtensionSchema)
+                     .filter(ExtensionSchema.id == extension_id)
+                     .first())
+
+    if not extension_row:
+        return None
+
+    return db_converter.to_model(extension_row)
+
+
+@daosession
 def find_all(session, order=None, commented=False):
     line_rows = _new_query(session, order, commented).all()
 

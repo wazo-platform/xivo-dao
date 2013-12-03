@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, all_of, equal_to, has_items, has_length, has_property
+from hamcrest import assert_that, all_of, equal_to, has_items, has_length, has_property, none
 from mock import patch, Mock
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -99,6 +99,23 @@ class TestFindAll(TestExtensionDao):
                 has_property('commented', True)
             )
         ))
+
+
+class TestFind(TestExtensionDao):
+
+    def test_find_no_extension(self):
+        result = extension_dao.find(1)
+
+        assert_that(result, none())
+
+    def test_find(self):
+        extension_row = self.add_extension(exten='1234', context='default')
+
+        result = extension_dao.find(extension_row.id)
+
+        assert_that(result, all_of(
+            has_property('exten', extension_row.exten),
+            has_property('context', extension_row.context)))
 
 
 class TestFindByExten(TestExtensionDao):
