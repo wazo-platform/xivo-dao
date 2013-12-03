@@ -177,6 +177,13 @@ class TestUserLineFindMainUserLine(TestUserLineDao):
 
         assert_that(result.user_id, equal_to(user_line.user_id))
 
+    def test_find_main_user_line_one_line_no_user(self):
+        user_line = self.add_user_line_without_user()
+
+        result = user_line_dao.find_main_user_line(user_line.line_id)
+
+        assert_that(result, none())
+
     def test_find_main_user_line(self):
         user = self.add_user()
         line1 = self.add_line()
