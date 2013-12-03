@@ -83,6 +83,91 @@ class TestCallLogDAO(DAOTestCase):
         assert_that(result, contains_inanyorder(has_property('date', call_log_1.date),
                                                 has_property('date', call_log_2.date)))
 
+    def test_find_all_answered_for_phone_no_calls(self):
+        identity = "sip/131313"
+        limit = 10
+
+        result = call_log_dao.find_all_answered_for_phone(identity, limit)
+
+        assert_that(result, has_length(0))
+
+    def test_find_all_answered_for_phone_limited(self):
+        identity = "sip/131313"
+        limit = 2
+        call_logs = _, call_log_1, call_log_2, _, _ = (self._mock_call_log(source_line_identity=identity),
+                                                       self._mock_call_log(date=datetime(2015, 1, 1, 13), destination_line_identity=identity, answered=True),
+                                                       self._mock_call_log(date=datetime(2014, 1, 1, 13), destination_line_identity=identity, answered=True),
+                                                       self._mock_call_log(date=datetime(2013, 1, 1, 13), destination_line_identity=identity, answered=True),
+                                                       self._mock_call_log(source_line_identity=identity))
+
+        call_log_dao.create_from_list(call_logs)
+
+        result = call_log_dao.find_all_answered_for_phone(identity, limit)
+
+        assert_that(result, has_length(2))
+        assert_that(result[0].date, equal_to(call_log_1.date))
+        assert_that(result[0].destination_line_identity, equal_to(call_log_1.destination_line_identity))
+        assert_that(result[0].answered, equal_to(call_log_1.answered))
+        assert_that(result[1].date, equal_to(call_log_2.date))
+        assert_that(result[1].destination_line_identity, equal_to(call_log_2.destination_line_identity))
+        assert_that(result[1].answered, equal_to(call_log_2.answered))
+
+    def test_find_all_missed_calls_for_phone_no_calls(self):
+        identity = "sip/131313"
+        limit = 10
+
+        result = call_log_dao.find_all_missed_for_phone(identity, limit)
+
+        assert_that(result, has_length(0))
+
+    def test_find_all_missed_for_phone_limited(self):
+        identity = "sip/131313"
+        limit = 2
+        call_logs = _, call_log_1, call_log_2, call_log_3, _ = (self._mock_call_log(source_line_identity=identity),
+                                                                self._mock_call_log(date=datetime(2015, 1, 1, 13), destination_line_identity=identity, answered=False),
+                                                                self._mock_call_log(date=datetime(2012, 1, 1, 13), destination_line_identity=identity, answered=False),
+                                                                self._mock_call_log(date=datetime(2014, 1, 1, 13), destination_line_identity=identity, answered=False),
+                                                                self._mock_call_log(source_line_identity=identity))
+
+        call_log_dao.create_from_list(call_logs)
+
+        result = call_log_dao.find_all_missed_for_phone(identity, limit)
+
+        assert_that(result, has_length(2))
+        assert_that(result[0].date, equal_to(call_log_1.date))
+        assert_that(result[0].destination_line_identity, equal_to(call_log_1.destination_line_identity))
+        assert_that(result[0].answered, equal_to(call_log_1.answered))
+        assert_that(result[1].date, equal_to(call_log_3.date))
+        assert_that(result[1].destination_line_identity, equal_to(call_log_3.destination_line_identity))
+        assert_that(result[1].answered, equal_to(call_log_3.answered))
+
+    def test_find_all_outgoing_calls_for_phone_no_calls(self):
+        identity = "sip/131313"
+        limit = 10
+
+        result = call_log_dao.find_all_outgoing_for_phone(identity, limit)
+
+        assert_that(result, has_length(0))
+
+    def test_find_all_outgoing_for_phone_limited(self):
+        identity = "sip/131313"
+        limit = 2
+        call_logs = _, call_log_1, call_log_2, call_log_3, _ = (self._mock_call_log(),
+                                                                self._mock_call_log(date=datetime(2015, 1, 1, 13), source_line_identity=identity),
+                                                                self._mock_call_log(date=datetime(2011, 1, 1, 13), source_line_identity=identity),
+                                                                self._mock_call_log(date=datetime(2015, 2, 1, 13), source_line_identity=identity),
+                                                                self._mock_call_log())
+
+        call_log_dao.create_from_list(call_logs)
+
+        result = call_log_dao.find_all_outgoing_for_phone(identity, limit)
+
+        assert_that(result, has_length(2))
+        assert_that(result[0].date, equal_to(call_log_3.date))
+        assert_that(result[1].date, equal_to(call_log_1.date))
+        assert_that(result[0].source_line_identity, equal_to(call_log_3.source_line_identity))
+        assert_that(result[1].source_line_identity, equal_to(call_log_1.source_line_identity))
+
     @patch('xivo_dao.helpers.db_manager.AsteriskSession')
     def test_create_call_log(self, session_init):
         session = Mock()
@@ -168,12 +253,22 @@ class TestCallLogDAO(DAOTestCase):
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
 
-    def _mock_call_log(self, cel_ids=None, date=None, id=None):
+    def _mock_call_log(self, cel_ids=None, date=None, id=None, source_line_identity=None, destination_line_identity=None, answered=False):
         if cel_ids is None:
             cel_ids = ()
         if date is None:
             date = datetime.now()
-        call_log = CallLog(id=id, date=date, duration=timedelta(0))
+        call_log = CallLog(id=id,
+                           date=date,
+                           duration=timedelta(0),
+                           source_line_identity=source_line_identity,
+                           destination_line_identity=destination_line_identity,
+                           answered=answered)
         call_log.add_related_cels(cel_ids)
-        self.call_log_rows.append(CallLogSchema(id=id, date=date, duration=timedelta(3)))
+        self.call_log_rows.append(CallLogSchema(id=id,
+                                                date=date,
+                                                source_line_identity=source_line_identity,
+                                                destination_line_identity=destination_line_identity,
+                                                answered=answered,
+                                                duration=timedelta(3)))
         return call_log
