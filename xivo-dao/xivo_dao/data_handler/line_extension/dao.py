@@ -21,6 +21,7 @@ from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
 from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.data_handler.line_extension.exception import LineExtensionNotExistsError
 from xivo_dao.data_handler.line_extension.model import db_converter
+from xivo_dao.data_handler.user_line_extension.helper import delete_association_if_necessary
 from xivo_dao.helpers.db_manager import daosession
 
 
@@ -107,13 +108,6 @@ def dissociate(session, line_extension):
     _dissociate_ule(session, line_extension)
     delete_association_if_necessary(session)
     session.commit()
-
-
-def delete_association_if_necessary(session):
-    query = (session.query(UserLineSchema)
-             .filter(UserLineSchema.user_id == None)
-             .filter(UserLineSchema.extension_id == None))
-    query.delete()
 
 
 def _dissociate_ule(session, line_extension):
