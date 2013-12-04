@@ -46,6 +46,7 @@ class TestULEHelper(TestCase):
 
         helper.make_associations(sentinel.user_id, sentinel.line_id, sentinel.extension_id)
 
+        extension_associate.assert_called_once_with(user, extension)
         assert_that(line, has_property('number', extension.exten))
         assert_that(line, has_property('context', extension.context))
         assert_that(line, has_property('callerid', sentinel.caller_id))
