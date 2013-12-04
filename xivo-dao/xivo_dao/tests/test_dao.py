@@ -216,6 +216,12 @@ class DAOTestCase(unittest.TestCase):
         self.add_me(user_line)
         return user_line
 
+    def add_user_line_without_user(self):
+        line_row = self.add_line()
+        extension_row = self.add_extension()
+        user_line_row = self.add_user_line(line_id=line_row.id, extension_id=extension_row.id)
+        return user_line_row
+
     def add_extension(self, **kwargs):
         kwargs.setdefault('type', 'user')
         kwargs.setdefault('context', 'default')
