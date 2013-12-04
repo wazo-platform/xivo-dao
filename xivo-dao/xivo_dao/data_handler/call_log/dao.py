@@ -48,8 +48,8 @@ def find_all_in_period(session, start, end):
 def find_all_answered_for_phone(session, identifier, limit):
     call_log_rows = (session
                      .query(CallLogSchema)
-                     .filter(CallLogSchema.destination_line_identity == identifier,
-                             CallLogSchema.answered == True)
+                     .filter(CallLogSchema.destination_line_identity == identifier)
+                     .filter(CallLogSchema.answered == True)
                      .order_by(CallLogSchema.date.desc())
                      .limit(limit))
 
@@ -60,8 +60,8 @@ def find_all_answered_for_phone(session, identifier, limit):
 def find_all_missed_for_phone(session, identifier, limit):
     call_log_rows = (session
                      .query(CallLogSchema)
-                     .filter(CallLogSchema.destination_line_identity == identifier,
-                             CallLogSchema.answered == False)
+                     .filter(CallLogSchema.destination_line_identity == identifier)
+                     .filter(CallLogSchema.answered == False)
                      .order_by(CallLogSchema.date.desc())
                      .limit(limit))
 
