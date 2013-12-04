@@ -17,8 +17,6 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 from xivo_dao.data_handler.user_line import validator, dao, notifier
-from xivo_dao.data_handler.line_extension import dao as line_extension_dao
-from xivo_dao.data_handler.user_line_extension import helper as ule_helper
 
 
 def get_by_user_id_and_line_id(user_id, line_id):
@@ -37,15 +35,8 @@ def associate(user_line):
     validator.validate_association(user_line)
     _adjust_optional_parameters(user_line)
     dao.associate(user_line)
-    make_user_line_associations(user_line)
     notifier.associated(user_line)
     return user_line
-
-
-def make_user_line_associations(user_line):
-    line_extension = line_extension_dao.find_by_line_id(user_line.line_id)
-    extension_id = line_extension.extension_id if line_extension else None
-    ule_helper.make_associations(user_line.user_id, user_line.line_id, extension_id)
 
 
 def dissociate(user_line):
