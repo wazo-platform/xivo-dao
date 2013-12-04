@@ -45,6 +45,41 @@ def find_all_in_period(session, start, end):
 
 
 @daosession
+def find_all_answered_for_phone(session, identifier, limit):
+    call_log_rows = (session
+                     .query(CallLogSchema)
+                     .filter(CallLogSchema.destination_line_identity == identifier,
+                             CallLogSchema.answered == True)
+                     .order_by(CallLogSchema.date.desc())
+                     .limit(limit))
+
+    return _converted_call_logs(call_log_rows)
+
+
+@daosession
+def find_all_missed_for_phone(session, identifier, limit):
+    call_log_rows = (session
+                     .query(CallLogSchema)
+                     .filter(CallLogSchema.destination_line_identity == identifier,
+                             CallLogSchema.answered == False)
+                     .order_by(CallLogSchema.date.desc())
+                     .limit(limit))
+
+    return _converted_call_logs(call_log_rows)
+
+
+@daosession
+def find_all_outgoing_for_phone(session, identifier, limit):
+    call_log_rows = (session
+                     .query(CallLogSchema)
+                     .filter(CallLogSchema.source_line_identity == identifier)
+                     .order_by(CallLogSchema.date.desc())
+                     .limit(limit))
+
+    return _converted_call_logs(call_log_rows)
+
+
+@daosession
 def create_from_list(session, call_logs):
     session.begin()
     for call_log in call_logs:
@@ -98,3 +133,9 @@ def delete_from_list(session, call_log_ids):
     except SQLAlchemyError as e:
         session.rollback()
         raise ElementDeletionError('CallLog', e)
+
+
+def _converted_call_logs(rows):
+    if not rows:
+        return []
+    return map(db_converter.to_model, rows)
