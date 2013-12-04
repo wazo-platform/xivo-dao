@@ -35,7 +35,7 @@ def dissociated(user_line):
 def sysconf_command_association_updated(user_line):
     command = {
         'dird': [],
-        'ipbx': ['sip reload'],
+        'ipbx': ['dialplan reload', 'sip reload'],
         'agentbus': [],
         'ctibus': _generate_ctibus_commands(user_line)
     }

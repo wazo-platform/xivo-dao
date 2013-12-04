@@ -17,6 +17,8 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 from xivo_dao.data_handler.user_line import validator, dao, notifier
+from xivo_dao.data_handler.line_extension import dao as line_extension_dao
+from xivo_dao.data_handler.user_line_extension import helper as ule_helper
 
 
 def get_by_user_id_and_line_id(user_id, line_id):
@@ -27,12 +29,23 @@ def find_all_by_user_id(user_id):
     return dao.find_all_by_user_id(user_id)
 
 
+def find_all_by_line_id(line_id):
+    return dao.find_all_by_line_id(line_id)
+
+
 def associate(user_line):
     validator.validate_association(user_line)
     _adjust_optional_parameters(user_line)
     dao.associate(user_line)
+    make_user_line_associations(user_line)
     notifier.associated(user_line)
     return user_line
+
+
+def make_user_line_associations(user_line):
+    line_extension = line_extension_dao.find_by_line_id(user_line.line_id)
+    extension_id = line_extension.extension_id if line_extension else None
+    ule_helper.make_associations(user_line.user_id, user_line.line_id, extension_id)
 
 
 def dissociate(user_line):
@@ -42,6 +55,6 @@ def dissociate(user_line):
 
 
 def _adjust_optional_parameters(user_line):
-    user_line_main_user = dao.find_main_user_line(user_line)
+    user_line_main_user = dao.find_main_user_line(user_line.line_id)
     if user_line_main_user is not None:
         user_line.main_user = (user_line.user_id == user_line_main_user.user_id)
