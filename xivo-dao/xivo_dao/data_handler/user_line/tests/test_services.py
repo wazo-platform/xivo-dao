@@ -17,8 +17,8 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 import unittest
-from mock import patch, Mock
-from hamcrest import assert_that, equal_to
+from mock import patch, Mock, sentinel
+from hamcrest import assert_that, equal_to, contains
 
 from xivo_dao.data_handler.user_line.model import UserLine
 from xivo_dao.data_handler.user_line import services as user_line_services
@@ -47,7 +47,12 @@ class TestUserLineAssociate(unittest.TestCase):
     @patch('xivo_dao.data_handler.user_line.validator.validate_association')
     @patch('xivo_dao.data_handler.user_line.dao.associate')
     @patch('xivo_dao.data_handler.user_line.notifier.associated')
-    def test_associate(self, notifier_associated, dao_associate, validate_association):
+    @patch('xivo_dao.data_handler.user_line.services.make_user_line_associations')
+    def test_associate(self,
+                       user_line_associations,
+                       notifier_associated,
+                       dao_associate,
+                       validate_association):
         user_line = UserLine(user_id=1,
                              line_id=2)
 
@@ -56,13 +61,20 @@ class TestUserLineAssociate(unittest.TestCase):
         assert_that(result, equal_to(user_line))
         validate_association.assert_called_once_with(user_line)
         dao_associate.assert_called_once_with(user_line)
+        user_line_associations.assert_called_once_with(user_line)
         notifier_associated.assert_called_once_with(user_line)
 
     @patch('xivo_dao.data_handler.user_line.dao.find_main_user_line')
     @patch('xivo_dao.data_handler.user_line.validator.validate_association')
     @patch('xivo_dao.data_handler.user_line.dao.associate')
     @patch('xivo_dao.data_handler.user_line.notifier.associated')
-    def test_associate_main_user(self, notifier_associated, dao_associate, validate_association, dao_find_main_user_line):
+    @patch('xivo_dao.data_handler.user_line.services.make_user_line_associations')
+    def test_associate_main_user(self,
+                                 user_line_associations,
+                                 notifier_associated,
+                                 dao_associate,
+                                 validate_association,
+                                 dao_find_main_user_line):
         user_line = UserLine(user_id=1,
                              line_id=2)
         expected_user_line = UserLine(user_id=1,
@@ -76,13 +88,16 @@ class TestUserLineAssociate(unittest.TestCase):
         assert_that(result, equal_to(expected_user_line))
         validate_association.assert_called_once_with(user_line)
         dao_associate.assert_called_once_with(user_line)
+        user_line_associations.assert_called_once_with(user_line)
         notifier_associated.assert_called_once_with(user_line)
 
     @patch('xivo_dao.data_handler.user_line.dao.find_main_user_line')
     @patch('xivo_dao.data_handler.user_line.validator.validate_association')
     @patch('xivo_dao.data_handler.user_line.dao.associate')
     @patch('xivo_dao.data_handler.user_line.notifier.associated')
+    @patch('xivo_dao.data_handler.user_line.services.make_user_line_associations')
     def test_associate_with_main_user_already_associated_to_this_line(self,
+                                                                      user_line_associations,
                                                                       notifier_associated,
                                                                       dao_associate,
                                                                       validate_association,
@@ -103,7 +118,35 @@ class TestUserLineAssociate(unittest.TestCase):
         assert_that(result, equal_to(expected_user_line))
         validate_association.assert_called_once_with(secondary_user_line)
         dao_associate.assert_called_once_with(secondary_user_line)
+        user_line_associations.assert_called_once_with(secondary_user_line)
         notifier_associated.assert_called_once_with(secondary_user_line)
+
+
+class TestMakeUserLineAssociation(unittest.TestCase):
+    @patch('xivo_dao.data_handler.line_extension.dao.find_by_line_id')
+    @patch('xivo_dao.data_handler.user_line_extension.helper.make_associations')
+    def test_make_user_line_associations_with_extension(self, make_associations, line_extension):
+        user_line = Mock(user_id=sentinel.user_id,
+                         line_id=sentinel.line_id)
+        line_extension.return_value = Mock(line_id=sentinel.line_id,
+                                           extension_id=sentinel.extension_id)
+
+        user_line_services.make_user_line_associations(user_line)
+
+        line_extension.assert_called_once_with(sentinel.line_id)
+        make_associations.assert_called_once_with(sentinel.user_id, sentinel.line_id, sentinel.extension_id)
+
+    @patch('xivo_dao.data_handler.line_extension.dao.find_by_line_id')
+    @patch('xivo_dao.data_handler.user_line_extension.helper.make_associations')
+    def test_make_user_line_associations_without_extension(self, make_associations, line_extension):
+        user_line = Mock(user_id=sentinel.user_id,
+                         line_id=sentinel.line_id)
+        line_extension.return_value = None
+
+        user_line_services.make_user_line_associations(user_line)
+
+        line_extension.assert_called_once_with(sentinel.line_id)
+        make_associations.assert_called_once_with(sentinel.user_id, sentinel.line_id, None)
 
 
 class TestUserLineDissociate(unittest.TestCase):
@@ -119,3 +162,12 @@ class TestUserLineDissociate(unittest.TestCase):
         validate_dissociation.assert_called_once_with(user_line)
         dao_dissociate.assert_called_once_with(user_line)
         notifier_dissociated.assert_called_once_with(user_line)
+
+    @patch('xivo_dao.data_handler.user_line.dao.find_all_by_line_id')
+    def test_find_all_by_line_id(self, find_all_by_line_id):
+        user_line = Mock(UserLine, line_id=1)
+        find_all_by_line_id.return_value = [user_line]
+
+        result = user_line_services.find_all_by_line_id(1)
+
+        assert_that(result, contains(user_line))
