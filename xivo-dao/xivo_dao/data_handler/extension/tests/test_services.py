@@ -35,6 +35,17 @@ class TestExtension(unittest.TestCase):
         find_all_dao.assert_called_once_with(order=None, commented=True)
         self.assertEquals(result, expected)
 
+    @patch('xivo_dao.data_handler.extension.dao.find_by_exten_context')
+    def test_find_by_exten_context(self, find_by_exten_context):
+        expected = Extension(exten='1000', context='default')
+
+        find_by_exten_context.return_value = expected
+
+        result = extension_services.find_by_exten_context(expected.exten, expected.context)
+
+        find_by_exten_context.assert_called_once_with(expected.exten, expected.context)
+        self.assertEquals(result, expected)
+
     def test_create_no_properties(self):
         extension = Extension(exten='1234')
 
