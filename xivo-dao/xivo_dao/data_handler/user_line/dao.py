@@ -159,13 +159,3 @@ def line_has_secondary_user(session, user_line):
              .count())
 
     return count > 0
-
-
-@daosession
-def extension_associated_to_this_user_line(session, user_line):
-    row = (session.query(UserLineSchema.extension_id)
-           .filter(UserLineSchema.user_id == user_line.user_id)
-           .filter(UserLineSchema.line_id == user_line.line_id)
-           .first())
-
-    return row.extension_id is not None

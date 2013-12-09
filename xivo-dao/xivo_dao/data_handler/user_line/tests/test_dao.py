@@ -378,23 +378,6 @@ class TestLineHasSecondaryUser(TestUserLineDao):
         assert_that(result, equal_to(True))
 
 
-class TestExtensionAssociatedToThisUserLine(TestUserLineDao):
-
-    def test_extension_associated_to_this_user_line(self):
-        user_line = self.add_user_line_with_exten()
-
-        result = user_line_dao.extension_associated_to_this_user_line(user_line)
-
-        assert_that(result, equal_to(True))
-
-    def test_extension_associated_to_this_user_line_no_exten(self):
-        user_line = self.add_user_line_without_exten()
-
-        result = user_line_dao.extension_associated_to_this_user_line(user_line)
-
-        assert_that(result, equal_to(False))
-
-
 class TestUserLineFindAllByLineId(TestUserLineDao):
 
     def test_find_all_by_line_id_no_user_line(self):
