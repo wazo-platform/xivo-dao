@@ -30,6 +30,10 @@ def associate(line_extension):
     return line_extension
 
 
+def find_by_line_id(line_id):
+    return dao.find_by_line_id(line_id)
+
+
 def get_by_line_id(line_id):
     return dao.get_by_line_id(line_id)
 

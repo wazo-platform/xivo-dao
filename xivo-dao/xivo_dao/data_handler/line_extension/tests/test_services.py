@@ -56,6 +56,16 @@ class TestLineExtensionService(unittest.TestCase):
         assert_that(result, equal_to(line_extension))
         dao_get_by_line_id.assert_called_once_with(1)
 
+    @patch('xivo_dao.data_handler.line_extension.dao.find_by_line_id')
+    def test_find_by_line_id(self, dao_find_by_line_id):
+        line_extension = Mock(LineExtension, line_id=1)
+        dao_find_by_line_id.return_value = line_extension
+
+        result = line_extension_service.find_by_line_id(1)
+
+        assert_that(result, equal_to(line_extension))
+        dao_find_by_line_id.assert_called_once_with(1)
+
     @patch('xivo_dao.data_handler.line_extension.dao.dissociate')
     @patch('xivo_dao.data_handler.line_extension.notifier.dissociated')
     @patch('xivo_dao.data_handler.line_extension.validator.validate_dissociation')
