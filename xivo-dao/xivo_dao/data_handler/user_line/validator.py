@@ -80,11 +80,8 @@ def _validate_user_has_line(user_line):
 
 
 def _validate_user_not_associated_with_line(user_line):
-    try:
-        user_line_dao.get_by_user_id_and_line_id(user_line.user_id, user_line.line_id)
-    except ElementNotExistsError:
-        pass
-    else:
+    existing = user_line_dao.find_all_by_user_id(user_line.user_id)
+    if len(existing) > 0:
         raise InvalidParametersError(['user is already associated to this line'])
 
 
