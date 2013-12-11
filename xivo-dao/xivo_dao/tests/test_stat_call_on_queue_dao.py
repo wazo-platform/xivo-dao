@@ -17,6 +17,7 @@
 
 import datetime
 
+from hamcrest import *
 from sqlalchemy import func
 
 from xivo_dao import stat_call_on_queue_dao
@@ -257,3 +258,37 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         callids = self.session.query(StatCallOnQueue.callid)
         self.assertEqual(callids.count(), 1)
         self.assertEqual(callids[0].callid, 'callid1')
+
+    def test_find_all_callid_between_date(self):
+        callid1 = 'callid1'
+        callid2 = 'callid2'
+        callid3 = 'callid3'
+        start = datetime.datetime(2012, 1, 1, 10, 00, 00)
+        end = datetime.datetime(2012, 1, 1, 11, 59, 59, 999999)
+        queue_name, _ = self._insert_queue_to_stat_queue()
+
+        stat_call_on_queue_dao.add_full_call(self.session, callid1, datetime.datetime(2012, 1, 1, 9, 34, 32), queue_name)
+        stat_call_on_queue_dao.add_full_call(self.session, callid1, datetime.datetime(2012, 1, 1, 10, 34, 32), queue_name)
+        stat_call_on_queue_dao.add_full_call(self.session, callid2, datetime.datetime(2012, 1, 1, 10, 11, 12), queue_name)
+        stat_call_on_queue_dao.add_full_call(self.session, callid3, datetime.datetime(2012, 1, 1, 10, 59, 59), queue_name)
+
+        result = stat_call_on_queue_dao.find_all_callid_between_date(self.session, start, end)
+
+        assert_that(result, contains(callid1, callid2, callid3))
+
+    def test_remove_callid_before(self):
+        callid1 = 'callid1'
+        callid2 = 'callid2'
+        callid3 = 'callid3'
+        queue_name, _ = self._insert_queue_to_stat_queue()
+
+        stat_call_on_queue_dao.add_full_call(self.session, callid1, datetime.datetime(2012, 1, 1, 9, 34, 32), queue_name)
+        stat_call_on_queue_dao.add_full_call(self.session, callid1, datetime.datetime(2012, 1, 1, 10, 11, 12), queue_name)
+        stat_call_on_queue_dao.add_full_call(self.session, callid1, datetime.datetime(2012, 1, 1, 10, 59, 59), queue_name)
+        stat_call_on_queue_dao.add_full_call(self.session, callid2, datetime.datetime(2012, 1, 1, 10, 11, 12), queue_name)
+        stat_call_on_queue_dao.add_full_call(self.session, callid3, datetime.datetime(2012, 1, 1, 11, 22, 59), queue_name)
+
+        stat_call_on_queue_dao.remove_callids(self.session, [callid1, callid2, callid3])
+
+        callids = self.session.query(StatCallOnQueue.callid)
+        self.assertEqual(callids.count(), 0)

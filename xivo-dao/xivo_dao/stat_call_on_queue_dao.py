@@ -67,9 +67,11 @@ def get_periodic_stats_quarter_hour(session, start, end):
                         (cast(extract('minute', StatCallOnQueue.time), Integer) / 15) * timedelta(minutes=15)
     return _get_periodic_stat_by_step(session, start, end, quarter_hour_step)
 
+
 def get_periodic_stats_hour(session, start, end):
     one_hour_step = func.date_trunc(literal('hour'), StatCallOnQueue.time)
     return _get_periodic_stat_by_step(session, start, end, one_hour_step)
+
 
 def _get_periodic_stat_by_step(session, start, end, step):
     stats = {}
@@ -94,9 +96,22 @@ def _get_periodic_stat_by_step(session, start, end, step):
 
     return stats
 
+
 def clean_table(session):
     session.query(StatCallOnQueue).delete()
 
 
 def remove_after(session, date):
     session.query(StatCallOnQueue).filter(StatCallOnQueue.time >= date).delete()
+
+
+def find_all_callid_between_date(session, start_date, end_date):
+    rows = (session.query(StatCallOnQueue.callid)
+           .filter(StatCallOnQueue.time.between(start_date, end_date))
+           .all())
+
+    return [row[0] for row in rows]
+
+
+def remove_callids(session, callids):
+    session.query(StatCallOnQueue).filter(StatCallOnQueue.callid.in_(callids)).delete(synchronize_session='fetch')
