@@ -29,16 +29,26 @@ from xivo_dao.helpers.db_manager import daosession
 
 
 @daosession
-def get_by_user_id_and_line_id(session, user_id, line_id):
+def find_by_user_id_and_line_id(session, user_id, line_id):
     row = (session.query(UserLineSchema)
            .filter(UserLineSchema.user_id == user_id)
            .filter(UserLineSchema.line_id == line_id)
            .first())
 
     if not row:
-        raise UserLineNotExistsError('UserLine', user_id=user_id, line_id=line_id)
+        return None
 
     return db_converter.to_model(row)
+
+
+@daosession
+def get_by_user_id_and_line_id(session, user_id, line_id):
+    user_line = find_by_user_id_and_line_id(user_id, line_id)
+
+    if not user_line:
+        raise UserLineNotExistsError('UserLine', user_id=user_id, line_id=line_id)
+
+    return user_line
 
 
 @daosession

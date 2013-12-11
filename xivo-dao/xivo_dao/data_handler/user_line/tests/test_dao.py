@@ -109,6 +109,49 @@ class TestUserLineGetByUserIdAndLineId(TestUserLineDao):
                     )
 
 
+class TestUserLineFindByUserIdAndLineId(TestUserLineDao):
+
+    def test_find_by_user_id_no_users_or_line(self):
+        result = user_line_dao.find_by_user_id_and_line_id(1, 1)
+        assert_that(result, none())
+
+    def test_find_by_user_id_with_line(self):
+        user_line = self.add_user_line_without_exten(firstname='King')
+
+        result = user_line_dao.find_by_user_id_and_line_id(user_line.user_id, user_line.line_id)
+
+        assert_that(result, instance_of(UserLine))
+        assert_that(result,
+                    has_property('user_id', user_line.user_id),
+                    has_property('line_id', user_line.line_id)
+                    )
+
+    def test_find_by_user_id_with_line_and_secondary_user(self):
+        main_user = self.add_user()
+        secondary_user = self.add_user()
+        line = self.add_line()
+        main_user_line = self.add_user_line(user_id=main_user.id,
+                                            line_id=line.id,
+                                            main_user=True,
+                                            main_line=False)
+        self.add_user_line(user_id=secondary_user.id,
+                           line_id=line.id,
+                           main_user=False,
+                           main_line=False)
+
+        result = user_line_dao.find_by_user_id_and_line_id(main_user_line.user_id, main_user_line.line_id)
+
+        assert_that(result, instance_of(UserLine))
+        assert_that(result,
+                    all_of(
+                        has_property('user_id', main_user_line.user_id),
+                        has_property('line_id', main_user_line.line_id),
+                        has_property('main_user', True),
+                        has_property('main_line', False)
+                    )
+                    )
+
+
 class TestUserLineFindAllByUserId(TestUserLineDao):
 
     def test_find_all_by_user_id_no_user_line(self):
