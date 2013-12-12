@@ -190,3 +190,18 @@ def associate_to_user(session, user, extension):
     except SQLAlchemyError:
         session.rollback()
         raise ElementEditionError('Extension', 'error while associating extension with user %d' % user.id)
+
+
+@daosession
+def dissociate_extension(session, extension):
+    session.begin()
+    (session.query(ExtensionSchema)
+     .filter(ExtensionSchema.id == extension.id)
+     .update({'type': 'user',
+              'typeval': '0'}))
+
+    try:
+        session.commit()
+    except SQLAlchemyError as e:
+        session.rollback()
+        raise ElementEditionError('Extension', 'error while dissociating extension %d: %s' % (extension.id, e))
