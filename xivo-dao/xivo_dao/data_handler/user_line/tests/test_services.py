@@ -197,7 +197,7 @@ class DeleteUserLineAssociations(unittest.TestCase):
                                        find_main_user_line,
                                        delete_extension_associations,
                                        delete_user_references):
-        user_line = Mock(UserLine, line_id=1)
+        user_line = Mock(UserLine, user_id=1, line_id=2)
 
         find_by_line_id.return_value = None
         find_main_user_line.return_value = None
@@ -205,8 +205,8 @@ class DeleteUserLineAssociations(unittest.TestCase):
         user_line_services.delete_user_line_associations(user_line)
 
         find_by_line_id.assert_called_once_with(user_line.line_id)
+        delete_user_references.assert_called_once_with(user_line.line_id)
         self.assertNotCalled(delete_extension_associations)
-        self.assertNotCalled(delete_user_references)
 
     @patch('xivo_dao.data_handler.line.dao.delete_user_references')
     @patch('xivo_dao.data_handler.user_line_extension.helper.delete_extension_associations')

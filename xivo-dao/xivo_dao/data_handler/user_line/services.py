@@ -60,9 +60,10 @@ def delete_user_line_associations(user_line):
     line_extension = line_extension_dao.find_by_line_id(user_line.line_id)
     main_user_line = dao.find_main_user_line(user_line.line_id)
 
-    if line_extension and not main_user_line:
-        ule_helper.delete_extension_associations(line_extension.line_id, line_extension.extension_id)
-        line_dao.delete_user_references(line_extension.line_id)
+    if not main_user_line:
+        line_dao.delete_user_references(user_line.line_id)
+        if line_extension:
+            ule_helper.delete_extension_associations(line_extension.line_id, line_extension.extension_id)
 
 
 def _adjust_optional_parameters(user_line):
