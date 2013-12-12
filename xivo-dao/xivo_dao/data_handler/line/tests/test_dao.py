@@ -756,7 +756,7 @@ class TestLineDao(DAOTestCase):
 
         self.assertEquals(line_row.number, '')
         self.assertEquals(line_row.context, '')
-        self.assertEquals(line_row.provisioningid, 0)
+        self.assertEquals(line_row.provisioningid, provisioningid)
 
     def test_associate_extension(self):
         exten = '1000'

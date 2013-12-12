@@ -424,6 +424,4 @@ def dissociate_extension(session, extension):
     if line_row:
         line_row.number = ''
         line_row.context = ''
-        line_row.provisioningid = 0
-
         _commit_or_abort(session, ElementEditionError, line_row)
