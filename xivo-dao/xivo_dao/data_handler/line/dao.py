@@ -234,7 +234,7 @@ def edit(session, line):
     line.update_data_source(derived_line)
     session.add(derived_line)
 
-    line_row = _fetch_line(session, line)
+    line_row = _fetch_line(session, line.id)
     if line_row is None:
         session.rollback()
         raise ElementNotExistsError('Line', line_id=line.id)
@@ -263,8 +263,9 @@ def update_xivo_userid(session, line, main_user):
             raise ElementEditionError('Line', e)
 
 
-def _fetch_line(session, line):
-    return session.query(LineSchema).get(line.id)
+
+def _fetch_line(session, line_id):
+    return session.query(LineSchema).get(line_id)
 
 
 def _fetch_derived_line(session, line):
