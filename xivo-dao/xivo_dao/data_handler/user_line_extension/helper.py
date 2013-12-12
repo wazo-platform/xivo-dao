@@ -44,3 +44,7 @@ def make_associations(main_user_id, line_id, extension_id):
         line_dao.update_xivo_userid(line, main_user)
 
     line_dao.edit(line)
+
+
+def delete_associations(line_id, extension_id):
+    raise NotImplementedError()
