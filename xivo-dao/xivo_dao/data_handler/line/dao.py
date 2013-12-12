@@ -199,68 +199,50 @@ def provisioning_id_exists(session, provd_id):
 @daosession
 def create(session, line):
     derived_line = _build_derived_line(session, line)
+    _commit_or_abort(session, ElementCreationError, derived_line)
 
-    session.begin()
-    session.add(derived_line)
-
-    try:
-        session.commit()
-    except SQLAlchemyError as e:
-        session.rollback()
-        raise ElementCreationError('Line', e)
-
-    session.begin()
     line_row = _build_line_row(line, derived_line)
-    session.add(line_row)
-
-    try:
-        session.commit()
-    except SQLAlchemyError as e:
-        session.rollback()
-        raise ElementCreationError('Line', e)
+    _commit_or_abort(session, ElementCreationError, line_row)
 
     line.id = line_row.id
-
     return line
+
+
+def _commit_or_abort(session, error, *elements):
+    session.begin()
+    for element in elements:
+        session.add(element)
+    try:
+        session.commit()
+    except SQLAlchemyError as e:
+        session.rollback()
+        raise error('Line', e)
 
 
 @daosession
 def edit(session, line):
-    session.begin()
     derived_line = _fetch_derived_line(session, line)
     if derived_line is None:
         session.rollback()
         raise ElementNotExistsError('Protocol Line', protocol_id=line.protocolid)
     line.update_data_source(derived_line)
-    session.add(derived_line)
 
     line_row = _fetch_line(session, line.id)
     if line_row is None:
         session.rollback()
         raise ElementNotExistsError('Line', line_id=line.id)
     line.update_data_source(line_row)
-    session.add(line_row)
 
-    try:
-        session.commit()
-    except SQLAlchemyError as e:
-        session.rollback()
-        raise ElementEditionError('Line', e)
+    _commit_or_abort(session, ElementEditionError, derived_line, line_row)
 
 
 @daosession
 def update_xivo_userid(session, line, main_user):
     if line.protocol.lower() == 'sip':
-        session.begin()
         sip_line = _fetch_derived_line(session, line)
         sip_line.setvar = 'XIVO_USERID=%s' % main_user.id
-        session.add(sip_line)
 
-        try:
-            session.commit()
-        except SQLAlchemyError as e:
-            session.rollback()
-            raise ElementEditionError('Line', e)
+        _commit_or_abort(session, ElementEditionError, sip_line)
 
 
 
@@ -419,9 +401,7 @@ def associate_extension(session, extension, line_id):
         line_row.number = extension.exten
         line_row.context = extension.context
 
-        session.begin()
-        session.add(line_row)
-        session.commit()
+        _commit_or_abort(session, ElementEditionError, line_row)
 
 
 @daosession
@@ -436,6 +416,4 @@ def unassociate_extension(session, extension):
         line_row.context = ''
         line_row.provisioningid = 0
 
-        session.begin()
-        session.add(line_row)
-        session.commit()
+        _commit_or_abort(session, ElementEditionError, line_row)
