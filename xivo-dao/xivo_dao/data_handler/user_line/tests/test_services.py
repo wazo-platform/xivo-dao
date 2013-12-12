@@ -42,6 +42,18 @@ class TestUserLineGetByUserIdAndLineId(unittest.TestCase):
         assert_that(result, equal_to(expected_result))
 
 
+class TestFindAllByLineId(unittest.TestCase):
+
+    @patch('xivo_dao.data_handler.user_line.dao.find_all_by_line_id')
+    def test_find_all_by_line_id(self, find_all_by_line_id):
+        user_line = Mock(UserLine, line_id=1)
+        find_all_by_line_id.return_value = [user_line]
+
+        result = user_line_services.find_all_by_line_id(1)
+
+        assert_that(result, contains(user_line))
+
+
 class TestUserLineAssociate(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.user_line.dao.find_main_user_line', Mock(return_value=None))
@@ -169,16 +181,6 @@ class TestUserLineDissociate(unittest.TestCase):
         dao_dissociate.assert_called_once_with(user_line)
         notifier_dissociated.assert_called_once_with(user_line)
         delete_user_line_associations.assert_called_once_with(user_line)
-
-
-    @patch('xivo_dao.data_handler.user_line.dao.find_all_by_line_id')
-    def test_find_all_by_line_id(self, find_all_by_line_id):
-        user_line = Mock(UserLine, line_id=1)
-        find_all_by_line_id.return_value = [user_line]
-
-        result = user_line_services.find_all_by_line_id(1)
-
-        assert_that(result, contains(user_line))
 
 
 class DeleteUserLineAssociations(unittest.TestCase):
