@@ -36,22 +36,15 @@ def make_associations(main_user_id, line_id, extension_id):
     exten = extension.exten if extension else None
 
     line.callerid = caller_id.assemble_caller_id(main_user.fullname, exten)
+    line_dao.edit(line)
 
     if extension:
         extension_dao.associate_to_user(main_user, extension)
-        line.number = extension.exten
-        line.context = extension.context
+        line_dao.associate_extension(extension, line.id)
         line_dao.update_xivo_userid(line, main_user)
-
-    line_dao.edit(line)
 
 
 def delete_extension_associations(line_id, extension_id):
-    line = line_dao.get(line_id)
-    line.number = None
-    line_dao.edit(line)
-
     extension = extension_dao.get(extension_id)
-    extension.type = 'user'
-    extension.typeval = '0'
-    extension_dao.edit(extension)
+    line_dao.dissociate_extension(extension)
+    extension_dao.dissociate_extension(extension)
