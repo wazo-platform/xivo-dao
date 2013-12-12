@@ -733,7 +733,7 @@ class TestLineDao(DAOTestCase):
 
         assert_that(row, equal_to(None))
 
-    def test_unassociate_extension(self):
+    def test_dissociate_extension(self):
         exten = '1000'
         context = 'default'
         type = 'user'
@@ -750,7 +750,7 @@ class TestLineDao(DAOTestCase):
 
         extension = extension_dao.get(extension_row.id)
 
-        line_dao.unassociate_extension(extension)
+        line_dao.dissociate_extension(extension)
 
         line_row = self.session.query(LineSchema).get(line_row.id)
 

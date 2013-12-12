@@ -415,7 +415,7 @@ def associate_extension(session, extension, line_id):
 
 
 @daosession
-def unassociate_extension(session, extension):
+def dissociate_extension(session, extension):
     line_row = (session.query(LineSchema)
                 .filter(LineSchema.number == extension.exten)
                 .filter(LineSchema.context == extension.context)
