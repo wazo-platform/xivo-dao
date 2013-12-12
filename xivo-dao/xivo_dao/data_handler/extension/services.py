@@ -21,7 +21,6 @@ from . import notifier
 from xivo_dao.data_handler.exception import MissingParametersError, \
     InvalidParametersError, ElementAlreadyExistsError, NonexistentParametersError
 
-from xivo_dao.data_handler.line import dao as line_dao
 from xivo_dao.data_handler.context import services as context_services
 
 
@@ -63,7 +62,6 @@ def edit(extension):
 
 
 def delete(extension):
-    line_dao.unassociate_extension(extension)
     dao.delete(extension)
     notifier.deleted(extension)
 
