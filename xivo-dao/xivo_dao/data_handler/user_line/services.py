@@ -16,6 +16,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+from xivo_dao.data_handler.line import dao as line_dao
 from xivo_dao.data_handler.user_line import validator, dao, notifier
 from xivo_dao.data_handler.line_extension import dao as line_extension_dao
 from xivo_dao.data_handler.user_line_extension import helper as ule_helper
@@ -61,6 +62,7 @@ def delete_user_line_associations(user_line):
 
     if line_extension and not main_user_line:
         ule_helper.delete_extension_associations(line_extension.line_id, line_extension.extension_id)
+        line_dao.delete_user_references(line_extension.line_id)
 
 
 def _adjust_optional_parameters(user_line):
