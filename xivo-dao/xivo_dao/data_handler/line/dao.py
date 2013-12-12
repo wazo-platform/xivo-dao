@@ -245,6 +245,16 @@ def update_xivo_userid(session, line, main_user):
         _commit_or_abort(session, ElementEditionError, sip_line)
 
 
+@daosession
+def delete_user_references(session, line_id):
+    line = _fetch_line(session, line_id)
+    if line.protocol.lower() == 'sip':
+        sip_line = _fetch_derived_line(session, line)
+        sip_line.callerid = None
+        sip_line.setvar = ''
+
+        _commit_or_abort(session, ElementEditionError, sip_line)
+
 
 def _fetch_line(session, line_id):
     return session.query(LineSchema).get(line_id)
