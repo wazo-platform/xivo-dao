@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, equal_to, has_property
+from hamcrest import assert_that, equal_to, has_property, none
 from mock import Mock, patch, sentinel
 from unittest import TestCase
 
@@ -85,3 +85,26 @@ class TestULEHelper(TestCase):
         line_edit.assert_called_once_with(line)
         assert_that(line_update_xivo_userid.call_count, equal_to(0))
         caller_id.assert_called_once_with(user.fullname, None)
+
+    @patch('xivo_dao.data_handler.extension.dao.edit')
+    @patch('xivo_dao.data_handler.line.dao.edit')
+    @patch('xivo_dao.data_handler.extension.dao.get')
+    @patch('xivo_dao.data_handler.line.dao.get')
+    def test_delete_extension_associations(self,
+                                           line_get,
+                                           extension_get,
+                                           line_edit,
+                                           extension_edit):
+        extension = extension_get.return_value = Mock(id=1)
+        line = line_get.return_value = Mock(id=2)
+
+        helper.delete_extension_associations(line.id, extension.id)
+
+        line_get.assert_called_once_with(line.id)
+        extension_get.assert_called_once_with(extension.id)
+        line_edit.assert_called_once_with(line)
+        extension_edit.assert_called_once_with(extension)
+
+        assert_that(extension.type, equal_to('user'))
+        assert_that(extension.typeval, equal_to('0'))
+        assert_that(line.number, none())

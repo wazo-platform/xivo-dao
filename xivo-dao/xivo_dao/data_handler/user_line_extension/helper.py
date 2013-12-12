@@ -47,4 +47,11 @@ def make_associations(main_user_id, line_id, extension_id):
 
 
 def delete_extension_associations(line_id, extension_id):
-    raise NotImplementedError()
+    line = line_dao.get(line_id)
+    line.number = None
+    line_dao.edit(line)
+
+    extension = extension_dao.get(extension_id)
+    extension.type = 'user'
+    extension.typeval = '0'
+    extension_dao.edit(extension)
