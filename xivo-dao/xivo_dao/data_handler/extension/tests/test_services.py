@@ -177,10 +177,9 @@ class TestExtension(unittest.TestCase):
 
         self.assertRaises(ElementCreationError, extension_services.create, extension)
 
-    @patch('xivo_dao.data_handler.line.dao.unassociate_extension')
     @patch('xivo_dao.data_handler.extension.notifier.deleted')
     @patch('xivo_dao.data_handler.extension.dao.delete')
-    def test_delete(self, extension_dao_delete, extension_notifier_deleted, unassociate_extension):
+    def test_delete(self, extension_dao_delete, extension_notifier_deleted):
         exten = 'extension'
         context = 'toto'
         extension = Extension(id=1,
@@ -189,6 +188,5 @@ class TestExtension(unittest.TestCase):
 
         extension_services.delete(extension)
 
-        unassociate_extension.assert_called_once_with(extension)
         extension_dao_delete.assert_called_once_with(extension)
         extension_notifier_deleted.assert_called_once_with(extension)
