@@ -133,6 +133,7 @@ class TestValidator(unittest.TestCase):
         self.assertEquals(user_line_dao_find_all_by_user_id.call_count, 0)
         self.assertEquals(line_has_secondary_user.call_count, 0)
 
+    @patch('xivo_dao.data_handler.user_line_extension.helper.validate_no_device')
     @patch('xivo_dao.data_handler.user_line.dao.line_has_secondary_user')
     @patch('xivo_dao.data_handler.user_line.dao.find_all_by_user_id')
     @patch('xivo_dao.data_handler.line.dao.get')
@@ -141,7 +142,8 @@ class TestValidator(unittest.TestCase):
                                    user_dao_get,
                                    line_dao_get,
                                    user_line_dao_find_all_by_user_id,
-                                   line_has_secondary_user):
+                                   line_has_secondary_user,
+                                   validate_no_device):
         user_line = UserLine(user_id=3,
                              line_id=4,
                              main_user=True)
@@ -154,6 +156,7 @@ class TestValidator(unittest.TestCase):
         line_dao_get.assert_called_once_with(user_line.line_id)
         user_line_dao_find_all_by_user_id.assert_called_once_with(user_line.user_id)
         line_has_secondary_user.assert_called_once_with(user_line)
+        validate_no_device.assert_called_once_with(user_line.line_id)
 
     @patch('xivo_dao.data_handler.user_line.dao.line_has_secondary_user')
     @patch('xivo_dao.data_handler.user_line.dao.find_all_by_user_id')

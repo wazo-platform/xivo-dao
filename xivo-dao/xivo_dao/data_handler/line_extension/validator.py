@@ -15,13 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.data_handler.line import dao as line_dao
-from xivo_dao.data_handler.extension import dao as extension_dao
-from xivo_dao.data_handler.line_extension import dao as line_extension_dao
-from xivo_dao.data_handler.exception import MissingParametersError
 from xivo_dao.data_handler.exception import ElementNotExistsError
-from xivo_dao.data_handler.exception import NonexistentParametersError
 from xivo_dao.data_handler.exception import InvalidParametersError
+from xivo_dao.data_handler.exception import MissingParametersError
+from xivo_dao.data_handler.exception import NonexistentParametersError
+from xivo_dao.data_handler.extension import dao as extension_dao
+from xivo_dao.data_handler.line import dao as line_dao
+from xivo_dao.data_handler.line_extension import dao as line_extension_dao
+from xivo_dao.data_handler.user_line_extension import helper as ule_helper
 
 
 def validate_associate(line_extension):
@@ -59,3 +60,4 @@ def validate_not_associated_to_extension(line_extension):
 
 def validate_dissociation(line_extension):
     validate_extension(line_extension)
+    ule_helper.validate_no_device(line_extension.line_id)

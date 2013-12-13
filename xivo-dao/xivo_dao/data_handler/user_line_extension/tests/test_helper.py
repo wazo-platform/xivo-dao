@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from xivo_dao.data_handler.exception import InvalidParametersError
+
 from hamcrest import assert_that, equal_to, has_property
 from mock import Mock, patch, sentinel
 from unittest import TestCase
@@ -102,3 +104,19 @@ class TestULEHelper(TestCase):
         extension_get.assert_called_once_with(extension.id)
         line_dissociate.assert_called_once_with(extension)
         extension_dissociate.assert_called_once_with(extension)
+
+    @patch('xivo_dao.data_handler.line.dao.get')
+    def test_validate_no_device_when_no_device_associated(self, line_get):
+        line_get.return_value = Mock(device=None)
+
+        helper.validate_no_device(sentinel.line_id)
+
+        line_get.assert_called_once_with(sentinel.line_id)
+
+    @patch('xivo_dao.data_handler.line.dao.get')
+    def test_validate_no_device_when_device_associated(self, line_get):
+        line_get.return_value = Mock(device='1234abcdefghijklmnopquesrtlkjh')
+
+        self.assertRaises(InvalidParametersError, helper.validate_no_device, sentinel.line_id)
+
+        line_get.assert_called_once_with(sentinel.line_id)
