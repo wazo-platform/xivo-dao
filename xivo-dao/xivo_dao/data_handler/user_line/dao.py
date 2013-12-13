@@ -20,6 +20,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 
 from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
+from xivo_dao.data_handler.line_extension import dao as line_extension_dao
 from xivo_dao.data_handler.user_line_extension.helper import delete_association_if_necessary
 from xivo_dao.data_handler.user_line.model import db_converter
 from xivo_dao.data_handler.user_line.exception import UserLineNotExistsError
@@ -125,6 +126,9 @@ def _associate_user_line(session, user_line):
 
 def _create_user_line(session, user_line):
     user_line_row = db_converter.to_source(user_line)
+    line_extension = line_extension_dao.find_by_line_id(user_line.line_id)
+    if line_extension:
+        user_line_row.extension_id = line_extension.extension_id
     session.add(user_line_row)
 
 

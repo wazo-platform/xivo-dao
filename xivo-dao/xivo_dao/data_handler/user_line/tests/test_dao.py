@@ -345,6 +345,46 @@ class TestAssociateUserLine(TestUserLineDao):
             has_property('main_user', True),
             has_property('main_line', True)))
 
+    def test_associate_secondary_user_with_line_and_extension(self):
+        main_user = self.add_user()
+        secondary_user = self.add_user()
+        line = self.add_line()
+        extension = self.add_extension()
+
+        main_user_line_row = self.add_user_line(user_id=main_user.id,
+                                                line_id=line.id,
+                                                extension_id=extension.id,
+                                                main_user=True,
+                                                main_line=True)
+
+        user_line = UserLine(user_id=secondary_user.id,
+                             line_id=line.id,
+                             main_user=False)
+
+        user_line_dao.associate(user_line)
+
+        main_row = (self.session.query(UserLineSchema)
+                    .filter(UserLineSchema.id == main_user_line_row.id)
+                    .first())
+
+        secondary_row = (self.session.query(UserLineSchema)
+                         .filter(UserLineSchema.line_id == line.id)
+                         .filter(UserLineSchema.user_id == secondary_user.id)
+                         .first())
+
+        assert_that(main_row, all_of(
+            has_property('user_id', main_user.id),
+            has_property('line_id', line.id),
+            has_property('extension_id', extension.id),
+            has_property('main_user', True),
+            has_property('main_line', True)))
+
+        assert_that(secondary_row, all_of(
+            has_property('user_id', secondary_user.id),
+            has_property('line_id', line.id),
+            has_property('extension_id', extension.id),
+            has_property('main_user', False),
+            has_property('main_line', True)))
 
     def test_associate_user_with_line_not_exist(self):
         user = self.add_user()
