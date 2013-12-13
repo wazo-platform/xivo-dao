@@ -159,10 +159,13 @@ def dissociate(session, user_line):
 
 
 def _dissasociate_user_line(session, user_line):
-    (session.query(UserLineSchema)
-            .filter(UserLineSchema.user_id == user_line.user_id)
-            .filter(UserLineSchema.line_id == user_line.line_id)
-            .update({'user_id': None}))
+    query = (session.query(UserLineSchema)
+             .filter(UserLineSchema.user_id == user_line.user_id)
+             .filter(UserLineSchema.line_id == user_line.line_id))
+    if line_has_secondary_user(user_line):
+        query.delete()
+    else:
+        query.update({'user_id': None})
 
 
 @daosession

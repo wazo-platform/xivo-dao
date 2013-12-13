@@ -411,7 +411,7 @@ class TestAssociateUserLine(TestUserLineDao):
 
 class TestDissociateUserLine(TestUserLineDao):
 
-    def test_dissociate_user_with_line_without_exten(self):
+    def test_dissociate_main_user_line_without_exten(self):
         user_line = self.add_user_line_without_exten()
 
         user_line_dao.dissociate(user_line)
@@ -420,9 +420,9 @@ class TestDissociateUserLine(TestUserLineDao):
                   .filter(UserLineSchema.id == user_line.id)
                   .first())
 
-        assert_that(result, equal_to(None))
+        assert_that(result, none())
 
-    def test_dissociate_user_line_with_exten(self):
+    def test_dissociate_main_user_line_with_exten(self):
         user_line = self.add_user_line_with_exten()
 
         user_line_dao.dissociate(user_line)
@@ -431,7 +431,42 @@ class TestDissociateUserLine(TestUserLineDao):
                   .filter(UserLineSchema.id == user_line.id)
                   .first())
 
-        assert_that(result.user_id, equal_to(None))
+        assert_that(result.user_id, none())
+
+    def test_dissociate_secondary_user_line(self):
+        main_user_line = self.add_user_line_with_exten()
+        secondary_user_line = self.prepare_secondary_user_line(main_user_line)
+
+        user_line_dao.dissociate(secondary_user_line)
+
+        self.assert_main_user_line_associated(main_user_line)
+        self.assert_secondary_user_line_deleted(secondary_user_line)
+
+    def prepare_secondary_user_line(self, main_user_line):
+        user_row = self.add_user()
+        self.add_user_line(user_id=user_row.id,
+                           line_id=main_user_line.line_id,
+                           extension_id=main_user_line.extension_id,
+                           main_user=False,
+                           main_line=True)
+
+        return UserLine(user_id=user_row.id, line_id=main_user_line.id, main_user=False)
+
+    def assert_main_user_line_associated(self, main_user_line):
+        row = (self.session.query(UserLineSchema)
+               .filter(UserLineSchema.user_id == main_user_line.user_id)
+               .filter(UserLineSchema.line_id == main_user_line.line_id)
+               .first())
+
+        assert_that(row, is_not(none()))
+
+    def assert_secondary_user_line_deleted(self, secondary_user_line):
+        row = (self.session.query(UserLineSchema)
+               .filter(UserLineSchema.user_id == secondary_user_line.user_id)
+               .filter(UserLineSchema.line_id == secondary_user_line.line_id)
+               .first())
+
+        assert_that(row, none())
 
 
 class TestLineHasSecondaryUser(TestUserLineDao):
