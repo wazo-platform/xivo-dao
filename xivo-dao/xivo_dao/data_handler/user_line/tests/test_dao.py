@@ -266,6 +266,9 @@ class TestAssociateUserLine(TestUserLineDao):
 
         assert_that(result.user_id, equal_to(user_line.user_id))
         assert_that(result.line_id, equal_to(user_line.line_id))
+        assert_that(result.extension_id, none())
+        assert_that(result.main_user, equal_to(True))
+        assert_that(result.main_line, equal_to(True))
 
     def test_associate_main_user_with_line(self):
         main_user = self.add_user()
@@ -284,6 +287,7 @@ class TestAssociateUserLine(TestUserLineDao):
 
         assert_that(result.user_id, equal_to(user_line.user_id))
         assert_that(result.line_id, equal_to(user_line.line_id))
+        assert_that(result.extension_id, none())
         assert_that(result.main_user, equal_to(user_line.main_user))
         assert_that(result.main_line, equal_to(user_line.main_line))
 
@@ -292,12 +296,11 @@ class TestAssociateUserLine(TestUserLineDao):
         secondary_user = self.add_user()
         line = self.add_line()
 
-        main_user_line = UserLine(user_id=main_user.id,
-                                  line_id=line.id,
-                                  main_user=True,
-                                  main_line=True)
-
-        user_line_dao.associate(main_user_line)
+        self.add_user_line(user_id=main_user.id,
+                           line_id=line.id,
+                           extension_id=None,
+                           main_user=True,
+                           main_line=True)
 
         secondary_user_line = UserLine(user_id=secondary_user.id,
                                        line_id=line.id,
@@ -306,19 +309,23 @@ class TestAssociateUserLine(TestUserLineDao):
 
         user_line_dao.associate(secondary_user_line)
 
-        result = self.session.query(UserLineSchema).filter(UserLineSchema.line_id == line.id).all()
+        result = (self.session.query(UserLineSchema)
+                  .filter(UserLineSchema.line_id == line.id)
+                  .all())
 
         assert_that(result, contains_inanyorder(
             all_of(has_property('user_id', main_user.id),
                    has_property('line_id', line.id),
+                   has_property('extension_id', None),
                    has_property('main_user', True),
                    has_property('main_line', True)),
             all_of(has_property('user_id', secondary_user.id),
                    has_property('line_id', line.id),
+                   has_property('extension_id', None),
                    has_property('main_user', False),
                    has_property('main_line', True))))
 
-    def test_associate_user_with_line_and_extension(self):
+    def test_associate_main_user_with_line_and_extension(self):
         user = self.add_user()
         line = self.add_line()
         extension = self.add_extension()
@@ -334,7 +341,10 @@ class TestAssociateUserLine(TestUserLineDao):
         assert_that(result, all_of(
             has_property('user_id', user.id),
             has_property('line_id', line.id),
-            has_property('extension_id', extension.id)))
+            has_property('extension_id', extension.id),
+            has_property('main_user', True),
+            has_property('main_line', True)))
+
 
     def test_associate_user_with_line_not_exist(self):
         user = self.add_user()
