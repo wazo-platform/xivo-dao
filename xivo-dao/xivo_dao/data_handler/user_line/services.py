@@ -44,9 +44,10 @@ def associate(user_line):
 
 
 def make_user_line_associations(user_line):
+    main_user_line = dao.find_main_user_line(user_line.line_id)
     line_extension = line_extension_dao.find_by_line_id(user_line.line_id)
     extension_id = line_extension.extension_id if line_extension else None
-    ule_helper.make_associations(user_line.user_id, user_line.line_id, extension_id)
+    ule_helper.make_associations(main_user_line.user_id, user_line.line_id, extension_id)
 
 
 def dissociate(user_line):

@@ -136,30 +136,49 @@ class TestUserLineAssociate(unittest.TestCase):
 
 
 class TestMakeUserLineAssociation(unittest.TestCase):
+
+    @patch('xivo_dao.data_handler.user_line.dao.find_main_user_line')
     @patch('xivo_dao.data_handler.line_extension.dao.find_by_line_id')
     @patch('xivo_dao.data_handler.user_line_extension.helper.make_associations')
-    def test_make_user_line_associations_with_extension(self, make_associations, line_extension):
+    def test_make_user_line_associations_with_extension(self,
+                                                        make_associations,
+                                                        line_extension,
+                                                        find_main_user_line):
         user_line = Mock(user_id=sentinel.user_id,
                          line_id=sentinel.line_id)
+        main_user_line = Mock(user_id=sentinel.main_user_id,
+                              line_id=sentinel.line_id)
+
         line_extension.return_value = Mock(line_id=sentinel.line_id,
                                            extension_id=sentinel.extension_id)
+        find_main_user_line.return_value = main_user_line
 
         user_line_services.make_user_line_associations(user_line)
 
+        find_main_user_line.assert_called_once_with(sentinel.line_id)
         line_extension.assert_called_once_with(sentinel.line_id)
-        make_associations.assert_called_once_with(sentinel.user_id, sentinel.line_id, sentinel.extension_id)
+        make_associations.assert_called_once_with(sentinel.main_user_id, sentinel.line_id, sentinel.extension_id)
 
+    @patch('xivo_dao.data_handler.user_line.dao.find_main_user_line')
     @patch('xivo_dao.data_handler.line_extension.dao.find_by_line_id')
     @patch('xivo_dao.data_handler.user_line_extension.helper.make_associations')
-    def test_make_user_line_associations_without_extension(self, make_associations, line_extension):
+    def test_make_user_line_associations_without_extension(self,
+                                                           make_associations,
+                                                           line_extension,
+                                                           find_main_user_line):
         user_line = Mock(user_id=sentinel.user_id,
                          line_id=sentinel.line_id)
+        main_user_line = Mock(user_id=sentinel.main_user_id,
+                              line_id=sentinel.line_id)
+
         line_extension.return_value = None
+        find_main_user_line.return_value = main_user_line
 
         user_line_services.make_user_line_associations(user_line)
 
+        find_main_user_line.assert_called_once_with(sentinel.line_id)
         line_extension.assert_called_once_with(sentinel.line_id)
-        make_associations.assert_called_once_with(sentinel.user_id, sentinel.line_id, None)
+        make_associations.assert_called_once_with(sentinel.main_user_id, sentinel.line_id, None)
 
 
 class TestUserLineDissociate(unittest.TestCase):
