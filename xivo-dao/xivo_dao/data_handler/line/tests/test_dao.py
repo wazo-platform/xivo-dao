@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, all_of, has_property, is_not, has_length
-from hamcrest.core import equal_to
+from hamcrest import assert_that, equal_to, all_of, has_property, is_not, has_length, none
 from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
 from xivo_dao.alchemy.ctipresences import CtiPresences
@@ -537,6 +536,46 @@ class TestLineDao(DAOTestCase):
 
         assert_that(session.commit.call_count, equal_to(0))
 
+    def test_delete_user_references_sip(self):
+        line_sip = self.add_usersip(name='toto',
+                                    username='toto',
+                                    secret='secret',
+                                    callerid='"Toto toto <1234>"',
+                                    setvar='XIVO_USERID=1')
+        line = self.add_line(protocol='sip',
+                             protocolid=line_sip.id,
+                             name=line_sip.username,
+                             context=line_sip.context)
+
+        line_dao.delete_user_references(line.id)
+
+        updated_row = (self.session.query(UserSIPSchema)
+                       .filter(UserSIPSchema.id == line_sip.id)
+                       .first())
+
+        assert_that(updated_row.callerid, none())
+        assert_that(updated_row.setvar, equal_to(''))
+
+    def test_delete_user_references_not_sip(self):
+        line_sccp_row = self.add_sccpline()
+        line_row = self.add_line(protocol='sccp',
+                                 protocolid=line_sccp_row.id)
+
+        line_dao.delete_user_references(line_row.id)
+
+        updated_row = (self.session.query(SCCPLineSchema)
+                       .get(line_sccp_row.id))
+
+        assert_that(updated_row.cid_name, is_not(equal_to('')))
+
+    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    def test_delete_user_references_db_error(self, Session):
+        session = Session.return_value = Mock()
+        session.commit.side_effect = SQLAlchemyError()
+        session.query.return_value.get.return_value = Mock(protocol='sip')
+
+        self.assertRaises(ElementEditionError, line_dao.delete_user_references, 1)
+
     def test_reset_device(self):
         line = self.add_line(device='1234')
 
@@ -694,7 +733,7 @@ class TestLineDao(DAOTestCase):
 
         assert_that(row, equal_to(None))
 
-    def test_unassociate_extension(self):
+    def test_dissociate_extension(self):
         exten = '1000'
         context = 'default'
         type = 'user'
@@ -711,13 +750,13 @@ class TestLineDao(DAOTestCase):
 
         extension = extension_dao.get(extension_row.id)
 
-        line_dao.unassociate_extension(extension)
+        line_dao.dissociate_extension(extension)
 
         line_row = self.session.query(LineSchema).get(line_row.id)
 
         self.assertEquals(line_row.number, '')
         self.assertEquals(line_row.context, '')
-        self.assertEquals(line_row.provisioningid, 0)
+        self.assertEquals(line_row.provisioningid, provisioningid)
 
     def test_associate_extension(self):
         exten = '1000'

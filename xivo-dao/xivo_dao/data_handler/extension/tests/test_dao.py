@@ -381,3 +381,32 @@ class TestAssociateToUser(TestExtensionDao):
         updated_extension = self.session.query(ExtensionSchema).get(extension.id)
         assert_that(updated_extension.type, equal_to('user'))
         assert_that(updated_extension.typeval, equal_to(str(user.id)))
+
+
+class TestDissociateExtension(TestExtensionDao):
+
+    def test_dissociate_extension(self):
+        extension = self.prepare_extension()
+
+        extension_dao.dissociate_extension(extension)
+
+        self.assert_extension_not_associated(extension)
+
+    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    def test_dissociate_extension_with_database_error(self, Session):
+        session = Mock()
+        session.commit.side_effect = SQLAlchemyError()
+        Session.return_value = session
+
+        extension = Mock(Extension, id=1)
+
+        self.assertRaises(ElementEditionError, extension_dao.dissociate_extension, extension)
+
+    def prepare_extension(self):
+        extension_row = self.add_extension(type='user', typeval='1234')
+        return Mock(Extension, id=extension_row.id)
+
+    def assert_extension_not_associated(self, extension):
+        updated_extension = self.session.query(ExtensionSchema).get(extension.id)
+        assert_that(updated_extension.type, equal_to('user'))
+        assert_that(updated_extension.typeval, equal_to('0'))

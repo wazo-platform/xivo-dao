@@ -20,6 +20,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 
 from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
+from xivo_dao.data_handler.line_extension import dao as line_extension_dao
 from xivo_dao.data_handler.user_line_extension.helper import delete_association_if_necessary
 from xivo_dao.data_handler.user_line.model import db_converter
 from xivo_dao.data_handler.user_line.exception import UserLineNotExistsError
@@ -29,16 +30,26 @@ from xivo_dao.helpers.db_manager import daosession
 
 
 @daosession
-def get_by_user_id_and_line_id(session, user_id, line_id):
+def find_by_user_id_and_line_id(session, user_id, line_id):
     row = (session.query(UserLineSchema)
            .filter(UserLineSchema.user_id == user_id)
            .filter(UserLineSchema.line_id == line_id)
            .first())
 
     if not row:
-        raise UserLineNotExistsError('UserLine', user_id=user_id, line_id=line_id)
+        return None
 
     return db_converter.to_model(row)
+
+
+@daosession
+def get_by_user_id_and_line_id(session, user_id, line_id):
+    user_line = find_by_user_id_and_line_id(user_id, line_id)
+
+    if not user_line:
+        raise UserLineNotExistsError('UserLine', user_id=user_id, line_id=line_id)
+
+    return user_line
 
 
 @daosession
@@ -115,6 +126,9 @@ def _associate_user_line(session, user_line):
 
 def _create_user_line(session, user_line):
     user_line_row = db_converter.to_source(user_line)
+    line_extension = line_extension_dao.find_by_line_id(user_line.line_id)
+    if line_extension:
+        user_line_row.extension_id = line_extension.extension_id
     session.add(user_line_row)
 
 
@@ -145,10 +159,13 @@ def dissociate(session, user_line):
 
 
 def _dissasociate_user_line(session, user_line):
-    (session.query(UserLineSchema)
-            .filter(UserLineSchema.user_id == user_line.user_id)
-            .filter(UserLineSchema.line_id == user_line.line_id)
-            .update({'user_id': None}))
+    query = (session.query(UserLineSchema)
+             .filter(UserLineSchema.user_id == user_line.user_id)
+             .filter(UserLineSchema.line_id == user_line.line_id))
+    if line_has_secondary_user(user_line):
+        query.delete()
+    else:
+        query.update({'user_id': None})
 
 
 @daosession
@@ -159,13 +176,3 @@ def line_has_secondary_user(session, user_line):
              .count())
 
     return count > 0
-
-
-@daosession
-def extension_associated_to_this_user_line(session, user_line):
-    row = (session.query(UserLineSchema.extension_id)
-           .filter(UserLineSchema.user_id == user_line.user_id)
-           .filter(UserLineSchema.line_id == user_line.line_id)
-           .first())
-
-    return row.extension_id is not None

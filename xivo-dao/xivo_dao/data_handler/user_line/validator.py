@@ -21,6 +21,7 @@ from xivo_dao.data_handler.exception import MissingParametersError, \
 from xivo_dao.data_handler.user import dao as user_dao
 from xivo_dao.data_handler.line import dao as line_dao
 from xivo_dao.data_handler.user_line import dao as user_line_dao
+from xivo_dao.data_handler.user_line_extension import helper as ule_helper
 
 
 def validate_association(user_line):
@@ -36,6 +37,7 @@ def validate_dissociation(user_line):
     _validate_line_id(user_line)
     _validate_user_has_line(user_line)
     _is_allowed_to_dissociate(user_line)
+    ule_helper.validate_no_device(user_line.line_id)
 
 
 def _validate_missing_parameters(user_line):
@@ -80,17 +82,11 @@ def _validate_user_has_line(user_line):
 
 
 def _validate_user_not_associated_with_line(user_line):
-    try:
-        user_line_dao.get_by_user_id_and_line_id(user_line.user_id, user_line.line_id)
-    except ElementNotExistsError:
-        pass
-    else:
+    existing = user_line_dao.find_all_by_user_id(user_line.user_id)
+    if len(existing) > 0:
         raise InvalidParametersError(['user is already associated to this line'])
 
 
 def _is_allowed_to_dissociate(user_line):
     if user_line.main_user is True and user_line_dao.line_has_secondary_user(user_line):
         raise InvalidParametersError(['There are secondary users associated to this line'])
-
-    if user_line_dao.extension_associated_to_this_user_line(user_line):
-        raise InvalidParametersError(['There is an extension associated to this line'])

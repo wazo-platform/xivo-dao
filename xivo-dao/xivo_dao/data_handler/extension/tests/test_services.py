@@ -35,6 +35,17 @@ class TestExtension(unittest.TestCase):
         find_all_dao.assert_called_once_with(order=None, commented=True)
         self.assertEquals(result, expected)
 
+    @patch('xivo_dao.data_handler.extension.dao.find_by_exten_context')
+    def test_find_by_exten_context(self, find_by_exten_context):
+        expected = Extension(exten='1000', context='default')
+
+        find_by_exten_context.return_value = expected
+
+        result = extension_services.find_by_exten_context(expected.exten, expected.context)
+
+        find_by_exten_context.assert_called_once_with(expected.exten, expected.context)
+        self.assertEquals(result, expected)
+
     def test_create_no_properties(self):
         extension = Extension(exten='1234')
 
@@ -166,10 +177,9 @@ class TestExtension(unittest.TestCase):
 
         self.assertRaises(ElementCreationError, extension_services.create, extension)
 
-    @patch('xivo_dao.data_handler.line.dao.unassociate_extension')
     @patch('xivo_dao.data_handler.extension.notifier.deleted')
     @patch('xivo_dao.data_handler.extension.dao.delete')
-    def test_delete(self, extension_dao_delete, extension_notifier_deleted, unassociate_extension):
+    def test_delete(self, extension_dao_delete, extension_notifier_deleted):
         exten = 'extension'
         context = 'toto'
         extension = Extension(id=1,
@@ -178,6 +188,5 @@ class TestExtension(unittest.TestCase):
 
         extension_services.delete(extension)
 
-        unassociate_extension.assert_called_once_with(extension)
         extension_dao_delete.assert_called_once_with(extension)
         extension_notifier_deleted.assert_called_once_with(extension)

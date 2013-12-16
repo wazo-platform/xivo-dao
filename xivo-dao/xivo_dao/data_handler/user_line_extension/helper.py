@@ -18,6 +18,7 @@
 from xivo import caller_id
 from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
 from xivo_dao.data_handler.extension import dao as extension_dao
+from xivo_dao.data_handler.exception import InvalidParametersError
 from xivo_dao.data_handler.line import dao as line_dao
 from xivo_dao.data_handler.user import dao as user_dao
 
@@ -36,11 +37,21 @@ def make_associations(main_user_id, line_id, extension_id):
     exten = extension.exten if extension else None
 
     line.callerid = caller_id.assemble_caller_id(main_user.fullname, exten)
+    line_dao.edit(line)
 
     if extension:
         extension_dao.associate_to_user(main_user, extension)
-        line.number = extension.exten
-        line.context = extension.context
+        line_dao.associate_extension(extension, line.id)
         line_dao.update_xivo_userid(line, main_user)
 
-    line_dao.edit(line)
+
+def delete_extension_associations(line_id, extension_id):
+    extension = extension_dao.get(extension_id)
+    line_dao.dissociate_extension(extension)
+    extension_dao.dissociate_extension(extension)
+
+
+def validate_no_device(line_id):
+    line = line_dao.get(line_id)
+    if line.device:
+        raise InvalidParametersError(['A device is still associated to the line'])
