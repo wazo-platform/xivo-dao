@@ -23,6 +23,7 @@ setup(
         'xivo_dao.data_handler.extension',
         'xivo_dao.data_handler.language',
         'xivo_dao.data_handler.line',
+        'xivo_dao.data_handler.line_extension',
         'xivo_dao.data_handler.user',
         'xivo_dao.data_handler.user_line',
         'xivo_dao.data_handler.user_line_extension',
