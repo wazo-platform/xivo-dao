@@ -41,9 +41,9 @@ def _provd_client():
 
 def _get_provd_config():
     config = {}
-    with open('/etc/pf-xivo/common.conf', 'r') as fobj:
+    with open('/etc/xivo/common.conf', 'r') as fobj:
         for line in fobj:
             if not line.startswith('#') and line.startswith('XIVO_PROVD'):
                 (key, _, value) = line.partition("=")
-                config[key] = value.replace('"','')
+                config[key] = value.replace('"', '')
     return config
