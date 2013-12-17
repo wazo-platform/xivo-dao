@@ -38,6 +38,10 @@ def get_by_line_id(line_id):
     return dao.get_by_line_id(line_id)
 
 
+def find_by_extension_id(extension_id):
+    return dao.find_by_extension_id(extension_id)
+
+
 def dissociate(line_extension):
     validator.validate_dissociation(line_extension)
     dao.dissociate(line_extension)
