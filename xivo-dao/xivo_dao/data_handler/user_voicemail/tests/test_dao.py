@@ -51,7 +51,7 @@ USER_TABLES = [UserFeatures, LineSchema, ContextInclude, AgentFeatures,
                SCCPDeviceSchema]
 
 
-class TestAssociateUserVoicemail(DAOTestCase):
+class TestUserVoicemail(DAOTestCase):
 
     tables = USER_TABLES + [
         VoicemailSchema,
@@ -60,6 +60,59 @@ class TestAssociateUserVoicemail(DAOTestCase):
 
     def setUp(self):
         self.empty_tables()
+
+    def create_user_and_voicemail(self, firstname, exten, context):
+        user_line_row = self.add_user_line_with_exten(firstname='King', exten='1000', context='default')
+        user_row = self.session.query(UserFeatures).get(user_line_row.user_id)
+        voicemail_row = self.add_voicemail(mailbox='1000', context='default')
+        self.link_user_and_voicemail(user_row, voicemail_row.uniqueid)
+        return user_row, voicemail_row
+
+    def prepare_user_and_line(self, exten, protocol):
+        user_line_row = self.add_user_line_with_exten(firstname='King',
+                                                      exten=exten,
+                                                      context='default',
+                                                      protocol=protocol)
+
+        user_id = user_line_row.user_id
+        line_id = user_line_row.line_id
+        protocol_id = self.session.query(LineSchema).get(user_line_row.line_id).protocolid
+
+        if protocol == 'sip':
+            self.add_usersip(id=protocol_id, context='default')
+        elif protocol == 'sccp':
+            self.add_sccpdevice(id=protocol_id,
+                                name='SEP001122334455',
+                                device='SEP001122334455',
+                                line=exten)
+
+        return user_id, line_id, protocol_id
+
+    def prepare_voicemail(self, number):
+        voicemail_row = self.add_voicemail(mailbox=number, context='default')
+        return voicemail_row.uniqueid
+
+    def prepare_main_and_secondary_user(self, number, protocol):
+        main_user_row = self.add_user(firstname='Main')
+        secondary_user_row = self.add_user(firstname='Secondary')
+        line_row = self.add_line(number=number)
+        extension_row = self.add_extension(exten=number)
+        self.add_usersip(id=line_row.protocolid, context='default')
+
+        self.add_user_line(user_id=main_user_row.id,
+                           line_id=line_row.id,
+                           extension_id=extension_row.id,
+                           main_user=True)
+
+        self.add_user_line(user_id=secondary_user_row.id,
+                           line_id=line_row.id,
+                           extension_id=extension_row.id,
+                           main_user=False)
+
+        return main_user_row.id, secondary_user_row.id, line_row.id, line_row.protocolid
+
+
+class TestAssociateUserVoicemail(TestUserVoicemail):
 
     def test_associate_with_sip_line(self):
         extension = '1000'
@@ -105,49 +158,6 @@ class TestAssociateUserVoicemail(DAOTestCase):
         self.assert_user_was_associated_with_voicemail(user_id, voicemail_id, enabled=True)
         self.assert_sccp_line_was_associated_with_voicemail(extension, voicemail_id)
 
-    def prepare_user_and_line(self, exten, protocol):
-        user_line_row = self.add_user_line_with_exten(firstname='King',
-                                                      exten=exten,
-                                                      context='default',
-                                                      protocol=protocol)
-
-        user_id = user_line_row.user_id
-        line_id = user_line_row.line_id
-        protocol_id = self.session.query(LineSchema).get(user_line_row.line_id).protocolid
-
-        if protocol == 'sip':
-            self.add_usersip(id=protocol_id, context='default')
-        elif protocol == 'sccp':
-            self.add_sccpdevice(id=protocol_id,
-                                name='SEP001122334455',
-                                device='SEP001122334455',
-                                line=exten)
-
-        return user_id, line_id, protocol_id
-
-    def prepare_voicemail(self, number):
-        voicemail_row = self.add_voicemail(mailbox=number, context='default')
-        return voicemail_row.uniqueid
-
-    def prepare_main_and_secondary_user(self, number, protocol):
-        main_user_row = self.add_user(firstname='Main')
-        secondary_user_row = self.add_user(firstname='Secondary')
-        line_row = self.add_line(number=number)
-        extension_row = self.add_extension(exten=number)
-        self.add_usersip(id=line_row.protocolid, context='default')
-
-        self.add_user_line(user_id=main_user_row.id,
-                           line_id=line_row.id,
-                           extension_id=extension_row.id,
-                           main_user=True)
-
-        self.add_user_line(user_id=secondary_user_row.id,
-                           line_id=line_row.id,
-                           extension_id=extension_row.id,
-                           main_user=False)
-
-        return main_user_row.id, secondary_user_row.id, line_row.id, line_row.protocolid
-
     def assert_user_was_associated_with_voicemail(self, user_id, voicemail_id, enabled):
         result_user_row = self.session.query(UserFeatures).get(user_id)
 
@@ -173,15 +183,7 @@ class TestAssociateUserVoicemail(DAOTestCase):
         assert_that(sccp_device_row.voicemail, equal_to(voicemail_row.mailbox))
 
 
-class TestUserVoicemailGetByUserId(DAOTestCase):
-
-    tables = USER_TABLES + [
-        VoicemailSchema,
-        LineSchema
-    ]
-
-    def setUp(self):
-        self.empty_tables()
+class TestUserVoicemailGetByUserId(TestUserVoicemail):
 
     def test_get_by_user_id_no_users_or_voicemail(self):
         self.assertRaises(ElementNotExistsError, user_voicemail_dao.get_by_user_id, 1)
