@@ -97,6 +97,20 @@ def get_by_user_id(session, user_id):
 
 
 @daosession
+def find_by_voicemail_id(session, voicemail_id):
+    row = (session.query(UserSchema.id.label('user_id'),
+                         UserSchema.voicemailid.label('voicemail_id'),
+                         UserSchema.enablevoicemail)
+           .filter(UserSchema.voicemailid == voicemail_id)
+           .first())
+
+    if not row:
+        return None
+
+    return db_converter.to_model(row)
+
+
+@daosession
 def dissociate(session, user_voicemail):
     session.begin()
     _dissociate_voicemail_from_user(session, user_voicemail.user_id)

@@ -208,23 +208,35 @@ class TestUserVoicemailGetByUserId(TestUserVoicemail):
                     has_property('user_id', user_row.id),
                     has_property('voicemail_id', voicemail_row.uniqueid))
 
-    def create_user_and_voicemail(self, firstname, exten, context):
-        user_line_row = self.add_user_line_with_exten(firstname='King', exten='1000', context='default')
-        user_row = self.session.query(UserFeatures).get(user_line_row.user_id)
+
+class TestUserVoicemailFindByVoicemailId(TestUserVoicemail):
+
+    def test_find_by_voicemail_id_no_voicemail(self):
+        result = user_voicemail_dao.find_by_voicemail_id(1)
+
+        assert_that(result, none())
+
+    def test_find_by_voicemail_id_voicemail_without_user(self):
         voicemail_row = self.add_voicemail(mailbox='1000', context='default')
-        self.link_user_and_voicemail(user_row, voicemail_row.uniqueid)
-        return user_row, voicemail_row
+
+        result = user_voicemail_dao.find_by_voicemail_id(voicemail_row.uniqueid)
+
+        assert_that(result, none())
+
+    def test_find_by_voicemail_id_when_voicemail_associated_to_user(self):
+        user_row, voicemail_row = self.create_user_and_voicemail(firstname='Dolly',
+                                                                 exten='1000',
+                                                                 context='default')
+
+        result = user_voicemail_dao.find_by_voicemail_id(voicemail_row.uniqueid)
+
+        assert_that(result, instance_of(UserVoicemail))
+        assert_that(result,
+                    has_property('user_id', user_row.id),
+                    has_property('voicemail_id', voicemail_row.uniqueid))
 
 
-class TestDissociateUserVoicemail(DAOTestCase):
-
-    tables = USER_TABLES + [
-        VoicemailSchema,
-        LineSchema
-    ]
-
-    def setUp(self):
-        self.empty_tables()
+class TestDissociateUserVoicemail(TestUserVoicemail):
 
     def test_dissociate_from_user_with_sip_line(self):
         extension = '1000'
