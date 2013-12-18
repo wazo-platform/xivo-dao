@@ -21,11 +21,7 @@ from mock import Mock, patch, ANY
 from xivo_dao.data_handler.user import association as user_association
 from xivo_dao.data_handler.voicemail.model import Voicemail
 from xivo_dao.data_handler.user.model import User
-from xivo_dao.data_handler.exception import ElementNotExistsError, \
-    ElementCreationError
-from xivo_dao.data_handler.line.model import LineSIP
-from xivo_dao.data_handler.extension.model import Extension
-from xivo_dao.data_handler.user_line_extension.model import UserLineExtension
+from xivo_dao.data_handler.exception import ElementNotExistsError
 
 
 class TestUserAssociation(unittest.TestCase):
