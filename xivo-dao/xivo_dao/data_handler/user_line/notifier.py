@@ -62,6 +62,6 @@ def bus_event_associated(user_line):
 def bus_event_dissociated(user_line):
     bus_event = event.UserLineDissociatedEvent(user_line.user_id,
                                                user_line.line_id,
-                                              user_line.main_user,
-                                              user_line.main_line)
+                                               user_line.main_user,
+                                               user_line.main_line)
     bus_manager.send_bus_command(bus_event)
