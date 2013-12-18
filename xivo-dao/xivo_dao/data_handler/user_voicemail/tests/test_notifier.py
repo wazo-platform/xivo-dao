@@ -90,6 +90,6 @@ class TestUserVoicemailNotifier(unittest.TestCase):
         notifier.bus_event_dissociated(user_voicemail)
 
         UserVoiceailDissociatedEvent.assert_called_once_with(user_voicemail.user_id,
-                                                            user_voicemail.voicemail_id,
-                                                            False)
+                                                             user_voicemail.voicemail_id,
+                                                             False)
         send_bus_command.assert_called_once_with(new_event)
