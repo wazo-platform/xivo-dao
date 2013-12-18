@@ -19,7 +19,7 @@ from xivo_dao.data_handler.exception import MissingParametersError, ElementNotEx
     InvalidParametersError
 from xivo_dao.data_handler.user import dao as user_dao
 from xivo_dao.data_handler.user_voicemail import dao as user_voicemail_dao
-from xivo_dao.data_handler.user_line_extension import dao as ule_dao
+from xivo_dao.data_handler.user_line import dao as user_line_dao
 from xivo_dao.data_handler.voicemail import dao as voicemail_dao
 
 
@@ -58,7 +58,7 @@ def _validate_voicemail_id(user_voicemail):
 
 
 def _validate_user_has_line(user_voicemail):
-    user_lines = ule_dao.find_all_by_user_id(user_voicemail.user_id)
+    user_lines = user_line_dao.find_all_by_user_id(user_voicemail.user_id)
     if len(user_lines) == 0:
         raise InvalidParametersError(['user with id %s does not have any line' % user_voicemail.user_id])
 

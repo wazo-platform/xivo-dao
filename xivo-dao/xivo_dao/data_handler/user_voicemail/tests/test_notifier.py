@@ -18,7 +18,7 @@
 import unittest
 from mock import patch, Mock
 
-from xivo_dao.data_handler.user_line_extension.model import UserLineExtension
+from xivo_dao.data_handler.user_line.model import UserLine
 from xivo_dao.data_handler.user_voicemail.model import UserVoicemail
 from xivo_dao.data_handler.user_voicemail import notifier
 
@@ -36,11 +36,11 @@ class TestUserVoicemailNotifier(unittest.TestCase):
         bus_event_associated.assert_called_once_with(user_voicemail)
 
     @patch('xivo_dao.helpers.sysconfd_connector.exec_request_handlers')
-    @patch('xivo_dao.data_handler.user_line_extension.dao.find_all_by_user_id')
+    @patch('xivo_dao.data_handler.user_line.dao.find_all_by_user_id')
     def test_send_sysconf_command_association_updated(self, find_all_by_user_id, exec_request_handlers):
         user_voicemail = UserVoicemail(user_id=1, voicemail_id=2)
-        user_line_1 = Mock(UserLineExtension, line_id=3)
-        user_line_2 = Mock(UserLineExtension, line_id=4)
+        user_line_1 = Mock(UserLine, line_id=3)
+        user_line_2 = Mock(UserLine, line_id=4)
 
         find_all_by_user_id.return_value = [user_line_1, user_line_2]
 

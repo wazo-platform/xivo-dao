@@ -20,8 +20,8 @@ import unittest
 from mock import patch, Mock
 from xivo_dao.data_handler.exception import InvalidParametersError, \
     MissingParametersError, NonexistentParametersError, ElementNotExistsError
-from xivo_dao.data_handler.user_line_extension.model import UserLineExtension
 
+from xivo_dao.data_handler.user_line.model import UserLine
 from xivo_dao.data_handler.user_voicemail import validator
 from xivo_dao.data_handler.user_voicemail.model import UserVoicemail
 
@@ -57,52 +57,52 @@ class TestValidator(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.user.dao.get')
     @patch('xivo_dao.data_handler.voicemail.dao.get')
-    @patch('xivo_dao.data_handler.user_line_extension.dao.find_all_by_user_id')
-    def test_validate_association_voicemail_when_user_has_no_line(self, ule_find_all_by_user_id, voicemail_get, user_get):
+    @patch('xivo_dao.data_handler.user_line.dao.find_all_by_user_id')
+    def test_validate_association_voicemail_when_user_has_no_line(self, find_all_by_user_id, voicemail_get, user_get):
         user_voicemail = UserVoicemail(user_id=1, voicemail_id=2)
 
-        ule_find_all_by_user_id.return_value = []
+        find_all_by_user_id.return_value = []
 
         self.assertRaises(InvalidParametersError, validator.validate_association, user_voicemail)
-        ule_find_all_by_user_id.assert_called_once_with(user_voicemail.user_id)
+        find_all_by_user_id.assert_called_once_with(user_voicemail.user_id)
 
     @patch('xivo_dao.data_handler.user.dao.get')
     @patch('xivo_dao.data_handler.voicemail.dao.get')
-    @patch('xivo_dao.data_handler.user_line_extension.dao.find_all_by_user_id')
+    @patch('xivo_dao.data_handler.user_line.dao.find_all_by_user_id')
     @patch('xivo_dao.data_handler.user_voicemail.dao.get_by_user_id')
     def test_validate_association_voicemail_when_user_already_has_a_voicemail(self,
                                                                               voicemail_get_by_user_id,
-                                                                              ule_find_all_by_user_id,
+                                                                              find_all_by_user_id,
                                                                               voicemail_get,
                                                                               user_get):
         user_voicemail = UserVoicemail(user_id=1, voicemail_id=2)
 
-        ule_find_all_by_user_id.return_value = [Mock(UserLineExtension)]
+        find_all_by_user_id.return_value = [Mock(UserLine)]
         voicemail_get_by_user_id.side_effect = Mock(UserVoicemail)
 
         self.assertRaises(InvalidParametersError, validator.validate_association, user_voicemail)
         voicemail_get_by_user_id.assert_called_once_with(user_voicemail.user_id)
-        ule_find_all_by_user_id.assert_called_once_with(user_voicemail.user_id)
+        find_all_by_user_id.assert_called_once_with(user_voicemail.user_id)
 
     @patch('xivo_dao.data_handler.user.dao.get')
     @patch('xivo_dao.data_handler.voicemail.dao.get')
-    @patch('xivo_dao.data_handler.user_line_extension.dao.find_all_by_user_id')
+    @patch('xivo_dao.data_handler.user_line.dao.find_all_by_user_id')
     @patch('xivo_dao.data_handler.user_voicemail.dao.get_by_user_id')
     def test_validate_association(self,
                                   voicemail_get_by_user_id,
-                                  ule_find_all_by_user_id,
+                                  find_all_by_user_id,
                                   voicemail_get,
                                   user_get):
         user_voicemail = UserVoicemail(user_id=1, voicemail_id=2)
 
-        ule_find_all_by_user_id.return_value = [Mock(UserLineExtension)]
+        find_all_by_user_id.return_value = [Mock(UserLine)]
         voicemail_get_by_user_id.side_effect = ElementNotExistsError('user_voicemail',
                                                                      user_id=user_voicemail.user_id)
 
         validator.validate_association(user_voicemail)
         user_get.assert_called_once_with(user_voicemail.user_id)
         voicemail_get.assert_called_once_with(user_voicemail.voicemail_id)
-        ule_find_all_by_user_id.assert_called_once_with(user_voicemail.user_id)
+        find_all_by_user_id.assert_called_once_with(user_voicemail.user_id)
         voicemail_get_by_user_id.assert_called_once_with(user_voicemail.user_id)
 
     @patch('xivo_dao.data_handler.user.dao.get')

@@ -21,7 +21,7 @@ from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema
 
 from xivo_dao.data_handler.exception import ElementNotExistsError
-from xivo_dao.data_handler.user_line_extension import dao as user_line_dao
+from xivo_dao.data_handler.user_line import dao as user_line_dao
 from xivo_dao.data_handler.user_voicemail.model import db_converter
 from xivo_dao.data_handler.user_voicemail.exception import UserVoicemailNotExistsError
 from xivo_dao.data_handler.voicemail import dao as voicemail_dao
