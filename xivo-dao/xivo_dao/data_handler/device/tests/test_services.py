@@ -25,7 +25,7 @@ from xivo_dao.data_handler.device import services as device_services
 from xivo_dao.data_handler.device.model import Device, DeviceOrdering
 from xivo_dao.data_handler.extension.model import Extension
 from xivo_dao.data_handler.line.model import LineSIP, LineSCCP
-from xivo_dao.data_handler.user_line_extension.model import UserLineExtension
+from xivo_dao.data_handler.line_extension.model import LineExtension
 from xivo_dao.data_handler.exception import ElementCreationError, \
     InvalidParametersError, ElementDeletionError, \
     ProvdError
@@ -305,9 +305,9 @@ class TestDeviceServices(unittest.TestCase):
         self.assertEquals(build_line_for_device.call_count, 0)
 
     @patch('xivo_dao.data_handler.extension.dao.get')
-    @patch('xivo_dao.data_handler.user_line_extension.dao.find_all_by_line_id')
+    @patch('xivo_dao.data_handler.line_extension.dao.find_by_line_id')
     @patch('xivo_dao.helpers.provd_connector.config_manager')
-    def test_build_line_for_device_with_a_sip_line(self, config_manager, ule_find_all_by_line_id, extension_dao_get):
+    def test_build_line_for_device_with_a_sip_line(self, config_manager, find_by_line_id, extension_dao_get):
         username = '1234'
         secret = 'password'
         exten = '1250'
@@ -334,11 +334,8 @@ class TestDeviceServices(unittest.TestCase):
 
         config_registrar_dict = self._give_me_a_provd_configregistrar(proxy_ip)
         config_manager().get.side_effect = (provd_base_config, config_registrar_dict)
-        ule_find_all_by_line_id.return_value = [UserLineExtension(user_id=1,
-                                                                  line_id=line.id,
-                                                                  extension_id=3,
-                                                                  main_user=True,
-                                                                  main_line=True)]
+        find_by_line_id.return_value = LineExtension(line_id=line.id,
+                                                     extension_id=3)
         extension_dao_get.return_value = Extension(exten=exten,
                                                    context=context)
 
@@ -365,9 +362,9 @@ class TestDeviceServices(unittest.TestCase):
         config_manager().update.assert_called_with(expected_arg)
 
     @patch('xivo_dao.data_handler.extension.dao.get')
-    @patch('xivo_dao.data_handler.user_line_extension.dao.find_all_by_line_id')
+    @patch('xivo_dao.data_handler.line_extension.dao.find_by_line_id')
     @patch('xivo_dao.helpers.provd_connector.config_manager')
-    def test_build_line_for_device_with_a_sip_line_with_proxy_backup(self, config_manager, ule_find_all_by_line_id, extension_dao_get):
+    def test_build_line_for_device_with_a_sip_line_with_proxy_backup(self, config_manager, find_by_line_id, extension_dao_get):
         username = '1234'
         secret = 'password'
         exten = '1250'
@@ -395,11 +392,8 @@ class TestDeviceServices(unittest.TestCase):
 
         config_registrar_dict = self._give_me_a_provd_configregistrar(proxy_ip, proxy_backup)
         config_manager().get.side_effect = (provd_base_config, config_registrar_dict)
-        ule_find_all_by_line_id.return_value = [UserLineExtension(user_id=1,
-                                                                  line_id=line.id,
-                                                                  extension_id=3,
-                                                                  main_user=True,
-                                                                  main_line=True)]
+        find_by_line_id.return_value = LineExtension(line_id=line.id,
+                                                     extension_id=3)
         extension_dao_get.return_value = Extension(exten=exten,
                                                    context=context)
 
@@ -427,9 +421,9 @@ class TestDeviceServices(unittest.TestCase):
         config_manager().get.assert_any_call(configregistrar)
         config_manager().update.assert_called_with(expected_arg)
 
-    @patch('xivo_dao.data_handler.user_line_extension.dao.find_all_by_line_id')
+    @patch('xivo_dao.data_handler.line_extension.dao.find_by_line_id')
     @patch('xivo_dao.helpers.provd_connector.config_manager')
-    def test_build_line_for_device_with_a_sccp_line(self, config_manager, ule_find_all_by_line_id):
+    def test_build_line_for_device_with_a_sccp_line(self, config_manager, find_by_line_id):
         exten = '1250'
         context = 'default'
         callerid = 'Francis Dagobert <%s>' % exten
@@ -449,11 +443,8 @@ class TestDeviceServices(unittest.TestCase):
 
         config_registrar_dict = self._give_me_a_provd_configregistrar(proxy_ip)
         config_manager().get.side_effect = (provd_base_config, config_registrar_dict)
-        ule_find_all_by_line_id.return_value = [UserLineExtension(user_id=1,
-                                                                  line_id=line.id,
-                                                                  extension_id=3,
-                                                                  main_user=True,
-                                                                  main_line=True)]
+        find_by_line_id.return_value = LineExtension(line_id=line.id,
+                                                     extension_id=3)
 
         expected_arg = {
             "raw_config": {
@@ -469,9 +460,9 @@ class TestDeviceServices(unittest.TestCase):
         config_manager().get.assert_any_call(configregistrar)
         config_manager().update.assert_called_with(expected_arg)
 
-    @patch('xivo_dao.data_handler.user_line_extension.dao.find_all_by_line_id')
+    @patch('xivo_dao.data_handler.line_extension.dao.find_by_line_id')
     @patch('xivo_dao.helpers.provd_connector.config_manager')
-    def test_build_line_for_device_with_a_sccp_line_with_proxy_backup(self, config_manager, ule_find_all_by_line_id):
+    def test_build_line_for_device_with_a_sccp_line_with_proxy_backup(self, config_manager, find_by_line_id):
         exten = '1250'
         context = 'default'
         callerid = 'Francis Dagobert <%s>' % exten
@@ -492,11 +483,8 @@ class TestDeviceServices(unittest.TestCase):
 
         config_registrar_dict = self._give_me_a_provd_configregistrar(proxy_ip, proxy_backup)
         config_manager().get.side_effect = (provd_base_config, config_registrar_dict)
-        ule_find_all_by_line_id.return_value = [UserLineExtension(user_id=1,
-                                                                  line_id=line.id,
-                                                                  extension_id=3,
-                                                                  main_user=True,
-                                                                  main_line=True)]
+        find_by_line_id.return_value = LineExtension(line_id=line.id,
+                                                     extension_id=3)
 
         expected_arg = {
             "raw_config": {

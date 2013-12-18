@@ -23,7 +23,7 @@ from . import notifier
 from urllib2 import URLError
 
 from xivo_dao.helpers import provd_connector
-from xivo_dao.data_handler.user_line_extension import dao as user_line_extension_dao
+from xivo_dao.data_handler.line_extension import dao as line_extension_dao
 from xivo_dao.data_handler.extension import dao as extension_dao
 from xivo_dao.data_handler.line import dao as line_dao
 from xivo_dao.data_handler.exception import InvalidParametersError, ProvdError
@@ -100,10 +100,10 @@ def build_line_for_device(device, line):
     provd_config_manager = provd_connector.config_manager()
     config = provd_config_manager.get(device.id)
     confregistrar = provd_config_manager.get(line.configregistrar)
-    ules = user_line_extension_dao.find_all_by_line_id(line.id)
-    for ule in ules:
+    line_extension = line_extension_dao.find_by_line_id(line.id)
+    if line_extension:
         if line.protocol == 'sip':
-            extension = extension_dao.get(ule.extension_id)
+            extension = extension_dao.get(line_extension.extension_id)
             provd_converter.populate_sip_line(config, confregistrar, line, extension)
         elif line.protocol == 'sccp':
             provd_converter.populate_sccp_line(config, confregistrar)
