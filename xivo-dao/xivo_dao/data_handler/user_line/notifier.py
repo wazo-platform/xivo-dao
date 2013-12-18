@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_bus.resources.user_line import event
-from xivo_dao.data_handler.user_line_extension import dao as user_line_dao
+from xivo_dao.data_handler.user_line import dao as user_line_dao
 from xivo_dao.helpers import sysconfd_connector
 from xivo_dao.helpers import bus_manager
 

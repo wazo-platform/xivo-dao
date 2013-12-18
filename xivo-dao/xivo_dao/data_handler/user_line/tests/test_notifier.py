@@ -35,7 +35,7 @@ class TestUserLineNotifier(unittest.TestCase):
         bus_event_associated.assert_called_once_with(user_line)
 
     @patch('xivo_dao.helpers.sysconfd_connector.exec_request_handlers')
-    @patch('xivo_dao.data_handler.user_line_extension.dao.find_all_by_user_id')
+    @patch('xivo_dao.data_handler.user_line.dao.find_all_by_user_id')
     def test_send_sysconf_command_association_updated(self, find_all_by_user_id, exec_request_handlers):
         user_line = UserLine(user_id=1, line_id=2)
         user_line_1 = Mock(UserLine, line_id=3)
