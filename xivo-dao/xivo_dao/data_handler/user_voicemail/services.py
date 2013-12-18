@@ -29,6 +29,10 @@ def get_by_user_id(user_id):
     return dao.get_by_user_id(user_id)
 
 
+def find_by_user_id(user_id):
+    return dao.find_by_user_id(user_id)
+
+
 def find_by_voicemail_id(voicemail_id):
     return dao.find_by_voicemail_id(voicemail_id)
 

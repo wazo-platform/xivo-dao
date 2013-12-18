@@ -209,6 +209,38 @@ class TestUserVoicemailGetByUserId(TestUserVoicemail):
                     has_property('voicemail_id', voicemail_row.uniqueid))
 
 
+class TestUserVoicemailFindByUserId(TestUserVoicemail):
+
+    def test_find_by_user_id_no_users_or_voicemail(self):
+        result = user_voicemail_dao.find_by_user_id(1)
+
+        assert_that(result, none())
+
+    def test_find_by_user_id_with_user_without_line_or_voicemail(self):
+        user_row = self.add_user(firstname='King')
+
+        result = user_voicemail_dao.find_by_user_id(user_row.id)
+
+        assert_that(result, none())
+
+    def test_find_by_user_id_with_user_without_voicemail(self):
+        user_row = self.add_user_line_with_exten(firstname='King', exten='1000', context='default')
+
+        result = user_voicemail_dao.find_by_user_id(user_row.id)
+
+        assert_that(result, none())
+
+    def test_find_by_user_id_with_voicemail(self):
+        user_row, voicemail_row = self.create_user_and_voicemail(firstname='King', exten='1000', context='default')
+
+        result = user_voicemail_dao.find_by_user_id(user_row.id)
+
+        assert_that(result, instance_of(UserVoicemail))
+        assert_that(result,
+                    has_property('user_id', user_row.id),
+                    has_property('voicemail_id', voicemail_row.uniqueid))
+
+
 class TestUserVoicemailFindByVoicemailId(TestUserVoicemail):
 
     def test_find_by_voicemail_id_no_voicemail(self):

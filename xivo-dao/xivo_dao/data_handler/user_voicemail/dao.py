@@ -79,19 +79,38 @@ def _associate_voicemail_with_protocol(session, voicemail, line_id):
          .update({'voicemail': voicemail.number}))
 
 
-@daosession
-def get_by_user_id(session, user_id):
+def _fetch_by_user_id(session, user_id):
     row = (session.query(UserSchema.id.label('user_id'),
                          UserSchema.voicemailid.label('voicemail_id'),
                          UserSchema.enablevoicemail)
            .filter(UserSchema.id == user_id)
            .first())
 
+    return row
+
+
+@daosession
+def get_by_user_id(session, user_id):
+    row = _fetch_by_user_id(session, user_id)
+
     if not row:
         raise ElementNotExistsError('User', id=user_id)
 
     if row.voicemail_id is None or row.voicemail_id == 0:
         raise UserVoicemailNotExistsError.from_user_id(user_id)
+
+    return db_converter.to_model(row)
+
+
+@daosession
+def find_by_user_id(session, user_id):
+    row = _fetch_by_user_id(session, user_id)
+
+    if not row:
+        return None
+
+    if row.voicemail_id is None or row.voicemail_id == 0:
+        return None
 
     return db_converter.to_model(row)
 
