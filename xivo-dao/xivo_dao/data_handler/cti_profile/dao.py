@@ -18,6 +18,7 @@
 from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.data_handler.cti_profile.model import db_converter
+from xivo_dao.data_handler.exception import ElementNotExistsError
 
 
 @daosession
@@ -28,4 +29,6 @@ def find_all(session):
 @daosession
 def get(session, profile_id):
     row = session.query(CtiProfile).filter(CtiProfile.id == profile_id).first()
+    if row is None:
+        raise ElementNotExistsError('cti_profile')
     return db_converter.to_model(row)

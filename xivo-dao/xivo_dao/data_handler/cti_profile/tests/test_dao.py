@@ -24,6 +24,7 @@ from hamcrest.core.core.isequal import equal_to
 from xivo_dao.alchemy.ctipresences import CtiPresences
 from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
 from hamcrest.core.core.isnone import not_none
+from xivo_dao.data_handler.exception import ElementNotExistsError
 
 class TestCtiProfile(DAOTestCase):
     tables = [CtiProfileSchema, CtiPresences, CtiPhoneHintsGroup]
@@ -54,3 +55,6 @@ class TestCtiProfile(DAOTestCase):
         assert_that(result, not_none())
         assert_that(result.id, equal_to(1))
         assert_that(result.name, equal_to('Profil 01'))
+
+    def test_get_unknown_user(self):
+        self.assertRaises(ElementNotExistsError, dao.get, 1)
