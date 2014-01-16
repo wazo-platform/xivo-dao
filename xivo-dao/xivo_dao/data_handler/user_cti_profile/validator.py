@@ -26,6 +26,11 @@ def validate_association(user_cti_profile):
     _validate_user_exists(user_cti_profile)
     _validate_user_has_no_profile(user_cti_profile)
 
+def validate_dissociation(user_cti_profile):
+    _validate_missing_params(user_cti_profile)
+    _validate_user_exists(user_cti_profile)
+    _validate_user_has_a_profile(user_cti_profile)
+
 def _validate_missing_params(user_cti_profile):
     missing = user_cti_profile.missing_parameters()
     if len(missing) > 0:
@@ -38,10 +43,7 @@ def _validate_cti_profile_exists(user_cti_profile):
         raise NonexistentParametersError(cti_profile=user_cti_profile.cti_profile_id)
 
 def _validate_user_exists(user_cti_profile):
-    try:
-        user_dao.get(user_cti_profile.user_id)
-    except ElementNotExistsError:
-        raise NonexistentParametersError(user=user_cti_profile.user_id)
+    user_dao.get(user_cti_profile.user_id)
 
 def _validate_user_has_no_profile(user_cti_profile):
     try:
@@ -49,3 +51,6 @@ def _validate_user_has_no_profile(user_cti_profile):
         raise InvalidParametersError(['user with id %s already has a CTI profile' % user_cti_profile.user_id])
     except ElementNotExistsError:
         return
+
+def _validate_user_has_a_profile(user_cti_profile):
+    user_cti_profile_dao.get_profile_by_userid(user_cti_profile.user_id)

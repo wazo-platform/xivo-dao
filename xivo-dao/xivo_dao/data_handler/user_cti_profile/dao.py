@@ -17,7 +17,8 @@
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.alchemy.cti_profile import CtiProfile as CtiProfileSchema
-from xivo_dao.data_handler.exception import ElementNotExistsError
+from xivo_dao.data_handler.cti_profile.model import db_converter as cti_profile_db_converter
+from xivo_dao.data_handler.user_cti_profile.exceptions import UserCtiProfileNotExistsError
 
 @daosession
 def associate(session, user_cti_profile):
@@ -31,5 +32,14 @@ def associate(session, user_cti_profile):
 def get_profile_by_userid(session, userid):
     user = session.query(UserSchema).filter(UserSchema.id == userid).first()
     if user.cti_profile_id is None:
-        raise ElementNotExistsError('user_cti_profile')
-    return session.query(CtiProfileSchema).filter(CtiProfileSchema.id == user.cti_profile_id).first()
+        raise UserCtiProfileNotExistsError('user_cti_profile')
+    row = session.query(CtiProfileSchema).filter(CtiProfileSchema.id == user.cti_profile_id).first()
+    return cti_profile_db_converter.to_model(row)
+
+@daosession
+def dissociate(session, user_cti_profile):
+    session.begin()
+    session.query(UserSchema).filter(UserSchema.id == user_cti_profile.user_id).update({
+                                                                            'cti_profile_id': None
+                                                                            })
+    session.commit()
