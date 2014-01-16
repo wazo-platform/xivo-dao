@@ -23,6 +23,7 @@ from xivo_dao.data_handler.cti_profile import dao
 from hamcrest.core.core.isequal import equal_to
 from xivo_dao.alchemy.ctipresences import CtiPresences
 from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
+from hamcrest.core.core.isnone import not_none
 
 class TestCtiProfile(DAOTestCase):
     tables = [CtiProfileSchema, CtiPresences, CtiPhoneHintsGroup]
@@ -43,3 +44,13 @@ class TestCtiProfile(DAOTestCase):
         assert_that(result[0].name, equal_to('Profil 01'))
         assert_that(result[1].id, equal_to(2))
         assert_that(result[1].name, equal_to('Profil 02'))
+
+    def test_get(self):
+        profile_row = CtiProfileSchema(id=1, name='Profil 01')
+        self.add_me(profile_row)
+
+        result = dao.get(1)
+
+        assert_that(result, not_none())
+        assert_that(result.id, equal_to(1))
+        assert_that(result.name, equal_to('Profil 01'))

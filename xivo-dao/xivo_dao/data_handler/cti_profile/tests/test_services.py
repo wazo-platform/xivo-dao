@@ -34,3 +34,13 @@ class TestCtiProfileServices(unittest.TestCase):
 
         assert_that(res1, same_instance(profile1))
         assert_that(res2, same_instance(profile2))
+
+    @patch('xivo_dao.data_handler.cti_profile.dao.get')
+    def test_get(self, profile_dao_get):
+        profile = CtiProfile()
+        profile_dao_get.return_value = profile
+
+        result = services.get(1)
+
+        assert_that(result, same_instance(profile))
+        profile_dao_get.assert_called_with(1)
