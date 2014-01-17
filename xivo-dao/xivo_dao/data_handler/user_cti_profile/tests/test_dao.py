@@ -40,6 +40,7 @@ from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.sccpdevice import SCCPDevice
 from xivo_dao.data_handler.user_cti_profile.exceptions import UserCtiProfileNotExistsError
 from hamcrest.core.core.isnone import none
+from xivo_dao.data_handler.exception import ElementNotExistsError
 
 
 class TestUserCtiProfile(DAOTestCase):
@@ -76,6 +77,9 @@ class TestUserCtiProfile(DAOTestCase):
     def test_get_by_user_id_not_found(self):
         user = self.add_user()
         self.assertRaises(UserCtiProfileNotExistsError, user_cti_profile_dao.get_profile_by_userid, user.id)
+
+    def test_get_by_user_id_no_user(self):
+        self.assertRaises(ElementNotExistsError, user_cti_profile_dao.get_profile_by_userid, 123)
 
     def test_dissociate(self):
         cti_profile = CtiProfileSchema(id=2, name='Test')
