@@ -1,0 +1,17 @@
+xivo-dao (13.02~20130131.124922.ae70e6f-2) squeeze-xivo-skaro-dev; urgency=low
+
+  * add dependency on xivo-config (needed for database migration)
+
+ -- Etienne Lessard <elessard@avencall.com>  Thu, 31 Jan 2013 10:46:09 -0500
+
+xivo-dao (12.22~20121106.150720.b8e539d-2) squeeze-xivo-skaro-dev; urgency=low
+
+  * fix depends, now on xivo-lib-python
+
+ -- Nicolas HICHER (atarakt) <nhicher@proformatique.com>  Wed, 07 Nov 2012 11:26:22 -0500
+
+xivo-dao (1.2.11~20120618.202346.5e41943-1.1) squeeze-xivo-skaro-dev; urgency=low
+
+  * Initial Release.
+
+ -- cabunar <cabunar@avencall.com>  Mon, 09 Jul 2012 13:19:34 -0400
