@@ -24,11 +24,15 @@ def _init_bus():
     global bus_client
     bus_client = BusCtlClient()
     bus_client.connect()
-    bus_client.declare_xivo_exchange()
+    exchange = 'xivo'
+    exchange_type = 'fanout'
+    bus_client.declare_exchange(exchange, exchange_type, durable=False)
 
 
 def send_bus_command(command):
     # TODO rename to send_bus_event
     if bus_client is None:
         _init_bus()
-    bus_client.publish_xivo_event(command)
+    exchange = 'xivo'
+    binding_key = ''
+    bus_client.publish_event(exchange, binding_key, command)
