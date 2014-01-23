@@ -14,7 +14,9 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
+
 from xivo_dao.data_handler.exception import ElementNotExistsError
+
 
 class UserCtiProfileNotExistsError(ElementNotExistsError):
     pass

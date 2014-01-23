@@ -22,14 +22,14 @@ from hamcrest.core.core.issame import same_instance
 from xivo_dao.data_handler.cti_profile import services
 from hamcrest.core import assert_that
 
+
 class TestCtiProfileServices(unittest.TestCase):
-    
     @patch('xivo_dao.data_handler.cti_profile.dao.find_all')
     def test_find_all(self, profile_dao_find_all):
         profile1 = CtiProfile()
         profile2 = CtiProfile()
         profile_dao_find_all.return_value = [profile1, profile2]
-        
+
         [res1, res2] = services.find_all()
 
         assert_that(res1, same_instance(profile1))

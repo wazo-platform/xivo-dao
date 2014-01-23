@@ -24,7 +24,8 @@ def associated(user_cti_profile):
                                                     user_cti_profile.cti_profile_id)
     bus_manager.send_bus_command(bus_event)
 
+
 def dissociated(user_cti_profile):
     bus_event = event.UserCtiProfileDissociatedEvent(user_cti_profile.user_id,
-                                                    user_cti_profile.cti_profile_id)
+                                                     user_cti_profile.cti_profile_id)
     bus_manager.send_bus_command(bus_event)

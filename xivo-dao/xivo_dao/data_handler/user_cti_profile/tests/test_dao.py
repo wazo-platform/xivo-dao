@@ -14,8 +14,9 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
-from hamcrest.core import assert_that
-from hamcrest.core.core.isequal import equal_to
+
+from hamcrest import assert_that, equal_to, none
+
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.callfilter import Callfilter
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
@@ -24,33 +25,44 @@ from xivo_dao.alchemy.cti_profile import CtiProfile as CtiProfileSchema
 from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
 from xivo_dao.alchemy.ctipresences import CtiPresences
 from xivo_dao.alchemy.dialaction import Dialaction
+from xivo_dao.alchemy.extension import Extension
+from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.phonefunckey import PhoneFunckey
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.rightcallmember import RightCallMember
+from xivo_dao.alchemy.sccpdevice import SCCPDevice
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.userfeatures import UserFeatures
-
+from xivo_dao.alchemy.usersip import UserSIP
+from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.data_handler.user_cti_profile import dao as user_cti_profile_dao
+from xivo_dao.data_handler.user_cti_profile.exceptions import UserCtiProfileNotExistsError
 from xivo_dao.data_handler.user_cti_profile.model import UserCtiProfile
 from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao.alchemy.linefeatures import LineFeatures
-from xivo_dao.alchemy.extension import Extension
-from xivo_dao.alchemy.usersip import UserSIP
-from xivo_dao.alchemy.sccpdevice import SCCPDevice
-from xivo_dao.data_handler.user_cti_profile.exceptions import UserCtiProfileNotExistsError
-from hamcrest.core.core.isnone import none
-from xivo_dao.data_handler.exception import ElementNotExistsError
 
 
 class TestUserCtiProfile(DAOTestCase):
-    
-    tables = [UserFeatures, LineFeatures, ContextInclude, AgentFeatures,
-               CtiPresences, CtiPhoneHintsGroup, CtiProfileSchema, QueueMember,
-               RightCallMember, Callfiltermember, Callfilter, Dialaction,
-               PhoneFunckey, SchedulePath, Extension, UserLine, UserSIP,
-               SCCPDevice]
-    
+
+    tables = [UserFeatures,
+              LineFeatures,
+              ContextInclude,
+              AgentFeatures,
+              CtiPresences,
+              CtiPhoneHintsGroup,
+              CtiProfileSchema,
+              QueueMember,
+              RightCallMember,
+              Callfiltermember,
+              Callfilter,
+              Dialaction,
+              PhoneFunckey,
+              SchedulePath,
+              Extension,
+              UserLine,
+              UserSIP,
+              SCCPDevice]
+
     def setUp(self):
         self.cleanTables()
 
@@ -61,7 +73,7 @@ class TestUserCtiProfile(DAOTestCase):
         user_cti_profile = UserCtiProfile(user_id=user.id, cti_profile_id=2)
 
         user_cti_profile_dao.associate(user_cti_profile)
-        
+
         assert_that(user.cti_profile_id, equal_to(2))
 
     def test_get_by_userid(self):

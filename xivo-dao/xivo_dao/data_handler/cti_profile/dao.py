@@ -26,6 +26,7 @@ def find_all(session):
     rows = session.query(CtiProfile).all()
     return [db_converter.to_model(row) for row in rows]
 
+
 @daosession
 def get(session, profile_id):
     row = session.query(CtiProfile).filter(CtiProfile.id == profile_id).first()

@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
+
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.alchemy.cti_profile import CtiProfile as CtiProfileSchema
@@ -21,13 +22,15 @@ from xivo_dao.data_handler.cti_profile.model import db_converter as cti_profile_
 from xivo_dao.data_handler.user_cti_profile.exceptions import UserCtiProfileNotExistsError
 from xivo_dao.data_handler.exception import ElementNotExistsError
 
+
 @daosession
 def associate(session, user_cti_profile):
     session.begin()
-    session.query(UserSchema).filter(UserSchema.id == user_cti_profile.user_id).update({
-                                                                            'cti_profile_id': user_cti_profile.cti_profile_id
-                                                                            })
+    (session.query(UserSchema)
+     .filter(UserSchema.id == user_cti_profile.user_id)
+     .update({'cti_profile_id': user_cti_profile.cti_profile_id}))
     session.commit()
+
 
 @daosession
 def get_profile_by_userid(session, userid):
@@ -39,10 +42,11 @@ def get_profile_by_userid(session, userid):
     row = session.query(CtiProfileSchema).filter(CtiProfileSchema.id == user.cti_profile_id).first()
     return cti_profile_db_converter.to_model(row)
 
+
 @daosession
 def dissociate(session, user_cti_profile):
     session.begin()
-    session.query(UserSchema).filter(UserSchema.id == user_cti_profile.user_id).update({
-                                                                            'cti_profile_id': None
-                                                                            })
+    (session.query(UserSchema)
+     .filter(UserSchema.id == user_cti_profile.user_id)
+     .update({'cti_profile_id': None}))
     session.commit()

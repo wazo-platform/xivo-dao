@@ -15,10 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest.core import assert_that
-from hamcrest.core.core.isequal import equal_to
-from mock import patch, Mock
 import unittest
+
+from hamcrest import assert_that, equal_to
+from mock import patch, Mock
 
 from xivo_dao.data_handler.user_cti_profile import services as user_cti_profile_services
 from xivo_dao.data_handler.user_cti_profile.model import UserCtiProfile

@@ -15,16 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.tests.test_dao import DAOTestCase
+from hamcrest import assert_that, equal_to, has_length
 from xivo_dao.alchemy.cti_profile import CtiProfile as CtiProfileSchema
-from hamcrest.library.object.haslength import has_length
-from hamcrest.core import assert_that
-from xivo_dao.data_handler.cti_profile import dao
-from hamcrest.core.core.isequal import equal_to
-from xivo_dao.alchemy.ctipresences import CtiPresences
 from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
-from hamcrest.core.core.isnone import not_none
+from xivo_dao.alchemy.ctipresences import CtiPresences
+from xivo_dao.data_handler.cti_profile import dao
 from xivo_dao.data_handler.exception import ElementNotExistsError
+from xivo_dao.tests.test_dao import DAOTestCase
+
 
 class TestCtiProfile(DAOTestCase):
     tables = [CtiProfileSchema, CtiPresences, CtiPhoneHintsGroup]
@@ -52,7 +50,6 @@ class TestCtiProfile(DAOTestCase):
 
         result = dao.get(1)
 
-        assert_that(result, not_none())
         assert_that(result.id, equal_to(1))
         assert_that(result.name, equal_to('Profil 01'))
 

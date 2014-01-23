@@ -23,6 +23,7 @@ DB_TO_MODEL_MAPPING = {
     'cti_profile_id': 'cti_profile_id'
 }
 
+
 class UserCtiProfile(NewModel):
     MANDATORY = [
         'user_id',
@@ -35,6 +36,7 @@ class UserCtiProfile(NewModel):
     ]
 
     _RELATION = {}
+
 
 class CtiProfileDbConverter(DatabaseConverter):
 

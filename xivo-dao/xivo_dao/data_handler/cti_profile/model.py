@@ -30,6 +30,7 @@ class CtiProfileDbConverter(DatabaseConverter):
     def __init__(self):
         DatabaseConverter.__init__(self, self.DB_TO_MODEL_MAPPING, CtiProfileSchema, CtiProfile)
 
+
 class CtiProfile(NewModel):
 
     MANDATORY = [

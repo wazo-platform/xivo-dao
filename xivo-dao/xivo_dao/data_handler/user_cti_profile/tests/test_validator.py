@@ -16,12 +16,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import unittest
+
+from mock import patch
 from xivo_dao.data_handler.exception import MissingParametersError, \
     ElementNotExistsError, NonexistentParametersError, InvalidParametersError
 
 from xivo_dao.data_handler.user_cti_profile import validator
 from xivo_dao.data_handler.user_cti_profile.model import UserCtiProfile
-from mock import patch
 from xivo_dao.data_handler.user_cti_profile.exceptions import UserCtiProfileNotExistsError
 
 

@@ -17,8 +17,10 @@
 
 from xivo_dao.data_handler.cti_profile import dao
 
+
 def find_all():
     return dao.find_all()
+
 
 def get(profile_id):
     return dao.get(profile_id)

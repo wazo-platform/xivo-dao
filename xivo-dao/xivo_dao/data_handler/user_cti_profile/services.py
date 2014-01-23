@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
+
 from xivo_dao.data_handler.user_cti_profile import validator, dao, notifier
 from xivo_dao.data_handler.user_cti_profile.model import UserCtiProfile
 
@@ -24,9 +25,11 @@ def associate(user_cti_profile):
     notifier.associated(user_cti_profile)
     return user_cti_profile
 
+
 def get(user_id):
     cti_profile = dao.get_profile_by_userid(user_id)
     return UserCtiProfile(user_id=user_id, cti_profile_id=cti_profile.id)
+
 
 def dissociate(user_cti_profile):
     validator.validate_dissociation(user_cti_profile)
