@@ -35,11 +35,14 @@ from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.alchemy.usersip import UserSIP
-from xivo_dao.data_handler.exception import ElementNotExistsError
+from xivo_dao.data_handler.exception import ElementNotExistsError, \
+    ElementEditionError
 from xivo_dao.data_handler.user_cti_profile import dao as user_cti_profile_dao
 from xivo_dao.data_handler.user_cti_profile.exceptions import UserCtiProfileNotExistsError
 from xivo_dao.data_handler.user_cti_profile.model import UserCtiProfile
 from xivo_dao.tests.test_dao import DAOTestCase
+from mock import patch, Mock
+from sqlalchemy.exc import SQLAlchemyError
 
 
 class TestUserCtiProfile(DAOTestCase):
@@ -76,6 +79,18 @@ class TestUserCtiProfile(DAOTestCase):
 
         assert_that(user.cti_profile_id, equal_to(2))
 
+    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    def test_associate_with_error(self, Session):
+        session = Mock()
+        session.commit.side_effect = SQLAlchemyError()
+        Session.return_value = session
+
+        user_cti_profile = UserCtiProfile(user_id=1, cti_profile_id=2)
+
+        self.assertRaises(ElementEditionError, user_cti_profile_dao.associate, user_cti_profile)
+        session.begin.assert_called_once_with()
+        session.rollback.assert_called_once_with()
+
     def test_get_by_userid(self):
         cti_profile = CtiProfileSchema(id=2, name='Test')
         self.add_me(cti_profile)
@@ -102,3 +117,15 @@ class TestUserCtiProfile(DAOTestCase):
         user_cti_profile_dao.dissociate(user_cti_profile)
 
         assert_that(user.cti_profile_id, none())
+
+    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    def test_dissociate_with_error(self, Session):
+        session = Mock()
+        session.commit.side_effect = SQLAlchemyError()
+        Session.return_value = session
+
+        user_cti_profile = UserCtiProfile(user_id=1, cti_profile_id=2)
+
+        self.assertRaises(ElementEditionError, user_cti_profile_dao.dissociate, user_cti_profile)
+        session.begin.assert_called_once_with()
+        session.rollback.assert_called_once_with()
