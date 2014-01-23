@@ -20,16 +20,22 @@ from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.alchemy.cti_profile import CtiProfile as CtiProfileSchema
 from xivo_dao.data_handler.cti_profile.model import db_converter as cti_profile_db_converter
 from xivo_dao.data_handler.user_cti_profile.exceptions import UserCtiProfileNotExistsError
-from xivo_dao.data_handler.exception import ElementNotExistsError
+from xivo_dao.data_handler.exception import ElementNotExistsError, \
+    ElementEditionError
+from sqlalchemy.exc import SQLAlchemyError
 
 
 @daosession
 def associate(session, user_cti_profile):
     session.begin()
-    (session.query(UserSchema)
-     .filter(UserSchema.id == user_cti_profile.user_id)
-     .update({'cti_profile_id': user_cti_profile.cti_profile_id}))
-    session.commit()
+    try:
+        (session.query(UserSchema)
+         .filter(UserSchema.id == user_cti_profile.user_id)
+         .update({'cti_profile_id': user_cti_profile.cti_profile_id}))
+        session.commit()
+    except SQLAlchemyError as e:
+        session.rollback()
+        raise ElementEditionError('UserCtiProfile', e)
 
 
 @daosession
@@ -46,7 +52,11 @@ def get_profile_by_userid(session, userid):
 @daosession
 def dissociate(session, user_cti_profile):
     session.begin()
-    (session.query(UserSchema)
-     .filter(UserSchema.id == user_cti_profile.user_id)
-     .update({'cti_profile_id': None}))
-    session.commit()
+    try:
+        (session.query(UserSchema)
+         .filter(UserSchema.id == user_cti_profile.user_id)
+         .update({'cti_profile_id': None}))
+        session.commit()
+    except SQLAlchemyError as e:
+        session.rollback()
+        raise ElementEditionError('UserCtiProfile', e)
