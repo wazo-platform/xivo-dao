@@ -16,16 +16,32 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_bus.resources.user_cti_profile import event
-from xivo_dao.helpers import bus_manager
+from xivo_dao.helpers import bus_manager, sysconfd_connector
 
 
 def associated(user_cti_profile):
     bus_event = event.UserCtiProfileAssociatedEvent(user_cti_profile.user_id,
                                                     user_cti_profile.cti_profile_id)
     bus_manager.send_bus_command(bus_event)
+    _send_sysconfd_command(user_cti_profile)
 
 
 def dissociated(user_cti_profile):
     bus_event = event.UserCtiProfileDissociatedEvent(user_cti_profile.user_id,
                                                      user_cti_profile.cti_profile_id)
     bus_manager.send_bus_command(bus_event)
+    _send_sysconfd_command(user_cti_profile)
+
+
+def _send_sysconfd_command(user_cti_profile):
+    command_dict = {
+                    'ctibus': _generate_cti_commands(user_cti_profile),
+                    'dird': [],
+                    'ipbx': [],
+                    'agentbus': [],
+                }
+    sysconfd_connector.exec_request_handlers(command_dict)
+
+
+def _generate_cti_commands(user_cti_profile):
+    return ['xivo[user,edit,%d]' % user_cti_profile.user_id]

@@ -22,28 +22,42 @@ from xivo_dao.data_handler.user_cti_profile import notifier
 from xivo_dao.data_handler.user_cti_profile.model import UserCtiProfile
 
 
-class TestUserVoicemailNotifier(unittest.TestCase):
+class TestUserCtiProfileNotifier(unittest.TestCase):
 
+    def setUp(self):
+        self.sysconfd_command = {
+                                'ctibus': [],
+                                'dird': [],
+                                'ipbx': [],
+                                'agentbus': [],
+                            }
+
+    @patch('xivo_dao.helpers.sysconfd_connector.exec_request_handlers')
     @patch('xivo_bus.resources.user_cti_profile.event.UserCtiProfileAssociatedEvent')
     @patch('xivo_dao.helpers.bus_manager.send_bus_command')
-    def test_associated(self, send_bus_command, UserCtiProfileAssociatedEvent):
+    def test_associated(self, send_bus_command, UserCtiProfileAssociatedEvent, exec_request_handler):
         new_event = UserCtiProfileAssociatedEvent.return_value = Mock()
         user_cti_profile = UserCtiProfile(user_id=1, cti_profile_id=2)
+        self.sysconfd_command['ctibus'] = ['xivo[user,edit,1]']
 
         notifier.associated(user_cti_profile)
 
         UserCtiProfileAssociatedEvent.assert_called_once_with(user_cti_profile.user_id,
                                                               user_cti_profile.cti_profile_id)
         send_bus_command.assert_called_once_with(new_event)
+        exec_request_handler.assert_called_once_with(self.sysconfd_command)
 
+    @patch('xivo_dao.helpers.sysconfd_connector.exec_request_handlers')
     @patch('xivo_bus.resources.user_cti_profile.event.UserCtiProfileDissociatedEvent')
     @patch('xivo_dao.helpers.bus_manager.send_bus_command')
-    def test_dissociated(self, send_bus_command, UserCtiProfileDissociatedEvent):
+    def test_dissociated(self, send_bus_command, UserCtiProfileDissociatedEvent, exec_request_handler):
         new_event = UserCtiProfileDissociatedEvent.return_value = Mock()
         user_cti_profile = UserCtiProfile(user_id=1, cti_profile_id=2)
+        self.sysconfd_command['ctibus'] = ['xivo[user,edit,1]']
 
         notifier.dissociated(user_cti_profile)
 
         UserCtiProfileDissociatedEvent.assert_called_once_with(user_cti_profile.user_id,
                                                                user_cti_profile.cti_profile_id)
         send_bus_command.assert_called_once_with(new_event)
+        exec_request_handler.assert_called_once_with(self.sysconfd_command)
