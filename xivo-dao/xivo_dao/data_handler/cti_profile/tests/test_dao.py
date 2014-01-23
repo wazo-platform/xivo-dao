@@ -55,3 +55,17 @@ class TestCtiProfile(DAOTestCase):
 
     def test_get_unknown_user(self):
         self.assertRaises(ElementNotExistsError, dao.get, 1)
+        
+    def test_get_id_by_name(self):
+        profile_row1 = CtiProfileSchema(id=1, name='Profil 01')
+        profile_row2 = CtiProfileSchema(id=2, name='Profil 02')
+        self.add_me(profile_row1)
+        self.add_me(profile_row2)
+        
+        result = dao.get_id_by_name('Profil 02')
+        
+        assert_that(result, equal_to(2))
+        
+    def test_get_id_by_name_not_found(self):
+        self.assertRaises(ElementNotExistsError, dao.get_id_by_name, 'Profil 01')
+

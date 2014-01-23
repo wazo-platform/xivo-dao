@@ -33,3 +33,11 @@ def get(session, profile_id):
     if row is None:
         raise ElementNotExistsError('cti_profile')
     return db_converter.to_model(row)
+
+
+@daosession
+def get_id_by_name(session, cti_profile_name):
+    row = session.query(CtiProfile).filter(CtiProfile.name == cti_profile_name).first()
+    if row is None:
+        raise ElementNotExistsError('cti_profile')
+    return row.id
