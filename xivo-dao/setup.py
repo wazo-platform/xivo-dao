@@ -29,6 +29,8 @@ setup(
         'xivo_dao.data_handler.user_line_extension',
         'xivo_dao.data_handler.user_voicemail',
         'xivo_dao.data_handler.voicemail',
+        'xivo_dao.data_handler.cti_profile',
+        'xivo_dao.data_handler.user_cti_profile',
         'xivo_dao.helpers',
     ]
 )
