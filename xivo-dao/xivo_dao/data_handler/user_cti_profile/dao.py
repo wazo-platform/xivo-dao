@@ -39,12 +39,12 @@ def associate(session, user_cti_profile):
 
 
 @daosession
-def get_profile_by_userid(session, userid):
+def find_profile_by_userid(session, userid):
     user = session.query(UserSchema).filter(UserSchema.id == userid).first()
     if user is None:
         raise ElementNotExistsError('user', id=userid)
     if user.cti_profile_id is None:
-        raise UserCtiProfileNotExistsError('user_cti_profile')
+        return None
     row = session.query(CtiProfileSchema).filter(CtiProfileSchema.id == user.cti_profile_id).first()
     return cti_profile_db_converter.to_model(row)
 

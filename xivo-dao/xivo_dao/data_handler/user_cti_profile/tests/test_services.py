@@ -23,6 +23,8 @@ from mock import patch, Mock
 from xivo_dao.data_handler.user_cti_profile import services as user_cti_profile_services
 from xivo_dao.data_handler.user_cti_profile.model import UserCtiProfile
 from xivo_dao.data_handler.cti_profile.model import CtiProfile
+from xivo_dao.data_handler.exception import ElementNotExistsError
+from xivo_dao.data_handler.user_cti_profile.exceptions import UserCtiProfileNotExistsError
 
 
 class TestUserCtiProfile(unittest.TestCase):
@@ -40,16 +42,23 @@ class TestUserCtiProfile(unittest.TestCase):
         dao_associate.assert_called_once_with(user_cti_profile)
         notifier_associated.assert_called_with(user_cti_profile)
 
-    @patch('xivo_dao.data_handler.user_cti_profile.dao.get_profile_by_userid')
-    def test_get(self, dao_get_profile_by_userid):
+    @patch('xivo_dao.data_handler.user_cti_profile.dao.find_profile_by_userid')
+    def test_get(self, dao_find_profile_by_userid):
         userid = 1
         cti_profile = CtiProfile(id=2)
-        dao_get_profile_by_userid.return_value = cti_profile
+        dao_find_profile_by_userid.return_value = cti_profile
 
         result = user_cti_profile_services.get(userid)
 
         assert_that(result.user_id, equal_to(userid))
         assert_that(result.cti_profile_id, equal_to(cti_profile.id))
+
+    @patch('xivo_dao.data_handler.user_cti_profile.dao.find_profile_by_userid')
+    def test_get_not_found(self, dao_find_profile_by_userid):
+        userid = 1
+        dao_find_profile_by_userid.return_value = None
+
+        self.assertRaises(UserCtiProfileNotExistsError, user_cti_profile_services.get, userid)
 
     @patch('xivo_dao.data_handler.user_cti_profile.validator.validate_dissociation')
     @patch('xivo_dao.data_handler.user_cti_profile.dao.dissociate')

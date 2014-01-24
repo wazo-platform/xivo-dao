@@ -38,7 +38,6 @@ from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementEditionError
 from xivo_dao.data_handler.user_cti_profile import dao as user_cti_profile_dao
-from xivo_dao.data_handler.user_cti_profile.exceptions import UserCtiProfileNotExistsError
 from xivo_dao.data_handler.user_cti_profile.model import UserCtiProfile
 from xivo_dao.tests.test_dao import DAOTestCase
 from mock import patch, Mock
@@ -96,17 +95,19 @@ class TestUserCtiProfile(DAOTestCase):
         self.add_me(cti_profile)
         user = self.add_user(cti_profile_id=2)
 
-        result = user_cti_profile_dao.get_profile_by_userid(user.id)
+        result = user_cti_profile_dao.find_profile_by_userid(user.id)
 
         assert_that(result.name, equal_to('Test'))
         assert_that(result.id, equal_to(2))
 
     def test_get_by_user_id_not_found(self):
         user = self.add_user()
-        self.assertRaises(UserCtiProfileNotExistsError, user_cti_profile_dao.get_profile_by_userid, user.id)
+
+        result = user_cti_profile_dao.find_profile_by_userid(user.id)
+        assert_that(result, none())
 
     def test_get_by_user_id_no_user(self):
-        self.assertRaises(ElementNotExistsError, user_cti_profile_dao.get_profile_by_userid, 123)
+        self.assertRaises(ElementNotExistsError, user_cti_profile_dao.find_profile_by_userid, 123)
 
     def test_dissociate(self):
         cti_profile = CtiProfileSchema(id=2, name='Test')

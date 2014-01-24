@@ -17,6 +17,7 @@
 
 from xivo_dao.data_handler.user_cti_profile import validator, dao, notifier
 from xivo_dao.data_handler.user_cti_profile.model import UserCtiProfile
+from xivo_dao.data_handler.user_cti_profile.exceptions import UserCtiProfileNotExistsError
 
 
 def associate(user_cti_profile):
@@ -27,7 +28,9 @@ def associate(user_cti_profile):
 
 
 def get(user_id):
-    cti_profile = dao.get_profile_by_userid(user_id)
+    cti_profile = dao.find_profile_by_userid(user_id)
+    if cti_profile is None:
+        raise UserCtiProfileNotExistsError('user_cti_profile')
     return UserCtiProfile(user_id=user_id, cti_profile_id=cti_profile.id)
 
 

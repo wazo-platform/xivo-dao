@@ -20,6 +20,7 @@ from xivo_dao.data_handler.exception import MissingParametersError, \
 from xivo_dao.data_handler.cti_profile import dao as cti_profile_dao
 from xivo_dao.data_handler.user import dao as user_dao
 from xivo_dao.data_handler.user_cti_profile import dao as user_cti_profile_dao
+from xivo_dao.data_handler.user_cti_profile.exceptions import UserCtiProfileNotExistsError
 
 
 def validate_association(user_cti_profile):
@@ -53,12 +54,10 @@ def _validate_user_exists(user_cti_profile):
 
 
 def _validate_user_has_no_profile(user_cti_profile):
-    try:
-        user_cti_profile_dao.get_profile_by_userid(user_cti_profile.user_id)
+    if user_cti_profile_dao.find_profile_by_userid(user_cti_profile.user_id):
         raise InvalidParametersError(['user with id %s already has a CTI profile' % user_cti_profile.user_id])
-    except ElementNotExistsError:
-        return
 
 
 def _validate_user_has_a_profile(user_cti_profile):
-    user_cti_profile_dao.get_profile_by_userid(user_cti_profile.user_id)
+    if user_cti_profile_dao.find_profile_by_userid(user_cti_profile.user_id) is None:
+        raise UserCtiProfileNotExistsError('user_cti_profile')
