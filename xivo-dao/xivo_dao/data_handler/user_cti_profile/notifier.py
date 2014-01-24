@@ -35,11 +35,11 @@ def dissociated(user_cti_profile):
 
 def _send_sysconfd_command(user_cti_profile):
     command_dict = {
-                    'ctibus': _generate_cti_commands(user_cti_profile),
-                    'dird': [],
-                    'ipbx': [],
-                    'agentbus': [],
-                }
+        'ctibus': _generate_cti_commands(user_cti_profile),
+        'dird': [],
+        'ipbx': [],
+        'agentbus': [],
+    }
     sysconfd_connector.exec_request_handlers(command_dict)
 
 

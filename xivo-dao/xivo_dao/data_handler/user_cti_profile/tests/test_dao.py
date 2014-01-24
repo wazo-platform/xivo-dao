@@ -90,7 +90,7 @@ class TestUserCtiProfile(DAOTestCase):
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
 
-    def test_get_by_userid(self):
+    def test_find_by_userid(self):
         cti_profile = CtiProfileSchema(id=2, name='Test')
         self.add_me(cti_profile)
         user = self.add_user(cti_profile_id=2)
@@ -100,13 +100,14 @@ class TestUserCtiProfile(DAOTestCase):
         assert_that(result.name, equal_to('Test'))
         assert_that(result.id, equal_to(2))
 
-    def test_get_by_user_id_not_found(self):
+    def test_find_by_user_id_not_found(self):
         user = self.add_user()
 
         result = user_cti_profile_dao.find_profile_by_userid(user.id)
+
         assert_that(result, none())
 
-    def test_get_by_user_id_no_user(self):
+    def test_find_by_user_id_no_user(self):
         self.assertRaises(ElementNotExistsError, user_cti_profile_dao.find_profile_by_userid, 123)
 
     def test_dissociate(self):
