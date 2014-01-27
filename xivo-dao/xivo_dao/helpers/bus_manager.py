@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_bus.ctl.client import BusCtlClient
+from xivo_dao.helpers import config
 
 bus_client = None
 
@@ -24,15 +25,15 @@ def _init_bus():
     global bus_client
     bus_client = BusCtlClient()
     bus_client.connect()
-    exchange = 'xivo'
-    exchange_type = 'fanout'
-    bus_client.declare_exchange(exchange, exchange_type, durable=False)
+    bus_client.declare_exchange(config.BUS_EXCHANGE_NAME,
+                                config.BUS_EXCHANGE_TYPE,
+                                durable=config.BUS_EXCHANGE_KEY)
 
 
 def send_bus_command(command):
     # TODO rename to send_bus_event
     if bus_client is None:
         _init_bus()
-    exchange = 'xivo'
-    binding_key = ''
-    bus_client.publish_event(exchange, binding_key, command)
+    bus_client.publish_event(config.BUS_EXCHANGE_NAME,
+                             config.BUS_EXCHANGE_KEY,
+                             command)

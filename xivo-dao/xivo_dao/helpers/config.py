@@ -18,3 +18,7 @@
 DB_URI = 'postgresql://asterisk:proformatique@localhost/asterisk'
 XIVO_DB_URI = 'postgresql://xivo:proformatique@localhost/xivo'
 SQL_DEBUG = False
+BUS_EXCHANGE_NAME = 'xivo'
+BUS_EXCHANGE_TYPE = 'fanout'
+BUS_EXCHANGE_DURABLE = False
+BUS_BINDING_KEY = ''
