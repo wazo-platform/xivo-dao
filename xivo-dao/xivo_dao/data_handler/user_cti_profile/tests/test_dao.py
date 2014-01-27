@@ -68,28 +68,6 @@ class TestUserCtiProfile(DAOTestCase):
     def setUp(self):
         self.cleanTables()
 
-    def test_associate(self):
-        user = self.add_user()
-        cti_profile = CtiProfileSchema(id=2, name='Test')
-        self.add_me(cti_profile)
-        user_cti_profile = UserCtiProfile(user_id=user.id, cti_profile_id=2)
-
-        user_cti_profile_dao.associate(user_cti_profile)
-
-        assert_that(user.cti_profile_id, equal_to(2))
-
-    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
-    def test_associate_with_error(self, Session):
-        session = Mock()
-        session.commit.side_effect = SQLAlchemyError()
-        Session.return_value = session
-
-        user_cti_profile = UserCtiProfile(user_id=1, cti_profile_id=2)
-
-        self.assertRaises(ElementEditionError, user_cti_profile_dao.associate, user_cti_profile)
-        session.begin.assert_called_once_with()
-        session.rollback.assert_called_once_with()
-
     def test_find_by_userid(self):
         cti_profile = CtiProfileSchema(id=2, name='Test')
         self.add_me(cti_profile)
@@ -109,28 +87,6 @@ class TestUserCtiProfile(DAOTestCase):
 
     def test_find_by_user_id_no_user(self):
         self.assertRaises(ElementNotExistsError, user_cti_profile_dao.find_profile_by_userid, 123)
-
-    def test_dissociate(self):
-        cti_profile = CtiProfileSchema(id=2, name='Test')
-        self.add_me(cti_profile)
-        user = self.add_user(cti_profile_id=cti_profile.id)
-        user_cti_profile = UserCtiProfile(user_id=user.id, cti_profile_id=cti_profile.id)
-
-        user_cti_profile_dao.dissociate(user_cti_profile)
-
-        assert_that(user.cti_profile_id, none())
-
-    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
-    def test_dissociate_with_error(self, Session):
-        session = Mock()
-        session.commit.side_effect = SQLAlchemyError()
-        Session.return_value = session
-
-        user_cti_profile = UserCtiProfile(user_id=1, cti_profile_id=2)
-
-        self.assertRaises(ElementEditionError, user_cti_profile_dao.dissociate, user_cti_profile)
-        session.begin.assert_called_once_with()
-        session.rollback.assert_called_once_with()
 
     def test_edit(self):
         cti_profile = CtiProfileSchema(id=2, name='Test')

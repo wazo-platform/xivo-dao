@@ -15,26 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.data_handler.exception import MissingParametersError, \
-    ElementNotExistsError, NonexistentParametersError, InvalidParametersError, \
+from xivo_dao.data_handler.exception import ElementNotExistsError, NonexistentParametersError, \
     ElementEditionError
 from xivo_dao.data_handler.cti_profile import dao as cti_profile_dao
 from xivo_dao.data_handler.user import dao as user_dao
-from xivo_dao.data_handler.user_cti_profile import dao as user_cti_profile_dao
-from xivo_dao.data_handler.user_cti_profile.exceptions import UserCtiProfileNotExistsError
-
-
-def validate_association(user_cti_profile):
-    _validate_missing_params(user_cti_profile)
-    _validate_cti_profile_exists(user_cti_profile)
-    _validate_user_exists(user_cti_profile)
-    _validate_user_has_no_profile(user_cti_profile)
-
-
-def validate_dissociation(user_cti_profile):
-    _validate_missing_params(user_cti_profile)
-    _validate_user_exists(user_cti_profile)
-    _validate_user_has_a_profile(user_cti_profile)
 
 
 def validate_edit(user_cti_profile):
@@ -42,12 +26,6 @@ def validate_edit(user_cti_profile):
     if user_cti_profile.cti_profile_id:
         _validate_cti_profile_exists(user_cti_profile)
     _validate_user_has_login_passwd(user_cti_profile)
-
-
-def _validate_missing_params(user_cti_profile):
-    missing = user_cti_profile.missing_parameters()
-    if missing:
-        raise MissingParametersError(missing)
 
 
 def _validate_cti_profile_exists(user_cti_profile):
@@ -59,16 +37,6 @@ def _validate_cti_profile_exists(user_cti_profile):
 
 def _validate_user_exists(user_cti_profile):
     user_dao.get(user_cti_profile.user_id)
-
-
-def _validate_user_has_no_profile(user_cti_profile):
-    if user_cti_profile_dao.find_profile_by_userid(user_cti_profile.user_id):
-        raise InvalidParametersError(['user with id %s already has a CTI profile' % user_cti_profile.user_id])
-
-
-def _validate_user_has_a_profile(user_cti_profile):
-    if user_cti_profile_dao.find_profile_by_userid(user_cti_profile.user_id) is None:
-        raise UserCtiProfileNotExistsError('user_cti_profile')
 
 
 def _validate_user_has_login_passwd(user_cti_profile):

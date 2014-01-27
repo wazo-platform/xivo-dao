@@ -28,19 +28,6 @@ from hamcrest.core.core.isnone import none
 
 class TestUserCtiProfile(unittest.TestCase):
 
-    @patch('xivo_dao.data_handler.user_cti_profile.validator.validate_association')
-    @patch('xivo_dao.data_handler.user_cti_profile.dao.associate')
-    @patch('xivo_dao.data_handler.user_cti_profile.notifier.associated')
-    def test_associate(self, notifier_associated, dao_associate, validate_association):
-        user_cti_profile = Mock(UserCtiProfile)
-
-        result = user_cti_profile_services.associate(user_cti_profile)
-
-        assert_that(result, equal_to(user_cti_profile))
-        validate_association.assert_called_once_with(user_cti_profile)
-        dao_associate.assert_called_once_with(user_cti_profile)
-        notifier_associated.assert_called_with(user_cti_profile)
-
     @patch('xivo_dao.data_handler.user.dao.is_cti_enabled')
     @patch('xivo_dao.data_handler.user_cti_profile.dao.find_profile_by_userid')
     def test_get(self, dao_find_profile_by_userid, dao_is_cti_enabled):
@@ -68,18 +55,6 @@ class TestUserCtiProfile(unittest.TestCase):
         assert_that(result.user_id, equal_to(userid))
         assert_that(result.cti_profile_id, none())
         self.assertTrue(result.enabled)
-
-    @patch('xivo_dao.data_handler.user_cti_profile.validator.validate_dissociation')
-    @patch('xivo_dao.data_handler.user_cti_profile.dao.dissociate')
-    @patch('xivo_dao.data_handler.user_cti_profile.notifier.dissociated')
-    def test_dissociate(self, notifier_dissociated, dao_dissociate, validate_dissociation):
-        user_cti_profile = Mock(UserCtiProfile)
-
-        user_cti_profile_services.dissociate(user_cti_profile)
-
-        validate_dissociation.assert_called_once_with(user_cti_profile)
-        dao_dissociate.assert_called_once_with(user_cti_profile)
-        notifier_dissociated.assert_called_with(user_cti_profile)
 
     @patch('xivo_dao.data_handler.user_cti_profile.validator.validate_edit')
     @patch('xivo_dao.data_handler.user_cti_profile.dao.edit')

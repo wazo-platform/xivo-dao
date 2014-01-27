@@ -17,15 +17,7 @@
 
 from xivo_dao.data_handler.user_cti_profile import validator, dao, notifier
 from xivo_dao.data_handler.user_cti_profile.model import UserCtiProfile
-from xivo_dao.data_handler.user_cti_profile.exceptions import UserCtiProfileNotExistsError
 from xivo_dao.data_handler.user import dao as user_dao
-
-
-def associate(user_cti_profile):
-    validator.validate_association(user_cti_profile)
-    dao.associate(user_cti_profile)
-    notifier.associated(user_cti_profile)
-    return user_cti_profile
 
 
 def get(user_id):
@@ -33,12 +25,6 @@ def get(user_id):
     cti_profile_id = None if cti_profile is None else cti_profile.id
     enabled = user_dao.is_cti_enabled(user_id)
     return UserCtiProfile(user_id=user_id, cti_profile_id=cti_profile_id, enabled=enabled)
-
-
-def dissociate(user_cti_profile):
-    validator.validate_dissociation(user_cti_profile)
-    dao.dissociate(user_cti_profile)
-    notifier.dissociated(user_cti_profile)
 
 
 def edit(user_cti_profile):

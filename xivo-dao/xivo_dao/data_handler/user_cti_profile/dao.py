@@ -25,19 +25,6 @@ from sqlalchemy.exc import SQLAlchemyError
 
 
 @daosession
-def associate(session, user_cti_profile):
-    session.begin()
-    try:
-        (session.query(UserSchema)
-         .filter(UserSchema.id == user_cti_profile.user_id)
-         .update({'cti_profile_id': user_cti_profile.cti_profile_id}))
-        session.commit()
-    except SQLAlchemyError as e:
-        session.rollback()
-        raise ElementEditionError('UserCtiProfile', e)
-
-
-@daosession
 def find_profile_by_userid(session, userid):
     user = session.query(UserSchema).filter(UserSchema.id == userid).first()
     if user is None:
@@ -46,19 +33,6 @@ def find_profile_by_userid(session, userid):
         return None
     row = session.query(CtiProfileSchema).filter(CtiProfileSchema.id == user.cti_profile_id).first()
     return cti_profile_db_converter.to_model(row)
-
-
-@daosession
-def dissociate(session, user_cti_profile):
-    session.begin()
-    try:
-        (session.query(UserSchema)
-         .filter(UserSchema.id == user_cti_profile.user_id)
-         .update({'cti_profile_id': None}))
-        session.commit()
-    except SQLAlchemyError as e:
-        session.rollback()
-        raise ElementEditionError('UserCtiProfile', e)
 
 
 @daosession
