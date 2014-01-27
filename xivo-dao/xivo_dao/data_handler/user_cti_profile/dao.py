@@ -64,14 +64,15 @@ def dissociate(session, user_cti_profile):
 @daosession
 def edit(session, user_cti_profile):
     session.begin()
-    updates = {
-           'cti_profile_id': user_cti_profile.cti_profile_id,
-           'enableclient': 1 if user_cti_profile.enabled else 0
-       }
     try:
-        (session.query(UserSchema)
+        user = (session.query(UserSchema)
             .filter(UserSchema.id == user_cti_profile.user_id)
-            .update(updates))
+            .first())
+        if user_cti_profile.enabled is not None:
+            user.enableclient = 1 if user_cti_profile.enabled else 0
+        if user_cti_profile.cti_profile_id is not None:
+            user.cti_profile_id = user_cti_profile.cti_profile_id
+        session.add(user)
         session.commit()
     except SQLAlchemyError as e:
         session.rollback()

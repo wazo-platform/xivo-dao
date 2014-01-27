@@ -141,7 +141,18 @@ class TestUserCtiProfile(DAOTestCase):
         user_cti_profile_dao.edit(user_cti_profile)
 
         assert_that(user.cti_profile_id, equal_to(cti_profile.id))
-        assert_that(user.enableclient, equal_to(True))
+        assert_that(user.enableclient, 1)
+
+    def test_edit_enabled_not_set(self):
+        cti_profile = CtiProfileSchema(id=2, name='Test')
+        self.add_me(cti_profile)
+        user = self.add_user(cti_profile_id=None, enableclient=1)
+        user_cti_profile = UserCtiProfile(user_id=user.id, cti_profile_id=cti_profile.id)
+
+        user_cti_profile_dao.edit(user_cti_profile)
+
+        assert_that(user.cti_profile_id, equal_to(cti_profile.id))
+        assert_that(user.enableclient, 0)
 
     @patch('xivo_dao.helpers.db_manager.AsteriskSession')
     def test_edit_with_errors(self, Session):
