@@ -594,3 +594,8 @@ class TestUserDAO(DAOTestCase):
                .first())
 
         assert_that(row, equal_to(None))
+
+    def test_is_ctis_enabled(self):
+        user = self.add_user(firstname='Pierre', enableclient=1)
+
+        self.assertTrue(user_dao.is_cti_enabled(user.id))

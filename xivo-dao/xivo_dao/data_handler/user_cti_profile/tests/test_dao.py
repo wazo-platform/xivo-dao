@@ -131,3 +131,26 @@ class TestUserCtiProfile(DAOTestCase):
         self.assertRaises(ElementEditionError, user_cti_profile_dao.dissociate, user_cti_profile)
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
+
+    def test_edit(self):
+        cti_profile = CtiProfileSchema(id=2, name='Test')
+        self.add_me(cti_profile)
+        user = self.add_user(cti_profile_id=None, enableclient=0)
+        user_cti_profile = UserCtiProfile(user_id=user.id, cti_profile_id=cti_profile.id, enabled=True)
+
+        user_cti_profile_dao.edit(user_cti_profile)
+
+        assert_that(user.cti_profile_id, equal_to(cti_profile.id))
+        assert_that(user.enableclient, equal_to(True))
+
+    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    def test_edit_with_errors(self, Session):
+        session = Mock()
+        session.commit.side_effect = SQLAlchemyError()
+        Session.return_value = session
+
+        user_cti_profile = UserCtiProfile(user_id=1, cti_profile_id=2)
+
+        self.assertRaises(ElementEditionError, user_cti_profile_dao.edit, user_cti_profile)
+        session.begin.assert_called_once_with()
+        session.rollback.assert_called_once_with()

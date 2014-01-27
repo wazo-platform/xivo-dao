@@ -33,6 +33,14 @@ def dissociated(user_cti_profile):
     _send_sysconfd_command(user_cti_profile)
 
 
+def edited(user_cti_profile):
+    bus_event = event.UserCtiProfileEditedEvent(user_cti_profile.user_id,
+                                                user_cti_profile.cti_profile_id,
+                                                user_cti_profile.enabled)
+    bus_manager.send_bus_command(bus_event)
+    _send_sysconfd_command(user_cti_profile)
+
+
 def _send_sysconfd_command(user_cti_profile):
     command_dict = {
         'ctibus': _generate_cti_commands(user_cti_profile),

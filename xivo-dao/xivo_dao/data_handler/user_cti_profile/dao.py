@@ -59,3 +59,20 @@ def dissociate(session, user_cti_profile):
     except SQLAlchemyError as e:
         session.rollback()
         raise ElementEditionError('UserCtiProfile', e)
+
+
+@daosession
+def edit(session, user_cti_profile):
+    session.begin()
+    updates = {
+           'cti_profile_id': user_cti_profile.cti_profile_id,
+           'enableclient': 1 if user_cti_profile.enabled else 0
+       }
+    try:
+        (session.query(UserSchema)
+            .filter(UserSchema.id == user_cti_profile.user_id)
+            .update(updates))
+        session.commit()
+    except SQLAlchemyError as e:
+        session.rollback()
+        raise ElementEditionError('UserCtiProfile', e)

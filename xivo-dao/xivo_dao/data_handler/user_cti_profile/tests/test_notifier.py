@@ -61,3 +61,19 @@ class TestUserCtiProfileNotifier(unittest.TestCase):
                                                                user_cti_profile.cti_profile_id)
         send_bus_command.assert_called_once_with(new_event)
         exec_request_handler.assert_called_once_with(self.sysconfd_command)
+
+    @patch('xivo_dao.helpers.sysconfd_connector.exec_request_handlers')
+    @patch('xivo_bus.resources.user_cti_profile.event.UserCtiProfileEditedEvent')
+    @patch('xivo_dao.helpers.bus_manager.send_bus_command')
+    def test_edited(self, send_bus_command, UserCtiProfileDissociatedEvent, exec_request_handler):
+        new_event = UserCtiProfileDissociatedEvent.return_value = Mock()
+        user_cti_profile = UserCtiProfile(user_id=1, cti_profile_id=2, enabled=True)
+        self.sysconfd_command['ctibus'] = ['xivo[user,edit,1]']
+
+        notifier.edited(user_cti_profile)
+
+        UserCtiProfileDissociatedEvent.assert_called_once_with(user_cti_profile.user_id,
+                                                               user_cti_profile.cti_profile_id,
+                                                               user_cti_profile.enabled)
+        send_bus_command.assert_called_once_with(new_event)
+        exec_request_handler.assert_called_once_with(self.sysconfd_command)

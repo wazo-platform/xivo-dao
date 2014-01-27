@@ -227,3 +227,9 @@ def _delete_user(session, user_id):
 
 def _new_query(session):
     return session.query(UserSchema).filter(UserSchema.commented == 0)
+
+
+@daosession
+def is_cti_enabled(session, userid):
+    enableclient = session.query(UserSchema).filter(UserSchema.id == userid).first().enableclient
+    return enableclient == 1
