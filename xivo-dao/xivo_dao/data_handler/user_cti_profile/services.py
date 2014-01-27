@@ -30,10 +30,9 @@ def associate(user_cti_profile):
 
 def get(user_id):
     cti_profile = dao.find_profile_by_userid(user_id)
-    if cti_profile is None:
-        raise UserCtiProfileNotExistsError('user_cti_profile')
+    cti_profile_id = None if cti_profile is None else cti_profile.id
     enabled = user_dao.is_cti_enabled(user_id)
-    return UserCtiProfile(user_id=user_id, cti_profile_id=cti_profile.id, enabled=enabled)
+    return UserCtiProfile(user_id=user_id, cti_profile_id=cti_profile_id, enabled=enabled)
 
 
 def dissociate(user_cti_profile):

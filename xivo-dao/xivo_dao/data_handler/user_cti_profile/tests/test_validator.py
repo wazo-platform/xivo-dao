@@ -25,7 +25,7 @@ from xivo_dao.data_handler.exception import MissingParametersError, \
 from xivo_dao.data_handler.user_cti_profile import validator
 from xivo_dao.data_handler.user_cti_profile.model import UserCtiProfile
 from xivo_dao.data_handler.user_cti_profile.exceptions import UserCtiProfileNotExistsError
-from xivo_dao.alchemy.userfeatures import UserFeatures
+from xivo_dao.data_handler.user.model import User
 
 
 class TestUserCtiProfileValidator(unittest.TestCase):
@@ -138,8 +138,16 @@ class TestUserCtiProfileValidator(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.cti_profile.dao.get')
     @patch('xivo_dao.data_handler.user.dao.get')
+    def test_validate_edition_null_profile(self, patch_get_user, patch_get_cti_profile):
+        user_cti_profile = UserCtiProfile(user_id=1, cti_profile_id=None, enabled=True)
+        validator.validate_edit(user_cti_profile)
+
+        self.assertFalse(patch_get_cti_profile.called, "CTI profile dao should not have been called")
+
+    @patch('xivo_dao.data_handler.cti_profile.dao.get')
+    @patch('xivo_dao.data_handler.user.dao.get')
     def test_validate_edition_missing_username_password(self, patch_get_user, patch_get_cti_profile):
         user_cti_profile = UserCtiProfile(user_id=1, cti_profile_id=2, enabled=True)
-        patch_get_user.return_value = UserFeatures(id=1, loginclient=None, passwdclient=None, enableclient=0)
+        patch_get_user.return_value = User(id=1, username=None, password=None)
 
         self.assertRaises(ElementEditionError, validator.validate_edit, user_cti_profile)

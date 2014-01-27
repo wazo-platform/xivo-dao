@@ -23,8 +23,7 @@ from mock import patch, Mock
 from xivo_dao.data_handler.user_cti_profile import services as user_cti_profile_services
 from xivo_dao.data_handler.user_cti_profile.model import UserCtiProfile
 from xivo_dao.data_handler.cti_profile.model import CtiProfile
-from xivo_dao.data_handler.exception import ElementNotExistsError
-from xivo_dao.data_handler.user_cti_profile.exceptions import UserCtiProfileNotExistsError
+from hamcrest.core.core.isnone import none
 
 
 class TestUserCtiProfile(unittest.TestCase):
@@ -57,12 +56,18 @@ class TestUserCtiProfile(unittest.TestCase):
         self.assertTrue(result.enabled)
         dao_is_cti_enabled.assert_called_with(userid)
 
+    @patch('xivo_dao.data_handler.user.dao.is_cti_enabled')
     @patch('xivo_dao.data_handler.user_cti_profile.dao.find_profile_by_userid')
-    def test_get_not_found(self, dao_find_profile_by_userid):
+    def test_get_not_found(self, dao_find_profile_by_userid, dao_is_cti_enabled):
         userid = 1
         dao_find_profile_by_userid.return_value = None
+        dao_is_cti_enabled.return_value = True
 
-        self.assertRaises(UserCtiProfileNotExistsError, user_cti_profile_services.get, userid)
+        result = user_cti_profile_services.get(userid)
+
+        assert_that(result.user_id, equal_to(userid))
+        assert_that(result.cti_profile_id, none())
+        self.assertTrue(result.enabled)
 
     @patch('xivo_dao.data_handler.user_cti_profile.validator.validate_dissociation')
     @patch('xivo_dao.data_handler.user_cti_profile.dao.dissociate')

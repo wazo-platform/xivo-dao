@@ -39,7 +39,8 @@ def validate_dissociation(user_cti_profile):
 
 def validate_edit(user_cti_profile):
     _validate_user_exists(user_cti_profile)
-    _validate_cti_profile_exists(user_cti_profile)
+    if user_cti_profile.cti_profile_id:
+        _validate_cti_profile_exists(user_cti_profile)
     _validate_user_has_login_passwd(user_cti_profile)
 
 
@@ -73,5 +74,5 @@ def _validate_user_has_a_profile(user_cti_profile):
 def _validate_user_has_login_passwd(user_cti_profile):
     if user_cti_profile.enabled:
         user = user_dao.get(user_cti_profile.user_id)
-        if not user.loginclient or not user.passwdclient:
+        if not user.username or not user.password:
             raise ElementEditionError(user.id, 'the user must have a username and password to enable the CTI')
