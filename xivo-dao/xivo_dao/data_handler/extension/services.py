@@ -18,10 +18,7 @@
 from . import dao
 from . import notifier
 
-from xivo_dao.data_handler.exception import MissingParametersError, \
-    InvalidParametersError, ElementAlreadyExistsError, NonexistentParametersError
-
-from xivo_dao.data_handler.context import services as context_services
+from xivo_dao.data_handler.extension import validator
 
 
 def get(extension_id):
@@ -49,68 +46,19 @@ def find_by_exten_context(exten, context):
 
 
 def create(extension):
-    _validate_create(extension)
+    validator.validate_create(extension)
     extension = dao.create(extension)
     notifier.created(extension)
     return extension
 
 
 def edit(extension):
-    _validate(extension)
+    validator.validate_edit(extension)
     dao.edit(extension)
     notifier.edited(extension)
 
 
 def delete(extension):
+    validator.validate_delete(extension)
     dao.delete(extension)
     notifier.deleted(extension)
-
-
-def _validate(extension):
-    _check_missing_parameters(extension)
-    _check_invalid_parameters(extension)
-    _check_if_context_exists(extension)
-    _check_if_exten_in_range(extension)
-
-
-def _validate_create(extension):
-    _validate(extension)
-    _check_if_extension_already_exists(extension)
-
-
-def _check_missing_parameters(extension):
-    missing = extension.missing_parameters()
-    if missing:
-        raise MissingParametersError(missing)
-
-
-def _check_invalid_parameters(extension):
-    invalid_parameters = []
-    if len(str(extension.exten)) == 0:
-        invalid_parameters.append('Exten required')
-    if len(extension.context) == 0:
-        invalid_parameters.append('Context required')
-    if hasattr(extension, 'commented') and not isinstance(extension.commented, bool):
-        invalid_parameters.append('Commented must be a bool')
-    if invalid_parameters:
-        raise InvalidParametersError(invalid_parameters)
-
-
-def _check_if_extension_already_exists(extension):
-    extension = dao.find_by_exten_context(extension.exten, extension.context)
-    if extension:
-        exten_context = '%s@%s' % (extension.exten, extension.context)
-        raise ElementAlreadyExistsError('Extension', exten_context)
-
-
-def _check_if_context_exists(extension):
-    context = context_services.find_by_name(extension.context)
-    if not context:
-        raise NonexistentParametersError(context=extension.context)
-
-
-def _check_if_exten_in_range(extension):
-    if not context_services.is_extension_valid_for_context(extension):
-        raise InvalidParametersError(['exten %s not inside range of context %s' % (
-            extension.exten,
-            extension.context)])
