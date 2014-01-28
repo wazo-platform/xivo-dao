@@ -18,95 +18,52 @@
 import unittest
 
 from mock import patch
-from xivo_dao.data_handler.exception import MissingParametersError, \
-    ElementNotExistsError, NonexistentParametersError, InvalidParametersError
+from xivo_dao.data_handler.exception import ElementNotExistsError, NonexistentParametersError, \
+    ElementEditionError
 
 from xivo_dao.data_handler.user_cti_profile import validator
 from xivo_dao.data_handler.user_cti_profile.model import UserCtiProfile
-from xivo_dao.data_handler.user_cti_profile.exceptions import UserCtiProfileNotExistsError
-from xivo_dao.data_handler.cti_profile.model import CtiProfile
+from xivo_dao.data_handler.user.model import User
 
 
 class TestUserCtiProfileValidator(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.cti_profile.dao.get')
     @patch('xivo_dao.data_handler.user.dao.get')
-    @patch('xivo_dao.data_handler.user_cti_profile.dao.find_profile_by_userid')
-    def test_validate_associate_missing_params(self, patch_find_profile_by_userid, patch_get_user, patch_get_profile):
-        association = UserCtiProfile(user_id=1)
-        self.assertRaises(MissingParametersError, validator.validate_association, association)
-
-        association = UserCtiProfile(cti_profile_id=1)
-        self.assertRaises(MissingParametersError, validator.validate_association, association)
+    def test_validate_edition(self, patch_get_user, patch_get_profile):
+        user_cti_profile = UserCtiProfile(user_id=1, cti_profile_id=2, enabled=True)
+        validator.validate_edit(user_cti_profile)
 
     @patch('xivo_dao.data_handler.cti_profile.dao.get')
     @patch('xivo_dao.data_handler.user.dao.get')
-    @patch('xivo_dao.data_handler.user_cti_profile.dao.find_profile_by_userid')
-    def test_validate_associate_unexisting_cti_profile(self, patch_find_profile_by_userid, patch_get_user, patch_get_profile):
-        association = UserCtiProfile(user_id=1, cti_profile_id=2)
-        patch_get_profile.side_effect = UserCtiProfileNotExistsError('user_cti_profile')
-
-        self.assertRaises(NonexistentParametersError, validator.validate_association, association)
-        patch_get_profile.assert_called_with(association.cti_profile_id)
-
-    @patch('xivo_dao.data_handler.cti_profile.dao.get')
-    @patch('xivo_dao.data_handler.user.dao.get')
-    @patch('xivo_dao.data_handler.user_cti_profile.dao.find_profile_by_userid')
-    def test_validate_associate_unexisting_user(self, patch_find_profile_by_userid, patch_get_user, patch_get_profile):
-        association = UserCtiProfile(user_id=1, cti_profile_id=2)
+    def test_validate_edition_unexisting_user(self, patch_get_user, patch_get_profile):
+        user_cti_profile = UserCtiProfile(user_id=1, cti_profile_id=2, enabled=True)
         patch_get_user.side_effect = ElementNotExistsError('user')
 
-        self.assertRaises(ElementNotExistsError, validator.validate_association, association)
-        patch_get_user.assert_called_with(association.user_id)
+        self.assertRaises(ElementNotExistsError, validator.validate_edit, user_cti_profile)
+        patch_get_user.assert_called_with(user_cti_profile.user_id)
 
     @patch('xivo_dao.data_handler.cti_profile.dao.get')
     @patch('xivo_dao.data_handler.user.dao.get')
-    @patch('xivo_dao.data_handler.user_cti_profile.dao.find_profile_by_userid')
-    def test_validate_associate_user_already_has_profile(self, patch_find_profile_by_userid, patch_get_user, patch_get_profile):
-        association = UserCtiProfile(user_id=1, cti_profile_id=2)
+    def test_validate_edition_unexisting_profile(self, patch_get_user, patch_get_cti_profile):
+        user_cti_profile = UserCtiProfile(user_id=1, cti_profile_id=2, enabled=True)
+        patch_get_cti_profile.side_effect = ElementNotExistsError('cti_profile')
 
-        self.assertRaises(InvalidParametersError, validator.validate_association, association)
-        patch_find_profile_by_userid.assert_called_with(association.user_id)
-
-    @patch('xivo_dao.data_handler.cti_profile.dao.get')
-    @patch('xivo_dao.data_handler.user.dao.get')
-    @patch('xivo_dao.data_handler.user_cti_profile.dao.find_profile_by_userid')
-    def test_validate_associate_ok(self, patch_find_profile_by_userid, patch_get_user, patch_get_profile):
-        association = UserCtiProfile(user_id=1, cti_profile_id=2)
-        patch_find_profile_by_userid.return_value = None
-
-        validator.validate_association(association)
-
-        patch_find_profile_by_userid.assert_called_with(association.user_id)
-        patch_get_user.assert_called_with(association.user_id)
-        patch_get_profile.assert_called_with(association.cti_profile_id)
+        self.assertRaises(NonexistentParametersError, validator.validate_edit, user_cti_profile)
+        patch_get_cti_profile.assert_called_with(user_cti_profile.cti_profile_id)
 
     @patch('xivo_dao.data_handler.cti_profile.dao.get')
     @patch('xivo_dao.data_handler.user.dao.get')
-    @patch('xivo_dao.data_handler.user_cti_profile.dao.find_profile_by_userid')
-    def test_validate_dissociate_missing_params(self, patch_find_profile_by_userid, patch_get_user, patch_get_profile):
-        association = UserCtiProfile(user_id=1)
-        self.assertRaises(MissingParametersError, validator.validate_dissociation, association)
+    def test_validate_edition_null_profile(self, patch_get_user, patch_get_cti_profile):
+        user_cti_profile = UserCtiProfile(user_id=1, cti_profile_id=None, enabled=True)
+        validator.validate_edit(user_cti_profile)
 
-        association = UserCtiProfile(cti_profile_id=1)
-        self.assertRaises(MissingParametersError, validator.validate_dissociation, association)
+        self.assertFalse(patch_get_cti_profile.called, "CTI profile dao should not have been called")
 
     @patch('xivo_dao.data_handler.cti_profile.dao.get')
     @patch('xivo_dao.data_handler.user.dao.get')
-    @patch('xivo_dao.data_handler.user_cti_profile.dao.find_profile_by_userid')
-    def test_validate_dissociate_unexisting_user(self, patch_find_profile_by_userid, patch_get_user, patch_get_profile):
-        association = UserCtiProfile(user_id=1, cti_profile_id=2)
-        patch_get_user.side_effect = ElementNotExistsError('user')
+    def test_validate_edition_missing_username_password(self, patch_get_user, patch_get_cti_profile):
+        user_cti_profile = UserCtiProfile(user_id=1, cti_profile_id=2, enabled=True)
+        patch_get_user.return_value = User(id=1, username=None, password=None)
 
-        self.assertRaises(ElementNotExistsError, validator.validate_dissociation, association)
-        patch_get_user.assert_called_with(association.user_id)
-
-    @patch('xivo_dao.data_handler.cti_profile.dao.get')
-    @patch('xivo_dao.data_handler.user.dao.get')
-    @patch('xivo_dao.data_handler.user_cti_profile.dao.find_profile_by_userid')
-    def test_validate_dissociate_user_has_no_profile(self, patch_find_profile_by_userid, patch_get_user, patch_get_profile):
-        association = UserCtiProfile(user_id=1, cti_profile_id=2)
-        patch_find_profile_by_userid.return_value = None
-
-        self.assertRaises(ElementNotExistsError, validator.validate_dissociation, association)
-        patch_find_profile_by_userid.assert_called_with(association.user_id)
+        self.assertRaises(ElementEditionError, validator.validate_edit, user_cti_profile)

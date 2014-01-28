@@ -20,19 +20,22 @@ from xivo_dao.converters.database_converter import DatabaseConverter
 
 DB_TO_MODEL_MAPPING = {
     'user_id': 'user_id',
-    'cti_profile_id': 'cti_profile_id'
+    'cti_profile_id': 'cti_profile_id',
+    'enabled': 'enabled'
 }
 
 
 class UserCtiProfile(NewModel):
     MANDATORY = [
         'user_id',
-        'cti_profile_id'
+        'cti_profile_id',
+        'enabled'
     ]
 
     FIELDS = [
         'user_id',
-        'cti_profile_id'
+        'cti_profile_id',
+        'enabled'
     ]
 
     _RELATION = {}
