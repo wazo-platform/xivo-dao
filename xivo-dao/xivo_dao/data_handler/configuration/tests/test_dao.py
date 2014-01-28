@@ -15,9 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.tests.test_dao import DAOTestCase
+from hamcrest.core import assert_that
+from hamcrest.core.core.isequal import equal_to
+from mock import patch, Mock
+from sqlalchemy.exc import SQLAlchemyError
 from xivo_dao.alchemy.ctimain import CtiMain
+
 from xivo_dao.data_handler.configuration import dao
+from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao.data_handler.exception import ElementEditionError
 
 
 class TestConfigurationDao(DAOTestCase):
@@ -41,3 +47,21 @@ class TestConfigurationDao(DAOTestCase):
         result = dao.get_live_reload_status()
 
         self.assertTrue(result)
+
+    def test_set_live_reload_status(self):
+        ctimain = CtiMain(live_reload_conf=0)
+        self.add_me(ctimain)
+
+        dao.set_live_reload_status({'enabled': True})
+
+        assert_that(ctimain.live_reload_conf, equal_to(1))
+
+    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    def test_set_live_reload_status_rollback(self, Session):
+        session = Mock()
+        session.commit.side_effect = SQLAlchemyError()
+        Session.return_value = session
+
+        self.assertRaises(ElementEditionError, dao.set_live_reload_status, {'enabled': True})
+        session.begin.assert_called_once_with()
+        session.rollback.assert_called_once_with()

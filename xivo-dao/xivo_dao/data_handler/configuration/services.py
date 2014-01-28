@@ -15,8 +15,14 @@
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-from xivo_dao.data_handler.configuration import dao
+from xivo_dao.data_handler.configuration import dao, validator, notifier
 
 
 def get_live_reload_status():
     return dao.get_live_reload_status()
+
+
+def set_live_reload_status(data):
+    validator.validate_live_reload_data(data)
+    dao.set_live_reload_status(data)
+    notifier.live_reload_status_changed(data)

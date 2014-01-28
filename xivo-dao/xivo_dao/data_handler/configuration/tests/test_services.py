@@ -23,10 +23,22 @@ from mock import patch
 class TestConfiguration(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.configuration.dao.get_live_reload_status')
-    def test_find_by_name_inexistant(self, get_live_reload_status):
+    def test_get_live_reload_status(self, get_live_reload_status):
         get_live_reload_status.return_value = False
 
         result = services.get_live_reload_status()
 
         self.assertFalse(result)
         get_live_reload_status.assert_called_once_with()
+
+    @patch('xivo_dao.data_handler.configuration.notifier.live_reload_status_changed')
+    @patch('xivo_dao.data_handler.configuration.dao.set_live_reload_status')
+    @patch('xivo_dao.data_handler.configuration.validator.validate_live_reload_data')
+    def test_set_live_reload_status(self, validate_live_reload_data, set_live_reload_status, live_reload_status_changed):
+        data = {'enabled': True}
+
+        services.set_live_reload_status(data)
+
+        validate_live_reload_data.assert_called_once_with(data)
+        set_live_reload_status.assert_called_once_with(data)
+        live_reload_status_changed.assert_called_once_with(data)

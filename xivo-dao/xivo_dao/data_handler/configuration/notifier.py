@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#
+
 # Copyright (C) 2013-2014 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
@@ -14,25 +14,23 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
-from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.alchemy.ctimain import CtiMain
-from sqlalchemy.exc import SQLAlchemyError
-from xivo_dao.data_handler.exception import ElementEditionError
+
+from xivo_bus.resources.configuration import event
+from xivo_dao.helpers import bus_manager, sysconfd_connector
 
 
-@daosession
-def get_live_reload_status(session):
-    ctimain = session.query(CtiMain).first()
-    return ctimain.live_reload_conf == 1
+def live_reload_status_changed(data):
+    bus_event = event.LiveRealoadEditedEvent(data['enabled'])
+    bus_manager.send_bus_command(bus_event)
+    if not data['enabled']:
+        _send_sysconfd_command()
 
 
-@daosession
-def set_live_reload_status(session, data):
-    value = 1 if data['enabled'] else 0
-    session.begin()
-    try:
-        session.query(CtiMain).update({'live_reload_conf': value})
-        session.commit()
-    except SQLAlchemyError as e:
-        session.rollback()
-        raise ElementEditionError('configuration', e)
+def _send_sysconfd_command():
+    command_dict = {
+        'ctibus': ['xivo[cticonfig,update]'],
+        'dird': [],
+        'ipbx': [],
+        'agentbus': [],
+    }
+    sysconfd_connector.exec_request_handlers(command_dict)
