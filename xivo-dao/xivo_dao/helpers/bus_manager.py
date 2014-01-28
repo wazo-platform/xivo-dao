@@ -27,7 +27,7 @@ def _init_bus():
     bus_client.connect()
     bus_client.declare_exchange(config.BUS_EXCHANGE_NAME,
                                 config.BUS_EXCHANGE_TYPE,
-                                durable=config.BUS_EXCHANGE_KEY)
+                                durable=config.BUS_EXCHANGE_DURABLE)
 
 
 def send_bus_command(command):
@@ -35,5 +35,5 @@ def send_bus_command(command):
     if bus_client is None:
         _init_bus()
     bus_client.publish_event(config.BUS_EXCHANGE_NAME,
-                             config.BUS_EXCHANGE_KEY,
+                             config.BUS_BINDING_KEY,
                              command)
