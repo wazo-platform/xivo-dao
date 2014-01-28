@@ -35,5 +35,5 @@ def send_bus_command(command):
     if bus_client is None:
         _init_bus()
     bus_client.publish_event(config.BUS_EXCHANGE_NAME,
-                             config.BUS_EXCHANGE_KEY,
+                             config.BUS_BINDING_KEY,
                              command)
