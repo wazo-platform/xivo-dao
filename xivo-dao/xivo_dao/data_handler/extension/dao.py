@@ -156,19 +156,11 @@ def edit(session, extension):
 def delete(session, extension):
     session.begin()
     try:
-        nb_row_affected = session.query(ExtensionSchema).filter(ExtensionSchema.id == extension.id).delete()
+        session.query(ExtensionSchema).filter(ExtensionSchema.id == extension.id).delete()
         session.commit()
-    except IntegrityError as e:
-        session.rollback()
-        raise ElementDeletionError('Extension', 'extension still has a link')
     except SQLAlchemyError, e:
         session.rollback()
         raise ElementDeletionError('Extension', e)
-
-    if nb_row_affected == 0:
-        raise ElementDeletionError('Extension', 'extension_id %s not exist' % extension.id)
-
-    return nb_row_affected
 
 
 def _new_query(session, order=None, commented=False):

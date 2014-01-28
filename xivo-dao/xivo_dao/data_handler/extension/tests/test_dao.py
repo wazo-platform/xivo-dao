@@ -336,11 +336,6 @@ class TestDelete(TestExtensionDao):
 
         self.assertEquals(row, None)
 
-    def test_delete_not_exist(self):
-        extension = Extension(id=1)
-
-        self.assertRaises(ElementDeletionError, extension_dao.delete, extension)
-
 
 class TestAssociateToUser(TestExtensionDao):
 
