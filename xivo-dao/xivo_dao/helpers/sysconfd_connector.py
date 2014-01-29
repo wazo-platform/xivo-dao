@@ -17,6 +17,7 @@
 
 from httplib import HTTPConnection
 import json
+from xivo_dao.data_handler.configuration import dao as configuration_dao
 
 SYSCONFD_SERVER = "localhost"
 SYSCONFD_PORT = "8668"
@@ -41,7 +42,8 @@ def sysconfd_conn_request(method, action, args):
 
 
 def exec_request_handlers(args):
-    sysconfd_conn_request('POST', '/exec_request_handlers', args)
+    if configuration_dao.is_live_reload_enabled():
+        sysconfd_conn_request('POST', '/exec_request_handlers', args)
 
 
 def delete_voicemail_storage(context, number):
