@@ -17,7 +17,7 @@ Creating the test database
 
 You can create the database by running these SQL commands:
 
-    CREATE DATBASE asterisktest;
+    CREATE DATABASE asterisktest;
     CREATE USER asterisk WITH PASSWORD 'asterisk';
     GRANT ALL ON DATABASE asterisktest TO asterisk;
 
