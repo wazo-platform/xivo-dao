@@ -18,6 +18,7 @@ setup(
         'xivo_dao.data_handler',
         'xivo_dao.data_handler.call_log',
         'xivo_dao.data_handler.cel',
+        'xivo_dao.data_handler.configuration',
         'xivo_dao.data_handler.context',
         'xivo_dao.data_handler.device',
         'xivo_dao.data_handler.extension',
