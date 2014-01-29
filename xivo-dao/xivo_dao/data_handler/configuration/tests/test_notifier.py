@@ -35,11 +35,11 @@ class TestUserCtiProfileNotifier(unittest.TestCase):
     @patch('xivo_dao.helpers.bus_manager.send_bus_command')
     def test_disable_live_reload(self, send_bus_command, LiveRealoadEditedEvent, exec_request_handler):
         new_event = LiveRealoadEditedEvent.return_value = Mock()
-        data = {'enabled': True}
+        data = {'enabled': False}
 
         notifier.live_reload_status_changed(data)
 
-        LiveRealoadEditedEvent.assert_called_once_with(True)
+        LiveRealoadEditedEvent.assert_called_once_with(False)
         send_bus_command.assert_called_once_with(new_event)
         self.assertFalse(exec_request_handler.called)
 
@@ -48,11 +48,11 @@ class TestUserCtiProfileNotifier(unittest.TestCase):
     @patch('xivo_dao.helpers.bus_manager.send_bus_command')
     def test_enable_live_reload(self, send_bus_command, LiveRealoadEditedEvent, exec_request_handler):
         new_event = LiveRealoadEditedEvent.return_value = Mock()
-        data = {'enabled': False}
+        data = {'enabled': True}
         self.sysconfd_command['ctibus'] = ['xivo[cticonfig,update]']
 
         notifier.live_reload_status_changed(data)
 
-        LiveRealoadEditedEvent.assert_called_once_with(False)
+        LiveRealoadEditedEvent.assert_called_once_with(True)
         send_bus_command.assert_called_once_with(new_event)
         exec_request_handler.assert_called_once_with(self.sysconfd_command)
