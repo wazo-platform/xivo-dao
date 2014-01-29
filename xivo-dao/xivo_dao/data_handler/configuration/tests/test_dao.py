@@ -33,18 +33,18 @@ class TestConfigurationDao(DAOTestCase):
     def setUp(self):
         self.empty_tables()
 
-    def test_get_live_reload_status(self):
+    def test_is_live_reload_enabled(self):
         ctimain = CtiMain(live_reload_conf=0)
         self.add_me(ctimain)
 
-        result = dao.get_live_reload_status()
+        result = dao.is_live_reload_enabled()
 
         self.assertFalse(result)
 
         ctimain.live_reload_conf = 1
         self.add_me(ctimain)
 
-        result = dao.get_live_reload_status()
+        result = dao.is_live_reload_enabled()
 
         self.assertTrue(result)
 

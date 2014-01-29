@@ -27,8 +27,9 @@ class TestSysconfdConnector(TestCase):
         sysconfd_connector.delete_voicemail_storage("default", "123")
         sysconfd_conn_request.assert_called_with('GET', '/delete_voicemail?context=default&name=123', '')
 
+    @patch('xivo_dao.data_handler.configuration.dao.get_live_reload_status')
     @patch('xivo_dao.helpers.sysconfd_connector.sysconfd_conn_request')
-    def test_exec_request_handlers(self, sysconfd_conn_request):
+    def test_exec_request_handlers(self, sysconfd_conn_request, get_live_reload_status):
         commands = {'ctibus': [],
                     'ipbx': []}
 

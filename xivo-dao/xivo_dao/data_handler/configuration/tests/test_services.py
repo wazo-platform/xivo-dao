@@ -18,18 +18,21 @@
 import unittest
 from xivo_dao.data_handler.configuration import services
 from mock import patch
+from hamcrest.core import assert_that
+from hamcrest.core.core.isequal import equal_to
 
 
 class TestConfiguration(unittest.TestCase):
 
-    @patch('xivo_dao.data_handler.configuration.dao.get_live_reload_status')
-    def test_get_live_reload_status(self, get_live_reload_status):
-        get_live_reload_status.return_value = False
+    @patch('xivo_dao.data_handler.configuration.dao.is_live_reload_enabled')
+    def test_get_live_reload_status(self, is_live_reload_enabled):
+        is_live_reload_enabled.return_value = False
+        expected_result = {'enabled': False}
 
         result = services.get_live_reload_status()
 
-        self.assertFalse(result)
-        get_live_reload_status.assert_called_once_with()
+        assert_that(result, equal_to(expected_result))
+        is_live_reload_enabled.assert_called_once_with()
 
     @patch('xivo_dao.data_handler.configuration.notifier.live_reload_status_changed')
     @patch('xivo_dao.data_handler.configuration.dao.set_live_reload_status')

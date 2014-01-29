@@ -19,7 +19,8 @@ from xivo_dao.data_handler.configuration import dao, validator, notifier
 
 
 def get_live_reload_status():
-    return dao.get_live_reload_status()
+    enabled = dao.is_live_reload_enabled()
+    return {'enabled': enabled}
 
 
 def set_live_reload_status(data):

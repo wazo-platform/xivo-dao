@@ -21,7 +21,7 @@ from xivo_dao.data_handler.exception import ElementEditionError
 
 
 @daosession
-def get_live_reload_status(session):
+def is_live_reload_enabled(session):
     ctimain = session.query(CtiMain).first()
     return ctimain.live_reload_conf == 1
 
