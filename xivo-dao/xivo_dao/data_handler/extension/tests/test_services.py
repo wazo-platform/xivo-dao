@@ -16,14 +16,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import unittest
+from mock import patch
 
-from mock import patch, Mock
 from xivo_dao.data_handler.extension.model import Extension
-from xivo_dao.data_handler.context.model import Context
 from xivo_dao.data_handler.extension import services as extension_services
-from xivo_dao.data_handler.exception import MissingParametersError, \
-    InvalidParametersError, ElementCreationError, ElementAlreadyExistsError, \
-    NonexistentParametersError
+from xivo_dao.data_handler.exception import ElementCreationError
 
 
 class TestExtension(unittest.TestCase):
@@ -60,11 +57,6 @@ class TestExtension(unittest.TestCase):
 
         find_by_exten_context.assert_called_once_with(expected.exten, expected.context)
         self.assertEquals(result, expected)
-
-    def test_create_no_properties(self):
-        extension = Extension(exten='1234')
-
-        self.assertRaises(MissingParametersError, extension_services.create, extension)
 
     @patch('xivo_dao.data_handler.extension.notifier.created')
     @patch('xivo_dao.data_handler.extension.dao.create')
