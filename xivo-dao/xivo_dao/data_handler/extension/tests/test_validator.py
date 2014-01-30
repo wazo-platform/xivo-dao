@@ -53,7 +53,7 @@ class TestValidators(TestCase):
         validate_extension_in_range.assert_called_once_with(extension)
 
     @patch('xivo_dao.data_handler.extension.validator.validate_extension_in_range')
-    @patch('xivo_dao.data_handler.extension.validator.validate_extension_available')
+    @patch('xivo_dao.data_handler.extension.validator.validate_extension_available_for_edit')
     @patch('xivo_dao.data_handler.extension.validator.validate_context_exists')
     @patch('xivo_dao.data_handler.extension.validator.validate_invalid_parameters')
     @patch('xivo_dao.data_handler.extension.validator.validate_missing_parameters')
@@ -61,7 +61,7 @@ class TestValidators(TestCase):
                            validate_missing_parameters,
                            validate_invalid_parameters,
                            validate_context_exists,
-                           validate_extension_available,
+                           validate_extension_available_for_edit,
                            validate_extension_in_range):
 
         extension = Mock()
@@ -71,7 +71,7 @@ class TestValidators(TestCase):
         validate_missing_parameters.assert_called_once_with(extension)
         validate_invalid_parameters.assert_called_once_with(extension)
         validate_context_exists.assert_called_once_with(extension)
-        validate_extension_available.assert_called_once_with(extension)
+        validate_extension_available_for_edit.assert_called_once_with(extension)
         validate_extension_in_range.assert_called_once_with(extension)
 
     @patch('xivo_dao.data_handler.extension.validator.validate_extension_exists')
@@ -222,3 +222,30 @@ class TestValidateExtensionNotAssociatedToLine(TestCase):
         self.assertRaises(ElementDeletionError, validator.validate_not_associated_to_line, extension)
 
         find_by_extension_id.assert_called_once_with(extension.id)
+
+
+class TestValidateExtensionAvailableForEdit(TestCase):
+
+    @patch('xivo_dao.data_handler.extension.validator.validate_extension_available')
+    @patch('xivo_dao.data_handler.extension.dao.get')
+    def test_when_exten_does_not_change(self, dao_get, validate_extension_available):
+        dao_get.return_value = Extension(exten='1000')
+
+        extension = Extension(id=1, exten='1000')
+
+        validator.validate_extension_available_for_edit(extension)
+
+        dao_get.assert_called_once_with(extension.id)
+        self.assertNotCalled(validate_extension_available)
+
+    @patch('xivo_dao.data_handler.extension.validator.validate_extension_available')
+    @patch('xivo_dao.data_handler.extension.dao.get')
+    def test_when_exten_changes_but_is_available(self, dao_get, validate_extension_available):
+        dao_get.return_value = Extension(exten='1000', context='default')
+
+        extension = Extension(id=1, exten='1001', context='default')
+
+        validator.validate_extension_available_for_edit(extension)
+
+        dao_get.assert_called_once_with(extension.id)
+        validate_extension_available.assert_called_once_with(extension)

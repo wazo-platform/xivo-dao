@@ -26,24 +26,24 @@ from xivo_dao.data_handler.context import services as context_services
 
 
 def validate_create(extension):
-    _validate(extension)
-
-
-def validate_edit(extension):
-    _validate(extension)
-
-
-def validate_delete(extension):
-    validate_extension_exists(extension)
-    validate_not_associated_to_line(extension)
-
-
-def _validate(extension):
     validate_invalid_parameters(extension)
     validate_missing_parameters(extension)
     validate_context_exists(extension)
     validate_extension_available(extension)
     validate_extension_in_range(extension)
+
+
+def validate_edit(extension):
+    validate_invalid_parameters(extension)
+    validate_missing_parameters(extension)
+    validate_context_exists(extension)
+    validate_extension_available_for_edit(extension)
+    validate_extension_in_range(extension)
+
+
+def validate_delete(extension):
+    validate_extension_exists(extension)
+    validate_not_associated_to_line(extension)
 
 
 def validate_invalid_parameters(extension):
@@ -89,3 +89,11 @@ def validate_not_associated_to_line(extension):
     line_extension = line_extension_dao.find_by_extension_id(extension.id)
     if line_extension:
         raise ElementDeletionError('Extension', 'extension still has a link')
+
+
+def validate_extension_available_for_edit(extension):
+    existing_extension = extension_dao.get(extension.id)
+
+    if existing_extension.exten != extension.exten or \
+       existing_extension.context != extension.context:
+        validate_extension_available(extension)
