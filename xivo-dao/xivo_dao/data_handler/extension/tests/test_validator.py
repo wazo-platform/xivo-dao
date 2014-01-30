@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-import unittest
+from xivo_dao.tests.test_case import TestCase
 
 from mock import patch, Mock
 
@@ -28,7 +28,7 @@ from xivo_dao.data_handler.extension import validator
 from xivo_dao.data_handler.extension.model import Extension
 
 
-class TestValidators(unittest.TestCase):
+class TestValidators(TestCase):
 
     @patch('xivo_dao.data_handler.extension.validator.validate_extension_in_range')
     @patch('xivo_dao.data_handler.extension.validator.validate_extension_available')
@@ -85,7 +85,7 @@ class TestValidators(unittest.TestCase):
         validate_not_associated_to_line.assert_called_once_with(extension)
 
 
-class TestValidateInvalidParameters(unittest.TestCase):
+class TestValidateInvalidParameters(TestCase):
 
     def test_on_empty_extension_number(self):
         extension = Extension(context='toto')
@@ -106,7 +106,7 @@ class TestValidateInvalidParameters(unittest.TestCase):
                                 validator.validate_invalid_parameters, extension)
 
 
-class TestValidateMissingParameters(unittest.TestCase):
+class TestValidateMissingParameters(TestCase):
 
     def test_missing_parameters_when_extension_has_no_parameters(self):
         extension = Extension()
@@ -119,7 +119,7 @@ class TestValidateMissingParameters(unittest.TestCase):
         validator.validate_missing_parameters(extension)
 
 
-class TestValidateContextExists(unittest.TestCase):
+class TestValidateContextExists(TestCase):
 
     @patch('xivo_dao.data_handler.context.services.find_by_name')
     def test_validate_context_exists_when_context_does_not_exist(self, find_by_name):
@@ -142,7 +142,7 @@ class TestValidateContextExists(unittest.TestCase):
         find_by_name.assert_called_once_with(extension.context)
 
 
-class TestValidateExtensionAvailable(unittest.TestCase):
+class TestValidateExtensionAvailable(TestCase):
 
     @patch('xivo_dao.data_handler.extension.dao.find_by_exten_context')
     def test_validate_extension_available_when_extension_does_not_exist(self, find_by_exten_context):
@@ -165,7 +165,7 @@ class TestValidateExtensionAvailable(unittest.TestCase):
         find_by_exten_context.assert_called_once_with(extension.exten, extension.context)
 
 
-class TestValidateExtensionInRange(unittest.TestCase):
+class TestValidateExtensionInRange(TestCase):
 
     @patch('xivo_dao.data_handler.context.services.is_extension_valid_for_context')
     def test_validate_extension_in_range_when_extension_outside_of_range(self, is_extension_valid_for_context):
@@ -188,7 +188,7 @@ class TestValidateExtensionInRange(unittest.TestCase):
         is_extension_valid_for_context.assert_called_once_with(extension)
 
 
-class TestValidateExtensionExists(unittest.TestCase):
+class TestValidateExtensionExists(TestCase):
 
     @patch('xivo_dao.data_handler.extension.dao.get')
     def test_validate_extension_exists_when_extension_exists(self, dao_get):
@@ -201,7 +201,7 @@ class TestValidateExtensionExists(unittest.TestCase):
         dao_get.assert_called_once_with(extension.id)
 
 
-class TestValidateExtensionNotAssociatedToLine(unittest.TestCase):
+class TestValidateExtensionNotAssociatedToLine(TestCase):
 
     @patch('xivo_dao.data_handler.line_extension.dao.find_by_extension_id')
     def test_validate_not_associated_to_line_when_no_associations(self, find_by_extension_id):

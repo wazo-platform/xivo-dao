@@ -15,16 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-import unittest
 from mock import patch, Mock, sentinel
 from hamcrest import assert_that, equal_to, contains
 
+from xivo_dao.tests.test_case import TestCase
 from xivo_dao.data_handler.user_line.model import UserLine
 from xivo_dao.data_handler.line_extension.model import LineExtension
 from xivo_dao.data_handler.user_line import services as user_line_services
 
 
-class TestUserLineGetByUserIdAndLineId(unittest.TestCase):
+class TestUserLineGetByUserIdAndLineId(TestCase):
 
     @patch('xivo_dao.data_handler.user_line.dao.get_by_user_id_and_line_id')
     def test_get_by_user_id_and_line_id(self, user_line_get_by_user_id):
@@ -41,7 +41,7 @@ class TestUserLineGetByUserIdAndLineId(unittest.TestCase):
         assert_that(result, equal_to(expected_result))
 
 
-class TestFindAllByLineId(unittest.TestCase):
+class TestFindAllByLineId(TestCase):
 
     @patch('xivo_dao.data_handler.user_line.dao.find_all_by_line_id')
     def test_find_all_by_line_id(self, find_all_by_line_id):
@@ -53,7 +53,7 @@ class TestFindAllByLineId(unittest.TestCase):
         assert_that(result, contains(user_line))
 
 
-class TestUserLineAssociate(unittest.TestCase):
+class TestUserLineAssociate(TestCase):
 
     @patch('xivo_dao.data_handler.user_line.dao.find_main_user_line', Mock(return_value=None))
     @patch('xivo_dao.data_handler.user_line.validator.validate_association')
@@ -134,7 +134,7 @@ class TestUserLineAssociate(unittest.TestCase):
         notifier_associated.assert_called_once_with(secondary_user_line)
 
 
-class TestMakeUserLineAssociation(unittest.TestCase):
+class TestMakeUserLineAssociation(TestCase):
 
     @patch('xivo_dao.data_handler.user_line.dao.find_main_user_line')
     @patch('xivo_dao.data_handler.line_extension.dao.find_by_line_id')
@@ -180,7 +180,7 @@ class TestMakeUserLineAssociation(unittest.TestCase):
         make_associations.assert_called_once_with(sentinel.main_user_id, sentinel.line_id, None)
 
 
-class TestUserLineDissociate(unittest.TestCase):
+class TestUserLineDissociate(TestCase):
 
     @patch('xivo_dao.data_handler.user_line.services.delete_user_line_associations')
     @patch('xivo_dao.data_handler.user_line.dao.dissociate')
@@ -201,10 +201,7 @@ class TestUserLineDissociate(unittest.TestCase):
         delete_user_line_associations.assert_called_once_with(user_line)
 
 
-class DeleteUserLineAssociations(unittest.TestCase):
-
-    def assertNotCalled(self, callee):
-        assert_that(callee.call_count, equal_to(0))
+class DeleteUserLineAssociations(TestCase):
 
     @patch('xivo_dao.data_handler.line.dao.delete_user_references')
     @patch('xivo_dao.data_handler.user_line_extension.helper.delete_extension_associations')
