@@ -26,16 +26,16 @@ from xivo_dao.data_handler.context import services as context_services
 
 
 def validate_create(extension):
-    validate_invalid_parameters(extension)
     validate_missing_parameters(extension)
+    validate_invalid_parameters(extension)
     validate_context_exists(extension)
     validate_extension_available(extension)
     validate_extension_in_range(extension)
 
 
 def validate_edit(extension):
-    validate_invalid_parameters(extension)
     validate_missing_parameters(extension)
+    validate_invalid_parameters(extension)
     validate_context_exists(extension)
     validate_extension_available_for_edit(extension)
     validate_extension_in_range(extension)
