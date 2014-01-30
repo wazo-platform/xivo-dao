@@ -39,10 +39,20 @@ def validate_delete(extension):
 
 
 def _validate(extension):
+    validate_invalid_parameters(extension)
     validate_missing_parameters(extension)
     validate_context_exists(extension)
     validate_extension_available(extension)
     validate_extension_in_range(extension)
+
+
+def validate_invalid_parameters(extension):
+    if not extension.exten:
+        raise InvalidParametersError(['Exten required'])
+    if not extension.context:
+        raise InvalidParametersError(['Context required'])
+    if extension.commented not in [True, False]:
+        raise InvalidParametersError(['Commented must be a bool'])
 
 
 def validate_missing_parameters(extension):

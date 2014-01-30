@@ -33,9 +33,11 @@ class TestValidators(unittest.TestCase):
     @patch('xivo_dao.data_handler.extension.validator.validate_extension_in_range')
     @patch('xivo_dao.data_handler.extension.validator.validate_extension_available')
     @patch('xivo_dao.data_handler.extension.validator.validate_context_exists')
+    @patch('xivo_dao.data_handler.extension.validator.validate_invalid_parameters')
     @patch('xivo_dao.data_handler.extension.validator.validate_missing_parameters')
     def test_validate_create(self,
                              validate_missing_parameters,
+                             validate_invalid_parameters,
                              validate_context_exists,
                              validate_extension_available,
                              validate_extension_in_range):
@@ -45,6 +47,7 @@ class TestValidators(unittest.TestCase):
         validator.validate_create(extension)
 
         validate_missing_parameters.assert_called_once_with(extension)
+        validate_invalid_parameters.assert_called_once_with(extension)
         validate_context_exists.assert_called_once_with(extension)
         validate_extension_available.assert_called_once_with(extension)
         validate_extension_in_range.assert_called_once_with(extension)
@@ -52,9 +55,11 @@ class TestValidators(unittest.TestCase):
     @patch('xivo_dao.data_handler.extension.validator.validate_extension_in_range')
     @patch('xivo_dao.data_handler.extension.validator.validate_extension_available')
     @patch('xivo_dao.data_handler.extension.validator.validate_context_exists')
+    @patch('xivo_dao.data_handler.extension.validator.validate_invalid_parameters')
     @patch('xivo_dao.data_handler.extension.validator.validate_missing_parameters')
     def test_validate_edit(self,
                            validate_missing_parameters,
+                           validate_invalid_parameters,
                            validate_context_exists,
                            validate_extension_available,
                            validate_extension_in_range):
@@ -64,6 +69,7 @@ class TestValidators(unittest.TestCase):
         validator.validate_edit(extension)
 
         validate_missing_parameters.assert_called_once_with(extension)
+        validate_invalid_parameters.assert_called_once_with(extension)
         validate_context_exists.assert_called_once_with(extension)
         validate_extension_available.assert_called_once_with(extension)
         validate_extension_in_range.assert_called_once_with(extension)
@@ -77,6 +83,27 @@ class TestValidators(unittest.TestCase):
 
         validate_extension_exists.assert_called_once_with(extension)
         validate_not_associated_to_line.assert_called_once_with(extension)
+
+
+class TestValidateInvalidParameters(unittest.TestCase):
+
+    def test_on_empty_extension_number(self):
+        extension = Extension(context='toto')
+
+        self.assertRaisesRegexp(InvalidParametersError, 'Invalid parameters: Exten required',
+                                validator.validate_invalid_parameters, extension)
+
+    def test_on_empty_context(self):
+        extension = Extension(exten='1000')
+
+        self.assertRaisesRegexp(InvalidParametersError, 'Invalid parameters: Context required',
+                                validator.validate_invalid_parameters, extension)
+
+    def test_commented_is_not_a_boolean(self):
+        extension = Extension(exten='1000', context='default', commented='lol')
+
+        self.assertRaisesRegexp(InvalidParametersError, 'Invalid parameters: Commented must be a bool',
+                                validator.validate_invalid_parameters, extension)
 
 
 class TestValidateMissingParameters(unittest.TestCase):
