@@ -177,13 +177,15 @@ class TestUser(unittest.TestCase):
         line_services_update_callerid.assert_called_once_with(user)
         update_voicemail_fullname.assert_called_once_with(user)
 
+    @patch('xivo_dao.data_handler.user.validator.validate_delete')
     @patch('xivo_dao.data_handler.user.notifier.deleted')
     @patch('xivo_dao.data_handler.user.dao.delete')
-    def test_delete(self, user_dao_delete, user_notifier_deleted):
+    def test_delete(self, user_validate_delete, user_dao_delete, user_notifier_deleted):
         user = User(id=1, firstname='user', lastname='toto')
 
         user_services.delete(user)
 
+        user_validate_delete.assert_called_once_with(user)
         user_dao_delete.assert_called_once_with(user)
         user_notifier_deleted.assert_called_once_with(user)
 

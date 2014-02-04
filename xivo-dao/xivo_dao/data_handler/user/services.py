@@ -58,6 +58,7 @@ def edit(user):
 
 
 def delete(user):
+    validator.validate_delete(user)
     user_dao.delete(user)
     notifier.deleted(user)
 
