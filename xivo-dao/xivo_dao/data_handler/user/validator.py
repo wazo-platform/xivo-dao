@@ -61,8 +61,8 @@ def _check_invalid_parameters(user):
 
 
 def validate_user_not_associated(user):
-    validate_not_associated_to_line(user)
     validate_not_associated_to_voicemail(user)
+    validate_not_associated_to_line(user)
 
 
 def validate_not_associated_to_line(user):
