@@ -17,6 +17,11 @@
 
 from xivo_dao.data_handler.exception import MissingParametersError
 from xivo_dao.data_handler.exception import InvalidParametersError
+from xivo_dao.data_handler.exception import ElementDeletionError
+
+from xivo_dao.data_handler.user import dao as user_dao
+from xivo_dao.data_handler.user_line import dao as user_line_dao
+from xivo_dao.data_handler.user_voicemail import dao as user_voicemail_dao
 
 
 def validate_create(user):
@@ -25,6 +30,11 @@ def validate_create(user):
 
 def validate_edit(user):
     validate_model(user)
+
+
+def validate_delete(user):
+    validate_user_exists(user)
+    validate_user_not_associated(user)
 
 
 def validate_model(user):
@@ -48,3 +58,24 @@ def _check_invalid_parameters(user):
         invalid_parameters.append('password')
     if invalid_parameters:
         raise InvalidParametersError(invalid_parameters)
+
+
+def validate_user_not_associated(user):
+    validate_not_associated_to_voicemail(user)
+    validate_not_associated_to_line(user)
+
+
+def validate_not_associated_to_line(user):
+    user_lines = user_line_dao.find_all_by_user_id(user.id)
+    if user_lines:
+        raise ElementDeletionError('User', 'user still associated to a line')
+
+
+def validate_user_exists(user):
+    user_dao.get(user.id)
+
+
+def validate_not_associated_to_voicemail(user):
+    user_voicemail = user_voicemail_dao.find_by_user_id(user.id)
+    if user_voicemail:
+        raise ElementDeletionError('User', 'user still associated to a voicemail')

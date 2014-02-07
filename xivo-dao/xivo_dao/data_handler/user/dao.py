@@ -189,19 +189,11 @@ def edit(session, user):
 def delete(session, user):
     session.begin()
     try:
-        nb_row_affected = _delete_user(session, user.id)
+        _delete_user(session, user.id)
         session.commit()
-    except IntegrityError as e:
-        session.rollback()
-        raise ElementDeletionError('User', 'user still has a link')
     except SQLAlchemyError as e:
         session.rollback()
         raise ElementDeletionError('User', e)
-
-    if nb_row_affected == 0:
-        raise ElementDeletionError('User', 'user_id %s not exist' % user.id)
-
-    return nb_row_affected
 
 
 def _delete_user(session, user_id):

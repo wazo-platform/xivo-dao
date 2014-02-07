@@ -21,6 +21,7 @@ from mock import patch, Mock
 
 from xivo_dao.data_handler.exception import InvalidParametersError
 from xivo_dao.data_handler.exception import MissingParametersError
+from xivo_dao.data_handler.exception import ElementDeletionError
 from xivo_dao.data_handler.user import validator
 from xivo_dao.data_handler.user.model import User
 
@@ -40,6 +41,18 @@ class TestUserValidator(unittest.TestCase):
 
         validator.validate_edit(user)
         validate_model.assert_called_once_with(user)
+
+    @patch('xivo_dao.data_handler.user.validator.validate_user_not_associated')
+    @patch('xivo_dao.data_handler.user.validator.validate_user_exists')
+    def test_validate_delete(self, validate_user_exists, validate_user_not_associated):
+        user = Mock(User)
+
+        validator.validate_delete(user)
+        validate_user_exists.assert_called_once_with(user)
+        validate_user_not_associated.assert_called_once_with(user)
+
+
+class TestValidateModel(unittest.TestCase):
 
     def test_validate_model_no_properties(self):
         user = User()
@@ -86,3 +99,79 @@ class TestUserValidator(unittest.TestCase):
         user.mobilephonenumber = '1234'
 
         validator.validate_model(user)
+
+
+class TestValidateUserNotAssociated(unittest.TestCase):
+
+    @patch('xivo_dao.data_handler.user.validator.validate_not_associated_to_line')
+    @patch('xivo_dao.data_handler.user.validator.validate_not_associated_to_voicemail')
+    def test_validate_user_not_assocaited(self, validate_not_associated_to_voicemail,
+                                          validate_not_associated_to_line):
+
+        user = Mock(User)
+
+        validator.validate_user_not_associated(user)
+
+        validate_not_associated_to_line.assert_called_once_with(user)
+        validate_not_associated_to_voicemail.assert_called_once_with(user)
+
+
+class TestValidateNotAssocaitedToLine(unittest.TestCase):
+
+    @patch('xivo_dao.data_handler.user_line.dao.find_all_by_user_id')
+    def test_when_not_associated_to_line(self, find_all_by_user_id):
+        find_all_by_user_id.return_value = []
+
+        user = Mock(User, id=1)
+
+        validator.validate_not_associated_to_line(user)
+
+        find_all_by_user_id.assert_called_once_with(user.id)
+
+    @patch('xivo_dao.data_handler.user_line.dao.find_all_by_user_id')
+    def test_when_associated_to_line(self, find_all_by_user_id):
+        find_all_by_user_id.return_value = [Mock(User)]
+
+        user = Mock(User, id=1)
+
+        self.assertRaisesRegexp(ElementDeletionError, "Error while deleting User: user still associated to a line",
+                                validator.validate_not_associated_to_line, user)
+
+        find_all_by_user_id.assert_called_once_with(user.id)
+
+
+class TestValidateUserExists(unittest.TestCase):
+
+    @patch('xivo_dao.data_handler.user.dao.get')
+    def test_validate_user_exists(self, dao_get):
+        dao_get.return_value = Mock(User)
+
+        user = Mock(User, id=1)
+
+        validator.validate_user_exists(user)
+
+        dao_get.assert_called_once_with(user.id)
+
+
+class TestValidateNotAssociatedToVoicemail(unittest.TestCase):
+
+    @patch('xivo_dao.data_handler.user_voicemail.dao.find_by_user_id')
+    def test_when_not_associated_to_voicemail(self, find_all_by_user_id):
+        find_all_by_user_id.return_value = []
+
+        user = Mock(User, id=1)
+
+        validator.validate_not_associated_to_voicemail(user)
+
+        find_all_by_user_id.assert_called_once_with(user.id)
+
+    @patch('xivo_dao.data_handler.user_voicemail.dao.find_by_user_id')
+    def test_when_associated_to_voicemail(self, find_by_user_id):
+        find_by_user_id.return_value = Mock(User)
+
+        user = Mock(User, id=1)
+
+        self.assertRaisesRegexp(ElementDeletionError, "Error while deleting User: user still associated to a voicemail",
+                                validator.validate_not_associated_to_voicemail, user)
+
+        find_by_user_id.assert_called_once_with(user.id)
