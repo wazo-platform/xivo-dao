@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import datetime
-from hamcrest import assert_that, contains, has_property
+from hamcrest import assert_that, contains, has_property, contains_inanyorder
 
 from xivo_dao.alchemy.call_log import CallLog as CallLogSchema
 from xivo_dao.alchemy.cel import CEL as CELSchema
@@ -129,8 +129,8 @@ class TestCELDAO(DAOTestCase):
 
         result = cel_dao.find_from_linked_id(linked_id)
 
-        assert_that(result, contains(has_property('id', cel_id_1),
-                                     has_property('id', cel_id_3)))
+        assert_that(result, contains_inanyorder(has_property('id', cel_id_1),
+                                                has_property('id', cel_id_3)))
 
     def _add_processed_cel(self, **kwargs):
         call_log_id = self._add_call()
