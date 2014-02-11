@@ -116,6 +116,22 @@ class TestCELDAO(DAOTestCase):
                                      has_property('id', cel_id_3),
                                      has_property('id', cel_id_4)))
 
+    def test_find_from_linked_id_no_cels(self):
+        linked_id = '666'
+
+        result = cel_dao.find_from_linked_id(linked_id)
+
+        assert_that(result, contains())
+
+    def test_find_from_linked_id(self):
+        linked_id = '666'
+        cel_id_1, cel_id_2, cel_id_3 = self.add_cel(linkedid='666'), self.add_cel(linkedid='3'), self.add_cel(linkedid='666')
+
+        result = cel_dao.find_from_linked_id(linked_id)
+
+        assert_that(result, contains(has_property('id', cel_id_1),
+                                     has_property('id', cel_id_3)))
+
     def _add_processed_cel(self, **kwargs):
         call_log_id = self._add_call()
         cel_id = self.add_cel(**kwargs)
