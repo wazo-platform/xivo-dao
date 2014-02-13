@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.sql.expression import desc, asc, or_
 from sqlalchemy.exc import SQLAlchemyError
 
 from xivo_dao.alchemy.voicemail import Voicemail as VoicemailSchema
@@ -27,68 +26,24 @@ from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementCreationError, ElementEditionError, ElementDeletionError
 from xivo_dao.helpers.abstract_model import SearchResult
 from xivo_dao.alchemy.staticvoicemail import StaticVoicemail
+from xivo_dao.data_handler.utils.search import SearchFilter
 
 
 @daosession
 def find_all(session, limit=None, skip=None, order=None, direction='asc', search=None):
     query = session.query(VoicemailSchema)
-
-    query = count_query = _apply_search_criteria(query, search)
-    query = _apply_order_and_direction(query, order, direction)
-    query = _apply_skip_and_limit(query, skip, limit)
-
-    items = _generate_items(query)
-    total = _generate_total(count_query)
+    search_filter = SearchFilter(query, Voicemail.SEARCH_COLUMNS, VoicemailOrder.number)
+    rows, total = search_filter.search(search, limit, skip, order, direction)
+    items = _generate_items(rows)
 
     return SearchResult(total, items)
 
 
-def _generate_items(query):
-    rows = query.all()
-
+def _generate_items(rows):
     if not rows:
         return []
 
     return [db_converter.to_model(row) for row in rows]
-
-
-def _generate_total(query):
-    return query.count()
-
-
-def _apply_search_criteria(query, search):
-    if search is None:
-        return query
-
-    criteria = []
-    for column in Voicemail.SEARCH_COLUMNS:
-        criteria.append(column.ilike('%%%s%%' % search))
-
-    query = query.filter(or_(*criteria))
-    return query
-
-
-def _apply_order_and_direction(query, order, direction):
-    if order is None:
-        order = VoicemailOrder.number
-
-    if direction == 'desc':
-        order_expression = desc(order)
-    else:
-        order_expression = asc(order)
-
-    query = query.order_by(order_expression)
-    return query
-
-
-def _apply_skip_and_limit(query, skip, limit):
-    if skip is not None:
-        query = query.offset(skip)
-
-    if limit is not None:
-        query = query.limit(limit)
-
-    return query
 
 
 @daosession
