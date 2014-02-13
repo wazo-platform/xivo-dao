@@ -19,6 +19,15 @@
 from xivo_dao.helpers.db_manager import Base
 from sqlalchemy.schema import Column, ForeignKey
 from sqlalchemy.types import Integer
+from xivo_dao.alchemy.func_key_type import FuncKeyType
+from xivo_dao.alchemy.func_key_destination_type import FuncKeyDestinationType
+from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
+
+test_dependencies = [
+    FuncKeyType,
+    FuncKeyDestinationType,
+    FuncKeyDestUser,
+]
 
 
 class FuncKey(Base):
