@@ -19,6 +19,7 @@ from xivo_dao.data_handler.user import dao as user_dao, notifier
 from xivo_dao.data_handler.line import services as line_services
 from xivo_dao.data_handler.user import validator
 from xivo_dao.data_handler.voicemail import dao as voicemail_dao
+from xivo_dao.data_handler.func_key_template import dao as template_dao
 
 
 def get(user_id):
@@ -45,6 +46,7 @@ def create(user):
     validator.validate_create(user)
     user = user_dao.create(user)
     notifier.created(user)
+    template_dao.create_private_template_for_user(user)
     return user
 
 

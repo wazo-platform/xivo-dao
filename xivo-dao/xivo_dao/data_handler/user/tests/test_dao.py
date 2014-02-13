@@ -16,45 +16,37 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from hamcrest import assert_that, equal_to, has_length, has_property, all_of, has_items, contains, is_, none
-from xivo_dao.alchemy.agentfeatures import AgentFeatures
+from mock import patch, Mock
+from sqlalchemy.exc import SQLAlchemyError
+
 from xivo_dao.alchemy.callfilter import Callfilter
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
-from xivo_dao.alchemy.contextinclude import ContextInclude
-from xivo_dao.alchemy.cti_profile import CtiProfile
-from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
-from xivo_dao.alchemy.ctipresences import CtiPresences
 from xivo_dao.alchemy.dialaction import Dialaction
-from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
+from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 from xivo_dao.alchemy.phonefunckey import PhoneFunckey
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.schedulepath import SchedulePath
-from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
-from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 from xivo_dao.alchemy.user_line import UserLine
+from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
+from xivo_dao.alchemy.userfeatures import test_dependencies as user_test_dependencies
 from xivo_dao.alchemy.voicemail import Voicemail as VoicemailSchema
+
+from xivo_dao.data_handler.exception import ElementCreationError
+from xivo_dao.data_handler.exception import ElementEditionError
+from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.data_handler.user import dao as user_dao
+from xivo_dao.data_handler.user.model import User
 from xivo_dao.data_handler.user.model import UserOrdering
 from xivo_dao.tests.test_dao import DAOTestCase
-from mock import patch, Mock
-from sqlalchemy.exc import SQLAlchemyError
-from xivo_dao.data_handler.user.model import User
-from xivo_dao.data_handler.exception import ElementEditionError, \
-    ElementCreationError, ElementNotExistsError
 
 
 class TestUserDAO(DAOTestCase):
 
     tables = [
-        AgentFeatures,
         Callfilter,
         Callfiltermember,
-        ContextInclude,
-        CtiPhoneHintsGroup,
-        CtiPresences,
-        CtiProfile,
         Dialaction,
-        LineSchema,
         PhoneFunckey,
         QueueMember,
         RightCallMember,
@@ -62,8 +54,10 @@ class TestUserDAO(DAOTestCase):
         UserSchema,
         ExtensionSchema,
         UserLine,
-        VoicemailSchema
+        VoicemailSchema,
     ]
+
+    tables += user_test_dependencies
 
     def setUp(self):
         self.empty_tables()

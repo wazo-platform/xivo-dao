@@ -23,13 +23,8 @@ from xivo_dao.data_handler.line_extension.model import LineExtension
 from xivo_dao.data_handler.line_extension.exception import LineExtensionNotExistsError
 from xivo_dao.data_handler.exception import ElementNotExistsError
 
-from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.callfilter import Callfilter
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
-from xivo_dao.alchemy.contextinclude import ContextInclude
-from xivo_dao.alchemy.cti_profile import CtiProfile
-from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
-from xivo_dao.alchemy.ctipresences import CtiPresences
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
@@ -39,20 +34,28 @@ from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.sccpdevice import SCCPDevice as SCCPDeviceSchema
 from xivo_dao.alchemy.userfeatures import UserFeatures
+from xivo_dao.alchemy.userfeatures import test_dependencies as user_test_dependencies
 from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema
 from xivo_dao.alchemy.user_line import UserLine
 
 
-USER_TABLES = [UserFeatures, LineSchema, ContextInclude, AgentFeatures,
-               CtiPresences, CtiPhoneHintsGroup, CtiProfile, QueueMember,
-               RightCallMember, Callfiltermember, Callfilter, Dialaction,
-               PhoneFunckey, SchedulePath, ExtensionSchema, UserLine, UserSIPSchema,
-               SCCPDeviceSchema]
-
-
 class TestLineExtensionDAO(DAOTestCase):
 
-    tables = USER_TABLES
+    tables = [UserFeatures,
+              LineSchema,
+              QueueMember,
+              RightCallMember,
+              Callfiltermember,
+              Callfilter,
+              Dialaction,
+              PhoneFunckey,
+              SchedulePath,
+              ExtensionSchema,
+              UserLine,
+              UserSIPSchema,
+              SCCPDeviceSchema]
+
+    tables += user_test_dependencies
 
     def setUp(self):
         self.empty_tables()

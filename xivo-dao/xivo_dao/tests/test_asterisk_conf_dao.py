@@ -17,18 +17,12 @@
 
 from hamcrest import *
 from xivo_dao import asterisk_conf_dao
-from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.agentqueueskill import AgentQueueSkill
 from xivo_dao.alchemy.context import Context
-from xivo_dao.alchemy.contextinclude import ContextInclude
-from xivo_dao.alchemy.ctipresences import CtiPresences
-from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
-from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.features import Features
 from xivo_dao.alchemy.groupfeatures import GroupFeatures
 from xivo_dao.alchemy.iaxcallnumberlimits import IAXCallNumberLimits
-from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.musiconhold import MusicOnHold
 from xivo_dao.alchemy.phonefunckey import PhoneFunckey
 from xivo_dao.alchemy.pickup import Pickup
@@ -51,6 +45,7 @@ from xivo_dao.alchemy.staticsip import StaticSIP
 from xivo_dao.alchemy.staticvoicemail import StaticVoicemail
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.userfeatures import UserFeatures
+from xivo_dao.alchemy.userfeatures import test_dependencies as user_test_dependencies
 from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.voicemail import Voicemail
@@ -61,11 +56,7 @@ from xivo_dao.alchemy.usercustom import UserCustom
 class TestSccpConfDAO(DAOTestCase):
 
     tables = [
-        CtiPhoneHintsGroup,
-        CtiPresences,
-        CtiProfile,
         Extension,
-        LineFeatures,
         PhoneFunckey,
         SCCPLine,
         SCCPDevice,
@@ -73,6 +64,8 @@ class TestSccpConfDAO(DAOTestCase):
         UserFeatures,
         UserLine,
     ]
+
+    tables += user_test_dependencies
 
     def setUp(self):
         self.empty_tables()
@@ -204,18 +197,12 @@ class TestSccpConfDAO(DAOTestCase):
 
 class TestAsteriskConfDAO(DAOTestCase):
 
-    tables = [AgentFeatures,
-              AgentQueueSkill,
+    tables = [AgentQueueSkill,
               Context,
-              ContextInclude,
-              CtiPhoneHintsGroup,
-              CtiPresences,
-              CtiProfile,
               Extension,
               Features,
               GroupFeatures,
               IAXCallNumberLimits,
-              LineFeatures,
               MusicOnHold,
               PhoneFunckey,
               Pickup,
@@ -240,6 +227,8 @@ class TestAsteriskConfDAO(DAOTestCase):
               UserSIP,
               UserIAX,
               Voicemail]
+
+    tables += user_test_dependencies
 
     def setUp(self):
         self.empty_tables()

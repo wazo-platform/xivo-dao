@@ -15,25 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-
 from xivo_dao.helpers.db_manager import Base
-from sqlalchemy.schema import Column, ForeignKey
-from sqlalchemy.types import Integer
-from xivo_dao.alchemy.func_key_type import FuncKeyType
-from xivo_dao.alchemy.func_key_destination_type import FuncKeyDestinationType
-from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
-
-test_dependencies = [
-    FuncKeyType,
-    FuncKeyDestinationType,
-    FuncKeyDestUser,
-]
+from sqlalchemy.schema import Column
+from sqlalchemy.types import Integer, Boolean, String
 
 
-class FuncKey(Base):
+class FuncKeyTemplate(Base):
 
-    __tablename__ = 'func_key'
+    __tablename__ = 'func_key_template'
 
     id = Column(Integer, primary_key=True)
-    type_id = Column(Integer, ForeignKey('func_key_type.id'), nullable=False)
-    destination_type_id = Column(Integer, ForeignKey('func_key_destination_type.id'), nullable=False)
+    name = Column(String(128), nullable=False)
+    private = Column(Boolean, nullable=False, default=False)

@@ -121,10 +121,15 @@ class TestUser(unittest.TestCase):
         self.assertEquals(expected_result, result)
         user_dao_find_all_by_fullname.assert_called_once_with(fullname)
 
+    @patch('xivo_dao.data_handler.func_key_template.dao.create_private_template_for_user')
     @patch('xivo_dao.data_handler.user.notifier.created')
     @patch('xivo_dao.data_handler.user.dao.create')
     @patch('xivo_dao.data_handler.user.validator.validate_create')
-    def test_create(self, user_validate_create, user_dao_create, user_notifier_created):
+    def test_create(self,
+                    user_validate_create,
+                    user_dao_create,
+                    user_notifier_created,
+                    create_private_template_for_user):
         firstname = 'user'
         lastname = 'toto'
 
@@ -136,8 +141,9 @@ class TestUser(unittest.TestCase):
 
         user_validate_create.assert_called_once_with(user)
         user_dao_create.assert_called_once_with(user)
-        self.assertEquals(type(result), User)
         user_notifier_created.assert_called_once_with(user)
+        create_private_template_for_user.assert_called_once_with(user)
+        self.assertEquals(type(result), User)
 
     @patch('xivo_dao.data_handler.user.dao.create')
     @patch('xivo_dao.data_handler.user.validator.validate_create')

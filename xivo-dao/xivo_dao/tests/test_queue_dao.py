@@ -19,16 +19,17 @@ from xivo_dao import queue_dao
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.userfeatures import UserFeatures
-from xivo_dao.alchemy.cti_profile import CtiProfile
-from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
-from xivo_dao.alchemy.ctipresences import CtiPresences
+from xivo_dao.alchemy.userfeatures import test_dependencies as user_test_dependencies
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestQueueDAO(DAOTestCase):
 
-    tables = [QueueFeatures, QueueMember, UserFeatures,
-              CtiProfile, CtiPresences, CtiPhoneHintsGroup]
+    tables = [QueueFeatures,
+              QueueMember,
+              UserFeatures]
+
+    tables += user_test_dependencies
 
     def setUp(self):
         self.empty_tables()
