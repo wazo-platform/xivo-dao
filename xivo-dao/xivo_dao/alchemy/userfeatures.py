@@ -25,6 +25,7 @@ from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.ctipresences import CtiPresences
 from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
 from xivo_dao.alchemy.cti_profile import CtiProfile
+from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
 
 test_dependencies = [
     LineFeatures,
@@ -32,7 +33,8 @@ test_dependencies = [
     AgentFeatures,
     CtiPresences,
     CtiPhoneHintsGroup,
-    CtiProfile
+    CtiProfile,
+    FuncKeyTemplate
 ]
 
 
@@ -83,6 +85,8 @@ class UserFeatures(Base):
     rightcallcode = Column(String(16))
     commented = Column(Integer, nullable=False, default=0)
     description = Column(Text, nullable=False, default='')
+    func_key_template_id = Column(Integer, ForeignKey('func_key_template.id'))
+    func_key_private_template_id = Column(Integer, ForeignKey('func_key_template.id'))
 
     @property
     def fullname(self):

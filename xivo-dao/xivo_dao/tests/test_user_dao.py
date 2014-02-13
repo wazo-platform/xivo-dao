@@ -33,16 +33,25 @@ from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.userfeatures import UserFeatures
+from xivo_dao.alchemy.userfeatures import test_dependencies as user_test_dependencies
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 from xivo_dao.alchemy.user_line import UserLine
 
 
 class TestUserFeaturesDAO(DAOTestCase):
 
-    tables = [UserFeatures, LineFeatures, ContextInclude, AgentFeatures,
-              CtiPresences, CtiPhoneHintsGroup, CtiProfile, QueueMember,
-              RightCallMember, Callfiltermember, Callfilter, Dialaction,
-              PhoneFunckey, SchedulePath, ExtensionSchema, UserLine]
+    tables = [UserFeatures,
+              QueueMember,
+              RightCallMember,
+              Callfiltermember,
+              Callfilter,
+              Dialaction,
+              PhoneFunckey,
+              SchedulePath,
+              ExtensionSchema,
+              UserLine]
+
+    tables += user_test_dependencies
 
     def setUp(self):
         self.empty_tables()
@@ -75,9 +84,9 @@ class TestUserFeaturesDAO(DAOTestCase):
 
     def test_get_user_by_number_context_line_commented(self):
         context, number = 'default', '1234'
-        user_line = self.add_user_line_with_exten(exten=number,
-                                                  context=context,
-                                                  commented_line=1)
+        self.add_user_line_with_exten(exten=number,
+                                      context=context,
+                                      commented_line=1)
 
         self.assertRaises(LookupError, user_dao.get_user_by_number_context, number, context)
 

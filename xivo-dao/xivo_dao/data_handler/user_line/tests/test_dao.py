@@ -17,22 +17,17 @@
 
 from hamcrest import *
 
-from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.callfilter import Callfilter
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
-from xivo_dao.alchemy.contextinclude import ContextInclude
-from xivo_dao.alchemy.cti_profile import CtiProfile
-from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
-from xivo_dao.alchemy.ctipresences import CtiPresences
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
-from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
 from xivo_dao.alchemy.phonefunckey import PhoneFunckey
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
 from xivo_dao.alchemy.userfeatures import UserFeatures
+from xivo_dao.alchemy.userfeatures import test_dependencies as user_test_dependencies
 from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema
 from xivo_dao.data_handler.exception import ElementNotExistsError, ElementCreationError
 from xivo_dao.data_handler.user_line import dao as user_line_dao
@@ -44,12 +39,6 @@ class TestUserLineDao(DAOTestCase):
 
     tables = [
         UserFeatures,
-        LineSchema,
-        ContextInclude,
-        AgentFeatures,
-        CtiPresences,
-        CtiPhoneHintsGroup,
-        CtiProfile,
         QueueMember,
         RightCallMember,
         Callfiltermember,
@@ -61,6 +50,8 @@ class TestUserLineDao(DAOTestCase):
         UserLineSchema,
         UserSIPSchema
     ]
+
+    tables += user_test_dependencies
 
     def setUp(self):
         self.empty_tables()

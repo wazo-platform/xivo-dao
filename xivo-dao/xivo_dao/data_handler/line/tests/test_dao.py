@@ -16,12 +16,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from hamcrest import assert_that, equal_to, all_of, has_property, is_not, has_length, none
-from xivo_dao.alchemy.cti_profile import CtiProfile
-from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
-from xivo_dao.alchemy.ctipresences import CtiPresences
 from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
+from xivo_dao.alchemy.userfeatures import test_dependencies as user_test_dependencies
 from xivo_dao.data_handler.line import dao as line_dao
 from xivo_dao.data_handler.extension import dao as extension_dao
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -44,9 +42,6 @@ class TestLineDao(DAOTestCase):
 
     tables = [
         UserSchema,
-        CtiProfile,
-        CtiPresences,
-        CtiPhoneHintsGroup,
         Extension,
         LineSchema,
         UserLine,
@@ -55,6 +50,8 @@ class TestLineDao(DAOTestCase):
         UserCustomSchema,
         SCCPLineSchema
     ]
+
+    tables += user_test_dependencies
 
     def setUp(self):
         self.empty_tables()
