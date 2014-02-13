@@ -34,3 +34,12 @@ def find_last_unprocessed(session, limit):
                 .all())
     cel_rows.reverse()
     return cel_rows
+
+
+@daosession
+def find_from_linked_id(session, linked_id):
+    cel_rows = (session
+                .query(CELSchema)
+                .filter(CELSchema.linkedid == linked_id)
+                .all())
+    return cel_rows
