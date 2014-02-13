@@ -1,8 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
+import fnmatch
+import os
+
 from distutils.core import setup
 
+
+def is_package(path):
+    is_svn_dir = fnmatch.fnmatch(path, '*/.svn*')
+    is_test_module = fnmatch.fnmatch(path, '*tests')
+    return not (is_svn_dir or is_test_module)
+
+packages = [p for p, _, _ in os.walk('xivo_dao') if is_package(p)]
 setup(
     name='xivo-dao',
     version='0.1',
@@ -11,27 +21,5 @@ setup(
     author_email='dev@avencall.com',
     url='http://git.xivo.fr/',
     license='GPLv3',
-    packages=[
-        'xivo_dao',
-        'xivo_dao.alchemy',
-        'xivo_dao.converters',
-        'xivo_dao.data_handler',
-        'xivo_dao.data_handler.call_log',
-        'xivo_dao.data_handler.cel',
-        'xivo_dao.data_handler.configuration',
-        'xivo_dao.data_handler.context',
-        'xivo_dao.data_handler.device',
-        'xivo_dao.data_handler.extension',
-        'xivo_dao.data_handler.language',
-        'xivo_dao.data_handler.line',
-        'xivo_dao.data_handler.line_extension',
-        'xivo_dao.data_handler.user',
-        'xivo_dao.data_handler.user_line',
-        'xivo_dao.data_handler.user_line_extension',
-        'xivo_dao.data_handler.user_voicemail',
-        'xivo_dao.data_handler.voicemail',
-        'xivo_dao.data_handler.cti_profile',
-        'xivo_dao.data_handler.user_cti_profile',
-        'xivo_dao.helpers',
-    ]
+    packages=packages,
 )
