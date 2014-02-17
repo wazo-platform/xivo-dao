@@ -41,5 +41,6 @@ def find_from_linked_id(session, linked_id):
     cel_rows = (session
                 .query(CELSchema)
                 .filter(CELSchema.linkedid == linked_id)
+                .order_by(CELSchema.eventtime.asc())
                 .all())
     return cel_rows

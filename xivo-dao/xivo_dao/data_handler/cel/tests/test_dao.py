@@ -132,6 +132,21 @@ class TestCELDAO(DAOTestCase):
         assert_that(result, contains_inanyorder(has_property('id', cel_id_1),
                                                 has_property('id', cel_id_3)))
 
+    def test_find_from_linked_id_when_cels_are_unordered_then_return_cels_in_chronological_order(self):
+        linked_id = '666'
+        now = datetime.datetime.now()
+        one_hour_ago = now - datetime.timedelta(hours=1)
+        one_hour_later = now + datetime.timedelta(hours=1)
+        cel_id_1, cel_id_2, cel_id_3 = [self.add_cel(linkedid='666', eventtime=now),
+                                        self.add_cel(linkedid='666', eventtime=one_hour_ago),
+                                        self.add_cel(linkedid='666', eventtime=one_hour_later)]
+
+        result = cel_dao.find_from_linked_id(linked_id)
+
+        assert_that(result, contains(has_property('id', cel_id_2),
+                                     has_property('id', cel_id_1),
+                                     has_property('id', cel_id_3)))
+
     def _add_processed_cel(self, **kwargs):
         call_log_id = self._add_call()
         cel_id = self.add_cel(**kwargs)
