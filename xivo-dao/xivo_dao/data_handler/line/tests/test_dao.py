@@ -60,12 +60,20 @@ class TestLineDao(DAOTestCase):
         line_name = 'sdklfj'
 
         line_sip = self.add_usersip(name=line_name)
-        line = self.add_line(protocolid=line_sip.id,
-                             name=line_name)
+        line_row = self.add_line(protocolid=line_sip.id,
+                                 name=line_name)
 
-        line = line_dao.get(line.id)
+        line = line_dao.get(line_row.id)
 
+        assert_that(line.id, equal_to(line_row.id))
         assert_that(line.name, equal_to(line_name))
+        assert_that(line.username, equal_to(line_row.name))
+        assert_that(line.secret, equal_to(line_sip.secret))
+        assert_that(line.context, equal_to(line_sip.context))
+        assert_that(line.protocol, equal_to(line_row.protocol))
+        assert_that(line.device_slot, equal_to(line_row.num))
+        assert_that(line.device_id, equal_to(line_row.device))
+        assert_that(line.provisioning_extension, equal_to(line_row.provisioningid))
 
     def test_get_custom_line(self):
         line_interface = '123456789'
