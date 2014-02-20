@@ -16,6 +16,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.data_handler.exception import InvalidParametersError
+from xivo_dao.data_handler.user.model import User
+from xivo_dao.data_handler.line.model import LineSIP
+from xivo_dao.data_handler.extension.model import Extension
 
 from hamcrest import assert_that, equal_to, has_property
 from mock import Mock, patch, sentinel
@@ -43,9 +46,9 @@ class TestULEHelper(TestCase):
                                               extension_associate,
                                               extension_find,
                                               caller_id):
-        user = user_get.return_value = Mock()
-        line = line_get.return_value = Mock()
-        extension = extension_find.return_value = Mock()
+        user = user_get.return_value = Mock(User, id=sentinel.user_id)
+        line = line_get.return_value = Mock(LineSIP, id=sentinel.line_id)
+        extension = extension_find.return_value = Mock(Extension, exten=sentinel.exten)
         caller_id.return_value = sentinel.caller_id
 
         helper.make_associations(sentinel.user_id, sentinel.line_id, sentinel.extension_id)
@@ -73,8 +76,9 @@ class TestULEHelper(TestCase):
                                                  extension_associate,
                                                  extension_find,
                                                  caller_id):
-        user = user_get.return_value = Mock()
-        line = line_get.return_value = Mock(number=sentinel.number,
+        user = user_get.return_value = Mock(User)
+        line = line_get.return_value = Mock(LineSIP,
+                                            number=sentinel.number,
                                             context=sentinel.context)
         extension_find.return_value = None
         caller_id.return_value = sentinel.caller_id
@@ -96,8 +100,8 @@ class TestULEHelper(TestCase):
                                            extension_get,
                                            line_dissociate,
                                            extension_dissociate):
-        extension = extension_get.return_value = Mock(id=1)
-        line = Mock(id=2)
+        extension = extension_get.return_value = Mock(Extension, id=1)
+        line = Mock(LineSIP, id=2)
 
         helper.delete_extension_associations(line.id, extension.id)
 
@@ -107,7 +111,7 @@ class TestULEHelper(TestCase):
 
     @patch('xivo_dao.data_handler.line.dao.get')
     def test_validate_no_device_when_no_device_associated(self, line_get):
-        line_get.return_value = Mock(device=None)
+        line_get.return_value = Mock(LineSIP, device_id=None)
 
         helper.validate_no_device(sentinel.line_id)
 
@@ -115,7 +119,7 @@ class TestULEHelper(TestCase):
 
     @patch('xivo_dao.data_handler.line.dao.get')
     def test_validate_no_device_when_device_associated(self, line_get):
-        line_get.return_value = Mock(device='1234abcdefghijklmnopquesrtlkjh')
+        line_get.return_value = Mock(LineSIP, device_id='1234abcdefghijklmnopquesrtlkjh')
 
         self.assertRaises(InvalidParametersError, helper.validate_no_device, sentinel.line_id)
 
