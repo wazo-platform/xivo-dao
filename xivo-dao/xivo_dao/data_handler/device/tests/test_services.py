@@ -260,7 +260,7 @@ class TestDeviceServices(unittest.TestCase):
     @patch('xivo_dao.data_handler.line.dao.find_all_by_device_id')
     def test_rebuild_device_config(self, line_find_all_by_device_id, build_line_for_device):
         device = Device(id=self.device_id)
-        line1 = LineSIP(device=self.device_id)
+        line1 = LineSIP(device_id=self.device_id)
         line_find_all_by_device_id.return_value = [line1]
 
         device_services.rebuild_device_config(device)
@@ -273,7 +273,7 @@ class TestDeviceServices(unittest.TestCase):
                                                line_find_all_by_device_id,
                                                build_line_for_device):
         device = Device(id=self.device_id)
-        line1 = LineSIP(device=self.device_id)
+        line1 = LineSIP(device_id=self.device_id)
         line_find_all_by_device_id.return_value = [line1]
         build_line_for_device.side_effect = URLError('urlerror')
 
@@ -285,8 +285,8 @@ class TestDeviceServices(unittest.TestCase):
     @patch('xivo_dao.data_handler.line.dao.find_all_by_device_id')
     def test_rebuild_device_config_2_lines_same_device(self, line_find_all_by_device_id, build_line_for_device):
         device = Device(id=self.device_id)
-        line1 = LineSIP(device=self.device_id)
-        line2 = LineSIP(device=self.device_id)
+        line1 = LineSIP(device_id=self.device_id)
+        line2 = LineSIP(device_id=self.device_id)
         line_find_all_by_device_id.return_value = [line1, line2]
 
         device_services.rebuild_device_config(device)

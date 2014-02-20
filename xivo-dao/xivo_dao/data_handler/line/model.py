@@ -36,7 +36,7 @@ class Line(AbstractModels):
         'protocol': 'protocol',
         'protocolid': 'protocolid',
         'callerid': 'callerid',
-        'device': 'device',
+        'device': 'device_id',
         'provisioningid': 'provisioning_extension',
         'configregistrar': 'configregistrar',
         'num': 'device_slot'
@@ -62,7 +62,7 @@ class LineSIP(Line):
     # mapping = {db_field: model_field}
     _MAPPING = dict(Line._MAPPING.items() + {
         'username': 'username',
-        'secret': 'secret'
+        'secret': 'secret',
     }.items())
 
     def __init__(self, *args, **kwargs):
