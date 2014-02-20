@@ -15,10 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from contextlib import contextmanager
-from sqlalchemy.exc import SQLAlchemyError
-
 from xivo_dao.helpers.db_manager import daosession
+from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.data_handler.exception import ElementCreationError
@@ -29,23 +27,11 @@ def create_private_template_for_user(session, user):
     template = FuncKeyTemplate(private=True,
                                name=user.fullname)
 
-    with _commit_or_abort(session):
+    with commit_or_abort(session, ElementCreationError, 'FuncKeyTemplate'):
         session.add(template)
 
-    with _commit_or_abort(session):
+    with commit_or_abort(session, ElementCreationError, 'FuncKeyTemplate'):
         (session
          .query(UserSchema)
          .filter(UserSchema.id == user.id)
          .update({'func_key_private_template_id': template.id}))
-
-
-@contextmanager
-def _commit_or_abort(session):
-    session.begin()
-    yield
-
-    try:
-        session.commit()
-    except SQLAlchemyError as e:
-        session.rollback()
-        raise ElementCreationError('FuncKeyTemplate', e)
