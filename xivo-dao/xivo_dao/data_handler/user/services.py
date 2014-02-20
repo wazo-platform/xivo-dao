@@ -20,6 +20,7 @@ from xivo_dao.data_handler.line import services as line_services
 from xivo_dao.data_handler.user import validator
 from xivo_dao.data_handler.voicemail import dao as voicemail_dao
 from xivo_dao.data_handler.func_key_template import dao as template_dao
+from xivo_dao.data_handler.dial_action import dao as dial_action_dao
 
 
 def get(user_id):
@@ -45,9 +46,14 @@ def find_all_by_fullname(fullname):
 def create(user):
     validator.validate_create(user)
     user = user_dao.create(user)
+    _create_secondary_associations(user)
     notifier.created(user)
-    template_dao.create_private_template_for_user(user)
     return user
+
+
+def _create_secondary_associations(user):
+    template_dao.create_private_template_for_user(user)
+    dial_action_dao.create_default_dial_actions_for_user(user)
 
 
 def edit(user):
