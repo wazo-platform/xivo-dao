@@ -336,7 +336,7 @@ class TestLineDao(DAOTestCase):
             has_property('id', line.id)
         ))
         assert_that(result, contains(
-            has_property('device', device_id)
+            has_property('device_id', device_id)
         ))
 
     def test_find_all_by_device_id_some_lines_no_device(self):
@@ -378,7 +378,7 @@ class TestLineDao(DAOTestCase):
             has_property('id', line.id)
         ))
         assert_that(result, contains(
-            has_property('device', device_id)
+            has_property('device_id', device_id)
         ))
 
     def test_find_by_user_id_no_lines(self):

@@ -53,5 +53,5 @@ def delete_extension_associations(line_id, extension_id):
 
 def validate_no_device(line_id):
     line = line_dao.get(line_id)
-    if line.device:
+    if line.device_id:
         raise InvalidParametersError(['A device is still associated to the line'])

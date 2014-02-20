@@ -358,7 +358,7 @@ class TestLineServices(unittest.TestCase):
                        context=context,
                        username=name,
                        secret=secret,
-                       device=device_id,
+                       device_id=device_id,
                        device_slot=1)
 
         device_dao_find.return_value = device
@@ -388,7 +388,7 @@ class TestLineServices(unittest.TestCase):
                        context=context,
                        username=name,
                        secret=secret,
-                       device=device_id,
+                       device_id=device_id,
                        device_slot=1)
 
         device_dao_find.return_value = None
@@ -437,13 +437,13 @@ class TestLineServices(unittest.TestCase):
         device_id = 15
         device_slot = 1
 
-        line = LineSIP(id=line_id, username=username, secret=secret, device=device_id, device_slot=device_slot)
+        line = LineSIP(id=line_id, username=username, secret=secret, device_id=device_id, device_slot=device_slot)
         device = device_dao_find.return_value = Mock()
 
         line_services.delete(line)
 
         line_dao_delete.assert_called_once_with(line)
-        device_dao_find.assert_called_once_with(line.device)
+        device_dao_find.assert_called_once_with(line.device_id)
         remove_line_from_device.assert_called_once_with(device, line)
         line_notifier_deleted.assert_called_once_with(line)
 
@@ -462,13 +462,13 @@ class TestLineServices(unittest.TestCase):
         device_id = 15
         device_slot = 1
 
-        line = LineSIP(id=line_id, username=username, secret=secret, device=device_id, device_slot=device_slot)
+        line = LineSIP(id=line_id, username=username, secret=secret, device_id=device_id, device_slot=device_slot)
         device_dao_find.return_value = None
 
         line_services.delete(line)
 
         line_dao_delete.assert_called_once_with(line)
-        device_dao_find.assert_called_once_with(line.device)
+        device_dao_find.assert_called_once_with(line.device_id)
         self.assertEquals(remove_line_from_device.call_count, 0)
         line_notifier_deleted.assert_called_once_with(line)
 

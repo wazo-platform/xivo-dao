@@ -36,7 +36,7 @@ class Line(AbstractModels):
         'protocol': 'protocol',
         'protocolid': 'protocolid',
         'callerid': 'callerid',
-        'device': 'device',
+        'device': 'device_id',
         'provisioningid': 'provisioning_extension',
         'configregistrar': 'configregistrar',
         'num': 'device_slot'
