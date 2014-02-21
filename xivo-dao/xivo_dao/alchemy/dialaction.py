@@ -71,6 +71,6 @@ class Dialaction(Base):
                          name='dialaction_action',
                          metadata=Type.metadata),
                     nullable=False)
-    actionarg1 = Column(String(255), nullable=False, default='')
-    actionarg2 = Column(String(255), nullable=False, default='')
+    actionarg1 = Column(String(255), nullable=True)
+    actionarg2 = Column(String(255), nullable=True)
     linked = Column(Integer, nullable=False, default=0)

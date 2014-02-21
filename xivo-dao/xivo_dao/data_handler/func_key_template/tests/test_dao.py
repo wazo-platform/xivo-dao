@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from hamcrest import assert_that, is_not, none
-from mock import patch, Mock
+from mock import patch, Mock, ANY
 
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -53,17 +53,13 @@ class TestCreatePrivateTemplateForUser(DAOTestCase):
 
         self.assert_user_has_private_template(user)
 
-    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
-    def test_given_database_error_then_exception_raised(self, Session):
-        session = Mock()
-        session.commit.side_effect = SQLAlchemyError()
-        Session.return_value = session
-
+    @patch('xivo_dao.data_handler.func_key_template.dao.commit_or_abort')
+    def test_given_database_error_then_transaction_aborted(self, commit_or_abort):
         user = User(firstname='firstname')
 
-        self.assertRaises(ElementCreationError, dao.create_private_template_for_user, user)
-        session.begin.assert_called_once_with()
-        session.rollback.assert_called_once_with()
+        dao.create_private_template_for_user(user)
+
+        commit_or_abort.assert_called_with(ANY, ElementCreationError, 'FuncKeyTemplate')
 
     def prepare_user(self):
         user_row = self.add_user()

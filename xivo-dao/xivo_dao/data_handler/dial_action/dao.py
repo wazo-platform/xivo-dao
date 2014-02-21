@@ -17,21 +17,30 @@
 
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.helpers.db_utils import commit_or_abort
-from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
-from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
+from xivo_dao.alchemy.dialaction import Dialaction as DialactionSchema
 from xivo_dao.data_handler.exception import ElementCreationError
+
+USER_EVENTS = [
+    'noanswer',
+    'busy',
+    'congestion',
+    'chanunavail',
+]
 
 
 @daosession
-def create_private_template_for_user(session, user):
-    template = FuncKeyTemplate(private=True,
-                               name=user.fullname)
+def create_default_dial_actions_for_user(session, user):
+    with commit_or_abort(session, ElementCreationError, 'Dialaction'):
+        for event in USER_EVENTS:
+            dialaction = _create_user_dial_action(user.id, event)
+            session.add(dialaction)
 
-    with commit_or_abort(session, ElementCreationError, 'FuncKeyTemplate'):
-        session.add(template)
 
-    with commit_or_abort(session, ElementCreationError, 'FuncKeyTemplate'):
-        (session
-         .query(UserSchema)
-         .filter(UserSchema.id == user.id)
-         .update({'func_key_private_template_id': template.id}))
+def _create_user_dial_action(user_id, event):
+    return DialactionSchema(event=event,
+                            category='user',
+                            categoryval=str(user_id),
+                            action='none',
+                            actionarg1=None,
+                            actionarg2=None,
+                            linked=1)
