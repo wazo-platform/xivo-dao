@@ -17,9 +17,10 @@
 
 import unittest
 
-from hamcrest import assert_that, equal_to
+from hamcrest import assert_that, equal_to, has_property
 from mock import patch, Mock
 
+from xivo_dao.tests.test_case import TestCase
 from xivo_dao.data_handler.exception import ElementCreationError
 from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.data_handler.user import services as user_services
@@ -27,7 +28,7 @@ from xivo_dao.data_handler.user.model import User
 from xivo_dao.data_handler.user.model import UserOrdering
 
 
-class TestUser(unittest.TestCase):
+class TestGetUser(TestCase):
 
     @patch('xivo_dao.data_handler.user.dao.get')
     def test_get_not_found(self, user_dao_get):
@@ -58,6 +59,9 @@ class TestUser(unittest.TestCase):
 
         user_dao_get.assert_called_once_with(number, context)
         assert_that(result, equal_to(expected_result))
+
+
+class TestFindUser(TestCase):
 
     @patch('xivo_dao.data_handler.user.dao.find_all')
     def test_find_all(self, user_dao_find_all):
@@ -121,6 +125,9 @@ class TestUser(unittest.TestCase):
         self.assertEquals(expected_result, result)
         user_dao_find_all_by_fullname.assert_called_once_with(fullname)
 
+
+class TestCreate(TestCase):
+
     @patch('xivo_dao.data_handler.dial_action.dao.create_default_dial_actions_for_user')
     @patch('xivo_dao.data_handler.func_key_template.dao.create_private_template_for_user')
     @patch('xivo_dao.data_handler.user.notifier.created')
@@ -150,6 +157,7 @@ class TestUser(unittest.TestCase):
         self.assertEquals(type(result), User)
 
 
+class TestEdit(TestCase):
 
     @patch('xivo_dao.data_handler.user.services.update_voicemail_fullname')
     @patch('xivo_dao.data_handler.user.services.update_caller_id')
@@ -175,6 +183,9 @@ class TestUser(unittest.TestCase):
         line_services_update_callerid.assert_called_once_with(user)
         update_voicemail_fullname.assert_called_once_with(user)
 
+
+class TestDelete(TestCase):
+
     @patch('xivo_dao.data_handler.user.validator.validate_delete')
     @patch('xivo_dao.data_handler.user.notifier.deleted')
     @patch('xivo_dao.data_handler.user.dao.delete')
@@ -186,6 +197,9 @@ class TestUser(unittest.TestCase):
         user_validate_delete.assert_called_once_with(user)
         user_dao_delete.assert_called_once_with(user)
         user_notifier_deleted.assert_called_once_with(user)
+
+
+class TestUpdateVoicemail(TestCase):
 
     @patch('xivo_dao.data_handler.voicemail.dao.edit')
     @patch('xivo_dao.data_handler.voicemail.dao.get')
@@ -209,6 +223,9 @@ class TestUser(unittest.TestCase):
         voicemail_dao_get.assert_called_once_with(user.voicemail_id)
         assert_that(voicemail.name, equal_to(fullname))
         voicemail_dao_edit.assert_called_once_with(voicemail)
+
+
+class TestUpdateCallerId(TestCase):
 
     @patch('xivo_dao.data_handler.user.dao.get')
     def test_update_caller_id_no_changes(self, user_dao_get):
