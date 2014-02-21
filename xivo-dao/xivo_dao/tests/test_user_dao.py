@@ -105,24 +105,14 @@ class TestUserFeaturesDAO(DAOTestCase):
         self._check_dnd_is_not_set(user_id)
 
     def add_user_dnd_set(self):
-        user_features = UserFeatures()
-        user_features.enablednd = 1
-        user_features.firstname = 'firstname_test'
-
-        self.add_me(user_features)
-
-        user_id = user_features.id
-        return user_id
+        user = self.add_user(firstname='firstname_test',
+                             enablednd=1)
+        return user.id
 
     def add_user_dnd_not_set(self):
-        user_features = UserFeatures()
-        user_features.enablednd = 0
-        user_features.firstname = 'firstname_dnd not set'
-
-        self.add_me(user_features)
-
-        user_id = user_features.id
-        return user_id
+        user = self.add_user(firstname='firstname_dnd not set',
+                             enablednd=0)
+        return user.id
 
     def _check_dnd_is_set(self, user_id):
         user_features = (self.session.query(UserFeatures)
@@ -149,14 +139,8 @@ class TestUserFeaturesDAO(DAOTestCase):
         self._check_filter_in_db(user_id, 0)
 
     def add_user_with_filter(self, filter_status):
-        user_features = UserFeatures()
-        user_features.incallfilter = filter_status
-        user_features.firstname = 'firstname_filter not set'
-
-        self.add_me(user_features)
-
-        user_id = user_features.id
-        return user_id
+        user = self.add_user(firstname='firstname_filter not set', incallfilter=filter_status)
+        return user.id
 
     def test_enable_recording(self):
         user_id = self.add_user_recording_disabled()
@@ -174,22 +158,12 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.assertEquals(user_features.callrecord, value)
 
     def add_user_recording_disabled(self):
-        user_features = UserFeatures()
-        user_features.callrecord = 0
-        user_features.firstname = 'firstname_recording not set'
-        self.add_me(user_features)
-
-        user_id = user_features.id
-        return user_id
+        user = self.add_user(firstname='firstname_recording not set', callrecord=0)
+        return user.id
 
     def add_user_recording_enabled(self):
-        user_features = UserFeatures()
-        user_features.callrecord = 1
-        user_features.firstname = 'firstname_recording set'
-        self.add_me(user_features)
-
-        user_id = user_features.id
-        return user_id
+        user = self.add_user(firstname='firstname_recording set', callrecord=1)
+        return user.id
 
     def _check_filter_in_db(self, user_id, value):
         user_features = (self.session.query(UserFeatures)
@@ -206,15 +180,10 @@ class TestUserFeaturesDAO(DAOTestCase):
         self._check_unconditional_dest_in_db(user_id, destination)
 
     def add_user_with_unconditional_fwd(self, destination, enabled):
-        user_features = UserFeatures()
-        user_features.enableunc = enabled
-        user_features.destunc = destination
-        user_features.firstname = 'firstname_unconditional_fwd'
-
-        self.add_me(user_features)
-
-        user_id = user_features.id
-        return user_id
+        user = self.add_user(firstname='firstname_unconditional_fwd',
+                             enableunc=enabled,
+                             destunc=destination)
+        return user.id
 
     def _check_unconditional_fwd_in_db(self, user_id, value):
         user_features = (self.session.query(UserFeatures)
@@ -254,15 +223,10 @@ class TestUserFeaturesDAO(DAOTestCase):
         self._check_rna_dest_in_db(user_id, destination)
 
     def add_user_with_rna_fwd(self, destination, enabled):
-        user_features = UserFeatures()
-        user_features.enablerna = enabled
-        user_features.destrna = destination
-        user_features.firstname = 'firstname_rna_fwd'
-
-        self.add_me(user_features)
-
-        user_id = user_features.id
-        return user_id
+        user = self.add_user(firstname='firstname_rna_fwd',
+                             enablerna=enabled,
+                             destrna=destination)
+        return user.id
 
     def _check_rna_dest_in_db(self, user_id, destination):
         user_features = (self.session.query(UserFeatures)
@@ -275,15 +239,8 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.assertEquals(user_features.enablerna, value)
 
     def add_user_with_busy_fwd(self, destination, enabled):
-        user_features = UserFeatures()
-        user_features.enablebusy = enabled
-        user_features.destbusy = destination
-        user_features.firstname = 'firstname_busy_fwd'
-
-        self.add_me(user_features)
-
-        user_id = user_features.id
-        return user_id
+        user = self.add_user(firstname='firstname_busy_fwd', enablebusy=enabled, destbusy=destination)
+        return user.id
 
     def _check_busy_fwd_in_db(self, user_id, value):
         user_features = (self.session.query(UserFeatures)
@@ -315,12 +272,7 @@ class TestUserFeaturesDAO(DAOTestCase):
 
     def test_find_by_agent_id(self):
         agent_id = 5
-        user = UserFeatures()
-
-        user.firstname = 'test_agent'
-        user.agentid = agent_id
-
-        self.add_me(user)
+        user = self.add_user(firstname='test_agent', agentid=agent_id)
 
         user_ids = user_dao.find_by_agent_id(agent_id)
 
@@ -328,23 +280,14 @@ class TestUserFeaturesDAO(DAOTestCase):
 
     def test_agent_id(self):
         agent_id = 5
-        user = UserFeatures()
-
-        user.firstname = 'test_agent'
-        user.agentid = agent_id
-
-        self.add_me(user)
+        user = self.add_user(firstname='test_agent', agentid=5)
 
         res = user_dao.agent_id(user.id)
 
         self.assertEqual(res, agent_id)
 
     def test_agent_id_no_agent(self):
-        user = UserFeatures()
-
-        user.firstname = 'test_agent'
-
-        self.add_me(user)
+        user = self.add_user(firstname='test_agent')
 
         res = user_dao.agent_id(user.id)
 
@@ -352,23 +295,14 @@ class TestUserFeaturesDAO(DAOTestCase):
 
     def test_is_agent_yes(self):
         agent_id = 5
-        user = UserFeatures()
-
-        user.firstname = 'test_agent'
-        user.agentid = agent_id
-
-        self.add_me(user)
+        user = self.add_user(firstname='test_agent', agentid=agent_id)
 
         result = user_dao.is_agent(user.id)
 
         self.assertEqual(result, True)
 
     def test_is_agent_no(self):
-        user = UserFeatures()
-
-        user.firstname = 'test_agent'
-
-        self.add_me(user)
+        user = self.add_user(firstname='test_agent')
 
         result = user_dao.is_agent(user.id)
 
@@ -376,12 +310,7 @@ class TestUserFeaturesDAO(DAOTestCase):
 
     def test_get_profile(self):
         user_profile_id = self._add_profile('test_profile')
-
-        user = UserFeatures()
-        user.firstname = 'test_agent'
-        user.cti_profile_id = user_profile_id
-
-        self.add_me(user)
+        user = self.add_user(firstname='test_agent', cti_profile_id=user_profile_id)
 
         result = user_dao.get_profile(user.id)
 
@@ -461,10 +390,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.assertEqual(result, [context])
 
     def test_get_reachable_context_no_line(self):
-        user = UserFeatures()
-        user.name = 'Tester'
-
-        self.add_me(user)
+        user = self.add_user(firstname='Tester')
 
         self.assertEqual(user_dao.get_reachable_contexts(user.id), [])
 
@@ -522,19 +448,14 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         self.add_me(agent)
 
-        user = UserFeatures()
-        user.agentid = agent.id
-
-        self.add_me(user)
+        user = self.add_user(agentid=agent.id)
 
         result = user_dao.get_agent_number(user.id)
 
         self.assertEqual(result, agent.number)
 
     def test_get_dest_unc(self):
-        user = UserFeatures()
-
-        self.add_me(user)
+        user = self.add_user()
 
         result = user_dao.get_dest_unc(user.id)
 
@@ -549,9 +470,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.assertEqual(result, '1002')
 
     def test_get_fwd_unc(self):
-        user = UserFeatures()
-
-        self.add_me(user)
+        user = self.add_user()
 
         result = user_dao.get_fwd_unc(user.id)
 
@@ -566,9 +485,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.assertTrue(result)
 
     def test_get_dest_busy(self):
-        user = UserFeatures()
-
-        self.add_me(user)
+        user = self.add_user()
 
         result = user_dao.get_dest_busy(user.id)
 
@@ -583,9 +500,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.assertEqual(result, '1002')
 
     def test_get_fwd_busy(self):
-        user = UserFeatures()
-
-        self.add_me(user)
+        user = self.add_user()
 
         result = user_dao.get_fwd_busy(user.id)
 
@@ -600,9 +515,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.assertTrue(result)
 
     def test_get_dest_rna(self):
-        user = UserFeatures()
-
-        self.add_me(user)
+        user = self.add_user()
 
         result = user_dao.get_dest_rna(user.id)
 
@@ -617,9 +530,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.assertEqual(result, '1002')
 
     def test_get_fwd_rna(self):
-        user = UserFeatures()
-
-        self.add_me(user)
+        user = self.add_user()
 
         result = user_dao.get_fwd_rna(user.id)
 
@@ -655,11 +566,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.assertEqual(result, device_id)
 
     def test_get_device_id_no_device_one_line(self):
-        user = UserFeatures()
-        user.firstname = 'Toto'
-        user.lastname = 'Plop'
-
-        self.add_me(user)
+        user = self.add_user(firstname='Toto', lastname='Plop')
 
         line = LineFeatures()
         line.number = '1234'
@@ -684,11 +591,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.assertEqual(result, device_id)
 
     def test_get_device_id_no_line(self):
-        user = UserFeatures()
-        user.firstname = 'Toto'
-        user.lastname = 'Plop'
-
-        self.add_me(user)
+        user = self.add_user(firstname='Toto', lastname='Plop')
 
         self.assertRaises(LookupError, user_dao.get_device_id, user.id)
 
@@ -724,7 +627,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         result = user_dao.get_all()
         self.assertEqual(result, [])
 
-    def testadd_user(self):
+    def test_add_user(self):
         user = UserFeatures()
         user.firstname = 'test_user'
         user_dao.add_user(user)
@@ -899,8 +802,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         assert_that(result, equal_to(expected))
 
     def test_get_user_config_with_no_line(self):
-        user = UserFeatures()
-        self.add_me(user)
+        user = self.add_user()
 
         result = user_dao.get_user_config(user.id)
 
@@ -908,11 +810,11 @@ class TestUserFeaturesDAO(DAOTestCase):
         assert_that(result[str(user.id)]['linelist'], equal_to([]))
 
     def test_get_users_config(self):
-        user1 = UserFeatures(
+        user1 = self.add_user(
             firstname='John',
             lastname='Jackson',
         )
-        user2 = UserFeatures(
+        user2 = self.add_user(
             firstname='Jack',
             lastname='Johnson',
         )
@@ -928,24 +830,22 @@ class TestUserFeaturesDAO(DAOTestCase):
         assert_that(result[user2_id]['firstname'], equal_to(user2.firstname))
 
     def test_get_by_voicemailid(self):
-        user1 = UserFeatures(
+        user1 = self.add_user(
             firstname='John',
             lastname='Jackson',
             voicemailid=1
         )
-        user2 = UserFeatures(
+        user2 = self.add_user(
             firstname='Jack',
             lastname='Johnson',
             voicemailid=1
         )
-        user3 = UserFeatures(
+        user3 = self.add_user(
             firstname='Christopher',
             lastname='Christopherson',
             voicemailid=2
         )
-        self.add_me(user1)
-        self.add_me(user2)
-        self.add_me(user3)
+
         result = user_dao.get_by_voicemailid(1)
         result = [user.id for user in result]
         self.assertTrue(user1.id in result)

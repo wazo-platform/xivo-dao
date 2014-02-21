@@ -125,16 +125,7 @@ class TestQueueDAO(DAOTestCase):
         self.assertRaises(LookupError, queue_dao.id_from_name, queue_name)
 
     def _insert_user(self, user_id, agent_id):
-        user = UserFeatures()
-        user.id = user_id
-        user.firstname = 'John'
-        user.agentid = agent_id
-
-        self.session.begin()
-        self.session.add(user)
-        self.session.commit()
-
-        return user
+        return self.add_user(id=user_id, firstname='John', agentid=agent_id)
 
     def _insert_queue(self, name, display_name, number='3000'):
         queue = QueueFeatures()
