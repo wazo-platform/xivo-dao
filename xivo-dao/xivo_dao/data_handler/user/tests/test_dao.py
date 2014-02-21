@@ -351,12 +351,20 @@ class TestFind(TestUserDAO):
 
         assert_that(user, is_(none()))
 
+
+class TestCreate(TestUserDAO):
+
+    def prepare_user(self, **kwargs):
+        private_template_row = self.add_func_key_template(private=True)
+        kwargs.setdefault('private_template_id', private_template_row.id)
+        return User(**kwargs)
+
     def test_create(self):
-        user = User(firstname='toto',
-                    lastname='kiki',
-                    language='fr_FR',
-                    music_on_hold='musiconhold',
-                    preprocess_subroutine='preprocess_subroutine')
+        user = self.prepare_user(firstname='toto',
+                                 lastname='kiki',
+                                 language='fr_FR',
+                                 music_on_hold='musiconhold',
+                                 preprocess_subroutine='preprocess_subroutine')
 
         created_user = user_dao.create(user)
 
@@ -374,9 +382,9 @@ class TestFind(TestUserDAO):
 
     def test_create_with_custom_caller_id(self):
         caller_id = '"caller_id"'
-        user = User(firstname='firstname',
-                    lastname='lastname',
-                    caller_id='caller_id')
+        user = self.prepare_user(firstname='firstname',
+                                 lastname='lastname',
+                                 caller_id='caller_id')
 
         created_user = user_dao.create(user)
 
@@ -392,9 +400,9 @@ class TestFind(TestUserDAO):
 
     def test_create_with_custom_caller_id_including_quotes(self):
         caller_id = '"caller_id"'
-        user = User(firstname='firstname',
-                    lastname='lastname',
-                    caller_id='"caller_id"')
+        user = self.prepare_user(firstname='firstname',
+                                 lastname='lastname',
+                                 caller_id='"caller_id"')
 
         created_user = user_dao.create(user)
 
@@ -410,8 +418,8 @@ class TestFind(TestUserDAO):
 
     def test_create_with_default_caller_id(self):
         caller_id = '"firstname lastname"'
-        user = User(firstname='firstname',
-                    lastname='lastname')
+        user = self.prepare_user(firstname='firstname',
+                                 lastname='lastname')
 
         created_user = user_dao.create(user)
 
@@ -427,19 +435,19 @@ class TestFind(TestUserDAO):
 
     def test_create_with_all_fields(self):
         caller_id = '"caller_id"'
-        user = User(firstname='firstname',
-                    lastname='lastname',
-                    timezone='America/Montreal',
-                    language='en_US',
-                    description='description',
-                    caller_id='caller_id',
-                    outgoing_caller_id='outgoing_caller_id',
-                    mobile_phone_number='1234567890',
-                    username='username',
-                    password='password',
-                    music_on_hold='music_on_hold',
-                    preprocess_subroutine='preprocess_subroutine',
-                    userfield='userfield')
+        user = self.prepare_user(firstname='firstname',
+                                 lastname='lastname',
+                                 timezone='America/Montreal',
+                                 language='en_US',
+                                 description='description',
+                                 caller_id='caller_id',
+                                 outgoing_caller_id='outgoing_caller_id',
+                                 mobile_phone_number='1234567890',
+                                 username='username',
+                                 password='password',
+                                 music_on_hold='music_on_hold',
+                                 preprocess_subroutine='preprocess_subroutine',
+                                 userfield='userfield')
 
         created_user = user_dao.create(user)
 
