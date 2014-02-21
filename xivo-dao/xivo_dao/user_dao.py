@@ -99,15 +99,15 @@ def get(session, user_id):
 @daosession
 def get_user_by_number_context(session, exten, context):
     user = (session.query(UserFeatures)
-           .join(ExtensionSchema, and_(ExtensionSchema.context == context,
-                                       ExtensionSchema.exten == exten,
-                                       ExtensionSchema.commented == 0))
-           .join(LineFeatures, and_(LineFeatures.commented == 0))
-           .join(UserLine, and_(UserLine.user_id == UserFeatures.id,
-                                UserLine.extension_id == ExtensionSchema.id,
-                                UserLine.line_id == LineFeatures.id,
-                                UserLine.main_line == True,
-                                UserLine.main_line == True))
+            .join(ExtensionSchema, and_(ExtensionSchema.context == context,
+                                        ExtensionSchema.exten == exten,
+                                        ExtensionSchema.commented == 0))
+            .join(LineFeatures, and_(LineFeatures.commented == 0))
+            .join(UserLine, and_(UserLine.user_id == UserFeatures.id,
+                                 UserLine.extension_id == ExtensionSchema.id,
+                                 UserLine.line_id == LineFeatures.id,
+                                 UserLine.main_line == True,
+                                 UserLine.main_line == True))
             .first())
 
     if not user:
@@ -163,7 +163,7 @@ def _get_nested_contexts(contexts):
 def get_reachable_contexts(session, user_id):
     res = (session.query(ExtensionSchema.context)
            .join(UserLine, and_(UserLine.extension_id == ExtensionSchema.id,
-                                 UserLine.user_id == int(user_id)))
+                                UserLine.user_id == int(user_id)))
            .join(LineFeatures, UserLine.line_id == LineFeatures.id)
            .all())
     line_contexts = [context[0] for context in res]
@@ -384,10 +384,10 @@ def _user_config_query(session):
         UserFeatures.voicemailtype,
         LineFeatures.id.label('line_id'),
         LineFeatures.context.label('line_context'))
-    .outerjoin(UserLine, and_(UserLine.main_user == True,
-                              UserLine.main_line == True,
-                              UserLine.user_id == UserFeatures.id))
-    .outerjoin(LineFeatures, and_(LineFeatures.id == UserLine.line_id)))
+        .outerjoin(UserLine, and_(UserLine.main_user == True,
+                                  UserLine.main_line == True,
+                                  UserLine.user_id == UserFeatures.id))
+        .outerjoin(LineFeatures, and_(LineFeatures.id == UserLine.line_id)))
 
 
 def _format_user(user):
@@ -452,19 +452,19 @@ def _format_user(user):
 @daosession
 def get_user_join_line(session, userid):
     return (session.query(UserFeatures, LineFeatures)
-                    .outerjoin(UserLine, and_(UserFeatures.id == UserLine.user_id,
-                                              UserLine.main_user == True,
-                                              UserLine.main_line == True))
-                    .outerjoin(LineFeatures, LineFeatures.id == UserLine.line_id)
-                    .filter(UserFeatures.id == userid)
-                    .first())
+            .outerjoin(UserLine, and_(UserFeatures.id == UserLine.user_id,
+                                      UserLine.main_user == True,
+                                      UserLine.main_line == True))
+            .outerjoin(LineFeatures, LineFeatures.id == UserLine.line_id)
+            .filter(UserFeatures.id == userid)
+            .first())
 
 
 @daosession
 def get_all_join_line(session):
     return (session.query(UserFeatures, LineFeatures)
-                    .outerjoin(UserLine, and_(UserFeatures.id == UserLine.user_id,
-                                              UserLine.main_user == True,
-                                              UserLine.main_line == True))
-                    .outerjoin(LineFeatures, LineFeatures.id == UserLine.line_id)
-                    .all())
+            .outerjoin(UserLine, and_(UserFeatures.id == UserLine.user_id,
+                                      UserLine.main_user == True,
+                                      UserLine.main_line == True))
+            .outerjoin(LineFeatures, LineFeatures.id == UserLine.line_id)
+            .all())
