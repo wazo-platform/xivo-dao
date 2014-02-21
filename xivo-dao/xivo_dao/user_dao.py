@@ -30,6 +30,7 @@ from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 # the following import is necessary to laod CtiProfiles' definition:
+from xivo_dao.data_handler.func_key_template import dao as func_key_template_dao
 
 
 def enable_dnd(user_id):
@@ -274,6 +275,9 @@ def delete_all(session):
 
 @daosession
 def add_user(session, user):
+    if not user.func_key_private_template_id:
+        user.func_key_private_template_id = func_key_template_dao.create_private_template()
+
     try:
         session.begin()
         session.add(user)

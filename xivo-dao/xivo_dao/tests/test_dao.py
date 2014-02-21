@@ -57,6 +57,7 @@ from xivo_dao.alchemy.queue import Queue
 from xivo_dao.alchemy.queueskillrule import QueueSkillRule
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.queueskill import QueueSkill
+from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
 
 logger = logging.getLogger(__name__)
 
@@ -232,6 +233,10 @@ class DAOTestCase(unittest.TestCase):
         return extension
 
     def add_user(self, **kwargs):
+        if 'func_key_private_template_id' not in kwargs:
+            func_key_template = self.add_func_key_template(private=True)
+            kwargs['func_key_private_template_id'] = func_key_template.id
+
         kwargs.setdefault('id', self._generate_id())
         user = UserFeatures(**kwargs)
         self.add_me(user)
@@ -541,6 +546,11 @@ class DAOTestCase(unittest.TestCase):
         sip_authentication = SIPAuthentication(**kwargs)
         self.add_me(sip_authentication)
         return sip_authentication
+
+    def add_func_key_template(self, **kwargs):
+        func_key_template = FuncKeyTemplate(**kwargs)
+        self.add_me(func_key_template)
+        return func_key_template
 
     def add_me(self, obj):
         self.session.begin()

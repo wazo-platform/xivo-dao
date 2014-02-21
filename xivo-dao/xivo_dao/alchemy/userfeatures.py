@@ -86,7 +86,7 @@ class UserFeatures(Base):
     commented = Column(Integer, nullable=False, default=0)
     description = Column(Text, nullable=False, default='')
     func_key_template_id = Column(Integer, ForeignKey('func_key_template.id'))
-    func_key_private_template_id = Column(Integer, ForeignKey('func_key_template.id'))
+    func_key_private_template_id = Column(Integer, ForeignKey('func_key_template.id'), nullable=False)
 
     @property
     def fullname(self):
