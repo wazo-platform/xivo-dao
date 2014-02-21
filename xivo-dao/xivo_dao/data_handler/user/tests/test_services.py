@@ -146,21 +146,10 @@ class TestUser(unittest.TestCase):
         user_notifier_created.assert_called_once_with(user)
         create_private_template_for_user.assert_called_once_with(user)
         create_default_dial_actions_for_user.assert_called_once_with(user)
+
         self.assertEquals(type(result), User)
 
-    @patch('xivo_dao.data_handler.user.dao.create')
-    @patch('xivo_dao.data_handler.user.validator.validate_create')
-    def test_create_with_error_from_dao(self, user_validate_create, user_dao_create):
-        firstname = 'user'
-        lastname = 'toto'
 
-        user = User(firstname=firstname, lastname=lastname)
-
-        error = Exception("message")
-        user_dao_create.side_effect = ElementCreationError(error, '')
-
-        self.assertRaises(ElementCreationError, user_services.create, user)
-        user_validate_create.assert_called_once_with(user)
 
     @patch('xivo_dao.data_handler.user.services.update_voicemail_fullname')
     @patch('xivo_dao.data_handler.user.services.update_caller_id')
