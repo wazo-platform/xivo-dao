@@ -62,6 +62,9 @@ class TestUserDAO(DAOTestCase):
     def setUp(self):
         self.empty_tables()
 
+
+class TestGet(TestUserDAO):
+
     def test_get_main_user_by_line_id_not_found(self):
         line_id = 654
 
@@ -74,6 +77,76 @@ class TestUserDAO(DAOTestCase):
         result = user_dao.get_main_user_by_line_id(line_id)
 
         assert_that(result, has_property('id', user_line.user.id))
+
+    def test_get_inexistant(self):
+        self.assertRaises(LookupError, user_dao.get, 42)
+
+    def test_get_required_fields(self):
+        user_row = self.add_user(firstname='Paul')
+
+        user = user_dao.get(user_row.id)
+
+        assert_that(user.id, equal_to(user_row.id))
+        assert_that(user.firstname, equal_to(user_row.firstname))
+
+    def test_get_all_fields(self):
+        user_row = self.add_user(firstname='Paul',
+                                 lastname='Rogers',
+                                 callerid='"Cool dude"',
+                                 outcallerid='"Cool dude going out"',
+                                 loginclient='paulrogers',
+                                 passwdclient='paulrogers',
+                                 musiconhold='mymusic',
+                                 mobilephonenumber='4185551234',
+                                 userfield='userfield',
+                                 timezone='America/Montreal',
+                                 language='fr_FR',
+                                 description='Really cool dude',
+                                 preprocess_subroutine='preprocess_subroutine')
+        voicemail_row = self.add_voicemail(mailbox='1234', context='default')
+        self.link_user_and_voicemail(user_row, voicemail_row.uniqueid)
+
+        user = user_dao.get(user_row.id)
+
+        assert_that(user.id, equal_to(user.id))
+        assert_that(user.lastname, equal_to(user_row.lastname))
+        assert_that(user.caller_id, equal_to(user_row.callerid))
+        assert_that(user.outgoing_caller_id, equal_to(user_row.outcallerid))
+        assert_that(user.username, equal_to(user_row.loginclient))
+        assert_that(user.password, equal_to(user_row.passwdclient))
+        assert_that(user.music_on_hold, equal_to(user_row.musiconhold))
+        assert_that(user.mobile_phone_number, equal_to(user_row.mobilephonenumber))
+        assert_that(user.userfield, equal_to(user_row.userfield))
+        assert_that(user.timezone, equal_to(user_row.timezone))
+        assert_that(user.language, equal_to(user_row.language))
+        assert_that(user.description, equal_to(user_row.description))
+        assert_that(user.preprocess_subroutine, equal_to(user_row.preprocess_subroutine))
+        assert_that(user.voicemail_id, equal_to(voicemail_row.uniqueid))
+
+    def test_get_commented(self):
+        user = self.add_user(firstname='Robert', commented=1)
+
+        self.assertRaises(LookupError, user_dao.get, user.id)
+
+    def test_get_by_number_context(self):
+        context, number = 'default', '1234'
+        user_line = self.add_user_line_with_exten(exten=number,
+                                                  context=context)
+
+        user = user_dao.get_by_number_context(number, context)
+
+        assert_that(user.id, equal_to(user_line.user_id))
+
+    def test_get_by_number_context_line_commented(self):
+        context, number = 'default', '1234'
+        self.add_user_line_with_exten(number=number,
+                                      context=context,
+                                      commented_line=1)
+
+        self.assertRaises(LookupError, user_dao.get_by_number_context, number, context)
+
+
+class TestFind(TestUserDAO):
 
     def test_find_all_no_users(self):
         expected = []
@@ -252,73 +325,6 @@ class TestUserDAO(DAOTestCase):
             has_property('id', user_last.id),
         ))
 
-    def test_get_inexistant(self):
-        self.assertRaises(LookupError, user_dao.get, 42)
-
-    def test_get_required_fields(self):
-        user_row = self.add_user(firstname='Paul')
-
-        user = user_dao.get(user_row.id)
-
-        assert_that(user.id, equal_to(user_row.id))
-        assert_that(user.firstname, equal_to(user_row.firstname))
-
-    def test_get_all_fields(self):
-        user_row = self.add_user(firstname='Paul',
-                                 lastname='Rogers',
-                                 callerid='"Cool dude"',
-                                 outcallerid='"Cool dude going out"',
-                                 loginclient='paulrogers',
-                                 passwdclient='paulrogers',
-                                 musiconhold='mymusic',
-                                 mobilephonenumber='4185551234',
-                                 userfield='userfield',
-                                 timezone='America/Montreal',
-                                 language='fr_FR',
-                                 description='Really cool dude',
-                                 preprocess_subroutine='preprocess_subroutine')
-        voicemail_row = self.add_voicemail(mailbox='1234', context='default')
-        self.link_user_and_voicemail(user_row, voicemail_row.uniqueid)
-
-        user = user_dao.get(user_row.id)
-
-        assert_that(user.id, equal_to(user.id))
-        assert_that(user.lastname, equal_to(user_row.lastname))
-        assert_that(user.caller_id, equal_to(user_row.callerid))
-        assert_that(user.outgoing_caller_id, equal_to(user_row.outcallerid))
-        assert_that(user.username, equal_to(user_row.loginclient))
-        assert_that(user.password, equal_to(user_row.passwdclient))
-        assert_that(user.music_on_hold, equal_to(user_row.musiconhold))
-        assert_that(user.mobile_phone_number, equal_to(user_row.mobilephonenumber))
-        assert_that(user.userfield, equal_to(user_row.userfield))
-        assert_that(user.timezone, equal_to(user_row.timezone))
-        assert_that(user.language, equal_to(user_row.language))
-        assert_that(user.description, equal_to(user_row.description))
-        assert_that(user.preprocess_subroutine, equal_to(user_row.preprocess_subroutine))
-        assert_that(user.voicemail_id, equal_to(voicemail_row.uniqueid))
-
-    def test_get_commented(self):
-        user = self.add_user(firstname='Robert', commented=1)
-
-        self.assertRaises(LookupError, user_dao.get, user.id)
-
-    def test_get_by_number_context(self):
-        context, number = 'default', '1234'
-        user_line = self.add_user_line_with_exten(exten=number,
-                                                  context=context)
-
-        user = user_dao.get_by_number_context(number, context)
-
-        assert_that(user.id, equal_to(user_line.user_id))
-
-    def test_get_by_number_context_line_commented(self):
-        context, number = 'default', '1234'
-        self.add_user_line_with_exten(number=number,
-                                      context=context,
-                                      commented_line=1)
-
-        self.assertRaises(LookupError, user_dao.get_by_number_context, number, context)
-
     def test_find_by_number_context_inexistant(self):
         context, number = 'default', '1234'
 
@@ -471,6 +477,9 @@ class TestUserDAO(DAOTestCase):
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
 
+
+class TestEdit(TestUserDAO):
+
     def test_edit(self):
         firstname = 'Robert'
         lastname = 'Raleur'
@@ -573,6 +582,9 @@ class TestUserDAO(DAOTestCase):
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
 
+
+class TestDelete(TestUserDAO):
+
     def test_delete(self):
         firstname = 'Gadou'
         lastname = 'Pipo'
@@ -589,7 +601,10 @@ class TestUserDAO(DAOTestCase):
 
         assert_that(row, equal_to(None))
 
-    def test_is_ctis_enabled(self):
+
+class TestIsCtiEnabled(TestUserDAO):
+
+    def test_is_cti_enabled(self):
         user = self.add_user(firstname='Pierre', enableclient=1)
 
         self.assertTrue(user_dao.is_cti_enabled(user.id))
