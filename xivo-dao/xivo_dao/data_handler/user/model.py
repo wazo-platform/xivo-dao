@@ -38,6 +38,7 @@ class UserDbConverter(DatabaseConverter):
         'description': 'description',
         'voicemailid': 'voicemail_id',
         'preprocess_subroutine': 'preprocess_subroutine',
+        'func_key_private_template_id': 'private_template_id',
     }
 
     def __init__(self):
@@ -94,6 +95,7 @@ class User(NewModel):
         'language',
         'description',
         'preprocess_subroutine',
+        'private_template_id',
     ]
 
     _RELATION = {

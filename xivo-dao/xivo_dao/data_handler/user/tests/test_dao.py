@@ -88,6 +88,7 @@ class TestGet(TestUserDAO):
 
         assert_that(user.id, equal_to(user_row.id))
         assert_that(user.firstname, equal_to(user_row.firstname))
+        assert_that(user.private_template_id, equal_to(user_row.func_key_private_template_id))
 
     def test_get_all_fields(self):
         user_row = self.add_user(firstname='Paul',
@@ -122,6 +123,7 @@ class TestGet(TestUserDAO):
         assert_that(user.description, equal_to(user_row.description))
         assert_that(user.preprocess_subroutine, equal_to(user_row.preprocess_subroutine))
         assert_that(user.voicemail_id, equal_to(voicemail_row.uniqueid))
+        assert_that(user.private_template_id, equal_to(user_row.func_key_private_template_id))
 
     def test_get_commented(self):
         user = self.add_user(firstname='Robert', commented=1)
@@ -379,6 +381,7 @@ class TestCreate(TestUserDAO):
         assert_that(row.language, equal_to(user.language))
         assert_that(row.musiconhold, equal_to(user.music_on_hold))
         assert_that(row.preprocess_subroutine, equal_to(user.preprocess_subroutine))
+        assert_that(row.func_key_private_template_id, equal_to(user.private_template_id))
 
     def test_create_with_custom_caller_id(self):
         caller_id = '"caller_id"'
@@ -533,6 +536,8 @@ class TestEdit(TestUserDAO):
                                  language='fr_FR',
                                  description='Really cool dude')
 
+        private_template_row = self.add_func_key_template(private=True)
+
         caller_id = '"caller_id"'
         user = user_dao.get(user_row.id)
         user.firstname = 'firstname'
@@ -548,6 +553,7 @@ class TestEdit(TestUserDAO):
         user.music_on_hold = 'music_on_hold'
         user.preprocess_subroutine = 'preprocess_subroutine'
         user.userfield = 'userfield'
+        user.private_template_id = private_template_row.id
 
         user_dao.edit(user)
 
@@ -569,6 +575,7 @@ class TestEdit(TestUserDAO):
         assert_that(row.musiconhold, equal_to(user.music_on_hold))
         assert_that(row.preprocess_subroutine, equal_to(user.preprocess_subroutine))
         assert_that(row.userfield, equal_to(user.userfield))
+        assert_that(row.func_key_private_template_id, equal_to(user.private_template_id))
 
     def test_edit_with_unknown_user(self):
         user = User(id=123, lastname='unknown')
