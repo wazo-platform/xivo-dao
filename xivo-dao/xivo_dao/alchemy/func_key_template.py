@@ -25,5 +25,5 @@ class FuncKeyTemplate(Base):
     __tablename__ = 'func_key_template'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(128), nullable=False)
+    name = Column(String(128), nullable=True)
     private = Column(Boolean, nullable=False, default=False)
