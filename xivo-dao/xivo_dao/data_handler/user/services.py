@@ -45,15 +45,16 @@ def find_all_by_fullname(fullname):
 
 def create(user):
     validator.validate_create(user)
-    user = user_dao.create(user)
-    _create_secondary_associations(user)
+    user = _create_user_in_database(user)
     notifier.created(user)
     return user
 
 
-def _create_secondary_associations(user):
-    template_dao.create_private_template_for_user(user)
+def _create_user_in_database(user):
+    user.private_template_id = template_dao.create_private_template()
+    user = user_dao.create(user)
     dial_action_dao.create_default_dial_actions_for_user(user)
+    return user
 
 
 def edit(user):

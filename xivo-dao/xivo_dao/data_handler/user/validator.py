@@ -26,10 +26,12 @@ from xivo_dao.data_handler.user_voicemail import dao as user_voicemail_dao
 
 def validate_create(user):
     validate_model(user)
+    validate_private_template_id_is_not_set(user)
 
 
 def validate_edit(user):
     validate_model(user)
+    validate_private_template_id_does_not_change(user)
 
 
 def validate_delete(user):
@@ -79,3 +81,14 @@ def validate_not_associated_to_voicemail(user):
     user_voicemail = user_voicemail_dao.find_by_user_id(user.id)
     if user_voicemail:
         raise ElementDeletionError('User', 'user still associated to a voicemail')
+
+
+def validate_private_template_id_is_not_set(user):
+    if user.private_template_id:
+        raise InvalidParametersError(['private_template_id'])
+
+
+def validate_private_template_id_does_not_change(user):
+    existing_user = user_dao.get(user.id)
+    if user.private_template_id != existing_user.private_template_id:
+        raise InvalidParametersError(['private_template_id'])
