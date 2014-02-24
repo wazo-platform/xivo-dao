@@ -532,12 +532,7 @@ def find_queue_penalty_settings(session):
 @daosession
 def find_queue_members_settings(session, queue_name):
     rows = (session.query(QueueMember.penalty,
-                          LineFeatures.name,
-                          LineFeatures.protocol)
-            .join(UserLine, UserLine.user_id == QueueMember.userid)
-            .join(LineFeatures, LineFeatures.id == UserLine.line_id)
-            .outerjoin(UserSIP, UserSIP.id == LineFeatures.protocolid)
-            .outerjoin(UserCustom, UserCustom.id == LineFeatures.protocolid)
+                          QueueMember.interface)
             .filter(and_(QueueMember.commented == 0,
                          QueueMember.queue_name == queue_name,
                          QueueMember.usertype == 'user'))
@@ -546,8 +541,7 @@ def find_queue_members_settings(session, queue_name):
 
     res = []
     for row in rows:
-        penalty, name, protocol = row
-        interface = name if protocol.lower() == 'custom' else '%s/%s' % (protocol, name)
+        penalty, interface = row
         tmp = {}
         tmp['penalty'] = penalty
         tmp['interface'] = interface
