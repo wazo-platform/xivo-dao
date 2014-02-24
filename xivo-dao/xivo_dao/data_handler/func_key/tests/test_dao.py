@@ -43,6 +43,44 @@ class TestFuncKeyDao(DAOTestCase):
 
     def setUp(self):
         self.empty_tables()
+        self.create_types_and_destinations()
+
+    def create_types_and_destinations(self):
+        func_key_type_row = FuncKeyTypeSchema(name='speeddial')
+        destination_type_row = FuncKeyDestinationTypeSchema(id=1, name='user')
+
+        self.add_me(func_key_type_row)
+        self.add_me(destination_type_row)
+
+        self.type_id = func_key_type_row.id
+        self.destination_type_id = destination_type_row.id
+
+    def add_func_key_for_user(self, user_row):
+        func_key_row = FuncKeySchema(type_id=self.type_id,
+                                     destination_type_id=self.destination_type_id)
+
+        self.add_me(func_key_row)
+
+        dest_user = FuncKeyDestUserSchema(user_id=user_row.id,
+                                          func_key_id=func_key_row.id,
+                                          destination_type_id=self.destination_type_id)
+
+        self.add_me(dest_user)
+
+        return func_key_row
+
+    def prepare_speeddial_with_user_destination(self, user_row):
+        func_key_row = self.add_func_key_for_user(user_row)
+
+        func_key = FuncKey(id=func_key_row.id,
+                           type='speeddial',
+                           destination='user',
+                           destination_id=user_row.id)
+
+        return func_key_row, func_key
+
+
+class TestFuncKeySearch(TestFuncKeyDao):
 
     @patch('xivo_dao.data_handler.func_key.dao.db_converter')
     @patch('xivo_dao.data_handler.func_key.dao.SearchFilter')
@@ -64,34 +102,16 @@ class TestFuncKeyDao(DAOTestCase):
 
     def test_search_one_func_key(self):
         user_row = self.add_user()
-        func_key_row = self.add_func_key_for_user(user_row)
+        _, func_key = self.prepare_speeddial_with_user_destination(user_row)
 
         result = dao.search()
-
-        func_key = FuncKey(id=func_key_row.id,
-                           type='speeddial',
-                           destination='user',
-                           destination_id=user_row.id)
 
         assert_that(result.total, 1)
         assert_that(result.items, contains(func_key))
 
-    def add_func_key_for_user(self, user_row):
-        func_key_type_row = FuncKeyTypeSchema(name='speeddial')
-        destination_type_row = FuncKeyDestinationTypeSchema(id=1, name='user')
 
-        self.add_me(func_key_type_row)
-        self.add_me(destination_type_row)
 
-        func_key_row = FuncKeySchema(type_id=func_key_type_row.id,
-                                     destination_type_id=destination_type_row.id)
 
-        self.add_me(func_key_row)
 
-        dest_user = FuncKeyDestUserSchema(user_id=user_row.id,
-                                          func_key_id=func_key_row.id,
-                                          destination_type_id=destination_type_row.id)
 
-        self.add_me(dest_user)
 
-        return func_key_row
