@@ -20,6 +20,7 @@ from hamcrest import assert_that, equal_to
 
 from xivo_dao.tests.test_case import TestCase
 from xivo_dao.data_handler.func_key import services
+from xivo_dao.data_handler.func_key.model import FuncKey
 
 
 class TestFuncKeyService(TestCase):
@@ -37,3 +38,13 @@ class TestFuncKeyService(TestCase):
 
         dao_search.assert_called_once_with(term, limit, skip, order, direction)
         assert_that(result, equal_to(search_result))
+
+    @patch('xivo_dao.data_handler.func_key.dao.get')
+    def test_get(self, dao_get):
+        func_key_id = 1
+        func_key = dao_get.return_value = Mock(FuncKey)
+
+        result = services.get(func_key_id)
+
+        dao_get.assert_called_once_with(func_key_id)
+        assert_that(result, equal_to(func_key))

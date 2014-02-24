@@ -20,3 +20,7 @@ from xivo_dao.data_handler.func_key import dao
 
 def search(term=None, limit=None, skip=None, order=None, direction='asc'):
     return dao.search(term, limit, skip, order, direction)
+
+
+def get(func_key_id):
+    return dao.get(func_key_id)

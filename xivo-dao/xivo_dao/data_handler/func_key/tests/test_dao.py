@@ -20,6 +20,7 @@ from mock import patch, Mock, ANY
 
 from xivo_dao.tests.test_dao import DAOTestCase
 
+from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.data_handler.func_key.model import FuncKey
 from xivo_dao.data_handler.func_key import dao
 from xivo_dao.helpers.abstract_model import SearchResult
@@ -110,8 +111,25 @@ class TestFuncKeySearch(TestFuncKeyDao):
         assert_that(result.items, contains(func_key))
 
 
+class TestFuncKeyGet(TestFuncKeyDao):
 
+    def test_when_no_func_key_then_raises_error(self):
+        self.assertRaises(ElementNotExistsError, dao.get, 1)
 
+    def test_when_one_func_key_in_db_then_func_key_model_returned(self):
+        user_row = self.add_user()
+        func_key_row, func_key = self.prepare_speeddial_with_user_destination(user_row)
 
+        result = dao.get(func_key_row.id)
 
+        assert_that(result, equal_to(func_key))
 
+    def test_when_two_func_keys_in_db_then_right_model_returned(self):
+        user_row = self.add_user()
+
+        self.prepare_speeddial_with_user_destination(user_row)
+        second_func_key_row, second_func_key = self.prepare_speeddial_with_user_destination(user_row)
+
+        result = dao.get(second_func_key_row.id)
+
+        assert_that(result, equal_to(second_func_key))

@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.data_handler.utils.search import SearchFilter
 from xivo_dao.helpers.abstract_model import SearchResult
 from xivo_dao.helpers.db_manager import daosession
@@ -27,6 +28,26 @@ from xivo_dao.alchemy.func_key_destination_type import FuncKeyDestinationType as
 
 @daosession
 def search(session, term=None, limit=None, skip=None, order=None, direction='asc'):
+    query = _func_key_query(session)
+    search_filter = SearchFilter(query, FuncKey.SEARCH_COLUMNS, FuncKeySchema.id)
+    rows, total = search_filter.search(term, limit, skip, order, direction)
+
+    func_keys = [db_converter.to_model(row) for row in rows]
+    return SearchResult(total, func_keys)
+
+
+@daosession
+def get(session, func_key_id):
+    query = _func_key_query(session)
+    row = query.filter(FuncKeySchema.id == func_key_id).first()
+
+    if not row:
+        raise ElementNotExistsError('FuncKey')
+
+    return db_converter.to_model(row)
+
+
+def _func_key_query(session):
     query = (session
              .query(FuncKeySchema.id,
                     FuncKeyTypeSchema.name.label('type'),
@@ -35,9 +56,4 @@ def search(session, term=None, limit=None, skip=None, order=None, direction='asc
              .join(FuncKeyTypeSchema)
              .join(FuncKeyDestinationTypeSchema)
              .join(FuncKeyDestUserSchema, FuncKeyDestUserSchema.func_key_id == FuncKeySchema.id))
-
-    search_filter = SearchFilter(query, FuncKey.SEARCH_COLUMNS, FuncKeySchema.id)
-    rows, total = search_filter.search(term, limit, skip, order, direction)
-
-    func_keys = [db_converter.to_model(row) for row in rows]
-    return SearchResult(total, func_keys)
+    return query
