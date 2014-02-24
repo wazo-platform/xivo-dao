@@ -818,8 +818,6 @@ class TestUserFeaturesDAO(DAOTestCase):
             firstname='Jack',
             lastname='Johnson',
         )
-        self.add_me(user1)
-        self.add_me(user2)
 
         result = user_dao.get_users_config()
 
