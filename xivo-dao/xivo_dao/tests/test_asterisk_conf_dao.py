@@ -1202,60 +1202,46 @@ class TestAsteriskConfDAO(DAOTestCase):
     def test_find_queue_members_settings(self):
         queue_name = 'toto'
 
-        # SIP
-        usersip = self.add_usersip()
-        ule = self.add_user_line_with_exten(protocolid=usersip.id,
-                                            name_line=usersip.name)
         self.add_queue_member(queue_name=queue_name,
+                              interface='Local/100@default',
                               usertype='user',
-                              userid=ule.user_id,
+                              userid=2131,
                               penalty=1,
                               commented=0)
 
-        # CUSTOM
-        usercustom = self.add_usercustom()
-        ule = self.add_user_line_with_exten(protocol='custom',
-                                            protocolid=usercustom.id,
-                                            name_line=usercustom.interface)
         self.add_queue_member(queue_name=queue_name,
+                              interface='SIP/3m6dsc',
                               usertype='user',
-                              userid=ule.user_id,
+                              userid=54,
                               penalty=5,
                               commented=0)
 
-        # SCCP
-        sccpline = self.add_sccpline()
-        ule = self.add_user_line_with_exten(protocol='sccp',
-                                            protocolid=sccpline.id,
-                                            name_line=sccpline.name)
         self.add_queue_member(queue_name=queue_name,
+                              interface='SCCP/1003',
                               usertype='user',
-                              userid=ule.user_id,
+                              userid=1,
                               penalty=15,
                               commented=0)
 
-        # DISABLE
-        usersip2 = self.add_usersip()
-        ule = self.add_user_line_with_exten(protocolid=usersip2.id,
-                                            name_line=usersip2.name)
         self.add_queue_member(queue_name=queue_name,
+                              interface='SIP/dsf4rs',
                               usertype='user',
-                              userid=ule.user_id,
+                              userid=3,
                               penalty=42,
                               commented=1)
 
         expected_result = [
             {
                 'penalty': 1,
-                'interface': 'sip/%s' % usersip.name
+                'interface': 'Local/100@default'
             },
             {
                 'penalty': 5,
-                'interface': usercustom.interface
+                'interface': 'SIP/3m6dsc'
             },
             {
                 'penalty': 15,
-                'interface': 'sccp/%s' % sccpline.name
+                'interface': 'SCCP/1003'
             }
         ]
         result = asterisk_conf_dao.find_queue_members_settings(queue_name)
