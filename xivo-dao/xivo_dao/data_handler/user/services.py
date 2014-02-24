@@ -51,15 +51,10 @@ def create(user):
 
 
 def _create_user_in_database(user):
-    create_private_template(user)
+    user.private_template_id = template_dao.create_private_template()
     user = user_dao.create(user)
     dial_action_dao.create_default_dial_actions_for_user(user)
     return user
-
-
-def create_private_template(user):
-    if not user.private_template_id:
-        user.private_template_id = template_dao.create_private_template()
 
 
 def edit(user):

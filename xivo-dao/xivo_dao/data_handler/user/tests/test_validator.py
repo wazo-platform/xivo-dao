@@ -17,7 +17,7 @@
 
 import unittest
 
-from mock import patch, Mock
+from mock import patch, Mock, sentinel
 
 from xivo_dao.data_handler.exception import InvalidParametersError
 from xivo_dao.data_handler.exception import MissingParametersError
@@ -29,18 +29,22 @@ from xivo_dao.data_handler.user.model import User
 class TestUserValidator(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.user.validator.validate_model')
-    def test_validate_create(self, validate_model):
+    @patch('xivo_dao.data_handler.user.validator.validate_private_template_id_is_not_set')
+    def test_validate_create(self, validate_template, validate_model):
         user = Mock(User)
 
         validator.validate_create(user)
         validate_model.assert_called_once_with(user)
+        validate_template.assert_called_once_with(user)
 
     @patch('xivo_dao.data_handler.user.validator.validate_model')
-    def test_validate_edit(self, validate_model):
+    @patch('xivo_dao.data_handler.user.validator.validate_private_template_id_does_not_change')
+    def test_validate_edit(self, validate_template, validate_model):
         user = Mock(User)
 
         validator.validate_edit(user)
         validate_model.assert_called_once_with(user)
+        validate_template.assert_called_once_with(user)
 
     @patch('xivo_dao.data_handler.user.validator.validate_user_not_associated')
     @patch('xivo_dao.data_handler.user.validator.validate_user_exists')
@@ -175,3 +179,30 @@ class TestValidateNotAssociatedToVoicemail(unittest.TestCase):
                                 validator.validate_not_associated_to_voicemail, user)
 
         find_by_user_id.assert_called_once_with(user.id)
+
+
+class TestValidatePrivateTemplateIDIsNotSet(unittest.TestCase):
+
+    def test_when_template_id_is_not_set(self):
+        user = Mock(User, private_template_id=None)
+
+        validator.validate_private_template_id_is_not_set(user)
+
+    def test_when_template_id_is_set(self):
+        user = Mock(User, private_template_id=12)
+
+        self.assertRaises(InvalidParametersError, validator.validate_private_template_id_is_not_set, user)
+
+
+@patch('xivo_dao.data_handler.user.dao.get', return_value=Mock(User, private_template_id=sentinel.template_id))
+class TestValidatePrivateTemplateIDDoesNotChange(unittest.TestCase):
+
+    def test_when_template_id_does_not_change(self, get_user):
+        user = Mock(User, id=1, private_template_id=sentinel.template_id)
+
+        validator.validate_private_template_id_does_not_change(user)
+
+    def test_when_template_id_does_change(self, get_user):
+        user = Mock(User, id=1, private_template_id=sentinel.template_id2)
+
+        self.assertRaises(InvalidParametersError, validator.validate_private_template_id_does_not_change, user)

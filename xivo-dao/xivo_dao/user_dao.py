@@ -275,8 +275,7 @@ def delete_all(session):
 
 @daosession
 def add_user(session, user):
-    if not user.func_key_private_template_id:
-        user.func_key_private_template_id = func_key_template_dao.create_private_template()
+    user.func_key_private_template_id = func_key_template_dao.create_private_template()
 
     try:
         session.begin()

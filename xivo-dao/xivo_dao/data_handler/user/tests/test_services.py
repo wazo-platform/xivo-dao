@@ -129,7 +129,7 @@ class TestFindUser(TestCase):
 class TestCreate(TestCase):
 
     @patch('xivo_dao.data_handler.dial_action.dao.create_default_dial_actions_for_user')
-    @patch('xivo_dao.data_handler.user.services.create_private_template')
+    @patch('xivo_dao.data_handler.func_key_template.dao.create_private_template')
     @patch('xivo_dao.data_handler.user.notifier.created')
     @patch('xivo_dao.data_handler.user.dao.create')
     @patch('xivo_dao.data_handler.user.validator.validate_create')
@@ -150,10 +150,10 @@ class TestCreate(TestCase):
         user_validate_create.assert_called_once_with(user)
         user_dao_create.assert_called_once_with(user)
         user_notifier_created.assert_called_once_with(user)
-        create_private_template.assert_called_once_with(user)
         create_default_dial_actions_for_user.assert_called_once_with(user)
 
         self.assertEquals(type(result), User)
+        self.assertEquals(result.private_template_id, create_private_template.return_value)
 
 
 class TestEdit(TestCase):
@@ -333,25 +333,3 @@ class TestUpdateCallerId(TestCase):
         user_services.update_caller_id(user)
         user_dao_get.assert_called_once_with(user.id)
         assert_that(user.caller_id, equal_to('"new_caller_id"'))
-
-
-class TestCreatePrivateTemplate(TestCase):
-
-    @patch('xivo_dao.data_handler.func_key_template.dao.create_private_template')
-    def test_when_no_private_template_then_private_template_created(self, create_private_template):
-        private_template_id = create_private_template.return_value = 10
-
-        user = User(firstname='toto')
-
-        user_services.create_private_template(user)
-
-        create_private_template.assert_called_once_with()
-        assert_that(user, has_property('private_template_id', private_template_id))
-
-    @patch('xivo_dao.data_handler.func_key_template.dao.create_private_template')
-    def test_when_user_has_private_template_then_no_template_created(self, create_private_template):
-        user = User(firstname='toto', private_template_id=1)
-
-        user_services.create_private_template(user)
-
-        self.assertNotCalled(create_private_template)
