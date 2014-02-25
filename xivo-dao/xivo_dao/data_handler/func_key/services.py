@@ -16,6 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.data_handler.func_key import dao
+from xivo_dao.data_handler.func_key import validator
+from xivo_dao.data_handler.func_key import notifier
 
 
 def search(term=None, limit=None, skip=None, order=None, direction='asc'):
@@ -24,3 +26,10 @@ def search(term=None, limit=None, skip=None, order=None, direction='asc'):
 
 def get(func_key_id):
     return dao.get(func_key_id)
+
+
+def create(func_key):
+    validator.validate_create(func_key)
+    created_func_key = dao.create(func_key)
+    notifier.created(created_func_key)
+    return created_func_key

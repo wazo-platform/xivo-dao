@@ -48,3 +48,20 @@ class TestFuncKeyService(TestCase):
 
         dao_get.assert_called_once_with(func_key_id)
         assert_that(result, equal_to(func_key))
+
+    @patch('xivo_dao.data_handler.func_key.validator.validate_create')
+    @patch('xivo_dao.data_handler.func_key.notifier.created')
+    @patch('xivo_dao.data_handler.func_key.dao.create')
+    def test_create(self, func_key_dao_create, func_key_notifier_created, validate_create):
+        func_key = FuncKey(type='speeddial',
+                           destination='user',
+                           destination_id=1)
+
+        func_key_dao_create.return_value = func_key
+
+        result = services.create(func_key)
+
+        self.assertEquals(type(result), FuncKey)
+        validate_create.assert_called_once_with(func_key)
+        func_key_dao_create.assert_called_once_with(func_key)
+        func_key_notifier_created.assert_called_once_with(func_key)
