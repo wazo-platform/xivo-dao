@@ -17,8 +17,11 @@
 
 from xivo_dao.helpers.new_model import NewModel
 from xivo_dao.converters.database_converter import DatabaseConverter
+
+from xivo_dao.data_handler.func_key import type_dao as func_key_type_dao
 from xivo_dao.alchemy.func_key import FuncKey as FuncKeySchema
 from xivo_dao.alchemy.func_key_type import FuncKeyType as FuncKeyTypeSchema
+from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser as FuncKeyDestUserSchema
 from xivo_dao.alchemy.func_key_destination_type import FuncKeyDestinationType as FuncKeyDestinationTypeSchema
 
 
@@ -62,6 +65,24 @@ class FuncKeyDbConverter(DatabaseConverter):
 
     def __init__(self):
         DatabaseConverter.__init__(self, DB_TO_MODEL_MAPPING, FuncKeySchema, FuncKey)
+
+    def create_func_key_row(self, model):
+        destination_type_row = func_key_type_dao.find_destination_type_for_name(model.destination)
+        type_row = func_key_type_dao.find_type_for_name(model.type)
+
+        func_key_row = FuncKeySchema(type_id=type_row.id,
+                                     destination_type_id=destination_type_row.id)
+
+        return func_key_row
+
+    def create_destination_row(self, model):
+        destination_type_row = func_key_type_dao.find_destination_type_for_name(model.destination)
+
+        destination_row = FuncKeyDestUserSchema(destination_type_id=destination_type_row.id,
+                                                user_id=model.destination_id,
+                                                func_key_id=model.id)
+
+        return destination_row
 
 
 db_converter = FuncKeyDbConverter()

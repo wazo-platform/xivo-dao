@@ -15,12 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, equal_to, instance_of, contains
+from contextlib import contextmanager
+from hamcrest import assert_that, equal_to, instance_of, contains, is_not, \
+    none
 from mock import patch, Mock, ANY
 
 from xivo_dao.tests.test_dao import DAOTestCase
 
 from xivo_dao.data_handler.exception import ElementNotExistsError
+from xivo_dao.data_handler.exception import ElementCreationError
 from xivo_dao.data_handler.func_key.model import FuncKey
 from xivo_dao.data_handler.func_key import dao
 from xivo_dao.helpers.abstract_model import SearchResult
@@ -148,14 +151,46 @@ class TestFuncKeyGet(TestUserFuncKey):
         assert_that(result, equal_to(second_func_key))
 
 
+class TestFuncKeyCreate(TestUserFuncKey):
 
+    def test_given_user_destination_then_func_key_created(self):
+        user_row = self.add_user()
 
+        func_key = FuncKey(type='speeddial',
+                           destination='user',
+                           destination_id=user_row.id)
 
+        dao.create(func_key)
 
+        user_destination_row = self.find_user_destination(user_row.id)
+        assert_that(user_destination_row, is_not(none()))
 
+        self.assert_func_key_for_user_created(user_destination_row)
 
+    @patch('xivo_dao.data_handler.func_key.dao.commit_or_abort')
+    def test_given_db_error_then_transaction_rollbacked(self, commit_or_abort):
+        func_key = FuncKey(type='speeddial',
+                           destination='user',
+                           destination_id=1)
 
+        with self.mocked_session() as session:
+            dao.create(func_key)
+            commit_or_abort.assert_any_call(session, ElementCreationError, 'FuncKey')
 
+    def find_user_destination(self, user_id):
+        row = (self.session.query(FuncKeyDestUserSchema)
+               .filter(FuncKeyDestUserSchema.user_id == user_id)
+               .first())
 
+        return row
 
+    def assert_func_key_for_user_created(self, destination_row):
+        row = self.session.query(FuncKeySchema).get(destination_row.func_key_id)
+        assert_that(row, is_not(none()))
 
+    @contextmanager
+    def mocked_session(self):
+        patcher = patch('xivo_dao.helpers.db_manager.AsteriskSession')
+        mock = patcher.start()
+        yield mock.return_value
+        patcher.stop()
