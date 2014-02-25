@@ -47,6 +47,24 @@ def get(session, func_key_id):
     return db_converter.to_model(row)
 
 
+@daosession
+def type_exists(session, name):
+    count = _count_using_name(session, FuncKeyTypeSchema, name)
+    return count > 0
+
+
+@daosession
+def destination_type_exists(session, name):
+    count = _count_using_name(session, FuncKeyDestinationTypeSchema, name)
+    return count > 0
+
+
+def _count_using_name(session, schema, name):
+    return (session.query(schema)
+            .filter(schema.name == name)
+            .count())
+
+
 def _func_key_query(session):
     query = (session
              .query(FuncKeySchema.id,
