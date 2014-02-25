@@ -19,7 +19,7 @@ from xivo_dao.data_handler.exception import InvalidParametersError
 from xivo_dao.data_handler.exception import MissingParametersError
 from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.data_handler.exception import NonexistentParametersError
-from xivo_dao.data_handler.func_key import dao as func_key_dao
+from xivo_dao.data_handler.func_key import type_dao as func_key_type_dao
 from xivo_dao.data_handler.user import dao as user_dao
 
 
@@ -36,7 +36,7 @@ def validate_missing_parameters(func_key):
 
 
 def validate_type(func_key):
-    if not func_key_dao.type_exists(func_key.type):
+    if not func_key_type_dao.find_type_for_name(func_key.type):
         raise InvalidParametersError(['type %s does not exist' % func_key.type])
 
 
@@ -46,7 +46,7 @@ def validate_destination(func_key):
 
 
 def validate_destination_type(func_key):
-    if not func_key_dao.destination_type_exists(func_key.destination):
+    if not func_key_type_dao.find_destination_type_for_name(func_key.destination):
         raise InvalidParametersError(['destination of type %s does not exist' % func_key.destination])
 
 

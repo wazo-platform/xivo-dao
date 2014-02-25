@@ -59,25 +59,25 @@ class TestFuncKeyValidateMissingParameters(TestCase):
         validator.validate_missing_parameters(func_key)
 
 
-@patch('xivo_dao.data_handler.func_key.dao.type_exists')
+@patch('xivo_dao.data_handler.func_key.type_dao.find_type_for_name')
 class TestFuncKeyValidateType(TestCase):
 
-    def test_when_unknown_type_then_raises_error(self, dao_type_exists):
+    def test_when_unknown_type_then_raises_error(self, dao_find_type_for_name):
         func_key = Mock(FuncKey, type='superdupertype')
-        dao_type_exists.return_value = False
+        dao_find_type_for_name.return_value = None
 
         self.assertRaisesRegexp(InvalidParametersError,
                                 "Invalid parameters: type superdupertype does not exist",
                                 validator.validate_type,
                                 func_key)
-        dao_type_exists.assert_called_once_with(func_key.type)
+        dao_find_type_for_name.assert_called_once_with(func_key.type)
 
-    def test_when_type_exists_then_validation_passes(self, dao_type_exists):
+    def test_when_find_type_for_name_then_validation_passes(self, dao_find_type_for_name):
         func_key = Mock(FuncKey, type='speeddial')
-        dao_type_exists.return_value = True
+        dao_find_type_for_name.return_value = Mock()
 
         validator.validate_type(func_key)
-        dao_type_exists.assert_called_once_with(func_key.type)
+        dao_find_type_for_name.assert_called_once_with(func_key.type)
 
 
 class TestFuncKeyValidateDestination(TestCase):
@@ -93,27 +93,27 @@ class TestFuncKeyValidateDestination(TestCase):
         validate_destination_exists.assert_called_once_with(func_key)
 
 
-@patch('xivo_dao.data_handler.func_key.dao.destination_type_exists')
+@patch('xivo_dao.data_handler.func_key.type_dao.find_destination_type_for_name')
 class TestFuncKeyValidateDestinationType(TestCase):
 
     def test_when_destination_type_does_not_exists_then_raises_error(self,
-                                                                     destination_type_exists):
-        destination_type_exists.return_value = False
+                                                                     find_destination_type_for_name):
+        find_destination_type_for_name.return_value = None
         func_key = Mock(FuncKey, destination='superdestination')
 
         self.assertRaisesRegexp(InvalidParametersError,
                                 "Invalid parameters: destination of type superdestination does not exist",
                                 validator.validate_destination_type,
                                 func_key)
-        destination_type_exists.assert_called_once_with(func_key.destination)
+        find_destination_type_for_name.assert_called_once_with(func_key.destination)
 
-    def test_when_destination_type_exists_then_validation_passes(self,
-                                                                 destination_type_exists):
-        destination_type_exists.return_value = True
+    def test_when_find_destination_type_for_name_then_validation_passes(self,
+                                                                        find_destination_type_for_name):
+        find_destination_type_for_name.return_value = Mock()
         func_key = Mock(FuncKey, destination='user')
 
         validator.validate_destination_type(func_key)
-        destination_type_exists.assert_called_once_with(func_key.destination)
+        find_destination_type_for_name.assert_called_once_with(func_key.destination)
 
 
 @patch('xivo_dao.data_handler.user.dao.get')
