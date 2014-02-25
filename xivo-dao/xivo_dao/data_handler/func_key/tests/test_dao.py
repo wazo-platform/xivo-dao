@@ -44,14 +44,27 @@ class TestFuncKeyDao(DAOTestCase):
 
     def setUp(self):
         self.empty_tables()
+
+    def add_type(self, name):
+        func_key_type_row = FuncKeyTypeSchema(name=name)
+        self.add_me(func_key_type_row)
+        return func_key_type_row
+
+    def add_destination_type(self, id, name):
+        destination_type_row = FuncKeyDestinationTypeSchema(id=id, name=name)
+        self.add_me(destination_type_row)
+        return destination_type_row
+
+
+class TestUserFuncKey(TestFuncKeyDao):
+
+    def setUp(self):
+        TestFuncKeyDao.setUp(self)
         self.create_types_and_destinations()
 
     def create_types_and_destinations(self):
-        func_key_type_row = FuncKeyTypeSchema(name='speeddial')
-        destination_type_row = FuncKeyDestinationTypeSchema(id=1, name='user')
-
-        self.add_me(func_key_type_row)
-        self.add_me(destination_type_row)
+        func_key_type_row = self.add_type('speeddial')
+        destination_type_row = self.add_destination_type(1, 'user')
 
         self.type_id = func_key_type_row.id
         self.destination_type_id = destination_type_row.id
@@ -81,7 +94,7 @@ class TestFuncKeyDao(DAOTestCase):
         return func_key_row, func_key
 
 
-class TestFuncKeySearch(TestFuncKeyDao):
+class TestFuncKeySearch(TestUserFuncKey):
 
     @patch('xivo_dao.data_handler.func_key.dao.db_converter')
     @patch('xivo_dao.data_handler.func_key.dao.SearchFilter')
@@ -111,7 +124,7 @@ class TestFuncKeySearch(TestFuncKeyDao):
         assert_that(result.items, contains(func_key))
 
 
-class TestFuncKeyGet(TestFuncKeyDao):
+class TestFuncKeyGet(TestUserFuncKey):
 
     def test_when_no_func_key_then_raises_error(self):
         self.assertRaises(ElementNotExistsError, dao.get, 1)
