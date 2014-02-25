@@ -61,6 +61,8 @@ def create(session, func_key):
     with commit_or_abort(session, ElementCreationError, 'FuncKey'):
         session.add(destination_row)
 
+    return func_key
+
 
 def _func_key_query(session):
     query = (session

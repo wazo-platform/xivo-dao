@@ -17,7 +17,7 @@
 
 from contextlib import contextmanager
 from hamcrest import assert_that, equal_to, instance_of, contains, is_not, \
-    none
+    none, has_property
 from mock import patch, Mock, ANY
 
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -160,7 +160,9 @@ class TestFuncKeyCreate(TestUserFuncKey):
                            destination='user',
                            destination_id=user_row.id)
 
-        dao.create(func_key)
+        created_func_key = dao.create(func_key)
+        assert_that(created_func_key, instance_of(FuncKey))
+        assert_that(created_func_key, has_property('id', is_not(none())))
 
         user_destination_row = self.find_user_destination(user_row.id)
         assert_that(user_destination_row, is_not(none()))
