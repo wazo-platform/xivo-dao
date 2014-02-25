@@ -148,62 +148,14 @@ class TestFuncKeyGet(TestUserFuncKey):
         assert_that(result, equal_to(second_func_key))
 
 
-class TestFuncKeyTypeExists(TestFuncKeyDao):
-
-    def test_given_no_types_then_returns_false(self):
-        exists = dao.type_exists('type')
-
-        assert_that(exists, equal_to(False))
-
-    def test_given_one_type_when_queried_returns_true(self):
-        type_name = 'speeddial'
-        self.add_type(type_name)
-
-        exists = dao.type_exists(type_name)
-
-        assert_that(exists, equal_to(True))
-
-    def test_given_one_type_when_other_name_queried_returns_false(self):
-        self.add_type('speeddial')
-
-        exists = dao.type_exists('transfer')
-
-        assert_that(exists, equal_to(False))
-
-    def test_given_two_types_when_one_queried_returns_true(self):
-        self.add_type('speeddial')
-        self.add_type('transfer')
-
-        exists = dao.type_exists('transfer')
-
-        assert_that(exists, equal_to(True))
 
 
-class TestFuncKeyDestinationTypeExists(TestFuncKeyDao):
 
-    def test_given_no_destination_types_then_returns_false(self):
-        exists = dao.destination_type_exists('type')
 
-        assert_that(exists, equal_to(False))
 
-    def test_given_one_destination_type_when_queried_returns_true(self):
-        self.add_destination_type(1, 'user')
 
-        exists = dao.destination_type_exists('user')
 
-        assert_that(exists, equal_to(True))
 
-    def test_given_one_destination_type_when_other_name_queried_returns_false(self):
-        self.add_destination_type(1, 'user')
 
-        exists = dao.destination_type_exists('queue')
 
-        assert_that(exists, equal_to(False))
 
-    def test_given_two_destination_types_when_one_queried_returns_true(self):
-        self.add_destination_type(1, 'user')
-        self.add_destination_type(2, 'queue')
-
-        exists = dao.destination_type_exists('queue')
-
-        assert_that(exists, equal_to(True))
