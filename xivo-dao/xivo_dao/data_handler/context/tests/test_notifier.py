@@ -22,11 +22,40 @@ from xivo_dao.data_handler.context.model import Context
 from xivo_dao.data_handler.context import notifier
 
 
-class TestContextNotifier(unittest.TestCase):
+class TestContextCreated(unittest.TestCase):
+
+    @patch('xivo_dao.data_handler.context.notifier.sysconf_reload_dialplan')
+    @patch('xivo_dao.data_handler.context.notifier.send_bus_event_created')
+    def test_associated(self, send_bus_event_created, sysconf_reload_dialplan):
+        context = Mock()
+
+        notifier.created(context)
+
+        sysconf_reload_dialplan.assert_called_once_with()
+        send_bus_event_created.assert_called_once_with(context)
+
+
+class TestSysconfReloadDialplan(unittest.TestCase):
+
+    @patch('xivo_dao.helpers.sysconfd_connector.exec_request_handlers')
+    def test_send_sysconf_command_association_updated(self, exec_request_handlers):
+        expected_sysconf_command = {
+            'ctibus': [],
+            'dird': [],
+            'ipbx': ['dialplan reload'],
+            'agentbus': []
+        }
+
+        notifier.sysconf_reload_dialplan()
+
+        exec_request_handlers.assert_called_once_with(expected_sysconf_command)
+
+
+class TestBusEventCreated(unittest.TestCase):
 
     @patch('xivo_bus.resources.context.event.CreateContextEvent')
     @patch('xivo_dao.helpers.bus_manager.send_bus_command')
-    def test_created(self, send_bus_command, CreateContextEvent):
+    def test_send_bus_event_created(self, send_bus_command, CreateContextEvent):
         new_event = CreateContextEvent.return_value = Mock()
 
         context = Context(name='foo',
@@ -34,7 +63,7 @@ class TestContextNotifier(unittest.TestCase):
                           type='internal',
                           description='description')
 
-        notifier.created(context)
+        notifier.send_bus_event_created(context)
 
         CreateContextEvent.assert_called_once_with(context.name,
                                                    context.display_name,

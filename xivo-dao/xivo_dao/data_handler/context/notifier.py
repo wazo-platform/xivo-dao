@@ -17,9 +17,26 @@
 
 from xivo_bus.resources.context import event
 from xivo_dao.helpers import bus_manager
+from xivo_dao.helpers import sysconfd_connector
 
 
 def created(context):
+    sysconf_reload_dialplan()
+    send_bus_event_created(context)
+
+
+def sysconf_reload_dialplan():
+    sysconf_command = {
+        'ctibus': [],
+        'dird': [],
+        'ipbx': ['dialplan reload'],
+        'agentbus': []
+    }
+
+    sysconfd_connector.exec_request_handlers(sysconf_command)
+
+
+def send_bus_event_created(context):
     created_event = event.CreateContextEvent(context.name,
                                              context.display_name,
                                              context.description,
