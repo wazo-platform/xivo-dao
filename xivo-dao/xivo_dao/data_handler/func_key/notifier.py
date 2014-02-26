@@ -15,21 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.data_handler.func_key import dao
-from xivo_dao.data_handler.func_key import validator
-from xivo_dao.data_handler.func_key import notifier
+from xivo_dao.helpers import bus_manager
+from xivo_bus.resources.func_key import event as func_key_event
 
 
-def search(term=None, limit=None, skip=None, order=None, direction='asc'):
-    return dao.search(term, limit, skip, order, direction)
-
-
-def get(func_key_id):
-    return dao.get(func_key_id)
-
-
-def create(func_key):
-    validator.validate_create(func_key)
-    created_func_key = dao.create(func_key)
-    notifier.created(created_func_key)
-    return created_func_key
+def created(func_key):
+    event = func_key_event.CreateFuncKeyEvent(func_key.id,
+                                              func_key.type,
+                                              func_key.destination,
+                                              func_key.destination_id)
+    bus_manager.send_bus_command(event)

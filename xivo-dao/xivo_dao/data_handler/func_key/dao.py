@@ -16,9 +16,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.data_handler.exception import ElementNotExistsError
+from xivo_dao.data_handler.exception import ElementCreationError
 from xivo_dao.data_handler.utils.search import SearchFilter
 from xivo_dao.helpers.abstract_model import SearchResult
 from xivo_dao.helpers.db_manager import daosession
+from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.data_handler.func_key.model import db_converter, FuncKey
 from xivo_dao.alchemy.func_key import FuncKey as FuncKeySchema
 from xivo_dao.alchemy.func_key_type import FuncKeyType as FuncKeyTypeSchema
@@ -45,6 +47,21 @@ def get(session, func_key_id):
         raise ElementNotExistsError('FuncKey')
 
     return db_converter.to_model(row)
+
+
+@daosession
+def create(session, func_key):
+    func_key_row = db_converter.create_func_key_row(func_key)
+    with commit_or_abort(session, ElementCreationError, 'FuncKey'):
+        session.add(func_key_row)
+
+    func_key.id = func_key_row.id
+
+    destination_row = db_converter.create_destination_row(func_key)
+    with commit_or_abort(session, ElementCreationError, 'FuncKey'):
+        session.add(destination_row)
+
+    return func_key
 
 
 def _func_key_query(session):
