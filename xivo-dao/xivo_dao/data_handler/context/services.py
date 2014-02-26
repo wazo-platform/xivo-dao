@@ -19,6 +19,7 @@ from xivo_dao import context_dao as old_context_dao
 from xivo_dao.data_handler.exception import InvalidParametersError
 from xivo_dao.data_handler.context import dao as context_dao
 from xivo_dao.data_handler.context import validator
+from xivo_dao.data_handler.context import notifier
 
 
 class ContextRange(object):
@@ -36,6 +37,7 @@ def find_by_name(context_name):
 def create(context):
     validator.validate_create(context)
     created_context = context_dao.create(context)
+    notifier.created(created_context)
     return created_context
 
 
