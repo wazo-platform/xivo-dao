@@ -48,9 +48,10 @@ class TestContext(unittest.TestCase):
 
         assert_that(result, equal_to(context_mock))
 
+    @patch('xivo_dao.data_handler.context.notifier.created')
     @patch('xivo_dao.data_handler.context.validator.validate_create')
     @patch('xivo_dao.data_handler.context.dao.create')
-    def test_create(self, context_dao_create, validate_create):
+    def test_create(self, context_dao_create, validate_create, notifier_created):
         context_name = 'test'
 
         context = Context(name=context_name,
@@ -63,6 +64,7 @@ class TestContext(unittest.TestCase):
 
         validate_create.assert_called_once_with(context)
         context_dao_create.assert_called_once_with(context)
+        notifier_created.assert_called_once_with(context)
 
         assert_that(result, all_of(
             has_property('name', context_name),
