@@ -17,7 +17,6 @@
 
 from xivo_dao.helpers.new_model import NewModel
 from xivo_dao.converters.database_converter import DatabaseConverter
-
 from xivo_dao.data_handler.func_key import type_dao as func_key_type_dao
 from xivo_dao.alchemy.func_key import FuncKey as FuncKeySchema
 from xivo_dao.alchemy.func_key_type import FuncKeyType as FuncKeyTypeSchema
