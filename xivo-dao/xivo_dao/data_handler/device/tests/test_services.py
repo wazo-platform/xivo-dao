@@ -256,6 +256,20 @@ class TestDeviceServices(unittest.TestCase):
         self.assertRaises(ElementDeletionError, device_services.delete, device)
         self.assertEquals(device_notifier_deleted.call_count, 0)
 
+    @patch('xivo_dao.data_handler.device.services.rebuild_device_config')
+    @patch('xivo_dao.data_handler.device.provd_converter.link_device_config')
+    @patch('xivo_dao.data_handler.line.dao.edit')
+    def test_associate_line_to_device(self, line_dao_edit, link_device_config, rebuild_device_config):
+        device = Device(id=self.device_id)
+        line = LineSIP()
+
+        device_services.associate_line_to_device(device, line)
+
+        line_dao_edit.assert_called_once_with(line)
+        link_device_config.assert_called_once_with(device)
+        rebuild_device_config.assert_called_once_with(device)
+        self.assertEquals(line.device_id, self.device_id)
+
     @patch('xivo_dao.data_handler.device.services.build_line_for_device')
     @patch('xivo_dao.data_handler.line.dao.find_all_by_device_id')
     def test_rebuild_device_config(self, line_find_all_by_device_id, build_line_for_device):

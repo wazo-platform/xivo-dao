@@ -81,7 +81,7 @@ def delete(device):
 
 
 def associate_line_to_device(device, line):
-    line.device = str(device.id)
+    line.device_id = str(device.id)
     line_dao.edit(line)
     provd_converter.link_device_config(device)
     rebuild_device_config(device)
