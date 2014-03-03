@@ -23,7 +23,7 @@ from xivo_dao.alchemy.entity import Entity as EntitySchema
 
 from xivo_dao.data_handler.context.model import Context, ContextType
 from xivo_dao.data_handler.context import dao as context_dao
-from hamcrest import *
+from hamcrest import assert_that, equal_to, instance_of, has_property, all_of
 
 
 class TestContextDao(DAOTestCase):
@@ -48,9 +48,11 @@ class TestContextDao(DAOTestCase):
 
         self._insert_entity(entity_name)
 
-        context_dao.create(context)
+        created_context = context_dao.create(context)
 
         context_row = self.session.query(ContextSchema).filter(ContextSchema.name == context_name).first()
+
+        assert_that(created_context, instance_of(Context))
 
         assert_that(context_row, all_of(
             has_property('name', context_name),

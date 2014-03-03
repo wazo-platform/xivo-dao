@@ -30,6 +30,8 @@ def create(session, context):
     session.add(context_row)
     session.commit()
 
+    return context
+
 
 @xivo_daosession
 def _get_default_entity_name(session):
