@@ -452,7 +452,7 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         result = asterisk_conf_dao.find_exten_settings('default')
 
-        assert_that(result, has_length(0))
+        assert_that(result, contains())
 
     def test_find_exten_settings_multiple_extensions(self):
         exten1 = self.add_extension(exten='12', context='default')
@@ -506,7 +506,7 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         extensions = asterisk_conf_dao.find_exten_hints_settings(context)
 
-        assert_that(extensions, has_length(0))
+        assert_that(extensions, contains())
 
     def test_find_context_settings(self):
         context1 = self.add_context()
