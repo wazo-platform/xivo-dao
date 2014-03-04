@@ -20,7 +20,7 @@ from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementCreationError, ElementDeletionError, ElementEditionError
 from xivo_dao.data_handler.extension.model import ExtensionOrdering, db_converter
-from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.sql.expression import or_
 
 
@@ -42,7 +42,7 @@ def _fetch_extension_row(session, extension_id):
 
 @daosession
 def get_by_exten_context(session, exten, context):
-    res = (_new_query(session)
+    res = (session.query(ExtensionSchema)
            .filter(ExtensionSchema.exten == exten)
            .filter(ExtensionSchema.context == context)
            ).first()

@@ -125,11 +125,6 @@ class TestGet(TestUserDAO):
         assert_that(user.voicemail_id, equal_to(voicemail_row.uniqueid))
         assert_that(user.private_template_id, equal_to(user_row.func_key_private_template_id))
 
-    def test_get_commented(self):
-        user = self.add_user(firstname='Robert', commented=1)
-
-        self.assertRaises(LookupError, user_dao.get, user.id)
-
     def test_get_by_number_context(self):
         context, number = 'default', '1234'
         user_line = self.add_user_line_with_exten(exten=number,

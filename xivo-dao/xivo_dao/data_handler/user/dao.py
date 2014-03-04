@@ -86,7 +86,7 @@ def find_user(session, firstname, lastname):
 
 @daosession
 def get(session, user_id):
-    user_row = _fetch_user_row(session, user_id)
+    user_row = _fetch_commented_user_row(session, user_id)
     return db_converter.to_model(user_row)
 
 
