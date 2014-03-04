@@ -45,7 +45,7 @@ def get(session, line_id):
     if not line:
         raise ElementNotExistsError('Line', line_id=line_id)
 
-    return _join_line_protocol(line)
+    return _convert_to_model(line)
 
 
 @daosession
@@ -61,7 +61,7 @@ def get_by_user_id(session, user_id):
     if not line:
         raise ElementNotExistsError('Line', user_id=user_id)
 
-    return _join_line_protocol(line)
+    return _convert_to_model(line)
 
 
 @daosession
@@ -79,7 +79,7 @@ def get_by_number_context(session, number, context):
     if not line:
         raise ElementNotExistsError('Line', number=number, context=context)
 
-    return _join_line_protocol(line)
+    return _convert_to_model(line)
 
 
 @daosession
@@ -129,7 +129,7 @@ def find_by_user_id(session, user_id, main_line=True, main_user=True):
                 .first())
 
     if line_row:
-        return _join_line_protocol(line_row)
+        return _convert_to_model(line_row)
     return None
 
 
@@ -139,12 +139,12 @@ def _rows_to_line_model(line_rows):
 
     lines = []
     for line_row in line_rows:
-        lines.append(_join_line_protocol(line_row))
+        lines.append(_convert_to_model(line_row))
 
     return lines
 
 
-def _join_line_protocol(line):
+def _convert_to_model(line):
     protocol = line.protocol.lower()
     protocol_row = _get_protocol_row(line)
 
