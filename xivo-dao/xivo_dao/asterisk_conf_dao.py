@@ -112,6 +112,7 @@ def find_sccp_line_settings(session):
                          UserLine.line_id == LineFeatures.id,
                          UserLine.main_user == True,
                          UserLine.main_line == True,
+                         LineFeatures.commented == 0,
                          LineFeatures.protocol == 'sccp',
                          LineFeatures.protocolid == SCCPLine.id))
             .all())
