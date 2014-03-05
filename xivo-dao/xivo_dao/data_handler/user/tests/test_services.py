@@ -15,13 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-import unittest
-
-from hamcrest import assert_that, equal_to, has_property
+from hamcrest import assert_that, equal_to
 from mock import patch, Mock
 
 from xivo_dao.tests.test_case import TestCase
-from xivo_dao.data_handler.exception import ElementCreationError
 from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.data_handler.user import services as user_services
 from xivo_dao.data_handler.user.model import User
