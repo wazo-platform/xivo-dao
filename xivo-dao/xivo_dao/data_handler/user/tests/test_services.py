@@ -128,6 +128,7 @@ class TestFindUser(TestCase):
 
 class TestCreate(TestCase):
 
+    @patch('xivo_dao.data_handler.func_key.destination.create_user_destination')
     @patch('xivo_dao.data_handler.dial_action.dao.create_default_dial_actions_for_user')
     @patch('xivo_dao.data_handler.func_key_template.dao.create_private_template')
     @patch('xivo_dao.data_handler.user.notifier.created')
@@ -138,7 +139,8 @@ class TestCreate(TestCase):
                     user_dao_create,
                     user_notifier_created,
                     create_private_template,
-                    create_default_dial_actions_for_user):
+                    create_default_dial_actions_for_user,
+                    create_user_destination):
         firstname = 'user'
         lastname = 'toto'
         user = User(firstname=firstname, lastname=lastname)
@@ -151,6 +153,7 @@ class TestCreate(TestCase):
         user_dao_create.assert_called_once_with(user)
         user_notifier_created.assert_called_once_with(user)
         create_default_dial_actions_for_user.assert_called_once_with(user)
+        create_user_destination.assert_called_once_with(user)
 
         self.assertEquals(type(result), User)
         self.assertEquals(result.private_template_id, create_private_template.return_value)
