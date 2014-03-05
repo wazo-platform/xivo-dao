@@ -760,7 +760,6 @@ class TestLineDao(DAOTestCase):
         line_row = self.session.query(LineSchema).get(line_row.id)
 
         self.assertEquals(line_row.number, '')
-        self.assertEquals(line_row.context, '')
         self.assertEquals(line_row.provisioningid, provisioningid)
 
     def test_associate_extension(self):
