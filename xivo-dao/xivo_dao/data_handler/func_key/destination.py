@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.data_handler.func_key import dao as func_key_dao
+from xivo_dao.data_handler.func_key_template import dao as template_dao
 from xivo_dao.data_handler.func_key.model import FuncKey
 
 
@@ -24,3 +25,10 @@ def create_user_destination(user):
                        destination='user',
                        destination_id=user.id)
     func_key_dao.create(func_key)
+
+
+def delete_user_destination(user):
+    func_keys = func_key_dao.find_all_by_destination('user', user.id)
+    for func_key in func_keys:
+        template_dao.remove_func_key_from_templates(func_key)
+        func_key_dao.delete(func_key)

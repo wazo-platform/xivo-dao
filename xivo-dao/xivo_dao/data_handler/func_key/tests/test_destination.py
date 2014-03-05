@@ -20,7 +20,7 @@ from xivo_dao.data_handler.user.model import User
 from xivo_dao.data_handler.func_key.model import FuncKey
 from xivo_dao.data_handler.func_key import destination
 
-from mock import patch, Mock
+from mock import patch, Mock, sentinel
 
 
 class TestCreateUserDestination(TestCase):
@@ -37,3 +37,27 @@ class TestCreateUserDestination(TestCase):
         destination.create_user_destination(user)
 
         dao_create.assert_called_once_with(expected_func_key)
+
+
+class TestDeleteUserDestination(TestCase):
+
+    @patch('xivo_dao.data_handler.func_key.dao.delete')
+    @patch('xivo_dao.data_handler.func_key_template.dao.remove_func_key_from_templates')
+    @patch('xivo_dao.data_handler.func_key.dao.find_all_by_destination')
+    def test_delete_user_destination(self,
+                                     find_all_by_destination,
+                                     remove_func_key_from_templates,
+                                     dao_delete):
+        user = Mock(User, id=sentinel.user_id)
+
+        first_func_key = Mock(FuncKey)
+        second_func_key = Mock(FuncKey)
+        find_all_by_destination.return_value = [first_func_key, second_func_key]
+
+        destination.delete_user_destination(user)
+
+        find_all_by_destination.assert_called_once_with('user', sentinel.user_id)
+        dao_delete.assert_any_call(first_func_key)
+        dao_delete.assert_any_call(second_func_key)
+        remove_func_key_from_templates.assert_any_call(first_func_key)
+        remove_func_key_from_templates.assert_any_call(second_func_key)

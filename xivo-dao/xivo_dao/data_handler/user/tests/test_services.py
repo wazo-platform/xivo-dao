@@ -188,16 +188,22 @@ class TestEdit(TestCase):
 
 class TestDelete(TestCase):
 
-    @patch('xivo_dao.data_handler.user.validator.validate_delete')
     @patch('xivo_dao.data_handler.user.notifier.deleted')
     @patch('xivo_dao.data_handler.user.dao.delete')
-    def test_delete(self, user_validate_delete, user_dao_delete, user_notifier_deleted):
+    @patch('xivo_dao.data_handler.func_key.destination.delete_user_destination')
+    @patch('xivo_dao.data_handler.user.validator.validate_delete')
+    def test_delete(self,
+                    user_validate_delete,
+                    delete_user_destination,
+                    user_dao_delete,
+                    user_notifier_deleted):
         user = User(id=1, firstname='user', lastname='toto')
 
         user_services.delete(user)
 
         user_validate_delete.assert_called_once_with(user)
         user_dao_delete.assert_called_once_with(user)
+        delete_user_destination.assert_called_once_with(user)
         user_notifier_deleted.assert_called_once_with(user)
 
 

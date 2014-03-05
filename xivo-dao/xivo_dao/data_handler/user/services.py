@@ -70,6 +70,7 @@ def edit(user):
 
 def delete(user):
     validator.validate_delete(user)
+    func_key_destination.delete_user_destination(user)
     user_dao.delete(user)
     notifier.deleted(user)
 
