@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from hamcrest import *
+
 from xivo_dao import agent_dao
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
@@ -94,6 +96,51 @@ class TestAgentDAO(DAOTestCase):
         self.assertEqual(result.queues[0].id, queue.id)
         self.assertEqual(result.queues[0].name, queue_member.queue_name)
         self.assertEqual(result.queues[0].penalty, queue_member.penalty)
+
+    def test_agent_with_id_not_exist(self):
+        self.assertRaises(LookupError, agent_dao.agent_with_id, 1)
+
+    def test_agent_with_number(self):
+        agent = self._insert_agent()
+
+        result = agent_dao.agent_with_number(agent.number)
+
+        assert_that(result.id, equal_to(agent.id))
+        assert_that(result.number, equal_to(agent.number))
+
+    def test_agent_with_number_not_exist(self):
+        self.assertRaises(LookupError, agent_dao.agent_with_number, '1234')
+
+    def test_get(self):
+        agent = self._insert_agent()
+
+        result = agent_dao.get(agent.id)
+
+        assert_that(result.id, equal_to(agent.id))
+        assert_that(result.numgroup, equal_to(agent.numgroup))
+        assert_that(result.number, equal_to(agent.number))
+        assert_that(result.passwd, equal_to(agent.passwd))
+        assert_that(result.context, equal_to(agent.context))
+        assert_that(result.language, equal_to(agent.language))
+
+    def test_get_not_exist(self):
+        result = agent_dao.get(1)
+
+        assert_that(result, equal_to(None))
+
+    def test_all(self):
+        agent1 = self._insert_agent()
+        agent2 = self._insert_agent()
+
+        expected = [agent1, agent2]
+
+        result = agent_dao.all()
+
+        assert_that(result, equal_to(expected))
+
+    def test_all_empty(self):
+        result = agent_dao.all()
+        self.assertEqual([], result)
 
     def _insert_agent(self):
         agent = AgentFeatures()
