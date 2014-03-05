@@ -96,6 +96,20 @@ class TestUserFuncKey(TestFuncKeyDao):
 
         return func_key_row, func_key
 
+    def find_user_destination(self, user_id):
+        row = (self.session.query(FuncKeyDestUserSchema)
+               .filter(FuncKeyDestUserSchema.user_id == user_id)
+               .first())
+
+        return row
+
+    @contextmanager
+    def mocked_session(self):
+        patcher = patch('xivo_dao.helpers.db_manager.AsteriskSession')
+        mock = patcher.start()
+        yield mock.return_value
+        patcher.stop()
+
 
 class TestFuncKeySearch(TestUserFuncKey):
 
@@ -179,20 +193,7 @@ class TestFuncKeyCreate(TestUserFuncKey):
             dao.create(func_key)
             commit_or_abort.assert_any_call(session, ElementCreationError, 'FuncKey')
 
-    def find_user_destination(self, user_id):
-        row = (self.session.query(FuncKeyDestUserSchema)
-               .filter(FuncKeyDestUserSchema.user_id == user_id)
-               .first())
-
-        return row
-
     def assert_func_key_for_user_created(self, destination_row):
         row = self.session.query(FuncKeySchema).get(destination_row.func_key_id)
         assert_that(row, is_not(none()))
 
-    @contextmanager
-    def mocked_session(self):
-        patcher = patch('xivo_dao.helpers.db_manager.AsteriskSession')
-        mock = patcher.start()
-        yield mock.return_value
-        patcher.stop()
