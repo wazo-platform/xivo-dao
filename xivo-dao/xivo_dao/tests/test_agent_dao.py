@@ -41,6 +41,12 @@ class TestAgentDAO(DAOTestCase):
 
         self.assertEqual(number, self.agent_number)
 
+    def test_test_agent_number_bad_args(self):
+        self.assertRaises(ValueError, agent_dao.agent_number, None)
+
+    def test_agent_number_unknown(self):
+        self.assertRaises(LookupError, lambda: agent_dao.agent_number(-1))
+
     def test_agent_context(self):
         agent = self._insert_agent()
 
@@ -48,8 +54,8 @@ class TestAgentDAO(DAOTestCase):
 
         self.assertEqual(context, self.agent_context)
 
-    def test_agent_number_unknown(self):
-        self.assertRaises(LookupError, lambda: agent_dao.agent_number(-1))
+    def test_agent_context_bad_args(self):
+        self.assertRaises(ValueError, agent_dao.agent_context, None)
 
     def test_agent_interface(self):
         agent = self._insert_agent()
@@ -58,12 +64,21 @@ class TestAgentDAO(DAOTestCase):
 
         self.assertEqual(interface, 'Agent/%s' % self.agent_number)
 
+    def test_agent_interface_bad_args(self):
+        self.assertRaises(ValueError, agent_dao.agent_interface, None)
+
+    def test_agent_interface_not_exist(self):
+        self.assertRaises(LookupError, agent_dao.agent_interface(1))
+
     def test_agent_id(self):
         agent = self._insert_agent()
 
         agent_id = agent_dao.agent_id(self.agent_number)
 
         self.assertEqual(str(agent.id), agent_id)
+
+    def test_agent_id_bad_args(self):
+        self.assertRaises(ValueError, agent_dao.agent_id, None)
 
     def test_agent_id_inexistant(self):
         self.assertRaises(LookupError, agent_dao.agent_id, '2345')
@@ -79,9 +94,15 @@ class TestAgentDAO(DAOTestCase):
         self.assertTrue(agent.id > 0)
         self.assertTrue(agent_dao.agent_number(agent.id) == '15')
 
+    def test_add_agent_bad_args(self):
+        self.assertRaises(ValueError, agent_dao.add_agent, None)
+
     def test_del_agent(self):
         agent_dao.del_agent(self._insert_agent().id)
         self.assertTrue(agent_dao.all() == [])
+
+    def test_del_agent_bad_args(self):
+        self.assertRaises(ValueError, agent_dao.del_agent, None)
 
     def test_agent_with_id(self):
         agent = self._insert_agent()

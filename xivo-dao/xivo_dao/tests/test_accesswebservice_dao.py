@@ -33,6 +33,10 @@ class TestAccessWebServiceDao(DAOTestCase):
         password = accesswebservice_dao.get_password(access.login)
         self.assertEqual(password, access.passwd)
 
+    def test_get_password_not_exist(self):
+        password = accesswebservice_dao.get_password('toto')
+        self.assertEqual(password, None)
+
     def test_get_allowed_hosts(self):
         self.host = '15.15.15.15'
         self._insert_access_web_service()
