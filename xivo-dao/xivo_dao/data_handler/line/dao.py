@@ -40,7 +40,7 @@ DEFAULT_ORDER = [LineOrdering.name, LineOrdering.context]
 
 @daosession
 def get(session, line_id):
-    line = _new_query(session).filter(LineSchema.id == line_id).first()
+    line = session.query(LineSchema).filter(LineSchema.id == line_id).first()
 
     if not line:
         raise ElementNotExistsError('Line', line_id=line_id)
@@ -51,7 +51,7 @@ def get(session, line_id):
 @daosession
 def get_by_user_id(session, user_id):
     line = (
-        _new_query(session)
+        session.query(LineSchema)
         .join(UserLineSchema, and_(UserLineSchema.user_id == user_id,
                                    UserLineSchema.line_id == LineSchema.id,
                                    UserLineSchema.main_line == True,
@@ -67,7 +67,7 @@ def get_by_user_id(session, user_id):
 @daosession
 def get_by_number_context(session, number, context):
     line = (
-        _new_query(session)
+        session.query(LineSchema)
         .join(Extension, and_(Extension.exten == number,
                               Extension.context == context))
         .join(UserLineSchema, and_(UserLineSchema.extension_id == Extension.id,
