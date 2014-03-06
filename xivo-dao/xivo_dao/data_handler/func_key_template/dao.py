@@ -18,7 +18,9 @@
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate as FuncKeyTemplateSchema
+from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping as FuncKeyMappingSchema
 from xivo_dao.data_handler.exception import ElementCreationError
+from xivo_dao.data_handler.exception import ElementDeletionError
 
 
 @daosession
@@ -29,3 +31,11 @@ def create_private_template(session):
         session.add(template)
 
     return template.id
+
+
+@daosession
+def remove_func_key_from_templates(session, func_key):
+    with commit_or_abort(session, ElementDeletionError, 'FuncKeyTemplate'):
+        (session.query(FuncKeyMappingSchema)
+         .filter(FuncKeyMappingSchema.func_key_id == func_key.id)
+         .delete())
