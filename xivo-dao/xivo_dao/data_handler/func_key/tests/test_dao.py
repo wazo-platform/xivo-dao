@@ -49,16 +49,6 @@ class TestFuncKeyDao(DAOTestCase):
     def setUp(self):
         self.empty_tables()
 
-    def add_type(self, name):
-        func_key_type_row = FuncKeyTypeSchema(name=name)
-        self.add_me(func_key_type_row)
-        return func_key_type_row
-
-    def add_destination_type(self, id, name):
-        destination_type_row = FuncKeyDestinationTypeSchema(id=id, name=name)
-        self.add_me(destination_type_row)
-        return destination_type_row
-
 
 class TestUserFuncKey(TestFuncKeyDao):
 
@@ -67,8 +57,8 @@ class TestUserFuncKey(TestFuncKeyDao):
         self.create_types_and_destinations()
 
     def create_types_and_destinations(self):
-        func_key_type_row = self.add_type('speeddial')
-        destination_type_row = self.add_destination_type(1, 'user')
+        func_key_type_row = self.add_func_key_type(name='speeddial')
+        destination_type_row = self.add_func_key_destination_type(id=1, name='user')
 
         self.type_id = func_key_type_row.id
         self.destination_type_id = destination_type_row.id
