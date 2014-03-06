@@ -182,7 +182,7 @@ class TestMakeUserLineAssociation(TestCase):
 
 class TestUserLineDissociate(TestCase):
 
-    @patch('xivo_dao.data_handler.user_line.services.delete_user_line_associations')
+    @patch('xivo_dao.data_handler.user_line.services._delete_user_line_associations')
     @patch('xivo_dao.data_handler.user_line.dao.dissociate')
     @patch('xivo_dao.data_handler.user_line.notifier.dissociated')
     @patch('xivo_dao.data_handler.user_line.validator.validate_dissociation')
@@ -190,7 +190,7 @@ class TestUserLineDissociate(TestCase):
                         validate_dissociation,
                         notifier_dissociated,
                         dao_dissociate,
-                        delete_user_line_associations):
+                        _delete_user_line_associations):
         user_line = Mock(UserLine)
 
         user_line_services.dissociate(user_line)
@@ -198,7 +198,7 @@ class TestUserLineDissociate(TestCase):
         validate_dissociation.assert_called_once_with(user_line)
         dao_dissociate.assert_called_once_with(user_line)
         notifier_dissociated.assert_called_once_with(user_line)
-        delete_user_line_associations.assert_called_once_with(user_line)
+        _delete_user_line_associations.assert_called_once_with(user_line)
 
 
 class DeleteUserLineAssociations(TestCase):
@@ -217,7 +217,7 @@ class DeleteUserLineAssociations(TestCase):
         find_by_line_id.return_value = None
         find_main_user_line.return_value = None
 
-        user_line_services.delete_user_line_associations(user_line)
+        user_line_services._delete_user_line_associations(user_line)
 
         find_by_line_id.assert_called_once_with(user_line.line_id)
         delete_user_references.assert_called_once_with(user_line.line_id)
@@ -237,7 +237,7 @@ class DeleteUserLineAssociations(TestCase):
         find_by_line_id.return_value = None
         find_main_user_line.return_value = user_line
 
-        user_line_services.delete_user_line_associations(user_line)
+        user_line_services._delete_user_line_associations(user_line)
 
         find_by_line_id.assert_called_once_with(user_line.line_id)
         find_main_user_line.assert_called_once_with(user_line.line_id)
@@ -259,7 +259,7 @@ class DeleteUserLineAssociations(TestCase):
         find_by_line_id.return_value = line_extension
         find_main_user_line.return_value = user_line
 
-        user_line_services.delete_user_line_associations(user_line)
+        user_line_services._delete_user_line_associations(user_line)
 
         find_by_line_id.assert_called_once_with(user_line.line_id)
         find_main_user_line.assert_called_once_with(user_line.line_id)
@@ -281,7 +281,7 @@ class DeleteUserLineAssociations(TestCase):
         find_by_line_id.return_value = line_extension
         find_main_user_line.return_value = None
 
-        user_line_services.delete_user_line_associations(user_line)
+        user_line_services._delete_user_line_associations(user_line)
 
         find_by_line_id.assert_called_once_with(user_line.line_id)
         find_main_user_line.assert_called_once_with(user_line.line_id)
