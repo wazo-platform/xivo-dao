@@ -201,17 +201,19 @@ class TestUserLineDissociate(TestCase):
         _delete_user_line_associations.assert_called_once_with(user_line)
 
 
-class DeleteUserLineAssociations(TestCase):
+class TestDeleteUserLineAssociations(TestCase):
 
     @patch('xivo_dao.data_handler.line.dao.delete_user_references')
     @patch('xivo_dao.data_handler.user_line_extension.helper.delete_extension_associations')
     @patch('xivo_dao.data_handler.user_line.dao.find_main_user_line')
     @patch('xivo_dao.data_handler.line_extension.dao.find_by_line_id')
-    def test_no_extension_no_main_user(self,
-                                       find_by_line_id,
-                                       find_main_user_line,
-                                       delete_extension_associations,
-                                       delete_user_references):
+    def test_given_line_has_no_extension_when_dissociating_main_user_then_user_references_deleted(
+            self,
+            find_by_line_id,
+            find_main_user_line,
+            delete_extension_associations,
+            delete_user_references):
+
         user_line = Mock(UserLine, user_id=1, line_id=2)
 
         find_by_line_id.return_value = None
@@ -227,11 +229,13 @@ class DeleteUserLineAssociations(TestCase):
     @patch('xivo_dao.data_handler.user_line_extension.helper.delete_extension_associations')
     @patch('xivo_dao.data_handler.user_line.dao.find_main_user_line')
     @patch('xivo_dao.data_handler.line_extension.dao.find_by_line_id')
-    def test_no_extension_with_main_user(self,
-                                         find_by_line_id,
-                                         find_main_user_line,
-                                         delete_extension_associations,
-                                         delete_user_references):
+    def test_given_line_has_no_extension_when_dissociating_secondary_user_then_no_references_deleted(
+            self,
+            find_by_line_id,
+            find_main_user_line,
+            delete_extension_associations,
+            delete_user_references):
+
         user_line = Mock(UserLine, user_id=1, line_id=2)
 
         find_by_line_id.return_value = None
@@ -248,11 +252,13 @@ class DeleteUserLineAssociations(TestCase):
     @patch('xivo_dao.data_handler.user_line_extension.helper.delete_extension_associations')
     @patch('xivo_dao.data_handler.user_line.dao.find_main_user_line')
     @patch('xivo_dao.data_handler.line_extension.dao.find_by_line_id')
-    def test_with_extension_with_main_user(self,
-                                           find_by_line_id,
-                                           find_main_user_line,
-                                           delete_extension_associations,
-                                           delete_user_references):
+    def test_given_line_has_an_extension_when_dissociating_secondary_user_then_no_references_deleted(
+            self,
+            find_by_line_id,
+            find_main_user_line,
+            delete_extension_associations,
+            delete_user_references):
+
         user_line = Mock(UserLine, user_id=1, line_id=2)
         line_extension = Mock(LineExtension, line_id=2, extension_id=3)
 
@@ -270,11 +276,13 @@ class DeleteUserLineAssociations(TestCase):
     @patch('xivo_dao.data_handler.user_line_extension.helper.delete_extension_associations')
     @patch('xivo_dao.data_handler.user_line.dao.find_main_user_line')
     @patch('xivo_dao.data_handler.line_extension.dao.find_by_line_id')
-    def test_with_extension_no_main_user(self,
-                                         find_by_line_id,
-                                         find_main_user_line,
-                                         delete_extension_associations,
-                                         delete_user_references):
+    def test_given_line_has_an_extension_when_dissociating_main_user_then_user_and_extension_references_deleted(
+            self,
+            find_by_line_id,
+            find_main_user_line,
+            delete_extension_associations,
+            delete_user_references):
+
         user_line = Mock(UserLine, user_id=1, line_id=2)
         line_extension = Mock(LineExtension, line_id=2, extension_id=3)
 
