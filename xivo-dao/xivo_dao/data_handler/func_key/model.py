@@ -60,6 +60,16 @@ DB_TO_MODEL_MAPPING = {
 }
 
 
+class DestinationType(object):
+    user = 'user'
+
+    all_types = [user]
+
+    @classmethod
+    def exists(cls, name):
+        return name in cls.all_types
+
+
 class FuncKeyDbConverter(DatabaseConverter):
 
     def __init__(self):

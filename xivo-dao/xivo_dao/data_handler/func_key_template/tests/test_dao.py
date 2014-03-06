@@ -15,17 +15,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, is_not, none, has_property
+from hamcrest import assert_that, is_not, none, has_property, equal_to
 from mock import patch, ANY
 
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate as FuncKeyTemplateSchema
+from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping as FuncKeyMappingSchema
+from xivo_dao.alchemy.func_key import FuncKey as FuncKeySchema
+from xivo_dao.alchemy.func_key_type import FuncKeyType as FuncKeyTypeSchema
+from xivo_dao.alchemy.func_key_destination_type import FuncKeyDestinationType as FuncKeyDestinationTypeSchema
 
 from xivo_dao.data_handler.exception import ElementCreationError
 from xivo_dao.data_handler.func_key_template import dao
+from xivo_dao.data_handler.func_key.model import FuncKey
 
 
-class TestCreatePrivateTemplate(DAOTestCase):
+class TestFuncKeyTemplateDao(DAOTestCase):
 
     tables = [
         FuncKeyTemplateSchema,
@@ -33,6 +38,9 @@ class TestCreatePrivateTemplate(DAOTestCase):
 
     def setUp(self):
         self.empty_tables()
+
+
+class TestCreatePrivateTemplate(TestFuncKeyTemplateDao):
 
     def test_create_private_template(self):
         template_id = dao.create_private_template()
@@ -51,3 +59,65 @@ class TestCreatePrivateTemplate(DAOTestCase):
         dao.create_private_template()
 
         commit_or_abort.assert_called_with(ANY, ElementCreationError, 'FuncKeyTemplate')
+
+
+class TestRemoveFuncKeyFromTemplate(TestFuncKeyTemplateDao):
+
+    tables = TestFuncKeyTemplateDao.tables + [
+        FuncKeyMappingSchema,
+        FuncKeySchema,
+        FuncKeyTypeSchema,
+        FuncKeyDestinationTypeSchema,
+    ]
+
+    def setUp(self):
+        TestFuncKeyTemplateDao.setUp(self)
+        func_key_type_row = self.add_func_key_type(name='speeddial')
+        destination_type_row = self.add_func_key_destination_type(id=1, name='user')
+
+        self.type_id = func_key_type_row.id
+        self.destination_type_id = destination_type_row.id
+
+    def test_given_one_func_key_mapped_when_removed_then_template_empty(self):
+        template_row = self.add_func_key_template()
+        func_key = self.create_func_key_for_template(template_row, 1)
+
+        dao.remove_func_key_from_templates(func_key)
+
+        self.assert_template_empty(template_row)
+
+    def test_given_two_func_keys_mapped_when_first_removed_then_other_func_key_remains(self):
+        template_row = self.add_func_key_template()
+        first_func_key = self.create_func_key_for_template(template_row, 1)
+        second_func_key = self.create_func_key_for_template(template_row, 2)
+
+        dao.remove_func_key_from_templates(first_func_key)
+
+        self.assert_template_contains_func_key(template_row, second_func_key)
+
+    def create_func_key_for_template(self, template_row, position):
+        func_key_row = self.add_func_key(type_id=self.type_id,
+                                         destination_type_id=self.destination_type_id)
+
+        mapping_row = FuncKeyMappingSchema(template_id=template_row.id,
+                                           func_key_id=func_key_row.id,
+                                           destination_type_id=func_key_row.destination_type_id,
+                                           position=position)
+        self.add_me(mapping_row)
+
+        return FuncKey(id=func_key_row.id)
+
+    def assert_template_empty(self, template_row):
+        count = (self.session.query(FuncKeyMappingSchema)
+                 .filter(FuncKeyMappingSchema.template_id == template_row.id)
+                 .count())
+
+        assert_that(count, equal_to(0))
+
+    def assert_template_contains_func_key(self, template_row, func_key_row):
+        count = (self.session.query(FuncKeyMappingSchema)
+                 .filter(FuncKeyMappingSchema.template_id == template_row.id)
+                 .filter(FuncKeyMappingSchema.func_key_id == func_key_row.id)
+                 .count())
+
+        assert_that(count, equal_to(1))

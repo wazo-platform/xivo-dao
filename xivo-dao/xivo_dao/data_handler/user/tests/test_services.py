@@ -15,13 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-import unittest
-
-from hamcrest import assert_that, equal_to, has_property
+from hamcrest import assert_that, equal_to
 from mock import patch, Mock
 
 from xivo_dao.tests.test_case import TestCase
-from xivo_dao.data_handler.exception import ElementCreationError
 from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.data_handler.user import services as user_services
 from xivo_dao.data_handler.user.model import User
@@ -128,6 +125,7 @@ class TestFindUser(TestCase):
 
 class TestCreate(TestCase):
 
+    @patch('xivo_dao.data_handler.func_key.destination.create_user_destination')
     @patch('xivo_dao.data_handler.dial_action.dao.create_default_dial_actions_for_user')
     @patch('xivo_dao.data_handler.func_key_template.dao.create_private_template')
     @patch('xivo_dao.data_handler.user.notifier.created')
@@ -138,7 +136,8 @@ class TestCreate(TestCase):
                     user_dao_create,
                     user_notifier_created,
                     create_private_template,
-                    create_default_dial_actions_for_user):
+                    create_default_dial_actions_for_user,
+                    create_user_destination):
         firstname = 'user'
         lastname = 'toto'
         user = User(firstname=firstname, lastname=lastname)
@@ -151,6 +150,7 @@ class TestCreate(TestCase):
         user_dao_create.assert_called_once_with(user)
         user_notifier_created.assert_called_once_with(user)
         create_default_dial_actions_for_user.assert_called_once_with(user)
+        create_user_destination.assert_called_once_with(user)
 
         self.assertEquals(type(result), User)
         self.assertEquals(result.private_template_id, create_private_template.return_value)
@@ -185,16 +185,22 @@ class TestEdit(TestCase):
 
 class TestDelete(TestCase):
 
-    @patch('xivo_dao.data_handler.user.validator.validate_delete')
     @patch('xivo_dao.data_handler.user.notifier.deleted')
     @patch('xivo_dao.data_handler.user.dao.delete')
-    def test_delete(self, user_validate_delete, user_dao_delete, user_notifier_deleted):
+    @patch('xivo_dao.data_handler.func_key.destination.delete_user_destination')
+    @patch('xivo_dao.data_handler.user.validator.validate_delete')
+    def test_delete(self,
+                    user_validate_delete,
+                    delete_user_destination,
+                    user_dao_delete,
+                    user_notifier_deleted):
         user = User(id=1, firstname='user', lastname='toto')
 
         user_services.delete(user)
 
         user_validate_delete.assert_called_once_with(user)
         user_dao_delete.assert_called_once_with(user)
+        delete_user_destination.assert_called_once_with(user)
         user_notifier_deleted.assert_called_once_with(user)
 
 

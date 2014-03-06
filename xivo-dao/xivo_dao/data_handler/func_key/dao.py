@@ -17,11 +17,12 @@
 
 from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.data_handler.exception import ElementCreationError
+from xivo_dao.data_handler.exception import ElementDeletionError
 from xivo_dao.data_handler.utils.search import SearchFilter
 from xivo_dao.helpers.abstract_model import SearchResult
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.helpers.db_utils import commit_or_abort
-from xivo_dao.data_handler.func_key.model import db_converter, FuncKey
+from xivo_dao.data_handler.func_key.model import db_converter, FuncKey, DestinationType
 from xivo_dao.alchemy.func_key import FuncKey as FuncKeySchema
 from xivo_dao.alchemy.func_key_type import FuncKeyType as FuncKeyTypeSchema
 from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser as FuncKeyDestUserSchema
@@ -36,6 +37,18 @@ def search(session, term=None, limit=None, skip=None, order=None, direction='asc
 
     func_keys = [db_converter.to_model(row) for row in rows]
     return SearchResult(total, func_keys)
+
+
+@daosession
+def find_all_by_destination(session, destination, destination_id):
+    if not DestinationType.exists(destination):
+        return []
+
+    query = (_func_key_query(session)
+             .filter(FuncKeyDestUserSchema.user_id == destination_id))
+
+    func_key_rows = query.all()
+    return [db_converter.to_model(row) for row in func_key_rows]
 
 
 @daosession
@@ -62,6 +75,21 @@ def create(session, func_key):
         session.add(destination_row)
 
     return func_key
+
+
+@daosession
+def delete(session, func_key):
+    func_key_row = (session.query(FuncKeySchema)
+                    .filter(FuncKeySchema.id == func_key.id)
+                    .first())
+    destination_row = (session.query(FuncKeyDestUserSchema)
+                       .filter(FuncKeyDestUserSchema.func_key_id == func_key_row.id)
+                       .filter(FuncKeyDestUserSchema.user_id == func_key.destination_id)
+                       .first())
+
+    with commit_or_abort(session, ElementDeletionError, 'FuncKey'):
+        session.delete(destination_row)
+        session.delete(func_key_row)
 
 
 def _func_key_query(session):

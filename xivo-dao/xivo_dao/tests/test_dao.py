@@ -57,7 +57,10 @@ from xivo_dao.alchemy.queue import Queue
 from xivo_dao.alchemy.queueskillrule import QueueSkillRule
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.queueskill import QueueSkill
+from xivo_dao.alchemy.func_key import FuncKey
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
+from xivo_dao.alchemy.func_key_type import FuncKeyType
+from xivo_dao.alchemy.func_key_destination_type import FuncKeyDestinationType
 
 logger = logging.getLogger(__name__)
 
@@ -547,10 +550,29 @@ class DAOTestCase(unittest.TestCase):
         self.add_me(sip_authentication)
         return sip_authentication
 
+    def add_func_key(self, **kwargs):
+        func_key_row = FuncKey(**kwargs)
+        self.add_me(func_key_row)
+        return func_key_row
+
     def add_func_key_template(self, **kwargs):
         func_key_template = FuncKeyTemplate(**kwargs)
         self.add_me(func_key_template)
         return func_key_template
+
+    def add_func_key_type(self, **kwargs):
+        kwargs.setdefault('id', self._generate_id())
+        kwargs.setdefault('name', 'speeddial')
+        func_key_type_row = FuncKeyType(**kwargs)
+        self.add_me(func_key_type_row)
+        return func_key_type_row
+
+    def add_func_key_destination_type(self, **kwargs):
+        kwargs.setdefault('id', 1)
+        kwargs.setdefault('name', 'user')
+        destination_type_row = FuncKeyDestinationType(**kwargs)
+        self.add_me(destination_type_row)
+        return destination_type_row
 
     def add_me(self, obj):
         self.session.begin()

@@ -24,6 +24,7 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.data_handler.exception import ElementCreationError
+from xivo_dao.data_handler.exception import ElementDeletionError
 from xivo_dao.data_handler.func_key.model import FuncKey
 from xivo_dao.data_handler.func_key import dao
 from xivo_dao.helpers.abstract_model import SearchResult
@@ -48,16 +49,6 @@ class TestFuncKeyDao(DAOTestCase):
     def setUp(self):
         self.empty_tables()
 
-    def add_type(self, name):
-        func_key_type_row = FuncKeyTypeSchema(name=name)
-        self.add_me(func_key_type_row)
-        return func_key_type_row
-
-    def add_destination_type(self, id, name):
-        destination_type_row = FuncKeyDestinationTypeSchema(id=id, name=name)
-        self.add_me(destination_type_row)
-        return destination_type_row
-
 
 class TestUserFuncKey(TestFuncKeyDao):
 
@@ -66,8 +57,8 @@ class TestUserFuncKey(TestFuncKeyDao):
         self.create_types_and_destinations()
 
     def create_types_and_destinations(self):
-        func_key_type_row = self.add_type('speeddial')
-        destination_type_row = self.add_destination_type(1, 'user')
+        func_key_type_row = self.add_func_key_type(name='speeddial')
+        destination_type_row = self.add_func_key_destination_type(id=1, name='user')
 
         self.type_id = func_key_type_row.id
         self.destination_type_id = destination_type_row.id
@@ -95,6 +86,20 @@ class TestUserFuncKey(TestFuncKeyDao):
                            destination_id=user_row.id)
 
         return func_key_row, func_key
+
+    def find_user_destination(self, user_id):
+        row = (self.session.query(FuncKeyDestUserSchema)
+               .filter(FuncKeyDestUserSchema.user_id == user_id)
+               .first())
+
+        return row
+
+    @contextmanager
+    def mocked_session(self):
+        patcher = patch('xivo_dao.helpers.db_manager.AsteriskSession')
+        mock = patcher.start()
+        yield mock.return_value
+        patcher.stop()
 
 
 class TestFuncKeySearch(TestUserFuncKey):
@@ -125,6 +130,41 @@ class TestFuncKeySearch(TestUserFuncKey):
 
         assert_that(result.total, 1)
         assert_that(result.items, contains(func_key))
+
+
+class TestFuncKeyFindAllByDestination(TestUserFuncKey):
+
+    def test_given_no_destinations_then_returns_empty_list(self):
+        result = dao.find_all_by_destination('user', 1)
+
+        assert_that(result, contains())
+
+    def test_given_one_destination_then_returns_list_with_one_element(self):
+        user_row = self.add_user()
+        func_key_row, func_key = self.prepare_speeddial_with_user_destination(user_row)
+
+        result = dao.find_all_by_destination('user', user_row.id)
+
+        assert_that(result, contains(func_key))
+
+    def test_given_2_destinations_then_returns_list_with_right_destination(self):
+        first_user = self.add_user()
+        second_user = self.add_user()
+
+        self.prepare_speeddial_with_user_destination(first_user)
+        func_key_row, func_key = self.prepare_speeddial_with_user_destination(second_user)
+
+        result = dao.find_all_by_destination('user', second_user.id)
+
+        assert_that(result, contains(func_key))
+
+    def test_given_user_destination_when_searching_wrong_type_then_returns_empty_list(self):
+        user_row = self.add_user()
+        func_key_row, func_key = self.prepare_speeddial_with_user_destination(user_row)
+
+        result = dao.find_all_by_destination('group', user_row.id)
+
+        assert_that(result, contains())
 
 
 class TestFuncKeyGet(TestUserFuncKey):
@@ -179,20 +219,40 @@ class TestFuncKeyCreate(TestUserFuncKey):
             dao.create(func_key)
             commit_or_abort.assert_any_call(session, ElementCreationError, 'FuncKey')
 
-    def find_user_destination(self, user_id):
-        row = (self.session.query(FuncKeyDestUserSchema)
-               .filter(FuncKeyDestUserSchema.user_id == user_id)
-               .first())
-
-        return row
-
     def assert_func_key_for_user_created(self, destination_row):
-        row = self.session.query(FuncKeySchema).get(destination_row.func_key_id)
+        row = (self.session.query(FuncKeySchema)
+               .filter(FuncKeySchema.id == destination_row.func_key_id)
+               .first())
         assert_that(row, is_not(none()))
 
-    @contextmanager
-    def mocked_session(self):
-        patcher = patch('xivo_dao.helpers.db_manager.AsteriskSession')
-        mock = patcher.start()
-        yield mock.return_value
-        patcher.stop()
+
+class TestFuncKeyDelete(TestUserFuncKey):
+
+    def test_given_user_destination_then_func_key_deleted(self):
+        user_row = self.add_user()
+        func_key_row, func_key = self.prepare_speeddial_with_user_destination(user_row)
+
+        dao.delete(func_key)
+
+        self.assert_func_key_deleted(func_key_row.id)
+        self.assert_user_destination_deleted(user_row.id)
+
+    @patch('xivo_dao.data_handler.func_key.dao.commit_or_abort')
+    def test_given_db_error_then_transaction_rollbacked(self, commit_or_abort):
+        func_key = FuncKey(type='speeddial',
+                           destination='user',
+                           destination_id=1)
+
+        with self.mocked_session() as session:
+            dao.delete(func_key)
+            commit_or_abort.assert_any_call(session, ElementDeletionError, 'FuncKey')
+
+    def assert_func_key_deleted(self, func_key_id):
+        row = (self.session.query(FuncKeySchema)
+               .filter(FuncKeySchema.id == func_key_id)
+               .first())
+        assert_that(row, none())
+
+    def assert_user_destination_deleted(self, user_id):
+        row = self.find_user_destination(user_id)
+        assert_that(row, none())

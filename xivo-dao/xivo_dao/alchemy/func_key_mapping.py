@@ -15,25 +15,25 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-
 from xivo_dao.helpers.db_manager import Base
-from sqlalchemy.schema import Column, ForeignKey, ForeignKeyConstraint, CheckConstraint
-from sqlalchemy.types import Integer
-from sqlalchemy.orm import relationship
+from sqlalchemy.schema import Column, ForeignKey, ForeignKeyConstraint, UniqueConstraint, CheckConstraint
+from sqlalchemy.types import Integer, Boolean, String
 
 
-class FuncKeyDestUser(Base):
+class FuncKeyMapping(Base):
 
-    __tablename__ = 'func_key_dest_user'
+    __tablename__ = 'func_key_mapping'
+
     __table_args__ = (
         ForeignKeyConstraint(['func_key_id', 'destination_type_id'],
                              ['func_key.id', 'func_key.destination_type_id']),
-        CheckConstraint('destination_type_id = 1')
+        UniqueConstraint('template_id', 'position'),
+        CheckConstraint('position >= 0')
     )
 
+    template_id = Column(Integer, ForeignKey('func_key_template.id'), primary_key=True)
     func_key_id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('userfeatures.id'), primary_key=True)
-    destination_type_id = Column(Integer, primary_key=True, server_default="1")
-
-    func_key = relationship("FuncKey")
-    user = relationship("UserFeatures")
+    destination_type_id = Column(Integer, primary_key=True)
+    label = Column(String(128))
+    position = Column(Integer, nullable=False)
+    blf = Column(Boolean, nullable=False, default=False)
