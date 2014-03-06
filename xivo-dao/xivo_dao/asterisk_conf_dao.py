@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.sql.expression import and_, literal, cast
+from sqlalchemy.sql.expression import and_, or_, literal, cast
 from sqlalchemy.types import VARCHAR
 
 from xivo_dao.helpers.db_manager import daosession
@@ -53,7 +53,6 @@ from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.queueskill import QueueSkill
 from xivo_dao.alchemy.agentqueueskill import AgentQueueSkill
 from xivo_dao.alchemy.queuepenaltychange import QueuePenaltyChange
-from xivo_dao.alchemy.usercustom import UserCustom
 
 
 @daosession
@@ -113,6 +112,7 @@ def find_sccp_line_settings(session):
                          UserLine.line_id == LineFeatures.id,
                          UserLine.main_user == True,
                          UserLine.main_line == True,
+                         LineFeatures.commented == 0,
                          LineFeatures.protocol == 'sccp',
                          LineFeatures.protocolid == SCCPLine.id))
             .all())
@@ -280,8 +280,15 @@ def find_extenfeatures_settings(session, features=[]):
 @daosession
 def find_exten_settings(session, context_name):
     rows = (session.query(Extension)
+            .outerjoin(UserLine, and_(UserLine.extension_id == Extension.id,
+                                      UserLine.main_user == True,
+                                      UserLine.main_line == True))
+            .outerjoin(LineFeatures, LineFeatures.id == UserLine.line_id)
             .filter(and_(Extension.context == context_name,
-                         Extension.commented == 0)).order_by('exten')
+                         Extension.commented == 0,
+                         or_(UserLine.line_id == None,
+                             LineFeatures.commented == 0)))
+            .order_by('exten')
             .all())
 
     return [row.todict() for row in rows]
@@ -295,12 +302,13 @@ def find_exten_hints_settings(session, context_name):
                           LineFeatures.name,
                           LineFeatures.protocol,
                           Voicemail.uniqueid)
+            .join(UserLine, and_(UserLine.user_id == UserFeatures.id,
+                                 UserLine.main_user == True,
+                                 UserLine.main_line == True))
+            .join(LineFeatures, UserLine.line_id == LineFeatures.id)
             .outerjoin(Voicemail, UserFeatures.voicemailid == Voicemail.uniqueid)
-            .filter(and_(UserLine.user_id == UserFeatures.id,
-                         UserLine.line_id == LineFeatures.id,
-                         UserLine.main_user == True,
-                         UserLine.main_line == True,
-                         LineFeatures.context == context_name,
+            .filter(and_(LineFeatures.context == context_name,
+                         LineFeatures.commented == 0,
                          UserFeatures.enablehint == 1))
             .all())
 

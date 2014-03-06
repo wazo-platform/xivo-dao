@@ -93,7 +93,7 @@ class TestSccpConfDAO(DAOTestCase):
 
         assert_that(sccp_general_settings, contains_inanyorder(*expected_result))
 
-    def test_find_sccp_line_settings(self):
+    def test_find_sccp_line_settings_when_line_enabled(self):
         number = '1234'
         sccp_line = self.add_sccpline(cid_num=number)
         ule = self.add_user_line_with_exten(protocol='sccp',
@@ -112,6 +112,18 @@ class TestSccpConfDAO(DAOTestCase):
         sccp_line = asterisk_conf_dao.find_sccp_line_settings()
 
         assert_that(sccp_line, contains_inanyorder(*expected_result))
+
+    def test_find_sccp_line_settings_when_line_disabled(self):
+        number = '1234'
+        sccp_line = self.add_sccpline(cid_num=number)
+        self.add_user_line_with_exten(protocol='sccp',
+                                      protocolid=sccp_line.id,
+                                      exten=number,
+                                      commented_line=1)
+
+        sccp_line = asterisk_conf_dao.find_sccp_line_settings()
+
+        assert_that(sccp_line, contains())
 
     def test_find_sccp_line_allow(self):
         number = '1234'
@@ -421,7 +433,40 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         assert_that(extensions, contains_inanyorder(*expected_result))
 
-    def test_find_exten_settings(self):
+    def test_find_exten_settings_when_line_enabled(self):
+        user_row = self.add_user()
+        line_row = self.add_line()
+        extension_row = self.add_extension(exten='12', context='default')
+        self.add_user_line(user_id=user_row.id,
+                           extension_id=extension_row.id,
+                           line_id=line_row.id)
+
+        expected_result = [
+            {'exten': u'12',
+             'commented': 0,
+             'context': u'default',
+             'typeval': None,
+             'type': 'user',
+             'id': extension_row.id}
+        ]
+
+        result = asterisk_conf_dao.find_exten_settings('default')
+
+        assert_that(result, contains(*expected_result))
+
+    def test_find_exten_settings_when_line_disabled(self):
+        user_row = self.add_user()
+        line_row = self.add_line(commented=1)
+        extension_row = self.add_extension(exten='13', context='default')
+        self.add_user_line(user_id=user_row.id,
+                           extension_id=extension_row.id,
+                           line_id=line_row.id)
+
+        result = asterisk_conf_dao.find_exten_settings('default')
+
+        assert_that(result, contains())
+
+    def test_find_exten_settings_multiple_extensions(self):
         exten1 = self.add_extension(exten='12', context='default')
         exten2 = self.add_extension(exten='23', context='default')
         self.add_extension(exten='41', context='toto')
@@ -445,7 +490,7 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         assert_that(extensions, contains_inanyorder(*expected_result))
 
-    def test_find_exten_hints_settings(self):
+    def test_find_exten_hints_settings_when_line_enabled(self):
         context = 'tyoyoi'
         vm = self.add_voicemail(context=context)
         ule = self.add_user_line_with_exten(context=context,
@@ -463,6 +508,17 @@ class TestAsteriskConfDAO(DAOTestCase):
         extensions = asterisk_conf_dao.find_exten_hints_settings(context)
 
         assert_that(extensions, contains_inanyorder(*expected_result))
+
+    def test_find_exten_hints_settings_when_line_disabled(self):
+        context = 'mycontext'
+        vm = self.add_voicemail(context=context)
+        self.add_user_line_with_exten(context=context,
+                                      voicemail_id=vm.uniqueid,
+                                      commented_line=1)
+
+        extensions = asterisk_conf_dao.find_exten_hints_settings(context)
+
+        assert_that(extensions, contains())
 
     def test_find_context_settings(self):
         context1 = self.add_context()
