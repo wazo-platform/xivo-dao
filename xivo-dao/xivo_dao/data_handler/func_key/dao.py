@@ -87,8 +87,6 @@ def delete(session, func_key):
 
     with commit_or_abort(session, ElementDeletionError, 'FuncKey'):
         session.delete(destination_row)
-
-    with commit_or_abort(session, ElementDeletionError, 'FuncKey'):
         session.delete(func_key_row)
 
 

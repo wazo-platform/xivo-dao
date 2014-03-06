@@ -19,6 +19,7 @@
 from xivo_dao.helpers.db_manager import Base
 from sqlalchemy.schema import Column, ForeignKey
 from sqlalchemy.types import Integer
+from sqlalchemy.orm import relationship
 from xivo_dao.alchemy.func_key_type import FuncKeyType
 from xivo_dao.alchemy.func_key_destination_type import FuncKeyDestinationType
 from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
@@ -37,3 +38,6 @@ class FuncKey(Base):
     id = Column(Integer, primary_key=True)
     type_id = Column(Integer, ForeignKey('func_key_type.id'), nullable=False)
     destination_type_id = Column(Integer, ForeignKey('func_key_destination_type.id'), nullable=False)
+
+    func_key_type = relationship("FuncKeyType")
+    destination_type = relationship("FuncKeyDestinationType")
