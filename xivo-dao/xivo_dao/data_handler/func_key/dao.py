@@ -79,7 +79,9 @@ def create(session, func_key):
 
 @daosession
 def delete(session, func_key):
-    func_key_row = session.query(FuncKeySchema).get(func_key.id)
+    func_key_row = (session.query(FuncKeySchema)
+                    .filter(FuncKeySchema.id == func_key.id)
+                    .first())
     destination_row = (session.query(FuncKeyDestUserSchema)
                        .filter(FuncKeyDestUserSchema.func_key_id == func_key_row.id)
                        .filter(FuncKeyDestUserSchema.user_id == func_key.destination_id)

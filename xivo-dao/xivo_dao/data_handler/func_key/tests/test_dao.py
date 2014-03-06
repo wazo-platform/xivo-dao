@@ -230,7 +230,9 @@ class TestFuncKeyCreate(TestUserFuncKey):
             commit_or_abort.assert_any_call(session, ElementCreationError, 'FuncKey')
 
     def assert_func_key_for_user_created(self, destination_row):
-        row = self.session.query(FuncKeySchema).get(destination_row.func_key_id)
+        row = (self.session.query(FuncKeySchema)
+               .filter(FuncKeySchema.id == destination_row.func_key_id)
+               .first())
         assert_that(row, is_not(none()))
 
 
@@ -256,7 +258,9 @@ class TestFuncKeyDelete(TestUserFuncKey):
             commit_or_abort.assert_any_call(session, ElementDeletionError, 'FuncKey')
 
     def assert_func_key_deleted(self, func_key_id):
-        row = self.session.query(FuncKeySchema).get(func_key_id)
+        row = (self.session.query(FuncKeySchema)
+               .filter(FuncKeySchema.id == func_key_id)
+               .first())
         assert_that(row, none())
 
     def assert_user_destination_deleted(self, user_id):

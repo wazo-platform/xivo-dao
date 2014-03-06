@@ -36,8 +36,10 @@ class FuncKey(Base):
     __tablename__ = 'func_key'
 
     id = Column(Integer, primary_key=True)
+    destination_type_id = Column(Integer,
+                                 ForeignKey('func_key_destination_type.id'),
+                                 primary_key=True)
     type_id = Column(Integer, ForeignKey('func_key_type.id'), nullable=False)
-    destination_type_id = Column(Integer, ForeignKey('func_key_destination_type.id'), nullable=False)
 
     func_key_type = relationship("FuncKeyType")
     destination_type = relationship("FuncKeyDestinationType")
