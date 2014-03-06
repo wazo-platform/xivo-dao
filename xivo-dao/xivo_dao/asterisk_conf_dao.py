@@ -286,7 +286,7 @@ def find_exten_settings(session, context_name):
             .outerjoin(LineFeatures, LineFeatures.id == UserLine.line_id)
             .filter(and_(Extension.context == context_name,
                          Extension.commented == 0,
-                         or_(LineFeatures.id == None,
+                         or_(UserLine.line_id == None,
                              LineFeatures.commented == 0)))
             .order_by('exten')
             .all())
