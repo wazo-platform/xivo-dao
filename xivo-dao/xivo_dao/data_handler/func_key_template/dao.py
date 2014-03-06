@@ -39,3 +39,15 @@ def remove_func_key_from_templates(session, func_key):
         (session.query(FuncKeyMappingSchema)
          .filter(FuncKeyMappingSchema.func_key_id == func_key.id)
          .delete())
+
+
+@daosession
+def delete_private_template(session, template_id):
+    with commit_or_abort(session, ElementDeletionError, 'FuncKeyTemplate'):
+        (session.query(FuncKeyMappingSchema)
+         .filter(FuncKeyMappingSchema.template_id == template_id)
+         .delete())
+
+        (session.query(FuncKeyTemplateSchema)
+         .filter(FuncKeyTemplateSchema.id == template_id)
+         .delete())

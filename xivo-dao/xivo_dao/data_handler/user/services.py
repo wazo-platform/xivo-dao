@@ -72,6 +72,7 @@ def delete(user):
     validator.validate_delete(user)
     func_key_destination.delete_user_destination(user)
     user_dao.delete(user)
+    template_dao.delete_private_template(user.private_template_id)
     notifier.deleted(user)
 
 

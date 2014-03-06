@@ -185,6 +185,7 @@ class TestEdit(TestCase):
 
 class TestDelete(TestCase):
 
+    @patch('xivo_dao.data_handler.func_key_template.dao.delete_private_template')
     @patch('xivo_dao.data_handler.user.notifier.deleted')
     @patch('xivo_dao.data_handler.user.dao.delete')
     @patch('xivo_dao.data_handler.func_key.destination.delete_user_destination')
@@ -193,8 +194,9 @@ class TestDelete(TestCase):
                     user_validate_delete,
                     delete_user_destination,
                     user_dao_delete,
-                    user_notifier_deleted):
-        user = User(id=1, firstname='user', lastname='toto')
+                    user_notifier_deleted,
+                    delete_private_template):
+        user = User(id=1, firstname='user', lastname='toto', private_template_id=10)
 
         user_services.delete(user)
 
@@ -202,6 +204,7 @@ class TestDelete(TestCase):
         user_dao_delete.assert_called_once_with(user)
         delete_user_destination.assert_called_once_with(user)
         user_notifier_deleted.assert_called_once_with(user)
+        delete_private_template.assert_called_once_with(user.private_template_id)
 
 
 class TestUpdateVoicemail(TestCase):

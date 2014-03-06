@@ -123,3 +123,33 @@ class TestRemoveFuncKeyFromTemplate(TestFuncKeyTemplateDao):
                  .count())
 
         assert_that(count, equal_to(1))
+
+
+class TestDeletePrivateTemplate(TestFuncKeyTemplateDao):
+
+    def test_given_empty_template_then_template_deleted(self):
+        template_row = self.add_func_key_template(private=True)
+
+        dao.delete_private_template(template_row.id)
+
+        self.assert_template_deleted(template_row)
+
+    def test_given_template_with_one_func_key_then_template_and_mapping_deleted(self):
+        template_row = self.add_func_key_template(private=True)
+        self.create_func_key_for_template(template_row, 1)
+
+        dao.delete_private_template(template_row.id)
+
+        self.assert_template_deleted(template_row)
+        self.assert_template_empty(template_row)
+
+    def assert_template_deleted(self, template_row):
+        row = self.session.query(FuncKeyTemplateSchema).get(template_row.id)
+        assert_that(row, none())
+
+    @patch('xivo_dao.data_handler.func_key_template.dao.commit_or_abort')
+    def test_given_database_error_then_transaction_aborted(self, commit_or_abort):
+        template_id = 1
+        dao.delete_private_template(template_id)
+
+        commit_or_abort.assert_called_with(ANY, ElementDeletionError, 'FuncKeyTemplate')
