@@ -109,7 +109,12 @@ class TestRemoveFuncKeyFromTemplate(TestFuncKeyTemplateDao):
 
         self.assert_template_contains_func_key(template_row, second_func_key)
 
+    @patch('xivo_dao.data_handler.func_key_template.dao.commit_or_abort')
+    def test_given_database_error_then_transaction_aborted(self, commit_or_abort):
+        func_key = Mock(id=1)
+        dao.remove_func_key_from_templates(func_key)
 
+        commit_or_abort.assert_called_with(ANY, ElementDeletionError, 'FuncKeyTemplate')
 
     def assert_template_contains_func_key(self, template_row, func_key_row):
         count = (self.session.query(FuncKeyMappingSchema)
