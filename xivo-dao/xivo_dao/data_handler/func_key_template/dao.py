@@ -17,13 +17,13 @@
 
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.helpers.db_utils import commit_or_abort
-from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
+from xivo_dao.alchemy.func_key_template import FuncKeyTemplate as FuncKeyTemplateSchema
 from xivo_dao.data_handler.exception import ElementCreationError
 
 
 @daosession
 def create_private_template(session):
-    template = FuncKeyTemplate(private=True)
+    template = FuncKeyTemplateSchema(private=True)
 
     with commit_or_abort(session, ElementCreationError, 'FuncKeyTemplate'):
         session.add(template)
