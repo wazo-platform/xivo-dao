@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from hamcrest import assert_that, is_not, none, has_property, equal_to
-from mock import patch, ANY
+from mock import patch, ANY, Mock
 
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate as FuncKeyTemplateSchema
@@ -26,6 +26,7 @@ from xivo_dao.alchemy.func_key_type import FuncKeyType as FuncKeyTypeSchema
 from xivo_dao.alchemy.func_key_destination_type import FuncKeyDestinationType as FuncKeyDestinationTypeSchema
 
 from xivo_dao.data_handler.exception import ElementCreationError
+from xivo_dao.data_handler.exception import ElementDeletionError
 from xivo_dao.data_handler.func_key_template import dao
 from xivo_dao.data_handler.func_key.model import FuncKey
 
@@ -34,10 +35,38 @@ class TestFuncKeyTemplateDao(DAOTestCase):
 
     tables = [
         FuncKeyTemplateSchema,
+        FuncKeyMappingSchema,
+        FuncKeySchema,
+        FuncKeyTypeSchema,
+        FuncKeyDestinationTypeSchema,
     ]
 
     def setUp(self):
         self.empty_tables()
+        func_key_type_row = self.add_func_key_type(name='speeddial')
+        destination_type_row = self.add_func_key_destination_type(id=1, name='user')
+
+        self.type_id = func_key_type_row.id
+        self.destination_type_id = destination_type_row.id
+
+    def assert_template_empty(self, template_row):
+        count = (self.session.query(FuncKeyMappingSchema)
+                 .filter(FuncKeyMappingSchema.template_id == template_row.id)
+                 .count())
+
+        assert_that(count, equal_to(0))
+
+    def create_func_key_for_template(self, template_row, position):
+        func_key_row = self.add_func_key(type_id=self.type_id,
+                                         destination_type_id=self.destination_type_id)
+
+        mapping_row = FuncKeyMappingSchema(template_id=template_row.id,
+                                           func_key_id=func_key_row.id,
+                                           destination_type_id=func_key_row.destination_type_id,
+                                           position=position)
+        self.add_me(mapping_row)
+
+        return FuncKey(id=func_key_row.id)
 
 
 class TestCreatePrivateTemplate(TestFuncKeyTemplateDao):
@@ -63,21 +92,6 @@ class TestCreatePrivateTemplate(TestFuncKeyTemplateDao):
 
 class TestRemoveFuncKeyFromTemplate(TestFuncKeyTemplateDao):
 
-    tables = TestFuncKeyTemplateDao.tables + [
-        FuncKeyMappingSchema,
-        FuncKeySchema,
-        FuncKeyTypeSchema,
-        FuncKeyDestinationTypeSchema,
-    ]
-
-    def setUp(self):
-        TestFuncKeyTemplateDao.setUp(self)
-        func_key_type_row = self.add_func_key_type(name='speeddial')
-        destination_type_row = self.add_func_key_destination_type(id=1, name='user')
-
-        self.type_id = func_key_type_row.id
-        self.destination_type_id = destination_type_row.id
-
     def test_given_one_func_key_mapped_when_removed_then_template_empty(self):
         template_row = self.add_func_key_template()
         func_key = self.create_func_key_for_template(template_row, 1)
@@ -95,24 +109,12 @@ class TestRemoveFuncKeyFromTemplate(TestFuncKeyTemplateDao):
 
         self.assert_template_contains_func_key(template_row, second_func_key)
 
-    def create_func_key_for_template(self, template_row, position):
-        func_key_row = self.add_func_key(type_id=self.type_id,
-                                         destination_type_id=self.destination_type_id)
+    @patch('xivo_dao.data_handler.func_key_template.dao.commit_or_abort')
+    def test_given_database_error_then_transaction_aborted(self, commit_or_abort):
+        func_key = Mock(id=1)
+        dao.remove_func_key_from_templates(func_key)
 
-        mapping_row = FuncKeyMappingSchema(template_id=template_row.id,
-                                           func_key_id=func_key_row.id,
-                                           destination_type_id=func_key_row.destination_type_id,
-                                           position=position)
-        self.add_me(mapping_row)
-
-        return FuncKey(id=func_key_row.id)
-
-    def assert_template_empty(self, template_row):
-        count = (self.session.query(FuncKeyMappingSchema)
-                 .filter(FuncKeyMappingSchema.template_id == template_row.id)
-                 .count())
-
-        assert_that(count, equal_to(0))
+        commit_or_abort.assert_called_with(ANY, ElementDeletionError, 'FuncKeyTemplate')
 
     def assert_template_contains_func_key(self, template_row, func_key_row):
         count = (self.session.query(FuncKeyMappingSchema)
@@ -121,3 +123,33 @@ class TestRemoveFuncKeyFromTemplate(TestFuncKeyTemplateDao):
                  .count())
 
         assert_that(count, equal_to(1))
+
+
+class TestDeletePrivateTemplate(TestFuncKeyTemplateDao):
+
+    def test_given_empty_template_then_template_deleted(self):
+        template_row = self.add_func_key_template(private=True)
+
+        dao.delete_private_template(template_row.id)
+
+        self.assert_template_deleted(template_row)
+
+    def test_given_template_with_one_func_key_then_template_and_mapping_deleted(self):
+        template_row = self.add_func_key_template(private=True)
+        self.create_func_key_for_template(template_row, 1)
+
+        dao.delete_private_template(template_row.id)
+
+        self.assert_template_deleted(template_row)
+        self.assert_template_empty(template_row)
+
+    def assert_template_deleted(self, template_row):
+        row = self.session.query(FuncKeyTemplateSchema).get(template_row.id)
+        assert_that(row, none())
+
+    @patch('xivo_dao.data_handler.func_key_template.dao.commit_or_abort')
+    def test_given_database_error_then_transaction_aborted(self, commit_or_abort):
+        template_id = 1
+        dao.delete_private_template(template_id)
+
+        commit_or_abort.assert_called_with(ANY, ElementDeletionError, 'FuncKeyTemplate')
