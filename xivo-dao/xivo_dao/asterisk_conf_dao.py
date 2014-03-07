@@ -267,7 +267,9 @@ def find_exten_xivofeatures_setting(session):
 
 
 @daosession
-def find_extenfeatures_settings(session, features=[]):
+def find_extenfeatures_settings(session, features=None):
+    if features is None:
+        features = []
     rows = (session.query(Extension)
             .filter(and_(Extension.context == 'xivo-features',
                          Extension.type == 'extenfeatures',
