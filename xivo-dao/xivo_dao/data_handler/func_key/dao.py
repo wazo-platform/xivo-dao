@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy.sql import func
+
 from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.data_handler.exception import ElementCreationError
 from xivo_dao.data_handler.exception import ElementDeletionError
@@ -26,6 +28,7 @@ from xivo_dao.data_handler.func_key.model import db_converter, FuncKey, Destinat
 from xivo_dao.alchemy.func_key import FuncKey as FuncKeySchema
 from xivo_dao.alchemy.func_key_type import FuncKeyType as FuncKeyTypeSchema
 from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser as FuncKeyDestUserSchema
+from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup as FuncKeyDestGroupSchema
 from xivo_dao.alchemy.func_key_destination_type import FuncKeyDestinationType as FuncKeyDestinationTypeSchema
 
 
@@ -44,8 +47,9 @@ def find_all_by_destination(session, destination, destination_id):
     if not DestinationType.exists(destination):
         return []
 
+    schema, column = DestinationType.schema_and_column(destination)
     query = (_func_key_query(session)
-             .filter(FuncKeyDestUserSchema.user_id == destination_id))
+             .filter(column == destination_id))
 
     func_key_rows = query.all()
     return [db_converter.to_model(row) for row in func_key_rows]
@@ -53,8 +57,9 @@ def find_all_by_destination(session, destination, destination_id):
 
 @daosession
 def get(session, func_key_id):
-    query = _func_key_query(session)
-    row = query.filter(FuncKeySchema.id == func_key_id).first()
+    row = (_func_key_query(session)
+           .filter(FuncKeySchema.id == func_key_id)
+           .first())
 
     if not row:
         raise ElementNotExistsError('FuncKey')
@@ -97,8 +102,12 @@ def _func_key_query(session):
              .query(FuncKeySchema.id,
                     FuncKeyTypeSchema.name.label('type'),
                     FuncKeyDestinationTypeSchema.name.label('destination'),
-                    FuncKeyDestUserSchema.user_id.label('destination_id'))
+                    func.coalesce(
+                        FuncKeyDestUserSchema.user_id,
+                        FuncKeyDestGroupSchema.group_id
+                    ).label('destination_id'))
              .join(FuncKeyTypeSchema)
              .join(FuncKeyDestinationTypeSchema)
-             .join(FuncKeyDestUserSchema, FuncKeyDestUserSchema.func_key_id == FuncKeySchema.id))
+             .outerjoin(FuncKeyDestUserSchema, FuncKeyDestUserSchema.func_key_id == FuncKeySchema.id)
+             .outerjoin(FuncKeyDestGroupSchema, FuncKeyDestGroupSchema.func_key_id == FuncKeySchema.id))
     return query

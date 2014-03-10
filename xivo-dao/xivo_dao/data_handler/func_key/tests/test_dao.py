@@ -17,7 +17,7 @@
 
 from contextlib import contextmanager
 from hamcrest import assert_that, equal_to, instance_of, contains, is_not, \
-    none, has_property
+    none, has_property, contains_inanyorder
 from mock import patch, Mock, ANY
 
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -31,9 +31,11 @@ from xivo_dao.helpers.abstract_model import SearchResult
 from xivo_dao.alchemy.func_key import FuncKey as FuncKeySchema
 from xivo_dao.alchemy.func_key_type import FuncKeyType as FuncKeyTypeSchema
 from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser as FuncKeyDestUserSchema
+from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup as FuncKeyDestGroupSchema
 from xivo_dao.alchemy.func_key_destination_type import FuncKeyDestinationType as FuncKeyDestinationTypeSchema
 from xivo_dao.alchemy.userfeatures import test_dependencies as user_test_dependencies
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
+from xivo_dao.alchemy.groupfeatures import GroupFeatures as GroupSchema
 
 
 class BaseTestFuncKeyDao(DAOTestCase):
@@ -43,7 +45,9 @@ class BaseTestFuncKeyDao(DAOTestCase):
         FuncKeyTypeSchema,
         FuncKeyDestinationTypeSchema,
         FuncKeyDestUserSchema,
+        FuncKeyDestGroupSchema,
         UserSchema,
+        GroupSchema,
     ] + user_test_dependencies
 
     def setUp(self):
@@ -59,9 +63,11 @@ class TestFuncKeyDao(BaseTestFuncKeyDao):
     def create_types_and_destinations(self):
         func_key_type_row = self.add_func_key_type(name='speeddial')
         user_destination_row = self.add_func_key_destination_type(id=1, name='user')
+        group_destination_row = self.add_func_key_destination_type(id=2, name='group')
 
         self.type_id = func_key_type_row.id
         self.user_destination_id = user_destination_row.id
+        self.group_destination_id = group_destination_row.id
 
     def add_func_key_for_user(self, user_row):
         func_key_row = self.add_func_key(type_id=self.type_id,
@@ -74,6 +80,17 @@ class TestFuncKeyDao(BaseTestFuncKeyDao):
 
         return func_key_row
 
+    def add_func_key_for_group(self, group_row):
+        func_key_row = self.add_func_key(type_id=self.type_id,
+                                         destination_type_id=self.group_destination_id)
+
+        dest_group = FuncKeyDestGroupSchema(group_id=group_row.id,
+                                            func_key_id=func_key_row.id,
+                                            destination_type_id=self.group_destination_id)
+        self.add_me(dest_group)
+
+        return func_key_row
+
     def prepare_user_destination(self, user_row):
         func_key_row = self.add_func_key_for_user(user_row)
 
@@ -82,12 +99,24 @@ class TestFuncKeyDao(BaseTestFuncKeyDao):
                        destination='user',
                        destination_id=user_row.id)
 
+    def prepare_group_destination(self, group_row):
+        func_key_row = self.add_func_key_for_group(group_row)
 
-        return func_key
+        return FuncKey(id=func_key_row.id,
+                       type='speeddial',
+                       destination='group',
+                       destination_id=group_row.id)
 
     def find_user_destination(self, user_id):
         row = (self.session.query(FuncKeyDestUserSchema)
                .filter(FuncKeyDestUserSchema.user_id == user_id)
+               .first())
+
+        return row
+
+    def find_group_destination(self, group_id):
+        row = (self.session.query(FuncKeyDestGroupSchema)
+               .filter(FuncKeyDestGroupSchema.group_id == group_id)
                .first())
 
         return row
@@ -128,6 +157,16 @@ class TestFuncKeySearch(TestFuncKeyDao):
 
         assert_that(result.total, 1)
         assert_that(result.items, contains(func_key))
+
+    def test_given_user_and_group_destination_when_searching_then_two_results_returned(self):
+        user_row = self.add_user()
+        group_row = self.add_group()
+        user_destination = self.prepare_user_destination(user_row)
+        group_destination = self.prepare_group_destination(group_row)
+
+        result = dao.search()
+        assert_that(result.total, 2)
+        assert_that(result.items, contains_inanyorder(user_destination, group_destination))
 
 
 class TestFuncKeyFindAllByDestination(TestFuncKeyDao):
@@ -173,6 +212,14 @@ class TestFuncKeyGet(TestFuncKeyDao):
     def test_when_user_func_key_in_db_then_func_key_model_returned(self):
         user_row = self.add_user()
         func_key = self.prepare_user_destination(user_row)
+
+        result = dao.get(func_key.id)
+
+        assert_that(result, equal_to(func_key))
+
+    def test_when_group_func_key_in_db_then_func_key_model_returned(self):
+        group_row = self.add_group()
+        func_key = self.prepare_group_destination(group_row)
 
         result = dao.get(func_key.id)
 

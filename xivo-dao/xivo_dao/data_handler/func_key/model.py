@@ -21,6 +21,7 @@ from xivo_dao.data_handler.func_key import type_dao as func_key_type_dao
 from xivo_dao.alchemy.func_key import FuncKey as FuncKeySchema
 from xivo_dao.alchemy.func_key_type import FuncKeyType as FuncKeyTypeSchema
 from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser as FuncKeyDestUserSchema
+from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup as FuncKeyDestGroupSchema
 from xivo_dao.alchemy.func_key_destination_type import FuncKeyDestinationType as FuncKeyDestinationTypeSchema
 
 
@@ -62,12 +63,20 @@ DB_TO_MODEL_MAPPING = {
 
 class DestinationType(object):
     user = 'user'
+    group = 'group'
 
-    all_types = [user]
+    all_types = [user, group]
 
     @classmethod
     def exists(cls, name):
         return name in cls.all_types
+
+    @classmethod
+    def schema_and_column(cls, dest_type):
+        if dest_type == cls.user:
+            return (FuncKeyDestUserSchema, FuncKeyDestUserSchema.user_id)
+        elif dest_type == cls.group:
+            return (FuncKeyDestGroupSchema, FuncKeyDestGroupSchema.group_id)
 
 
 class FuncKeyDbConverter(DatabaseConverter):
