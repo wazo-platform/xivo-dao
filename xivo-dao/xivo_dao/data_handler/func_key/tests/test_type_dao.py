@@ -15,13 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.data_handler.func_key.tests.test_dao import TestFuncKeyDao
+from xivo_dao.data_handler.func_key.tests.test_dao import BaseTestFuncKeyDao
 from xivo_dao.data_handler.func_key import type_dao as dao
 
 from hamcrest import assert_that, none, has_property
 
 
-class TestFindTypeForName(TestFuncKeyDao):
+class TestFindTypeForName(BaseTestFuncKeyDao):
 
     def test_given_no_types_then_returns_none(self):
         result = dao.find_type_for_name('type')
@@ -52,7 +52,7 @@ class TestFindTypeForName(TestFuncKeyDao):
         assert_that(result, has_property('name', 'transfer'))
 
 
-class TestFuncKeyDestinationTypeExists(TestFuncKeyDao):
+class BaseTestFuncKeyDestinationTypeExists(BaseTestFuncKeyDao):
 
     def test_given_no_destination_types_then_returns_none(self):
         result = dao.find_destination_type_for_name('type')
