@@ -314,6 +314,15 @@ class TestFuncKeyDelete(TestFuncKeyDao):
         self.assert_func_key_deleted(func_key.id)
         self.assert_user_destination_deleted(user_row.id)
 
+    def test_given_group_destination_then_func_key_deleted(self):
+        group_row = self.add_group()
+        func_key = self.prepare_group_destination(group_row)
+
+        dao.delete(func_key)
+
+        self.assert_func_key_deleted(func_key.id)
+        self.assert_group_destination_deleted(group_row.id)
+
     @patch('xivo_dao.data_handler.func_key.dao.commit_or_abort')
     def test_given_db_error_then_transaction_rollbacked(self, commit_or_abort):
         func_key = FuncKey(type='speeddial',
@@ -332,4 +341,8 @@ class TestFuncKeyDelete(TestFuncKeyDao):
 
     def assert_user_destination_deleted(self, user_id):
         row = self.find_user_destination(user_id)
+        assert_that(row, none())
+
+    def assert_group_destination_deleted(self, group_id):
+        row = self.find_group_destination(group_id)
         assert_that(row, none())

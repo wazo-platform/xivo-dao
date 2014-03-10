@@ -84,17 +84,17 @@ def create(session, func_key):
 
 @daosession
 def delete(session, func_key):
-    func_key_row = (session.query(FuncKeySchema)
-                    .filter(FuncKeySchema.id == func_key.id)
-                    .first())
-    destination_row = (session.query(FuncKeyDestUserSchema)
-                       .filter(FuncKeyDestUserSchema.func_key_id == func_key_row.id)
-                       .filter(FuncKeyDestUserSchema.user_id == func_key.destination_id)
-                       .first())
+    func_key_query = (session.query(FuncKeySchema)
+                      .filter(FuncKeySchema.id == func_key.id))
+
+    schema, column = DestinationType.schema_and_column(func_key.destination)
+    destination_query = (session.query(schema)
+                         .filter(column == func_key.destination_id)
+                         .filter(schema.func_key_id == func_key.id))
 
     with commit_or_abort(session, ElementDeletionError, 'FuncKey'):
-        session.delete(destination_row)
-        session.delete(func_key_row)
+        destination_query.delete()
+        func_key_query.delete()
 
 
 def _func_key_query(session):
