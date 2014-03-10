@@ -43,6 +43,11 @@ class NewModel(object):
     def __ne__(self, other):
         return not self == other
 
+    def __repr__(self):
+        properties = ['%s: %s' % (field, getattr(self, field))
+                      for field in self.FIELDS]
+        return '<%s %s>' % (self.__class__.__name__, ', '.join(properties))
+
     def update_from_data(self, data):
         self._check_invalid_parameters(data.keys())
 
