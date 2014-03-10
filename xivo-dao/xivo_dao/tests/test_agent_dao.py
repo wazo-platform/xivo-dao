@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import *
+from mock import patch, Mock
+from hamcrest import assert_that, equal_to
 
 from xivo_dao import agent_dao
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
@@ -103,6 +104,14 @@ class TestAgentDAO(DAOTestCase):
 
     def test_del_agent_bad_args(self):
         self.assertRaises(ValueError, agent_dao.del_agent, None)
+
+    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    def test_del_agent_db_error(self, AsteriskSession):
+        session = AsteriskSession.return_value = Mock()
+        session.commit.side_effect = Exception()
+
+        self.assertRaises(Exception, agent_dao.del_agent, 1)
+        session.rollback.assert_called_once_with()
 
     def test_agent_with_id(self):
         agent = self._insert_agent()
