@@ -96,11 +96,14 @@ class FuncKeyDbConverter(DatabaseConverter):
     def create_destination_row(self, model):
         destination_type_row = func_key_type_dao.find_destination_type_for_name(model.destination)
 
-        destination_row = FuncKeyDestUserSchema(destination_type_id=destination_type_row.id,
-                                                user_id=model.destination_id,
-                                                func_key_id=model.id)
-
-        return destination_row
+        if model.destination == DestinationType.user:
+            return FuncKeyDestUserSchema(destination_type_id=destination_type_row.id,
+                                         user_id=model.destination_id,
+                                         func_key_id=model.id)
+        elif model.destination == DestinationType.group:
+            return FuncKeyDestGroupSchema(destination_type_id=destination_type_row.id,
+                                          group_id=model.destination_id,
+                                          func_key_id=model.id)
 
 
 db_converter = FuncKeyDbConverter()

@@ -195,6 +195,22 @@ class TestFuncKeyFindAllByDestination(TestFuncKeyDao):
 
         assert_that(result, contains(func_key))
 
+    def test_given_one_group_destination_then_returns_list_with_one_group_destination(self):
+        group_row = self.add_group()
+        func_key = self.prepare_group_destination(group_row)
+
+        result = dao.find_all_by_destination('group', group_row.id)
+        assert_that(result, contains(func_key))
+
+    def test_given_group_and_user_destination_then_returns_list_with_right_destination(self):
+        user_row = self.add_user()
+        self.prepare_user_destination(user_row)
+        group_row = self.add_group()
+        group_func_key = self.prepare_group_destination(group_row)
+
+        result = dao.find_all_by_destination('group', group_row.id)
+        assert_that(result, contains(group_func_key))
+
     def test_given_user_destination_when_searching_wrong_type_then_returns_empty_list(self):
         user_row = self.add_user()
         self.prepare_user_destination(user_row)
@@ -253,6 +269,22 @@ class TestFuncKeyCreate(TestFuncKeyDao):
         assert_that(user_destination_row, is_not(none()))
 
         self.assert_func_key_row_created(user_destination_row)
+
+    def test_given_group_destination_then_func_key_created(self):
+        group_row = self.add_group()
+
+        func_key = FuncKey(type='speeddial',
+                           destination='group',
+                           destination_id=group_row.id)
+
+        created_func_key = dao.create(func_key)
+        assert_that(created_func_key, instance_of(FuncKey))
+        assert_that(created_func_key, has_property('id', is_not(none())))
+
+        group_destination_row = self.find_group_destination(group_row.id)
+        assert_that(group_destination_row, is_not(none()))
+
+        self.assert_func_key_row_created(group_destination_row)
 
     @patch('xivo_dao.data_handler.func_key.dao.commit_or_abort')
     def test_given_db_error_then_transaction_rollbacked(self, commit_or_abort):
