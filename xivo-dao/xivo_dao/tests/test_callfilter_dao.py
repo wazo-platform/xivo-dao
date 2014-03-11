@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from mock import patch, Mock
+from sqlalchemy.exc import SQLAlchemyError
+
 from xivo_dao import callfilter_dao
 from xivo_dao.alchemy.callfilter import Callfilter
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -64,6 +67,16 @@ class TestCallFilterDAO(DAOTestCase):
         member.bstype = role
         self.add_me(member)
 
+    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    def test_add_with_db_error(self, AsteriskSession):
+        session = AsteriskSession.return_value = Mock()
+        session.commit.side_effect = SQLAlchemyError()
+
+        callfilter = Mock(Callfilter)
+
+        self.assertRaises(SQLAlchemyError, callfilter_dao.add, callfilter)
+        session.rollback.assert_called_once_with()
+
     def test_add_user_to_filter(self):
         filterid = self._insert_call_filter('test')
         callfilter_dao.add_user_to_filter(1, filterid, 'boss')
@@ -72,6 +85,14 @@ class TestCallFilterDAO(DAOTestCase):
         self.assertEquals('user', member.type)
         self.assertEquals(filterid, member.callfilterid)
         self.assertEquals('boss', member.bstype)
+
+    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    def test_add_user_to_filter_with_db_error(self, AsteriskSession):
+        session = AsteriskSession.return_value = Mock()
+        session.commit.side_effect = SQLAlchemyError()
+
+        self.assertRaises(SQLAlchemyError, callfilter_dao.add_user_to_filter, 1, 2, 'boss')
+        session.rollback.assert_called_once_with()
 
     def test_get_callfiltermember_by_userid(self):
         filterid1 = self._insert_call_filter('test1')
@@ -98,6 +119,14 @@ class TestCallFilterDAO(DAOTestCase):
 
         self.assertEquals(None, self.session.query(Callfiltermember).filter(Callfiltermember.typeval == '1').first())
         self.assertNotEquals(None, self.session.query(Callfiltermember).filter(Callfiltermember.typeval == '2').first())
+
+    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    def test_delete_callfiltermember_by_userid_with_db_error(self, AsteriskSession):
+        session = AsteriskSession.return_value = Mock()
+        session.commit.side_effect = SQLAlchemyError()
+
+        self.assertRaises(SQLAlchemyError, callfilter_dao.delete_callfiltermember_by_userid, 1)
+        session.rollback.assert_called_once_with()
 
     def test_does_secretary_filter_boss_with_no_filters(self):
         boss_id = 1
