@@ -98,3 +98,93 @@ class TestCallFilterDAO(DAOTestCase):
 
         self.assertEquals(None, self.session.query(Callfiltermember).filter(Callfiltermember.typeval == '1').first())
         self.assertNotEquals(None, self.session.query(Callfiltermember).filter(Callfiltermember.typeval == '2').first())
+
+    def test_does_secretary_filter_boss_with_no_filters(self):
+        boss_id = 1
+        secretary_id = 2
+
+        result = callfilter_dao.does_secretary_filter_boss(boss_id, secretary_id)
+
+        self.assertFalse(result)
+
+    def test_does_secretary_filter_boss_with_no_boss_or_secretary(self):
+        boss_id = 1
+        secretary_id = 2
+        self._insert_call_filter('test1')
+
+        result = callfilter_dao.does_secretary_filter_boss(boss_id, secretary_id)
+
+        self.assertFalse(result)
+
+    def test_does_secretary_filter_boss_with_no_secretary(self):
+        boss_id = 1
+        secretary_id = 2
+        filter_id = self._insert_call_filter('test1')
+        callfilter_dao.add_user_to_filter(boss_id, filter_id, 'boss')
+
+        result = callfilter_dao.does_secretary_filter_boss(boss_id, secretary_id)
+
+        self.assertFalse(result)
+
+    def test_does_secretary_filter_boss_with_no_boss(self):
+        boss_id = 1
+        secretary_id = 2
+        filter_id = self._insert_call_filter('test1')
+        callfilter_dao.add_user_to_filter(secretary_id, filter_id, 'secretary')
+
+        result = callfilter_dao.does_secretary_filter_boss(boss_id, secretary_id)
+
+        self.assertFalse(result)
+
+    def test_does_secretary_filter_boss_with_boss_and_secretary_in_different_filters(self):
+        boss_id = 1
+        secretary_id = 2
+        boss_filter_id = self._insert_call_filter('bossfilter')
+        secretatry_filter_id = self._insert_call_filter('secretaryfilter')
+        callfilter_dao.add_user_to_filter(boss_id, boss_filter_id, 'boss')
+        callfilter_dao.add_user_to_filter(secretary_id, secretatry_filter_id, 'secretary')
+
+        result = callfilter_dao.does_secretary_filter_boss(boss_id, secretary_id)
+
+        self.assertFalse(result)
+
+    def test_does_secretary_filter_boss_with_boss_and_secretary_in_same_filter(self):
+        boss_id = 1
+        secretary_id = 2
+        filter_id = self._insert_call_filter('testfilter')
+        callfilter_dao.add_user_to_filter(boss_id, filter_id, 'boss')
+        callfilter_dao.add_user_to_filter(secretary_id, filter_id, 'secretary')
+
+        result = callfilter_dao.does_secretary_filter_boss(boss_id, secretary_id)
+
+        self.assertTrue(result)
+
+    def test_does_secretary_filter_boss_with_2_secretaries(self):
+        boss_id = 1
+        first_secretary_id = 20
+        second_secretary_id = 21
+        filter_id = self._insert_call_filter('testfilter')
+        callfilter_dao.add_user_to_filter(boss_id, filter_id, 'boss')
+        callfilter_dao.add_user_to_filter(first_secretary_id, filter_id, 'secretary')
+        callfilter_dao.add_user_to_filter(second_secretary_id, filter_id, 'secretary')
+
+        first_result = callfilter_dao.does_secretary_filter_boss(boss_id, first_secretary_id)
+        second_result = callfilter_dao.does_secretary_filter_boss(boss_id, second_secretary_id)
+
+        self.assertTrue(first_result)
+        self.assertTrue(second_result)
+
+    def test_does_secretary_filter_boss_with_2_bosses(self):
+        first_boss_id = 1
+        second_boss_id = 2
+        secretary_id = 20
+        filter_id = self._insert_call_filter('testfilter')
+        callfilter_dao.add_user_to_filter(secretary_id, filter_id, 'secretary')
+        callfilter_dao.add_user_to_filter(first_boss_id, filter_id, 'boss')
+        callfilter_dao.add_user_to_filter(second_boss_id, filter_id, 'boss')
+
+        first_result = callfilter_dao.does_secretary_filter_boss(first_boss_id, secretary_id)
+        second_result = callfilter_dao.does_secretary_filter_boss(second_boss_id, secretary_id)
+
+        self.assertTrue(first_result)
+        self.assertTrue(second_result)
