@@ -52,7 +52,7 @@ def get(session, callfilter_id):
 def get_secretaries_id_by_context(session, context):
     return (session.query(Callfiltermember.id)
             .join(UserLine, and_(UserLine.user_id == cast(Callfiltermember.typeval, Integer),
-                                 UserLine.main_line == True,
+                                 UserLine.main_user == True,
                                  UserLine.main_line == True))
             .join(ExtensionSchema, and_(ExtensionSchema.context == context,
                                         UserLine.extension_id == ExtensionSchema.id))

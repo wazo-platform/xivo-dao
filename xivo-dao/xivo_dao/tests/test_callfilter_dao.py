@@ -186,6 +186,48 @@ class TestCallFilterDAO(BaseTestCallFilterDAO):
         self.assertRaises(SQLAlchemyError, callfilter_dao.add, callfilter)
         session.rollback.assert_called_once_with()
 
+    def test_get_with_no_filter(self):
+        filter_id = 1
+        result = callfilter_dao.get(filter_id)
+
+        self.assertEquals(result, [])
+
+    def test_get_with_filter_but_no_members(self):
+        filter_id = self._insert_call_filter('testfilter')
+
+        result = callfilter_dao.get(filter_id)
+
+        self.assertEquals(result, [])
+
+    def test_get_with_filter_having_members(self):
+        boss_id = 1
+        filter_id = self._insert_call_filter('testfilter')
+        callfilter_dao.add_user_to_filter(boss_id, filter_id, 'boss')
+
+        result = callfilter_dao.get(filter_id)
+
+        self.assertEquals(1, len(result))
+
+        callfilter = result[0][0]
+        member = result[0][1]
+        self.assertEquals(callfilter.id, filter_id)
+        self.assertEquals(member.typeval, str(boss_id))
+
+    def test_get_with_filter_having_2_members(self):
+        boss_id = 1
+        secretary_id = 2
+        filter_id = self._insert_call_filter('testfilter')
+        callfilter_dao.add_user_to_filter(boss_id, filter_id, 'boss')
+        callfilter_dao.add_user_to_filter(secretary_id, filter_id, 'secretary')
+
+        result = callfilter_dao.get(filter_id)
+
+        self.assertEquals(2, len(result))
+
+        member_ids = [int(c[1].typeval) for c in result]
+        self.assertIn(boss_id, member_ids)
+        self.assertIn(secretary_id, member_ids)
+
     def test_add_user_to_filter(self):
         filterid = self._insert_call_filter('test')
         callfilter_dao.add_user_to_filter(1, filterid, 'boss')
