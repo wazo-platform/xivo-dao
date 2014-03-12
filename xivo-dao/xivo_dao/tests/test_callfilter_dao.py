@@ -170,17 +170,16 @@ class TestCallFilterDAO(BaseTestCallFilterDAO):
         callfilter.bosssecretary = 'bossfirst-serial'
         callfilter.name = 'test'
         callfilter.description = ''
+
         callfilter_dao.add(callfilter)
 
         result = self.session.query(Callfilter).first()
-
         self.assertEquals(result.name, 'test')
 
     @patch('xivo_dao.helpers.db_manager.AsteriskSession')
     def test_add_with_db_error(self, AsteriskSession):
         session = AsteriskSession.return_value = Mock()
         session.commit.side_effect = SQLAlchemyError()
-
         callfilter = Mock(Callfilter)
 
         self.assertRaises(SQLAlchemyError, callfilter_dao.add, callfilter)
@@ -188,6 +187,7 @@ class TestCallFilterDAO(BaseTestCallFilterDAO):
 
     def test_get_with_no_filter(self):
         filter_id = 1
+
         result = callfilter_dao.get(filter_id)
 
         self.assertEquals(result, [])
@@ -207,7 +207,6 @@ class TestCallFilterDAO(BaseTestCallFilterDAO):
         result = callfilter_dao.get(filter_id)
 
         self.assertEquals(1, len(result))
-
         callfilter = result[0][0]
         member = result[0][1]
         self.assertEquals(callfilter.id, filter_id)
@@ -223,20 +222,23 @@ class TestCallFilterDAO(BaseTestCallFilterDAO):
         result = callfilter_dao.get(filter_id)
 
         self.assertEquals(2, len(result))
-
         member_ids = [int(c[1].typeval) for c in result]
         self.assertIn(boss_id, member_ids)
         self.assertIn(secretary_id, member_ids)
 
     def test_get_by_name(self):
         self._insert_call_filter('test')
+
         result = callfilter_dao.get_by_name('test')
+
         self.assertEquals(1, len(result))
         self.assertEquals('test', result[0].name)
 
     def test_add_user_to_filter(self):
         filterid = self._insert_call_filter('test')
+
         callfilter_dao.add_user_to_filter(1, filterid, 'boss')
+
         member = self.session.query(Callfiltermember).first()
         self.assertEquals('1', member.typeval)
         self.assertEquals('user', member.type)
@@ -259,11 +261,13 @@ class TestCallFilterDAO(BaseTestCallFilterDAO):
         self._add_user_to_filter(1, filterid2)
 
         result = callfilter_dao.get_callfiltermembers_by_userid(1)
+
         self.assertEquals(2, len(result))
         self.assertEquals('1', result[0].typeval)
         self.assertEquals('1', result[1].typeval)
 
         result = callfilter_dao.get_callfiltermembers_by_userid(2)
+
         self.assertEquals(1, len(result))
         self.assertEquals('2', result[0].typeval)
 
