@@ -49,6 +49,7 @@ class TestExtensionsDAO(DAOTestCase):
         extensions_dao.create(exten)
         self.assertTrue(exten.id)
         self.assertTrue(exten in self._get_all())
+        self.assertEquals(exten.name, exten.typeval)
 
     def test_get_by_exten(self):
         self.add_extension(type='extenfeatures',

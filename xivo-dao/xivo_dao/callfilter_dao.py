@@ -27,16 +27,17 @@ from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 
 @daosession
 def does_secretary_filter_boss(session, boss_user_id, secretary_user_id):
-    query = '''\
-SELECT COUNT(id) AS count
-FROM "callfiltermember"
-WHERE "callfilterid" = (SELECT "callfilterid" FROM "callfiltermember" WHERE "typeval"='%s' AND "bstype" = 'boss')
-AND "typeval" = '%s'
-AND "bstype" = 'secretary'
-''' % (boss_user_id, secretary_user_id)
+    subquery = (session.query(Callfiltermember.callfilterid)
+                .filter(Callfiltermember.bstype == 'boss')
+                .filter(Callfiltermember.typeval == str(boss_user_id))
+                .subquery())
 
-    res, = session.query('count').from_statement(query).first()
-    return res
+    query = (session.query(Callfiltermember.id)
+             .filter(Callfiltermember.typeval == str(secretary_user_id))
+             .filter(Callfiltermember.bstype == 'secretary')
+             .filter(Callfiltermember.callfilterid.in_(subquery)))
+
+    return query.count()
 
 
 @daosession
@@ -51,7 +52,7 @@ def get(session, callfilter_id):
 def get_secretaries_id_by_context(session, context):
     return (session.query(Callfiltermember.id)
             .join(UserLine, and_(UserLine.user_id == cast(Callfiltermember.typeval, Integer),
-                                 UserLine.main_line == True,
+                                 UserLine.main_user == True,
                                  UserLine.main_line == True))
             .join(ExtensionSchema, and_(ExtensionSchema.context == context,
                                         UserLine.extension_id == ExtensionSchema.id))

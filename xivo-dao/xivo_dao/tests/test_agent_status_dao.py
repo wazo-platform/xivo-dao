@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from mock import patch, Mock
+
 from xivo_dao import agent_status_dao
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
@@ -23,6 +25,7 @@ from xivo_dao.alchemy.agent_membership_status import AgentMembershipStatus
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
 from sqlalchemy import and_
+from sqlalchemy.exc import SQLAlchemyError
 
 
 class TestAgentStatusDao(DAOTestCase):
@@ -69,6 +72,24 @@ class TestAgentStatusDao(DAOTestCase):
         self.assertEquals(agent_status.context, context)
         self.assertEquals(agent_status.interface, interface)
         self.assertEquals(agent_status.state_interface, state_interface)
+
+    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    def test_log_in_agent_with_db_error(self, AsteriskSession):
+        session = AsteriskSession.return_value = Mock()
+        session.commit.side_effect = SQLAlchemyError()
+
+        agent_id = 1
+        agent_number = '2'
+        extension = '1001'
+        context = 'default'
+        interface = 'sip/abcdef'
+        state_interface = interface
+
+        self.assertRaises(SQLAlchemyError,
+                          agent_status_dao.log_in_agent,
+                          agent_id, agent_number, extension, context, interface, state_interface)
+
+        session.rollback.assert_called_once_with()
 
     def test_log_off_agent(self):
         agent_id = 1
@@ -144,7 +165,7 @@ class TestAgentStatusDao(DAOTestCase):
 
     def test_get_status_by_number_with_unlogged_agent_returns_none(self):
         agent_number = '1001'
-        agent_status = agent_status_dao.get_status(agent_number)
+        agent_status = agent_status_dao.get_status_by_number(agent_number)
         self.assertEquals(agent_status, None)
 
     def test_get_status_by_number_with_logged_agent(self):
