@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.sql import func
-
 from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.data_handler.exception import ElementCreationError
 from xivo_dao.data_handler.exception import ElementDeletionError
@@ -24,18 +22,14 @@ from xivo_dao.data_handler.utils.search import SearchFilter
 from xivo_dao.helpers.abstract_model import SearchResult
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.helpers.db_utils import commit_or_abort
-from xivo_dao.data_handler.func_key.model import db_converter, FuncKey, DestinationType
+from xivo_dao.data_handler.func_key.model import db_converter, DbHelper
 from xivo_dao.alchemy.func_key import FuncKey as FuncKeySchema
-from xivo_dao.alchemy.func_key_type import FuncKeyType as FuncKeyTypeSchema
-from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser as FuncKeyDestUserSchema
-from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup as FuncKeyDestGroupSchema
-from xivo_dao.alchemy.func_key_destination_type import FuncKeyDestinationType as FuncKeyDestinationTypeSchema
 
 
 @daosession
 def search(session, term=None, limit=None, skip=None, order=None, direction='asc'):
-    query = _func_key_query(session)
-    search_filter = SearchFilter(query, FuncKey.SEARCH_COLUMNS, FuncKeySchema.id)
+    query = DbHelper.view_query(session)
+    search_filter = SearchFilter(query, DbHelper.search_columns, DbHelper.id)
     rows, total = search_filter.search(term, limit, skip, order, direction)
 
     func_keys = [db_converter.to_model(row) for row in rows]
@@ -44,12 +38,11 @@ def search(session, term=None, limit=None, skip=None, order=None, direction='asc
 
 @daosession
 def find_all_by_destination(session, destination, destination_id):
-    if not DestinationType.exists(destination):
+    schema, column = DbHelper.schema_and_column(destination)
+    if not schema:
         return []
 
-    schema, column = DestinationType.schema_and_column(destination)
-    query = (_func_key_query(session)
-             .filter(column == destination_id))
+    query = DbHelper.view_query(session).filter(column == destination_id)
 
     func_key_rows = query.all()
     return [db_converter.to_model(row) for row in func_key_rows]
@@ -57,9 +50,7 @@ def find_all_by_destination(session, destination, destination_id):
 
 @daosession
 def get(session, func_key_id):
-    row = (_func_key_query(session)
-           .filter(FuncKeySchema.id == func_key_id)
-           .first())
+    row = DbHelper.view_query(session).filter(DbHelper.id == func_key_id).first()
 
     if not row:
         raise ElementNotExistsError('FuncKey')
@@ -87,7 +78,7 @@ def delete(session, func_key):
     func_key_query = (session.query(FuncKeySchema)
                       .filter(FuncKeySchema.id == func_key.id))
 
-    schema, column = DestinationType.schema_and_column(func_key.destination)
+    schema, column = DbHelper.schema_and_column(func_key.destination)
     destination_query = (session.query(schema)
                          .filter(column == func_key.destination_id)
                          .filter(schema.func_key_id == func_key.id))
@@ -95,22 +86,3 @@ def delete(session, func_key):
     with commit_or_abort(session, ElementDeletionError, 'FuncKey'):
         destination_query.delete()
         func_key_query.delete()
-
-
-def _func_key_query(session):
-    destination_id_col = func.coalesce(
-        FuncKeyDestUserSchema.user_id,
-        FuncKeyDestGroupSchema.group_id
-    ).label('destination_id')
-
-    query = (session
-             .query(FuncKeySchema.id,
-                    FuncKeyTypeSchema.name.label('type'),
-                    FuncKeyDestinationTypeSchema.name.label('destination'),
-                    destination_id_col)
-             .join(FuncKeyTypeSchema)
-             .join(FuncKeyDestinationTypeSchema)
-             .outerjoin(FuncKeyDestUserSchema, FuncKeyDestUserSchema.func_key_id == FuncKeySchema.id)
-             .outerjoin(FuncKeyDestGroupSchema, FuncKeyDestGroupSchema.func_key_id == FuncKeySchema.id)
-             .filter(destination_id_col != None))
-    return query

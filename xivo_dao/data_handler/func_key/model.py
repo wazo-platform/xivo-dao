@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy import func
+
 from xivo_dao.helpers.new_model import NewModel
 from xivo_dao.converters.database_converter import DatabaseConverter
 from xivo_dao.data_handler.func_key import type_dao as func_key_type_dao
@@ -40,26 +42,7 @@ class FuncKey(NewModel):
         'destination_id',
     ]
 
-    SEARCH_COLUMNS = [
-        FuncKeyTypeSchema.name.label('type'),
-        FuncKeyDestinationTypeSchema.name.label('destination')
-    ]
-
     _RELATION = {}
-
-
-class FuncKeyOrder(object):
-    id = FuncKeySchema.id.label('id')
-    type = FuncKeyTypeSchema.name.label('type')
-    destination = FuncKeyDestinationTypeSchema.name.label('destination')
-
-
-DB_TO_MODEL_MAPPING = {
-    'id': 'id',
-    'type': 'type',
-    'destination': 'destination',
-    'destination_id': 'destination_id',
-}
 
 
 class DestinationType(object):
@@ -72,18 +55,59 @@ class DestinationType(object):
     def exists(cls, name):
         return name in cls.all_types
 
+
+class DbHelper(object):
+    id = FuncKeySchema.id.label('id')
+    type = FuncKeyTypeSchema.name.label('type')
+    destination = FuncKeyDestinationTypeSchema.name.label('destination')
+    destination_id = func.coalesce(FuncKeyDestUserSchema.user_id,
+                                   FuncKeyDestGroupSchema.group_id
+                                   ).label('destination_id')
+
+    search_columns = [type, destination, destination_id]
+
+    destination_schemas = {
+        'user': (FuncKeyDestUserSchema, FuncKeyDestUserSchema.user_id),
+        'group': (FuncKeyDestGroupSchema, FuncKeyDestGroupSchema.group_id)
+    }
+
     @classmethod
     def schema_and_column(cls, dest_type):
-        if dest_type == cls.user:
-            return (FuncKeyDestUserSchema, FuncKeyDestUserSchema.user_id)
-        elif dest_type == cls.group:
-            return (FuncKeyDestGroupSchema, FuncKeyDestGroupSchema.group_id)
+        return cls.destination_schemas.get(dest_type, (None, None))
+
+    @classmethod
+    def view_query(cls, session):
+        query = (session
+                 .query(cls.id, cls.type, cls.destination, cls.destination_id)
+                 .join(FuncKeyTypeSchema)
+                 .join(FuncKeyDestinationTypeSchema)
+                 .outerjoin(FuncKeyDestUserSchema, FuncKeyDestUserSchema.func_key_id == FuncKeySchema.id)
+                 .outerjoin(FuncKeyDestGroupSchema, FuncKeyDestGroupSchema.func_key_id == FuncKeySchema.id)
+                 .filter(cls.destination_id != None))
+        return query
+
+
+class FuncKeyOrder(object):
+    id = DbHelper.id
+    type = DbHelper.type
+    destination = DbHelper.destination
+    destination_id = DbHelper.destination_id
 
 
 class FuncKeyDbConverter(DatabaseConverter):
 
+    DB_TO_MODEL_MAPPING = {
+        'id': 'id',
+        'type': 'type',
+        'destination': 'destination',
+        'destination_id': 'destination_id',
+    }
+
     def __init__(self):
-        DatabaseConverter.__init__(self, DB_TO_MODEL_MAPPING, FuncKeySchema, FuncKey)
+        DatabaseConverter.__init__(self,
+                                   self.DB_TO_MODEL_MAPPING,
+                                   FuncKeySchema,
+                                   FuncKey)
 
     def create_func_key_row(self, model):
         destination_type_row = func_key_type_dao.find_destination_type_for_name(model.destination)

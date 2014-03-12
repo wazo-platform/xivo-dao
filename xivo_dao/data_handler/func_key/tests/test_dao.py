@@ -25,7 +25,7 @@ from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.data_handler.exception import ElementCreationError
 from xivo_dao.data_handler.exception import ElementDeletionError
-from xivo_dao.data_handler.func_key.model import FuncKey
+from xivo_dao.data_handler.func_key.model import FuncKey, DbHelper
 from xivo_dao.data_handler.func_key import dao
 from xivo_dao.helpers.abstract_model import SearchResult
 from xivo_dao.alchemy.func_key import FuncKey as FuncKeySchema
@@ -142,7 +142,7 @@ class TestFuncKeySearch(TestFuncKeyDao):
 
         result = dao.search()
 
-        SearchFilter.assert_called_once_with(ANY, FuncKey.SEARCH_COLUMNS, FuncKeySchema.id)
+        SearchFilter.assert_called_once_with(ANY, DbHelper.search_columns, DbHelper.id)
         db_converter.to_model.assert_called_once_with(item)
 
         assert_that(result, instance_of(SearchResult))
