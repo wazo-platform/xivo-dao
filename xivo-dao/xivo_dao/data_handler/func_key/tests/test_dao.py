@@ -155,7 +155,7 @@ class TestFuncKeySearch(TestFuncKeyDao):
 
         result = dao.search()
 
-        assert_that(result.total, 1)
+        assert_that(result.total, equal_to(1))
         assert_that(result.items, contains(func_key))
 
     def test_given_user_and_group_destination_when_searching_then_two_results_returned(self):
@@ -165,7 +165,7 @@ class TestFuncKeySearch(TestFuncKeyDao):
         group_destination = self.prepare_group_destination(group_row)
 
         result = dao.search()
-        assert_that(result.total, 2)
+        assert_that(result.total, equal_to(2))
         assert_that(result.items, contains_inanyorder(user_destination, group_destination))
 
 
