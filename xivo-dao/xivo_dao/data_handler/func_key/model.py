@@ -49,6 +49,7 @@ class FuncKey(NewModel):
 
 
 class FuncKeyOrder(object):
+    id = FuncKeySchema.id.label('id')
     type = FuncKeyTypeSchema.name.label('type')
     destination = FuncKeyDestinationTypeSchema.name.label('destination')
 
