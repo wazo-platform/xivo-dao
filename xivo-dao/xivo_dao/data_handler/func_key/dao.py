@@ -98,16 +98,19 @@ def delete(session, func_key):
 
 
 def _func_key_query(session):
+    destination_id_col = func.coalesce(
+        FuncKeyDestUserSchema.user_id,
+        FuncKeyDestGroupSchema.group_id
+    ).label('destination_id')
+
     query = (session
              .query(FuncKeySchema.id,
                     FuncKeyTypeSchema.name.label('type'),
                     FuncKeyDestinationTypeSchema.name.label('destination'),
-                    func.coalesce(
-                        FuncKeyDestUserSchema.user_id,
-                        FuncKeyDestGroupSchema.group_id
-                    ).label('destination_id'))
+                    destination_id_col)
              .join(FuncKeyTypeSchema)
              .join(FuncKeyDestinationTypeSchema)
              .outerjoin(FuncKeyDestUserSchema, FuncKeyDestUserSchema.func_key_id == FuncKeySchema.id)
-             .outerjoin(FuncKeyDestGroupSchema, FuncKeyDestGroupSchema.func_key_id == FuncKeySchema.id))
+             .outerjoin(FuncKeyDestGroupSchema, FuncKeyDestGroupSchema.func_key_id == FuncKeySchema.id)
+             .filter(destination_id_col != None))
     return query
