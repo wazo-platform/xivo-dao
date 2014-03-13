@@ -20,6 +20,7 @@ from sqlalchemy import func
 from xivo_dao.helpers.new_model import NewModel
 from xivo_dao.converters.database_converter import DatabaseConverter
 from xivo_dao.data_handler.func_key import type_dao as func_key_type_dao
+from xivo_dao.data_handler.utils.search import SearchFilter
 from xivo_dao.alchemy.func_key import FuncKey as FuncKeySchema
 from xivo_dao.alchemy.func_key_type import FuncKeyType as FuncKeyTypeSchema
 from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser as FuncKeyDestUserSchema
@@ -45,53 +46,67 @@ class FuncKey(NewModel):
     _RELATION = {}
 
 
-class DestinationType(object):
-    user = 'user'
-    group = 'group'
+class QueryHelper(object):
 
-    all_types = [user, group]
+    column_mapping = {
+        'id': FuncKeySchema.id.label('id'),
+        'type': FuncKeyTypeSchema.name.label('type'),
+        'destination': FuncKeyDestinationTypeSchema.name.label('destination'),
+        'destination_id': func.coalesce(FuncKeyDestUserSchema.user_id,
+                                        FuncKeyDestGroupSchema.group_id
+                                        ).label('destination_id')
+    }
 
-    @classmethod
-    def exists(cls, name):
-        return name in cls.all_types
-
-
-class DbHelper(object):
-    id = FuncKeySchema.id.label('id')
-    type = FuncKeyTypeSchema.name.label('type')
-    destination = FuncKeyDestinationTypeSchema.name.label('destination')
-    destination_id = func.coalesce(FuncKeyDestUserSchema.user_id,
-                                   FuncKeyDestGroupSchema.group_id
-                                   ).label('destination_id')
-
-    search_columns = [type, destination, destination_id]
-
-    destination_schemas = {
+    destination_mapping = {
         'user': (FuncKeyDestUserSchema, FuncKeyDestUserSchema.user_id),
-        'group': (FuncKeyDestGroupSchema, FuncKeyDestGroupSchema.group_id)
+        'group': (FuncKeyDestGroupSchema, FuncKeyDestGroupSchema.group_id),
     }
 
     @classmethod
-    def schema_and_column(cls, dest_type):
-        return cls.destination_schemas.get(dest_type, (None, None))
+    def destination_exists(cls, destination):
+        return destination in cls.destination_mapping
 
-    @classmethod
-    def view_query(cls, session):
-        query = (session
-                 .query(cls.id, cls.type, cls.destination, cls.destination_id)
-                 .join(FuncKeyTypeSchema)
-                 .join(FuncKeyDestinationTypeSchema)
-                 .outerjoin(FuncKeyDestUserSchema, FuncKeyDestUserSchema.func_key_id == FuncKeySchema.id)
-                 .outerjoin(FuncKeyDestGroupSchema, FuncKeyDestGroupSchema.func_key_id == FuncKeySchema.id)
-                 .filter(cls.destination_id != None))
-        return query
+    def __init__(self, session):
+        self._session = session
+
+    def search_filter(self):
+        return SearchFilter(self.query(),
+                            self.column_mapping.values(),
+                            self.column_mapping['id'])
+
+    def select_destination(self, destination, destination_id):
+        schema, column = self.destination_mapping[destination]
+        return self.query().filter(column == destination_id)
+
+    def select_func_key(self, func_key_id):
+        return self.query().filter(FuncKeySchema.id == func_key_id)
+
+    def delete_destination(self, destination, destination_id):
+        schema, column = self.destination_mapping[destination]
+        return self._session.query(schema).filter(column == destination_id)
+
+    def delete_func_key(self, func_key_id):
+        return self._session.query(FuncKeySchema)
+
+    def query(self):
+        destination_id_col = self.column_mapping['destination_id']
+        return (self._session
+                .query(self.column_mapping['id'],
+                       self.column_mapping['type'],
+                       self.column_mapping['destination'],
+                       self.column_mapping['destination_id'])
+                .join(FuncKeyTypeSchema, FuncKeySchema.type_id == FuncKeyTypeSchema.id)
+                .join(FuncKeyDestinationTypeSchema)
+                .outerjoin(FuncKeyDestUserSchema, FuncKeyDestUserSchema.func_key_id == FuncKeySchema.id)
+                .outerjoin(FuncKeyDestGroupSchema, FuncKeyDestGroupSchema.func_key_id == FuncKeySchema.id)
+                .filter(destination_id_col != None))
 
 
 class FuncKeyOrder(object):
-    id = DbHelper.id
-    type = DbHelper.type
-    destination = DbHelper.destination
-    destination_id = DbHelper.destination_id
+    id = QueryHelper.column_mapping['id']
+    type = QueryHelper.column_mapping['type']
+    destination = QueryHelper.column_mapping['destination']
+    destination_id = QueryHelper.column_mapping['destination_id']
 
 
 class FuncKeyDbConverter(DatabaseConverter):

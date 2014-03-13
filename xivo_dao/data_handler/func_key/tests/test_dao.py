@@ -11,21 +11,21 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-#
+
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from contextlib import contextmanager
 from hamcrest import assert_that, equal_to, instance_of, contains, is_not, \
     none, has_property, contains_inanyorder
-from mock import patch, Mock, ANY
+from mock import patch, Mock
 
 from xivo_dao.tests.test_dao import DAOTestCase
 
 from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.data_handler.exception import ElementCreationError
 from xivo_dao.data_handler.exception import ElementDeletionError
-from xivo_dao.data_handler.func_key.model import FuncKey, DbHelper
+from xivo_dao.data_handler.func_key.model import FuncKey, QueryHelper
 from xivo_dao.data_handler.func_key import dao
 from xivo_dao.helpers.abstract_model import SearchResult
 from xivo_dao.alchemy.func_key import FuncKey as FuncKeySchema
@@ -131,23 +131,11 @@ class TestFuncKeyDao(BaseTestFuncKeyDao):
 
 class TestFuncKeySearch(TestFuncKeyDao):
 
-    @patch('xivo_dao.data_handler.func_key.dao.db_converter')
-    @patch('xivo_dao.data_handler.func_key.dao.SearchFilter')
-    def test_search_calls_search_filter(self, SearchFilter, db_converter):
-        search_filter = SearchFilter.return_value
-
-        item = Mock()
-        mock_items, mock_total = search_filter.search.return_value = ([item], 1)
-        converted_item = db_converter.to_model.return_value = Mock()
-
+    def test_given_no_func_keys_when_searching_then_returns_nothing(self):
         result = dao.search()
 
-        SearchFilter.assert_called_once_with(ANY, DbHelper.search_columns, DbHelper.id)
-        db_converter.to_model.assert_called_once_with(item)
-
-        assert_that(result, instance_of(SearchResult))
-        assert_that(result.items, contains(converted_item))
-        assert_that(result.total, equal_to(mock_total))
+        assert_that(result.total, equal_to(0))
+        assert_that(result.items, contains())
 
     def test_given_user_destination_when_searching_then_one_result_returned(self):
         user_row = self.add_user()
