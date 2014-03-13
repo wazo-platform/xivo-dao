@@ -118,6 +118,11 @@ class FuncKeyDbConverter(DatabaseConverter):
         'destination_id': 'destination_id',
     }
 
+    destination_mapping = {
+        'user': (FuncKeyDestUserSchema, 'user_id'),
+        'group': (FuncKeyDestGroupSchema, 'group_id')
+    }
+
     def __init__(self):
         DatabaseConverter.__init__(self,
                                    self.DB_TO_MODEL_MAPPING,
@@ -136,14 +141,12 @@ class FuncKeyDbConverter(DatabaseConverter):
     def create_destination_row(self, model):
         destination_type_row = func_key_type_dao.find_destination_type_for_name(model.destination)
 
-        if model.destination == DestinationType.user:
-            return FuncKeyDestUserSchema(destination_type_id=destination_type_row.id,
-                                         user_id=model.destination_id,
-                                         func_key_id=model.id)
-        elif model.destination == DestinationType.group:
-            return FuncKeyDestGroupSchema(destination_type_id=destination_type_row.id,
-                                          group_id=model.destination_id,
-                                          func_key_id=model.id)
+        schema, column_name = self.destination_mapping[model.destination]
+        destination_row = schema(destination_type_id=destination_type_row.id,
+                                 func_key_id=model.id)
+        setattr(destination_row, column_name, model.destination_id)
+
+        return destination_row
 
 
 db_converter = FuncKeyDbConverter()
