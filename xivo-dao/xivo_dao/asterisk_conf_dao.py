@@ -179,16 +179,17 @@ def find_exten_progfunckeys_settings(session, context_name):
                           PhoneFunckey.typevalextenumbersright,
                           Extension.exten.label('leftexten'))
             .filter(and_(UserLine.user_id == PhoneFunckey.iduserfeatures,
-                         UserLine.line_id == LineFeatures.id,
                          UserLine.main_user == True,
                          UserLine.main_line == True,
+                         UserLine.line_id == LineFeatures.id,
                          LineFeatures.context == context_name,
                          PhoneFunckey.typeextenumbers != None,
                          PhoneFunckey.typevalextenumbers != None,
-                         PhoneFunckey.typevalextenumbers != 'user',
-                         cast(PhoneFunckey.typeextenumbers, VARCHAR) == cast(Extension.type, VARCHAR),
                          PhoneFunckey.supervision == 1,
-                         PhoneFunckey.progfunckey == 1))
+                         PhoneFunckey.progfunckey == 1,
+                         cast(PhoneFunckey.typeextenumbers, VARCHAR) == cast(Extension.type, VARCHAR),
+                         PhoneFunckey.typevalextenumbers != 'user',
+                         PhoneFunckey.typevalextenumbers == Extension.typeval))
             .all())
 
     res = []

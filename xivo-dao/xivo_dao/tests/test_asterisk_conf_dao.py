@@ -321,27 +321,37 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         assert_that(featuremap, contains_inanyorder(*expected_result))
 
-    def test_find_exten_progfunckeys_settings(self):
-        number = '4567'
-        ule = self.add_user_line_with_exten(exten=number)
-        phonefunckey = self.add_function_key_to_user(iduserfeatures=ule.user_id,
-                                                     exten=number,
+    def test_find_exten_progfunckeys_settings_does_not_return_extenfeatures_func_keys(self):
+        user_having_fk = self.add_user_line_with_exten(exten='4567')
+
+        number_dest = '100'
+        user_dest = self.add_user_line_with_exten(exten=number_dest)
+
+        phonefunckey = self.add_function_key_to_user(iduserfeatures=user_having_fk.user_id,
+                                                     exten=number_dest,
                                                      typeextenumbers='user',
-                                                     typevalextenumbers='toto',
+                                                     typevalextenumbers=str(user_dest.user_id),
                                                      supervision=1,
                                                      progfunckey=1)
 
+        self.add_function_key_to_user(iduserfeatures=user_having_fk.user_id,
+                                      exten='',
+                                      typeextenumbers='extenfeatures',
+                                      typevalextenumbers='enablednd',
+                                      supervision=1,
+                                      progfunckey=1)
+
         expected_result = [
-            {'leftexten': number,
-             'user_id': ule.user_id,
-             'exten': number,
+            {'leftexten': number_dest,
+             'user_id': user_having_fk.user_id,
+             'exten': number_dest,
              'typeextenumbers': u'user',
              'typevalextenumbersright': None,
              'typeextenumbersright': u'user',
              'typevalextenumbers': phonefunckey.typevalextenumbers}
         ]
 
-        funckeys = asterisk_conf_dao.find_exten_progfunckeys_settings(ule.line.context)
+        funckeys = asterisk_conf_dao.find_exten_progfunckeys_settings(user_having_fk.line.context)
 
         assert_that(funckeys, contains_inanyorder(*expected_result))
 
