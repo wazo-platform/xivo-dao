@@ -195,7 +195,7 @@ class TestSccpConfDAO(DAOTestCase):
 
         expected_result = [
             {'user_id': ule.user_id,
-             'fknum': 1,
+             'fknum': phonefunckey.fknum,
              'exten': number,
              'supervision': 0,
              'label': phonefunckey.label,

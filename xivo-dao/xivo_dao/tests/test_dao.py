@@ -400,7 +400,7 @@ class DAOTestCase(unittest.TestCase):
 
     def add_function_key_to_user(self, **kwargs):
         kwargs.setdefault('iduserfeatures', self._generate_id())
-        kwargs.setdefault('fknum', '1')
+        kwargs.setdefault('fknum', ''.join(random.choice('123456789') for _ in range(6)))
         kwargs.setdefault('exten', ''.join(random.choice('0123456789_*X.') for _ in range(6)))
         kwargs.setdefault('supervision', '0')
         kwargs.setdefault('label', 'toto')
