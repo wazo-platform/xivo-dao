@@ -10,7 +10,7 @@ Running unit tests
 1. Install PostgreSQL
 2. Install dependencies with ```pip install -r requirements.txt```
 3. Create a test database
-4. Run the tests with ```nosetests xivo-dao```
+4. Run the tests with ```nosetests xivo_dao```
 
 Creating the test database
 --------------------------
