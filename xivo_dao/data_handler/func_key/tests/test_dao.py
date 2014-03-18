@@ -228,6 +228,14 @@ class TestFuncKeyGet(TestFuncKeyDao):
 
         assert_that(result, equal_to(func_key))
 
+    def test_when_queue_func_key_in_db_then_func_key_model_returned(self):
+        queue_row = self.add_queuefeatures()
+        func_key = self.prepare_destination('queue', queue_row.id)
+
+        result = dao.get(func_key.id)
+
+        assert_that(result, equal_to(func_key))
+
     def test_when_two_func_keys_in_db_then_right_model_returned(self):
         user_row = self.add_user()
 
