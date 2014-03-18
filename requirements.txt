@@ -1,7 +1,7 @@
 # svn urls are used here to be able to change directory
-svn+https://github.com/xivo-pbx/xivo-lib-python/trunk/xivo-lib-python
-svn+https://github.com/xivo-pbx/xivo-bus/trunk/xivo-bus
--e svn+https://github.com/xivo-pbx/xivo-provisioning/trunk/xivo-provisioning#egg=provd
+git+https://github.com/xivo-pbx/xivo-lib-python.git
+git+https://github.com/xivo-pbx/xivo-bus.git
+git+https://github.com/xivo-pbx/xivo-provisioning.git
 mock
 pika
 psycopg2
