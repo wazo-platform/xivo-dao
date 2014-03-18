@@ -84,6 +84,9 @@ class TestFuncKeyDao(DAOTestCase):
         row = (self.session.query(schema)
                .filter(column == destination_id)
                .first())
+        row = (self.session.query(schema)
+               .filter(column == destination_id)
+               .first())
 
         return row
 
@@ -220,14 +223,6 @@ class TestFuncKeyGet(TestFuncKeyDao):
     def test_when_group_func_key_in_db_then_func_key_model_returned(self):
         group_row = self.add_group()
         func_key = self.prepare_destination('group', group_row.id)
-
-        result = dao.get(func_key.id)
-
-        assert_that(result, equal_to(func_key))
-
-    def test_when_queue_func_key_in_db_then_func_key_model_returned(self):
-        queue_row = self.add_queuefeatures()
-        func_key = self.prepare_destination('queue', queue_row.id)
 
         result = dao.get(func_key.id)
 
