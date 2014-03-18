@@ -136,7 +136,16 @@ class TestFuncKeySearch(TestFuncKeyDao):
         assert_that(result.total, equal_to(1))
         assert_that(result.items, contains(func_key))
 
-    def test_given_user_and_group_destination_when_searching_then_two_results_returned(self):
+    def test_group_destination_when_searching_then_one_result_returned(self):
+        group_row = self.add_group()
+        func_key = self.prepare_destination('group', group_row.id)
+
+        result = dao.search()
+
+        assert_that(result.total, equal_to(1))
+        assert_that(result.items, contains(func_key))
+
+    def test_given_2_destination_types_when_searching_then_two_results_returned(self):
         user_row = self.add_user()
         group_row = self.add_group()
         user_destination = self.prepare_destination('user', user_row.id)
