@@ -170,6 +170,13 @@ class TestLineFeaturesDAO(DAOTestCase):
 
         self.assertEquals(extension, expected_extension)
 
+    def test_get_extension_from_protocol_interface_local(self):
+        protocol = 'local'
+        name = 'id-5@agentcallback'
+
+        self.assertRaises(ValueError,
+                          line_dao.get_extension_from_protocol_interface, protocol, name)
+
     def test_get_extension_from_protocol_interface_sccp(self):
         protocol = 'SCCP'
         name = LINE_NUMBER
