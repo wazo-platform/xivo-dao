@@ -30,10 +30,10 @@ from xivo_dao.data_handler.utils.search import SearchFilter
 
 
 @daosession
-def find_all(session, limit=None, skip=None, order=None, direction='asc', search=None):
+def search(session, **parameters):
     query = session.query(VoicemailSchema)
     search_filter = SearchFilter(query, Voicemail.SEARCH_COLUMNS, VoicemailOrder.number)
-    rows, total = search_filter.search(search, limit, skip, order, direction)
+    rows, total = search_filter.search(parameters)
     items = _generate_items(rows)
 
     return SearchResult(total, items)

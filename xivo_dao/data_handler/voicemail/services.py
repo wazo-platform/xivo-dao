@@ -23,8 +23,8 @@ from xivo_dao.helpers import sysconfd_connector
 from xivo_dao.helpers.sysconfd_connector import SysconfdError
 
 
-def find_all(skip=None, limit=None, order=None, direction=None, search=None):
-    return voicemail_dao.find_all(skip=skip, limit=limit, order=order, direction=direction, search=search)
+def search(**parameters):
+    return voicemail_dao.search(**parameters)
 
 
 def find_all_timezone():
