@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.sql.expression import desc, asc, or_
+from sqlalchemy import String
+from sqlalchemy.sql.expression import desc, asc, or_, cast
 
 
 class SearchFilter(object):
@@ -43,7 +44,8 @@ class SearchFilter(object):
 
         criteria = []
         for column in self.columns:
-            criteria.append(column.ilike('%%%s%%' % term))
+            column_search = cast(column, String).ilike('%%%s%%' % term)
+            criteria.append(column_search)
 
         return self.base_query.filter(or_(*criteria))
 

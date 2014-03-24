@@ -18,6 +18,7 @@
 import unittest
 from mock import patch, Mock
 from hamcrest import assert_that, equal_to
+import sqlalchemy as sa
 
 from xivo_dao.data_handler.utils.search import SearchFilter
 
@@ -62,19 +63,19 @@ class TestSearchFilter(unittest.TestCase):
 
         assert_that(search_query, equal_to(self.base_query))
 
-    @patch('xivo_dao.data_handler.utils.search.or_')
-    def test_search_for_with_term(self, sql_or):
+    def test_search_for_with_term(self):
         term = 'term'
-        mock_criteria = sql_or.return_value = Mock()
         search_query = self.base_query.filter.return_value = Mock()
         column1, column2 = self.columns
+        expected_expr = sa.sql.or_(
+            sa.sql.cast(column1, sa.String).ilike('%term%'),
+            sa.sql.cast(column2, sa.String).ilike('%term%')
+        )
 
         result = self.search_filter.search_for(self.base_query, term)
 
-        sql_or.assert_called_once_with(column1.ilike.return_value, column2.ilike.return_value)
-        self.base_query.filter.assert_called_once_with(mock_criteria)
-        column1.ilike.assert_called_once_with('%term%')
-        column2.ilike.assert_called_once_with('%term%')
+        result_expr = self.base_query.filter.call_args[0][0]
+        assert_that(str(expected_expr), equal_to(str(result_expr)))
         assert_that(result, equal_to(search_query))
 
     def test_paginate_no_parameters(self):
