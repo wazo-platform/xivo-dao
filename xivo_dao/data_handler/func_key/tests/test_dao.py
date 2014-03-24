@@ -18,16 +18,15 @@
 from contextlib import contextmanager
 from hamcrest import assert_that, equal_to, instance_of, contains, is_not, \
     none, has_property, contains_inanyorder
-from mock import patch, Mock
+from mock import patch
 
 from xivo_dao.tests.test_dao import DAOTestCase
 
 from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.data_handler.exception import ElementCreationError
 from xivo_dao.data_handler.exception import ElementDeletionError
-from xivo_dao.data_handler.func_key.model import FuncKey, QueryHelper
+from xivo_dao.data_handler.func_key.model import FuncKey
 from xivo_dao.data_handler.func_key import dao
-from xivo_dao.helpers.abstract_model import SearchResult
 from xivo_dao.alchemy.func_key import FuncKey as FuncKeySchema
 from xivo_dao.alchemy.func_key_type import FuncKeyType as FuncKeyTypeSchema
 from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser as FuncKeyDestUserSchema
