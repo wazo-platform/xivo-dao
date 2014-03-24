@@ -34,11 +34,13 @@ class TestSearchFilter(unittest.TestCase):
     @patch.object(SearchFilter, 'sort')
     @patch.object(SearchFilter, 'search_for')
     def test_search(self, search_for, sort, paginate):
-        term = ''
-        limit = 1
-        skip = 2
-        order = Mock()
-        direction = 'desc'
+        parameters = {
+            'search': '',
+            'limit': 1,
+            'skip': 2,
+            'order': Mock(),
+            'direction': 'desc',
+        }
 
         search_query = search_for.return_value = Mock()
         sort_query = sort.return_value = Mock()
@@ -46,11 +48,11 @@ class TestSearchFilter(unittest.TestCase):
         mock_items = paginate_query.all.return_value = Mock()
         mock_total = search_query.count.return_value = Mock()
 
-        items, total = self.search_filter.search(term, limit, skip, order, direction)
+        items, total = self.search_filter.search(parameters)
 
-        search_for.assert_called_once_with(self.base_query, term)
-        sort.assert_called_once_with(search_query, order, direction)
-        paginate.assert_called_once_with(sort_query, limit, skip)
+        search_for.assert_called_once_with(self.base_query, parameters['search'])
+        sort.assert_called_once_with(search_query, parameters['order'], parameters['direction'])
+        paginate.assert_called_once_with(sort_query, parameters['limit'], parameters['skip'])
 
         assert_that(items, equal_to(mock_items))
         assert_that(total, equal_to(mock_total))

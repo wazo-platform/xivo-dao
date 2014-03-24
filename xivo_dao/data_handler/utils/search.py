@@ -25,10 +25,16 @@ class SearchFilter(object):
         self.columns = columns
         self.default_column = default_column
 
-    def search(self, term=None, limit=None, skip=None, order=None, direction='asc'):
-        search_query = self.search_for(self.base_query, term)
-        sorted_query = self.sort(search_query, order, direction)
-        paginated_query = self.paginate(sorted_query, limit, skip)
+    def search(self, parameters=None):
+        parameters = parameters or {}
+
+        search_query = self.search_for(self.base_query, parameters.get('search', None))
+        sorted_query = self.sort(search_query,
+                                 parameters.get('order', None),
+                                 parameters.get('direction', 'asc'))
+        paginated_query = self.paginate(sorted_query,
+                                        parameters.get('limit', None),
+                                        parameters.get('skip', None))
         return paginated_query.all(), search_query.count()
 
     def search_for(self, query, term=None):
