@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.db_manager import Base
-from sqlalchemy.types import Integer, String, Text
+from xivo_dao.helpers.db_manager import Base, Type
+from sqlalchemy.types import Integer, String, Text, Enum
 from sqlalchemy.schema import Column, UniqueConstraint
 
 
@@ -39,4 +39,6 @@ class LineFeatures(Base):
     ipfrom = Column(String(15))
     commented = Column(Integer, nullable=False, default=0)
     description = Column(Text)
-    protocol = Column(String(10))
+    protocol = Column('protocol', Enum('sip', 'iax', 'sccp', 'custom',
+                                       name='trunk_protocol',
+                                       metadata=Type.metadata))

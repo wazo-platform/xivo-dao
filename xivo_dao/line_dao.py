@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy.exc import DataError
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 from xivo.asterisk.extension import Extension
 from xivo_dao.alchemy.linefeatures import LineFeatures
@@ -34,10 +35,13 @@ def get_interface_from_exten_and_context(session, extension, context):
 
 @daosession
 def get_extension_from_protocol_interface(session, protocol, interface):
-    line_row = (session.query(LineFeatures.number, LineFeatures.context)
-                .filter(LineFeatures.protocol == protocol.lower())
-                .filter(LineFeatures.name == interface)
-                .first())
+    try:
+        line_row = (session.query(LineFeatures.number, LineFeatures.context)
+                    .filter(LineFeatures.protocol == protocol.lower())
+                    .filter(LineFeatures.name == interface)
+                    .first())
+    except DataError as e:
+        raise ValueError(e)
 
     if not line_row:
         message = 'no line with interface %s' % interface

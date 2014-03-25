@@ -61,7 +61,7 @@ class TestLineFeaturesDAO(DAOTestCase):
         return sccpline
 
     def test_get_peer_name_abcde(self):
-        protocol = 'SIP'
+        protocol = 'sip'
         name = 'abcde'
         expected_name = '/'.join([protocol, name])
 
@@ -83,7 +83,7 @@ class TestLineFeaturesDAO(DAOTestCase):
         self.assertEqual(peer_name, expected_name)
 
     def test_get_peer_name_qwerty(self):
-        protocol = 'SIP'
+        protocol = 'sip'
         name = 'qwerty'
         expected_name = '/'.join([protocol, name])
 
@@ -122,7 +122,7 @@ class TestLineFeaturesDAO(DAOTestCase):
         self.assertEqual('SIP/abcdef', interface)
 
     def test_get_interface_from_exten_and_context_sccp(self):
-        protocol = 'SCCP'
+        protocol = 'sccp'
         name = '1001'
         context = 'foobar'
         self.add_line(context=context,
@@ -169,6 +169,13 @@ class TestLineFeaturesDAO(DAOTestCase):
         extension = line_dao.get_extension_from_protocol_interface(protocol, name)
 
         self.assertEquals(extension, expected_extension)
+
+    def test_get_extension_from_protocol_interface_local(self):
+        protocol = 'local'
+        name = 'id-5@agentcallback'
+
+        self.assertRaises(ValueError,
+                          line_dao.get_extension_from_protocol_interface, protocol, name)
 
     def test_get_extension_from_protocol_interface_sccp(self):
         protocol = 'SCCP'
