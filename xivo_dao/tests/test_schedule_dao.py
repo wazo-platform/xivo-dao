@@ -23,11 +23,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 class TestScheduleDAO(DAOTestCase):
 
-    tables = [Schedule, SchedulePath]
-
-    def setUp(self):
-        self.empty_tables()
-
     def test_add(self):
         schedule = Schedule()
         schedule.name = 'test'

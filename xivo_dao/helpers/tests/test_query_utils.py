@@ -15,22 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.alchemy.agentfeatures import AgentFeatures
-from xivo_dao.alchemy.queuefeatures import QueueFeatures
+import copy
+
 from xivo_dao.alchemy.record_campaigns import RecordCampaigns
-from xivo_dao.alchemy.recordings import Recordings
 from xivo_dao.helpers import query_utils
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.tests.test_preriquisites import recording_preriquisites
-import copy
 
 
 class TestQueryUtils(DAOTestCase):
 
-    tables = [AgentFeatures, QueueFeatures, Recordings, RecordCampaigns]
-
     def setUp(self):
-        self.empty_tables()
+        DAOTestCase.setUp(self)
         recording_preriquisites(self.session)
 
     def test_paginate_valid_paginator(self):

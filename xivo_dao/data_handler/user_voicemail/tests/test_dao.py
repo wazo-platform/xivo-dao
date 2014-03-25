@@ -17,49 +17,19 @@
 
 from hamcrest import assert_that, has_property, instance_of, equal_to, none
 
-from xivo_dao.alchemy.callfilter import Callfilter
-from xivo_dao.alchemy.callfiltermember import Callfiltermember
-from xivo_dao.alchemy.dialaction import Dialaction
-from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
-from xivo_dao.alchemy.queuemember import QueueMember
-from xivo_dao.alchemy.phonefunckey import PhoneFunckey
-from xivo_dao.alchemy.rightcallmember import RightCallMember
-from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.sccpdevice import SCCPDevice as SCCPDeviceSchema
 from xivo_dao.alchemy.userfeatures import UserFeatures
-from xivo_dao.alchemy.userfeatures import test_dependencies as user_test_dependencies
 from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema
-from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.voicemail import Voicemail as VoicemailSchema
-
-from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.data_handler.user_voicemail import dao as user_voicemail_dao
 from xivo_dao.data_handler.user_voicemail.model import UserVoicemail
 from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.data_handler.user_voicemail.exception import UserVoicemailNotExistsError
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestUserVoicemail(DAOTestCase):
-
-    tables = [UserFeatures,
-              QueueMember,
-              RightCallMember,
-              Callfiltermember,
-              Callfilter,
-              Dialaction,
-              PhoneFunckey,
-              SchedulePath,
-              ExtensionSchema,
-              UserLine,
-              UserSIPSchema,
-              VoicemailSchema,
-              SCCPDeviceSchema]
-
-    tables += user_test_dependencies
-
-    def setUp(self):
-        self.empty_tables()
 
     def create_user_and_voicemail(self, firstname, exten, context):
         user_line_row = self.add_user_line_with_exten(firstname='King', exten='1000', context='default')

@@ -15,26 +15,30 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column, ForeignKey
+from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint
 from sqlalchemy.types import Integer, String, Enum
-from xivo_dao.helpers.db_manager import Base, Type
+
+from xivo_dao.helpers.db_manager import Base
 
 
 class Callfiltermember(Base):
 
     __tablename__ = 'callfiltermember'
+    __table_args__ = (
+        UniqueConstraint('callfilterid', 'type', 'typeval'),
+    )
 
     id = Column(Integer, primary_key=True)
     callfilterid = Column(Integer, ForeignKey('callfilter.id'))
     type = Column(Enum('user',
                        name='callfiltermember_type',
-                       metadata=Type.metadata),
+                       metadata=Base.metadata),
                   nullable=False)
-    typeval = Column(String(128), nullable=False, default=0)
-    ringseconds = Column(Integer, nullable=False, default=0)
-    priority = Column(Integer, nullable=False, default=0)
+    typeval = Column(String(128), nullable=False, server_default='0')
+    ringseconds = Column(Integer, nullable=False, server_default='0')
+    priority = Column(Integer, nullable=False, server_default='0')
     bstype = Column(Enum('boss', 'secretary',
                          name='generic_bsfilter',
-                         metadata=Type.metadata),
+                         metadata=Base.metadata),
                     nullable=False)
-    active = Column(Integer, nullable=False, default=0)
+    active = Column(Integer, nullable=False, server_default='0')

@@ -23,11 +23,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 class TestMeetmeFeaturesDAO(DAOTestCase):
 
-    tables = [MeetmeFeatures, StaticMeetme]
-
-    def setUp(self):
-        self.empty_tables()
-
     def _insert_meetme(self, meetmeid, name, confno, pin=None, context=None):
         var_val = confno if pin is None else ','.join([confno, pin])
         static_meetme = StaticMeetme()

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.db_manager import Base, Type
+from xivo_dao.helpers.db_manager import Base
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String, Enum
 
@@ -27,8 +27,8 @@ class QueueMember(Base):
     interface = Column(String(128), primary_key=True)
     penalty = Column(Integer, nullable=False, server_default='0')
     commented = Column(Integer, nullable=False, server_default='0')
-    usertype = Column(Enum('user', 'agent', name='queuemember_usertype', metadata=Type.metadata), nullable=False)
+    usertype = Column(Enum('user', 'agent', name='queuemember_usertype', metadata=Base.metadata), nullable=False)
     userid = Column(Integer, nullable=False)
     channel = Column(String(25), nullable=False)
-    category = Column(Enum('queue', 'group', name='queue_category', metadata=Type.metadata), nullable=False)
+    category = Column(Enum('queue', 'group', name='queue_category', metadata=Base.metadata), nullable=False)
     position = Column(Integer, nullable=False, server_default='0')

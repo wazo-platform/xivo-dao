@@ -15,9 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.db_manager import Base
 from sqlalchemy.types import Integer, Boolean
 from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint
+from sqlalchemy.orm import relationship
+
+from xivo_dao.helpers.db_manager import Base
 
 
 class UserLine(Base):
@@ -28,8 +30,12 @@ class UserLine(Base):
     )
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('userfeatures.id'))
     line_id = Column(Integer, ForeignKey('linefeatures.id'), nullable=False, primary_key=True)
+    user_id = Column(Integer, ForeignKey('userfeatures.id'))
     extension_id = Column(Integer, ForeignKey('extensions.id'))
     main_user = Column(Boolean, nullable=False)
     main_line = Column(Boolean, nullable=False)
+
+    linefeatures = relationship("LineFeatures", foreign_keys=line_id)
+    userfeatures = relationship("UserFeatures", foreign_keys=user_id)
+    extensions = relationship("Extension", foreign_keys=extension_id)

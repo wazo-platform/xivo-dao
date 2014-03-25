@@ -16,29 +16,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao import cti_profile_dao
-from xivo_dao.alchemy.cti_preference import CtiPreference
 from xivo_dao.alchemy.cti_profile import CtiProfile
-from xivo_dao.alchemy.cti_profile_preference import CtiProfilePreference
-from xivo_dao.alchemy.cti_profile_service import CtiProfileService
 from xivo_dao.alchemy.cti_profile_xlet import CtiProfileXlet
-from xivo_dao.alchemy.cti_service import CtiService
 from xivo_dao.alchemy.cti_xlet import CtiXlet
 from xivo_dao.alchemy.cti_xlet_layout import CtiXletLayout
 from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
 from xivo_dao.alchemy.ctipresences import CtiPresences
-from xivo_dao.alchemy.ctistatus import CtiStatus
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestCtiProfileDAO(DAOTestCase):
-
-    tables = [CtiProfile, CtiPreference, CtiPhoneHintsGroup,
-              CtiPresences, CtiProfilePreference, CtiProfileService,
-              CtiProfileXlet, CtiService, CtiXlet, CtiXletLayout,
-              CtiStatus]
-
-    def setUp(self):
-        self.empty_tables()
 
     def test_get_name(self):
         cti_profile = CtiProfile()

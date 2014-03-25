@@ -17,6 +17,8 @@
 
 from sqlalchemy.schema import Column, ForeignKey
 from sqlalchemy.types import Integer
+from sqlalchemy.orm import relationship
+
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -26,3 +28,6 @@ class CtiProfileService(Base):
 
     profile_id = Column(Integer, ForeignKey('cti_profile.id'), primary_key=True)
     service_id = Column(Integer, ForeignKey("cti_service.id"), primary_key=True)
+
+    cti_profile = relationship("CtiProfile", foreign_keys=profile_id)
+    cti_service = relationship("CtiService", foreign_keys=service_id)

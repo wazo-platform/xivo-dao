@@ -21,10 +21,8 @@ import random
 import unittest
 
 from mock import patch
-from xivo_dao.helpers.db_manager import Base
 from sqlalchemy.schema import MetaData
-from xivo_dao.helpers import config
-from xivo_dao.helpers import db_manager
+
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.userfeatures import UserFeatures
@@ -61,8 +59,48 @@ from xivo_dao.alchemy.func_key import FuncKey
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
 from xivo_dao.alchemy.func_key_type import FuncKeyType
 from xivo_dao.alchemy.func_key_destination_type import FuncKeyDestinationType
+from xivo_dao.helpers import config
+from xivo_dao.helpers import db_manager
+from xivo_dao.helpers.db_manager import Base
+from xivo.debug import trace_duration
 
 logger = logging.getLogger(__name__)
+
+_expensive_setup_has_run = False
+_tables = []
+
+
+def expensive_setup():
+    logger.debug("Connecting to database")
+    config.DB_URI = config.XIVO_DB_URI = 'postgresql://asterisk:asterisk@localhost/asterisktest'
+    db_manager._init()
+    session = db_manager.AsteriskSession()
+    engine = session.bind
+    logger.debug("Connected to database")
+    _init_tables(engine)
+
+
+@trace_duration
+def _init_tables(engine):
+    global _tables
+    logger.debug("Cleaning tables")
+    metadata = MetaData(bind=engine)
+    metadata.reflect()
+    logger.debug("drop all tables")
+    metadata.drop_all()
+    logger.debug("create all tables")
+    Base.metadata.create_all(bind=engine)
+    engine.dispose()
+    logger.debug("Tables cleaned")
+    metadata = MetaData(bind=engine)
+    metadata.reflect()
+    _tables = [table for table in metadata.tables.iterkeys()]
+
+
+# TODO implement this
+def afterTest(test):
+    logger.debug("Closing connection")
+    db_manager.close()
 
 
 class DAOTestCase(unittest.TestCase):
@@ -70,46 +108,20 @@ class DAOTestCase(unittest.TestCase):
     @classmethod
     @patch('xivo_dao.helpers.bus_manager.send_bus_command')
     def setUpClass(cls, send_bus_command):
-        logger.debug("Connecting to database")
-        config.DB_URI = 'postgresql://asterisk:asterisk@localhost/asterisktest'
-        config.XIVO_DB_URI = 'postgresql://asterisk:asterisk@localhost/asterisktest'
-        db_manager._init()
+        global _expensive_setup_has_run
+        if _expensive_setup_has_run is False:
+            expensive_setup()
+            _expensive_setup_has_run = True
+
         cls.session = db_manager.AsteriskSession()
-        cls.engine = cls.session.bind
-        logger.debug("Connected to database")
-        cls.cleanTables()
 
-    @classmethod
-    def tearDownClass(cls):
-        logger.debug("Closing connection")
-        db_manager.close()
-
-    @classmethod
-    def cleanTables(cls):
-        logger.debug("Cleaning tables")
-        cls.session.begin()
-
-        if hasattr(cls, 'tables') and cls.tables:
-            engine = cls.engine
-
-            meta = MetaData(engine)
-            meta.reflect()
-            logger.debug("drop all tables")
-            meta.drop_all()
-
-            table_list = [table.__table__ for table in cls.tables]
-            logger.debug("create all tables")
-            Base.metadata.create_all(engine, table_list)
-            engine.dispose()
-
-        cls.session.commit()
-        logger.debug("Tables cleaned")
-
-    def empty_tables(self):
+    @trace_duration
+    def setUp(self):
+        global _tables
+        self.session = db_manager.AsteriskSession()
         logger.debug("Emptying tables")
-        table_names = [table.__tablename__ for table in self.tables]
         self.session.begin()
-        self.session.execute("TRUNCATE %s CASCADE;" % ",".join(table_names))
+        self.session.execute("TRUNCATE %s CASCADE;" % ",".join(_tables))
         self.session.commit()
         logger.debug("Tables emptied")
 
@@ -252,6 +264,7 @@ class DAOTestCase(unittest.TestCase):
         kwargs.setdefault('passwd', '')
         kwargs.setdefault('context', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
         kwargs.setdefault('language', random.choice(['fr_FR', 'en_US']))
+        kwargs.setdefault('description', 'description')
         agent = AgentFeatures(**kwargs)
         self.add_me(agent)
         return agent
@@ -590,3 +603,6 @@ class DAOTestCase(unittest.TestCase):
 
     def _generate_id(self):
         return random.randint(1, 1000000)
+
+    def _random_name(self, length=6):
+        return ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(length))

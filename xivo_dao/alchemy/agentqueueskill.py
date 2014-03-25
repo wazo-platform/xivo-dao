@@ -15,9 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.db_manager import Base
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer
+
+from xivo_dao.helpers.db_manager import Base
 
 
 class AgentQueueSkill(Base):
@@ -26,4 +27,4 @@ class AgentQueueSkill(Base):
 
     agentid = Column(Integer, primary_key=True, nullable=False)
     skillid = Column(Integer, primary_key=True, nullable=False)
-    weight = Column(Integer, default=0, nullable=False)
+    weight = Column(Integer, nullable=False, server_default='0')

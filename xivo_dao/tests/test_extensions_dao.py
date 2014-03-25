@@ -22,11 +22,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 class TestExtensionsDAO(DAOTestCase):
 
-    tables = [Extension]
-
-    def setUp(self):
-        self.empty_tables()
-
     def test_exten_by_name(self):
         self.add_extension(type='extenfeatures',
                            typeval='enablednd',

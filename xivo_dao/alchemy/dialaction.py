@@ -15,9 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.db_manager import Base, Type
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String, Enum
+
+from xivo_dao.helpers.db_manager import Base
 
 
 class Dialaction(Base):
@@ -33,7 +34,7 @@ class Dialaction(Base):
                         'qwaittime',
                         'qwaitratio',
                         name='dialaction_event',
-                        metadata=Type.metadata),
+                        metadata=Base.metadata),
                    primary_key=True)
     category = Column(Enum('callfilter',
                            'group',
@@ -43,9 +44,9 @@ class Dialaction(Base):
                            'user',
                            'outcall',
                            name='dialaction_category',
-                           metadata=Type.metadata),
+                           metadata=Base.metadata),
                       primary_key=True)
-    categoryval = Column(String(128), default='', primary_key=True)
+    categoryval = Column(String(128), server_default='', primary_key=True)
     action = Column(Enum('none',
                          'endcall:busy',
                          'endcall:congestion',
@@ -69,8 +70,8 @@ class Dialaction(Base):
                          'sound',
                          'custom',
                          name='dialaction_action',
-                         metadata=Type.metadata),
+                         metadata=Base.metadata),
                     nullable=False)
     actionarg1 = Column(String(255), nullable=True)
     actionarg2 = Column(String(255), nullable=True)
-    linked = Column(Integer, nullable=False, default=0)
+    linked = Column(Integer, nullable=False, server_default='0')

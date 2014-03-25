@@ -17,20 +17,14 @@
 
 from datetime import datetime as dt
 
+from xivo_dao import stat_dao
 from xivo_dao.alchemy.queue_log import QueueLog
-from xivo_dao.alchemy.stat_call_on_queue import StatCallOnQueue
 from xivo_dao.alchemy.stat_agent import StatAgent
 from xivo_dao.alchemy.stat_queue import StatQueue
 from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao import stat_dao
 
 
 class TestStatDAO(DAOTestCase):
-
-    tables = [StatAgent, StatQueue, QueueLog, StatCallOnQueue]
-
-    def setUp(self):
-        self.empty_tables()
 
     def test_get_completed_logins(self):
         _, agent_id_1 = self._insert_agent('Agent/1')

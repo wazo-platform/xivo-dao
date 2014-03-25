@@ -22,10 +22,8 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 class TestPhoneFunckey(DAOTestCase):
 
-    tables = [PhoneFunckey]
-
     def setUp(self):
-        self.empty_tables()
+        DAOTestCase.setUp(self)
         self._user_id = 19
         self._user_id_no_dest = 21
         self._destination_unc = '123'

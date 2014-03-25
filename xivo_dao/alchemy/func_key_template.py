@@ -15,9 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.db_manager import Base
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, Boolean, String
+
+from xivo_dao.helpers.db_manager import Base
 
 
 class FuncKeyTemplate(Base):
@@ -26,4 +27,4 @@ class FuncKeyTemplate(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(128), nullable=True)
-    private = Column(Boolean, nullable=False, default=False)
+    private = Column(Boolean, nullable=False, server_default='False')

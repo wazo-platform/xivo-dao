@@ -15,20 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, equal_to
+from hamcrest import *
 from mock import Mock, patch
 from unittest import TestCase
+
 from xivo_dao.data_handler.call_log import services
 from xivo_dao.data_handler.call_log.model import CallLog
 from xivo_dao.data_handler.exception import MissingParametersError
 
 
 class TestCallLogServices(TestCase):
-    def setUp(self):
-        pass
-
-    def tearDown(self):
-        pass
 
     @patch('xivo_dao.data_handler.call_log.dao.find_all')
     def test_find_all_not_found(self, mock_dao):

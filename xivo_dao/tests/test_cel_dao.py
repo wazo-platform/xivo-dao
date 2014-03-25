@@ -16,11 +16,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from datetime import datetime, timedelta
+
+from xivo_dao import cel_dao
 from xivo_dao.alchemy.cel import CEL
-from xivo_dao.alchemy.call_log import CallLog
 from xivo_dao.helpers.cel_exception import CELException
 from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao import cel_dao
 
 
 def _new_datetime_generator(step=timedelta(seconds=1)):
@@ -59,11 +59,6 @@ def _new_cel(**kwargs):
 
 
 class TestCELDAO(DAOTestCase):
-
-    tables = [CallLog, CEL]
-
-    def setUp(self):
-        self.empty_tables()
 
     def _insert_cels(self, cels):
         self.session.begin()

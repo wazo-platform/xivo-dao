@@ -22,11 +22,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 class TestContextMemberDAO(DAOTestCase):
 
-    tables = [ContextMember]
-
-    def setUp(self):
-        self.empty_tables()
-
     def test_add(self):
         contextmember = ContextMember()
         contextmember.varname = "context"

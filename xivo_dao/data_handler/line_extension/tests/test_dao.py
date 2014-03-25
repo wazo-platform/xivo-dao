@@ -15,50 +15,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, all_of, has_property, none, is_not
+from hamcrest import *
 
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.data_handler.line_extension import dao
 from xivo_dao.data_handler.line_extension.model import LineExtension
 from xivo_dao.data_handler.line_extension.exception import LineExtensionNotExistsError
 from xivo_dao.data_handler.exception import ElementNotExistsError
-
-from xivo_dao.alchemy.callfilter import Callfilter
-from xivo_dao.alchemy.callfiltermember import Callfiltermember
-from xivo_dao.alchemy.dialaction import Dialaction
-from xivo_dao.alchemy.extension import Extension as ExtensionSchema
-from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
-from xivo_dao.alchemy.queuemember import QueueMember
-from xivo_dao.alchemy.phonefunckey import PhoneFunckey
-from xivo_dao.alchemy.rightcallmember import RightCallMember
-from xivo_dao.alchemy.schedulepath import SchedulePath
-from xivo_dao.alchemy.sccpdevice import SCCPDevice as SCCPDeviceSchema
-from xivo_dao.alchemy.userfeatures import UserFeatures
-from xivo_dao.alchemy.userfeatures import test_dependencies as user_test_dependencies
-from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema
 from xivo_dao.alchemy.user_line import UserLine
 
 
 class TestLineExtensionDAO(DAOTestCase):
-
-    tables = [UserFeatures,
-              LineSchema,
-              QueueMember,
-              RightCallMember,
-              Callfiltermember,
-              Callfilter,
-              Dialaction,
-              PhoneFunckey,
-              SchedulePath,
-              ExtensionSchema,
-              UserLine,
-              UserSIPSchema,
-              SCCPDeviceSchema]
-
-    tables += user_test_dependencies
-
-    def setUp(self):
-        self.empty_tables()
 
     def prepare_secondary_user_associated(self, user_line_row):
         user_row = self.add_user()

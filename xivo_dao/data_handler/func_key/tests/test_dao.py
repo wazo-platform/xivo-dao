@@ -19,45 +19,19 @@ from hamcrest import assert_that, equal_to, instance_of, contains, is_not, \
     none, has_property, contains_inanyorder
 from mock import patch
 
-from xivo_dao.tests.test_dao import DAOTestCase
-
+from xivo_dao.alchemy.func_key import FuncKey as FuncKeySchema
+from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser as FuncKeyDestUserSchema
+from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup as FuncKeyDestGroupSchema
+from xivo_dao.alchemy.func_key_dest_queue import FuncKeyDestQueue as FuncKeyDestQueueSchema
 from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.data_handler.exception import ElementCreationError
 from xivo_dao.data_handler.exception import ElementDeletionError
 from xivo_dao.data_handler.func_key.model import FuncKey
 from xivo_dao.data_handler.func_key import dao
-from xivo_dao.alchemy.func_key import FuncKey as FuncKeySchema
-from xivo_dao.alchemy.func_key_type import FuncKeyType as FuncKeyTypeSchema
-from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser as FuncKeyDestUserSchema
-from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup as FuncKeyDestGroupSchema
-from xivo_dao.alchemy.func_key_dest_queue import FuncKeyDestQueue as FuncKeyDestQueueSchema
-from xivo_dao.alchemy.func_key_destination_type import FuncKeyDestinationType as FuncKeyDestinationTypeSchema
-from xivo_dao.alchemy.userfeatures import test_dependencies as user_test_dependencies
-from xivo_dao.alchemy.queuefeatures import test_dependencies as queue_test_dependencies
-from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
-from xivo_dao.alchemy.groupfeatures import GroupFeatures as GroupSchema
-from xivo_dao.alchemy.queuefeatures import QueueFeatures as QueueSchema
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
-class BaseTestFuncKeyDao(DAOTestCase):
-
-    tables = [
-        FuncKeySchema,
-        FuncKeyTypeSchema,
-        FuncKeyDestinationTypeSchema,
-        FuncKeyDestUserSchema,
-        FuncKeyDestGroupSchema,
-        FuncKeyDestQueueSchema,
-        UserSchema,
-        GroupSchema,
-        QueueSchema,
-    ] + user_test_dependencies + queue_test_dependencies
-
-    def setUp(self):
-        self.empty_tables()
-
-
-class TestFuncKeyDao(BaseTestFuncKeyDao):
+class TestFuncKeyDao(DAOTestCase):
 
     destination_type_ids = {
         'user': 1,
@@ -72,7 +46,7 @@ class TestFuncKeyDao(BaseTestFuncKeyDao):
     }
 
     def setUp(self):
-        BaseTestFuncKeyDao.setUp(self)
+        DAOTestCase.setUp(self)
         self.create_types_and_destinations()
 
     def create_types_and_destinations(self):

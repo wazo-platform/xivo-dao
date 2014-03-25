@@ -17,10 +17,13 @@
 
 from sqlalchemy.schema import Column, ForeignKey
 from sqlalchemy.types import Integer, String, Boolean, DateTime
+from sqlalchemy.orm import relationship
+
 from xivo_dao.helpers.db_manager import Base
 
 
 class RecordCampaigns(Base):
+
     __tablename__ = 'record_campaign'
 
     id = Column(Integer, primary_key=True)
@@ -30,3 +33,5 @@ class RecordCampaigns(Base):
     queue_id = Column(Integer, ForeignKey('queuefeatures.id'))
     start_date = Column(DateTime)
     end_date = Column(DateTime)
+
+    queuefeatures = relationship("QueueFeatures", foreign_keys=queue_id)

@@ -15,8 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column, Sequence
+from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String
+
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -24,5 +25,5 @@ class CtiPreference(Base):
 
     __tablename__ = 'cti_preference'
 
-    id = Column(Integer, Sequence('cti_preference_id_seq'), primary_key=True)
+    id = Column(Integer, primary_key=True)
     option = Column(String(255), nullable=False)

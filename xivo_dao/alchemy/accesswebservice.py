@@ -15,20 +15,28 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column
+from sqlalchemy.schema import Column, UniqueConstraint, Index
 from sqlalchemy.types import Integer, String, TEXT
+
 from xivo_dao.helpers.db_manager import Base
 
 
 class AccessWebService(Base):
 
     __tablename__ = 'accesswebservice'
+    __table_args__ = (
+        UniqueConstraint('name'),
+        Index('accesswebservice__idx__disable', 'disable'),
+        Index('accesswebservice__idx__host', 'host'),
+        Index('accesswebservice__idx__login', 'login'),
+        Index('accesswebservice__idx__passwd', 'passwd')
+    )
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(64), nullable=False)
+    name = Column(String(64), nullable=False, server_default='')
     login = Column(String(64))
     passwd = Column(String(64))
     host = Column(String(255))
     obj = Column(TEXT, nullable=False)
-    disable = Column(Integer, nullable=False, default=0)
+    disable = Column(Integer, nullable=False, server_default='0')
     description = Column(TEXT, nullable=False)

@@ -15,22 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, equal_to, has_entries
+from hamcrest import *
+from mock import Mock, patch
+
 from xivo_dao import cti_directories_dao
-from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.ldapfilter import LdapFilter
 from xivo_dao.alchemy.ldapserver import LdapServer
 from xivo_dao.alchemy.ctidirectories import CtiDirectories
 from xivo_dao.alchemy.ctidirectoryfields import CtiDirectoryFields
-from mock import Mock, patch
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestCtiSheetsDAO(DAOTestCase):
-
-    tables = [LdapServer, LdapFilter, CtiDirectories, CtiDirectoryFields]
-
-    def setUp(self):
-        self.empty_tables()
 
     def test_get_config(self):
         expected_result = {

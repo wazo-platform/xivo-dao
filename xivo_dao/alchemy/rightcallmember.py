@@ -17,10 +17,12 @@
 
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String
+
 from xivo_dao.helpers.db_manager import Base
 
 
 class RightCallMember(Base):
+
     __tablename__ = 'rightcallmember'
 
     id = Column(Integer, primary_key=True)

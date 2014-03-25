@@ -30,11 +30,6 @@ class TestAgentDAO(DAOTestCase):
     agent_number = '1234'
     agent_context = 'test'
 
-    tables = [AgentFeatures, QueueFeatures, QueueMember]
-
-    def setUp(self):
-        self.empty_tables()
-
     def test_agent_number(self):
         agent = self._insert_agent()
 
@@ -91,6 +86,7 @@ class TestAgentDAO(DAOTestCase):
         agent.passwd = ''
         agent.context = self.agent_context
         agent.language = ''
+        agent.description = ''
         agent_dao.add_agent(agent)
         self.assertTrue(agent.id > 0)
         self.assertTrue(agent_dao.agent_number(agent.id) == '15')
@@ -179,6 +175,7 @@ class TestAgentDAO(DAOTestCase):
         agent.passwd = ''
         agent.context = self.agent_context
         agent.language = ''
+        agent.description = ''
 
         self.session.begin()
         self.session.add(agent)

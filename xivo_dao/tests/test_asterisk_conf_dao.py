@@ -16,59 +16,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from hamcrest import *
+
 from xivo_dao import asterisk_conf_dao
 from xivo_dao.alchemy.agentqueueskill import AgentQueueSkill
-from xivo_dao.alchemy.context import Context
-from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.features import Features
-from xivo_dao.alchemy.groupfeatures import GroupFeatures
 from xivo_dao.alchemy.iaxcallnumberlimits import IAXCallNumberLimits
-from xivo_dao.alchemy.musiconhold import MusicOnHold
-from xivo_dao.alchemy.phonefunckey import PhoneFunckey
-from xivo_dao.alchemy.pickup import Pickup
-from xivo_dao.alchemy.pickupmember import PickupMember
-from xivo_dao.alchemy.queue import Queue
-from xivo_dao.alchemy.queuefeatures import QueueFeatures
-from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.queuepenalty import QueuePenalty
 from xivo_dao.alchemy.queuepenaltychange import QueuePenaltyChange
-from xivo_dao.alchemy.queueskill import QueueSkill
-from xivo_dao.alchemy.queueskillrule import QueueSkillRule
-from xivo_dao.alchemy.sccpdevice import SCCPDevice
-from xivo_dao.alchemy.sccpgeneralsettings import SCCPGeneralSettings
-from xivo_dao.alchemy.sccpline import SCCPLine
-from xivo_dao.alchemy.sipauthentication import SIPAuthentication
-from xivo_dao.alchemy.staticiax import StaticIAX
-from xivo_dao.alchemy.staticmeetme import StaticMeetme
-from xivo_dao.alchemy.staticqueue import StaticQueue
-from xivo_dao.alchemy.staticsip import StaticSIP
-from xivo_dao.alchemy.staticvoicemail import StaticVoicemail
-from xivo_dao.alchemy.user_line import UserLine
-from xivo_dao.alchemy.userfeatures import UserFeatures
-from xivo_dao.alchemy.userfeatures import test_dependencies as user_test_dependencies
-from xivo_dao.alchemy.usersip import UserSIP
-from xivo_dao.alchemy.useriax import UserIAX
-from xivo_dao.alchemy.voicemail import Voicemail
 from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao.alchemy.usercustom import UserCustom
 
 
 class TestSccpConfDAO(DAOTestCase):
-
-    tables = [
-        Extension,
-        PhoneFunckey,
-        SCCPLine,
-        SCCPDevice,
-        SCCPGeneralSettings,
-        UserFeatures,
-        UserLine,
-    ]
-
-    tables += user_test_dependencies
-
-    def setUp(self):
-        self.empty_tables()
 
     def test_find_sccp_general_settings(self):
         expected_result = [
@@ -208,42 +166,6 @@ class TestSccpConfDAO(DAOTestCase):
 
 
 class TestAsteriskConfDAO(DAOTestCase):
-
-    tables = [AgentQueueSkill,
-              Context,
-              Extension,
-              Features,
-              GroupFeatures,
-              IAXCallNumberLimits,
-              MusicOnHold,
-              PhoneFunckey,
-              Pickup,
-              PickupMember,
-              Queue,
-              QueueFeatures,
-              QueueMember,
-              QueuePenalty,
-              QueuePenaltyChange,
-              QueueSkill,
-              QueueSkillRule,
-              SCCPLine,
-              SIPAuthentication,
-              StaticIAX,
-              StaticMeetme,
-              StaticQueue,
-              StaticSIP,
-              StaticVoicemail,
-              UserLine,
-              UserFeatures,
-              UserCustom,
-              UserSIP,
-              UserIAX,
-              Voicemail]
-
-    tables += user_test_dependencies
-
-    def setUp(self):
-        self.empty_tables()
 
     def test_find_featuremap_features_settings(self):
         features = Features(id=1,

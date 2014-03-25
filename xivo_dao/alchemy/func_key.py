@@ -16,19 +16,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 
-from xivo_dao.helpers.db_manager import Base
 from sqlalchemy.schema import Column, ForeignKey
 from sqlalchemy.types import Integer
 from sqlalchemy.orm import relationship
-from xivo_dao.alchemy.func_key_type import FuncKeyType
-from xivo_dao.alchemy.func_key_destination_type import FuncKeyDestinationType
-from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
 
-test_dependencies = [
-    FuncKeyType,
-    FuncKeyDestinationType,
-    FuncKeyDestUser,
-]
+from xivo_dao.helpers.db_manager import Base
 
 
 class FuncKey(Base):
@@ -41,5 +33,5 @@ class FuncKey(Base):
                                  primary_key=True)
     type_id = Column(Integer, ForeignKey('func_key_type.id'), nullable=False)
 
-    func_key_type = relationship("FuncKeyType")
-    destination_type = relationship("FuncKeyDestinationType")
+    func_key_type = relationship("FuncKeyType", foreign_keys=type_id)
+    destination_type = relationship("FuncKeyDestinationType", foreign_keys=destination_type_id)

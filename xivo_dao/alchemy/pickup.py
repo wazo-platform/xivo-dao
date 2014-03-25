@@ -17,13 +17,15 @@
 
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String, Text
+
 from xivo_dao.helpers.db_manager import Base
 
 
 class Pickup(Base):
+
     __tablename__ = 'pickup'
 
     id = Column(Integer, primary_key=True)
     name = Column(String(128), nullable=False)
-    commented = Column(Integer, nullable=False, default=0)
+    commented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text)

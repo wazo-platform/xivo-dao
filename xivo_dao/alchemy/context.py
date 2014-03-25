@@ -15,10 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.db_manager import Base
-
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String, Text
+
+from xivo_dao.helpers.db_manager import Base
 
 
 class Context(Base):
@@ -26,8 +26,8 @@ class Context(Base):
     __tablename__ = 'context'
 
     name = Column(String(39), primary_key=True)
-    displayname = Column(String(128), nullable=False, default='')
+    displayname = Column(String(128), nullable=False, server_default='')
     entity = Column(String(64))
-    contexttype = Column(String(20), nullable=False, default='internal')
-    commented = Column(Integer, nullable=False, default=0)
+    contexttype = Column(String(20), nullable=False, server_default='internal')
+    commented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text, nullable=False)

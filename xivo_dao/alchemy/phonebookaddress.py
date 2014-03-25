@@ -17,7 +17,8 @@
 
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String, Enum
-from xivo_dao.helpers.db_manager import Base, Type
+
+from xivo_dao.helpers.db_manager import Base
 
 
 class PhonebookAddress(Base):
@@ -26,11 +27,13 @@ class PhonebookAddress(Base):
 
     id = Column(Integer, primary_key=True)
     phonebookid = Column(Integer, nullable=False)
-    address1 = Column(String(30), nullable=False, default='')
-    address2 = Column(String(30), nullable=False, default='')
-    city = Column(String(128), nullable=False, default='')
-    state = Column(String(128), nullable=False, default='')
-    zipcode = Column(String(16), nullable=False, default='')
-    country = Column(String(3), nullable=False, default='')
-    type = Column(Enum(('home', 'office', 'other'), name='phonebookaddress_type', metadata=Type.metadata),
+    address1 = Column(String(30), nullable=False, server_default='')
+    address2 = Column(String(30), nullable=False, server_default='')
+    city = Column(String(128), nullable=False, server_default='')
+    state = Column(String(128), nullable=False, server_default='')
+    zipcode = Column(String(16), nullable=False, server_default='')
+    country = Column(String(3), nullable=False, server_default='')
+    type = Column(Enum('home', 'office', 'other',
+                       name='phonebookaddress_type',
+                       metadata=Base.metadata),
                   nullable=False)

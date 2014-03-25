@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.db_manager import Base, Type
+from xivo_dao.helpers.db_manager import Base
 from sqlalchemy.schema import Column, Sequence
 from sqlalchemy.types import Integer, String, Text, Enum
 
@@ -40,8 +40,8 @@ class LdapFilter(Base):
                                  'other',
                                  'custom',
                                  name='ldapfilter_additionaltype',
-                                 metadata=Type.metadata),
+                                 metadata=Base.metadata),
                             nullable=False)
     additionaltext = Column(String(16), nullable=False, server_default='')
-    commented = Column(Integer, nullable=False, default=0)
+    commented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text, nullable=False)

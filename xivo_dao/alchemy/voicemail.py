@@ -15,9 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.db_manager import Base, Type
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String, Text, Float, Enum
+
+from xivo_dao.helpers.db_manager import Base
 
 
 class Voicemail(Base):
@@ -27,8 +28,8 @@ class Voicemail(Base):
     uniqueid = Column(Integer, primary_key=True)
     context = Column(String(39), nullable=False)
     mailbox = Column(String(40), nullable=False)
-    password = Column(String(80), nullable=False, default='')
-    fullname = Column(String(80), nullable=False, default='')
+    password = Column(String(80), nullable=False, server_default='')
+    fullname = Column(String(80), nullable=False, server_default='')
     email = Column(String(80))
     pager = Column(String(80))
     dialout = Column(String(39))
@@ -44,12 +45,12 @@ class Voicemail(Base):
     sayduration = Column(Integer)
     saydurationm = Column(Integer)
     sendvoicemail = Column(Integer)
-    deletevoicemail = Column(Integer, nullable=False, default=0)
+    deletevoicemail = Column(Integer, nullable=False, server_default='0')
     forcename = Column(Integer)
     forcegreetings = Column(Integer)
-    hidefromdir = Column(Enum('yes', 'no', name='voicemail_hidefromdir', metadata=Type.metadata),
+    hidefromdir = Column(Enum('yes', 'no', name='voicemail_hidefromdir', metadata=Base.metadata),
                          nullable=False,
-                         default='no')
+                         server_default='no')
     maxmsg = Column(Integer)
     emailsubject = Column(String(1024))
     emailbody = Column(Text)
@@ -68,6 +69,6 @@ class Voicemail(Base):
     nextaftercmd = Column(Integer)
     backupdeleted = Column(Integer)
     volgain = Column(Float)
-    passwordlocation = Column(Enum('spooldir', 'voicemail', name='voicemail_passwordlocation', metadata=Type.metadata))
-    commented = Column(Integer, nullable=False, default=0)
-    skipcheckpass = Column(Integer, nullable=False, default=0)
+    passwordlocation = Column(Enum('spooldir', 'voicemail', name='voicemail_passwordlocation', metadata=Base.metadata))
+    commented = Column(Integer, nullable=False, server_default='0')
+    skipcheckpass = Column(Integer, nullable=False, server_default='0')

@@ -28,15 +28,6 @@ from hamcrest import assert_that, equal_to, instance_of, has_property, all_of
 
 class TestContextDao(DAOTestCase):
 
-    tables = [
-        ContextSchema,
-        ContextNumberSchema,
-        EntitySchema
-    ]
-
-    def setUp(self):
-        self.empty_tables()
-
     def test_create(self):
         entity_name = 'testentity'
         context_name = 'contextname'

@@ -15,18 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao import cti_sheets_dao
 from xivo_dao.alchemy.ctisheetactions import CtiSheetActions
 from xivo_dao.alchemy.ctisheetevents import CtiSheetEvents
-from xivo_dao import cti_sheets_dao
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestCtiSheetsDAO(DAOTestCase):
-
-    tables = [CtiSheetActions, CtiSheetEvents]
-
-    def setUp(self):
-        self.empty_tables()
 
     def test_get_config(self):
         expected_result = {

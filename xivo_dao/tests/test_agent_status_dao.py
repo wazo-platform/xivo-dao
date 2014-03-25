@@ -30,12 +30,6 @@ from sqlalchemy.exc import SQLAlchemyError
 
 class TestAgentStatusDao(DAOTestCase):
 
-    tables = [AgentFeatures, AgentLoginStatus, AgentMembershipStatus,
-              QueueFeatures, QueueMember]
-
-    def setUp(self):
-        self.empty_tables()
-
     def test_is_agent_logged_in_with_no_agents(self):
         agent_id = 1
 
@@ -410,6 +404,7 @@ class TestAgentStatusDao(DAOTestCase):
         agent.passwd = ''
         agent.context = 'foobar'
         agent.language = ''
+        agent.description = ''
 
         self.session.begin()
         self.session.add(agent)

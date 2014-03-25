@@ -22,11 +22,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 class TestUserSIPDAO(DAOTestCase):
 
-    tables = [UserSIP]
-
-    def setUp(self):
-        self.empty_tables()
-
     def test_create(self):
         usersip = UserSIP(name='abcd', type='friend')
 

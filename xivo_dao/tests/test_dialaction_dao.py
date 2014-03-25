@@ -22,11 +22,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 class TestDialactionDAO(DAOTestCase):
 
-    tables = [Dialaction]
-
-    def setUp(self):
-        self.empty_tables()
-
     def test_add(self):
         dialaction = Dialaction()
         dialaction.action = 'none'

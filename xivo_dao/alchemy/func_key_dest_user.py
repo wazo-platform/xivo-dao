@@ -16,10 +16,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 
-from xivo_dao.helpers.db_manager import Base
-from sqlalchemy.schema import Column, ForeignKey, ForeignKeyConstraint, CheckConstraint
+from sqlalchemy.schema import Column, ForeignKey, CheckConstraint, \
+    ForeignKeyConstraint
 from sqlalchemy.types import Integer
 from sqlalchemy.orm import relationship
+
+from xivo_dao.helpers.db_manager import Base
 
 
 class FuncKeyDestUser(Base):
@@ -28,7 +30,7 @@ class FuncKeyDestUser(Base):
     __table_args__ = (
         ForeignKeyConstraint(['func_key_id', 'destination_type_id'],
                              ['func_key.id', 'func_key.destination_type_id']),
-        CheckConstraint('destination_type_id = 1')
+        CheckConstraint('destination_type_id=1'),
     )
 
     func_key_id = Column(Integer, primary_key=True)
@@ -36,4 +38,4 @@ class FuncKeyDestUser(Base):
     destination_type_id = Column(Integer, primary_key=True, server_default="1")
 
     func_key = relationship("FuncKey")
-    user = relationship("UserFeatures")
+    userfeatures = relationship("UserFeatures")

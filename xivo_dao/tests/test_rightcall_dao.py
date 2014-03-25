@@ -22,11 +22,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 class TestRightCallDAO(DAOTestCase):
 
-    tables = [RightCall]
-
-    def setUp(self):
-        self.empty_tables()
-
     def test_add(self):
         right = RightCall(name='test')
         rightcall_dao.add(right)

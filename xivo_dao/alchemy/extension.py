@@ -15,19 +15,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.db_manager import Base, Type
 from sqlalchemy.schema import Column, UniqueConstraint
 from sqlalchemy.types import Integer, String, Enum
 
+from xivo_dao.helpers.db_manager import Base
+
 
 class Extension(Base):
+
     __tablename__ = 'extensions'
     __table_args__ = (
         UniqueConstraint('exten', 'context'),
     )
 
     id = Column(Integer, primary_key=True)
-    commented = Column(Integer, nullable=False, default=0)
+    commented = Column(Integer, nullable=False, server_default='0')
     context = Column(String(39), nullable=False, server_default='')
     exten = Column(String(40), nullable=False, server_default='')
     type = Column(Enum('extenfeatures',
@@ -40,7 +42,7 @@ class Extension(Base):
                        'queue',
                        'user',
                        name='extenumbers_type',
-                       metadata=Type.metadata),
+                       metadata=Base.metadata),
                     nullable=False)
     typeval = Column(String(255))
 
