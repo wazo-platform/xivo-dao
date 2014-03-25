@@ -18,7 +18,6 @@
 import datetime
 from hamcrest import assert_that, contains, has_property, contains_inanyorder
 
-from xivo_dao.alchemy.call_log import CallLog as CallLogSchema
 from xivo_dao.alchemy.cel import CEL as CELSchema
 from xivo_dao.data_handler.call_log.model import CallLog, db_converter
 from xivo_dao.data_handler.cel import dao as cel_dao
@@ -26,17 +25,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestCELDAO(DAOTestCase):
-
-    tables = [
-        CallLogSchema,
-        CELSchema
-    ]
-
-    def setUp(self):
-        self.empty_tables()
-
-    def tearDown(self):
-        pass
 
     def test_find_last_unprocessed_no_cels(self):
         limit = 10

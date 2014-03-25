@@ -17,10 +17,12 @@
 
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String
+
 from xivo_dao.helpers.db_manager import Base
 
 
 class SchedulePath(Base):
+
     __tablename__ = 'schedule_path'
 
     schedule_id = Column(Integer, primary_key=True)

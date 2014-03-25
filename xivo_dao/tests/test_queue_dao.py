@@ -18,21 +18,10 @@
 from xivo_dao import queue_dao
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
-from xivo_dao.alchemy.userfeatures import UserFeatures
-from xivo_dao.alchemy.userfeatures import test_dependencies as user_test_dependencies
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestQueueDAO(DAOTestCase):
-
-    tables = [QueueFeatures,
-              QueueMember,
-              UserFeatures]
-
-    tables += user_test_dependencies
-
-    def setUp(self):
-        self.empty_tables()
 
     def test_id_from_name(self):
         queue = self._insert_queue('test_queue', 'Queue Test')

@@ -15,29 +15,30 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.db_manager import Base, Type
-from sqlalchemy.schema import Column, Sequence
+from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String, Text, Enum
+
+from xivo_dao.helpers.db_manager import Base
 
 
 class LdapServer(Base):
 
     __tablename__ = 'ldapserver'
 
-    id = Column(Integer, Sequence('ldapserver_id_seq'), primary_key=True)
+    id = Column(Integer, primary_key=True)
     name = Column(String(128), nullable=False, server_default='')
     host = Column(String(255), nullable=False, server_default='')
     port = Column(Integer, nullable=False)
     securitylayer = Column(Enum('tls',
                                 'ssl',
                                 name='ldapserver_securitylayer',
-                                metadata=Type.metadata))
+                                metadata=Base.metadata))
     protocolversion = Column(Enum('2',
                                   '3',
                                   name='ldapserver_protocolversion',
-                                  metadata=Type.metadata),
+                                  metadata=Base.metadata),
                              nullable=False,
-                             default='3')
-    disable = Column(Integer, nullable=False, default=0)
-    dcreate = Column(Integer, nullable=False, default=0)
+                             server_default='3')
+    disable = Column(Integer, nullable=False, server_default='0')
+    dcreate = Column(Integer, nullable=False, server_default='0')
     description = Column(Text, nullable=False)

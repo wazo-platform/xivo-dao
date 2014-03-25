@@ -16,48 +16,24 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from contextlib import contextmanager
-from hamcrest import assert_that, equal_to, instance_of, contains, is_not, \
-    none, has_property, contains_inanyorder
-from mock import patch, Mock
+from hamcrest import *
+from mock import patch
 
-from xivo_dao.tests.test_dao import DAOTestCase
-
+from xivo_dao.alchemy.func_key import FuncKey as FuncKeySchema
+from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser as FuncKeyDestUserSchema
+from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup as FuncKeyDestGroupSchema
 from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.data_handler.exception import ElementCreationError
 from xivo_dao.data_handler.exception import ElementDeletionError
-from xivo_dao.data_handler.func_key.model import FuncKey, QueryHelper
+from xivo_dao.data_handler.func_key.model import FuncKey
 from xivo_dao.data_handler.func_key import dao
-from xivo_dao.helpers.abstract_model import SearchResult
-from xivo_dao.alchemy.func_key import FuncKey as FuncKeySchema
-from xivo_dao.alchemy.func_key_type import FuncKeyType as FuncKeyTypeSchema
-from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser as FuncKeyDestUserSchema
-from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup as FuncKeyDestGroupSchema
-from xivo_dao.alchemy.func_key_destination_type import FuncKeyDestinationType as FuncKeyDestinationTypeSchema
-from xivo_dao.alchemy.userfeatures import test_dependencies as user_test_dependencies
-from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
-from xivo_dao.alchemy.groupfeatures import GroupFeatures as GroupSchema
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
-class BaseTestFuncKeyDao(DAOTestCase):
-
-    tables = [
-        FuncKeySchema,
-        FuncKeyTypeSchema,
-        FuncKeyDestinationTypeSchema,
-        FuncKeyDestUserSchema,
-        FuncKeyDestGroupSchema,
-        UserSchema,
-        GroupSchema,
-    ] + user_test_dependencies
+class TestFuncKeyDao(DAOTestCase):
 
     def setUp(self):
-        self.empty_tables()
-
-
-class TestFuncKeyDao(BaseTestFuncKeyDao):
-
-    def setUp(self):
-        BaseTestFuncKeyDao.setUp(self)
+        DAOTestCase.setUp(self)
         self.create_types_and_destinations()
 
     def create_types_and_destinations(self):

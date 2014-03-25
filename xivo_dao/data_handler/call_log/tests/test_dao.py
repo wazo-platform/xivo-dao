@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from datetime import datetime, timedelta
-from hamcrest import all_of, assert_that, contains, contains_inanyorder, equal_to, has_length, has_property
+from hamcrest import *
 from mock import Mock, patch
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -30,13 +30,8 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 class TestCallLogDAO(DAOTestCase):
 
-    tables = [
-        CallLogSchema,
-        CELSchema
-    ]
-
     def setUp(self):
-        self.empty_tables()
+        DAOTestCase.setUp(self)
         self.db_converter_patcher = patch('xivo_dao.data_handler.call_log.model.db_converter')
         self.db_converter = self.db_converter_patcher.start()
         self.call_log_rows = []

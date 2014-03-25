@@ -35,11 +35,8 @@ def todict(self):
 
     return d
 
-
 Base = declarative_base()
 Base.todict = todict
-
-Type = declarative_base()
 
 _asterisk_engine = None
 AsteriskSession = None

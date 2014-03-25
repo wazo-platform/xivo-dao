@@ -15,66 +15,50 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.db_manager import Base
 from sqlalchemy.schema import Column, ForeignKey
 from sqlalchemy.types import Integer, String, Text
+from sqlalchemy.orm import relationship
 
-from xivo_dao.alchemy.linefeatures import LineFeatures
-from xivo_dao.alchemy.contextinclude import ContextInclude
-from xivo_dao.alchemy.agentfeatures import AgentFeatures
-from xivo_dao.alchemy.ctipresences import CtiPresences
-from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
-from xivo_dao.alchemy.cti_profile import CtiProfile
-from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
-
-test_dependencies = [
-    LineFeatures,
-    ContextInclude,
-    AgentFeatures,
-    CtiPresences,
-    CtiPhoneHintsGroup,
-    CtiProfile,
-    FuncKeyTemplate
-]
+from xivo_dao.helpers.db_manager import Base
 
 
 class UserFeatures(Base):
+
     __tablename__ = 'userfeatures'
 
     id = Column(Integer, primary_key=True)
     firstname = Column(String(128), nullable=False, server_default='')
     lastname = Column(String(128), nullable=False, server_default='')
-    voicemailtype = Column(String(128))  # Should be Enum
+    voicemailtype = Column(String(128))  # TODO Should be Enum
     voicemailid = Column(Integer)
     agentid = Column(Integer)
     pictureid = Column(Integer)
     entityid = Column(Integer)
     callerid = Column(String(160))
-    ringseconds = Column(Integer, nullable=False, default=30)
-    simultcalls = Column(Integer, nullable=False, default=5)
-    enableclient = Column(Integer, nullable=False, default=0)
+    ringseconds = Column(Integer, nullable=False, server_default='30')
+    simultcalls = Column(Integer, nullable=False, server_default='5')
+    enableclient = Column(Integer, nullable=False, server_default='0')
     loginclient = Column(String(64), nullable=False, server_default='')
     passwdclient = Column(String(64), nullable=False, server_default='')
     cti_profile_id = Column(Integer, ForeignKey('cti_profile.id'))
-    enablehint = Column(Integer, nullable=False, default=1)
-    enablevoicemail = Column(Integer, nullable=False, default=0)
-    enablexfer = Column(Integer, nullable=False, default=1)
-    enableautomon = Column(Integer, nullable=False, default=0)
-    callrecord = Column(Integer, nullable=False, default=0)
-    incallfilter = Column(Integer, nullable=False, default=0)
-    enablednd = Column(Integer, nullable=False, default=0)
-    enableunc = Column(Integer, nullable=False, default=0)
+    enablehint = Column(Integer, nullable=False, server_default='1')
+    enablevoicemail = Column(Integer, nullable=False, server_default='0')
+    enablexfer = Column(Integer, nullable=False, server_default='1')
+    enableautomon = Column(Integer, nullable=False, server_default='0')
+    callrecord = Column(Integer, nullable=False, server_default='0')
+    incallfilter = Column(Integer, nullable=False, server_default='0')
+    enablednd = Column(Integer, nullable=False, server_default='0')
+    enableunc = Column(Integer, nullable=False, server_default='0')
     destunc = Column(String(128), nullable=False, server_default='')
-    enablerna = Column(Integer, nullable=False, default=0)
+    enablerna = Column(Integer, nullable=False, server_default='0')
     destrna = Column(String(128), nullable=False, server_default='')
-    enablebusy = Column(Integer, nullable=False, default=0)
+    enablebusy = Column(Integer, nullable=False, server_default='0')
     destbusy = Column(String(128), nullable=False, server_default='')
     musiconhold = Column(String(128), nullable=False, server_default='')
     outcallerid = Column(String(80), nullable=False, server_default='')
     mobilephonenumber = Column(String(128), nullable=False, server_default='')
     userfield = Column(String(128), nullable=False, server_default='')
-    # Should be Enum
-    bsfilter = Column(String(128), nullable=False, server_default='no')
+    bsfilter = Column(String(128), nullable=False, server_default='no')  # TODO Should be Enum
     preprocess_subroutine = Column(String(39))
     timezone = Column(String(128))
     language = Column(String(20))
@@ -83,10 +67,14 @@ class UserFeatures(Base):
     ringgroup = Column(String(64))
     ringforward = Column(String(64))
     rightcallcode = Column(String(16))
-    commented = Column(Integer, nullable=False, default=0)
-    description = Column(Text, nullable=False, default='')
+    commented = Column(Integer, nullable=False, server_default='0')
+    description = Column(Text, nullable=False, server_default='')
     func_key_template_id = Column(Integer, ForeignKey('func_key_template.id'))
     func_key_private_template_id = Column(Integer, ForeignKey('func_key_template.id'), nullable=False)
+
+    func_key_template = relationship("FuncKeyTemplate", foreign_keys=func_key_template_id)
+    func_key_template_private = relationship("FuncKeyTemplate", foreign_keys=func_key_private_template_id)
+    cti_profile = relationship("CtiProfile", foreign_keys=cti_profile_id)
 
     @property
     def fullname(self):

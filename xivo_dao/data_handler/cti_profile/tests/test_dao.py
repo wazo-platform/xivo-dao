@@ -16,19 +16,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from hamcrest import assert_that, equal_to, has_length
+
 from xivo_dao.alchemy.cti_profile import CtiProfile as CtiProfileSchema
-from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
-from xivo_dao.alchemy.ctipresences import CtiPresences
 from xivo_dao.data_handler.cti_profile import dao
 from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestCtiProfile(DAOTestCase):
-    tables = [CtiProfileSchema, CtiPresences, CtiPhoneHintsGroup]
-
-    def setUp(self):
-        self.empty_tables()
 
     def test_find_all(self):
         profile_row1 = CtiProfileSchema(id=1, name='Profil 01')

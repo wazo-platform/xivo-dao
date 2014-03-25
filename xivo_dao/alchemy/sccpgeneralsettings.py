@@ -15,9 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.db_manager import Base
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String
+
+from xivo_dao.helpers.db_manager import Base
 
 
 class SCCPGeneralSettings(Base):

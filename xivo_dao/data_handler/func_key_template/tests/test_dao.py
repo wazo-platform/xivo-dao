@@ -21,10 +21,6 @@ from mock import patch, ANY, Mock
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate as FuncKeyTemplateSchema
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping as FuncKeyMappingSchema
-from xivo_dao.alchemy.func_key import FuncKey as FuncKeySchema
-from xivo_dao.alchemy.func_key_type import FuncKeyType as FuncKeyTypeSchema
-from xivo_dao.alchemy.func_key_destination_type import FuncKeyDestinationType as FuncKeyDestinationTypeSchema
-
 from xivo_dao.data_handler.exception import ElementCreationError
 from xivo_dao.data_handler.exception import ElementDeletionError
 from xivo_dao.data_handler.func_key_template import dao
@@ -33,16 +29,8 @@ from xivo_dao.data_handler.func_key.model import FuncKey
 
 class TestFuncKeyTemplateDao(DAOTestCase):
 
-    tables = [
-        FuncKeyTemplateSchema,
-        FuncKeyMappingSchema,
-        FuncKeySchema,
-        FuncKeyTypeSchema,
-        FuncKeyDestinationTypeSchema,
-    ]
-
     def setUp(self):
-        self.empty_tables()
+        DAOTestCase.setUp(self)
         func_key_type_row = self.add_func_key_type(name='speeddial')
         destination_type_row = self.add_func_key_destination_type(id=1, name='user')
 

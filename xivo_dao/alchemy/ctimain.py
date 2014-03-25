@@ -15,8 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column, Sequence
+from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String
+
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -24,7 +25,7 @@ class CtiMain(Base):
 
     __tablename__ = 'ctimain'
 
-    id = Column(Integer, Sequence('ctimain_id_seq'), primary_key=True)
+    id = Column(Integer, primary_key=True)
     commandset = Column(String(20))
     ami_ip = Column(String(16))
     ami_port = Column(Integer)
@@ -32,16 +33,16 @@ class CtiMain(Base):
     ami_password = Column(String(64))
     cti_ip = Column(String(16))
     cti_port = Column(Integer)
-    cti_active = Column(Integer, nullable=False, default=1)
+    cti_active = Column(Integer, nullable=False, server_default='1')
     ctis_ip = Column(String(16))
     ctis_port = Column(Integer)
-    ctis_active = Column(Integer, nullable=False, default=1)
+    ctis_active = Column(Integer, nullable=False, server_default='1')
     webi_ip = Column(String(16))
     webi_port = Column(Integer)
-    webi_active = Column(Integer, nullable=False, default=1)
+    webi_active = Column(Integer, nullable=False, server_default='1')
     info_ip = Column(String(16))
     info_port = Column(Integer)
-    info_active = Column(Integer, nullable=False, default=1)
+    info_active = Column(Integer, nullable=False, server_default='1')
     tlscertfile = Column(String(128))
     tlsprivkeyfile = Column(String(128))
     socket_timeout = Column(Integer)

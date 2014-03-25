@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.db_manager import Base, Type
+from xivo_dao.helpers.db_manager import Base
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String, Enum
 
@@ -30,6 +30,6 @@ class SIPAuthentication(Base):
     secretmode = Column(Enum('md5',
                              'clear',
                              name='sipauthentication_secretmode',
-                             metadata=Type.metadata), nullable=False)
+                             metadata=Base.metadata), nullable=False)
     secret = Column(String(255), nullable=False)
     realm = Column(String(1024), nullable=False)

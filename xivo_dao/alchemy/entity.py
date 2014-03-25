@@ -17,6 +17,7 @@
 
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String, TEXT
+
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -27,16 +28,16 @@ class Entity(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(64), nullable=False)
     displayname = Column(String(128), nullable=False)
-    phonenumber = Column(String(40), nullable=False, default='')
-    faxnumber = Column(String(40), nullable=False, default='')
-    email = Column(String(255), nullable=False, default='')
-    url = Column(String(255), nullable=False, default='')
-    address1 = Column(String(30), nullable=False, default='')
-    address2 = Column(String(30), nullable=False, default='')
-    city = Column(String(128), nullable=False, default='')
-    state = Column(String(128), nullable=False, default='')
-    zipcode = Column(String(16), nullable=False, default='')
-    country = Column(String(3), nullable=False, default='')
-    disable = Column(Integer, nullable=False, default=0)
-    dcreate = Column(Integer, nullable=False, default=0)
-    description = Column(TEXT, nullable=False, default='')
+    phonenumber = Column(String(40), nullable=False, server_default='')
+    faxnumber = Column(String(40), nullable=False, server_default='')
+    email = Column(String(255), nullable=False, server_default='')
+    url = Column(String(255), nullable=False, server_default='')
+    address1 = Column(String(30), nullable=False, server_default='')
+    address2 = Column(String(30), nullable=False, server_default='')
+    city = Column(String(128), nullable=False, server_default='')
+    state = Column(String(128), nullable=False, server_default='')
+    zipcode = Column(String(16), nullable=False, server_default='')
+    country = Column(String(3), nullable=False, server_default='')
+    disable = Column(Integer, nullable=False, server_default='0')
+    dcreate = Column(Integer, nullable=False, server_default='0')
+    description = Column(TEXT, nullable=False, server_default='')

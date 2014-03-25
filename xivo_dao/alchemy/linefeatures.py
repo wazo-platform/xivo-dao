@@ -15,12 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.db_manager import Base
 from sqlalchemy.types import Integer, String, Text
 from sqlalchemy.schema import Column, UniqueConstraint
 
+from xivo_dao.helpers.db_manager import Base
+
 
 class LineFeatures(Base):
+
     __tablename__ = 'linefeatures'
     __table_args__ = (
         UniqueConstraint('name'),
@@ -35,8 +37,8 @@ class LineFeatures(Base):
     number = Column(String(40))
     context = Column(String(39), nullable=False)
     provisioningid = Column(Integer, nullable=False)
-    num = Column(Integer, default=0)
+    num = Column(Integer, server_default='0')
     ipfrom = Column(String(15))
-    commented = Column(Integer, nullable=False, default=0)
+    commented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text)
     protocol = Column(String(10))

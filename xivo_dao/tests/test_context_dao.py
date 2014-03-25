@@ -19,16 +19,10 @@ from xivo_dao import context_dao
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.context import Context
 from xivo_dao.alchemy.contexttype import ContextType
-from xivo_dao.alchemy.contextinclude import ContextInclude
 from xivo_dao.alchemy.contextnumbers import ContextNumbers
 
 
 class TestContextDAO(DAOTestCase):
-
-    tables = [Context, ContextType, ContextInclude, ContextNumbers]
-
-    def setUp(self):
-        self.empty_tables()
 
     def _insert_context(self, name, displayname=None, contexttype_name='internal'):
         contexttype = ContextType()

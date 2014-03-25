@@ -15,8 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column, ForeignKey, Sequence
+from sqlalchemy.schema import Column, ForeignKey
 from sqlalchemy.types import Integer, String
+from sqlalchemy.orm import relationship
+
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -24,7 +26,10 @@ class CtiProfile(Base):
 
     __tablename__ = 'cti_profile'
 
-    id = Column(Integer, Sequence('cti_profile_id_seq'), primary_key=True)
+    id = Column(Integer, primary_key=True)
     name = Column(String(255), nullable=False)
     presence_id = Column(Integer, ForeignKey("ctipresences.id"))
     phonehints_id = Column(Integer, ForeignKey("ctiphonehintsgroup.id"))
+
+    ctipresences = relationship("CtiPresences", foreign_keys=presence_id)
+    ctiphonehintsgroup = relationship("CtiPhoneHintsGroup", foreign_keys=phonehints_id)

@@ -68,6 +68,7 @@ def _new_cel(**kwargs):
 
 
 class TestCELChannel(unittest.TestCase):
+
     def setUp(self):
         self._datetime_gen = _new_datetime_generator()
 

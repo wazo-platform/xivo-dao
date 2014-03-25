@@ -23,11 +23,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 class TestGroupDAO(DAOTestCase):
 
-    tables = [GroupFeatures, QueueMember]
-
-    def setUp(self):
-        self.empty_tables()
-
     def test_get_name(self):
         group = self._insert_group('test_name', '1234', 'my_ctx')
 

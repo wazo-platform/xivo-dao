@@ -17,6 +17,7 @@
 
 from sqlalchemy.schema import Column
 from sqlalchemy.types import String
+
 from xivo_dao.helpers.db_manager import Base
 
 

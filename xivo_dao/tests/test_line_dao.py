@@ -16,14 +16,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo.asterisk.extension import Extension
+from xivo_dao import line_dao, user_line_dao
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.usersip import UserSIP
-from xivo_dao import line_dao, user_line_dao
-from xivo_dao.alchemy.ctiphonehints import CtiPhoneHints
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
-from xivo_dao.alchemy.userfeatures import UserFeatures
-from xivo_dao.alchemy.userfeatures import test_dependencies as user_test_dependencies
 from xivo_dao.tests.test_dao import DAOTestCase
 
 USER_ID = 5
@@ -31,20 +28,6 @@ LINE_NUMBER = '1666'
 
 
 class TestLineFeaturesDAO(DAOTestCase):
-
-    tables = [
-        LineFeatures,
-        SCCPLine,
-        UserSIP,
-        UserFeatures,
-        CtiPhoneHints,
-        ExtensionSchema
-    ]
-
-    tables += user_test_dependencies
-
-    def setUp(self):
-        self.empty_tables()
 
     def _insert_sccpline(self, sccpline_id):
         sccpline = SCCPLine()

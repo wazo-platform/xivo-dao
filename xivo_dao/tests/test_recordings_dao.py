@@ -15,23 +15,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+import copy
 from datetime import datetime
+
 from xivo_dao import recordings_dao
-from xivo_dao.alchemy.agentfeatures import AgentFeatures
-from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.record_campaigns import RecordCampaigns
 from xivo_dao.alchemy.recordings import Recordings
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.tests.test_preriquisites import recording_preriquisites
-import copy
 
 
 class TestRecordingDao(DAOTestCase):
 
-    tables = [QueueFeatures, AgentFeatures, Recordings, RecordCampaigns]
-
     def setUp(self):
-        self.empty_tables()
+        DAOTestCase.setUp(self)
         recording_preriquisites(self.session)
         self._insert_campaign()
         self._create_sample_recording()

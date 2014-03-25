@@ -28,11 +28,6 @@ from xivo_dao.data_handler.exception import ElementEditionError
 
 class TestConfigurationDao(DAOTestCase):
 
-    tables = [CtiMain]
-
-    def setUp(self):
-        self.empty_tables()
-
     def test_is_live_reload_enabled(self):
         ctimain = CtiMain(live_reload_conf=0)
         self.add_me(ctimain)

@@ -19,21 +19,12 @@ from mock import patch, Mock
 from sqlalchemy.exc import SQLAlchemyError
 
 from xivo_dao import callfilter_dao
-from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.callfilter import Callfilter
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
-from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
-from xivo_dao.alchemy.extension import Extension as ExtensionSchema
-from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
-from xivo_dao.alchemy.userfeatures import test_dependencies as user_dependencies
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class BaseTestCallFilterDAO(DAOTestCase):
-
-    tables = [Callfilter, Callfiltermember]
-
-    def setUp(self):
-        self.empty_tables()
 
     def _insert_call_filter(self, name):
         callfilter = Callfilter()
@@ -56,14 +47,6 @@ class BaseTestCallFilterDAO(DAOTestCase):
 
 
 class TestGetSecretariesIdByContext(BaseTestCallFilterDAO):
-
-    tables = BaseTestCallFilterDAO.tables + [
-        UserLineSchema,
-        ExtensionSchema,
-        UserSchema
-    ]
-
-    tables += user_dependencies
 
     def _create_user_and_add_to_filter(self, filter_id, role, context='mycontext'):
         user_line_row = self.add_user_line_with_exten(context=context)

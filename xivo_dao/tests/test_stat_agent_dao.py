@@ -22,11 +22,6 @@ from xivo_dao.alchemy.stat_agent import StatAgent
 
 class TestStatAgentDAO(DAOTestCase):
 
-    tables = [StatAgent]
-
-    def setUp(self):
-        self.empty_tables()
-
     def test_id_from_name(self):
         agent = self._insert_agent('Agent/1234')
 

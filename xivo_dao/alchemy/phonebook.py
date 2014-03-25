@@ -17,7 +17,8 @@
 
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String, Text, Enum, LargeBinary
-from xivo_dao.helpers.db_manager import Base, Type
+
+from xivo_dao.helpers.db_manager import Base
 
 
 class Phonebook(Base):
@@ -25,13 +26,15 @@ class Phonebook(Base):
     __tablename__ = 'phonebook'
 
     id = Column(Integer, primary_key=True)
-    title = Column(Enum(('mr', 'mrs', 'ms'), name='phonebook_title', metadata=Type.metadata),
+    title = Column(Enum('mr', 'mrs', 'ms',
+                        name='phonebook_title',
+                        metadata=Base.metadata),
                    nullable=False)
-    firstname = Column(String(128), nullable=False, default='')
-    lastname = Column(String(128), nullable=False, default='')
-    displayname = Column(String(64), nullable=False, default='')
-    society = Column(String(128), nullable=False, default='')
-    email = Column(String(255), nullable=False, default='')
-    url = Column(String(255), nullable=False, default='')
+    firstname = Column(String(128), nullable=False, server_default='')
+    lastname = Column(String(128), nullable=False, server_default='')
+    displayname = Column(String(64), nullable=False, server_default='')
+    society = Column(String(128), nullable=False, server_default='')
+    email = Column(String(255), nullable=False, server_default='')
+    url = Column(String(255), nullable=False, server_default='')
     image = Column(LargeBinary)
     description = Column(Text, nullable=False)

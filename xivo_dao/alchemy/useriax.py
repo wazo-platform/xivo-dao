@@ -15,9 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.db_manager import Base
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String, Text
+
+from xivo_dao.helpers.db_manager import Base
 
 
 class UserIAX(Base):
@@ -28,18 +29,18 @@ class UserIAX(Base):
     name = Column(String(40), nullable=False)
     type = Column(String(8), nullable=False)
     username = Column(String(80))
-    secret = Column(String(80), nullable=False, default='')
-    dbsecret = Column(String(255), nullable=False, default='')
+    secret = Column(String(80), nullable=False, server_default='')
+    dbsecret = Column(String(255), nullable=False, server_default='')
     context = Column(String(39))
     language = Column(String(20))
     accountcode = Column(String(20))
-    amaflags = Column(String(16), nullable=False, default='default')
+    amaflags = Column(String(16), nullable=False, server_default='default')
     mailbox = Column(String(80))
     callerid = Column(String(160))
     fullname = Column(String(80))
     cid_number = Column(String(80))
-    trunk = Column(Integer, nullable=False, default=0)
-    auth = Column(String(16), nullable=False, default='plaintext,md5')
+    trunk = Column(Integer, nullable=False, server_default='0')
+    auth = Column(String(16), nullable=False, server_default='plaintext,md5')
     encryption = Column(String(8))
     forceencryption = Column(String(8))
     maxauthreq = Column(Integer)
@@ -50,11 +51,11 @@ class UserIAX(Base):
     codecpriority = Column(String(16))
     jitterbuffer = Column(Integer)
     forcejitterbuffer = Column(Integer)
-    sendani = Column(Integer, nullable=False, default=0)
-    qualify = Column(String(4), nullable=False, default='no')
-    qualifysmoothing = Column(Integer, nullable=False, default=0)
-    qualifyfreqok = Column(Integer, nullable=False, default=60000)
-    qualifyfreqnotok = Column(Integer, nullable=False, default=10000)
+    sendani = Column(Integer, nullable=False, server_default='0')
+    qualify = Column(String(4), nullable=False, server_default='no')
+    qualifysmoothing = Column(Integer, nullable=False, server_default='0')
+    qualifyfreqok = Column(Integer, nullable=False, server_default='60000')
+    qualifyfreqnotok = Column(Integer, nullable=False, server_default='10000')
     timezone = Column(String(80))
     disallow = Column(String(100))
     allow = Column(Text)
@@ -64,18 +65,18 @@ class UserIAX(Base):
     permit = Column(String(31))
     defaultip = Column(String(255))
     sourceaddress = Column(String(255))
-    setvar = Column(String(100), nullable=False, default='')
-    host = Column(String(255), nullable=False, default='dynamic')
+    setvar = Column(String(100), nullable=False, server_default='')
+    host = Column(String(255), nullable=False, server_default='dynamic')
     port = Column(Integer)
     mask = Column(String(15))
     regexten = Column(String(80))
     peercontext = Column(String(80))
-    ipaddr = Column(String(255), nullable=False, default='')
-    regseconds = Column(Integer, nullable=False, default=0)
+    ipaddr = Column(String(255), nullable=False, server_default='')
+    regseconds = Column(Integer, nullable=False, server_default='0')
     immediate = Column(Integer)
     keyrotate = Column(Integer)
     parkinglot = Column(Integer)
-    protocol = Column(String(8), nullable=False, default='iax')
+    protocol = Column(String(8), nullable=False, server_default='iax')
     category = Column(String(8))
-    commented = Column(Integer, nullable=False, default=0)
-    requirecalltoken = Column(String(4), nullable=False, default='no')
+    commented = Column(Integer, nullable=False, server_default='0')
+    requirecalltoken = Column(String(4), nullable=False, server_default='no')

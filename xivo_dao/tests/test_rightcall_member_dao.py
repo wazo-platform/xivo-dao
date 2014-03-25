@@ -16,17 +16,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao import rightcall_member_dao
-from xivo_dao.alchemy.rightcall import RightCall
 from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestRightCallMemberDAO(DAOTestCase):
-
-    tables = [RightCall, RightCallMember]
-
-    def setUp(self):
-        self.empty_tables()
 
     def test_add_user_to_rightcall(self):
         userid = 1

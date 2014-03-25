@@ -15,46 +15,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, equal_to, all_of, has_property, is_not, has_length, none
+from hamcrest import *
+from mock import patch, Mock
+from sqlalchemy.exc import SQLAlchemyError
+
 from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
-from xivo_dao.alchemy.user_line import UserLine
-from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
-from xivo_dao.alchemy.userfeatures import test_dependencies as user_test_dependencies
-from xivo_dao.data_handler.line import dao as line_dao
-from xivo_dao.data_handler.extension import dao as extension_dao
-from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema
-from xivo_dao.alchemy.useriax import UserIAX as UserIAXSchema
-from xivo_dao.alchemy.usercustom import UserCustom as UserCustomSchema
 from xivo_dao.alchemy.sccpline import SCCPLine as SCCPLineSchema
 from xivo_dao.data_handler.line.model import LineSIP, LineSCCP, LineIAX, LineCUSTOM, \
     LineOrdering
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementCreationError, ElementDeletionError, ElementEditionError
-from sqlalchemy.exc import SQLAlchemyError
-from mock import patch, Mock
-from hamcrest.library.collection.issequence_containinginorder import contains
-from hamcrest.library.collection.issequence_containing import has_items
+from xivo_dao.data_handler.line import dao as line_dao
+from xivo_dao.data_handler.extension import dao as extension_dao
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestLineDao(DAOTestCase):
-
-    tables = [
-        UserSchema,
-        Extension,
-        LineSchema,
-        UserLine,
-        UserSIPSchema,
-        UserIAXSchema,
-        UserCustomSchema,
-        SCCPLineSchema
-    ]
-
-    tables += user_test_dependencies
-
-    def setUp(self):
-        self.empty_tables()
 
     def test_get(self):
         line_name = 'sdklfj'

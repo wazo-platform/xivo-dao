@@ -26,12 +26,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 class TestCtiServiceDAO(DAOTestCase):
 
-    tables = [CtiProfile, CtiPhoneHintsGroup,
-              CtiPresences, CtiProfileService, CtiService]
-
-    def setUp(self):
-        self.empty_tables()
-
     def test_get_name(self):
         cti_profile = CtiProfile()
         cti_profile.name = 'test_name'

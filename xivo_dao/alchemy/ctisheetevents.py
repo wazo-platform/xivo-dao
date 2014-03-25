@@ -15,8 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column, Sequence
+from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String
+
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -24,7 +25,7 @@ class CtiSheetEvents(Base):
 
     __tablename__ = 'ctisheetevents'
 
-    id = Column(Integer, Sequence('ctisheetevents_id_seq'), primary_key=True)
+    id = Column(Integer, primary_key=True)
     incomingdid = Column(String(50))
     hangup = Column(String(50))
     dial = Column(String(50))

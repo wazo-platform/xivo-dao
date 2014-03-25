@@ -15,9 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.db_manager import Base
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String, Text
+
+from xivo_dao.helpers.db_manager import Base
 
 
 class SCCPLine(Base):
@@ -29,7 +30,7 @@ class SCCPLine(Base):
     context = Column(String(39), nullable=False)
     cid_name = Column(String(80), nullable=False)
     cid_num = Column(String(80), nullable=False)
-    protocol = Column(String(8), nullable=False, default='sccp')
+    protocol = Column(String(8), nullable=False, server_default='sccp')
     allow = Column(Text)
     disallow = Column(String(100))
-    commented = Column(Integer, nullable=False, default=0)
+    commented = Column(Integer, nullable=False, server_default='0')

@@ -17,6 +17,8 @@
 
 from sqlalchemy.schema import Column, ForeignKey
 from sqlalchemy.types import String, Integer, DateTime
+from sqlalchemy.orm import relationship
+
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -33,3 +35,6 @@ class Recordings(Base):
     filename = Column(String(1024))
     campaign_id = Column(Integer, ForeignKey('record_campaign.id'))
     agent_id = Column(Integer, ForeignKey('agentfeatures.id'))
+
+    record_campaign = relationship("RecordCampaigns", foreign_keys=campaign_id)
+    agentfeatures = relationship("AgentFeatures", foreign_keys=agent_id)

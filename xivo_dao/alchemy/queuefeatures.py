@@ -16,12 +16,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION
-from sqlalchemy.schema import Column, ForeignKeyConstraint
+from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String
+
 from xivo_dao.helpers.db_manager import Base
-from xivo_dao.alchemy.record_campaigns import RecordCampaigns
-from xivo_dao.alchemy.stat_call_on_queue import StatCallOnQueue
-from xivo_dao.alchemy.stat_queue_periodic import StatQueuePeriodic
 
 
 class QueueFeatures(Base):
@@ -31,25 +29,21 @@ class QueueFeatures(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(128), nullable=False)
     displayname = Column(String(128), nullable=False)
-    number = Column(String(40), nullable=False, default='')
+    number = Column(String(40), nullable=False, server_default='')
     context = Column(String(39))
-    data_quality = Column(Integer, nullable=False, default=0)
-    hitting_callee = Column(Integer, nullable=False, default=0)
-    hitting_caller = Column(Integer, nullable=False, default=0)
-    retries = Column(Integer, nullable=False, default=0)
-    ring = Column(Integer, nullable=False, default=0)
-    transfer_user = Column(Integer, nullable=False, default=0)
-    transfer_call = Column(Integer, nullable=False, default=0)
-    write_caller = Column(Integer, nullable=False, default=0)
-    write_calling = Column(Integer, nullable=False, default=0)
-    url = Column(String(255), nullable=False, default='')
-    announceoverride = Column(String(128), nullable=False, default='')
-    timeout = Column(Integer, nullable=False, default=0)
+    data_quality = Column(Integer, nullable=False, server_default='0')
+    hitting_callee = Column(Integer, nullable=False, server_default='0')
+    hitting_caller = Column(Integer, nullable=False, server_default='0')
+    retries = Column(Integer, nullable=False, server_default='0')
+    ring = Column(Integer, nullable=False, server_default='0')
+    transfer_user = Column(Integer, nullable=False, server_default='0')
+    transfer_call = Column(Integer, nullable=False, server_default='0')
+    write_caller = Column(Integer, nullable=False, server_default='0')
+    write_calling = Column(Integer, nullable=False, server_default='0')
+    url = Column(String(255), nullable=False, server_default='')
+    announceoverride = Column(String(128), nullable=False, server_default='')
+    timeout = Column(Integer, nullable=False, server_default='0')
     preprocess_subroutine = Column(String(39))
-    announce_holdtime = Column(Integer, nullable=False, default=0)
+    announce_holdtime = Column(Integer, nullable=False, server_default='0')
     waittime = Column(Integer)
     waitratio = Column(DOUBLE_PRECISION)
-
-ForeignKeyConstraint(columns=[QueueFeatures.id], refcolumns=[StatCallOnQueue.queue_id], ondelete="CASCADE")
-ForeignKeyConstraint(columns=[QueueFeatures.id], refcolumns=[StatQueuePeriodic.queue_id], ondelete="CASCADE")
-ForeignKeyConstraint(columns=[QueueFeatures.id], refcolumns=[RecordCampaigns.queue_id], ondelete="CASCADE")

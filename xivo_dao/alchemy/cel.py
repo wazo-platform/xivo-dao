@@ -16,17 +16,23 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, ForeignKey
+from sqlalchemy.schema import Column, ForeignKey, Index
 from sqlalchemy.types import DateTime, Integer, String
-from xivo_dao.helpers.db_manager import Base
 
-from xivo_dao.alchemy.call_log import CallLog
+from xivo_dao.helpers.db_manager import Base
 
 
 class CEL(Base):
-    __tablename__ = 'cel'
 
-    id = Column(Integer, primary_key=True)
+    __tablename__ = 'cel'
+    __table_args__ = (
+        Index('cel__idx__call_log_id', 'call_log_id'),
+        Index('cel__idx__eventtime', 'eventtime'),
+        Index('cel__idx__linkedid', 'linkedid'),
+        Index('cel__idx__uniqueid', 'uniqueid'),
+    )
+
+    id = Column(Integer, primary_key=True, nullable=False)
     eventtype = Column(String(30), nullable=False)
     eventtime = Column(DateTime, nullable=False)
     userdeftype = Column(String(255), nullable=False)
@@ -48,4 +54,5 @@ class CEL(Base):
     userfield = Column(String(255), nullable=False)
     peer = Column(String(80), nullable=False)
     call_log_id = Column(Integer, ForeignKey('call_log.id'))
-    call_log = relationship(CallLog, backref='cels')
+
+    call_log = relationship('CallLog', foreign_keys=call_log_id, backref='cels')

@@ -16,18 +16,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao.alchemy.voicemail import Voicemail
 from xivo_dao import voicemail_dao
+from xivo_dao.alchemy.voicemail import Voicemail
 from xivo_dao.alchemy.contextmember import ContextMember
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class VoicemailDAOTestCase(DAOTestCase):
-
-    tables = [Voicemail, ContextMember]
-
-    def setUp(self):
-        self.empty_tables()
 
     def _insert_voicemail(self, mailbox, context='default'):
         voicemail = Voicemail()

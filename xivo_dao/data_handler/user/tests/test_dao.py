@@ -15,23 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, equal_to, has_length, has_property, all_of, has_items, contains, is_, none
+from hamcrest import *
 from mock import patch, Mock
 from sqlalchemy.exc import SQLAlchemyError
 
-from xivo_dao.alchemy.callfilter import Callfilter
-from xivo_dao.alchemy.callfiltermember import Callfiltermember
-from xivo_dao.alchemy.dialaction import Dialaction
-from xivo_dao.alchemy.extension import Extension as ExtensionSchema
-from xivo_dao.alchemy.phonefunckey import PhoneFunckey
-from xivo_dao.alchemy.queuemember import QueueMember
-from xivo_dao.alchemy.rightcallmember import RightCallMember
-from xivo_dao.alchemy.schedulepath import SchedulePath
-from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
-from xivo_dao.alchemy.userfeatures import test_dependencies as user_test_dependencies
-from xivo_dao.alchemy.voicemail import Voicemail as VoicemailSchema
-
 from xivo_dao.data_handler.exception import ElementCreationError
 from xivo_dao.data_handler.exception import ElementEditionError
 from xivo_dao.data_handler.exception import ElementNotExistsError
@@ -41,29 +29,7 @@ from xivo_dao.data_handler.user.model import UserOrdering
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
-class TestUserDAO(DAOTestCase):
-
-    tables = [
-        Callfilter,
-        Callfiltermember,
-        Dialaction,
-        PhoneFunckey,
-        QueueMember,
-        RightCallMember,
-        SchedulePath,
-        UserSchema,
-        ExtensionSchema,
-        UserLine,
-        VoicemailSchema,
-    ]
-
-    tables += user_test_dependencies
-
-    def setUp(self):
-        self.empty_tables()
-
-
-class TestGet(TestUserDAO):
+class TestGet(DAOTestCase):
 
     def test_get_main_user_by_line_id_not_found(self):
         line_id = 654
@@ -143,7 +109,7 @@ class TestGet(TestUserDAO):
         self.assertRaises(LookupError, user_dao.get_by_number_context, number, context)
 
 
-class TestFind(TestUserDAO):
+class TestFind(DAOTestCase):
 
     def test_find_all_no_users(self):
         expected = []
@@ -349,7 +315,7 @@ class TestFind(TestUserDAO):
         assert_that(user, is_(none()))
 
 
-class TestCreate(TestUserDAO):
+class TestCreate(DAOTestCase):
 
     def prepare_user(self, **kwargs):
         private_template_row = self.add_func_key_template(private=True)
@@ -484,7 +450,7 @@ class TestCreate(TestUserDAO):
         session.rollback.assert_called_once_with()
 
 
-class TestEdit(TestUserDAO):
+class TestEdit(DAOTestCase):
 
     def test_edit(self):
         firstname = 'Robert'
@@ -589,7 +555,7 @@ class TestEdit(TestUserDAO):
         session.rollback.assert_called_once_with()
 
 
-class TestDelete(TestUserDAO):
+class TestDelete(DAOTestCase):
 
     def test_delete(self):
         firstname = 'Gadou'
@@ -608,7 +574,7 @@ class TestDelete(TestUserDAO):
         assert_that(row, equal_to(None))
 
 
-class TestIsCtiEnabled(TestUserDAO):
+class TestIsCtiEnabled(DAOTestCase):
 
     def test_is_cti_enabled(self):
         user = self.add_user(firstname='Pierre', enableclient=1)

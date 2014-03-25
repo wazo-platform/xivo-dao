@@ -29,11 +29,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 class TestStatCallOnQueueDAO(DAOTestCase):
 
-    tables = [StatCallOnQueue, StatQueue, StatAgent]
-
-    def setUp(self):
-        self.empty_tables()
-
     @staticmethod
     def _build_date(year, month, day, hour=0, minute=0, second=0, micro=0):
         return datetime.datetime(year, month, day, hour, minute, second, micro).strftime("%Y-%m-%d %H:%M:%S.%f")

@@ -18,10 +18,12 @@
 from hamcrest import assert_that, contains
 from mock import Mock
 from unittest import TestCase
+
 from xivo_dao.data_handler.call_log.model import CallLog
 
 
 class TestCallLogModel(TestCase):
+
     def setUp(self):
         self.call_log = CallLog()
 

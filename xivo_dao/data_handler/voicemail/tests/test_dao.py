@@ -15,31 +15,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from mock import Mock, patch
 from hamcrest import *
-
+from mock import Mock, patch
 from sqlalchemy.exc import SQLAlchemyError
-from xivo_dao.tests.test_dao import DAOTestCase
+
 from xivo_dao.alchemy.voicemail import Voicemail as VoicemailSchema
-from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema
-from xivo_dao.alchemy.userfeatures import test_dependencies
-from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.alchemy.incall import Incall as IncallSchema
 from xivo_dao.alchemy.dialaction import Dialaction as DialactionSchema
 from xivo_dao.data_handler.voicemail import dao as voicemail_dao
 from xivo_dao.data_handler.voicemail.model import Voicemail, VoicemailOrder
 from xivo_dao.data_handler.exception import ElementCreationError, \
     ElementDeletionError, ElementEditionError
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestFindAllVoicemail(DAOTestCase):
-
-    tables = [
-        VoicemailSchema
-    ]
-
-    def setUp(self):
-        self.empty_tables()
 
     def _has_voicemail(self, voicemail):
         matchers = []
@@ -393,15 +383,6 @@ class TestFindAllVoicemail(DAOTestCase):
 
 class TestGetVoicemail(DAOTestCase):
 
-    tables = [
-        VoicemailSchema,
-        UserSIPSchema,
-        UserSchema,
-    ] + test_dependencies
-
-    def setUp(self):
-        self.empty_tables()
-
     def test_get_by_number_context_with_no_voicemail(self):
         self.assertRaises(LookupError, voicemail_dao.get_by_number_context, '42', 'my_context')
 
@@ -518,13 +499,6 @@ class TestGetVoicemail(DAOTestCase):
 
 class TestCreateVoicemail(DAOTestCase):
 
-    tables = [
-        VoicemailSchema,
-    ]
-
-    def setUp(self):
-        self.empty_tables()
-
     def test_create(self):
         name = 'voicemail'
         number = '42'
@@ -564,13 +538,6 @@ class TestCreateVoicemail(DAOTestCase):
 
 
 class TestEditVoicemail(DAOTestCase):
-
-    tables = [
-        VoicemailSchema,
-    ]
-
-    def setUp(self):
-        self.empty_tables()
 
     def test_edit(self):
         number = '42'
@@ -661,9 +628,6 @@ class TestEditVoicemail(DAOTestCase):
 
 class VoicemailTestCase(DAOTestCase):
 
-    def setUp(self):
-        self.empty_tables()
-
     def create_voicemail(self, number, context):
         voicemail = self.mock_voicemail(number, context)
         voicemail_id = self.prepare_database(voicemail)
@@ -686,12 +650,6 @@ class VoicemailTestCase(DAOTestCase):
 
 
 class TestVoicemailDelete(VoicemailTestCase):
-
-    tables = [
-        VoicemailSchema,
-        IncallSchema,
-        DialactionSchema
-    ]
 
     def test_delete(self):
         voicemail = self.create_voicemail(number='42', context='default')
@@ -755,11 +713,6 @@ class TestVoicemailDelete(VoicemailTestCase):
 
 
 class TestIsVoicemailLinked(VoicemailTestCase):
-
-    tables = [
-        VoicemailSchema,
-        UserSchema,
-    ] + test_dependencies
 
     def test_is_voicemail_linked_no_links(self):
         voicemail = self.create_voicemail(number='42', context='default')

@@ -15,17 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.alchemy.stat_queue import StatQueue
 from xivo_dao import stat_queue_dao
+from xivo_dao.alchemy.stat_queue import StatQueue
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestStatQueueDAO(DAOTestCase):
-
-    tables = [StatQueue]
-
-    def setUp(self):
-        self.empty_tables()
 
     def test_id_from_name(self):
         queue = self._insert_queue('test_queue')

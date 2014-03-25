@@ -15,19 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, has_entries
-from xivo_dao.tests.test_dao import DAOTestCase
+from hamcrest import *
+
+from xivo_dao import ldap_dao
 from xivo_dao.alchemy.ldapfilter import LdapFilter
 from xivo_dao.alchemy.ldapserver import LdapServer
-from xivo_dao import ldap_dao
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestLdapDAO(DAOTestCase):
-
-    tables = [LdapServer, LdapFilter]
-
-    def setUp(self):
-        self.empty_tables()
 
     def test_find_ldapserver_with_id(self):
         ldapserver = self._insert_ldapserver(name='ldapserver_test')
