@@ -118,13 +118,6 @@ class TestFuncKeyDao(BaseTestFuncKeyDao):
         row = self.find_destination(destination, destination_id)
         assert_that(row, none())
 
-    @contextmanager
-    def mocked_session(self):
-        patcher = patch('xivo_dao.helpers.db_manager.AsteriskSession')
-        mock = patcher.start()
-        yield mock.return_value
-        patcher.stop()
-
 
 class TestFuncKeySearch(TestFuncKeyDao):
 
@@ -328,15 +321,17 @@ class TestFuncKeyCreate(TestFuncKeyDao):
 
         self.assert_func_key_row_created(queue_destination_row)
 
+    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
     @patch('xivo_dao.data_handler.func_key.dao.commit_or_abort')
-    def test_given_db_error_then_transaction_rollbacked(self, commit_or_abort):
+    def test_given_db_error_then_transaction_rollbacked(self, commit_or_abort, session_maker):
+        session = session_maker.return_value
         func_key = FuncKey(type='speeddial',
                            destination='user',
                            destination_id=1)
 
-        with self.mocked_session() as session:
-            dao.create(func_key)
-            commit_or_abort.assert_any_call(session, ElementCreationError, 'FuncKey')
+        dao.create(func_key)
+
+        commit_or_abort.assert_any_call(session, ElementCreationError, 'FuncKey')
 
     def assert_func_key_row_created(self, destination_row):
         row = (self.session.query(FuncKeySchema)
@@ -374,15 +369,17 @@ class TestFuncKeyDelete(TestFuncKeyDao):
         self.assert_func_key_deleted(func_key.id)
         self.assert_destination_deleted('queue', queue_row.id)
 
+    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
     @patch('xivo_dao.data_handler.func_key.dao.commit_or_abort')
-    def test_given_db_error_then_transaction_rollbacked(self, commit_or_abort):
+    def test_given_db_error_then_transaction_rollbacked(self, commit_or_abort, session_maker):
+        session = session_maker.return_value
         func_key = FuncKey(type='speeddial',
                            destination='user',
                            destination_id=1)
 
-        with self.mocked_session() as session:
-            dao.delete(func_key)
-            commit_or_abort.assert_any_call(session, ElementDeletionError, 'FuncKey')
+        dao.delete(func_key)
+
+        commit_or_abort.assert_any_call(session, ElementDeletionError, 'FuncKey')
 
     def assert_func_key_deleted(self, func_key_id):
         row = (self.session.query(FuncKeySchema)
