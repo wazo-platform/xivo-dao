@@ -22,7 +22,6 @@ from xivo_dao.helpers.abstract_model import SearchResult
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.data_handler.func_key.model import db_converter, QueryHelper
-from xivo_dao.alchemy.func_key import FuncKey as FuncKeySchema
 
 
 @daosession
@@ -73,11 +72,11 @@ def create(session, func_key):
 
 @daosession
 def delete(session, func_key):
-    func_key_query = (session.query(FuncKeySchema)
-                      .filter(FuncKeySchema.id == func_key.id))
+    helper = QueryHelper(session)
+    func_key_query = helper.delete_func_key(func_key.id)
+    destination_query = helper.delete_destination(func_key.destination,
+                                                  func_key.destination_id)
 
-    destination_query = QueryHelper(session).delete_destination(func_key.destination,
-                                                                func_key.destination_id)
     with commit_or_abort(session, ElementDeletionError, 'FuncKey'):
         destination_query.delete()
         func_key_query.delete()
