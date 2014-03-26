@@ -32,7 +32,7 @@ from xivo_dao.data_handler.exception import ElementCreationError, \
     ElementDeletionError, ElementEditionError
 
 
-class TestFindAllVoicemail(DAOTestCase):
+class TestSearchVoicemail(DAOTestCase):
 
     tables = [
         VoicemailSchema
@@ -49,14 +49,14 @@ class TestFindAllVoicemail(DAOTestCase):
 
         return all_of(instance_of(Voicemail), *matchers)
 
-    def test_find_all_no_voicemails(self):
-        result = voicemail_dao.find_all()
+    def test_search_no_voicemails(self):
+        result = voicemail_dao.search()
 
         assert_that(result, all_of(
             has_property('total', 0),
             has_property('items', [])))
 
-    def test_find_all_one_voicemail(self):
+    def test_search_one_voicemail(self):
         name = 'myvoicemail'
         context = 'default'
         number = '1000'
@@ -76,12 +76,12 @@ class TestFindAllVoicemail(DAOTestCase):
             ask_password=False,
         )
 
-        result = voicemail_dao.find_all()
+        result = voicemail_dao.search()
 
         assert_that(result.total, equal_to(1))
         assert_that(result.items, contains(self._has_voicemail(expected_voicemail)))
 
-    def test_find_all_two_voicemails(self):
+    def test_search_two_voicemails(self):
         context = 'default'
 
         voicemail_row1 = VoicemailSchema(fullname='voicemail1',
@@ -114,7 +114,7 @@ class TestFindAllVoicemail(DAOTestCase):
             ask_password=False,
         )
 
-        result = voicemail_dao.find_all()
+        result = voicemail_dao.search()
 
         assert_that(result.total, equal_to(2))
         assert_that(result.items, contains_inanyorder(
@@ -122,7 +122,7 @@ class TestFindAllVoicemail(DAOTestCase):
             self._has_voicemail(expected_voicemail2)
         ))
 
-    def test_find_all_with_limit(self):
+    def test_search_with_limit(self):
         context = 'default'
 
         voicemail_row1 = VoicemailSchema(fullname='voicemail1',
@@ -136,12 +136,12 @@ class TestFindAllVoicemail(DAOTestCase):
         self.add_me(voicemail_row1)
         self.add_me(voicemail_row2)
 
-        result = voicemail_dao.find_all(limit=1)
+        result = voicemail_dao.search(limit=1)
 
         assert_that(result.total, equal_to(2))
         assert_that(result.items, contains(instance_of(Voicemail)))
 
-    def test_find_all_with_order(self):
+    def test_search_with_order(self):
         context = 'default'
 
         voicemail_row1 = VoicemailSchema(fullname='voicemail1',
@@ -175,13 +175,13 @@ class TestFindAllVoicemail(DAOTestCase):
             ask_password=False,
         )
 
-        result = voicemail_dao.find_all(order=VoicemailOrder.name)
+        result = voicemail_dao.search(order=VoicemailOrder.name)
 
         assert_that(result.total, equal_to(2))
         assert_that(result.items, contains(self._has_voicemail(expected_voicemail1),
                                            self._has_voicemail(expected_voicemail2)))
 
-    def test_find_all_with_order_and_direction(self):
+    def test_search_with_order_and_direction(self):
         context = 'default'
 
         voicemail_row1 = VoicemailSchema(fullname='voicemail1',
@@ -215,13 +215,13 @@ class TestFindAllVoicemail(DAOTestCase):
             ask_password=False,
         )
 
-        result = voicemail_dao.find_all(order=VoicemailOrder.name, direction='desc')
+        result = voicemail_dao.search(order=VoicemailOrder.name, direction='desc')
 
         assert_that(result.total, equal_to(2))
         assert_that(result.items, contains(self._has_voicemail(expected_voicemail2),
                                            self._has_voicemail(expected_voicemail1)))
 
-    def test_find_all_with_skip_and_order(self):
+    def test_search_with_skip_and_order(self):
         context = 'default'
 
         voicemail_row1 = VoicemailSchema(fullname='voicemail1',
@@ -245,12 +245,12 @@ class TestFindAllVoicemail(DAOTestCase):
             ask_password=False,
         )
 
-        result = voicemail_dao.find_all(skip=1, order=VoicemailOrder.name)
+        result = voicemail_dao.search(skip=1, order=VoicemailOrder.name)
 
         assert_that(result.total, equal_to(2))
         assert_that(result.items, contains(self._has_voicemail(expected_voicemail2)))
 
-    def test_find_all_with_skip_and_limit(self):
+    def test_search_with_skip_and_limit(self):
         context = 'default'
 
         voicemail_row1 = VoicemailSchema(fullname='voicemail1',
@@ -279,12 +279,12 @@ class TestFindAllVoicemail(DAOTestCase):
             ask_password=False,
         )
 
-        result = voicemail_dao.find_all(skip=1, limit=1, order=VoicemailOrder.name)
+        result = voicemail_dao.search(skip=1, limit=1, order=VoicemailOrder.name)
 
         assert_that(result.total, equal_to(3))
         assert_that(result.items, contains(self._has_voicemail(expected_voicemail2)))
 
-    def test_find_all_with_search(self):
+    def test_search_with_search(self):
         context = 'default'
 
         voicemail_row1 = VoicemailSchema(fullname='voicemail1',
@@ -323,14 +323,14 @@ class TestFindAllVoicemail(DAOTestCase):
             ask_password=False,
         )
 
-        result = voicemail_dao.find_all(search='VOICEMAIL')
+        result = voicemail_dao.search(search='VOICEMAIL')
 
         assert_that(result.total, equal_to(2))
         assert_that(result.items, contains(
             self._has_voicemail(expected_voicemail1),
             self._has_voicemail(expected_voicemail3)))
 
-    def test_find_all_with_all_parameters(self):
+    def test_search_with_all_parameters(self):
         context = 'default'
 
         voicemail_row1 = VoicemailSchema(fullname='donotappear',
@@ -379,11 +379,11 @@ class TestFindAllVoicemail(DAOTestCase):
             ask_password=False,
         )
 
-        result = voicemail_dao.find_all(search='VOICEMAIL',
-                                        order=VoicemailOrder.name,
-                                        direction='desc',
-                                        skip=1,
-                                        limit=2)
+        result = voicemail_dao.search(search='VOICEMAIL',
+                                      order=VoicemailOrder.name,
+                                      direction='desc',
+                                      skip=1,
+                                      limit=2)
 
         assert_that(result.total, equal_to(4))
         assert_that(result.items, contains(

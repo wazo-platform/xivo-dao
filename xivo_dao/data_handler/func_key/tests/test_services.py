@@ -28,15 +28,15 @@ class TestFuncKeyService(TestCase):
     @patch('xivo_dao.data_handler.func_key.dao.search')
     def test_search(self, dao_search):
         search_result = dao_search.return_value = Mock()
-        term = 'term'
+        search = 'search'
         limit = 2
         skip = 1
         order = 'order'
         direction = 'desc'
 
-        result = services.search(term, limit, skip, order, direction)
+        result = services.search(search=search, limit=limit, skip=skip, order=order, direction=direction)
 
-        dao_search.assert_called_once_with(term, limit, skip, order, direction)
+        dao_search.assert_called_once_with(search=search, limit=limit, skip=skip, order=order, direction=direction)
         assert_that(result, equal_to(search_result))
 
     @patch('xivo_dao.data_handler.func_key.dao.get')

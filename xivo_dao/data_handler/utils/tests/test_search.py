@@ -18,6 +18,7 @@
 import unittest
 from mock import patch, Mock
 from hamcrest import assert_that, equal_to
+import sqlalchemy as sa
 
 from xivo_dao.data_handler.utils.search import SearchFilter
 
@@ -34,11 +35,13 @@ class TestSearchFilter(unittest.TestCase):
     @patch.object(SearchFilter, 'sort')
     @patch.object(SearchFilter, 'search_for')
     def test_search(self, search_for, sort, paginate):
-        term = ''
-        limit = 1
-        skip = 2
-        order = Mock()
-        direction = 'desc'
+        parameters = {
+            'search': '',
+            'limit': 1,
+            'skip': 2,
+            'order': Mock(),
+            'direction': 'desc',
+        }
 
         search_query = search_for.return_value = Mock()
         sort_query = sort.return_value = Mock()
@@ -46,11 +49,11 @@ class TestSearchFilter(unittest.TestCase):
         mock_items = paginate_query.all.return_value = Mock()
         mock_total = search_query.count.return_value = Mock()
 
-        items, total = self.search_filter.search(term, limit, skip, order, direction)
+        items, total = self.search_filter.search(parameters)
 
-        search_for.assert_called_once_with(self.base_query, term)
-        sort.assert_called_once_with(search_query, order, direction)
-        paginate.assert_called_once_with(sort_query, limit, skip)
+        search_for.assert_called_once_with(self.base_query, parameters['search'])
+        sort.assert_called_once_with(search_query, parameters['order'], parameters['direction'])
+        paginate.assert_called_once_with(sort_query, parameters['limit'], parameters['skip'])
 
         assert_that(items, equal_to(mock_items))
         assert_that(total, equal_to(mock_total))
@@ -60,19 +63,19 @@ class TestSearchFilter(unittest.TestCase):
 
         assert_that(search_query, equal_to(self.base_query))
 
-    @patch('xivo_dao.data_handler.utils.search.or_')
-    def test_search_for_with_term(self, sql_or):
+    def test_search_for_with_term(self):
         term = 'term'
-        mock_criteria = sql_or.return_value = Mock()
         search_query = self.base_query.filter.return_value = Mock()
         column1, column2 = self.columns
+        expected_expr = sa.sql.or_(
+            sa.sql.cast(column1, sa.String).ilike('%term%'),
+            sa.sql.cast(column2, sa.String).ilike('%term%')
+        )
 
         result = self.search_filter.search_for(self.base_query, term)
 
-        sql_or.assert_called_once_with(column1.ilike.return_value, column2.ilike.return_value)
-        self.base_query.filter.assert_called_once_with(mock_criteria)
-        column1.ilike.assert_called_once_with('%term%')
-        column2.ilike.assert_called_once_with('%term%')
+        result_expr = self.base_query.filter.call_args[0][0]
+        assert_that(str(expected_expr), equal_to(str(result_expr)))
         assert_that(result, equal_to(search_query))
 
     def test_paginate_no_parameters(self):

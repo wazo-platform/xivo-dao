@@ -25,9 +25,9 @@ from xivo_dao.data_handler.func_key.model import db_converter, QueryHelper
 
 
 @daosession
-def search(session, term=None, limit=None, skip=None, order=None, direction='asc'):
+def search(session, **parameters):
     search_filter = QueryHelper(session).search_filter()
-    rows, total = search_filter.search(term, limit, skip, order, direction)
+    rows, total = search_filter.search(parameters)
 
     func_keys = [db_converter.to_model(row) for row in rows]
     return SearchResult(total, func_keys)

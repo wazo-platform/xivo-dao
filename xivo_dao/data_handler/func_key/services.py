@@ -20,8 +20,8 @@ from xivo_dao.data_handler.func_key import validator
 from xivo_dao.data_handler.func_key import notifier
 
 
-def search(term=None, limit=None, skip=None, order=None, direction='asc'):
-    return dao.search(term, limit, skip, order, direction)
+def search(**parameters):
+    return dao.search(**parameters)
 
 
 def get(func_key_id):

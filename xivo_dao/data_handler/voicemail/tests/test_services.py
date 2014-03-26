@@ -30,31 +30,22 @@ from xivo_dao.helpers.abstract_model import SearchResult
 
 class TestVoicemail(unittest.TestCase):
 
-    @patch('xivo_dao.data_handler.voicemail.dao.find_all')
-    def test_find_all(self, mock_find_all):
+    @patch('xivo_dao.data_handler.voicemail.dao.search')
+    def test_search_with_parameters(self, mock_search):
         voicemails = Mock(SearchResult)
-        mock_find_all.return_value = voicemails
+        mock_search.return_value = voicemails
 
-        result = voicemail_services.find_all()
+        result = voicemail_services.search(skip=1,
+                                           limit=2,
+                                           order=VoicemailOrder.number,
+                                           direction='asc',
+                                           search='toto')
 
-        mock_find_all.assert_called_once_with(skip=None, limit=None, order=None, direction=None, search=None)
-        self.assertEquals(result, voicemails)
-
-    @patch('xivo_dao.data_handler.voicemail.dao.find_all')
-    def test_find_all_with_parameters(self, mock_find_all):
-        voicemails = Mock(SearchResult)
-        mock_find_all.return_value = voicemails
-
-        result = voicemail_services.find_all(skip=1,
-                                             limit=2,
-                                             order=VoicemailOrder.number,
-                                             direction='asc',
-                                             search='toto')
-
-        mock_find_all.assert_called_once_with(skip=1, limit=2,
-                                              order=VoicemailOrder.number,
-                                              direction='asc',
-                                              search='toto')
+        mock_search.assert_called_once_with(skip=1,
+                                            limit=2,
+                                            order=VoicemailOrder.number,
+                                            direction='asc',
+                                            search='toto')
 
         self.assertEquals(result, voicemails)
 

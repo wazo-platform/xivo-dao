@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.sql.expression import desc, asc, or_
+from sqlalchemy import String
+from sqlalchemy.sql.expression import desc, asc, or_, cast
 
 
 class SearchFilter(object):
@@ -25,10 +26,16 @@ class SearchFilter(object):
         self.columns = columns
         self.default_column = default_column
 
-    def search(self, term=None, limit=None, skip=None, order=None, direction='asc'):
-        search_query = self.search_for(self.base_query, term)
-        sorted_query = self.sort(search_query, order, direction)
-        paginated_query = self.paginate(sorted_query, limit, skip)
+    def search(self, parameters=None):
+        parameters = parameters or {}
+
+        search_query = self.search_for(self.base_query, parameters.get('search', None))
+        sorted_query = self.sort(search_query,
+                                 parameters.get('order', None),
+                                 parameters.get('direction', 'asc'))
+        paginated_query = self.paginate(sorted_query,
+                                        parameters.get('limit', None),
+                                        parameters.get('skip', None))
         return paginated_query.all(), search_query.count()
 
     def search_for(self, query, term=None):
@@ -37,7 +44,8 @@ class SearchFilter(object):
 
         criteria = []
         for column in self.columns:
-            criteria.append(column.ilike('%%%s%%' % term))
+            column_search = cast(column, String).ilike('%%%s%%' % term)
+            criteria.append(column_search)
 
         return self.base_query.filter(or_(*criteria))
 
