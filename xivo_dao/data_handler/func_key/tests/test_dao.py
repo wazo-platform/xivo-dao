@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, equal_to, instance_of, contains, is_not, \
-    none, has_property, contains_inanyorder
+from hamcrest import *
 from mock import patch
 
 from xivo_dao.alchemy.func_key import FuncKey as FuncKeySchema
