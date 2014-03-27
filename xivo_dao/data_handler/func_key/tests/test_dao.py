@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from contextlib import contextmanager
 from hamcrest import assert_that, equal_to, instance_of, contains, is_not, \
     none, has_property, contains_inanyorder
 from mock import patch
