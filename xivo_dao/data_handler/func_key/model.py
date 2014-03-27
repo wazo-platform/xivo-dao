@@ -89,7 +89,7 @@ class QueryHelper(object):
         return self._session.query(schema).filter(column == destination_id)
 
     def delete_func_key(self, func_key_id):
-        return self._session.query(FuncKeySchema)
+        return self._session.query(FuncKeySchema).filter(FuncKeySchema.id == func_key_id)
 
     def query(self):
         destination_id_col = self.column_mapping['destination_id']

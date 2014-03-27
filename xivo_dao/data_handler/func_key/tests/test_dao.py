@@ -369,6 +369,21 @@ class TestFuncKeyDelete(TestFuncKeyDao):
         self.assert_func_key_deleted(func_key.id)
         self.assert_destination_deleted('queue', queue_row.id)
 
+    def test_given_multiple_destinations_then_only_one_func_key_deleted(self):
+        user_row = self.add_user()
+        first_func_key = self.prepare_destination('user', user_row.id)
+
+        group_row = self.add_group()
+        self.prepare_destination('group', group_row.id)
+
+        dao.delete(first_func_key)
+
+        self.assert_func_key_deleted(first_func_key.id)
+        self.assert_destination_deleted('user', user_row.id)
+
+        existing_func_key = self.find_destination('group', group_row.id)
+        assert_that(existing_func_key, is_not(none()))
+
     @patch('xivo_dao.helpers.db_manager.AsteriskSession')
     @patch('xivo_dao.data_handler.func_key.dao.commit_or_abort')
     def test_given_db_error_then_transaction_rollbacked(self, commit_or_abort, session_maker):
