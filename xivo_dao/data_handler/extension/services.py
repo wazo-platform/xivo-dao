@@ -29,8 +29,8 @@ def get_by_exten_context(exten, context):
     return dao.get_by_exten_context(exten, context)
 
 
-def find_all(order=None, commented=False):
-    return dao.find_all(order=order, commented=commented)
+def find_all(order=None):
+    return dao.find_all(order=order)
 
 
 def find_by_exten(exten, order=None):

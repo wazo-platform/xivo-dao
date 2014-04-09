@@ -76,26 +76,13 @@ class TestFindAll(TestExtensionDao):
         assert_that(extens, has_length(2))
         assert_that(extens, has_items(exten1, exten2))
 
-    def test_find_all_without_commented(self):
-        expected = []
-        self.add_extension(exten='1234', commented=1)
+    def test_find_all_with_commented(self):
+        extension = self.prepare_extension(exten='1234', commented=1)
 
         extens = extension_dao.find_all()
 
-        assert_that(extens, equal_to(expected))
-
-    def test_find_all_including_commented(self):
-        exten = self.add_extension(exten='1234', commented=1)
-
-        result = extension_dao.find_all(commented=True)
-
-        assert_that(result, has_items(
-            all_of(
-                has_property('id', exten.id),
-                has_property('exten', exten.exten),
-                has_property('commented', True)
-            )
-        ))
+        assert_that(extens, has_length(1))
+        assert_that(extens, contains(extension))
 
 
 class TestFind(TestExtensionDao):
