@@ -90,6 +90,13 @@ class TestGet(TestUserDAO):
         assert_that(user.firstname, equal_to(user_row.firstname))
         assert_that(user.private_template_id, equal_to(user_row.func_key_private_template_id))
 
+    def test_get_commented(self):
+        user_row = self.add_user(firstname='Paul', commented=1)
+
+        user = user_dao.get(user_row.id)
+
+        assert_that(user.id, equal_to(user_row.id))
+
     def test_get_all_fields(self):
         user_row = self.add_user(firstname='Paul',
                                  lastname='Rogers',
@@ -154,6 +161,17 @@ class TestFind(TestUserDAO):
     def test_find_all_one_user(self):
         firstname = 'Pascal'
         user = self.add_user(firstname=firstname)
+
+        users = user_dao.find_all()
+        assert_that(users, has_length(1))
+
+        user_found = users[0]
+        assert_that(user_found, has_property('id', user.id))
+        assert_that(user_found, has_property('firstname', firstname))
+
+    def test_find_all_one_user_commented(self):
+        firstname = 'Pascal'
+        user = self.add_user(firstname=firstname, commented=1)
 
         users = user_dao.find_all()
         assert_that(users, has_length(1))
