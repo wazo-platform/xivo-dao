@@ -198,6 +198,20 @@ class TestLineDao(DAOTestCase):
                 has_property('name', name2))
         ))
 
+    def test_find_all_commented_line(self):
+        name = 'Pascal'
+        line_sip = self.add_usersip(name=name)
+        line = self.add_line(protocolid=line_sip.id,
+                             name=name,
+                             commented=1)
+
+        lines = line_dao.find_all()
+
+        assert_that(lines, has_length(1))
+        line_found = lines[0]
+        assert_that(line_found, has_property('id', line.id))
+        assert_that(line_found, has_property('name', name))
+
     def test_find_all_default_order_by_name_context(self):
         line_sip = self.add_usersip(name='xxx')
         line1 = self.add_line(protocolid=line_sip.id,
