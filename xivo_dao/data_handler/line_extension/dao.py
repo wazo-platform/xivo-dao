@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
+from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
 from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.data_handler.line_extension.exception import LineExtensionNotExistsError
@@ -99,6 +100,26 @@ def find_by_extension_id(session, extension_id):
         return None
 
     return db_converter.to_model(user_line_row)
+
+
+def get_by_extension_id(extension_id):
+    _check_extension_exists(extension_id)
+    line_extension = find_by_extension_id(extension_id)
+
+    if line_extension is None:
+        raise LineExtensionNotExistsError.from_extension_id(extension_id)
+
+    return line_extension
+
+
+@daosession
+def _check_extension_exists(session, extension_id):
+    count = (session.query(ExtensionSchema)
+             .filter(ExtensionSchema.id == extension_id)
+             .count())
+
+    if count == 0:
+        raise ElementNotExistsError('Extension', extension_id=extension_id)
 
 
 @daosession
