@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, all_of, equal_to, has_items, has_length, has_property, none
+from hamcrest import assert_that, all_of, equal_to, has_items, has_length, has_property, none, contains
 from mock import patch, Mock
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -23,7 +23,6 @@ from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 from xivo_dao.alchemy.userfeatures import test_dependencies as user_test_dependencies
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.data_handler.exception import ElementCreationError
-from xivo_dao.data_handler.exception import ElementDeletionError
 from xivo_dao.data_handler.exception import ElementEditionError
 from xivo_dao.data_handler.extension import dao as extension_dao
 from xivo_dao.data_handler.extension.model import Extension
@@ -43,6 +42,13 @@ class TestExtensionDao(DAOTestCase):
 
 class TestFindAll(TestExtensionDao):
 
+    def prepare_extension(self, **kwargs):
+        extension_row = self.add_extension(**kwargs)
+        return Extension(id=extension_row.id,
+                         exten=extension_row.exten,
+                         context=extension_row.context,
+                         commented=bool(extension_row.commented))
+
     def test_find_all_no_extens(self):
         expected = []
         extens = extension_dao.find_all()
@@ -51,54 +57,32 @@ class TestFindAll(TestExtensionDao):
 
     def test_find_all_one_exten(self):
         expected_exten = '12345'
-        exten = self.add_extension(exten=expected_exten)
+        extension = self.prepare_extension(exten=expected_exten)
 
         extens = extension_dao.find_all()
 
         assert_that(extens, has_length(1))
-        exten_found = extens[0]
-        assert_that(exten_found, has_property('id', exten.id))
-        assert_that(exten_found, has_property('exten', expected_exten))
+        assert_that(extens, contains(extension))
 
     def test_find_all_two_extens(self):
         expected_exten1 = '1234'
         expected_exten2 = '5678'
 
-        exten1 = self.add_extension(exten=expected_exten1)
-        exten2 = self.add_extension(exten=expected_exten2)
+        exten1 = self.prepare_extension(exten=expected_exten1)
+        exten2 = self.prepare_extension(exten=expected_exten2)
 
         extens = extension_dao.find_all()
 
         assert_that(extens, has_length(2))
-        assert_that(extens, has_items(
-            all_of(
-                has_property('id', exten1.id),
-                has_property('exten', expected_exten1)),
-            all_of(
-                has_property('id', exten2.id),
-                has_property('exten', expected_exten2))
-        ))
+        assert_that(extens, has_items(exten1, exten2))
 
-    def test_find_all_without_commented(self):
-        expected = []
-        self.add_extension(exten='1234', commented=1)
+    def test_find_all_with_commented(self):
+        extension = self.prepare_extension(exten='1234', commented=1)
 
         extens = extension_dao.find_all()
 
-        assert_that(extens, equal_to(expected))
-
-    def test_find_all_including_commented(self):
-        exten = self.add_extension(exten='1234', commented=1)
-
-        result = extension_dao.find_all(commented=True)
-
-        assert_that(result, has_items(
-            all_of(
-                has_property('id', exten.id),
-                has_property('exten', exten.exten),
-                has_property('commented', True)
-            )
-        ))
+        assert_that(extens, has_length(1))
+        assert_that(extens, contains(extension))
 
 
 class TestFind(TestExtensionDao):

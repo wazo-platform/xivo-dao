@@ -398,7 +398,7 @@ def _delete_custom_line(session, protocolid):
 
 def _new_query(session, order=None):
     order = order or DEFAULT_ORDER
-    return session.query(LineSchema).filter(LineSchema.commented == 0).order_by(*order)
+    return session.query(LineSchema).order_by(*order)
 
 
 @daosession

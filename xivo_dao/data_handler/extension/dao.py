@@ -66,8 +66,8 @@ def find(session, extension_id):
 
 
 @daosession
-def find_all(session, order=None, commented=False):
-    line_rows = _new_query(session, order, commented).all()
+def find_all(session, order=None):
+    line_rows = _new_query(session, order).all()
 
     return _rows_to_extension_model(line_rows)
 
@@ -163,10 +163,9 @@ def delete(session, extension):
         raise ElementDeletionError('Extension', e)
 
 
-def _new_query(session, order=None, commented=False):
+def _new_query(session, order=None):
     order = order or DEFAULT_ORDER
-    commented = int(commented)
-    return session.query(ExtensionSchema).filter(ExtensionSchema.commented == commented).order_by(*order)
+    return session.query(ExtensionSchema).order_by(*order)
 
 
 @daosession

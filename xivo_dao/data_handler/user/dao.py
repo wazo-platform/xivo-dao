@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+from sqlalchemy.exc import SQLAlchemyError
 from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
 from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
@@ -95,11 +95,6 @@ def _fetch_commented_user_row(session, user_id):
     return _user_row_from_query(query, user_id)
 
 
-def _fetch_user_row(session, user_id):
-    query = _new_query(session).filter(UserSchema.id == user_id)
-    return _user_row_from_query(query, user_id)
-
-
 def _user_row_from_query(query, user_id):
     user_row = query.first()
     if not user_row:
@@ -128,7 +123,7 @@ def find_by_number_context(session, number, context):
 
 
 def _find_by_number_context(session, number, context):
-    user_row = (_new_query(session)
+    user_row = (session.query(UserSchema)
                 .join(ExtensionSchema, and_(ExtensionSchema.context == context,
                                             ExtensionSchema.exten == number,
                                             ExtensionSchema.commented == 0))
@@ -215,10 +210,6 @@ def _delete_user(session, user_id):
                                 .filter(SchedulePath.pathid == user_id)
                                 .delete())
     return result
-
-
-def _new_query(session):
-    return session.query(UserSchema).filter(UserSchema.commented == 0)
 
 
 @daosession
