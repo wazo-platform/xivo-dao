@@ -35,10 +35,17 @@ class Device(NewModel):
         'version',
         'description',
         'status',
+        'options',
         'template_id',
     ]
 
     _RELATION = {}
+
+    def is_switchboard(self):
+        if self.plugin and 'switchboard' in self.plugin:
+            return True
+
+        return bool(self.options and self.options.get('switchboard'))
 
 
 class DeviceOrdering(object):
