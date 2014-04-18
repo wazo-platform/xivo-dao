@@ -16,18 +16,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo import caller_id
-from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
 from xivo_dao.data_handler.extension import dao as extension_dao
 from xivo_dao.data_handler.exception import InvalidParametersError
 from xivo_dao.data_handler.line import dao as line_dao
 from xivo_dao.data_handler.user import dao as user_dao
-
-
-def delete_association_if_necessary(session):
-    query = (session.query(UserLineSchema)
-             .filter(UserLineSchema.user_id == None)
-             .filter(UserLineSchema.extension_id == None))
-    query.delete()
+from xivo_dao.data_handler.user_line import dao as user_line_dao
 
 
 def make_associations(main_user_id, line_id, extension_id):
@@ -43,6 +36,14 @@ def make_associations(main_user_id, line_id, extension_id):
         extension_dao.associate_to_user(main_user, extension)
         line_dao.associate_extension(extension, line.id)
         line_dao.update_xivo_userid(line, main_user)
+
+
+def make_line_extension_associations(line_extension):
+    main_user_line = user_line_dao.find_main_user_line(line_extension.line_id)
+    if main_user_line:
+        make_associations(main_user_line.user_id,
+                          line_extension.line_id,
+                          line_extension.extension_id)
 
 
 def delete_extension_associations(line_id, extension_id):

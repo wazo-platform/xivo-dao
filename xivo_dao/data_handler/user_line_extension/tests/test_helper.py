@@ -124,3 +124,30 @@ class TestULEHelper(TestCase):
         self.assertRaises(InvalidParametersError, helper.validate_no_device, sentinel.line_id)
 
         line_get.assert_called_once_with(sentinel.line_id)
+
+
+class TestMakeLineExtensionAssociation(TestCase):
+    @patch('xivo_dao.data_handler.user_line.dao.find_main_user_line')
+    @patch('xivo_dao.data_handler.user_line_extension.helper.make_associations')
+    def test_make_line_extension_associations_with_user(self, make_associations, user_line):
+        line_extension = Mock(line_id=sentinel.line_id,
+                              extension_id=sentinel.extension_id)
+        user_line.return_value = Mock(user_id=sentinel.user_id,
+                                      line_id=sentinel.line_id)
+
+        helper.make_line_extension_associations(line_extension)
+
+        user_line.assert_called_once_with(sentinel.line_id)
+        make_associations.assert_called_once_with(sentinel.user_id, sentinel.line_id, sentinel.extension_id)
+
+    @patch('xivo_dao.data_handler.user_line.dao.find_main_user_line')
+    @patch('xivo_dao.data_handler.user_line_extension.helper.make_associations')
+    def test_make_line_extension_associations_without_user(self, make_associations, user_line):
+        line_extension = Mock(line_id=sentinel.line_id,
+                              extension_id=sentinel.extension_id)
+        user_line.return_value = None
+
+        helper.make_line_extension_associations(line_extension)
+
+        user_line.assert_called_once_with(sentinel.line_id)
+        assert_that(make_associations.call_count, equal_to(0))

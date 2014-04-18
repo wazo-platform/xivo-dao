@@ -20,7 +20,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
 from xivo_dao.data_handler.line_extension import dao as line_extension_dao
-from xivo_dao.data_handler.user_line_extension.helper import delete_association_if_necessary
+from xivo_dao.data_handler.user_line_extension import dao as ule_dao
 from xivo_dao.data_handler.user_line.model import db_converter
 from xivo_dao.data_handler.user_line.exception import UserLineNotExistsError
 from xivo_dao.data_handler.exception import ElementCreationError, \
@@ -150,7 +150,7 @@ def dissociate(session, user_line):
     session.begin()
     try:
         _dissasociate_user_line(session, user_line)
-        delete_association_if_necessary(session)
+        ule_dao.delete_association_if_necessary(session)
         session.commit()
     except SQLAlchemyError as e:
         session.rollback()
