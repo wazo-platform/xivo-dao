@@ -293,5 +293,5 @@ class TestDeleteUserLineAssociations(TestCase):
 
         find_by_line_id.assert_called_once_with(user_line.line_id)
         find_main_user_line.assert_called_once_with(user_line.line_id)
-        delete_extension_associations.assert_called_once_with(user_line.line_id, line_extension.extension_id)
+        delete_extension_associations.assert_called_once_with(line_extension.extension_id)
         delete_user_references.assert_called_once_with(user_line.line_id)

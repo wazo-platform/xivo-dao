@@ -101,9 +101,8 @@ class TestULEHelper(TestCase):
                                            line_dissociate,
                                            extension_dissociate):
         extension = extension_get.return_value = Mock(Extension, id=1)
-        line = Mock(LineSIP, id=2)
 
-        helper.delete_extension_associations(line.id, extension.id)
+        helper.delete_extension_associations(extension.id)
 
         extension_get.assert_called_once_with(extension.id)
         line_dissociate.assert_called_once_with(extension)

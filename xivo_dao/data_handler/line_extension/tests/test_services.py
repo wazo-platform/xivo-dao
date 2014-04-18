@@ -92,4 +92,4 @@ class TestLineExtensionService(unittest.TestCase):
         validate_dissociation.assert_called_once_with(line_extension)
         dao_dissociate.assert_called_once_with(line_extension)
         notifier_dissociated.assert_called_once_with(line_extension)
-        delete_extension_associations.assert_called_once_with(line_extension.line_id, line_extension.extension_id)
+        delete_extension_associations.assert_called_once_with(line_extension.extension_id)

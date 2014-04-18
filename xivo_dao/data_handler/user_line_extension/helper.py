@@ -46,7 +46,7 @@ def make_line_extension_associations(line_extension):
                           line_extension.extension_id)
 
 
-def delete_extension_associations(line_id, extension_id):
+def delete_extension_associations(extension_id):
     extension = extension_dao.get(extension_id)
     line_dao.dissociate_extension(extension)
     extension_dao.dissociate_extension(extension)

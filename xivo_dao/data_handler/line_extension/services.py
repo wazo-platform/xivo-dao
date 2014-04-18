@@ -48,6 +48,6 @@ def associate(line_extension):
 def dissociate(line_extension):
     validator.validate_dissociation(line_extension)
     dao.dissociate(line_extension)
-    ule_helper.delete_extension_associations(line_extension.line_id, line_extension.extension_id)
+    ule_helper.delete_extension_associations(line_extension.extension_id)
     notifier.dissociated(line_extension)
     return line_extension
