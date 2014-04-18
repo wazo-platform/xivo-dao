@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.data_handler.line_extension import dao
+from xivo_dao.data_handler.user_line_extension import services as ule_services
 from xivo_dao.data_handler.line_extension import notifier
 from xivo_dao.data_handler.line_extension import validator
 from xivo_dao.data_handler.user_line_extension import helper as ule_helper
@@ -39,8 +40,7 @@ def get_all_by_line_id(line_id):
 
 def associate(line_extension):
     validator.validate_associate(line_extension)
-    line_extension = dao.associate(line_extension)
-    ule_helper.make_line_extension_associations(line_extension)
+    line_extension = ule_services.associate_line_extension(line_extension)
     notifier.associated(line_extension)
     return line_extension
 

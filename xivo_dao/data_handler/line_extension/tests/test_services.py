@@ -26,24 +26,21 @@ from xivo_dao.data_handler.line_extension import services as line_extension_serv
 class TestLineExtensionService(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.line_extension.notifier.associated')
-    @patch('xivo_dao.data_handler.line_extension.dao.associate')
     @patch('xivo_dao.data_handler.line_extension.validator.validate_associate')
-    @patch('xivo_dao.data_handler.user_line_extension.helper.make_line_extension_associations')
+    @patch('xivo_dao.data_handler.user_line_extension.services.associate_line_extension')
     def test_associate(self,
-                       line_extension_associations,
+                       associate_line_extension,
                        validate_associate,
-                       dao_associate,
                        notifier_associated):
 
         line_extension = Mock(LineExtension)
-        created_line_extension = dao_associate.return_value = Mock(LineExtension)
+        created_line_extension = associate_line_extension.return_value = Mock(LineExtension)
 
         result = line_extension_service.associate(line_extension)
 
         assert_that(result, equal_to(created_line_extension))
         validate_associate.assert_called_once_with(line_extension)
-        dao_associate.assert_called_once_with(line_extension)
-        line_extension_associations.assert_called_once_with(created_line_extension)
+        associate_line_extension.assert_called_once_with(line_extension)
         notifier_associated.assert_called_once_with(created_line_extension)
 
     @patch('xivo_dao.data_handler.line_extension.dao.get_by_line_id')
