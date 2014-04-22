@@ -19,7 +19,6 @@ from xivo_dao.data_handler.line_extension import dao
 from xivo_dao.data_handler.user_line_extension import services as ule_services
 from xivo_dao.data_handler.line_extension import notifier
 from xivo_dao.data_handler.line_extension import validator
-from xivo_dao.data_handler.user_line_extension import helper as ule_helper
 
 
 def find_by_line_id(line_id):
@@ -47,7 +46,6 @@ def associate(line_extension):
 
 def dissociate(line_extension):
     validator.validate_dissociation(line_extension)
-    dao.dissociate(line_extension)
-    ule_helper.delete_extension_associations(line_extension.extension_id)
+    ule_services.dissociate_line_extension(line_extension)
     notifier.dissociated(line_extension)
     return line_extension

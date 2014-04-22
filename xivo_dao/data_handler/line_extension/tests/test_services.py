@@ -73,20 +73,17 @@ class TestLineExtensionService(unittest.TestCase):
         assert_that(result, equal_to(line_extension))
         dao_find_by_extension_id.assert_called_once_with(1)
 
-    @patch('xivo_dao.data_handler.user_line_extension.helper.delete_extension_associations')
-    @patch('xivo_dao.data_handler.line_extension.dao.dissociate')
     @patch('xivo_dao.data_handler.line_extension.notifier.dissociated')
+    @patch('xivo_dao.data_handler.user_line_extension.services.dissociate_line_extension')
     @patch('xivo_dao.data_handler.line_extension.validator.validate_dissociation')
     def test_dissociate(self,
                         validate_dissociation,
-                        notifier_dissociated,
-                        dao_dissociate,
-                        delete_extension_associations):
+                        dissociate_line_extension,
+                        notifier_dissociated):
         line_extension = Mock(LineExtension, line_id=1, extension_id=2)
 
         line_extension_service.dissociate(line_extension)
 
         validate_dissociation.assert_called_once_with(line_extension)
-        dao_dissociate.assert_called_once_with(line_extension)
+        dissociate_line_extension.assert_called_once_with(line_extension)
         notifier_dissociated.assert_called_once_with(line_extension)
-        delete_extension_associations.assert_called_once_with(line_extension.extension_id)

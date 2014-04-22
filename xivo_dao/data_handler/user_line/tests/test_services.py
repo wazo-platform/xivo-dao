@@ -20,7 +20,6 @@ from hamcrest import assert_that, equal_to, contains
 
 from xivo_dao.tests.test_case import TestCase
 from xivo_dao.data_handler.user_line.model import UserLine
-from xivo_dao.data_handler.line_extension.model import LineExtension
 from xivo_dao.data_handler.user_line import services as user_line_services
 
 
@@ -127,116 +126,17 @@ class TestUserLineAssociate(TestCase):
 
 class TestUserLineDissociate(TestCase):
 
-    @patch('xivo_dao.data_handler.user_line.services._delete_user_line_associations')
-    @patch('xivo_dao.data_handler.user_line.dao.dissociate')
     @patch('xivo_dao.data_handler.user_line.notifier.dissociated')
+    @patch('xivo_dao.data_handler.user_line_extension.services.dissociate_user_line')
     @patch('xivo_dao.data_handler.user_line.validator.validate_dissociation')
     def test_dissociate(self,
                         validate_dissociation,
-                        notifier_dissociated,
-                        dao_dissociate,
-                        _delete_user_line_associations):
+                        dissociate_user_line,
+                        notifier_dissociated):
         user_line = Mock(UserLine)
 
         user_line_services.dissociate(user_line)
 
         validate_dissociation.assert_called_once_with(user_line)
-        dao_dissociate.assert_called_once_with(user_line)
+        dissociate_user_line.assert_called_once_with(user_line)
         notifier_dissociated.assert_called_once_with(user_line)
-        _delete_user_line_associations.assert_called_once_with(user_line)
-
-
-class TestDeleteUserLineAssociations(TestCase):
-
-    @patch('xivo_dao.data_handler.line.dao.delete_user_references')
-    @patch('xivo_dao.data_handler.user_line_extension.helper.delete_extension_associations')
-    @patch('xivo_dao.data_handler.user_line.dao.find_main_user_line')
-    @patch('xivo_dao.data_handler.line_extension.dao.find_by_line_id')
-    def test_given_line_has_no_extension_when_dissociating_main_user_then_user_references_deleted(
-            self,
-            find_by_line_id,
-            find_main_user_line,
-            delete_extension_associations,
-            delete_user_references):
-
-        user_line = Mock(UserLine, user_id=1, line_id=2)
-
-        find_by_line_id.return_value = None
-        find_main_user_line.return_value = None
-
-        user_line_services._delete_user_line_associations(user_line)
-
-        find_by_line_id.assert_called_once_with(user_line.line_id)
-        delete_user_references.assert_called_once_with(user_line.line_id)
-        self.assertNotCalled(delete_extension_associations)
-
-    @patch('xivo_dao.data_handler.line.dao.delete_user_references')
-    @patch('xivo_dao.data_handler.user_line_extension.helper.delete_extension_associations')
-    @patch('xivo_dao.data_handler.user_line.dao.find_main_user_line')
-    @patch('xivo_dao.data_handler.line_extension.dao.find_by_line_id')
-    def test_given_line_has_no_extension_when_dissociating_secondary_user_then_no_references_deleted(
-            self,
-            find_by_line_id,
-            find_main_user_line,
-            delete_extension_associations,
-            delete_user_references):
-
-        user_line = Mock(UserLine, user_id=1, line_id=2)
-
-        find_by_line_id.return_value = None
-        find_main_user_line.return_value = user_line
-
-        user_line_services._delete_user_line_associations(user_line)
-
-        find_by_line_id.assert_called_once_with(user_line.line_id)
-        find_main_user_line.assert_called_once_with(user_line.line_id)
-        self.assertNotCalled(delete_extension_associations)
-        self.assertNotCalled(delete_user_references)
-
-    @patch('xivo_dao.data_handler.line.dao.delete_user_references')
-    @patch('xivo_dao.data_handler.user_line_extension.helper.delete_extension_associations')
-    @patch('xivo_dao.data_handler.user_line.dao.find_main_user_line')
-    @patch('xivo_dao.data_handler.line_extension.dao.find_by_line_id')
-    def test_given_line_has_an_extension_when_dissociating_secondary_user_then_no_references_deleted(
-            self,
-            find_by_line_id,
-            find_main_user_line,
-            delete_extension_associations,
-            delete_user_references):
-
-        user_line = Mock(UserLine, user_id=1, line_id=2)
-        line_extension = Mock(LineExtension, line_id=2, extension_id=3)
-
-        find_by_line_id.return_value = line_extension
-        find_main_user_line.return_value = user_line
-
-        user_line_services._delete_user_line_associations(user_line)
-
-        find_by_line_id.assert_called_once_with(user_line.line_id)
-        find_main_user_line.assert_called_once_with(user_line.line_id)
-        self.assertNotCalled(delete_extension_associations)
-        self.assertNotCalled(delete_user_references)
-
-    @patch('xivo_dao.data_handler.line.dao.delete_user_references')
-    @patch('xivo_dao.data_handler.user_line_extension.helper.delete_extension_associations')
-    @patch('xivo_dao.data_handler.user_line.dao.find_main_user_line')
-    @patch('xivo_dao.data_handler.line_extension.dao.find_by_line_id')
-    def test_given_line_has_an_extension_when_dissociating_main_user_then_user_and_extension_references_deleted(
-            self,
-            find_by_line_id,
-            find_main_user_line,
-            delete_extension_associations,
-            delete_user_references):
-
-        user_line = Mock(UserLine, user_id=1, line_id=2)
-        line_extension = Mock(LineExtension, line_id=2, extension_id=3)
-
-        find_by_line_id.return_value = line_extension
-        find_main_user_line.return_value = None
-
-        user_line_services._delete_user_line_associations(user_line)
-
-        find_by_line_id.assert_called_once_with(user_line.line_id)
-        find_main_user_line.assert_called_once_with(user_line.line_id)
-        delete_extension_associations.assert_called_once_with(line_extension.extension_id)
-        delete_user_references.assert_called_once_with(user_line.line_id)
