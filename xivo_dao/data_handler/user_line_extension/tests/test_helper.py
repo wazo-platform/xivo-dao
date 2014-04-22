@@ -16,11 +16,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.data_handler.exception import InvalidParametersError
-from xivo_dao.data_handler.user.model import User
 from xivo_dao.data_handler.line.model import LineSIP
 from xivo_dao.data_handler.extension.model import Extension
 
-from hamcrest import assert_that, equal_to, has_property
 from mock import Mock, patch, sentinel
 from unittest import TestCase
 
@@ -28,70 +26,6 @@ from .. import helper
 
 
 class TestULEHelper(TestCase):
-
-    @patch('xivo.caller_id.assemble_caller_id')
-    @patch('xivo_dao.data_handler.extension.dao.find')
-    @patch('xivo_dao.data_handler.extension.dao.associate_to_user')
-    @patch('xivo_dao.data_handler.line.dao.get')
-    @patch('xivo_dao.data_handler.line.dao.associate_extension')
-    @patch('xivo_dao.data_handler.line.dao.update_xivo_userid')
-    @patch('xivo_dao.data_handler.line.dao.edit')
-    @patch('xivo_dao.data_handler.user.dao.get')
-    def test_make_associations_with_extension(self,
-                                              user_get,
-                                              line_edit,
-                                              line_update_xivo_userid,
-                                              line_associate_extension,
-                                              line_get,
-                                              extension_associate,
-                                              extension_find,
-                                              caller_id):
-        user = user_get.return_value = Mock(User, id=sentinel.user_id)
-        line = line_get.return_value = Mock(LineSIP, id=sentinel.line_id)
-        extension = extension_find.return_value = Mock(Extension, exten=sentinel.exten)
-        caller_id.return_value = sentinel.caller_id
-
-        helper.make_associations(sentinel.user_id, sentinel.line_id, sentinel.extension_id)
-
-        line_edit.assert_called_once_with(line)
-        extension_associate.assert_called_once_with(user, extension)
-        assert_that(line, has_property('callerid', sentinel.caller_id))
-        extension_associate.assert_called_once_with(user, extension)
-        line_associate_extension.assert_called_once_with(extension, line.id)
-        line_update_xivo_userid.assert_called_once_with(line, user)
-        caller_id.assert_called_once_with(user.fullname, extension.exten)
-
-    @patch('xivo.caller_id.assemble_caller_id')
-    @patch('xivo_dao.data_handler.extension.dao.find')
-    @patch('xivo_dao.data_handler.extension.dao.associate_to_user')
-    @patch('xivo_dao.data_handler.line.dao.get')
-    @patch('xivo_dao.data_handler.line.dao.edit')
-    @patch('xivo_dao.data_handler.line.dao.update_xivo_userid')
-    @patch('xivo_dao.data_handler.user.dao.get')
-    def test_make_associations_without_extension(self,
-                                                 user_get,
-                                                 line_update_xivo_userid,
-                                                 line_edit,
-                                                 line_get,
-                                                 extension_associate,
-                                                 extension_find,
-                                                 caller_id):
-        user = user_get.return_value = Mock(User)
-        line = line_get.return_value = Mock(LineSIP,
-                                            number=sentinel.number,
-                                            context=sentinel.context)
-        extension_find.return_value = None
-        caller_id.return_value = sentinel.caller_id
-
-        helper.make_associations(sentinel.user_id, sentinel.line_id, sentinel.extension_id)
-
-        assert_that(extension_associate.call_count, equal_to(0))
-        assert_that(line, has_property('number', sentinel.number))
-        assert_that(line, has_property('context', sentinel.context))
-        assert_that(line, has_property('callerid', sentinel.caller_id))
-        line_edit.assert_called_once_with(line)
-        assert_that(line_update_xivo_userid.call_count, equal_to(0))
-        caller_id.assert_called_once_with(user.fullname, None)
 
     @patch('xivo_dao.data_handler.extension.dao.dissociate_extension')
     @patch('xivo_dao.data_handler.line.dao.dissociate_extension')
@@ -123,30 +57,3 @@ class TestULEHelper(TestCase):
         self.assertRaises(InvalidParametersError, helper.validate_no_device, sentinel.line_id)
 
         line_get.assert_called_once_with(sentinel.line_id)
-
-
-class TestMakeLineExtensionAssociation(TestCase):
-    @patch('xivo_dao.data_handler.user_line.dao.find_main_user_line')
-    @patch('xivo_dao.data_handler.user_line_extension.helper.make_associations')
-    def test_make_line_extension_associations_with_user(self, make_associations, user_line):
-        line_extension = Mock(line_id=sentinel.line_id,
-                              extension_id=sentinel.extension_id)
-        user_line.return_value = Mock(user_id=sentinel.user_id,
-                                      line_id=sentinel.line_id)
-
-        helper.make_line_extension_associations(line_extension)
-
-        user_line.assert_called_once_with(sentinel.line_id)
-        make_associations.assert_called_once_with(sentinel.user_id, sentinel.line_id, sentinel.extension_id)
-
-    @patch('xivo_dao.data_handler.user_line.dao.find_main_user_line')
-    @patch('xivo_dao.data_handler.user_line_extension.helper.make_associations')
-    def test_make_line_extension_associations_without_user(self, make_associations, user_line):
-        line_extension = Mock(line_id=sentinel.line_id,
-                              extension_id=sentinel.extension_id)
-        user_line.return_value = None
-
-        helper.make_line_extension_associations(line_extension)
-
-        user_line.assert_called_once_with(sentinel.line_id)
-        assert_that(make_associations.call_count, equal_to(0))

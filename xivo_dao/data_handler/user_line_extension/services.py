@@ -15,17 +15,65 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-
-def associate_line_extension(line_extension):
-    raise NotImplementedError()
+from xivo_dao.data_handler.extension import dao as extension_dao
+from xivo_dao.data_handler.line import dao as line_dao
+from xivo_dao.data_handler.user import dao as user_dao
+from xivo_dao.data_handler.user_line import dao as user_line_dao
+from xivo_dao.data_handler.line_extension import dao as line_extension_dao
+from xivo import caller_id
 
 
 def associate_user_line(user_line):
-    raise NotImplementedError()
+    created_user_line = user_line_dao.associate(user_line)
+    main_user_line = user_line_dao.find_main_user_line(created_user_line.line_id)
+    fix_associations(main_user_line)
+    return created_user_line
 
 
-def make_user_line_associations(user_line):
-    main_user_line = dao.find_main_user_line(user_line.line_id)
-    line_extension = line_extension_dao.find_by_line_id(user_line.line_id)
-    extension_id = line_extension.extension_id if line_extension else None
-    ule_helper.make_associations(main_user_line.user_id, user_line.line_id, extension_id)
+def associate_line_extension(line_extension):
+    created_line_extension = line_extension_dao.associate(line_extension)
+    main_user_line = user_line_dao.find_main_user_line(created_line_extension.line_id)
+    if main_user_line:
+        fix_associations(main_user_line)
+    return created_line_extension
+
+
+def fix_associations(main_user_line):
+    main_user, line, extension = find_resources(main_user_line)
+    update_resources(main_user, line, extension)
+
+
+def find_resources(main_user_line):
+    main_user = user_dao.get(main_user_line.user_id)
+    line = line_dao.get(main_user_line.line_id)
+    extension = find_extension(main_user_line.line_id)
+    return main_user, line, extension
+
+
+def find_extension(line_id):
+    line_extension = line_extension_dao.find_by_line_id(line_id)
+    if line_extension:
+        return extension_dao.get(line_extension.extension_id)
+    return None
+
+
+def update_resources(main_user, line, extension=None):
+    update_caller_id(main_user, line, extension)
+    update_line(main_user, line)
+    if extension:
+        update_exten_and_context(main_user, line, extension)
+
+
+def update_caller_id(main_user, line, extension=None):
+    exten = extension.exten if extension else None
+    line.callerid = caller_id.assemble_caller_id(main_user.fullname, exten)
+    line_dao.edit(line)
+
+
+def update_line(main_user, line):
+    line_dao.update_xivo_userid(line, main_user)
+
+
+def update_exten_and_context(main_user, line, extension):
+    extension_dao.associate_to_user(main_user, extension)
+    line_dao.associate_extension(extension, line.id)
