@@ -17,7 +17,6 @@
 
 from xivo_dao.data_handler.exception import InvalidParametersError
 from xivo_dao.data_handler.line.model import LineSIP
-from xivo_dao.data_handler.extension.model import Extension
 
 from mock import Mock, patch, sentinel
 from unittest import TestCase
@@ -26,21 +25,6 @@ from .. import helper
 
 
 class TestULEHelper(TestCase):
-
-    @patch('xivo_dao.data_handler.extension.dao.dissociate_extension')
-    @patch('xivo_dao.data_handler.line.dao.dissociate_extension')
-    @patch('xivo_dao.data_handler.extension.dao.get')
-    def test_delete_extension_associations(self,
-                                           extension_get,
-                                           line_dissociate,
-                                           extension_dissociate):
-        extension = extension_get.return_value = Mock(Extension, id=1)
-
-        helper.delete_extension_associations(extension.id)
-
-        extension_get.assert_called_once_with(extension.id)
-        line_dissociate.assert_called_once_with(extension)
-        extension_dissociate.assert_called_once_with(extension)
 
     @patch('xivo_dao.data_handler.line.dao.get')
     def test_validate_no_device_when_no_device_associated(self, line_get):

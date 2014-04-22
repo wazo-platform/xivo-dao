@@ -77,3 +77,32 @@ def update_line(main_user, line):
 def update_exten_and_context(main_user, line, extension):
     extension_dao.associate_to_user(main_user, extension)
     line_dao.associate_extension(extension, line.id)
+
+
+def dissociate_line_extension(line_extension):
+    line_extension_dao.dissociate(line_extension)
+    extension = extension_dao.get(line_extension.extension_id)
+    remove_exten_and_context(extension)
+
+
+def remove_exten_and_context(extension):
+    line_dao.dissociate_extension(extension)
+    extension_dao.dissociate_extension(extension)
+
+
+def dissociate_user_line(user_line):
+    user_line_dao.dissociate(user_line)
+    main_user_line = user_line_dao.find_main_user_line(user_line.line_id)
+    if not main_user_line:
+        fix_main_user_dissociation(user_line.line_id)
+
+
+def fix_main_user_dissociation(line_id):
+    remove_caller_id(line_id)
+    extension = find_extension(line_id)
+    if extension:
+        remove_exten_and_context(extension)
+
+
+def remove_caller_id(line_id):
+    line_dao.delete_user_references(line_id)

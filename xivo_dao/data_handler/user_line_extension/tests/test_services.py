@@ -233,3 +233,113 @@ class TestExtenAndContext(TestCase):
 
         extension_assocaite_to_user.assert_called_once_with(main_user, extension)
         line_associate_extension.assert_called_once_with(extension, line.id)
+
+
+@patch('xivo_dao.data_handler.user_line_extension.services.remove_exten_and_context')
+@patch('xivo_dao.data_handler.extension.dao.get')
+@patch('xivo_dao.data_handler.line_extension.dao.dissociate')
+class TestDissociateLineExtension(TestCase):
+
+    def test_given_dissociated_line_extension_then_exten_and_context_removed(self,
+                                                                             line_extension_dissociate,
+                                                                             extension_dao_get,
+                                                                             remove_exten_and_context):
+        line_extension = Mock(LineExtension, extension_id=1)
+        extension = extension_dao_get.return_value = Mock(Extension)
+
+        ule_service.dissociate_line_extension(line_extension)
+
+        line_extension_dissociate.assert_called_once_with(line_extension)
+        extension_dao_get.assert_called_once_with(line_extension.extension_id)
+        remove_exten_and_context.assert_called_once_with(extension)
+
+
+@patch('xivo_dao.data_handler.extension.dao.dissociate_extension')
+@patch('xivo_dao.data_handler.line.dao.dissociate_extension')
+class TestRemoveExtenAndContext(TestCase):
+
+    def test_given_extension_then_exten_and_context_removed(self,
+                                                            line_dissociate_extension,
+                                                            ext_dissociate_extension):
+        extension = Mock(Extension)
+
+        ule_service.remove_exten_and_context(extension)
+
+        line_dissociate_extension.assert_called_once_with(extension)
+        ext_dissociate_extension.assert_called_once_with(extension)
+
+
+@patch('xivo_dao.data_handler.user_line_extension.services.fix_main_user_dissociation')
+@patch('xivo_dao.data_handler.user_line.dao.find_main_user_line')
+@patch('xivo_dao.data_handler.user_line.dao.dissociate')
+class TestDissociateUserLine(TestCase):
+
+    def test_given_secondary_user_then_only_user_line_dissociated(self,
+                                                                  user_line_dissociate,
+                                                                  find_main_user_line,
+                                                                  fix_main_user_dissociation):
+        user_line = Mock(UserLine, line_id=1)
+        find_main_user_line.return_value = Mock(UserLine)
+
+        ule_service.dissociate_user_line(user_line)
+
+        user_line_dissociate.assert_called_once_with(user_line)
+        find_main_user_line.assert_called_once_with(user_line.line_id)
+        self.assertNotCalled(fix_main_user_dissociation)
+
+    def test_given_main_user_then_dissociation_gets_fixed(self,
+                                                          user_line_dissociate,
+                                                          find_main_user_line,
+                                                          fix_main_user_dissociation):
+        user_line = Mock(UserLine, line_id=1)
+        find_main_user_line.return_value = None
+
+        ule_service.dissociate_user_line(user_line)
+
+        user_line_dissociate.assert_called_once_with(user_line)
+        find_main_user_line.assert_called_once_with(user_line.line_id)
+        fix_main_user_dissociation.assert_called_once_with(user_line.line_id)
+
+
+@patch('xivo_dao.data_handler.user_line_extension.services.remove_exten_and_context')
+@patch('xivo_dao.data_handler.user_line_extension.services.find_extension')
+@patch('xivo_dao.data_handler.user_line_extension.services.remove_caller_id')
+class TestFixMainUserDissociation(TestCase):
+
+    def test_given_no_extension_associated_then_caller_id_removed(self,
+                                                                  remove_caller_id,
+                                                                  find_extension,
+                                                                  remove_exten_and_context):
+        line_id = 1
+        find_extension.return_value = None
+
+        ule_service.fix_main_user_dissociation(line_id)
+
+        remove_caller_id.assert_called_once_with(line_id)
+        find_extension.assert_called_once_with(line_id)
+        self.assertNotCalled(remove_exten_and_context)
+
+    def test_given_extension_associated_then_caller_id_and_exten_removed(self,
+                                                                         remove_caller_id,
+                                                                         find_extension,
+                                                                         remove_exten_and_context):
+        line_id = 1
+        extension = find_extension.return_value = Mock(Extension)
+
+        ule_service.fix_main_user_dissociation(line_id)
+
+        remove_caller_id.assert_called_once_with(line_id)
+        find_extension.assert_called_once_with(line_id)
+        remove_exten_and_context.assert_called_once_with(extension)
+
+
+@patch('xivo_dao.data_handler.line.dao.delete_user_references')
+class TestRemoveCallerId(TestCase):
+
+    def test_given_dissociate_line_then_removes_user_caller_id(self,
+                                                               delete_user_references):
+        line_id = 1
+
+        ule_service.remove_caller_id(line_id)
+
+        delete_user_references.assert_called_once_with(line_id)
