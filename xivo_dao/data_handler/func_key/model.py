@@ -26,6 +26,7 @@ from xivo_dao.alchemy.func_key_type import FuncKeyType as FuncKeyTypeSchema
 from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser as FuncKeyDestUserSchema
 from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup as FuncKeyDestGroupSchema
 from xivo_dao.alchemy.func_key_dest_queue import FuncKeyDestQueue as FuncKeyDestQueueSchema
+from xivo_dao.alchemy.func_key_dest_conf import FuncKeyDestConf as FuncKeyDestConfSchema
 from xivo_dao.alchemy.func_key_destination_type import FuncKeyDestinationType as FuncKeyDestinationTypeSchema
 
 
@@ -56,6 +57,7 @@ class QueryHelper(object):
         'destination_id': func.coalesce(FuncKeyDestUserSchema.user_id,
                                         FuncKeyDestGroupSchema.group_id,
                                         FuncKeyDestQueueSchema.queue_id,
+                                        FuncKeyDestConfSchema.conf_id,
                                         ).label('destination_id')
     }
 
@@ -63,6 +65,7 @@ class QueryHelper(object):
         'user': (FuncKeyDestUserSchema, FuncKeyDestUserSchema.user_id),
         'group': (FuncKeyDestGroupSchema, FuncKeyDestGroupSchema.group_id),
         'queue': (FuncKeyDestQueueSchema, FuncKeyDestQueueSchema.queue_id),
+        'conf': (FuncKeyDestConfSchema, FuncKeyDestConfSchema.conf_id),
     }
 
     @classmethod
@@ -103,6 +106,7 @@ class QueryHelper(object):
                 .outerjoin(FuncKeyDestUserSchema, FuncKeyDestUserSchema.func_key_id == FuncKeySchema.id)
                 .outerjoin(FuncKeyDestGroupSchema, FuncKeyDestGroupSchema.func_key_id == FuncKeySchema.id)
                 .outerjoin(FuncKeyDestQueueSchema, FuncKeyDestQueueSchema.func_key_id == FuncKeySchema.id)
+                .outerjoin(FuncKeyDestConfSchema, FuncKeyDestConfSchema.func_key_id == FuncKeySchema.id)
                 .filter(destination_id_col != None))
 
 
@@ -126,6 +130,7 @@ class FuncKeyDbConverter(DatabaseConverter):
         'user': (FuncKeyDestUserSchema, 'user_id'),
         'group': (FuncKeyDestGroupSchema, 'group_id'),
         'queue': (FuncKeyDestQueueSchema, 'queue_id'),
+        'conf': (FuncKeyDestConfSchema, 'conf_id'),
     }
 
     def __init__(self):

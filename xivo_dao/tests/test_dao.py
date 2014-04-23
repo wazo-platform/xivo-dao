@@ -47,6 +47,7 @@ from xivo_dao.alchemy.pickupmember import PickupMember
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.groupfeatures import GroupFeatures
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
+from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
 from xivo_dao.alchemy.staticiax import StaticIAX
 from xivo_dao.alchemy.staticmeetme import StaticMeetme
 from xivo_dao.alchemy.musiconhold import MusicOnHold
@@ -283,6 +284,16 @@ class DAOTestCase(unittest.TestCase):
         queuefeatures = QueueFeatures(**kwargs)
         self.add_me(queuefeatures)
         return queuefeatures
+
+    def add_meetmefeatures(self, **kwargs):
+        kwargs.setdefault('id', self._generate_id())
+        kwargs.setdefault('meetmeid', self._generate_id())
+        kwargs.setdefault('name', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+        kwargs.setdefault('confno', ''.join(random.choice('0123456789') for _ in range(6)))
+        kwargs.setdefault('context', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+        meetmefeatures = MeetmeFeatures(**kwargs)
+        self.add_me(meetmefeatures)
+        return meetmefeatures
 
     def add_queue(self, **kwargs):
         kwargs.setdefault('name', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
