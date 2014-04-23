@@ -35,4 +35,4 @@ class FuncKeyDestQueue(Base):
     destination_type_id = Column(Integer, primary_key=True, server_default="3")
 
     func_key = relationship("FuncKey")
-    group = relationship("QueueFeatures")
+    queue = relationship("QueueFeatures")
