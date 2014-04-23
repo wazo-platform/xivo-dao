@@ -15,10 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.data_handler.line import dao as line_dao
 from xivo_dao.data_handler.user_line import validator, dao, notifier
-from xivo_dao.data_handler.line_extension import dao as line_extension_dao
-from xivo_dao.data_handler.user_line_extension import helper as ule_helper
+from xivo_dao.data_handler.user_line_extension import services as ule_service
 
 
 def get_by_user_id_and_line_id(user_id, line_id):
@@ -35,35 +33,18 @@ def find_all_by_line_id(line_id):
 
 def associate(user_line):
     validator.validate_association(user_line)
+
     _adjust_optional_parameters(user_line)
-    dao.associate(user_line)
-    make_user_line_associations(user_line)
+    ule_service.associate_user_line(user_line)
+
     notifier.associated(user_line)
     return user_line
 
 
-def make_user_line_associations(user_line):
-    main_user_line = dao.find_main_user_line(user_line.line_id)
-    line_extension = line_extension_dao.find_by_line_id(user_line.line_id)
-    extension_id = line_extension.extension_id if line_extension else None
-    ule_helper.make_associations(main_user_line.user_id, user_line.line_id, extension_id)
-
-
 def dissociate(user_line):
     validator.validate_dissociation(user_line)
-    dao.dissociate(user_line)
+    ule_service.dissociate_user_line(user_line)
     notifier.dissociated(user_line)
-    _delete_user_line_associations(user_line)
-
-
-def _delete_user_line_associations(user_line):
-    line_extension = line_extension_dao.find_by_line_id(user_line.line_id)
-    main_user_line = dao.find_main_user_line(user_line.line_id)
-
-    if not main_user_line:
-        line_dao.delete_user_references(user_line.line_id)
-        if line_extension:
-            ule_helper.delete_extension_associations(line_extension.line_id, line_extension.extension_id)
 
 
 def _adjust_optional_parameters(user_line):

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2014 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,11 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.data_handler.exception import InvalidParametersError
-from xivo_dao.data_handler.line import dao as line_dao
+from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
 
 
-def validate_no_device(line_id):
-    line = line_dao.get(line_id)
-    if line.device_id:
-        raise InvalidParametersError(['A device is still associated to the line'])
+def delete_association_if_necessary(session):
+    query = (session.query(UserLineSchema)
+             .filter(UserLineSchema.user_id == None)
+             .filter(UserLineSchema.extension_id == None))
+    query.delete()
