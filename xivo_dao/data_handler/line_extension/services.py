@@ -33,10 +33,6 @@ def find_by_extension_id(extension_id):
     return dao.find_by_extension_id(extension_id)
 
 
-def get_all_by_line_id(line_id):
-    pass
-
-
 def associate(line_extension):
     validator.validate_associate(line_extension)
     line_extension = ule_services.associate_line_extension(line_extension)
