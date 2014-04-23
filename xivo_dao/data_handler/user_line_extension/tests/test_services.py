@@ -270,34 +270,27 @@ class TestRemoveExtenAndContext(TestCase):
 
 
 @patch('xivo_dao.data_handler.user_line_extension.services.fix_main_user_dissociation')
-@patch('xivo_dao.data_handler.user_line.dao.find_main_user_line')
 @patch('xivo_dao.data_handler.user_line.dao.dissociate')
 class TestDissociateUserLine(TestCase):
 
     def test_given_secondary_user_then_only_user_line_dissociated(self,
                                                                   user_line_dissociate,
-                                                                  find_main_user_line,
                                                                   fix_main_user_dissociation):
-        user_line = Mock(UserLine, line_id=1)
-        find_main_user_line.return_value = Mock(UserLine)
+        user_line = Mock(UserLine, line_id=1, main_user=False)
 
         ule_service.dissociate_user_line(user_line)
 
         user_line_dissociate.assert_called_once_with(user_line)
-        find_main_user_line.assert_called_once_with(user_line.line_id)
         self.assertNotCalled(fix_main_user_dissociation)
 
     def test_given_main_user_then_dissociation_gets_fixed(self,
                                                           user_line_dissociate,
-                                                          find_main_user_line,
                                                           fix_main_user_dissociation):
-        user_line = Mock(UserLine, line_id=1)
-        find_main_user_line.return_value = None
+        user_line = Mock(UserLine, line_id=1, main_user=True)
 
         ule_service.dissociate_user_line(user_line)
 
         user_line_dissociate.assert_called_once_with(user_line)
-        find_main_user_line.assert_called_once_with(user_line.line_id)
         fix_main_user_dissociation.assert_called_once_with(user_line.line_id)
 
 

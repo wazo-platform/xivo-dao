@@ -92,8 +92,7 @@ def remove_exten_and_context(extension):
 
 def dissociate_user_line(user_line):
     user_line_dao.dissociate(user_line)
-    main_user_line = user_line_dao.find_main_user_line(user_line.line_id)
-    if not main_user_line:
+    if user_line.main_user:
         fix_main_user_dissociation(user_line.line_id)
 
 
