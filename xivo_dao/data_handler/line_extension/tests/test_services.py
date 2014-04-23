@@ -17,7 +17,7 @@
 
 import unittest
 from mock import Mock, patch
-from hamcrest import assert_that, equal_to
+from hamcrest import assert_that, equal_to, has_items
 
 from xivo_dao.data_handler.extension.model import Extension
 from xivo_dao.data_handler.line.model import Line
@@ -118,3 +118,28 @@ class TestLineExtensionDissociate(unittest.TestCase):
         validate_dissociation.assert_called_once_with(line_extension)
         dissociate_line_extension.assert_called_once_with(line_extension)
         notifier_dissociated.assert_called_once_with(line_extension)
+
+
+class TestGetAllByLineId(unittest.TestCase):
+
+    @patch('xivo_dao.data_handler.incall.dao.find_all_line_extensions_by_line_id')
+    @patch('xivo_dao.data_handler.line_extension.dao.find_all_by_line_id')
+    @patch('xivo_dao.data_handler.line.dao.get')
+    def test_get_all_by_line_id(self,
+                                line_get,
+                                line_extension_find_all_by_line_id,
+                                incall_find_all_line_extension_by_line_id):
+
+        line = line_get.return_value = Mock(Line, id=1)
+        line_extension = Mock(LineExtension)
+        incall_line_extension = Mock(LineExtension)
+
+        line_extension_find_all_by_line_id.return_value = [line_extension]
+        incall_find_all_line_extension_by_line_id.return_value = [incall_line_extension]
+
+        result = line_extension_service.get_all_by_line_id(line.id)
+
+        assert_that(result, has_items(line_extension, incall_line_extension))
+        line_get.assert_called_once_with(line.id)
+        line_extension_find_all_by_line_id.assert_called_once_with(line.id)
+        incall_find_all_line_extension_by_line_id.assert_called_once_with(line.id)
