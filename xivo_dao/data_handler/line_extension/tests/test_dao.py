@@ -137,6 +137,38 @@ class TestFindByLineId(TestLineExtensionDAO):
         assert_that(line_extension, equal_to(expected_line_extension))
 
 
+class TestFindAllByLineId(TestLineExtensionDAO):
+
+    def test_given_no_line_extensions_then_returns_empty_list(self):
+        result = dao.find_all_by_line_id(1)
+
+        assert_that(result, contains())
+
+    def test_given_one_line_extension_then_returns_one_item(self):
+        user_line_row = self.add_user_line_with_exten()
+        line_extension = self.row_to_line_extension(user_line_row)
+
+        result = dao.find_all_by_line_id(line_extension.line_id)
+
+        assert_that(result, contains(line_extension))
+
+    def test_given_user_line_without_extension_then_returns_empty_list(self):
+        user_line_row = self.add_user_line_without_exten()
+
+        result = dao.find_all_by_line_id(user_line_row.line_id)
+
+        assert_that(result, contains())
+
+    def test_given_multiple_users_associated_to_same_line_then_returns_one_item(self):
+        main_ule = self.add_user_line_with_exten()
+        line_extension = self.row_to_line_extension(main_ule)
+        self.prepare_secondary_user_associated(main_ule)
+
+        result = dao.find_all_by_line_id(line_extension.line_id)
+
+        assert_that(result, contains(line_extension))
+
+
 class TestGetByLineId(TestLineExtensionDAO):
 
     def test_get_by_line_id_no_extension(self):
