@@ -25,7 +25,7 @@ from xivo_dao.data_handler.line_extension.model import LineExtension
 from xivo_dao.data_handler.line_extension import services as line_extension_service
 
 
-class TestLineExtensionService(unittest.TestCase):
+class TestLineExtensionAssociate(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.line_extension.notifier.associated')
     @patch('xivo_dao.data_handler.line_extension.validator.validate_associate')
@@ -45,6 +45,9 @@ class TestLineExtensionService(unittest.TestCase):
         associate_line_extension.assert_called_once_with(line_extension)
         notifier_associated.assert_called_once_with(created_line_extension)
 
+
+class TestGetByLineId(unittest.TestCase):
+
     @patch('xivo_dao.data_handler.line_extension.dao.get_by_line_id')
     @patch('xivo_dao.data_handler.line.dao.get')
     def test_get_by_line_id(self, line_get, dao_get_by_line_id):
@@ -57,6 +60,9 @@ class TestLineExtensionService(unittest.TestCase):
         line_get.assert_called_once_with(line.id)
         dao_get_by_line_id.assert_called_once_with(line.id)
 
+
+class TestFindByLineId(unittest.TestCase):
+
     @patch('xivo_dao.data_handler.line_extension.dao.find_by_line_id')
     def test_find_by_line_id(self, dao_find_by_line_id):
         line_extension = Mock(LineExtension, line_id=1)
@@ -67,6 +73,9 @@ class TestLineExtensionService(unittest.TestCase):
         assert_that(result, equal_to(line_extension))
         dao_find_by_line_id.assert_called_once_with(1)
 
+
+class TestFindByExtensionId(unittest.TestCase):
+
     @patch('xivo_dao.data_handler.line_extension.dao.find_by_extension_id')
     def test_find_by_extension_id(self, dao_find_by_extension_id):
         line_extension = Mock(LineExtension, extension_id=1)
@@ -76,6 +85,9 @@ class TestLineExtensionService(unittest.TestCase):
 
         assert_that(result, equal_to(line_extension))
         dao_find_by_extension_id.assert_called_once_with(1)
+
+
+class TestGetByExtensionId(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.line_extension.dao.get_by_extension_id')
     @patch('xivo_dao.data_handler.extension.dao.get')
@@ -88,6 +100,9 @@ class TestLineExtensionService(unittest.TestCase):
 
         assert_that(result, equal_to(line_extension))
         dao_get_by_extension_id.assert_called_once_with(extension.id)
+
+
+class TestLineExtensionDissociate(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.line_extension.notifier.dissociated')
     @patch('xivo_dao.data_handler.user_line_extension.services.dissociate_line_extension')
