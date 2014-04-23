@@ -78,6 +78,11 @@ def _check_invalid_parameters(device):
         invalid_parameters.append('ip')
     if device.mac and not MAC_REGEX.match(device.mac):
         invalid_parameters.append('mac')
+    if device.options is not None:
+        if not isinstance(device.options, dict):
+            invalid_parameters.append('options')
+        elif 'switchboard' in device.options and not isinstance(device.options['switchboard'], bool):
+            invalid_parameters.append('options.switchboard')
     if invalid_parameters:
         raise InvalidParametersError(invalid_parameters)
 

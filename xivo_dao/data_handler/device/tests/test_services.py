@@ -17,7 +17,7 @@
 
 import unittest
 
-from hamcrest import assert_that, equal_to
+from hamcrest import *
 from mock import patch, Mock
 from urllib2 import URLError
 from xivo_dao.helpers.abstract_model import SearchResult
@@ -667,17 +667,21 @@ class TestDeviceServices(unittest.TestCase):
     @patch('xivo_dao.helpers.provd_connector.device_manager')
     def test_autoprov(self, device_manager, config_manager, generate_autoprov_config):
         device = Device(id=self.device_id)
+        autoprov_config_id = 'autoprov123'
 
         config_device = {}
         config_device['id'] = device.id
         config_device['config'] = 'qwerty'
+        config_device['options'] = {'switchboard': True}
 
-        generate_autoprov_config.return_value = 'autoprov123'
+        generate_autoprov_config.return_value = autoprov_config_id
         device_manager().get.return_value = config_device
         config_manager().autocreate.return_value = 'autocreate123'
 
         device_services.reset_to_autoprov(device)
 
+        assert_that(config_device['config'], equal_to(autoprov_config_id))
+        assert_that(config_device, is_not(has_item('options')))
         generate_autoprov_config.assert_called_once_with()
         device_manager().get.assert_called_with(self.device_id)
         device_manager().update.assert_called_with(config_device)

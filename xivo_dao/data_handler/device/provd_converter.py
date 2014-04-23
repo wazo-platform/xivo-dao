@@ -29,7 +29,8 @@ PROVD_DEVICE_KEYS = [
     'vendor',
     'model',
     'version',
-    'description'
+    'description',
+    'options',
 ]
 
 

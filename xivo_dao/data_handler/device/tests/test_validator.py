@@ -66,6 +66,18 @@ class TestDeviceValidator(unittest.TestCase):
 
         self.assertRaises(InvalidParametersError, validator.validate_create, device)
 
+    def test_validate_create_invalid_options_type(self):
+        device = Device()
+        device.options = 'foobar'
+
+        self.assertRaises(InvalidParametersError, validator.validate_create, device)
+
+    def test_validate_create_invalid_switchboard_option_type(self):
+        device = Device()
+        device.options = {'switchboard': 42}
+
+        self.assertRaises(InvalidParametersError, validator.validate_create, device)
+
     @patch('xivo_dao.data_handler.device.dao.mac_exists', Mock(return_value=False))
     @patch('xivo_dao.data_handler.device.dao.plugin_exists')
     def test_validate_create_plugin_does_not_exist(self, dao_plugin_exists):
@@ -104,6 +116,7 @@ class TestDeviceValidator(unittest.TestCase):
             'ip': '10.40.0.210',
             'template_id': 'defaultconfigdevice',
             'plugin': 'null',
+            'options': {'switchboard': True},
         }
 
         device = Device(**device)

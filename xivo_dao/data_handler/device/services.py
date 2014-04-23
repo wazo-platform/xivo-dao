@@ -138,6 +138,7 @@ def reset_to_autoprov(device):
     try:
         provd_device = provd_device_manager.get(device.id)
         provd_device['config'] = provd_converter.generate_autoprov_config()
+        provd_device.pop('options', None)
         provd_device_manager.update(provd_device)
     except Exception as e:
         raise ProvdError('error while synchronize device.', e)
