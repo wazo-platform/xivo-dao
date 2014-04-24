@@ -19,6 +19,8 @@ import unittest
 from mock import Mock, patch
 from hamcrest import assert_that, equal_to
 
+from xivo_dao.data_handler.extension.model import Extension
+from xivo_dao.data_handler.line.model import Line
 from xivo_dao.data_handler.line_extension.model import LineExtension
 from xivo_dao.data_handler.line_extension import services as line_extension_service
 
@@ -44,14 +46,16 @@ class TestLineExtensionService(unittest.TestCase):
         notifier_associated.assert_called_once_with(created_line_extension)
 
     @patch('xivo_dao.data_handler.line_extension.dao.get_by_line_id')
-    def test_get_by_line_id(self, dao_get_by_line_id):
-        line_extension = Mock(LineExtension, line_id=1)
-        dao_get_by_line_id.return_value = line_extension
+    @patch('xivo_dao.data_handler.line.dao.get')
+    def test_get_by_line_id(self, line_get, dao_get_by_line_id):
+        line = line_get.return_value = Mock(Line, id=1)
+        line_extension = dao_get_by_line_id.return_value = Mock(LineExtension, line_id=line.id)
 
-        result = line_extension_service.get_by_line_id(1)
+        result = line_extension_service.get_by_line_id(line.id)
 
         assert_that(result, equal_to(line_extension))
-        dao_get_by_line_id.assert_called_once_with(1)
+        line_get.assert_called_once_with(line.id)
+        dao_get_by_line_id.assert_called_once_with(line.id)
 
     @patch('xivo_dao.data_handler.line_extension.dao.find_by_line_id')
     def test_find_by_line_id(self, dao_find_by_line_id):
@@ -74,14 +78,16 @@ class TestLineExtensionService(unittest.TestCase):
         dao_find_by_extension_id.assert_called_once_with(1)
 
     @patch('xivo_dao.data_handler.line_extension.dao.get_by_extension_id')
-    def test_get_by_extension_id(self, dao_get_by_extension_id):
-        line_extension = Mock(LineExtension, extension_id=1)
+    @patch('xivo_dao.data_handler.extension.dao.get')
+    def test_get_by_extension_id(self, extension_get, dao_get_by_extension_id):
+        extension = extension_get.return_value = Mock(Extension, id=1)
+        line_extension = Mock(LineExtension, extension_id=extension.id)
         dao_get_by_extension_id.return_value = line_extension
 
-        result = line_extension_service.get_by_extension_id(1)
+        result = line_extension_service.get_by_extension_id(extension.id)
 
         assert_that(result, equal_to(line_extension))
-        dao_get_by_extension_id.assert_called_once_with(1)
+        dao_get_by_extension_id.assert_called_once_with(extension.id)
 
     @patch('xivo_dao.data_handler.line_extension.notifier.dissociated')
     @patch('xivo_dao.data_handler.user_line_extension.services.dissociate_line_extension')

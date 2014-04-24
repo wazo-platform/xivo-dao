@@ -21,7 +21,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.data_handler.line_extension import dao
 from xivo_dao.data_handler.line_extension.model import LineExtension
 from xivo_dao.data_handler.line_extension.exception import LineExtensionNotExistsError
-from xivo_dao.data_handler.exception import ElementNotExistsError
 
 from xivo_dao.alchemy.callfilter import Callfilter
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
@@ -172,9 +171,6 @@ class TestFindByLineId(TestLineExtensionDAO):
 
 class TestGetByLineId(TestLineExtensionDAO):
 
-    def test_get_by_line_id_no_line(self):
-        self.assertRaises(ElementNotExistsError, dao.get_by_line_id, 1)
-
     def test_get_by_line_id_no_extension(self):
         user_line_row = self.add_user_line_without_exten()
 
@@ -242,9 +238,6 @@ class TestFindAllByExtensionId(TestLineExtensionDAO):
 
 
 class TestGetByExtensionId(TestLineExtensionDAO):
-
-    def test_get_by_extension_id_no_extension(self):
-        self.assertRaises(ElementNotExistsError, dao.get_by_extension_id, 1)
 
     def test_get_by_extension_id_no_line(self):
         extension_row = self.add_extension()
