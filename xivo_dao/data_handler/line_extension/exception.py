@@ -23,3 +23,7 @@ class LineExtensionNotExistsError(ElementNotExistsError):
     @classmethod
     def from_line_id(cls, line_id):
         return cls('LineExtension', line_id=line_id)
+
+    @classmethod
+    def from_extension_id(cls, extension_id):
+        return cls('LineExtension', extension_id=extension_id)

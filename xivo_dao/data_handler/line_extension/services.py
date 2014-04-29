@@ -15,22 +15,30 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.data_handler.line_extension import dao
-from xivo_dao.data_handler.user_line_extension import services as ule_services
+from xivo_dao.data_handler.extension import dao as extension_dao
+from xivo_dao.data_handler.line import dao as line_dao
+from xivo_dao.data_handler.line_extension import dao as line_extension_dao
 from xivo_dao.data_handler.line_extension import notifier
 from xivo_dao.data_handler.line_extension import validator
+from xivo_dao.data_handler.user_line_extension import services as ule_services
 
 
 def find_by_line_id(line_id):
-    return dao.find_by_line_id(line_id)
+    return line_extension_dao.find_by_line_id(line_id)
 
 
 def get_by_line_id(line_id):
-    return dao.get_by_line_id(line_id)
+    line = line_dao.get(line_id)
+    return line_extension_dao.get_by_line_id(line.id)
 
 
 def find_by_extension_id(extension_id):
-    return dao.find_by_extension_id(extension_id)
+    return line_extension_dao.find_by_extension_id(extension_id)
+
+
+def get_by_extension_id(extension_id):
+    extension = extension_dao.get(extension_id)
+    return line_extension_dao.get_by_extension_id(extension.id)
 
 
 def associate(line_extension):

@@ -21,7 +21,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.data_handler.line_extension import dao
 from xivo_dao.data_handler.line_extension.model import LineExtension
 from xivo_dao.data_handler.line_extension.exception import LineExtensionNotExistsError
-from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.alchemy.user_line import UserLine
 
 
@@ -139,9 +138,6 @@ class TestFindByLineId(TestLineExtensionDAO):
 
 class TestGetByLineId(TestLineExtensionDAO):
 
-    def test_get_by_line_id_no_line(self):
-        self.assertRaises(ElementNotExistsError, dao.get_by_line_id, 1)
-
     def test_get_by_line_id_no_extension(self):
         user_line_row = self.add_user_line_without_exten()
 
@@ -204,6 +200,33 @@ class TestFindAllByExtensionId(TestLineExtensionDAO):
         result = dao.find_by_extension_id(secondary_ule.extension_id)
 
         assert_that(result, all_of(
+            has_property('line_id', main_ule.line_id),
+            has_property('extension_id', main_ule.extension_id)))
+
+
+class TestGetByExtensionId(TestLineExtensionDAO):
+
+    def test_get_by_extension_id_no_line(self):
+        extension_row = self.add_extension()
+
+        self.assertRaises(LineExtensionNotExistsError, dao.get_by_extension_id, extension_row.id)
+
+    def test_get_by_extension_id_with_line(self):
+        user_line_row = self.add_user_line_with_exten()
+
+        line_extension = dao.get_by_extension_id(user_line_row.extension_id)
+
+        assert_that(line_extension, all_of(
+            has_property('line_id', user_line_row.line_id),
+            has_property('extension_id', user_line_row.extension_id)))
+
+    def test_get_by_extension_id_with_multiple_users(self):
+        main_ule = self.add_user_line_with_exten()
+        secondary_ule = self.prepare_secondary_user_associated(main_ule)
+
+        line_extension = dao.get_by_extension_id(secondary_ule.extension_id)
+
+        assert_that(line_extension, all_of(
             has_property('line_id', main_ule.line_id),
             has_property('extension_id', main_ule.extension_id)))
 
