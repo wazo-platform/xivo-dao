@@ -17,7 +17,7 @@
 
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, Enum
-from xivo_dao.helpers.db_manager import Base, Type
+from xivo_dao.helpers.db_manager import Base
 
 
 class PickupMember(Base):
@@ -27,10 +27,10 @@ class PickupMember(Base):
     category = Column(Enum('member',
                            'pickup',
                            name='pickup_category',
-                           metadata=Type.metadata), nullable=False, primary_key=True)
+                           metadata=Base.metadata), nullable=False, primary_key=True)
     membertype = Column(Enum('group',
                              'queue',
                              'user',
                              name='pickup_membertype',
-                             metadata=Type.metadata), nullable=False, primary_key=True)
+                             metadata=Base.metadata), nullable=False, primary_key=True)
     memberid = Column(Integer, nullable=False, primary_key=True)

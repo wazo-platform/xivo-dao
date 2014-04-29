@@ -15,9 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.db_manager import Base
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String, Text
+
+from xivo_dao.helpers.db_manager import Base
 
 
 class QueueSkill(Base):
@@ -25,7 +26,7 @@ class QueueSkill(Base):
     __tablename__ = 'queueskill'
 
     id = Column(Integer, primary_key=True, nullable=False)
-    catid = Column(Integer, default=1, nullable=False)
-    name = Column(String(64), default='', nullable=False)
+    catid = Column(Integer, server_default='1', nullable=False)
+    name = Column(String(64), server_default='', nullable=False)
     description = Column(Text, nullable=False)
     printscreen = Column(String(5))

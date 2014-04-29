@@ -17,13 +17,15 @@
 
 from sqlalchemy.schema import Column
 from sqlalchemy.types import DateTime, Integer, String, Boolean, Interval
+
 from xivo_dao.helpers.db_manager import Base
 
 
 class CallLog(Base):
+
     __tablename__ = 'call_log'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, nullable=False, primary_key=True)
     date = Column(DateTime, nullable=False)
     source_name = Column(String(255))
     source_exten = Column(String(255))

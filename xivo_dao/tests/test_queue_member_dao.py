@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from mock import patch
+
 from xivo_dao import queue_member_dao
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
@@ -23,11 +24,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestQueueMemberDAO(DAOTestCase):
-
-    tables = [QueueMember, QueueFeatures]
-
-    def setUp(self):
-        self.empty_tables()
 
     def test_add_agent_to_queue(self):
         agent_id = 123

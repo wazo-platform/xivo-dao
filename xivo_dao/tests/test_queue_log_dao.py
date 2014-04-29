@@ -16,13 +16,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import random
+from datetime import datetime
+from datetime import timedelta
 
 from xivo_dao import queue_log_dao
 from xivo_dao.alchemy.stat_agent import StatAgent
 from xivo_dao.alchemy.queue_log import QueueLog
 from xivo_dao.tests.test_dao import DAOTestCase
-from datetime import datetime
-from datetime import timedelta
 
 ONE_HOUR = timedelta(hours=1)
 ONE_MICROSECOND = timedelta(microseconds=1)
@@ -31,10 +31,8 @@ TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 
 class TestQueueLogDAO(DAOTestCase):
 
-    tables = [QueueLog, StatAgent]
-
     def setUp(self):
-        self.empty_tables()
+        DAOTestCase.setUp(self)
         self.queue_name = 'q1'
 
     def _insert_agent(self, aname):

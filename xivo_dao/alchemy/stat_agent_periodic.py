@@ -15,9 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column, ForeignKey, Sequence
+from sqlalchemy.schema import Column, ForeignKey
 from sqlalchemy.types import Integer, TIMESTAMP
 from sqlalchemy.dialects.postgresql import INTERVAL
+from sqlalchemy.orm import relationship
+
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -25,9 +27,11 @@ class StatAgentPeriodic(Base):
 
     __tablename__ = 'stat_agent_periodic'
 
-    id = Column(Integer, Sequence('stat_queue_periodic_id_seq'), primary_key=True)
+    id = Column(Integer, primary_key=True)
     time = Column(TIMESTAMP, nullable=False)
-    login_time = Column(INTERVAL, nullable=False, default=0)
-    pause_time = Column(INTERVAL, nullable=False, default=0)
-    wrapup_time = Column(INTERVAL, nullable=False, default=0)
+    login_time = Column(INTERVAL, nullable=False, server_default='0')
+    pause_time = Column(INTERVAL, nullable=False, server_default='0')
+    wrapup_time = Column(INTERVAL, nullable=False, server_default='0')
     agent_id = Column(Integer, ForeignKey("stat_agent.id"))
+
+    stat_agent = relationship("StatAgent", foreign_keys=agent_id)

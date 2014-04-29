@@ -15,10 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.db_manager import Base, Type
-
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String, Enum
+
+from xivo_dao.helpers.db_manager import Base
 
 
 class ContextNumbers(Base):
@@ -28,8 +28,8 @@ class ContextNumbers(Base):
     context = Column(String(39), primary_key=True)
     type = Column(Enum('user', 'group', 'queue', 'meetme', 'incall',
                        name='contextnumbers_type',
-                       metadata=Type.metadata),
+                       metadata=Base.metadata),
                   primary_key=True)
-    numberbeg = Column(String(16), default=0, primary_key=True)
-    numberend = Column(String(16), default=0, primary_key=True)
-    didlength = Column(Integer, nullable=False, default=0)
+    numberbeg = Column(String(16), server_default='0', primary_key=True)
+    numberend = Column(String(16), server_default='0', primary_key=True)
+    didlength = Column(Integer, nullable=False, server_default='0')

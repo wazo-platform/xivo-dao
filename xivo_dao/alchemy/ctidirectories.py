@@ -15,8 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column, Sequence
+from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, Text, String
+
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -24,7 +25,7 @@ class CtiDirectories(Base):
 
     __tablename__ = 'ctidirectories'
 
-    id = Column(Integer, Sequence('ctidirectories_id_seq'), primary_key=True)
+    id = Column(Integer, primary_key=True)
     name = Column(String(255))
     uri = Column(String(255))
     delimiter = Column(String(20))

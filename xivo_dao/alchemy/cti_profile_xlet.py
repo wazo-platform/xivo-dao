@@ -17,6 +17,8 @@
 
 from sqlalchemy.schema import Column, ForeignKey
 from sqlalchemy.types import Integer, Boolean
+from sqlalchemy.orm import relationship
+
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -27,8 +29,12 @@ class CtiProfileXlet(Base):
     xlet_id = Column(Integer, ForeignKey("cti_xlet.id"), primary_key=True)
     profile_id = Column(Integer, ForeignKey('cti_profile.id'), primary_key=True)
     layout_id = Column(Integer, ForeignKey("cti_xlet_layout.id"))
-    closable = Column(Boolean, default=True)
-    movable = Column(Boolean, default=True)
-    floating = Column(Boolean, default=True)
-    scrollable = Column(Boolean, default=True)
+    closable = Column(Boolean, server_default='True')
+    movable = Column(Boolean, server_default='True')
+    floating = Column(Boolean, server_default='True')
+    scrollable = Column(Boolean, server_default='True')
     order = Column(Integer)
+
+    cti_xlet = relationship("CtiXlet", foreign_keys=xlet_id)
+    cti_profile = relationship("CtiProfile", foreign_keys=profile_id)
+    cti_xlet_layout = relationship("CtiXletLayout", foreign_keys=layout_id)

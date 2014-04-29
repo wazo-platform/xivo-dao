@@ -17,17 +17,19 @@
 
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String, TEXT
+
 from xivo_dao.helpers.db_manager import Base
 
 
 class Schedule(Base):
+
     __tablename__ = 'schedule'
 
     id = Column(Integer, primary_key=True)
     name = Column(String(255), nullable=False)
     timezone = Column(String(128))
-    fallback_action = Column(String(25), nullable=False, default='none')
+    fallback_action = Column(String(25), nullable=False, server_default='none')
     fallback_actionid = Column(String(255))
     fallback_actionargs = Column(String(255))
     description = Column(TEXT)
-    commented = Column(Integer, nullable=False, default=0)
+    commented = Column(Integer, nullable=False, server_default='0')

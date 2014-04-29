@@ -22,11 +22,6 @@ from sqlalchemy.exc import IntegrityError
 
 class TestSession(DAOTestCase):
 
-    tables = [AgentFeatures]
-
-    def setUp(self):
-        self.empty_tables()
-
     def _insert_valid_agent(self):
         agent = AgentFeatures()
         agent.numgroup = 6
@@ -34,6 +29,7 @@ class TestSession(DAOTestCase):
         agent.passwd = ''
         agent.context = 'default'
         agent.language = ''
+        agent.description = ''
 
         self.session.add(agent)
 
@@ -48,11 +44,8 @@ class TestSession(DAOTestCase):
 
     def test_commit(self):
         self.session.begin()
-        try:
-            self._insert_valid_agent()
-            self.session.commit()
-        except IntegrityError:
-            self.session.rollback()
+        self._insert_valid_agent()
+        self.session.commit()
 
         res = self.session.query(AgentFeatures).all()
 

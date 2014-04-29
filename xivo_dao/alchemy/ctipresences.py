@@ -15,8 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column, Sequence
+from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String
+
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -24,7 +25,7 @@ class CtiPresences(Base):
 
     __tablename__ = 'ctipresences'
 
-    id = Column(Integer, Sequence('ctipresences_id_seq'), primary_key=True)
+    id = Column(Integer, primary_key=True)
     name = Column(String(255), nullable=False)
     description = Column(String(255))
-    deletable = Column(Integer, default=1)
+    deletable = Column(Integer, server_default='1')

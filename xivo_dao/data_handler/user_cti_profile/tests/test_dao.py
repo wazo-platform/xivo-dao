@@ -15,50 +15,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, equal_to, none
+from hamcrest import *
+from mock import patch, Mock
+from sqlalchemy.exc import SQLAlchemyError
 
-from xivo_dao.alchemy.callfilter import Callfilter
-from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from xivo_dao.alchemy.cti_profile import CtiProfile as CtiProfileSchema
-from xivo_dao.alchemy.dialaction import Dialaction
-from xivo_dao.alchemy.extension import Extension
-from xivo_dao.alchemy.phonefunckey import PhoneFunckey
-from xivo_dao.alchemy.queuemember import QueueMember
-from xivo_dao.alchemy.rightcallmember import RightCallMember
-from xivo_dao.alchemy.sccpdevice import SCCPDevice
-from xivo_dao.alchemy.schedulepath import SchedulePath
-from xivo_dao.alchemy.user_line import UserLine
-from xivo_dao.alchemy.userfeatures import UserFeatures
-from xivo_dao.alchemy.userfeatures import test_dependencies as user_test_dependencies
-from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementEditionError
 from xivo_dao.data_handler.user_cti_profile import dao as user_cti_profile_dao
 from xivo_dao.data_handler.user_cti_profile.model import UserCtiProfile
 from xivo_dao.tests.test_dao import DAOTestCase
-from mock import patch, Mock
-from sqlalchemy.exc import SQLAlchemyError
 
 
 class TestUserCtiProfile(DAOTestCase):
-
-    tables = [UserFeatures,
-              QueueMember,
-              RightCallMember,
-              Callfiltermember,
-              Callfilter,
-              Dialaction,
-              PhoneFunckey,
-              SchedulePath,
-              Extension,
-              UserLine,
-              UserSIP,
-              SCCPDevice]
-
-    tables += user_test_dependencies
-
-    def setUp(self):
-        self.cleanTables()
 
     def test_find_by_userid(self):
         cti_profile = CtiProfileSchema(id=2, name='Test')

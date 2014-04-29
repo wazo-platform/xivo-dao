@@ -15,24 +15,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.alchemy.stat_agent_periodic import StatAgentPeriodic
-from xivo_dao.alchemy.stat_agent import StatAgent
-from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao import stat_agent_periodic_dao
 from datetime import datetime as dt
 from datetime import timedelta
 from sqlalchemy import func
+
+from xivo_dao import stat_agent_periodic_dao
+from xivo_dao.alchemy.stat_agent_periodic import StatAgentPeriodic
+from xivo_dao.alchemy.stat_agent import StatAgent
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
 ONE_HOUR = timedelta(hours=1)
 
 
 class TestStatAgentPeriodicDAO(DAOTestCase):
-
-    tables = [StatAgent, StatAgentPeriodic]
-
-    def setUp(self):
-        self.empty_tables()
 
     def _insert_agent_to_stat_agent(self):
         agent = StatAgent()

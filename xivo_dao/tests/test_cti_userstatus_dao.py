@@ -17,16 +17,11 @@
 
 from xivo_dao import cti_userstatus_dao
 from xivo_dao.alchemy.ctipresences import CtiPresences
-from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.ctistatus import CtiStatus
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestCtiUserStatusDAO(DAOTestCase):
-
-    tables = [CtiStatus, CtiPresences]
-
-    def setUp(self):
-        self.empty_tables()
 
     def test_get_status_with_presence_id(self):
         cti_presence_id_1 = self._add_presence('test1')

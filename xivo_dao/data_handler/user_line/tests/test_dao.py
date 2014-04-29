@@ -17,47 +17,14 @@
 
 from hamcrest import *
 
-from xivo_dao.alchemy.callfilter import Callfilter
-from xivo_dao.alchemy.callfiltermember import Callfiltermember
-from xivo_dao.alchemy.dialaction import Dialaction
-from xivo_dao.alchemy.extension import Extension as ExtensionSchema
-from xivo_dao.alchemy.phonefunckey import PhoneFunckey
-from xivo_dao.alchemy.queuemember import QueueMember
-from xivo_dao.alchemy.rightcallmember import RightCallMember
-from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
-from xivo_dao.alchemy.userfeatures import UserFeatures
-from xivo_dao.alchemy.userfeatures import test_dependencies as user_test_dependencies
-from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema
 from xivo_dao.data_handler.exception import ElementNotExistsError, ElementCreationError
 from xivo_dao.data_handler.user_line import dao as user_line_dao
 from xivo_dao.data_handler.user_line.model import UserLine
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
-class TestUserLineDao(DAOTestCase):
-
-    tables = [
-        UserFeatures,
-        QueueMember,
-        RightCallMember,
-        Callfiltermember,
-        Callfilter,
-        Dialaction,
-        PhoneFunckey,
-        SchedulePath,
-        ExtensionSchema,
-        UserLineSchema,
-        UserSIPSchema
-    ]
-
-    tables += user_test_dependencies
-
-    def setUp(self):
-        self.empty_tables()
-
-
-class TestUserLineGetByUserIdAndLineId(TestUserLineDao):
+class TestUserLineGetByUserIdAndLineId(DAOTestCase):
 
     def test_get_by_user_id_no_users_or_line(self):
         self.assertRaises(ElementNotExistsError, user_line_dao.get_by_user_id_and_line_id, 1, 1)
@@ -99,7 +66,7 @@ class TestUserLineGetByUserIdAndLineId(TestUserLineDao):
                     )
 
 
-class TestUserLineFindByUserIdAndLineId(TestUserLineDao):
+class TestUserLineFindByUserIdAndLineId(DAOTestCase):
 
     def test_find_by_user_id_no_users_or_line(self):
         result = user_line_dao.find_by_user_id_and_line_id(1, 1)
@@ -142,7 +109,7 @@ class TestUserLineFindByUserIdAndLineId(TestUserLineDao):
                     )
 
 
-class TestUserLineFindAllByUserId(TestUserLineDao):
+class TestUserLineFindAllByUserId(DAOTestCase):
 
     def test_find_all_by_user_id_no_user_line(self):
         expected_result = []
@@ -186,7 +153,7 @@ class TestUserLineFindAllByUserId(TestUserLineDao):
         ))
 
 
-class TestUserLineFindMainUserLine(TestUserLineDao):
+class TestUserLineFindMainUserLine(DAOTestCase):
 
     def test_find_main_user_line_no_user(self):
         line_id = 33
@@ -239,7 +206,7 @@ class TestUserLineFindMainUserLine(TestUserLineDao):
                     )
 
 
-class TestAssociateUserLine(TestUserLineDao):
+class TestAssociateUserLine(DAOTestCase):
 
     def test_associate_user_with_line(self):
         user = self.add_user()
@@ -399,7 +366,7 @@ class TestAssociateUserLine(TestUserLineDao):
         self.assertRaises(ElementCreationError, user_line_dao.associate, user_line)
 
 
-class TestDissociateUserLine(TestUserLineDao):
+class TestDissociateUserLine(DAOTestCase):
 
     def test_dissociate_main_user_line_without_exten(self):
         user_line = self.add_user_line_without_exten()
@@ -459,7 +426,7 @@ class TestDissociateUserLine(TestUserLineDao):
         assert_that(row, none())
 
 
-class TestLineHasSecondaryUser(TestUserLineDao):
+class TestLineHasSecondaryUser(DAOTestCase):
 
     def test_line_has_secondary_user(self):
         main_user = self.add_user()
@@ -496,7 +463,7 @@ class TestLineHasSecondaryUser(TestUserLineDao):
         assert_that(result, equal_to(True))
 
 
-class TestUserLineFindAllByLineId(TestUserLineDao):
+class TestUserLineFindAllByLineId(DAOTestCase):
 
     def test_find_all_by_line_id_no_user_line(self):
         result = user_line_dao.find_all_by_line_id(1)

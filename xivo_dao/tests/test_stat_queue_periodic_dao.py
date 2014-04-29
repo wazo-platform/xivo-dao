@@ -16,20 +16,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import datetime
-
-from xivo_dao.alchemy.stat_queue_periodic import StatQueuePeriodic
-from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao.alchemy.stat_queue import StatQueue
-from xivo_dao import stat_queue_periodic_dao
 from sqlalchemy import func
+
+from xivo_dao import stat_queue_periodic_dao
+from xivo_dao.alchemy.stat_queue_periodic import StatQueuePeriodic
+from xivo_dao.alchemy.stat_queue import StatQueue
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestStatQueuePeriodicDAO(DAOTestCase):
-
-    tables = [StatQueue, StatQueuePeriodic]
-
-    def setUp(self):
-        self.empty_tables()
 
     def _insert_queue_to_stat_queue(self):
         queue = StatQueue()

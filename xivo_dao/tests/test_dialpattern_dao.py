@@ -22,8 +22,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 class TestDialPatternDAO(DAOTestCase):
 
-    tables = [DialPattern]
-
     def test_delete(self):
         dialpattern = self.add_dialpattern()
 

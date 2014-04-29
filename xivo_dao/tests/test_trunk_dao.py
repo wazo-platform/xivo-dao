@@ -15,20 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from xivo_dao import trunk_dao
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
 from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.usercustom import UserCustom
-from xivo_dao import trunk_dao
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TrunkFeaturesDAOTestCase(DAOTestCase):
-
-    tables = [TrunkFeatures, UserSIP, UserIAX, UserCustom]
-
-    def setUp(self):
-        self.empty_tables()
 
     def test_find_by_proto_name_sip(self):
         trunk_name = 'my_trunk'

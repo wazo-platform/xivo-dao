@@ -16,20 +16,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao import incall_dao
-from xivo_dao.alchemy.cti_profile import CtiProfile
-from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
-from xivo_dao.alchemy.ctipresences import CtiPresences
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.incall import Incall
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestIncallDAO(DAOTestCase):
-
-    tables = [Incall, Dialaction, CtiPresences, CtiPhoneHintsGroup, CtiProfile]
-
-    def setUp(self):
-        self.empty_tables()
 
     def _insert_incall(self, exten, context='from-extern'):
         incall = Incall()

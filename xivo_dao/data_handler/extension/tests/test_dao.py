@@ -20,8 +20,6 @@ from mock import patch, Mock
 from sqlalchemy.exc import SQLAlchemyError
 
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
-from xivo_dao.alchemy.userfeatures import test_dependencies as user_test_dependencies
-from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.data_handler.exception import ElementCreationError
 from xivo_dao.data_handler.exception import ElementEditionError
 from xivo_dao.data_handler.extension import dao as extension_dao
@@ -30,17 +28,7 @@ from xivo_dao.data_handler.user.model import User
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
-class TestExtensionDao(DAOTestCase):
-
-    tables = [
-        ExtensionSchema
-    ]
-
-    def setUp(self):
-        self.empty_tables()
-
-
-class TestFindAll(TestExtensionDao):
+class TestFindAll(DAOTestCase):
 
     def prepare_extension(self, **kwargs):
         extension_row = self.add_extension(**kwargs)
@@ -85,7 +73,7 @@ class TestFindAll(TestExtensionDao):
         assert_that(extens, contains(extension))
 
 
-class TestFind(TestExtensionDao):
+class TestFind(DAOTestCase):
 
     def test_find_no_extension(self):
         result = extension_dao.find(1)
@@ -102,7 +90,7 @@ class TestFind(TestExtensionDao):
             has_property('context', extension_row.context)))
 
 
-class TestFindByExten(TestExtensionDao):
+class TestFindByExten(DAOTestCase):
 
     def test_find_by_exten_no_extens(self):
         expected = []
@@ -127,7 +115,7 @@ class TestFindByExten(TestExtensionDao):
         ))
 
 
-class TestFindByContext(TestExtensionDao):
+class TestFindByContext(DAOTestCase):
 
     def test_find_by_context_no_extens(self):
         expected = []
@@ -152,7 +140,7 @@ class TestFindByContext(TestExtensionDao):
         ))
 
 
-class TestGet(TestExtensionDao):
+class TestGet(DAOTestCase):
 
     def test_get_no_exist(self):
         self.assertRaises(LookupError, extension_dao.get, 666)
@@ -167,7 +155,7 @@ class TestGet(TestExtensionDao):
         assert_that(extension.exten, equal_to(exten))
 
 
-class TestGetByExten(TestExtensionDao):
+class TestGetByExten(DAOTestCase):
 
     def test_get_by_exten_context_no_exist(self):
         self.assertRaises(LookupError, extension_dao.get_by_exten_context, '1234', 'default')
@@ -186,7 +174,7 @@ class TestGetByExten(TestExtensionDao):
         assert_that(extension.context, equal_to(context))
 
 
-class TestFindByExtenContext(TestExtensionDao):
+class TestFindByExtenContext(DAOTestCase):
 
     def test_find_by_exten_context_no_extensions(self):
         expected = None
@@ -209,7 +197,7 @@ class TestFindByExtenContext(TestExtensionDao):
         ))
 
 
-class TestCreate(TestExtensionDao):
+class TestCreate(DAOTestCase):
 
     def test_create(self):
         exten = 'extension'
@@ -262,10 +250,10 @@ class TestCreate(TestExtensionDao):
         session.rollback.assert_called_once_with()
 
 
-class TestEdit(TestExtensionDao):
+class TestEdit(DAOTestCase):
 
     def setUp(self):
-        TestExtensionDao.setUp(self)
+        DAOTestCase.setUp(self)
         self.existing_extension = self.add_extension(exten='1635', context='my_context', type='user', typeval='0')
 
     def test_edit(self):
@@ -303,7 +291,7 @@ class TestEdit(TestExtensionDao):
         session.rollback.assert_called_once_with()
 
 
-class TestDelete(TestExtensionDao):
+class TestDelete(DAOTestCase):
 
     def test_delete(self):
         exten = 'sdklfj'
@@ -321,9 +309,7 @@ class TestDelete(TestExtensionDao):
         self.assertEquals(row, None)
 
 
-class TestAssociateToUser(TestExtensionDao):
-
-    tables = TestExtensionDao.tables + user_test_dependencies + [UserSchema]
+class TestAssociateToUser(DAOTestCase):
 
     def test_associate_to_user(self):
         extension = self.prepare_extension()
@@ -362,7 +348,7 @@ class TestAssociateToUser(TestExtensionDao):
         assert_that(updated_extension.typeval, equal_to(str(user.id)))
 
 
-class TestDissociateExtension(TestExtensionDao):
+class TestDissociateExtension(DAOTestCase):
 
     def test_dissociate_extension(self):
         extension = self.prepare_extension()

@@ -16,35 +16,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from mock import patch
-from xivo_dao.alchemy.linefeatures import LineFeatures
+
+from xivo_dao import user_line_dao
 from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.usersip import UserSIP
-from xivo_dao import user_line_dao
-from xivo_dao.alchemy.extension import Extension as ExtensionSchema
-from xivo_dao.alchemy.userfeatures import UserFeatures
-from xivo_dao.alchemy.userfeatures import test_dependencies as user_test_dependencies
 from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao.alchemy.user_line import UserLine
 
 USER_ID = 5
 LINE_NUMBER = '1666'
 
 
 class TestUserLineDAO(DAOTestCase):
-
-    tables = [
-        LineFeatures,
-        UserLine,
-        SCCPLine,
-        UserSIP,
-        UserFeatures,
-        ExtensionSchema
-    ]
-
-    tables += user_test_dependencies
-
-    def setUp(self):
-        self.empty_tables()
 
     def test_find_line_id_by_user_id(self):
         self.add_user_line_with_exten(exten='445')

@@ -15,9 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.db_manager import Base, Type
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String, Enum, Text
+
+from xivo_dao.helpers.db_manager import Base
 
 
 class Queue(Base):
@@ -28,8 +29,8 @@ class Queue(Base):
     musicclass = Column(String(128))
     announce = Column(String(128))
     context = Column(String(39))
-    timeout = Column(Integer, default=0)
-    monitor_type = Column('monitor-type', Enum('no', 'mixmonitor', name='queue_monitor_type', metadata=Type.metadata))
+    timeout = Column(Integer, server_default='0')
+    monitor_type = Column('monitor-type', Enum('no', 'mixmonitor', name='queue_monitor_type', metadata=Base.metadata))
     monitor_format = Column('monitor-format', String(128))
     queue_youarenext = Column('queue-youarenext', String(128))
     queue_thereare = Column('queue-thereare', String(128))
@@ -51,24 +52,24 @@ class Queue(Base):
     strategy = Column(String(11))
     joinempty = Column(String(255))
     leavewhenempty = Column(String(255))
-    eventmemberstatus = Column(Integer, nullable=False, default=0)
-    eventwhencalled = Column(Integer, nullable=False, default=0)
-    ringinuse = Column(Integer, nullable=False, default=0)
-    reportholdtime = Column(Integer, nullable=False, default=0)
+    eventmemberstatus = Column(Integer, nullable=False, server_default='0')
+    eventwhencalled = Column(Integer, nullable=False, server_default='0')
+    ringinuse = Column(Integer, nullable=False, server_default='0')
+    reportholdtime = Column(Integer, nullable=False, server_default='0')
     memberdelay = Column(Integer)
     weight = Column(Integer)
-    timeoutrestart = Column(Integer, nullable=False, default=0)
-    commented = Column(Integer, nullable=False, default=0)
-    category = Column(Enum('group', 'queue', name='queue_category', metadata=Type.metadata), nullable=False)
-    timeoutpriority = Column(String(10), nullable=False, default='app')
-    autofill = Column(Integer, nullable=False, default=1)
-    autopause = Column(Integer, nullable=False, default=1)
-    setinterfacevar = Column(Integer, nullable=False, default=0)
-    setqueueentryvar = Column(Integer, nullable=False, default=0)
-    setqueuevar = Column(Integer, nullable=False, default=0)
+    timeoutrestart = Column(Integer, nullable=False, server_default='0')
+    commented = Column(Integer, nullable=False, server_default='0')
+    category = Column(Enum('group', 'queue', name='queue_category', metadata=Base.metadata), nullable=False)
+    timeoutpriority = Column(String(10), nullable=False, server_default='app')
+    autofill = Column(Integer, nullable=False, server_default='1')
+    autopause = Column(Integer, nullable=False, server_default='1')
+    setinterfacevar = Column(Integer, nullable=False, server_default='0')
+    setqueueentryvar = Column(Integer, nullable=False, server_default='0')
+    setqueuevar = Column(Integer, nullable=False, server_default='0')
     membermacro = Column(String(1024))
-    min_announce_frequency = Column('min-announce-frequency', Integer, nullable=False, default=60)
-    random_periodic_announce = Column('random-periodic-announce', Integer, nullable=False, default=0)
-    announce_position = Column('announce-position', String(1024), nullable=False, default='yes')
-    announce_position_limit = Column('announce-position-limit', Integer, nullable=False, default=5)
+    min_announce_frequency = Column('min-announce-frequency', Integer, nullable=False, server_default='60')
+    random_periodic_announce = Column('random-periodic-announce', Integer, nullable=False, server_default='0')
+    announce_position = Column('announce-position', String(1024), nullable=False, server_default='yes')
+    announce_position_limit = Column('announce-position-limit', Integer, nullable=False, server_default='5')
     defaultrule = Column(String(1024))

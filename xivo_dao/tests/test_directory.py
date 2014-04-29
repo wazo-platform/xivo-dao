@@ -15,23 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.tests.test_dao import DAOTestCase
-
+from xivo_dao import directory_dao
 from xivo_dao.alchemy.cti_contexts import CtiContexts
 from xivo_dao.alchemy.cti_displays import CtiDisplays
-
-from xivo_dao import directory_dao
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestDirectoryDAO(DAOTestCase):
-
-    tables = [
-        CtiContexts,
-        CtiDisplays,
-    ]
-
-    def setUp(self):
-        self.empty_tables()
 
     def test_get_directory_headers(self):
         display_name = 'mydisplay'

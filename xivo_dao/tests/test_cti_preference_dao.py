@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao import cti_profile_dao, cti_preference_dao
+from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
 from xivo_dao.alchemy.ctipresences import CtiPresences
 from xivo_dao.alchemy.cti_profile_preference import CtiProfilePreference
@@ -25,12 +25,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestCtiPreferenceDAO(DAOTestCase):
-
-    tables = [CtiProfile, CtiPhoneHintsGroup,
-              CtiPresences, CtiProfilePreference, CtiPreference]
-
-    def setUp(self):
-        self.empty_tables()
 
     def test_get_name(self):
         cti_profile = CtiProfile()

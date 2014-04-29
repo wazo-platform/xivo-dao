@@ -18,19 +18,16 @@
 import datetime
 from datetime import datetime as t
 
+from xivo_dao import stat_dao
 from xivo_dao.alchemy.queue_log import QueueLog
-from xivo_dao.alchemy.stat_call_on_queue import StatCallOnQueue
 from xivo_dao.alchemy.stat_agent import StatAgent
 from xivo_dao.alchemy.stat_queue import StatQueue
 from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao import stat_dao
 
 TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 
 
 class TestStatDAO(DAOTestCase):
-
-    tables = [StatAgent, StatQueue, QueueLog, StatCallOnQueue]
 
     @classmethod
     def setUpClass(cls):
@@ -38,7 +35,7 @@ class TestStatDAO(DAOTestCase):
         cls._create_functions()
 
     def setUp(self):
-        self.empty_tables()
+        DAOTestCase.setUp(self)
         self.start = t(2012, 07, 01)
         self.end = t(2012, 07, 31, 23, 59, 59, 999999)
         self.qname1, self.qid1 = self._insert_queue('q1')

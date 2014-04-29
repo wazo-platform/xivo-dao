@@ -28,11 +28,6 @@ from xivo_dao.data_handler.exception import ElementCreationError
 
 class TestDialActionDAO(DAOTestCase):
 
-    tables = [DialactionSchema]
-
-    def setUp(self):
-        self.empty_tables()
-
     def test_create_default_dial_actions_for_user(self):
         user = User(id=1)
 

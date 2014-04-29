@@ -33,28 +33,9 @@ from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.userfeatures import UserFeatures
-from xivo_dao.alchemy.userfeatures import test_dependencies as user_test_dependencies
-from xivo_dao.alchemy.extension import Extension as ExtensionSchema
-from xivo_dao.alchemy.user_line import UserLine
 
 
 class TestUserFeaturesDAO(DAOTestCase):
-
-    tables = [UserFeatures,
-              QueueMember,
-              RightCallMember,
-              Callfiltermember,
-              Callfilter,
-              Dialaction,
-              PhoneFunckey,
-              SchedulePath,
-              ExtensionSchema,
-              UserLine]
-
-    tables += user_test_dependencies
-
-    def setUp(self):
-        self.empty_tables()
 
     def test_get_one_result(self):
         expected_user = self.add_user(firstname='first')
@@ -445,6 +426,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         agent.passwd = ''
         agent.context = 'ctx'
         agent.language = 'fr'
+        agent.description = 'description'
 
         self.add_me(agent)
 

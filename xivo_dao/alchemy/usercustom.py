@@ -15,9 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.db_manager import Base
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String
+
+from xivo_dao.helpers.db_manager import Base
 
 
 class UserCustom(Base):
@@ -28,7 +29,7 @@ class UserCustom(Base):
     name = Column(String(40))
     context = Column(String(39))
     interface = Column(String(128), nullable=False)
-    intfsuffix = Column(String(32), nullable=False, default='')
-    commented = Column(Integer, nullable=False, default=0)
-    protocol = Column(String(8), nullable=False, default='custom')
+    intfsuffix = Column(String(32), nullable=False, server_default='')
+    commented = Column(Integer, nullable=False, server_default='0')
+    protocol = Column(String(8), nullable=False, server_default='custom')
     category = Column(String(8))
