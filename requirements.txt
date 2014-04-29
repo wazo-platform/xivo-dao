@@ -7,4 +7,4 @@ pika
 psycopg2
 pyhamcrest
 python-cjson
-sqlalchemy==0.7.2
+sqlalchemy==0.9.4
