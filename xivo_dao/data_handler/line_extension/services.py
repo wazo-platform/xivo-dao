@@ -15,9 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from xivo_dao.data_handler.context.model import ContextType
+from xivo_dao.data_handler.incall.model import Incall
+from xivo_dao.data_handler.context import dao as context_dao
 from xivo_dao.data_handler.extension import dao as extension_dao
 from xivo_dao.data_handler.incall import dao as incall_dao
 from xivo_dao.data_handler.line import dao as line_dao
+from xivo_dao.data_handler.user_line import dao as user_line_dao
 from xivo_dao.data_handler.line_extension import dao as line_extension_dao
 from xivo_dao.data_handler.line_extension import notifier
 from xivo_dao.data_handler.line_extension import validator
@@ -51,9 +55,31 @@ def get_all_by_line_id(line_id):
 
 def associate(line_extension):
     validator.validate_associate(line_extension)
-    line_extension = ule_services.associate_line_extension(line_extension)
+    _create_association(line_extension)
     notifier.associated(line_extension)
     return line_extension
+
+
+def _create_association(line_extension):
+    context = context_dao.get_by_extension_id(line_extension.extension_id)
+    if context.type == ContextType.internal:
+        _create_internal_association(line_extension)
+    elif context.type == ContextType.incall:
+        _create_incall_association(line_extension)
+
+
+def _create_internal_association(line_extension):
+    ule_services.associate_line_extension(line_extension)
+
+
+def _create_incall_association(line_extension):
+    user_line = user_line_dao.find_main_user_line(line_extension.line_id)
+
+    incall = Incall.user_destination(user_line.user_id,
+                                     line_extension.extension_id)
+    created_incall = incall_dao.create(incall)
+
+    extension_dao.associate_destination('incall', created_incall.id)
 
 
 def dissociate(line_extension):
