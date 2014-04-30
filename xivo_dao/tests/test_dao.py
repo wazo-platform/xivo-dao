@@ -23,6 +23,7 @@ import unittest
 from mock import patch
 from sqlalchemy.schema import MetaData
 
+from xivo_dao.alchemy.incall import Incall
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.userfeatures import UserFeatures
@@ -246,6 +247,16 @@ class DAOTestCase(unittest.TestCase):
         extension = Extension(**kwargs)
         self.add_me(extension)
         return extension
+
+    def add_incall(self, **kwargs):
+        kwargs.setdefault('description', '')
+        kwargs.setdefault('exten', '1000')
+        kwargs.setdefault('context', 'from-extern')
+        kwargs.setdefault('commented', 0)
+
+        incall = Incall(**kwargs)
+        self.add_me(incall)
+        return incall
 
     def add_user(self, **kwargs):
         if 'func_key_private_template_id' not in kwargs:

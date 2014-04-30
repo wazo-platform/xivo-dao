@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, contains, has_items
+from hamcrest import assert_that, contains, has_items, equal_to
 
 from xivo_dao.alchemy.incall import Incall
 from xivo_dao.alchemy.dialaction import Dialaction
@@ -30,10 +30,8 @@ class TestIncallDAO(DAOTestCase):
     def create_incall_for_user(self, user_id, extension_id):
         extension_row = self.session.query(Extension).get(extension_id)
 
-        incall_row = Incall(exten=extension_row.exten,
-                            context=extension_row.context,
-                            description='')
-        self.add_me(incall_row)
+        incall_row = self.add_incall(exten=extension_row.exten,
+                                     context=extension_row.context)
 
         dialaction_row = Dialaction(event='answer',
                                     category='incall',
