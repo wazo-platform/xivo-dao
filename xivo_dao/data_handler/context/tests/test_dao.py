@@ -28,6 +28,26 @@ from hamcrest import assert_that, equal_to, instance_of, has_property, all_of
 
 class TestContextDao(DAOTestCase):
 
+    def _insert_entity(self, entity_name):
+        entity = EntitySchema(name=entity_name,
+                              displayname=entity_name)
+
+        self.session.begin()
+        self.session.add(entity)
+        self.session.commit()
+
+        return entity
+
+    def _insert_contextnumber(self, **kwargs):
+        context_number = ContextNumberSchema(**kwargs)
+
+        self.session.begin()
+        self.session.add(context_number)
+        self.session.commit()
+
+
+class TestContextCreate(TestContextDao):
+
     def test_create(self):
         entity_name = 'testentity'
         context_name = 'contextname'
@@ -54,15 +74,8 @@ class TestContextDao(DAOTestCase):
             has_property('description', '')
         ))
 
-    def _insert_entity(self, entity_name):
-        entity = EntitySchema(name=entity_name,
-                              displayname=entity_name)
 
-        self.session.begin()
-        self.session.add(entity)
-        self.session.commit()
-
-        return entity
+class TestFindAllContextRanges(TestContextDao):
 
     def test_find_all_context_ranges_no_range(self):
         expected = []
@@ -147,6 +160,9 @@ class TestContextDao(DAOTestCase):
         result = context_dao.find_all_context_ranges('default')
 
         assert_that(result, equal_to(expected))
+
+
+class TestFindAllSpecificContextRanges(TestContextDao):
 
     def test_find_all_specific_context_ranges_no_range(self):
         expected = []
@@ -238,10 +254,3 @@ class TestContextDao(DAOTestCase):
         result = context_dao.find_all_specific_context_ranges('default', 'user')
 
         assert_that(result, equal_to(expected))
-
-    def _insert_contextnumber(self, **kwargs):
-        context_number = ContextNumberSchema(**kwargs)
-
-        self.session.begin()
-        self.session.add(context_number)
-        self.session.commit()
