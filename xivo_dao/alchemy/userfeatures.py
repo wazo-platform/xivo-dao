@@ -68,7 +68,7 @@ class UserFeatures(Base):
     ringforward = Column(String(64))
     rightcallcode = Column(String(16))
     commented = Column(Integer, nullable=False, server_default='0')
-    description = Column(Text, nullable=False, server_default='')
+    description = Column(Text, nullable=False, default='')
     func_key_template_id = Column(Integer, ForeignKey('func_key_template.id'))
     func_key_private_template_id = Column(Integer, ForeignKey('func_key_template.id'), nullable=False)
 
