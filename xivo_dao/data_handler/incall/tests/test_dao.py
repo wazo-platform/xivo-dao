@@ -125,12 +125,16 @@ class TestCreateUserIncall(TestIncallDAO):
     def setUp(self):
         TestIncallDAO.setUp(self)
 
-        self.user_row = self.add_user()
-        self.extension_row = self.add_extension(exten='1000', context='from-extern')
+        user_row = self.add_user()
+        extension_row = self.add_extension(exten='1000', context='from-extern')
+
+        self.user_id = user_row.id
+        self.exten = extension_row.exten
+        self.context = extension_row.context
 
         self.incall = Incall(destination='user',
-                             destination_id=self.user_row.id,
-                             extension_id=self.extension_row.id)
+                             destination_id=user_row.id,
+                             extension_id=extension_row.id)
 
     def test_given_user_incall_then_creates_incall_row(self):
         created_incall = dao.create(self.incall)
@@ -145,12 +149,12 @@ class TestCreateUserIncall(TestIncallDAO):
     def assert_incall_row_created(self, incall_id):
         count = (self.session.query(IncallSchema)
                  .filter(IncallSchema.id == incall_id)
-                 .filter(IncallSchema.exten == self.extension_row.exten)
-                 .filter(IncallSchema.context == self.extension_row.context)
+                 .filter(IncallSchema.exten == self.exten)
+                 .filter(IncallSchema.context == self.context)
                  .count())
 
-        assert_that(count, equal_to(1), "incall %s@%s was not created" % (self.extension_row.exten,
-                                                                          self.extension_row.context))
+        assert_that(count, equal_to(1), "incall %s@%s was not created" % (self.exten,
+                                                                          self.context))
 
     def assert_dialaction_row_created(self, incall_id):
         count = (self.session.query(Dialaction)
@@ -158,7 +162,7 @@ class TestCreateUserIncall(TestIncallDAO):
                  .filter(Dialaction.category == 'incall')
                  .filter(Dialaction.categoryval == str(incall_id))
                  .filter(Dialaction.action == 'user')
-                 .filter(Dialaction.actionarg1 == str(self.user_row.id))
+                 .filter(Dialaction.actionarg1 == str(self.user_id))
                  .count())
 
         assert_that(count, equal_to(1), "dialaction was not created")
