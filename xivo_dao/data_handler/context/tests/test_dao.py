@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from hamcrest import assert_that, equal_to, instance_of, has_property, all_of
+
 from xivo_dao.tests.test_dao import DAOTestCase
 
 from xivo_dao.alchemy.context import Context as ContextSchema
@@ -23,7 +25,7 @@ from xivo_dao.alchemy.entity import Entity as EntitySchema
 
 from xivo_dao.data_handler.context.model import Context, ContextType
 from xivo_dao.data_handler.context import dao as context_dao
-from hamcrest import assert_that, equal_to, instance_of, has_property, all_of
+from xivo_dao.data_handler.exception import ElementNotExistsError
 
 
 class TestContextDao(DAOTestCase):
@@ -44,6 +46,43 @@ class TestContextDao(DAOTestCase):
         self.session.begin()
         self.session.add(context_number)
         self.session.commit()
+
+
+class TestContextGet(TestContextDao):
+
+    def test_given_no_context_then_raises_error(self):
+        self.assertRaises(ElementNotExistsError, context_dao.get, 'mycontext')
+
+    def test_given_context_exists_then_returns_context_model(self):
+        context_row = self.add_context()
+
+        expected_context = Context(name=context_row.name,
+                                   display_name=context_row.displayname,
+                                   type=context_row.contexttype,
+                                   description=context_row.description)
+
+        result = context_dao.get(context_row.name)
+
+        assert_that(result, equal_to(expected_context))
+
+
+class TestContextGetByExtensionId(TestContextDao):
+
+    def test_given_no_extension_then_raises_error(self):
+        self.assertRaises(ElementNotExistsError, context_dao.get_by_extension_id, 1)
+
+    def test_given_extension_exists_then_returns_associated_context(self):
+        context_row = self.add_context()
+        extension_row = self.add_extension(context=context_row.name)
+
+        expected_context = Context(name=context_row.name,
+                                   display_name=context_row.displayname,
+                                   type=context_row.contexttype,
+                                   description=context_row.description)
+
+        result = context_dao.get_by_extension_id(extension_row.id)
+
+        assert_that(result, equal_to(expected_context))
 
 
 class TestContextCreate(TestContextDao):

@@ -15,10 +15,38 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from xivo_dao.alchemy.context import Context as ContextSchema
+from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 from xivo_dao.alchemy.contextnumbers import ContextNumbers as ContextNumberSchema
 from xivo_dao.alchemy.entity import Entity as EntitySchema
 from xivo_dao.data_handler.context.model import db_converter
+from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.helpers.db_manager import daosession, xivo_daosession
+
+
+@daosession
+def get(session, context_name):
+    context_row = (session.query(ContextSchema)
+                   .filter(ContextSchema.name == context_name)
+                   .first())
+
+    if not context_row:
+        raise ElementNotExistsError('Context', name=context_name)
+
+    return db_converter.to_model(context_row)
+
+
+@daosession
+def get_by_extension_id(session, extension_id):
+    context_row = (session.query(ContextSchema)
+                   .join(ExtensionSchema, ExtensionSchema.context == ContextSchema.name)
+                   .filter(ExtensionSchema.id == extension_id)
+                   .first())
+
+    if not context_row:
+        raise ElementNotExistsError('Context', extension_id=extension_id)
+
+    return db_converter.to_model(context_row)
 
 
 @daosession
