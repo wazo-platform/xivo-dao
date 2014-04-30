@@ -22,8 +22,13 @@ from xivo_dao.alchemy.incall import Incall
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.helpers.db_manager import daosession
+from xivo_dao.helpers.db_utils import commit_or_abort
+
+from xivo_dao.data_handler.extension import dao as extension_dao
 
 from xivo_dao.data_handler.line_extension.model import db_converter as line_extension_db_converter
+from xivo_dao.data_handler.incall.model import db_converter as incall_db_converter
+from xivo_dao.data_handler.exception import ElementCreationError
 
 
 @daosession
@@ -43,3 +48,20 @@ def find_all_line_extensions_by_line_id(session, line_id):
              .filter(UserLine.line_id == line_id))
 
     return [line_extension_db_converter.to_model(row) for row in query]
+
+
+@daosession
+def create(session, incall):
+    extension = extension_dao.get(incall.extension_id)
+
+    incall_row = incall_db_converter.to_incall(incall, extension)
+    with commit_or_abort(session, ElementCreationError, 'Incall'):
+        session.add(incall_row)
+
+    incall.id = incall_row.id
+
+    dialaction_row = incall_db_converter.to_dialaction(incall)
+    with commit_or_abort(session, ElementCreationError, 'Incall'):
+        session.add(dialaction_row)
+
+    return incall

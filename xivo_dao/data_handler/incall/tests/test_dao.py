@@ -17,11 +17,12 @@
 
 from hamcrest import assert_that, contains, has_items, equal_to
 
-from xivo_dao.alchemy.incall import Incall
+from xivo_dao.alchemy.incall import Incall as IncallSchema
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.data_handler.incall import dao
+from xivo_dao.data_handler.incall.model import Incall
 from xivo_dao.data_handler.line_extension.model import LineExtension
 
 
@@ -117,3 +118,47 @@ class TestFindAllLineExtensionsByLineId(TestIncallDAO):
         result = dao.find_all_line_extensions_by_line_id(first_user_line_row.line_id)
 
         assert_that(result, contains(line_extension))
+
+
+class TestCreateUserIncall(TestIncallDAO):
+
+    def setUp(self):
+        TestIncallDAO.setUp(self)
+
+        self.user_row = self.add_user()
+        self.extension_row = self.add_extension(exten='1000', context='from-extern')
+
+        self.incall = Incall(destination='user',
+                             destination_id=self.user_row.id,
+                             extension_id=self.extension_row.id)
+
+    def test_given_user_incall_then_creates_incall_row(self):
+        created_incall = dao.create(self.incall)
+
+        self.assert_incall_row_created(created_incall.id)
+
+    def test_given_user_incall_then_creates_dialaction_row(self):
+        created_incall = dao.create(self.incall)
+
+        self.assert_dialaction_row_created(created_incall.id)
+
+    def assert_incall_row_created(self, incall_id):
+        count = (self.session.query(IncallSchema)
+                 .filter(IncallSchema.id == incall_id)
+                 .filter(IncallSchema.exten == self.extension_row.exten)
+                 .filter(IncallSchema.context == self.extension_row.context)
+                 .count())
+
+        assert_that(count, equal_to(1), "incall %s@%s was not created" % (self.extension_row.exten,
+                                                                          self.extension_row.context))
+
+    def assert_dialaction_row_created(self, incall_id):
+        count = (self.session.query(Dialaction)
+                 .filter(Dialaction.event == 'answer')
+                 .filter(Dialaction.category == 'incall')
+                 .filter(Dialaction.categoryval == str(incall_id))
+                 .filter(Dialaction.action == 'user')
+                 .filter(Dialaction.actionarg1 == str(self.user_row.id))
+                 .count())
+
+        assert_that(count, equal_to(1), "dialaction was not created")
