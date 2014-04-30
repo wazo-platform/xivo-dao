@@ -75,7 +75,7 @@ def update_line(main_user, line):
 
 
 def update_exten_and_context(main_user, line, extension):
-    extension_dao.associate_to_user(main_user, extension)
+    extension_dao.associate_destination(extension.id, 'user', main_user.id)
     line_dao.associate_extension(extension, line.id)
 
 

@@ -23,8 +23,7 @@ from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 from xivo_dao.data_handler.exception import ElementCreationError
 from xivo_dao.data_handler.exception import ElementEditionError
 from xivo_dao.data_handler.extension import dao as extension_dao
-from xivo_dao.data_handler.extension.model import Extension
-from xivo_dao.data_handler.user.model import User
+from xivo_dao.data_handler.extension.model import Extension, ExtensionDestination
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -309,43 +308,50 @@ class TestDelete(DAOTestCase):
         self.assertEquals(row, None)
 
 
-class TestAssociateToUser(DAOTestCase):
+class TestAssociateDestination(DAOTestCase):
 
     def test_associate_to_user(self):
-        extension = self.prepare_extension()
-        user = self.prepare_user()
+        extension_row = self.add_extension()
+        user_row = self.add_user()
 
-        extension_dao.associate_to_user(user, extension)
+        extension_dao.associate_destination(extension_row.id, ExtensionDestination.user, user_row.id)
 
-        self.assert_extension_is_associated_to_user(user, extension)
+        self.assert_extension_is_associated_to_user(user_row, extension_row)
+
+    def test_associate_to_incall(self):
+        extension_row = self.add_extension()
+        incall_row = self.add_incall()
+
+        extension_dao.associate_destination(extension_row.id, ExtensionDestination.incall, incall_row.id)
+
+        self.assert_extension_is_associated_to_incall(incall_row, extension_row)
 
     @patch('xivo_dao.helpers.db_manager.AsteriskSession')
     def test_associate_to_user_with_database_error(self, Session):
-        session = Mock()
+        session = Session.return_value = Mock()
         session.commit.side_effect = SQLAlchemyError()
-        Session.return_value = session
 
-        extension = Mock(Extension, id=1)
-        user = Mock(User, id=2)
+        extension_row = Mock()
+        user_row = Mock()
 
-        self.assertRaises(ElementEditionError, extension_dao.associate_to_user, user, extension)
+        self.assertRaises(ElementEditionError,
+                          extension_dao.associate_destination,
+                          extension_row.id,
+                          'user',
+                          user_row.id)
+
         session.commit.assert_called_once_with()
         session.rollback.assert_called_once_with()
 
-    def prepare_extension(self):
-        extension_row = self.add_extension()
-        extension = Mock(Extension, id=extension_row.id)
-        return extension
-
-    def prepare_user(self):
-        user_row = self.add_user()
-        user = Mock(User, id=user_row.id)
-        return user
-
-    def assert_extension_is_associated_to_user(self, user, extension):
-        updated_extension = self.session.query(ExtensionSchema).get(extension.id)
+    def assert_extension_is_associated_to_user(self, user_row, extension_row):
+        updated_extension = self.session.query(ExtensionSchema).get(extension_row.id)
         assert_that(updated_extension.type, equal_to('user'))
-        assert_that(updated_extension.typeval, equal_to(str(user.id)))
+        assert_that(updated_extension.typeval, equal_to(str(user_row.id)))
+
+    def assert_extension_is_associated_to_incall(self, incall_row, extension_row):
+        updated_extension = self.session.query(ExtensionSchema).get(extension_row.id)
+        assert_that(updated_extension.type, equal_to('incall'))
+        assert_that(updated_extension.typeval, equal_to(str(incall_row.id)))
 
 
 class TestDissociateExtension(DAOTestCase):

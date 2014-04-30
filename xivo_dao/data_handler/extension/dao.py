@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from xivo_dao.helpers.db_utils import commit_or_abort
+
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
@@ -169,18 +171,13 @@ def _new_query(session, order=None):
 
 
 @daosession
-def associate_to_user(session, user, extension):
-    session.begin()
-    (session.query(ExtensionSchema)
-     .filter(ExtensionSchema.id == extension.id)
-     .update({'type': 'user',
-              'typeval': str(user.id)}))
+def associate_destination(session, extension_id, destination, destination_id):
+    updated_row = {'type': destination, 'typeval': str(destination_id)}
 
-    try:
-        session.commit()
-    except SQLAlchemyError as e:
-        session.rollback()
-        raise ElementEditionError('Extension', 'error while associating extension with user %d: %s' % (user.id, e))
+    with commit_or_abort(session, ElementEditionError, 'Extension'):
+        (session.query(ExtensionSchema)
+         .filter(ExtensionSchema.id == extension_id)
+         .update(updated_row))
 
 
 @daosession

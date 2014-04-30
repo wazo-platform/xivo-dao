@@ -54,6 +54,11 @@ class ExtensionOrdering(object):
     context = ExtensionSchema.context
 
 
+class ExtensionDestination(object):
+    user = 'user'
+    incall = 'incall'
+
+
 class ExtensionDatabaseConverter(DatabaseConverter):
 
     def __init__(self):
