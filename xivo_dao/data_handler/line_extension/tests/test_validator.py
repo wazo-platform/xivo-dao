@@ -16,9 +16,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import unittest
+
 from mock import patch, Mock
 
+from xivo_dao.data_handler.context.model import Context
+from xivo_dao.data_handler.extension.model import Extension
 from xivo_dao.data_handler.line_extension.model import LineExtension
+from xivo_dao.data_handler.user_line.model import UserLine
 from xivo_dao.data_handler.line_extension import validator
 
 from xivo_dao.data_handler.exception import ElementNotExistsError
@@ -29,7 +33,7 @@ from xivo_dao.data_handler.exception import InvalidParametersError
 
 class TestValidateAssociate(unittest.TestCase):
 
-    @patch('xivo_dao.data_handler.line_extension.validator.validate_not_associated_to_extension')
+    @patch('xivo_dao.data_handler.line_extension.validator.validate_context_type')
     @patch('xivo_dao.data_handler.line_extension.validator.validate_extension')
     @patch('xivo_dao.data_handler.line_extension.validator.validate_line')
     @patch('xivo_dao.data_handler.line_extension.validator.validate_model')
@@ -37,7 +41,7 @@ class TestValidateAssociate(unittest.TestCase):
                                 validate_model,
                                 validate_line,
                                 validate_extension,
-                                not_associated_to_extension):
+                                validate_context_type):
 
         line_extension = Mock(LineExtension, line_id=1, extension_id=2)
 
@@ -46,7 +50,7 @@ class TestValidateAssociate(unittest.TestCase):
         validate_model.assert_called_once_with(line_extension)
         validate_line.assert_called_once_with(line_extension)
         validate_extension.assert_called_once_with(line_extension)
-        not_associated_to_extension.assert_called_once_with(line_extension)
+        validate_context_type.assert_called_once_with(line_extension)
 
 
 class TestValidateModel(unittest.TestCase):
@@ -92,11 +96,39 @@ class TestValidateExtension(unittest.TestCase):
     @patch('xivo_dao.data_handler.extension.dao.get')
     def test_validate_extension_with_extension(self, extension_get):
         line_extension = Mock(LineExtension, line_id=1, extension_id=2)
-
-        extension_get.return_value = line_extension
+        extension_get.return_value = Mock(Extension, id=2)
 
         validator.validate_extension(line_extension)
+
         extension_get.assert_called_once_with(line_extension.extension_id)
+
+
+class TestValidateContextType(unittest.TestCase):
+
+    @patch('xivo_dao.data_handler.line_extension.validator.validate_not_associated_to_extension')
+    @patch('xivo_dao.data_handler.context.dao.get_by_extension_id')
+    def test_validate_internal_context(self, context_get_by_extension_id, validate_not_associated_to_extension):
+        line_extension = Mock(LineExtension, extension_id=1)
+        context_get_by_extension_id.return_value = Mock(Context, type='internal')
+
+        validator.validate_context_type(line_extension)
+        validate_not_associated_to_extension.assert_called_once_with(line_extension)
+
+    @patch('xivo_dao.data_handler.line_extension.validator.validate_associated_to_user')
+    @patch('xivo_dao.data_handler.context.dao.get_by_extension_id')
+    def test_validate_incall_context(self, context_get_by_extension_id, validate_associated_to_user):
+        line_extension = Mock(LineExtension, extension_id=1)
+        context_get_by_extension_id.return_value = Mock(Context, type='incall')
+
+        validator.validate_context_type(line_extension)
+        validate_associated_to_user.assert_called_once_with(line_extension)
+
+    @patch('xivo_dao.data_handler.context.dao.get_by_extension_id')
+    def test_validate_context_type_not_managed(self, context_get_by_extension_id):
+        line_extension = Mock(LineExtension, extension_id=1)
+        context_get_by_extension_id.return_value = Mock(Context, type='others')
+
+        self.assertRaises(InvalidParametersError, validator.validate_context_type, line_extension)
 
 
 class TestValidateNotAssociatedToExtension(unittest.TestCase):
@@ -118,6 +150,24 @@ class TestValidateNotAssociatedToExtension(unittest.TestCase):
 
         validator.validate_not_associated_to_extension(line_extension)
         find_by_line_id.assert_called_once_with(line_extension.line_id)
+
+
+class TestValidateAssociatedToUser(unittest.TestCase):
+
+    @patch('xivo_dao.data_handler.user_line.dao.find_all_by_line_id')
+    def test_given_user_not_associated_to_line_then_raises_error(self, find_all_by_line_id):
+        find_all_by_line_id.return_value = None
+        line_extension = Mock(LineExtension, line_id=1)
+
+        self.assertRaises(InvalidParametersError, validator.validate_associated_to_user, line_extension)
+
+    @patch('xivo_dao.data_handler.user_line.dao.find_all_by_line_id')
+    def test_given_user_associated_to_line_then_validation_passes(self, find_all_by_line_id):
+        find_all_by_line_id.return_value = [Mock(UserLine)]
+        line_extension = Mock(LineExtension, line_id=1)
+
+        validator.validate_associated_to_user(line_extension)
+        find_all_by_line_id.assert_called_once_with(line_extension.line_id)
 
 
 class TestValidateDissociation(unittest.TestCase):
