@@ -87,3 +87,17 @@ def create(session, incall):
         session.add(dialaction_row)
 
     return incall
+
+
+@daosession
+def delete(session, incall):
+    incall_query = (session.query(Incall)
+                    .filter(Incall.id == incall.id))
+
+    dialaction_query = (session.query(Dialaction)
+                        .filter(Dialaction.category == 'incall')
+                        .filter(Dialaction.categoryval == str(incall.id)))
+
+    with commit_or_abort(session, ElementDeletionError, 'Incall'):
+        incall_query.delete()
+        dialaction_query.delete()

@@ -205,3 +205,35 @@ class TestCreateUserIncall(TestIncallDAO):
                  .count())
 
         assert_that(count, equal_to(1), "dialaction was not created")
+
+
+class TestDeleteUserIncall(TestIncallDAO):
+
+    def test_given_user_incall_model_then_deletes_incall_row(self):
+        incall = self.create_user_incall()
+
+        dao.delete(incall)
+
+        self.assert_incall_row_deleted(incall.id)
+
+    def test_given_user_incall_model_then_deletes_dialaction_row(self):
+        incall = self.create_user_incall()
+
+        dao.delete(incall)
+
+        self.assert_dialaction_row_deleted(incall.id)
+
+    def assert_incall_row_deleted(self, incall_id):
+        count = (self.session.query(IncallSchema)
+                 .filter(IncallSchema.id == incall_id)
+                 .count())
+
+        assert_that(count, equal_to(0), "incall row was not deleted")
+
+    def assert_dialaction_row_deleted(self, incall_id):
+        count = (self.session.query(Dialaction)
+                 .filter(Dialaction.category == 'incall')
+                 .filter(Dialaction.categoryval == str(incall_id))
+                 .count())
+
+        assert_that(count, equal_to(0), "dialaction row was not deleted")
