@@ -87,7 +87,7 @@ def dissociate_line_extension(line_extension):
 
 def remove_exten_and_context(extension):
     line_dao.dissociate_extension(extension)
-    extension_dao.dissociate_extension(extension)
+    extension_dao.dissociate_extension(extension.id)
 
 
 def dissociate_user_line(user_line):

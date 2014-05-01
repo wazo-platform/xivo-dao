@@ -181,10 +181,10 @@ def associate_destination(session, extension_id, destination, destination_id):
 
 
 @daosession
-def dissociate_extension(session, extension):
+def dissociate_extension(session, extension_id):
     session.begin()
     (session.query(ExtensionSchema)
-     .filter(ExtensionSchema.id == extension.id)
+     .filter(ExtensionSchema.id == extension_id)
      .update({'type': 'user',
               'typeval': '0'}))
 
@@ -192,4 +192,4 @@ def dissociate_extension(session, extension):
         session.commit()
     except SQLAlchemyError as e:
         session.rollback()
-        raise ElementEditionError('Extension', 'error while dissociating extension %d: %s' % (extension.id, e))
+        raise ElementEditionError('Extension', 'error while dissociating extension %d: %s' % (extension_id, e))

@@ -261,12 +261,12 @@ class TestRemoveExtenAndContext(TestCase):
     def test_given_extension_then_exten_and_context_removed(self,
                                                             line_dissociate_extension,
                                                             ext_dissociate_extension):
-        extension = Mock(Extension)
+        extension = Mock(Extension, id=1)
 
         ule_service.remove_exten_and_context(extension)
 
         line_dissociate_extension.assert_called_once_with(extension)
-        ext_dissociate_extension.assert_called_once_with(extension)
+        ext_dissociate_extension.assert_called_once_with(extension.id)
 
 
 @patch('xivo_dao.data_handler.user_line_extension.services.fix_main_user_dissociation')
