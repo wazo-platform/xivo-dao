@@ -136,22 +136,49 @@ class TestGetByExtensionId(unittest.TestCase):
         dao_get_by_extension_id.assert_called_once_with(extension.id)
 
 
+@patch('xivo_dao.data_handler.context.dao.get_by_extension_id')
+@patch('xivo_dao.data_handler.line_extension.notifier.dissociated')
+@patch('xivo_dao.data_handler.line_extension.validator.validate_dissociation')
 class TestLineExtensionDissociate(unittest.TestCase):
 
-    @patch('xivo_dao.data_handler.line_extension.notifier.dissociated')
     @patch('xivo_dao.data_handler.user_line_extension.services.dissociate_line_extension')
-    @patch('xivo_dao.data_handler.line_extension.validator.validate_dissociation')
-    def test_dissociate(self,
-                        validate_dissociation,
-                        dissociate_line_extension,
-                        notifier_dissociated):
+    def test_given_internal_context_then_dissociates_line_extension(self,
+                                                                    dissociate_line_extension,
+                                                                    validate_dissociation,
+                                                                    notifier_dissociated,
+                                                                    get_by_extension_id):
         line_extension = Mock(LineExtension, line_id=1, extension_id=2)
+        get_by_extension_id.return_value = Mock(Context, type='internal')
 
         line_extension_service.dissociate(line_extension)
 
+        get_by_extension_id.assert_called_once_with(line_extension.extension_id)
         validate_dissociation.assert_called_once_with(line_extension)
         dissociate_line_extension.assert_called_once_with(line_extension)
         notifier_dissociated.assert_called_once_with(line_extension)
+
+    @patch('xivo_dao.data_handler.extension.dao.dissociate_extension')
+    @patch('xivo_dao.data_handler.incall.dao.delete')
+    @patch('xivo_dao.data_handler.incall.dao.find_by_extension_id')
+    def test_given_incall_context_then_dissociates_incall(self,
+                                                          incall_find_by_extension_id,
+                                                          incall_delete,
+                                                          dissociate_extension,
+                                                          validate_dissociation,
+                                                          notifier_dissociated,
+                                                          get_by_extension_id):
+        line_extension = Mock(LineExtension, line_id=1, extension_id=2)
+        get_by_extension_id.return_value = Mock(Context, type='incall')
+        incall = incall_find_by_extension_id.return_value = Mock(Incall)
+
+        line_extension_service.dissociate(line_extension)
+
+        get_by_extension_id.assert_called_once_with(line_extension.extension_id)
+        validate_dissociation.assert_called_once_with(line_extension)
+        notifier_dissociated.assert_called_once_with(line_extension)
+        incall_find_by_extension_id.assert_called_once_with(line_extension.extension_id)
+        incall_delete.assert_called_once_with(incall)
+        dissociate_extension.assert_called_once_with(line_extension.extension_id)
 
 
 class TestGetAllByLineId(unittest.TestCase):

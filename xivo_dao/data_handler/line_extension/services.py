@@ -84,6 +84,24 @@ def _create_incall_association(line_extension):
 
 def dissociate(line_extension):
     validator.validate_dissociation(line_extension)
-    ule_services.dissociate_line_extension(line_extension)
+    _delete_association(line_extension)
     notifier.dissociated(line_extension)
     return line_extension
+
+
+def _delete_association(line_extension):
+    context = context_dao.get_by_extension_id(line_extension.extension_id)
+    if context.type == ContextType.internal:
+        _delete_internal_association(line_extension)
+    elif context.type == ContextType.incall:
+        _delete_incall_association(line_extension)
+
+
+def _delete_internal_association(line_extension):
+    ule_services.dissociate_line_extension(line_extension)
+
+
+def _delete_incall_association(line_extension):
+    incall = incall_dao.find_by_extension_id(line_extension.extension_id)
+    incall_dao.delete(incall)
+    extension_dao.dissociate_extension(line_extension.extension_id)
