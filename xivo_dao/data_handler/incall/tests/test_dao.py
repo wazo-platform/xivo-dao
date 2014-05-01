@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, contains, has_items, equal_to
+from hamcrest import assert_that, contains, has_items, equal_to, none
 
 from xivo_dao.alchemy.incall import Incall as IncallSchema
 from xivo_dao.alchemy.dialaction import Dialaction
@@ -28,7 +28,16 @@ from xivo_dao.data_handler.line_extension.model import LineExtension
 
 class TestIncallDAO(DAOTestCase):
 
-    def create_incall_for_user(self, user_id, extension_id):
+    def create_user_incall(self):
+        user_row = self.add_user()
+        extension_row = self.add_extension(exten='1000', context='from-extern')
+        incall_row = self.create_incall_row_for_user(user_row.id, extension_row.id)
+        return Incall(id=incall_row.id,
+                      destination='user',
+                      destination_id=user_row.id,
+                      extension_id=extension_row.id)
+
+    def create_incall_row_for_user(self, user_id, extension_id):
         extension_row = self.session.query(Extension).get(extension_id)
 
         incall_row = self.add_incall(exten=extension_row.exten,
@@ -69,7 +78,7 @@ class TestFindAllLineExtensionsByLineId(TestIncallDAO):
 
     def test_given_incall_associated_to_user_with_line_then_returns_one_item(self):
         user_line_row = self.add_user_line_with_exten(exten='1000', context='from-extern')
-        self.create_incall_for_user(user_line_row.user_id, user_line_row.extension_id)
+        self.create_incall_row_for_user(user_line_row.user_id, user_line_row.extension_id)
 
         line_extension = LineExtension(line_id=user_line_row.line_id,
                                        extension_id=user_line_row.extension_id)
@@ -80,7 +89,7 @@ class TestFindAllLineExtensionsByLineId(TestIncallDAO):
 
     def test_given_line_with_multiple_users_then_returns_one_item(self):
         user_line_row = self.add_user_line_with_exten(exten='1000', context='from-extern')
-        self.create_incall_for_user(user_line_row.user_id, user_line_row.extension_id)
+        self.create_incall_row_for_user(user_line_row.user_id, user_line_row.extension_id)
 
         line_extension = LineExtension(line_id=user_line_row.line_id,
                                        extension_id=user_line_row.extension_id)
@@ -94,8 +103,8 @@ class TestFindAllLineExtensionsByLineId(TestIncallDAO):
         user_line_row = self.add_user_line_with_exten(exten='1000', context='from-extern')
         second_extension_row = self.add_extension(exten='1001', context='from-extern')
 
-        self.create_incall_for_user(user_line_row.user_id, user_line_row.extension_id)
-        self.create_incall_for_user(user_line_row.user_id, second_extension_row.id)
+        self.create_incall_row_for_user(user_line_row.user_id, user_line_row.extension_id)
+        self.create_incall_row_for_user(user_line_row.user_id, second_extension_row.id)
 
         first_line_extension = LineExtension(line_id=user_line_row.line_id,
                                              extension_id=user_line_row.extension_id)
@@ -109,8 +118,8 @@ class TestFindAllLineExtensionsByLineId(TestIncallDAO):
     def test_given_2_lines_then_returns_one_item_with_right_line_id(self):
         first_user_line_row = self.add_user_line_with_exten(exten='1000', context='from-extern')
         second_user_line_row = self.add_user_line_with_exten(exten='1001', context='from-extern')
-        self.create_incall_for_user(first_user_line_row.user_id, first_user_line_row.extension_id)
-        self.create_incall_for_user(second_user_line_row.user_id, second_user_line_row.extension_id)
+        self.create_incall_row_for_user(first_user_line_row.user_id, first_user_line_row.extension_id)
+        self.create_incall_row_for_user(second_user_line_row.user_id, second_user_line_row.extension_id)
 
         line_extension = LineExtension(line_id=first_user_line_row.line_id,
                                        extension_id=first_user_line_row.extension_id)
