@@ -129,6 +129,35 @@ class TestFindAllLineExtensionsByLineId(TestIncallDAO):
         assert_that(result, contains(line_extension))
 
 
+class TestFindByExtensionId(TestIncallDAO):
+
+    def test_given_no_extension_then_returns_none(self):
+        result = dao.find_by_extension_id(1)
+
+        assert_that(result, none())
+
+    def test_given_extension_associated_to_nothing_then_returns_none(self):
+        extension_row = self.add_extension(exten='1000', context='default')
+
+        result = dao.find_by_extension_id(extension_row.id)
+
+        assert_that(result, none())
+
+    def test_given_extension_to_line_then_returns_none(self):
+        user_line_row = self.add_user_line_with_exten()
+
+        result = dao.find_by_extension_id(user_line_row.extension_id)
+
+        assert_that(result, none())
+
+    def test_given_extension_associated_to_user_incall_then_returns_incall(self):
+        expected_incall = self.create_user_incall()
+
+        result = dao.find_by_extension_id(expected_incall.extension_id)
+
+        assert_that(result, equal_to(expected_incall))
+
+
 class TestCreateUserIncall(TestIncallDAO):
 
     def setUp(self):

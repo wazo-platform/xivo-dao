@@ -31,6 +31,7 @@ class Incall(NewModel):
     ]
 
     FIELDS = [
+        'id',
         'destination',
         'destination_id',
         'extension_id',
@@ -48,10 +49,22 @@ class Incall(NewModel):
 
 class IncallDbConverter(DatabaseConverter):
 
-    DB_TO_MODEL_MAPPING = {}
+    DB_TO_MODEL_MAPPING = {
+        'id': 'id',
+        'description': 'description',
+        'destination': 'destination',
+        'destination_id': 'destination_id',
+        'extension_id': 'extension_id'
+    }
 
     def __init__(self):
         DatabaseConverter.__init__(self, self.DB_TO_MODEL_MAPPING, IncallSchema, Incall)
+
+    def to_model(self, db_row):
+        model = DatabaseConverter.to_model(self, db_row)
+        if model.description == '':
+            model.description = None
+        return model
 
     def to_incall(self, incall, extension):
         description = incall.description or ''
