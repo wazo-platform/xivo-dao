@@ -173,10 +173,52 @@ class TestValidateAssociatedToUser(unittest.TestCase):
 class TestValidateDissociation(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.user_line_extension.helper.validate_no_device')
+    @patch('xivo_dao.data_handler.line_extension.validator.validate_associated')
+    @patch('xivo_dao.data_handler.line_extension.validator.validate_line')
     @patch('xivo_dao.data_handler.line_extension.validator.validate_extension')
-    def test_validate_dissociation(self, validate_extension, validate_no_device):
+    def test_validate_dissociation(self, validate_extension, validate_line, validate_associated, validate_no_device):
         line_extension = Mock(LineExtension, line_id=1)
 
         validator.validate_dissociation(line_extension)
+
         validate_extension.assert_called_once_with(line_extension)
+        validate_line.assert_called_once_with(line_extension)
+        validate_associated.assert_called_once_with(line_extension)
         validate_no_device.assert_called_once_with(line_extension.line_id)
+
+
+@patch('xivo_dao.data_handler.incall.dao.find_all_line_extensions_by_line_id')
+@patch('xivo_dao.data_handler.line_extension.dao.find_all_by_line_id')
+class TestValidateAssociated(unittest.TestCase):
+
+    def test_given_line_not_associated_to_extension_then_raises_error(self,
+                                                                      find_all_by_line_id,
+                                                                      find_all_line_extensions_by_line_id):
+        find_all_by_line_id.return_value = []
+
+        line_extension = Mock(LineExtension, line_id=1, extension_id=2)
+
+        self.assertRaises(InvalidParametersError, validator.validate_associated, line_extension)
+
+    def test_given_line_associated_to_internal_extension_then_validation_passes(self,
+                                                                                find_all_by_line_id,
+                                                                                find_all_line_extensions_by_line_id):
+        line_extension = Mock(LineExtension, line_id=1, extension_id=2)
+        find_all_by_line_id.return_value = [line_extension]
+        find_all_line_extensions_by_line_id.return_value = []
+
+        validator.validate_associated(line_extension)
+
+        find_all_by_line_id.assert_called_once_with(line_extension.line_id)
+
+    def test_given_line_associated_to_incall_extension_then_validation_passes(self,
+                                                                              find_all_by_line_id,
+                                                                              find_all_line_extensions_by_line_id):
+        line_extension = Mock(LineExtension, line_id=1, extension_id=2)
+        find_all_by_line_id.return_value = []
+        find_all_line_extensions_by_line_id.return_value = [line_extension]
+
+        validator.validate_associated(line_extension)
+
+        find_all_by_line_id.assert_called_once_with(line_extension.line_id)
+        find_all_line_extensions_by_line_id.assert_called_once_with(line_extension.line_id)

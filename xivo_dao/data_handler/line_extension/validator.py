@@ -22,6 +22,7 @@ from xivo_dao.data_handler.exception import NonexistentParametersError
 from xivo_dao.data_handler.context.model import ContextType
 from xivo_dao.data_handler.context import dao as context_dao
 from xivo_dao.data_handler.extension import dao as extension_dao
+from xivo_dao.data_handler.incall import dao as incall_dao
 from xivo_dao.data_handler.user_line import dao as user_line_dao
 from xivo_dao.data_handler.line import dao as line_dao
 from xivo_dao.data_handler.line_extension import dao as line_extension_dao
@@ -82,4 +83,18 @@ def validate_associated_to_user(line_extension):
 
 def validate_dissociation(line_extension):
     validate_extension(line_extension)
+    validate_line(line_extension)
+    validate_associated(line_extension)
     ule_helper.validate_no_device(line_extension.line_id)
+
+
+def validate_associated(line_extension):
+    line_extensions = _all_line_extensions(line_extension.line_id)
+    if line_extension not in line_extensions:
+        msg = 'Line (id=%s) is not associated with Extension (id=%s)'
+        raise InvalidParametersError([msg % (line_extension.line_id, line_extension.extension_id)])
+
+
+def _all_line_extensions(line_id):
+    return (line_extension_dao.find_all_by_line_id(line_id)
+            + incall_dao.find_all_line_extensions_by_line_id(line_id))
