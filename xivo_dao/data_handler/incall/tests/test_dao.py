@@ -163,6 +163,7 @@ class TestCreateUserIncall(TestIncallDAO):
                  .filter(Dialaction.categoryval == str(incall_id))
                  .filter(Dialaction.action == 'user')
                  .filter(Dialaction.actionarg1 == str(self.user_id))
+                 .filter(Dialaction.linked == 1)
                  .count())
 
         assert_that(count, equal_to(1), "dialaction was not created")

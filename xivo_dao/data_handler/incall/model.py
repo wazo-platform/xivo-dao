@@ -65,7 +65,8 @@ class IncallDbConverter(DatabaseConverter):
                                           category='incall',
                                           categoryval=incall.id,
                                           action=incall.destination,
-                                          actionarg1=incall.destination_id)
+                                          actionarg1=incall.destination_id,
+                                          linked=1)
         return dialaction_row
 
 
