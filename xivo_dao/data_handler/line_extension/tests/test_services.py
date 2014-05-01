@@ -76,7 +76,7 @@ class TestLineExtensionAssociate(unittest.TestCase):
         assert_that(result, equal_to(line_extension))
         validate_associate.assert_called_once_with(line_extension)
         incall_dao_create.assert_called_once_with(incall)
-        associate_destination.assert_called_once_with('incall', created_incall.id)
+        associate_destination.assert_called_once_with(line_extension.extension_id, 'incall', created_incall.id)
         notifier_associated.assert_called_once_with(line_extension)
 
 

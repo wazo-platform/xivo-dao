@@ -79,7 +79,7 @@ def _create_incall_association(line_extension):
                                      line_extension.extension_id)
     created_incall = incall_dao.create(incall)
 
-    extension_dao.associate_destination('incall', created_incall.id)
+    extension_dao.associate_destination(line_extension.extension_id, 'incall', created_incall.id)
 
 
 def dissociate(line_extension):
