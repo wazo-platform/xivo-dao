@@ -53,18 +53,19 @@ def _create_ule(session, line_extension):
 
 
 @daosession
-def find_by_line_id(session, line_id):
-    user_line_row = (session.query(UserLineSchema)
-                     .filter(UserLineSchema.line_id == line_id)
-                     .first())
+def find_all_by_line_id(session, line_id):
+    query = (session.query(UserLineSchema.line_id,
+                           UserLineSchema.extension_id)
+             .filter(UserLineSchema.line_id == line_id)
+             .filter(UserLineSchema.extension_id != None)
+             .distinct())
 
-    if not user_line_row:
-        return None
+    return [db_converter.to_model(row) for row in query]
 
-    if not user_line_row.extension_id:
-        return None
 
-    return db_converter.to_model(user_line_row)
+def find_by_line_id(line_id):
+    line_extensions = find_all_by_line_id(line_id)
+    return line_extensions[0] if line_extensions else None
 
 
 def get_by_line_id(line_id):
