@@ -38,24 +38,14 @@ def todict(self):
 Base = declarative_base()
 Base.todict = todict
 
-_asterisk_engine = None
-AsteriskSession = None
-
-_xivo_engine = None
-XivoSession = None
+_dao_engine = None
+DaoSession = None
 
 
 def daosession(func):
     @wraps(func)
     def wrapped(*args, **kwargs):
-        return _execute_with_session(AsteriskSession, func, args, kwargs)
-    return wrapped
-
-
-def xivo_daosession(func):
-    @wraps(func)
-    def wrapped(*args, **kwargs):
-        return _execute_with_session(XivoSession, func, args, kwargs)
+        return _execute_with_session(DaoSession, func, args, kwargs)
     return wrapped
 
 
@@ -78,21 +68,13 @@ def _apply_and_flush(func, session, args, kwargs):
 
 def _init():
     _init_asterisk()
-    _init_xivo()
 
 
 def _init_asterisk():
-    global _asterisk_engine
-    global AsteriskSession
-    _asterisk_engine = _new_engine(config.DB_URI)
-    AsteriskSession = _new_scoped_session(_asterisk_engine)
-
-
-def _init_xivo():
-    global _xivo_engine
-    global XivoSession
-    _xivo_engine = _new_engine(config.XIVO_DB_URI)
-    XivoSession = _new_scoped_session(_xivo_engine)
+    global _dao_engine
+    global DaoSession
+    _dao_engine = _new_engine(config.DB_URI)
+    DaoSession = _new_scoped_session(_dao_engine)
 
 
 def _new_engine(url):
@@ -109,11 +91,8 @@ def reinit():
 
 
 def close():
-    AsteriskSession.close()
-    _asterisk_engine.dispose()
-
-    XivoSession.close()
-    _xivo_engine.dispose()
+    DaoSession.close()
+    _dao_engine.dispose()
 
 
 _init()

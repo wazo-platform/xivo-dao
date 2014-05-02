@@ -233,7 +233,7 @@ class TestCreate(DAOTestCase):
 
         self.assertRaises(ElementCreationError, extension_dao.create, extension)
 
-    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    @patch('xivo_dao.helpers.db_manager.DaoSession')
     def test_create_extension_with_error_from_dao(self, Session):
         session = Mock()
         session.commit.side_effect = SQLAlchemyError()
@@ -277,7 +277,7 @@ class TestEdit(DAOTestCase):
         assert_that(row.type, equal_to('user'))
         assert_that(row.typeval, equal_to('0'))
 
-    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    @patch('xivo_dao.helpers.db_manager.DaoSession')
     def test_edit_extension_with_error_from_dao(self, Session):
         session = Mock()
         session.commit.side_effect = SQLAlchemyError()
@@ -319,7 +319,7 @@ class TestAssociateToUser(DAOTestCase):
 
         self.assert_extension_is_associated_to_user(user, extension)
 
-    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    @patch('xivo_dao.helpers.db_manager.DaoSession')
     def test_associate_to_user_with_database_error(self, Session):
         session = Mock()
         session.commit.side_effect = SQLAlchemyError()
@@ -357,7 +357,7 @@ class TestDissociateExtension(DAOTestCase):
 
         self.assert_extension_not_associated(extension)
 
-    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    @patch('xivo_dao.helpers.db_manager.DaoSession')
     def test_dissociate_extension_with_database_error(self, Session):
         session = Mock()
         session.commit.side_effect = SQLAlchemyError()

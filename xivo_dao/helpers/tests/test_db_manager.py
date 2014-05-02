@@ -36,11 +36,11 @@ class TestDBManager(unittest.TestCase):
 
         result = decorated_function(*args, **kwargs)
 
-        execute_mock.assert_called_once_with(db_manager.AsteriskSession, function_mock, args, kwargs)
+        execute_mock.assert_called_once_with(db_manager.DaoSession, function_mock, args, kwargs)
         self.assertEqual(result, sentinel)
 
     @patch('xivo_dao.helpers.db_manager._execute_with_session')
-    def testxivo_daosession_decorator(self, execute_mock):
+    def testdaosession_decorator(self, execute_mock):
         execute_mock.return_value = sentinel
 
         function_mock = Mock()
@@ -48,7 +48,7 @@ class TestDBManager(unittest.TestCase):
         args = ('arg1', 'arg2')
         kwargs = {'arg3': 'arg3'}
 
-        decorated_function = db_manager.xivo_daosession(function_mock)
+        decorated_function = db_manager.daosession(function_mock)
 
         result = decorated_function(*args, **kwargs)
 

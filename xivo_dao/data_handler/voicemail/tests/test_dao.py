@@ -518,7 +518,7 @@ class TestCreateVoicemail(DAOTestCase):
         self.assertEquals(row.mailbox, number)
         self.assertEquals(row.context, context)
 
-    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    @patch('xivo_dao.helpers.db_manager.DaoSession')
     def test_create_with_database_error(self, Session):
         session = Mock()
         session.commit.side_effect = SQLAlchemyError()
@@ -607,7 +607,7 @@ class TestEditVoicemail(DAOTestCase):
         self.assertEquals(row.deletevoicemail, voicemail.delete_messages)
         self.assertEquals(row.skipcheckpass, voicemail.ask_password)
 
-    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    @patch('xivo_dao.helpers.db_manager.DaoSession')
     def test_edit_with_database_error(self, Session):
         session = Mock()
         session.commit.side_effect = SQLAlchemyError()
@@ -666,7 +666,7 @@ class TestVoicemailDelete(VoicemailTestCase):
         self.check_voicemail_table(voicemail.id)
         self.check_incall_associated_to_nothing(incall.id)
 
-    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    @patch('xivo_dao.helpers.db_manager.DaoSession')
     def test_delete_with_database_error(self, Session):
         session = Mock()
         session.commit.side_effect = SQLAlchemyError()

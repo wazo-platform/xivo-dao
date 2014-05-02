@@ -74,7 +74,7 @@ def expensive_setup():
     logger.debug("Connecting to database")
     config.DB_URI = config.XIVO_DB_URI = 'postgresql://asterisk:asterisk@localhost/asterisktest'
     db_manager._init()
-    session = db_manager.AsteriskSession()
+    session = db_manager.DaoSession()
     engine = session.bind
     logger.debug("Connected to database")
     _init_tables(engine)
@@ -113,12 +113,12 @@ class DAOTestCase(unittest.TestCase):
             expensive_setup()
             _expensive_setup_has_run = True
 
-        cls.session = db_manager.AsteriskSession()
+        cls.session = db_manager.DaoSession()
 
     @trace_duration
     def setUp(self):
         global _tables
-        self.session = db_manager.AsteriskSession()
+        self.session = db_manager.DaoSession()
         logger.debug("Emptying tables")
         self.session.begin()
         self.session.execute("TRUNCATE %s CASCADE;" % ",".join(_tables))

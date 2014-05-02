@@ -51,7 +51,7 @@ class TestConfigurationDao(DAOTestCase):
 
         assert_that(ctimain.live_reload_conf, equal_to(1))
 
-    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    @patch('xivo_dao.helpers.db_manager.DaoSession')
     def test_set_live_reload_status_rollback(self, Session):
         session = Mock()
         session.commit.side_effect = SQLAlchemyError()
