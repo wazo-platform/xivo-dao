@@ -33,14 +33,14 @@ from xivo_dao.alchemy.func_key_type import FuncKeyType as FuncKeyTypeSchema
 from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser as FuncKeyDestUserSchema
 from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup as FuncKeyDestGroupSchema
 from xivo_dao.alchemy.func_key_dest_queue import FuncKeyDestQueue as FuncKeyDestQueueSchema
-from xivo_dao.alchemy.func_key_dest_conf import FuncKeyDestConf as FuncKeyDestConfSchema
+from xivo_dao.alchemy.func_key_dest_conference import FuncKeyDestConference as FuncKeyDestConferenceSchema
 from xivo_dao.alchemy.func_key_destination_type import FuncKeyDestinationType as FuncKeyDestinationTypeSchema
 from xivo_dao.alchemy.userfeatures import test_dependencies as user_test_dependencies
 from xivo_dao.alchemy.queuefeatures import test_dependencies as queue_test_dependencies
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.alchemy.groupfeatures import GroupFeatures as GroupSchema
 from xivo_dao.alchemy.queuefeatures import QueueFeatures as QueueSchema
-from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures as ConfSchema
+from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures as ConferenceSchema
 
 
 class BaseTestFuncKeyDao(DAOTestCase):
@@ -52,11 +52,11 @@ class BaseTestFuncKeyDao(DAOTestCase):
         FuncKeyDestUserSchema,
         FuncKeyDestGroupSchema,
         FuncKeyDestQueueSchema,
-        FuncKeyDestConfSchema,
+        FuncKeyDestConferenceSchema,
         UserSchema,
         GroupSchema,
         QueueSchema,
-        ConfSchema,
+        ConferenceSchema,
     ] + user_test_dependencies + queue_test_dependencies
 
     def setUp(self):
@@ -69,14 +69,14 @@ class TestFuncKeyDao(DAOTestCase):
         'user': 1,
         'group': 2,
         'queue': 3,
-        'conf': 4,
+        'conference': 4,
     }
 
     destination_type_schemas = {
         'user': (FuncKeyDestUserSchema, 'user_id'),
         'group': (FuncKeyDestGroupSchema, 'group_id'),
         'queue': (FuncKeyDestQueueSchema, 'queue_id'),
-        'conf': (FuncKeyDestConfSchema, 'conf_id'),
+        'conference': (FuncKeyDestConferenceSchema, 'conference_id'),
     }
 
     def setUp(self):
@@ -164,9 +164,9 @@ class TestFuncKeySearch(TestFuncKeyDao):
         assert_that(result.total, equal_to(1))
         assert_that(result.items, contains(func_key))
 
-    def test_conf_destination_when_searching_then_one_result_returned(self):
-        conf_row = self.add_meetmefeatures()
-        func_key = self.prepare_destination('conf', conf_row.id)
+    def test_conference_destination_when_searching_then_one_result_returned(self):
+        conference_row = self.add_meetmefeatures()
+        func_key = self.prepare_destination('conference', conference_row.id)
 
         result = dao.search()
 
@@ -232,11 +232,11 @@ class TestFuncKeyFindAllByDestination(TestFuncKeyDao):
         result = dao.find_all_by_destination('queue', queue_row.id)
         assert_that(result, contains(func_key))
 
-    def test_given_one_conf_destination_then_returns_list_with_one_conf_destination(self):
-        conf_row = self.add_meetmefeatures()
-        func_key = self.prepare_destination('conf', conf_row.id)
+    def test_given_one_conference_destination_then_returns_list_with_one_conference_destination(self):
+        conference_row = self.add_meetmefeatures()
+        func_key = self.prepare_destination('conference', conference_row.id)
 
-        result = dao.find_all_by_destination('conf', conf_row.id)
+        result = dao.find_all_by_destination('conference', conference_row.id)
         assert_that(result, contains(func_key))
 
     def test_given_group_and_user_destination_then_returns_list_with_right_destination(self):
@@ -286,9 +286,9 @@ class TestFuncKeyGet(TestFuncKeyDao):
 
         assert_that(result, equal_to(func_key))
 
-    def test_when_conf_func_key_in_db_then_func_key_model_returned(self):
-        conf_row = self.add_meetmefeatures()
-        func_key = self.prepare_destination('conf', conf_row.id)
+    def test_when_conference_func_key_in_db_then_func_key_model_returned(self):
+        conference_row = self.add_meetmefeatures()
+        func_key = self.prepare_destination('conference', conference_row.id)
 
         result = dao.get(func_key.id)
 
@@ -355,21 +355,21 @@ class TestFuncKeyCreate(TestFuncKeyDao):
 
         self.assert_func_key_row_created(queue_destination_row)
 
-    def test_given_conf_destination_then_func_key_created(self):
-        conf_row = self.add_meetmefeatures()
+    def test_given_conference_destination_then_func_key_created(self):
+        conference_row = self.add_meetmefeatures()
 
         func_key = FuncKey(type='speeddial',
-                           destination='conf',
-                           destination_id=conf_row.id)
+                           destination='conference',
+                           destination_id=conference_row.id)
 
         created_func_key = dao.create(func_key)
         assert_that(created_func_key, instance_of(FuncKey))
         assert_that(created_func_key, has_property('id', is_not(none())))
 
-        conf_destination_row = self.find_destination('conf', conf_row.id)
-        assert_that(conf_destination_row, is_not(none()))
+        conference_destination_row = self.find_destination('conference', conference_row.id)
+        assert_that(conference_destination_row, is_not(none()))
 
-        self.assert_func_key_row_created(conf_destination_row)
+        self.assert_func_key_row_created(conference_destination_row)
 
     @patch('xivo_dao.helpers.db_manager.AsteriskSession')
     @patch('xivo_dao.data_handler.func_key.dao.commit_or_abort')
@@ -419,14 +419,14 @@ class TestFuncKeyDelete(TestFuncKeyDao):
         self.assert_func_key_deleted(func_key.id)
         self.assert_destination_deleted('queue', queue_row.id)
 
-    def test_given_conf_destination_then_func_key_deleted(self):
-        conf_row = self.add_meetmefeatures()
-        func_key = self.prepare_destination('conf', conf_row.id)
+    def test_given_conference_destination_then_func_key_deleted(self):
+        conference_row = self.add_meetmefeatures()
+        func_key = self.prepare_destination('conference', conference_row.id)
 
         dao.delete(func_key)
 
         self.assert_func_key_deleted(func_key.id)
-        self.assert_destination_deleted('conf', conf_row.id)
+        self.assert_destination_deleted('conference', conference_row.id)
 
     def test_given_multiple_destinations_then_only_one_func_key_deleted(self):
         user_row = self.add_user()
