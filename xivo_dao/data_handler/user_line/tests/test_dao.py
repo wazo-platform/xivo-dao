@@ -501,6 +501,13 @@ class TestUserLineFindAllByLineId(DAOTestCase):
 
         assert_that(result, contains_inanyorder(user_line_1, user_line_2))
 
+    def test_find_all_by_line_id_with_line_no_user(self):
+        user_line_row = self.add_user_line_without_user()
+
+        result = user_line_dao.find_all_by_line_id(user_line_row.line_id)
+
+        assert_that(result, contains())
+
     def prepare_user_line(self, user_line_row):
         return UserLine(user_id=user_line_row.user_id,
                         line_id=user_line_row.line_id,
