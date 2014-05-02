@@ -224,14 +224,14 @@ class TestExtenAndContext(TestCase):
 
     def test_given_main_user_line_and_extension_then_exten_and_context_updated(self,
                                                                                line_associate_extension,
-                                                                               extension_assocaite_destination):
+                                                                               extension_associate_destination):
         main_user = Mock(User, id=1)
         line = Mock(Line, id=2)
         extension = Mock(Extension, id=3)
 
         ule_service.update_exten_and_context(main_user, line, extension)
 
-        extension_assocaite_destination.assert_called_once_with(extension.id, 'user', main_user.id)
+        extension_associate_destination.assert_called_once_with(extension.id, 'user', main_user.id)
         line_associate_extension.assert_called_once_with(extension, line.id)
 
 
