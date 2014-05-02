@@ -472,25 +472,19 @@ class TestUserLineFindAllByLineId(DAOTestCase):
 
     def test_find_all_by_line_id_one_user_line_with_exten(self):
         user_line_row = self.add_user_line_with_exten()
+        user_line = self.prepare_user_line(user_line_row)
 
         result = user_line_dao.find_all_by_line_id(user_line_row.line_id)
 
-        assert_that(result, contains(
-            all_of(
-                has_property('user_id', user_line_row.user_id),
-                has_property('line_id', user_line_row.line_id))
-        ))
+        assert_that(result, contains(user_line))
 
     def test_find_all_by_line_id_one_user_line_without_exten(self):
         user_line_row = self.add_user_line_without_exten()
+        user_line = self.prepare_user_line(user_line_row)
 
         result = user_line_dao.find_all_by_line_id(user_line_row.line_id)
 
-        assert_that(result, contains(
-            all_of(
-                has_property('user_id', user_line_row.user_id),
-                has_property('line_id', user_line_row.line_id))
-        ))
+        assert_that(result, contains(user_line))
 
     def test_find_all_by_line_id_two_user_lines(self):
         user_line_row_1 = self.add_user_line_with_exten()
@@ -500,13 +494,15 @@ class TestUserLineFindAllByLineId(DAOTestCase):
                                              main_user=False,
                                              main_line=True)
 
+        user_line_1 = self.prepare_user_line(user_line_row_1)
+        user_line_2 = self.prepare_user_line(user_line_row_2)
+
         result = user_line_dao.find_all_by_line_id(user_line_row_1.line_id)
 
-        assert_that(result, contains_inanyorder(
-            all_of(
-                has_property('user_id', user_line_row_1.user_id),
-                has_property('line_id', user_line_row_1.line_id)),
-            all_of(
-                has_property('user_id', user_line_row_2.user_id),
-                has_property('line_id', user_line_row_2.line_id))
-        ))
+        assert_that(result, contains_inanyorder(user_line_1, user_line_2))
+
+    def prepare_user_line(self, user_line_row):
+        return UserLine(user_id=user_line_row.user_id,
+                        line_id=user_line_row.line_id,
+                        main_user=user_line_row.main_user,
+                        main_line=user_line_row.main_line)
