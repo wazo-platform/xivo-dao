@@ -71,7 +71,7 @@ class TestUserCtiProfile(DAOTestCase):
         assert_that(user.cti_profile_id, equal_to(cti_profile.id))
         assert_that(user.enableclient, 0)
 
-    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    @patch('xivo_dao.helpers.db_manager.DaoSession')
     def test_edit_with_errors(self, Session):
         session = Mock()
         session.commit.side_effect = SQLAlchemyError()

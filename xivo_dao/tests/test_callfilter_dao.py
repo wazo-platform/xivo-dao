@@ -159,9 +159,9 @@ class TestCallFilterDAO(BaseTestCallFilterDAO):
         result = self.session.query(Callfilter).first()
         self.assertEquals(result.name, 'test')
 
-    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
-    def test_add_with_db_error(self, AsteriskSession):
-        session = AsteriskSession.return_value = Mock()
+    @patch('xivo_dao.helpers.db_manager.DaoSession')
+    def test_add_with_db_error(self, DaoSession):
+        session = DaoSession.return_value = Mock()
         session.commit.side_effect = SQLAlchemyError()
         callfilter = Mock(Callfilter)
 
@@ -228,9 +228,9 @@ class TestCallFilterDAO(BaseTestCallFilterDAO):
         self.assertEquals(filterid, member.callfilterid)
         self.assertEquals('boss', member.bstype)
 
-    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
-    def test_add_user_to_filter_with_db_error(self, AsteriskSession):
-        session = AsteriskSession.return_value = Mock()
+    @patch('xivo_dao.helpers.db_manager.DaoSession')
+    def test_add_user_to_filter_with_db_error(self, DaoSession):
+        session = DaoSession.return_value = Mock()
         session.commit.side_effect = SQLAlchemyError()
 
         self.assertRaises(SQLAlchemyError, callfilter_dao.add_user_to_filter, 1, 2, 'boss')
@@ -264,9 +264,9 @@ class TestCallFilterDAO(BaseTestCallFilterDAO):
         self.assertEquals(None, self.session.query(Callfiltermember).filter(Callfiltermember.typeval == '1').first())
         self.assertNotEquals(None, self.session.query(Callfiltermember).filter(Callfiltermember.typeval == '2').first())
 
-    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
-    def test_delete_callfiltermember_by_userid_with_db_error(self, AsteriskSession):
-        session = AsteriskSession.return_value = Mock()
+    @patch('xivo_dao.helpers.db_manager.DaoSession')
+    def test_delete_callfiltermember_by_userid_with_db_error(self, DaoSession):
+        session = DaoSession.return_value = Mock()
         session.commit.side_effect = SQLAlchemyError()
 
         self.assertRaises(SQLAlchemyError, callfilter_dao.delete_callfiltermember_by_userid, 1)

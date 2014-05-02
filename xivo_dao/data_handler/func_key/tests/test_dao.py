@@ -296,7 +296,7 @@ class TestFuncKeyCreate(TestFuncKeyDao):
 
         self.assert_func_key_row_created(queue_destination_row)
 
-    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    @patch('xivo_dao.helpers.db_manager.DaoSession')
     @patch('xivo_dao.data_handler.func_key.dao.commit_or_abort')
     def test_given_db_error_then_transaction_rollbacked(self, commit_or_abort, session_maker):
         session = session_maker.return_value
@@ -359,7 +359,7 @@ class TestFuncKeyDelete(TestFuncKeyDao):
         existing_func_key = self.find_destination('group', group_row.id)
         assert_that(existing_func_key, is_not(none()))
 
-    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    @patch('xivo_dao.helpers.db_manager.DaoSession')
     @patch('xivo_dao.data_handler.func_key.dao.commit_or_abort')
     def test_given_db_error_then_transaction_rollbacked(self, commit_or_abort, session_maker):
         session = session_maker.return_value

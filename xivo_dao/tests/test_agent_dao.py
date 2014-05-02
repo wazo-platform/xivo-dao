@@ -101,9 +101,9 @@ class TestAgentDAO(DAOTestCase):
     def test_del_agent_bad_args(self):
         self.assertRaises(ValueError, agent_dao.del_agent, None)
 
-    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
-    def test_del_agent_db_error(self, AsteriskSession):
-        session = AsteriskSession.return_value = Mock()
+    @patch('xivo_dao.helpers.db_manager.DaoSession')
+    def test_del_agent_db_error(self, DaoSession):
+        session = DaoSession.return_value = Mock()
         session.commit.side_effect = Exception()
 
         self.assertRaises(Exception, agent_dao.del_agent, 1)
