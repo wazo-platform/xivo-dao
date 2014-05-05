@@ -121,7 +121,7 @@ class DAOTestCase(unittest.TestCase):
         self.session = db_manager.AsteriskSession()
         logger.debug("Emptying tables")
         self.session.begin()
-        self.session.execute("TRUNCATE %s CASCADE;" % ",".join(_tables))
+        self.session.execute('TRUNCATE "%s" CASCADE;' % '","'.join(_tables))
         self.session.commit()
         logger.debug("Tables emptied")
 
