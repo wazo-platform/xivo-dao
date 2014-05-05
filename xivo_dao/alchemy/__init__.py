@@ -129,7 +129,7 @@ from xivo_dao.alchemy.staticmeetme import StaticMeetme
 from xivo_dao.alchemy.staticqueue import StaticQueue
 from xivo_dao.alchemy.staticsip import StaticSIP
 from xivo_dao.alchemy.staticvoicemail import StaticVoicemail
-from xivo_dao.alchemy.stats_conf import StasConf
+from xivo_dao.alchemy.stats_conf import StatsConf
 from xivo_dao.alchemy.stats_conf_agent import StatsConfAgent
 from xivo_dao.alchemy.stats_conf_group import StatsConfGroup
 from xivo_dao.alchemy.stats_conf_incall import StatsConfIncall

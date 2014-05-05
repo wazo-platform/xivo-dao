@@ -22,7 +22,7 @@ from sqlalchemy.types import Integer, String, Text, TIMESTAMP, SmallInteger
 from xivo_dao.helpers.db_manager import Base
 
 
-class StasConf(Base):
+class StatsConf(Base):
 
     __tablename__ = 'stats_conf'
     __table_args__ = (
