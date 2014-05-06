@@ -33,4 +33,4 @@ class Directories(Base):
     dirtype = Column(String(20))
     name = Column(String(255))
     tablename = Column(String(255))
-    description = Column(Text)
+    description = Column(Text, nullable=False)

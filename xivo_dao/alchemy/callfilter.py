@@ -41,12 +41,10 @@ class Callfilter(Base):
                                 'secretary-simult',
                                 'all',
                                 name='callfilter_bosssecretary',
-                                metadata=Base.metadata),
-                           nullable=False)
+                                metadata=Base.metadata))
     callfrom = Column(Enum('internal', 'external', 'all',
                            name='callfilter_callfrom',
-                           metadata=Base.metadata),
-                      nullable=False)
+                           metadata=Base.metadata))
     ringseconds = Column(Integer, nullable=False, server_default='0')
     commented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text, nullable=False)
