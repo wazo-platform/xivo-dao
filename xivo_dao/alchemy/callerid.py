@@ -35,4 +35,4 @@ class Callerid(Base):
     type = Column(Enum('callfilter', 'incall', 'group', 'queue',
                        name='callerid_type',
                        metadata=Base.metadata))
-    typeval = Column(Integer, nullable=False)
+    typeval = Column(Integer, nullable=False, autoincrement=False)

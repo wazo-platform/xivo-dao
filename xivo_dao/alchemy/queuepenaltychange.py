@@ -15,17 +15,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.db_manager import Base
-from sqlalchemy.schema import Column
+from sqlalchemy.schema import Column, PrimaryKeyConstraint
 from sqlalchemy.types import Integer, Enum
+
+from xivo_dao.helpers.db_manager import Base
 
 
 class QueuePenaltyChange(Base):
 
     __tablename__ = 'queuepenaltychange'
+    __table_args__ = (
+        PrimaryKeyConstraint('queuepenalty_id', 'seconds'),
+    )
 
-    queuepenalty_id = Column(Integer, primary_key=True, nullable=False)
-    seconds = Column(Integer, primary_key=True, nullable=False, server_default='0')
+    queuepenalty_id = Column(Integer, nullable=False, autoincrement=False)
+    seconds = Column(Integer, nullable=False, server_default='0', autoincrement=False)
     maxp_sign = Column(Enum('user', 'agent', name='queuepenaltychange_sign', metadata=Base.metadata))
     maxp_value = Column(Integer)
     minp_sign = Column(Enum('user', 'agent', name='queuepenaltychange_sign', metadata=Base.metadata))
