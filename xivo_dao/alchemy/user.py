@@ -33,7 +33,7 @@ class User(Base):
     )
 
     id = Column(Integer, nullable=False)
-    entity_id = Column(Integer, nullable=False)
+    entity_id = Column(Integer)
     login = Column(String(64), nullable=False, server_default='')
     passwd = Column(String(64), nullable=False, server_default='')
     meta = Column(Enum('user',

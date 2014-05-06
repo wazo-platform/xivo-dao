@@ -28,5 +28,5 @@ class CtiDisplays(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(50))
     data = Column(Text, nullable=False)
-    description = Column(Text)
     deletable = Column(Integer)
+    description = Column(Text)

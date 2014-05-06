@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from sqlalchemy.schema import Column
-from sqlalchemy.types import Integer, String
+from sqlalchemy.types import Integer, String, Text
 
 from xivo_dao.helpers.db_manager import Base
 
@@ -32,4 +32,4 @@ class StaticVoicemail(Base):
     filename = Column(String(128), nullable=False)
     category = Column(String(128), nullable=False)
     var_name = Column(String(128), nullable=False)
-    var_val = Column(String(128))
+    var_val = Column(Text)
