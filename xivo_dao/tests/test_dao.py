@@ -72,7 +72,7 @@ _tables = []
 
 def expensive_setup():
     logger.debug("Connecting to database")
-    config.DB_URI = config.XIVO_DB_URI = 'postgresql://asterisk:asterisk@localhost/asterisktest'
+    config.DB_URI = 'postgresql://asterisk:asterisk@localhost/asterisktest'
     db_manager._init()
     session = db_manager.DaoSession()
     engine = session.bind
