@@ -37,7 +37,7 @@ class Callfiltermember(Base):
     typeval = Column(String(128), nullable=False, server_default='0')
     ringseconds = Column(Integer, nullable=False, server_default='0')
     priority = Column(Integer, nullable=False, server_default='0')
-    bstype = Column(Enum('boss', 'secretary',
+    bstype = Column(Enum('no', 'boss', 'secretary',
                          name='generic_bsfilter',
                          metadata=Base.metadata),
                     nullable=False)

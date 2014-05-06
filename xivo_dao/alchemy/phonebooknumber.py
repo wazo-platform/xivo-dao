@@ -28,5 +28,7 @@ class PhonebookNumber(Base):
     id = Column(Integer, primary_key=True)
     phonebookid = Column(Integer, nullable=False)
     number = Column(String(40), nullable=False, server_default='')
-    type = Column(Enum(('home', 'office', 'other'), name='phonebookaddress_type', metadata=Base.metadata),
+    type = Column(Enum('home', 'office', 'mobile', 'fax', 'other',
+                       name='phonebooknumber_type',
+                       metadata=Base.metadata),
                   nullable=False)

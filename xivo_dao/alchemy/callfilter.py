@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column, Index
+from sqlalchemy.schema import Column, Index, PrimaryKeyConstraint
 from sqlalchemy.types import Integer, String, Enum, Text
 
 from xivo_dao.helpers.db_manager import Base
@@ -25,10 +25,11 @@ class Callfilter(Base):
 
     __tablename__ = 'callfilter'
     __table_args__ = (
+        PrimaryKeyConstraint('id'),
         Index('callfilter__uidx__name', 'name'),
     )
 
-    id = Column(Integer, nullable=False, primary_key=True)
+    id = Column(Integer, nullable=False)
     name = Column(String(128), nullable=False, server_default='')
     type = Column(Enum('bosssecretary',
                        name='callfilter_type',
