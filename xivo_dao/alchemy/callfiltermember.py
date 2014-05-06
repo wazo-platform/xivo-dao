@@ -29,7 +29,7 @@ class Callfiltermember(Base):
     )
 
     id = Column(Integer, primary_key=True)
-    callfilterid = Column(Integer, ForeignKey('callfilter.id'))
+    callfilterid = Column(Integer, ForeignKey('callfilter.id'), nullable=False, server_default='0')
     type = Column(Enum('user',
                        name='callfiltermember_type',
                        metadata=Base.metadata),

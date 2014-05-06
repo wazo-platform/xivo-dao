@@ -28,7 +28,7 @@ class GroupFeatures(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(128), nullable=False)
     number = Column(String(40), nullable=False, server_default='')
-    context = Column(String(39))
+    context = Column(String(39), nullable=False)
     transfer_user = Column(Integer, nullable=False, server_default='0')
     transfer_call = Column(Integer, nullable=False, server_default='0')
     write_caller = Column(Integer, nullable=False, server_default='0')

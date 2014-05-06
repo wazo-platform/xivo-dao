@@ -34,8 +34,8 @@ class FuncKeyDestGroup(Base):
     )
 
     func_key_id = Column(Integer, primary_key=True)
-    group_id = Column(Integer, ForeignKey('groupfeatures.id'), primary_key=True)
     destination_type_id = Column(Integer, primary_key=True, server_default="2")
+    group_id = Column(Integer, ForeignKey('groupfeatures.id'), primary_key=True)
 
     func_key = relationship("FuncKey")
     groupfeatures = relationship("GroupFeatures")

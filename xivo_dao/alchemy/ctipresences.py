@@ -28,4 +28,4 @@ class CtiPresences(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(255), nullable=False)
     description = Column(String(255))
-    deletable = Column(Integer, server_default='1')
+    deletable = Column(Integer)

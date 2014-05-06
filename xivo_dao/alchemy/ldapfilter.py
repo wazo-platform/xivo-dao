@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.helpers.db_manager import Base
-from sqlalchemy.schema import Column, Sequence
+from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String, Text, Enum
 
 
@@ -24,7 +24,7 @@ class LdapFilter(Base):
 
     __tablename__ = 'ldapfilter'
 
-    id = Column(Integer, Sequence('ldapfilter_id_seq'), primary_key=True)
+    id = Column(Integer, primary_key=True)
     ldapserverid = Column(Integer, nullable=False)
     name = Column(String(128), nullable=False, server_default='')
     user = Column(String(255))

@@ -30,6 +30,6 @@ class Monitoring(Base):
 
     id = Column(Integer, nullable=False)
     maintenance = Column(Integer, nullable=False, server_default='0')
-    alert_emails = Column(String(4096), server_default='NULL')
-    dahdi_monitor_ports = Column(String(255), server_default='NULL')
+    alert_emails = Column(String(4096))
+    dahdi_monitor_ports = Column(String(255))
     max_call_duration = Column(Integer)

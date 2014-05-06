@@ -48,7 +48,7 @@ class Voicemail(Base):
     deletevoicemail = Column(Integer, nullable=False, server_default='0')
     forcename = Column(Integer)
     forcegreetings = Column(Integer)
-    hidefromdir = Column(Enum('yes', 'no', name='voicemail_hidefromdir', metadata=Base.metadata),
+    hidefromdir = Column(Enum('no', 'yes', name='voicemail_hidefromdir', metadata=Base.metadata),
                          nullable=False,
                          server_default='no')
     maxmsg = Column(Integer)

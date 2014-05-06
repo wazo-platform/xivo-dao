@@ -44,7 +44,7 @@ class Extension(Base):
                        name='extenumbers_type',
                        metadata=Base.metadata),
                     nullable=False)
-    typeval = Column(String(255))
+    typeval = Column(String(255), nullable=False, server_default='')
 
     @property
     def name(self):

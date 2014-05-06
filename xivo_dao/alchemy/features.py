@@ -32,4 +32,4 @@ class Features(Base):
     filename = Column(String(128), nullable=False)
     category = Column(String(128), nullable=False)
     var_name = Column(String(128), nullable=False)
-    var_val = Column(String(128))
+    var_val = Column(String(255))

@@ -36,7 +36,7 @@ class MeetmeFeatures(Base):
     meetmeid = Column(Integer, nullable=False)
     name = Column(String(80), nullable=False)
     confno = Column(String(40), nullable=False)
-    context = Column(String(39), nullable=False, server_default='')
+    context = Column(String(39), nullable=False)
     admin_typefrom = Column(Enum('none', 'internal', 'external', 'undefined',
                                  name='meetmefeatures_admin_typefrom',
                                  metadata=Base.metadata))
@@ -94,7 +94,7 @@ class MeetmeFeatures(Base):
     emailfrom = Column(String(255))
     emailfromname = Column(String(255))
     emailsubject = Column(String(255))
-    emailbody = Column(Text)
+    emailbody = Column(Text, nullable=False)
     preprocess_subroutine = Column(String(39))
-    description = Column(Text)
+    description = Column(Text, nullable=False)
     commented = Column(Integer, server_default='0')

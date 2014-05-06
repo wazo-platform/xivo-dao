@@ -45,7 +45,7 @@ class CEL(Base):
     context = Column(String(80), nullable=False)
     channame = Column(String(80, convert_unicode=True), nullable=False)
     appname = Column(String(80), nullable=False)
-    appdata = Column(String(80), nullable=False)
+    appdata = Column(String(512), nullable=False)
     amaflags = Column(Integer, nullable=False)
     accountcode = Column(String(20), nullable=False)
     peeraccount = Column(String(20), nullable=False)

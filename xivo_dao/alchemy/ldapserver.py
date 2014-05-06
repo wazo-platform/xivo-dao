@@ -26,7 +26,7 @@ class LdapServer(Base):
     __tablename__ = 'ldapserver'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(128), nullable=False, server_default='')
+    name = Column(String(64), nullable=False, server_default='')
     host = Column(String(255), nullable=False, server_default='')
     port = Column(Integer, nullable=False)
     securitylayer = Column(Enum('tls',

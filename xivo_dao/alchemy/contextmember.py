@@ -27,5 +27,5 @@ class ContextMember(Base):
 
     context = Column(String(39), primary_key=True)
     type = Column(String(32), primary_key=True)
-    typeval = Column(String(128), primary_key=True)
-    varname = Column(String(128), primary_key=True)
+    typeval = Column(String(128), primary_key=True, server_default='')
+    varname = Column(String(128), primary_key=True, server_default='')

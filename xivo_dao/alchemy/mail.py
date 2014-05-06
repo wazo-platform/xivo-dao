@@ -34,4 +34,4 @@ class Mail(Base):
     origin = Column(String(255), nullable=False, server_default='xivo-clients.proformatique.com')
     relayhost = Column(String(255))
     fallback_relayhost = Column(String(255))
-    canonical = Column(Text)
+    canonical = Column(Text, nullable=False)

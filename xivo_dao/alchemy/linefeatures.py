@@ -30,6 +30,9 @@ class LineFeatures(Base):
     )
 
     id = Column(Integer, primary_key=True)
+    protocol = Column('protocol', Enum('sip', 'iax', 'sccp', 'custom',
+                                       name='trunk_protocol',
+                                       metadata=Base.metadata))
     protocolid = Column(Integer, nullable=False)
     device = Column(String(32))
     configregistrar = Column(String(128))
@@ -41,6 +44,3 @@ class LineFeatures(Base):
     ipfrom = Column(String(15))
     commented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text)
-    protocol = Column('protocol', Enum('sip', 'iax', 'sccp', 'custom',
-                                       name='trunk_protocol',
-                                       metadata=Base.metadata))

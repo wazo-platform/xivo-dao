@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from sqlalchemy.schema import Column
-from sqlalchemy.types import Integer, String, TEXT
+from sqlalchemy.types import Integer, String, Text
 
 from xivo_dao.helpers.db_manager import Base
 
@@ -26,8 +26,8 @@ class Entity(Base):
     __tablename__ = 'entity'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(64), nullable=False)
-    displayname = Column(String(128), nullable=False)
+    name = Column(String(64), nullable=False, server_default='')
+    displayname = Column(String(128), nullable=False, server_default='')
     phonenumber = Column(String(40), nullable=False, server_default='')
     faxnumber = Column(String(40), nullable=False, server_default='')
     email = Column(String(255), nullable=False, server_default='')
@@ -40,4 +40,4 @@ class Entity(Base):
     country = Column(String(3), nullable=False, server_default='')
     disable = Column(Integer, nullable=False, server_default='0')
     dcreate = Column(Integer, nullable=False, server_default='0')
-    description = Column(TEXT, nullable=False, server_default='')
+    description = Column(Text, nullable=False)
