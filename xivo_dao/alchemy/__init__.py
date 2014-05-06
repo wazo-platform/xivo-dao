@@ -105,8 +105,6 @@ from xivo_dao.alchemy.queuepenaltychange import QueuePenaltyChange
 from xivo_dao.alchemy.queueskill import QueueSkill
 from xivo_dao.alchemy.queueskillcat import QueueSkillCat
 from xivo_dao.alchemy.queueskillrule import QueueSkillRule
-from xivo_dao.alchemy.record_campaigns import RecordCampaigns
-from xivo_dao.alchemy.recordings import Recordings
 from xivo_dao.alchemy.resolvconf import Resolvconf
 from xivo_dao.alchemy.rightcall import RightCall
 from xivo_dao.alchemy.rightcallexten import RightCallExten
