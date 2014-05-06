@@ -15,8 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column, ForeignKey
-from sqlalchemy.types import Integer, String, Text
+from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint, Index, \
+    UniqueConstraint
+from sqlalchemy.types import Integer, String, Text, Enum
 from sqlalchemy.orm import relationship
 
 from xivo_dao.helpers.db_manager import Base
@@ -25,11 +26,24 @@ from xivo_dao.helpers.db_manager import Base
 class UserFeatures(Base):
 
     __tablename__ = 'userfeatures'
+    __table_args__ = (
+        PrimaryKeyConstraint('id'),
+        UniqueConstraint('func_key_private_template_id'),
+        Index('userfeatures__idx__agentid', 'agentid'),
+        Index('userfeatures__idx__entityid', 'entityid'),
+        Index('userfeatures__idx__firstname', 'firstname'),
+        Index('userfeatures__idx__lastname', 'lastname'),
+        Index('userfeatures__idx__loginclient', 'loginclient'),
+        Index('userfeatures__idx__musiconhold', 'musiconhold'),
+        Index('userfeatures__idx__voicemailid', 'voicemailid'),
+    )
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, nullable=False)
     firstname = Column(String(128), nullable=False, server_default='')
     lastname = Column(String(128), nullable=False, server_default='')
-    voicemailtype = Column(String(128))  # TODO Should be Enum
+    voicemailtype = Column(Enum('asterisk', 'exchange',
+                                name='userfeatures_voicemailtype',
+                                metadata=Base.metadata))
     voicemailid = Column(Integer)
     agentid = Column(Integer)
     pictureid = Column(Integer)
