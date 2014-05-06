@@ -16,24 +16,37 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.helpers.db_manager import Base
-from sqlalchemy.schema import Column
-from sqlalchemy.types import Integer, String, Text
+from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint, \
+    Index
+from sqlalchemy.types import Integer, String, Text, Enum
 
 
 class UserSIP(Base):
 
     __tablename__ = 'usersip'
+    __table_args__ = (
+        PrimaryKeyConstraint('id'),
+        UniqueConstraint('name'),
+        Index('usersip__idx__category', 'category'),
+        Index('usersip__idx__mailbox', 'mailbox'),
+    )
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, nullable=False)
     name = Column(String(40), nullable=False)
-    type = Column(String(8), nullable=False)
+    type = Column(Enum('friend', 'peer', 'user',
+                       name='useriax_type',
+                       metadata=Base.metadata),
+                  nullable=False)
     username = Column(String(80))
     secret = Column(String(80), nullable=False, server_default='')
     md5secret = Column(String(32), nullable=False, server_default='')
     context = Column(String(39))
     language = Column(String(20))
     accountcode = Column(String(20))
-    amaflags = Column(String(16), nullable=False, server_default='default')
+    amaflags = Column(Enum('default', 'omit', 'billing', 'documentation',
+                           name='useriax_amaflags',
+                           metadata=Base.metadata),
+                      nullable=False, server_default='default')
     allowtransfer = Column(Integer)
     fromuser = Column(String(80))
     fromdomain = Column(String(255))
@@ -45,16 +58,24 @@ class UserSIP(Base):
     fullname = Column(String(80))
     cid_number = Column(String(80))
     maxcallbitrate = Column(Integer)
-    insecure = Column(String(16))
-    nat = Column(String(16))
+    insecure = Column(Enum('port', 'invite', 'port,invite',
+                       name='usersip_insecure',
+                       metadata=Base.metadata))
+    nat = Column(Enum('no', 'force_rport', 'comedia', 'force_rport,comedia',
+                      name='usersip_nat',
+                      metadata=Base.metadata))
     promiscredir = Column(Integer)
     usereqphone = Column(Integer)
-    videosupport = Column(String(16))
+    videosupport = Column(Enum('no', 'yes', 'always',
+                               name='usersip_videosupport',
+                               metadata=Base.metadata))
     trustrpid = Column(Integer)
     sendrpid = Column(Integer)
     allowsubscribe = Column(Integer)
     allowoverlap = Column(Integer)
-    dtmfmode = Column(String(16))
+    dtmfmode = Column(Enum('rfc2833', 'inband', 'info', 'auto',
+                           name='usersip_dtmfmode',
+                           metadata=Base.metadata))
     rfc2833compensate = Column(Integer)
     qualify = Column(String(4))
     g726nonstandard = Column(Integer)
@@ -64,7 +85,9 @@ class UserSIP(Base):
     mohinterpret = Column(String(80))
     mohsuggest = Column(String(80))
     useclientcode = Column(Integer)
-    progressinband = Column(String(16))
+    progressinband = Column(Enum('no', 'yes', 'never',
+                                 name='usersip_progressinband',
+                                 metadata=Base.metadata))
     t38pt_udptl = Column(Integer)
     t38pt_usertpsource = Column(Integer)
     rtptimeout = Column(Integer)
@@ -86,31 +109,45 @@ class UserSIP(Base):
     regserver = Column(String(20))
     lastms = Column(String(15), nullable=False, server_default='')
     parkinglot = Column(Integer)
-    protocol = Column(String(8), nullable=False, server_default='sip')
-    category = Column(String(8))
+    protocol = Column(Enum('sip', 'iax', 'sccp', 'custom',
+                            name='trunk_protocol',
+                            metadata=Base.metadata),
+                      nullable=False, server_default='sip')
+    category = Column(Enum('user', 'trunk',
+                           name='useriax_category',
+                           metadata=Base.metadata),
+                      nullable=False)
     outboundproxy = Column(String(1024))
-    transport = Column(String(255))
-    remotesecret = Column(String(255))
-    directmedia = Column(String(16))
+    transport = Column(String(255), nullable=False, server_default='NULL')
+    remotesecret = Column(String(255), nullable=False, server_default='NULL')
+    directmedia = Column(Enum('no', 'yes', 'nonat', 'update', 'update,nonat',
+                           name='usersip_directmedia',
+                           metadata=Base.metadata))
     callcounter = Column(Integer)
     busylevel = Column(Integer)
     ignoresdpversion = Column(Integer)
-    session_timers = Column('session-timers', String(16))
+    session_timers = Column('session-timers',
+                            Enum('originate', 'accept', 'refuse',
+                                 name='usersip_session_timers',
+                                 metadata=Base.metadata))
     session_expires = Column('session-expires', Integer)
     session_minse = Column('session-minse', Integer)
-    session_refresher = Column('session-refresher', String(16))
-    callbackextension = Column(String(255))
+    session_refresher = Column('session-refresher',
+                               Enum('uac', 'uas',
+                                    name='usersip_session_refresher',
+                                    metadata=Base.metadata))
+    callbackextension = Column(String(255), nullable=False, server_default='NULL')
     registertrying = Column(Integer)
     timert1 = Column(Integer)
     timerb = Column(Integer)
     qualifyfreq = Column(Integer)
-    contactpermit = Column(String(1024))
-    contactdeny = Column(String(1024))
-    unsolicited_mailbox = Column(String(1024))
+    contactpermit = Column(String(1024), nullable=False, server_default='NULL')
+    contactdeny = Column(String(1024), nullable=False, server_default='NULL')
+    unsolicited_mailbox = Column(String(1024), nullable=False, server_default='NULL')
     use_q850_reason = Column(Integer)
     encryption = Column(Integer)
     snom_aoc_enabled = Column(Integer)
     maxforwards = Column(Integer)
-    disallowed_methods = Column(String(1024))
+    disallowed_methods = Column(String(1024), nullable=False, server_default='NULL')
     textsupport = Column(Integer)
     commented = Column(Integer, nullable=False, server_default='0')
