@@ -296,12 +296,19 @@ class TestAsteriskConfDAO(DAOTestCase):
         assert_that(funckeys, contains_inanyorder(*expected_result))
 
     def test_find_exten_conferences_settings(self):
-        conference = self.add_meetmefeatures()
+        conference = self.add_meetmefeatures(context='test')
         expected_result = [{'exten': conference.confno}]
 
-        conference_extens = asterisk_conf_dao.find_exten_conferences_settings()
+        conference_extens = asterisk_conf_dao.find_exten_conferences_settings('test')
 
         assert_that(conference_extens, contains_inanyorder(*expected_result))
+
+    def test_find_exten_conferences_settings_different_context(self):
+        self.add_meetmefeatures(context='test')
+
+        conference_extens = asterisk_conf_dao.find_exten_conferences_settings('default')
+
+        assert_that(conference_extens, has_length(0))
 
     def test_find_exten_xivofeatures_setting(self):
         exten1 = self.add_extension(exten='*25', context='xivo-features')
