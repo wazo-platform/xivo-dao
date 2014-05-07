@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint, \
+from sqlalchemy.schema import Column, PrimaryKeyConstraint, \
     UniqueConstraint, ForeignKeyConstraint
 from sqlalchemy.types import Integer, String, Boolean, DateTime
 from sqlalchemy.orm import relationship

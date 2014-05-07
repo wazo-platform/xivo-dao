@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, ForeignKeyConstraint
+from sqlalchemy.schema import Column, PrimaryKeyConstraint
 from sqlalchemy.types import Integer
 
 from xivo_dao.helpers.db_manager import Base
@@ -27,15 +26,7 @@ class StatsConfXivoUser(Base):
     __tablename__ = 'stats_conf_xivouser'
     __table_args__ = (
         PrimaryKeyConstraint('stats_conf_id', 'user_id'),
-        ForeignKeyConstraint(('user_id',),
-                             ('user.id',),
-                             ondelete='RESTRICT'),
-        ForeignKeyConstraint(('stats_conf_id',),
-                             ('stats_conf.id',)),
     )
 
-    stats_conf_id = Column(Integer, nullable=False)
-    user_id = Column(Integer, nullable=False)
-
-    user = relationship('User')
-    stats_conf = relationship('StatsConf')
+    stats_conf_id = Column(Integer, nullable=False, autoincrement=False)
+    user_id = Column(Integer, nullable=False, autoincrement=False)
