@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column
+from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
 from sqlalchemy.types import Integer, String, Text
 
 from xivo_dao.helpers.db_manager import Base
@@ -24,8 +24,12 @@ from xivo_dao.helpers.db_manager import Base
 class QueuePenalty(Base):
 
     __tablename__ = 'queuepenalty'
+    __table_args__ = (
+        PrimaryKeyConstraint('id'),
+        UniqueConstraint('name')
+    )
 
-    id = Column(Integer, primary_key=True, nullable=False)
+    id = Column(Integer)
     name = Column(String(255), nullable=False)
-    commented = Column(Integer, server_default='0', nullable=False)
+    commented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text, nullable=False)
