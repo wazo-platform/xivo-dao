@@ -57,7 +57,7 @@ class Netiface(Base):
     mtu = Column(Integer)
     vlanrawdevice = Column(String(64))
     vlanid = Column(Integer)
-    options = Column(Text)
+    options = Column(Text, nullable=False)
     disable = Column(Integer, nullable=False, server_default='0')
     dcreate = Column(Integer, nullable=False, server_default='0')
     description = Column(Text)

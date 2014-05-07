@@ -30,7 +30,7 @@ class QueuePenaltyChange(Base):
 
     queuepenalty_id = Column(Integer, nullable=False, autoincrement=False)
     seconds = Column(Integer, nullable=False, server_default='0', autoincrement=False)
-    maxp_sign = Column(Enum('user', 'agent', name='queuepenaltychange_sign', metadata=Base.metadata))
+    maxp_sign = Column(Enum('=', '+', '-', name='queuepenaltychange_sign', metadata=Base.metadata))
     maxp_value = Column(Integer)
-    minp_sign = Column(Enum('user', 'agent', name='queuepenaltychange_sign', metadata=Base.metadata))
+    minp_sign = Column(Enum('=', '+', '-', name='queuepenaltychange_sign', metadata=Base.metadata))
     minp_value = Column(Integer)

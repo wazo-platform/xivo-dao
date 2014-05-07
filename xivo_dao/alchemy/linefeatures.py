@@ -32,7 +32,8 @@ class LineFeatures(Base):
     id = Column(Integer, primary_key=True)
     protocol = Column('protocol', Enum('sip', 'iax', 'sccp', 'custom',
                                        name='trunk_protocol',
-                                       metadata=Base.metadata))
+                                       metadata=Base.metadata),
+                      nullable=False)
     protocolid = Column(Integer, nullable=False)
     device = Column(String(32))
     configregistrar = Column(String(128))

@@ -35,14 +35,14 @@ class PhoneFunckey(Base):
     iduserfeatures = Column(Integer, nullable=False, autoincrement=False)
     fknum = Column(Integer, nullable=False, autoincrement=False)
     exten = Column(String(40))
-    typeextenumbers = Column(String(255))
-    typevalextenumbers = Column(Enum('extenfeatures', 'featuremap', 'generalfeatures',
-                                     name='phonefunckey_typeextenumbers',
-                                     metadata=Base.metadata))
-    typeextenumbersright = Column(String(255))
-    typevalextenumbersright = Column(Enum('agent', 'group', 'meetme', 'queue', 'user', 'paging',
-                                          name='phonefunckey_typeextenumbersright',
-                                          metadata=Base.metadata))
+    typeextenumbers = Column(Enum('extenfeatures', 'featuremap', 'generalfeatures',
+                                  name='phonefunckey_typeextenumbers',
+                                  metadata=Base.metadata))
+    typevalextenumbers = Column(String(255))
+    typeextenumbersright = Column(Enum('agent', 'group', 'meetme', 'queue', 'user', 'paging',
+                                       name='phonefunckey_typeextenumbersright',
+                                       metadata=Base.metadata))
+    typevalextenumbersright = Column(String(255))
     label = Column(String(32))
     supervision = Column(Integer, nullable=False, server_default='0')
     progfunckey = Column(Integer, nullable=False, server_default='0')

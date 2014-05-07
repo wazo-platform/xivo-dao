@@ -33,8 +33,8 @@ class Recordings(Base):
     client_id = Column(String(1024))
     callee = Column(String(32))
     filename = Column(String(1024))
-    campaign_id = Column(Integer, ForeignKey('record_campaign.id'))
-    agent_id = Column(Integer, ForeignKey('agentfeatures.id'))
+    campaign_id = Column(Integer, ForeignKey('record_campaign.id'), nullable=False)
+    agent_id = Column(Integer, ForeignKey('agentfeatures.id'), nullable=False)
 
     record_campaign = relationship("RecordCampaigns", foreign_keys=campaign_id)
     agentfeatures = relationship("AgentFeatures", foreign_keys=agent_id)
