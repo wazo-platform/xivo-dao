@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column
+from sqlalchemy.schema import Column, PrimaryKeyConstraint
 from sqlalchemy.types import Integer, String, Text
 
 from xivo_dao.helpers.db_manager import Base
@@ -24,13 +24,16 @@ from xivo_dao.helpers.db_manager import Base
 class SCCPLine(Base):
 
     __tablename__ = 'sccpline'
+    __table_args__ = (
+        PrimaryKeyConstraint('id'),
+    )
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     name = Column(String(80), nullable=False)
     context = Column(String(39), nullable=False)
     cid_name = Column(String(80), nullable=False)
     cid_num = Column(String(80), nullable=False)
-    protocol = Column(String(8), nullable=False, server_default='sccp')
-    allow = Column(Text)
     disallow = Column(String(100))
+    allow = Column(Text)
+    protocol = Column(String(8), nullable=False, server_default='sccp')
     commented = Column(Integer, nullable=False, server_default='0')

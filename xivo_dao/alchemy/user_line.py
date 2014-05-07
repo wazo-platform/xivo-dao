@@ -16,7 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from sqlalchemy.types import Integer, Boolean
-from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint
+from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint, \
+    PrimaryKeyConstraint
 from sqlalchemy.orm import relationship
 
 from xivo_dao.helpers.db_manager import Base
@@ -26,12 +27,13 @@ class UserLine(Base):
 
     __tablename__ = 'user_line'
     __table_args__ = (
+        PrimaryKeyConstraint('id', 'line_id'),
         UniqueConstraint('user_id', 'line_id'),
     )
 
-    id = Column(Integer, primary_key=True)
-    line_id = Column(Integer, ForeignKey('linefeatures.id'), nullable=False, primary_key=True)
+    id = Column(Integer, nullable=False)
     user_id = Column(Integer, ForeignKey('userfeatures.id'))
+    line_id = Column(Integer, ForeignKey('linefeatures.id'), nullable=False)
     extension_id = Column(Integer, ForeignKey('extensions.id'))
     main_user = Column(Boolean, nullable=False)
     main_line = Column(Boolean, nullable=False)

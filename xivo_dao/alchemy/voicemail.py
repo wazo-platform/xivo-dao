@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column
+from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint, \
+    Index
 from sqlalchemy.types import Integer, String, Text, Float, Enum
 
 from xivo_dao.helpers.db_manager import Base
@@ -24,8 +25,13 @@ from xivo_dao.helpers.db_manager import Base
 class Voicemail(Base):
 
     __tablename__ = 'voicemail'
+    __table_args__ = (
+        PrimaryKeyConstraint('uniqueid'),
+        UniqueConstraint('mailbox', 'context'),
+        Index('voicemail__idx__context', 'context'),
+    )
 
-    uniqueid = Column(Integer, primary_key=True)
+    uniqueid = Column(Integer)
     context = Column(String(39), nullable=False)
     mailbox = Column(String(40), nullable=False)
     password = Column(String(80), nullable=False, server_default='')

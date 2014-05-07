@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column
+from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
 from sqlalchemy.types import Integer, String
 
 from xivo_dao.helpers.db_manager import Base
@@ -24,8 +24,12 @@ from xivo_dao.helpers.db_manager import Base
 class StaticQueue(Base):
 
     __tablename__ = 'staticqueue'
+    __table_args__ = (
+        PrimaryKeyConstraint('id'),
+        Index('staticqueue__idx__category', 'category')
+    )
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, nullable=False)
     cat_metric = Column(Integer, nullable=False, server_default='0')
     var_metric = Column(Integer, nullable=False, server_default='0')
     commented = Column(Integer, nullable=False, server_default='0')

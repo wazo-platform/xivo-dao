@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2012-2014 Avencall
@@ -16,7 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column
+from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint, \
+    Index
 from sqlalchemy.types import Integer, String, Text
 
 from xivo_dao.helpers.db_manager import Base
@@ -25,10 +25,16 @@ from xivo_dao.helpers.db_manager import Base
 class TrunkFeatures(Base):
 
     __tablename__ = 'trunkfeatures'
+    __table_args__ = (
+        PrimaryKeyConstraint('id'),
+        UniqueConstraint('protocol', 'protocolid'),
+        Index('trunkfeatures__idx__registercommented', 'registercommented'),
+        Index('trunkfeatures__idx__registerid', 'registerid')
+    )
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, nullable=False)
     protocol = Column(String(8), nullable=False)
     protocolid = Column(Integer, nullable=False)
     registerid = Column(Integer, nullable=False, server_default='0')
     registercommented = Column(Integer, nullable=False, server_default='0')
-    description = Column(Text, nullable=False, server_default='')
+    description = Column(Text, nullable=False)
