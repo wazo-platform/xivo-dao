@@ -16,7 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from sqlalchemy.types import Integer, String, Text
-from sqlalchemy.schema import Column, UniqueConstraint
+from sqlalchemy.schema import Column, UniqueConstraint, PrimaryKeyConstraint, \
+    Index
 
 from xivo_dao.helpers.db_manager import Base
 from xivo_dao.alchemy import enum
@@ -26,11 +27,16 @@ class LineFeatures(Base):
 
     __tablename__ = 'linefeatures'
     __table_args__ = (
+        PrimaryKeyConstraint('id'),
         UniqueConstraint('name'),
         UniqueConstraint('protocol', 'protocolid'),
+        Index('linefeatures__idx__context', 'context'),
+        Index('linefeatures__idx__device', 'device'),
+        Index('linefeatures__idx__number', 'number'),
+        Index('linefeatures__idx__provisioningid', 'provisioningid'),
     )
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     protocol = Column(enum.trunk_protocol, nullable=False)
     protocolid = Column(Integer, nullable=False)
     device = Column(String(32))
