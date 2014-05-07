@@ -62,6 +62,30 @@ extenumbers_type = Enum(
     metadata=Base.metadata
 )
 
+callfilter_type = Enum(
+    'bosssecretary',
+    name='callfilter_type',
+    metadata=Base.metadata
+)
+
+callfilter_bosssecretary = Enum(
+    'bossfirst-serial',
+    'bossfirst-simult',
+    'secretary-serial',
+    'secretary-simult',
+    'all',
+    name='callfilter_bosssecretary',
+    metadata=Base.metadata
+)
+
+callfilter_callfrom = Enum(
+    'internal',
+    'external',
+    'all',
+    name='callfilter_callfrom',
+    metadata=Base.metadata
+)
+
 generic_bsfilter = Enum(
     'no',
     'boss',

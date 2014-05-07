@@ -15,9 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column, Index, PrimaryKeyConstraint
-from sqlalchemy.types import Integer, String, Enum, Text
+from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
+from sqlalchemy.types import Integer, String, Text
 
+from xivo_dao.alchemy import enum
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -26,25 +27,14 @@ class Callfilter(Base):
     __tablename__ = 'callfilter'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
-        Index('callfilter__uidx__name', 'name'),
+        UniqueConstraint('name'),
     )
 
     id = Column(Integer, nullable=False)
     name = Column(String(128), nullable=False, server_default='')
-    type = Column(Enum('bosssecretary',
-                       name='callfilter_type',
-                       metadata=Base.metadata),
-                  nullable=False)
-    bosssecretary = Column(Enum('bossfirst-serial',
-                                'bossfirst-simult',
-                                'secretary-serial',
-                                'secretary-simult',
-                                'all',
-                                name='callfilter_bosssecretary',
-                                metadata=Base.metadata))
-    callfrom = Column(Enum('internal', 'external', 'all',
-                           name='callfilter_callfrom',
-                           metadata=Base.metadata))
+    type = Column(enum.callfilter_type, nullable=False)
+    bosssecretary = Column(enum.callfilter_bosssecretary)
+    callfrom = Column(enum.callfilter_callfrom)
     ringseconds = Column(Integer, nullable=False, server_default='0')
     commented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text, nullable=False)
