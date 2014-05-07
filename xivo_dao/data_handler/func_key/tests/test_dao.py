@@ -19,48 +19,21 @@ from hamcrest import *
 from mock import patch
 
 from xivo_dao.alchemy.func_key import FuncKey as FuncKeySchema
-from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser as FuncKeyDestUserSchema
+from xivo_dao.alchemy.func_key_dest_conference import FuncKeyDestConference as FuncKeyDestConferenceSchema
 from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup as FuncKeyDestGroupSchema
 from xivo_dao.alchemy.func_key_dest_queue import FuncKeyDestQueue as FuncKeyDestQueueSchema
-from xivo_dao.data_handler.exception import ElementNotExistsError
+from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser as FuncKeyDestUserSchema
+from xivo_dao.alchemy.func_key_destination_type import FuncKeyDestinationType as FuncKeyDestinationTypeSchema
 from xivo_dao.data_handler.exception import ElementCreationError
 from xivo_dao.data_handler.exception import ElementDeletionError
-from xivo_dao.data_handler.func_key.model import FuncKey
+from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.data_handler.func_key import dao
+from xivo_dao.data_handler.func_key.model import FuncKey
 from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao.alchemy.func_key import FuncKey as FuncKeySchema
-from xivo_dao.alchemy.func_key_type import FuncKeyType as FuncKeyTypeSchema
-from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser as FuncKeyDestUserSchema
-from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup as FuncKeyDestGroupSchema
-from xivo_dao.alchemy.func_key_dest_queue import FuncKeyDestQueue as FuncKeyDestQueueSchema
-from xivo_dao.alchemy.func_key_dest_conference import FuncKeyDestConference as FuncKeyDestConferenceSchema
-from xivo_dao.alchemy.func_key_destination_type import FuncKeyDestinationType as FuncKeyDestinationTypeSchema
-from xivo_dao.alchemy.userfeatures import test_dependencies as user_test_dependencies
-from xivo_dao.alchemy.queuefeatures import test_dependencies as queue_test_dependencies
-from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
-from xivo_dao.alchemy.groupfeatures import GroupFeatures as GroupSchema
-from xivo_dao.alchemy.queuefeatures import QueueFeatures as QueueSchema
-from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures as ConferenceSchema
 
 
 class BaseTestFuncKeyDao(DAOTestCase):
-
-    tables = [
-        FuncKeySchema,
-        FuncKeyTypeSchema,
-        FuncKeyDestinationTypeSchema,
-        FuncKeyDestUserSchema,
-        FuncKeyDestGroupSchema,
-        FuncKeyDestQueueSchema,
-        FuncKeyDestConferenceSchema,
-        UserSchema,
-        GroupSchema,
-        QueueSchema,
-        ConferenceSchema,
-    ] + user_test_dependencies + queue_test_dependencies
-
-    def setUp(self):
-        self.empty_tables()
+    pass
 
 
 class TestFuncKeyDao(DAOTestCase):
