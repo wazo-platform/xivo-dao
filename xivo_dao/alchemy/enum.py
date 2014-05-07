@@ -47,6 +47,32 @@ dialaction_action = Enum(
     metadata=Base.metadata
 )
 
+dialaction_category = Enum(
+    'callfilter',
+    'group',
+    'incall',
+    'queue',
+    'schedule',
+    'user',
+    'outcall',
+    name='dialaction_category',
+    metadata=Base.metadata
+)
+
+dialaction_event = Enum(
+    'answer',
+    'noanswer',
+    'congestion',
+    'busy',
+    'chanunavail',
+    'inschedule',
+    'outschedule',
+    'qwaittime',
+    'qwaitratio',
+    name='dialaction_event',
+    metadata=Base.metadata
+)
+
 extenumbers_type = Enum(
     'extenfeatures',
     'featuremap',

@@ -15,39 +15,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column
-from sqlalchemy.types import Integer, String, Enum
+from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
+from sqlalchemy.types import Integer, String
 
 from xivo_dao.helpers.db_manager import Base
 from xivo_dao.alchemy import enum
 
 
 class Dialaction(Base):
-    __tablename__ = 'dialaction'
 
-    event = Column(Enum('answer',
-                        'noanswer',
-                        'congestion',
-                        'busy',
-                        'chanunavail',
-                        'inschedule',
-                        'outschedule',
-                        'qwaittime',
-                        'qwaitratio',
-                        name='dialaction_event',
-                        metadata=Base.metadata),
-                   primary_key=True)
-    category = Column(Enum('callfilter',
-                           'group',
-                           'incall',
-                           'queue',
-                           'schedule',
-                           'user',
-                           'outcall',
-                           name='dialaction_category',
-                           metadata=Base.metadata),
-                      primary_key=True)
-    categoryval = Column(String(128), server_default='', primary_key=True)
+    __tablename__ = 'dialaction'
+    __table_args__ = (
+        PrimaryKeyConstraint('event', 'category', 'categoryval'),
+        Index('dialaction__idx__action_actionarg1', 'action', 'actionarg1'),
+    )
+
+    event = Column(enum.dialaction_event)
+    category = Column(enum.dialaction_category)
+    categoryval = Column(String(128), server_default='')
     action = Column(enum.dialaction_action, nullable=False)
     actionarg1 = Column(String(255))
     actionarg2 = Column(String(255))
