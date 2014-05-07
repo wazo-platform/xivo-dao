@@ -218,20 +218,20 @@ class TestUpdateLine(TestCase):
         update_xivo_userid.assert_called_once_with(line, main_user)
 
 
-@patch('xivo_dao.data_handler.extension.dao.associate_to_user')
+@patch('xivo_dao.data_handler.extension.dao.associate_destination')
 @patch('xivo_dao.data_handler.line.dao.associate_extension')
 class TestExtenAndContext(TestCase):
 
     def test_given_main_user_line_and_extension_then_exten_and_context_updated(self,
                                                                                line_associate_extension,
-                                                                               extension_assocaite_to_user):
-        main_user = Mock(User)
-        line = Mock(Line, id=1)
-        extension = Mock(Extension)
+                                                                               extension_associate_destination):
+        main_user = Mock(User, id=1)
+        line = Mock(Line, id=2)
+        extension = Mock(Extension, id=3)
 
         ule_service.update_exten_and_context(main_user, line, extension)
 
-        extension_assocaite_to_user.assert_called_once_with(main_user, extension)
+        extension_associate_destination.assert_called_once_with(extension.id, 'user', main_user.id)
         line_associate_extension.assert_called_once_with(extension, line.id)
 
 
@@ -261,12 +261,12 @@ class TestRemoveExtenAndContext(TestCase):
     def test_given_extension_then_exten_and_context_removed(self,
                                                             line_dissociate_extension,
                                                             ext_dissociate_extension):
-        extension = Mock(Extension)
+        extension = Mock(Extension, id=1)
 
         ule_service.remove_exten_and_context(extension)
 
         line_dissociate_extension.assert_called_once_with(extension)
-        ext_dissociate_extension.assert_called_once_with(extension)
+        ext_dissociate_extension.assert_called_once_with(extension.id)
 
 
 @patch('xivo_dao.data_handler.user_line_extension.services.fix_main_user_dissociation')

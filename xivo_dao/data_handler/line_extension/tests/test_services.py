@@ -19,31 +19,65 @@ import unittest
 from mock import Mock, patch
 from hamcrest import assert_that, equal_to, has_items
 
+from xivo_dao.data_handler.context.model import Context, ContextType
 from xivo_dao.data_handler.extension.model import Extension
+from xivo_dao.data_handler.user_line.model import UserLine
 from xivo_dao.data_handler.line.model import Line
+from xivo_dao.data_handler.incall.model import Incall
 from xivo_dao.data_handler.line_extension.model import LineExtension
 from xivo_dao.data_handler.line_extension import services as line_extension_service
 
 
+@patch('xivo_dao.data_handler.line_extension.notifier.associated')
+@patch('xivo_dao.data_handler.line_extension.validator.validate_associate')
+@patch('xivo_dao.data_handler.context.dao.get_by_extension_id')
 class TestLineExtensionAssociate(unittest.TestCase):
 
-    @patch('xivo_dao.data_handler.line_extension.notifier.associated')
-    @patch('xivo_dao.data_handler.line_extension.validator.validate_associate')
     @patch('xivo_dao.data_handler.user_line_extension.services.associate_line_extension')
-    def test_associate(self,
-                       associate_line_extension,
-                       validate_associate,
-                       notifier_associated):
+    def test_given_internal_context_then_creates_line_extension(self,
+                                                                associate_line_extension,
+                                                                get_by_extension_id,
+                                                                validate_associate,
+                                                                notifier_associated):
 
-        line_extension = Mock(LineExtension)
-        created_line_extension = associate_line_extension.return_value = Mock(LineExtension)
+        get_by_extension_id.return_value = Mock(Context, type=ContextType.internal)
+
+        line_extension = Mock(LineExtension, line_id=20, extension_id=30)
 
         result = line_extension_service.associate(line_extension)
 
-        assert_that(result, equal_to(created_line_extension))
+        assert_that(result, equal_to(line_extension))
         validate_associate.assert_called_once_with(line_extension)
         associate_line_extension.assert_called_once_with(line_extension)
-        notifier_associated.assert_called_once_with(created_line_extension)
+        notifier_associated.assert_called_once_with(line_extension)
+
+    @patch('xivo_dao.data_handler.extension.dao.associate_destination')
+    @patch('xivo_dao.data_handler.user_line.dao.find_main_user_line')
+    @patch('xivo_dao.data_handler.incall.dao.create')
+    def test_given_incall_context_then_creates_incall(self,
+                                                      incall_dao_create,
+                                                      find_main_user_line,
+                                                      associate_destination,
+                                                      get_by_extension_id,
+                                                      validate_associate,
+                                                      notifier_associated):
+
+        get_by_extension_id.return_value = Mock(Context, type=ContextType.incall)
+        user_line = find_main_user_line.return_value = Mock(UserLine, user_id=10, line_id=20)
+        created_incall = incall_dao_create.return_value = Mock(Incall, id=40)
+
+        line_extension = Mock(LineExtension, line_id=20, extension_id=30)
+        incall = Incall(destination='user',
+                        destination_id=user_line.user_id,
+                        extension_id=line_extension.extension_id)
+
+        result = line_extension_service.associate(line_extension)
+
+        assert_that(result, equal_to(line_extension))
+        validate_associate.assert_called_once_with(line_extension)
+        incall_dao_create.assert_called_once_with(incall)
+        associate_destination.assert_called_once_with(line_extension.extension_id, 'incall', created_incall.id)
+        notifier_associated.assert_called_once_with(line_extension)
 
 
 class TestGetByLineId(unittest.TestCase):
@@ -102,22 +136,49 @@ class TestGetByExtensionId(unittest.TestCase):
         dao_get_by_extension_id.assert_called_once_with(extension.id)
 
 
+@patch('xivo_dao.data_handler.context.dao.get_by_extension_id')
+@patch('xivo_dao.data_handler.line_extension.notifier.dissociated')
+@patch('xivo_dao.data_handler.line_extension.validator.validate_dissociation')
 class TestLineExtensionDissociate(unittest.TestCase):
 
-    @patch('xivo_dao.data_handler.line_extension.notifier.dissociated')
     @patch('xivo_dao.data_handler.user_line_extension.services.dissociate_line_extension')
-    @patch('xivo_dao.data_handler.line_extension.validator.validate_dissociation')
-    def test_dissociate(self,
-                        validate_dissociation,
-                        dissociate_line_extension,
-                        notifier_dissociated):
+    def test_given_internal_context_then_dissociates_line_extension(self,
+                                                                    dissociate_line_extension,
+                                                                    validate_dissociation,
+                                                                    notifier_dissociated,
+                                                                    get_by_extension_id):
         line_extension = Mock(LineExtension, line_id=1, extension_id=2)
+        get_by_extension_id.return_value = Mock(Context, type='internal')
 
         line_extension_service.dissociate(line_extension)
 
+        get_by_extension_id.assert_called_once_with(line_extension.extension_id)
         validate_dissociation.assert_called_once_with(line_extension)
         dissociate_line_extension.assert_called_once_with(line_extension)
         notifier_dissociated.assert_called_once_with(line_extension)
+
+    @patch('xivo_dao.data_handler.extension.dao.dissociate_extension')
+    @patch('xivo_dao.data_handler.incall.dao.delete')
+    @patch('xivo_dao.data_handler.incall.dao.find_by_extension_id')
+    def test_given_incall_context_then_dissociates_incall(self,
+                                                          incall_find_by_extension_id,
+                                                          incall_delete,
+                                                          dissociate_extension,
+                                                          validate_dissociation,
+                                                          notifier_dissociated,
+                                                          get_by_extension_id):
+        line_extension = Mock(LineExtension, line_id=1, extension_id=2)
+        get_by_extension_id.return_value = Mock(Context, type='incall')
+        incall = incall_find_by_extension_id.return_value = Mock(Incall)
+
+        line_extension_service.dissociate(line_extension)
+
+        get_by_extension_id.assert_called_once_with(line_extension.extension_id)
+        validate_dissociation.assert_called_once_with(line_extension)
+        notifier_dissociated.assert_called_once_with(line_extension)
+        incall_find_by_extension_id.assert_called_once_with(line_extension.extension_id)
+        incall_delete.assert_called_once_with(incall)
+        dissociate_extension.assert_called_once_with(line_extension.extension_id)
 
 
 class TestGetAllByLineId(unittest.TestCase):

@@ -71,6 +71,7 @@ def find_all_by_user_id(session, user_id):
 def find_all_by_line_id(session, line_id):
     rows = (session.query(UserLineSchema)
             .filter(UserLineSchema.line_id == line_id)
+            .filter(UserLineSchema.user_id != None)
             .all())
 
     if not rows:

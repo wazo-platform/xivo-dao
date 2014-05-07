@@ -109,7 +109,7 @@ class TestValidateUserNotAssociated(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.user.validator.validate_not_associated_to_line')
     @patch('xivo_dao.data_handler.user.validator.validate_not_associated_to_voicemail')
-    def test_validate_user_not_assocaited(self, validate_not_associated_to_voicemail,
+    def test_validate_user_not_associated(self, validate_not_associated_to_voicemail,
                                           validate_not_associated_to_line):
 
         user = Mock(User)
@@ -120,7 +120,7 @@ class TestValidateUserNotAssociated(unittest.TestCase):
         validate_not_associated_to_voicemail.assert_called_once_with(user)
 
 
-class TestValidateNotAssocaitedToLine(unittest.TestCase):
+class TestValidateNotAssociatedToLine(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.user_line.dao.find_all_by_user_id')
     def test_when_not_associated_to_line(self, find_all_by_user_id):

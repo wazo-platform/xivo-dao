@@ -75,7 +75,7 @@ def update_line(main_user, line):
 
 
 def update_exten_and_context(main_user, line, extension):
-    extension_dao.associate_to_user(main_user, extension)
+    extension_dao.associate_destination(extension.id, 'user', main_user.id)
     line_dao.associate_extension(extension, line.id)
 
 
@@ -87,7 +87,7 @@ def dissociate_line_extension(line_extension):
 
 def remove_exten_and_context(extension):
     line_dao.dissociate_extension(extension)
-    extension_dao.dissociate_extension(extension)
+    extension_dao.dissociate_extension(extension.id)
 
 
 def dissociate_user_line(user_line):
