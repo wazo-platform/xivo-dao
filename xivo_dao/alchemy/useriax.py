@@ -71,7 +71,6 @@ class UserIAX(Base):
     transfer = Column(Enum('no', 'yes', 'mediaonly',
                            name='useriax_transfer',
                            metadata=Base.metadata))
-    maxauthreq = Column(Integer)
     codecpriority = Column(Enum('disabled', 'host', 'caller', 'reqonly',
                                 name='useriax_codecpriority',
                                 metadata=Base.metadata))

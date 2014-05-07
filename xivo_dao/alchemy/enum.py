@@ -62,9 +62,24 @@ extenumbers_type = Enum(
     metadata=Base.metadata
 )
 
+generic_bsfilter = Enum(
+    'no',
+    'boss',
+    'secretary',
+    name='generic_bsfilter',
+    metadata=Base.metadata
+)
+
 netiface_type = Enum(
     'iface',
     name='netiface_type',
+    metadata=Base.metadata
+)
+
+serverfeatures_type = Enum(
+    'xivo',
+    'ldap',
+    name='serverfeatures_type',
     metadata=Base.metadata
 )
 

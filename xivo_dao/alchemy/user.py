@@ -46,6 +46,6 @@ class User(Base):
     time = Column(Integer, nullable=False, server_default='0')
     dcreate = Column(Integer, nullable=False, server_default='0')
     dupdate = Column(Integer, nullable=False, server_default='0')
-    obj = Column(Text)
+    obj = Column(Text, nullable=False)
 
     entity = relationship('Entity')

@@ -36,11 +36,11 @@ class ScheduleTime(Base):
                        name='schedule_time_mode',
                        metadata=Base.metadata),
                   nullable=False, server_default='opened')
-    hours = Column(String(512), server_default='NULL')
-    weekdays = Column(String(512), server_default='NULL')
-    monthdays = Column(String(512), server_default='NULL')
-    months = Column(String(512), server_default='NULL')
+    hours = Column(String(512))
+    weekdays = Column(String(512))
+    monthdays = Column(String(512))
+    months = Column(String(512))
     action = Column(enum.dialaction_action)
-    actionid = Column(String(512), server_default='NULL')
-    actionargs = Column(String(512), server_default='NULL')
+    actionid = Column(String(512))
+    actionargs = Column(String(512))
     commented = Column(Integer, nullable=False, server_default='0')

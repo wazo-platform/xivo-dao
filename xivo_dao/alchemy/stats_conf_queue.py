@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy import text
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, ForeignKeyConstraint
 from sqlalchemy.types import Integer, SmallInteger
@@ -36,7 +37,7 @@ class StatsConfQueue(Base):
 
     stats_conf_id = Column(Integer, nullable=False)
     queuefeatures_id = Column(Integer, nullable=False)
-    qos = Column(SmallInteger, nullable=False, server_default='0')
+    qos = Column(SmallInteger, nullable=False, server_default=text('0'))
 
     queuefeatures = relationship('QueueFeatures')
     stats_conf = relationship('StatsConf')

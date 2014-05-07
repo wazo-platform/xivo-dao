@@ -71,7 +71,7 @@ class UserSIP(Base):
                                name='usersip_videosupport',
                                metadata=Base.metadata))
     trustrpid = Column(Integer)
-    sendrpid = Column(Integer)
+    sendrpid = Column(String(16))
     allowsubscribe = Column(Integer)
     allowoverlap = Column(Integer)
     dtmfmode = Column(Enum('rfc2833', 'inband', 'info', 'auto',
@@ -116,8 +116,8 @@ class UserSIP(Base):
                            metadata=Base.metadata),
                       nullable=False)
     outboundproxy = Column(String(1024))
-    transport = Column(String(255), nullable=False, server_default='NULL')
-    remotesecret = Column(String(255), nullable=False, server_default='NULL')
+    transport = Column(String(255))
+    remotesecret = Column(String(255))
     directmedia = Column(Enum('no', 'yes', 'nonat', 'update', 'update,nonat',
                            name='usersip_directmedia',
                            metadata=Base.metadata))
@@ -134,18 +134,18 @@ class UserSIP(Base):
                                Enum('uac', 'uas',
                                     name='usersip_session_refresher',
                                     metadata=Base.metadata))
-    callbackextension = Column(String(255), nullable=False, server_default='NULL')
+    callbackextension = Column(String(255))
     registertrying = Column(Integer)
     timert1 = Column(Integer)
     timerb = Column(Integer)
     qualifyfreq = Column(Integer)
-    contactpermit = Column(String(1024), nullable=False, server_default='NULL')
-    contactdeny = Column(String(1024), nullable=False, server_default='NULL')
-    unsolicited_mailbox = Column(String(1024), nullable=False, server_default='NULL')
+    contactpermit = Column(String(1024))
+    contactdeny = Column(String(1024))
+    unsolicited_mailbox = Column(String(1024))
     use_q850_reason = Column(Integer)
     encryption = Column(Integer)
     snom_aoc_enabled = Column(Integer)
     maxforwards = Column(Integer)
-    disallowed_methods = Column(String(1024), nullable=False, server_default='NULL')
+    disallowed_methods = Column(String(1024))
     textsupport = Column(Integer)
     commented = Column(Integer, nullable=False, server_default='0')

@@ -17,9 +17,10 @@
 
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint, \
     CheckConstraint
-from sqlalchemy.types import Integer, String, Enum
+from sqlalchemy.types import Integer, String
 
 from xivo_dao.helpers.db_manager import Base
+from xivo_dao.alchemy import enum
 
 
 class ServerFeatures(Base):
@@ -33,8 +34,6 @@ class ServerFeatures(Base):
 
     id = Column(Integer)
     serverid = Column(Integer, nullable=False)
-    feature = Column(String(64), nullable=False)
-    type = Column(Enum('xivo', 'ldap',
-                       name='serverfeatures_type',
-                       metadata=Base.metadata))
+    type = Column(enum.serverfeatures_type, nullable=False)
     commented = Column(Integer, nullable=False, server_default='0')
+    feature = Column(String(64), nullable=False, server_default='phonebook')

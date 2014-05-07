@@ -17,8 +17,9 @@
 
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint, \
     Index
-from sqlalchemy.types import Integer, String, Text
+from sqlalchemy.types import Integer, Text
 
+from xivo_dao.alchemy import enum
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -33,7 +34,7 @@ class TrunkFeatures(Base):
     )
 
     id = Column(Integer, nullable=False)
-    protocol = Column(String(8), nullable=False)
+    protocol = Column(enum.trunk_protocol, nullable=False)
     protocolid = Column(Integer, nullable=False)
     registerid = Column(Integer, nullable=False, server_default='0')
     registercommented = Column(Integer, nullable=False, server_default='0')

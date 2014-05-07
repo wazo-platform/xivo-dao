@@ -20,6 +20,7 @@ from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint, Index, \
 from sqlalchemy.types import Integer, String, Text, Enum
 from sqlalchemy.orm import relationship
 
+from xivo_dao.alchemy import enum
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -51,7 +52,7 @@ class UserFeatures(Base):
     callerid = Column(String(160))
     ringseconds = Column(Integer, nullable=False, server_default='30')
     simultcalls = Column(Integer, nullable=False, server_default='5')
-    enableclient = Column(Integer, nullable=False, server_default='0')
+    enableclient = Column(Integer, nullable=False, server_default='1')
     loginclient = Column(String(64), nullable=False, server_default='')
     passwdclient = Column(String(64), nullable=False, server_default='')
     cti_profile_id = Column(Integer, ForeignKey('cti_profile.id'))
@@ -72,7 +73,7 @@ class UserFeatures(Base):
     outcallerid = Column(String(80), nullable=False, server_default='')
     mobilephonenumber = Column(String(128), nullable=False, server_default='')
     userfield = Column(String(128), nullable=False, server_default='')
-    bsfilter = Column(String(128), nullable=False, server_default='no')  # TODO Should be Enum
+    bsfilter = Column(enum.generic_bsfilter, nullable=False, server_default='no')
     preprocess_subroutine = Column(String(39))
     timezone = Column(String(128))
     language = Column(String(20))

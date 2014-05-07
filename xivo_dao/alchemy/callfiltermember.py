@@ -19,6 +19,7 @@ from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint,\
     CheckConstraint
 from sqlalchemy.types import Integer, String, Enum
 
+from xivo_dao.alchemy import enum
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -39,8 +40,5 @@ class Callfiltermember(Base):
     typeval = Column(String(128), nullable=False, server_default='0')
     ringseconds = Column(Integer, nullable=False, server_default='0')
     priority = Column(Integer, nullable=False, server_default='0')
-    bstype = Column(Enum('no', 'boss', 'secretary',
-                         name='generic_bsfilter',
-                         metadata=Base.metadata),
-                    nullable=False)
+    bstype = Column(enum.generic_bsfilter, nullable=False)
     active = Column(Integer, nullable=False, server_default='0')
