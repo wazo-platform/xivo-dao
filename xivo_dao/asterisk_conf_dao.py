@@ -227,8 +227,9 @@ def find_exten_progfunckeys_custom_settings(session, context_name):
 
 
 @daosession
-def find_exten_conferences_settings(session):
-    rows = session.query(MeetmeFeatures.confno)
+def find_exten_conferences_settings(session, context_name):
+    rows = (session.query(MeetmeFeatures.confno)
+            .filter(MeetmeFeatures.context == context_name))
     return [{'exten': row[0]} for row in rows]
 
 
