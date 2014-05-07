@@ -41,6 +41,6 @@ class ScheduleTime(Base):
     monthdays = Column(String(512))
     months = Column(String(512))
     action = Column(enum.dialaction_action)
-    actionid = Column(String(512))
-    actionargs = Column(String(512))
+    actionid = Column(String(255))
+    actionargs = Column(String(255))
     commented = Column(Integer, nullable=False, server_default='0')
