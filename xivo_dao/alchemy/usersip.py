@@ -19,6 +19,7 @@ from xivo_dao.helpers.db_manager import Base
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint, \
     Index
 from sqlalchemy.types import Integer, String, Text, Enum
+from xivo_dao.alchemy import enum
 
 
 class UserSIP(Base):
@@ -109,10 +110,7 @@ class UserSIP(Base):
     regserver = Column(String(20))
     lastms = Column(String(15), nullable=False, server_default='')
     parkinglot = Column(Integer)
-    protocol = Column(Enum('sip', 'iax', 'sccp', 'custom',
-                            name='trunk_protocol',
-                            metadata=Base.metadata),
-                      nullable=False, server_default='sip')
+    protocol = Column(enum.trunk_protocol, nullable=False, server_default='sip')
     category = Column(Enum('user', 'trunk',
                            name='useriax_category',
                            metadata=Base.metadata),

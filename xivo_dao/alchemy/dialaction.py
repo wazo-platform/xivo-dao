@@ -19,6 +19,7 @@ from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String, Enum
 
 from xivo_dao.helpers.db_manager import Base
+from xivo_dao.alchemy import enum
 
 
 class Dialaction(Base):
@@ -47,31 +48,7 @@ class Dialaction(Base):
                            metadata=Base.metadata),
                       primary_key=True)
     categoryval = Column(String(128), server_default='', primary_key=True)
-    action = Column(Enum('none',
-                         'endcall:busy',
-                         'endcall:congestion',
-                         'endcall:hangup',
-                         'user',
-                         'group',
-                         'queue',
-                         'meetme',
-                         'voicemail',
-                         'trunk',
-                         'schedule',
-                         'voicemenu',
-                         'extension',
-                         'outcall',
-                         'application:callbackdisa',
-                         'application:disa',
-                         'application:directory',
-                         'application:faxtomail',
-                         'application:voicemailmain',
-                         'application:password',
-                         'sound',
-                         'custom',
-                         name='dialaction_action',
-                         metadata=Base.metadata),
-                    nullable=False)
+    action = Column(enum.dialaction_action, nullable=False)
     actionarg1 = Column(String(255))
     actionarg2 = Column(String(255))
     linked = Column(Integer, nullable=False, server_default='0')

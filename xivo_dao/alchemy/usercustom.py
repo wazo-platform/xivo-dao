@@ -20,6 +20,7 @@ from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint, \
 from sqlalchemy.types import Integer, String, Enum
 
 from xivo_dao.helpers.db_manager import Base
+from xivo_dao.alchemy import enum
 
 
 class UserCustom(Base):
@@ -39,10 +40,7 @@ class UserCustom(Base):
     interface = Column(String(128), nullable=False)
     intfsuffix = Column(String(32), nullable=False, server_default='')
     commented = Column(Integer, nullable=False, server_default='0')
-    protocol = Column(Enum('sip', 'iax', 'sccp', 'custom',
-                           name='trunk_protocol',
-                           metadata=Base.metadata),
-                      nullable=False, server_default='custom')
+    protocol = Column(enum.trunk_protocol, nullable=False, server_default='custom')
     category = Column(Enum('user', 'trunk',
                            name='usercustom_category',
                            metadata=Base.metadata),

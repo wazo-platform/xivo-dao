@@ -19,6 +19,7 @@ from sqlalchemy.schema import Column, PrimaryKeyConstraint
 from sqlalchemy.types import Integer, String, Text
 
 from xivo_dao.helpers.db_manager import Base
+from xivo_dao.alchemy import enum
 
 
 class SCCPLine(Base):
@@ -30,10 +31,10 @@ class SCCPLine(Base):
 
     id = Column(Integer)
     name = Column(String(80), nullable=False)
-    context = Column(String(39), nullable=False)
+    context = Column(String(80), nullable=False)
     cid_name = Column(String(80), nullable=False)
     cid_num = Column(String(80), nullable=False)
     disallow = Column(String(100))
     allow = Column(Text)
-    protocol = Column(String(8), nullable=False, server_default='sccp')
+    protocol = Column(enum.trunk_protocol, nullable=False, server_default='sccp')
     commented = Column(Integer, nullable=False, server_default='0')

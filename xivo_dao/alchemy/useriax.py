@@ -20,6 +20,7 @@ from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint, \
 from sqlalchemy.types import Integer, String, Text, Enum
 
 from xivo_dao.helpers.db_manager import Base
+from xivo_dao.alchemy import enum
 
 
 class UserIAX(Base):
@@ -101,10 +102,7 @@ class UserIAX(Base):
     immediate = Column(Integer)
     keyrotate = Column(Integer)
     parkinglot = Column(Integer)
-    protocol = Column(Enum('sip', 'iax', 'sccp', 'custom',
-                            name='trunk_protocol',
-                            metadata=Base.metadata),
-                      nullable=False, server_default='iax')
+    protocol = Column(enum.trunk_protocol, nullable=False, server_default='iax')
     category = Column(Enum('user', 'trunk',
                            name='useriax_category',
                            metadata=Base.metadata),

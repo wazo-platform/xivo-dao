@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint
+from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint,\
+    CheckConstraint
 from sqlalchemy.types import Integer, String, Enum
 
 from xivo_dao.helpers.db_manager import Base
@@ -26,6 +27,7 @@ class Callfiltermember(Base):
     __tablename__ = 'callfiltermember'
     __table_args__ = (
         UniqueConstraint('callfilterid', 'type', 'typeval'),
+        CheckConstraint("bstype in ('boss', 'secretary')")
     )
 
     id = Column(Integer, primary_key=True)

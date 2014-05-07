@@ -16,9 +16,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from sqlalchemy.schema import Column, UniqueConstraint
-from sqlalchemy.types import Integer, String, Enum
+from sqlalchemy.types import Integer, String
 
 from xivo_dao.helpers.db_manager import Base
+from xivo_dao.alchemy import enum
 
 
 class Extension(Base):
@@ -32,18 +33,7 @@ class Extension(Base):
     commented = Column(Integer, nullable=False, server_default='0')
     context = Column(String(39), nullable=False, server_default='')
     exten = Column(String(40), nullable=False, server_default='')
-    type = Column(Enum('extenfeatures',
-                       'featuremap',
-                       'generalfeatures',
-                       'group',
-                       'incall',
-                       'meetme',
-                       'outcall',
-                       'queue',
-                       'user',
-                       name='extenumbers_type',
-                       metadata=Base.metadata),
-                    nullable=False)
+    type = Column(enum.extenumbers_type, nullable=False)
     typeval = Column(String(255), nullable=False, server_default='')
 
     @property

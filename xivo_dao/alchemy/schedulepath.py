@@ -16,9 +16,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from sqlalchemy.schema import Column, PrimaryKeyConstraint
-from sqlalchemy.types import Integer, Enum
+from sqlalchemy.types import Integer
 
 from xivo_dao.helpers.db_manager import Base
+from xivo_dao.alchemy import enum
 
 
 class SchedulePath(Base):
@@ -29,9 +30,6 @@ class SchedulePath(Base):
     )
 
     schedule_id = Column(Integer, autoincrement=False)
-    path = Column(Enum('user', 'group', 'queue', 'incall', 'outcall',
-                       name='schedule_path_type',
-                       metadata=Base.metadata),
-                  nullable=False, autoincrement=False)
+    path = Column(enum.schedule_path_type, nullable=False, autoincrement=False)
     pathid = Column(Integer, autoincrement=False)
     order = Column(Integer, nullable=False)
