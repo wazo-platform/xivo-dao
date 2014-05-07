@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column, ForeignKey
+from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint, \
+    UniqueConstraint
 from sqlalchemy.types import Integer, String, Boolean, DateTime
 from sqlalchemy.orm import relationship
 
@@ -25,8 +26,12 @@ from xivo_dao.helpers.db_manager import Base
 class RecordCampaigns(Base):
 
     __tablename__ = 'record_campaign'
+    __table_args__ = (
+        PrimaryKeyConstraint('id'),
+        UniqueConstraint('campaign_name'),
+    )
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     campaign_name = Column(String(128), nullable=False)
     activated = Column(Boolean, nullable=False)
     base_filename = Column(String(64), nullable=False)

@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint,\
-    CheckConstraint
+from sqlalchemy.schema import Column, UniqueConstraint, CheckConstraint
 from sqlalchemy.types import Integer, String, Enum
 
 from xivo_dao.alchemy import enum
@@ -32,7 +31,7 @@ class Callfiltermember(Base):
     )
 
     id = Column(Integer, primary_key=True)
-    callfilterid = Column(Integer, ForeignKey('callfilter.id'), nullable=False, server_default='0')
+    callfilterid = Column(Integer, nullable=False, server_default='0')
     type = Column(Enum('user',
                        name='callfiltermember_type',
                        metadata=Base.metadata),
