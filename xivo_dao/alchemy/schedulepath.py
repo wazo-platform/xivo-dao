@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column, PrimaryKeyConstraint
+from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
 from sqlalchemy.types import Integer
 
 from xivo_dao.helpers.db_manager import Base
@@ -27,6 +27,7 @@ class SchedulePath(Base):
     __tablename__ = 'schedule_path'
     __table_args__ = (
         PrimaryKeyConstraint('schedule_id', 'path', 'pathid'),
+        Index('schedule_path_path', 'path', 'pathid'),
     )
 
     schedule_id = Column(Integer, autoincrement=False)

@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint, Index, \
-    UniqueConstraint
+    UniqueConstraint, ForeignKeyConstraint
 from sqlalchemy.types import Integer, String, Text, Enum
 from sqlalchemy.orm import relationship
 
@@ -29,6 +29,9 @@ class UserFeatures(Base):
     __tablename__ = 'userfeatures'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
+        ForeignKeyConstraint(('cti_profile_id',),
+                             ('cti_profile.id',),
+                             ondelete='RESTRICT'),
         UniqueConstraint('func_key_private_template_id'),
         Index('userfeatures__idx__agentid', 'agentid'),
         Index('userfeatures__idx__entityid', 'entityid'),
@@ -55,7 +58,7 @@ class UserFeatures(Base):
     enableclient = Column(Integer, nullable=False, server_default='1')
     loginclient = Column(String(64), nullable=False, server_default='')
     passwdclient = Column(String(64), nullable=False, server_default='')
-    cti_profile_id = Column(Integer, ForeignKey('cti_profile.id'))
+    cti_profile_id = Column(Integer)
     enablehint = Column(Integer, nullable=False, server_default='1')
     enablevoicemail = Column(Integer, nullable=False, server_default='0')
     enablexfer = Column(Integer, nullable=False, server_default='1')
