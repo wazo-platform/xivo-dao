@@ -295,27 +295,13 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         assert_that(funckeys, contains_inanyorder(*expected_result))
 
-    def test_find_exten_phonefunckeys_settings(self):
-        number = '4567'
-        ule = self.add_user_line_with_exten(exten=number)
-        self.add_function_key_to_user(iduserfeatures=ule.user_id,
-                                      exten=number,
-                                      typeextenumbersright='group',
-                                      typevalextenumbersright=number,
-                                      typeextenumbers=None,
-                                      typevalextenumbers=None,
-                                      supervision=1,
-                                      progfunckey=1)
+    def test_find_exten_conferences_settings(self):
+        conference = self.add_meetmefeatures()
+        expected_result = [{'exten': conference.confno}]
 
-        expected_result = [
-            {'exten': None,
-             'typevalextenumbersright': number,
-             'typeextenumbersright': u'group'}
-        ]
+        conference_extens = asterisk_conf_dao.find_exten_conferences_settings()
 
-        funckeys = asterisk_conf_dao.find_exten_phonefunckeys_settings(ule.line.context)
-
-        assert_that(funckeys, contains_inanyorder(*expected_result))
+        assert_that(conference_extens, contains_inanyorder(*expected_result))
 
     def test_find_exten_xivofeatures_setting(self):
         exten1 = self.add_extension(exten='*25', context='xivo-features')

@@ -28,6 +28,39 @@ from xivo_dao.data_handler.exception import ElementDeletionError
 from xivo_dao.data_handler.func_key.model import FuncKey
 from xivo_dao.data_handler.func_key import dao
 from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao.alchemy.func_key import FuncKey as FuncKeySchema
+from xivo_dao.alchemy.func_key_type import FuncKeyType as FuncKeyTypeSchema
+from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser as FuncKeyDestUserSchema
+from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup as FuncKeyDestGroupSchema
+from xivo_dao.alchemy.func_key_dest_queue import FuncKeyDestQueue as FuncKeyDestQueueSchema
+from xivo_dao.alchemy.func_key_dest_conference import FuncKeyDestConference as FuncKeyDestConferenceSchema
+from xivo_dao.alchemy.func_key_destination_type import FuncKeyDestinationType as FuncKeyDestinationTypeSchema
+from xivo_dao.alchemy.userfeatures import test_dependencies as user_test_dependencies
+from xivo_dao.alchemy.queuefeatures import test_dependencies as queue_test_dependencies
+from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
+from xivo_dao.alchemy.groupfeatures import GroupFeatures as GroupSchema
+from xivo_dao.alchemy.queuefeatures import QueueFeatures as QueueSchema
+from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures as ConferenceSchema
+
+
+class BaseTestFuncKeyDao(DAOTestCase):
+
+    tables = [
+        FuncKeySchema,
+        FuncKeyTypeSchema,
+        FuncKeyDestinationTypeSchema,
+        FuncKeyDestUserSchema,
+        FuncKeyDestGroupSchema,
+        FuncKeyDestQueueSchema,
+        FuncKeyDestConferenceSchema,
+        UserSchema,
+        GroupSchema,
+        QueueSchema,
+        ConferenceSchema,
+    ] + user_test_dependencies + queue_test_dependencies
+
+    def setUp(self):
+        self.empty_tables()
 
 
 class TestFuncKeyDao(DAOTestCase):
@@ -36,12 +69,14 @@ class TestFuncKeyDao(DAOTestCase):
         'user': 1,
         'group': 2,
         'queue': 3,
+        'conference': 4,
     }
 
     destination_type_schemas = {
         'user': (FuncKeyDestUserSchema, 'user_id'),
         'group': (FuncKeyDestGroupSchema, 'group_id'),
         'queue': (FuncKeyDestQueueSchema, 'queue_id'),
+        'conference': (FuncKeyDestConferenceSchema, 'conference_id'),
     }
 
     def setUp(self):
@@ -129,6 +164,15 @@ class TestFuncKeySearch(TestFuncKeyDao):
         assert_that(result.total, equal_to(1))
         assert_that(result.items, contains(func_key))
 
+    def test_conference_destination_when_searching_then_one_result_returned(self):
+        conference_row = self.add_meetmefeatures()
+        func_key = self.prepare_destination('conference', conference_row.id)
+
+        result = dao.search()
+
+        assert_that(result.total, equal_to(1))
+        assert_that(result.items, contains(func_key))
+
     def test_given_2_destination_types_when_searching_then_two_results_returned(self):
         user_row = self.add_user()
         group_row = self.add_group()
@@ -188,6 +232,13 @@ class TestFuncKeyFindAllByDestination(TestFuncKeyDao):
         result = dao.find_all_by_destination('queue', queue_row.id)
         assert_that(result, contains(func_key))
 
+    def test_given_one_conference_destination_then_returns_list_with_one_conference_destination(self):
+        conference_row = self.add_meetmefeatures()
+        func_key = self.prepare_destination('conference', conference_row.id)
+
+        result = dao.find_all_by_destination('conference', conference_row.id)
+        assert_that(result, contains(func_key))
+
     def test_given_group_and_user_destination_then_returns_list_with_right_destination(self):
         user_row = self.add_user()
         self.prepare_destination('user', user_row.id)
@@ -230,6 +281,14 @@ class TestFuncKeyGet(TestFuncKeyDao):
     def test_when_queue_func_key_in_db_then_func_key_model_returned(self):
         queue_row = self.add_queuefeatures()
         func_key = self.prepare_destination('queue', queue_row.id)
+
+        result = dao.get(func_key.id)
+
+        assert_that(result, equal_to(func_key))
+
+    def test_when_conference_func_key_in_db_then_func_key_model_returned(self):
+        conference_row = self.add_meetmefeatures()
+        func_key = self.prepare_destination('conference', conference_row.id)
 
         result = dao.get(func_key.id)
 
@@ -296,6 +355,22 @@ class TestFuncKeyCreate(TestFuncKeyDao):
 
         self.assert_func_key_row_created(queue_destination_row)
 
+    def test_given_conference_destination_then_func_key_created(self):
+        conference_row = self.add_meetmefeatures()
+
+        func_key = FuncKey(type='speeddial',
+                           destination='conference',
+                           destination_id=conference_row.id)
+
+        created_func_key = dao.create(func_key)
+        assert_that(created_func_key, instance_of(FuncKey))
+        assert_that(created_func_key, has_property('id', is_not(none())))
+
+        conference_destination_row = self.find_destination('conference', conference_row.id)
+        assert_that(conference_destination_row, is_not(none()))
+
+        self.assert_func_key_row_created(conference_destination_row)
+
     @patch('xivo_dao.helpers.db_manager.AsteriskSession')
     @patch('xivo_dao.data_handler.func_key.dao.commit_or_abort')
     def test_given_db_error_then_transaction_rollbacked(self, commit_or_abort, session_maker):
@@ -343,6 +418,15 @@ class TestFuncKeyDelete(TestFuncKeyDao):
 
         self.assert_func_key_deleted(func_key.id)
         self.assert_destination_deleted('queue', queue_row.id)
+
+    def test_given_conference_destination_then_func_key_deleted(self):
+        conference_row = self.add_meetmefeatures()
+        func_key = self.prepare_destination('conference', conference_row.id)
+
+        dao.delete(func_key)
+
+        self.assert_func_key_deleted(func_key.id)
+        self.assert_destination_deleted('conference', conference_row.id)
 
     def test_given_multiple_destinations_then_only_one_func_key_deleted(self):
         user_row = self.add_user()

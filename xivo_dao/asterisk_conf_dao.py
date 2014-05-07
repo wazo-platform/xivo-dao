@@ -22,6 +22,7 @@ from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.linefeatures import LineFeatures
+from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
@@ -226,35 +227,10 @@ def find_exten_progfunckeys_custom_settings(session, context_name):
 
 
 @daosession
-def find_exten_phonefunckeys_settings(session, context_name):
-    """get all supervised user/group/queue/meetme
-    """
-    rows = (session.query(PhoneFunckey.typeextenumbersright,
-                          PhoneFunckey.typevalextenumbersright,
-                          Extension.exten)
-            .outerjoin(Extension, and_(cast(PhoneFunckey.typeextenumbersright, VARCHAR) == cast(Extension.type, VARCHAR),
-                                       PhoneFunckey.typevalextenumbersright == Extension.typeval))
-            .filter(and_(UserLine.user_id == PhoneFunckey.iduserfeatures,
-                         UserLine.line_id == LineFeatures.id,
-                         UserLine.main_user == True,
-                         UserLine.main_line == True,
-                         LineFeatures.context == context_name,
-                         PhoneFunckey.typeextenumbers == None,
-                         PhoneFunckey.typevalextenumbers == None,
-                         PhoneFunckey.typeextenumbersright.in_(('group', 'queue', 'meetme')),
-                         PhoneFunckey.supervision == 1))
-            .all())
-
-    res = []
-    for row in rows:
-        typeextenumbersright, typevalextenumbersright, exten = row
-        tmp = {}
-        tmp['typeextenumbersright'] = typeextenumbersright
-        tmp['typevalextenumbersright'] = typevalextenumbersright
-        tmp['exten'] = exten
-        res.append(tmp)
-
-    return res
+def find_exten_conferences_settings(session, context_name):
+    rows = (session.query(MeetmeFeatures.confno)
+            .filter(MeetmeFeatures.context == context_name))
+    return [{'exten': row[0]} for row in rows]
 
 
 @daosession
