@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column, ForeignKey
+from sqlalchemy.schema import Column, PrimaryKeyConstraint, ForeignKeyConstraint
 from sqlalchemy.types import Integer, Boolean
 from sqlalchemy.orm import relationship
 
@@ -25,16 +25,28 @@ from xivo_dao.helpers.db_manager import Base
 class CtiProfileXlet(Base):
 
     __tablename__ = 'cti_profile_xlet'
+    __table_args__ = (
+        PrimaryKeyConstraint('xlet_id', 'profile_id'),
+        ForeignKeyConstraint(('xlet_id',),
+                             ('cti_xlet.id',),
+                             ondelete='CASCADE'),
+        ForeignKeyConstraint(('profile_id',),
+                             ('cti_profile.id',),
+                             ondelete='CASCADE'),
+        ForeignKeyConstraint(('layout_id',),
+                             ('cti_xlet_layout.id',),
+                             ondelete='RESTRICT'),
+    )
 
-    xlet_id = Column(Integer, ForeignKey("cti_xlet.id"), primary_key=True)
-    profile_id = Column(Integer, ForeignKey('cti_profile.id'), primary_key=True)
-    layout_id = Column(Integer, ForeignKey("cti_xlet_layout.id"))
+    xlet_id = Column(Integer)
+    profile_id = Column(Integer)
+    layout_id = Column(Integer)
     closable = Column(Boolean, server_default='True')
     movable = Column(Boolean, server_default='True')
     floating = Column(Boolean, server_default='True')
     scrollable = Column(Boolean, server_default='True')
     order = Column(Integer)
 
-    cti_xlet = relationship("CtiXlet", foreign_keys=xlet_id)
-    cti_profile = relationship("CtiProfile", foreign_keys=profile_id)
-    cti_xlet_layout = relationship("CtiXletLayout", foreign_keys=layout_id)
+    cti_xlet = relationship("CtiXlet")
+    cti_profile = relationship("CtiProfile")
+    cti_xlet_layout = relationship("CtiXletLayout")

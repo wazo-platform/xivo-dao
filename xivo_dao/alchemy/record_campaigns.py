@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint, \
-    UniqueConstraint
+    UniqueConstraint, ForeignKeyConstraint
 from sqlalchemy.types import Integer, String, Boolean, DateTime
 from sqlalchemy.orm import relationship
 
@@ -29,14 +29,18 @@ class RecordCampaigns(Base):
     __table_args__ = (
         PrimaryKeyConstraint('id'),
         UniqueConstraint('campaign_name'),
+        ForeignKeyConstraint(('queue_id',),
+                             ('queuefeatures.id',),
+                             ondelete='SET NULL',
+                             onupdate='CASCADE'),
     )
 
     id = Column(Integer)
     campaign_name = Column(String(128), nullable=False)
     activated = Column(Boolean, nullable=False)
     base_filename = Column(String(64), nullable=False)
-    queue_id = Column(Integer, ForeignKey('queuefeatures.id'))
+    queue_id = Column(Integer)
     start_date = Column(DateTime)
     end_date = Column(DateTime)
 
-    queuefeatures = relationship("QueueFeatures", foreign_keys=queue_id)
+    queuefeatures = relationship("QueueFeatures")

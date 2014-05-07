@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column, ForeignKey
+from sqlalchemy.schema import Column, PrimaryKeyConstraint, ForeignKeyConstraint
 from sqlalchemy.types import Integer
 from sqlalchemy.orm import relationship
 
@@ -25,9 +25,18 @@ from xivo_dao.helpers.db_manager import Base
 class CtiProfileService(Base):
 
     __tablename__ = 'cti_profile_service'
+    __table_args__ = (
+        PrimaryKeyConstraint('profile_id', 'service_id'),
+        ForeignKeyConstraint(('profile_id',),
+                             ('cti_profile.id',),
+                             ondelete='CASCADE'),
+        ForeignKeyConstraint(('service_id',),
+                             ('cti_service.id',),
+                             ondelete='CASCADE'),
+    )
 
-    profile_id = Column(Integer, ForeignKey('cti_profile.id'), primary_key=True)
-    service_id = Column(Integer, ForeignKey("cti_service.id"), primary_key=True)
+    profile_id = Column(Integer)
+    service_id = Column(Integer)
 
-    cti_profile = relationship("CtiProfile", foreign_keys=profile_id)
-    cti_service = relationship("CtiService", foreign_keys=service_id)
+    cti_profile = relationship("CtiProfile")
+    cti_service = relationship("CtiService")

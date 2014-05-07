@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column, ForeignKey
+from sqlalchemy.schema import Column, ForeignKeyConstraint, PrimaryKeyConstraint
 from sqlalchemy.types import Integer, String
 from sqlalchemy.orm import relationship
 
@@ -25,11 +25,20 @@ from xivo_dao.helpers.db_manager import Base
 class CtiProfile(Base):
 
     __tablename__ = 'cti_profile'
+    __table_args__ = (
+        PrimaryKeyConstraint('id'),
+        ForeignKeyConstraint(('presence_id',),
+                             ('ctipresences.id',),
+                             ondelete='RESTRICT'),
+        ForeignKeyConstraint(('phonehints_id',),
+                             ('ctiphonehintsgroup.id',),
+                             ondelete='RESTRICT'),
+    )
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     name = Column(String(255), nullable=False)
-    presence_id = Column(Integer, ForeignKey("ctipresences.id"))
-    phonehints_id = Column(Integer, ForeignKey("ctiphonehintsgroup.id"))
+    presence_id = Column(Integer)
+    phonehints_id = Column(Integer)
 
-    ctipresences = relationship("CtiPresences", foreign_keys=presence_id)
-    ctiphonehintsgroup = relationship("CtiPhoneHintsGroup", foreign_keys=phonehints_id)
+    ctipresences = relationship("CtiPresences")
+    ctiphonehintsgroup = relationship("CtiPhoneHintsGroup")
