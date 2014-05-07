@@ -37,4 +37,4 @@ class TrunkFeatures(Base):
     protocolid = Column(Integer, nullable=False)
     registerid = Column(Integer, nullable=False, server_default='0')
     registercommented = Column(Integer, nullable=False, server_default='0')
-    description = Column(Text, nullable=False)
+    description = Column(Text)
