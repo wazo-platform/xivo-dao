@@ -16,7 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.helpers.db_manager import Base
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
+from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index,\
+    UniqueConstraint
 from sqlalchemy.types import Integer, String, Enum
 
 
@@ -25,6 +26,7 @@ class QueueMember(Base):
     __tablename__ = 'queuemember'
     __table_args__ = (
         PrimaryKeyConstraint('queue_name', 'interface'),
+        UniqueConstraint('queue_name', 'channel', 'usertype', 'userid', 'category'),
         Index('queuemember__idx__category', 'category'),
         Index('queuemember__idx__channel', 'channel'),
         Index('queuemember__idx__userid', 'userid'),

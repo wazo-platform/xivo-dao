@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column, PrimaryKeyConstraint
+from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
 from sqlalchemy.types import Integer, String, Text
 
 from xivo_dao.helpers.db_manager import Base
@@ -26,6 +26,7 @@ class QueueSkill(Base):
     __tablename__ = 'queueskill'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
+        UniqueConstraint('name'),
     )
 
     id = Column(Integer, nullable=False)

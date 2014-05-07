@@ -16,7 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
+from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index,\
+    UniqueConstraint
 from sqlalchemy.types import Integer, String
 
 from xivo_dao.helpers.db_manager import Base
@@ -27,6 +28,7 @@ class QueueFeatures(Base):
     __tablename__ = 'queuefeatures'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
+        UniqueConstraint('name'),
         Index('queuefeatures__idx__context', 'context'),
         Index('queuefeatures__idx__number', 'number'),
     )

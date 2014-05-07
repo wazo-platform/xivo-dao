@@ -27,7 +27,7 @@ class Recordings(Base):
 
     __tablename__ = 'recording'
     __table_args__ = (
-        PrimaryKeyConstraint('id'),
+        PrimaryKeyConstraint('cid'),
         ForeignKeyConstraint(('campaign_id',),
                              ('record_campaign.id',)),
         ForeignKeyConstraint(('agent_id',),
@@ -36,7 +36,7 @@ class Recordings(Base):
                              onupdate='CASCADE'),
     )
 
-    id = Column(String(32))
+    cid = Column(String(32))
     start_time = Column(DateTime)
     end_time = Column(DateTime)
     caller = Column(String(32))

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column
+from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
 from sqlalchemy.types import Integer, String, Enum
 
 from xivo_dao.helpers.db_manager import Base
@@ -24,8 +24,12 @@ from xivo_dao.helpers.db_manager import Base
 class PhonebookNumber(Base):
 
     __tablename__ = 'phonebooknumber'
+    __table_args__ = (
+        PrimaryKeyConstraint('id'),
+        Index('phonebooknumber__uidx__phonebookid_type', 'phonebookid', 'type', unique=True),
+    )
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     phonebookid = Column(Integer, nullable=False)
     number = Column(String(40), nullable=False, server_default='')
     type = Column(Enum('home', 'office', 'mobile', 'fax', 'other',

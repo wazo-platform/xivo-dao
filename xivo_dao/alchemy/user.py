@@ -16,7 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, ForeignKeyConstraint
+from sqlalchemy.schema import Column, PrimaryKeyConstraint, ForeignKeyConstraint,\
+    UniqueConstraint
 from sqlalchemy.types import Integer, String, Enum, Text
 
 from xivo_dao.helpers.db_manager import Base
@@ -30,6 +31,7 @@ class User(Base):
         ForeignKeyConstraint(('entity_id',),
                              ('entity.id',),
                              ondelete='RESTRICT'),
+        UniqueConstraint('login', 'meta'),
     )
 
     id = Column(Integer, nullable=False)
