@@ -120,6 +120,31 @@ generic_bsfilter = Enum(
     metadata=Base.metadata
 )
 
+ldapfilter_additionaltype = Enum(
+    'office',
+    'home',
+    'mobile',
+    'fax',
+    'other',
+    'custom',
+    name='ldapfilter_additionaltype',
+    metadata=Base.metadata
+)
+
+ldapserver_protocolversion = Enum(
+    '2',
+    '3',
+    name='ldapserver_protocolversion',
+    metadata=Base.metadata
+)
+
+ldapserver_securitylayer = Enum(
+    'tls',
+    'ssl',
+    name='ldapserver_securitylayer',
+    metadata=Base.metadata
+)
+
 netiface_type = Enum(
     'iface',
     name='netiface_type',

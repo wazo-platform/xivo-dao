@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
+from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index, \
+    UniqueConstraint
 from sqlalchemy.types import Integer, String, Text
 
 from xivo_dao.helpers.db_manager import Base
@@ -26,6 +27,7 @@ class Incall(Base):
     __tablename__ = 'incall'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
+        UniqueConstraint('exten', 'context'),
         Index('incall__idx__context', 'context'),
         Index('incall__idx__exten', 'exten'),
     )
