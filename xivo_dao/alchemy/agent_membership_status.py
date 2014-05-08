@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column
+from sqlalchemy.schema import Column, PrimaryKeyConstraint
 from sqlalchemy.types import Integer, String
 
 from xivo_dao.helpers.db_manager import Base
@@ -24,8 +24,11 @@ from xivo_dao.helpers.db_manager import Base
 class AgentMembershipStatus(Base):
 
     __tablename__ = 'agent_membership_status'
+    __table_args__ = (
+        PrimaryKeyConstraint('agent_id', 'queue_id'),
+    )
 
-    agent_id = Column(Integer, primary_key=True)
-    queue_id = Column(Integer, primary_key=True)
+    agent_id = Column(Integer, autoincrement=False)
+    queue_id = Column(Integer, autoincrement=False)
     queue_name = Column(String(128), nullable=False)
     penalty = Column(Integer, nullable=False, server_default='0')

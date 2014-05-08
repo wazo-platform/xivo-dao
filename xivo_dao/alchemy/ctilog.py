@@ -31,7 +31,7 @@ class CtiLog(Base):
     id = Column(Integer, nullable=False)
     eventdate = Column(TIMESTAMP)
     loginclient = Column(String(64))
-    compagny = Column(String(64))
+    company = Column(String(64))
     status = Column(String(64))
     action = Column(String(64))
     arguments = Column(String(255))

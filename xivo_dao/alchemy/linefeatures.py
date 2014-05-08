@@ -15,21 +15,29 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.types import Integer, String, Text, Enum
-from sqlalchemy.schema import Column, UniqueConstraint
+from sqlalchemy.types import Integer, String, Text
+from sqlalchemy.schema import Column, UniqueConstraint, PrimaryKeyConstraint, \
+    Index
 
 from xivo_dao.helpers.db_manager import Base
+from xivo_dao.alchemy import enum
 
 
 class LineFeatures(Base):
 
     __tablename__ = 'linefeatures'
     __table_args__ = (
+        PrimaryKeyConstraint('id'),
         UniqueConstraint('name'),
         UniqueConstraint('protocol', 'protocolid'),
+        Index('linefeatures__idx__context', 'context'),
+        Index('linefeatures__idx__device', 'device'),
+        Index('linefeatures__idx__number', 'number'),
+        Index('linefeatures__idx__provisioningid', 'provisioningid'),
     )
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
+    protocol = Column(enum.trunk_protocol, nullable=False)
     protocolid = Column(Integer, nullable=False)
     device = Column(String(32))
     configregistrar = Column(String(128))
@@ -41,6 +49,3 @@ class LineFeatures(Base):
     ipfrom = Column(String(15))
     commented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text)
-    protocol = Column('protocol', Enum('sip', 'iax', 'sccp', 'custom',
-                                       name='trunk_protocol',
-                                       metadata=Base.metadata))

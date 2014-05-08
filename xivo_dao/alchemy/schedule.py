@@ -15,21 +15,25 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column
-from sqlalchemy.types import Integer, String, TEXT
+from sqlalchemy.schema import Column, PrimaryKeyConstraint
+from sqlalchemy.types import Integer, String, Text
 
 from xivo_dao.helpers.db_manager import Base
+from xivo_dao.alchemy import enum
 
 
 class Schedule(Base):
 
     __tablename__ = 'schedule'
+    __table_args__ = (
+        PrimaryKeyConstraint('id'),
+    )
 
-    id = Column(Integer, primary_key=True)
-    name = Column(String(255), nullable=False)
+    id = Column(Integer, nullable=False)
+    name = Column(String(255), nullable=False, server_default='')
     timezone = Column(String(128))
-    fallback_action = Column(String(25), nullable=False, server_default='none')
+    fallback_action = Column(enum.dialaction_action, nullable=False, server_default='none')
     fallback_actionid = Column(String(255))
     fallback_actionargs = Column(String(255))
-    description = Column(TEXT)
+    description = Column(Text)
     commented = Column(Integer, nullable=False, server_default='0')

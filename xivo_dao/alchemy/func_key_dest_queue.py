@@ -31,8 +31,8 @@ class FuncKeyDestQueue(Base):
     )
 
     func_key_id = Column(Integer, primary_key=True)
-    queue_id = Column(Integer, ForeignKey('queuefeatures.id'), primary_key=True)
     destination_type_id = Column(Integer, primary_key=True, server_default="3")
+    queue_id = Column(Integer, ForeignKey('queuefeatures.id'), primary_key=True)
 
     func_key = relationship("FuncKey")
     queue = relationship("QueueFeatures")

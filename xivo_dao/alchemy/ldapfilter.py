@@ -15,16 +15,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
+from sqlalchemy.types import Integer, String, Text
+
 from xivo_dao.helpers.db_manager import Base
-from sqlalchemy.schema import Column, Sequence
-from sqlalchemy.types import Integer, String, Text, Enum
+from xivo_dao.alchemy import enum
 
 
 class LdapFilter(Base):
 
     __tablename__ = 'ldapfilter'
+    __table_args__ = (
+        PrimaryKeyConstraint('id'),
+        UniqueConstraint('name'),
+    )
 
-    id = Column(Integer, Sequence('ldapfilter_id_seq'), primary_key=True)
+    id = Column(Integer)
     ldapserverid = Column(Integer, nullable=False)
     name = Column(String(128), nullable=False, server_default='')
     user = Column(String(255))
@@ -33,15 +39,7 @@ class LdapFilter(Base):
     filter = Column(String(255), nullable=False, server_default='')
     attrdisplayname = Column(String(255), nullable=False, server_default='')
     attrphonenumber = Column(String(255), nullable=False, server_default='')
-    additionaltype = Column(Enum('office',
-                                 'home',
-                                 'mobile',
-                                 'fax',
-                                 'other',
-                                 'custom',
-                                 name='ldapfilter_additionaltype',
-                                 metadata=Base.metadata),
-                            nullable=False)
+    additionaltype = Column(enum.ldapfilter_additionaltype, nullable=False)
     additionaltext = Column(String(16), nullable=False, server_default='')
     commented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text, nullable=False)

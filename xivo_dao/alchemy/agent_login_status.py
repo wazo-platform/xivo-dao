@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column, UniqueConstraint
+from sqlalchemy.schema import Column, UniqueConstraint, PrimaryKeyConstraint
 from sqlalchemy.types import Integer, String, DateTime
 from sqlalchemy.sql import func
 
@@ -26,14 +26,15 @@ class AgentLoginStatus(Base):
 
     __tablename__ = 'agent_login_status'
     __table_args__ = (
+        PrimaryKeyConstraint('agent_id'),
         UniqueConstraint('extension', 'context'),
         UniqueConstraint('interface')
     )
 
-    agent_id = Column(Integer, primary_key=True)
+    agent_id = Column(Integer, autoincrement=False)
     agent_number = Column(String(40), nullable=False)
     extension = Column(String(80), nullable=False)
     context = Column(String(80), nullable=False)
-    interface = Column(String(128), nullable=False, unique=True)
+    interface = Column(String(128), nullable=False)
     state_interface = Column(String(128), nullable=False)
     login_at = Column(DateTime, nullable=False, server_default=func.now())

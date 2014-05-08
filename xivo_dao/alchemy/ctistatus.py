@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column
+from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
 from sqlalchemy.types import Integer, String
 
 from xivo_dao.helpers.db_manager import Base
@@ -24,12 +24,16 @@ from xivo_dao.helpers.db_manager import Base
 class CtiStatus(Base):
 
     __tablename__ = 'ctistatus'
+    __table_args__ = (
+        PrimaryKeyConstraint('id'),
+        UniqueConstraint('presence_id', 'name'),
+    )
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     presence_id = Column(Integer)
     name = Column(String(255), nullable=False)
-    display_name = Column(String(255), nullable=False)
-    actions = Column(String(255), nullable=False)
-    color = Column(String(20), nullable=False)
-    access_status = Column(String(255), nullable=False)
-    deletable = Column(Integer, server_default='1')
+    display_name = Column(String(255))
+    actions = Column(String(255))
+    color = Column(String(20))
+    access_status = Column(String(255))
+    deletable = Column(Integer)

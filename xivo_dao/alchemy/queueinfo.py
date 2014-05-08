@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column
+from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
 from sqlalchemy.types import Integer, String
 
 from xivo_dao.helpers.db_manager import Base
@@ -24,8 +24,13 @@ from xivo_dao.helpers.db_manager import Base
 class QueueInfo(Base):
 
     __tablename__ = 'queue_info'
+    __table_args__ = (
+        PrimaryKeyConstraint('id'),
+        Index('queue_info_call_time_t_index', 'call_time_t'),
+        Index('queue_info_queue_name_index', 'queue_name'),
+    )
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer)
     call_time_t = Column(Integer)
     queue_name = Column(String(128), nullable=False, server_default='')
     caller = Column(String(80), nullable=False, server_default='')

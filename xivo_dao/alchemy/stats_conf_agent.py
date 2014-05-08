@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, ForeignKeyConstraint
+from sqlalchemy.schema import Column, PrimaryKeyConstraint
 from sqlalchemy.types import Integer
 
 from xivo_dao.helpers.db_manager import Base
@@ -27,15 +26,7 @@ class StatsConfAgent(Base):
     __tablename__ = 'stats_conf_agent'
     __table_args__ = (
         PrimaryKeyConstraint('stats_conf_id', 'agentfeatures_id'),
-        ForeignKeyConstraint(('agentfeatures_id',),
-                             ('agentfeatures.id',),
-                             ondelete='RESTRICT'),
-        ForeignKeyConstraint(('stats_conf_id',),
-                             ('stats_conf.id',)),
     )
 
-    stats_conf_id = Column(Integer, nullable=False)
-    agentfeatures_id = Column(Integer, nullable=False)
-
-    agentfeatures = relationship('AgentFeatures')
-    stats_conf = relationship('StatsConf')
+    stats_conf_id = Column(Integer, nullable=False, autoincrement=False)
+    agentfeatures_id = Column(Integer, nullable=False, autoincrement=False)

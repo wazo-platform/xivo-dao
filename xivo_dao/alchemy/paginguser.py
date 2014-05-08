@@ -29,6 +29,6 @@ class PagingUser(Base):
         Index('paginguser__idx__pagingid', 'pagingid'),
     )
 
-    pagingid = Column(Integer, nullable=False)
-    userfeaturesid = Column(Integer, nullable=False)
-    caller = Column(Integer, nullable=False)
+    pagingid = Column(Integer, nullable=False, autoincrement=False)
+    userfeaturesid = Column(Integer, nullable=False, autoincrement=False)
+    caller = Column(Integer, nullable=False, autoincrement=False)

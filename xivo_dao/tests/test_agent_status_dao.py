@@ -67,9 +67,9 @@ class TestAgentStatusDao(DAOTestCase):
         self.assertEquals(agent_status.interface, interface)
         self.assertEquals(agent_status.state_interface, state_interface)
 
-    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
-    def test_log_in_agent_with_db_error(self, AsteriskSession):
-        session = AsteriskSession.return_value = Mock()
+    @patch('xivo_dao.helpers.db_manager.DaoSession')
+    def test_log_in_agent_with_db_error(self, DaoSession):
+        session = DaoSession.return_value = Mock()
         session.commit.side_effect = SQLAlchemyError()
 
         agent_id = 1

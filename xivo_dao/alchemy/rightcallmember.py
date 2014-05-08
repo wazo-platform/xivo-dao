@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column
-from sqlalchemy.types import Integer, String
+from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
+from sqlalchemy.types import Integer, String, Enum
 
 from xivo_dao.helpers.db_manager import Base
 
@@ -24,8 +24,15 @@ from xivo_dao.helpers.db_manager import Base
 class RightCallMember(Base):
 
     __tablename__ = 'rightcallmember'
+    __table_args__ = (
+        PrimaryKeyConstraint('id'),
+        UniqueConstraint('rightcallid', 'type', 'typeval'),
+    )
 
-    id = Column(Integer, primary_key=True)
-    rightcallid = Column(Integer)
-    type = Column(String(7))
-    typeval = Column(String(128))
+    id = Column(Integer, nullable=False)
+    rightcallid = Column(Integer, nullable=False, server_default='0')
+    type = Column(Enum('user', 'group', 'incall', 'outcall',
+                       name='rightcallmember_type',
+                       metadata=Base.metadata),
+                  nullable=False)
+    typeval = Column(String(128), nullable=False, server_default='0')

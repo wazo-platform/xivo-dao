@@ -15,22 +15,26 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column
+from sqlalchemy.schema import Column, PrimaryKeyConstraint
 from sqlalchemy.types import Integer, Enum
+
 from xivo_dao.helpers.db_manager import Base
 
 
 class PickupMember(Base):
     __tablename__ = 'pickupmember'
+    __table_args__ = (
+        PrimaryKeyConstraint('pickupid', 'category', 'membertype', 'memberid'),
+    )
 
-    pickupid = Column(Integer, nullable=False, primary_key=True)
+    pickupid = Column(Integer, nullable=False, autoincrement=False)
     category = Column(Enum('member',
                            'pickup',
                            name='pickup_category',
-                           metadata=Base.metadata), nullable=False, primary_key=True)
+                           metadata=Base.metadata), nullable=False, autoincrement=False)
     membertype = Column(Enum('group',
                              'queue',
                              'user',
                              name='pickup_membertype',
-                             metadata=Base.metadata), nullable=False, primary_key=True)
-    memberid = Column(Integer, nullable=False, primary_key=True)
+                             metadata=Base.metadata), nullable=False, autoincrement=False)
+    memberid = Column(Integer, nullable=False, autoincrement=False)

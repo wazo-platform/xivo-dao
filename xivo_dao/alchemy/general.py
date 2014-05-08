@@ -31,5 +31,5 @@ class General(Base):
     id = Column(Integer, nullable=False)
     timezone = Column(String(128))
     exchange_trunkid = Column(Integer)
-    exchange_exten = Column(String(128), server_default='NULL')
-    dundi = Column(Integer)
+    exchange_exten = Column(String(128))
+    dundi = Column(Integer, nullable=False, server_default='0')

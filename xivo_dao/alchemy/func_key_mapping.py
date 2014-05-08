@@ -30,7 +30,7 @@ class FuncKeyMapping(Base):
         ForeignKeyConstraint(['func_key_id', 'destination_type_id'],
                              ['func_key.id', 'func_key.destination_type_id']),
         UniqueConstraint('template_id', 'position'),
-        CheckConstraint('position >= 0')
+        CheckConstraint('position > 0')
     )
 
     template_id = Column(Integer, ForeignKey('func_key_template.id'), primary_key=True)

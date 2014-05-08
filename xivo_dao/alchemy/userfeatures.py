@@ -15,21 +15,39 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column, ForeignKey
-from sqlalchemy.types import Integer, String, Text
+from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint, Index, \
+    UniqueConstraint, ForeignKeyConstraint
+from sqlalchemy.types import Integer, String, Text, Enum
 from sqlalchemy.orm import relationship
 
+from xivo_dao.alchemy import enum
 from xivo_dao.helpers.db_manager import Base
 
 
 class UserFeatures(Base):
 
     __tablename__ = 'userfeatures'
+    __table_args__ = (
+        PrimaryKeyConstraint('id'),
+        ForeignKeyConstraint(('cti_profile_id',),
+                             ('cti_profile.id',),
+                             ondelete='RESTRICT'),
+        UniqueConstraint('func_key_private_template_id'),
+        Index('userfeatures__idx__agentid', 'agentid'),
+        Index('userfeatures__idx__entityid', 'entityid'),
+        Index('userfeatures__idx__firstname', 'firstname'),
+        Index('userfeatures__idx__lastname', 'lastname'),
+        Index('userfeatures__idx__loginclient', 'loginclient'),
+        Index('userfeatures__idx__musiconhold', 'musiconhold'),
+        Index('userfeatures__idx__voicemailid', 'voicemailid'),
+    )
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, nullable=False)
     firstname = Column(String(128), nullable=False, server_default='')
     lastname = Column(String(128), nullable=False, server_default='')
-    voicemailtype = Column(String(128))  # TODO Should be Enum
+    voicemailtype = Column(Enum('asterisk', 'exchange',
+                                name='userfeatures_voicemailtype',
+                                metadata=Base.metadata))
     voicemailid = Column(Integer)
     agentid = Column(Integer)
     pictureid = Column(Integer)
@@ -37,10 +55,10 @@ class UserFeatures(Base):
     callerid = Column(String(160))
     ringseconds = Column(Integer, nullable=False, server_default='30')
     simultcalls = Column(Integer, nullable=False, server_default='5')
-    enableclient = Column(Integer, nullable=False, server_default='0')
+    enableclient = Column(Integer, nullable=False, server_default='1')
     loginclient = Column(String(64), nullable=False, server_default='')
     passwdclient = Column(String(64), nullable=False, server_default='')
-    cti_profile_id = Column(Integer, ForeignKey('cti_profile.id'))
+    cti_profile_id = Column(Integer)
     enablehint = Column(Integer, nullable=False, server_default='1')
     enablevoicemail = Column(Integer, nullable=False, server_default='0')
     enablexfer = Column(Integer, nullable=False, server_default='1')
@@ -58,7 +76,7 @@ class UserFeatures(Base):
     outcallerid = Column(String(80), nullable=False, server_default='')
     mobilephonenumber = Column(String(128), nullable=False, server_default='')
     userfield = Column(String(128), nullable=False, server_default='')
-    bsfilter = Column(String(128), nullable=False, server_default='no')  # TODO Should be Enum
+    bsfilter = Column(enum.generic_bsfilter, nullable=False, server_default='no')
     preprocess_subroutine = Column(String(39))
     timezone = Column(String(128))
     language = Column(String(20))

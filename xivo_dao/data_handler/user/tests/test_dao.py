@@ -453,7 +453,7 @@ class TestCreate(DAOTestCase):
         assert_that(row.preprocess_subroutine, equal_to(user.preprocess_subroutine))
         assert_that(row.userfield, equal_to(user.userfield))
 
-    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    @patch('xivo_dao.helpers.db_manager.DaoSession')
     def test_create_with_database_error(self, Session):
         session = Mock()
         session.commit.side_effect = SQLAlchemyError()
@@ -557,7 +557,7 @@ class TestEdit(DAOTestCase):
 
         self.assertRaises(ElementNotExistsError, user_dao.edit, user)
 
-    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    @patch('xivo_dao.helpers.db_manager.DaoSession')
     def test_edit_with_database_error(self, Session):
         session = Mock()
         session.commit.side_effect = SQLAlchemyError()

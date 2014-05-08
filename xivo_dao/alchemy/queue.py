@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column
+from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
 from sqlalchemy.types import Integer, String, Enum, Text
 
 from xivo_dao.helpers.db_manager import Base
@@ -24,8 +24,12 @@ from xivo_dao.helpers.db_manager import Base
 class Queue(Base):
 
     __tablename__ = 'queue'
+    __table_args__ = (
+        PrimaryKeyConstraint('name'),
+        Index('queue__idx__category', 'category'),
+    )
 
-    name = Column(String(128), primary_key=True)
+    name = Column(String(128))
     musicclass = Column(String(128))
     announce = Column(String(128))
     context = Column(String(39))

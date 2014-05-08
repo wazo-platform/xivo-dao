@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, ForeignKey, Index
+from sqlalchemy.schema import Column, Index, ForeignKeyConstraint
 from sqlalchemy.types import DateTime, Integer, String
 
 from xivo_dao.helpers.db_manager import Base
@@ -26,6 +26,9 @@ class CEL(Base):
 
     __tablename__ = 'cel'
     __table_args__ = (
+        ForeignKeyConstraint(('call_log_id',),
+                             ('call_log.id',),
+                             ondelete='SET NULL'),
         Index('cel__idx__call_log_id', 'call_log_id'),
         Index('cel__idx__eventtime', 'eventtime'),
         Index('cel__idx__linkedid', 'linkedid'),
@@ -45,7 +48,7 @@ class CEL(Base):
     context = Column(String(80), nullable=False)
     channame = Column(String(80, convert_unicode=True), nullable=False)
     appname = Column(String(80), nullable=False)
-    appdata = Column(String(80), nullable=False)
+    appdata = Column(String(512), nullable=False)
     amaflags = Column(Integer, nullable=False)
     accountcode = Column(String(20), nullable=False)
     peeraccount = Column(String(20), nullable=False)
@@ -53,6 +56,6 @@ class CEL(Base):
     linkedid = Column(String(150), nullable=False)
     userfield = Column(String(255), nullable=False)
     peer = Column(String(80), nullable=False)
-    call_log_id = Column(Integer, ForeignKey('call_log.id'))
+    call_log_id = Column(Integer)
 
-    call_log = relationship('CallLog', foreign_keys=call_log_id, backref='cels')
+    call_log = relationship('CallLog')

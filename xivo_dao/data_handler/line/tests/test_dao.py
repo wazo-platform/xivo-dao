@@ -472,7 +472,7 @@ class TestLineDao(DAOTestCase):
 
         self.assertRaises(ElementNotExistsError, line_dao.edit, line)
 
-    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    @patch('xivo_dao.helpers.db_manager.DaoSession')
     def test_edit_with_database_error(self, Session):
         session = Mock()
         session.commit.side_effect = SQLAlchemyError()
@@ -506,7 +506,7 @@ class TestLineDao(DAOTestCase):
                         .first())
         self.assertEquals(line_sip_row.setvar, 'XIVO_USERID=12')
 
-    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    @patch('xivo_dao.helpers.db_manager.DaoSession')
     def test_update_xivo_userid_sip_db_error(self, Session):
         session = Session.return_value = Mock()
         session.commit.side_effect = SQLAlchemyError()
@@ -522,7 +522,7 @@ class TestLineDao(DAOTestCase):
 
         self.assertRaises(ElementEditionError, line_dao.update_xivo_userid, line, main_user)
 
-    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    @patch('xivo_dao.helpers.db_manager.DaoSession')
     def test_update_xivo_userid_not_sip(self, Session):
         session = Session.return_value = Mock()
         line = Mock(protocol='sccp')
@@ -564,7 +564,7 @@ class TestLineDao(DAOTestCase):
 
         assert_that(updated_row.cid_name, is_not(equal_to('')))
 
-    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    @patch('xivo_dao.helpers.db_manager.DaoSession')
     def test_delete_user_references_db_error(self, Session):
         session = Session.return_value = Mock()
         session.commit.side_effect = SQLAlchemyError()
@@ -616,7 +616,7 @@ class TestLineDao(DAOTestCase):
 
         assert_that(line_created, is_not(has_property('number')))
 
-    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    @patch('xivo_dao.helpers.db_manager.DaoSession')
     def test_create_sip_line_with_error_from_dao(self, Session):
         session = Mock()
         session.commit.side_effect = SQLAlchemyError()
@@ -675,7 +675,7 @@ class TestLineDao(DAOTestCase):
 
         self.assertRaises(NotImplementedError, line_dao.create, line)
 
-    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    @patch('xivo_dao.helpers.db_manager.DaoSession')
     def test_create_database_error(self, Session):
         session = Mock()
         session.commit.side_effect = SQLAlchemyError()

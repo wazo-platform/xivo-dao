@@ -28,6 +28,6 @@ class Context(Base):
     name = Column(String(39), primary_key=True)
     displayname = Column(String(128), nullable=False, server_default='')
     entity = Column(String(64))
-    contexttype = Column(String(20), nullable=False, server_default='internal')
+    contexttype = Column(String(40), nullable=False, server_default='internal')
     commented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text, nullable=False)

@@ -163,7 +163,7 @@ class TestCallLogDAO(DAOTestCase):
         assert_that(result[0].source_line_identity, equal_to(call_log_3.source_line_identity))
         assert_that(result[1].source_line_identity, equal_to(call_log_1.source_line_identity))
 
-    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    @patch('xivo_dao.helpers.db_manager.DaoSession')
     def test_create_call_log(self, session_init):
         session = Mock()
         session_init.return_value = session
@@ -196,7 +196,7 @@ class TestCallLogDAO(DAOTestCase):
             all_of(has_property('id', cel_id_4), has_property('call_log_id', call_log_id_2))))
 
     @patch('xivo_dao.data_handler.call_log.dao.create_call_log')
-    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    @patch('xivo_dao.helpers.db_manager.DaoSession')
     def test_create_from_list_db_error(self, session_init, create_call_log):
         session = Mock()
         session.commit.side_effect = SQLAlchemyError()
@@ -218,7 +218,7 @@ class TestCallLogDAO(DAOTestCase):
         call_log_rows = self.session.query(CallLogSchema).all()
         assert_that(call_log_rows, has_length(0))
 
-    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    @patch('xivo_dao.helpers.db_manager.DaoSession')
     def test_delete_all_db_error(self, session_init):
         session = Mock()
         session.commit.side_effect = SQLAlchemyError()
@@ -238,7 +238,7 @@ class TestCallLogDAO(DAOTestCase):
         call_log_rows = self.session.query(CallLogSchema).all()
         assert_that(call_log_rows, contains(has_property('id', id_2)))
 
-    @patch('xivo_dao.helpers.db_manager.AsteriskSession')
+    @patch('xivo_dao.helpers.db_manager.DaoSession')
     def test_delete_from_list_db_error(self, session_init):
         session = Mock()
         session.commit.side_effect = SQLAlchemyError()

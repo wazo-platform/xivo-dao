@@ -16,15 +16,19 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.helpers.db_manager import Base
-from sqlalchemy.schema import Column
+from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
 from sqlalchemy.types import Integer, String, Enum
 
 
 class SIPAuthentication(Base):
 
     __tablename__ = 'sipauthentication'
+    __table_args__ = (
+        PrimaryKeyConstraint('id'),
+        Index('sipauthentication__idx__usersip_id', 'usersip_id')
+    )
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, nullable=False)
     usersip_id = Column(Integer)
     user = Column(String(255), nullable=False)
     secretmode = Column(Enum('md5',

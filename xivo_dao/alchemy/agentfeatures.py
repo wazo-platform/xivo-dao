@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column
+from sqlalchemy.schema import Column, UniqueConstraint
 from sqlalchemy.types import Integer, String, Text
 
 from xivo_dao.helpers.db_manager import Base
@@ -24,6 +24,9 @@ from xivo_dao.helpers.db_manager import Base
 class AgentFeatures(Base):
 
     __tablename__ = 'agentfeatures'
+    __table_args__ = (
+        UniqueConstraint('number'),
+    )
 
     id = Column(Integer, primary_key=True)
     numgroup = Column(Integer, nullable=False)

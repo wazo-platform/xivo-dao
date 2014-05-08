@@ -30,6 +30,6 @@ class ContextNumbers(Base):
                        name='contextnumbers_type',
                        metadata=Base.metadata),
                   primary_key=True)
-    numberbeg = Column(String(16), server_default='0', primary_key=True)
-    numberend = Column(String(16), server_default='0', primary_key=True)
+    numberbeg = Column(String(16), server_default='', primary_key=True)
+    numberend = Column(String(16), server_default='', primary_key=True)
     didlength = Column(Integer, nullable=False, server_default='0')

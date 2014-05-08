@@ -21,7 +21,7 @@ from xivo_dao.alchemy.contextnumbers import ContextNumbers as ContextNumberSchem
 from xivo_dao.alchemy.entity import Entity as EntitySchema
 from xivo_dao.data_handler.context.model import db_converter
 from xivo_dao.data_handler.exception import ElementNotExistsError
-from xivo_dao.helpers.db_manager import daosession, xivo_daosession
+from xivo_dao.helpers.db_manager import daosession
 
 
 @daosession
@@ -61,7 +61,7 @@ def create(session, context):
     return context
 
 
-@xivo_daosession
+@daosession
 def _get_default_entity_name(session):
     entity = session.query(EntitySchema).first()
     return entity.name

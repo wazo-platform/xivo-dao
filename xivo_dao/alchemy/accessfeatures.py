@@ -31,5 +31,5 @@ class AccessFeatures(Base):
 
     id = Column(Integer, primary_key=True)
     host = Column(String(255), nullable=False, server_default='')
-    feature = Column(String(64), nullable=False, server_default='phonebook')
     commented = Column(Integer, nullable=False, server_default='0')
+    feature = Column(String(64), nullable=False, server_default='phonebook')

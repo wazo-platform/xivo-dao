@@ -16,7 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, ForeignKeyConstraint
+from sqlalchemy.schema import Column, PrimaryKeyConstraint, ForeignKeyConstraint,\
+    UniqueConstraint
 from sqlalchemy.types import Integer, String, Enum, Text
 
 from xivo_dao.helpers.db_manager import Base
@@ -30,10 +31,11 @@ class User(Base):
         ForeignKeyConstraint(('entity_id',),
                              ('entity.id',),
                              ondelete='RESTRICT'),
+        UniqueConstraint('login', 'meta'),
     )
 
     id = Column(Integer, nullable=False)
-    entity_id = Column(Integer, nullable=False)
+    entity_id = Column(Integer)
     login = Column(String(64), nullable=False, server_default='')
     passwd = Column(String(64), nullable=False, server_default='')
     meta = Column(Enum('user',
@@ -46,6 +48,6 @@ class User(Base):
     time = Column(Integer, nullable=False, server_default='0')
     dcreate = Column(Integer, nullable=False, server_default='0')
     dupdate = Column(Integer, nullable=False, server_default='0')
-    obj = Column(Text)
+    obj = Column(Text, nullable=False)
 
     entity = relationship('Entity')

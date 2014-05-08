@@ -17,10 +17,10 @@
 
 from sqlalchemy.sql.expression import and_, distinct
 from xivo_dao.alchemy.accesswebservice import AccessWebService
-from xivo_dao.helpers.db_manager import xivo_daosession
+from xivo_dao.helpers.db_manager import daosession
 
 
-@xivo_daosession
+@daosession
 def get_password(session, login):
     result = (session
               .query(AccessWebService.passwd)
@@ -32,7 +32,7 @@ def get_password(session, login):
         return result.passwd
 
 
-@xivo_daosession
+@daosession
 def get_allowed_hosts(session):
     result = (session
               .query(distinct(AccessWebService.host))

@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, ForeignKeyConstraint
+from sqlalchemy import text
+from sqlalchemy.schema import Column, PrimaryKeyConstraint
 from sqlalchemy.types import Integer, SmallInteger
 
 from xivo_dao.helpers.db_manager import Base
@@ -27,16 +27,8 @@ class StatsConfQueue(Base):
     __tablename__ = 'stats_conf_queue'
     __table_args__ = (
         PrimaryKeyConstraint('stats_conf_id', 'queuefeatures_id'),
-        ForeignKeyConstraint(('queuefeatures_id',),
-                             ('queuefeatures.id',),
-                             ondelete='RESTRICT'),
-        ForeignKeyConstraint(('stats_conf_id',),
-                             ('stats_conf.id',)),
     )
 
-    stats_conf_id = Column(Integer, nullable=False)
-    queuefeatures_id = Column(Integer, nullable=False)
-    qos = Column(SmallInteger, nullable=False, server_default='0')
-
-    queuefeatures = relationship('QueueFeatures')
-    stats_conf = relationship('StatsConf')
+    stats_conf_id = Column(Integer, nullable=False, autoincrement=False)
+    queuefeatures_id = Column(Integer, nullable=False, autoincrement=False)
+    qos = Column(SmallInteger, nullable=False, server_default=text('0'))

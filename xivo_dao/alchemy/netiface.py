@@ -15,11 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint, \
-    CheckConstraint
+from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
 from sqlalchemy.types import Integer, String, Text, Enum
 
 from xivo_dao.helpers.db_manager import Base
+from xivo_dao.alchemy import enum
 
 
 class Netiface(Base):
@@ -28,7 +28,6 @@ class Netiface(Base):
     __table_args__ = (
         PrimaryKeyConstraint('id'),
         UniqueConstraint('ifname'),
-        CheckConstraint('type=\'iface\'')
     )
 
     id = Column(Integer, nullable=False)
@@ -39,7 +38,7 @@ class Netiface(Base):
                               name='netiface_networktype',
                               metadata=Base.metadata),
                          nullable=False)
-    type = Column(String(64), nullable=False)
+    type = Column(enum.netiface_type, nullable=False)
     family = Column(Enum('inet',
                          'inet6',
                          name='netiface_family',
@@ -57,7 +56,7 @@ class Netiface(Base):
     mtu = Column(Integer)
     vlanrawdevice = Column(String(64))
     vlanid = Column(Integer)
-    options = Column(Text)
+    options = Column(Text, nullable=False)
     disable = Column(Integer, nullable=False, server_default='0')
     dcreate = Column(Integer, nullable=False, server_default='0')
     description = Column(Text)

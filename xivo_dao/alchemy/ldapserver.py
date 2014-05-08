@@ -15,30 +15,28 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column
-from sqlalchemy.types import Integer, String, Text, Enum
+from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
+from sqlalchemy.types import Integer, String, Text
 
 from xivo_dao.helpers.db_manager import Base
+from xivo_dao.alchemy import enum
 
 
 class LdapServer(Base):
 
     __tablename__ = 'ldapserver'
+    __table_args__ = (
+        PrimaryKeyConstraint('id'),
+        UniqueConstraint('name'),
+        UniqueConstraint('host', 'port'),
+    )
 
-    id = Column(Integer, primary_key=True)
-    name = Column(String(128), nullable=False, server_default='')
+    id = Column(Integer)
+    name = Column(String(64), nullable=False, server_default='')
     host = Column(String(255), nullable=False, server_default='')
     port = Column(Integer, nullable=False)
-    securitylayer = Column(Enum('tls',
-                                'ssl',
-                                name='ldapserver_securitylayer',
-                                metadata=Base.metadata))
-    protocolversion = Column(Enum('2',
-                                  '3',
-                                  name='ldapserver_protocolversion',
-                                  metadata=Base.metadata),
-                             nullable=False,
-                             server_default='3')
+    securitylayer = Column(enum.ldapserver_securitylayer)
+    protocolversion = Column(enum.ldapserver_protocolversion, nullable=False, server_default='3')
     disable = Column(Integer, nullable=False, server_default='0')
     dcreate = Column(Integer, nullable=False, server_default='0')
     description = Column(Text, nullable=False)
