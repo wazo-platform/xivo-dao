@@ -229,11 +229,11 @@ class TestFind(DAOTestCase):
         lastname = 'Sanderson'
 
         user1 = self.add_user(firstname=firstname, lastname=lastname)
-        self.add_user(firstname=firstname, lastname=lastname)
+        user2 = self.add_user(firstname=firstname, lastname=lastname)
 
         result = user_dao.find_user(firstname, lastname)
 
-        assert_that(result, has_property('id', user1.id))
+        assert_that(result, has_property('id', any_of(user1.id, user2.id)))
 
     def test_find_all_by_fullname_no_users(self):
         result = user_dao.find_all_by_fullname('')
