@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column, UniqueConstraint, PrimaryKeyConstraint
+from sqlalchemy.schema import Column, PrimaryKeyConstraint
 from sqlalchemy.types import Integer, String
 
 from xivo_dao.helpers.db_manager import Base
@@ -26,7 +26,6 @@ class DialPattern(Base):
     __tablename__ = 'dialpattern'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
-        UniqueConstraint('type', 'typeid')
     )
 
     id = Column(Integer)

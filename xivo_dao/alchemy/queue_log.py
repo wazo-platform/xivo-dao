@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
-from sqlalchemy.types import String
+from sqlalchemy.types import String, Integer
 
 from xivo_dao.helpers.db_manager import Base
 
@@ -25,7 +25,7 @@ class QueueLog(Base):
 
     __tablename__ = 'queue_log'
     __table_args__ = (
-        PrimaryKeyConstraint('time', 'callid'),
+        PrimaryKeyConstraint('id'),
         Index('queue_log__idx_agent', 'agent'),
         Index('queue_log__idx_callid', 'callid'),
         Index('queue_log__idx_event', 'event'),
@@ -33,8 +33,8 @@ class QueueLog(Base):
         Index('queue_log__idx_time', 'time'),
     )
 
-    time = Column(String(26), server_default='')
-    callid = Column(String(32), server_default='')
+    time = Column(String(26), nullable=False, server_default='')
+    callid = Column(String(32), nullable=False, server_default='')
     queuename = Column(String(50), nullable=False, server_default='')
     agent = Column(String(50), nullable=False, server_default='')
     event = Column(String(20), nullable=False, server_default='')
@@ -43,3 +43,4 @@ class QueueLog(Base):
     data3 = Column(String(30), server_default='')
     data4 = Column(String(30), server_default='')
     data5 = Column(String(30), server_default='')
+    id = Column(Integer)
