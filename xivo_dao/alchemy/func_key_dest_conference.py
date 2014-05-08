@@ -31,8 +31,8 @@ class FuncKeyDestConference(Base):
     )
 
     func_key_id = Column(Integer, primary_key=True)
-    conference_id = Column(Integer, ForeignKey('meetmefeatures.id'), primary_key=True)
     destination_type_id = Column(Integer, primary_key=True, server_default="4")
+    conference_id = Column(Integer, ForeignKey('meetmefeatures.id'), primary_key=True)
 
     func_key = relationship("FuncKey")
     conference = relationship("MeetmeFeatures")
