@@ -23,7 +23,7 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 class TestMeetmeFeaturesDAO(DAOTestCase):
 
-    def _insert_meetme(self, meetmeid, name, confno, pin=None, context=None):
+    def _insert_meetme(self, meetmeid, name, confno, pin=None, context='foo'):
         var_val = confno if pin is None else ','.join([confno, pin])
         static_meetme = StaticMeetme()
         static_meetme.category = 'rooms'
@@ -40,8 +40,14 @@ class TestMeetmeFeaturesDAO(DAOTestCase):
         meetme.name = name
         meetme.confno = confno
         meetme.meetmeid = static_meetme.id
-        if context is not None:
-            meetme.context = context
+        meetme.context = context
+        meetme.admin_identification = 'all'
+        meetme.admin_mode = 'all'
+        meetme.admin_announcejoinleave = 'no'
+        meetme.user_mode = 'all'
+        meetme.user_announcejoinleave = 'no'
+        meetme.emailbody = ''
+        meetme.description = ''
 
         self.session.begin()
         self.session.add(meetme)

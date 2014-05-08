@@ -36,6 +36,7 @@ class TrunkFeaturesDAOTestCase(DAOTestCase):
         usersip.id = trunk.protocolid
         usersip.name = trunk_name
         usersip.type = 'peer'
+        usersip.category = 'user'
 
         self.session.begin()
         map(self.session.add, [trunk, usersip])
@@ -56,6 +57,7 @@ class TrunkFeaturesDAOTestCase(DAOTestCase):
         useriax.id = trunk.protocolid
         useriax.name = trunk_name
         useriax.type = 'peer'
+        useriax.category = 'user'
 
         self.session.begin()
         map(self.session.add, [trunk, useriax])
@@ -76,6 +78,7 @@ class TrunkFeaturesDAOTestCase(DAOTestCase):
         usercustom.name = 'dahdi_test'
         usercustom.id = trunk.protocolid
         usercustom.interface = dahdi_interface
+        usercustom.category = 'user'
 
         self.session.begin()
         map(self.session.add, [trunk, usercustom])
@@ -96,6 +99,7 @@ class TrunkFeaturesDAOTestCase(DAOTestCase):
         usercustom.name = 'dahdi_test'
         usercustom.id = trunk.protocolid
         usercustom.interface = dahdi_interface
+        usercustom.category = 'user'
 
         self.session.begin()
         map(self.session.add, [trunk, usercustom])

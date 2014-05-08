@@ -243,40 +243,6 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         assert_that(featuremap, contains_inanyorder(*expected_result))
 
-    def test_find_exten_progfunckeys_settings_does_not_return_extenfeatures_func_keys(self):
-        user_having_fk = self.add_user_line_with_exten(exten='4567')
-
-        number_dest = '100'
-        user_dest = self.add_user_line_with_exten(exten=number_dest)
-
-        phonefunckey = self.add_function_key_to_user(iduserfeatures=user_having_fk.user_id,
-                                                     exten=number_dest,
-                                                     typeextenumbers='user',
-                                                     typevalextenumbers=str(user_dest.user_id),
-                                                     supervision=1,
-                                                     progfunckey=1)
-
-        self.add_function_key_to_user(iduserfeatures=user_having_fk.user_id,
-                                      exten='',
-                                      typeextenumbers='extenfeatures',
-                                      typevalextenumbers='enablednd',
-                                      supervision=1,
-                                      progfunckey=1)
-
-        expected_result = [
-            {'leftexten': number_dest,
-             'user_id': user_having_fk.user_id,
-             'exten': number_dest,
-             'typeextenumbers': u'user',
-             'typevalextenumbersright': None,
-             'typeextenumbersright': u'user',
-             'typevalextenumbers': phonefunckey.typevalextenumbers}
-        ]
-
-        funckeys = asterisk_conf_dao.find_exten_progfunckeys_settings(user_having_fk.line.context)
-
-        assert_that(funckeys, contains_inanyorder(*expected_result))
-
     def test_find_exten_progfunckeys_custom_settings(self):
         number = '4567'
         ule = self.add_user_line_with_exten(exten=number)
@@ -319,13 +285,13 @@ class TestAsteriskConfDAO(DAOTestCase):
             {'exten': u'*25',
              'commented': 0,
              'context': u'xivo-features',
-             'typeval': None,
+             'typeval': u'',
              'type': 'user',
              'id': exten1.id},
             {'exten': u'*26',
              'commented': 0,
              'context': u'xivo-features',
-             'typeval': None,
+             'typeval': u'',
              'type': 'user',
              'id': exten2.id}
         ]
@@ -385,7 +351,7 @@ class TestAsteriskConfDAO(DAOTestCase):
             {'exten': u'12',
              'commented': 0,
              'context': u'default',
-             'typeval': None,
+             'typeval': u'',
              'type': 'user',
              'id': extension_row.id}
         ]
@@ -415,19 +381,20 @@ class TestAsteriskConfDAO(DAOTestCase):
             {'exten': u'12',
              'commented': 0,
              'context': u'default',
-             'typeval': None,
+             'typeval': u'',
              'type': 'user',
              'id': exten1.id},
             {'exten': u'23',
              'commented': 0,
              'context': u'default',
-             'typeval': None,
+             'typeval': u'',
              'type': 'user',
              'id': exten2.id}
         ]
 
         extensions = asterisk_conf_dao.find_exten_settings('default')
 
+        print extensions
         assert_that(extensions, contains_inanyorder(*expected_result))
 
     def test_find_exten_hints_settings_when_line_enabled(self):
@@ -1167,13 +1134,13 @@ class TestAsteriskConfDAO(DAOTestCase):
         assert_that(queue_skill_rule, contains_inanyorder(*expected_result))
 
     def test_find_queue_penalty_settings(self):
-        queue_penalty1 = QueuePenalty(name='toto',
+        queue_penalty1 = QueuePenalty(name='foo1',
                                       commented=1,
                                       description='')
-        queue_penalty2 = QueuePenalty(name='toto',
+        queue_penalty2 = QueuePenalty(name='foo2',
                                       commented=0,
                                       description='')
-        queue_penalty3 = QueuePenalty(name='toto',
+        queue_penalty3 = QueuePenalty(name='foo3',
                                       commented=0,
                                       description='')
         self.add_me_all([queue_penalty1,
@@ -1272,18 +1239,16 @@ class TestAsteriskConfDAO(DAOTestCase):
         assert_that(result, contains_inanyorder(*expected_result))
 
     def test_find_queue_penalties_settings(self):
-        queue_penalty1 = QueuePenalty(name='toto',
+        queue_penalty1 = QueuePenalty(name='foo1',
                                       commented=1,
                                       description='')
-        queue_penalty_change1 = QueuePenaltyChange(queuepenalty_id=queue_penalty1.id)
-        queue_penalty2 = QueuePenalty(name='toto',
+        queue_penalty2 = QueuePenalty(name='foo2',
                                       commented=0,
                                       description='')
+        self.add_me_all([queue_penalty1, queue_penalty2])
+        queue_penalty_change1 = QueuePenaltyChange(queuepenalty_id=queue_penalty1.id)
         queue_penalty_change2 = QueuePenaltyChange(queuepenalty_id=queue_penalty2.id)
-        self.add_me_all([queue_penalty1,
-                         queue_penalty_change1,
-                         queue_penalty2,
-                         queue_penalty_change2])
+        self.add_me_all([queue_penalty_change1, queue_penalty_change2])
 
         expected_result = [
             {

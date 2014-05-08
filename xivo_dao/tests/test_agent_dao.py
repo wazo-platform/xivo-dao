@@ -28,6 +28,8 @@ from xivo_dao.tests.test_dao import DAOTestCase
 class TestAgentDAO(DAOTestCase):
 
     agent_number = '1234'
+    agent1_number = '1001'
+    agent2_number = '1002'
     agent_context = 'test'
 
     def test_agent_number(self):
@@ -155,8 +157,8 @@ class TestAgentDAO(DAOTestCase):
         assert_that(result, equal_to(None))
 
     def test_all(self):
-        agent1 = self._insert_agent()
-        agent2 = self._insert_agent()
+        agent1 = self._insert_agent(self.agent1_number)
+        agent2 = self._insert_agent(self.agent2_number)
 
         expected = [agent1, agent2]
 
@@ -168,10 +170,10 @@ class TestAgentDAO(DAOTestCase):
         result = agent_dao.all()
         self.assertEqual([], result)
 
-    def _insert_agent(self):
+    def _insert_agent(self, number=agent_number):
         agent = AgentFeatures()
         agent.numgroup = 6
-        agent.number = self.agent_number
+        agent.number = number
         agent.passwd = ''
         agent.context = self.agent_context
         agent.language = ''

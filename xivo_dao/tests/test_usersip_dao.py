@@ -23,7 +23,7 @@ from xivo_dao.tests.test_dao import DAOTestCase
 class TestUserSIPDAO(DAOTestCase):
 
     def test_create(self):
-        usersip = UserSIP(name='abcd', type='friend')
+        usersip = UserSIP(name='abcd', type='friend', category='user')
 
         usersip_dao.create(usersip)
         self.assertTrue(usersip.id > 0)
@@ -34,7 +34,7 @@ class TestUserSIPDAO(DAOTestCase):
         return self.session.query(UserSIP).all()
 
     def _insert(self, name, typename='friend'):
-        usersip = UserSIP(name=name, type=typename)
+        usersip = UserSIP(name=name, type=typename, category='user')
         self.add_me(usersip)
         return usersip.id
 

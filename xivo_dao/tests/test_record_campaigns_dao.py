@@ -129,8 +129,8 @@ class TestRecordCampaignDao(DAOTestCase):
                           campaign)
 
     def test_delete_all(self):
-        campaign1 = copy.deepcopy(self.sample_campaign)
-        campaign2 = copy.deepcopy(self.sample_campaign)
+        campaign1 = copy.deepcopy(self.sample_campaign1)
+        campaign2 = copy.deepcopy(self.sample_campaign2)
 
         self.session.begin()
         self.session.add_all([campaign1, campaign2])
@@ -142,8 +142,8 @@ class TestRecordCampaignDao(DAOTestCase):
         self.assertEqual(None, record_campaigns_dao.get(id2))
 
     def test_delete_all_integrity_error(self):
-        campaign1 = copy.deepcopy(self.sample_campaign)
-        campaign2 = copy.deepcopy(self.sample_campaign)
+        campaign1 = copy.deepcopy(self.sample_campaign1)
+        campaign2 = copy.deepcopy(self.sample_campaign2)
 
         self.session.begin()
         self.session.add_all([campaign1, campaign2])
@@ -175,4 +175,22 @@ class TestRecordCampaignDao(DAOTestCase):
         self.sample_campaign.start_date = datetime.strptime('2012-01-01 12:12:12',
                                                             '%Y-%m-%d %H:%M:%S')
         self.sample_campaign.end_date = datetime.strptime('2012-12-12 12:12:12',
+                                                          '%Y-%m-%d %H:%M:%S')
+        self.sample_campaign1 = RecordCampaigns()
+        self.sample_campaign1.activated = True
+        self.sample_campaign1.campaign_name = "campaign1-àé"
+        self.sample_campaign1.queue_id = 1
+        self.sample_campaign1.base_filename = self.sample_campaign.campaign_name + "-"
+        self.sample_campaign1.start_date = datetime.strptime('2012-01-01 12:12:12',
+                                                            '%Y-%m-%d %H:%M:%S')
+        self.sample_campaign1.end_date = datetime.strptime('2012-12-12 12:12:12',
+                                                          '%Y-%m-%d %H:%M:%S')
+        self.sample_campaign2 = RecordCampaigns()
+        self.sample_campaign2.activated = True
+        self.sample_campaign2.campaign_name = "campaign2-àé"
+        self.sample_campaign2.queue_id = 1
+        self.sample_campaign2.base_filename = self.sample_campaign.campaign_name + "-"
+        self.sample_campaign2.start_date = datetime.strptime('2012-01-01 12:12:12',
+                                                            '%Y-%m-%d %H:%M:%S')
+        self.sample_campaign2.end_date = datetime.strptime('2012-12-12 12:12:12',
                                                           '%Y-%m-%d %H:%M:%S')

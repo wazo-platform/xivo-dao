@@ -151,6 +151,7 @@ class TestUserLineDAO(DAOTestCase):
         line.name = 'abcd'
         line.type = 'friend'
         line.callerid = '"Tester One" <1234>'
+        line.category = 'user'
 
         self.session.begin()
         self.session.add(line)

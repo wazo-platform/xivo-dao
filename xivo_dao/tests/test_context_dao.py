@@ -74,11 +74,11 @@ class TestContextDAO(DAOTestCase):
 
     def test_all(self):
         context_name1 = 'test_context1'
-        self._insert_context(context_name1)
+        self._insert_context(context_name1, contexttype_name='internal1')
         self._insert_contextnumbers(context_name1)
 
         context_name2 = 'test_context2'
-        self._insert_context(context_name2)
+        self._insert_context(context_name2, contexttype_name='internal2')
         self._insert_contextnumbers(context_name2)
 
         context_full_infos = context_dao.all()

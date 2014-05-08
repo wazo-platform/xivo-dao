@@ -32,7 +32,8 @@ class TestContextDao(DAOTestCase):
 
     def _insert_entity(self, entity_name):
         entity = EntitySchema(name=entity_name,
-                              displayname=entity_name)
+                              displayname=entity_name,
+                              description='')
 
         self.session.begin()
         self.session.add(entity)

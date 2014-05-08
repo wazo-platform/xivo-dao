@@ -555,6 +555,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         line.name = '12kjdhf'
         line.context = 'context'
         line.provisioningid = 1234
+        line.protocol = 'sip'
         line.protocolid = 1
         line.device = ''
 
@@ -735,7 +736,7 @@ class TestUserFeaturesDAO(DAOTestCase):
                 'destunc': u'',
                 'enableautomon': 0,
                 'enablebusy': 0,
-                'enableclient': 0,
+                'enableclient': 1,
                 'enablednd': 0,
                 'enablehint': 1,
                 'enablerna': 0,

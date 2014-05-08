@@ -39,22 +39,6 @@ class TestDBManager(unittest.TestCase):
         execute_mock.assert_called_once_with(db_manager.DaoSession, function_mock, args, kwargs)
         self.assertEqual(result, sentinel)
 
-    @patch('xivo_dao.helpers.db_manager._execute_with_session')
-    def testdaosession_decorator(self, execute_mock):
-        execute_mock.return_value = sentinel
-
-        function_mock = Mock()
-        function_mock.__name__ = "tested_function"
-        args = ('arg1', 'arg2')
-        kwargs = {'arg3': 'arg3'}
-
-        decorated_function = db_manager.daosession(function_mock)
-
-        result = decorated_function(*args, **kwargs)
-
-        execute_mock.assert_called_once_with(db_manager.XivoSession, function_mock, args, kwargs)
-        self.assertEqual(result, sentinel)
-
     @patch('xivo_dao.helpers.db_manager._apply_and_flush')
     def test_execute_with_session_with_reconnection(self, apply_and_flush_mock):
         function_mock = Mock()
