@@ -79,25 +79,30 @@ def find(device_id):
     return None
 
 
-def find_all(order=None, direction=None, limit=None, skip=None, search=None):
-    provd_devices = find_devices_ordered(order, direction)
-    provd_devices = filter_list(search, provd_devices)
-    total = len(provd_devices)
-    provd_devices = paginate_devices(skip, limit, provd_devices)
-    items = convert_devices_to_model(provd_devices)
+def search(**parameters):
+    provd_devices = find_devices_ordered(parameters.get('order', None),
+                                         parameters.get('direction', None))
+    provd_devices = filter_list(provd_devices,
+                                parameters.get('search', None))
 
+    total = len(provd_devices)
+
+    provd_devices = paginate_devices(provd_devices,
+                                     parameters.get('skip', 0),
+                                     parameters.get('limit', None))
+
+    items = convert_devices_to_model(provd_devices)
     return SearchResult(total=total, items=items)
 
 
-def find_devices_ordered(order, direction):
+def find_devices_ordered(order=None, direction=None):
     parameters = _convert_provd_parameters(order, direction)
 
     device_manager = provd_connector.device_manager()
     return device_manager.find(**parameters)
 
 
-def paginate_devices(skip, limit, devices):
-    skip = skip or 0
+def paginate_devices(devices, skip=0, limit=None):
     if limit:
         devices = devices[skip:skip + limit]
     else:
@@ -110,7 +115,7 @@ def convert_devices_to_model(devices):
     return [provd_converter.to_model(device, config) for device, config in devices_configs]
 
 
-def filter_list(search, devices):
+def filter_list(devices, search=None):
     if search is None:
         return devices
 
@@ -118,20 +123,20 @@ def filter_list(search, devices):
     search = search.lower().strip()
 
     for device in devices:
-        if _device_matches_search(search, device):
+        if _device_matches_search(device, search):
             found.append(device)
 
     return found
 
 
-def _device_matches_search(search, device):
+def _device_matches_search(device, search):
     for key in provd_converter.PROVD_DEVICE_KEYS:
         if key in device and search in unicode(device[key]).lower():
             return True
     return False
 
 
-def _convert_provd_parameters(order, direction):
+def _convert_provd_parameters(order=None, direction=None):
     parameters = {}
 
     sort = _convert_order_and_direction(order, direction)
@@ -141,7 +146,7 @@ def _convert_provd_parameters(order, direction):
     return parameters
 
 
-def _convert_order_and_direction(order, direction):
+def _convert_order_and_direction(order=None, direction=None):
     if direction and not order:
         raise InvalidParametersError("cannot use a direction without an order")
 
