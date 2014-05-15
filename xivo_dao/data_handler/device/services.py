@@ -34,17 +34,17 @@ def get(device_id):
     return dao.get(device_id)
 
 
-def find_all(order=None, direction=None, skip=None, limit=None, search=None):
-    if order:
-        DeviceOrdering.validate_order(order)
-    if direction:
-        DeviceOrdering.validate_direction(direction)
-    if skip:
-        _validate_skip(skip)
-    if limit:
-        _validate_limit(limit)
+def search(**parameters):
+    if 'order' in parameters:
+        DeviceOrdering.validate_order(parameters['order'])
+    if 'direction' in parameters:
+        DeviceOrdering.validate_direction(parameters['direction'])
+    if 'skip' in parameters:
+        _validate_skip(parameters['skip'])
+    if 'limit' in parameters:
+        _validate_limit(parameters['limit'])
 
-    return dao.find_all(order=order, direction=direction, skip=skip, limit=limit, search=search)
+    return dao.search(**parameters)
 
 
 def _validate_skip(skip):
