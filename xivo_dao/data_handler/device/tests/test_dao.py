@@ -198,22 +198,26 @@ class TestDeviceDaoFindAll(TestDeviceDao):
     @patch('xivo_dao.data_handler.device.dao.filter_list')
     @patch('xivo_dao.data_handler.device.dao.paginate_devices')
     @patch('xivo_dao.data_handler.device.dao.convert_devices_to_model')
-    def test_find_all(self,
-                      convert_devices_to_model,
-                      paginate_devices,
-                      filter_list,
-                      find_devices_ordered):
+    def test_search(self,
+                    convert_devices_to_model,
+                    paginate_devices,
+                    filter_list,
+                    find_devices_ordered):
         devices_ordered = find_devices_ordered.return_value = Mock()
         devices_filtered = filter_list.return_value = [Mock(), Mock()]
         devices_paginated = paginate_devices.return_value = Mock()
         models = convert_devices_to_model.return_value = Mock()
         order, direction, limit, skip, search = Mock(), Mock(), Mock(), Mock(), Mock()
 
-        result = device_dao.find_all(order, direction, limit, skip, search)
+        result = device_dao.search(order=order,
+                                   direction=direction,
+                                   limit=limit,
+                                   skip=skip,
+                                   search=search)
 
         find_devices_ordered.assert_called_once_with(order, direction)
-        filter_list.assert_called_once_with(search, devices_ordered)
-        paginate_devices.assert_called_once_with(skip, limit, devices_filtered)
+        filter_list.assert_called_once_with(devices_ordered, search)
+        paginate_devices.assert_called_once_with(devices_filtered, skip, limit)
         convert_devices_to_model.assert_called_once_with(devices_paginated)
         assert_that(result, all_of(has_property('total', 2),
                                    has_property('items', models)))
@@ -260,9 +264,9 @@ class TestDeviceDaoFindAll(TestDeviceDao):
 
     def test_paginate_devices_no_pagination(self):
         devices = [device1, device2, device3] = [Mock(), Mock(), Mock()]
-        skip, limit = None, None
+        skip, limit = 0, None
 
-        result = device_dao.paginate_devices(skip, limit, devices)
+        result = device_dao.paginate_devices(devices, skip, limit)
 
         assert_that(result, contains(*devices))
 
@@ -270,15 +274,15 @@ class TestDeviceDaoFindAll(TestDeviceDao):
         devices = [device1, device2, device3] = [Mock(), Mock(), Mock()]
         skip, limit = 1, None
 
-        result = device_dao.paginate_devices(skip, limit, devices)
+        result = device_dao.paginate_devices(devices, skip, limit)
 
         assert_that(result, contains(device2, device3))
 
     def test_paginate_devices_with_limit(self):
         devices = [device1, device2, device3] = [Mock(), Mock(), Mock()]
-        skip, limit = None, 2
+        skip, limit = 0, 2
 
-        result = device_dao.paginate_devices(skip, limit, devices)
+        result = device_dao.paginate_devices(devices, skip, limit)
 
         assert_that(result, contains(device1, device2))
 
@@ -286,7 +290,7 @@ class TestDeviceDaoFindAll(TestDeviceDao):
         devices = [device1, device2, device3] = [Mock(), Mock(), Mock()]
         skip, limit = 1, 1
 
-        result = device_dao.paginate_devices(skip, limit, devices)
+        result = device_dao.paginate_devices(devices, skip, limit)
 
         assert_that(result, contains(device2))
 
@@ -312,7 +316,7 @@ class TestDeviceDaoFilterList(TestDeviceDao):
         expected = [self.provd_device]
         search = None
 
-        result = device_dao.filter_list(search, devices)
+        result = device_dao.filter_list(devices, search)
 
         assert_that(result, equal_to(expected))
 
@@ -321,7 +325,7 @@ class TestDeviceDaoFilterList(TestDeviceDao):
         expected = []
         search = 'toto'
 
-        result = device_dao.filter_list(search, devices)
+        result = device_dao.filter_list(devices, search)
         assert_that(result, equal_to(expected))
 
     def test_filter_list_one_device_wrong_search(self):
@@ -329,7 +333,7 @@ class TestDeviceDaoFilterList(TestDeviceDao):
         expected = []
         search = 'toto'
 
-        result = device_dao.filter_list(search, devices)
+        result = device_dao.filter_list(devices, search)
         assert_that(result, equal_to(expected))
 
     def test_filter_list_one_device_right_search(self):
@@ -337,7 +341,7 @@ class TestDeviceDaoFilterList(TestDeviceDao):
         expected = [self.provd_device]
         search = self.deviceid[0:5]
 
-        result = device_dao.filter_list(search, devices)
+        result = device_dao.filter_list(devices, search)
         assert_that(result, equal_to(expected))
 
     def test_filter_list_one_device_uppercase_search(self):
@@ -345,7 +349,7 @@ class TestDeviceDaoFilterList(TestDeviceDao):
         expected = [self.provd_device]
         search = self.deviceid.upper()
 
-        result = device_dao.filter_list(search, devices)
+        result = device_dao.filter_list(devices, search)
         assert_that(result, equal_to(expected))
 
     def test_filter_list_one_device_trailing_spaces(self):
@@ -353,7 +357,7 @@ class TestDeviceDaoFilterList(TestDeviceDao):
         expected = [self.provd_device]
         search = ' %s ' % self.deviceid
 
-        result = device_dao.filter_list(search, devices)
+        result = device_dao.filter_list(devices, search)
         assert_that(result, equal_to(expected))
 
 
