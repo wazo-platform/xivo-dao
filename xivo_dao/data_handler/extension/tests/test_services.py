@@ -17,6 +17,7 @@
 
 import unittest
 from mock import patch, Mock
+from hamcrest import assert_that, equal_to
 
 from xivo_dao.helpers.abstract_model import SearchResult
 from xivo_dao.data_handler.extension.model import Extension
@@ -37,7 +38,7 @@ class TestExtension(unittest.TestCase):
         search_dao.assert_called_once_with(search='term', order='exten',
                                            direction='desc', skip=1,
                                            limit=2)
-        self.assertEquals(result, search_result)
+        assert_that(result, equal_to(search_result))
 
     @patch('xivo_dao.data_handler.extension.dao.find_by_exten_context')
     def test_find_by_exten_context(self, find_by_exten_context):
@@ -48,7 +49,7 @@ class TestExtension(unittest.TestCase):
         result = extension_services.find_by_exten_context(expected.exten, expected.context)
 
         find_by_exten_context.assert_called_once_with(expected.exten, expected.context)
-        self.assertEquals(result, expected)
+        assert_that(result, equal_to(expected))
 
     @patch('xivo_dao.data_handler.extension.notifier.created')
     @patch('xivo_dao.data_handler.extension.dao.create')
@@ -64,7 +65,7 @@ class TestExtension(unittest.TestCase):
 
         result = extension_services.create(extension)
 
-        self.assertEquals(type(result), Extension)
+        assert_that(result, equal_to(extension))
         validate_create.assert_called_once_with(extension)
         extension_dao_create.assert_called_once_with(extension)
         extension_notifier_created.assert_called_once_with(extension)
