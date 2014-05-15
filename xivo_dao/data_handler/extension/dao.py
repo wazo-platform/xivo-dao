@@ -68,8 +68,8 @@ def find(session, extension_id):
 
 
 @daosession
-def find_all(session, order=None):
-    line_rows = _new_query(session, order).all()
+def search(session, **parameters):
+    line_rows = _new_query(session, parameters['order']).all()
 
     return _rows_to_extension_model(line_rows)
 
