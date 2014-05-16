@@ -41,6 +41,11 @@ class Extension(NewModel):
         'commented',
     ]
 
+    SEARCH_COLUMNS = [
+        ExtensionSchema.exten,
+        ExtensionSchema.context
+    ]
+
     _RELATION = {}
 
     def __init__(self, *args, **kwargs):
