@@ -48,7 +48,7 @@ def search(**parameters):
 
 
 def _validate_skip(skip):
-    if not (isinstance(skip, int) and skip > 0):
+    if not isinstance(skip, int) or skip < 0:
         raise InvalidParametersError(["skip must be a positive number"])
     return int(skip)
 

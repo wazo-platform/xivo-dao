@@ -98,6 +98,11 @@ class TestDeviceServices(unittest.TestCase):
         self.assertEquals(device_dao_search.call_count, 0)
 
     @patch('xivo_dao.data_handler.device.dao.search')
+    def test_search_with_limit_at_0(self, device_dao_search):
+        self.assertRaises(InvalidParametersError, device_services.search, limit=0)
+        self.assertEquals(device_dao_search.call_count, 0)
+
+    @patch('xivo_dao.data_handler.device.dao.search')
     def test_search_with_valid_limit(self, device_dao_search):
         expected = Mock(SearchResult)
 
@@ -112,6 +117,17 @@ class TestDeviceServices(unittest.TestCase):
     def test_search_with_invalid_skip(self, device_dao_search):
         self.assertRaises(InvalidParametersError, device_services.search, skip=-1)
         self.assertEquals(device_dao_search.call_count, 0)
+
+    @patch('xivo_dao.data_handler.device.dao.search')
+    def test_search_with_skip_at_0(self, device_dao_search):
+        expected = Mock(SearchResult)
+
+        device_dao_search.return_value = expected
+
+        result = device_services.search(skip=0)
+
+        self.assertEquals(result, expected)
+        device_dao_search.assert_called_once_with(skip=0)
 
     @patch('xivo_dao.data_handler.device.dao.search')
     def test_search_with_valid_skip(self, device_dao_search):
