@@ -46,7 +46,6 @@ from xivo_dao.alchemy.cti_xlet import CtiXlet
 from xivo_dao.alchemy.cti_xlet_layout import CtiXletLayout
 from xivo_dao.alchemy.ctidirectories import CtiDirectories
 from xivo_dao.alchemy.ctidirectoryfields import CtiDirectoryFields
-from xivo_dao.alchemy.ctilog import CtiLog
 from xivo_dao.alchemy.ctimain import CtiMain
 from xivo_dao.alchemy.ctiphonehints import CtiPhoneHints
 from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
@@ -130,10 +129,7 @@ from xivo_dao.alchemy.staticsip import StaticSIP
 from xivo_dao.alchemy.staticvoicemail import StaticVoicemail
 from xivo_dao.alchemy.stats_conf import StatsConf
 from xivo_dao.alchemy.stats_conf_agent import StatsConfAgent
-from xivo_dao.alchemy.stats_conf_group import StatsConfGroup
-from xivo_dao.alchemy.stats_conf_incall import StatsConfIncall
 from xivo_dao.alchemy.stats_conf_queue import StatsConfQueue
-from xivo_dao.alchemy.stats_conf_user import StatsConfUser
 from xivo_dao.alchemy.stats_conf_xivouser import StatsConfXivoUser
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
 from xivo_dao.alchemy.user import User
