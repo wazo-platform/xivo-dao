@@ -27,8 +27,10 @@ class FuncKeyDestExtension(Base):
     __tablename__ = 'func_key_dest_extension'
     __table_args__ = (
         PrimaryKeyConstraint('func_key_id', 'destination_type_id', 'extension_id'),
-        ForeignKeyConstraint(['func_key_id', 'destination_type_id', 'extension_id'],
-                             ['func_key.id', 'func_key.destination_type_id', 'extension.id']),
+        ForeignKeyConstraint(['func_key_id', 'destination_type_id'],
+                             ['func_key.id', 'func_key.destination_type_id']),
+        ForeignKeyConstraint(['extension_id'],
+                             ['extensions.id']),
         CheckConstraint('destination_type_id = 5')
     )
 
@@ -37,4 +39,4 @@ class FuncKeyDestExtension(Base):
     extension_id = Column(Integer)
 
     func_key = relationship("FuncKey")
-    extension = relationship("Extension")
+    extensions = relationship("Extension")
