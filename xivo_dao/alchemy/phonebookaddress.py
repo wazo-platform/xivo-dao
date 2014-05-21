@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
+from sqlalchemy.orm import relationship
+from sqlalchemy.schema import Column, PrimaryKeyConstraint, ForeignKeyConstraint, Index
 from sqlalchemy.types import Integer, String, Enum
 
 from xivo_dao.helpers.db_manager import Base
@@ -26,6 +27,9 @@ class PhonebookAddress(Base):
     __tablename__ = 'phonebookaddress'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
+        ForeignKeyConstraint(('phonebookid',),
+                             ('phonebook.id',),
+                             ondelete='CASCADE'),
         Index('phonebookaddress__uidx__phonebookid_type', 'phonebookid', 'type', unique=True),
     )
 
@@ -41,3 +45,5 @@ class PhonebookAddress(Base):
                        name='phonebookaddress_type',
                        metadata=Base.metadata),
                   nullable=False)
+
+    phonebook = relationship('Phonebook')
