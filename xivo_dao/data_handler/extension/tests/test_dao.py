@@ -15,11 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, all_of, equal_to, has_items, has_length, has_property, none, contains
+from hamcrest import assert_that, all_of, equal_to, has_items, has_length, has_property, none
 from mock import patch, Mock
 from sqlalchemy.exc import SQLAlchemyError
 
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
+from xivo_dao.helpers.abstract_model import SearchResult
 from xivo_dao.data_handler.exception import ElementCreationError
 from xivo_dao.data_handler.exception import ElementEditionError
 from xivo_dao.data_handler.extension import dao as extension_dao
@@ -27,7 +28,7 @@ from xivo_dao.data_handler.extension.model import Extension, ExtensionDestinatio
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
-class TestFindAll(DAOTestCase):
+class TestExtension(DAOTestCase):
 
     def prepare_extension(self, **kwargs):
         extension_row = self.add_extension(**kwargs)
@@ -36,40 +37,71 @@ class TestFindAll(DAOTestCase):
                          context=extension_row.context,
                          commented=bool(extension_row.commented))
 
-    def test_find_all_no_extens(self):
-        expected = []
-        extens = extension_dao.find_all()
+    def assert_search_returns_result(self, search_result, **parameters):
+        result = extension_dao.search(**parameters)
+        assert_that(result, equal_to(search_result))
 
-        assert_that(extens, equal_to(expected))
 
-    def test_find_all_one_exten(self):
-        expected_exten = '12345'
-        extension = self.prepare_extension(exten=expected_exten)
+class TestSimpleSearch(TestExtension):
 
-        extens = extension_dao.find_all()
+    def setUp(self):
+        super(TestExtension, self).setUp()
 
-        assert_that(extens, has_length(1))
-        assert_that(extens, contains(extension))
+    def test_given_no_extensions_then_returns_no_empty_result(self):
+        expected = SearchResult(0, [])
 
-    def test_find_all_two_extens(self):
-        expected_exten1 = '1234'
-        expected_exten2 = '5678'
+        self.assert_search_returns_result(expected)
 
-        exten1 = self.prepare_extension(exten=expected_exten1)
-        exten2 = self.prepare_extension(exten=expected_exten2)
+    def test_given_one_commented_extension_then_returns_one_result(self):
+        extension = self.prepare_extension(exten='1000', commented=1)
+        expected = SearchResult(1, [extension])
 
-        extens = extension_dao.find_all()
+        self.assert_search_returns_result(expected)
 
-        assert_that(extens, has_length(2))
-        assert_that(extens, has_items(exten1, exten2))
 
-    def test_find_all_with_commented(self):
-        extension = self.prepare_extension(exten='1234', commented=1)
+class TestSearchGivenMultipleExtensions(TestExtension):
 
-        extens = extension_dao.find_all()
+    def setUp(self):
+        super(TestExtension, self).setUp()
+        self.extension1 = self.prepare_extension(exten='1000')
+        self.extension2 = self.prepare_extension(exten='1001')
+        self.extension3 = self.prepare_extension(exten='1002')
+        self.extension4 = self.prepare_extension(exten='1103')
 
-        assert_that(extens, has_length(1))
-        assert_that(extens, contains(extension))
+    def test_when_searching_then_returns_one_result(self):
+        expected = SearchResult(1, [self.extension2])
+
+        self.assert_search_returns_result(expected, search='1001')
+
+    def test_when_sorting_then_returns_result_in_ascending_order(self):
+        expected = SearchResult(4, [self.extension1, self.extension2, self.extension3, self.extension4])
+
+        self.assert_search_returns_result(expected, order='exten')
+
+    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
+        expected = SearchResult(4, [self.extension4, self.extension3, self.extension2, self.extension1])
+
+        self.assert_search_returns_result(expected, order='exten', direction='desc')
+
+    def test_when_limiting_then_returns_right_number_of_items(self):
+        expected = SearchResult(4, [self.extension1])
+
+        self.assert_search_returns_result(expected, limit=1)
+
+    def test_when_skipping_then_returns_right_number_of_items(self):
+        expected = SearchResult(4, [self.extension2, self.extension3, self.extension4])
+
+        self.assert_search_returns_result(expected, skip=1)
+
+    def test_when_doing_a_paginated_search_then_returns_a_paginated_result(self):
+        expected = SearchResult(3, [self.extension2])
+
+        self.assert_search_returns_result(expected,
+                                          search='100',
+                                          order='exten',
+                                          direction='desc',
+                                          skip=1,
+                                          limit=1)
 
 
 class TestFind(DAOTestCase):

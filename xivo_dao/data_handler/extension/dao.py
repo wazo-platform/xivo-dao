@@ -15,16 +15,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.db_utils import commit_or_abort
-
-from xivo_dao.alchemy.extension import Extension as ExtensionSchema
-from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.data_handler.exception import ElementNotExistsError, \
-    ElementCreationError, ElementDeletionError, ElementEditionError
-from xivo_dao.data_handler.extension.model import ExtensionOrdering, db_converter
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.sql.expression import or_
 
+from xivo_dao.alchemy.extension import Extension as ExtensionSchema
+from xivo_dao.data_handler.exception import ElementCreationError
+from xivo_dao.data_handler.exception import ElementDeletionError
+from xivo_dao.data_handler.exception import ElementEditionError
+from xivo_dao.data_handler.exception import ElementNotExistsError
+from xivo_dao.data_handler.extension.model import Extension, ExtensionOrdering, db_converter
+from xivo_dao.data_handler.utils.search import SearchFilter
+from xivo_dao.helpers.abstract_model import SearchResult
+from xivo_dao.helpers.db_manager import daosession
+from xivo_dao.helpers.db_utils import commit_or_abort
 
 DEFAULT_ORDER = [ExtensionOrdering.exten, ExtensionOrdering.context]
 
@@ -68,10 +71,13 @@ def find(session, extension_id):
 
 
 @daosession
-def find_all(session, order=None):
-    line_rows = _new_query(session, order).all()
+def search(session, **parameters):
+    query = session.query(ExtensionSchema)
+    search_filter = SearchFilter(query, Extension.SEARCH_COLUMNS, ExtensionOrdering.exten)
+    rows, total = search_filter.search(parameters)
 
-    return _rows_to_extension_model(line_rows)
+    extensions = _rows_to_extension_model(rows)
+    return SearchResult(total, extensions)
 
 
 @daosession

@@ -16,8 +16,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import unittest
-from mock import patch
+from mock import patch, Mock
+from hamcrest import assert_that, equal_to
 
+from xivo_dao.helpers.abstract_model import SearchResult
 from xivo_dao.data_handler.extension.model import Extension
 from xivo_dao.data_handler.extension import services as extension_services
 from xivo_dao.data_handler.exception import ElementCreationError
@@ -25,16 +27,18 @@ from xivo_dao.data_handler.exception import ElementCreationError
 
 class TestExtension(unittest.TestCase):
 
-    @patch('xivo_dao.data_handler.extension.dao.find_all')
-    def test_find_all(self, find_all_dao):
-        expected = [Extension()]
+    @patch('xivo_dao.data_handler.extension.dao.search')
+    def test_search(self, search_dao):
+        search_result = search_dao.return_value = Mock(SearchResult)
 
-        find_all_dao.return_value = expected
+        result = extension_services.search(search='term', order='exten',
+                                           direction='desc', skip=1,
+                                           limit=2)
 
-        result = extension_services.find_all()
-
-        find_all_dao.assert_called_once_with(order=None)
-        self.assertEquals(result, expected)
+        search_dao.assert_called_once_with(search='term', order='exten',
+                                           direction='desc', skip=1,
+                                           limit=2)
+        assert_that(result, equal_to(search_result))
 
     @patch('xivo_dao.data_handler.extension.dao.find_by_exten_context')
     def test_find_by_exten_context(self, find_by_exten_context):
@@ -45,7 +49,7 @@ class TestExtension(unittest.TestCase):
         result = extension_services.find_by_exten_context(expected.exten, expected.context)
 
         find_by_exten_context.assert_called_once_with(expected.exten, expected.context)
-        self.assertEquals(result, expected)
+        assert_that(result, equal_to(expected))
 
     @patch('xivo_dao.data_handler.extension.notifier.created')
     @patch('xivo_dao.data_handler.extension.dao.create')
@@ -61,7 +65,7 @@ class TestExtension(unittest.TestCase):
 
         result = extension_services.create(extension)
 
-        self.assertEquals(type(result), Extension)
+        assert_that(result, equal_to(extension))
         validate_create.assert_called_once_with(extension)
         extension_dao_create.assert_called_once_with(extension)
         extension_notifier_created.assert_called_once_with(extension)
