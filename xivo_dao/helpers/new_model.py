@@ -44,9 +44,10 @@ class NewModel(object):
         return not self == other
 
     def __repr__(self):
-        properties = ['%s: %s' % (field, getattr(self, field))
+        properties = [u'%s: %s' % (field, getattr(self, field))
                       for field in self.FIELDS]
-        return '<%s %s>' % (self.__class__.__name__, ', '.join(properties))
+        text = u'<%s %s>' % (self.__class__.__name__, ', '.join(properties))
+        return text.encode('utf8')
 
     def update_from_data(self, data):
         self._check_invalid_parameters(data.keys())
