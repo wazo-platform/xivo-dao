@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2014 Avencall
+# Copyright (C) 2014 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,29 +16,27 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, ForeignKeyConstraint, Index
-from sqlalchemy.types import Integer, String, Enum
+from sqlalchemy.schema import Column, PrimaryKeyConstraint, ForeignKeyConstraint, ForeignKey
+from sqlalchemy.types import Integer
 
 from xivo_dao.helpers.db_manager import Base
 
 
-class PhonebookNumber(Base):
+class UserContact(Base):
 
-    __tablename__ = 'phonebooknumber'
+    __tablename__ = 'user_contact'
     __table_args__ = (
-        PrimaryKeyConstraint('id'),
-        ForeignKeyConstraint(('phonebookid',),
+        PrimaryKeyConstraint('user_id', 'phonebook_id'),
+        ForeignKeyConstraint(('phonebook_id',),
                              ('phonebook.id',),
                              ondelete='CASCADE'),
-        Index('phonebooknumber__uidx__phonebookid_type', 'phonebookid', 'type', unique=True),
+        ForeignKeyConstraint(('user_id',),
+                             ('userfeatures.id',),
+                             ondelete='CASCADE'),
     )
 
-    id = Column(Integer)
-    phonebookid = Column(Integer, nullable=False)
-    number = Column(String(40), nullable=False, server_default='')
-    type = Column(Enum('home', 'office', 'mobile', 'fax', 'other',
-                       name='phonebooknumber_type',
-                       metadata=Base.metadata),
-                  nullable=False)
+    user_id = Column(Integer, ForeignKey('userfeatures.id'))
+    phonebook_id = Column(Integer, ForeignKey('phonebook.id'))
 
-    phonebook = relationship('Phonebook')
+    phonebook = relationship('Phonebook', foreign_keys=phonebook_id)
+    user = relationship('UserFeatures', foreign_keys=user_id)
