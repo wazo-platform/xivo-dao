@@ -63,7 +63,6 @@ from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.features import Features
 from xivo_dao.alchemy.func_key import FuncKey
 from xivo_dao.alchemy.func_key_dest_conference import FuncKeyDestConference
-from xivo_dao.alchemy.func_key_dest_extension import FuncKeyDestExtension
 from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup
 from xivo_dao.alchemy.func_key_dest_queue import FuncKeyDestQueue
 from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
