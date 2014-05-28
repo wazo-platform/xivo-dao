@@ -23,7 +23,7 @@ from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementDeletionError, ElementCreationError, InvalidParametersError, \
     ElementEditionError
 from xivo_dao.helpers import provd_connector
-from xivo_dao.helpers.abstract_model import SearchResult
+from xivo_dao.data_handler.utils.search import SearchResult
 
 DEFAULT_ORDER = [DeviceOrdering.ip, DeviceOrdering.mac]
 

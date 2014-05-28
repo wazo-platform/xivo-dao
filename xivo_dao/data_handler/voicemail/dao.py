@@ -24,7 +24,7 @@ from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.data_handler.voicemail.model import db_converter, VoicemailOrder, Voicemail
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementCreationError, ElementEditionError, ElementDeletionError
-from xivo_dao.helpers.abstract_model import SearchResult
+from xivo_dao.data_handler.utils.search import SearchResult
 from xivo_dao.alchemy.staticvoicemail import StaticVoicemail
 from xivo_dao.data_handler.utils.search import SearchFilter
 

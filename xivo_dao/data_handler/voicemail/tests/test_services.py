@@ -25,7 +25,7 @@ from xivo_dao.data_handler.exception import ElementEditionError
 
 from xivo_dao.data_handler.voicemail import services as voicemail_services
 from xivo_dao.data_handler.voicemail.model import Voicemail, VoicemailOrder
-from xivo_dao.helpers.abstract_model import SearchResult
+from xivo_dao.data_handler.utils.search import SearchResult
 
 
 class TestVoicemail(unittest.TestCase):

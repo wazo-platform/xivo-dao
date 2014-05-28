@@ -20,7 +20,7 @@ from mock import patch, Mock
 from sqlalchemy.exc import SQLAlchemyError
 
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
-from xivo_dao.helpers.abstract_model import SearchResult
+from xivo_dao.data_handler.utils.search import SearchResult
 from xivo_dao.data_handler.exception import ElementCreationError
 from xivo_dao.data_handler.exception import ElementEditionError
 from xivo_dao.data_handler.extension import dao as extension_dao

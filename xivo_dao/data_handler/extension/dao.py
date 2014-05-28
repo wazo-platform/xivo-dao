@@ -25,7 +25,7 @@ from xivo_dao.data_handler.exception import ElementEditionError
 from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.data_handler.extension.model import Extension, ExtensionOrdering, db_converter
 from xivo_dao.data_handler.utils.search import SearchFilter
-from xivo_dao.helpers.abstract_model import SearchResult
+from xivo_dao.data_handler.utils.search import SearchResult
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.helpers.db_utils import commit_or_abort
 
