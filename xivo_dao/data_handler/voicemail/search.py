@@ -28,7 +28,6 @@ config = SearchConfig(select=Voicemail,
                                'language': Voicemail.language,
                                'timezone': Voicemail.tz},
                       search=['name', 'number', 'email'],
-                      sort=['name', 'number', 'email', 'context', 'language', 'timezone'],
                       order_by='number')
 
 voicemail_search = SearchSystem(config)

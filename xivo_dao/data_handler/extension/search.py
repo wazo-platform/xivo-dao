@@ -23,8 +23,6 @@ from xivo_dao.data_handler.utils.search import SearchConfig
 config = SearchConfig(select=Extension,
                       columns={'exten': Extension.exten,
                                'context': Extension.context},
-                      search=['exten', 'context'],
-                      sort=['exten', 'context'],
                       order_by='exten')
 
 extension_search = SearchSystem(config)
