@@ -54,11 +54,6 @@ class Extension(NewModel):
             self.commented = False
 
 
-class ExtensionOrdering(object):
-    exten = ExtensionSchema.exten
-    context = ExtensionSchema.context
-
-
 class ExtensionDestination(object):
     user = 'user'
     incall = 'incall'
