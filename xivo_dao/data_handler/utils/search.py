@@ -53,6 +53,9 @@ class SearchConfig(object):
 
         return [columns[s] for s in search_columns]
 
+    def sort_columns(self):
+        return self._get('sort')
+
     def _get(self, attribute):
         if attribute not in self.parameters:
             raise AttributeError("search config is missing '%s' parameter" % attribute)
