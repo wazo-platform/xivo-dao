@@ -28,38 +28,43 @@ SearchResult = namedtuple('SearchResult', ['total', 'items'])
 class SearchConfig(object):
 
     def __init__(self, **parameters):
-        parameters.setdefault('sort', [])
-        parameters.setdefault('search', [])
         self.parameters = parameters
 
     def query(self, session):
         select = self._get('select')
         return session.query(select)
 
-    def sort_by_column(self, name=None):
-        sort_columns = self._get('sort')
-        columns = self._get('columns')
-        order_by = self._get('order_by')
-
-        name = name or order_by
-        if name not in columns or name not in sort_columns:
-            raise InvalidParametersError(["ordering column '%s' does not exist" % name])
-
-        return columns[name]
-
     def search_columns(self):
         columns = self._get('columns')
-        search_columns = self._get('search')
-
-        return [columns[s] for s in search_columns]
+        return self.parameters.get('search', columns.keys())
 
     def sort_columns(self):
-        return self._get('sort')
+        columns = self._get('columns')
+        return self.parameters.get('sort', columns.keys())
+
+    def columns_for_filtering(self):
+        columns = self._get('columns')
+        return [columns[s] for s in self.search_columns()]
+
+    def sort_by_column(self, name=None):
+        columns = self._get('columns')
+        column_name = self._validate_column_name(name)
+
+        return columns[column_name]
 
     def _get(self, attribute):
         if attribute not in self.parameters:
             raise AttributeError("search config is missing '%s' parameter" % attribute)
         return self.parameters[attribute]
+
+    def _validate_column_name(self, name=None):
+        order_by = self._get('order_by')
+
+        name = name or order_by
+        if name not in self.sort_columns():
+            raise InvalidParametersError(["ordering column '%s' does not exist" % name])
+
+        return name
 
 
 class SearchSystem(object):
@@ -90,7 +95,7 @@ class SearchSystem(object):
             return query
 
         criteria = []
-        for column in self.config.search_columns():
+        for column in self.config.columns_for_filtering():
             expression = sql.cast(column, sa.String).ilike('%%%s%%' % term)
             criteria.append(expression)
 

@@ -35,8 +35,6 @@ class TestSearchSystem(DAOTestCase):
                                    columns={'lastname': UserFeatures.lastname,
                                             'firstname': UserFeatures.firstname,
                                             'simultcalls': UserFeatures.simultcalls},
-                                   search=['firstname', 'lastname', 'simultcalls'],
-                                   sort=['firstname', 'lastname'],
                                    order_by='lastname')
         self.search = SearchSystem(self.config)
 
@@ -144,18 +142,21 @@ class TestSearchConfig(unittest.TestCase):
                                 config.search_columns)
         self.assertRaisesRegexp(AttributeError,
                                 "search config is missing 'columns' parameter",
+                                config.sort_columns)
+        self.assertRaisesRegexp(AttributeError,
+                                "search config is missing 'columns' parameter",
                                 config.sort_by_column)
 
-    def test_given_no_sort_by_then_raises_error(self):
-        config = SearchConfig(columns={})
+    def test_given_no_order_by_then_raises_error(self):
+        config = SearchConfig(columns={'column': Mock()})
 
         self.assertRaisesRegexp(AttributeError,
                                 "search config is missing 'order_by' parameter",
                                 config.sort_by_column)
 
-    def test_given_list_of_sort_columns_then_returns_column(self):
+    def test_given_list_of_sort_columns_then_returns_selected_columns(self):
         column = Mock()
-        config = SearchConfig(columns={'column': column},
+        config = SearchConfig(columns={'column': column, 'column2': Mock()},
                               sort=['column'],
                               order_by='column')
 
@@ -170,21 +171,19 @@ class TestSearchConfig(unittest.TestCase):
                                 "Invalid parameters: ordering column 'toto' does not exist",
                                 config.sort_by_column, 'toto')
 
-    def test_given_sort_column_not_in_sort_list_then_raises_error(self):
-        config = SearchConfig(columns={'column1': 'column1',
-                                       'column2': 'column2'},
-                              sort=[],
+    def test_given_sort_column_does_not_exist_then_raises_error(self):
+        config = SearchConfig(columns={'column1': 'column1'},
                               order_by='column1')
 
         self.assertRaisesRegexp(InvalidParametersError,
                                 "Invalid parameters: ordering column 'column2' does not exist",
                                 config.sort_by_column, 'column2')
 
-    def test_given_list_of_search_columns_then_returns_only_columns_to_search(self):
+    def test_given_parameters_search_then_returns_only_columns_to_filter(self):
         column = Mock()
         config = SearchConfig(columns={'column1': column, 'column2': Mock()},
                               search=['column1'])
 
-        result = config.search_columns()
+        result = config.columns_for_filtering()
 
         assert_that(result, contains(column))
