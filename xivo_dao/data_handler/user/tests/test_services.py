@@ -18,11 +18,11 @@
 from hamcrest import assert_that, equal_to
 from mock import patch, Mock
 
+from xivo_dao.data_handler.utils.search import SearchResult
 from xivo_dao.tests.test_case import TestCase
 from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.data_handler.user import services as user_services
 from xivo_dao.data_handler.user.model import User
-from xivo_dao.data_handler.user.model import UserOrdering
 
 
 class TestGetUser(TestCase):
@@ -58,6 +58,26 @@ class TestGetUser(TestCase):
         assert_that(result, equal_to(expected_result))
 
 
+class TestSearchUser(TestCase):
+
+    @patch('xivo_dao.data_handler.user.dao.search')
+    def test_search(self, user_dao_search):
+        search_result = user_dao_search.return_value = Mock(SearchResult)
+
+        result = user_services.search(search='toto',
+                                      order='firstname',
+                                      direction='desc',
+                                      limit=1,
+                                      skip=2)
+
+        assert_that(result, equal_to(search_result))
+        user_dao_search.assert_called_once_with(search='toto',
+                                                order='firstname',
+                                                direction='desc',
+                                                limit=1,
+                                                skip=2)
+
+
 class TestFindUser(TestCase):
 
     @patch('xivo_dao.data_handler.user.dao.find_all')
@@ -80,13 +100,13 @@ class TestFindUser(TestCase):
     def test_find_all_order_by_lastname(self, user_dao_find_all):
         first_user = Mock(User)
         second_user = Mock(User)
-        expected_order = [UserOrdering.lastname]
+        expected_order = ['lastname']
 
         expected = [first_user, second_user]
 
         user_dao_find_all.return_value = expected
 
-        result = user_services.find_all(order=[UserOrdering.lastname])
+        result = user_services.find_all(order=['lastname'])
 
         self.assertEquals(result, expected)
 

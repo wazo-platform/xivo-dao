@@ -19,13 +19,13 @@ from hamcrest import *
 from mock import patch, Mock
 from sqlalchemy.exc import SQLAlchemyError
 
+from xivo_dao.data_handler.utils.search import SearchResult
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.data_handler.exception import ElementCreationError
 from xivo_dao.data_handler.exception import ElementEditionError
 from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.data_handler.user import dao as user_dao
 from xivo_dao.data_handler.user.model import User
-from xivo_dao.data_handler.user.model import UserOrdering
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -181,7 +181,7 @@ class TestFind(DAOTestCase):
         user_last = self.add_user(firstname='Bob', lastname='Alzard')
         user_first = self.add_user(firstname='Albert', lastname='Breton')
 
-        users = user_dao.find_all(order=[UserOrdering.firstname])
+        users = user_dao.find_all(order=['firstname'])
 
         assert_that(users[0].id, equal_to(user_first.id))
         assert_that(users[1].id, equal_to(user_last.id))
@@ -190,7 +190,7 @@ class TestFind(DAOTestCase):
         user_last = self.add_user(firstname='Albert', lastname='Breton')
         user_first = self.add_user(firstname='Bob', lastname='Alzard')
 
-        users = user_dao.find_all(order=[UserOrdering.lastname])
+        users = user_dao.find_all(order=['lastname'])
 
         assert_that(users[0].id, equal_to(user_first.id))
         assert_that(users[1].id, equal_to(user_last.id))
@@ -331,6 +331,94 @@ class TestFind(DAOTestCase):
         user = user_dao.find_by_number_context(number, context)
 
         assert_that(user, is_(none()))
+
+
+class TestSearch(DAOTestCase):
+
+    def prepare_user(self, **parameters):
+        user_row = self.add_user(**parameters)
+        user = User(id=user_row.id,
+                    firstname=user_row.firstname,
+                    lastname=user_row.lastname,
+                    timezone=user_row.timezone,
+                    language=user_row.language,
+                    description=user_row.description,
+                    caller_id=user_row.callerid,
+                    outgoing_caller_id=user_row.outcallerid,
+                    mobile_phone_number=(user_row.mobilephonenumber or None),
+                    password=(user_row.passwdclient or None),
+                    username=user_row.loginclient,
+                    music_on_hold=user_row.musiconhold,
+                    preprocess_subroutine=user_row.preprocess_subroutine,
+                    userfield=user_row.userfield,
+                    private_template_id=user_row.func_key_private_template_id)
+        return user
+
+    def assert_search_returns_result(self, search_result, **parameters):
+        result = user_dao.search(**parameters)
+        assert_that(result, equal_to(search_result))
+
+
+class TestSimpleSearch(TestSearch):
+
+    def setUp(self):
+        super(TestSearch, self).setUp()
+
+    def test_given_no_users_then_returns_no_empty_result(self):
+        expected = SearchResult(0, [])
+
+        self.assert_search_returns_result(expected)
+
+    def test_given_one_commented_user_then_returns_one_result(self):
+        user = self.prepare_user(firstname='bob')
+        expected = SearchResult(1, [user])
+
+        self.assert_search_returns_result(expected)
+
+
+class TestSearchGivenMultipleUsers(TestSearch):
+
+    def setUp(self):
+        super(TestSearch, self).setUp()
+        self.user1 = self.prepare_user(firstname='Ashton', lastname='ToujoursFrais')
+        self.user2 = self.prepare_user(firstname='Beaugarte', lastname='Cougar')
+        self.user3 = self.prepare_user(firstname='Casa', lastname='Grecque')
+        self.user4 = self.prepare_user(firstname='Dunkin', lastname='Donuts')
+
+    def test_when_searching_then_returns_one_result(self):
+        expected = SearchResult(1, [self.user2])
+
+        self.assert_search_returns_result(expected, search='eau')
+
+    def test_when_sorting_then_returns_result_in_ascending_order(self):
+        expected = SearchResult(4, [self.user1, self.user2, self.user3, self.user4])
+
+        self.assert_search_returns_result(expected, order='firstname')
+
+    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
+        expected = SearchResult(4, [self.user4, self.user3, self.user2, self.user1])
+
+        self.assert_search_returns_result(expected, order='firstname', direction='desc')
+
+    def test_when_limiting_then_returns_right_number_of_items(self):
+        expected = SearchResult(4, [self.user2])
+
+        self.assert_search_returns_result(expected, limit=1)
+
+    def test_when_skipping_then_returns_right_number_of_items(self):
+        expected = SearchResult(4, [self.user4, self.user3, self.user1])
+
+        self.assert_search_returns_result(expected, skip=1)
+
+    def test_when_doing_a_paginated_search_then_returns_a_paginated_result(self):
+        expected = SearchResult(3, [self.user2])
+
+        self.assert_search_returns_result(expected,
+                                          search='a',
+                                          order='firstname',
+                                          direction='desc',
+                                          skip=1,
+                                          limit=1)
 
 
 class TestCreate(DAOTestCase):
