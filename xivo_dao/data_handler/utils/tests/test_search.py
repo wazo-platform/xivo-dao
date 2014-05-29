@@ -15,139 +15,176 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from mock import Mock
 import unittest
-from mock import patch, Mock
-from hamcrest import assert_that, equal_to
-import sqlalchemy as sa
+from hamcrest import assert_that, equal_to, contains, has_length
 
-from xivo_dao.data_handler.utils.search import SearchFilter
+from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao.data_handler.utils.search import SearchConfig
+from xivo_dao.data_handler.utils.search import SearchSystem
+from xivo_dao.data_handler.exception import InvalidParametersError
+
+from xivo_dao.alchemy.userfeatures import UserFeatures
 
 
-class TestSearchFilter(unittest.TestCase):
+class TestSearchSystem(DAOTestCase):
 
     def setUp(self):
-        self.base_query = Mock()
-        self.columns = [Mock(), Mock()]
-        self.default_column = Mock()
-        self.search_filter = SearchFilter(self.base_query, self.columns, self.default_column)
+        DAOTestCase.setUp(self)
+        self.config = SearchConfig(select=UserFeatures,
+                                   columns={'lastname': UserFeatures.lastname,
+                                            'firstname': UserFeatures.firstname,
+                                            'simultcalls': UserFeatures.simultcalls},
+                                   search=['firstname', 'lastname', 'simultcalls'],
+                                   sort=['firstname', 'lastname'],
+                                   order_by='lastname')
+        self.search = SearchSystem(self.config)
 
-    @patch.object(SearchFilter, 'paginate')
-    @patch.object(SearchFilter, 'sort')
-    @patch.object(SearchFilter, 'search_for')
-    def test_search(self, search_for, sort, paginate):
-        parameters = {
-            'search': '',
-            'limit': 1,
-            'skip': 2,
-            'order': Mock(),
-            'direction': 'desc',
-        }
+    def test_given_no_parameters_then_sorts_rows_using_default_order_and_direction(self):
+        last_user_row = self.add_user(lastname='Zintrabi')
+        first_user_row = self.add_user(lastname='Abigale')
 
-        search_query = search_for.return_value = Mock()
-        sort_query = sort.return_value = Mock()
-        paginate_query = paginate.return_value = Mock()
-        mock_items = paginate_query.all.return_value = Mock()
-        mock_total = search_query.count.return_value = Mock()
+        rows, total = self.search.search(self.session)
 
-        items, total = self.search_filter.search(parameters)
+        assert_that(total, equal_to(2))
+        assert_that(rows, contains(first_user_row, last_user_row))
 
-        search_for.assert_called_once_with(self.base_query, parameters['search'])
-        sort.assert_called_once_with(search_query, parameters['order'], parameters['direction'])
-        paginate.assert_called_once_with(sort_query, parameters['limit'], parameters['skip'])
+    def test_given_order_then_sorts_rows_using_order(self):
+        last_user_row = self.add_user(firstname='Bob', lastname='Abigale')
+        first_user_row = self.add_user(firstname='Alice', lastname='Zintrabi')
 
-        assert_that(items, equal_to(mock_items))
-        assert_that(total, equal_to(mock_total))
+        rows, total = self.search.search(self.session, {'order': 'firstname'})
 
-    def test_search_for_no_term(self):
-        search_query = self.search_filter.search_for(None)
+        assert_that(total, equal_to(2))
+        assert_that(rows, contains(first_user_row, last_user_row))
 
-        assert_that(search_query, equal_to(self.base_query))
+    def test_given_direction_then_sorts_rows_using_direction(self):
+        first_user_row = self.add_user(lastname='Abigale')
+        last_user_row = self.add_user(lastname='Zintrabi')
 
-    def test_search_for_with_term(self):
-        term = 'term'
-        search_query = self.base_query.filter.return_value = Mock()
-        column1, column2 = self.columns
-        expected_expr = sa.sql.or_(
-            sa.sql.cast(column1, sa.String).ilike('%term%'),
-            sa.sql.cast(column2, sa.String).ilike('%term%')
-        )
+        rows, total = self.search.search(self.session, {'direction': 'desc'})
 
-        result = self.search_filter.search_for(self.base_query, term)
+        assert_that(total, equal_to(2))
+        assert_that(rows, contains(last_user_row, first_user_row))
 
-        result_expr = self.base_query.filter.call_args[0][0]
-        assert_that(str(expected_expr), equal_to(str(result_expr)))
-        assert_that(result, equal_to(search_query))
+    def test_given_limit_is_negative_number_then_raises_error(self):
+        self.assertRaises(InvalidParametersError,
+                          self.search.search,
+                          self.session, {'limit': -1})
 
-    def test_paginate_no_parameters(self):
-        result = self.search_filter.paginate(self.base_query, None, None)
+    def test_given_skip_is_negative_number_then_raises_error(self):
+        self.assertRaises(InvalidParametersError,
+                          self.search.search,
+                          self.session, {'skip': -1})
 
-        assert_that(result, equal_to(self.base_query))
+    def test_given_limit_then_returns_same_number_of_rows_as_limit(self):
+        self.add_user()
+        self.add_user()
 
-    def test_paginate_with_limit(self):
-        limit = 1
-        limit_query = self.base_query.limit.return_value = Mock()
+        rows, total = self.search.search(self.session, {'limit': 1})
 
-        result = self.search_filter.paginate(self.base_query, limit, None)
+        assert_that(total, equal_to(2))
+        assert_that(rows, has_length(1))
 
-        self.base_query.limit.assert_called_once_with(limit)
-        assert_that(result, equal_to(limit_query))
+    def test_given_skip_then_skips_a_number_of_rows(self):
+        self.add_user(lastname='Abigale')
+        last_user_row = self.add_user(lastname='Zintrabi')
 
-    def test_paginate_with_skip(self):
-        skip = 2
-        skip_query = self.base_query.offset.return_value = Mock()
+        rows, total = self.search.search(self.session, {'skip': 1})
 
-        result = self.search_filter.paginate(self.base_query, None, skip)
+        assert_that(total, equal_to(2))
+        assert_that(rows, contains(last_user_row))
 
-        self.base_query.offset.assert_called_once_with(skip)
-        assert_that(result, equal_to(skip_query))
+    def test_given_search_then_filters_in_configured_columns_and_uses_default_order(self):
+        user_row1 = self.add_user(firstname='a123bcd', lastname='eeefghi')
+        user_row2 = self.add_user(firstname='eeefghi', lastname='a123zzz')
+        self.add_user(description='123')
 
-    def test_paginate_with_limit_and_skip(self):
-        limit = 1
-        skip = 2
+        rows, total = self.search.search(self.session, {'search': '123'})
 
-        skip_query = self.base_query.offset.return_value = Mock()
-        limit_query = skip_query.limit.return_value = Mock()
+        assert_that(total, equal_to(2))
+        assert_that(rows, contains(user_row2, user_row1))
 
-        result = self.search_filter.paginate(self.base_query, limit, skip)
+    def test_given_search_then_filters_in_numeric_columns(self):
+        self.add_user(simultcalls=1)
+        user_row2 = self.add_user(simultcalls=2)
 
-        self.base_query.offset.assert_called_once_with(skip)
-        skip_query.limit.assert_called_once_with(limit)
-        assert_that(result, equal_to(limit_query))
+        rows, total = self.search.search(self.session, {'search': '2'})
 
-    @patch('xivo_dao.data_handler.utils.search.asc')
-    def test_sort_with_default_parameters(self, sql_asc):
-        order_query = self.base_query.order_by.return_value = Mock()
-        mock_order = sql_asc.return_value = Mock()
+        assert_that(total, equal_to(1))
+        assert_that(rows, contains(user_row2))
 
-        result = self.search_filter.sort(self.base_query, None, None)
 
-        sql_asc.assert_called_once_with(self.default_column)
-        self.base_query.order_by.assert_called_once_with(mock_order)
+class TestSearchConfig(unittest.TestCase):
 
-        assert_that(result, equal_to(order_query))
+    def test_given_no_select_then_raises_error(self):
+        config = SearchConfig()
 
-    @patch('xivo_dao.data_handler.utils.search.asc')
-    def test_sort_with_different_order(self, sql_asc):
-        order_query = self.base_query.order_by.return_value = Mock()
-        mock_order = sql_asc.return_value = Mock()
+        self.assertRaisesRegexp(AttributeError,
+                                "search config is missing 'select' parameter",
+                                config.query, None)
+
+    def test_given_select_then_returns_query(self):
+        select = Mock()
+        session = Mock()
+        expected = session.query.return_value
+
+        config = SearchConfig(select=select)
+
+        result = config.query(session)
+
+        assert_that(result, equal_to(expected))
+        session.query.assert_called_once_with(select)
+
+    def test_given_no_columns_then_raises_error(self):
+        config = SearchConfig()
+
+        self.assertRaisesRegexp(AttributeError,
+                                "search config is missing 'columns' parameter",
+                                config.search_columns)
+        self.assertRaisesRegexp(AttributeError,
+                                "search config is missing 'columns' parameter",
+                                config.sort_by_column)
+
+    def test_given_no_sort_by_then_raises_error(self):
+        config = SearchConfig(columns={})
+
+        self.assertRaisesRegexp(AttributeError,
+                                "search config is missing 'order_by' parameter",
+                                config.sort_by_column)
+
+    def test_given_list_of_sort_columns_then_returns_column(self):
         column = Mock()
+        config = SearchConfig(columns={'column': column},
+                              sort=['column'],
+                              order_by='column')
 
-        result = self.search_filter.sort(self.base_query, column, None)
+        result = config.sort_by_column('column')
 
-        sql_asc.assert_called_once_with(column)
-        self.base_query.order_by.assert_called_once_with(mock_order)
+        assert_that(result, equal_to(column))
 
-        assert_that(result, equal_to(order_query))
+    def test_given_column_name_does_not_exist_then_raises_error(self):
+        config = SearchConfig(columns={}, order_by='nothing')
 
-    @patch('xivo_dao.data_handler.utils.search.desc')
-    def test_sort_with_different_direction(self, sql_desc):
-        order_query = self.base_query.order_by.return_value = Mock()
-        mock_order = sql_desc.return_value = Mock()
+        self.assertRaisesRegexp(InvalidParametersError,
+                                "Invalid parameters: ordering column 'toto' does not exist",
+                                config.sort_by_column, 'toto')
+
+    def test_given_sort_column_not_in_sort_list_then_raises_error(self):
+        config = SearchConfig(columns={'column1': 'column1',
+                                       'column2': 'column2'},
+                              sort=[],
+                              order_by='column1')
+
+        self.assertRaisesRegexp(InvalidParametersError,
+                                "Invalid parameters: ordering column 'column2' does not exist",
+                                config.sort_by_column, 'column2')
+
+    def test_given_list_of_search_columns_then_returns_only_columns_to_search(self):
         column = Mock()
+        config = SearchConfig(columns={'column1': column, 'column2': Mock()},
+                              search=['column1'])
 
-        result = self.search_filter.sort(self.base_query, column, 'desc')
+        result = config.search_columns()
 
-        sql_desc.assert_called_once_with(column)
-        self.base_query.order_by.assert_called_once_with(mock_order)
-
-        assert_that(result, equal_to(order_query))
+        assert_that(result, contains(column))

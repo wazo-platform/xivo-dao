@@ -14,61 +14,111 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
+
 from collections import namedtuple
 
-from sqlalchemy import String
-from sqlalchemy.sql.expression import desc, asc, or_, cast
+import sqlalchemy as sa
+from sqlalchemy import sql
 
+from xivo_dao.data_handler.exception import InvalidParametersError
 
 SearchResult = namedtuple('SearchResult', ['total', 'items'])
 
 
-class SearchFilter(object):
+class SearchConfig(object):
 
-    def __init__(self, base_query, columns, default_column):
-        self.base_query = base_query
-        self.columns = columns
-        self.default_column = default_column
+    def __init__(self, **parameters):
+        parameters.setdefault('sort', [])
+        parameters.setdefault('search', [])
+        self.parameters = parameters
 
-    def search(self, parameters=None):
+    def query(self, session):
+        select = self._get('select')
+        return session.query(select)
+
+    def sort_by_column(self, name=None):
+        sort_columns = self._get('sort')
+        columns = self._get('columns')
+        order_by = self._get('order_by')
+
+        name = name or order_by
+        if name not in columns or name not in sort_columns:
+            raise InvalidParametersError(["ordering column '%s' does not exist" % name])
+
+        return columns[name]
+
+    def search_columns(self):
+        columns = self._get('columns')
+        search_columns = self._get('search')
+
+        return [columns[s] for s in search_columns]
+
+    def _get(self, attribute):
+        if attribute not in self.parameters:
+            raise AttributeError("search config is missing '%s' parameter" % attribute)
+        return self.parameters[attribute]
+
+
+class SearchSystem(object):
+
+    sort_directions = {
+        'asc': sql.asc,
+        'desc': sql.desc,
+    }
+
+    def __init__(self, config):
+        self.config = config
+
+    def search(self, session, parameters=None):
+        query = self.config.query(session)
+        return self.search_from_query(query, parameters)
+
+    def search_from_query(self, query, parameters=None):
         parameters = parameters or {}
+        query = self._filter(query, parameters)
+        sorted_query = self._sort(query, parameters)
+        paginated_query = self._paginate(sorted_query, parameters)
 
-        search_query = self.search_for(self.base_query, parameters.get('search', None))
-        sorted_query = self.sort(search_query,
-                                 parameters.get('order', None),
-                                 parameters.get('direction', 'asc'))
-        paginated_query = self.paginate(sorted_query,
-                                        parameters.get('limit', None),
-                                        parameters.get('skip', None))
-        return paginated_query.all(), search_query.count()
+        return paginated_query.all(), sorted_query.count()
 
-    def search_for(self, query, term=None):
-        if term is None:
-            return self.base_query
+    def _filter(self, query, parameters):
+        term = parameters.get('search', None)
+        if not term:
+            return query
 
         criteria = []
-        for column in self.columns:
-            column_search = cast(column, String).ilike('%%%s%%' % term)
-            criteria.append(column_search)
+        for column in self.config.search_columns():
+            expression = sql.cast(column, sa.String).ilike('%%%s%%' % term)
+            criteria.append(expression)
 
-        return self.base_query.filter(or_(*criteria))
+        return query.filter(sql.or_(*criteria))
 
-    def paginate(self, query, limit=None, skip=None):
-        if skip is not None:
-            query = query.offset(skip)
+    def _sort(self, query, parameters):
+        order = parameters.get('order', None)
+        direction = parameters.get('direction', 'asc')
 
-        if limit is not None:
-            query = query.limit(limit)
+        column = self.config.sort_by_column(order)
+        sorted_column = self.sort_directions[direction](column)
+
+        return query.order_by(sorted_column)
+
+    def _paginate(self, query, parameters):
+        self._validate_skip_limit(parameters)
+
+        skip = parameters.get('skip', 0)
+        if skip > 0:
+            query = query.offset(parameters['skip'])
+
+        if 'limit' in parameters:
+            query = query.limit(parameters['limit'])
 
         return query
 
-    def sort(self, query, order=None, direction='asc'):
-        if order is None:
-            order = self.default_column
+    def _validate_skip_limit(self, parameters):
+        if 'skip' in parameters:
+            if parameters['skip'] < 0:
+                raise InvalidParametersError(['skip must be a positive number'])
 
-        if direction == 'desc':
-            order_expression = desc(order)
-        else:
-            order_expression = asc(order)
-
-        return query.order_by(order_expression)
+        if 'limit' in parameters:
+            if parameters['limit'] < 0:
+                raise InvalidParametersError(['limit must be a positive number'])
