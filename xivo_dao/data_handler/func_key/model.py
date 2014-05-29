@@ -20,7 +20,7 @@ from sqlalchemy import func
 from xivo_dao.helpers.new_model import NewModel
 from xivo_dao.converters.database_converter import DatabaseConverter
 from xivo_dao.data_handler.func_key import type_dao as func_key_type_dao
-from xivo_dao.data_handler.utils.search import SearchFilter
+from xivo_dao.data_handler.utils.search import SearchSystem, SearchConfig
 from xivo_dao.alchemy.func_key import FuncKey as FuncKeySchema
 from xivo_dao.alchemy.func_key_type import FuncKeyType as FuncKeyTypeSchema
 from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser as FuncKeyDestUserSchema
@@ -75,10 +75,17 @@ class QueryHelper(object):
     def __init__(self, session):
         self._session = session
 
-    def search_filter(self):
-        return SearchFilter(self.query(),
-                            self.column_mapping.values(),
-                            self.column_mapping['id'])
+    def search(self, parameters):
+        sort = ['id', 'type', 'destination', 'destination_id']
+        search = ['type', 'destination', 'destination_id']
+        order_by = 'id'
+
+        config = SearchConfig(columns=self.column_mapping,
+                              sort=sort,
+                              search=search,
+                              order_by=order_by)
+
+        return SearchSystem(config).search_from_query(self.query(), parameters)
 
     def select_destination(self, destination, destination_id):
         schema, column = self.destination_mapping[destination]
