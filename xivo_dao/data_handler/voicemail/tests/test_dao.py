@@ -23,7 +23,7 @@ from xivo_dao.alchemy.voicemail import Voicemail as VoicemailSchema
 from xivo_dao.alchemy.incall import Incall as IncallSchema
 from xivo_dao.alchemy.dialaction import Dialaction as DialactionSchema
 from xivo_dao.data_handler.voicemail import dao as voicemail_dao
-from xivo_dao.data_handler.voicemail.model import Voicemail, VoicemailOrder
+from xivo_dao.data_handler.voicemail.model import Voicemail
 from xivo_dao.data_handler.exception import ElementCreationError, \
     ElementDeletionError, ElementEditionError
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -165,7 +165,7 @@ class TestSearchVoicemail(DAOTestCase):
             ask_password=False,
         )
 
-        result = voicemail_dao.search(order=VoicemailOrder.name)
+        result = voicemail_dao.search(order='name')
 
         assert_that(result.total, equal_to(2))
         assert_that(result.items, contains(self._has_voicemail(expected_voicemail1),
@@ -205,7 +205,7 @@ class TestSearchVoicemail(DAOTestCase):
             ask_password=False,
         )
 
-        result = voicemail_dao.search(order=VoicemailOrder.name, direction='desc')
+        result = voicemail_dao.search(order='name', direction='desc')
 
         assert_that(result.total, equal_to(2))
         assert_that(result.items, contains(self._has_voicemail(expected_voicemail2),
@@ -235,7 +235,7 @@ class TestSearchVoicemail(DAOTestCase):
             ask_password=False,
         )
 
-        result = voicemail_dao.search(skip=1, order=VoicemailOrder.name)
+        result = voicemail_dao.search(skip=1, order='name')
 
         assert_that(result.total, equal_to(2))
         assert_that(result.items, contains(self._has_voicemail(expected_voicemail2)))
@@ -269,7 +269,7 @@ class TestSearchVoicemail(DAOTestCase):
             ask_password=False,
         )
 
-        result = voicemail_dao.search(skip=1, limit=1, order=VoicemailOrder.name)
+        result = voicemail_dao.search(skip=1, limit=1, order='name')
 
         assert_that(result.total, equal_to(3))
         assert_that(result.items, contains(self._has_voicemail(expected_voicemail2)))
@@ -370,7 +370,7 @@ class TestSearchVoicemail(DAOTestCase):
         )
 
         result = voicemail_dao.search(search='VOICEMAIL',
-                                      order=VoicemailOrder.name,
+                                      order='name',
                                       direction='desc',
                                       skip=1,
                                       limit=2)

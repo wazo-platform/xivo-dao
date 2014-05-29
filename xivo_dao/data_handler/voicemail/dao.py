@@ -21,19 +21,17 @@ from xivo_dao.alchemy.voicemail import Voicemail as VoicemailSchema
 from xivo_dao.alchemy.dialaction import Dialaction as DialactionSchema
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.data_handler.voicemail.model import db_converter, VoicemailOrder, Voicemail
+from xivo_dao.data_handler.voicemail.model import db_converter
+from xivo_dao.data_handler.voicemail.search import voicemail_search
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementCreationError, ElementEditionError, ElementDeletionError
 from xivo_dao.data_handler.utils.search import SearchResult
 from xivo_dao.alchemy.staticvoicemail import StaticVoicemail
-from xivo_dao.data_handler.utils.search import SearchFilter
 
 
 @daosession
 def search(session, **parameters):
-    query = session.query(VoicemailSchema)
-    search_filter = SearchFilter(query, Voicemail.SEARCH_COLUMNS, VoicemailOrder.number)
-    rows, total = search_filter.search(parameters)
+    rows, total = voicemail_search.search(session, parameters)
     items = _generate_items(rows)
 
     return SearchResult(total, items)

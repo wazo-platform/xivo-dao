@@ -24,7 +24,7 @@ from xivo_dao.data_handler.exception import ElementDeletionError
 from xivo_dao.data_handler.exception import ElementEditionError
 
 from xivo_dao.data_handler.voicemail import services as voicemail_services
-from xivo_dao.data_handler.voicemail.model import Voicemail, VoicemailOrder
+from xivo_dao.data_handler.voicemail.model import Voicemail
 from xivo_dao.data_handler.utils.search import SearchResult
 
 
@@ -37,13 +37,13 @@ class TestVoicemail(unittest.TestCase):
 
         result = voicemail_services.search(skip=1,
                                            limit=2,
-                                           order=VoicemailOrder.number,
+                                           order='number',
                                            direction='asc',
                                            search='toto')
 
         mock_search.assert_called_once_with(skip=1,
                                             limit=2,
-                                            order=VoicemailOrder.number,
+                                            order='number',
                                             direction='asc',
                                             search='toto')
 

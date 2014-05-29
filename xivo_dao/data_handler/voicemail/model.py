@@ -43,12 +43,6 @@ class Voicemail(NewModel):
         'ask_password'
     ]
 
-    SEARCH_COLUMNS = [
-        VoicemailSchema.fullname,
-        VoicemailSchema.mailbox,
-        VoicemailSchema.email
-    ]
-
     _RELATION = {
         'user': 'user'
     }
@@ -114,12 +108,3 @@ class VoicemailDBConverter(DatabaseConverter):
 
 
 db_converter = VoicemailDBConverter()
-
-
-class VoicemailOrder(object):
-    name = VoicemailSchema.fullname
-    number = VoicemailSchema.mailbox
-    context = VoicemailSchema.context
-    email = VoicemailSchema.email
-    language = VoicemailSchema.language
-    timezone = VoicemailSchema.tz
