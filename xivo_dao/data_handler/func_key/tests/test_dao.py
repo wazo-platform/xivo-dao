@@ -19,6 +19,7 @@ from hamcrest import *
 from mock import patch
 
 from xivo_dao.alchemy.func_key import FuncKey as FuncKeySchema
+from xivo_dao.alchemy.func_key_dest_extension import FuncKeyDestExtension as FuncKeyDestExtensionSchema
 from xivo_dao.alchemy.func_key_dest_conference import FuncKeyDestConference as FuncKeyDestConferenceSchema
 from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup as FuncKeyDestGroupSchema
 from xivo_dao.alchemy.func_key_dest_queue import FuncKeyDestQueue as FuncKeyDestQueueSchema
@@ -42,6 +43,7 @@ class TestFuncKeyDao(DAOTestCase):
         'group': 2,
         'queue': 3,
         'conference': 4,
+        'extension': 5,
     }
 
     destination_type_schemas = {
@@ -49,6 +51,7 @@ class TestFuncKeyDao(DAOTestCase):
         'group': (FuncKeyDestGroupSchema, 'group_id'),
         'queue': (FuncKeyDestQueueSchema, 'queue_id'),
         'conference': (FuncKeyDestConferenceSchema, 'conference_id'),
+        'extension': (FuncKeyDestExtensionSchema, 'extension_id'),
     }
 
     def setUp(self):
@@ -108,6 +111,15 @@ class TestFuncKeySearch(TestFuncKeyDao):
 
         assert_that(result.total, equal_to(0))
         assert_that(result.items, contains())
+
+    def test_given_extension_destination_when_searching_then_one_result_returned(self):
+        extension_row = self.add_extension()
+        func_key = self.prepare_destination('extension', extension_row.id)
+
+        result = dao.search()
+
+        assert_that(result.total, equal_to(1))
+        assert_that(result.items, contains(func_key))
 
     def test_given_user_destination_when_searching_then_one_result_returned(self):
         user_row = self.add_user()
@@ -399,6 +411,15 @@ class TestFuncKeyDelete(TestFuncKeyDao):
 
         self.assert_func_key_deleted(func_key.id)
         self.assert_destination_deleted('conference', conference_row.id)
+
+    def test_given_extension_destination_then_func_key_deleted(self):
+        extension_row = self.add_extension()
+        func_key = self.prepare_destination('extension', extension_row.id)
+
+        dao.delete(func_key)
+
+        self.assert_func_key_deleted(func_key.id)
+        self.assert_destination_deleted('extension', extension_row.id)
 
     def test_given_multiple_destinations_then_only_one_func_key_deleted(self):
         user_row = self.add_user()
