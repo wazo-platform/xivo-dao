@@ -45,7 +45,7 @@ class TestExtension(DAOTestCase):
 class TestSimpleSearch(TestExtension):
 
     def setUp(self):
-        super(TestExtension, self).setUp()
+        TestExtension.setUp(self)
 
     def test_given_no_extensions_then_returns_no_empty_result(self):
         expected = SearchResult(0, [])
@@ -62,7 +62,7 @@ class TestSimpleSearch(TestExtension):
 class TestSearchGivenMultipleExtensions(TestExtension):
 
     def setUp(self):
-        super(TestExtension, self).setUp()
+        TestExtension.setUp(self)
         self.extension1 = self.prepare_extension(exten='1000')
         self.extension2 = self.prepare_extension(exten='1001')
         self.extension3 = self.prepare_extension(exten='1002')
