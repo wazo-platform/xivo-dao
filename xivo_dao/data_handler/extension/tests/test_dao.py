@@ -104,6 +104,56 @@ class TestSearchGivenMultipleExtensions(TestExtension):
                                           limit=1)
 
 
+class TestSearchGivenInternalExtensionType(TestExtension):
+
+    def setUp(self):
+        TestExtension.setUp(self)
+
+        self.add_context(name='internal_context', contexttype='internal')
+        self.extension1 = self.prepare_extension(exten='1000', context='internal_context')
+        self.extension2 = self.prepare_extension(exten='1001', context='internal_context')
+
+    def test_when_searching_type_internal_extensions_then_returns_internal_extensions(self):
+        expected = SearchResult(2, [self.extension1, self.extension2])
+
+        self.assert_search_returns_result(expected, type='internal')
+
+    def test_when_searching_type_internal_and_limit_then_returns_internal_extensions(self):
+        expected = SearchResult(2, [self.extension1])
+
+        self.assert_search_returns_result(expected, type='internal', limit=1)
+
+    def test_when_searching_type_incall_then_returns_empty_result(self):
+        expected = SearchResult(0, [])
+
+        self.assert_search_returns_result(expected, type='incall')
+
+
+class TestSearchGivenIncallExtensionType(TestExtension):
+
+    def setUp(self):
+        TestExtension.setUp(self)
+
+        self.add_context(name='incall_context', contexttype='incall')
+        self.extension1 = self.prepare_extension(exten='1000', context='incall_context')
+        self.extension2 = self.prepare_extension(exten='1001', context='incall_context')
+
+    def test_when_searching_type_internal_then_returns_empty_result(self):
+        expected = SearchResult(0, [])
+
+        self.assert_search_returns_result(expected, type='internal')
+
+    def test_when_searching_type_incall_then_returns_incall_extensions(self):
+        expected = SearchResult(2, [self.extension1, self.extension2])
+
+        self.assert_search_returns_result(expected, type='incall')
+
+    def test_when_searching_type_incall_and_limit_then_returns_interal_extensions(self):
+        expected = SearchResult(2, [self.extension1])
+
+        self.assert_search_returns_result(expected, type='incall', limit=1)
+
+
 class TestFind(DAOTestCase):
 
     def test_find_no_extension(self):
