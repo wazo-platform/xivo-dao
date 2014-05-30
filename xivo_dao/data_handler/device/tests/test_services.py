@@ -22,7 +22,7 @@ from mock import patch, Mock
 from urllib2 import URLError
 from xivo_dao.data_handler.utils.search import SearchResult
 from xivo_dao.data_handler.device import services as device_services
-from xivo_dao.data_handler.device.model import Device, DeviceOrdering
+from xivo_dao.data_handler.device.model import Device
 from xivo_dao.data_handler.extension.model import Extension
 from xivo_dao.data_handler.line.model import LineSIP, LineSCCP
 from xivo_dao.data_handler.line_extension.model import LineExtension
@@ -71,10 +71,10 @@ class TestDeviceServices(unittest.TestCase):
 
         device_dao_search.return_value = expected
 
-        result = device_services.search(order=DeviceOrdering.ip)
+        result = device_services.search(order='ip')
 
         self.assertEquals(result, expected)
-        device_dao_search.assert_called_once_with(order=DeviceOrdering.ip)
+        device_dao_search.assert_called_once_with(order='ip')
 
     @patch('xivo_dao.data_handler.device.dao.search')
     def test_search_with_invalid_direction(self, device_dao_search):
