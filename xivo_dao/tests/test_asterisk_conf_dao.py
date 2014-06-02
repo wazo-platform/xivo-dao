@@ -394,7 +394,6 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         extensions = asterisk_conf_dao.find_exten_settings('default')
 
-        print extensions
         assert_that(extensions, contains_inanyorder(*expected_result))
 
     def test_find_exten_hints_settings_when_line_enabled(self):
