@@ -23,7 +23,8 @@ DB_TO_MODEL_MAPPING = {
     'id': 'id',
     'exten': 'exten',
     'context': 'context',
-    'commented': 'commented'
+    'commented': 'commented',
+    'typeval': 'typeval'
 }
 
 
@@ -39,6 +40,7 @@ class Extension(NewModel):
         'exten',
         'context',
         'commented',
+        'typeval',
     ]
 
     SEARCH_COLUMNS = [
