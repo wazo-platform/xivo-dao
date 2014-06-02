@@ -22,9 +22,9 @@ from sqlalchemy.schema import Column, ForeignKeyConstraint, CheckConstraint, Pri
 from sqlalchemy.types import Integer
 
 
-class FuncKeyDestExtension(Base):
+class FuncKeyDestService(Base):
 
-    __tablename__ = 'func_key_dest_extension'
+    __tablename__ = 'func_key_dest_service'
     __table_args__ = (
         PrimaryKeyConstraint('func_key_id', 'destination_type_id', 'extension_id'),
         ForeignKeyConstraint(['func_key_id', 'destination_type_id'],
