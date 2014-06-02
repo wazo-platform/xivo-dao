@@ -68,7 +68,7 @@ class QueryHelper(object):
         'group': (FuncKeyDestGroupSchema, FuncKeyDestGroupSchema.group_id),
         'queue': (FuncKeyDestQueueSchema, FuncKeyDestQueueSchema.queue_id),
         'conference': (FuncKeyDestConferenceSchema, FuncKeyDestConferenceSchema.conference_id),
-        'extension': (FuncKeyDestExtensionSchema, FuncKeyDestExtensionSchema.extension_id),
+        'service': (FuncKeyDestExtensionSchema, FuncKeyDestExtensionSchema.extension_id),
     }
 
     @classmethod
@@ -137,7 +137,7 @@ class FuncKeyDbConverter(DatabaseConverter):
         'group': (FuncKeyDestGroupSchema, 'group_id'),
         'queue': (FuncKeyDestQueueSchema, 'queue_id'),
         'conference': (FuncKeyDestConferenceSchema, 'conference_id'),
-        'extension': (FuncKeyDestExtensionSchema, 'extension_id'),
+        'service': (FuncKeyDestExtensionSchema, 'extension_id'),
     }
 
     def __init__(self):
