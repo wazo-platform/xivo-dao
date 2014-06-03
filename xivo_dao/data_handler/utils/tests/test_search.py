@@ -129,25 +129,6 @@ class TestSearchSystem(DAOTestCase):
 
 class TestSearchConfig(unittest.TestCase):
 
-    def test_given_no_table_then_raises_error(self):
-        self.assertRaisesRegexp(AttributeError,
-                                "search config is missing 'table' parameter",
-                                SearchConfig)
-
-    def test_given_no_columns_then_raises_error(self):
-        table = Mock()
-
-        self.assertRaisesRegexp(AttributeError,
-                                "search config is missing 'columns' parameter",
-                                SearchConfig, table=table)
-
-    def test_given_no_default_sort_then_raises_error(self):
-        table = Mock()
-
-        self.assertRaisesRegexp(AttributeError,
-                                "search config is missing 'default_sort' parameter",
-                                SearchConfig, table=table, columns={})
-
     def test_given_list_of_sort_columns_then_returns_columns_for_sorting(self):
         table = Mock()
         column = Mock()

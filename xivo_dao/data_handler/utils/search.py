@@ -27,33 +27,25 @@ SearchResult = namedtuple('SearchResult', ['total', 'items'])
 
 class SearchConfig(object):
 
-    REQUIRED = ('table', 'columns', 'default_sort')
-
-    def __init__(self, **parameters):
-        parameters.setdefault('search', None)
-        parameters.setdefault('sort', None)
-        self._validate_required_params(parameters)
-
-        for key, value in parameters.items():
-            setattr(self, key, value)
+    def __init__(self, table, columns, default_sort, search=None, sort=None):
+        self.table = table
+        self._columns = columns
+        self._default_sort = default_sort
+        self._search = search
+        self._sort = sort
 
     def columns_for_searching(self):
-        if self.search:
-            return [self.columns[s] for s in self.search]
-        return self.columns.values()
+        if self._search:
+            return [self._columns[s] for s in self._search]
+        return self._columns.values()
 
     def column_for_sorting(self, name=None):
         column_name = self._get_sort_column_name(name)
-        return self.columns[column_name]
-
-    def _validate_required_params(self, parameters):
-        for param_name in self.REQUIRED:
-            if param_name not in parameters:
-                raise AttributeError("search config is missing '%s' parameter" % param_name)
+        return self._columns[column_name]
 
     def _get_sort_column_name(self, name=None):
-        name = name or self.default_sort
-        sort_columns = self.sort or self.columns.keys()
+        name = name or self._default_sort
+        sort_columns = self._sort or self._columns.keys()
 
         if name not in sort_columns:
             raise InvalidParametersError(["ordering column '%s' does not exist" % name])
