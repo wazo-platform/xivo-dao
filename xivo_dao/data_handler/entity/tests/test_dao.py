@@ -29,3 +29,12 @@ class TestDefaultEntityName(DAOTestCase):
         result = dao.default_entity_name()
 
         assert_that(result, equal_to(entity_name))
+
+
+class TestDefaultEntityID(DAOTestCase):
+    def test_given_entity_then_return_entity_id(self):
+        entity = self.add_entity()
+
+        result = dao.default_entity_id()
+
+        assert_that(result, equal_to(entity.id))
