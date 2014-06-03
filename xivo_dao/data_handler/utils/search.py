@@ -27,41 +27,35 @@ SearchResult = namedtuple('SearchResult', ['total', 'items'])
 
 class SearchConfig(object):
 
+    REQUIRED = ('table', 'columns', 'default_sort')
+
     def __init__(self, **parameters):
-        self.parameters = parameters
+        parameters.setdefault('search', None)
+        parameters.setdefault('sort', None)
+        self._validate_required_params(parameters)
 
-    def query(self, session):
-        select = self._get('select')
-        return session.query(select)
+        for key, value in parameters.items():
+            setattr(self, key, value)
 
-    def search_columns(self):
-        columns = self._get('columns')
-        return self.parameters.get('search', columns.keys())
+    def columns_for_searching(self):
+        if self.search:
+            return [self.columns[s] for s in self.search]
+        return self.columns.values()
 
-    def sort_columns(self):
-        columns = self._get('columns')
-        return self.parameters.get('sort', columns.keys())
+    def column_for_sorting(self, name=None):
+        column_name = self._get_sort_column_name(name)
+        return self.columns[column_name]
 
-    def columns_for_filtering(self):
-        columns = self._get('columns')
-        return [columns[s] for s in self.search_columns()]
+    def _validate_required_params(self, parameters):
+        for param_name in self.REQUIRED:
+            if param_name not in parameters:
+                raise AttributeError("search config is missing '%s' parameter" % param_name)
 
-    def sort_by_column(self, name=None):
-        columns = self._get('columns')
-        column_name = self._validate_column_name(name)
+    def _get_sort_column_name(self, name=None):
+        name = name or self.default_sort
+        sort_columns = self.sort or self.columns.keys()
 
-        return columns[column_name]
-
-    def _get(self, attribute):
-        if attribute not in self.parameters:
-            raise AttributeError("search config is missing '%s' parameter" % attribute)
-        return self.parameters[attribute]
-
-    def _validate_column_name(self, name=None):
-        order_by = self._get('order_by')
-
-        name = name or order_by
-        if name not in self.sort_columns():
+        if name not in sort_columns:
             raise InvalidParametersError(["ordering column '%s' does not exist" % name])
 
         return name

@@ -115,75 +115,82 @@ class TestSearchSystem(DAOTestCase):
 
 class TestSearchConfig(unittest.TestCase):
 
-    def test_given_no_select_then_raises_error(self):
-        config = SearchConfig()
-
+    def test_given_no_table_then_raises_error(self):
         self.assertRaisesRegexp(AttributeError,
-                                "search config is missing 'select' parameter",
-                                config.query, None)
-
-    def test_given_select_then_returns_query(self):
-        select = Mock()
-        session = Mock()
-        expected = session.query.return_value
-
-        config = SearchConfig(select=select)
-
-        result = config.query(session)
-
-        assert_that(result, equal_to(expected))
-        session.query.assert_called_once_with(select)
+                                "search config is missing 'table' parameter",
+                                SearchConfig)
 
     def test_given_no_columns_then_raises_error(self):
-        config = SearchConfig()
+        table = Mock()
 
         self.assertRaisesRegexp(AttributeError,
                                 "search config is missing 'columns' parameter",
-                                config.search_columns)
-        self.assertRaisesRegexp(AttributeError,
-                                "search config is missing 'columns' parameter",
-                                config.sort_columns)
-        self.assertRaisesRegexp(AttributeError,
-                                "search config is missing 'columns' parameter",
-                                config.sort_by_column)
+                                SearchConfig, table=table)
 
-    def test_given_no_order_by_then_raises_error(self):
-        config = SearchConfig(columns={'column': Mock()})
+    def test_given_no_default_sort_then_raises_error(self):
+        table = Mock()
 
         self.assertRaisesRegexp(AttributeError,
-                                "search config is missing 'order_by' parameter",
-                                config.sort_by_column)
+                                "search config is missing 'default_sort' parameter",
+                                SearchConfig, table=table, columns={})
 
-    def test_given_list_of_sort_columns_then_returns_selected_columns(self):
+    def test_given_list_of_sort_columns_then_returns_columns_for_sorting(self):
+        table = Mock()
         column = Mock()
-        config = SearchConfig(columns={'column': column, 'column2': Mock()},
-                              sort=['column'],
-                              order_by='column')
+        column2 = Mock()
+        config = SearchConfig(table=table,
+                              columns={'column': column,
+                                       'column2': column2,
+                                       'column3': Mock()},
+                              sort=['column', 'column2'],
+                              default_sort='column')
 
-        result = config.sort_by_column('column')
+        result = config.column_for_sorting('column2')
 
-        assert_that(result, equal_to(column))
+        assert_that(result, equal_to(column2))
 
-    def test_given_column_name_does_not_exist_then_raises_error(self):
-        config = SearchConfig(columns={}, order_by='nothing')
+    def test_given_no_columns_when_sorting_then_raises_error(self):
+        table = Mock()
+
+        config = SearchConfig(table=table, columns={}, default_sort='nothing')
 
         self.assertRaisesRegexp(InvalidParametersError,
                                 "Invalid parameters: ordering column 'toto' does not exist",
-                                config.sort_by_column, 'toto')
+                                config.column_for_sorting, 'toto')
 
-    def test_given_sort_column_does_not_exist_then_raises_error(self):
-        config = SearchConfig(columns={'column1': 'column1'},
-                              order_by='column1')
+    def test_given_sort_column_does_not_exist_when_sorting_then_raises_error(self):
+        table = Mock()
+
+        config = SearchConfig(table=table,
+                              columns={'column1': 'column1'},
+                              default_sort='column1')
 
         self.assertRaisesRegexp(InvalidParametersError,
                                 "Invalid parameters: ordering column 'column2' does not exist",
-                                config.sort_by_column, 'column2')
+                                config.column_for_sorting, 'column2')
 
-    def test_given_parameters_search_then_returns_only_columns_to_filter(self):
+    def test_given_list_of_search_columns_then_returns_only_columns_for_searching(self):
+        table = Mock()
         column = Mock()
-        config = SearchConfig(columns={'column1': column, 'column2': Mock()},
-                              search=['column1'])
 
-        result = config.columns_for_filtering()
+        config = SearchConfig(table=table,
+                              columns={'column1': column, 'column2': Mock()},
+                              search=['column1'],
+                              default_sort='column1')
+
+        result = config.columns_for_searching()
 
         assert_that(result, contains(column))
+
+    def test_given_list_of_columns_then_returns_all_columns_for_searching(self):
+        table = Mock()
+        column1 = Mock()
+        column2 = Mock()
+
+        config = SearchConfig(table=table,
+                              columns={'column1': column1, 'column2': column2},
+                              default_sort='column1')
+
+        result = config.columns_for_searching()
+
+        assert_that(result, contains(column1, column2))
