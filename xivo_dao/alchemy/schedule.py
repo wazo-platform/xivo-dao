@@ -20,6 +20,8 @@ from sqlalchemy.types import Integer, String, Text
 
 from xivo_dao.helpers.db_manager import Base
 from xivo_dao.alchemy import enum
+from sqlalchemy.sql.schema import ForeignKeyConstraint
+from sqlalchemy.orm import relationship
 
 
 class Schedule(Base):
@@ -27,9 +29,13 @@ class Schedule(Base):
     __tablename__ = 'schedule'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
+        ForeignKeyConstraint(('entity_id',),
+                             ('entity.id',),
+                             ondelete='RESTRICT'),
     )
 
     id = Column(Integer, nullable=False)
+    entity_id = Column(Integer)
     name = Column(String(255), nullable=False, server_default='')
     timezone = Column(String(128))
     fallback_action = Column(enum.dialaction_action, nullable=False, server_default='none')
@@ -37,3 +43,5 @@ class Schedule(Base):
     fallback_actionargs = Column(String(255))
     description = Column(Text)
     commented = Column(Integer, nullable=False, server_default='0')
+
+    entity = relationship('Entity')

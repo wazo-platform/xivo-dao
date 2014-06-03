@@ -20,6 +20,8 @@ from sqlalchemy.types import Integer, String, Text
 
 from xivo_dao.alchemy import enum
 from xivo_dao.helpers.db_manager import Base
+from sqlalchemy.sql.schema import ForeignKeyConstraint
+from sqlalchemy.orm import relationship
 
 
 class Callfilter(Base):
@@ -27,10 +29,14 @@ class Callfilter(Base):
     __tablename__ = 'callfilter'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
+        ForeignKeyConstraint(('entity_id',),
+                             ('entity.id',),
+                             ondelete='RESTRICT'),
         UniqueConstraint('name'),
     )
 
     id = Column(Integer, nullable=False)
+    entity_id = Column(Integer)
     name = Column(String(128), nullable=False, server_default='')
     type = Column(enum.callfilter_type, nullable=False)
     bosssecretary = Column(enum.callfilter_bosssecretary)
@@ -38,3 +44,5 @@ class Callfilter(Base):
     ringseconds = Column(Integer, nullable=False, server_default='0')
     commented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text, nullable=False)
+
+    entity = relationship('Entity')
