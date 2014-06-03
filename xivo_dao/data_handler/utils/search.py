@@ -63,64 +63,82 @@ class SearchConfig(object):
 
 class SearchSystem(object):
 
-    sort_directions = {
+    SORT_DIRECTIONS = {
         'asc': sql.asc,
         'desc': sql.desc,
+    }
+
+    DEFAULTS = {
+        'search': None,
+        'order': None,
+        'direction': 'asc',
+        'limit': None,
+        'skip': 0
     }
 
     def __init__(self, config):
         self.config = config
 
     def search(self, session, parameters=None):
-        query = self.config.query(session)
+        query = session.query(self.config.table)
         return self.search_from_query(query, parameters)
 
     def search_from_query(self, query, parameters=None):
-        parameters = parameters or {}
-        query = self._filter(query, parameters)
-        sorted_query = self._sort(query, parameters)
-        paginated_query = self._paginate(sorted_query, parameters)
+        parameters = self._populate_parameters(parameters)
+        self._validate_parameters(parameters)
+
+        query = self._filter(query, parameters['search'])
+        sorted_query = self._sort(query, parameters['order'], parameters['direction'])
+        paginated_query = self._paginate(sorted_query, parameters['limit'], parameters['skip'])
 
         return paginated_query.all(), sorted_query.count()
 
-    def _filter(self, query, parameters):
-        term = parameters.get('search', None)
+    def _populate_parameters(self, parameters=None):
+        new_params = dict(self.DEFAULTS)
+        if parameters:
+            new_params.update(parameters)
+        return new_params
+
+    def _validate_parameters(self, parameters):
+        invalid = []
+
+        if parameters['skip'] < 0:
+            invalid.append('skip must be a positive number')
+
+        if parameters['limit'] and parameters['limit'] <= 0:
+            invalid.append('limit must be a positive number')
+
+        if parameters['direction'] not in self.SORT_DIRECTIONS.keys():
+            invalid.append("direction must be 'asc' or 'desc'")
+
+        if invalid:
+            raise InvalidParametersError(invalid)
+
+    def _filter(self, query, term=None):
         if not term:
             return query
 
         criteria = []
-        for column in self.config.columns_for_filtering():
+        for column in self.config.columns_for_searching():
             expression = sql.cast(column, sa.String).ilike('%%%s%%' % term)
             criteria.append(expression)
 
-        return query.filter(sql.or_(*criteria))
-
-    def _sort(self, query, parameters):
-        order = parameters.get('order', None)
-        direction = parameters.get('direction', 'asc')
-
-        column = self.config.sort_by_column(order)
-        sorted_column = self.sort_directions[direction](column)
-
-        return query.order_by(sorted_column)
-
-    def _paginate(self, query, parameters):
-        self._validate_skip_limit(parameters)
-
-        skip = parameters.get('skip', 0)
-        if skip > 0:
-            query = query.offset(parameters['skip'])
-
-        if 'limit' in parameters:
-            query = query.limit(parameters['limit'])
-
+        print "before", query.all()
+        query = query.filter(sql.or_(*criteria))
+        print "after", query.all()
         return query
 
-    def _validate_skip_limit(self, parameters):
-        if 'skip' in parameters:
-            if parameters['skip'] < 0:
-                raise InvalidParametersError(['skip must be a positive number'])
+    def _sort(self, query, order=None, direction='asc'):
+        column = self.config.column_for_sorting(order)
+        direction = self.SORT_DIRECTIONS[direction]
 
-        if 'limit' in parameters:
-            if parameters['limit'] < 0:
-                raise InvalidParametersError(['limit must be a positive number'])
+        return query.order_by(direction(column))
+
+    def _paginate(self, query, limit=None, skip=0):
+        if skip > 0:
+            query = query.offset(skip)
+
+        if limit:
+            query = query.limit(limit)
+
+        return query

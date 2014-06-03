@@ -31,14 +31,14 @@ class TestSearchSystem(DAOTestCase):
 
     def setUp(self):
         DAOTestCase.setUp(self)
-        self.config = SearchConfig(select=UserFeatures,
+        self.config = SearchConfig(table=UserFeatures,
                                    columns={'lastname': UserFeatures.lastname,
                                             'firstname': UserFeatures.firstname,
                                             'simultcalls': UserFeatures.simultcalls},
-                                   order_by='lastname')
+                                   default_sort='lastname')
         self.search = SearchSystem(self.config)
 
-    def test_given_no_parameters_then_sorts_rows_using_default_order_and_direction(self):
+    def test_given_no_parameters_then_sorts_rows_using_default_sort_and_direction(self):
         last_user_row = self.add_user(lastname='Zintrabi')
         first_user_row = self.add_user(lastname='Abigale')
 
@@ -70,6 +70,11 @@ class TestSearchSystem(DAOTestCase):
                           self.search.search,
                           self.session, {'limit': -1})
 
+    def test_given_limit_is_zero_then_raises_error(self):
+        self.assertRaises(InvalidParametersError,
+                          self.search.search,
+                          self.session, {'limit': -1})
+
     def test_given_skip_is_negative_number_then_raises_error(self):
         self.assertRaises(InvalidParametersError,
                           self.search.search,
@@ -93,7 +98,16 @@ class TestSearchSystem(DAOTestCase):
         assert_that(total, equal_to(2))
         assert_that(rows, contains(last_user_row))
 
-    def test_given_search_then_filters_in_configured_columns_and_uses_default_order(self):
+    def test_given_skip_is_zero_then_does_not_skip_rows(self):
+        first_user_row = self.add_user(lastname='Abigale')
+        last_user_row = self.add_user(lastname='Zintrabi')
+
+        rows, total = self.search.search(self.session, {'skip': 0})
+
+        assert_that(total, equal_to(2))
+        assert_that(rows, contains(first_user_row, last_user_row))
+
+    def test_given_search_term_then_searches_in_columns_and_uses_default_sort(self):
         user_row1 = self.add_user(firstname='a123bcd', lastname='eeefghi')
         user_row2 = self.add_user(firstname='eeefghi', lastname='a123zzz')
         self.add_user(description='123')
@@ -103,7 +117,7 @@ class TestSearchSystem(DAOTestCase):
         assert_that(total, equal_to(2))
         assert_that(rows, contains(user_row2, user_row1))
 
-    def test_given_search_then_filters_in_numeric_columns(self):
+    def test_given_search_term_then_searches_in_numeric_columns(self):
         self.add_user(simultcalls=1)
         user_row2 = self.add_user(simultcalls=2)
 
