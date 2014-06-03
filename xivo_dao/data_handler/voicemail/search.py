@@ -20,7 +20,7 @@ from xivo_dao.data_handler.utils.search import SearchSystem
 from xivo_dao.data_handler.utils.search import SearchConfig
 
 
-config = SearchConfig(select=Voicemail,
+config = SearchConfig(table=Voicemail,
                       columns={'name': Voicemail.fullname,
                                'number': Voicemail.mailbox,
                                'email': Voicemail.email,
@@ -28,6 +28,6 @@ config = SearchConfig(select=Voicemail,
                                'language': Voicemail.language,
                                'timezone': Voicemail.tz},
                       search=['name', 'number', 'email'],
-                      order_by='number')
+                      default_sort='number')
 
 voicemail_search = SearchSystem(config)

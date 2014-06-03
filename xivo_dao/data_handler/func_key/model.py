@@ -76,14 +76,9 @@ class QueryHelper(object):
         self._session = session
 
     def search(self, parameters):
-        sort = ['id', 'type', 'destination', 'destination_id']
-        search = ['type', 'destination', 'destination_id']
-        order_by = 'id'
-
-        config = SearchConfig(columns=self.column_mapping,
-                              sort=sort,
-                              search=search,
-                              order_by=order_by)
+        config = SearchConfig(table=FuncKeySchema,
+                              columns=self.column_mapping,
+                              default_sort='id')
 
         return SearchSystem(config).search_from_query(self.query(), parameters)
 
