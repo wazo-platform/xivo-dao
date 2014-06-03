@@ -123,9 +123,7 @@ class SearchSystem(object):
             expression = sql.cast(column, sa.String).ilike('%%%s%%' % term)
             criteria.append(expression)
 
-        print "before", query.all()
         query = query.filter(sql.or_(*criteria))
-        print "after", query.all()
         return query
 
     def _sort(self, query, order=None, direction='asc'):
