@@ -27,6 +27,7 @@ from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.phonefunckey import PhoneFunckey
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.helpers.db_manager import daosession
+from xivo_dao.data_handler.entity import dao as entity_dao
 from xivo_dao.data_handler.user.model import UserOrdering, db_converter
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementEditionError, ElementCreationError, ElementDeletionError
@@ -151,6 +152,7 @@ def get_by_number_context(session, number, context):
 @daosession
 def create(session, user):
     user_row = db_converter.to_source(user)
+    user_row.entityid = entity_dao.default_entity_id()
     session.begin()
     session.add(user_row)
 
