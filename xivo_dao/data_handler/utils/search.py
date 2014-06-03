@@ -95,9 +95,9 @@ class SearchSystem(object):
         invalid = []
 
         if parameters['skip'] < 0:
-            invalid.append('skip must be a positive number')
+            invalid.append('skip must be a positive number or zero')
 
-        if parameters['limit'] and parameters['limit'] <= 0:
+        if parameters['limit'] is not None and parameters['limit'] <= 0:
             invalid.append('limit must be a positive number')
 
         if parameters['direction'] not in self.SORT_DIRECTIONS.keys():

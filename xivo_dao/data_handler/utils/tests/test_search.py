@@ -73,7 +73,7 @@ class TestSearchSystem(DAOTestCase):
     def test_given_limit_is_zero_then_raises_error(self):
         self.assertRaises(InvalidParametersError,
                           self.search.search,
-                          self.session, {'limit': -1})
+                          self.session, {'limit': 0})
 
     def test_given_skip_is_negative_number_then_raises_error(self):
         self.assertRaises(InvalidParametersError,
