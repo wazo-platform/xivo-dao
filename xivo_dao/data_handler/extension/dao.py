@@ -23,13 +23,13 @@ from xivo_dao.data_handler.exception import ElementCreationError
 from xivo_dao.data_handler.exception import ElementDeletionError
 from xivo_dao.data_handler.exception import ElementEditionError
 from xivo_dao.data_handler.exception import ElementNotExistsError
-from xivo_dao.data_handler.extension.model import Extension, ExtensionOrdering, db_converter
-from xivo_dao.data_handler.utils.search import SearchFilter
-from xivo_dao.helpers.abstract_model import SearchResult
+from xivo_dao.data_handler.extension.model import db_converter
+from xivo_dao.data_handler.extension.search import extension_search
+from xivo_dao.data_handler.utils.search import SearchResult
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.helpers.db_utils import commit_or_abort
 
-DEFAULT_ORDER = [ExtensionOrdering.exten, ExtensionOrdering.context]
+DEFAULT_ORDER = ExtensionSchema.exten
 
 
 @daosession
@@ -72,9 +72,7 @@ def find(session, extension_id):
 
 @daosession
 def search(session, **parameters):
-    query = session.query(ExtensionSchema)
-    search_filter = SearchFilter(query, Extension.SEARCH_COLUMNS, ExtensionOrdering.exten)
-    rows, total = search_filter.search(parameters)
+    rows, total = extension_search.search(session, parameters)
 
     extensions = _rows_to_extension_model(rows)
     return SearchResult(total, extensions)
@@ -173,7 +171,7 @@ def delete(session, extension):
 
 def _new_query(session, order=None):
     order = order or DEFAULT_ORDER
-    return session.query(ExtensionSchema).order_by(*order)
+    return session.query(ExtensionSchema).order_by(order)
 
 
 @daosession

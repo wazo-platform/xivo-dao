@@ -15,56 +15,120 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy import String
-from sqlalchemy.sql.expression import desc, asc, or_, cast
+from collections import namedtuple
+
+import sqlalchemy as sa
+from sqlalchemy import sql
+
+from xivo_dao.data_handler.exception import InvalidParametersError
+
+SearchResult = namedtuple('SearchResult', ['total', 'items'])
 
 
-class SearchFilter(object):
+class SearchConfig(object):
 
-    def __init__(self, base_query, columns, default_column):
-        self.base_query = base_query
-        self.columns = columns
-        self.default_column = default_column
+    def __init__(self, table, columns, default_sort, search=None, sort=None):
+        self.table = table
+        self._columns = columns
+        self._default_sort = default_sort
+        self._search = search
+        self._sort = sort
 
-    def search(self, parameters=None):
-        parameters = parameters or {}
+    def columns_for_searching(self):
+        if self._search:
+            return [self._columns[s] for s in self._search]
+        return self._columns.values()
 
-        search_query = self.search_for(self.base_query, parameters.get('search', None))
-        sorted_query = self.sort(search_query,
-                                 parameters.get('order', None),
-                                 parameters.get('direction', 'asc'))
-        paginated_query = self.paginate(sorted_query,
-                                        parameters.get('limit', None),
-                                        parameters.get('skip', None))
-        return paginated_query.all(), search_query.count()
+    def column_for_sorting(self, name=None):
+        column_name = self._get_sort_column_name(name)
+        return self._columns[column_name]
 
-    def search_for(self, query, term=None):
-        if term is None:
-            return self.base_query
+    def _get_sort_column_name(self, name=None):
+        name = name or self._default_sort
+        sort_columns = self._sort or self._columns.keys()
+
+        if name not in sort_columns:
+            raise InvalidParametersError(["ordering column '%s' does not exist" % name])
+
+        return name
+
+
+class SearchSystem(object):
+
+    SORT_DIRECTIONS = {
+        'asc': sql.asc,
+        'desc': sql.desc,
+    }
+
+    DEFAULTS = {
+        'search': None,
+        'order': None,
+        'direction': 'asc',
+        'limit': None,
+        'skip': 0
+    }
+
+    def __init__(self, config):
+        self.config = config
+
+    def search(self, session, parameters=None):
+        query = session.query(self.config.table)
+        return self.search_from_query(query, parameters)
+
+    def search_from_query(self, query, parameters=None):
+        parameters = self._populate_parameters(parameters)
+        self._validate_parameters(parameters)
+
+        query = self._filter(query, parameters['search'])
+        sorted_query = self._sort(query, parameters['order'], parameters['direction'])
+        paginated_query = self._paginate(sorted_query, parameters['limit'], parameters['skip'])
+
+        return paginated_query.all(), sorted_query.count()
+
+    def _populate_parameters(self, parameters=None):
+        new_params = dict(self.DEFAULTS)
+        if parameters:
+            new_params.update(parameters)
+        return new_params
+
+    def _validate_parameters(self, parameters):
+        invalid = []
+
+        if parameters['skip'] < 0:
+            invalid.append('skip must be a positive number or zero')
+
+        if parameters['limit'] is not None and parameters['limit'] <= 0:
+            invalid.append('limit must be a positive number')
+
+        if parameters['direction'] not in self.SORT_DIRECTIONS.keys():
+            invalid.append("direction must be 'asc' or 'desc'")
+
+        if invalid:
+            raise InvalidParametersError(invalid)
+
+    def _filter(self, query, term=None):
+        if not term:
+            return query
 
         criteria = []
-        for column in self.columns:
-            column_search = cast(column, String).ilike('%%%s%%' % term)
-            criteria.append(column_search)
+        for column in self.config.columns_for_searching():
+            expression = sql.cast(column, sa.String).ilike('%%%s%%' % term)
+            criteria.append(expression)
 
-        return self.base_query.filter(or_(*criteria))
+        query = query.filter(sql.or_(*criteria))
+        return query
 
-    def paginate(self, query, limit=None, skip=None):
-        if skip is not None:
+    def _sort(self, query, order=None, direction='asc'):
+        column = self.config.column_for_sorting(order)
+        direction = self.SORT_DIRECTIONS[direction]
+
+        return query.order_by(direction(column))
+
+    def _paginate(self, query, limit=None, skip=0):
+        if skip > 0:
             query = query.offset(skip)
 
-        if limit is not None:
+        if limit:
             query = query.limit(limit)
 
         return query
-
-    def sort(self, query, order=None, direction='asc'):
-        if order is None:
-            order = self.default_column
-
-        if direction == 'desc':
-            order_expression = desc(order)
-        else:
-            order_expression = asc(order)
-
-        return query.order_by(order_expression)

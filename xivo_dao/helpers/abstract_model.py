@@ -16,7 +16,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.data_handler.exception import InvalidParametersError
-from collections import namedtuple
 
 
 class AbstractModels(object):
@@ -124,6 +123,3 @@ class AbstractModels(object):
                 missing.append(parameter)
 
         return missing
-
-
-SearchResult = namedtuple('SearchResult', ['total', 'items'])
