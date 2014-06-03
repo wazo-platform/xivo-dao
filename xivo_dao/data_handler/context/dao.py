@@ -18,8 +18,8 @@
 from xivo_dao.alchemy.context import Context as ContextSchema
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 from xivo_dao.alchemy.contextnumbers import ContextNumbers as ContextNumberSchema
-from xivo_dao.alchemy.entity import Entity as EntitySchema
 from xivo_dao.data_handler.context.model import db_converter
+from xivo_dao.data_handler.entity import dao as entity_dao
 from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.helpers.db_manager import daosession
 
@@ -52,19 +52,13 @@ def get_by_extension_id(session, extension_id):
 @daosession
 def create(session, context):
     context_row = db_converter.to_source(context)
-    context_row.entity = _get_default_entity_name()
+    context_row.entity = entity_dao.default_entity_name()
 
     session.begin()
     session.add(context_row)
     session.commit()
 
     return context
-
-
-@daosession
-def _get_default_entity_name(session):
-    entity = session.query(EntitySchema).first()
-    return entity.name
 
 
 @daosession
