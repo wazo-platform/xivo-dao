@@ -32,6 +32,9 @@ class UserFeatures(Base):
         ForeignKeyConstraint(('cti_profile_id',),
                              ('cti_profile.id',),
                              ondelete='RESTRICT'),
+        ForeignKeyConstraint(('entityid',),
+                             ('entity.id',),
+                             ondelete='RESTRICT'),
         UniqueConstraint('func_key_private_template_id'),
         Index('userfeatures__idx__agentid', 'agentid'),
         Index('userfeatures__idx__entityid', 'entityid'),
@@ -93,6 +96,7 @@ class UserFeatures(Base):
     func_key_template = relationship("FuncKeyTemplate", foreign_keys=func_key_template_id)
     func_key_template_private = relationship("FuncKeyTemplate", foreign_keys=func_key_private_template_id)
     cti_profile = relationship("CtiProfile", foreign_keys=cti_profile_id)
+    entity = relationship("Entity", foreign_keys=entityid)
 
     @property
     def fullname(self):
