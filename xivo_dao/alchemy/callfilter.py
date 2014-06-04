@@ -22,6 +22,7 @@ from xivo_dao.alchemy import enum
 from xivo_dao.helpers.db_manager import Base
 from sqlalchemy.sql.schema import ForeignKeyConstraint
 from sqlalchemy.orm import relationship
+from sqlalchemy import text
 
 
 class Callfilter(Base):
@@ -37,7 +38,7 @@ class Callfilter(Base):
     )
 
     id = Column(Integer, nullable=False)
-    entity_id = Column(Integer)
+    entity_id = Column(Integer, server_default=text('NULL'))
     name = Column(String(128), nullable=False, server_default='')
     type = Column(enum.callfilter_type, nullable=False)
     bosssecretary = Column(enum.callfilter_bosssecretary)
