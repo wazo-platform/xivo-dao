@@ -335,6 +335,10 @@ class TestFind(DAOTestCase):
 
 class TestCreate(DAOTestCase):
 
+    def setUp(self):
+        DAOTestCase.setUp(self)
+        self.entity = self.add_entity()
+
     def prepare_user(self, **kwargs):
         private_template_row = self.add_func_key_template(private=True)
         kwargs.setdefault('private_template_id', private_template_row.id)
@@ -361,6 +365,7 @@ class TestCreate(DAOTestCase):
         assert_that(row.musiconhold, equal_to(user.music_on_hold))
         assert_that(row.preprocess_subroutine, equal_to(user.preprocess_subroutine))
         assert_that(row.func_key_private_template_id, equal_to(user.private_template_id))
+        assert_that(row.entityid, equal_to(self.entity.id))
 
     def test_create_with_custom_caller_id(self):
         caller_id = '"caller_id"'

@@ -24,6 +24,7 @@ import unittest
 from mock import patch
 from sqlalchemy.schema import MetaData
 
+from xivo_dao.alchemy.entity import Entity as EntitySchema
 from xivo_dao.alchemy.incall import Incall
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.user_line import UserLine
@@ -620,6 +621,18 @@ class DAOTestCase(unittest.TestCase):
         destination_type_row = FuncKeyDestinationType(**kwargs)
         self.add_me(destination_type_row)
         return destination_type_row
+
+    def add_entity(self, **kwargs):
+        kwargs.setdefault('name', 'entity')
+        kwargs.setdefault('displayname', 'entity')
+        kwargs.setdefault('description', '')
+        entity = EntitySchema(**kwargs)
+
+        self.session.begin()
+        self.session.add(entity)
+        self.session.commit()
+
+        return entity
 
     def add_me(self, obj):
         self.session.begin()

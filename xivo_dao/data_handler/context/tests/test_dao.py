@@ -21,7 +21,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 from xivo_dao.alchemy.context import Context as ContextSchema
 from xivo_dao.alchemy.contextnumbers import ContextNumbers as ContextNumberSchema
-from xivo_dao.alchemy.entity import Entity as EntitySchema
 
 from xivo_dao.data_handler.context.model import Context, ContextType
 from xivo_dao.data_handler.context import dao as context_dao
@@ -29,17 +28,6 @@ from xivo_dao.data_handler.exception import ElementNotExistsError
 
 
 class TestContextDao(DAOTestCase):
-
-    def _insert_entity(self, entity_name):
-        entity = EntitySchema(name=entity_name,
-                              displayname=entity_name,
-                              description='')
-
-        self.session.begin()
-        self.session.add(entity)
-        self.session.commit()
-
-        return entity
 
     def _insert_contextnumber(self, **kwargs):
         context_number = ContextNumberSchema(**kwargs)
@@ -97,7 +85,7 @@ class TestContextCreate(TestContextDao):
                           display_name=context_name,
                           type=context_type)
 
-        self._insert_entity(entity_name)
+        self.add_entity(name=entity_name)
 
         created_context = context_dao.create(context)
 
