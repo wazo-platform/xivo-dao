@@ -29,9 +29,11 @@ class UserContact(Base):
         PrimaryKeyConstraint('user_id', 'phonebook_id'),
         ForeignKeyConstraint(('phonebook_id',),
                              ('phonebook.id',),
+                             name='fk_phonebook_id',
                              ondelete='CASCADE'),
         ForeignKeyConstraint(('user_id',),
                              ('userfeatures.id',),
+                             name='fk_user_id',
                              ondelete='CASCADE'),
     )
 
