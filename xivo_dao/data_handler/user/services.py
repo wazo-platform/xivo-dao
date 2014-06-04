@@ -44,6 +44,10 @@ def find_all_by_fullname(fullname):
     return user_dao.find_all_by_fullname(fullname)
 
 
+def search(**parameters):
+    return user_dao.search(**parameters)
+
+
 def create(user):
     validator.validate_create(user)
     user = _create_user_in_database(user)

@@ -133,9 +133,4 @@ class User(NewModel):
         return self.caller_id_from_fullname()
 
 
-class UserOrdering(object):
-    firstname = 'firstname'
-    lastname = 'lastname'
-
-
 db_converter = UserDbConverter()

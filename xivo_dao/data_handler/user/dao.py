@@ -28,13 +28,23 @@ from xivo_dao.alchemy.phonefunckey import PhoneFunckey
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.data_handler.entity import dao as entity_dao
-from xivo_dao.data_handler.user.model import UserOrdering, db_converter
+
+from xivo_dao.data_handler.user.search import user_search
+from xivo_dao.data_handler.utils.search import SearchResult
+from xivo_dao.data_handler.user.model import db_converter
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementEditionError, ElementCreationError, ElementDeletionError
 from sqlalchemy.sql.expression import and_
 
 
-DEFAULT_ORDER = [UserOrdering.lastname, UserOrdering.firstname]
+DEFAULT_ORDER = [UserSchema.lastname, UserSchema.firstname]
+
+
+@daosession
+def search(session, **parameters):
+    rows, total = user_search.search(session, parameters)
+    users = _rows_to_user_model(rows)
+    return SearchResult(total, users)
 
 
 @daosession
