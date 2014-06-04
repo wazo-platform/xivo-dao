@@ -76,9 +76,9 @@ class DeviceOrdering(object):
     @classmethod
     def validate_order(cls, order):
         if order not in cls.all_columns():
-            raise InvalidParametersError("ordering parameter '%s' does not exist" % order)
+            raise InvalidParametersError(["ordering column '%s' does not exist" % order])
 
     @classmethod
     def validate_direction(cls, direction):
         if direction not in cls.directions():
-            raise InvalidParametersError("direction parameter '%s' does not exist" % direction)
+            raise InvalidParametersError(["direction must be 'asc' or 'desc'"])
