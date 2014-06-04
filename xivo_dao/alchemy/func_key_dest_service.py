@@ -39,4 +39,4 @@ class FuncKeyDestService(Base):
     extension_id = Column(Integer)
 
     func_key = relationship("FuncKey")
-    extensions = relationship("Extension")
+    extension = relationship("Extension")
