@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.alchemy.extension import Extension
+from xivo_dao.alchemy.context import Context
 from xivo_dao.data_handler.utils.search import SearchSystem
 from xivo_dao.data_handler.utils.search import SearchConfig
 
@@ -25,4 +26,19 @@ config = SearchConfig(table=Extension,
                                'context': Extension.context},
                       default_sort='exten')
 
-extension_search = SearchSystem(config)
+
+class ExtensionSearchSystem(SearchSystem):
+
+    def search_from_query(self, query, parameters=None):
+        query = self._apply_type_filter(query, parameters)
+        return SearchSystem.search_from_query(self, query, parameters)
+
+    def _apply_type_filter(self, query, parameters=None):
+        if parameters and 'type' in parameters:
+            return (query
+                    .join(Context, Extension.context == Context.name)
+                    .filter(Context.contexttype == parameters['type']))
+        return query
+
+
+extension_search = ExtensionSearchSystem(config)
