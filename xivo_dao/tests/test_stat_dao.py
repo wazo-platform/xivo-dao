@@ -78,14 +78,14 @@ class TestStatDAO(DAOTestCase):
         self.assertEqual(expected, result)
 
     def test_get_login_intervals_when_logoff_same_as_start_no_login(self):
-        logintime = datetime.timedelta(minutes=1)
+        talktime = datetime.timedelta(minutes=1)
 
         logoffs = [
             {'time': self.start,
              'callid': 'login_1',
              'agent': self.aname1,
              'chan_name': 'SIP/1234-00001',
-             'talktime': logintime}
+             'talktime': talktime}
         ]
 
         self._insert_agent_callback_logins_logoffs([], logoffs)
@@ -94,6 +94,50 @@ class TestStatDAO(DAOTestCase):
         result = stat_dao.get_login_intervals_in_range(self.session, self.start, self.end)
 
         self.assertEqual(len(result), 0)
+
+    def test_get_login_intervals_when_logoff_after_end_no_login(self):
+        talktime = datetime.timedelta(minutes=1)
+        logintime = self.end + datetime.timedelta(minutes=1)
+        logouttime = logintime + talktime
+
+        logoffs = [
+            {'time': logouttime,
+             'callid': 'login_1',
+             'agent': self.aname1,
+             'chan_name': 'SIP/1234-00001',
+             'talktime': talktime}
+        ]
+
+        self._insert_agent_callback_logins_logoffs([], logoffs)
+        self._insert_agent_logins_logoffs([], logoffs)
+
+        result = stat_dao.get_login_intervals_in_range(self.session, self.start, self.end)
+
+        self.assertEqual(len(result), 0)
+
+    def test_get_login_intervals_when_logoff_same_as_end_no_login(self):
+        talktime = datetime.timedelta(minutes=1)
+        logintime = self.end - talktime
+        logouttime = self.end
+
+        logoffs = [
+            {'time': logouttime,
+             'callid': 'login_1',
+             'agent': self.aname1,
+             'chan_name': 'SIP/1234-00001',
+             'talktime': talktime}
+        ]
+
+        self._insert_agent_callback_logins_logoffs([], logoffs)
+        self._insert_agent_logins_logoffs([], logoffs)
+
+        result = stat_dao.get_login_intervals_in_range(self.session, self.start, self.end)
+
+        expected = {
+            self.aid1: sorted([(logintime, logouttime)])
+        }
+
+        self.assertEqual(expected, result)
 
     def test_get_login_intervals_in_range_calls_logins_in_range(self):
         logintimes = [
