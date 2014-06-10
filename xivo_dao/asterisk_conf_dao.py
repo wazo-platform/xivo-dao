@@ -375,6 +375,12 @@ def find_sip_trunk_settings(session):
 
 @daosession
 def find_sip_user_settings(session):
+    def gen_user(user_sip, number, moh):
+        user_config = user_sip.todict()
+        user_config['number'] = number
+        user_config['mohsuggest'] = moh
+        return user_config
+
     rows = (
         session.query(
             UserSIP,
@@ -392,15 +398,7 @@ def find_sip_user_settings(session):
         ).all()
     )
 
-    res = []
-    for row in rows:
-        user_sip, number, moh = row
-        tmp = user_sip.todict()
-        tmp['number'] = number
-        tmp['mohsuggest'] = moh
-        res.append(tmp)
-
-    return res
+    return (gen_user(*row) for row in rows)
 
 
 @daosession
