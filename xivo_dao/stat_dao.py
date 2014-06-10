@@ -192,7 +192,7 @@ FROM
   WHERE event like 'AGENT%LOGOFF' AND
   data1 <> '' AND
   data2::INTEGER > 0 AND
-  time::TIMESTAMP >= :start) AS logouts
+  time::TIMESTAMP > :start) AS logouts
 WHERE stat_agent.name = agent
 ORDER BY agent, logout_timestamp
 '''
