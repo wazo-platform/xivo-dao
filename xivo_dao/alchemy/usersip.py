@@ -84,7 +84,6 @@ class UserSIP(Base):
     allow = Column(Text)
     autoframing = Column(Integer)
     mohinterpret = Column(String(80))
-    mohsuggest = Column(String(80))
     useclientcode = Column(Integer)
     progressinband = Column(Enum('no', 'yes', 'never',
                                  name='usersip_progressinband',

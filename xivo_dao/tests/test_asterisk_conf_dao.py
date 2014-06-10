@@ -652,7 +652,6 @@ class TestAsteriskConfDAO(DAOTestCase):
              't38pt_udptl': None,
              'fullcontact': None,
              'subscribemwi': 0,
-             'mohsuggest': None,
              'id': sip1.id,
              'autoframing': None,
              't38pt_usertpsource': None,
