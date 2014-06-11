@@ -178,30 +178,39 @@ def _pick_longest_with_same_end(logins):
 
 def _get_completed_logins(session, start, end):
     completed_logins_query = '''\
+WITH agent_logins AS (
 SELECT
-  logout_timestamp - login_delay AS login_timestamp,
-  logout_timestamp,
-  stat_agent.id AS agent
+    agent,
+    CAST(time AS TIMESTAMP) AS logout_timestamp,
+    CAST(time as TIMESTAMP) - (data2 || ' seconds')::INTERVAL AS login_timestamp
 FROM
-  stat_agent,
-(SELECT
-  CAST(time AS TIMESTAMP) as logout_timestamp,
-  agent,
-  (data2 || ' seconds')::INTERVAL AS login_delay
- FROM queue_log
-  WHERE event like 'AGENT%LOGOFF' AND
-  data1 <> '' AND
-  data2::INTEGER > 0 AND
-  time::TIMESTAMP >= :start) AS logouts
-WHERE stat_agent.name = agent
-ORDER BY agent, logout_timestamp
+    queue_log
+WHERE
+    event like 'AGENT%LOGOFF' AND
+    data1 <> '' AND
+    data2::INTEGER > 0
+)
+
+SELECT
+    agent_logins.login_timestamp,
+    agent_logins.logout_timestamp,
+    stat_agent.id AS agent
+FROM
+    stat_agent
+    INNER JOIN agent_logins
+        ON agent_logins.agent = stat_agent.name
+WHERE
+    agent_logins.logout_timestamp > :start
+    AND agent_logins.logout_timestamp <= :end
+ORDER BY
+    agent_logins.agent, agent_logins.logout_timestamp
 '''
 
     rows = session.query(
         'agent',
         'login_timestamp',
         'logout_timestamp'
-    ).from_statement(completed_logins_query).params(start=start)
+    ).from_statement(completed_logins_query).params(start=start, end=end)
 
     results = {}
 
