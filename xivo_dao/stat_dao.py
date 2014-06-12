@@ -70,12 +70,15 @@ SELECT stat_agent.id AS agent,
       ) AS unpauseall
     FROM queue_log AS pause_all
     WHERE event = 'PAUSEALL'
-    AND time::TIMESTAMP >= :start
+    AND time >= :start
     ORDER BY agent, time DESC
   ) AS pauseall, stat_agent
   WHERE stat_agent.name = agent
   GROUP BY stat_agent.id, unpauseall
 '''
+
+    start = start.strftime(_STR_TIME_FMT)
+    end = end.strftime(_STR_TIME_FMT)
 
     rows = (session
             .query('agent', 'pauseall', 'unpauseall')
@@ -186,9 +189,11 @@ SELECT
 FROM
     queue_log
 WHERE
-    event like 'AGENT%LOGOFF' AND
-    data1 <> '' AND
-    data2::INTEGER > 0
+    event like 'AGENT%LOGOFF'
+    AND data1 <> ''
+    AND data2::INTEGER > 0
+    AND time > :start
+    AND time <= :end
 )
 
 SELECT
@@ -199,18 +204,16 @@ FROM
     stat_agent
     INNER JOIN agent_logins
         ON agent_logins.agent = stat_agent.name
-WHERE
-    agent_logins.logout_timestamp > :start
-    AND agent_logins.logout_timestamp <= :end
 ORDER BY
     agent_logins.agent, agent_logins.logout_timestamp
 '''
 
-    rows = session.query(
-        'agent',
-        'login_timestamp',
-        'logout_timestamp'
-    ).from_statement(completed_logins_query).params(start=start, end=end)
+    formatted_start = start.strftime(_STR_TIME_FMT)
+    formatted_end = end.strftime(_STR_TIME_FMT)
+
+    rows = (session.query('agent', 'login_timestamp', 'logout_timestamp')
+            .from_statement(completed_logins_query)
+            .params(start=formatted_start, end=formatted_end))
 
     results = {}
 
@@ -266,8 +269,12 @@ WHERE
 GROUP BY
   stat_agent.id
 HAVING
-  CAST(MAX(case when event like '%LOGIN' then time end) AS TIMESTAMP) < :end
+  MAX(case when event like '%LOGIN' then time end) < :end
 '''
+
+    start = start.strftime(_STR_TIME_FMT)
+    end = end.strftime(_STR_TIME_FMT)
+
     rows = session.query(
         'agent',
         'login',
