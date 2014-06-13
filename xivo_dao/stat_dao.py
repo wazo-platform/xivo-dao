@@ -225,7 +225,7 @@ ORDER BY
 
 
 def _get_ongoing_logins(session, start, end):
-    last_logins, last_logouts = _get_last_logins_and_logouts(session)
+    last_logins, last_logouts = _get_last_logins_and_logouts(session, start, end)
 
     def filter_ended_logins(logins, logouts):
         filtered_logins = {}
@@ -251,7 +251,7 @@ def _get_ongoing_logins(session, start, end):
     return results
 
 
-def _get_last_logins_and_logouts(session):
+def _get_last_logins_and_logouts(session, start, end):
     query = '''\
 SELECT
   stat_agent.id AS agent,
@@ -265,12 +265,14 @@ WHERE
   event LIKE 'AGENT%'
 GROUP BY
   stat_agent.id
+HAVING
+  CAST(MAX(case when event like '%LOGIN' then time end) AS TIMESTAMP) < :end
 '''
     rows = session.query(
         'agent',
         'login',
         'logout',
-    ).from_statement(query)
+    ).from_statement(query).params(start=start, end=end)
 
     agent_last_logins = {}
     agent_last_logouts = {}
