@@ -717,7 +717,8 @@ class TestUserFeaturesDAO(DAOTestCase):
                                                   exten='1234',
                                                   name='12kjdhf',
                                                   provisioningid=1234,
-                                                  protocolid=1)
+                                                  protocolid=1,
+                                                  musiconhold=u'')
 
         user_id = user_line.user.id
         line_list = [str(user_line.line.id)]

@@ -652,7 +652,6 @@ class TestAsteriskConfDAO(DAOTestCase):
              't38pt_udptl': None,
              'fullcontact': None,
              'subscribemwi': 0,
-             'mohsuggest': None,
              'id': sip1.id,
              'autoframing': None,
              't38pt_usertpsource': None,
@@ -681,10 +680,13 @@ class TestAsteriskConfDAO(DAOTestCase):
 
     def test_find_sip_user_settings(self):
         usersip = self.add_usersip(category='user')
-        ule = self.add_user_line_with_exten(protocol='sip',
-                                            protocolid=usersip.id,
-                                            name_line=usersip.name,
-                                            context=usersip.context)
+        ule = self.add_user_line_with_exten(
+            protocol='sip',
+            protocolid=usersip.id,
+            name_line=usersip.name,
+            context=usersip.context,
+            musiconhold='mymusic',
+        )
 
         expected_result = [
             {'number': ule.line.number,
@@ -757,7 +759,7 @@ class TestAsteriskConfDAO(DAOTestCase):
              't38pt_udptl': None,
              'fullcontact': None,
              'subscribemwi': 0,
-             'mohsuggest': None,
+             'mohsuggest': 'mymusic',
              'id': usersip.id,
              'autoframing': None,
              't38pt_usertpsource': None,

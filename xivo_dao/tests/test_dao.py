@@ -141,11 +141,13 @@ class DAOTestCase(unittest.TestCase):
         kwargs.setdefault('commented_line', 0)
         kwargs.setdefault('device', 1)
         kwargs.setdefault('voicemail_id', None)
+        kwargs.setdefault('musiconhold', 'default')
 
         user = self.add_user(firstname=kwargs['firstname'],
                              lastname=kwargs['lastname'],
                              callerid=kwargs['callerid'],
-                             voicemailid=kwargs['voicemail_id'])
+                             voicemailid=kwargs['voicemail_id'],
+                             musiconhold=kwargs['musiconhold'])
         line = self.add_line(number=kwargs['exten'],
                              context=kwargs['context'],
                              protocol=kwargs['protocol'],

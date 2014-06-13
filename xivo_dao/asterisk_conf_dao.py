@@ -375,22 +375,30 @@ def find_sip_trunk_settings(session):
 
 @daosession
 def find_sip_user_settings(session):
-    rows = (session.query(UserSIP,
-                          LineFeatures.number)
-            .filter(and_(UserSIP.category == 'user',
-                         UserSIP.commented == 0,
-                         LineFeatures.protocol == 'sip',
-                         LineFeatures.protocolid == UserSIP.id))
-            .all())
+    def gen_user(user_sip, number, moh):
+        user_config = user_sip.todict()
+        user_config['number'] = number
+        user_config['mohsuggest'] = moh
+        return user_config
 
-    res = []
-    for row in rows:
-        user_sip, number = row
-        tmp = user_sip.todict()
-        tmp['number'] = number
-        res.append(tmp)
+    rows = (
+        session.query(
+            UserSIP,
+            LineFeatures.number,
+            UserFeatures.musiconhold,
+        ).filter(
+            and_(
+                UserSIP.category == 'user',
+                UserSIP.commented == 0,
+                LineFeatures.protocol == 'sip',
+                LineFeatures.protocolid == UserSIP.id,
+                UserLine.user_id == UserFeatures.id,
+                UserLine.line_id == LineFeatures.id,
+            )
+        ).all()
+    )
 
-    return res
+    return (gen_user(*row) for row in rows)
 
 
 @daosession
