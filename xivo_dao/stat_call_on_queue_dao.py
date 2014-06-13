@@ -63,7 +63,7 @@ def add_timeout_call(dao_sess, callid, time, queue_name, waittime):
 
 def get_periodic_stats_quarter_hour(session, start, end):
     quarter_hour_step = func.date_trunc(literal('hour'), StatCallOnQueue.time) + \
-                        (cast(extract('minute', StatCallOnQueue.time), Integer) / 15) * timedelta(minutes=15)
+        (cast(extract('minute', StatCallOnQueue.time), Integer) / 15) * timedelta(minutes=15)
     return _get_periodic_stat_by_step(session, start, end, quarter_hour_step)
 
 
@@ -106,8 +106,8 @@ def remove_after(session, date):
 
 def find_all_callid_between_date(session, start_date, end_date):
     rows = (session.query(StatCallOnQueue.callid)
-           .filter(StatCallOnQueue.time.between(start_date, end_date))
-           .all())
+            .filter(StatCallOnQueue.time.between(start_date, end_date))
+            .all())
 
     return [row[0] for row in rows]
 
