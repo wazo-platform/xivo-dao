@@ -33,9 +33,8 @@ def _add_call(session, callid, time, queue_name, event, waittime=None):
     if waittime:
         call_on_queue.waittime = waittime
 
-    session.begin()
     session.add(call_on_queue)
-    session.commit()
+    session.flush()
 
 
 def add_abandoned_call(dao_sess, callid, time, queue_name, waittime):
