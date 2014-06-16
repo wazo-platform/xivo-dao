@@ -31,28 +31,29 @@ def get_wrapup_times(session, start, end, interval):
     before_start = start - timedelta(minutes=2)
     wrapup_times_query = '''\
 SELECT
-  CAST(queue_log.time AS TIMESTAMP) AS start,
-  (CAST(queue_log.time AS TIMESTAMP) + (queue_log.data1 || ' seconds')::INTERVAL) AS end,
-  stat_agent.id AS agent_id
+    CAST(queue_log.time AS TIMESTAMP) AS start,
+    (CAST(queue_log.time AS TIMESTAMP) + (queue_log.data1 || ' seconds')::INTERVAL) AS end,
+    stat_agent.id AS agent_id
 FROM
-  queue_log,
-  stat_agent
+    queue_log
+INNER JOIN
+    stat_agent ON stat_agent.name = queue_log.agent
 WHERE
-  stat_agent.name = queue_log.agent
-AND
   queue_log.event = 'WRAPUPSTART'
 AND
-  queue_log.time::TIMESTAMP BETWEEN :start AND :end
+  queue_log.time BETWEEN :start AND :end
 '''
 
     periods = [t for t in _enumerate_periods(start, end, interval)]
+    formatted_start = before_start.strftime('%Y-%m-%d %H:%M:%S')
+    formatted_end = end.strftime('%Y-%m-%d %H:%M:%S')
 
     rows = session.query(
         'start',
         'end',
         'agent_id'
-    ).from_statement(wrapup_times_query).params(start=before_start,
-                                                end=end)
+    ).from_statement(wrapup_times_query).params(start=formatted_start,
+                                                end=formatted_end)
 
     results = {}
     for row in rows.all():
