@@ -98,9 +98,15 @@ class TestValidateModel(unittest.TestCase):
 
         self.assertRaises(InvalidParametersError, validator.validate_model, user)
 
-    def test_validate_model_valid_mobilephonenumber(self):
-        user = User(firstname='toto')
-        user.mobilephonenumber = '1234'
+    def test_validate_model_basic_mobilephonenumber(self):
+        user = User(firstname='toto',
+                    mobile_phone_number='1234')
+
+        validator.validate_model(user)
+
+    def test_validate_model_international_mobilephonenumber(self):
+        user = User(firstname='toto',
+                    mobile_phone_number='+011224657453*77#23')
 
         validator.validate_model(user)
 

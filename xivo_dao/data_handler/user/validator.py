@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
+import re
 
 from xivo_dao.data_handler.exception import MissingParametersError
 from xivo_dao.data_handler.exception import InvalidParametersError
@@ -22,6 +23,9 @@ from xivo_dao.data_handler.exception import ElementDeletionError
 from xivo_dao.data_handler.user import dao as user_dao
 from xivo_dao.data_handler.user_line import dao as user_line_dao
 from xivo_dao.data_handler.user_voicemail import dao as user_voicemail_dao
+
+
+MOBILE_PHONE_NUMBER_REGEX = re.compile(r"^\+?[0-9\*#]+$")
 
 
 def validate_create(user):
@@ -54,7 +58,7 @@ def _check_invalid_parameters(user):
     invalid_parameters = []
     if not user.firstname:
         invalid_parameters.append('firstname')
-    if user.mobile_phone_number is not None and not unicode(user.mobile_phone_number).isnumeric():
+    if user.mobile_phone_number and not MOBILE_PHONE_NUMBER_REGEX.match(user.mobile_phone_number):
         invalid_parameters.append('mobile_phone_number')
     if user.password is not None and len(user.password) < 4:
         invalid_parameters.append('password')
