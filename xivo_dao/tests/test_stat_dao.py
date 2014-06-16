@@ -115,6 +115,62 @@ class TestStatDAO(DAOTestCase):
 
         self.assertEqual(len(result), 0)
 
+    def test_get_login_intervals_when_login_after_range(self):
+        talktime = datetime.timedelta(minutes=1)
+        logintime = self.start
+        logouttime = logintime + talktime
+
+        logins = [
+            {'time': logintime,
+             'callid': 'login_1',
+             'agent': self.aname1,
+             'chan_name': 'SIP/1234-00001',
+             'talktime': talktime},
+            {'time': self.end + datetime.timedelta(minutes=1),
+             'callid': 'login_1',
+             'agent': self.aname1,
+             'chan_name': 'SIP/1234-00001',
+             'talktime': talktime}
+        ]
+
+        logoffs = [
+            {'time': logouttime,
+             'agent': self.aname1,
+             'chan_name': 'SIP/1234-00001',
+             'talktime': talktime}
+        ]
+
+        self._insert_agent_callback_logins_logoffs(logins, logoffs)
+        self._insert_agent_logins_logoffs(logins, logoffs)
+
+        result = stat_dao.get_login_intervals_in_range(self.session, self.start, self.end)
+
+        expected = {
+            self.aid1: sorted([(logintime, logouttime)])
+        }
+
+        self.assertEqual(expected, result)
+
+    def test_get_login_intervals_when_login_after_range_no_logoff(self):
+        talktime = datetime.timedelta(minutes=1)
+
+        logins = [
+            {'time': self.end + datetime.timedelta(minutes=1),
+             'callid': 'login_1',
+             'agent': self.aname1,
+             'chan_name': 'SIP/1234-00001',
+             'talktime': talktime}
+        ]
+
+        logoffs = []
+
+        self._insert_agent_callback_logins_logoffs(logins, logoffs)
+        self._insert_agent_logins_logoffs(logins, logoffs)
+
+        result = stat_dao.get_login_intervals_in_range(self.session, self.start, self.end)
+
+        self.assertEqual(len(result), 0)
+
     def test_get_login_intervals_when_logoff_same_as_end_no_login(self):
         talktime = datetime.timedelta(minutes=1)
         logintime = self.end - talktime
