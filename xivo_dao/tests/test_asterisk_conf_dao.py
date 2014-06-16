@@ -786,6 +786,29 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         assert_that(sip_user, contains_inanyorder(*expected_result))
 
+    def test_find_sip_user_settings_no_xivo_user(self):
+        number, context = '1001', 'myctx'
+        user_sip = self.add_usersip(
+            category='user',
+            context=context,
+        )
+        self.add_line(
+            number=number,
+            context=context,
+            protocolid=user_sip.id,
+            name='name',
+        )
+        self.add_extension(
+            exten=number,
+            context=context,
+        )
+
+        sip_user_conf = next(asterisk_conf_dao.find_sip_user_settings())
+
+        assert_that(sip_user_conf, has_entries('protocol', 'sip',
+                                               'number', number,
+                                               'context', context))
+
     def test_find_sip_pickup_settings(self):
         pickup = self.add_pickup()
         user_member = self._add_pickup_member_user(pickup)

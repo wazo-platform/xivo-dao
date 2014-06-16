@@ -386,14 +386,17 @@ def find_sip_user_settings(session):
             UserSIP,
             LineFeatures.number,
             UserFeatures.musiconhold,
+        ).join(
+            LineFeatures, and_(LineFeatures.protocolid == UserSIP.id,
+                               LineFeatures.protocol == 'sip')
+        ).outerjoin(
+            UserLine, UserLine.line_id == LineFeatures.id
+        ).outerjoin(
+            UserFeatures, UserFeatures.id == UserLine.user_id
         ).filter(
             and_(
                 UserSIP.category == 'user',
                 UserSIP.commented == 0,
-                LineFeatures.protocol == 'sip',
-                LineFeatures.protocolid == UserSIP.id,
-                UserLine.user_id == UserFeatures.id,
-                UserLine.line_id == LineFeatures.id,
             )
         ).all()
     )
