@@ -15,9 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy.sql import text
+
 _STR_TIME_FMT = "%Y-%m-%d %H:%M:%S.%f"
 
-FILL_ANSWERED_CALL_ON_QUEUE_QUERY = '''\n
+FILL_ANSWERED_CALL_ON_QUEUE_QUERY = text('''\n
 INSERT INTO stat_call_on_queue (callid, "time", talktime, waittime, queue_id, agent_id, status)
 (
     WITH
@@ -113,7 +115,7 @@ INSERT INTO stat_call_on_queue (callid, "time", talktime, waittime, queue_id, ag
     ORDER BY
         all_calls.time
 )
-'''
+''')
 
 
 def fill_simple_calls(session, start, end):
@@ -125,11 +127,12 @@ def fill_simple_calls(session, start, end):
 
 
 def fill_answered_calls(session, start, end):
-    _run_sql_function_returning_void(
-        session,
-        start, end,
-        FILL_ANSWERED_CALL_ON_QUEUE_QUERY,
-    )
+    params = {
+        'start': start.strftime(_STR_TIME_FMT),
+        'end': end.strftime(_STR_TIME_FMT),
+    }
+
+    session.execute(FILL_ANSWERED_CALL_ON_QUEUE_QUERY, params)
 
 
 def fill_leaveempty_calls(session, start, end):
