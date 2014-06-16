@@ -115,7 +115,7 @@ class TestStatDAO(DAOTestCase):
 
         self.assertEqual(len(result), 0)
 
-    def test_get_login_internvals_when_login_after_range(self):
+    def test_get_login_intervals_when_login_after_range(self):
         talktime = datetime.timedelta(minutes=1)
         logintime = self.start
         logouttime = logintime + talktime
@@ -151,7 +151,7 @@ class TestStatDAO(DAOTestCase):
 
         self.assertEqual(expected, result)
 
-    def test_get_login_internvals_when_login_after_range_no_logoff(self):
+    def test_get_login_intervals_when_login_after_range_no_logoff(self):
         talktime = datetime.timedelta(minutes=1)
 
         logins = [
