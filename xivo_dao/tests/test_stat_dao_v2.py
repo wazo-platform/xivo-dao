@@ -67,6 +67,9 @@ class TestStatDAO(DAOTestCase):
         _, agent_id_2 = self._insert_agent('Agent/2')
         _, agent_id_3 = self._insert_agent('Agent/3')
 
+        start = dt(2012, 5, 31)
+        end = dt(2012, 6, 1, 23, 59, 59, 999999)
+
         queue_log_data = '''\
 | time                       | callid   | queuename | agent   | event               | data1        | data2 | data3         | data4 | data5 |
 | 2012-05-31 22:00:00.000000 | logout_0 | NONE      | Agent/1 | AGENTCALLBACKLOGOFF | 1001@default | 25200 | CommandLogoff |       |       |
@@ -82,7 +85,7 @@ class TestStatDAO(DAOTestCase):
 
         self._insert_queue_log_data(queue_log_data)
 
-        _, result = stat_dao._get_last_logins_and_logouts(self.session)
+        _, result = stat_dao._get_last_logins_and_logouts(self.session, start, end)
 
         expected = {
             agent_id_1: dt(2012, 6, 1, 6, 45),
@@ -95,6 +98,8 @@ class TestStatDAO(DAOTestCase):
         _, agent_id_1 = self._insert_agent('Agent/1')
         _, agent_id_2 = self._insert_agent('Agent/2')
         _, agent_id_3 = self._insert_agent('Agent/3')
+        start = dt(2012, 1, 1)
+        end = dt(2012, 6, 1, 23, 59, 59, 999999)
 
         queue_log_data = '''\
 | time                       | callid     | queuename | agent   | event               | data1        | data2 | data3         | data4 | data5 |
@@ -114,7 +119,7 @@ class TestStatDAO(DAOTestCase):
 
         self._insert_queue_log_data(queue_log_data)
 
-        result, _ = stat_dao._get_last_logins_and_logouts(self.session)
+        result, _ = stat_dao._get_last_logins_and_logouts(self.session, start, end)
 
         expected = {
             agent_id_1: dt(2012, 6, 1, 6, 40),
