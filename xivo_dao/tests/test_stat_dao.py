@@ -472,7 +472,7 @@ class TestStatDAO(DAOTestCase):
 
     @classmethod
     def _create_functions(cls):
-        # ## WARNING: These functions should always be the same as the one in baseconfig
+        # ## WARNING: These functions should always be the same as the one in xivo-manage-db
         fill_simple_calls_fn = '''\
 DROP FUNCTION IF EXISTS "fill_saturated_calls" (text, text);
 DROP FUNCTION IF EXISTS "fill_simple_calls" (text, text);
@@ -497,112 +497,6 @@ $$
 LANGUAGE SQL;
 '''
         cls.session.execute(fill_simple_calls_fn)
-
-        fill_answered_calls_fn = '''\
-DROP FUNCTION IF EXISTS "fill_answered_calls" (text, text);
-CREATE FUNCTION "fill_answered_calls"(period_start text, period_end text)
-    RETURNS void AS
-$$
-    INSERT INTO stat_call_on_queue (callid, "time", talktime, waittime, queue_id, agent_id, status)
-    (
-        WITH
-        call_entries AS (
-            SELECT
-                callid, queuename, agent, time, event, data1, data2, data3, data4
-            FROM
-                queue_log
-            WHERE
-                time BETWEEN $1 AND $2
-        ),
-        call_start AS (
-            SELECT
-                callid, queuename, time
-            FROM
-                call_entries
-            WHERE
-                event = 'ENTERQUEUE'
-        ),
-        call_end AS (
-            SELECT
-                callid, queuename, agent, time,
-                CASE
-                    WHEN event IN ('COMPLETEAGENT', 'COMPLETECALLER')
-                        THEN CAST (data2 AS INTEGER)
-                    WHEN event = 'TRANSFER'
-                        THEN CAST (data4 AS INTEGER)
-                END as talktime,
-                CASE
-                    WHEN event IN ('COMPLETEAGENT', 'COMPLETECALLER')
-                        THEN CAST (data1 AS INTEGER)
-                    WHEN event = 'TRANSFER'
-                        THEN CAST (data3 AS INTEGER)
-                END as waittime
-            FROM
-                call_entries
-            WHERE
-                event IN ('COMPLETEAGENT', 'COMPLETECALLER', 'TRANSFER')
-        ),
-        completed_calls AS (
-            SELECT
-                call_end.callid,
-                call_end.queuename,
-                call_end.agent,
-                call_start.time::TIMESTAMP,
-                call_end.talktime,
-                call_end.waittime
-            FROM
-                call_end
-                INNER JOIN call_start
-                    ON call_end.callid = call_start.callid
-                    AND call_end.queuename = call_start.queuename
-        ),
-        partial_calls AS (
-            SELECT
-                call_end.callid,
-                call_end.queuename,
-                call_end.agent,
-                call_end.time::TIMESTAMP
-                    - (call_end.talktime || ' seconds')::INTERVAL
-                    - (call_end.waittime || ' seconds')::INTERVAL
-                AS time,
-                call_end.talktime,
-                call_end.waittime
-            FROM
-                call_end
-                LEFT OUTER JOIN call_start
-                    ON call_end.callid = call_start.callid
-                    AND call_end.queuename = call_start.queuename
-            WHERE
-                call_start.callid IS NULL
-        ),
-        all_calls AS (
-            SELECT * FROM completed_calls
-            UNION
-            SELECT * FROM partial_calls
-        )
-
-        SELECT
-            all_calls.callid,
-            all_calls.time,
-            all_calls.talktime,
-            all_calls.waittime,
-            stat_queue.id as queue_id,
-            stat_agent.id as agent_id,
-            'answered' AS status
-        FROM
-            all_calls
-        LEFT JOIN
-            stat_agent ON all_calls.agent = stat_agent.name
-        LEFT JOIN
-            stat_queue ON all_calls.queuename = stat_queue.name
-        ORDER BY
-            all_calls.time
-    )
-$$
-LANGUAGE SQL;
-'''
-        cls.session.execute(fill_answered_calls_fn)
-
         fill_leaveempty_calls_fn = '''\
 DROP FUNCTION IF EXISTS "fill_leaveempty_calls" (text, text);
 CREATE OR REPLACE FUNCTION "fill_leaveempty_calls" (period_start text, period_end text)

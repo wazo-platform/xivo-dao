@@ -17,6 +17,104 @@
 
 _STR_TIME_FMT = "%Y-%m-%d %H:%M:%S.%f"
 
+FILL_ANSWERED_CALL_ON_QUEUE_QUERY = '''\n
+INSERT INTO stat_call_on_queue (callid, "time", talktime, waittime, queue_id, agent_id, status)
+(
+    WITH
+    call_entries AS (
+        SELECT
+            callid, queuename, agent, time, event, data1, data2, data3, data4
+        FROM
+            queue_log
+        WHERE
+            time BETWEEN :start AND :end
+    ),
+    call_start AS (
+        SELECT
+            callid, queuename, time
+        FROM
+            call_entries
+        WHERE
+            event = 'ENTERQUEUE'
+    ),
+    call_end AS (
+        SELECT
+            callid, queuename, agent, time,
+            CASE
+                WHEN event IN ('COMPLETEAGENT', 'COMPLETECALLER')
+                    THEN CAST (data2 AS INTEGER)
+                WHEN event = 'TRANSFER'
+                    THEN CAST (data4 AS INTEGER)
+            END as talktime,
+            CASE
+                WHEN event IN ('COMPLETEAGENT', 'COMPLETECALLER')
+                    THEN CAST (data1 AS INTEGER)
+                WHEN event = 'TRANSFER'
+                    THEN CAST (data3 AS INTEGER)
+            END as waittime
+        FROM
+            call_entries
+        WHERE
+            event IN ('COMPLETEAGENT', 'COMPLETECALLER', 'TRANSFER')
+    ),
+    completed_calls AS (
+        SELECT
+            call_end.callid,
+            call_end.queuename,
+            call_end.agent,
+            call_start.time::TIMESTAMP,
+            call_end.talktime,
+            call_end.waittime
+        FROM
+            call_end
+            INNER JOIN call_start
+                ON call_end.callid = call_start.callid
+                AND call_end.queuename = call_start.queuename
+    ),
+    partial_calls AS (
+        SELECT
+            call_end.callid,
+            call_end.queuename,
+            call_end.agent,
+            call_end.time::TIMESTAMP
+                - (call_end.talktime || ' seconds')::INTERVAL
+                - (call_end.waittime || ' seconds')::INTERVAL
+            AS time,
+            call_end.talktime,
+            call_end.waittime
+        FROM
+            call_end
+            LEFT OUTER JOIN call_start
+                ON call_end.callid = call_start.callid
+                AND call_end.queuename = call_start.queuename
+        WHERE
+            call_start.callid IS NULL
+    ),
+    all_calls AS (
+        SELECT * FROM completed_calls
+        UNION
+        SELECT * FROM partial_calls
+    )
+
+    SELECT
+        all_calls.callid,
+        all_calls.time,
+        all_calls.talktime,
+        all_calls.waittime,
+        stat_queue.id as queue_id,
+        stat_agent.id as agent_id,
+        'answered' AS status
+    FROM
+        all_calls
+    LEFT JOIN
+        stat_agent ON all_calls.agent = stat_agent.name
+    LEFT JOIN
+        stat_queue ON all_calls.queuename = stat_queue.name
+    ORDER BY
+        all_calls.time
+)
+'''
+
 
 def fill_simple_calls(session, start, end):
     _run_sql_function_returning_void(
@@ -30,7 +128,7 @@ def fill_answered_calls(session, start, end):
     _run_sql_function_returning_void(
         session,
         start, end,
-        'SELECT 1 AS place_holder FROM fill_answered_calls(:start, :end)'
+        FILL_ANSWERED_CALL_ON_QUEUE_QUERY,
     )
 
 
