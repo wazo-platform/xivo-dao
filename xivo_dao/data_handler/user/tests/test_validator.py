@@ -87,20 +87,26 @@ class TestValidateModel(unittest.TestCase):
         validator.validate_model(user)
 
     def test_validate_model_invalid_mobilephonenumber_alpha(self):
-        user = User(firstname='toto')
+        user = User(firstname='toto',
+                    mobile_phone_number='mobilephonenumber')
 
-        user.mobile_phone_number = 'mobilephonenumber'
         self.assertRaises(InvalidParametersError, validator.validate_model, user)
 
     def test_validate_model_invalid_mobilephonenumber_alphanum(self):
-        user = User(firstname='toto')
+        user = User(firstname='toto',
+                    mobile_phone_number='abcd1234')
 
-        user.mobile_phone_number = 'abcd1234'
         self.assertRaises(InvalidParametersError, validator.validate_model, user)
 
-    def test_validate_model_valid_mobilephonenumber(self):
-        user = User(firstname='toto')
-        user.mobilephonenumber = '1234'
+    def test_validate_model_basic_mobilephonenumber(self):
+        user = User(firstname='toto',
+                    mobile_phone_number='1234')
+
+        validator.validate_model(user)
+
+    def test_validate_model_international_mobilephonenumber(self):
+        user = User(firstname='toto',
+                    mobile_phone_number='+011224657453*77#23')
 
         validator.validate_model(user)
 
