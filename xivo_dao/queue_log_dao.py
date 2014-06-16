@@ -35,7 +35,7 @@ SELECT
     (CAST(queue_log.time AS TIMESTAMP) + (queue_log.data1 || ' seconds')::INTERVAL) AS end,
     stat_agent.id AS agent_id
 FROM
-    queue_log,
+    queue_log
 INNER JOIN
     stat_agent ON stat_agent.name = queue_log.agent
 WHERE
