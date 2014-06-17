@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column, ForeignKey
+from sqlalchemy.schema import Column, ForeignKey, Index
 from sqlalchemy.types import String, TIMESTAMP, Integer, Enum
 from sqlalchemy.orm import relationship
 
@@ -25,6 +25,9 @@ from xivo_dao.helpers.db_manager import Base
 class StatCallOnQueue(Base):
 
     __tablename__ = 'stat_call_on_queue'
+    __table_args__ = (
+        Index('stat_call_on_queue__idx_callid', 'callid'),
+    )
 
     id = Column(Integer, primary_key=True)
     callid = Column(String(32), nullable=False)
