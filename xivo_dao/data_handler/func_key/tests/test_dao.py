@@ -93,9 +93,6 @@ class TestFuncKeyDao(DAOTestCase):
         row = (self.session.query(schema)
                .filter(column == destination_id)
                .first())
-        row = (self.session.query(schema)
-               .filter(column == destination_id)
-               .first())
 
         return row
 
