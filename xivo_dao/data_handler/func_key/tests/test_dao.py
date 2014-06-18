@@ -220,6 +220,16 @@ class TestFuncKeyFindAllByDestination(TestFuncKeyDao):
         result = dao.find_all_by_destination('conference', conference_row.id)
         assert_that(result, contains(func_key))
 
+    def test_given_one_service_destination_then_returns_list_with_one_service_destination(self):
+        service_row = self.add_extension(type='extenfeatures',
+                                         context='xivo-features',
+                                         typeval='vmusermsg')
+        func_key = self.prepare_destination('service', service_row.id)
+
+        result = dao.find_all_by_destination('service', service_row.id)
+
+        assert_that(result, contains(func_key))
+
     def test_given_group_and_user_destination_then_returns_list_with_right_destination(self):
         user_row = self.add_user()
         self.prepare_destination('user', user_row.id)
@@ -361,6 +371,24 @@ class TestFuncKeyCreate(TestFuncKeyDao):
         assert_that(conference_destination_row, is_not(none()))
 
         self.assert_func_key_row_created(conference_destination_row)
+
+    def test_given_service_destination_then_func_key_created(self):
+        service_row = self.add_extension(type='extenfeatures',
+                                         context='xivo-features',
+                                         typeval='vmusermsg')
+
+        func_key = FuncKey(type='speeddial',
+                           destination='service',
+                           destination_id=service_row.id)
+
+        created_func_key = dao.create(func_key)
+        assert_that(created_func_key, instance_of(FuncKey))
+        assert_that(created_func_key, has_property('id', is_not(none())))
+
+        service_destination_row = self.find_destination('service', service_row.id)
+        assert_that(service_destination_row, is_not(none()))
+
+        self.assert_func_key_row_created(service_destination_row)
 
     @patch('xivo_dao.helpers.db_manager.DaoSession')
     @patch('xivo_dao.data_handler.func_key.dao.commit_or_abort')
