@@ -134,6 +134,7 @@ from xivo_dao.alchemy.stats_conf_xivouser import StatsConfXivoUser
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
 from xivo_dao.alchemy.user import User
 from xivo_dao.alchemy.user_line import UserLine
+from xivo_dao.alchemy.user_contact import UserContact
 from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.alchemy.useriax import UserIAX

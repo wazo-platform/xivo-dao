@@ -32,7 +32,6 @@ class Callfilter(Base):
         PrimaryKeyConstraint('id'),
         ForeignKeyConstraint(('entity_id',),
                              ('entity.id',),
-                             name='fk_entity_id',
                              ondelete='RESTRICT'),
         UniqueConstraint('name'),
     )

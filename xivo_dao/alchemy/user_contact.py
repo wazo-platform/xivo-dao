@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, ForeignKeyConstraint, ForeignKey
+from sqlalchemy.schema import Column, PrimaryKeyConstraint, ForeignKeyConstraint
 from sqlalchemy.types import Integer
 
 from xivo_dao.helpers.db_manager import Base
@@ -29,16 +29,14 @@ class UserContact(Base):
         PrimaryKeyConstraint('user_id', 'phonebook_id'),
         ForeignKeyConstraint(('phonebook_id',),
                              ('phonebook.id',),
-                             name='fk_phonebook_id',
                              ondelete='CASCADE'),
         ForeignKeyConstraint(('user_id',),
                              ('userfeatures.id',),
-                             name='fk_user_id',
                              ondelete='CASCADE'),
     )
 
-    user_id = Column(Integer, ForeignKey('userfeatures.id'))
-    phonebook_id = Column(Integer, ForeignKey('phonebook.id'))
+    user_id = Column(Integer)
+    phonebook_id = Column(Integer)
 
     phonebook = relationship('Phonebook', foreign_keys=phonebook_id)
     user = relationship('UserFeatures', foreign_keys=user_id)

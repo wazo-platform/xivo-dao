@@ -29,7 +29,6 @@ class PhonebookNumber(Base):
         PrimaryKeyConstraint('id'),
         ForeignKeyConstraint(('phonebookid',),
                              ('phonebook.id',),
-                             name='fk_phonebook_id',
                              ondelete='CASCADE'),
         Index('phonebooknumber__uidx__phonebookid_type', 'phonebookid', 'type', unique=True),
     )
