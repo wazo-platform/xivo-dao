@@ -275,6 +275,16 @@ class TestFuncKeyGet(TestFuncKeyDao):
 
         assert_that(result, equal_to(func_key))
 
+    def test_when_service_func_key_in_db_then_func_key_model_returned(self):
+        service_row = self.add_extension(type='extenfeatures',
+                                         context='xivo-features',
+                                         typeval='vmusermsg')
+        func_key = self.prepare_destination('service', service_row.id)
+
+        result = dao.get(func_key.id)
+
+        assert_that(result, equal_to(func_key))
+
     def test_when_two_func_keys_in_db_then_right_model_returned(self):
         user_row = self.add_user()
 
