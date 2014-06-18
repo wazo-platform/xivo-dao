@@ -110,7 +110,9 @@ class TestFuncKeySearch(TestFuncKeyDao):
         assert_that(result.items, contains())
 
     def test_given_service_destination_when_searching_then_one_result_returned(self):
-        extension_row = self.add_extension()
+        extension_row = self.add_extension(type='extenfeatures',
+                                           context='xivo-features',
+                                           typeval='vmusermsg')
         func_key = self.prepare_destination('service', extension_row.id)
 
         result = dao.search()
@@ -448,7 +450,9 @@ class TestFuncKeyDelete(TestFuncKeyDao):
         self.assert_destination_deleted('conference', conference_row.id)
 
     def test_given_service_destination_then_func_key_deleted(self):
-        extension_row = self.add_extension()
+        extension_row = self.add_extension(type='extenfeatures',
+                                           context='xivo-features',
+                                           typeval='vmusermsg')
         func_key = self.prepare_destination('service', extension_row.id)
 
         dao.delete(func_key)
