@@ -26,6 +26,8 @@ from xivo_dao.data_handler.line_extension import dao as line_extension_dao
 from xivo_dao.data_handler.line_extension import notifier
 from xivo_dao.data_handler.line_extension import validator
 from xivo_dao.data_handler.user_line_extension import services as ule_services
+from xivo_dao.data_handler.exception import ElementNotExistsError
+from xivo_dao.data_handler.line_extension.exception import LineExtensionNotExistsError
 
 
 def find_by_line_id(line_id):
@@ -38,12 +40,30 @@ def get_by_line_id(line_id):
 
 
 def find_by_extension_id(extension_id):
-    return line_extension_dao.find_by_extension_id(extension_id)
+    context = context_dao.find_by_extension_id(extension_id)
+    if not context:
+        return None
+
+    return _find_line_extension_by_type(context, extension_id)
 
 
 def get_by_extension_id(extension_id):
-    extension = extension_dao.get(extension_id)
-    return line_extension_dao.get_by_extension_id(extension.id)
+    context = context_dao.find_by_extension_id(extension_id)
+    if not context:
+        raise ElementNotExistsError('Extension', id=extension_id)
+
+    line_extension = _find_line_extension_by_type(context, extension_id)
+    if not line_extension:
+        raise LineExtensionNotExistsError.from_extension_id(extension_id)
+
+    return line_extension
+
+
+def _find_line_extension_by_type(context, extension_id):
+    if context.type == ContextType.internal:
+        return line_extension_dao.find_by_extension_id(extension_id)
+    elif context.type == ContextType.incall:
+        return incall_dao.find_line_extension_by_extension_id(extension_id)
 
 
 def get_all_by_line_id(line_id):

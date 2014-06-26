@@ -17,15 +17,15 @@
 
 import unittest
 from mock import Mock, patch
-from hamcrest import assert_that, equal_to, has_items
+from hamcrest import assert_that, equal_to, has_items, none
 
 from xivo_dao.data_handler.context.model import Context, ContextType
-from xivo_dao.data_handler.extension.model import Extension
 from xivo_dao.data_handler.user_line.model import UserLine
 from xivo_dao.data_handler.line.model import Line
 from xivo_dao.data_handler.incall.model import Incall
 from xivo_dao.data_handler.line_extension.model import LineExtension
 from xivo_dao.data_handler.line_extension import services as line_extension_service
+from xivo_dao.data_handler.exception import ElementNotExistsError
 
 
 @patch('xivo_dao.data_handler.line_extension.notifier.associated')
@@ -110,30 +110,101 @@ class TestFindByLineId(unittest.TestCase):
 
 class TestFindByExtensionId(unittest.TestCase):
 
-    @patch('xivo_dao.data_handler.line_extension.dao.find_by_extension_id')
-    def test_find_by_extension_id(self, dao_find_by_extension_id):
-        line_extension = Mock(LineExtension, extension_id=1)
-        dao_find_by_extension_id.return_value = line_extension
+    @patch('xivo_dao.data_handler.context.dao.find_by_extension_id')
+    def test_given_extension_does_not_exist_then_returns_nothing(self, context_find_by_extension_id):
+        context_find_by_extension_id.return_value = None
 
-        result = line_extension_service.find_by_extension_id(1)
+        result = line_extension_service.find_by_extension_id(2)
+
+        assert_that(result, none())
+        context_find_by_extension_id.assert_called_once_with(2)
+
+    @patch('xivo_dao.data_handler.line_extension.dao.find_by_extension_id')
+    @patch('xivo_dao.data_handler.context.dao.find_by_extension_id')
+    def test_given_internal_extension_then_returns_line_extension(self,
+                                                                  context_find_by_extension_id,
+                                                                  line_extension_find_by_extension_id):
+        context_find_by_extension_id.return_value = Mock(Context, type='internal')
+        line_extension = line_extension_find_by_extension_id.return_value = Mock(LineExtension, line_id=1, extension_id=2)
+
+        result = line_extension_service.find_by_extension_id(2)
 
         assert_that(result, equal_to(line_extension))
-        dao_find_by_extension_id.assert_called_once_with(1)
+        context_find_by_extension_id.assert_called_once_with(2)
+        line_extension_find_by_extension_id.assert_called_once_with(2)
+
+    @patch('xivo_dao.data_handler.incall.dao.find_line_extension_by_extension_id')
+    @patch('xivo_dao.data_handler.context.dao.find_by_extension_id')
+    def test_given_incall_extension_then_returns_line_extension(self,
+                                                                context_find_by_extension_id,
+                                                                find_line_extension_by_extension_id):
+        context_find_by_extension_id.return_value = Mock(Context, type='incall')
+        line_extension = find_line_extension_by_extension_id.return_value = Mock(LineExtension, line_id=1, extension_id=2)
+
+        result = line_extension_service.find_by_extension_id(2)
+
+        assert_that(result, equal_to(line_extension))
+        context_find_by_extension_id.assert_called_once_with(2)
+        find_line_extension_by_extension_id.assert_called_once_with(2)
 
 
 class TestGetByExtensionId(unittest.TestCase):
 
-    @patch('xivo_dao.data_handler.line_extension.dao.get_by_extension_id')
-    @patch('xivo_dao.data_handler.extension.dao.get')
-    def test_get_by_extension_id(self, extension_get, dao_get_by_extension_id):
-        extension = extension_get.return_value = Mock(Extension, id=1)
-        line_extension = Mock(LineExtension, extension_id=extension.id)
-        dao_get_by_extension_id.return_value = line_extension
+    @patch('xivo_dao.data_handler.context.dao.find_by_extension_id')
+    def test_given_extension_does_not_exist_then_raises_error(self, context_find_by_extension_id):
+        context_find_by_extension_id.return_value = None
 
-        result = line_extension_service.get_by_extension_id(extension.id)
+        self.assertRaises(ElementNotExistsError, line_extension_service.get_by_extension_id, 2)
+
+    @patch('xivo_dao.data_handler.line_extension.dao.find_by_extension_id')
+    @patch('xivo_dao.data_handler.context.dao.find_by_extension_id')
+    def test_given_internal_extension_then_returns_line_extension(self,
+                                                                  context_find_by_extension_id,
+                                                                  line_extension_find_by_extension_id):
+        line_extension = line_extension_find_by_extension_id.return_value = Mock(LineExtension, line_id=1, extension_id=2)
+        context_find_by_extension_id.return_value = Mock(Context, type='internal')
+
+        result = line_extension_service.get_by_extension_id(2)
 
         assert_that(result, equal_to(line_extension))
-        dao_get_by_extension_id.assert_called_once_with(extension.id)
+        context_find_by_extension_id.assert_called_once_with(2)
+        line_extension_find_by_extension_id.assert_called_once_with(2)
+
+    @patch('xivo_dao.data_handler.line_extension.dao.find_by_extension_id')
+    @patch('xivo_dao.data_handler.context.dao.find_by_extension_id')
+    def test_given_internal_extension_without_line_then_raises_error(self,
+                                                                     context_find_by_extension_id,
+                                                                     line_extension_find_by_extension_id):
+        context_find_by_extension_id.return_value = Mock(Context, type='internal')
+        line_extension_find_by_extension_id.return_value = None
+
+        self.assertRaises(ElementNotExistsError, line_extension_service.get_by_extension_id, 2)
+        line_extension_find_by_extension_id.assert_called_once_with(2)
+
+    @patch('xivo_dao.data_handler.incall.dao.find_line_extension_by_extension_id')
+    @patch('xivo_dao.data_handler.context.dao.find_by_extension_id')
+    def test_given_incall_extension_then_returns_line_extension(self,
+                                                                context_find_by_extension_id,
+                                                                find_line_extension_by_extension_id):
+        line_extension = find_line_extension_by_extension_id.return_value = Mock(LineExtension, line_id=1, extension_id=2)
+        context_find_by_extension_id.return_value = Mock(Context, type='incall')
+
+        result = line_extension_service.get_by_extension_id(2)
+
+        assert_that(result, equal_to(line_extension))
+        context_find_by_extension_id.assert_called_once_with(2)
+        find_line_extension_by_extension_id.assert_called_once_with(2)
+
+    @patch('xivo_dao.data_handler.incall.dao.find_line_extension_by_extension_id')
+    @patch('xivo_dao.data_handler.context.dao.find_by_extension_id')
+    def test_given_incall_extension_without_line_then_raises_error(self,
+                                                                   context_find_by_extension_id,
+                                                                   find_line_extension_by_extension_id):
+        context_find_by_extension_id.return_value = Mock(Context, type='incall')
+        find_line_extension_by_extension_id.return_value = None
+
+        self.assertRaises(ElementNotExistsError, line_extension_service.get_by_extension_id, 2)
+        find_line_extension_by_extension_id.assert_called_once_with(2)
 
 
 @patch('xivo_dao.data_handler.context.dao.get_by_extension_id')
