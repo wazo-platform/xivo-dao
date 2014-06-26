@@ -53,6 +53,29 @@ def find_all_line_extensions_by_line_id(session, line_id):
 
 
 @daosession
+def find_line_extension_by_extension_id(session, extension_id):
+    query = (session.query(UserLine.line_id,
+                           Extension.id.label('extension_id'))
+             .join(Dialaction,
+                   and_(Dialaction.action == 'user',
+                        cast(Dialaction.actionarg1, Integer) == UserLine.user_id,
+                        UserLine.main_line == True))
+             .join(Incall,
+                   and_(Dialaction.category == 'incall',
+                        cast(Dialaction.categoryval, Integer) == Incall.id))
+             .join(Extension,
+                   and_(Incall.exten == Extension.exten,
+                        Incall.context == Extension.context))
+             .filter(Extension.id == extension_id))
+
+    row = query.first()
+    if not row:
+        return None
+
+    return line_extension_db_converter.to_model(row)
+
+
+@daosession
 def find_by_extension_id(session, extension_id):
     query = (session.query(Incall.id,
                            Incall.description,

@@ -141,6 +141,49 @@ class TestFindAllLineExtensionsByLineId(TestIncallDAO):
         assert_that(result, contains(line_extension))
 
 
+class TestFindLineExtensionByExtensionId(TestIncallDAO):
+
+    def test_given_no_incalls_then_returns_nothing(self):
+        result = dao.find_line_extension_by_extension_id(1)
+
+        assert_that(result, none())
+
+    def test_given_user_with_internal_extension_then_returns_nothing(self):
+        user_line_row = self.add_user_line_with_exten(exten='1000', context='default')
+
+        result = dao.find_line_extension_by_extension_id(user_line_row.extension_id)
+
+        assert_that(result, none())
+
+    def test_given_incall_associated_to_user_with_line_then_returns_item(self):
+        user_line_row = self.add_user_line_with_exten(exten='1000', context='default')
+        extension_row = self.add_extension(exten='1000', context='from-extern')
+
+        self.create_incall_row_for_user(user_line_row.user_id, extension_row.id)
+
+        line_extension = LineExtension(line_id=user_line_row.line_id,
+                                       extension_id=extension_row.id)
+
+        result = dao.find_line_extension_by_extension_id(line_extension.extension_id)
+
+        assert_that(result, equal_to(line_extension))
+
+    def test_given_2_incalls_on_same_user_then_returns_correct_item(self):
+        user_line_row = self.add_user_line_with_exten(exten='1000', context='default')
+        extension_row = self.add_extension(exten='1000', context='from-extern')
+        second_extension_row = self.add_extension(exten='1001', context='from-extern')
+
+        self.create_incall_row_for_user(user_line_row.user_id, extension_row.id)
+        self.create_incall_row_for_user(user_line_row.user_id, second_extension_row.id)
+
+        line_extension = LineExtension(line_id=user_line_row.line_id,
+                                       extension_id=extension_row.id)
+
+        result = dao.find_line_extension_by_extension_id(line_extension.extension_id)
+
+        assert_that(result, equal_to(line_extension))
+
+
 class TestFindByExtensionId(TestIncallDAO):
 
     def test_given_no_extension_then_returns_none(self):
