@@ -37,16 +37,25 @@ def get(session, context_name):
 
 
 @daosession
-def get_by_extension_id(session, extension_id):
+def find_by_extension_id(session, extension_id):
     context_row = (session.query(ContextSchema)
                    .join(ExtensionSchema, ExtensionSchema.context == ContextSchema.name)
                    .filter(ExtensionSchema.id == extension_id)
                    .first())
 
     if not context_row:
-        raise ElementNotExistsError('Context', extension_id=extension_id)
+        return None
 
     return db_converter.to_model(context_row)
+
+
+def get_by_extension_id(extension_id):
+    context = find_by_extension_id(extension_id)
+
+    if not context:
+        raise ElementNotExistsError('Context', extension_id=extension_id)
+
+    return context
 
 
 @daosession

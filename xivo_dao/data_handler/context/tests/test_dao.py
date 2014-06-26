@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, equal_to, instance_of, has_property, all_of
+from hamcrest import assert_that, equal_to, instance_of, has_property, all_of, none
 
 from xivo_dao.tests.test_dao import DAOTestCase
 
@@ -70,6 +70,27 @@ class TestContextGetByExtensionId(TestContextDao):
                                    description=context_row.description)
 
         result = context_dao.get_by_extension_id(extension_row.id)
+
+        assert_that(result, equal_to(expected_context))
+
+
+class TestContextFindByExtensionId(TestContextDao):
+
+    def test_given_no_extension_then_returns_nothing(self):
+        result = context_dao.find_by_extension_id(1)
+
+        assert_that(result, none())
+
+    def test_given_extension_exists_then_returns_associated_context(self):
+        context_row = self.add_context()
+        extension_row = self.add_extension(context=context_row.name)
+
+        expected_context = Context(name=context_row.name,
+                                   display_name=context_row.displayname,
+                                   type=context_row.contexttype,
+                                   description=context_row.description)
+
+        result = context_dao.find_by_extension_id(extension_row.id)
 
         assert_that(result, equal_to(expected_context))
 
