@@ -55,6 +55,9 @@ from xivo_dao.alchemy.queueskill import QueueSkill
 from xivo_dao.alchemy.agentqueueskill import AgentQueueSkill
 from xivo_dao.alchemy.queuepenaltychange import QueuePenaltyChange
 
+from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
+from xivo_dao.alchemy.func_key_dest_service import FuncKeyDestService
+
 
 @daosession
 def find_sccp_general_settings(session):
@@ -172,6 +175,53 @@ def find_general_features_settings(session):
 
 @daosession
 def find_exten_progfunckeys_settings(session, context_name):
+    old_progfunckeys = _find_old_progfunckeys(session, context_name)
+    new_progfunckeys = _find_new_progfunckeys(session, context_name)
+    return old_progfunckeys + new_progfunckeys
+
+
+def _find_new_progfunckeys(session, context_name):
+    query = (
+        session.query(
+            UserFeatures.id.label('user_id'),
+            Extension.exten.label('leftexten'),
+            Extension.type.label('typeextenumbers'),
+            Extension.typeval.label('typevalextenumbers'))
+        .join(
+            FuncKeyMapping,
+            and_(
+                FuncKeyMapping.template_id == UserFeatures.func_key_private_template_id,
+                FuncKeyMapping.blf == True))
+        .join(
+            FuncKeyDestService,
+            FuncKeyDestService.func_key_id == FuncKeyMapping.func_key_id)
+        .join(
+            Extension,
+            FuncKeyDestService.extension_id == Extension.id)
+        .join(
+            UserLine,
+            and_(UserFeatures.id == UserLine.user_id,
+                 UserLine.main_user == True,
+                 UserLine.main_line == True)
+        ).join(
+            LineFeatures,
+            UserLine.line_id == LineFeatures.id
+        ).filter(
+            LineFeatures.context == context_name,
+        )
+    )
+
+    return [{'user_id': row.user_id,
+             'leftexten': row.leftexten,
+             'typeextenumbers': row.typeextenumbers,
+             'typevalextenumbers': row.typevalextenumbers,
+             'typeextenumbersright': None,
+             'typevalextenumbersright': None,
+             'exten': None}
+            for row in query]
+
+
+def _find_old_progfunckeys(session, context_name):
     rows = (session.query(PhoneFunckey.iduserfeatures,
                           PhoneFunckey.exten,
                           PhoneFunckey.typeextenumbers,

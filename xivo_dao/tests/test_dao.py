@@ -61,6 +61,7 @@ from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.queueskill import QueueSkill
 from xivo_dao.alchemy.func_key import FuncKey
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
+from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
 from xivo_dao.alchemy.func_key_type import FuncKeyType
 from xivo_dao.alchemy.func_key_destination_type import FuncKeyDestinationType
 from xivo_dao.helpers import config
@@ -635,6 +636,11 @@ class DAOTestCase(unittest.TestCase):
         self.session.commit()
 
         return entity
+
+    def add_func_key_mapping(self, **kwargs):
+        func_key_mapping = FuncKeyMapping(**kwargs)
+        self.add_me(func_key_mapping)
+        return func_key_mapping
 
     def add_me(self, obj):
         self.session.begin()

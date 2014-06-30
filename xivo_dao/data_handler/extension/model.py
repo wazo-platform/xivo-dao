@@ -23,7 +23,7 @@ DB_TO_MODEL_MAPPING = {
     'id': 'id',
     'exten': 'exten',
     'context': 'context',
-    'commented': 'commented'
+    'commented': 'commented',
 }
 
 
