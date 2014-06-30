@@ -19,7 +19,7 @@ setup(
     description='XiVO Data Access Object',
     author='Avencall',
     author_email='dev@avencall.com',
-    url='http://git.xivo.fr/',
+    url='http://git.xivo.io/',
     license='GPLv3',
     packages=packages,
 )

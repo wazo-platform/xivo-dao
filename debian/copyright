@@ -1,6 +1,6 @@
 Format: http://dep.debian.net/deps/dep5
 Upstream-Name: xivo-dao
-Source: git://git.xivo.fr/official/xivo-dao.git
+Source: git://git.xivo.io/official/xivo-dao.git
 
 Files: *
 Copyright: 2012 Avencall
