@@ -286,6 +286,25 @@ class TestFindExtenProgfunckeysSettings(TestFuncKeyDao):
             has_entries(new_func_key),
             has_entries(old_func_key)))
 
+    def test_that_only_one_hint_is_generated_for_a_given_funckey(self):
+        self.add_service_func_key_to_user('*90', 'enablevm', position=1)
+
+        new_func_key = {'user_id': self.user['id'],
+                        'exten': None,
+                        'typeextenumbers': 'extenfeatures',
+                        'typevalextenumbers': 'enablevm',
+                        'typeextenumbersright': None,
+                        'typevalextenumbersright': None,
+                        'leftexten': '*90'}
+
+        result = asterisk_conf_dao.find_exten_progfunckeys_settings(self.context)
+
+        assert_that(result, contains_inanyorder(has_entries(new_func_key)))
+
+        result = asterisk_conf_dao.find_exten_progfunckeys_settings('some-other-context')
+
+        assert_that(result, contains(), 'No hint should be generated in some other context')
+
 
 class TestAsteriskConfDAO(DAOTestCase):
 
