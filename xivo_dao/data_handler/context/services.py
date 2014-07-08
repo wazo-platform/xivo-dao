@@ -22,14 +22,6 @@ from xivo_dao.data_handler.context import validator
 from xivo_dao.data_handler.context import notifier
 
 
-class ContextRange(object):
-    users = 'user'
-    queues = 'queue'
-    groups = 'group'
-    conference_rooms = 'meetme'
-    incalls = 'incall'
-
-
 def find_by_name(context_name):
     return old_context_dao.get(context_name)
 

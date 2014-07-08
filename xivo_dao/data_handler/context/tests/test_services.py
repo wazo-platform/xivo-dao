@@ -20,9 +20,7 @@ from mock import Mock, patch
 from hamcrest import all_of, assert_that, equal_to, has_property
 
 from xivo_dao.data_handler.context import services as context_services
-from xivo_dao.data_handler.context.services import ContextRange
-
-from xivo_dao.data_handler.context.model import Context, ContextType
+from xivo_dao.data_handler.context.model import Context, ContextType, ContextRangeType
 from xivo_dao.data_handler.extension.model import Extension
 from xivo_dao.data_handler.exception import InvalidParametersError
 
@@ -227,9 +225,9 @@ class TestContext(unittest.TestCase):
         context_range = find_all_specific_context_ranges.return_value = Mock()
         is_extension_included_in_ranges.return_value = True
 
-        result = context_services.is_extension_valid_for_context_range(extension, ContextRange.users)
+        result = context_services.is_extension_valid_for_context_range(extension, ContextRangeType.users)
 
-        find_all_specific_context_ranges.assert_called_once_with(extension.context, ContextRange.users)
+        find_all_specific_context_ranges.assert_called_once_with(extension.context, ContextRangeType.users)
         is_extension_included_in_ranges.assert_called_once_with(1000, context_range)
 
         assert_that(result, equal_to(True))
@@ -242,4 +240,4 @@ class TestContext(unittest.TestCase):
         self.assertRaises(InvalidParametersError,
                           context_services.is_extension_valid_for_context_range,
                           extension,
-                          ContextRange.users)
+                          ContextRangeType.users)

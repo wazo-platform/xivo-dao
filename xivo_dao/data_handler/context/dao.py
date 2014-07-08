@@ -18,7 +18,7 @@
 from xivo_dao.alchemy.context import Context as ContextSchema
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 from xivo_dao.alchemy.contextnumbers import ContextNumbers as ContextNumberSchema
-from xivo_dao.data_handler.context.model import db_converter
+from xivo_dao.data_handler.context.converters import context_converter as db_converter
 from xivo_dao.data_handler.entity import dao as entity_dao
 from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.helpers.db_manager import daosession
