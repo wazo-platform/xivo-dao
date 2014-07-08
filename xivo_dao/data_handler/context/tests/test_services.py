@@ -28,10 +28,10 @@ from xivo_dao.data_handler.extension.model import Extension
 from xivo_dao.data_handler.exception import InvalidParametersError
 
 
-class TestContext(unittest.TestCase):
+class TestContextFindByName(unittest.TestCase):
 
     @patch('xivo_dao.context_dao.get')
-    def test_find_by_name_inexistant(self, context_dao_get):
+    def test_find_by_name_when_context_does_not_exist(self, context_dao_get):
         context_name = 'inexistant_context'
         context_dao_get.return_value = None
 
@@ -48,6 +48,9 @@ class TestContext(unittest.TestCase):
         result = context_services.find_by_name(context_name)
 
         assert_that(result, equal_to(context_mock))
+
+
+class TestContextCreate(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.context.notifier.created')
     @patch('xivo_dao.data_handler.context.validator.validate_create')
@@ -72,6 +75,9 @@ class TestContext(unittest.TestCase):
             has_property('display_name', context_name),
             has_property('type', ContextType.internal)))
 
+
+class TestContextIsExtensionValidForContext(unittest.TestCase):
+
     @patch('xivo_dao.data_handler.context.dao.find_all_context_ranges')
     @patch('xivo_dao.data_handler.context.services.is_extension_included_in_ranges')
     def test_is_extension_valid_for_context(self, is_extension_included_in_ranges, find_all_context_ranges):
@@ -86,7 +92,17 @@ class TestContext(unittest.TestCase):
         find_all_context_ranges.assert_called_once_with(extension.context)
         is_extension_included_in_ranges.assert_called_once_with('1000', context_ranges)
 
-    def test_is_extension_included_in_ranges_when_no_ranges(self):
+    @patch('xivo_dao.data_handler.context.dao.find_all_context_ranges')
+    def test_is_extension_valid_for_context_when_extension_is_alphanumeric(self, context_ranges):
+        extension = Extension(exten='ABC123',
+                              context='default')
+
+        self.assertRaises(InvalidParametersError, context_services.is_extension_valid_for_context, extension)
+
+
+class TestContextIsExtensionIncludedInRanges(unittest.TestCase):
+
+    def test_when_no_ranges(self):
         expected = False
 
         exten = '1000'
@@ -96,7 +112,7 @@ class TestContext(unittest.TestCase):
 
         assert_that(result, equal_to(expected))
 
-    def test_is_extension_included_in_ranges_when_below_minimum(self):
+    def test_when_exten_is_below_minimum(self):
         expected = False
 
         exten = '1000'
@@ -106,7 +122,7 @@ class TestContext(unittest.TestCase):
 
         assert_that(result, equal_to(expected))
 
-    def test_is_extension_included_in_ranges_when_above_maximum(self):
+    def test_when_exten_is_above_maximum(self):
         expected = False
 
         exten = '9999'
@@ -116,7 +132,7 @@ class TestContext(unittest.TestCase):
 
         assert_that(result, equal_to(expected))
 
-    def test_is_extension_included_in_ranges_when_inside_of_range_lower_limit(self):
+    def test_when_exten_is_same_as_minimum(self):
         expected = True
 
         exten = '1000'
@@ -126,7 +142,7 @@ class TestContext(unittest.TestCase):
 
         assert_that(result, equal_to(expected))
 
-    def test_is_extension_included_in_ranges_when_inside_of_range_upper_limit(self):
+    def test_when_exten_is_same_as_maximum(self):
         expected = True
 
         exten = '3000'
@@ -136,7 +152,7 @@ class TestContext(unittest.TestCase):
 
         assert_that(result, equal_to(expected))
 
-    def test_is_extension_included_in_ranges_when_inside_second_range(self):
+    def test_when_exten_is_inside_second_range(self):
         expected = True
 
         exten = '2000'
@@ -147,7 +163,7 @@ class TestContext(unittest.TestCase):
 
         assert_that(result, equal_to(expected))
 
-    def test_is_extension_included_in_ranges_when_ranges_overlap(self):
+    def test_when_ranges_overlap(self):
         expected = True
 
         exten = '1450'
@@ -158,7 +174,7 @@ class TestContext(unittest.TestCase):
 
         assert_that(result, equal_to(expected))
 
-    def test_is_extension_included_in_ranges_with_single_value_using_lesser_value(self):
+    def test_when_no_maximum_and_exten_is_below_minimum(self):
         expected = False
 
         exten = '500'
@@ -168,7 +184,7 @@ class TestContext(unittest.TestCase):
 
         assert_that(result, equal_to(expected))
 
-    def test_is_extension_included_in_ranges_with_single_value_using_greater_value(self):
+    def test_when_no_maximum_and_exten_is_above_minimum(self):
         expected = False
 
         exten = '1450'
@@ -178,7 +194,7 @@ class TestContext(unittest.TestCase):
 
         assert_that(result, equal_to(expected))
 
-    def test_is_extension_included_in_ranges_with_single_value_using_right_value(self):
+    def test_when_no_maximum_and_exten_is_same_as_minimum(self):
         expected = True
 
         exten = '1000'
@@ -188,7 +204,7 @@ class TestContext(unittest.TestCase):
 
         assert_that(result, equal_to(expected))
 
-    def test_is_extension_included_in_ranges_with_single_value_and_range_when_extension_in_range(self):
+    def test_when_exten_only_matches_on_a_range_with_minimum_and_maximum(self):
         expected = True
 
         exten = '2000'
@@ -199,7 +215,7 @@ class TestContext(unittest.TestCase):
 
         assert_that(result, equal_to(expected))
 
-    def test_is_extension_included_in_ranges_with_single_value_and_range_when_extension_on_value(self):
+    def test_when_exten_only_matches_on_a_range_with_minimum(self):
         expected = True
 
         exten = '1000'
@@ -210,12 +226,8 @@ class TestContext(unittest.TestCase):
 
         assert_that(result, equal_to(expected))
 
-    @patch('xivo_dao.data_handler.context.dao.find_all_context_ranges')
-    def test_is_extension_valid_for_context_when_extension_is_alphanumeric(self, context_ranges):
-        extension = Extension(exten='ABC123',
-                              context='default')
 
-        self.assertRaises(InvalidParametersError, context_services.is_extension_valid_for_context, extension)
+class TestContextIsExtensionValidForContextRange(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.context.dao.find_all_specific_context_ranges')
     @patch('xivo_dao.data_handler.context.services.is_extension_included_in_ranges')
