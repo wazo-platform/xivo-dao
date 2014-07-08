@@ -60,9 +60,7 @@ class Context(NewModel):
 class ContextRange(NewModel):
 
     MANDATORY = [
-        'start',
-        'end',
-        'did_length'
+        'start'
     ]
 
     FIELDS = [
@@ -70,3 +68,13 @@ class ContextRange(NewModel):
         'end',
         'did_length'
     ]
+
+    _RELATION = {
+    }
+
+    def in_range(self, exten):
+        if not self.end and exten == self.start:
+            return True
+        elif self.start <= exten <= self.end:
+            return True
+        return False

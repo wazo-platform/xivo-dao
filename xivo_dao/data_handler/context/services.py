@@ -46,10 +46,8 @@ def _validate_exten(extension):
 
 
 def is_extension_included_in_ranges(exten, context_ranges):
-    for minimum, maximum in context_ranges:
-        if not maximum and exten == minimum:
-            return True
-        elif minimum <= exten <= maximum:
+    for context_range in context_ranges:
+        if context_range.in_range(exten):
             return True
     return False
 

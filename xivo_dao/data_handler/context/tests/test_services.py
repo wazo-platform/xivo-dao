@@ -20,7 +20,10 @@ from mock import Mock, patch
 from hamcrest import all_of, assert_that, equal_to, has_property
 
 from xivo_dao.data_handler.context import services as context_services
-from xivo_dao.data_handler.context.model import Context, ContextType, ContextRangeType
+from xivo_dao.data_handler.context.model import Context
+from xivo_dao.data_handler.context.model import ContextType
+from xivo_dao.data_handler.context.model import ContextRange
+from xivo_dao.data_handler.context.model import ContextRangeType
 from xivo_dao.data_handler.extension.model import Extension
 from xivo_dao.data_handler.exception import InvalidParametersError
 
@@ -97,7 +100,7 @@ class TestContext(unittest.TestCase):
         expected = False
 
         exten = 1000
-        context_ranges = [(2000, 3000)]
+        context_ranges = [ContextRange(start=2000, end=3000)]
 
         result = context_services.is_extension_included_in_ranges(exten, context_ranges)
 
@@ -107,7 +110,7 @@ class TestContext(unittest.TestCase):
         expected = False
 
         exten = 9999
-        context_ranges = [(2000, 3000)]
+        context_ranges = [ContextRange(start=2000, end=3000)]
 
         result = context_services.is_extension_included_in_ranges(exten, context_ranges)
 
@@ -117,7 +120,7 @@ class TestContext(unittest.TestCase):
         expected = True
 
         exten = 1000
-        context_ranges = [(1000, 3000)]
+        context_ranges = [ContextRange(start=1000, end=3000)]
 
         result = context_services.is_extension_included_in_ranges(exten, context_ranges)
 
@@ -127,7 +130,7 @@ class TestContext(unittest.TestCase):
         expected = True
 
         exten = 3000
-        context_ranges = [(1000, 3000)]
+        context_ranges = [ContextRange(start=1000, end=3000)]
 
         result = context_services.is_extension_included_in_ranges(exten, context_ranges)
 
@@ -137,8 +140,8 @@ class TestContext(unittest.TestCase):
         expected = True
 
         exten = 2000
-        context_ranges = [(1000, 1999),
-                          (2000, 2999)]
+        context_ranges = [ContextRange(start=1000, end=1999),
+                          ContextRange(start=2000, end=2999)]
 
         result = context_services.is_extension_included_in_ranges(exten, context_ranges)
 
@@ -148,8 +151,8 @@ class TestContext(unittest.TestCase):
         expected = True
 
         exten = 1450
-        context_ranges = [(1400, 2000),
-                          (1000, 1500)]
+        context_ranges = [ContextRange(start=1400, end=2000),
+                          ContextRange(start=1000, end=1500)]
 
         result = context_services.is_extension_included_in_ranges(exten, context_ranges)
 
@@ -159,7 +162,7 @@ class TestContext(unittest.TestCase):
         expected = False
 
         exten = 500
-        context_ranges = [(1000, None)]
+        context_ranges = [ContextRange(start=1000, end=None)]
 
         result = context_services.is_extension_included_in_ranges(exten, context_ranges)
 
@@ -169,7 +172,7 @@ class TestContext(unittest.TestCase):
         expected = False
 
         exten = 1450
-        context_ranges = [(1000, None)]
+        context_ranges = [ContextRange(start=1000, end=None)]
 
         result = context_services.is_extension_included_in_ranges(exten, context_ranges)
 
@@ -179,7 +182,7 @@ class TestContext(unittest.TestCase):
         expected = True
 
         exten = 1000
-        context_ranges = [(1000, None)]
+        context_ranges = [ContextRange(start=1000, end=None)]
 
         result = context_services.is_extension_included_in_ranges(exten, context_ranges)
 
@@ -189,8 +192,8 @@ class TestContext(unittest.TestCase):
         expected = True
 
         exten = 2000
-        context_ranges = [(1000, None),
-                          (2000, 3000)]
+        context_ranges = [ContextRange(start=1000, end=None),
+                          ContextRange(start=2000, end=3000)]
 
         result = context_services.is_extension_included_in_ranges(exten, context_ranges)
 
@@ -200,8 +203,8 @@ class TestContext(unittest.TestCase):
         expected = True
 
         exten = 1000
-        context_ranges = [(2000, 3000),
-                          (1000, None)]
+        context_ranges = [ContextRange(start=2000, end=3000),
+                          ContextRange(start=1000, end=None)]
 
         result = context_services.is_extension_included_in_ranges(exten, context_ranges)
 
