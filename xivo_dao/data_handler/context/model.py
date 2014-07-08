@@ -72,6 +72,11 @@ class ContextRange(NewModel):
     _RELATION = {
     }
 
+    def __init__(self, **kwargs):
+        NewModel.__init__(self, **kwargs)
+        if self.did_length is None:
+            self.did_length = 0
+
     def in_range(self, exten):
         exten = int(exten)
         start = int(self.start)

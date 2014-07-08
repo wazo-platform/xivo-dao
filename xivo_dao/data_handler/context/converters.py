@@ -18,7 +18,9 @@
 
 from xivo_dao.converters.database_converter import DatabaseConverter
 from xivo_dao.alchemy.context import Context as ContextSchema
+from xivo_dao.alchemy.contextnumbers import ContextNumbers as ContextRangeSchema
 from xivo_dao.data_handler.context.model import Context
+from xivo_dao.data_handler.context.model import ContextRange
 
 
 class ContextDBConverter(DatabaseConverter):
@@ -42,4 +44,25 @@ class ContextDBConverter(DatabaseConverter):
         return context_row
 
 
+class ContextRangeDBConverter(DatabaseConverter):
+
+    DB_TO_MODEL_MAPPING = {
+        'numberbeg': 'start',
+        'numberend': 'end',
+        'didlength': 'did_length',
+    }
+
+    def __init__(self):
+        DatabaseConverter.__init__(self, self.DB_TO_MODEL_MAPPING, ContextRangeSchema, ContextRange)
+
+    def to_model(self, source):
+        context_range = DatabaseConverter.to_model(self, source)
+        if context_range.end == '':
+            context_range.end = None
+        if context_range.did_length == '':
+            context_range.did_length = None
+        return context_range
+
+
 context_converter = ContextDBConverter()
+range_converter = ContextRangeDBConverter()
