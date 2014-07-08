@@ -59,8 +59,6 @@ class ContextRangeDBConverter(DatabaseConverter):
         context_range = DatabaseConverter.to_model(self, source)
         if context_range.end == '':
             context_range.end = None
-        if context_range.did_length == '':
-            context_range.did_length = None
         return context_range
 
 
