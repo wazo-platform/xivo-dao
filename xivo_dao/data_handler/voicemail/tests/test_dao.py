@@ -63,7 +63,7 @@ class TestSearchVoicemail(DAOTestCase):
             number=number,
             attach_audio=False,
             delete_messages=False,
-            ask_password=False,
+            ask_password=True,
         )
 
         result = voicemail_dao.search()
@@ -91,7 +91,7 @@ class TestSearchVoicemail(DAOTestCase):
             number='1000',
             attach_audio=False,
             delete_messages=False,
-            ask_password=False,
+            ask_password=True,
         )
 
         expected_voicemail2 = Voicemail(
@@ -101,7 +101,7 @@ class TestSearchVoicemail(DAOTestCase):
             number='1001',
             attach_audio=False,
             delete_messages=False,
-            ask_password=False,
+            ask_password=True,
         )
 
         result = voicemail_dao.search()
@@ -152,7 +152,7 @@ class TestSearchVoicemail(DAOTestCase):
             number='1001',
             attach_audio=False,
             delete_messages=False,
-            ask_password=False,
+            ask_password=True,
         )
 
         expected_voicemail2 = Voicemail(
@@ -162,7 +162,7 @@ class TestSearchVoicemail(DAOTestCase):
             number='1000',
             attach_audio=False,
             delete_messages=False,
-            ask_password=False,
+            ask_password=True,
         )
 
         result = voicemail_dao.search(order='name')
@@ -192,7 +192,7 @@ class TestSearchVoicemail(DAOTestCase):
             number='1001',
             attach_audio=False,
             delete_messages=False,
-            ask_password=False,
+            ask_password=True,
         )
 
         expected_voicemail2 = Voicemail(
@@ -202,7 +202,7 @@ class TestSearchVoicemail(DAOTestCase):
             number='1000',
             attach_audio=False,
             delete_messages=False,
-            ask_password=False,
+            ask_password=True,
         )
 
         result = voicemail_dao.search(order='name', direction='desc')
@@ -232,7 +232,7 @@ class TestSearchVoicemail(DAOTestCase):
             number='1000',
             attach_audio=False,
             delete_messages=False,
-            ask_password=False,
+            ask_password=True,
         )
 
         result = voicemail_dao.search(skip=1, order='name')
@@ -266,7 +266,7 @@ class TestSearchVoicemail(DAOTestCase):
             number='1000',
             attach_audio=False,
             delete_messages=False,
-            ask_password=False,
+            ask_password=True,
         )
 
         result = voicemail_dao.search(skip=1, limit=1, order='name')
@@ -300,7 +300,7 @@ class TestSearchVoicemail(DAOTestCase):
             number='1001',
             attach_audio=False,
             delete_messages=False,
-            ask_password=False,
+            ask_password=True,
         )
 
         expected_voicemail3 = Voicemail(
@@ -310,7 +310,7 @@ class TestSearchVoicemail(DAOTestCase):
             number='1002',
             attach_audio=False,
             delete_messages=False,
-            ask_password=False,
+            ask_password=True,
         )
 
         result = voicemail_dao.search(search='VOICEMAIL')
@@ -356,7 +356,7 @@ class TestSearchVoicemail(DAOTestCase):
             number='1004',
             attach_audio=False,
             delete_messages=False,
-            ask_password=False,
+            ask_password=True,
         )
 
         expected_voicemail3 = Voicemail(
@@ -366,7 +366,7 @@ class TestSearchVoicemail(DAOTestCase):
             number='1003',
             attach_audio=False,
             delete_messages=False,
-            ask_password=False,
+            ask_password=True,
         )
 
         result = voicemail_dao.search(search='VOICEMAIL',
@@ -453,7 +453,7 @@ class TestGetVoicemail(DAOTestCase):
             id=voicemail_id,
             attach_audio=False,
             delete_messages=False,
-            ask_password=False
+            ask_password=True
         )
 
         voicemail = voicemail_dao.get(voicemail_id)
@@ -494,7 +494,7 @@ class TestGetVoicemail(DAOTestCase):
         self.assertEquals(voicemail.max_messages, voicemail_row.maxmsg)
         self.assertEquals(voicemail.attach_audio, True)
         self.assertEquals(voicemail.delete_messages, False)
-        self.assertEquals(voicemail.ask_password, False)
+        self.assertEquals(voicemail.ask_password, True)
 
 
 class TestCreateVoicemail(DAOTestCase):
@@ -586,7 +586,7 @@ class TestEditVoicemail(DAOTestCase):
         voicemail.max_messages = 10
         voicemail.attach_audio = True
         voicemail.delete_messages = True
-        voicemail.ask_password = True
+        voicemail.ask_password = False
 
         voicemail_dao.edit(voicemail)
 
@@ -605,7 +605,7 @@ class TestEditVoicemail(DAOTestCase):
         self.assertEquals(row.maxmsg, voicemail.max_messages)
         self.assertEquals(row.attach, voicemail.attach_audio)
         self.assertEquals(row.deletevoicemail, voicemail.delete_messages)
-        self.assertEquals(row.skipcheckpass, voicemail.ask_password)
+        self.assertEquals(row.skipcheckpass, 1)
 
     @patch('xivo_dao.helpers.db_manager.DaoSession')
     def test_edit_with_database_error(self, Session):

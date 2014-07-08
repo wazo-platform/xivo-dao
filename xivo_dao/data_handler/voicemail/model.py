@@ -81,7 +81,7 @@ class VoicemailDBConverter(DatabaseConverter):
     def _convert_model_fields(self, model):
         model.attach_audio = bool(model.attach_audio)
         model.delete_messages = bool(model.delete_messages)
-        model.ask_password = bool(model.ask_password)
+        model.ask_password = (not model.ask_password)
 
         if model.password == '':
             model.password = None
@@ -102,7 +102,7 @@ class VoicemailDBConverter(DatabaseConverter):
         if source.deletevoicemail is not None:
             source.deletevoicemail = int(bool(source.deletevoicemail))
         if source.skipcheckpass is not None:
-            source.skipcheckpass = int(bool(source.skipcheckpass))
+            source.skipcheckpass = int(not source.skipcheckpass)
         if source.password is None:
             source.password = ''
 
