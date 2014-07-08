@@ -18,7 +18,8 @@
 from xivo_dao.alchemy.context import Context as ContextSchema
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 from xivo_dao.alchemy.contextnumbers import ContextNumbers as ContextNumberSchema
-from xivo_dao.data_handler.context.model import db_converter
+from xivo_dao.data_handler.context.converters import context_converter
+from xivo_dao.data_handler.context.converters import range_converter
 from xivo_dao.data_handler.entity import dao as entity_dao
 from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.helpers.db_manager import daosession
@@ -33,7 +34,7 @@ def get(session, context_name):
     if not context_row:
         raise ElementNotExistsError('Context', name=context_name)
 
-    return db_converter.to_model(context_row)
+    return context_converter.to_model(context_row)
 
 
 @daosession
@@ -46,7 +47,7 @@ def find_by_extension_id(session, extension_id):
     if not context_row:
         return None
 
-    return db_converter.to_model(context_row)
+    return context_converter.to_model(context_row)
 
 
 def get_by_extension_id(extension_id):
@@ -60,7 +61,7 @@ def get_by_extension_id(extension_id):
 
 @daosession
 def create(session, context):
-    context_row = db_converter.to_source(context)
+    context_row = context_converter.to_source(context)
     context_row.entity = entity_dao.default_entity_name()
 
     session.begin()
@@ -74,42 +75,22 @@ def create(session, context):
 def find_all_context_ranges(session, context_name):
     rows = (session.query(
         ContextNumberSchema.numberbeg,
-        ContextNumberSchema.numberend)
+        ContextNumberSchema.numberend,
+        ContextNumberSchema.didlength)
         .filter(ContextNumberSchema.context == context_name)
         .all())
 
-    ranges = []
-
-    for row in rows:
-        minimum, maximum = _convert_minimum_maximum(row)
-        ranges.append((minimum, maximum))
-
-    return ranges
+    return [range_converter.to_model(row) for row in rows]
 
 
 @daosession
 def find_all_specific_context_ranges(session, context_name, context_range):
     rows = (session.query(
         ContextNumberSchema.numberbeg,
-        ContextNumberSchema.numberend)
+        ContextNumberSchema.numberend,
+        ContextNumberSchema.didlength)
         .filter(ContextNumberSchema.context == context_name)
         .filter(ContextNumberSchema.type == context_range)
         .all())
 
-    ranges = []
-
-    for row in rows:
-        minimum, maximum = _convert_minimum_maximum(row)
-        ranges.append((minimum, maximum))
-
-    return ranges
-
-
-def _convert_minimum_maximum(row):
-    minimum = int(row.numberbeg)
-    if row.numberend:
-        maximum = int(row.numberend)
-    else:
-        maximum = None
-
-    return minimum, maximum
+    return [range_converter.to_model(row) for row in rows]

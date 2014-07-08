@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.alchemy.context import Context as ContextSchema
-from xivo_dao.converters.database_converter import DatabaseConverter
 from xivo_dao.helpers.new_model import NewModel
 
 
@@ -32,12 +30,12 @@ class ContextType(object):
         return [cls.incall, cls.internal, cls.other, cls.outcall, cls.service]
 
 
-DB_TO_MODEL_MAPPING = {
-    'name': 'name',
-    'displayname': 'display_name',
-    'description': 'description',
-    'contexttype': 'type'
-}
+class ContextRangeType(object):
+    users = 'user'
+    queues = 'queue'
+    groups = 'group'
+    conference_rooms = 'meetme'
+    incalls = 'incall'
 
 
 class Context(NewModel):
@@ -59,16 +57,36 @@ class Context(NewModel):
     }
 
 
-class ContextDBConverter(DatabaseConverter):
-    def __init__(self):
-        DatabaseConverter.__init__(self, DB_TO_MODEL_MAPPING, ContextSchema, Context)
+class ContextRange(NewModel):
 
-    def to_source(self, model):
-        context_row = DatabaseConverter.to_source(self, model)
-        if context_row.description is None:
-            context_row.description = ''
-        if context_row.commented is None:
-            context_row.commented = 0
-        return context_row
+    MANDATORY = [
+        'start'
+    ]
 
-db_converter = ContextDBConverter()
+    FIELDS = [
+        'start',
+        'end',
+        'did_length'
+    ]
+
+    _RELATION = {
+    }
+
+    def __init__(self, **kwargs):
+        NewModel.__init__(self, **kwargs)
+        if self.did_length is None:
+            self.did_length = 0
+
+    def in_range(self, exten):
+        exten = int(exten)
+        start = self._convert_limit(self.start)
+        end = self._convert_limit(self.end) if self.end else None
+
+        if not end and exten == start:
+            return True
+        elif start <= exten <= end:
+            return True
+        return False
+
+    def _convert_limit(self, limit):
+        return int(limit[-self.did_length:])

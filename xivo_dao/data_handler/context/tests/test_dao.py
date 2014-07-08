@@ -22,7 +22,7 @@ from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.context import Context as ContextSchema
 from xivo_dao.alchemy.contextnumbers import ContextNumbers as ContextNumberSchema
 
-from xivo_dao.data_handler.context.model import Context, ContextType
+from xivo_dao.data_handler.context.model import Context, ContextType, ContextRange
 from xivo_dao.data_handler.context import dao as context_dao
 from xivo_dao.data_handler.exception import ElementNotExistsError
 
@@ -153,7 +153,7 @@ class TestFindAllContextRanges(TestContextDao):
                                    numberend='2000',
                                    didlength=0)
 
-        expected = [(1000, 2000)]
+        expected = [ContextRange(start='1000', end='2000')]
 
         result = context_dao.find_all_context_ranges('default')
 
@@ -166,7 +166,7 @@ class TestFindAllContextRanges(TestContextDao):
                                    numberend='',
                                    didlength=0)
 
-        expected = [(1000, None)]
+        expected = [ContextRange(start='1000', end=None)]
 
         result = context_dao.find_all_context_ranges('default')
 
@@ -185,7 +185,8 @@ class TestFindAllContextRanges(TestContextDao):
                                    numberend='2999',
                                    didlength=0)
 
-        expected = [(1000, 1999), (2000, 2999)]
+        expected = [ContextRange(start='1000', end='1999'),
+                    ContextRange(start='2000', end='2999')]
 
         result = context_dao.find_all_context_ranges('default')
 
@@ -204,7 +205,8 @@ class TestFindAllContextRanges(TestContextDao):
                                    numberend='2999',
                                    didlength=0)
 
-        expected = [(1000, 1999), (2000, 2999)]
+        expected = [ContextRange(start='1000', end='1999'),
+                    ContextRange(start='2000', end='2999')]
 
         result = context_dao.find_all_context_ranges('default')
 
@@ -266,7 +268,7 @@ class TestFindAllSpecificContextRanges(TestContextDao):
                                    numberend='2000',
                                    didlength=0)
 
-        expected = [(1000, 2000)]
+        expected = [ContextRange(start='1000', end='2000')]
 
         result = context_dao.find_all_specific_context_ranges('default', 'user')
 
@@ -279,7 +281,7 @@ class TestFindAllSpecificContextRanges(TestContextDao):
                                    numberend='',
                                    didlength=0)
 
-        expected = [(1000, None)]
+        expected = [ContextRange(start='1000')]
 
         result = context_dao.find_all_specific_context_ranges('default', 'user')
 
@@ -298,7 +300,8 @@ class TestFindAllSpecificContextRanges(TestContextDao):
                                    numberend='2999',
                                    didlength=0)
 
-        expected = [(1000, 1999), (2000, 2999)]
+        expected = [ContextRange(start='1000', end='1999'),
+                    ContextRange(start='2000', end='2999')]
 
         result = context_dao.find_all_specific_context_ranges('default', 'user')
 

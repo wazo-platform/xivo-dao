@@ -22,14 +22,6 @@ from xivo_dao.data_handler.context import validator
 from xivo_dao.data_handler.context import notifier
 
 
-class ContextRange(object):
-    users = 'user'
-    queues = 'queue'
-    groups = 'group'
-    conference_rooms = 'meetme'
-    incalls = 'incall'
-
-
 def find_by_name(context_name):
     return old_context_dao.get(context_name)
 
@@ -50,14 +42,12 @@ def is_extension_valid_for_context(extension):
 def _validate_exten(extension):
     if not extension.exten.isdigit():
         raise InvalidParametersError(['Alphanumeric extensions are not supported'])
-    return int(extension.exten)
+    return extension.exten
 
 
 def is_extension_included_in_ranges(exten, context_ranges):
-    for minimum, maximum in context_ranges:
-        if not maximum and exten == minimum:
-            return True
-        elif minimum <= exten <= maximum:
+    for context_range in context_ranges:
+        if context_range.in_range(exten):
             return True
     return False
 
