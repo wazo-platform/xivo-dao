@@ -84,12 +84,12 @@ class TestContext(unittest.TestCase):
 
         assert_that(result, equal_to(True))
         find_all_context_ranges.assert_called_once_with(extension.context)
-        is_extension_included_in_ranges.assert_called_once_with(1000, context_ranges)
+        is_extension_included_in_ranges.assert_called_once_with('1000', context_ranges)
 
     def test_is_extension_included_in_ranges_when_no_ranges(self):
         expected = False
 
-        exten = 1000
+        exten = '1000'
         context_ranges = []
 
         result = context_services.is_extension_included_in_ranges(exten, context_ranges)
@@ -99,8 +99,8 @@ class TestContext(unittest.TestCase):
     def test_is_extension_included_in_ranges_when_below_minimum(self):
         expected = False
 
-        exten = 1000
-        context_ranges = [ContextRange(start=2000, end=3000)]
+        exten = '1000'
+        context_ranges = [ContextRange(start='2000', end='3000')]
 
         result = context_services.is_extension_included_in_ranges(exten, context_ranges)
 
@@ -109,8 +109,8 @@ class TestContext(unittest.TestCase):
     def test_is_extension_included_in_ranges_when_above_maximum(self):
         expected = False
 
-        exten = 9999
-        context_ranges = [ContextRange(start=2000, end=3000)]
+        exten = '9999'
+        context_ranges = [ContextRange(start='2000', end='3000')]
 
         result = context_services.is_extension_included_in_ranges(exten, context_ranges)
 
@@ -119,8 +119,8 @@ class TestContext(unittest.TestCase):
     def test_is_extension_included_in_ranges_when_inside_of_range_lower_limit(self):
         expected = True
 
-        exten = 1000
-        context_ranges = [ContextRange(start=1000, end=3000)]
+        exten = '1000'
+        context_ranges = [ContextRange(start='1000', end='3000')]
 
         result = context_services.is_extension_included_in_ranges(exten, context_ranges)
 
@@ -129,8 +129,8 @@ class TestContext(unittest.TestCase):
     def test_is_extension_included_in_ranges_when_inside_of_range_upper_limit(self):
         expected = True
 
-        exten = 3000
-        context_ranges = [ContextRange(start=1000, end=3000)]
+        exten = '3000'
+        context_ranges = [ContextRange(start='1000', end='3000')]
 
         result = context_services.is_extension_included_in_ranges(exten, context_ranges)
 
@@ -139,9 +139,9 @@ class TestContext(unittest.TestCase):
     def test_is_extension_included_in_ranges_when_inside_second_range(self):
         expected = True
 
-        exten = 2000
-        context_ranges = [ContextRange(start=1000, end=1999),
-                          ContextRange(start=2000, end=2999)]
+        exten = '2000'
+        context_ranges = [ContextRange(start='1000', end='1999'),
+                          ContextRange(start='2000', end='2999')]
 
         result = context_services.is_extension_included_in_ranges(exten, context_ranges)
 
@@ -150,9 +150,9 @@ class TestContext(unittest.TestCase):
     def test_is_extension_included_in_ranges_when_ranges_overlap(self):
         expected = True
 
-        exten = 1450
-        context_ranges = [ContextRange(start=1400, end=2000),
-                          ContextRange(start=1000, end=1500)]
+        exten = '1450'
+        context_ranges = [ContextRange(start='1400', end='2000'),
+                          ContextRange(start='1000', end='1500')]
 
         result = context_services.is_extension_included_in_ranges(exten, context_ranges)
 
@@ -161,8 +161,8 @@ class TestContext(unittest.TestCase):
     def test_is_extension_included_in_ranges_with_single_value_using_lesser_value(self):
         expected = False
 
-        exten = 500
-        context_ranges = [ContextRange(start=1000, end=None)]
+        exten = '500'
+        context_ranges = [ContextRange(start='1000')]
 
         result = context_services.is_extension_included_in_ranges(exten, context_ranges)
 
@@ -171,8 +171,8 @@ class TestContext(unittest.TestCase):
     def test_is_extension_included_in_ranges_with_single_value_using_greater_value(self):
         expected = False
 
-        exten = 1450
-        context_ranges = [ContextRange(start=1000, end=None)]
+        exten = '1450'
+        context_ranges = [ContextRange(start='1000')]
 
         result = context_services.is_extension_included_in_ranges(exten, context_ranges)
 
@@ -181,8 +181,8 @@ class TestContext(unittest.TestCase):
     def test_is_extension_included_in_ranges_with_single_value_using_right_value(self):
         expected = True
 
-        exten = 1000
-        context_ranges = [ContextRange(start=1000, end=None)]
+        exten = '1000'
+        context_ranges = [ContextRange(start='1000')]
 
         result = context_services.is_extension_included_in_ranges(exten, context_ranges)
 
@@ -191,9 +191,9 @@ class TestContext(unittest.TestCase):
     def test_is_extension_included_in_ranges_with_single_value_and_range_when_extension_in_range(self):
         expected = True
 
-        exten = 2000
-        context_ranges = [ContextRange(start=1000, end=None),
-                          ContextRange(start=2000, end=3000)]
+        exten = '2000'
+        context_ranges = [ContextRange(start='1000'),
+                          ContextRange(start='2000', end='3000')]
 
         result = context_services.is_extension_included_in_ranges(exten, context_ranges)
 
@@ -202,9 +202,9 @@ class TestContext(unittest.TestCase):
     def test_is_extension_included_in_ranges_with_single_value_and_range_when_extension_on_value(self):
         expected = True
 
-        exten = 1000
-        context_ranges = [ContextRange(start=2000, end=3000),
-                          ContextRange(start=1000, end=None)]
+        exten = '1000'
+        context_ranges = [ContextRange(start='2000', end='3000'),
+                          ContextRange(start='1000')]
 
         result = context_services.is_extension_included_in_ranges(exten, context_ranges)
 
@@ -231,7 +231,7 @@ class TestContext(unittest.TestCase):
         result = context_services.is_extension_valid_for_context_range(extension, ContextRangeType.users)
 
         find_all_specific_context_ranges.assert_called_once_with(extension.context, ContextRangeType.users)
-        is_extension_included_in_ranges.assert_called_once_with(1000, context_range)
+        is_extension_included_in_ranges.assert_called_once_with('1000', context_range)
 
         assert_that(result, equal_to(True))
 

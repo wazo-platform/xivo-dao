@@ -42,7 +42,7 @@ def is_extension_valid_for_context(extension):
 def _validate_exten(extension):
     if not extension.exten.isdigit():
         raise InvalidParametersError(['Alphanumeric extensions are not supported'])
-    return int(extension.exten)
+    return extension.exten
 
 
 def is_extension_included_in_ranges(exten, context_ranges):
