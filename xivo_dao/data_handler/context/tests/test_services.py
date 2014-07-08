@@ -226,6 +226,26 @@ class TestContextIsExtensionIncludedInRanges(unittest.TestCase):
 
         assert_that(result, equal_to(expected))
 
+    def test_when_exten_is_inside_of_range_with_did_length(self):
+        expected = True
+
+        exten = '10'
+        context_ranges = [ContextRange(start='100', end='120', did_length=2)]
+
+        result = context_services.is_extension_included_in_ranges(exten, context_ranges)
+
+        assert_that(result, equal_to(expected))
+
+    def test_when_exten_is_outside_of_range_with_did_length(self):
+        expected = False
+
+        exten = '30'
+        context_ranges = [ContextRange(start='100', end='120', did_length=2)]
+
+        result = context_services.is_extension_included_in_ranges(exten, context_ranges)
+
+        assert_that(result, equal_to(expected))
+
 
 class TestContextIsExtensionValidForContextRange(unittest.TestCase):
 

@@ -79,11 +79,14 @@ class ContextRange(NewModel):
 
     def in_range(self, exten):
         exten = int(exten)
-        start = int(self.start)
-        end = int(self.end) if self.end else None
+        start = self._convert_limit(self.start)
+        end = self._convert_limit(self.end) if self.end else None
 
         if not end and exten == start:
             return True
         elif start <= exten <= end:
             return True
         return False
+
+    def _convert_limit(self, limit):
+        return int(limit[-self.did_length:])
