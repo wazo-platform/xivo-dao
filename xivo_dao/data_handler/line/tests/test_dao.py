@@ -50,7 +50,7 @@ class TestLineDao(DAOTestCase):
         assert_that(line.protocol, equal_to(line_row.protocol))
         assert_that(line.device_slot, equal_to(line_row.num))
         assert_that(line.device_id, equal_to(line_row.device))
-        assert_that(line.provisioning_extension, equal_to(line_row.provisioningid))
+        assert_that(line.provisioning_extension, equal_to(str(line_row.provisioningid)))
 
     def test_get_custom_line(self):
         line_interface = '123456789'
@@ -610,7 +610,7 @@ class TestLineDao(DAOTestCase):
     def test_create_sip_line_with_no_extension(self):
         line = LineSIP(protocol='sip',
                        context='default',
-                       provisioning_extension=123456)
+                       provisioning_extension="123456")
 
         line_created = line_dao.create(line)
 
@@ -637,7 +637,7 @@ class TestLineDao(DAOTestCase):
 
     def test_create_sip_line(self):
         line = LineSIP(context='default',
-                       provisioning_extension=123456)
+                       provisioning_extension="123456")
 
         line_created = line_dao.create(line)
 
@@ -652,7 +652,7 @@ class TestLineDao(DAOTestCase):
             has_property('protocol', 'sip'),
             has_property('protocolid', result_protocol.id),
             has_property('context', 'default'),
-            has_property('provisioningid', line.provisioning_extension)
+            has_property('provisioningid', int(line.provisioning_extension))
         ))
 
         assert_that(result_protocol, has_property('type', 'friend'))

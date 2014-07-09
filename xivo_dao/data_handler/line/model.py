@@ -47,6 +47,21 @@ class Line(AbstractModels):
     def __init__(self, *args, **kwargs):
         AbstractModels.__init__(self, *args, **kwargs)
 
+    @classmethod
+    def from_data_source(cls, db_object):
+        model = super(Line, cls).from_data_source(db_object)
+        model.provisioning_extension = str(model.provisioning_extension)
+        return model
+
+    def update_from_data_source(self, db_object):
+        AbstractModels.update_from_data_source(self, db_object)
+        self.provisioning_extension = str(self.provisioning_extension)
+
+    def to_data_source(self, class_schema):
+        source = AbstractModels.to_data_source(self, class_schema)
+        source.provisioningid = int(source.provisioningid)
+        return source
+
     @property
     def interface(self):
         return '%s/%s' % (self.protocol.upper(), self.name)

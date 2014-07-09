@@ -135,7 +135,7 @@ def make_provisioning_id():
     provd_id = _generate_random_digits()
     while dao.provisioning_id_exists(provd_id):
         provd_id = _generate_random_digits()
-    return int(provd_id)
+    return provd_id
 
 
 def _generate_random_digits():
