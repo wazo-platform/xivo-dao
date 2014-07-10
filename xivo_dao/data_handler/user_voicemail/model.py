@@ -21,7 +21,6 @@ from xivo_dao.helpers.new_model import NewModel
 DB_TO_MODEL_MAPPING = {
     'user_id': 'user_id',
     'voicemail_id': 'voicemail_id',
-    'enablevoicemail': 'enabled',
 }
 
 
@@ -51,15 +50,15 @@ class UserVoicemailDbConverter(DatabaseConverter):
     def __init__(self):
         DatabaseConverter.__init__(self, DB_TO_MODEL_MAPPING, None, UserVoicemail)
 
-    def to_model(self, db_row):
-        model = DatabaseConverter.to_model(self, db_row)
-        model.enabled = bool(model.enabled)
+    def to_model(self, source):
+        model = DatabaseConverter.to_model(self, source)
+        model.enabled = bool(source.enablevoicemail)
         return model
 
     def to_source(self, model):
-        db_row = DatabaseConverter.to_source(self, model)
-        db_row.enablevoicemail = int(db_row.enablevoicemail)
-        return db_row
+        source = DatabaseConverter.to_source(self, model)
+        source.enablevoicemail = int(model.enabled)
+        return source
 
 
 db_converter = UserVoicemailDbConverter()

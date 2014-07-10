@@ -64,9 +64,6 @@ class VoicemailDBConverter(DatabaseConverter):
         'language': 'language',
         'tz': 'timezone',
         'maxmsg': 'max_messages',
-        'attach': 'attach_audio',
-        'deletevoicemail': 'delete_messages',
-        'skipcheckpass': 'ask_password'
     }
 
     def __init__(self):
@@ -74,35 +71,36 @@ class VoicemailDBConverter(DatabaseConverter):
 
     def to_model(self, source):
         model = DatabaseConverter.to_model(self, source)
-        self._convert_model_fields(model)
+        self._convert_model_fields(source, model)
 
         return model
 
-    def _convert_model_fields(self, model):
-        model.attach_audio = bool(model.attach_audio)
-        model.delete_messages = bool(model.delete_messages)
-        model.ask_password = (not model.ask_password)
+    def _convert_model_fields(self, source, model):
+        model.attach_audio = bool(source.attach)
+        model.delete_messages = bool(source.deletevoicemail)
+        model.ask_password = (not source.skipcheckpass)
 
         if model.password == '':
             model.password = None
 
     def to_source(self, model):
         source = DatabaseConverter.to_source(self, model)
-        self._convert_source_fields(source)
+        self._convert_source_fields(source, model)
 
         return source
 
     def update_source(self, source, model):
         DatabaseConverter.update_source(self, source, model)
-        self._convert_source_fields(source)
+        self._convert_source_fields(source, model)
 
-    def _convert_source_fields(self, source):
-        if source.attach is not None:
-            source.attach = int(bool(source.attach))
-        if source.deletevoicemail is not None:
-            source.deletevoicemail = int(bool(source.deletevoicemail))
-        if source.skipcheckpass is not None:
-            source.skipcheckpass = int(not source.skipcheckpass)
+    def _convert_source_fields(self, source, model):
+        if model.attach_audio is not None:
+            source.attach = int(bool(model.attach_audio))
+        if model.delete_messages is not None:
+            source.deletevoicemail = int(bool(model.delete_messages))
+        if model.ask_password is not None:
+            source.skipcheckpass = int(not model.ask_password)
+
         if source.password is None:
             source.password = ''
 
