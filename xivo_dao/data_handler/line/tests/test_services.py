@@ -171,8 +171,8 @@ class TestLineServices(unittest.TestCase):
 
         provd_id = line_services.make_provisioning_id()
 
-        self.assertEquals(len(str(provd_id)), 6)
-        self.assertEquals(str(provd_id).startswith('0'), False)
+        self.assertEquals(len(provd_id), 6)
+        self.assertEquals(provd_id.startswith('0'), False)
 
     @patch('xivo_dao.data_handler.context.services.find_by_name', Mock(return_value=Mock()))
     @patch('xivo_dao.data_handler.line.services.make_provisioning_id')
