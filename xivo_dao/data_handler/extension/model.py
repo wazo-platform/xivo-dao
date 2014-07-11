@@ -23,7 +23,6 @@ DB_TO_MODEL_MAPPING = {
     'id': 'id',
     'exten': 'exten',
     'context': 'context',
-    'commented': 'commented',
 }
 
 
@@ -66,17 +65,23 @@ class ExtensionDatabaseConverter(DatabaseConverter):
 
     def to_model(self, source):
         model = DatabaseConverter.to_model(self, source)
-        model.commented = bool(source.commented)
+        self._convert_model_fields(source, model)
         return model
+
+    def _convert_model_fields(self, source, model):
+        model.commented = bool(source.commented)
 
     def to_source(self, model):
         source = DatabaseConverter.to_source(self, model)
-        source.commented = int(source.commented)
+        self._convert_source_fields(source, model)
         return source
 
     def update_source(self, source, model):
         DatabaseConverter.update_source(self, source, model)
-        source.commented = int(source.commented)
+        self._convert_source_fields(source, model)
+
+    def _convert_source_fields(self, source, model):
+        source.commented = int(model.commented)
 
 
 db_converter = ExtensionDatabaseConverter()

@@ -26,7 +26,6 @@ class UserDbConverter(DatabaseConverter):
         'id': 'id',
         'firstname': 'firstname',
         'lastname': 'lastname',
-        'callerid': 'caller_id',
         'outcallerid': 'outgoing_caller_id',
         'loginclient': 'username',
         'passwdclient': 'password',
@@ -46,14 +45,15 @@ class UserDbConverter(DatabaseConverter):
 
     def to_model(self, source):
         model = DatabaseConverter.to_model(self, source)
-        self._convert_model_fields(model)
+        self._convert_model_fields(source, model)
 
         return model
 
-    def _convert_model_fields(self, model):
+    def _convert_model_fields(self, source, model):
+        model.caller_id = source.callerid
+
         if model.password == '':
             model.password = None
-
         if model.mobile_phone_number == '':
             model.mobile_phone_number = None
 
@@ -68,6 +68,7 @@ class UserDbConverter(DatabaseConverter):
 
     def _convert_source_fields(self, source, model):
         source.callerid = model.generate_caller_id()
+
         if source.passwdclient is None:
             source.passwdclient = ''
         if source.mobilephonenumber is None:
