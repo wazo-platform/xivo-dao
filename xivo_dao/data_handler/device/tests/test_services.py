@@ -17,7 +17,7 @@
 
 import unittest
 
-from hamcrest import *
+from hamcrest import assert_that, equal_to, is_not, has_item
 from mock import patch, Mock
 from urllib2 import URLError
 from xivo_dao.data_handler.utils.search import SearchResult
@@ -524,6 +524,7 @@ class TestDeviceServices(unittest.TestCase):
     def test_remove_line_from_device(self, config_manager):
         config_dict = {
             "raw_config": {
+                "protocol": "sip",
                 "sip_lines": {
                     "1": {"username": "1234"},
                     "2": {"username": "5678"}
@@ -537,6 +538,7 @@ class TestDeviceServices(unittest.TestCase):
 
         expected_arg = {
             "raw_config": {
+                "protocol": "sip",
                 "sip_lines": {
                     "1": {"username": "1234"}
                 }
@@ -565,10 +567,11 @@ class TestDeviceServices(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.device.services.reset_to_autoprov')
     @patch('xivo_dao.helpers.provd_connector.config_manager')
-    def test_remove_line_from_device_autoprov(self, config_manager, reset_to_autoprov):
+    def test_remove_line_from_device_sip_autoprov(self, config_manager, reset_to_autoprov):
         autoprovid = "autoprov1234"
         config_dict = {
             "raw_config": {
+                "protocol": "sip",
                 "sip_lines": {
                     "1": {"username": "1234"}
                 },
@@ -589,7 +592,11 @@ class TestDeviceServices(unittest.TestCase):
 
         device = Device(id=self.device_id)
 
-        expected_arg_config = {"raw_config": {}}
+        expected_arg_config = {
+            "raw_config": {
+                "protocol": "sip",
+            }
+        }
 
         device_services.remove_line_from_device(device, line)
 
@@ -599,9 +606,26 @@ class TestDeviceServices(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.device.services.reset_to_autoprov')
     @patch('xivo_dao.helpers.provd_connector.config_manager')
+    def test_remove_line_from_device_sccp_autoprov(self, config_manager, reset_to_autoprov):
+        config_manager().get.return_value = {
+            "raw_config": {
+                "protocol": "sccp",
+            }
+        }
+        line = LineSCCP(device_slot=1)
+        device = Device(id=self.device_id)
+
+        device_services.remove_line_from_device(device, line)
+
+        reset_to_autoprov.assert_called_with(device)
+
+    @patch('xivo_dao.data_handler.device.services.reset_to_autoprov')
+    @patch('xivo_dao.helpers.provd_connector.config_manager')
     def test_remove_line_from_device_no_sip_lines(self, config_manager, reset_to_autoprov):
         config_dict = {
-            "raw_config": {}
+            "raw_config": {
+                "protocol": "sip",
+            }
         }
         config_manager().get.return_value = config_dict
         line = LineSIP(device_slot=2)
@@ -622,6 +646,7 @@ class TestDeviceServices(unittest.TestCase):
         autoprovid = "autoprov1234"
         config_dict = {
             "raw_config": {
+                "protocol": "sip",
                 "sip_lines": {
                     "1": {"username": "1234"}
                 }
