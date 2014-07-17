@@ -110,17 +110,28 @@ def build_line_for_device(device, line):
 
 
 def remove_line_from_device(device, line):
-    provd_config_manager = provd_connector.config_manager()
     try:
-        config = provd_config_manager.get(device.id)
-        if 'sip_lines' in config['raw_config']:
-            del config['raw_config']['sip_lines'][str(line.device_slot)]
-            if len(config['raw_config']['sip_lines']) == 0:
-                provd_converter.reset_config(config)
-                reset_to_autoprov(device)
-            provd_config_manager.update(config)
+        if line.protocol == 'sccp':
+            _remove_line_from_device_sccp(device)
+        elif line.protocol == 'sip':
+            _remove_line_from_device_sip(device, line)
     except URLError as e:
         raise ProvdError('error during remove line %s from device %s' % (line.device_slot, device.id), e)
+
+
+def _remove_line_from_device_sccp(device):
+    reset_to_autoprov(device)
+
+
+def _remove_line_from_device_sip(device, line):
+    provd_config_manager = provd_connector.config_manager()
+    config = provd_config_manager.get(device.id)
+    if 'sip_lines' in config['raw_config']:
+        del config['raw_config']['sip_lines'][str(line.device_slot)]
+        if len(config['raw_config']['sip_lines']) == 0:
+            provd_converter.reset_config(config)
+            reset_to_autoprov(device)
+        provd_config_manager.update(config)
 
 
 def remove_all_line_from_device(device):
