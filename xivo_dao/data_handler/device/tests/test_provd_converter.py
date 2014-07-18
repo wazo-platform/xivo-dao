@@ -30,7 +30,6 @@ class TestProvdConverter(unittest.TestCase):
 
         expected_provd_device = {
             'id': device_id,
-            'config': device_id
         }
 
         expected_provd_config = {
@@ -64,7 +63,6 @@ class TestProvdConverter(unittest.TestCase):
             'plugin': device.plugin,
             'vendor': device.vendor,
             'model': device.model,
-            'config': device_id,
         }
 
         expected_provd_config = {
@@ -87,7 +85,6 @@ class TestProvdConverter(unittest.TestCase):
 
         expected_provd_device = {
             'id': device_id,
-            'config': device_id
         }
 
         expected_provd_config = {

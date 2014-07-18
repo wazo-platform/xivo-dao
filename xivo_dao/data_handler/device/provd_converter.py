@@ -43,7 +43,6 @@ def to_source(device):
 
 def _create_provd_device(device):
     parameters = _filter_device_parameters(device)
-    parameters['config'] = device.id
 
     return parameters
 
