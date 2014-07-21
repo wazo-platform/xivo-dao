@@ -33,4 +33,3 @@ class QueueSkill(Base):
     catid = Column(Integer, server_default='1', nullable=False)
     name = Column(String(64), server_default='', nullable=False)
     description = Column(Text)
-    printscreen = Column(String(5))
