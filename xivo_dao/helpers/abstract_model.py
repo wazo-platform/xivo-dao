@@ -33,6 +33,9 @@ class AbstractModels(object):
     def __ne__(self, other):
         return not self == other
 
+    def __repr__(self):
+        return (u'<%s %s>' % (self.__class__.__name__, self.__dict__)).encode('utf8')
+
     @classmethod
     def from_data_source(cls, db_object):
         obj = cls()
