@@ -20,12 +20,12 @@ from xivo_dao.tests.test_case import TestCase
 from mock import patch, Mock
 
 from xivo_dao.data_handler.exception import ElementAlreadyExistsError
-from xivo_dao.data_handler.exception import ElementDeletionError
 from xivo_dao.data_handler.exception import InvalidParametersError
 from xivo_dao.data_handler.exception import MissingParametersError
 from xivo_dao.data_handler.exception import NonexistentParametersError
 from xivo_dao.data_handler.extension import validator
 from xivo_dao.data_handler.extension.model import Extension
+from xivo_dao.data_handler.line_extension.model import LineExtension
 
 
 class TestValidators(TestCase):
@@ -74,15 +74,15 @@ class TestValidators(TestCase):
         validate_extension_available_for_edit.assert_called_once_with(extension)
         validate_extension_in_range.assert_called_once_with(extension)
 
+    @patch('xivo_dao.data_handler.extension.validator.validate_extension_not_associated')
     @patch('xivo_dao.data_handler.extension.validator.validate_extension_exists')
-    @patch('xivo_dao.data_handler.extension.validator.validate_not_associated_to_line')
-    def test_delete(self, validate_extension_exists, validate_not_associated_to_line):
-        extension = Mock(Extension)
+    def test_delete(self, validate_extension_exists, validate_extension_not_associated):
+        extension = Mock(Extension, id=0)
 
         validator.validate_delete(extension)
 
         validate_extension_exists.assert_called_once_with(extension)
-        validate_not_associated_to_line.assert_called_once_with(extension)
+        validate_extension_not_associated.assert_called_once_with(extension.id)
 
 
 class TestValidateInvalidParameters(TestCase):
@@ -201,27 +201,42 @@ class TestValidateExtensionExists(TestCase):
         dao_get.assert_called_once_with(extension.id)
 
 
-class TestValidateExtensionNotAssociatedToLine(TestCase):
+@patch('xivo_dao.data_handler.line_extension.dao.find_by_extension_id')
+@patch('xivo_dao.data_handler.extension.dao.get_type_typeval')
+class TestValidateExtensionNotAssociated(TestCase):
 
-    @patch('xivo_dao.data_handler.line_extension.dao.find_by_extension_id')
-    def test_validate_not_associated_to_line_when_no_associations(self, find_by_extension_id):
+    def test_given_extension_not_associated_then_validation_passes(self,
+                                                                   get_type_typeval,
+                                                                   find_by_extension_id):
+        get_type_typeval.return_value = ('user', '0')
         find_by_extension_id.return_value = None
+        extension_id = 1
 
-        extension = Mock(Extension, id=1)
+        validator.validate_extension_not_associated(extension_id)
 
-        validator.validate_not_associated_to_line(extension)
+        get_type_typeval.assert_called_once_with(extension_id)
+        find_by_extension_id.assert_called_once_with(extension_id)
 
-        find_by_extension_id.assert_called_once_with(extension.id)
+    def test_given_extension_is_associated_to_a_line_then_validation_fails(self,
+                                                                           get_type_typeval,
+                                                                           find_by_extension_id):
+        get_type_typeval.return_value = ('user', '0')
+        find_by_extension_id.return_value = Mock(LineExtension)
+        extension_id = 1
 
-    @patch('xivo_dao.data_handler.line_extension.dao.find_by_extension_id')
-    def test_validate_not_associated_to_line_when_associated(self, find_by_extension_id):
-        find_by_extension_id.return_value = Mock()
+        self.assertRaises(InvalidParametersError, validator.validate_extension_not_associated, extension_id)
 
-        extension = Mock(Extension, id=1)
+        find_by_extension_id.assert_called_once_with(extension_id)
 
-        self.assertRaises(ElementDeletionError, validator.validate_not_associated_to_line, extension)
+    def test_given_extension_is_associated_to_a_resource_then_validation_fails(self,
+                                                                               get_type_typeval,
+                                                                               find_by_extension_id):
+        get_type_typeval.return_value = ('queue', '123')
+        extension_id = 1
 
-        find_by_extension_id.assert_called_once_with(extension.id)
+        self.assertRaises(InvalidParametersError, validator.validate_extension_not_associated, extension_id)
+
+        get_type_typeval.assert_called_once_with(extension_id)
 
 
 class TestValidateExtensionAvailableForEdit(TestCase):

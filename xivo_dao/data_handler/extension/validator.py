@@ -18,7 +18,6 @@
 from xivo_dao.data_handler.exception import MissingParametersError
 from xivo_dao.data_handler.exception import InvalidParametersError
 from xivo_dao.data_handler.exception import ElementAlreadyExistsError
-from xivo_dao.data_handler.exception import ElementDeletionError
 from xivo_dao.data_handler.exception import NonexistentParametersError
 from xivo_dao.data_handler.extension import dao as extension_dao
 from xivo_dao.data_handler.line_extension import dao as line_extension_dao
@@ -43,7 +42,7 @@ def validate_edit(extension):
 
 def validate_delete(extension):
     validate_extension_exists(extension)
-    validate_not_associated_to_line(extension)
+    validate_extension_not_associated(extension.id)
 
 
 def validate_invalid_parameters(extension):
@@ -85,10 +84,16 @@ def validate_extension_exists(extension):
     extension_dao.get(extension.id)
 
 
-def validate_not_associated_to_line(extension):
-    line_extension = line_extension_dao.find_by_extension_id(extension.id)
+def validate_extension_not_associated(extension_id):
+    extension_type, typeval = extension_dao.get_type_typeval(extension_id)
+
+    #extensions that are created or dissociated are set to these values by default
+    if extension_type != 'user' and typeval != '0':
+        raise InvalidParametersError(['extension is associated to a %s' % extension_type])
+
+    line_extension = line_extension_dao.find_by_extension_id(extension_id)
     if line_extension:
-        raise ElementDeletionError('Extension', 'extension still has a link')
+        raise InvalidParametersError(['extension is associated to a line'])
 
 
 def validate_extension_available_for_edit(extension):
