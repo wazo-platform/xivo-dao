@@ -22,6 +22,7 @@ from xivo_dao.data_handler.exception import NonexistentParametersError
 from xivo_dao.data_handler.context.model import ContextType
 from xivo_dao.data_handler.context import dao as context_dao
 from xivo_dao.data_handler.extension import dao as extension_dao
+from xivo_dao.data_handler.extension import validator as extension_validator
 from xivo_dao.data_handler.incall import dao as incall_dao
 from xivo_dao.data_handler.user_line import dao as user_line_dao
 from xivo_dao.data_handler.line import dao as line_dao
@@ -60,6 +61,7 @@ def validate_context_type_on_association(line_extension):
     context = context_dao.get_by_extension_id(line_extension.extension_id)
     if context.type == ContextType.internal:
         validate_line_not_associated_to_extension(line_extension)
+        extension_validator.validate_extension_not_associated(line_extension.extension_id)
     elif context.type == ContextType.incall:
         validate_associated_to_user(line_extension)
     else:

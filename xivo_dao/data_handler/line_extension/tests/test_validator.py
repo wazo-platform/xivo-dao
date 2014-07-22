@@ -106,14 +106,17 @@ class TestValidateExtension(unittest.TestCase):
 class TestValidateContextType(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.line_extension.validator.validate_line_not_associated_to_extension')
+    @patch('xivo_dao.data_handler.extension.validator.validate_extension_not_associated')
     @patch('xivo_dao.data_handler.context.dao.get_by_extension_id')
     def test_validate_internal_context(self,
                                        context_get_by_extension_id,
+                                       validate_extension_not_associated,
                                        validate_line_not_associated_to_extension):
         line_extension = Mock(LineExtension, extension_id=1)
         context_get_by_extension_id.return_value = Mock(Context, type='internal')
 
         validator.validate_context_type_on_association(line_extension)
+        validate_extension_not_associated.assert_called_once_with(line_extension.extension_id)
         validate_line_not_associated_to_extension.assert_called_once_with(line_extension)
 
     @patch('xivo_dao.data_handler.line_extension.validator.validate_associated_to_user')
