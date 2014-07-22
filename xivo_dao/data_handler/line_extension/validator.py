@@ -59,7 +59,7 @@ def validate_extension(line_extension):
 def validate_context_type_on_association(line_extension):
     context = context_dao.get_by_extension_id(line_extension.extension_id)
     if context.type == ContextType.internal:
-        validate_not_associated_to_extension(line_extension)
+        validate_line_not_associated_to_extension(line_extension)
     elif context.type == ContextType.incall:
         validate_associated_to_user(line_extension)
     else:
@@ -67,7 +67,7 @@ def validate_context_type_on_association(line_extension):
         raise InvalidParametersError([msg % context.type])
 
 
-def validate_not_associated_to_extension(line_extension):
+def validate_line_not_associated_to_extension(line_extension):
     line_extension = line_extension_dao.find_by_line_id(line_extension.line_id)
     if line_extension:
         msg = "line with id %s already has an extension with a context of type 'internal'"
