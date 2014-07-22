@@ -197,3 +197,15 @@ def dissociate_extension(session, extension_id):
     except SQLAlchemyError as e:
         session.rollback()
         raise ElementEditionError('Extension', 'error while dissociating extension %d: %s' % (extension_id, e))
+
+
+@daosession
+def get_type_typeval(session, extension_id):
+    row = (session.query(ExtensionSchema.type, ExtensionSchema.typeval)
+           .filter(ExtensionSchema.id == extension_id)
+           .first())
+
+    if not row:
+        raise ElementNotExistsError('Extension', id=1)
+
+    return (row.type, row.typeval)

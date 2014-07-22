@@ -23,6 +23,7 @@ from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 from xivo_dao.data_handler.utils.search import SearchResult
 from xivo_dao.data_handler.exception import ElementCreationError
 from xivo_dao.data_handler.exception import ElementEditionError
+from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.data_handler.extension import dao as extension_dao
 from xivo_dao.data_handler.extension.model import Extension, ExtensionDestination
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -459,3 +460,17 @@ class TestDissociateExtension(DAOTestCase):
         updated_extension = self.session.query(ExtensionSchema).get(extension_id)
         assert_that(updated_extension.type, equal_to('user'))
         assert_that(updated_extension.typeval, equal_to('0'))
+
+
+class TestGetTypeTypeval(DAOTestCase):
+
+    def test_given_no_extension_then_raises_error(self):
+        self.assertRaises(ElementNotExistsError, extension_dao.get_type_typeval, 1)
+
+    def test_given_an_extension_then_returns_type_and_typeval(self):
+        extension_row = self.add_extension(type='queue', typeval='1234')
+
+        extension_type, typeval = extension_dao.get_type_typeval(extension_row.id)
+
+        assert_that(extension_type, equal_to('queue'))
+        assert_that(typeval, equal_to('1234'))
