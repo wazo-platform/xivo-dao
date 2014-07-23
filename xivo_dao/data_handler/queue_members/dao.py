@@ -31,3 +31,15 @@ def get_by_queue_id_and_agent_id(session, queue_id, agent_id):
     if not row:
         raise QueueMemberNotExistsError('QueueMember', agent_id=agent_id, queue_id=queue_id)
     return QueueMember(agent_id=agent_id, queue_id=queue_id, penalty=row.penalty)
+
+
+@daosession
+def edit_agent_queue_association(session, queue_member):
+    session.begin()
+    row = (session.query(QueueMemberSchema)
+                           .filter(QueueFeaturesSchema.name == QueueMemberSchema.queue_name)
+                           .filter(QueueMemberSchema.usertype == 'agent')
+                           .filter(QueueMemberSchema.userid == queue_member.agent_id)
+                           .filter(QueueFeaturesSchema.id == queue_member.queue_id)).first()
+    row.penalty = queue_member.penalty
+    session.commit()
