@@ -49,12 +49,14 @@ class TestQueueMembers(unittest.TestCase):
 
         assert_raises(QueueNotExistsError, queue_members_services.get_by_queue_id_and_agent_id, queue_id, agent_id)
 
+    @patch('xivo_dao.data_handler.queue_members.notifier.agent_queue_association_updated')
     @patch('xivo_dao.data_handler.queue_members.dao.edit_agent_queue_association')
     @patch('xivo_dao.data_handler.queue_members.validator.validate_edit_agent_queue_association')
-    def test_edit_agent_queue_association(self, patch_validate_edit_agent, patch_edit_agent):
+    def test_edit_agent_queue_association(self, patch_validate_edit_agent, patch_edit_agent, patch_notify_edition):
         queue_member = QueueMember(agent_id=12, queue_id=2, penalty=4)
 
         queue_members_services.edit_agent_queue_association(queue_member)
 
         patch_validate_edit_agent.assert_called_once_with(queue_member)
         patch_edit_agent.assert_called_once_with(queue_member)
+        patch_notify_edition.assert_called_once_with(queue_member)

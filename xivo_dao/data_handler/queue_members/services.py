@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 from xivo_dao import queue_dao
 from xivo_dao.data_handler.queue_members import dao as queue_members_dao, \
-    validator
+    validator, notifier
 from xivo_dao.data_handler.queue_members.exception import QueueNotExistsError
 
 
@@ -31,3 +31,4 @@ def get_by_queue_id_and_agent_id(queue_id, agent_id):
 def edit_agent_queue_association(queue_member):
     validator.validate_edit_agent_queue_association(queue_member)
     queue_members_dao.edit_agent_queue_association(queue_member)
+    notifier.agent_queue_association_updated(queue_member)
