@@ -29,7 +29,6 @@ class QueueLog(Base):
         Index('queue_log__idx_agent', 'agent'),
         Index('queue_log__idx_callid', 'callid'),
         Index('queue_log__idx_event', 'event'),
-        Index('queue_log__idx_queuename', 'queuename'),
         Index('queue_log__idx_time', 'time'),
     )
 
