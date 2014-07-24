@@ -32,7 +32,6 @@ class CEL(Base):
         Index('cel__idx__call_log_id', 'call_log_id'),
         Index('cel__idx__eventtime', 'eventtime'),
         Index('cel__idx__linkedid', 'linkedid'),
-        Index('cel__idx__uniqueid', 'uniqueid'),
     )
 
     id = Column(Integer, primary_key=True, nullable=False)
