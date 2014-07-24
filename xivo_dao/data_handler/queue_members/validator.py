@@ -23,5 +23,5 @@ def validate_edit_agent_queue_association(queue_member):
     try:
         queue_dao.get(queue_member.queue_id)
     except LookupError:
-        raise QueueNotExistsError('Queue', queue_id=queue_member.queue_id)
+        raise QueueNotExistsError('Queue', id=queue_member.queue_id)
     queue_members_dao.get_by_queue_id_and_agent_id(queue_member.queue_id, queue_member.agent_id)

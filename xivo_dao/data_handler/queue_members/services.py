@@ -24,7 +24,7 @@ def get_by_queue_id_and_agent_id(queue_id, agent_id):
     try:
         queue_dao.get(queue_id)
     except LookupError:
-        raise QueueNotExistsError('Queue', queue_id=queue_id)
+        raise QueueNotExistsError('Queue', id=queue_id)
     return queue_members_dao.get_by_queue_id_and_agent_id(queue_id, agent_id)
 
 
