@@ -60,11 +60,7 @@ def find_all_by_user_id(session, user_id):
     if not rows:
         return []
 
-    tmp = []
-    for row in rows:
-        tmp.append(db_converter.to_model(row))
-
-    return tmp
+    return [db_converter.to_model(row) for row in rows]
 
 
 @daosession
