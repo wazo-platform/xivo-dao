@@ -15,12 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 from mock import patch, Mock
-from psycopg2.tests.testutils import unittest
+import unittest
 from hamcrest import assert_that, equal_to
 from xivo_dao.data_handler.queue_members.model import QueueMember
 from xivo_dao.data_handler.queue_members import services as queue_members_services
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
-from sqlalchemy.testing.assertions import assert_raises
 from xivo_dao.data_handler.queue_members.exception import QueueNotExistsError
 
 
@@ -47,7 +46,7 @@ class TestQueueMembers(unittest.TestCase):
         queue_id = 2
         patch_get_queue.side_effect = LookupError
 
-        assert_raises(QueueNotExistsError, queue_members_services.get_by_queue_id_and_agent_id, queue_id, agent_id)
+        self.assertRaises(QueueNotExistsError, queue_members_services.get_by_queue_id_and_agent_id, queue_id, agent_id)
 
     @patch('xivo_dao.data_handler.queue_members.notifier.agent_queue_association_updated')
     @patch('xivo_dao.data_handler.queue_members.dao.edit_agent_queue_association')
