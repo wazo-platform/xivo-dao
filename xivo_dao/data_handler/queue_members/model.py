@@ -15,9 +15,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 from xivo_dao.helpers.new_model import NewModel
+from xivo_dao.converters.database_converter import DatabaseConverter
+from xivo_dao.alchemy.queuemember import QueueMember
 
 
-class QueueMember(NewModel):
+DB_TO_MODEL_MAPPING = {
+    'penalty': 'penalty',
+    'userid': 'agent_id'
+}
+
+
+class QueueMemberAgent(NewModel):
 
     def __init__(self, *args, **kwargs):
         NewModel.__init__(self, *args, **kwargs)
@@ -30,7 +38,17 @@ class QueueMember(NewModel):
 
     MANDATORY = [
         'queue_id',
+        'agent_id',
         'penalty'
     ]
 
     _RELATION = {}
+
+
+class QueueMemberAgentDbConverter(DatabaseConverter):
+
+    def __init__(self):
+        DatabaseConverter.__init__(self, DB_TO_MODEL_MAPPING, QueueMember, QueueMemberAgent)
+
+
+db_converter = QueueMemberAgentDbConverter()

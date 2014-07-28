@@ -19,25 +19,25 @@ import unittest
 from mock import patch, Mock
 
 from xivo_dao.data_handler.queue_members import notifier
-from xivo_dao.data_handler.queue_members.model import QueueMember
+from xivo_dao.data_handler.queue_members.model import QueueMemberAgent
 
 
 class TestQueueMembersNotifier(unittest.TestCase):
 
     def setUp(self):
         self.sysconfd_command = {
-                                'ctibus': [],
-                                'dird': [],
-                                'ipbx': [],
-                                'agentbus': [],
-                            }
+            'ctibus': [],
+            'dird': [],
+            'ipbx': [],
+            'agentbus': [],
+        }
 
     @patch('xivo_dao.helpers.sysconfd_connector.exec_request_handlers')
     @patch('xivo_bus.resources.queue_members.event.AgentQueueAssociationEditedEvent')
     @patch('xivo_dao.helpers.bus_manager.send_bus_command')
     def test_edited(self, send_bus_command, AgentQueueAssociationEditedEvent, exec_request_handler):
         new_event = AgentQueueAssociationEditedEvent.return_value = Mock()
-        queue_member = QueueMember(queue_id=2, agent_id=30, penalty=5)
+        queue_member = QueueMemberAgent(queue_id=2, agent_id=30, penalty=5)
         self.sysconfd_command['agentbus'] = ['agent.edit.%s' % queue_member.agent_id]
 
         notifier.agent_queue_association_updated(queue_member)

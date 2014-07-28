@@ -17,7 +17,7 @@
 from mock import patch, Mock
 import unittest
 from hamcrest import assert_that, equal_to
-from xivo_dao.data_handler.queue_members.model import QueueMember
+from xivo_dao.data_handler.queue_members.model import QueueMemberAgent
 from xivo_dao.data_handler.queue_members import services as queue_members_services
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.data_handler.queues.exception import QueueNotExistsError
@@ -31,7 +31,7 @@ class TestQueueMembers(unittest.TestCase):
         agent_id = 3
         queue_id = 2
         patch_get_queue.return_value = Mock(QueueFeatures)
-        queue_member = patch_get_by_queue_id_and_agent_id.return_value = QueueMember(agent_id=agent_id, queue_id=queue_id, penalty=5)
+        queue_member = patch_get_by_queue_id_and_agent_id.return_value = QueueMemberAgent(agent_id=agent_id, queue_id=queue_id, penalty=5)
 
         result = queue_members_services.get_by_queue_id_and_agent_id(queue_id, agent_id)
 
@@ -52,7 +52,7 @@ class TestQueueMembers(unittest.TestCase):
     @patch('xivo_dao.data_handler.queue_members.dao.edit_agent_queue_association')
     @patch('xivo_dao.data_handler.queue_members.validator.validate_edit_agent_queue_association')
     def test_edit_agent_queue_association(self, patch_validate_edit_agent, patch_edit_agent, patch_notify_edition):
-        queue_member = QueueMember(agent_id=12, queue_id=2, penalty=4)
+        queue_member = QueueMemberAgent(agent_id=12, queue_id=2, penalty=4)
 
         queue_members_services.edit_agent_queue_association(queue_member)
 
