@@ -14,14 +14,12 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
-
-from hamcrest import *
+from hamcrest import assert_that, all_of, has_property
 
 from xivo_dao.data_handler.queue_members import dao as queue_members_dao
-from xivo_dao.tests.test_dao import DAOTestCase
-from sqlalchemy.testing.assertions import assert_raises
 from xivo_dao.data_handler.queue_members.exception import QueueMemberNotExistsError
 from xivo_dao.data_handler.queue_members.model import QueueMember
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestQueueAgentAssociation(DAOTestCase):
@@ -33,7 +31,13 @@ class TestQueueAgentAssociation(DAOTestCase):
         queue_name = 'myqueue'
         self.add_queuefeatures(id=queue_id, name=queue_name)
         self.add_agent(id=agent_id, number='1200')
-        self.add_queue_member(queue_name=queue_name, interface='Agent/1200', penalty=penalty, usertype='agent', userid=agent_id, channel='Agent', category='queue')
+        self.add_queue_member(queue_name=queue_name,
+                              interface='Agent/1200',
+                              penalty=penalty,
+                              usertype='agent',
+                              userid=agent_id,
+                              channel='Agent',
+                              category='queue')
 
         result = queue_members_dao.get_by_queue_id_and_agent_id(queue_id, agent_id)
 
@@ -42,7 +46,7 @@ class TestQueueAgentAssociation(DAOTestCase):
                                    has_property('queue_id', queue_id)))
 
     def test_get_by_queue_and_agent_id_not_exists(self):
-        assert_raises(QueueMemberNotExistsError, queue_members_dao.get_by_queue_id_and_agent_id, 1, 8)
+        self.assertRaises(QueueMemberNotExistsError, queue_members_dao.get_by_queue_id_and_agent_id, 1, 8)
 
     def test_edit_agent_queue_association(self):
         agent_id = 23
