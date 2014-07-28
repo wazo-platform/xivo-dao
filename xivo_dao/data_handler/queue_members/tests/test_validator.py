@@ -14,12 +14,13 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
-import unittest
 from mock import patch
+import unittest
+
 from xivo_dao.data_handler.queue_members import validator
-from xivo_dao.data_handler.queue_members.exception import QueueNotExistsError, \
-    QueueMemberNotExistsError
+from xivo_dao.data_handler.queue_members.exception import QueueMemberNotExistsError
 from xivo_dao.data_handler.queue_members.model import QueueMember
+from xivo_dao.data_handler.queues.exception import QueueNotExistsError
 
 
 class TestQueueMembersValidator(unittest.TestCase):

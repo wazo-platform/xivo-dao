@@ -20,7 +20,3 @@ from xivo_dao.data_handler.exception import ElementNotExistsError
 
 class QueueMemberNotExistsError(ElementNotExistsError):
     pass
-
-
-class QueueNotExistsError(ElementNotExistsError):
-    pass

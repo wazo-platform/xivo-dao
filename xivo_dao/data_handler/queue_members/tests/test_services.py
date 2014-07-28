@@ -20,7 +20,7 @@ from hamcrest import assert_that, equal_to
 from xivo_dao.data_handler.queue_members.model import QueueMember
 from xivo_dao.data_handler.queue_members import services as queue_members_services
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
-from xivo_dao.data_handler.queue_members.exception import QueueNotExistsError
+from xivo_dao.data_handler.queues.exception import QueueNotExistsError
 
 
 class TestQueueMembers(unittest.TestCase):

@@ -17,7 +17,7 @@
 from xivo_dao import queue_dao
 from xivo_dao.data_handler.queue_members import dao as queue_members_dao, \
     validator, notifier
-from xivo_dao.data_handler.queue_members.exception import QueueNotExistsError
+from xivo_dao.data_handler.queues.exception import QueueNotExistsError
 
 
 def get_by_queue_id_and_agent_id(queue_id, agent_id):
