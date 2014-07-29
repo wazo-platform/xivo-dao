@@ -39,7 +39,5 @@ def _validate_queue_exists(queue_id):
 
 
 def _validate_agent_exists(agent_id):
-    try:
-        agent_dao.get(agent_id)
-    except LookupError:
+    if agent_dao.get(agent_id) is None:
         raise AgentNotExistsError('Agent', id=agent_id)
