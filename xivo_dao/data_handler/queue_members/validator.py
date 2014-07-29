@@ -14,14 +14,32 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
-from xivo_dao import queue_dao
+from xivo_dao import queue_dao, agent_dao
 from xivo_dao.data_handler.queue_members import dao as queue_members_dao
 from xivo_dao.data_handler.queues.exception import QueueNotExistsError
+from xivo_dao.data_handler.agents.exception import AgentNotExistsError
 
 
 def validate_edit_agent_queue_association(queue_member):
-    try:
-        queue_dao.get(queue_member.queue_id)
-    except LookupError:
-        raise QueueNotExistsError('Queue', id=queue_member.queue_id)
+    _validate_queue_exists(queue_member.queue_id)
+    _validate_agent_exists(queue_member.agent_id)
     queue_members_dao.get_by_queue_id_and_agent_id(queue_member.queue_id, queue_member.agent_id)
+
+
+def validate_get_agent_queue_association(queue_id, agent_id):
+    _validate_queue_exists(queue_id)
+    _validate_agent_exists(agent_id)
+
+
+def _validate_queue_exists(queue_id):
+    try:
+        queue_dao.get(queue_id)
+    except LookupError:
+        raise QueueNotExistsError('Queue', id=queue_id)
+
+
+def _validate_agent_exists(agent_id):
+    try:
+        agent_dao.get(agent_id)
+    except LookupError:
+        raise AgentNotExistsError('Agent', id=agent_id)

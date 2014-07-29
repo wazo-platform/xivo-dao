@@ -14,39 +14,27 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
-from mock import patch, Mock
 import unittest
 from hamcrest import assert_that, equal_to
 from xivo_dao.data_handler.queue_members.model import QueueMemberAgent
 from xivo_dao.data_handler.queue_members import services as queue_members_services
-from xivo_dao.alchemy.queuefeatures import QueueFeatures
-from xivo_dao.data_handler.queues.exception import QueueNotExistsError
+from mock import patch
 
 
 class TestQueueMembers(unittest.TestCase):
 
+    @patch('xivo_dao.data_handler.queue_members.validator.validate_get_agent_queue_association')
     @patch('xivo_dao.data_handler.queue_members.dao.get_by_queue_id_and_agent_id')
-    @patch('xivo_dao.queue_dao.get')
-    def test_get_by_queue_id_and_agent_id(self, patch_get_queue, patch_get_by_queue_id_and_agent_id):
+    def test_get_by_queue_id_and_agent_id(self, patch_get_by_queue_id_and_agent_id, patch_validate):
         agent_id = 3
         queue_id = 2
-        patch_get_queue.return_value = Mock(QueueFeatures)
         queue_member = patch_get_by_queue_id_and_agent_id.return_value = QueueMemberAgent(agent_id=agent_id, queue_id=queue_id, penalty=5)
 
         result = queue_members_services.get_by_queue_id_and_agent_id(queue_id, agent_id)
 
-        patch_get_queue.assert_called_once_with(queue_id)
+        patch_validate.assert_called_once_with(queue_id, agent_id)
         patch_get_by_queue_id_and_agent_id.assert_called_once_with(queue_id, agent_id)
         assert_that(result, equal_to(queue_member))
-
-    @patch('xivo_dao.data_handler.queue_members.dao.get_by_queue_id_and_agent_id')
-    @patch('xivo_dao.queue_dao.get')
-    def test_get_by_queue_id_and_agent_id_no_queue(self, patch_get_queue, patch_get_by_queue_id_and_agent_id):
-        agent_id = 3
-        queue_id = 2
-        patch_get_queue.side_effect = LookupError
-
-        self.assertRaises(QueueNotExistsError, queue_members_services.get_by_queue_id_and_agent_id, queue_id, agent_id)
 
     @patch('xivo_dao.data_handler.queue_members.notifier.agent_queue_association_updated')
     @patch('xivo_dao.data_handler.queue_members.dao.edit_agent_queue_association')

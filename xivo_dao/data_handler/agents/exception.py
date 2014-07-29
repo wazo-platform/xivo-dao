@@ -14,16 +14,9 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
-from xivo_dao.data_handler.queue_members import dao as queue_members_dao, \
-    validator, notifier
+
+from xivo_dao.data_handler.exception import ElementNotExistsError
 
 
-def get_by_queue_id_and_agent_id(queue_id, agent_id):
-    validator.validate_get_agent_queue_association(queue_id, agent_id)
-    return queue_members_dao.get_by_queue_id_and_agent_id(queue_id, agent_id)
-
-
-def edit_agent_queue_association(queue_member):
-    validator.validate_edit_agent_queue_association(queue_member)
-    queue_members_dao.edit_agent_queue_association(queue_member)
-    notifier.agent_queue_association_updated(queue_member)
+class AgentNotExistsError(ElementNotExistsError):
+    pass
