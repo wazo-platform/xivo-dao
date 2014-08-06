@@ -23,7 +23,7 @@ from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.dialaction import Dialaction as DialactionSchema
 from xivo_dao.data_handler.user.model import User
 from xivo_dao.data_handler.dial_action import dao as dial_action_dao
-from xivo_dao.data_handler.exception import ElementCreationError
+from xivo_dao.data_handler.exception import DataError
 
 
 class TestDialActionDAO(DAOTestCase):
@@ -44,7 +44,7 @@ class TestDialActionDAO(DAOTestCase):
 
         dial_action_dao.create_default_dial_actions_for_user(user)
 
-        commit_or_abort.assert_called_once_with(ANY, ElementCreationError, 'Dialaction')
+        commit_or_abort.assert_called_once_with(ANY, DataError.on_create, 'Dialaction')
 
     def assert_user_has_dialaction(self, user, event):
         count = (self.session.query(DialactionSchema)
