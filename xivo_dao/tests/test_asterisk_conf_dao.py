@@ -1230,7 +1230,7 @@ class TestAsteriskConfDAO(DAOTestCase):
 
         expected_result = [
             {
-                'autopause': 1,
+                'autopause': 'no',
                 'weight': None,
                 'autofill': 1,
                 'queue-holdtime': None,
