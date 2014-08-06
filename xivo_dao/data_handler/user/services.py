@@ -22,6 +22,7 @@ from xivo_dao.data_handler.voicemail import dao as voicemail_dao
 from xivo_dao.data_handler.func_key_template import dao as template_dao
 from xivo_dao.data_handler.func_key import destination as func_key_destination
 from xivo_dao.data_handler.dial_action import dao as dial_action_dao
+from xivo_dao.data_handler.exception import NotFoundError
 
 
 def get(user_id):
@@ -83,7 +84,7 @@ def delete(user):
 def delete_voicemail(user):
     try:
         voicemail = voicemail_dao.get(user.voicemail_id)
-    except LookupError:
+    except NotFoundError:
         return
     else:
         voicemail_dao.delete(voicemail)
@@ -92,7 +93,7 @@ def delete_voicemail(user):
 def delete_line(user):
     try:
         line = line_services.get_by_user_id(user.id)
-    except LookupError:
+    except NotFoundError:
         return
     else:
         line_services.delete(line)

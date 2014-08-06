@@ -15,15 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import *
+from hamcrest import assert_that, equal_to, has_property, all_of, has_items, has_length, any_of, contains, is_, none
 from mock import patch, Mock
 from sqlalchemy.exc import SQLAlchemyError
 
 from xivo_dao.data_handler.utils.search import SearchResult
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
-from xivo_dao.data_handler.exception import ElementCreationError
-from xivo_dao.data_handler.exception import ElementEditionError
-from xivo_dao.data_handler.exception import ElementNotExistsError
+from xivo_dao.data_handler.exception import DataError
+from xivo_dao.data_handler.exception import NotFoundError
 from xivo_dao.data_handler.user import dao as user_dao
 from xivo_dao.data_handler.user.model import User
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -34,7 +33,7 @@ class TestGet(DAOTestCase):
     def test_get_main_user_by_line_id_not_found(self):
         line_id = 654
 
-        self.assertRaises(LookupError, user_dao.get_main_user_by_line_id, line_id)
+        self.assertRaises(NotFoundError, user_dao.get_main_user_by_line_id, line_id)
 
     def test_get_main_user_by_line_id(self):
         user_line = self.add_user_line_with_exten()
@@ -45,7 +44,7 @@ class TestGet(DAOTestCase):
         assert_that(result, has_property('id', user_line.user.id))
 
     def test_get_inexistant(self):
-        self.assertRaises(LookupError, user_dao.get, 42)
+        self.assertRaises(NotFoundError, user_dao.get, 42)
 
     def test_get_required_fields(self):
         user_row = self.add_user(firstname='Paul')
@@ -113,7 +112,7 @@ class TestGet(DAOTestCase):
                                       context=context,
                                       commented_line=1)
 
-        self.assertRaises(LookupError, user_dao.get_by_number_context, number, context)
+        self.assertRaises(NotFoundError, user_dao.get_by_number_context, number, context)
 
 
 class TestFind(DAOTestCase):
@@ -556,7 +555,7 @@ class TestCreate(DAOTestCase):
                     lastname='kiki',
                     language='fr_FR')
 
-        self.assertRaises(ElementCreationError, user_dao.create, user)
+        self.assertRaises(DataError, user_dao.create, user)
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
 
@@ -648,7 +647,7 @@ class TestEdit(DAOTestCase):
     def test_edit_with_unknown_user(self):
         user = User(id=123, lastname='unknown')
 
-        self.assertRaises(ElementNotExistsError, user_dao.edit, user)
+        self.assertRaises(NotFoundError, user_dao.edit, user)
 
     @patch('xivo_dao.helpers.db_manager.DaoSession')
     def test_edit_with_database_error(self, Session):
@@ -661,7 +660,7 @@ class TestEdit(DAOTestCase):
                     lastname='kiki',
                     language='fr_FR')
 
-        self.assertRaises(ElementEditionError, user_dao.edit, user)
+        self.assertRaises(DataError, user_dao.edit, user)
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
 

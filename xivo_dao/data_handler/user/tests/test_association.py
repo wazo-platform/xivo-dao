@@ -21,7 +21,9 @@ from mock import Mock, patch, ANY
 from xivo_dao.data_handler.user import association as user_association
 from xivo_dao.data_handler.voicemail.model import Voicemail
 from xivo_dao.data_handler.user.model import User
-from xivo_dao.data_handler.exception import ElementNotExistsError
+
+from xivo_dao.data_handler.exception import ResourceError
+from xivo_dao.data_handler.exception import NotFoundError
 
 
 class TestUserAssociation(unittest.TestCase):
@@ -32,10 +34,10 @@ class TestUserAssociation(unittest.TestCase):
         user_id = 21
         voicemail_id = 32
 
-        get_user.side_effect = ElementNotExistsError('voicemail')
+        get_user.side_effect = NotFoundError
         get_voicemail.return_value = Mock()
 
-        self.assertRaises(ElementNotExistsError, user_association.associate_voicemail, user_id, voicemail_id)
+        self.assertRaises(ResourceError, user_association.associate_voicemail, user_id, voicemail_id)
 
     @patch('xivo_dao.data_handler.voicemail.services.get')
     @patch('xivo_dao.data_handler.user.services.get')
@@ -44,9 +46,9 @@ class TestUserAssociation(unittest.TestCase):
         voicemail_id = 32
 
         get_user.return_value = Mock()
-        get_voicemail.side_effect = ElementNotExistsError('voicemail')
+        get_voicemail.side_effect = NotFoundError
 
-        self.assertRaises(ElementNotExistsError, user_association.associate_voicemail, user_id, voicemail_id)
+        self.assertRaises(ResourceError, user_association.associate_voicemail, user_id, voicemail_id)
 
     @patch('xivo_dao.data_handler.voicemail.services.get')
     @patch('xivo_dao.data_handler.user.services.edit')
