@@ -17,7 +17,7 @@
 
 import unittest
 
-from hamcrest import *
+from hamcrest import assert_that, equal_to, same_instance, none, all_of, has_property, contains
 from mock import Mock, patch
 from urllib2 import HTTPError
 from StringIO import StringIO
@@ -25,11 +25,9 @@ from contextlib import contextmanager
 
 from xivo_dao.data_handler.device import dao as device_dao
 from xivo_dao.data_handler.device.model import Device
-from xivo_dao.data_handler.exception import ElementDeletionError
-from xivo_dao.data_handler.exception import ElementCreationError
-from xivo_dao.data_handler.exception import ElementNotExistsError
-from xivo_dao.data_handler.exception import ElementEditionError
-from xivo_dao.data_handler.exception import InvalidParametersError
+from xivo_dao.data_handler.exception import DataError
+from xivo_dao.data_handler.exception import NotFoundError
+from xivo_dao.data_handler.exception import InputError
 
 
 class TestDeviceDao(unittest.TestCase):
@@ -106,7 +104,7 @@ class TestDeviceDaoGetFind(TestDeviceDao):
     def test_get_no_device(self, fetch_device_and_config, to_model):
         fetch_device_and_config.return_value = None, None
 
-        self.assertRaises(ElementNotExistsError, device_dao.get, self.deviceid)
+        self.assertRaises(NotFoundError, device_dao.get, self.deviceid)
         fetch_device_and_config.assert_called_once_with(self.deviceid)
         assert_that(to_model.call_count, equal_to(0))
 
@@ -140,7 +138,7 @@ class TestDeviceDaoGetFind(TestDeviceDao):
                                                'config': self.config_id}
             config_manager.get.side_effect = HTTPError('', 404, '', '', StringIO(''))
 
-            self.assertRaises(ElementNotExistsError, device_dao.fetch_device_and_config, self.deviceid)
+            self.assertRaises(NotFoundError, device_dao.fetch_device_and_config, self.deviceid)
 
             device_manager.get.assert_called_once_with(self.deviceid)
             config_manager.get.assert_called_once_with(self.config_id)
@@ -258,7 +256,7 @@ class TestDeviceDaoFindAll(TestDeviceDao):
         with self.provd_managers() as (device_manager, _, _):
             order, direction = None, Mock()
 
-            self.assertRaises(InvalidParametersError, device_dao.find_devices_ordered, order, direction)
+            self.assertRaises(InputError, device_dao.find_devices_ordered, order, direction)
 
             assert_that(device_manager.find.call_count, equal_to(0))
 
@@ -400,7 +398,7 @@ class TestDeviceDaoCreate(TestDeviceDao):
         with self.provd_managers() as (device_manager, config_manager, _):
             device_manager.update.side_effect = Exception()
 
-            self.assertRaises(ElementCreationError, device_dao.create, device)
+            self.assertRaises(DataError, device_dao.create, device)
 
             assert_that(config_manager.add.call_count, equal_to(0))
 
@@ -419,7 +417,7 @@ class TestDeviceDaoCreate(TestDeviceDao):
         with self.provd_managers() as (device_manager, config_manager, _):
             config_manager.add.side_effect = Exception()
 
-            self.assertRaises(ElementCreationError, device_dao.create, device)
+            self.assertRaises(DataError, device_dao.create, device)
             device_manager.remove.assert_called_once_with(device_id)
 
     def test_generate_device_id(self):
@@ -437,7 +435,7 @@ class TestDeviceDaoCreate(TestDeviceDao):
         with self.provd_managers() as (device_manager, config_manager, _):
             device_manager.add.side_effect = Exception()
 
-            self.assertRaises(ElementCreationError, device_dao.generate_device_id)
+            self.assertRaises(DataError, device_dao.generate_device_id)
             device_manager.add.assert_called_once_with({})
 
 
@@ -504,7 +502,7 @@ class TestDeviceDaoEdit(TestDeviceDao):
             config_manager.get.return_value = provd_config
             config_manager.update.side_effect = Exception
 
-            self.assertRaises(ElementEditionError, device_dao.edit, device)
+            self.assertRaises(DataError, device_dao.edit, device)
 
     @patch('xivo_dao.data_handler.device.provd_converter.build_edit')
     def test_edit_with_error_on_device_update(self, provd_build_edit):
@@ -518,7 +516,7 @@ class TestDeviceDaoEdit(TestDeviceDao):
             config_manager.get.return_value = {}
             device_manager.update.side_effect = Exception
 
-            self.assertRaises(ElementEditionError, device_dao.edit, device)
+            self.assertRaises(DataError, device_dao.edit, device)
 
 
 class TestDeviceDaoMacExists(TestDeviceDao):
@@ -628,7 +626,7 @@ class TestDeviceDaoDelete(TestDeviceDao):
         with self.provd_managers() as (device_manager, config_manager, _):
             device_manager.remove.side_effect = HTTPError('', 404, '', '', StringIO(''))
 
-            self.assertRaises(ElementNotExistsError, device_dao.delete, device)
+            self.assertRaises(NotFoundError, device_dao.delete, device)
             device_manager.remove.assert_called_once_with(device.id)
             self.assertEquals(config_manager.remove.call_count, 0)
 
@@ -638,6 +636,6 @@ class TestDeviceDaoDelete(TestDeviceDao):
         with self.provd_managers() as (device_manager, config_manager, _):
             device_manager.remove.side_effect = Exception
 
-            self.assertRaises(ElementDeletionError, device_dao.delete, device)
+            self.assertRaises(DataError, device_dao.delete, device)
             device_manager.remove.assert_called_once_with(device.id)
             self.assertEquals(config_manager.remove.call_count, 0)

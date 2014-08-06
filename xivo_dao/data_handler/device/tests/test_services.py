@@ -16,8 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import unittest
-
 from hamcrest import assert_that, equal_to, is_not, has_item
+
 from mock import patch, Mock
 from urllib2 import URLError
 from xivo_dao.data_handler.utils.search import SearchResult
@@ -26,9 +26,8 @@ from xivo_dao.data_handler.device.model import Device
 from xivo_dao.data_handler.extension.model import Extension
 from xivo_dao.data_handler.line.model import LineSIP, LineSCCP
 from xivo_dao.data_handler.line_extension.model import LineExtension
-from xivo_dao.data_handler.exception import ElementCreationError, \
-    InvalidParametersError, ElementDeletionError, \
-    ProvdError
+from xivo_dao.data_handler.exception import DataError
+from xivo_dao.data_handler.exception import InputError
 from xivo_dao.helpers import provd_connector
 
 
@@ -62,7 +61,7 @@ class TestDeviceServices(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.device.dao.search')
     def test_search_with_invalid_order(self, device_dao_search):
-        self.assertRaises(InvalidParametersError, device_services.search, order='toto')
+        self.assertRaises(InputError, device_services.search, order='toto')
         self.assertEquals(device_dao_search.call_count, 0)
 
     @patch('xivo_dao.data_handler.device.dao.search')
@@ -78,7 +77,7 @@ class TestDeviceServices(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.device.dao.search')
     def test_search_with_invalid_direction(self, device_dao_search):
-        self.assertRaises(InvalidParametersError, device_services.search, direction='toto')
+        self.assertRaises(InputError, device_services.search, direction='toto')
         self.assertEquals(device_dao_search.call_count, 0)
 
     @patch('xivo_dao.data_handler.device.dao.search')
@@ -94,12 +93,12 @@ class TestDeviceServices(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.device.dao.search')
     def test_search_with_invalid_limit(self, device_dao_search):
-        self.assertRaises(InvalidParametersError, device_services.search, limit=-1)
+        self.assertRaises(InputError, device_services.search, limit=-1)
         self.assertEquals(device_dao_search.call_count, 0)
 
     @patch('xivo_dao.data_handler.device.dao.search')
     def test_search_with_limit_at_0(self, device_dao_search):
-        self.assertRaises(InvalidParametersError, device_services.search, limit=0)
+        self.assertRaises(InputError, device_services.search, limit=0)
         self.assertEquals(device_dao_search.call_count, 0)
 
     @patch('xivo_dao.data_handler.device.dao.search')
@@ -115,7 +114,7 @@ class TestDeviceServices(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.device.dao.search')
     def test_search_with_invalid_skip(self, device_dao_search):
-        self.assertRaises(InvalidParametersError, device_services.search, skip=-1)
+        self.assertRaises(InputError, device_services.search, skip=-1)
         self.assertEquals(device_dao_search.call_count, 0)
 
     @patch('xivo_dao.data_handler.device.dao.search')
@@ -127,6 +126,7 @@ class TestDeviceServices(unittest.TestCase):
         result = device_services.search(skip=0)
 
         self.assertEquals(result, expected)
+
         device_dao_search.assert_called_once_with(skip=0)
 
     @patch('xivo_dao.data_handler.device.dao.search')
@@ -196,18 +196,6 @@ class TestDeviceServices(unittest.TestCase):
         self.assertEquals(result.vendor, expected_device['vendor'])
         self.assertEquals(result.model, expected_device['model'])
 
-    @patch('xivo_dao.data_handler.device.notifier.created')
-    @patch('xivo_dao.data_handler.device.dao.create')
-    @patch('xivo_dao.data_handler.device.validator.validate_create')
-    def test_create_with_dao_error(self, validate_create, device_dao_create, notifier_created):
-        device = Device()
-
-        device_dao_create.side_effect = ElementCreationError('Device', '')
-
-        self.assertRaises(ElementCreationError, device_services.create, device)
-        self.assertEquals(notifier_created.call_count, 0)
-        validate_create.assert_called_once_with(device)
-
     @patch('xivo_dao.data_handler.device.notifier.edited')
     @patch('xivo_dao.data_handler.device.dao.edit')
     @patch('xivo_dao.data_handler.device.validator.validate_edit')
@@ -233,33 +221,6 @@ class TestDeviceServices(unittest.TestCase):
         device_dao_delete.assert_called_once_with(device)
         line_dao_reset_device.assert_called_once_with(device.id)
         device_notifier_deleted.assert_called_once_with(device)
-
-    @patch('xivo_dao.data_handler.device.notifier.deleted')
-    @patch('xivo_dao.data_handler.line.dao.reset_device')
-    @patch('xivo_dao.data_handler.device.dao.delete')
-    @patch('xivo_dao.data_handler.device.validator.validate_delete')
-    def test_delete_associated(self, device_validate, device_dao_delete, line_dao_reset_device, device_notifier_deleted):
-        device = Device(id=self.device_id,
-                        ip='10.0.0.1')
-        device_validate.side_effect = ElementDeletionError('Device', 'device is still linked')
-
-        self.assertRaises(ElementDeletionError, device_services.delete, device)
-
-        assert_that(device_dao_delete.call_count, equal_to(0))
-        assert_that(line_dao_reset_device.call_count, equal_to(0))
-        assert_that(device_notifier_deleted.call_count, equal_to(0))
-
-    @patch('xivo_dao.data_handler.device.notifier.deleted')
-    @patch('xivo_dao.data_handler.device.dao.delete')
-    @patch('xivo_dao.data_handler.line.dao.reset_device')
-    @patch('xivo_dao.data_handler.device.validator.validate_delete', Mock())
-    def test_delete_with_error(self, ine_dao_reset, device_dao_delete, device_notifier_deleted):
-        device = Device(id=self.device_id,
-                        ip='10.0.0.1')
-        device_dao_delete.side_effect = ElementDeletionError('Device', 'Not Exist')
-
-        self.assertRaises(ElementDeletionError, device_services.delete, device)
-        self.assertEquals(device_notifier_deleted.call_count, 0)
 
     @patch('xivo_dao.data_handler.device.services.rebuild_device_config')
     @patch('xivo_dao.data_handler.device.provd_converter.link_device_config')
@@ -296,7 +257,7 @@ class TestDeviceServices(unittest.TestCase):
         line_find_all_by_device_id.return_value = [line1]
         build_line_for_device.side_effect = URLError('urlerror')
 
-        self.assertRaises(ProvdError, device_services.rebuild_device_config, device)
+        self.assertRaises(DataError, device_services.rebuild_device_config, device)
 
         build_line_for_device.assert_called_once_with(device, line1)
 
@@ -558,7 +519,7 @@ class TestDeviceServices(unittest.TestCase):
         line = LineSIP(device_slot=2)
         device = Device(id=self.device_id)
 
-        self.assertRaises(ProvdError, device_services.remove_line_from_device, device, line)
+        self.assertRaises(DataError, device_services.remove_line_from_device, device, line)
 
         config_manager().get.assert_called_once_with(self.device_id)
         self.assertEquals(config_manager.update.call_count, 0)
@@ -688,7 +649,7 @@ class TestDeviceServices(unittest.TestCase):
 
         device_manager().synchronize.side_effect = Exception('')
 
-        self.assertRaises(ProvdError, device_services.synchronize, device)
+        self.assertRaises(DataError, device_services.synchronize, device)
         device_manager().synchronize.assert_called_with(self.device_id)
 
     @patch('xivo_dao.data_handler.line.dao.reset_device', Mock(return_value=None))
@@ -723,7 +684,7 @@ class TestDeviceServices(unittest.TestCase):
 
         device_manager().update.side_effect = Exception('')
 
-        self.assertRaises(ProvdError, device_services.reset_to_autoprov, device)
+        self.assertRaises(DataError, device_services.reset_to_autoprov, device)
 
     def _give_me_a_provd_configregistrar(self, proxy_main, proxy_backup=None):
         config_registrar_dict = {

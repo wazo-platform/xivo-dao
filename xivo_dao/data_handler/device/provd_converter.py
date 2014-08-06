@@ -18,7 +18,7 @@
 from xivo_dao.data_handler.device.model import Device
 from xivo_dao.helpers import provd_connector
 from xivo import caller_id
-from xivo_dao.data_handler.exception import ProvdError
+from xivo_dao.data_handler.exception import DataError
 
 PROVD_DEVICE_KEYS = [
     'id',
@@ -85,7 +85,7 @@ def link_device_config(device):
         provd_device['config'] = device.id
         provd_device_manager.update(provd_device)
     except Exception as e:
-        raise ProvdError('error while linking config to device.', e)
+        raise DataError.on_action('link', 'Device', e)
 
 
 def populate_sip_line(config, confregistrar, line, extension):
