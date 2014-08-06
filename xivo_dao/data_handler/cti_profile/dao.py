@@ -15,10 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from xivo_dao.data_handler import errors
 from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.data_handler.cti_profile.model import db_converter
-from xivo_dao.data_handler.exception import ElementNotExistsError
 
 
 @daosession
@@ -31,7 +31,7 @@ def find_all(session):
 def get(session, profile_id):
     row = session.query(CtiProfile).filter(CtiProfile.id == profile_id).first()
     if row is None:
-        raise ElementNotExistsError('cti_profile')
+        raise errors.not_found('CtiProfile', id=profile_id)
     return db_converter.to_model(row)
 
 
@@ -39,5 +39,5 @@ def get(session, profile_id):
 def get_id_by_name(session, cti_profile_name):
     row = session.query(CtiProfile).filter(CtiProfile.name == cti_profile_name).first()
     if row is None:
-        raise ElementNotExistsError('cti_profile')
+        raise errors.not_found('CtiProfile', name=cti_profile_name)
     return row.id

@@ -19,7 +19,7 @@ from hamcrest import assert_that, equal_to, has_length
 
 from xivo_dao.alchemy.cti_profile import CtiProfile as CtiProfileSchema
 from xivo_dao.data_handler.cti_profile import dao
-from xivo_dao.data_handler.exception import ElementNotExistsError
+from xivo_dao.data_handler.exception import NotFoundError
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -49,7 +49,7 @@ class TestCtiProfile(DAOTestCase):
         assert_that(result.name, equal_to('Profil 01'))
 
     def test_get_unknown_user(self):
-        self.assertRaises(ElementNotExistsError, dao.get, 1)
+        self.assertRaises(NotFoundError, dao.get, 1)
 
     def test_get_id_by_name(self):
         profile_row1 = CtiProfileSchema(id=1, name='Profil 01')
@@ -62,4 +62,4 @@ class TestCtiProfile(DAOTestCase):
         assert_that(result, equal_to(2))
 
     def test_get_id_by_name_not_found(self):
-        self.assertRaises(ElementNotExistsError, dao.get_id_by_name, 'Profil 01')
+        self.assertRaises(NotFoundError, dao.get_id_by_name, 'Profil 01')
