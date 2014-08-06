@@ -29,8 +29,8 @@ from xivo_dao.alchemy.sccpline import SCCPLine as SCCPLineSchema, SCCPLine
 from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.data_handler.exception import ElementNotExistsError, \
-    ElementDeletionError, ElementCreationError, ElementEditionError
+from xivo_dao.data_handler import errors
+from xivo_dao.data_handler.exception import DataError
 from model import LineSIP, LineIAX, LineSCCP, LineCUSTOM
 from xivo_dao.data_handler.line.model import LineOrdering
 
@@ -43,7 +43,7 @@ def get(session, line_id):
     line = session.query(LineSchema).filter(LineSchema.id == line_id).first()
 
     if not line:
-        raise ElementNotExistsError('Line', line_id=line_id)
+        raise errors.not_found('Line', id=line_id)
 
     return _convert_to_model(line)
 
@@ -59,7 +59,7 @@ def get_by_user_id(session, user_id):
         .first())
 
     if not line:
-        raise ElementNotExistsError('Line', user_id=user_id)
+        raise errors.not_found('Line', user_id=user_id)
 
     return _convert_to_model(line)
 
@@ -77,7 +77,7 @@ def get_by_number_context(session, number, context):
     ).first()
 
     if not line:
-        raise ElementNotExistsError('Line', number=number, context=context)
+        raise errors.not_found('Line', number=number, context=context)
 
     return _convert_to_model(line)
 
@@ -196,7 +196,7 @@ def _get_protocol_row(session, line):
         row = session.query(UserCustom).filter(line.protocolid == UserCustom.id).first()
 
     if not row:
-        raise ElementNotExistsError('Line %s' % protocol, id=line.protocolid)
+        raise errors.not_found('Line%s' % protocol.upper(), protocolid=line.protocolid)
 
     return row
 
@@ -217,10 +217,10 @@ def provisioning_id_exists(session, provd_id):
 @daosession
 def create(session, line):
     derived_line = _build_derived_line(session, line)
-    _commit_or_abort(session, ElementCreationError, derived_line)
+    _commit_or_abort(session, DataError.on_create, derived_line)
 
     line_row = _build_line_row(line, derived_line)
-    _commit_or_abort(session, ElementCreationError, line_row)
+    _commit_or_abort(session, DataError.on_create, line_row)
 
     line.id = line_row.id
     return line
@@ -242,16 +242,16 @@ def edit(session, line):
     derived_line = _fetch_derived_line(session, line)
     if derived_line is None:
         session.rollback()
-        raise ElementNotExistsError('Protocol Line', protocol_id=line.protocolid)
+        raise errors.not_found('LineProtocol', protocolid=line.protocolid)
     line.update_data_source(derived_line)
 
     line_row = _fetch_line(session, line.id)
     if line_row is None:
         session.rollback()
-        raise ElementNotExistsError('Line', line_id=line.id)
+        raise errors.not_found('Line', id=line.id)
     line.update_data_source(line_row)
 
-    _commit_or_abort(session, ElementEditionError, derived_line, line_row)
+    _commit_or_abort(session, DataError.on_edit, derived_line, line_row)
 
 
 @daosession
@@ -260,7 +260,7 @@ def update_xivo_userid(session, line, main_user):
         sip_line = _fetch_derived_line(session, line)
         sip_line.setvar = 'XIVO_USERID=%s' % main_user.id
 
-        _commit_or_abort(session, ElementEditionError, sip_line)
+        _commit_or_abort(session, DataError.on_edit, sip_line)
 
 
 @daosession
@@ -271,7 +271,7 @@ def delete_user_references(session, line_id):
         sip_line.callerid = None
         sip_line.setvar = ''
 
-        _commit_or_abort(session, ElementEditionError, sip_line)
+        _commit_or_abort(session, DataError.on_edit, sip_line)
 
 
 def _fetch_line(session, line_id):
@@ -374,13 +374,13 @@ def delete(session, line):
         session.commit()
     except IntegrityError as e:
         session.rollback()
-        raise ElementDeletionError('Line', 'line still has a link')
+        raise errors.resource_associated('Line', 'Resource', line_id=line.id)
     except SQLAlchemyError, e:
         session.rollback()
-        raise ElementDeletionError('Line', e)
+        raise DataError.on_delete('Line', e)
 
     if nb_row_affected == 0:
-        raise ElementDeletionError('Line', 'line_id %s not exist' % line.id)
+        errors.not_found('Line', line.id)
 
     return nb_row_affected
 
@@ -429,7 +429,7 @@ def associate_extension(session, extension, line_id):
         line_row.number = extension.exten
         line_row.context = extension.context
 
-        _commit_or_abort(session, ElementEditionError, line_row)
+        _commit_or_abort(session, DataError.on_edit, line_row)
 
 
 @daosession
@@ -441,4 +441,4 @@ def dissociate_extension(session, extension):
 
     if line_row:
         line_row.number = ''
-        _commit_or_abort(session, ElementEditionError, line_row)
+        _commit_or_abort(session, DataError.on_edit, line_row)

@@ -24,11 +24,14 @@ from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema
 from xivo_dao.alchemy.sccpline import SCCPLine as SCCPLineSchema
 from xivo_dao.data_handler.line.model import LineSIP, LineSCCP, LineIAX, LineCUSTOM, \
     LineOrdering
-from xivo_dao.data_handler.exception import ElementNotExistsError, \
-    ElementCreationError, ElementDeletionError, ElementEditionError
 from xivo_dao.data_handler.line import dao as line_dao
 from xivo_dao.data_handler.extension import dao as extension_dao
 from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao.data_handler.exception import DataError
+from xivo_dao.data_handler.exception import ResourceError
+from xivo_dao.data_handler.exception import NotFoundError
+from hamcrest.library.collection.issequence_containinginorder import contains
+from hamcrest.library.collection.issequence_containing import has_items
 
 
 class TestLineDao(DAOTestCase):
@@ -69,7 +72,7 @@ class TestLineDao(DAOTestCase):
         assert_that(line.name, equal_to(line_interface))
 
     def test_get_no_line(self):
-        self.assertRaises(ElementNotExistsError, line_dao.get, 666)
+        self.assertRaises(NotFoundError, line_dao.get, 666)
 
     def test_get_by_user_id(self):
         line_name = 'sdklfj'
@@ -85,7 +88,7 @@ class TestLineDao(DAOTestCase):
         assert_that(line.name, equal_to(line_name))
 
     def test_get_by_user_id_no_user(self):
-        self.assertRaises(ElementNotExistsError, line_dao.get_by_user_id, 666)
+        self.assertRaises(NotFoundError, line_dao.get_by_user_id, 666)
 
     def test_get_by_user_id_commented(self):
         line_name = 'sdklfj'
@@ -95,7 +98,7 @@ class TestLineDao(DAOTestCase):
                                                   commented_line=1)
         self.add_user_line_with_exten(exten='6666')
 
-        self.assertRaises(ElementNotExistsError, line_dao.get_by_user_id, user_line.user.id)
+        self.assertRaises(NotFoundError, line_dao.get_by_user_id, user_line.user.id)
 
     def test_get_by_number_context(self):
         line_name = 'sdklfj'
@@ -118,7 +121,7 @@ class TestLineDao(DAOTestCase):
         assert_that(line.context, equal_to(context))
 
     def test_get_by_number_context_no_line(self):
-        self.assertRaises(ElementNotExistsError, line_dao.get_by_number_context, '1234', 'default')
+        self.assertRaises(NotFoundError, line_dao.get_by_number_context, '1234', 'default')
 
     def test_get_by_number_context_commented(self):
         line_name = 'sdklfj'
@@ -131,7 +134,7 @@ class TestLineDao(DAOTestCase):
                            type='user',
                            typeval=str(line.id))
 
-        self.assertRaises(ElementNotExistsError, line_dao.get_by_number_context, number, context)
+        self.assertRaises(NotFoundError, line_dao.get_by_number_context, number, context)
 
     def test_find_all_no_lines(self):
         expected = []
@@ -470,7 +473,7 @@ class TestLineDao(DAOTestCase):
                        username='unknown',
                        protocolid=line_sip.id)
 
-        self.assertRaises(ElementNotExistsError, line_dao.edit, line)
+        self.assertRaises(NotFoundError, line_dao.edit, line)
 
     @patch('xivo_dao.helpers.db_manager.DaoSession')
     def test_edit_with_database_error(self, Session):
@@ -484,7 +487,7 @@ class TestLineDao(DAOTestCase):
                        secret='kiki',
                        protocolid=line_sip.id)
 
-        self.assertRaises(ElementEditionError, line_dao.edit, line)
+        self.assertRaises(DataError, line_dao.edit, line)
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
 
@@ -520,7 +523,7 @@ class TestLineDao(DAOTestCase):
                              context=line_sip.context)
         main_user = Mock(id=12)
 
-        self.assertRaises(ElementEditionError, line_dao.update_xivo_userid, line, main_user)
+        self.assertRaises(DataError, line_dao.update_xivo_userid, line, main_user)
 
     @patch('xivo_dao.helpers.db_manager.DaoSession')
     def test_update_xivo_userid_not_sip(self, Session):
@@ -570,7 +573,7 @@ class TestLineDao(DAOTestCase):
         session.commit.side_effect = SQLAlchemyError()
         session.query.return_value.get.return_value = Mock(protocol='sip')
 
-        self.assertRaises(ElementEditionError, line_dao.delete_user_references, 1)
+        self.assertRaises(DataError, line_dao.delete_user_references, 1)
 
     def test_reset_device(self):
         line = self.add_line(device='1234')
@@ -631,7 +634,7 @@ class TestLineDao(DAOTestCase):
                        username=name,
                        secret=secret)
 
-        self.assertRaises(ElementCreationError, line_dao.create, line)
+        self.assertRaises(DataError, line_dao.create, line)
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
 
@@ -690,7 +693,7 @@ class TestLineDao(DAOTestCase):
                        username=name,
                        secret=secret)
 
-        self.assertRaises(ElementCreationError, line_dao.create, line)
+        self.assertRaises(DataError, line_dao.create, line)
 
     def test_delete_sip_line_associated(self):
         number = '1234'
@@ -703,7 +706,7 @@ class TestLineDao(DAOTestCase):
 
         line = line_dao.get(user_line.line.id)
 
-        self.assertRaises(ElementDeletionError, line_dao.delete, line)
+        self.assertRaises(ResourceError, line_dao.delete, line)
 
     def test_delete_sip_line_not_associated(self):
         number = '1234'
