@@ -21,8 +21,8 @@ from xivo_dao.alchemy.contextnumbers import ContextNumbers as ContextNumberSchem
 from xivo_dao.data_handler.context.converters import context_converter
 from xivo_dao.data_handler.context.converters import range_converter
 from xivo_dao.data_handler.entity import dao as entity_dao
-from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.helpers.db_manager import daosession
+from xivo_dao.data_handler import errors
 
 
 @daosession
@@ -32,7 +32,7 @@ def get(session, context_name):
                    .first())
 
     if not context_row:
-        raise ElementNotExistsError('Context', name=context_name)
+        raise errors.not_found('Context', name=context_name)
 
     return context_converter.to_model(context_row)
 
@@ -54,7 +54,7 @@ def get_by_extension_id(extension_id):
     context = find_by_extension_id(extension_id)
 
     if not context:
-        raise ElementNotExistsError('Context', extension_id=extension_id)
+        raise errors.not_found('Context', extension_id=extension_id)
 
     return context
 
