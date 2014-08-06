@@ -20,19 +20,11 @@ from mock import patch, Mock
 
 from xivo_dao.data_handler.utils.search import SearchResult
 from xivo_dao.tests.test_case import TestCase
-from xivo_dao.data_handler.exception import ElementNotExistsError
 from xivo_dao.data_handler.user import services as user_services
 from xivo_dao.data_handler.user.model import User
 
 
 class TestGetUser(TestCase):
-
-    @patch('xivo_dao.data_handler.user.dao.get')
-    def test_get_not_found(self, user_dao_get):
-        user_id = 123
-        user_dao_get.side_effect = ElementNotExistsError('User', id=user_id)
-
-        self.assertRaises(LookupError, user_services.get, user_id)
 
     @patch('xivo_dao.data_handler.user.dao.get')
     def test_get(self, user_dao_get):
