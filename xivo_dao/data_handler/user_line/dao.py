@@ -17,14 +17,12 @@
 
 from sqlalchemy.exc import SQLAlchemyError
 
-
+from xivo_dao.data_handler import errors
+from xivo_dao.data_handler.exception import DataError
 from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
 from xivo_dao.data_handler.line_extension import dao as line_extension_dao
 from xivo_dao.data_handler.user_line_extension import dao as ule_dao
 from xivo_dao.data_handler.user_line.model import db_converter
-from xivo_dao.data_handler.user_line.exception import UserLineNotExistsError
-from xivo_dao.data_handler.exception import ElementCreationError, \
-    ElementDeletionError
 from xivo_dao.helpers.db_manager import daosession
 
 
@@ -46,7 +44,7 @@ def get_by_user_id_and_line_id(session, user_id, line_id):
     user_line = find_by_user_id_and_line_id(user_id, line_id)
 
     if not user_line:
-        raise UserLineNotExistsError('UserLine', user_id=user_id, line_id=line_id)
+        raise errors.not_found('UserLine', user_id=user_id, line_id=line_id)
 
     return user_line
 
@@ -97,7 +95,7 @@ def associate(session, user_line):
         user_line_id = _associate_user_line(session, user_line)
     except SQLAlchemyError as e:
         session.rollback()
-        raise ElementCreationError('UserLine', e)
+        raise DataError.on_create('UserLine', e)
 
     user_line.id = user_line_id
 
@@ -151,7 +149,7 @@ def dissociate(session, user_line):
         session.commit()
     except SQLAlchemyError as e:
         session.rollback()
-        raise ElementDeletionError('UserLine', e)
+        raise DataError.on_delete('UserLine', e)
 
 
 def _dissasociate_user_line(session, user_line):

@@ -18,8 +18,9 @@
 from mock import patch, Mock
 import unittest
 
-from xivo_dao.data_handler.exception import InvalidParametersError, \
-    MissingParametersError, NonexistentParametersError, ElementNotExistsError
+from xivo_dao.data_handler.exception import InputError
+from xivo_dao.data_handler.exception import ResourceError
+from xivo_dao.data_handler.exception import NotFoundError
 from xivo_dao.data_handler.user_line import validator
 from xivo_dao.data_handler.user_line.model import UserLine
 
@@ -29,14 +30,14 @@ class TestValidator(unittest.TestCase):
     def test_validate_association_missing_parameters(self):
         user_line = UserLine()
 
-        self.assertRaises(MissingParametersError, validator.validate_association, user_line)
+        self.assertRaises(InputError, validator.validate_association, user_line)
 
     @patch('xivo_dao.data_handler.user.dao.get')
     def test_validate_association_when_user_does_not_exist(self, user_get):
         user_line = UserLine(user_id=1, line_id=2)
 
-        user_get.side_effect = ElementNotExistsError('user', id=user_line.user_id)
-        self.assertRaises(NonexistentParametersError, validator.validate_association, user_line)
+        user_get.side_effect = NotFoundError
+        self.assertRaises(InputError, validator.validate_association, user_line)
         user_get.assert_called_once_with(user_line.user_id)
 
     @patch('xivo_dao.data_handler.user.dao.get')
@@ -44,8 +45,8 @@ class TestValidator(unittest.TestCase):
     def test_validate_association_when_line_does_not_exist(self, line_get, user_get):
         user_line = UserLine(user_id=1, line_id=2)
 
-        line_get.side_effect = ElementNotExistsError('line', id=user_line.line_id)
-        self.assertRaises(NonexistentParametersError, validator.validate_association, user_line)
+        line_get.side_effect = NotFoundError
+        self.assertRaises(InputError, validator.validate_association, user_line)
         line_get.assert_called_once_with(user_line.line_id)
 
     @patch('xivo_dao.data_handler.user.dao.get')
@@ -59,7 +60,7 @@ class TestValidator(unittest.TestCase):
 
         user_line_find_all_by_user_id.return_value = [user_line]
 
-        self.assertRaises(InvalidParametersError, validator.validate_association, user_line)
+        self.assertRaises(ResourceError, validator.validate_association, user_line)
         user_line_find_all_by_user_id.assert_called_once_with(user_line.user_id)
 
     @patch('xivo_dao.data_handler.user.dao.get')
@@ -74,7 +75,7 @@ class TestValidator(unittest.TestCase):
 
         user_line_find_all_by_user_id.return_value = [existing_user_line]
 
-        self.assertRaises(InvalidParametersError, validator.validate_association, user_line)
+        self.assertRaises(ResourceError, validator.validate_association, user_line)
         user_line_find_all_by_user_id.assert_called_once_with(user_line.user_id)
 
     @patch('xivo_dao.data_handler.user.dao.get')
@@ -104,9 +105,9 @@ class TestValidator(unittest.TestCase):
                                                    line_has_secondary_user):
         user_line = Mock(UserLine, user_id=3)
 
-        user_dao_get.side_effect = ElementNotExistsError('User', id=user_line.user_id)
+        user_dao_get.side_effect = NotFoundError
 
-        self.assertRaises(NonexistentParametersError, validator.validate_dissociation, user_line)
+        self.assertRaises(InputError, validator.validate_dissociation, user_line)
         user_dao_get.assert_called_once_with(user_line.user_id)
         self.assertEquals(line_dao_get.call_count, 0)
         self.assertEquals(user_line_dao_find_all_by_user_id.call_count, 0)
@@ -124,9 +125,9 @@ class TestValidator(unittest.TestCase):
         user_line = Mock(UserLine, user_id=3, line_id=4)
 
         user_dao_get.return_value = Mock()
-        line_dao_get.side_effect = ElementNotExistsError('Line', id=user_line.line_id)
+        line_dao_get.side_effect = NotFoundError
 
-        self.assertRaises(NonexistentParametersError, validator.validate_dissociation, user_line)
+        self.assertRaises(InputError, validator.validate_dissociation, user_line)
         user_dao_get.assert_called_once_with(user_line.user_id)
         line_dao_get.assert_called_once_with(user_line.line_id)
         self.assertEquals(user_line_dao_find_all_by_user_id.call_count, 0)
@@ -173,7 +174,7 @@ class TestValidator(unittest.TestCase):
         user_line_dao_find_all_by_user_id.return_value = [user_line]
         line_has_secondary_user.return_value = True
 
-        self.assertRaises(InvalidParametersError, validator.validate_dissociation, user_line)
+        self.assertRaises(ResourceError, validator.validate_dissociation, user_line)
         user_dao_get.assert_called_once_with(user_line.user_id)
         line_dao_get.assert_called_once_with(user_line.line_id)
         user_line_dao_find_all_by_user_id.assert_called_once_with(user_line.user_id)
