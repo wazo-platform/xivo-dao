@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
+from sqlalchemy.sql.schema import CheckConstraint
 from sqlalchemy.types import Integer, String, Enum, Text
 
 from xivo_dao.helpers.db_manager import Base
@@ -27,6 +28,7 @@ class Queue(Base):
     __table_args__ = (
         PrimaryKeyConstraint('name'),
         Index('queue__idx__category', 'category'),
+        CheckConstraint("autopause in ('no', 'yes', 'all')")
     )
 
     name = Column(String(128))
@@ -67,7 +69,7 @@ class Queue(Base):
     category = Column(Enum('group', 'queue', name='queue_category', metadata=Base.metadata), nullable=False)
     timeoutpriority = Column(String(10), nullable=False, server_default='app')
     autofill = Column(Integer, nullable=False, server_default='1')
-    autopause = Column(Integer, nullable=False, server_default='1')
+    autopause = Column(String(3), nullable=False, server_default='no')
     setinterfacevar = Column(Integer, nullable=False, server_default='0')
     setqueueentryvar = Column(Integer, nullable=False, server_default='0')
     setqueuevar = Column(Integer, nullable=False, server_default='0')
