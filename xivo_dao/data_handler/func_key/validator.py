@@ -15,10 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.data_handler.exception import InvalidParametersError
-from xivo_dao.data_handler.exception import MissingParametersError
-from xivo_dao.data_handler.exception import ElementNotExistsError
-from xivo_dao.data_handler.exception import NonexistentParametersError
+from xivo_dao.data_handler import errors
+from xivo_dao.data_handler.exception import NotFoundError
 from xivo_dao.data_handler.func_key import type_dao as func_key_type_dao
 from xivo_dao.data_handler.user import dao as user_dao
 
@@ -32,12 +30,12 @@ def validate_create(func_key):
 def validate_missing_parameters(func_key):
     missing = func_key.missing_parameters()
     if missing:
-        raise MissingParametersError(missing)
+        raise errors.missing(*missing)
 
 
 def validate_type(func_key):
     if not func_key_type_dao.find_type_for_name(func_key.type):
-        raise InvalidParametersError(['type %s does not exist' % func_key.type])
+        raise errors.invalid_func_key_type(func_key.type)
 
 
 def validate_destination(func_key):
@@ -47,11 +45,11 @@ def validate_destination(func_key):
 
 def validate_destination_type(func_key):
     if not func_key_type_dao.find_destination_type_for_name(func_key.destination):
-        raise InvalidParametersError(['destination of type %s does not exist' % func_key.destination])
+        raise errors.invalid_destination_type(func_key.destination)
 
 
 def validate_destination_exists(func_key):
     try:
         user_dao.get(func_key.destination_id)
-    except ElementNotExistsError:
-        raise NonexistentParametersError(user=func_key.destination_id)
+    except NotFoundError:
+        raise errors.param_not_found('Destination', destination=func_key.destination, destination_id=func_key.destination_id)
