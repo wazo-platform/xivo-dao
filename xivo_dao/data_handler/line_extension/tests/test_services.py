@@ -25,7 +25,7 @@ from xivo_dao.data_handler.line.model import Line
 from xivo_dao.data_handler.incall.model import Incall
 from xivo_dao.data_handler.line_extension.model import LineExtension
 from xivo_dao.data_handler.line_extension import services as line_extension_service
-from xivo_dao.data_handler.exception import ElementNotExistsError
+from xivo_dao.data_handler.exception import NotFoundError
 
 
 @patch('xivo_dao.data_handler.line_extension.notifier.associated')
@@ -154,7 +154,7 @@ class TestGetByExtensionId(unittest.TestCase):
     def test_given_extension_does_not_exist_then_raises_error(self, context_find_by_extension_id):
         context_find_by_extension_id.return_value = None
 
-        self.assertRaises(ElementNotExistsError, line_extension_service.get_by_extension_id, 2)
+        self.assertRaises(NotFoundError, line_extension_service.get_by_extension_id, 2)
 
     @patch('xivo_dao.data_handler.line_extension.dao.find_by_extension_id')
     @patch('xivo_dao.data_handler.context.dao.find_by_extension_id')
@@ -178,7 +178,7 @@ class TestGetByExtensionId(unittest.TestCase):
         context_find_by_extension_id.return_value = Mock(Context, type='internal')
         line_extension_find_by_extension_id.return_value = None
 
-        self.assertRaises(ElementNotExistsError, line_extension_service.get_by_extension_id, 2)
+        self.assertRaises(NotFoundError, line_extension_service.get_by_extension_id, 2)
         line_extension_find_by_extension_id.assert_called_once_with(2)
 
     @patch('xivo_dao.data_handler.incall.dao.find_line_extension_by_extension_id')
@@ -203,7 +203,7 @@ class TestGetByExtensionId(unittest.TestCase):
         context_find_by_extension_id.return_value = Mock(Context, type='incall')
         find_line_extension_by_extension_id.return_value = None
 
-        self.assertRaises(ElementNotExistsError, line_extension_service.get_by_extension_id, 2)
+        self.assertRaises(NotFoundError, line_extension_service.get_by_extension_id, 2)
         find_line_extension_by_extension_id.assert_called_once_with(2)
 
 

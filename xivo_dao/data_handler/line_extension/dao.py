@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from xivo_dao.data_handler import errors
 from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
-from xivo_dao.data_handler.line_extension.exception import LineExtensionNotExistsError
 from xivo_dao.data_handler.line_extension.model import db_converter
 from xivo_dao.data_handler.user_line_extension import dao as ule_dao
 from xivo_dao.helpers.db_manager import daosession
@@ -72,7 +72,7 @@ def get_by_line_id(line_id):
     line_extension = find_by_line_id(line_id)
 
     if line_extension is None:
-        raise LineExtensionNotExistsError.from_line_id(line_id)
+        raise errors.not_found('LineExtension', line_id=line_id)
 
     return line_extension
 
@@ -93,7 +93,7 @@ def get_by_extension_id(extension_id):
     line_extension = find_by_extension_id(extension_id)
 
     if line_extension is None:
-        raise LineExtensionNotExistsError.from_extension_id(extension_id)
+        raise errors.not_found('LineExtension', extension_id=extension_id)
 
     return line_extension
 

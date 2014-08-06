@@ -20,7 +20,9 @@ from hamcrest import assert_that, all_of, has_property, none, is_not, contains, 
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.data_handler.line_extension import dao
 from xivo_dao.data_handler.line_extension.model import LineExtension
-from xivo_dao.data_handler.line_extension.exception import LineExtensionNotExistsError
+
+from xivo_dao.data_handler.exception import NotFoundError
+
 from xivo_dao.alchemy.user_line import UserLine
 
 
@@ -171,10 +173,13 @@ class TestFindAllByLineId(TestLineExtensionDAO):
 
 class TestGetByLineId(TestLineExtensionDAO):
 
+    def test_get_by_line_id_no_line(self):
+        self.assertRaises(NotFoundError, dao.get_by_line_id, 1)
+
     def test_get_by_line_id_no_extension(self):
         user_line_row = self.add_user_line_without_exten()
 
-        self.assertRaises(LineExtensionNotExistsError, dao.get_by_line_id, user_line_row.line_id)
+        self.assertRaises(NotFoundError, dao.get_by_line_id, user_line_row.line_id)
 
     def test_get_by_line_id_with_extension(self):
         user_line_row = self.add_user_line_with_exten()
@@ -238,7 +243,7 @@ class TestGetByExtensionId(TestLineExtensionDAO):
     def test_get_by_extension_id_no_line(self):
         extension_row = self.add_extension()
 
-        self.assertRaises(LineExtensionNotExistsError, dao.get_by_extension_id, extension_row.id)
+        self.assertRaises(NotFoundError, dao.get_by_extension_id, extension_row.id)
 
     def test_get_by_extension_id_with_line(self):
         user_line_row = self.add_user_line_with_exten()
