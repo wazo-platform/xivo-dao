@@ -22,8 +22,7 @@ from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.incall import Incall
 from xivo_dao.alchemy.user_line import UserLine
 
-from xivo_dao.data_handler.exception import ElementCreationError
-from xivo_dao.data_handler.exception import ElementDeletionError
+from xivo_dao.data_handler.exception import DataError
 
 from xivo_dao.data_handler.extension import dao as extension_dao
 from xivo_dao.data_handler.incall.model import db_converter as incall_db_converter
@@ -100,13 +99,13 @@ def create(session, incall):
     extension = extension_dao.get(incall.extension_id)
 
     incall_row = incall_db_converter.to_incall(incall, extension)
-    with commit_or_abort(session, ElementCreationError, 'Incall'):
+    with commit_or_abort(session, DataError.on_create, 'Incall'):
         session.add(incall_row)
 
     incall.id = incall_row.id
 
     dialaction_row = incall_db_converter.to_dialaction(incall)
-    with commit_or_abort(session, ElementCreationError, 'Incall'):
+    with commit_or_abort(session, DataError.on_create, 'Incall'):
         session.add(dialaction_row)
 
     return incall
@@ -121,6 +120,6 @@ def delete(session, incall):
                         .filter(Dialaction.category == 'incall')
                         .filter(Dialaction.categoryval == str(incall.id)))
 
-    with commit_or_abort(session, ElementDeletionError, 'Incall'):
+    with commit_or_abort(session, DataError.on_delete, 'Incall'):
         incall_query.delete()
         dialaction_query.delete()
