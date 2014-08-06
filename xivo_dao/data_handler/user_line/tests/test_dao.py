@@ -15,10 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import *
+from hamcrest import assert_that, equal_to, has_property, instance_of, all_of, none, has_items, contains_inanyorder, contains, is_not, has_length
 
 from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
-from xivo_dao.data_handler.exception import ElementNotExistsError, ElementCreationError
+from xivo_dao.data_handler.exception import NotFoundError
 from xivo_dao.data_handler.user_line import dao as user_line_dao
 from xivo_dao.data_handler.user_line.model import UserLine
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -27,7 +27,7 @@ from xivo_dao.tests.test_dao import DAOTestCase
 class TestUserLineGetByUserIdAndLineId(DAOTestCase):
 
     def test_get_by_user_id_no_users_or_line(self):
-        self.assertRaises(ElementNotExistsError, user_line_dao.get_by_user_id_and_line_id, 1, 1)
+        self.assertRaises(NotFoundError, user_line_dao.get_by_user_id_and_line_id, 1, 1)
 
     def test_get_by_user_id_with_line(self):
         user_line = self.add_user_line_without_exten(firstname='King')
@@ -342,28 +342,6 @@ class TestAssociateUserLine(DAOTestCase):
             has_property('extension_id', extension.id),
             has_property('main_user', False),
             has_property('main_line', True)))
-
-    def test_associate_user_with_line_not_exist(self):
-        user = self.add_user()
-
-        user_line = UserLine(user_id=user.id,
-                             line_id=42)
-
-        self.assertRaises(ElementCreationError, user_line_dao.associate, user_line)
-
-    def test_associate_user_not_exist_with_line(self):
-        line = self.add_line()
-
-        user_line = UserLine(user_id=41,
-                             line_id=line.id)
-
-        self.assertRaises(ElementCreationError, user_line_dao.associate, user_line)
-
-    def test_associate_user_not_exist_with_line_not_exist(self):
-        user_line = UserLine(user_id=41,
-                             line_id=12)
-
-        self.assertRaises(ElementCreationError, user_line_dao.associate, user_line)
 
 
 class TestDissociateUserLine(DAOTestCase):
