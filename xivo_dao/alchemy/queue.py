@@ -28,7 +28,7 @@ class Queue(Base):
     __table_args__ = (
         PrimaryKeyConstraint('name'),
         Index('queue__idx__category', 'category'),
-        CheckConstraint("autopause in ('yes', 'no', 'all')")
+        CheckConstraint("autopause in ('no', 'yes', 'all')")
     )
 
     name = Column(String(128))
@@ -69,7 +69,7 @@ class Queue(Base):
     category = Column(Enum('group', 'queue', name='queue_category', metadata=Base.metadata), nullable=False)
     timeoutpriority = Column(String(10), nullable=False, server_default='app')
     autofill = Column(Integer, nullable=False, server_default='1')
-    autopause = Column(String(3), nullable=False, server_default='yes')
+    autopause = Column(String(3), nullable=False, server_default='no')
     setinterfacevar = Column(Integer, nullable=False, server_default='0')
     setqueueentryvar = Column(Integer, nullable=False, server_default='0')
     setqueuevar = Column(Integer, nullable=False, server_default='0')
