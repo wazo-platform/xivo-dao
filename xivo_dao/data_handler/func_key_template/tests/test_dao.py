@@ -21,8 +21,8 @@ from mock import patch, ANY, Mock
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate as FuncKeyTemplateSchema
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping as FuncKeyMappingSchema
-from xivo_dao.data_handler.exception import ElementCreationError
-from xivo_dao.data_handler.exception import ElementDeletionError
+
+from xivo_dao.data_handler.exception import DataError
 from xivo_dao.data_handler.func_key_template import dao
 from xivo_dao.data_handler.func_key.model import FuncKey
 
@@ -75,7 +75,7 @@ class TestCreatePrivateTemplate(TestFuncKeyTemplateDao):
     def test_given_database_error_then_transaction_aborted(self, commit_or_abort):
         dao.create_private_template()
 
-        commit_or_abort.assert_called_with(ANY, ElementCreationError, 'FuncKeyTemplate')
+        commit_or_abort.assert_called_with(ANY, DataError.on_create, 'FuncKeyTemplate')
 
 
 class TestRemoveFuncKeyFromTemplate(TestFuncKeyTemplateDao):
@@ -102,7 +102,7 @@ class TestRemoveFuncKeyFromTemplate(TestFuncKeyTemplateDao):
         func_key = Mock(id=1)
         dao.remove_func_key_from_templates(func_key)
 
-        commit_or_abort.assert_called_with(ANY, ElementDeletionError, 'FuncKeyTemplate')
+        commit_or_abort.assert_called_with(ANY, DataError.on_delete, 'FuncKeyTemplate')
 
     def assert_template_contains_func_key(self, template_row, func_key_row):
         count = (self.session.query(FuncKeyMappingSchema)
@@ -140,4 +140,4 @@ class TestDeletePrivateTemplate(TestFuncKeyTemplateDao):
         template_id = 1
         dao.delete_private_template(template_id)
 
-        commit_or_abort.assert_called_with(ANY, ElementDeletionError, 'FuncKeyTemplate')
+        commit_or_abort.assert_called_with(ANY, DataError.on_delete, 'FuncKeyTemplate')
