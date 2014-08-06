@@ -16,75 +16,46 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 
-class MissingParametersError(ValueError):
+class ServiceError(ValueError):
 
-    def __init__(self, missing_parameters):
-        ValueError.__init__(self, "Missing parameters: %s" % ','.join(missing_parameters))
+    template = "{prefix} - {message} {metadata}"
+    prefix = "Error"
 
-
-class InvalidParametersError(ValueError):
-
-    def __init__(self, invalid_parameters):
-        ValueError.__init__(self, "Invalid parameters: %s" % ','.join(invalid_parameters))
+    def __init__(self, message=None, metadata=None):
+        super(ServiceError, self).__init__(message)
+        self.metadata = metadata
 
 
-class NonexistentParametersError(ValueError):
+class InputError(ServiceError):
 
-    def __init__(self, **kwargs):
-        errors = []
-        for key, value in kwargs.iteritems():
-            message = '%s %s does not exist' % (key, value)
-            errors.append(message)
-
-        error = "Nonexistent parameters: %s" % ','.join(errors)
-
-        ValueError.__init__(self, error)
+    prefix = "Input Error"
 
 
-class ElementAlreadyExistsError(ValueError):
+class ResourceError(ServiceError):
 
-    def __init__(self, element, *args):
-        ValueError.__init__(self, "%s %s already exists" % (element, ' '.join(args)))
-
-
-class ElementNotExistsError(LookupError):
-
-    def __init__(self, element, **kwargs):
-        err = []
-        for key, value in kwargs.iteritems():
-            err.append('%s=%s' % (key, value))
-        LookupError.__init__(self, "%s with %s does not exist" % (element, ' '.join(err)))
+    prefix = "Resource Error"
 
 
-class AssociationNotExistsError(LookupError):
-    pass
+class NotFoundError(ServiceError):
+
+    prefix = "Resource Not Found"
 
 
-class ElementCreationError(IOError):
+class DataError(IOError):
 
-    def __init__(self, element, error):
-        message = "Error while creating %s: %s" % (element, unicode(str(error), 'utf8'))
-        IOError.__init__(self, message)
+    @classmethod
+    def on_create(cls, resource, error):
+        return cls.on_action('create', resource, error)
 
+    @classmethod
+    def on_edit(cls, resource, error):
+        return cls.on_action('edit', resource, error)
 
-class ElementEditionError(IOError):
+    @classmethod
+    def on_delete(cls, resource, error):
+        return cls.on_action('delete', resource, error)
 
-    def __init__(self, element, error):
-        message = "Error while editing %s: %s" % (element, unicode(str(error), 'utf8'))
-        IOError.__init__(self, message)
-
-
-class ElementDeletionError(IOError):
-
-    def __init__(self, element, error):
-        message = "Error while deleting %s: %s" % (element, unicode(str(error), 'utf8'))
-        IOError.__init__(self, message)
-
-
-class ProvdError(Exception):
-    def __init__(self, value, message):
-        self.value = value
-        self.message = message
-
-    def __str__(self):
-        return "provd: %s, %s" % (self.value, self.message)
+    @classmethod
+    def on_action(cls, resource, action, error):
+        msg = "Could not %s %s: %s" % (resource, action, error)
+        return cls(msg)
