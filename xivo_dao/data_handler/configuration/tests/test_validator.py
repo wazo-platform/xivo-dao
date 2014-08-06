@@ -17,8 +17,7 @@
 
 import unittest
 from xivo_dao.data_handler.configuration import validator
-from xivo_dao.data_handler.exception import MissingParametersError, \
-    InvalidParametersError
+from xivo_dao.data_handler.exception import InputError
 
 
 class TestValidator(unittest.TestCase):
@@ -26,10 +25,10 @@ class TestValidator(unittest.TestCase):
     def test_validate_data_no_parameter(self):
         data = {}
 
-        self.assertRaises(MissingParametersError, validator.validate_live_reload_data, data)
+        self.assertRaises(InputError, validator.validate_live_reload_data, data)
 
     def test_validate_data_invalid_param(self):
         data = {'enabled': True,
                 'foo': 'bar'}
 
-        self.assertRaises(InvalidParametersError, validator.validate_live_reload_data, data)
+        self.assertRaises(InputError, validator.validate_live_reload_data, data)

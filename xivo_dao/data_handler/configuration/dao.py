@@ -17,7 +17,7 @@
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.ctimain import CtiMain
 from sqlalchemy.exc import SQLAlchemyError
-from xivo_dao.data_handler.exception import ElementEditionError
+from xivo_dao.data_handler.exception import DataError
 
 
 @daosession
@@ -35,4 +35,4 @@ def set_live_reload_status(session, data):
         session.commit()
     except SQLAlchemyError as e:
         session.rollback()
-        raise ElementEditionError('configuration', e)
+        raise DataError.on_edit('Configuration', e)
