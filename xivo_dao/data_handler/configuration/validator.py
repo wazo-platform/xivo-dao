@@ -15,21 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.data_handler.exception import MissingParametersError, InvalidParametersError
+
+from xivo_dao.data_handler import errors
 
 LIVE_RELOAD_PARAM = 'enabled'
 
 
 def validate_live_reload_data(data):
-    _validate_data_has_param(data, LIVE_RELOAD_PARAM)
-    _validate_no_extra_params(data, LIVE_RELOAD_PARAM)
-
-
-def _validate_data_has_param(data, mandatory_param):
-    if mandatory_param not in data:
-        raise MissingParametersError(mandatory_param)
-
-
-def _validate_no_extra_params(data, LIVE_RELOAD_PARAM):
+    if LIVE_RELOAD_PARAM not in data:
+        raise errors.missing(LIVE_RELOAD_PARAM)
     if len(data) > 1:
-        raise InvalidParametersError('A single parameter %s is expected' % LIVE_RELOAD_PARAM)
+        params = data.keys()
+        params.remove(LIVE_RELOAD_PARAM)
+        raise errors.unknown(*params)

@@ -23,7 +23,7 @@ from xivo_dao.alchemy.ctimain import CtiMain
 
 from xivo_dao.data_handler.configuration import dao
 from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao.data_handler.exception import ElementEditionError
+from xivo_dao.data_handler.exception import DataError
 
 
 class TestConfigurationDao(DAOTestCase):
@@ -57,6 +57,6 @@ class TestConfigurationDao(DAOTestCase):
         session.commit.side_effect = SQLAlchemyError()
         Session.return_value = session
 
-        self.assertRaises(ElementEditionError, dao.set_live_reload_status, {'enabled': True})
+        self.assertRaises(DataError, dao.set_live_reload_status, {'enabled': True})
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
