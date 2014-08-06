@@ -21,7 +21,7 @@ from unittest import TestCase
 
 from xivo_dao.data_handler.call_log import services
 from xivo_dao.data_handler.call_log.model import CallLog
-from xivo_dao.data_handler.exception import MissingParametersError
+from xivo_dao.data_handler.exception import InputError
 
 
 class TestCallLogServices(TestCase):
@@ -46,17 +46,17 @@ class TestCallLogServices(TestCase):
     def test_find_all_in_period_no_start(self):
         start, end = None, Mock()
 
-        self.assertRaises(MissingParametersError, services.find_all_in_period, start, end)
+        self.assertRaises(InputError, services.find_all_in_period, start, end)
 
     def test_find_all_in_period_no_end(self):
         start, end = Mock(), None
 
-        self.assertRaises(MissingParametersError, services.find_all_in_period, start, end)
+        self.assertRaises(InputError, services.find_all_in_period, start, end)
 
     def test_find_all_in_period_no_start_no_end(self):
         start, end = None, None
 
-        self.assertRaises(MissingParametersError, services.find_all_in_period, start, end)
+        self.assertRaises(InputError, services.find_all_in_period, start, end)
 
     @patch('xivo_dao.data_handler.call_log.dao.find_all_in_period')
     def test_find_all_in_period_not_found(self, mock_dao):

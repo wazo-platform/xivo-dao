@@ -18,7 +18,7 @@
 from sqlalchemy.exc import SQLAlchemyError
 from xivo_dao.alchemy.call_log import CallLog as CallLogSchema
 from xivo_dao.alchemy.cel import CEL as CELSchema
-from xivo_dao.data_handler.exception import ElementCreationError, ElementDeletionError
+from xivo_dao.data_handler.exception import DataError
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.data_handler.call_log.model import db_converter
 
@@ -90,7 +90,7 @@ def create_from_list(session, call_logs):
         session.commit()
     except SQLAlchemyError as e:
         session.rollback()
-        raise ElementCreationError('CallLog', e)
+        raise DataError.on_create('CallLog', e)
 
 
 def create_call_log(session, call_log):
@@ -117,7 +117,7 @@ def delete_all(session):
         session.commit()
     except SQLAlchemyError as e:
         session.rollback()
-        raise ElementDeletionError('CallLog', e)
+        raise DataError.on_delete('CallLog', e)
 
 
 @daosession
@@ -132,7 +132,7 @@ def delete_from_list(session, call_log_ids):
         session.commit()
     except SQLAlchemyError as e:
         session.rollback()
-        raise ElementDeletionError('CallLog', e)
+        raise DataError.on_delete('CallLog', e)
 
 
 def _converted_call_logs(rows):
