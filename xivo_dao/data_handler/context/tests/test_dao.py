@@ -24,7 +24,7 @@ from xivo_dao.alchemy.contextnumbers import ContextNumbers as ContextNumberSchem
 
 from xivo_dao.data_handler.context.model import Context, ContextType, ContextRange
 from xivo_dao.data_handler.context import dao as context_dao
-from xivo_dao.data_handler.exception import ElementNotExistsError
+from xivo_dao.data_handler.exception import NotFoundError
 
 
 class TestContextDao(DAOTestCase):
@@ -40,7 +40,7 @@ class TestContextDao(DAOTestCase):
 class TestContextGet(TestContextDao):
 
     def test_given_no_context_then_raises_error(self):
-        self.assertRaises(ElementNotExistsError, context_dao.get, 'mycontext')
+        self.assertRaises(NotFoundError, context_dao.get, 'mycontext')
 
     def test_given_context_exists_then_returns_context_model(self):
         context_row = self.add_context()
@@ -58,7 +58,7 @@ class TestContextGet(TestContextDao):
 class TestContextGetByExtensionId(TestContextDao):
 
     def test_given_no_extension_then_raises_error(self):
-        self.assertRaises(ElementNotExistsError, context_dao.get_by_extension_id, 1)
+        self.assertRaises(NotFoundError, context_dao.get_by_extension_id, 1)
 
     def test_given_extension_exists_then_returns_associated_context(self):
         context_row = self.add_context()

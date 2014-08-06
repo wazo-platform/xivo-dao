@@ -25,7 +25,7 @@ from xivo_dao.data_handler.context.model import ContextType
 from xivo_dao.data_handler.context.model import ContextRange
 from xivo_dao.data_handler.context.model import ContextRangeType
 from xivo_dao.data_handler.extension.model import Extension
-from xivo_dao.data_handler.exception import InvalidParametersError
+from xivo_dao.data_handler.exception import InputError
 
 
 class TestContextFindByName(unittest.TestCase):
@@ -97,7 +97,7 @@ class TestContextIsExtensionValidForContext(unittest.TestCase):
         extension = Extension(exten='ABC123',
                               context='default')
 
-        self.assertRaises(InvalidParametersError, context_services.is_extension_valid_for_context, extension)
+        self.assertRaises(InputError, context_services.is_extension_valid_for_context, extension)
 
 
 class TestContextIsExtensionIncludedInRanges(unittest.TestCase):
@@ -272,7 +272,7 @@ class TestContextIsExtensionValidForContextRange(unittest.TestCase):
         extension = Extension(exten='ABC123',
                               context='default')
 
-        self.assertRaises(InvalidParametersError,
+        self.assertRaises(InputError,
                           context_services.is_extension_valid_for_context_range,
                           extension,
                           ContextRangeType.users)

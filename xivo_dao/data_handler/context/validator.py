@@ -17,9 +17,7 @@
 
 from xivo_dao.data_handler.context.model import Context, ContextType
 from xivo_dao import context_dao as old_context_dao
-from xivo_dao.data_handler.exception import MissingParametersError
-from xivo_dao.data_handler.exception import InvalidParametersError
-from xivo_dao.data_handler.exception import ElementAlreadyExistsError
+from xivo_dao.data_handler import errors
 
 
 def validate_create(context):
@@ -32,7 +30,7 @@ def validate_create(context):
 def _validate_missing(context):
     missing = context.missing_parameters()
     if len(missing) > 0:
-        raise MissingParametersError(missing)
+        raise errors.missing(*missing)
 
 
 def _validate_empty(context):
@@ -42,18 +40,19 @@ def _validate_empty(context):
             empty.append(parameter)
 
     if len(empty) > 0:
-        raise InvalidParametersError(empty)
+        raise errors.missing(*empty)
 
 
 def _validate_context_type(context):
-    if context.type not in ContextType.all():
-        raise InvalidParametersError(['type'])
+    available_types = ContextType.all()
+    if context.type not in available_types:
+        raise errors.invalid_choice('type', available_types, context_type=context.type)
 
 
 def _validate_exists_already(context):
     existing_context = _find_by_name(context.name)
     if existing_context:
-        raise ElementAlreadyExistsError('context')
+        raise errors.resource_exists('Context', name=context.name)
 
 
 def _find_by_name(context_name):

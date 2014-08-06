@@ -16,8 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao import context_dao as old_context_dao
-from xivo_dao.data_handler.exception import InvalidParametersError
 from xivo_dao.data_handler.context import dao as context_dao
+from xivo_dao.data_handler import errors
 from xivo_dao.data_handler.context import validator
 from xivo_dao.data_handler.context import notifier
 
@@ -41,7 +41,7 @@ def is_extension_valid_for_context(extension):
 
 def _validate_exten(extension):
     if not extension.exten.isdigit():
-        raise InvalidParametersError(['Alphanumeric extensions are not supported'])
+        raise errors.wrong_type('exten', 'numeric string')
     return extension.exten
 
 
