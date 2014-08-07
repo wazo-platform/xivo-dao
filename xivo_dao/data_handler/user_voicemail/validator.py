@@ -15,8 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.data_handler.exception import MissingParametersError, ElementNotExistsError, NonexistentParametersError, \
-    InvalidParametersError
+from xivo_dao.data_handler import errors
+from xivo_dao.data_handler.exception import NotFoundError
+
 from xivo_dao.data_handler.user import dao as user_dao
 from xivo_dao.data_handler.user_voicemail import dao as user_voicemail_dao
 from xivo_dao.data_handler.user_line import dao as user_line_dao
@@ -35,40 +36,43 @@ def validate_association(user_voicemail):
 def _validate_missing_parameters(user_voicemail):
     missing = user_voicemail.missing_parameters()
     if len(missing) > 0:
-        raise MissingParametersError(missing)
+        raise errors.missing(*missing)
 
 
 def _validate_invalid_parameters(user_voicemail):
     if not isinstance(user_voicemail.enabled, bool):
-        raise InvalidParametersError(['enabled must be a boolean'])
+        raise errors.wrong_type('enabled', 'boolean', enabled=user_voicemail.enabled)
 
 
 def _validate_user_id(user_voicemail):
     try:
         return user_dao.get(user_voicemail.user_id)
-    except ElementNotExistsError:
-        raise NonexistentParametersError(user=user_voicemail.user_id)
+    except NotFoundError:
+        raise errors.param_not_found('User', user_id=user_voicemail.user_id)
 
 
 def _validate_voicemail_id(user_voicemail):
     try:
         return voicemail_dao.get(user_voicemail.voicemail_id)
-    except ElementNotExistsError:
-        raise NonexistentParametersError(voicemail=user_voicemail.voicemail_id)
+    except NotFoundError:
+        raise errors.param_not_found('Voicemail', voicemail_id=user_voicemail.voicemail_id)
 
 
 def _validate_user_has_line(user_voicemail):
     user_lines = user_line_dao.find_all_by_user_id(user_voicemail.user_id)
     if len(user_lines) == 0:
-        raise InvalidParametersError(['user with id %s does not have any line' % user_voicemail.user_id])
+        raise errors.missing_association('User', 'Line', user_id=user_voicemail.user_id)
 
 
 def _validate_user_does_not_have_a_voicemail(user_voicemail):
     try:
         user_voicemail_dao.get_by_user_id(user_voicemail.user_id)
-        raise InvalidParametersError(['user with id %s already has a voicemail' % user_voicemail.user_id])
-    except ElementNotExistsError:
-        pass
+    except NotFoundError:
+        return
+
+    raise errors.resource_associated('User', 'Voicemail',
+                                     user_id=user_voicemail.user_id,
+                                     voicemail_id=user_voicemail.voicemail_id)
 
 
 def validate_dissociation(user_voicemail):
