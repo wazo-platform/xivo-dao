@@ -19,15 +19,13 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.sql.expression import or_
 
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
-from xivo_dao.data_handler.exception import ElementCreationError
-from xivo_dao.data_handler.exception import ElementDeletionError
-from xivo_dao.data_handler.exception import ElementEditionError
-from xivo_dao.data_handler.exception import ElementNotExistsError
+from xivo_dao.helpers.db_manager import daosession
+
+from xivo_dao.data_handler import errors
+from xivo_dao.data_handler.exception import DataError
 from xivo_dao.data_handler.extension.model import db_converter
 from xivo_dao.data_handler.extension.search import extension_search
 from xivo_dao.data_handler.utils.search import SearchResult
-from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.helpers.db_utils import commit_or_abort
 
 DEFAULT_ORDER = ExtensionSchema.exten
 
@@ -41,7 +39,7 @@ def get(session, extension_id):
 def _fetch_extension_row(session, extension_id):
     row = session.query(ExtensionSchema).get(extension_id)
     if not row:
-        raise ElementNotExistsError('Extension', id=extension_id)
+        raise errors.not_found('Extension', id=extension_id)
     return row
 
 
@@ -53,7 +51,7 @@ def get_by_exten_context(session, exten, context):
            ).first()
 
     if not res:
-        raise ElementNotExistsError('Extension', exten=exten, context=context)
+        raise errors.not_found('Extension', exten=exten, context=context)
 
     return db_converter.to_model(res)
 
@@ -136,7 +134,7 @@ def create(session, extension):
         session.commit()
     except SQLAlchemyError as e:
         session.rollback()
-        raise ElementCreationError('Extension', e)
+        raise DataError.on_create('Extension', e)
 
     extension.id = extension_row.id
 
@@ -155,7 +153,7 @@ def edit(session, extension):
         session.commit()
     except SQLAlchemyError as e:
         session.rollback()
-        raise ElementEditionError('Extension', e)
+        raise DataError.on_edit('Extension', e)
 
 
 @daosession
@@ -166,7 +164,7 @@ def delete(session, extension):
         session.commit()
     except SQLAlchemyError, e:
         session.rollback()
-        raise ElementDeletionError('Extension', e)
+        raise DataError.on_delete('Extension', e)
 
 
 def _new_query(session, order=None):
@@ -176,12 +174,18 @@ def _new_query(session, order=None):
 
 @daosession
 def associate_destination(session, extension_id, destination, destination_id):
-    updated_row = {'type': destination, 'typeval': str(destination_id)}
+    session.begin()
 
-    with commit_or_abort(session, ElementEditionError, 'Extension'):
-        (session.query(ExtensionSchema)
-         .filter(ExtensionSchema.id == extension_id)
-         .update(updated_row))
+    updated_row = {'type': destination, 'typeval': str(destination_id)}
+    (session.query(ExtensionSchema)
+        .filter(ExtensionSchema.id == extension_id)
+        .update(updated_row))
+
+    try:
+        session.commit()
+    except SQLAlchemyError as e:
+        session.rollback()
+        raise DataError.on_edit('Extension', e)
 
 
 @daosession
@@ -196,7 +200,7 @@ def dissociate_extension(session, extension_id):
         session.commit()
     except SQLAlchemyError as e:
         session.rollback()
-        raise ElementEditionError('Extension', 'error while dissociating extension %d: %s' % (extension_id, e))
+        raise DataError.on_edit('Extension', e)
 
 
 @daosession
@@ -206,6 +210,6 @@ def get_type_typeval(session, extension_id):
            .first())
 
     if not row:
-        raise ElementNotExistsError('Extension', id=1)
+        raise errors.not_found('Extension', id=extension_id)
 
     return (row.type, row.typeval)

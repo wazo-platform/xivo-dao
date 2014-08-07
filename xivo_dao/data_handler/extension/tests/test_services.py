@@ -22,7 +22,6 @@ from hamcrest import assert_that, equal_to
 from xivo_dao.data_handler.utils.search import SearchResult
 from xivo_dao.data_handler.extension.model import Extension
 from xivo_dao.data_handler.extension import services as extension_services
-from xivo_dao.data_handler.exception import ElementCreationError
 
 
 class TestExtension(unittest.TestCase):
@@ -70,21 +69,6 @@ class TestExtension(unittest.TestCase):
         extension_dao_create.assert_called_once_with(extension)
         extension_notifier_created.assert_called_once_with(extension)
 
-    @patch('xivo_dao.data_handler.extension.notifier.created')
-    @patch('xivo_dao.data_handler.extension.dao.create')
-    @patch('xivo_dao.data_handler.extension.validator.validate_create')
-    def test_create_with_error_from_dao(self, validate_create, extension_dao_create, extension_notifier_created):
-        exten = '1000'
-        context = 'toto'
-
-        extension = Extension(exten=exten,
-                              context=context)
-
-        error = Exception("message")
-        extension_dao_create.side_effect = ElementCreationError(error, '')
-
-        self.assertRaises(ElementCreationError, extension_services.create, extension)
-
     @patch('xivo_dao.data_handler.extension.notifier.edited')
     @patch('xivo_dao.data_handler.extension.dao.edit')
     @patch('xivo_dao.data_handler.extension.validator.validate_edit')
@@ -103,21 +87,6 @@ class TestExtension(unittest.TestCase):
         validate_edit.assert_called_once_with(extension)
         extension_dao_edit.assert_called_once_with(extension)
         extension_notifier_edited.assert_called_once_with(extension)
-
-    @patch('xivo_dao.data_handler.extension.notifier.edited')
-    @patch('xivo_dao.data_handler.extension.dao.edit')
-    @patch('xivo_dao.data_handler.extension.validator.validate_edit')
-    def test_edit_with_error_from_dao(self, validate_edit, extension_dao_edit, extension_notifier_edited):
-        exten = '1000'
-        context = 'toto'
-
-        extension = Extension(exten=exten,
-                              context=context)
-
-        error = Exception("message")
-        extension_dao_edit.side_effect = ElementCreationError(error, '')
-
-        self.assertRaises(ElementCreationError, extension_services.edit, extension)
 
     @patch('xivo_dao.data_handler.extension.notifier.deleted')
     @patch('xivo_dao.data_handler.extension.dao.delete')
