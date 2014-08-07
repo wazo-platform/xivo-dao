@@ -15,11 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.data_handler.exception import InvalidParametersError
+from xivo_dao.data_handler import errors
 from xivo_dao.data_handler.line import dao as line_dao
 
 
 def validate_no_device(line_id):
     line = line_dao.get(line_id)
     if line.device_id:
-        raise InvalidParametersError(['A device is still associated to the line'])
+        raise errors.resource_associated('Line', 'Device',
+                                         line_id=line_id, device_id=line.device_id)
