@@ -21,9 +21,9 @@ from mock import Mock, patch
 
 from xivo_dao.data_handler.voicemail.model import Voicemail
 from xivo_dao.data_handler.voicemail import validator
-from xivo_dao.data_handler.exception import InvalidParametersError, ElementAlreadyExistsError, \
-    ElementEditionError, NonexistentParametersError, MissingParametersError, ElementNotExistsError, \
-    ElementDeletionError
+from xivo_dao.data_handler.exception import InputError
+from xivo_dao.data_handler.exception import ResourceError
+from xivo_dao.data_handler.exception import NotFoundError
 
 
 class TestValidateCreate(unittest.TestCase):
@@ -72,7 +72,7 @@ class TestValidateEdit(unittest.TestCase):
 
         is_voicemail_linked.return_value = True
 
-        self.assertRaises(ElementEditionError, validator.validate_edit, voicemail)
+        self.assertRaises(ResourceError, validator.validate_edit, voicemail)
 
         validate_model.assert_called_once_with(voicemail)
         validate_existing_number_context.assert_called_once_with(voicemail)
@@ -97,7 +97,7 @@ class TestValidateDelete(unittest.TestCase):
 
         is_voicemail_linked.return_value = True
 
-        self.assertRaises(ElementDeletionError, validator.validate_delete, voicemail)
+        self.assertRaises(ResourceError, validator.validate_delete, voicemail)
 
         is_voicemail_linked.assert_called_once_with(voicemail)
 
@@ -130,7 +130,7 @@ class TestValidateModel(unittest.TestCase):
     def test_validate_model_empty_model(self):
         voicemail = Voicemail()
 
-        self.assertRaises(MissingParametersError, validator.validate_model, voicemail)
+        self.assertRaises(InputError, validator.validate_model, voicemail)
 
     def test_validate_model_empty_name(self):
         name = ''
@@ -141,7 +141,7 @@ class TestValidateModel(unittest.TestCase):
                               number=number,
                               context=context)
 
-        self.assertRaises(InvalidParametersError, validator.validate_model, voicemail)
+        self.assertRaises(InputError, validator.validate_model, voicemail)
 
     def test_validate_model_invalid_number(self):
         name = 'voicemail'
@@ -152,7 +152,7 @@ class TestValidateModel(unittest.TestCase):
                               number=number,
                               context=context)
 
-        self.assertRaises(InvalidParametersError, validator.validate_model, voicemail)
+        self.assertRaises(InputError, validator.validate_model, voicemail)
 
     @patch('xivo_dao.helpers.validator.is_existing_context')
     def test_validate_model_invalid_context(self, is_existing_context):
@@ -166,7 +166,7 @@ class TestValidateModel(unittest.TestCase):
                               number=number,
                               context=context)
 
-        self.assertRaises(NonexistentParametersError, validator.validate_model, voicemail)
+        self.assertRaises(InputError, validator.validate_model, voicemail)
         is_existing_context.assert_called_once_with(context)
 
     @patch('xivo_dao.data_handler.language.dao.find_all')
@@ -185,7 +185,7 @@ class TestValidateModel(unittest.TestCase):
                               context=context,
                               language=language)
 
-        self.assertRaises(NonexistentParametersError, validator.validate_model, voicemail)
+        self.assertRaises(InputError, validator.validate_model, voicemail)
         is_existing_context.assert_called_once_with(context)
         language_dao_find_all.assert_called_once_with()
 
@@ -206,7 +206,7 @@ class TestValidateModel(unittest.TestCase):
                               context=context,
                               language=language)
 
-        self.assertRaises(NonexistentParametersError, validator.validate_model, voicemail)
+        self.assertRaises(InputError, validator.validate_model, voicemail)
         is_existing_context.assert_called_once_with(context)
         language_dao_find_all.assert_called_once_with()
 
@@ -220,7 +220,7 @@ class TestValidateNumberContext(unittest.TestCase):
                               number='1001',
                               context='default')
 
-        get_by_number_context.side_effect = ElementNotExistsError('voicemail')
+        get_by_number_context.side_effect = NotFoundError
 
         validator.validate_number_context(voicemail)
 
@@ -229,13 +229,16 @@ class TestValidateNumberContext(unittest.TestCase):
     @patch('xivo_dao.data_handler.voicemail.dao.get_by_number_context')
     def test_when_number_context_exist(self,
                                        get_by_number_context):
+        existing = Voicemail(name='existing',
+                             number='1001',
+                             context='default')
         voicemail = Voicemail(name='voicemail',
                               number='1001',
                               context='default')
 
-        get_by_number_context.return_value = Mock(Voicemail)
+        get_by_number_context.return_value = existing
 
-        self.assertRaises(ElementAlreadyExistsError, validator.validate_number_context, voicemail)
+        self.assertRaises(ResourceError, validator.validate_number_context, voicemail)
 
         get_by_number_context.assert_called_once_with(voicemail.number, voicemail.context)
 
