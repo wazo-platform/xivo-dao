@@ -19,9 +19,7 @@ import unittest
 
 from mock import patch, Mock
 
-from xivo_dao.data_handler.exception import ElementCreationError
-from xivo_dao.data_handler.exception import ElementDeletionError
-from xivo_dao.data_handler.exception import ElementEditionError
+from xivo_dao.data_handler.exception import DataError
 
 from xivo_dao.data_handler.voicemail import services as voicemail_services
 from xivo_dao.data_handler.voicemail.model import Voicemail
@@ -60,9 +58,9 @@ class TestVoicemail(unittest.TestCase):
                                      validate_delete):
         voicemail = Mock(Voicemail)
 
-        voicemail_dao_delete.side_effect = ElementDeletionError('voicemail', '')
+        voicemail_dao_delete.side_effect = DataError()
 
-        self.assertRaises(ElementDeletionError, voicemail_services.delete, voicemail)
+        self.assertRaises(DataError, voicemail_services.delete, voicemail)
         validate_delete.assert_called_once_with(voicemail)
         self.assertEquals(voicemail_notifier_deleted.call_count, 0)
         self.assertEquals(sysconf_delete_voicemail.call_count, 0)
@@ -126,9 +124,9 @@ class TestVoicemail(unittest.TestCase):
                               number=number,
                               context=context)
 
-        voicemail_dao_create.side_effect = ElementCreationError('voicemail', '')
+        voicemail_dao_create.side_effect = DataError()
 
-        self.assertRaises(ElementCreationError, voicemail_dao_create, voicemail)
+        self.assertRaises(DataError, voicemail_dao_create, voicemail)
         self.assertEquals(voicemail_notifier_created.call_count, 0)
 
     @patch('xivo_dao.data_handler.voicemail.validator.validate_edit')
@@ -161,8 +159,8 @@ class TestVoicemail(unittest.TestCase):
                               number=number,
                               context=context)
 
-        voicemail_dao_edit.side_effect = ElementEditionError('voicemail', '')
+        voicemail_dao_edit.side_effect = DataError()
 
-        self.assertRaises(ElementEditionError, voicemail_services.edit, voicemail)
+        self.assertRaises(DataError, voicemail_services.edit, voicemail)
         validate_edit.assert_called_once_with(voicemail)
         self.assertEquals(voicemail_notifier_edited.call_count, 0)

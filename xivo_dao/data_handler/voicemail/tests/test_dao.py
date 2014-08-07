@@ -15,17 +15,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import *
+from hamcrest import assert_that, equal_to, contains, has_property, all_of, instance_of, contains_inanyorder
 from mock import Mock, patch
 from sqlalchemy.exc import SQLAlchemyError
 
+from xivo_dao.data_handler.exception import NotFoundError
+from xivo_dao.data_handler.exception import DataError
 from xivo_dao.alchemy.voicemail import Voicemail as VoicemailSchema
 from xivo_dao.alchemy.incall import Incall as IncallSchema
 from xivo_dao.alchemy.dialaction import Dialaction as DialactionSchema
 from xivo_dao.data_handler.voicemail import dao as voicemail_dao
 from xivo_dao.data_handler.voicemail.model import Voicemail
-from xivo_dao.data_handler.exception import ElementCreationError, \
-    ElementDeletionError, ElementEditionError
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -384,7 +384,7 @@ class TestSearchVoicemail(DAOTestCase):
 class TestGetVoicemail(DAOTestCase):
 
     def test_get_by_number_context_with_no_voicemail(self):
-        self.assertRaises(LookupError, voicemail_dao.get_by_number_context, '42', 'my_context')
+        self.assertRaises(NotFoundError, voicemail_dao.get_by_number_context, '42', 'my_context')
 
     def test_get_by_number_context_with_wrong_context(self):
         number = '42'
@@ -394,7 +394,7 @@ class TestGetVoicemail(DAOTestCase):
                                         mailbox=number)
         self.add_me(voicemail_row)
 
-        self.assertRaises(LookupError, voicemail_dao.get_by_number_context, number, 'bad_context')
+        self.assertRaises(NotFoundError, voicemail_dao.get_by_number_context, number, 'bad_context')
 
     def test_get_by_number_context_with_one_voicemail(self):
         number = '42'
@@ -432,7 +432,7 @@ class TestGetVoicemail(DAOTestCase):
     def test_get_with_no_voicemail(self):
         voicemail_id = 42
 
-        self.assertRaises(LookupError, voicemail_dao.get, voicemail_id)
+        self.assertRaises(NotFoundError, voicemail_dao.get, voicemail_id)
 
     def test_get_with_one_voicemail(self):
         name = 'voicemail name'
@@ -532,7 +532,7 @@ class TestCreateVoicemail(DAOTestCase):
                               number=number,
                               context=context)
 
-        self.assertRaises(ElementCreationError, voicemail_dao.create, voicemail)
+        self.assertRaises(DataError, voicemail_dao.create, voicemail)
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
 
@@ -621,7 +621,7 @@ class TestEditVoicemail(DAOTestCase):
                               number=number,
                               context=context)
 
-        self.assertRaises(ElementEditionError, voicemail_dao.edit, voicemail)
+        self.assertRaises(DataError, voicemail_dao.edit, voicemail)
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
 
@@ -675,7 +675,7 @@ class TestVoicemailDelete(VoicemailTestCase):
         voicemail = self.mock_voicemail(number='42', context='default')
         voicemail.id = 1
 
-        self.assertRaises(ElementDeletionError, voicemail_dao.delete, voicemail)
+        self.assertRaises(DataError, voicemail_dao.delete, voicemail)
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
 
