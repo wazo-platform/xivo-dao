@@ -86,7 +86,25 @@ def get_by_number_context(session, number, context):
 def find_all(session, order=None):
     line_rows = _new_query(session, order).all()
 
-    return _rows_to_line_model(line_rows)
+    if not line_rows:
+        return []
+
+    lines = []
+    for line_row in line_rows:
+        protocol = line_row.protocol.lower()
+
+        if protocol == 'sip':
+            line_protocol = LineSIP.from_data_source(line_row)
+        elif protocol == 'iax':
+            line_protocol = LineIAX.from_data_source(line_row)
+        elif protocol == 'sccp':
+            line_protocol = LineSCCP.from_data_source(line_row)
+        elif protocol == 'custom':
+            line_protocol = LineCUSTOM.from_data_source(line_row)
+
+        lines.append(line_protocol)
+
+    return lines
 
 
 @daosession
