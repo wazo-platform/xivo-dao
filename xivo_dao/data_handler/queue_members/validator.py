@@ -21,23 +21,26 @@ from xivo_dao.data_handler import errors
 
 
 def validate_edit_agent_queue_association(queue_member):
-    _validate_queue_exists(queue_member.queue_id, errors.param_not_found, 'QueueMember')
-    _validate_agent_exists(queue_member.agent_id, errors.param_not_found, 'QueueMember')
+    if not _queue_exists(queue_member.queue_id):
+        raise errors.param_not_found('queue_id', 'Queue')
+    if not _agent_exists(queue_member.agent_id):
+        raise errors.param_not_found('agent_id', 'Agent')
     queue_members_dao.get_by_queue_id_and_agent_id(queue_member.queue_id, queue_member.agent_id)
 
 
 def validate_get_agent_queue_association(queue_id, agent_id):
-    _validate_queue_exists(queue_id, errors.not_found, 'Queue')
-    _validate_agent_exists(agent_id, errors.not_found, 'Agent')
+    if not _queue_exists(queue_id):
+        raise errors.not_found('Queue', queue_id=queue_id)
+    if not _agent_exists(agent_id):
+        raise errors.not_found('Agent', agent_id=agent_id)
 
 
-def _validate_queue_exists(queue_id, error_handler, resource_name):
+def _queue_exists(queue_id):
     try:
-        queue_dao.get(queue_id)
+        return queue_dao.get(queue_id) is not None
     except LookupError:
-        raise error_handler(resource_name, queue_id=queue_id)
+        return False
 
 
-def _validate_agent_exists(agent_id, error_handler, resource_name):
-    if agent_dao.get(agent_id) is None:
-        raise error_handler(resource_name, agent_id=agent_id)
+def _agent_exists(agent_id):
+    return agent_dao.get(agent_id) is not None
