@@ -72,7 +72,7 @@ def _validate_not_empty(field_name, value):
 
 def _validate_number(field_name, value):
     if not validator.is_positive_number(value):
-        raise errors.wrong_type(field_name, 'positive integer')
+        raise errors.wrong_type(field_name, 'numeric string')
 
 
 def _validate_boolean(field_name, value):
