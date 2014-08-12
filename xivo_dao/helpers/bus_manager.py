@@ -15,15 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from xivo import moresynchro
 from xivo_bus.ctl.client import BusCtlClient
 from xivo_dao.helpers import config
 
-bus_client = None
+_once = moresynchro.Once()
+bus_client = BusCtlClient()
 
 
 def _init_bus():
-    global bus_client
-    bus_client = BusCtlClient()
     bus_client.connect()
     bus_client.declare_exchange(config.BUS_EXCHANGE_NAME,
                                 config.BUS_EXCHANGE_TYPE,
@@ -32,8 +32,7 @@ def _init_bus():
 
 def send_bus_command(command):
     # TODO rename to send_bus_event
-    if bus_client is None:
-        _init_bus()
+    _once.once(_init_bus)
     bus_client.publish_event(config.BUS_EXCHANGE_NAME,
                              config.BUS_BINDING_KEY,
                              command)
