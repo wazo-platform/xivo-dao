@@ -82,11 +82,11 @@ def _validate_boolean(field_name, value):
 
 def _check_parameter_references(voicemail):
     if not validator.is_existing_context(voicemail.context):
-        raise errors.param_not_found('Context', name=voicemail.context)
+        raise errors.param_not_found('context', 'Context')
     if voicemail.language is not None and voicemail.language not in language_dao.find_all():
-        raise errors.param_not_found('Language', name=voicemail.language)
+        raise errors.param_not_found('language', 'Language')
     if voicemail.timezone is not None and voicemail.timezone not in voicemail_dao.find_all_timezone():
-        raise errors.param_not_found('Timezone', name=voicemail.timezone)
+        raise errors.param_not_found('timezone', 'Timezone')
 
 
 def validate_number_context(voicemail):

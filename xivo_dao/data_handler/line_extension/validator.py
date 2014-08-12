@@ -45,14 +45,14 @@ def validate_line(line_extension):
     try:
         line_dao.get(line_extension.line_id)
     except NotFoundError:
-        raise errors.param_not_found('Line', line_id=line_extension.line_id)
+        raise errors.param_not_found('line_id', 'Line')
 
 
 def validate_extension(line_extension):
     try:
         extension_dao.get(line_extension.extension_id)
     except NotFoundError:
-        raise errors.param_not_found('Extension', extension_id=line_extension.extension_id)
+        raise errors.param_not_found('extension_id', 'Extension')
 
 
 def validate_context_type_on_association(line_extension):
@@ -70,7 +70,7 @@ def validate_line_not_associated_to_extension(line_extension):
     line_extension = line_extension_dao.find_by_line_id(line_extension.line_id)
     if line_extension:
         raise errors.resource_associated('Line',
-                                         'Internal Extension',
+                                         'Extension',
                                          line_id=line_extension.line_id,
                                          extension_id=line_extension.extension_id)
 

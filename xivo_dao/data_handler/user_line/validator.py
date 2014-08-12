@@ -60,14 +60,14 @@ def _validate_user_id(user_line):
     try:
         return user_dao.get(user_line.user_id)
     except NotFoundError:
-        raise errors.param_not_found('User', user_id=user_line.user_id)
+        raise errors.param_not_found('user_id', 'User')
 
 
 def _validate_line_id(user_line):
     try:
         return line_dao.get(user_line.line_id)
     except NotFoundError:
-        raise errors.param_not_found('Line', line_id=user_line.line_id)
+        raise errors.param_not_found('line_id', 'Line')
 
 
 def _validate_user_has_line(user_line):
