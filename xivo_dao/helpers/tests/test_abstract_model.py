@@ -21,7 +21,7 @@ from hamcrest import all_of, assert_that, has_entries, has_key, is_not, same_ins
 from hamcrest.core import equal_to
 from mock import Mock
 from xivo_dao.helpers.abstract_model import AbstractModels
-from xivo_dao.data_handler.exception import InvalidParametersError
+from xivo_dao.data_handler.exception import InputError
 from xivo_dao.data_handler.line.model import Line, LineSIP
 
 
@@ -150,4 +150,4 @@ class TestModelsAbstract(unittest.TestCase):
             'toto': 'tata'
         }
 
-        self.assertRaises(InvalidParametersError, model.update_from_data, data_update)
+        self.assertRaises(InputError, model.update_from_data, data_update)

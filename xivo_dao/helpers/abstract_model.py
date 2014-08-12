@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.data_handler.exception import InputError
+from xivo_dao.data_handler import errors
 
 
 class AbstractModels(object):
@@ -78,7 +78,7 @@ class AbstractModels(object):
         invalid = self.invalid_parameters(parameters)
 
         if len(invalid) > 0:
-            raise InputError.message('missing', *invalid)
+            raise errors.missing(*invalid)
 
         for model_field in self._MAPPING.itervalues():
             model_field_value = data.get(model_field)
