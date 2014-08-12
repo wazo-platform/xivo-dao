@@ -530,7 +530,7 @@ class TestDeviceDaoMacExists(TestDeviceDao):
             result = device_dao.mac_exists(mac)
 
             assert_that(result, equal_to(False))
-            device_manager.find.assert_called_once_with({'mac': mac})
+            device_manager.find.assert_called_once_with({'mac': mac.lower()})
 
     def test_mac_exists_with_a_mac(self):
         mac = 'FF:FF:FF:FF:FF'
@@ -550,7 +550,7 @@ class TestDeviceDaoMacExists(TestDeviceDao):
             result = device_dao.mac_exists(mac)
 
             assert_that(result, equal_to(True))
-            device_manager.find.assert_called_once_with({'mac': mac})
+            device_manager.find.assert_called_once_with({'mac': mac.lower()})
 
 
 class TestDeviceDaoPluginExists(TestDeviceDao):

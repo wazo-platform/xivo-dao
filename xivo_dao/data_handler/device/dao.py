@@ -255,6 +255,7 @@ def _update_provd_device(provd_device):
 
 
 def mac_exists(mac):
+    mac = mac.lower()
     device_manager = provd_connector.device_manager()
     existing_macs = device_manager.find({'mac': mac})
     return len(existing_macs) > 0
