@@ -20,12 +20,12 @@ from xivo_bus.ctl.client import BusCtlClient
 from xivo_dao.helpers import config
 
 _once = moresynchro.Once()
-bus_client = BusCtlClient()
+_bus_client = BusCtlClient()
 
 
 def _init_bus():
-    bus_client.connect()
-    bus_client.declare_exchange(config.BUS_EXCHANGE_NAME,
+    _bus_client.connect()
+    _bus_client.declare_exchange(config.BUS_EXCHANGE_NAME,
                                 config.BUS_EXCHANGE_TYPE,
                                 durable=config.BUS_EXCHANGE_DURABLE)
 
@@ -33,6 +33,6 @@ def _init_bus():
 def send_bus_command(command):
     # TODO rename to send_bus_event
     _once.once(_init_bus)
-    bus_client.publish_event(config.BUS_EXCHANGE_NAME,
+    _bus_client.publish_event(config.BUS_EXCHANGE_NAME,
                              config.BUS_BINDING_KEY,
                              command)
