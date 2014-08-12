@@ -32,14 +32,14 @@ def _validate_cti_profile_exists(user_cti_profile):
     try:
         cti_profile_dao.get(user_cti_profile.cti_profile_id)
     except NotFoundError:
-        raise errors.param_not_found('CtiProfile', cti_profile_id=user_cti_profile.cti_profile_id)
+        raise errors.param_not_found('cti_profile_id', 'CtiProfile')
 
 
 def _validate_user_exists(user_cti_profile):
     try:
         user_dao.get(user_cti_profile.user_id)
     except NotFoundError:
-        raise errors.param_not_found('User', user_id=user_cti_profile.user_id)
+        raise errors.param_not_found('user_id', 'User')
 
 
 def _validate_user_has_login_passwd(user_cti_profile):

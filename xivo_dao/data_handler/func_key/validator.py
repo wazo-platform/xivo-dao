@@ -52,4 +52,4 @@ def validate_destination_exists(func_key):
     try:
         user_dao.get(func_key.destination_id)
     except NotFoundError:
-        raise errors.param_not_found('Destination', destination=func_key.destination, destination_id=func_key.destination_id)
+        raise errors.param_not_found('destination_id', 'Destination')

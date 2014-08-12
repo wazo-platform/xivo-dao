@@ -58,7 +58,7 @@ def _check_plugin_exists(device):
         return
 
     if not dao.plugin_exists(device.plugin):
-        raise errors.param_not_found('Plugin', plugin=device.plugin)
+        raise errors.param_not_found('plugin', 'Plugin')
 
 
 def _check_template_id_exists(device):
@@ -66,7 +66,7 @@ def _check_template_id_exists(device):
         return
 
     if not dao.template_id_exists(device.template_id):
-        raise errors.param_not_found('DeviceTemplate', template_id=device.template_id)
+        raise errors.param_not_found('template_id', 'DeviceTemplate')
 
 
 def _check_invalid_parameters(device):

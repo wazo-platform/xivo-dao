@@ -125,7 +125,7 @@ def _check_invalid_parameters(line):
 def _check_invalid_context(line):
     context = context_services.find_by_name(line.context)
     if not context:
-        raise errors.param_not_found('Context', name=line.context)
+        raise errors.param_not_found('context', 'Context')
 
 
 def make_provisioning_id():

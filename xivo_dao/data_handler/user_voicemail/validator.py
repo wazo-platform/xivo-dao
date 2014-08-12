@@ -48,14 +48,14 @@ def _validate_user_id(user_voicemail):
     try:
         return user_dao.get(user_voicemail.user_id)
     except NotFoundError:
-        raise errors.param_not_found('User', user_id=user_voicemail.user_id)
+        raise errors.param_not_found('user_id', 'User')
 
 
 def _validate_voicemail_id(user_voicemail):
     try:
         return voicemail_dao.get(user_voicemail.voicemail_id)
     except NotFoundError:
-        raise errors.param_not_found('Voicemail', voicemail_id=user_voicemail.voicemail_id)
+        raise errors.param_not_found('voicemail_id', 'Voicemail')
 
 
 def _validate_user_has_line(user_voicemail):

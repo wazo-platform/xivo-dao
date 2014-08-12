@@ -60,7 +60,7 @@ def validate_missing_parameters(extension):
 def validate_context_exists(extension):
     existing_context = context_services.find_by_name(extension.context)
     if not existing_context:
-        raise errors.param_not_found('Context', name=extension.context)
+        raise errors.param_not_found('context', 'Context')
 
 
 def validate_extension_available(extension):
