@@ -6,6 +6,7 @@ from xivo_dao.data_handler.exception import NotFoundError
 
 
 def format_error(category, error, metadata=None):
+    metadata = metadata or {}
     template = "{category} - {error} {metadata}"
     message = template.format(category=category,
                               error=error,
@@ -14,7 +15,7 @@ def format_error(category, error, metadata=None):
 
 
 def _format_metadata(metadata):
-    if metadata is None:
+    if len(metadata) == 0:
         return ''
     return "({})".format(unicode(metadata).strip("{}"))
 
@@ -61,20 +62,20 @@ def invalid_choice(field, choices, **metadata):
     return InputError(error)
 
 
-minimum_length = FormattedError(InputError, "{} has a minimum length of {}")
-invalid_direction = FormattedError(InputError, "direction '{}' invalid (must be 'asc or 'desc')")
-invalid_ordering = FormattedError(InputError, "'{}' invalid")
-wrong_type = FormattedError(InputError, "'{}' should be typed as a {}")
+minimum_length = FormattedError(InputError, "field '{}': must have a minimum length of {}")
+invalid_direction = FormattedError(InputError, "direction: must be 'asc' or 'desc'")
+invalid_ordering = FormattedError(InputError, "order: column '{}' was not found")
+wrong_type = FormattedError(InputError, "field '{}': wrong type. Should be a {}")
 outside_context_range = FormattedError(InputError, "Extension '{}' is outside of range for context '{}'")
 invalid_func_key_type = FormattedError(InputError, "FuncKey type '{}' does not exist")
 invalid_destination_type = FormattedError(InputError, "FuncKey destination type '{}' does not exist")
-param_not_found = FormattedError(InputError, "{} was not found")
+param_not_found = FormattedError(InputError, "field '{}': {} was not found")
 
 not_found = FormattedError(NotFoundError, "{} was not found")
 
 resource_exists = FormattedError(ResourceError, "{} already exists")
-resource_associated = FormattedError(ResourceError, "'{}' is associated with a '{}'")
+resource_associated = FormattedError(ResourceError, "{} is associated with a {}")
 missing_association = FormattedError(ResourceError, "{} must be associated with a {}")
 missing_cti_parameters = FormattedError(ResourceError, "User must have a username and password to enable a CtiProfile")
-unhandled_context_type = FormattedError(ResourceError, "ContextType {} cannot be associated")
-secondary_users = FormattedError(ResourceError, "there are secondary users associated to the line")
+unhandled_context_type = FormattedError(ResourceError, "ContextType '{}' cannot be associated")
+secondary_users = FormattedError(ResourceError, "There are secondary users associated to the line")
