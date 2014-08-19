@@ -112,13 +112,13 @@ def find_sccp_line_settings(session):
                           UserLine.user_id,
                           LineFeatures.context,
                           LineFeatures.number)
-            .filter(and_(UserLine.user_id == UserFeatures.id,
-                         UserLine.line_id == LineFeatures.id,
-                         UserLine.main_user == True,
-                         UserLine.main_line == True,
-                         LineFeatures.commented == 0,
-                         LineFeatures.protocol == 'sccp',
-                         LineFeatures.protocolid == SCCPLine.id))
+            .join(LineFeatures, and_(LineFeatures.protocolid == SCCPLine.id,
+                                     LineFeatures.protocol == 'sccp'))
+            .join(UserLine, and_(UserLine.line_id == LineFeatures.id,
+                                 UserLine.main_line == True))
+            .join(UserFeatures, and_(UserFeatures.id == UserLine.user_id,
+                                     UserLine.main_user == True))
+            .filter(LineFeatures.commented == 0)
             .all())
 
     for row in rows:
