@@ -28,30 +28,7 @@ from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.data_handler.func_key.tests.test_dao import TestFuncKeyDao
 
 
-class TestSccpConfDAO(DAOTestCase):
-
-    def test_find_sccp_general_settings(self):
-        expected_result = [
-            {'option_name': 'directmedia',
-             'option_value': 'no'},
-            {'option_name': 'dialtimeout',
-             'option_value': '6'},
-            {'option_name': 'language',
-             'option_value': 'en_US'},
-            {'option_name': 'vmexten',
-             'option_value': '*98'},
-        ]
-
-        self.add_sccp_general_settings(**expected_result[0])
-        self.add_sccp_general_settings(**expected_result[1])
-        self.add_sccp_general_settings(**expected_result[2])
-        self.add_extension(exten='*98',
-                           type='extenfeatures',
-                           typeval='vmusermsg')
-
-        sccp_general_settings = asterisk_conf_dao.find_sccp_general_settings()
-
-        assert_that(sccp_general_settings, contains_inanyorder(*expected_result))
+class TestSCCPLineSettingDAO(DAOTestCase):
 
     def test_find_sccp_line_settings_when_line_enabled(self):
         number = '1234'
@@ -127,6 +104,32 @@ class TestSccpConfDAO(DAOTestCase):
         sccp_line = asterisk_conf_dao.find_sccp_line_settings()
 
         assert_that(sccp_line, contains(expected_result))
+
+
+class TestSccpConfDAO(DAOTestCase):
+
+    def test_find_sccp_general_settings(self):
+        expected_result = [
+            {'option_name': 'directmedia',
+             'option_value': 'no'},
+            {'option_name': 'dialtimeout',
+             'option_value': '6'},
+            {'option_name': 'language',
+             'option_value': 'en_US'},
+            {'option_name': 'vmexten',
+             'option_value': '*98'},
+        ]
+
+        self.add_sccp_general_settings(**expected_result[0])
+        self.add_sccp_general_settings(**expected_result[1])
+        self.add_sccp_general_settings(**expected_result[2])
+        self.add_extension(exten='*98',
+                           type='extenfeatures',
+                           typeval='vmusermsg')
+
+        sccp_general_settings = asterisk_conf_dao.find_sccp_general_settings()
+
+        assert_that(sccp_general_settings, contains_inanyorder(*expected_result))
 
     def test_find_sccp_device_settings(self):
         sccp_device = self.add_sccpdevice()
