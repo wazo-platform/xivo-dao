@@ -17,6 +17,7 @@
 
 from hamcrest import *
 
+from mock import patch
 from xivo_dao import asterisk_conf_dao
 from xivo_dao.alchemy.agentqueueskill import AgentQueueSkill
 from xivo_dao.alchemy.features import Features
@@ -146,6 +147,33 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
         sccp_line = asterisk_conf_dao.find_sccp_line_settings()
 
         assert_that(sccp_line, contains(expected_result))
+
+    @patch('xivo_dao.asterisk_conf_dao.find_pickup_members')
+    def test_find_sccp_line_pickup_group(self, mock_find_pickup_members):
+        sccp_line = self.add_sccpline()
+        ule = self.add_user_line_with_exten(protocol='sccp',
+                                            protocolid=sccp_line.id)
+        callgroups = set([1, 2, 3, 4])
+        pickupgroups = set([3, 4])
+        pickup_members = {('sccp', ule.line.protocolid): {'callgroup': callgroups,
+                                                          'pickupgroup': pickupgroups}}
+        mock_find_pickup_members.return_value = pickup_members
+
+        sccp_lines = asterisk_conf_dao.find_sccp_line_settings()
+
+        expected = {
+            'user_id': ule.user_id,
+            'name': sccp_line.name,
+            'language': None,
+            'number': ule.line.number,
+            'cid_name': u'Tester One',
+            'context': u'foocontext',
+            'cid_num': sccp_line.cid_num,
+            'callgroup': callgroups,
+            'pickupgroup': pickupgroups,
+        }
+
+        assert_that(sccp_lines, contains(expected))
 
 
 class TestSccpConfDAO(DAOTestCase):

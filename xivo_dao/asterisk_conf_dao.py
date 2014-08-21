@@ -91,8 +91,10 @@ def find_sccp_general_settings(session):
 
 @daosession
 def find_sccp_line_settings(session):
+    sccp_pickup_members = find_pickup_members()
 
-    def line_config(name, cid_name, cid_num, allow, disallow, language, user_id, context, number):
+    def line_config(protocolid, name, cid_name, cid_num, allow, disallow,
+                    language, user_id, context, number):
         line = {
             'name': name,
             'cid_name': cid_name,
@@ -108,9 +110,13 @@ def find_sccp_line_settings(session):
         if disallow:
             line['disallow'] = disallow
 
+        pickup_group_key = ('sccp', protocolid)
+        line.update(sccp_pickup_members.get(pickup_group_key, {}))
+
         return line
 
-    rows = (session.query(SCCPLine.name,
+    rows = (session.query(SCCPLine.id,
+                          SCCPLine.name,
                           SCCPLine.cid_name,
                           SCCPLine.cid_num,
                           SCCPLine.allow,
