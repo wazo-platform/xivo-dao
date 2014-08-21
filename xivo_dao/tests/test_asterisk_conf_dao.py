@@ -102,9 +102,9 @@ class TestSccpConfDAO(DAOTestCase):
             'allow': 'g729',
         }
 
-        sccp_line = asterisk_conf_dao.find_sccp_line_settings()
+        sccp_lines = asterisk_conf_dao.find_sccp_line_settings()
 
-        assert_that(sccp_line, contains(expected_result))
+        assert_that(sccp_lines, contains(expected_result))
 
     def test_find_sccp_line_disallow(self):
         number = '1234'

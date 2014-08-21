@@ -89,25 +89,29 @@ def find_sccp_general_settings(session):
 @daosession
 def find_sccp_line_settings(session):
 
-    def line_config(sccpline, language, user_id, context, number):
+    def line_config(name, cid_name, cid_num, allow, disallow, language, user_id, context, number):
         line = {
-            'name': sccpline.name,
-            'cid_name': sccpline.cid_name,
-            'cid_num': sccpline.cid_num,
+            'name': name,
+            'cid_name': cid_name,
+            'cid_num': cid_num,
             'user_id': user_id,
             'number': number,
             'context': context,
             'language': language,
         }
 
-        if sccpline.allow:
-            line['allow'] = sccpline.allow
-        if sccpline.disallow:
-            line['disallow'] = sccpline.disallow
+        if allow:
+            line['allow'] = allow
+        if disallow:
+            line['disallow'] = disallow
 
         return line
 
-    rows = (session.query(SCCPLine,
+    rows = (session.query(SCCPLine.name,
+                          SCCPLine.cid_name,
+                          SCCPLine.cid_num,
+                          SCCPLine.allow,
+                          SCCPLine.disallow,
                           UserFeatures.language,
                           UserLine.user_id,
                           LineFeatures.context,
