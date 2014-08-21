@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from collections import defaultdict
+from itertools import imap
+
 from sqlalchemy.sql.expression import and_, or_, literal, cast
 from sqlalchemy.types import VARCHAR
 
@@ -456,6 +459,80 @@ def find_sip_user_settings(session):
     )
 
     return (gen_user(*row) for row in rows)
+
+
+@daosession
+def find_pickup_members(session):
+    '''
+    Returns a map:
+    {(protocol, protocolid): {pickupgroup: set([pickupgroup_id, ...]),
+                              callgroup: set([pickupgroup_id, ...])},
+     ...,
+    }
+    '''
+    group_map = {'member': 'callgroup',
+                 'pickup': 'pickupgroup'}
+
+    res = defaultdict(lambda: defaultdict(set))
+    add_member = lambda m: res[(m.protocol, m.protocolid)][group_map[m.category]].add(m.id)
+
+    base_query = session.query(
+        PickupMember.category,
+        Pickup.id,
+        LineFeatures.protocol,
+        LineFeatures.protocolid,
+    ).join(
+        Pickup, Pickup.id == PickupMember.pickupid,
+    ).filter(
+        Pickup.commented == 0
+    )
+
+    users = base_query.join(
+        UserLine, UserLine.user_id == PickupMember.memberid,
+    ).join(
+        LineFeatures, LineFeatures.id == UserLine.line_id,
+    ).filter(
+        PickupMember.membertype == 'user',
+    )
+
+    groups = base_query.join(
+        GroupFeatures, GroupFeatures.id == PickupMember.memberid,
+    ).join(
+        QueueMember, QueueMember.queue_name == GroupFeatures.name,
+    ).join(
+        UserLine, UserLine.user_id == QueueMember.userid,
+    ).join(
+        LineFeatures, LineFeatures.id == UserLine.line_id,
+    ).filter(
+        and_(
+            PickupMember.membertype == 'group',
+            QueueMember.usertype == 'user',
+            UserLine.main_user == True,
+            UserLine.main_line == True,
+        )
+    )
+
+    queues = base_query.join(
+        QueueFeatures, QueueFeatures.id == PickupMember.memberid,
+    ).join(
+        QueueMember, QueueMember.queue_name == QueueFeatures.name,
+    ).join(
+        UserLine, UserLine.user_id == QueueMember.userid,
+    ).join(
+        LineFeatures, LineFeatures.id == UserLine.line_id,
+    ).filter(
+        and_(
+            PickupMember.membertype == 'queue',
+            QueueMember.usertype == 'user',
+            UserLine.main_user == True,
+            UserLine.main_line == True,
+        )
+    )
+
+    for member in users.union(groups.union(queues)).all():
+        add_member(member)
+
+    return res
 
 
 @daosession
