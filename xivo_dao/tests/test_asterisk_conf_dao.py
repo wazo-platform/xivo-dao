@@ -147,60 +147,6 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
 
         assert_that(sccp_line, contains(expected_result))
 
-    def test_find_pickup_members_empty(self):
-        self.add_pickup()
-
-        pickup_members = asterisk_conf_dao.find_pickup_members()
-
-        assert_that(pickup_members, contains())
-
-    def test_find_pickup_members_with_users(self):
-        pickup = self.add_pickup()
-
-        sccp_line = self.add_sccpline()
-        ule1 = self.add_user_line_with_exten(protocol='sccp', protocolid=sccp_line.id)
-        category1 = self.add_pickup_member_user(pickup, ule1.user_id)
-
-        ule2 = self.add_user_line_with_exten(protocol='sip')
-        category2 = self.add_pickup_member_user(pickup, ule2.user_id)
-
-        pickup_members = asterisk_conf_dao.find_pickup_members()
-
-        expected = {
-            ('sccp', sccp_line.id): {category1: set([pickup.id])},
-            ('sip', ule2.line.protocolid): {category2: set([pickup.id])},
-        }
-
-        assert_that(pickup_members, equal_to(expected))
-
-    def test_find_pickup_members_with_groups(self):
-        pickup = self.add_pickup()
-
-        ule = self.add_user_line_with_exten()
-        category = self.add_pickup_member_group(pickup, ule.user_id)
-
-        pickup_members = asterisk_conf_dao.find_pickup_members()
-
-        expected = {
-            (ule.line.protocol, ule.line.protocolid): {category: set([pickup.id])}
-        }
-
-        assert_that(pickup_members, equal_to(expected))
-
-    def test_find_pickup_members_with_queues(self):
-        pickup = self.add_pickup()
-
-        ule = self.add_user_line_with_exten()
-        category = self.add_pickup_member_queue(pickup, ule.user_id)
-
-        pickup_members = asterisk_conf_dao.find_pickup_members()
-
-        expected = {
-            (ule.line.protocol, ule.line.protocolid): {category: set([pickup.id])}
-        }
-
-        assert_that(pickup_members, equal_to(expected))
-
 
 class TestSccpConfDAO(DAOTestCase):
 
@@ -406,6 +352,61 @@ class TestFindExtenProgfunckeysSettings(TestFuncKeyDao):
 
 
 class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
+
+
+    def test_find_pickup_members_empty(self):
+        self.add_pickup()
+
+        pickup_members = asterisk_conf_dao.find_pickup_members()
+
+        assert_that(pickup_members, contains())
+
+    def test_find_pickup_members_with_users(self):
+        pickup = self.add_pickup()
+
+        sccp_line = self.add_sccpline()
+        ule1 = self.add_user_line_with_exten(protocol='sccp', protocolid=sccp_line.id)
+        category1 = self.add_pickup_member_user(pickup, ule1.user_id)
+
+        ule2 = self.add_user_line_with_exten(protocol='sip')
+        category2 = self.add_pickup_member_user(pickup, ule2.user_id)
+
+        pickup_members = asterisk_conf_dao.find_pickup_members()
+
+        expected = {
+            ('sccp', sccp_line.id): {category1: set([pickup.id])},
+            ('sip', ule2.line.protocolid): {category2: set([pickup.id])},
+        }
+
+        assert_that(pickup_members, equal_to(expected))
+
+    def test_find_pickup_members_with_groups(self):
+        pickup = self.add_pickup()
+
+        ule = self.add_user_line_with_exten()
+        category = self.add_pickup_member_group(pickup, ule.user_id)
+
+        pickup_members = asterisk_conf_dao.find_pickup_members()
+
+        expected = {
+            (ule.line.protocol, ule.line.protocolid): {category: set([pickup.id])}
+        }
+
+        assert_that(pickup_members, equal_to(expected))
+
+    def test_find_pickup_members_with_queues(self):
+        pickup = self.add_pickup()
+
+        ule = self.add_user_line_with_exten()
+        category = self.add_pickup_member_queue(pickup, ule.user_id)
+
+        pickup_members = asterisk_conf_dao.find_pickup_members()
+
+        expected = {
+            (ule.line.protocol, ule.line.protocolid): {category: set([pickup.id])}
+        }
+
+        assert_that(pickup_members, equal_to(expected))
 
     def test_find_featuremap_features_settings(self):
         features = Features(id=1,
