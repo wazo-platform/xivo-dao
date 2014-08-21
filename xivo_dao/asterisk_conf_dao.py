@@ -16,7 +16,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from collections import defaultdict
-from itertools import imap
 
 from sqlalchemy.sql.expression import and_, or_, literal, cast
 from sqlalchemy.types import VARCHAR
