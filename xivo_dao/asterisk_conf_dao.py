@@ -462,7 +462,7 @@ def find_sip_user_settings(session):
 
 
 @daosession
-def find_pickup_members(session):
+def find_pickup_members(session, query_filter=None):
     '''
     Returns a map:
     {(protocol, protocolid): {pickupgroup: set([pickupgroup_id, ...]),
@@ -486,6 +486,9 @@ def find_pickup_members(session):
     ).filter(
         Pickup.commented == 0
     )
+
+    if query_filter:
+        base_query = base_query.filter(query_filter)
 
     users = base_query.join(
         UserLine, UserLine.user_id == PickupMember.memberid,
@@ -537,46 +540,22 @@ def find_pickup_members(session):
 
 @daosession
 def find_sip_pickup_settings(session):
-    users = (session.query(UserSIP.name,
-                           PickupMember.category,
-                           Pickup.id)
-             .filter(and_(Pickup.commented == 0,
-                          Pickup.id == PickupMember.pickupid,
-                          PickupMember.membertype == 'user',
-                          PickupMember.memberid == UserLine.user_id,
-                          LineFeatures.id == UserLine.line_id,
-                          LineFeatures.protocol == 'sip',
-                          LineFeatures.protocolid == UserSIP.id)))
+    pickup_members = find_pickup_members(LineFeatures.protocol == 'sip')
+    sip_line_ids = [protocolid for _, protocolid in pickup_members.iterkeys()]
 
-    groups = (session.query(UserSIP.name,
-                            PickupMember.category,
-                            Pickup.id)
-              .filter(and_(Pickup.commented == 0,
-                           Pickup.id == PickupMember.pickupid,
-                           PickupMember.membertype == 'group',
-                           PickupMember.memberid == GroupFeatures.id,
-                           GroupFeatures.name == QueueMember.queue_name,
-                           QueueMember.usertype == 'user',
-                           QueueMember.userid == UserLine.user_id,
-                           LineFeatures.id == UserLine.line_id,
-                           LineFeatures.protocol == 'sip',
-                           LineFeatures.protocolid == UserSIP.id)))
+    sip_users = session.query(
+        UserSIP.id,
+        UserSIP.name,
+    ).filter(UserSIP.id.in_(sip_line_ids))
 
-    queues = (session.query(UserSIP.name,
-                            PickupMember.category,
-                            Pickup.id)
-              .filter(and_(Pickup.commented == 0,
-                           Pickup.id == PickupMember.pickupid,
-                           PickupMember.membertype == 'queue',
-                           PickupMember.memberid == QueueFeatures.id,
-                           QueueFeatures.name == QueueMember.queue_name,
-                           QueueMember.usertype == 'user',
-                           QueueMember.userid == UserLine.user_id,
-                           LineFeatures.id == UserLine.line_id,
-                           LineFeatures.protocol == 'sip',
-                           LineFeatures.protocolid == UserSIP.id)))
+    for sip_user in sip_users.all():
+        pickup_entry = pickup_members[('sip', sip_user.id)]
 
-    return users.union(groups.union(queues)).all()
+        for pickup_id in pickup_entry.get('pickupgroup', []):
+            yield sip_user.name, 'pickup', pickup_id
+
+        for pickup_id in pickup_entry.get('callgroup', []):
+            yield sip_user.name, 'member', pickup_id
 
 
 @daosession
