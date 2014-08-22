@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.sql.expression import and_
+
 from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
 from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
@@ -32,9 +33,10 @@ from xivo_dao.data_handler.entity import dao as entity_dao
 from xivo_dao.data_handler.user.search import user_search
 from xivo_dao.data_handler.utils.search import SearchResult
 from xivo_dao.data_handler.user.model import db_converter
-from xivo_dao.data_handler.exception import ElementNotExistsError, \
-    ElementEditionError, ElementCreationError, ElementDeletionError
-from sqlalchemy.sql.expression import and_
+from xivo_dao.helpers.db_utils import commit_or_abort
+
+from xivo_dao.data_handler import errors
+from xivo_dao.data_handler.exception import DataError
 
 
 DEFAULT_ORDER = [UserSchema.lastname, UserSchema.firstname]
@@ -109,7 +111,7 @@ def _fetch_commented_user_row(session, user_id):
 def _user_row_from_query(query, user_id):
     user_row = query.first()
     if not user_row:
-        raise ElementNotExistsError('User', id=user_id)
+        raise errors.not_found('User', id=user_id)
     return user_row
 
 
@@ -122,7 +124,7 @@ def get_main_user_by_line_id(session, line_id):
            .first())
 
     if not row:
-        raise ElementNotExistsError('MainUser', line_id=line_id)
+        raise errors.not_found('User', line_id=line_id)
 
     user_row, _ = row
     return db_converter.to_model(user_row)
@@ -155,7 +157,7 @@ def _find_by_number_context(session, number, context):
 def get_by_number_context(session, number, context):
     user = _find_by_number_context(session, number, context)
     if not user:
-        raise ElementNotExistsError('User', number=number, context=context)
+        raise errors.not_found('User', number=number, context=context)
     return user
 
 
@@ -163,14 +165,9 @@ def get_by_number_context(session, number, context):
 def create(session, user):
     user_row = db_converter.to_source(user)
     user_row.entityid = entity_dao.default_entity_id()
-    session.begin()
-    session.add(user_row)
 
-    try:
-        session.commit()
-    except SQLAlchemyError as e:
-        session.rollback()
-        raise ElementCreationError('User', e)
+    with commit_or_abort(session, DataError.on_create, 'User'):
+        session.add(user_row)
 
     user.id = user_row.id
 
@@ -181,26 +178,16 @@ def create(session, user):
 def edit(session, user):
     user_row = _fetch_commented_user_row(session, user.id)
 
-    session.begin()
     db_converter.update_source(user_row, user)
-    session.add(user_row)
 
-    try:
-        session.commit()
-    except SQLAlchemyError as e:
-        session.rollback()
-        raise ElementEditionError('User', e)
+    with commit_or_abort(session, DataError.on_edit, 'User'):
+        session.add(user_row)
 
 
 @daosession
 def delete(session, user):
-    session.begin()
-    try:
+    with commit_or_abort(session, DataError.on_delete, 'User'):
         _delete_user(session, user.id)
-        session.commit()
-    except SQLAlchemyError as e:
-        session.rollback()
-        raise ElementDeletionError('User', e)
 
 
 def _delete_user(session, user_id):

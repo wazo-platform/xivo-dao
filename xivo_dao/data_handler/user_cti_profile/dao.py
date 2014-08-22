@@ -19,8 +19,8 @@ from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.alchemy.cti_profile import CtiProfile as CtiProfileSchema
 from xivo_dao.data_handler.cti_profile.model import db_converter as cti_profile_db_converter
-from xivo_dao.data_handler.exception import ElementNotExistsError, \
-    ElementEditionError
+from xivo_dao.data_handler.exception import DataError
+from xivo_dao.data_handler import errors
 from sqlalchemy.exc import SQLAlchemyError
 
 
@@ -28,7 +28,7 @@ from sqlalchemy.exc import SQLAlchemyError
 def find_profile_by_userid(session, userid):
     user = session.query(UserSchema).filter(UserSchema.id == userid).first()
     if user is None:
-        raise ElementNotExistsError('user', id=userid)
+        raise errors.not_found('User', id=userid)
     if user.cti_profile_id is None:
         return None
     row = session.query(CtiProfileSchema).filter(CtiProfileSchema.id == user.cti_profile_id).first()
@@ -50,4 +50,4 @@ def edit(session, user_cti_profile):
         session.commit()
     except SQLAlchemyError as e:
         session.rollback()
-        raise ElementEditionError('UserCtiProfile', e)
+        raise DataError.on_edit('UserCtiProfile', e)

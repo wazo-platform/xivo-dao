@@ -19,14 +19,13 @@ from hamcrest import assert_that, all_of, equal_to, has_items, has_length, has_p
 from mock import patch, Mock
 from sqlalchemy.exc import SQLAlchemyError
 
+from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
-from xivo_dao.data_handler.utils.search import SearchResult
-from xivo_dao.data_handler.exception import ElementCreationError
-from xivo_dao.data_handler.exception import ElementEditionError
-from xivo_dao.data_handler.exception import ElementNotExistsError
+from xivo_dao.data_handler.exception import DataError
+from xivo_dao.data_handler.exception import NotFoundError
 from xivo_dao.data_handler.extension import dao as extension_dao
 from xivo_dao.data_handler.extension.model import Extension, ExtensionDestination
-from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao.data_handler.utils.search import SearchResult
 
 
 class TestExtension(DAOTestCase):
@@ -225,7 +224,7 @@ class TestFindByContext(DAOTestCase):
 class TestGet(DAOTestCase):
 
     def test_get_no_exist(self):
-        self.assertRaises(LookupError, extension_dao.get, 666)
+        self.assertRaises(NotFoundError, extension_dao.get, 666)
 
     def test_get(self):
         exten = 'sdklfj'
@@ -240,7 +239,7 @@ class TestGet(DAOTestCase):
 class TestGetByExten(DAOTestCase):
 
     def test_get_by_exten_context_no_exist(self):
-        self.assertRaises(LookupError, extension_dao.get_by_exten_context, '1234', 'default')
+        self.assertRaises(NotFoundError, extension_dao.get_by_exten_context, '1234', 'default')
 
     def test_get_by_exten_context(self):
         exten = 'sdklfj'
@@ -313,7 +312,7 @@ class TestCreate(DAOTestCase):
         extension = Extension(exten=exten,
                               context=context)
 
-        self.assertRaises(ElementCreationError, extension_dao.create, extension)
+        self.assertRaises(DataError, extension_dao.create, extension)
 
     @patch('xivo_dao.helpers.db_manager.DaoSession')
     def test_create_extension_with_error_from_dao(self, Session):
@@ -327,7 +326,7 @@ class TestCreate(DAOTestCase):
         extension = Extension(exten=exten,
                               context=context)
 
-        self.assertRaises(ElementCreationError, extension_dao.create, extension)
+        self.assertRaises(DataError, extension_dao.create, extension)
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
 
@@ -368,7 +367,7 @@ class TestEdit(DAOTestCase):
         extension = Extension(exten='extension',
                               context='context')
 
-        self.assertRaises(ElementEditionError, extension_dao.edit, extension)
+        self.assertRaises(DataError, extension_dao.edit, extension)
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
 
@@ -417,7 +416,7 @@ class TestAssociateDestination(DAOTestCase):
         extension_row = Mock()
         user_row = Mock()
 
-        self.assertRaises(ElementEditionError,
+        self.assertRaises(DataError,
                           extension_dao.associate_destination,
                           extension_row.id,
                           'user',
@@ -454,7 +453,7 @@ class TestDissociateExtension(DAOTestCase):
 
         extension_id = 1
 
-        self.assertRaises(ElementEditionError, extension_dao.dissociate_extension, extension_id)
+        self.assertRaises(DataError, extension_dao.dissociate_extension, extension_id)
 
     def assert_extension_not_associated(self, extension_id):
         updated_extension = self.session.query(ExtensionSchema).get(extension_id)
@@ -465,7 +464,7 @@ class TestDissociateExtension(DAOTestCase):
 class TestGetTypeTypeval(DAOTestCase):
 
     def test_given_no_extension_then_raises_error(self):
-        self.assertRaises(ElementNotExistsError, extension_dao.get_type_typeval, 1)
+        self.assertRaises(NotFoundError, extension_dao.get_type_typeval, 1)
 
     def test_given_an_extension_then_returns_type_and_typeval(self):
         extension_row = self.add_extension(type='queue', typeval='1234')

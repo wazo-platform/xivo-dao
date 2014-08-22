@@ -17,13 +17,11 @@
 
 import unittest
 from mock import patch, Mock
-from hamcrest import *
+from hamcrest import assert_that, equal_to
 
 from xivo_dao.data_handler.device import validator
-from xivo_dao.data_handler.exception import ElementAlreadyExistsError
-from xivo_dao.data_handler.exception import ElementDeletionError
-from xivo_dao.data_handler.exception import InvalidParametersError
-from xivo_dao.data_handler.exception import NonexistentParametersError
+from xivo_dao.data_handler.exception import InputError
+from xivo_dao.data_handler.exception import ResourceError
 from xivo_dao.data_handler.device.model import Device
 
 
@@ -35,7 +33,7 @@ class TestDeviceValidator(unittest.TestCase):
 
         dao_mac_exists.return_value = True
 
-        self.assertRaises(ElementAlreadyExistsError, validator.validate_create, device)
+        self.assertRaises(ResourceError, validator.validate_create, device)
 
         dao_mac_exists.assert_called_once_with(device.mac)
 
@@ -46,7 +44,7 @@ class TestDeviceValidator(unittest.TestCase):
         }
         device = Device(**device)
 
-        self.assertRaises(InvalidParametersError, validator.validate_create, device)
+        self.assertRaises(InputError, validator.validate_create, device)
 
     def test_validate_create_ip_over_255(self):
         device = {
@@ -55,7 +53,7 @@ class TestDeviceValidator(unittest.TestCase):
         }
         device = Device(**device)
 
-        self.assertRaises(InvalidParametersError, validator.validate_create, device)
+        self.assertRaises(InputError, validator.validate_create, device)
 
     def test_validate_create_invalid_mac(self):
         device = {
@@ -64,19 +62,19 @@ class TestDeviceValidator(unittest.TestCase):
         }
         device = Device(**device)
 
-        self.assertRaises(InvalidParametersError, validator.validate_create, device)
+        self.assertRaises(InputError, validator.validate_create, device)
 
     def test_validate_create_invalid_options_type(self):
         device = Device()
         device.options = 'foobar'
 
-        self.assertRaises(InvalidParametersError, validator.validate_create, device)
+        self.assertRaises(InputError, validator.validate_create, device)
 
     def test_validate_create_invalid_switchboard_option_type(self):
         device = Device()
         device.options = {'switchboard': 42}
 
-        self.assertRaises(InvalidParametersError, validator.validate_create, device)
+        self.assertRaises(InputError, validator.validate_create, device)
 
     @patch('xivo_dao.data_handler.device.dao.mac_exists', Mock(return_value=False))
     @patch('xivo_dao.data_handler.device.dao.plugin_exists')
@@ -88,7 +86,7 @@ class TestDeviceValidator(unittest.TestCase):
 
         dao_plugin_exists.return_value = False
 
-        self.assertRaises(NonexistentParametersError, validator.validate_create, device)
+        self.assertRaises(InputError, validator.validate_create, device)
 
     @patch('xivo_dao.data_handler.device.dao.mac_exists', Mock(return_value=False))
     @patch('xivo_dao.data_handler.device.dao.plugin_exists', Mock(return_value=True))
@@ -101,7 +99,7 @@ class TestDeviceValidator(unittest.TestCase):
 
         dao_template_id_exists.return_value = False
 
-        self.assertRaises(NonexistentParametersError, validator.validate_create, device)
+        self.assertRaises(InputError, validator.validate_create, device)
 
     @patch('xivo_dao.data_handler.device.dao.mac_exists')
     @patch('xivo_dao.data_handler.device.dao.plugin_exists')
@@ -268,7 +266,7 @@ class TestDeviceValidator(unittest.TestCase):
 
         device = Device(**device)
 
-        self.assertRaises(ElementAlreadyExistsError, validator.validate_edit, device)
+        self.assertRaises(ResourceError, validator.validate_edit, device)
         dao_find.assert_called_once_with(device_id)
         mac_exists.assert_called_once_with(new_mac)
 
@@ -284,8 +282,8 @@ class TestDeviceValidator(unittest.TestCase):
     @patch('xivo_dao.data_handler.line.dao.find_all_by_device_id')
     def test_validate_delete_linked_to_line(self, find_all_by_device_id):
         device = Mock(id='abc123')
-        find_all_by_device_id.return_value = [Mock()]
+        find_all_by_device_id.return_value = [Mock(id=1)]
 
-        self.assertRaises(ElementDeletionError, validator.validate_delete, device)
+        self.assertRaises(ResourceError, validator.validate_delete, device)
 
         find_all_by_device_id.assert_called_once_with(device.id)

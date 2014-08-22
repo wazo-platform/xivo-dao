@@ -17,8 +17,8 @@
 from hamcrest import assert_that, all_of, has_property
 
 from xivo_dao.data_handler.queue_members import dao as queue_members_dao
-from xivo_dao.data_handler.queue_members.exception import QueueMemberNotExistsError
 from xivo_dao.data_handler.queue_members.model import QueueMemberAgent
+from xivo_dao.data_handler.exception import NotFoundError
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -46,7 +46,7 @@ class TestQueueAgentAssociation(DAOTestCase):
                                    has_property('queue_id', queue_id)))
 
     def test_get_by_queue_and_agent_id_not_exists(self):
-        self.assertRaises(QueueMemberNotExistsError, queue_members_dao.get_by_queue_id_and_agent_id, 1, 8)
+        self.assertRaises(NotFoundError, queue_members_dao.get_by_queue_id_and_agent_id, 1, 8)
 
     def test_edit_agent_queue_association(self):
         agent_id = 23

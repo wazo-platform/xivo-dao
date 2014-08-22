@@ -17,14 +17,14 @@
 
 from sqlalchemy.exc import SQLAlchemyError
 
+from xivo_dao.data_handler import errors
 from xivo_dao.alchemy.voicemail import Voicemail as VoicemailSchema
 from xivo_dao.alchemy.dialaction import Dialaction as DialactionSchema
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.data_handler.voicemail.model import db_converter
 from xivo_dao.data_handler.voicemail.search import voicemail_search
-from xivo_dao.data_handler.exception import ElementNotExistsError, \
-    ElementCreationError, ElementEditionError, ElementDeletionError
+from xivo_dao.data_handler.exception import DataError
 from xivo_dao.data_handler.utils.search import SearchResult
 from xivo_dao.alchemy.staticvoicemail import StaticVoicemail
 
@@ -60,7 +60,7 @@ def get_by_number_context(session, number, context):
            .filter(VoicemailSchema.context == context)
            .first())
     if not row:
-        raise ElementNotExistsError('Voicemail', number=number, context=context)
+        raise errors.not_found('Voicemail', number=number, context=context)
 
     return db_converter.to_model(row)
 
@@ -77,7 +77,7 @@ def _get_voicemail_row(session, voicemail_id):
            .first())
 
     if not row:
-        raise ElementNotExistsError('Voicemail', uniqueid=voicemail_id)
+        raise errors.not_found('Voicemail', id=voicemail_id)
 
     return row
 
@@ -92,7 +92,7 @@ def create(session, voicemail):
         session.commit()
     except SQLAlchemyError as e:
         session.rollback()
-        raise ElementCreationError('voicemail', e)
+        raise DataError.on_create('voicemail', e)
 
     voicemail.id = voicemail_row.uniqueid
 
@@ -111,7 +111,7 @@ def edit(session, voicemail):
         session.commit()
     except SQLAlchemyError as e:
         session.rollback()
-        raise ElementEditionError('voicemail', e)
+        raise DataError.on_edit('voicemail', e)
 
 
 @daosession
@@ -123,7 +123,7 @@ def delete(session, voicemail):
         session.commit()
     except SQLAlchemyError as e:
         session.rollback()
-        raise ElementDeletionError('voicemail', e)
+        raise DataError.on_delete('voicemail', e)
 
 
 def _delete_voicemail(session, voicemail_id):

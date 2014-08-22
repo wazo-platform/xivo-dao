@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.data_handler.exception import ElementNotExistsError, NonexistentParametersError, \
-    ElementEditionError
+from xivo_dao.data_handler import errors
+from xivo_dao.data_handler.exception import NotFoundError
 from xivo_dao.data_handler.cti_profile import dao as cti_profile_dao
 from xivo_dao.data_handler.user import dao as user_dao
 
@@ -31,16 +31,19 @@ def validate_edit(user_cti_profile):
 def _validate_cti_profile_exists(user_cti_profile):
     try:
         cti_profile_dao.get(user_cti_profile.cti_profile_id)
-    except ElementNotExistsError:
-        raise NonexistentParametersError(cti_profile=user_cti_profile.cti_profile_id)
+    except NotFoundError:
+        raise errors.param_not_found('cti_profile_id', 'CtiProfile')
 
 
 def _validate_user_exists(user_cti_profile):
-    user_dao.get(user_cti_profile.user_id)
+    try:
+        user_dao.get(user_cti_profile.user_id)
+    except NotFoundError:
+        raise errors.param_not_found('user_id', 'User')
 
 
 def _validate_user_has_login_passwd(user_cti_profile):
     if user_cti_profile.enabled:
         user = user_dao.get(user_cti_profile.user_id)
         if not user.username or not user.password:
-            raise ElementEditionError(user.id, 'the user must have a username and password to enable the CTI')
+            raise errors.missing_cti_parameters(user_id=user.id)

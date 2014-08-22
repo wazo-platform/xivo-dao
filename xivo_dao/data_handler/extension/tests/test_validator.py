@@ -19,10 +19,9 @@ from xivo_dao.tests.test_case import TestCase
 
 from mock import patch, Mock
 
-from xivo_dao.data_handler.exception import ElementAlreadyExistsError
-from xivo_dao.data_handler.exception import InvalidParametersError
-from xivo_dao.data_handler.exception import MissingParametersError
-from xivo_dao.data_handler.exception import NonexistentParametersError
+from xivo_dao.data_handler.exception import InputError
+from xivo_dao.data_handler.exception import ResourceError
+
 from xivo_dao.data_handler.extension import validator
 from xivo_dao.data_handler.extension.model import Extension
 from xivo_dao.data_handler.line_extension.model import LineExtension
@@ -90,20 +89,17 @@ class TestValidateInvalidParameters(TestCase):
     def test_on_empty_extension_number(self):
         extension = Extension(context='toto')
 
-        self.assertRaisesRegexp(InvalidParametersError, 'Invalid parameters: Exten required',
-                                validator.validate_invalid_parameters, extension)
+        self.assertRaises(InputError, validator.validate_invalid_parameters, extension)
 
     def test_on_empty_context(self):
         extension = Extension(exten='1000')
 
-        self.assertRaisesRegexp(InvalidParametersError, 'Invalid parameters: Context required',
-                                validator.validate_invalid_parameters, extension)
+        self.assertRaises(InputError, validator.validate_invalid_parameters, extension)
 
     def test_commented_is_not_a_boolean(self):
         extension = Extension(exten='1000', context='default', commented='lol')
 
-        self.assertRaisesRegexp(InvalidParametersError, 'Invalid parameters: Commented must be a bool',
-                                validator.validate_invalid_parameters, extension)
+        self.assertRaises(InputError, validator.validate_invalid_parameters, extension)
 
 
 class TestValidateMissingParameters(TestCase):
@@ -111,7 +107,7 @@ class TestValidateMissingParameters(TestCase):
     def test_missing_parameters_when_extension_has_no_parameters(self):
         extension = Extension()
 
-        self.assertRaises(MissingParametersError, validator.validate_missing_parameters, extension)
+        self.assertRaises(InputError, validator.validate_missing_parameters, extension)
 
     def test_missing_parameters_when_extension_has_minimal_parameters(self):
         extension = Extension(exten='1000', context='default')
@@ -127,7 +123,7 @@ class TestValidateContextExists(TestCase):
 
         extension = Extension(exten='1000', context='default')
 
-        self.assertRaises(NonexistentParametersError, validator.validate_context_exists, extension)
+        self.assertRaises(InputError, validator.validate_context_exists, extension)
 
         find_by_name.assert_called_once_with(extension.context)
 
@@ -160,7 +156,7 @@ class TestValidateExtensionAvailable(TestCase):
 
         extension = Extension(exten='1000', context='default')
 
-        self.assertRaises(ElementAlreadyExistsError, validator.validate_extension_available, extension)
+        self.assertRaises(ResourceError, validator.validate_extension_available, extension)
 
         find_by_exten_context.assert_called_once_with(extension.exten, extension.context)
 
@@ -173,7 +169,7 @@ class TestValidateExtensionInRange(TestCase):
 
         extension = Extension(exten='9999', context='default')
 
-        self.assertRaises(InvalidParametersError, validator.validate_extension_in_range, extension)
+        self.assertRaises(InputError, validator.validate_extension_in_range, extension)
 
         is_extension_valid_for_context.assert_called_once_with(extension)
 
@@ -221,11 +217,10 @@ class TestValidateExtensionNotAssociated(TestCase):
                                                                            get_type_typeval,
                                                                            find_by_extension_id):
         get_type_typeval.return_value = ('user', '0')
-        find_by_extension_id.return_value = Mock(LineExtension)
+        find_by_extension_id.return_value = Mock(LineExtension, line_id=1)
         extension_id = 1
 
-        self.assertRaises(InvalidParametersError, validator.validate_extension_not_associated, extension_id)
-
+        self.assertRaises(ResourceError, validator.validate_extension_not_associated, extension_id)
         find_by_extension_id.assert_called_once_with(extension_id)
 
     def test_given_extension_is_associated_to_a_resource_then_validation_fails(self,
@@ -234,8 +229,7 @@ class TestValidateExtensionNotAssociated(TestCase):
         get_type_typeval.return_value = ('queue', '123')
         extension_id = 1
 
-        self.assertRaises(InvalidParametersError, validator.validate_extension_not_associated, extension_id)
-
+        self.assertRaises(ResourceError, validator.validate_extension_not_associated, extension_id)
         get_type_typeval.assert_called_once_with(extension_id)
 
 

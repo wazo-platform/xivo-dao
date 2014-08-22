@@ -15,21 +15,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import *
+from hamcrest import assert_that, equal_to, none, contains, contains_inanyorder, instance_of, has_property, is_not
 from mock import patch
 
+from xivo_dao.tests.test_dao import DAOTestCase
+
+from xivo_dao.data_handler.exception import NotFoundError
+from xivo_dao.data_handler.exception import DataError
+from xivo_dao.data_handler.func_key.model import FuncKey
+from xivo_dao.data_handler.func_key import dao
 from xivo_dao.alchemy.func_key import FuncKey as FuncKeySchema
 from xivo_dao.alchemy.func_key_dest_service import FuncKeyDestService as FuncKeyDestServiceSchema
 from xivo_dao.alchemy.func_key_dest_conference import FuncKeyDestConference as FuncKeyDestConferenceSchema
 from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup as FuncKeyDestGroupSchema
 from xivo_dao.alchemy.func_key_dest_queue import FuncKeyDestQueue as FuncKeyDestQueueSchema
 from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser as FuncKeyDestUserSchema
-from xivo_dao.data_handler.exception import ElementCreationError
-from xivo_dao.data_handler.exception import ElementDeletionError
-from xivo_dao.data_handler.exception import ElementNotExistsError
-from xivo_dao.data_handler.func_key import dao
-from xivo_dao.data_handler.func_key.model import FuncKey
-from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class BaseTestFuncKeyDao(DAOTestCase):
@@ -253,7 +253,7 @@ class TestFuncKeyFindAllByDestination(TestFuncKeyDao):
 class TestFuncKeyGet(TestFuncKeyDao):
 
     def test_when_no_func_key_then_raises_error(self):
-        self.assertRaises(ElementNotExistsError, dao.get, 1)
+        self.assertRaises(NotFoundError, dao.get, 1)
 
     def test_when_user_func_key_in_db_then_func_key_model_returned(self):
         user_row = self.add_user()
@@ -401,8 +401,7 @@ class TestFuncKeyCreate(TestFuncKeyDao):
                            destination_id=1)
 
         dao.create(func_key)
-
-        commit_or_abort.assert_any_call(session, ElementCreationError, 'FuncKey')
+        commit_or_abort.assert_any_call(session, DataError.on_create, 'FuncKey')
 
     def assert_func_key_row_created(self, destination_row):
         row = (self.session.query(FuncKeySchema)
@@ -485,7 +484,7 @@ class TestFuncKeyDelete(TestFuncKeyDao):
 
         dao.delete(func_key)
 
-        commit_or_abort.assert_any_call(session, ElementDeletionError, 'FuncKey')
+        commit_or_abort.assert_any_call(session, DataError.on_delete, 'FuncKey')
 
     def assert_func_key_deleted(self, func_key_id):
         row = (self.session.query(FuncKeySchema)

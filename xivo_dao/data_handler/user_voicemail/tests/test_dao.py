@@ -24,8 +24,7 @@ from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema
 from xivo_dao.alchemy.voicemail import Voicemail as VoicemailSchema
 from xivo_dao.data_handler.user_voicemail import dao as user_voicemail_dao
 from xivo_dao.data_handler.user_voicemail.model import UserVoicemail
-from xivo_dao.data_handler.exception import ElementNotExistsError
-from xivo_dao.data_handler.user_voicemail.exception import UserVoicemailNotExistsError
+from xivo_dao.data_handler.exception import NotFoundError
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -156,17 +155,17 @@ class TestAssociateUserVoicemail(TestUserVoicemail):
 class TestUserVoicemailGetByUserId(TestUserVoicemail):
 
     def test_get_by_user_id_no_users_or_voicemail(self):
-        self.assertRaises(ElementNotExistsError, user_voicemail_dao.get_by_user_id, 1)
+        self.assertRaises(NotFoundError, user_voicemail_dao.get_by_user_id, 1)
 
     def test_get_by_user_id_with_user_without_line_or_voicemail(self):
         user_row = self.add_user(firstname='King')
 
-        self.assertRaises(UserVoicemailNotExistsError, user_voicemail_dao.get_by_user_id, user_row.id)
+        self.assertRaises(NotFoundError, user_voicemail_dao.get_by_user_id, user_row.id)
 
     def test_get_by_user_id_with_user_without_voicemail(self):
         user_row = self.add_user_line_with_exten(firstname='King', exten='1000', context='default')
 
-        self.assertRaises(ElementNotExistsError, user_voicemail_dao.get_by_user_id, user_row.id)
+        self.assertRaises(NotFoundError, user_voicemail_dao.get_by_user_id, user_row.id)
 
     def test_get_by_user_id_with_voicemail(self):
         user_row, voicemail_row = self.create_user_and_voicemail(firstname='King', exten='1000', context='default')

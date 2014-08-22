@@ -20,7 +20,8 @@ import random
 from . import notifier
 from . import dao
 
-from xivo_dao.data_handler.exception import MissingParametersError, InvalidParametersError
+
+from xivo_dao.data_handler import errors
 from xivo_dao.data_handler.device import services as device_services
 from xivo_dao.data_handler.device import dao as device_dao
 from xivo_dao.data_handler.context import services as context_services
@@ -107,28 +108,24 @@ def _validate(line):
 def _check_missing_parameters(line):
     missing = line.missing_parameters()
     if missing:
-        raise MissingParametersError(missing)
+        raise errors.missing(*missing)
 
 
 def _check_invalid_parameters(line):
-    invalid = []
     if line.context.strip() == '':
-        invalid.append('context cannot be empty')
+        raise errors.missing('context')
     try:
         line.device_slot = int(line.device_slot)
     except ValueError:
-        invalid.append('device_slot must be numeric')
+        raise errors.wrong_type('device_slot', 'positive numeric', device_slot=line.device_slot)
     if line.device_slot <= 0:
-        invalid.append('device_slot must be greater than 0')
-
-    if len(invalid) > 0:
-        raise InvalidParametersError(invalid)
+        raise errors.wrong_type('device_slot', 'positive numeric', device_slot=line.device_slot)
 
 
 def _check_invalid_context(line):
     context = context_services.find_by_name(line.context)
     if not context:
-        raise InvalidParametersError(['context %s does not exist' % line.context])
+        raise errors.param_not_found('context', 'Context')
 
 
 def make_provisioning_id():

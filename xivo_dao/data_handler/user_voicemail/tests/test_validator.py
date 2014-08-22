@@ -18,8 +18,9 @@
 import unittest
 
 from mock import patch, Mock
-from xivo_dao.data_handler.exception import InvalidParametersError, \
-    MissingParametersError, NonexistentParametersError, ElementNotExistsError
+from xivo_dao.data_handler.exception import ResourceError
+from xivo_dao.data_handler.exception import NotFoundError
+from xivo_dao.data_handler.exception import InputError
 
 from xivo_dao.data_handler.user_line.model import UserLine
 from xivo_dao.data_handler.user_voicemail import validator
@@ -31,19 +32,19 @@ class TestValidator(unittest.TestCase):
     def test_validate_association_missing_parameters(self):
         user_voicemail = UserVoicemail()
 
-        self.assertRaises(MissingParametersError, validator.validate_association, user_voicemail)
+        self.assertRaises(InputError, validator.validate_association, user_voicemail)
 
     def test_validate_association_wrong_parameter_type_for_enabled(self):
         user_voicemail = UserVoicemail(user_id=1, voicemail_id=2, enabled=1)
 
-        self.assertRaises(InvalidParametersError, validator.validate_association, user_voicemail)
+        self.assertRaises(InputError, validator.validate_association, user_voicemail)
 
     @patch('xivo_dao.data_handler.user.dao.get')
     def test_validate_association_when_user_does_not_exist(self, user_get):
         user_voicemail = UserVoicemail(user_id=1, voicemail_id=2)
 
-        user_get.side_effect = ElementNotExistsError('user', id=user_voicemail.user_id)
-        self.assertRaises(NonexistentParametersError, validator.validate_association, user_voicemail)
+        user_get.side_effect = NotFoundError
+        self.assertRaises(InputError, validator.validate_association, user_voicemail)
         user_get.assert_called_once_with(user_voicemail.user_id)
 
     @patch('xivo_dao.data_handler.user.dao.get')
@@ -51,8 +52,8 @@ class TestValidator(unittest.TestCase):
     def test_validate_association_when_voicemail_does_not_exist(self, voicemail_get, user_get):
         user_voicemail = UserVoicemail(user_id=1, voicemail_id=2)
 
-        voicemail_get.side_effect = ElementNotExistsError('voicemail', id=user_voicemail.voicemail_id)
-        self.assertRaises(NonexistentParametersError, validator.validate_association, user_voicemail)
+        voicemail_get.side_effect = NotFoundError
+        self.assertRaises(InputError, validator.validate_association, user_voicemail)
         voicemail_get.assert_called_once_with(user_voicemail.voicemail_id)
 
     @patch('xivo_dao.data_handler.user.dao.get')
@@ -63,7 +64,7 @@ class TestValidator(unittest.TestCase):
 
         find_all_by_user_id.return_value = []
 
-        self.assertRaises(InvalidParametersError, validator.validate_association, user_voicemail)
+        self.assertRaises(ResourceError, validator.validate_association, user_voicemail)
         find_all_by_user_id.assert_called_once_with(user_voicemail.user_id)
 
     @patch('xivo_dao.data_handler.user.dao.get')
@@ -80,7 +81,7 @@ class TestValidator(unittest.TestCase):
         find_all_by_user_id.return_value = [Mock(UserLine)]
         voicemail_get_by_user_id.side_effect = Mock(UserVoicemail)
 
-        self.assertRaises(InvalidParametersError, validator.validate_association, user_voicemail)
+        self.assertRaises(ResourceError, validator.validate_association, user_voicemail)
         voicemail_get_by_user_id.assert_called_once_with(user_voicemail.user_id)
         find_all_by_user_id.assert_called_once_with(user_voicemail.user_id)
 
@@ -96,8 +97,7 @@ class TestValidator(unittest.TestCase):
         user_voicemail = UserVoicemail(user_id=1, voicemail_id=2)
 
         find_all_by_user_id.return_value = [Mock(UserLine)]
-        voicemail_get_by_user_id.side_effect = ElementNotExistsError('user_voicemail',
-                                                                     user_id=user_voicemail.user_id)
+        voicemail_get_by_user_id.side_effect = NotFoundError
 
         validator.validate_association(user_voicemail)
         user_get.assert_called_once_with(user_voicemail.user_id)
@@ -109,9 +109,9 @@ class TestValidator(unittest.TestCase):
     def test_validate_dissociation_user_not_exists(self, patch_dao):
         user_voicemail = Mock(UserVoicemail, user_id=3)
 
-        patch_dao.side_effect = ElementNotExistsError('User', id=user_voicemail.user_id)
+        patch_dao.side_effect = NotFoundError
 
-        self.assertRaises(NonexistentParametersError, validator.validate_dissociation, user_voicemail)
+        self.assertRaises(InputError, validator.validate_dissociation, user_voicemail)
 
     @patch('xivo_dao.data_handler.voicemail.dao.get')
     @patch('xivo_dao.data_handler.user.dao.get')
@@ -119,9 +119,9 @@ class TestValidator(unittest.TestCase):
         user_voicemail = Mock(UserVoicemail, user_id=3, voicemail_id=4)
 
         user_dao_get.return_value = Mock()
-        voicemail_dao_get.side_effect = ElementNotExistsError('Voicemail', id=user_voicemail.voicemail_id)
+        voicemail_dao_get.side_effect = NotFoundError
 
-        self.assertRaises(NonexistentParametersError, validator.validate_dissociation, user_voicemail)
+        self.assertRaises(InputError, validator.validate_dissociation, user_voicemail)
 
     @patch('xivo_dao.data_handler.voicemail.dao.get')
     @patch('xivo_dao.data_handler.user.dao.get')

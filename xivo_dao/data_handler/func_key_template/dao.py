@@ -19,15 +19,14 @@ from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate as FuncKeyTemplateSchema
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping as FuncKeyMappingSchema
-from xivo_dao.data_handler.exception import ElementCreationError
-from xivo_dao.data_handler.exception import ElementDeletionError
+from xivo_dao.data_handler.exception import DataError
 
 
 @daosession
 def create_private_template(session):
     template = FuncKeyTemplateSchema(private=True)
 
-    with commit_or_abort(session, ElementCreationError, 'FuncKeyTemplate'):
+    with commit_or_abort(session, DataError.on_create, 'FuncKeyTemplate'):
         session.add(template)
 
     return template.id
@@ -35,7 +34,7 @@ def create_private_template(session):
 
 @daosession
 def remove_func_key_from_templates(session, func_key):
-    with commit_or_abort(session, ElementDeletionError, 'FuncKeyTemplate'):
+    with commit_or_abort(session, DataError.on_delete, 'FuncKeyTemplate'):
         (session.query(FuncKeyMappingSchema)
          .filter(FuncKeyMappingSchema.func_key_id == func_key.id)
          .delete())
@@ -43,7 +42,7 @@ def remove_func_key_from_templates(session, func_key):
 
 @daosession
 def delete_private_template(session, template_id):
-    with commit_or_abort(session, ElementDeletionError, 'FuncKeyTemplate'):
+    with commit_or_abort(session, DataError.on_delete, 'FuncKeyTemplate'):
         (session.query(FuncKeyMappingSchema)
          .filter(FuncKeyMappingSchema.template_id == template_id)
          .delete())

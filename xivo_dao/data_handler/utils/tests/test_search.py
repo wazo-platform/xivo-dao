@@ -22,7 +22,7 @@ from hamcrest import assert_that, equal_to, contains, has_length
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.data_handler.utils.search import SearchConfig
 from xivo_dao.data_handler.utils.search import SearchSystem
-from xivo_dao.data_handler.exception import InvalidParametersError
+from xivo_dao.data_handler.exception import InputError
 
 from xivo_dao.alchemy.userfeatures import UserFeatures
 
@@ -66,17 +66,17 @@ class TestSearchSystem(DAOTestCase):
         assert_that(rows, contains(last_user_row, first_user_row))
 
     def test_given_limit_is_negative_number_then_raises_error(self):
-        self.assertRaises(InvalidParametersError,
+        self.assertRaises(InputError,
                           self.search.search,
                           self.session, {'limit': -1})
 
     def test_given_limit_is_zero_then_raises_error(self):
-        self.assertRaises(InvalidParametersError,
+        self.assertRaises(InputError,
                           self.search.search,
                           self.session, {'limit': 0})
 
     def test_given_skip_is_negative_number_then_raises_error(self):
-        self.assertRaises(InvalidParametersError,
+        self.assertRaises(InputError,
                           self.search.search,
                           self.session, {'skip': -1})
 
@@ -149,9 +149,7 @@ class TestSearchConfig(unittest.TestCase):
 
         config = SearchConfig(table=table, columns={}, default_sort='nothing')
 
-        self.assertRaisesRegexp(InvalidParametersError,
-                                "Invalid parameters: ordering column 'toto' does not exist",
-                                config.column_for_sorting, 'toto')
+        self.assertRaises(InputError, config.column_for_sorting, 'toto')
 
     def test_given_sort_column_does_not_exist_when_sorting_then_raises_error(self):
         table = Mock()
@@ -160,9 +158,7 @@ class TestSearchConfig(unittest.TestCase):
                               columns={'column1': 'column1'},
                               default_sort='column1')
 
-        self.assertRaisesRegexp(InvalidParametersError,
-                                "Invalid parameters: ordering column 'column2' does not exist",
-                                config.column_for_sorting, 'column2')
+        self.assertRaises(InputError, config.column_for_sorting, 'column2')
 
     def test_given_list_of_search_columns_then_returns_only_columns_for_searching(self):
         table = Mock()

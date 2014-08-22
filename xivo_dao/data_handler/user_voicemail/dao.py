@@ -20,10 +20,10 @@ from xivo_dao.alchemy.sccpdevice import SCCPDevice as SCCPDeviceSchema
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema
 
-from xivo_dao.data_handler.exception import ElementNotExistsError
+from xivo_dao.data_handler import errors
+
 from xivo_dao.data_handler.user_line import dao as user_line_dao
 from xivo_dao.data_handler.user_voicemail.model import db_converter
-from xivo_dao.data_handler.user_voicemail.exception import UserVoicemailNotExistsError
 from xivo_dao.data_handler.voicemail import dao as voicemail_dao
 
 from xivo_dao.helpers.db_manager import daosession
@@ -94,10 +94,10 @@ def get_by_user_id(session, user_id):
     row = _fetch_by_user_id(session, user_id)
 
     if not row:
-        raise ElementNotExistsError('User', id=user_id)
+        raise errors.not_found('User', id=user_id)
 
     if row.voicemail_id is None or row.voicemail_id == 0:
-        raise UserVoicemailNotExistsError.from_user_id(user_id)
+        raise errors.not_found('UserVoicemail', user_id=user_id)
 
     return db_converter.to_model(row)
 

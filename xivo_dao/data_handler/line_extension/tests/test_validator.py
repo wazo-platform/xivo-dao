@@ -25,10 +25,9 @@ from xivo_dao.data_handler.line_extension.model import LineExtension
 from xivo_dao.data_handler.user_line.model import UserLine
 from xivo_dao.data_handler.line_extension import validator
 
-from xivo_dao.data_handler.exception import ElementNotExistsError
-from xivo_dao.data_handler.exception import NonexistentParametersError
-from xivo_dao.data_handler.exception import MissingParametersError
-from xivo_dao.data_handler.exception import InvalidParametersError
+from xivo_dao.data_handler.exception import ResourceError
+from xivo_dao.data_handler.exception import NotFoundError
+from xivo_dao.data_handler.exception import InputError
 
 
 class TestValidateAssociate(unittest.TestCase):
@@ -58,7 +57,7 @@ class TestValidateModel(unittest.TestCase):
     def test_validate_model_no_parameters(self):
         line_extension = LineExtension()
 
-        self.assertRaises(MissingParametersError, validator.validate_model, line_extension)
+        self.assertRaises(InputError, validator.validate_model, line_extension)
 
 
 class TestValidateLine(unittest.TestCase):
@@ -67,9 +66,9 @@ class TestValidateLine(unittest.TestCase):
     def test_validate_line_when_no_line(self, line_get):
         line_extension = Mock(LineExtension, line_id=1)
 
-        line_get.side_effect = ElementNotExistsError('Line', id=1)
+        line_get.side_effect = NotFoundError
 
-        self.assertRaises(NonexistentParametersError, validator.validate_line, line_extension)
+        self.assertRaises(InputError, validator.validate_line, line_extension)
         line_get.assert_called_once_with(line_extension.line_id)
 
     @patch('xivo_dao.data_handler.line.dao.get')
@@ -88,9 +87,9 @@ class TestValidateExtension(unittest.TestCase):
     def test_validate_extension_when_no_extension(self, extension_get):
         line_extension = Mock(LineExtension, line_id=1, extension_id=2)
 
-        extension_get.side_effect = ElementNotExistsError('Extension', id=2)
+        extension_get.side_effect = NotFoundError
 
-        self.assertRaises(NonexistentParametersError, validator.validate_extension, line_extension)
+        self.assertRaises(InputError, validator.validate_extension, line_extension)
         extension_get.assert_called_once_with(line_extension.extension_id)
 
     @patch('xivo_dao.data_handler.extension.dao.get')
@@ -133,7 +132,7 @@ class TestValidateContextType(unittest.TestCase):
         line_extension = Mock(LineExtension, extension_id=1)
         context_get_by_extension_id.return_value = Mock(Context, type='others')
 
-        self.assertRaises(InvalidParametersError, validator.validate_context_type_on_association, line_extension)
+        self.assertRaises(ResourceError, validator.validate_context_type_on_association, line_extension)
 
 
 class TestValidateLineNotAssociatedToExtension(unittest.TestCase):
@@ -144,7 +143,7 @@ class TestValidateLineNotAssociatedToExtension(unittest.TestCase):
 
         find_by_line_id.return_value = Mock()
 
-        self.assertRaises(InvalidParametersError, validator.validate_line_not_associated_to_extension, line_extension)
+        self.assertRaises(ResourceError, validator.validate_line_not_associated_to_extension, line_extension)
         find_by_line_id.assert_called_once_with(line_extension.line_id)
 
     @patch('xivo_dao.data_handler.line_extension.dao.find_by_line_id')
@@ -164,7 +163,7 @@ class TestValidateAssociatedToUser(unittest.TestCase):
         find_all_by_line_id.return_value = None
         line_extension = Mock(LineExtension, line_id=1)
 
-        self.assertRaises(InvalidParametersError, validator.validate_associated_to_user, line_extension)
+        self.assertRaises(ResourceError, validator.validate_associated_to_user, line_extension)
 
     @patch('xivo_dao.data_handler.user_line.dao.find_all_by_line_id')
     def test_given_user_associated_to_line_then_validation_passes(self, find_all_by_line_id):
@@ -229,7 +228,7 @@ class TestValidateAssociated(unittest.TestCase):
 
         line_extension = Mock(LineExtension, line_id=1, extension_id=2)
 
-        self.assertRaises(InvalidParametersError, validator.validate_associated, line_extension)
+        self.assertRaises(ResourceError, validator.validate_associated, line_extension)
 
     def test_given_line_associated_to_internal_extension_then_validation_passes(self,
                                                                                 find_all_by_line_id,

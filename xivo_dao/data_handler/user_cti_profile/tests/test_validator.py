@@ -18,8 +18,9 @@
 import unittest
 
 from mock import patch
-from xivo_dao.data_handler.exception import ElementNotExistsError, NonexistentParametersError, \
-    ElementEditionError
+from xivo_dao.data_handler.exception import ResourceError
+from xivo_dao.data_handler.exception import NotFoundError
+from xivo_dao.data_handler.exception import InputError
 
 from xivo_dao.data_handler.user_cti_profile import validator
 from xivo_dao.data_handler.user_cti_profile.model import UserCtiProfile
@@ -38,18 +39,18 @@ class TestUserCtiProfileValidator(unittest.TestCase):
     @patch('xivo_dao.data_handler.user.dao.get')
     def test_validate_edition_unexisting_user(self, patch_get_user, patch_get_profile):
         user_cti_profile = UserCtiProfile(user_id=1, cti_profile_id=2, enabled=True)
-        patch_get_user.side_effect = ElementNotExistsError('user')
+        patch_get_user.side_effect = NotFoundError
 
-        self.assertRaises(ElementNotExistsError, validator.validate_edit, user_cti_profile)
+        self.assertRaises(InputError, validator.validate_edit, user_cti_profile)
         patch_get_user.assert_called_with(user_cti_profile.user_id)
 
     @patch('xivo_dao.data_handler.cti_profile.dao.get')
     @patch('xivo_dao.data_handler.user.dao.get')
     def test_validate_edition_unexisting_profile(self, patch_get_user, patch_get_cti_profile):
         user_cti_profile = UserCtiProfile(user_id=1, cti_profile_id=2, enabled=True)
-        patch_get_cti_profile.side_effect = ElementNotExistsError('cti_profile')
+        patch_get_cti_profile.side_effect = NotFoundError
 
-        self.assertRaises(NonexistentParametersError, validator.validate_edit, user_cti_profile)
+        self.assertRaises(InputError, validator.validate_edit, user_cti_profile)
         patch_get_cti_profile.assert_called_with(user_cti_profile.cti_profile_id)
 
     @patch('xivo_dao.data_handler.cti_profile.dao.get')
@@ -66,4 +67,4 @@ class TestUserCtiProfileValidator(unittest.TestCase):
         user_cti_profile = UserCtiProfile(user_id=1, cti_profile_id=2, enabled=True)
         patch_get_user.return_value = User(id=1, username=None, password=None)
 
-        self.assertRaises(ElementEditionError, validator.validate_edit, user_cti_profile)
+        self.assertRaises(ResourceError, validator.validate_edit, user_cti_profile)

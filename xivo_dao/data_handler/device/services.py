@@ -22,11 +22,12 @@ from . import notifier
 
 from urllib2 import URLError
 
+from xivo_dao.data_handler import errors
 from xivo_dao.helpers import provd_connector
 from xivo_dao.data_handler.line_extension import dao as line_extension_dao
 from xivo_dao.data_handler.extension import dao as extension_dao
 from xivo_dao.data_handler.line import dao as line_dao
-from xivo_dao.data_handler.exception import InvalidParametersError, ProvdError
+from xivo_dao.data_handler.exception import DataError
 from xivo_dao.data_handler.device import provd_converter
 
 
@@ -49,13 +50,13 @@ def search(**parameters):
 
 def _validate_skip(skip):
     if not isinstance(skip, int) or skip < 0:
-        raise InvalidParametersError(["skip must be a positive number"])
+        raise errors.wrong_type('skip', 'positive number', skip=skip)
     return int(skip)
 
 
 def _validate_limit(limit):
     if not (isinstance(limit, int) and limit > 0):
-        raise InvalidParametersError(["limit must be a positive number"])
+        raise errors.wrong_type('limit', 'positive number', limit=limit)
     return int(limit)
 
 
@@ -93,7 +94,7 @@ def rebuild_device_config(device):
         for line in lines_device:
             build_line_for_device(device, line)
     except Exception as e:
-        raise ProvdError('error while rebuilding config device.', e)
+        raise DataError.on_action('associate', 'LineDevice', e)
 
 
 def build_line_for_device(device, line):
@@ -116,7 +117,7 @@ def remove_line_from_device(device, line):
         elif line.protocol == 'sip':
             _remove_line_from_device_sip(device, line)
     except URLError as e:
-        raise ProvdError('error during remove line %s from device %s' % (line.device_slot, device.id), e)
+        raise DataError.on_action('dissociate', 'LineDevice', e)
 
 
 def _remove_line_from_device_sccp(device):
@@ -141,7 +142,7 @@ def remove_all_line_from_device(device):
         provd_converter.reset_config(config)
         provd_config_manager.update(config)
     except URLError as e:
-        raise ProvdError('error during remove all lines from device %s' % (device.id), e)
+        raise DataError.on_action('dissociate', 'LineDevice', e)
 
 
 def reset_to_autoprov(device):
@@ -152,7 +153,7 @@ def reset_to_autoprov(device):
         provd_device.pop('options', None)
         provd_device_manager.update(provd_device)
     except Exception as e:
-        raise ProvdError('error while synchronize device.', e)
+        raise DataError.on_action('reset to autoprov', 'Device', e)
     else:
         remove_all_line_from_device(device)
         line_dao.reset_device(device.id)
@@ -163,4 +164,4 @@ def synchronize(device):
         provd_device_manager = provd_connector.device_manager()
         provd_device_manager.synchronize(device.id)
     except Exception as e:
-        raise ProvdError('error while reset to autoprov.', e)
+        raise DataError.on_action('synchronize', 'Device', e)

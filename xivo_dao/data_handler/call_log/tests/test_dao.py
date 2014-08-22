@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from datetime import datetime, timedelta
-from hamcrest import *
+from hamcrest import assert_that, equal_to, has_length, contains_inanyorder, has_property, contains, all_of
 from mock import Mock, patch
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -24,7 +24,7 @@ from xivo_dao.alchemy.call_log import CallLog as CallLogSchema
 from xivo_dao.alchemy.cel import CEL as CELSchema
 from xivo_dao.data_handler.call_log import dao as call_log_dao
 from xivo_dao.data_handler.call_log.model import CallLog
-from xivo_dao.data_handler.exception import ElementCreationError, ElementDeletionError
+from xivo_dao.data_handler.exception import DataError
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -205,7 +205,7 @@ class TestCallLogDAO(DAOTestCase):
 
         call_logs = (self._mock_call_log(), self._mock_call_log())
 
-        self.assertRaises(ElementCreationError, call_log_dao.create_from_list, call_logs)
+        self.assertRaises(DataError, call_log_dao.create_from_list, call_logs)
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
 
@@ -224,7 +224,7 @@ class TestCallLogDAO(DAOTestCase):
         session.commit.side_effect = SQLAlchemyError()
         session_init.return_value = session
 
-        self.assertRaises(ElementDeletionError, call_log_dao.delete_all)
+        self.assertRaises(DataError, call_log_dao.delete_all)
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
 
@@ -244,7 +244,7 @@ class TestCallLogDAO(DAOTestCase):
         session.commit.side_effect = SQLAlchemyError()
         session_init.return_value = session
 
-        self.assertRaises(ElementDeletionError, call_log_dao.delete_from_list, [1, 2])
+        self.assertRaises(DataError, call_log_dao.delete_from_list, [1, 2])
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
 

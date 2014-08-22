@@ -17,11 +17,10 @@
 
 from urllib2 import HTTPError
 
+from xivo_dao.data_handler import errors
 from xivo_dao.data_handler.device.model import DeviceOrdering
 from xivo_dao.data_handler.device import provd_converter
-from xivo_dao.data_handler.exception import ElementNotExistsError, \
-    ElementDeletionError, ElementCreationError, InvalidParametersError, \
-    ElementEditionError
+from xivo_dao.data_handler.exception import DataError
 from xivo_dao.helpers import provd_connector
 from xivo_dao.data_handler.utils.search import SearchResult
 
@@ -31,7 +30,7 @@ DEFAULT_ORDER = [DeviceOrdering.ip, DeviceOrdering.mac]
 def get(device_id):
     device, config = fetch_device_and_config(device_id)
     if not device:
-        raise ElementNotExistsError('device', id=device_id)
+        raise errors.not_found('Device', id=device_id)
     return provd_converter.to_model(device, config)
 
 
@@ -58,7 +57,7 @@ def _get_config_from_provd(config_id):
         return config_manager.get(config_id)
     except HTTPError as e:
         if e.code == 404:
-            raise ElementNotExistsError('device config', id=config_id)
+            raise errors.not_found('Device', config=config_id)
         raise
 
 
@@ -148,7 +147,7 @@ def _convert_provd_parameters(order=None, direction=None):
 
 def _convert_order_and_direction(order=None, direction=None):
     if direction and not order:
-        raise InvalidParametersError("cannot use a direction without an order")
+        raise errors.missing('order')
 
     if not order:
         return None
@@ -174,10 +173,10 @@ def _delete_provd_device(device):
         provd_device_manager.remove(device.id)
     except HTTPError as e:
         if e.code == 404:
-            raise ElementNotExistsError('Device', id=device.id)
+            raise errors.not_found('Device', id=device.id)
         raise e
     except Exception as e:
-        raise ElementDeletionError('Device', e)
+        raise DataError.on_delete('Device', e)
 
 
 def _delete_provd_config(device):
@@ -205,7 +204,7 @@ def _create_provd_device(device_id, provd_device):
         device_manager.update(provd_device)
     except Exception as e:
         device_manager.remove(device_id)
-        raise ElementCreationError('device', e)
+        raise DataError.on_create('Device', e)
 
 
 def _create_provd_config(device_id, provd_config):
@@ -216,7 +215,7 @@ def _create_provd_config(device_id, provd_config):
     except Exception as e:
         device_manager = provd_connector.device_manager()
         device_manager.remove(device_id)
-        raise ElementCreationError('device', e)
+        raise DataError.on_create('Device', e)
 
 
 def generate_device_id():
@@ -224,7 +223,7 @@ def generate_device_id():
     try:
         return device_manager.add({})
     except Exception as e:
-        raise ElementCreationError('device', e)
+        raise DataError.on_create('Device', e)
 
 
 def edit(device):
@@ -244,7 +243,7 @@ def _update_provd_config(provd_config):
     try:
         config_manager.update(provd_config)
     except Exception as e:
-        raise ElementEditionError('device', e)
+        raise DataError.on_edit('Device', e)
 
 
 def _update_provd_device(provd_device):
@@ -252,10 +251,11 @@ def _update_provd_device(provd_device):
     try:
         device_manager.update(provd_device)
     except Exception as e:
-        raise ElementEditionError('device', e)
+        raise DataError.on_edit('Device', e)
 
 
 def mac_exists(mac):
+    mac = mac.lower()
     device_manager = provd_connector.device_manager()
     existing_macs = device_manager.find({'mac': mac})
     return len(existing_macs) > 0

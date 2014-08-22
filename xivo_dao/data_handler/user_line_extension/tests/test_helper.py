@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.data_handler.exception import InvalidParametersError
+from xivo_dao.data_handler.exception import ResourceError
 from xivo_dao.data_handler.line.model import LineSIP
 
 from mock import Mock, patch, sentinel
@@ -38,6 +38,6 @@ class TestULEHelper(TestCase):
     def test_validate_no_device_when_device_associated(self, line_get):
         line_get.return_value = Mock(LineSIP, device_id='1234abcdefghijklmnopquesrtlkjh')
 
-        self.assertRaises(InvalidParametersError, helper.validate_no_device, sentinel.line_id)
+        self.assertRaises(ResourceError, helper.validate_no_device, sentinel.line_id)
 
         line_get.assert_called_once_with(sentinel.line_id)

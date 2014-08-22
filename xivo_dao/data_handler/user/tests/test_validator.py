@@ -19,11 +19,12 @@ import unittest
 
 from mock import patch, Mock, sentinel
 
-from xivo_dao.data_handler.exception import InvalidParametersError
-from xivo_dao.data_handler.exception import MissingParametersError
-from xivo_dao.data_handler.exception import ElementDeletionError
+from xivo_dao.data_handler.exception import ResourceError
+from xivo_dao.data_handler.exception import InputError
 from xivo_dao.data_handler.user import validator
 from xivo_dao.data_handler.user.model import User
+from xivo_dao.data_handler.user_line.model import UserLine
+from xivo_dao.data_handler.user_voicemail.model import UserVoicemail
 
 
 class TestUserValidator(unittest.TestCase):
@@ -61,14 +62,14 @@ class TestValidateModel(unittest.TestCase):
     def test_validate_model_no_properties(self):
         user = User()
 
-        self.assertRaises(MissingParametersError, validator.validate_model, user)
+        self.assertRaises(InputError, validator.validate_model, user)
 
     def test_validate_model_empty_firstname(self):
         firstname = ''
 
         user = User(firstname=firstname)
 
-        self.assertRaises(InvalidParametersError, validator.validate_model, user)
+        self.assertRaises(InputError, validator.validate_model, user)
 
     def test_validate_model_invalid_password(self):
         password = 'ewr'
@@ -76,7 +77,7 @@ class TestValidateModel(unittest.TestCase):
         user = User(firstname='toto',
                     password=password)
 
-        self.assertRaises(InvalidParametersError, validator.validate_model, user)
+        self.assertRaises(InputError, validator.validate_model, user)
 
     def test_validate_model_valid_password(self):
         password = 'ewree'
@@ -90,13 +91,13 @@ class TestValidateModel(unittest.TestCase):
         user = User(firstname='toto',
                     mobile_phone_number='mobilephonenumber')
 
-        self.assertRaises(InvalidParametersError, validator.validate_model, user)
+        self.assertRaises(InputError, validator.validate_model, user)
 
     def test_validate_model_invalid_mobilephonenumber_alphanum(self):
         user = User(firstname='toto',
                     mobile_phone_number='abcd1234')
 
-        self.assertRaises(InvalidParametersError, validator.validate_model, user)
+        self.assertRaises(InputError, validator.validate_model, user)
 
     def test_validate_model_basic_mobilephonenumber(self):
         user = User(firstname='toto',
@@ -140,12 +141,11 @@ class TestValidateNotAssociatedToLine(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.user_line.dao.find_all_by_user_id')
     def test_when_associated_to_line(self, find_all_by_user_id):
-        find_all_by_user_id.return_value = [Mock(User)]
+        find_all_by_user_id.return_value = [Mock(UserLine, user_id=1, line_id=2)]
 
         user = Mock(User, id=1)
 
-        self.assertRaisesRegexp(ElementDeletionError, "Error while deleting User: user still associated to a line",
-                                validator.validate_not_associated_to_line, user)
+        self.assertRaises(ResourceError, validator.validate_not_associated_to_line, user)
 
         find_all_by_user_id.assert_called_once_with(user.id)
 
@@ -177,12 +177,11 @@ class TestValidateNotAssociatedToVoicemail(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.user_voicemail.dao.find_by_user_id')
     def test_when_associated_to_voicemail(self, find_by_user_id):
-        find_by_user_id.return_value = Mock(User)
+        find_by_user_id.return_value = Mock(UserVoicemail, user_id=1, voicemail_id=2)
 
         user = Mock(User, id=1)
 
-        self.assertRaisesRegexp(ElementDeletionError, "Error while deleting User: user still associated to a voicemail",
-                                validator.validate_not_associated_to_voicemail, user)
+        self.assertRaises(ResourceError, validator.validate_not_associated_to_voicemail, user)
 
         find_by_user_id.assert_called_once_with(user.id)
 
@@ -197,7 +196,7 @@ class TestValidatePrivateTemplateIDIsNotSet(unittest.TestCase):
     def test_when_template_id_is_set(self):
         user = Mock(User, private_template_id=12)
 
-        self.assertRaises(InvalidParametersError, validator.validate_private_template_id_is_not_set, user)
+        self.assertRaises(InputError, validator.validate_private_template_id_is_not_set, user)
 
 
 @patch('xivo_dao.data_handler.user.dao.get', return_value=Mock(User, private_template_id=sentinel.template_id))
@@ -211,4 +210,4 @@ class TestValidatePrivateTemplateIDDoesNotChange(unittest.TestCase):
     def test_when_template_id_does_change(self, get_user):
         user = Mock(User, id=1, private_template_id=sentinel.template_id2)
 
-        self.assertRaises(InvalidParametersError, validator.validate_private_template_id_does_not_change, user)
+        self.assertRaises(InputError, validator.validate_private_template_id_does_not_change, user)

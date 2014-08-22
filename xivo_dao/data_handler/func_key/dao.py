@@ -15,10 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.data_handler.exception import ElementNotExistsError
-from xivo_dao.data_handler.exception import ElementCreationError
-from xivo_dao.data_handler.exception import ElementDeletionError
+from xivo_dao.data_handler import errors
 from xivo_dao.data_handler.utils.search import SearchResult
+from xivo_dao.data_handler.exception import DataError
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.data_handler.func_key.model import db_converter, QueryHelper
@@ -49,7 +48,7 @@ def get(session, func_key_id):
     row = query.first()
 
     if not row:
-        raise ElementNotExistsError('FuncKey')
+        raise errors.not_found('FuncKey', id=func_key_id)
 
     return db_converter.to_model(row)
 
@@ -57,13 +56,13 @@ def get(session, func_key_id):
 @daosession
 def create(session, func_key):
     func_key_row = db_converter.create_func_key_row(func_key)
-    with commit_or_abort(session, ElementCreationError, 'FuncKey'):
+    with commit_or_abort(session, DataError.on_create, 'FuncKey'):
         session.add(func_key_row)
 
     func_key.id = func_key_row.id
 
     destination_row = db_converter.create_destination_row(func_key)
-    with commit_or_abort(session, ElementCreationError, 'FuncKey'):
+    with commit_or_abort(session, DataError.on_create, 'FuncKey'):
         session.add(destination_row)
 
     return func_key
@@ -76,6 +75,6 @@ def delete(session, func_key):
     destination_query = helper.delete_destination(func_key.destination,
                                                   func_key.destination_id)
 
-    with commit_or_abort(session, ElementDeletionError, 'FuncKey'):
+    with commit_or_abort(session, DataError.on_delete, 'FuncKey'):
         destination_query.delete()
         func_key_query.delete()

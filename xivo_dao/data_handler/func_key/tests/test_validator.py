@@ -20,10 +20,8 @@ from mock import patch, Mock
 from xivo_dao.tests.test_case import TestCase
 from xivo_dao.data_handler.func_key import validator
 from xivo_dao.data_handler.func_key.model import FuncKey
-from xivo_dao.data_handler.exception import InvalidParametersError
-from xivo_dao.data_handler.exception import MissingParametersError
-from xivo_dao.data_handler.exception import ElementNotExistsError
-from xivo_dao.data_handler.exception import NonexistentParametersError
+from xivo_dao.data_handler.exception import InputError
+from xivo_dao.data_handler.exception import NotFoundError
 
 
 class TestFuncKeyValidateCreate(TestCase):
@@ -46,10 +44,7 @@ class TestFuncKeyValidateMissingParameters(TestCase):
     def test_when_no_parameters_then_raises_error(self):
         func_key = FuncKey()
 
-        self.assertRaisesRegexp(MissingParametersError,
-                                "Missing parameters: type,destination,destination_id",
-                                validator.validate_missing_parameters,
-                                func_key)
+        self.assertRaises(InputError, validator.validate_missing_parameters, func_key)
 
     def test_when_all_parameters_then_validation_passes(self):
         func_key = FuncKey(type='speeddial',
@@ -66,10 +61,7 @@ class TestFuncKeyValidateType(TestCase):
         func_key = Mock(FuncKey, type='superdupertype')
         dao_find_type_for_name.return_value = None
 
-        self.assertRaisesRegexp(InvalidParametersError,
-                                "Invalid parameters: type superdupertype does not exist",
-                                validator.validate_type,
-                                func_key)
+        self.assertRaises(InputError, validator.validate_type, func_key)
         dao_find_type_for_name.assert_called_once_with(func_key.type)
 
     def test_when_find_type_for_name_then_validation_passes(self, dao_find_type_for_name):
@@ -101,10 +93,7 @@ class TestFuncKeyValidateDestinationType(TestCase):
         find_destination_type_for_name.return_value = None
         func_key = Mock(FuncKey, destination='superdestination')
 
-        self.assertRaisesRegexp(InvalidParametersError,
-                                "Invalid parameters: destination of type superdestination does not exist",
-                                validator.validate_destination_type,
-                                func_key)
+        self.assertRaises(InputError, validator.validate_destination_type, func_key)
         find_destination_type_for_name.assert_called_once_with(func_key.destination)
 
     def test_when_find_destination_type_for_name_then_validation_passes(self,
@@ -120,13 +109,10 @@ class TestFuncKeyValidateDestinationType(TestCase):
 class TestFuncKeyDestinationExists(TestCase):
 
     def test_when_user_destination_does_not_exist_then_raises_error(self, user_dao_get):
-        user_dao_get.side_effect = ElementNotExistsError('User')
+        user_dao_get.side_effect = NotFoundError
         func_key = Mock(FuncKey, destination='user', destination_id=1)
 
-        self.assertRaisesRegexp(NonexistentParametersError,
-                                "Nonexistent parameters: user 1 does not exist",
-                                validator.validate_destination_exists,
-                                func_key)
+        self.assertRaises(InputError, validator.validate_destination_exists, func_key)
         user_dao_get.assert_called_once_with(func_key.destination_id)
 
     def test_when_user_destination_exists_then_validation_passes(self, user_dao_get):

@@ -17,10 +17,9 @@
 
 import unittest
 
-from hamcrest import *
-from hamcrest.core import equal_to
+from hamcrest import assert_that, equal_to, all_of, has_property, has_entries, has_length
 from xivo_dao.helpers.new_model import NewModel
-from xivo_dao.data_handler.exception import InvalidParametersError
+from xivo_dao.data_handler.exception import InputError
 
 
 class StubModel(NewModel):
@@ -93,7 +92,7 @@ class TestNewModel(unittest.TestCase):
         }))
 
     def test_invalid_parameters(self):
-        self.assertRaises(InvalidParametersError, StubModel, blabla='HOWDY')
+        self.assertRaises(InputError, StubModel, blabla='HOWDY')
 
     def test_missing_parameters(self):
         model = StubModel(field2='value2')

@@ -17,8 +17,8 @@
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy import QueueMember as QueueMemberSchema
 from xivo_dao.alchemy import QueueFeatures as QueueFeaturesSchema
-from xivo_dao.data_handler.queue_members.exception import QueueMemberNotExistsError
 from xivo_dao.data_handler.queue_members.model import db_converter
+from xivo_dao.data_handler import errors
 
 
 @daosession
@@ -29,7 +29,7 @@ def get_by_queue_id_and_agent_id(session, queue_id, agent_id):
                   .filter(QueueMemberSchema.userid == agent_id)
                   .filter(QueueFeaturesSchema.id == queue_id)).first()
     if not row:
-        raise QueueMemberNotExistsError('QueueMember', agent_id=agent_id, queue_id=queue_id)
+        raise errors.not_found('QueueMember', agent_id=agent_id, queue_id=queue_id)
     result = db_converter.to_model(row)
     result.queue_id = queue_id
     return result

@@ -20,7 +20,7 @@ from collections import namedtuple
 import sqlalchemy as sa
 from sqlalchemy import sql
 
-from xivo_dao.data_handler.exception import InvalidParametersError
+from xivo_dao.data_handler import errors
 
 SearchResult = namedtuple('SearchResult', ['total', 'items'])
 
@@ -48,7 +48,7 @@ class SearchConfig(object):
         sort_columns = self._sort or self._columns.keys()
 
         if name not in sort_columns:
-            raise InvalidParametersError(["ordering column '%s' does not exist" % name])
+            raise errors.invalid_ordering(name)
 
         return name
 
@@ -92,19 +92,14 @@ class SearchSystem(object):
         return new_params
 
     def _validate_parameters(self, parameters):
-        invalid = []
-
         if parameters['skip'] < 0:
-            invalid.append('skip must be a positive number or zero')
+            raise errors.wrong_type('skip', 'positive number')
 
         if parameters['limit'] is not None and parameters['limit'] <= 0:
-            invalid.append('limit must be a positive number')
+            raise errors.wrong_type('limit', 'positive number')
 
         if parameters['direction'] not in self.SORT_DIRECTIONS.keys():
-            invalid.append("direction must be 'asc' or 'desc'")
-
-        if invalid:
-            raise InvalidParametersError(invalid)
+            raise errors.invalid_direction(parameters['direction'])
 
     def _filter(self, query, term=None):
         if not term:

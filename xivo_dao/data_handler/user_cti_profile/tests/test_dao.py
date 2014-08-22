@@ -20,8 +20,8 @@ from mock import patch, Mock
 from sqlalchemy.exc import SQLAlchemyError
 
 from xivo_dao.alchemy.cti_profile import CtiProfile as CtiProfileSchema
-from xivo_dao.data_handler.exception import ElementNotExistsError, \
-    ElementEditionError
+from xivo_dao.data_handler.exception import NotFoundError
+from xivo_dao.data_handler.exception import DataError
 from xivo_dao.data_handler.user_cti_profile import dao as user_cti_profile_dao
 from xivo_dao.data_handler.user_cti_profile.model import UserCtiProfile
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -47,7 +47,7 @@ class TestUserCtiProfile(DAOTestCase):
         assert_that(result, none())
 
     def test_find_by_user_id_no_user(self):
-        self.assertRaises(ElementNotExistsError, user_cti_profile_dao.find_profile_by_userid, 123)
+        self.assertRaises(NotFoundError, user_cti_profile_dao.find_profile_by_userid, 123)
 
     def test_edit(self):
         cti_profile = CtiProfileSchema(id=2, name='Test')
@@ -79,6 +79,6 @@ class TestUserCtiProfile(DAOTestCase):
 
         user_cti_profile = UserCtiProfile(user_id=1, cti_profile_id=2)
 
-        self.assertRaises(ElementEditionError, user_cti_profile_dao.edit, user_cti_profile)
+        self.assertRaises(DataError, user_cti_profile_dao.edit, user_cti_profile)
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.data_handler.exception import InvalidParametersError
+from xivo_dao.data_handler import errors
 
 
 class NewModel(object):
@@ -31,7 +31,7 @@ class NewModel(object):
         invalid = self.invalid_parameters(parameters)
 
         if len(invalid) > 0:
-            raise InvalidParametersError(invalid)
+            raise errors.missing(*invalid)
 
     def __eq__(self, other):
         class_name = self.__class__.__name__

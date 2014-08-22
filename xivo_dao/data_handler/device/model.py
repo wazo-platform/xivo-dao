@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from xivo_dao.data_handler import errors
 from xivo_dao.helpers.new_model import NewModel
-from xivo_dao.data_handler.exception import InvalidParametersError
 
 
 class Device(NewModel):
@@ -76,9 +76,9 @@ class DeviceOrdering(object):
     @classmethod
     def validate_order(cls, order):
         if order not in cls.all_columns():
-            raise InvalidParametersError(["ordering column '%s' does not exist" % order])
+            raise errors.invalid_ordering(order)
 
     @classmethod
     def validate_direction(cls, direction):
         if direction not in cls.directions():
-            raise InvalidParametersError(["direction must be 'asc' or 'desc'"])
+            raise errors.invalid_direction(direction)

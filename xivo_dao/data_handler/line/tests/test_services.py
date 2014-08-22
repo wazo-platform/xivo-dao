@@ -21,9 +21,7 @@ from mock import patch, Mock
 
 from xivo_dao.data_handler.line.model import LineSIP, LineOrdering, Line
 from xivo_dao.data_handler.line import services as line_services
-from xivo_dao.data_handler.exception import MissingParametersError, \
-    ElementCreationError, ElementNotExistsError, InvalidParametersError, \
-    ElementEditionError
+from xivo_dao.data_handler.exception import InputError
 from xivo_dao.data_handler.device.model import Device
 from xivo_dao.data_handler.user.model import User
 
@@ -42,12 +40,6 @@ class TestLineServices(unittest.TestCase):
         mock_line_get.assert_called_once_with(line_id)
         self.assertEquals(result, line)
 
-    @patch('xivo_dao.data_handler.line.dao.get')
-    def test_get_not_exist(self, mock_line_get):
-        mock_line_get.side_effect = ElementNotExistsError('Line')
-
-        self.assertRaises(ElementNotExistsError, line_services.get, 1)
-
     @patch('xivo_dao.data_handler.line.dao.get_by_user_id')
     def test_get_by_user_id(self, mock_get_by_user_id):
         user_id = 1
@@ -59,12 +51,6 @@ class TestLineServices(unittest.TestCase):
 
         mock_get_by_user_id.assert_called_once_with(user_id)
         self.assertEquals(result, line)
-
-    @patch('xivo_dao.data_handler.line.dao.get_by_user_id')
-    def test_get_by_user_id_not_exist(self, mock_get_by_user_id):
-        mock_get_by_user_id.side_effect = ElementNotExistsError('Line')
-
-        self.assertRaises(ElementNotExistsError, line_services.get_by_user_id, 1)
 
     @patch('xivo_dao.data_handler.line.dao.get_by_number_context')
     def test_get_by_number_context(self, mock_get_by_number_context):
@@ -78,12 +64,6 @@ class TestLineServices(unittest.TestCase):
 
         mock_get_by_number_context.assert_called_once_with(number, context)
         self.assertEquals(result, line)
-
-    @patch('xivo_dao.data_handler.line.dao.get_by_number_context')
-    def test_get_by_number_context_not_exist(self, mock_get_by_number_context):
-        mock_get_by_number_context.side_effect = ElementNotExistsError('Line')
-
-        self.assertRaises(ElementNotExistsError, line_services.get_by_number_context, '1000', 'default')
 
     @patch('xivo_dao.data_handler.line.dao.find_all')
     def test_find_all(self, line_dao_find_all):
@@ -203,7 +183,7 @@ class TestLineServices(unittest.TestCase):
     def test_create_with_missing_attributes(self, line_dao_create, make_provisioning_id):
         line = LineSIP(name='lpko')
 
-        self.assertRaises(MissingParametersError, line_services.create, line)
+        self.assertRaises(InputError, line_services.create, line)
         self.assertEquals(make_provisioning_id.call_count, 0)
 
     @patch('xivo_dao.data_handler.line.services.make_provisioning_id')
@@ -215,8 +195,8 @@ class TestLineServices(unittest.TestCase):
         line2 = LineSIP(context='default',
                         device_slot='')
 
-        self.assertRaises(InvalidParametersError, line_services.create, line1)
-        self.assertRaises(InvalidParametersError, line_services.create, line2)
+        self.assertRaises(InputError, line_services.create, line1)
+        self.assertRaises(InputError, line_services.create, line2)
         self.assertEquals(make_provisioning_id.call_count, 0)
 
     @patch('xivo_dao.data_handler.line.services.make_provisioning_id')
@@ -231,9 +211,9 @@ class TestLineServices(unittest.TestCase):
         line3 = LineSIP(context='default',
                         device_slot='abcd')
 
-        self.assertRaises(InvalidParametersError, line_services.create, line1)
-        self.assertRaises(InvalidParametersError, line_services.create, line2)
-        self.assertRaises(InvalidParametersError, line_services.create, line3)
+        self.assertRaises(InputError, line_services.create, line1)
+        self.assertRaises(InputError, line_services.create, line2)
+        self.assertRaises(InputError, line_services.create, line3)
         self.assertEquals(make_provisioning_id.call_count, 0)
 
     @patch('xivo_dao.data_handler.context.services.find_by_name')
@@ -244,28 +224,8 @@ class TestLineServices(unittest.TestCase):
                        device_slot=1)
         find_context_by_name.return_value = None
 
-        self.assertRaises(InvalidParametersError, line_services.create, line)
+        self.assertRaises(InputError, line_services.create, line)
         self.assertEquals(make_provisioning_id.call_count, 0)
-
-    @patch('xivo_dao.data_handler.context.services.find_by_name', Mock(return_value=Mock()))
-    @patch('xivo_dao.data_handler.line.services.make_provisioning_id')
-    @patch('xivo_dao.data_handler.line.dao.create')
-    def test_create_with_error_from_dao(self, line_dao_create, make_provisioning_id):
-        name = 'line'
-        context = 'toto'
-        secret = '1234'
-
-        line = LineSIP(name=name,
-                       context=context,
-                       username=name,
-                       secret=secret,
-                       device_slot=1)
-
-        error = Exception("message")
-        line_dao_create.side_effect = ElementCreationError(error, '')
-
-        self.assertRaises(ElementCreationError, line_services.create, line)
-        make_provisioning_id.assert_called_with()
 
     @patch('xivo_dao.data_handler.context.services.find_by_name', Mock(return_value=Mock()))
     @patch('xivo_dao.data_handler.device.services.rebuild_device_config')
@@ -305,37 +265,9 @@ class TestLineServices(unittest.TestCase):
         line = LineSIP(context='',
                        device_slot=1)
 
-        self.assertRaises(InvalidParametersError, line_services.edit, line)
+        self.assertRaises(InputError, line_services.edit, line)
         self.assertEquals(line_dao_edit.call_count, 0)
         self.assertEquals(device_services_get.call_count, 0)
-        self.assertEquals(device_services_rebuild_device_config.call_count, 0)
-        self.assertEquals(line_notifier_edited.call_count, 0)
-
-    @patch('xivo_dao.data_handler.context.services.find_by_name', Mock(return_value=Mock()))
-    @patch('xivo_dao.data_handler.device.services.rebuild_device_config')
-    @patch('xivo_dao.data_handler.device.services.get')
-    @patch('xivo_dao.data_handler.line.notifier.edited')
-    @patch('xivo_dao.data_handler.line.dao.edit')
-    def test_edit_with_error_from_dao(self,
-                                      line_dao_edit,
-                                      line_notifier_edited,
-                                      device_dao_find,
-                                      device_services_rebuild_device_config):
-        name = 'line'
-        context = 'toto'
-        secret = '1234'
-
-        line = LineSIP(name=name,
-                       context=context,
-                       username=name,
-                       secret=secret,
-                       device_slot=1)
-
-        error = Exception("message")
-        line_dao_edit.side_effect = ElementEditionError(error, '')
-
-        self.assertRaises(ElementEditionError, line_services.edit, line)
-        self.assertEquals(device_dao_find.call_count, 0)
         self.assertEquals(device_services_rebuild_device_config.call_count, 0)
         self.assertEquals(line_notifier_edited.call_count, 0)
 

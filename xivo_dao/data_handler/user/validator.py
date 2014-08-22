@@ -16,10 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 import re
 
-from xivo_dao.data_handler.exception import MissingParametersError
-from xivo_dao.data_handler.exception import InvalidParametersError
-from xivo_dao.data_handler.exception import ElementDeletionError
-
+from xivo_dao.data_handler import errors
 from xivo_dao.data_handler.user import dao as user_dao
 from xivo_dao.data_handler.user_line import dao as user_line_dao
 from xivo_dao.data_handler.user_voicemail import dao as user_voicemail_dao
@@ -51,19 +48,16 @@ def validate_model(user):
 def _check_missing_parameters(user):
     missing = user.missing_parameters()
     if missing:
-        raise MissingParametersError(missing)
+        raise errors.missing(*missing)
 
 
 def _check_invalid_parameters(user):
-    invalid_parameters = []
     if not user.firstname:
-        invalid_parameters.append('firstname')
+        raise errors.missing('firstname')
     if user.mobile_phone_number and not MOBILE_PHONE_NUMBER_REGEX.match(user.mobile_phone_number):
-        invalid_parameters.append('mobile_phone_number')
+        raise errors.wrong_type('mobile_phone_number', 'numeric phone number')
     if user.password is not None and len(user.password) < 4:
-        invalid_parameters.append('password')
-    if invalid_parameters:
-        raise InvalidParametersError(invalid_parameters)
+        raise errors.minimum_length('password', 4)
 
 
 def validate_user_not_associated(user):
@@ -74,7 +68,8 @@ def validate_user_not_associated(user):
 def validate_not_associated_to_line(user):
     user_lines = user_line_dao.find_all_by_user_id(user.id)
     if user_lines:
-        raise ElementDeletionError('User', 'user still associated to a line')
+        ids = tuple(ul.line_id for ul in user_lines)
+        raise errors.resource_associated('User', 'Line', line_ids=ids)
 
 
 def validate_user_exists(user):
@@ -84,15 +79,18 @@ def validate_user_exists(user):
 def validate_not_associated_to_voicemail(user):
     user_voicemail = user_voicemail_dao.find_by_user_id(user.id)
     if user_voicemail:
-        raise ElementDeletionError('User', 'user still associated to a voicemail')
+        raise errors.resource_associated('User',
+                                         'Voicemail',
+                                         user_id=user_voicemail.user_id,
+                                         voicemail_id=user_voicemail.voicemail_id)
 
 
 def validate_private_template_id_is_not_set(user):
     if user.private_template_id:
-        raise InvalidParametersError(['private_template_id'])
+        raise errors.unknown('private_template_id')
 
 
 def validate_private_template_id_does_not_change(user):
     existing_user = user_dao.get(user.id)
     if user.private_template_id != existing_user.private_template_id:
-        raise InvalidParametersError(['private_template_id'])
+        raise errors.unknown('private_template_id')
