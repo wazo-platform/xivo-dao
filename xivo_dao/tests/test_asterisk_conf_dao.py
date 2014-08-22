@@ -31,8 +31,8 @@ from xivo_dao.data_handler.func_key.tests.test_dao import TestFuncKeyDao
 
 class PickupHelperMixin(object):
 
-    _category_to_conf_map = {'member': 'callgroup',
-                             'pickup': 'pickupgroup'}
+    _category_to_conf_map = {'member': 'pickupgroup',
+                             'pickup': 'callgroup'}
 
     def _category_to_conf(self, category):
         return self._category_to_conf_map[category]
@@ -1079,8 +1079,8 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
                                                'context', context))
 
     def test_find_sip_pickup_settings(self):
-        category_to_conf_reverse_map = {'callgroup': 'member',
-                                        'pickupgroup': 'pickup'}
+        category_to_conf_reverse_map = {'pickupgroup': 'member',
+                                        'callgroup': 'pickup'}
         pickup = self.add_pickup()
 
         name1, user_id1 = self._create_user_with_usersip()

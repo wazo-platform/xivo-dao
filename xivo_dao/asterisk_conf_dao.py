@@ -475,8 +475,8 @@ def find_pickup_members(session, query_filter=None):
      ...,
     }
     '''
-    group_map = {'member': 'callgroup',
-                 'pickup': 'pickupgroup'}
+    group_map = {'member': 'pickupgroup',
+                 'pickup': 'callgroup'}
 
     res = defaultdict(lambda: defaultdict(set))
     add_member = lambda m: res[(m.protocol, m.protocolid)][group_map[m.category]].add(m.id)
@@ -557,10 +557,10 @@ def find_sip_pickup_settings(session):
         pickup_entry = pickup_members[('sip', sip_user.id)]
 
         for pickup_id in pickup_entry.get('pickupgroup', []):
-            yield sip_user.name, 'pickup', pickup_id
+            yield sip_user.name, 'member', pickup_id
 
         for pickup_id in pickup_entry.get('callgroup', []):
-            yield sip_user.name, 'member', pickup_id
+            yield sip_user.name, 'pickup', pickup_id
 
 
 @daosession
