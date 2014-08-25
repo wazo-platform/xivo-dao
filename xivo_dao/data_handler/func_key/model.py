@@ -27,6 +27,7 @@ from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser as FuncKeyDestUs
 from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup as FuncKeyDestGroupSchema
 from xivo_dao.alchemy.func_key_dest_queue import FuncKeyDestQueue as FuncKeyDestQueueSchema
 from xivo_dao.alchemy.func_key_dest_conference import FuncKeyDestConference as FuncKeyDestConferenceSchema
+from xivo_dao.alchemy.func_key_dest_forward import FuncKeyDestForward as FuncKeyDestForwardSchema
 from xivo_dao.alchemy.func_key_dest_service import FuncKeyDestService as FuncKeyDestServiceSchema
 from xivo_dao.alchemy.func_key_destination_type import FuncKeyDestinationType as FuncKeyDestinationTypeSchema
 
@@ -60,6 +61,7 @@ class QueryHelper(object):
                                         FuncKeyDestQueueSchema.queue_id,
                                         FuncKeyDestConferenceSchema.conference_id,
                                         FuncKeyDestServiceSchema.extension_id,
+                                        FuncKeyDestForwardSchema.extension_id,
                                         ).label('destination_id')
     }
 
@@ -69,6 +71,7 @@ class QueryHelper(object):
         'queue': (FuncKeyDestQueueSchema, FuncKeyDestQueueSchema.queue_id),
         'conference': (FuncKeyDestConferenceSchema, FuncKeyDestConferenceSchema.conference_id),
         'service': (FuncKeyDestServiceSchema, FuncKeyDestServiceSchema.extension_id),
+        'forward': (FuncKeyDestForwardSchema, FuncKeyDestForwardSchema.extension_id),
     }
 
     @classmethod
@@ -113,6 +116,7 @@ class QueryHelper(object):
                 .outerjoin(FuncKeyDestQueueSchema, FuncKeyDestQueueSchema.func_key_id == FuncKeySchema.id)
                 .outerjoin(FuncKeyDestConferenceSchema, FuncKeyDestConferenceSchema.func_key_id == FuncKeySchema.id)
                 .outerjoin(FuncKeyDestServiceSchema, FuncKeyDestServiceSchema.func_key_id == FuncKeySchema.id)
+                .outerjoin(FuncKeyDestForwardSchema, FuncKeyDestForwardSchema.func_key_id == FuncKeySchema.id)
                 .filter(destination_id_col != None))
 
 
@@ -138,6 +142,7 @@ class FuncKeyDbConverter(DatabaseConverter):
         'queue': (FuncKeyDestQueueSchema, 'queue_id'),
         'conference': (FuncKeyDestConferenceSchema, 'conference_id'),
         'service': (FuncKeyDestServiceSchema, 'extension_id'),
+        'forward': (FuncKeyDestForwardSchema, 'extension_id'),
     }
 
     def __init__(self):

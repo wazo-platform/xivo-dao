@@ -279,8 +279,26 @@ class TestFindExtenProgfunckeysSettings(TestFuncKeyDao):
 
         return func_key_row
 
+    def add_forward_func_key(self, exten, typeval, number):
+        extension_row = self.add_extension(context='xivo-features',
+                                           exten=exten,
+                                           type='extenfeatures',
+                                           typeval=typeval)
+        func_key_row, destination_row = self.add_forward(extension_row.id, number)
+
+        return func_key_row
+
     def add_service_func_key_to_user(self, exten, extentype, blf=True, position=1):
         func_key_row = self.add_service_func_key(exten, extentype)
+
+        self.add_func_key_mapping(template_id=self.user['template_id'],
+                                  func_key_id=func_key_row.id,
+                                  destination_type_id=func_key_row.destination_type_id,
+                                  blf=blf,
+                                  position=position)
+
+    def add_forward_func_key_to_user(self, exten, extentype, number, blf=True, position=1):
+        func_key_row = self.add_forward_func_key(exten, extentype, number)
 
         self.add_func_key_mapping(template_id=self.user['template_id'],
                                   func_key_id=func_key_row.id,
@@ -338,6 +356,21 @@ class TestFindExtenProgfunckeysSettings(TestFuncKeyDao):
                     'typeextenumbersright': None,
                     'typevalextenumbersright': None,
                     'leftexten': '*90'}
+
+        result = asterisk_conf_dao.find_exten_progfunckeys_settings(self.context)
+
+        assert_that(result, contains(has_entries(expected)))
+
+    def test_given_user_has_func_key_to_activate_forward_then_returns_hint(self):
+        self.add_forward_func_key_to_user('_*21.', 'fwdunc', '1234')
+
+        expected = {'user_id': self.user['id'],
+                    'exten': '1234',
+                    'typeextenumbers': 'extenfeatures',
+                    'typevalextenumbers': 'fwdunc',
+                    'typeextenumbersright': None,
+                    'typevalextenumbersright': None,
+                    'leftexten': '_*21.'}
 
         result = asterisk_conf_dao.find_exten_progfunckeys_settings(self.context)
 

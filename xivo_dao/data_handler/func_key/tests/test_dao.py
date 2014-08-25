@@ -27,6 +27,7 @@ from xivo_dao.data_handler.func_key import dao
 from xivo_dao.alchemy.func_key import FuncKey as FuncKeySchema
 from xivo_dao.alchemy.func_key_dest_service import FuncKeyDestService as FuncKeyDestServiceSchema
 from xivo_dao.alchemy.func_key_dest_conference import FuncKeyDestConference as FuncKeyDestConferenceSchema
+from xivo_dao.alchemy.func_key_dest_forward import FuncKeyDestForward as FuncKeyDestForwardSchema
 from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup as FuncKeyDestGroupSchema
 from xivo_dao.alchemy.func_key_dest_queue import FuncKeyDestQueue as FuncKeyDestQueueSchema
 from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser as FuncKeyDestUserSchema
@@ -44,6 +45,7 @@ class TestFuncKeyDao(DAOTestCase):
         'queue': 3,
         'conference': 4,
         'service': 5,
+        'forward': 6,
     }
 
     destination_type_schemas = {
@@ -52,6 +54,7 @@ class TestFuncKeyDao(DAOTestCase):
         'queue': (FuncKeyDestQueueSchema, 'queue_id'),
         'conference': (FuncKeyDestConferenceSchema, 'conference_id'),
         'service': (FuncKeyDestServiceSchema, 'extension_id'),
+        'forward': (FuncKeyDestForwardSchema, 'extension_id'),
     }
 
     def setUp(self):
@@ -78,6 +81,21 @@ class TestFuncKeyDao(DAOTestCase):
 
         return func_key_row, destination_row
 
+    def add_forward(self, extension_id, number=None):
+        destination_type_id = self.destination_type_ids['forward']
+
+        func_key_row = self.add_func_key(type_id=self.type_id,
+                                         destination_type_id=destination_type_id)
+
+        destination_row = FuncKeyDestForwardSchema(func_key_id=func_key_row.id,
+                                                   destination_type_id=destination_type_id,
+                                                   extension_id=extension_id,
+                                                   number=number)
+
+        self.add_me(destination_row)
+
+        return func_key_row, destination_row
+
     def prepare_destination(self, destination, destination_id):
         func_key_row, destination_row = self.add_destination(destination, destination_id)
 
@@ -85,6 +103,14 @@ class TestFuncKeyDao(DAOTestCase):
                        type='speeddial',
                        destination=destination,
                        destination_id=destination_id)
+
+    def prepare_forward(self, extension_id, number=None):
+        func_key_row, dest_forward_row = self.add_forward(extension_id, number)
+
+        return FuncKey(id=func_key_row.id,
+                       type='speeddial',
+                       destination='forward',
+                       destination_id=dest_forward_row.extension_id)
 
     def find_destination(self, destination, destination_id):
         schema, column_name = self.destination_type_schemas[destination]
@@ -108,6 +134,18 @@ class TestFuncKeySearch(TestFuncKeyDao):
 
         assert_that(result.total, equal_to(0))
         assert_that(result.items, contains())
+
+    def test_given_forward_destination_when_searching_then_one_result_returned(self):
+        extension_row = self.add_extension(type='extenfeatures',
+                                           context='xivo-features',
+                                           typeval='fwdrna',
+                                           exten='_*22.')
+        func_key = self.prepare_forward(extension_row.id, '1234')
+
+        result = dao.search()
+
+        assert_that(result.total, equal_to(1))
+        assert_that(result.items, contains(func_key))
 
     def test_given_service_destination_when_searching_then_one_result_returned(self):
         extension_row = self.add_extension(type='extenfeatures',
@@ -232,6 +270,17 @@ class TestFuncKeyFindAllByDestination(TestFuncKeyDao):
 
         assert_that(result, contains(func_key))
 
+    def test_given_one_forward_destination_then_returns_list_with_one_forward_destination(self):
+        extension_row = self.add_extension(type='extenfeatures',
+                                           context='xivo-features',
+                                           typeval='fwdrna',
+                                           exten='_*22.')
+        func_key = self.prepare_forward(extension_row.id, '1234')
+
+        result = dao.find_all_by_destination('forward', extension_row.id)
+
+        assert_that(result, contains(func_key))
+
     def test_given_group_and_user_destination_then_returns_list_with_right_destination(self):
         user_row = self.add_user()
         self.prepare_destination('user', user_row.id)
@@ -292,6 +341,17 @@ class TestFuncKeyGet(TestFuncKeyDao):
                                          context='xivo-features',
                                          typeval='vmusermsg')
         func_key = self.prepare_destination('service', service_row.id)
+
+        result = dao.get(func_key.id)
+
+        assert_that(result, equal_to(func_key))
+
+    def test_when_forward_func_key_in_db_then_func_key_model_returned(self):
+        extension_row = self.add_extension(type='extenfeatures',
+                                           context='xivo-features',
+                                           typeval='fwdrna',
+                                           exten='_*22.')
+        func_key = self.prepare_forward(extension_row.id, '1234')
 
         result = dao.get(func_key.id)
 
