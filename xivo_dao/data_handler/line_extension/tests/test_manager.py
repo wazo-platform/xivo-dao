@@ -35,7 +35,7 @@ class TestBuildManager(unittest.TestCase):
     @patch('xivo_dao.data_handler.line_extension.manager.extension_dao')
     @patch('xivo_dao.data_handler.line_extension.manager.incall_dao')
     @patch('xivo_dao.data_handler.line_extension.manager.user_line_dao')
-    @patch('xivo_dao.data_handler.line_extension.manager.ule_dao')
+    @patch('xivo_dao.data_handler.line_extension.manager.ule_services')
     @patch('xivo_dao.data_handler.line_extension.manager.context_dao')
     @patch('xivo_dao.data_handler.line_extension.manager.validator')
     @patch('xivo_dao.data_handler.line_extension.manager.IncallAssociator')
@@ -47,7 +47,7 @@ class TestBuildManager(unittest.TestCase):
                            IncallAssociator,
                            validator,
                            context_dao,
-                           ule_dao,
+                           ule_services,
                            user_line_dao,
                            incall_dao,
                            extension_dao,
@@ -63,7 +63,7 @@ class TestBuildManager(unittest.TestCase):
         AssociationManager.assert_called_once_with(context_dao, validator, {
             'internal': internal_association, 'incall': incall_association})
 
-        InternalAssociator.assert_called_once_with(ule_dao, validator, line_device_validator)
+        InternalAssociator.assert_called_once_with(ule_services, validator, line_device_validator)
         IncallAssociator.assert_called_once_with(validator, user_line_dao, incall_dao, extension_dao)
 
 
