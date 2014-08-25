@@ -133,7 +133,7 @@ class TestValidator(unittest.TestCase):
         self.assertEquals(user_line_dao_find_all_by_user_id.call_count, 0)
         self.assertEquals(line_has_secondary_user.call_count, 0)
 
-    @patch('xivo_dao.data_handler.user_line_extension.helper.validate_no_device')
+    @patch('xivo_dao.data_handler.line_device.validator.validate_no_device')
     @patch('xivo_dao.data_handler.user_line.dao.line_has_secondary_user')
     @patch('xivo_dao.data_handler.user_line.dao.find_all_by_user_id')
     @patch('xivo_dao.data_handler.line.dao.get')

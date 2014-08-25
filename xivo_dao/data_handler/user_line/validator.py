@@ -20,7 +20,7 @@ from xivo_dao.data_handler.exception import NotFoundError
 from xivo_dao.data_handler.user import dao as user_dao
 from xivo_dao.data_handler.line import dao as line_dao
 from xivo_dao.data_handler.user_line import dao as user_line_dao
-from xivo_dao.data_handler.user_line_extension import helper as ule_helper
+from xivo_dao.data_handler.line_device import validator as line_device_validator
 
 
 def validate_association(user_line):
@@ -36,7 +36,7 @@ def validate_dissociation(user_line):
     _validate_line_id(user_line)
     _validate_user_has_line(user_line)
     _is_allowed_to_dissociate(user_line)
-    ule_helper.validate_no_device(user_line.line_id)
+    line_device_validator.validate_no_device(user_line.line_id)
 
 
 def _validate_missing_parameters(user_line):

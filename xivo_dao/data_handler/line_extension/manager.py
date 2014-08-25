@@ -23,11 +23,12 @@ from xivo_dao.data_handler.user_line import dao as user_line_dao
 from xivo_dao.data_handler.user_line import services as ule_dao
 from xivo_dao.data_handler.context import dao as context_dao
 from xivo_dao.data_handler.line_extension import validator
+from xivo_dao.data_handler.line_device import validator as line_device_validator
 
 
 def build_manager():
     incall = IncallAssociator(validator, user_line_dao, incall_dao, extension_dao)
-    internal = InternalAssociator(ule_dao, validator)
+    internal = InternalAssociator(ule_dao, validator, line_device_validator)
     associators = {'incall': incall, 'internal': internal}
     return AssociationManager(context_dao, validator, associators)
 
@@ -67,16 +68,17 @@ class AssociationManager(object):
 
 class InternalAssociator(object):
 
-    def __init__(self, ule_dao, validator):
+    def __init__(self, ule_dao, line_extension_validator, line_device_validator):
         self.ule_dao = ule_dao
-        self.validator = validator
+        self.line_extension_validator = line_extension_validator
+        self.line_device_validator = line_device_validator
 
     def associate(self, line_extension):
-        self.validator.validate_not_associated_to_extension(line_extension)
+        self.line_extension_validator.validate_not_associated_to_extension(line_extension)
         self.ule_dao.associate_line_extension(line_extension)
 
     def dissociate(self, line_extension):
-        self.validator.validate_no_device(line_extension)
+        self.line_device_validator.validate_no_device(line_extension.line_id)
         self.ule_dao.dissociate_line_extension(line_extension)
 
 

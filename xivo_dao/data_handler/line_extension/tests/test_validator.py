@@ -205,7 +205,7 @@ class TestValidateContextTypeOnDissociation(unittest.TestCase):
 
         validator.validate_context_type_on_dissociation(line_extension)
 
-    @patch('xivo_dao.data_handler.user_line_extension.helper.validate_no_device')
+    @patch('xivo_dao.data_handler.line_device.validator.validate_no_device')
     @patch('xivo_dao.data_handler.context.dao.get_by_extension_id')
     def test_given_internal_extension_then_validates_no_device_associated(self,
                                                                           get_by_extension_id,

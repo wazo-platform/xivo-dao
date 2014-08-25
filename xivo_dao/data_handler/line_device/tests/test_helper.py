@@ -21,16 +21,16 @@ from xivo_dao.data_handler.line.model import LineSIP
 from mock import Mock, patch, sentinel
 from unittest import TestCase
 
-from .. import helper
+from xivo_dao.data_handler.line_device import validator
 
 
-class TestULEHelper(TestCase):
+class TestLineDeviceValidator(TestCase):
 
     @patch('xivo_dao.data_handler.line.dao.get')
     def test_validate_no_device_when_no_device_associated(self, line_get):
         line_get.return_value = Mock(LineSIP, device_id=None)
 
-        helper.validate_no_device(sentinel.line_id)
+        validator.validate_no_device(sentinel.line_id)
 
         line_get.assert_called_once_with(sentinel.line_id)
 
@@ -38,6 +38,6 @@ class TestULEHelper(TestCase):
     def test_validate_no_device_when_device_associated(self, line_get):
         line_get.return_value = Mock(LineSIP, device_id='1234abcdefghijklmnopquesrtlkjh')
 
-        self.assertRaises(ResourceError, helper.validate_no_device, sentinel.line_id)
+        self.assertRaises(ResourceError, validator.validate_no_device, sentinel.line_id)
 
         line_get.assert_called_once_with(sentinel.line_id)
