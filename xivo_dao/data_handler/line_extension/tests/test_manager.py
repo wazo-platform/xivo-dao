@@ -32,12 +32,13 @@ from xivo_dao.data_handler.line_extension.manager import build_manager
 class TestBuildManager(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.line_extension.manager.line_device_validator')
+    @patch('xivo_dao.data_handler.line_extension.manager.extension_validator')
     @patch('xivo_dao.data_handler.line_extension.manager.extension_dao')
     @patch('xivo_dao.data_handler.line_extension.manager.incall_dao')
     @patch('xivo_dao.data_handler.line_extension.manager.user_line_dao')
     @patch('xivo_dao.data_handler.line_extension.manager.ule_services')
     @patch('xivo_dao.data_handler.line_extension.manager.context_dao')
-    @patch('xivo_dao.data_handler.line_extension.manager.validator')
+    @patch('xivo_dao.data_handler.line_extension.manager.line_extension_validator')
     @patch('xivo_dao.data_handler.line_extension.manager.IncallAssociator')
     @patch('xivo_dao.data_handler.line_extension.manager.InternalAssociator')
     @patch('xivo_dao.data_handler.line_extension.manager.AssociationManager')
@@ -45,12 +46,13 @@ class TestBuildManager(unittest.TestCase):
                            AssociationManager,
                            InternalAssociator,
                            IncallAssociator,
-                           validator,
+                           line_extension_validator,
                            context_dao,
                            ule_services,
                            user_line_dao,
                            incall_dao,
                            extension_dao,
+                           extension_validator,
                            line_device_validator):
 
         association_manager = AssociationManager.return_value = Mock(AssociationManager)
@@ -60,11 +62,14 @@ class TestBuildManager(unittest.TestCase):
         result = build_manager()
 
         assert_that(result, equal_to(association_manager))
-        AssociationManager.assert_called_once_with(context_dao, validator, {
+        AssociationManager.assert_called_once_with(context_dao, line_extension_validator, {
             'internal': internal_association, 'incall': incall_association})
 
-        InternalAssociator.assert_called_once_with(ule_services, validator, line_device_validator)
-        IncallAssociator.assert_called_once_with(validator, user_line_dao, incall_dao, extension_dao)
+        InternalAssociator.assert_called_once_with(ule_services,
+                                                   extension_validator,
+                                                   line_extension_validator,
+                                                   line_device_validator)
+        IncallAssociator.assert_called_once_with(line_extension_validator, user_line_dao, incall_dao, extension_dao)
 
 
 class TestAssociationManager(unittest.TestCase):

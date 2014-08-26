@@ -18,19 +18,23 @@
 from xivo_dao.data_handler.incall.model import Incall
 
 from xivo_dao.data_handler.extension import dao as extension_dao
+from xivo_dao.data_handler.extension import validator as extension_validator
 from xivo_dao.data_handler.incall import dao as incall_dao
 from xivo_dao.data_handler.user_line import dao as user_line_dao
 from xivo_dao.data_handler.user_line_extension import services as ule_services
 from xivo_dao.data_handler.context import dao as context_dao
-from xivo_dao.data_handler.line_extension import validator
+from xivo_dao.data_handler.line_extension import validator as line_extension_validator
 from xivo_dao.data_handler.line_device import validator as line_device_validator
 
 
 def build_manager():
-    incall = IncallAssociator(validator, user_line_dao, incall_dao, extension_dao)
-    internal = InternalAssociator(ule_services, validator, line_device_validator)
+    incall = IncallAssociator(line_extension_validator, user_line_dao, incall_dao, extension_dao)
+    internal = InternalAssociator(ule_services,
+                                  extension_validator,
+                                  line_extension_validator,
+                                  line_device_validator)
     associators = {'incall': incall, 'internal': internal}
-    return AssociationManager(context_dao, validator, associators)
+    return AssociationManager(context_dao, line_extension_validator, associators)
 
 
 class AssociationManager(object):
