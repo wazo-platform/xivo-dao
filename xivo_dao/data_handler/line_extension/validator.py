@@ -20,19 +20,11 @@ from xivo_dao.data_handler.exception import NotFoundError
 from xivo_dao.data_handler.context.model import ContextType
 from xivo_dao.data_handler.context import dao as context_dao
 from xivo_dao.data_handler.extension import dao as extension_dao
-from xivo_dao.data_handler.extension import validator as extension_validator
 from xivo_dao.data_handler.incall import dao as incall_dao
 from xivo_dao.data_handler.user_line import dao as user_line_dao
 from xivo_dao.data_handler.line import dao as line_dao
 from xivo_dao.data_handler.line_extension import dao as line_extension_dao
 from xivo_dao.data_handler.line_device import validator as line_device_validator
-
-
-def validate_associate(line_extension):
-    validate_model(line_extension)
-    validate_line(line_extension)
-    validate_extension(line_extension)
-    validate_context_type_on_association(line_extension)
 
 
 def validate_model(line_extension):
@@ -55,17 +47,6 @@ def validate_extension(line_extension):
         raise errors.param_not_found('extension_id', 'Extension')
 
 
-def validate_context_type_on_association(line_extension):
-    context = context_dao.get_by_extension_id(line_extension.extension_id)
-    if context.type == ContextType.internal:
-        validate_line_not_associated_to_extension(line_extension)
-        extension_validator.validate_extension_not_associated(line_extension.extension_id)
-    elif context.type == ContextType.incall:
-        validate_associated_to_user(line_extension)
-    else:
-        raise errors.unhandled_context_type(context.type)
-
-
 def validate_line_not_associated_to_extension(line_extension):
     line_extension = line_extension_dao.find_by_line_id(line_extension.line_id)
     if line_extension:
@@ -79,19 +60,6 @@ def validate_associated_to_user(line_extension):
     user_lines = user_line_dao.find_all_by_line_id(line_extension.line_id)
     if not user_lines:
         raise errors.missing_association('Line', 'User', line_id=line_extension.line_id)
-
-
-def validate_dissociation(line_extension):
-    validate_extension(line_extension)
-    validate_line(line_extension)
-    validate_associated(line_extension)
-    validate_context_type_on_dissociation(line_extension)
-
-
-def validate_context_type_on_dissociation(line_extension):
-    context = context_dao.get_by_extension_id(line_extension.extension_id)
-    if context.type == ContextType.internal:
-        line_device_validator.validate_no_device(line_extension.line_id)
 
 
 def validate_associated(line_extension):

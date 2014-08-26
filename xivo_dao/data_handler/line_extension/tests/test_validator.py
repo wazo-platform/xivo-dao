@@ -30,28 +30,6 @@ from xivo_dao.data_handler.exception import NotFoundError
 from xivo_dao.data_handler.exception import InputError
 
 
-class TestValidateAssociate(unittest.TestCase):
-
-    @patch('xivo_dao.data_handler.line_extension.validator.validate_context_type_on_association')
-    @patch('xivo_dao.data_handler.line_extension.validator.validate_extension')
-    @patch('xivo_dao.data_handler.line_extension.validator.validate_line')
-    @patch('xivo_dao.data_handler.line_extension.validator.validate_model')
-    def test_validate_associate(self,
-                                validate_model,
-                                validate_line,
-                                validate_extension,
-                                validate_context_type_on_association):
-
-        line_extension = Mock(LineExtension, line_id=1, extension_id=2)
-
-        validator.validate_associate(line_extension)
-
-        validate_model.assert_called_once_with(line_extension)
-        validate_line.assert_called_once_with(line_extension)
-        validate_extension.assert_called_once_with(line_extension)
-        validate_context_type_on_association.assert_called_once_with(line_extension)
-
-
 class TestValidateModel(unittest.TestCase):
 
     def test_validate_model_no_parameters(self):
@@ -102,39 +80,6 @@ class TestValidateExtension(unittest.TestCase):
         extension_get.assert_called_once_with(line_extension.extension_id)
 
 
-class TestValidateContextType(unittest.TestCase):
-
-    @patch('xivo_dao.data_handler.line_extension.validator.validate_line_not_associated_to_extension')
-    @patch('xivo_dao.data_handler.extension.validator.validate_extension_not_associated')
-    @patch('xivo_dao.data_handler.context.dao.get_by_extension_id')
-    def test_validate_internal_context(self,
-                                       context_get_by_extension_id,
-                                       validate_extension_not_associated,
-                                       validate_line_not_associated_to_extension):
-        line_extension = Mock(LineExtension, extension_id=1)
-        context_get_by_extension_id.return_value = Mock(Context, type='internal')
-
-        validator.validate_context_type_on_association(line_extension)
-        validate_extension_not_associated.assert_called_once_with(line_extension.extension_id)
-        validate_line_not_associated_to_extension.assert_called_once_with(line_extension)
-
-    @patch('xivo_dao.data_handler.line_extension.validator.validate_associated_to_user')
-    @patch('xivo_dao.data_handler.context.dao.get_by_extension_id')
-    def test_validate_incall_context(self, context_get_by_extension_id, validate_associated_to_user):
-        line_extension = Mock(LineExtension, extension_id=1)
-        context_get_by_extension_id.return_value = Mock(Context, type='incall')
-
-        validator.validate_context_type_on_association(line_extension)
-        validate_associated_to_user.assert_called_once_with(line_extension)
-
-    @patch('xivo_dao.data_handler.context.dao.get_by_extension_id')
-    def test_validate_context_type_on_association_not_managed(self, context_get_by_extension_id):
-        line_extension = Mock(LineExtension, extension_id=1)
-        context_get_by_extension_id.return_value = Mock(Context, type='others')
-
-        self.assertRaises(ResourceError, validator.validate_context_type_on_association, line_extension)
-
-
 class TestValidateLineNotAssociatedToExtension(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.line_extension.dao.find_by_line_id')
@@ -172,49 +117,6 @@ class TestValidateAssociatedToUser(unittest.TestCase):
 
         validator.validate_associated_to_user(line_extension)
         find_all_by_line_id.assert_called_once_with(line_extension.line_id)
-
-
-class TestValidateDissociation(unittest.TestCase):
-
-    @patch('xivo_dao.data_handler.line_extension.validator.validate_context_type_on_dissociation')
-    @patch('xivo_dao.data_handler.line_extension.validator.validate_associated')
-    @patch('xivo_dao.data_handler.line_extension.validator.validate_line')
-    @patch('xivo_dao.data_handler.line_extension.validator.validate_extension')
-    def test_validate_dissociation(self,
-                                   validate_extension,
-                                   validate_line,
-                                   validate_associated,
-                                   validate_context_type_on_dissociation):
-        line_extension = Mock(LineExtension, line_id=1)
-
-        validator.validate_dissociation(line_extension)
-
-        validate_extension.assert_called_once_with(line_extension)
-        validate_line.assert_called_once_with(line_extension)
-        validate_associated.assert_called_once_with(line_extension)
-        validate_context_type_on_dissociation.assert_called_once_with(line_extension)
-
-
-class TestValidateContextTypeOnDissociation(unittest.TestCase):
-
-    @patch('xivo_dao.data_handler.context.dao.get_by_extension_id')
-    def test_given_incall_extension_then_validation_passes(self,
-                                                           get_by_extension_id):
-        get_by_extension_id.return_value = Mock(Context, type='incall')
-        line_extension = Mock(LineExtension, line_id=1, extension_id=2)
-
-        validator.validate_context_type_on_dissociation(line_extension)
-
-    @patch('xivo_dao.data_handler.line_device.validator.validate_no_device')
-    @patch('xivo_dao.data_handler.context.dao.get_by_extension_id')
-    def test_given_internal_extension_then_validates_no_device_associated(self,
-                                                                          get_by_extension_id,
-                                                                          validate_no_device):
-        get_by_extension_id.return_value = Mock(Context, type='internal')
-        line_extension = Mock(LineExtension, line_id=1, extension_id=2)
-
-        validator.validate_context_type_on_dissociation(line_extension)
-        validate_no_device.assert_called_once_with(line_extension.line_id)
 
 
 @patch('xivo_dao.data_handler.incall.dao.find_all_line_extensions_by_line_id')
