@@ -161,7 +161,7 @@ class TestInternalAssociator(unittest.TestCase):
     def test_when_associating_then_validates_not_associated_to_extension(self):
         self.associator.associate(self.line_extension)
 
-        self.line_extension_validator.validate_not_associated_to_extension.assert_called_once_with(self.line_extension)
+        self.line_extension_validator.validate_line_not_associated_to_extension.assert_called_once_with(self.line_extension)
 
     def test_when_associating_then_creates_ule(self):
         self.associator.associate(self.line_extension)

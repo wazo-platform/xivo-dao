@@ -74,7 +74,7 @@ class InternalAssociator(object):
         self.line_device_validator = line_device_validator
 
     def associate(self, line_extension):
-        self.line_extension_validator.validate_not_associated_to_extension(line_extension)
+        self.line_extension_validator.validate_line_not_associated_to_extension(line_extension)
         self.ule_services.associate_line_extension(line_extension)
 
     def dissociate(self, line_extension):
