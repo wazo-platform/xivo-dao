@@ -157,16 +157,25 @@ class TestGivenKnownContextType(TestAssociationManager):
 class TestInternalAssociator(unittest.TestCase):
 
     def setUp(self):
+        self.extension_validator = Mock()
         self.line_extension_validator = Mock()
         self.line_device_validator = Mock()
         self.ule_dao = Mock()
-        self.line_extension = Mock(LineExtension, line_id=12)
-        self.associator = InternalAssociator(self.ule_dao, self.line_extension_validator, self.line_device_validator)
+        self.line_extension = Mock(LineExtension, line_id=12, extension_id=15)
+        self.associator = InternalAssociator(self.ule_dao,
+                                             self.extension_validator,
+                                             self.line_extension_validator,
+                                             self.line_device_validator)
 
-    def test_when_associating_then_validates_not_associated_to_extension(self):
+    def test_when_associating_then_validates_line_not_associated_to_any_extension(self):
         self.associator.associate(self.line_extension)
 
         self.line_extension_validator.validate_line_not_associated_to_extension.assert_called_once_with(self.line_extension)
+
+    def test_when_associating_then_validates_extension_not_associated(self):
+        self.associator.associate(self.line_extension)
+
+        self.extension_validator.validate_extension_not_associated.assert_called_once_with(self.line_extension.extension_id)
 
     def test_when_associating_then_creates_ule(self):
         self.associator.associate(self.line_extension)

@@ -69,13 +69,15 @@ class AssociationManager(object):
 
 class InternalAssociator(object):
 
-    def __init__(self, ule_services, line_extension_validator, line_device_validator):
+    def __init__(self, ule_services, extension_validator, line_extension_validator, line_device_validator):
         self.ule_services = ule_services
+        self.extension_validator = extension_validator
         self.line_extension_validator = line_extension_validator
         self.line_device_validator = line_device_validator
 
     def associate(self, line_extension):
         self.line_extension_validator.validate_line_not_associated_to_extension(line_extension)
+        self.extension_validator.validate_extension_not_associated(line_extension.extension_id)
         self.ule_services.associate_line_extension(line_extension)
 
     def dissociate(self, line_extension):
