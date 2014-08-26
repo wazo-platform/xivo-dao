@@ -130,7 +130,7 @@ class TestGivenKnownContextType(TestAssociationManager):
 
             mock_validate.assert_called_once_with(self.line_extension)
 
-    def test_when_validating_then_calls_approprite_validators(self):
+    def test_when_validating_then_calls_appropriate_validators(self):
         self.manager.validate(self.line_extension)
 
         self.validator.validate_model.assert_called_once_with(self.line_extension)
@@ -142,11 +142,16 @@ class TestGivenKnownContextType(TestAssociationManager):
 
         self.associator.dissociate.assert_called_once_with(self.line_extension)
 
-    def test_when_dissociating_then_validates_model(self):
+    def test_when_dissociating_then_validates_models(self):
         with patch.object(self.manager, 'validate') as mock_validate:
             self.manager.dissociate(self.line_extension)
 
             mock_validate.assert_called_once_with(self.line_extension)
+
+    def test_when_dissociating_then_validates_already_associated(self):
+        self.manager.dissociate(self.line_extension)
+
+        self.validator.validate_associated.assert_called_once_with(self.line_extension)
 
 
 class TestInternalAssociator(unittest.TestCase):

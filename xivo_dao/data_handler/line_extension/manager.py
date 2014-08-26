@@ -63,6 +63,7 @@ class AssociationManager(object):
         associator = self._get_associator(line_extension)
 
         self.validate(line_extension)
+        self.validator.validate_associated(line_extension)
         associator.dissociate(line_extension)
 
 
