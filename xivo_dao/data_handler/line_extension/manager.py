@@ -45,9 +45,9 @@ class AssociationManager(object):
         self.associators = associators
 
     def associate(self, line_extension):
-        associator = self._get_associator(line_extension)
-
         self.validate(line_extension)
+
+        associator = self._get_associator(line_extension)
         associator.associate(line_extension)
 
     def _get_associator(self, line_extension):
@@ -64,10 +64,10 @@ class AssociationManager(object):
         self.validator.validate_extension(line_extension)
 
     def dissociate(self, line_extension):
-        associator = self._get_associator(line_extension)
-
         self.validate(line_extension)
         self.validator.validate_associated(line_extension)
+
+        associator = self._get_associator(line_extension)
         associator.dissociate(line_extension)
 
 
