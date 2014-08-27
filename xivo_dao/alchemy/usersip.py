@@ -18,6 +18,7 @@
 from xivo_dao.helpers.db_manager import Base
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint, \
     Index
+from sqlalchemy.sql.schema import CheckConstraint
 from sqlalchemy.types import Integer, String, Text, Enum
 from xivo_dao.alchemy import enum
 
@@ -30,6 +31,7 @@ class UserSIP(Base):
         UniqueConstraint('name'),
         Index('usersip__idx__category', 'category'),
         Index('usersip__idx__mailbox', 'mailbox'),
+        CheckConstraint("directmedia in ('no', 'yes', 'nonat', 'update', 'update,nonat', 'outgoing')"),
     )
 
     id = Column(Integer, nullable=False)
