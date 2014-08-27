@@ -15,8 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+import warnings
+
+from contextlib import contextmanager
 from hamcrest import *
 
+from mock import patch
 from xivo_dao import asterisk_conf_dao
 from xivo_dao.alchemy.agentqueueskill import AgentQueueSkill
 from xivo_dao.alchemy.features import Features
@@ -28,30 +32,56 @@ from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.data_handler.func_key.tests.test_dao import TestFuncKeyDao
 
 
-class TestSccpConfDAO(DAOTestCase):
+@contextmanager
+def warning_filter(level):
+    warnings.simplefilter(level)
+    yield
+    warnings.resetwarnings()
 
-    def test_find_sccp_general_settings(self):
-        expected_result = [
-            {'option_name': 'directmedia',
-             'option_value': 'no'},
-            {'option_name': 'dialtimeout',
-             'option_value': '6'},
-            {'option_name': 'language',
-             'option_value': 'en_US'},
-            {'option_name': 'vmexten',
-             'option_value': '*98'},
-        ]
 
-        self.add_sccp_general_settings(**expected_result[0])
-        self.add_sccp_general_settings(**expected_result[1])
-        self.add_sccp_general_settings(**expected_result[2])
-        self.add_extension(exten='*98',
-                           type='extenfeatures',
-                           typeval='vmusermsg')
+class PickupHelperMixin(object):
 
-        sccp_general_settings = asterisk_conf_dao.find_sccp_general_settings()
+    _category_to_conf_map = {'member': 'pickupgroup',
+                             'pickup': 'callgroup'}
 
-        assert_that(sccp_general_settings, contains_inanyorder(*expected_result))
+    def _category_to_conf(self, category):
+        return self._category_to_conf_map[category]
+
+    def add_pickup_member_user(self, pickup, user_id):
+        args = {
+            'pickupid': pickup.id,
+            'membertype': 'user',
+            'memberid': user_id,
+        }
+
+        pickup_member = self.add_pickup_member(**args)
+
+        return self._category_to_conf(pickup_member.category)
+
+    def add_pickup_member_group(self, pickup, user_id):
+        group = self.add_group()
+        pickup_member = self.add_pickup_member(pickupid=pickup.id,
+                                               membertype='group',
+                                               memberid=group.id)
+        self.add_queue_member(queue_name=group.name,
+                              usertype='user',
+                              userid=user_id)
+
+        return self._category_to_conf(pickup_member.category)
+
+    def add_pickup_member_queue(self, pickup, user_id):
+        queue = self.add_queuefeatures()
+        pickup_member = self.add_pickup_member(pickupid=pickup.id,
+                                               membertype='queue',
+                                               memberid=queue.id)
+        self.add_queue_member(queue_name=queue.name,
+                              usertype='user',
+                              userid=user_id)
+
+        return self._category_to_conf(pickup_member.category)
+
+
+class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
 
     def test_find_sccp_line_settings_when_line_enabled(self):
         number = '1234'
@@ -102,9 +132,9 @@ class TestSccpConfDAO(DAOTestCase):
             'allow': 'g729',
         }
 
-        sccp_line = asterisk_conf_dao.find_sccp_line_settings()
+        sccp_lines = asterisk_conf_dao.find_sccp_line_settings()
 
-        assert_that(sccp_line, contains(expected_result))
+        assert_that(sccp_lines, contains(expected_result))
 
     def test_find_sccp_line_disallow(self):
         number = '1234'
@@ -127,6 +157,59 @@ class TestSccpConfDAO(DAOTestCase):
         sccp_line = asterisk_conf_dao.find_sccp_line_settings()
 
         assert_that(sccp_line, contains(expected_result))
+
+    @patch('xivo_dao.asterisk_conf_dao.find_pickup_members')
+    def test_find_sccp_line_pickup_group(self, mock_find_pickup_members):
+        sccp_line = self.add_sccpline()
+        ule = self.add_user_line_with_exten(protocol='sccp',
+                                            protocolid=sccp_line.id)
+        callgroups = set([1, 2, 3, 4])
+        pickupgroups = set([3, 4])
+        pickup_members = {('sccp', ule.line.protocolid): {'callgroup': callgroups,
+                                                          'pickupgroup': pickupgroups}}
+        mock_find_pickup_members.return_value = pickup_members
+
+        sccp_lines = asterisk_conf_dao.find_sccp_line_settings()
+
+        expected = {
+            'user_id': ule.user_id,
+            'name': sccp_line.name,
+            'language': None,
+            'number': ule.line.number,
+            'cid_name': u'Tester One',
+            'context': u'foocontext',
+            'cid_num': sccp_line.cid_num,
+            'callgroup': callgroups,
+            'pickupgroup': pickupgroups,
+        }
+
+        assert_that(sccp_lines, contains(expected))
+
+
+class TestSccpConfDAO(DAOTestCase):
+
+    def test_find_sccp_general_settings(self):
+        expected_result = [
+            {'option_name': 'directmedia',
+             'option_value': 'no'},
+            {'option_name': 'dialtimeout',
+             'option_value': '6'},
+            {'option_name': 'language',
+             'option_value': 'en_US'},
+            {'option_name': 'vmexten',
+             'option_value': '*98'},
+        ]
+
+        self.add_sccp_general_settings(**expected_result[0])
+        self.add_sccp_general_settings(**expected_result[1])
+        self.add_sccp_general_settings(**expected_result[2])
+        self.add_extension(exten='*98',
+                           type='extenfeatures',
+                           typeval='vmusermsg')
+
+        sccp_general_settings = asterisk_conf_dao.find_sccp_general_settings()
+
+        assert_that(sccp_general_settings, contains_inanyorder(*expected_result))
 
     def test_find_sccp_device_settings(self):
         sccp_device = self.add_sccpdevice()
@@ -306,7 +389,61 @@ class TestFindExtenProgfunckeysSettings(TestFuncKeyDao):
         assert_that(result, contains(), 'No hint should be generated in some other context')
 
 
-class TestAsteriskConfDAO(DAOTestCase):
+class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
+
+    def test_find_pickup_members_empty(self):
+        self.add_pickup()
+
+        pickup_members = asterisk_conf_dao.find_pickup_members()
+
+        assert_that(pickup_members, contains())
+
+    def test_find_pickup_members_with_users(self):
+        pickup = self.add_pickup()
+
+        sccp_line = self.add_sccpline()
+        ule1 = self.add_user_line_with_exten(protocol='sccp', protocolid=sccp_line.id)
+        category1 = self.add_pickup_member_user(pickup, ule1.user_id)
+
+        ule2 = self.add_user_line_with_exten(protocol='sip')
+        category2 = self.add_pickup_member_user(pickup, ule2.user_id)
+
+        pickup_members = asterisk_conf_dao.find_pickup_members()
+
+        expected = {
+            ('sccp', sccp_line.id): {category1: set([pickup.id])},
+            ('sip', ule2.line.protocolid): {category2: set([pickup.id])},
+        }
+
+        assert_that(pickup_members, equal_to(expected))
+
+    def test_find_pickup_members_with_groups(self):
+        pickup = self.add_pickup()
+
+        ule = self.add_user_line_with_exten()
+        category = self.add_pickup_member_group(pickup, ule.user_id)
+
+        pickup_members = asterisk_conf_dao.find_pickup_members()
+
+        expected = {
+            (ule.line.protocol, ule.line.protocolid): {category: set([pickup.id])}
+        }
+
+        assert_that(pickup_members, equal_to(expected))
+
+    def test_find_pickup_members_with_queues(self):
+        pickup = self.add_pickup()
+
+        ule = self.add_user_line_with_exten()
+        category = self.add_pickup_member_queue(pickup, ule.user_id)
+
+        pickup_members = asterisk_conf_dao.find_pickup_members()
+
+        expected = {
+            (ule.line.protocol, ule.line.protocolid): {category: set([pickup.id])}
+        }
+
+        assert_that(pickup_members, equal_to(expected))
 
     def test_find_featuremap_features_settings(self):
         features = Features(id=1,
@@ -951,47 +1088,37 @@ class TestAsteriskConfDAO(DAOTestCase):
                                                'context', context))
 
     def test_find_sip_pickup_settings(self):
+        category_to_conf_reverse_map = {'pickupgroup': 'member',
+                                        'callgroup': 'pickup'}
         pickup = self.add_pickup()
-        user_member = self._add_pickup_member_user(pickup)
-        group_member = self._add_pickup_member_group(pickup)
-        queue_member = self._add_pickup_member_queue(pickup)
 
-        expected_result = [user_member, group_member, queue_member]
+        name1, user_id1 = self._create_user_with_usersip()
+        name2, user_id2 = self._create_user_with_usersip()
+        name3, user_id3 = self._create_user_with_usersip()
+
+        user_member_category = self.add_pickup_member_user(pickup, user_id1)
+        group_member_category = self.add_pickup_member_group(pickup, user_id2)
+        queue_member_category = self.add_pickup_member_queue(pickup, user_id3)
+
+        expected_result = [
+            (name1, category_to_conf_reverse_map[user_member_category], pickup.id),
+            (name2, category_to_conf_reverse_map[group_member_category], pickup.id),
+            (name3, category_to_conf_reverse_map[queue_member_category], pickup.id),
+        ]
 
         sip_pickup = asterisk_conf_dao.find_sip_pickup_settings()
 
         assert_that(sip_pickup, contains_inanyorder(*expected_result))
 
-    def _add_pickup_member_user(self, pickup):
-        sip_name, user_id = self._create_user_with_usersip()
-        pickup_member = self.add_pickup_member(pickupid=pickup.id,
-                                               membertype='user',
-                                               memberid=user_id)
-        return sip_name, pickup_member.category, pickup.id
+    def test_find_sip_pickup_settings_no_pickup(self):
+        name1, user_id1 = self._create_user_with_usersip()
+        name2, user_id2 = self._create_user_with_usersip()
+        name3, user_id3 = self._create_user_with_usersip()
 
-    def _add_pickup_member_group(self, pickup):
-        sip_name, user_id = self._create_user_with_usersip()
-        group = self.add_group()
-        pickup_member = self.add_pickup_member(pickupid=pickup.id,
-                                               membertype='group',
-                                               memberid=group.id)
-        self.add_queue_member(queue_name=group.name,
-                              usertype='user',
-                              userid=user_id)
+        with warning_filter('error'):
+            sip_pickup = asterisk_conf_dao.find_sip_pickup_settings()
 
-        return sip_name, pickup_member.category, pickup.id
-
-    def _add_pickup_member_queue(self, pickup):
-        sip_name, user_id = self._create_user_with_usersip()
-        queue = self.add_queuefeatures()
-        pickup_member = self.add_pickup_member(pickupid=pickup.id,
-                                               membertype='queue',
-                                               memberid=queue.id)
-        self.add_queue_member(queue_name=queue.name,
-                              usertype='user',
-                              userid=user_id)
-
-        return sip_name, pickup_member.category, pickup.id
+            assert_that(sip_pickup, contains_inanyorder())
 
     def _create_user_with_usersip(self):
         usersip = self.add_usersip(category='user')
