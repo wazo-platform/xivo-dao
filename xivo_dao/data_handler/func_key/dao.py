@@ -20,7 +20,7 @@ from xivo_dao.data_handler.utils.search import SearchResult
 from xivo_dao.data_handler.exception import DataError
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.helpers.db_utils import commit_or_abort
-from xivo_dao.data_handler.func_key.model import db_converter, QueryHelper
+from xivo_dao.data_handler.func_key.database import db_converter, QueryHelper
 
 
 @daosession
