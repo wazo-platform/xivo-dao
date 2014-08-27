@@ -18,6 +18,7 @@
 from xivo_dao.helpers.db_manager import Base
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint, \
     Index
+from sqlalchemy.sql.schema import CheckConstraint
 from sqlalchemy.types import Integer, String, Text, Enum
 from xivo_dao.alchemy import enum
 
@@ -25,12 +26,6 @@ from xivo_dao.alchemy import enum
 class UserSIP(Base):
 
     __tablename__ = 'usersip'
-    __table_args__ = (
-        PrimaryKeyConstraint('id'),
-        UniqueConstraint('name'),
-        Index('usersip__idx__category', 'category'),
-        Index('usersip__idx__mailbox', 'mailbox'),
-    )
 
     id = Column(Integer, nullable=False)
     name = Column(String(40), nullable=False)
@@ -60,8 +55,8 @@ class UserSIP(Base):
     cid_number = Column(String(80))
     maxcallbitrate = Column(Integer)
     insecure = Column(Enum('port', 'invite', 'port,invite',
-                       name='usersip_insecure',
-                       metadata=Base.metadata))
+                           name='usersip_insecure',
+                           metadata=Base.metadata))
     nat = Column(Enum('no', 'force_rport', 'comedia', 'force_rport,comedia',
                       name='usersip_nat',
                       metadata=Base.metadata))
@@ -117,9 +112,7 @@ class UserSIP(Base):
     outboundproxy = Column(String(1024))
     transport = Column(String(255))
     remotesecret = Column(String(255))
-    directmedia = Column(Enum('no', 'yes', 'nonat', 'update', 'update,nonat',
-                           name='usersip_directmedia',
-                           metadata=Base.metadata))
+    directmedia = Column(String(20))
     callcounter = Column(Integer)
     busylevel = Column(Integer)
     ignoresdpversion = Column(Integer)
@@ -148,3 +141,13 @@ class UserSIP(Base):
     disallowed_methods = Column(String(1024))
     textsupport = Column(Integer)
     commented = Column(Integer, nullable=False, server_default='0')
+
+    __table_args__ = (
+        PrimaryKeyConstraint('id'),
+        UniqueConstraint('name'),
+        Index('usersip__idx__category', 'category'),
+        Index('usersip__idx__mailbox', 'mailbox'),
+        CheckConstraint(
+            directmedia.in_(
+                ['no', 'yes', 'nonat', 'update', 'update,nonat', 'outgoing'])),
+    )
