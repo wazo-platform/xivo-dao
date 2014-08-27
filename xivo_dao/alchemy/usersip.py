@@ -26,13 +26,6 @@ from xivo_dao.alchemy import enum
 class UserSIP(Base):
 
     __tablename__ = 'usersip'
-    __table_args__ = (
-        PrimaryKeyConstraint('id'),
-        UniqueConstraint('name'),
-        Index('usersip__idx__category', 'category'),
-        Index('usersip__idx__mailbox', 'mailbox'),
-        CheckConstraint("directmedia in ('no', 'yes', 'nonat', 'update', 'update,nonat', 'outgoing')"),
-    )
 
     id = Column(Integer, nullable=False)
     name = Column(String(40), nullable=False)
@@ -148,3 +141,13 @@ class UserSIP(Base):
     disallowed_methods = Column(String(1024))
     textsupport = Column(Integer)
     commented = Column(Integer, nullable=False, server_default='0')
+
+    __table_args__ = (
+        PrimaryKeyConstraint('id'),
+        UniqueConstraint('name'),
+        Index('usersip__idx__category', 'category'),
+        Index('usersip__idx__mailbox', 'mailbox'),
+        CheckConstraint(
+            directmedia.in_(
+                ['no', 'yes', 'nonat', 'update', 'update,nonat', 'outgoing'])),
+    )
