@@ -90,7 +90,7 @@ def find_sccp_general_settings(session):
 
 @daosession
 def find_sccp_line_settings(session):
-    sccp_pickup_members = find_pickup_members()
+    sccp_pickup_members = find_pickup_members('sccp')
 
     def line_config(protocolid, name, cid_name, cid_num, allow, disallow,
                     language, user_id, context, number):
@@ -109,8 +109,7 @@ def find_sccp_line_settings(session):
         if disallow:
             line['disallow'] = disallow
 
-        pickup_group_key = ('sccp', protocolid)
-        line.update(sccp_pickup_members.get(pickup_group_key, {}))
+        line.update(sccp_pickup_members.get(protocolid, {}))
 
         return line
 
@@ -467,11 +466,11 @@ def find_sip_user_settings(session):
 
 
 @daosession
-def find_pickup_members(session, query_filter=None):
+def find_pickup_members(session, protocol):
     '''
     Returns a map:
-    {(protocol, protocolid): {pickupgroup: set([pickupgroup_id, ...]),
-                              callgroup: set([pickupgroup_id, ...])},
+    {protocolid: {pickupgroup: set([pickupgroup_id, ...]),
+                  callgroup: set([pickupgroup_id, ...])},
      ...,
     }
     '''
@@ -479,7 +478,7 @@ def find_pickup_members(session, query_filter=None):
                  'pickup': 'callgroup'}
 
     res = defaultdict(lambda: defaultdict(set))
-    add_member = lambda m: res[(m.protocol, m.protocolid)][group_map[m.category]].add(m.id)
+    add_member = lambda m: res[m.protocolid][group_map[m.category]].add(m.id)
 
     base_query = session.query(
         PickupMember.category,
@@ -489,11 +488,11 @@ def find_pickup_members(session, query_filter=None):
     ).join(
         Pickup, Pickup.id == PickupMember.pickupid,
     ).filter(
-        Pickup.commented == 0
+        and_(
+             Pickup.commented == 0,
+             LineFeatures.protocol == protocol,
+        )
     )
-
-    if query_filter:
-        base_query = base_query.filter(query_filter)
 
     users = base_query.join(
         UserLine, UserLine.user_id == PickupMember.memberid,
@@ -545,19 +544,18 @@ def find_pickup_members(session, query_filter=None):
 
 @daosession
 def find_sip_pickup_settings(session):
-    pickup_members = find_pickup_members(LineFeatures.protocol == 'sip')
-    sip_line_ids = [protocolid for _, protocolid in pickup_members.iterkeys()]
+    pickup_members = find_pickup_members('sip')
 
-    if not sip_line_ids:
+    if not pickup_members:
         return
 
     sip_users = session.query(
         UserSIP.id,
         UserSIP.name,
-    ).filter(UserSIP.id.in_(sip_line_ids))
+    ).filter(UserSIP.id.in_(pickup_members.keys()))
 
     for sip_user in sip_users.all():
-        pickup_entry = pickup_members[('sip', sip_user.id)]
+        pickup_entry = pickup_members[sip_user.id]
 
         for pickup_id in pickup_entry.get('pickupgroup', []):
             yield sip_user.name, 'member', pickup_id

@@ -165,8 +165,8 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
                                             protocolid=sccp_line.id)
         callgroups = set([1, 2, 3, 4])
         pickupgroups = set([3, 4])
-        pickup_members = {('sccp', ule.line.protocolid): {'callgroup': callgroups,
-                                                          'pickupgroup': pickupgroups}}
+        pickup_members = {ule.line.protocolid: {'callgroup': callgroups,
+                                                'pickupgroup': pickupgroups}}
         mock_find_pickup_members.return_value = pickup_members
 
         sccp_lines = asterisk_conf_dao.find_sccp_line_settings()
@@ -394,25 +394,35 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
     def test_find_pickup_members_empty(self):
         self.add_pickup()
 
-        pickup_members = asterisk_conf_dao.find_pickup_members()
+        pickup_members = asterisk_conf_dao.find_pickup_members('sip')
 
         assert_that(pickup_members, contains())
 
-    def test_find_pickup_members_with_users(self):
+    def test_find_pickup_members_with_sip_users(self):
+        pickup = self.add_pickup()
+
+        ule = self.add_user_line_with_exten(protocol='sip')
+        category = self.add_pickup_member_user(pickup, ule.user_id)
+
+        pickup_members = asterisk_conf_dao.find_pickup_members('sip')
+
+        expected = {
+            ule.line.protocolid: {category: set([pickup.id])},
+        }
+
+        assert_that(pickup_members, equal_to(expected))
+
+    def test_find_pickup_members_with_sccp_users(self):
         pickup = self.add_pickup()
 
         sccp_line = self.add_sccpline()
-        ule1 = self.add_user_line_with_exten(protocol='sccp', protocolid=sccp_line.id)
-        category1 = self.add_pickup_member_user(pickup, ule1.user_id)
+        ule = self.add_user_line_with_exten(protocol='sccp', protocolid=sccp_line.id)
+        category = self.add_pickup_member_user(pickup, ule.user_id)
 
-        ule2 = self.add_user_line_with_exten(protocol='sip')
-        category2 = self.add_pickup_member_user(pickup, ule2.user_id)
-
-        pickup_members = asterisk_conf_dao.find_pickup_members()
+        pickup_members = asterisk_conf_dao.find_pickup_members('sccp')
 
         expected = {
-            ('sccp', sccp_line.id): {category1: set([pickup.id])},
-            ('sip', ule2.line.protocolid): {category2: set([pickup.id])},
+            sccp_line.id: {category: set([pickup.id])},
         }
 
         assert_that(pickup_members, equal_to(expected))
@@ -423,10 +433,10 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         ule = self.add_user_line_with_exten()
         category = self.add_pickup_member_group(pickup, ule.user_id)
 
-        pickup_members = asterisk_conf_dao.find_pickup_members()
+        pickup_members = asterisk_conf_dao.find_pickup_members('sip')
 
         expected = {
-            (ule.line.protocol, ule.line.protocolid): {category: set([pickup.id])}
+            ule.line.protocolid: {category: set([pickup.id])}
         }
 
         assert_that(pickup_members, equal_to(expected))
@@ -437,10 +447,10 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         ule = self.add_user_line_with_exten()
         category = self.add_pickup_member_queue(pickup, ule.user_id)
 
-        pickup_members = asterisk_conf_dao.find_pickup_members()
+        pickup_members = asterisk_conf_dao.find_pickup_members('sip')
 
         expected = {
-            (ule.line.protocol, ule.line.protocolid): {category: set([pickup.id])}
+            ule.line.protocolid: {category: set([pickup.id])}
         }
 
         assert_that(pickup_members, equal_to(expected))
