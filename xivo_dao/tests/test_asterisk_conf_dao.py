@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+import warnings
+
+from contextlib import contextmanager
 from hamcrest import *
 
 from mock import patch
@@ -27,6 +30,13 @@ from xivo_dao.alchemy.queuepenaltychange import QueuePenaltyChange
 from xivo_dao.tests.test_dao import DAOTestCase
 
 from xivo_dao.data_handler.func_key.tests.test_dao import TestFuncKeyDao
+
+
+@contextmanager
+def warning_filter(level):
+    warnings.simplefilter(level)
+    yield
+    warnings.resetwarnings()
 
 
 class PickupHelperMixin(object):
@@ -380,7 +390,6 @@ class TestFindExtenProgfunckeysSettings(TestFuncKeyDao):
 
 
 class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
-
 
     def test_find_pickup_members_empty(self):
         self.add_pickup()
@@ -1100,6 +1109,16 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         sip_pickup = asterisk_conf_dao.find_sip_pickup_settings()
 
         assert_that(sip_pickup, contains_inanyorder(*expected_result))
+
+    def test_find_sip_pickup_settings_no_pickup(self):
+        name1, user_id1 = self._create_user_with_usersip()
+        name2, user_id2 = self._create_user_with_usersip()
+        name3, user_id3 = self._create_user_with_usersip()
+
+        with warning_filter('error'):
+            sip_pickup = asterisk_conf_dao.find_sip_pickup_settings()
+
+            assert_that(sip_pickup, contains_inanyorder())
 
     def _create_user_with_usersip(self):
         usersip = self.add_usersip(category='user')

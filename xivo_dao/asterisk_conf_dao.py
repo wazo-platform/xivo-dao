@@ -548,6 +548,9 @@ def find_sip_pickup_settings(session):
     pickup_members = find_pickup_members(LineFeatures.protocol == 'sip')
     sip_line_ids = [protocolid for _, protocolid in pickup_members.iterkeys()]
 
+    if not sip_line_ids:
+        return
+
     sip_users = session.query(
         UserSIP.id,
         UserSIP.name,
