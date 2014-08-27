@@ -119,9 +119,7 @@ class UserSIP(Base):
     outboundproxy = Column(String(1024))
     transport = Column(String(255))
     remotesecret = Column(String(255))
-    directmedia = Column(Enum('no', 'yes', 'nonat', 'update', 'update,nonat',
-                           name='usersip_directmedia',
-                           metadata=Base.metadata))
+    directmedia = Column(String(20))
     callcounter = Column(Integer)
     busylevel = Column(Integer)
     ignoresdpversion = Column(Integer)
