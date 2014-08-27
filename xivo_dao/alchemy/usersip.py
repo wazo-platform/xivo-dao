@@ -62,8 +62,8 @@ class UserSIP(Base):
     cid_number = Column(String(80))
     maxcallbitrate = Column(Integer)
     insecure = Column(Enum('port', 'invite', 'port,invite',
-                       name='usersip_insecure',
-                       metadata=Base.metadata))
+                           name='usersip_insecure',
+                           metadata=Base.metadata))
     nat = Column(Enum('no', 'force_rport', 'comedia', 'force_rport,comedia',
                       name='usersip_nat',
                       metadata=Base.metadata))
