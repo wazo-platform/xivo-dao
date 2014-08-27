@@ -99,14 +99,14 @@ class IncallAssociator(object):
 
     def associate(self, line_extension):
         self.validator.validate_associated_to_user(line_extension)
-        created_incall = self._create_incall(line_extension)
-        self.extension_dao.associate_destination(line_extension.extension_id, 'incall', created_incall.id)
+        self._create_incall(line_extension)
 
     def _create_incall(self, line_extension):
         main_user_line = self.user_line_dao.find_main_user_line(line_extension.line_id)
         incall = Incall.user_destination(main_user_line.user_id,
                                          line_extension.extension_id)
-        return self.incall_dao.create(incall)
+        created_incall = self.incall_dao.create(incall)
+        self.extension_dao.associate_destination(line_extension.extension_id, 'incall', created_incall.id)
 
     def dissociate(self, line_extension):
         incall = self.incall_dao.find_by_extension_id(line_extension.extension_id)
