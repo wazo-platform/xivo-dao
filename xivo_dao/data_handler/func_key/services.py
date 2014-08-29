@@ -33,3 +33,7 @@ def create(func_key):
     created_func_key = dao.create(func_key)
     notifier.created(created_func_key)
     return created_func_key
+
+
+def find_all_hints(context):
+    return dao.find_all_hints(context)

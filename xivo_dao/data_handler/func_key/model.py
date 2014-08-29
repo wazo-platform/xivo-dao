@@ -37,4 +37,4 @@ class FuncKey(NewModel):
 
     _RELATION = {}
 
-
+Hint = namedtuple('Hint', ['user_id', 'exten', 'type', 'number'])

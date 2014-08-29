@@ -16,11 +16,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from mock import patch, Mock
-from hamcrest import assert_that, equal_to
+from hamcrest import assert_that, equal_to, contains
 
 from xivo_dao.tests.test_case import TestCase
 from xivo_dao.data_handler.func_key import services
-from xivo_dao.data_handler.func_key.model import FuncKey
+from xivo_dao.data_handler.func_key.model import FuncKey, Hint
 
 
 class TestFuncKeyService(TestCase):
@@ -65,3 +65,18 @@ class TestFuncKeyService(TestCase):
         validate_create.assert_called_once_with(func_key)
         func_key_dao_create.assert_called_once_with(func_key)
         func_key_notifier_created.assert_called_once_with(func_key)
+
+    @patch('xivo_dao.data_handler.func_key.dao.find_all_hints')
+    def test_find_all_hints(self, find_all_hints):
+        context = 'mycontext'
+        hint = Hint(user_id=1,
+                    exten='1234',
+                    type='enablevm',
+                    number=None)
+
+        find_all_hints.return_value = [hint]
+
+        result = services.find_all_hints(context)
+
+        assert_that(result, contains(hint))
+        find_all_hints.assert_called_once_with(context)
