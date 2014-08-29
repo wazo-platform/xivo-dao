@@ -15,14 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, equal_to, none, contains, contains_inanyorder, instance_of, has_property, is_not
+from hamcrest import assert_that, equal_to, none, contains, contains_inanyorder, is_not, instance_of, has_property
 from mock import patch
 
 from xivo_dao.tests.test_dao import DAOTestCase
 
-from xivo_dao.data_handler.exception import NotFoundError
-from xivo_dao.data_handler.exception import DataError
-from xivo_dao.data_handler.func_key.model import FuncKey
+from xivo_dao.data_handler.exception import NotFoundError, DataError
+from xivo_dao.data_handler.func_key.model import FuncKey, Hint
 from xivo_dao.data_handler.func_key import dao
 from xivo_dao.alchemy.func_key import FuncKey as FuncKeySchema
 from xivo_dao.alchemy.func_key_dest_service import FuncKeyDestService as FuncKeyDestServiceSchema
@@ -33,87 +32,99 @@ from xivo_dao.alchemy.func_key_dest_queue import FuncKeyDestQueue as FuncKeyDest
 from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser as FuncKeyDestUserSchema
 
 
-class BaseTestFuncKeyDao(DAOTestCase):
-    pass
-
-
 class TestFuncKeyDao(DAOTestCase):
 
-    destination_type_ids = {
-        'user': 1,
-        'group': 2,
-        'queue': 3,
-        'conference': 4,
-        'service': 5,
-        'forward': 6,
-    }
-
-    destination_type_schemas = {
-        'user': (FuncKeyDestUserSchema, 'user_id'),
-        'group': (FuncKeyDestGroupSchema, 'group_id'),
-        'queue': (FuncKeyDestQueueSchema, 'queue_id'),
-        'conference': (FuncKeyDestConferenceSchema, 'conference_id'),
-        'service': (FuncKeyDestServiceSchema, 'extension_id'),
-        'forward': (FuncKeyDestForwardSchema, 'extension_id'),
+    destinations = {
+        'user': (FuncKeyDestUserSchema, 'user_id', 1),
+        'group': (FuncKeyDestGroupSchema, 'group_id', 2),
+        'queue': (FuncKeyDestQueueSchema, 'queue_id', 3),
+        'conference': (FuncKeyDestConferenceSchema, 'conference_id', 4),
+        'service': (FuncKeyDestServiceSchema, 'extension_id', 5),
+        'forward': (FuncKeyDestForwardSchema, 'extension_id', 6),
     }
 
     def setUp(self):
-        DAOTestCase.setUp(self)
-        self.create_types_and_destinations()
+        super(TestFuncKeyDao, self).setUp()
+        self.setup_types()
+        self.setup_destination_types()
 
-    def create_types_and_destinations(self):
-        type_row = self.add_func_key_type(name='speeddial')
-        self.type_id = type_row.id
+    def setup_types(self):
+        row = self.add_func_key_type(name='speeddial')
+        self.speeddial_id = row.id
 
-        for destination_name, destination_id in self.destination_type_ids.items():
-            self.add_func_key_destination_type(id=destination_id, name=destination_name)
+    def setup_destination_types(self):
+        for name, destination in self.destinations.items():
+            self.add_func_key_destination_type(id=destination[2],
+                                               name=name)
 
-    def add_destination(self, destination, destination_id):
-        destination_type_id = self.destination_type_ids[destination]
-        schema, column = self.destination_type_schemas[destination]
+    def add_extenfeatures(self, exten, typeval):
+        extension_row = self.add_extension(exten=exten,
+                                           type='extenfeatures',
+                                           context='xivo-features',
+                                           typeval=typeval)
+        return extension_row
 
-        func_key_row = self.add_func_key(type_id=self.type_id,
-                                         destination_type_id=destination_type_id)
+    def add_user_destination(self, dest_id):
+        return self._add_destination('user', dest_id)
 
-        destination_row = schema(**{'func_key_id': func_key_row.id,
-                                    column: destination_id})
-        self.add_me(destination_row)
+    def add_group_destination(self, dest_id):
+        return self._add_destination('group', dest_id)
 
-        return func_key_row, destination_row
+    def add_queue_destination(self, dest_id):
+        return self._add_destination('queue', dest_id)
 
-    def add_forward(self, extension_id, number=None):
-        destination_type_id = self.destination_type_ids['forward']
+    def add_conference_destination(self, dest_id):
+        return self._add_destination('conference', dest_id)
 
-        func_key_row = self.add_func_key(type_id=self.type_id,
-                                         destination_type_id=destination_type_id)
+    def add_service_destination(self, dest_id):
+        return self._add_destination('service', dest_id)
 
+    def add_forward_destination(self, extension_id, number=None):
+        destination_type_id = 6
+        func_key_row = self.create_func_key(destination_type_id)
         destination_row = FuncKeyDestForwardSchema(func_key_id=func_key_row.id,
-                                                   destination_type_id=destination_type_id,
                                                    extension_id=extension_id,
+                                                   destination_type_id=destination_type_id,
                                                    number=number)
-
         self.add_me(destination_row)
+        return destination_row
 
-        return func_key_row, destination_row
+    def create_func_key(self, dest_type_id):
+        return self.add_func_key(type_id=self.speeddial_id,
+                                 destination_type_id=dest_type_id)
 
-    def prepare_destination(self, destination, destination_id):
-        func_key_row, destination_row = self.add_destination(destination, destination_id)
+    def create_forward_func_key(self, exten, fwd_type, number=None):
+        extension_row = self.add_extenfeatures(exten, fwd_type)
+        return self.add_forward_destination(extension_row.id, number)
 
-        return FuncKey(id=func_key_row.id,
+    def create_service_func_key(self, exten, service_type):
+        extension_row = self.add_extenfeatures(exten, service_type)
+        return self.add_service_destination(extension_row.id)
+
+    def create_user_func_key(self):
+        user_row = self.add_user()
+        return self.add_user_destination(user_row.id)
+
+    def create_group_func_key(self):
+        group_row = self.add_group()
+        return self.add_group_destination(group_row.id)
+
+    def create_queue_func_key(self):
+        queue_row = self.add_queuefeatures()
+        return self.add_queue_destination(queue_row.id)
+
+    def create_conference_func_key(self):
+        conference_row = self.add_meetmefeatures()
+        return self.add_conference_destination(conference_row.id)
+
+    def row_to_model(self, row):
+        return FuncKey(id=row.func_key_id,
                        type='speeddial',
-                       destination=destination,
-                       destination_id=destination_id)
-
-    def prepare_forward(self, extension_id, number=None):
-        func_key_row, dest_forward_row = self.add_forward(extension_id, number)
-
-        return FuncKey(id=func_key_row.id,
-                       type='speeddial',
-                       destination='forward',
-                       destination_id=dest_forward_row.extension_id)
+                       destination=self._destination_name(row.destination_type_id),
+                       destination_id=self._destination_id(row))
 
     def find_destination(self, destination, destination_id):
-        schema, column_name = self.destination_type_schemas[destination]
+        schema, column_name, _ = self.destinations[destination]
         column = getattr(schema, column_name)
 
         row = (self.session.query(schema)
@@ -126,6 +137,27 @@ class TestFuncKeyDao(DAOTestCase):
         row = self.find_destination(destination, destination_id)
         assert_that(row, none())
 
+    def _add_destination(self, dest_type, dest_id):
+        schema, column, destination_type_id = self.destinations[dest_type]
+
+        func_key_row = self.create_func_key(destination_type_id)
+
+        destination_row = schema(**{'func_key_id': func_key_row.id,
+                                    column: dest_id})
+        self.add_me(destination_row)
+
+        return destination_row
+
+    def _destination_name(self, type_id):
+        for name, destination in self.destinations.items():
+            if destination[2] == type_id:
+                return name
+
+    def _destination_id(self, row):
+        for name, destination in self.destinations.items():
+            if destination[2] == row.destination_type_id:
+                return getattr(row, destination[1])
+
 
 class TestFuncKeySearch(TestFuncKeyDao):
 
@@ -136,11 +168,8 @@ class TestFuncKeySearch(TestFuncKeyDao):
         assert_that(result.items, contains())
 
     def test_given_forward_destination_when_searching_then_one_result_returned(self):
-        extension_row = self.add_extension(type='extenfeatures',
-                                           context='xivo-features',
-                                           typeval='fwdrna',
-                                           exten='_*22.')
-        func_key = self.prepare_forward(extension_row.id, '1234')
+        destination_row = self.create_forward_func_key('_*22.', 'fwdrna')
+        func_key = self.row_to_model(destination_row)
 
         result = dao.search()
 
@@ -148,10 +177,8 @@ class TestFuncKeySearch(TestFuncKeyDao):
         assert_that(result.items, contains(func_key))
 
     def test_given_service_destination_when_searching_then_one_result_returned(self):
-        extension_row = self.add_extension(type='extenfeatures',
-                                           context='xivo-features',
-                                           typeval='vmusermsg')
-        func_key = self.prepare_destination('service', extension_row.id)
+        destination_row = self.create_service_func_key('*98', 'vmusermsg')
+        func_key = self.row_to_model(destination_row)
 
         result = dao.search()
 
@@ -159,8 +186,8 @@ class TestFuncKeySearch(TestFuncKeyDao):
         assert_that(result.items, contains(func_key))
 
     def test_given_user_destination_when_searching_then_one_result_returned(self):
-        user_row = self.add_user()
-        func_key = self.prepare_destination('user', user_row.id)
+        destination_row = self.create_user_func_key()
+        func_key = self.row_to_model(destination_row)
 
         result = dao.search()
 
@@ -168,8 +195,8 @@ class TestFuncKeySearch(TestFuncKeyDao):
         assert_that(result.items, contains(func_key))
 
     def test_group_destination_when_searching_then_one_result_returned(self):
-        group_row = self.add_group()
-        func_key = self.prepare_destination('group', group_row.id)
+        destination_row = self.create_group_func_key()
+        func_key = self.row_to_model(destination_row)
 
         result = dao.search()
 
@@ -177,8 +204,8 @@ class TestFuncKeySearch(TestFuncKeyDao):
         assert_that(result.items, contains(func_key))
 
     def test_queue_destination_when_searching_then_one_result_returned(self):
-        queue_row = self.add_queuefeatures()
-        func_key = self.prepare_destination('queue', queue_row.id)
+        destination_row = self.create_queue_func_key()
+        func_key = self.row_to_model(destination_row)
 
         result = dao.search()
 
@@ -186,8 +213,8 @@ class TestFuncKeySearch(TestFuncKeyDao):
         assert_that(result.items, contains(func_key))
 
     def test_conference_destination_when_searching_then_one_result_returned(self):
-        conference_row = self.add_meetmefeatures()
-        func_key = self.prepare_destination('conference', conference_row.id)
+        destination_row = self.create_conference_func_key()
+        func_key = self.row_to_model(destination_row)
 
         result = dao.search()
 
@@ -195,18 +222,19 @@ class TestFuncKeySearch(TestFuncKeyDao):
         assert_that(result.items, contains(func_key))
 
     def test_given_2_destination_types_when_searching_then_two_results_returned(self):
-        user_row = self.add_user()
-        group_row = self.add_group()
-        user_destination = self.prepare_destination('user', user_row.id)
-        group_destination = self.prepare_destination('group', group_row.id)
+        user_dest_row = self.create_user_func_key()
+        group_dest_row = self.create_group_func_key()
+
+        user_func_key = self.row_to_model(user_dest_row)
+        group_func_key = self.row_to_model(group_dest_row)
 
         result = dao.search()
         assert_that(result.total, equal_to(2))
-        assert_that(result.items, contains_inanyorder(user_destination, group_destination))
+        assert_that(result.items, contains_inanyorder(user_func_key, group_func_key))
 
     def test_given_func_key_without_destination_when_searching_then_returns_nothing(self):
-        self.add_func_key(type_id=self.type_id,
-                          destination_type_id=self.destination_type_ids['user'])
+        self.add_func_key(type_id=self.speeddial_id,
+                          destination_type_id=1)
 
         result = dao.search()
         assert_that(result.total, equal_to(0))
@@ -221,80 +249,73 @@ class TestFuncKeyFindAllByDestination(TestFuncKeyDao):
         assert_that(result, contains())
 
     def test_given_one_user_destination_then_returns_list_with_one_element(self):
-        user_row = self.add_user()
-        func_key = self.prepare_destination('user', user_row.id)
+        destination_row = self.create_user_func_key()
+        func_key = self.row_to_model(destination_row)
 
-        result = dao.find_all_by_destination('user', user_row.id)
+        result = dao.find_all_by_destination('user', destination_row.user_id)
 
         assert_that(result, contains(func_key))
 
     def test_given_2_user_destinations_then_returns_list_with_right_destination(self):
-        first_user = self.add_user()
-        second_user = self.add_user()
+        first_user_dest = self.create_user_func_key()
+        self.create_user_func_key()
 
-        self.prepare_destination('user', first_user.id)
-        func_key = self.prepare_destination('user', second_user.id)
+        func_key = self.row_to_model(first_user_dest)
 
-        result = dao.find_all_by_destination('user', second_user.id)
+        result = dao.find_all_by_destination('user', first_user_dest.user_id)
 
         assert_that(result, contains(func_key))
 
     def test_given_one_group_destination_then_returns_list_with_one_group_destination(self):
-        group_row = self.add_group()
-        func_key = self.prepare_destination('group', group_row.id)
+        destination_row = self.create_group_func_key()
+        func_key = self.row_to_model(destination_row)
 
-        result = dao.find_all_by_destination('group', group_row.id)
+        result = dao.find_all_by_destination('group', destination_row.group_id)
         assert_that(result, contains(func_key))
 
     def test_given_one_queue_destination_then_returns_list_with_one_queue_destination(self):
-        queue_row = self.add_queuefeatures()
-        func_key = self.prepare_destination('queue', queue_row.id)
+        destination_row = self.create_queue_func_key()
+        func_key = self.row_to_model(destination_row)
 
-        result = dao.find_all_by_destination('queue', queue_row.id)
+        result = dao.find_all_by_destination('queue', destination_row.queue_id)
         assert_that(result, contains(func_key))
 
     def test_given_one_conference_destination_then_returns_list_with_one_conference_destination(self):
-        conference_row = self.add_meetmefeatures()
-        func_key = self.prepare_destination('conference', conference_row.id)
+        destination_row = self.create_conference_func_key()
+        func_key = self.row_to_model(destination_row)
 
-        result = dao.find_all_by_destination('conference', conference_row.id)
+        result = dao.find_all_by_destination('conference', destination_row.conference_id)
         assert_that(result, contains(func_key))
 
     def test_given_one_service_destination_then_returns_list_with_one_service_destination(self):
-        service_row = self.add_extension(type='extenfeatures',
-                                         context='xivo-features',
-                                         typeval='vmusermsg')
-        func_key = self.prepare_destination('service', service_row.id)
+        destination_row = self.create_service_func_key('*98', 'vmusermsg')
+        func_key = self.row_to_model(destination_row)
 
-        result = dao.find_all_by_destination('service', service_row.id)
+        result = dao.find_all_by_destination('service', destination_row.extension_id)
 
         assert_that(result, contains(func_key))
 
     def test_given_one_forward_destination_then_returns_list_with_one_forward_destination(self):
-        extension_row = self.add_extension(type='extenfeatures',
-                                           context='xivo-features',
-                                           typeval='fwdrna',
-                                           exten='_*22.')
-        func_key = self.prepare_forward(extension_row.id, '1234')
+        destination_row = self.create_forward_func_key('_*22.', 'fwdrna')
+        func_key = self.row_to_model(destination_row)
 
-        result = dao.find_all_by_destination('forward', extension_row.id)
+        result = dao.find_all_by_destination('forward', destination_row.extension_id)
 
         assert_that(result, contains(func_key))
 
     def test_given_group_and_user_destination_then_returns_list_with_right_destination(self):
-        user_row = self.add_user()
-        self.prepare_destination('user', user_row.id)
-        group_row = self.add_group()
-        group_func_key = self.prepare_destination('group', group_row.id)
+        self.create_user_func_key()
+        group_dest_row = self.create_group_func_key()
+        group_func_key = self.row_to_model(group_dest_row)
 
-        result = dao.find_all_by_destination('group', group_row.id)
+        result = dao.find_all_by_destination('group', group_dest_row.group_id)
         assert_that(result, contains(group_func_key))
 
     def test_given_user_destination_when_searching_wrong_type_then_returns_empty_list(self):
-        user_row = self.add_user()
-        self.prepare_destination('user', user_row.id)
+        destination_row = self.create_user_func_key()
+        self.row_to_model(destination_row)
 
-        result = dao.find_all_by_destination('invalidtype', user_row.id)
+        result = dao.find_all_by_destination('invalidtype', destination_row.user_id)
 
         assert_that(result, contains())
 
@@ -305,63 +326,58 @@ class TestFuncKeyGet(TestFuncKeyDao):
         self.assertRaises(NotFoundError, dao.get, 1)
 
     def test_when_user_func_key_in_db_then_func_key_model_returned(self):
-        user_row = self.add_user()
-        func_key = self.prepare_destination('user', user_row.id)
+        destination_row = self.create_user_func_key()
+        func_key = self.row_to_model(destination_row)
 
         result = dao.get(func_key.id)
 
         assert_that(result, equal_to(func_key))
 
     def test_when_group_func_key_in_db_then_func_key_model_returned(self):
-        group_row = self.add_group()
-        func_key = self.prepare_destination('group', group_row.id)
+        destination_row = self.create_group_func_key()
+        func_key = self.row_to_model(destination_row)
 
         result = dao.get(func_key.id)
 
         assert_that(result, equal_to(func_key))
 
     def test_when_queue_func_key_in_db_then_func_key_model_returned(self):
-        queue_row = self.add_queuefeatures()
-        func_key = self.prepare_destination('queue', queue_row.id)
+        destination_row = self.create_queue_func_key()
+        func_key = self.row_to_model(destination_row)
 
         result = dao.get(func_key.id)
 
         assert_that(result, equal_to(func_key))
 
     def test_when_conference_func_key_in_db_then_func_key_model_returned(self):
-        conference_row = self.add_meetmefeatures()
-        func_key = self.prepare_destination('conference', conference_row.id)
+        destination_row = self.create_conference_func_key()
+        func_key = self.row_to_model(destination_row)
 
         result = dao.get(func_key.id)
 
         assert_that(result, equal_to(func_key))
 
     def test_when_service_func_key_in_db_then_func_key_model_returned(self):
-        service_row = self.add_extension(type='extenfeatures',
-                                         context='xivo-features',
-                                         typeval='vmusermsg')
-        func_key = self.prepare_destination('service', service_row.id)
+        destination_row = self.create_service_func_key('*98', 'vmusermsg')
+        func_key = self.row_to_model(destination_row)
 
         result = dao.get(func_key.id)
 
         assert_that(result, equal_to(func_key))
 
     def test_when_forward_func_key_in_db_then_func_key_model_returned(self):
-        extension_row = self.add_extension(type='extenfeatures',
-                                           context='xivo-features',
-                                           typeval='fwdrna',
-                                           exten='_*22.')
-        func_key = self.prepare_forward(extension_row.id, '1234')
+        destination_row = self.create_forward_func_key('_*22.', 'fwdrna')
+        func_key = self.row_to_model(destination_row)
 
         result = dao.get(func_key.id)
 
         assert_that(result, equal_to(func_key))
 
     def test_when_two_func_keys_in_db_then_right_model_returned(self):
-        user_row = self.add_user()
+        self.create_user_func_key()
+        second_user_dest = self.create_user_func_key()
 
-        self.prepare_destination('user', user_row.id)
-        second_func_key = self.prepare_destination('user', user_row.id)
+        second_func_key = self.row_to_model(second_user_dest)
 
         result = dao.get(second_func_key.id)
 
@@ -386,72 +402,6 @@ class TestFuncKeyCreate(TestFuncKeyDao):
 
         self.assert_func_key_row_created(user_destination_row)
 
-    def test_given_group_destination_then_func_key_created(self):
-        group_row = self.add_group()
-
-        func_key = FuncKey(type='speeddial',
-                           destination='group',
-                           destination_id=group_row.id)
-
-        created_func_key = dao.create(func_key)
-        assert_that(created_func_key, instance_of(FuncKey))
-        assert_that(created_func_key, has_property('id', is_not(none())))
-
-        group_destination_row = self.find_destination('group', group_row.id)
-        assert_that(group_destination_row, is_not(none()))
-
-        self.assert_func_key_row_created(group_destination_row)
-
-    def test_given_queue_destination_then_func_key_created(self):
-        queue_row = self.add_queuefeatures()
-
-        func_key = FuncKey(type='speeddial',
-                           destination='queue',
-                           destination_id=queue_row.id)
-
-        created_func_key = dao.create(func_key)
-        assert_that(created_func_key, instance_of(FuncKey))
-        assert_that(created_func_key, has_property('id', is_not(none())))
-
-        queue_destination_row = self.find_destination('queue', queue_row.id)
-        assert_that(queue_destination_row, is_not(none()))
-
-        self.assert_func_key_row_created(queue_destination_row)
-
-    def test_given_conference_destination_then_func_key_created(self):
-        conference_row = self.add_meetmefeatures()
-
-        func_key = FuncKey(type='speeddial',
-                           destination='conference',
-                           destination_id=conference_row.id)
-
-        created_func_key = dao.create(func_key)
-        assert_that(created_func_key, instance_of(FuncKey))
-        assert_that(created_func_key, has_property('id', is_not(none())))
-
-        conference_destination_row = self.find_destination('conference', conference_row.id)
-        assert_that(conference_destination_row, is_not(none()))
-
-        self.assert_func_key_row_created(conference_destination_row)
-
-    def test_given_service_destination_then_func_key_created(self):
-        service_row = self.add_extension(type='extenfeatures',
-                                         context='xivo-features',
-                                         typeval='vmusermsg')
-
-        func_key = FuncKey(type='speeddial',
-                           destination='service',
-                           destination_id=service_row.id)
-
-        created_func_key = dao.create(func_key)
-        assert_that(created_func_key, instance_of(FuncKey))
-        assert_that(created_func_key, has_property('id', is_not(none())))
-
-        service_destination_row = self.find_destination('service', service_row.id)
-        assert_that(service_destination_row, is_not(none()))
-
-        self.assert_func_key_row_created(service_destination_row)
-
     @patch('xivo_dao.helpers.db_manager.DaoSession')
     @patch('xivo_dao.data_handler.func_key.dao.commit_or_abort')
     def test_given_db_error_then_transaction_rollbacked(self, commit_or_abort, session_maker):
@@ -473,66 +423,13 @@ class TestFuncKeyCreate(TestFuncKeyDao):
 class TestFuncKeyDelete(TestFuncKeyDao):
 
     def test_given_user_destination_then_func_key_deleted(self):
-        user_row = self.add_user()
-        func_key = self.prepare_destination('user', user_row.id)
+        destination_row = self.create_user_func_key()
+        func_key = self.row_to_model(destination_row)
 
         dao.delete(func_key)
 
         self.assert_func_key_deleted(func_key.id)
-        self.assert_destination_deleted('user', user_row.id)
-
-    def test_given_group_destination_then_func_key_deleted(self):
-        group_row = self.add_group()
-        func_key = self.prepare_destination('group', group_row.id)
-
-        dao.delete(func_key)
-
-        self.assert_func_key_deleted(func_key.id)
-        self.assert_destination_deleted('group', group_row.id)
-
-    def test_given_queue_destination_then_func_key_deleted(self):
-        queue_row = self.add_queuefeatures()
-        func_key = self.prepare_destination('queue', queue_row.id)
-
-        dao.delete(func_key)
-
-        self.assert_func_key_deleted(func_key.id)
-        self.assert_destination_deleted('queue', queue_row.id)
-
-    def test_given_conference_destination_then_func_key_deleted(self):
-        conference_row = self.add_meetmefeatures()
-        func_key = self.prepare_destination('conference', conference_row.id)
-
-        dao.delete(func_key)
-
-        self.assert_func_key_deleted(func_key.id)
-        self.assert_destination_deleted('conference', conference_row.id)
-
-    def test_given_service_destination_then_func_key_deleted(self):
-        extension_row = self.add_extension(type='extenfeatures',
-                                           context='xivo-features',
-                                           typeval='vmusermsg')
-        func_key = self.prepare_destination('service', extension_row.id)
-
-        dao.delete(func_key)
-
-        self.assert_func_key_deleted(func_key.id)
-        self.assert_destination_deleted('service', extension_row.id)
-
-    def test_given_multiple_destinations_then_only_one_func_key_deleted(self):
-        user_row = self.add_user()
-        first_func_key = self.prepare_destination('user', user_row.id)
-
-        group_row = self.add_group()
-        self.prepare_destination('group', group_row.id)
-
-        dao.delete(first_func_key)
-
-        self.assert_func_key_deleted(first_func_key.id)
-        self.assert_destination_deleted('user', user_row.id)
-
-        existing_func_key = self.find_destination('group', group_row.id)
-        assert_that(existing_func_key, is_not(none()))
+        self.assert_destination_deleted('user', destination_row.user_id)
 
     @patch('xivo_dao.helpers.db_manager.DaoSession')
     @patch('xivo_dao.data_handler.func_key.dao.commit_or_abort')
