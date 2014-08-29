@@ -17,7 +17,7 @@
 
 from collections import defaultdict
 
-from sqlalchemy.sql.expression import and_, or_, literal, cast, null
+from sqlalchemy.sql.expression import and_, or_, literal, cast
 from sqlalchemy.types import VARCHAR
 
 from xivo_dao.helpers.db_manager import daosession
@@ -57,9 +57,7 @@ from xivo_dao.alchemy.queueskill import QueueSkill
 from xivo_dao.alchemy.agentqueueskill import AgentQueueSkill
 from xivo_dao.alchemy.queuepenaltychange import QueuePenaltyChange
 
-from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
-from xivo_dao.alchemy.func_key_dest_service import FuncKeyDestService
-from xivo_dao.alchemy.func_key_dest_forward import FuncKeyDestForward
+from xivo_dao.data_handler.func_key import services as func_key_services
 
 
 @daosession
@@ -185,74 +183,26 @@ def find_general_features_settings(session):
     return [row.todict() for row in rows]
 
 
-@daosession
-def find_exten_progfunckeys_settings(session, context_name):
-    old_progfunckeys = _find_old_progfunckeys(session, context_name)
-    new_progfunckeys = _find_new_progfunckeys(session, context_name)
+def find_exten_progfunckeys_settings(context_name):
+    old_progfunckeys = _find_old_progfunckeys(context_name)
+    new_progfunckeys = _find_new_progfunckeys(context_name)
     return old_progfunckeys + new_progfunckeys
 
 
-def _find_new_progfunckeys(session, context_name):
-    base = (
-        session.query(
-            UserFeatures.id.label('user_id'),
-            Extension.exten.label('leftexten'),
-            Extension.type.label('typeextenumbers'),
-            Extension.typeval.label('typevalextenumbers'))
-        .join(
-            UserLine,
-            and_(UserFeatures.id == UserLine.user_id,
-                 UserLine.main_user == True,
-                 UserLine.main_line == True))
-        .join(
-            LineFeatures,
-            UserLine.line_id == LineFeatures.id)
-        .join(
-            FuncKeyMapping,
-            and_(
-                FuncKeyMapping.template_id == UserFeatures.func_key_private_template_id,
-                FuncKeyMapping.blf == True))
-        .filter(
-            LineFeatures.context == context_name
-        )
-    )
+def _find_new_progfunckeys(context_name):
+    hints = func_key_services.find_all_hints(context_name)
 
-    service_query = (
-        base.add_columns(
-            null().label('exten'))
-        .join(
-            FuncKeyDestService,
-            FuncKeyDestService.func_key_id == FuncKeyMapping.func_key_id)
-        .join(
-            Extension,
-            FuncKeyDestService.extension_id == Extension.id)
-    )
-
-    forward_query = (
-        base.add_columns(
-            FuncKeyDestForward.number.label('exten'))
-        .join(
-            FuncKeyDestForward,
-            FuncKeyDestForward.func_key_id == FuncKeyMapping.func_key_id)
-        .join(
-            Extension,
-            FuncKeyDestForward.extension_id == Extension.id)
-    )
-
-    query = service_query.union(forward_query)
-
-    hints = [{'user_id': row.user_id,
-              'leftexten': row.leftexten,
-              'typeextenumbers': row.typeextenumbers,
-              'typevalextenumbers': row.typevalextenumbers,
-              'typeextenumbersright': None,
-              'typevalextenumbersright': None,
-              'exten': row.exten}
-             for row in query]
-
-    return hints
+    return [{'user_id': hint.user_id,
+             'leftexten': hint.exten,
+             'typeextenumbers': 'extenfeatures',
+             'typevalextenumbers': hint.type,
+             'typeextenumbersright': None,
+             'typevalextenumbersright': None,
+             'exten': hint.number}
+            for hint in hints]
 
 
+@daosession
 def _find_old_progfunckeys(session, context_name):
     rows = (session.query(PhoneFunckey.iduserfeatures,
                           PhoneFunckey.exten,
