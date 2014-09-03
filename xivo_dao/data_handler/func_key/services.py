@@ -35,5 +35,21 @@ def create(func_key):
     return created_func_key
 
 
+def find_all_fwd_unc(user_id):
+    return _filter_fwd_type(user_id, 'unconditional')
+
+
+def find_all_fwd_rna(user_id):
+    return _filter_fwd_type(user_id, 'noanswer')
+
+
+def find_all_fwd_busy(user_id):
+    return _filter_fwd_type(user_id, 'busy')
+
+
+def _filter_fwd_type(user_id, fwd_type):
+    return [fwd.number or '' for fwd in dao.find_all_forwards(user_id, fwd_type)]
+
+
 def find_all_hints(context):
     return dao.find_all_hints(context)

@@ -21,7 +21,7 @@ from mock import patch
 from xivo_dao.tests.test_dao import DAOTestCase
 
 from xivo_dao.data_handler.exception import NotFoundError, DataError
-from xivo_dao.data_handler.func_key.model import FuncKey, Hint
+from xivo_dao.data_handler.func_key.model import FuncKey, Hint, Forward
 from xivo_dao.data_handler.func_key import dao
 from xivo_dao.alchemy.func_key import FuncKey as FuncKeySchema
 from xivo_dao.alchemy.func_key_dest_service import FuncKeyDestService as FuncKeyDestServiceSchema
@@ -482,3 +482,54 @@ class TestFindAllHints(TestFuncKeyDao):
         result = dao.find_all_hints(context)
 
         assert_that(result, contains(hint))
+
+
+class TestFindAllForwards(TestFuncKeyDao):
+
+    def prepare_user_and_forward(self, exten, fwd_type, number=None):
+        user_row = self.add_user()
+
+        exten_row = self.add_extenfeatures(exten, fwd_type)
+        forward_row = self.add_forward_destination(exten_row.id, number)
+        self.add_func_key_mapping(func_key_id=forward_row.func_key_id,
+                                  destination_type_id=forward_row.destination_type_id,
+                                  template_id=user_row.func_key_private_template_id,
+                                  position=1,
+                                  blf=True)
+
+        return user_row, forward_row
+
+    def test_given_no_forwards_then_returns_empty_list(self):
+        result = dao.find_all_forwards(1, 'unconditional')
+
+        assert_that(result, contains())
+
+    def test_given_unconditional_forward_then_list_contains_unconditional_forward(self):
+        number = '1234'
+        user_row, forward_row = self.prepare_user_and_forward('_*21.', 'fwdunc', number)
+
+        result = dao.find_all_forwards(user_row.id, 'unconditional')
+
+        assert_that(result, contains(Forward(user_id=user_row.id,
+                                             type='unconditional',
+                                             number=number)))
+
+    def test_given_noanswer_forward_then_list_contains_noanswer_forward(self):
+        number = '1234'
+        user_row, forward_row = self.prepare_user_and_forward('_*22.', 'fwdrna', number)
+
+        result = dao.find_all_forwards(user_row.id, 'noanswer')
+
+        assert_that(result, contains(Forward(user_id=user_row.id,
+                                             type='noanswer',
+                                             number=number)))
+
+    def test_given_busy_forward_then_list_contains_busy_forward(self):
+        number = '1234'
+        user_row, forward_row = self.prepare_user_and_forward('_*23.', 'fwdbusy', number)
+
+        result = dao.find_all_forwards(user_row.id, 'busy')
+
+        assert_that(result, contains(Forward(user_id=user_row.id,
+                                             type='busy',
+                                             number=number)))

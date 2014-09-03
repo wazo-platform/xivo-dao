@@ -20,7 +20,7 @@ from hamcrest import assert_that, equal_to, contains
 
 from xivo_dao.tests.test_case import TestCase
 from xivo_dao.data_handler.func_key import services
-from xivo_dao.data_handler.func_key.model import FuncKey, Hint
+from xivo_dao.data_handler.func_key.model import FuncKey, Forward, Hint
 
 
 class TestFuncKeyService(TestCase):
@@ -65,6 +65,60 @@ class TestFuncKeyService(TestCase):
         validate_create.assert_called_once_with(func_key)
         func_key_dao_create.assert_called_once_with(func_key)
         func_key_notifier_created.assert_called_once_with(func_key)
+
+    @patch('xivo_dao.data_handler.func_key.dao.find_all_forwards')
+    def test_fund_all_fwd_unc(self, find_all_forwards):
+        expected_number = '1234'
+        fwd_type = 'unconditional'
+        user_id = 1
+
+        find_all_forwards.return_value = [Forward(user_id=user_id,
+                                                  type=fwd_type,
+                                                  number=expected_number),
+                                          Forward(user_id=user_id,
+                                                  type=fwd_type,
+                                                  number=None)]
+
+        result = services.find_all_fwd_unc(user_id)
+
+        find_all_forwards.assert_called_once_with(user_id, fwd_type)
+        assert_that(result, contains(expected_number, ''))
+
+    @patch('xivo_dao.data_handler.func_key.dao.find_all_forwards')
+    def test_fund_all_fwd_rna(self, find_all_forwards):
+        expected_number = '2345'
+        fwd_type = 'noanswer'
+        user_id = 1
+
+        find_all_forwards.return_value = [Forward(user_id=user_id,
+                                                  type=fwd_type,
+                                                  number=expected_number),
+                                          Forward(user_id=user_id,
+                                                  type=fwd_type,
+                                                  number=None)]
+
+        result = services.find_all_fwd_rna(user_id)
+
+        find_all_forwards.assert_called_once_with(user_id, fwd_type)
+        assert_that(result, contains(expected_number, ''))
+
+    @patch('xivo_dao.data_handler.func_key.dao.find_all_forwards')
+    def test_fund_all_fwd_busy(self, find_all_forwards):
+        expected_number = '1234'
+        fwd_type = 'busy'
+        user_id = 1
+
+        find_all_forwards.return_value = [Forward(user_id=user_id,
+                                                  type=fwd_type,
+                                                  number=expected_number),
+                                          Forward(user_id=user_id,
+                                                  type=fwd_type,
+                                                  number=None)]
+
+        result = services.find_all_fwd_busy(user_id)
+
+        find_all_forwards.assert_called_once_with(user_id, fwd_type)
+        assert_that(result, contains(expected_number, ''))
 
     @patch('xivo_dao.data_handler.func_key.dao.find_all_hints')
     def test_find_all_hints(self, find_all_hints):
