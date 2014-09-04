@@ -483,6 +483,34 @@ class TestFindAllHints(TestFuncKeyDao):
 
         assert_that(result, contains(hint))
 
+    def test_given_user_has_forward_func_key_then_returns_appropriate_hint(self):
+        context = 'mycontext'
+
+        user_row = self.add_user()
+        line_row = self.add_line(context=context)
+        extension_row = self.add_extension(exten='1000', context=context, type='user', typeval=user_row.id)
+        self.add_user_line(user_id=user_row.id,
+                           line_id=line_row.id,
+                           extension_id=extension_row.id,
+                           main_user=True,
+                           main_line=True)
+
+        destination_row = self.create_forward_func_key('_*22.', 'fwdrna', number='1001')
+        self.add_func_key_mapping(template_id=user_row.func_key_private_template_id,
+                                  func_key_id=destination_row.func_key_id,
+                                  destination_type_id=destination_row.destination_type_id,
+                                  position=1,
+                                  blf=True)
+
+        hint = Hint(user_id=user_row.id,
+                    type='fwdrna',
+                    exten='_*22.',
+                    number='1001')
+
+        result = dao.find_all_hints(context)
+
+        assert_that(result, contains(hint))
+
 
 class TestFindAllForwards(TestFuncKeyDao):
 

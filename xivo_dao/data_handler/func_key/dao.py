@@ -87,12 +87,11 @@ def delete(session, func_key):
 
 @daosession
 def find_all_hints(session, context):
-    query = (
+    base = (
         session.query(
             tbl.UserFeatures.id.label('user_id'),
             tbl.Extension.typeval.label('type'),
-            tbl.Extension.exten.label('exten'),
-            null().label('number'))
+            tbl.Extension.exten.label('exten'))
         .join(tbl.UserLine,
               and_(
                   tbl.UserLine.user_id == tbl.UserFeatures.id,
@@ -101,17 +100,33 @@ def find_all_hints(session, context):
               tbl.LineFeatures.id == tbl.UserLine.line_id)
         .join(tbl.FuncKeyMapping,
               tbl.FuncKeyMapping.template_id == tbl.UserFeatures.func_key_private_template_id)
+        .filter(tbl.FuncKeyMapping.blf == True)
+        .filter(tbl.LineFeatures.context == context)
+    )
+
+    service_query = (
+        base.add_columns(
+            null().label('number'))
         .join(tbl.FuncKeyDestService,
               and_(
                   tbl.FuncKeyMapping.func_key_id == tbl.FuncKeyDestService.func_key_id,
                   tbl.FuncKeyMapping.destination_type_id == tbl.FuncKeyDestService.destination_type_id))
         .join(tbl.Extension,
               tbl.FuncKeyDestService.extension_id == tbl.Extension.id)
-        .filter(
-            tbl.FuncKeyMapping.blf == True)
-        .filter(
-            tbl.LineFeatures.context == context)
     )
+
+    forward_query = (
+        base.add_columns(
+            tbl.FuncKeyDestForward.number.label('number'))
+        .join(
+            tbl.FuncKeyDestForward,
+            tbl.FuncKeyDestForward.func_key_id == tbl.FuncKeyMapping.func_key_id)
+        .join(
+            tbl.Extension,
+            tbl.FuncKeyDestForward.extension_id == tbl.Extension.id)
+    )
+
+    query = service_query.union(forward_query)
 
     return [Hint(user_id=row.user_id,
                  type=row.type,
