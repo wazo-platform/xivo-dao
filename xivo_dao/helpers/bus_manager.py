@@ -16,23 +16,23 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo import moresynchro
-from xivo_bus.ctl.client import BusCtlClient
+from xivo_bus.ctl.producer import BusProducer
 from xivo_dao.helpers import config
 
 _once = moresynchro.Once()
-_bus_client = BusCtlClient()
+_bus_client = BusProducer()
 
 
 def _init_bus():
     _bus_client.connect()
     _bus_client.declare_exchange(config.BUS_EXCHANGE_NAME,
-                                config.BUS_EXCHANGE_TYPE,
-                                durable=config.BUS_EXCHANGE_DURABLE)
+                                 config.BUS_EXCHANGE_TYPE,
+                                 durable=config.BUS_EXCHANGE_DURABLE)
 
 
 def send_bus_command(command):
     # TODO rename to send_bus_event
     _once.once(_init_bus)
     _bus_client.publish_event(config.BUS_EXCHANGE_NAME,
-                             config.BUS_BINDING_KEY,
-                             command)
+                              config.BUS_BINDING_KEY,
+                              command)
