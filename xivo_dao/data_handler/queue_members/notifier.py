@@ -26,6 +26,7 @@ def agent_queue_association_updated(queue_member):
 
 def agent_queue_associated(queue_member):
     sysconf_command_agent_associated(queue_member)
+    bus_event_agent_queue_associated(queue_member)
 
 def sysconf_command_agent_association_updated(queue_member):
     command = {
@@ -48,6 +49,12 @@ def sysconf_command_agent_associated(queue_member):
 
 def bus_event_agent_association_updated(queue_member):
     bus_event = event.AgentQueueAssociationEditedEvent(queue_member.queue_id,
+                                                       queue_member.agent_id,
+                                                       queue_member.penalty)
+    bus_manager.send_bus_command(bus_event)
+
+def bus_event_agent_queue_associated(queue_member):
+    bus_event = event.AgentQueueAssociatedEvent(queue_member.queue_id,
                                                        queue_member.agent_id,
                                                        queue_member.penalty)
     bus_manager.send_bus_command(bus_event)
