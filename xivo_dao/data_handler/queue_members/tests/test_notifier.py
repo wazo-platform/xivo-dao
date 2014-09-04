@@ -47,3 +47,12 @@ class TestQueueMembersNotifier(unittest.TestCase):
                                                                  queue_member.penalty)
         send_bus_command.assert_called_once_with(new_event)
         exec_request_handler.assert_called_once_with(self.sysconfd_command)
+
+    @patch('xivo_dao.helpers.sysconfd_connector.exec_request_handlers')
+    def test_associated(self,exec_request_handler):
+        queue_member = QueueMemberAgent(queue_id=2, agent_id=30, penalty=5)
+        self.sysconfd_command['ctibus'] = ['xivo[queuemember,update]']
+
+        notifier.agent_queue_associated(queue_member)
+
+        exec_request_handler.assert_called_once_with(self.sysconfd_command)

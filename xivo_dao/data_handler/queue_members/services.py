@@ -27,3 +27,8 @@ def edit_agent_queue_association(queue_member):
     validator.validate_edit_agent_queue_association(queue_member)
     queue_members_dao.edit_agent_queue_association(queue_member)
     notifier.agent_queue_association_updated(queue_member)
+
+def associate_agent_to_queue(queue_member):
+    qm = queue_members_dao.associate(queue_member)
+    notifier.agent_queue_associated(queue_member)
+    return qm

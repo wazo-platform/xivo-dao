@@ -14,13 +14,59 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
-from hamcrest import assert_that, all_of, has_property
+from hamcrest import assert_that, all_of, has_property, equal_to
+from hamcrest.core.base_matcher import BaseMatcher
+from hamcrest.core.helpers.hasmethod import hasmethod
 
 from xivo_dao.data_handler.queue_members import dao as queue_members_dao
 from xivo_dao.data_handler.queue_members.model import QueueMemberAgent
 from xivo_dao.data_handler.exception import NotFoundError
 from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao.alchemy import QueueMember as QueueMemberSchema
+from xivo_dao.alchemy import QueueFeatures as QueueFeaturesSchema
+from xivo_dao.alchemy import AgentFeatures as AgentFeaturesSchema
 
+
+class IsAnAgentQueueMember(BaseMatcher):
+
+    def __init__(self,agent,queue_name):
+        self.agent= agent
+        self.queue_name = queue_name
+        self.error = "";
+
+    def _sub_match(self,property, expected, item):
+        if not has_property(property, expected).matches(item):
+            self.error = "%s is <%s> should be <%s>" % (property, getattr(item, property) , expected)
+            return False
+        return True
+
+    def _matches(self, item):
+        if not self._sub_match('queue_name',self.queue_name,item):
+            return False
+        if not self._sub_match('interface',('Agent/%s' % self.agent.number),item):
+            return False
+        if not self._sub_match('commented',0,item):
+            return False
+        if not self._sub_match('usertype','agent',item):
+            return False
+        if not self._sub_match('userid',self.agent.id,item):
+            return False
+        if not self._sub_match('channel','Agent',item):
+            return False
+        if not self._sub_match('category','queue',item):
+            return False
+        if not self._sub_match('position',0,item):
+            return False
+        return True
+
+    def describe_mismatch(self, item, mismatch_description):
+        mismatch_description.append_text(self.error)
+
+    def describe_to(self, description):
+        description.append_text("queue member should have proper queue_name, interface, category, userid")
+
+def is_an_agent_queue_member(agent,queue_name):
+    return IsAnAgentQueueMember(agent,queue_name)
 
 class TestQueueAgentAssociation(DAOTestCase):
 
@@ -61,3 +107,40 @@ class TestQueueAgentAssociation(DAOTestCase):
         queue_members_dao.edit_agent_queue_association(queue_member)
 
         assert_that(queue_members_dao.get_by_queue_id_and_agent_id(queue_id, agent_id), has_property('penalty', 6))
+
+    def test_associate(self):
+        queue_name = 'yellowstone'
+        queue_member = QueueMemberAgent(agent_id=52, queue_id=34, penalty=9)
+
+        self.add_queuefeatures(id=queue_member.queue_id, name=queue_name)
+        self.add_agent(id=queue_member.agent_id, number='1400')
+        agent = (self.session.query(AgentFeaturesSchema)
+                 .filter(AgentFeaturesSchema.id == queue_member.agent_id).first())
+
+
+        res_qm = queue_members_dao.associate(queue_member)
+
+        assert_that(res_qm, equal_to(queue_member))
+
+        assert_that(self.qm_in_base(queue_member), is_an_agent_queue_member(agent,queue_name))
+
+    def test_associate_at_last_position(self):
+        queue_name = 'blackpearl'
+        queue_memberPos0 = QueueMemberAgent(agent_id=52, queue_id=34, penalty=9)
+        queue_memberPosMax = QueueMemberAgent(agent_id=62, queue_id=34, penalty=5)
+
+        self.add_queuefeatures(id=queue_memberPos0.queue_id, name=queue_name)
+        self.add_agent(id=queue_memberPos0.agent_id, number='1410')
+        self.add_agent(id=queue_memberPosMax.agent_id, number='1411')
+        queue_members_dao.associate(queue_memberPos0)
+
+        res_qmPosMax = queue_members_dao.associate(queue_memberPosMax)
+
+        assert_that(self.qm_in_base(queue_memberPosMax),has_property('position', 1))
+
+    def qm_in_base(self,queue_member):
+        return (self.session.query(QueueMemberSchema)
+                      .filter(QueueFeaturesSchema.name == QueueMemberSchema.queue_name)
+                      .filter(QueueMemberSchema.usertype == 'agent')
+                      .filter(QueueMemberSchema.userid == queue_member.agent_id)
+                      .filter(QueueFeaturesSchema.id == queue_member.queue_id)).first()
