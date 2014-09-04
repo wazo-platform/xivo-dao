@@ -41,7 +41,7 @@ def sysconf_command_agent_associated(queue_member):
     command = {
         'dird': [],
         'ipbx': [],
-        'agentbus': [],
+        'agentbus': ['agent.edit.%s' % queue_member.agent_id],
         'ctibus': ['xivo[queuemember,update]']
     }
     sysconfd_connector.exec_request_handlers(command)

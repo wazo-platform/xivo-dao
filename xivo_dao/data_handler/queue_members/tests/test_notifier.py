@@ -55,6 +55,7 @@ class TestQueueMembersNotifier(unittest.TestCase):
         new_event = AgentQueueAssociatedEvent.return_value = Mock()
         queue_member = QueueMemberAgent(queue_id=2, agent_id=30, penalty=5)
         self.sysconfd_command['ctibus'] = ['xivo[queuemember,update]']
+        self.sysconfd_command['agentbus'] = ['agent.edit.%s' % queue_member.agent_id]
 
         notifier.agent_queue_associated(queue_member)
 
