@@ -48,13 +48,15 @@ class TestQueueMembers(unittest.TestCase):
         patch_edit_agent.assert_called_once_with(queue_member)
         patch_notify_edition.assert_called_once_with(queue_member)
 
+    @patch('xivo_dao.data_handler.queue_members.validator.validate_associate_agent_queue')
     @patch('xivo_dao.data_handler.queue_members.dao.associate')
     @patch('xivo_dao.data_handler.queue_members.notifier.agent_queue_associated')
-    def test_associate_agent_to_queue(self,patch_notify_association,patch_associate):
+    def test_associate_agent_to_queue(self,patch_notify_association,patch_associate, patch_validate):
         queue_member = QueueMemberAgent(agent_id=31, queue_id=7, penalty=3)
         patch_associate.return_value = queue_member
         qm = queue_members_services.associate_agent_to_queue(queue_member)
 
+        patch_validate.assert_called_once_with(queue_member.queue_id, queue_member.agent_id)
         patch_associate.assert_called_once_with(queue_member)
         patch_notify_association.assert_called_once_with(queue_member)
         assert_that(qm, equal_to(queue_member))

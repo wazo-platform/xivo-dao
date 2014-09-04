@@ -22,9 +22,9 @@ from xivo_dao.data_handler import errors
 
 def validate_edit_agent_queue_association(queue_member):
     if not _queue_exists(queue_member.queue_id):
-        raise errors.param_not_found('queue_id', 'Queue')
+        raise errors.not_found('Queue', queue_id=queue_member.queue_id)
     if not _agent_exists(queue_member.agent_id):
-        raise errors.param_not_found('agent_id', 'Agent')
+        raise errors.not_found('Agent', agent_id=queue_member.agent_id)
     queue_members_dao.get_by_queue_id_and_agent_id(queue_member.queue_id, queue_member.agent_id)
 
 
@@ -34,6 +34,11 @@ def validate_get_agent_queue_association(queue_id, agent_id):
     if not _agent_exists(agent_id):
         raise errors.not_found('Agent', agent_id=agent_id)
 
+def validate_associate_agent_queue(queue_id, agent_id):
+    if not _queue_exists(queue_id):
+        raise errors.not_found('Queue', queue_id=queue_id)
+    if not _agent_exists(agent_id):
+        raise errors.param_not_found('agent_id', 'Agent')
 
 def _queue_exists(queue_id):
     try:

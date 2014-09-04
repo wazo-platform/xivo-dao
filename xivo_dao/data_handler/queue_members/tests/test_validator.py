@@ -41,7 +41,7 @@ class TestQueueMembersValidator(unittest.TestCase):
     def test_validate_edit_agent_queue_association_no_such_queue(self, patch_get_by_queue_and_agent, patch_get_queue, patch_get_agent):
         patch_get_queue.side_effect = LookupError
         queue_member = QueueMemberAgent(agent_id=3, queue_id=5, penalty=3)
-        self.assertRaises(InputError, validator.validate_edit_agent_queue_association, queue_member)
+        self.assertRaises(NotFoundError, validator.validate_edit_agent_queue_association, queue_member)
 
     @patch('xivo_dao.agent_dao.get')
     @patch('xivo_dao.queue_dao.get')
@@ -57,7 +57,7 @@ class TestQueueMembersValidator(unittest.TestCase):
     def test_validate_edit_agent_queue_association_no_such_agent(self, patch_get_by_queue_and_agent, patch_get_queue, patch_get_agent):
         patch_get_agent.return_value = None
         queue_member = QueueMemberAgent(agent_id=3, queue_id=5, penalty=3)
-        self.assertRaises(InputError, validator.validate_edit_agent_queue_association, queue_member)
+        self.assertRaises(NotFoundError, validator.validate_edit_agent_queue_association, queue_member)
 
     @patch('xivo_dao.agent_dao.get')
     @patch('xivo_dao.queue_dao.get')
@@ -86,3 +86,21 @@ class TestQueueMembersValidator(unittest.TestCase):
         patch_get_agent.return_value = None
 
         self.assertRaises(NotFoundError, validator.validate_get_agent_queue_association, queue_id, agent_id)
+
+    @patch('xivo_dao.agent_dao.get')
+    @patch('xivo_dao.queue_dao.get')
+    def test_validate_associate_agent_queue_no_such_queue(self, patch_get_queue, patch_get_agent):
+        queue_id = 5
+        agent_id = 3
+        patch_get_queue.side_effect = LookupError
+
+        self.assertRaises(NotFoundError, validator.validate_associate_agent_queue, queue_id, agent_id)
+
+    @patch('xivo_dao.agent_dao.get')
+    @patch('xivo_dao.queue_dao.get')
+    def test_validate_associate_agent_queue_no_such_queue(self, patch_get_queue, patch_get_agent):
+        queue_id = 5
+        agent_id = 3
+        patch_get_agent.return_value = None
+
+        self.assertRaises(InputError, validator.validate_associate_agent_queue, queue_id, agent_id)
