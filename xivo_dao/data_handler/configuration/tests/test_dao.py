@@ -17,11 +17,11 @@
 
 from hamcrest.core import assert_that
 from hamcrest.core.core.isequal import equal_to
-from mock import patch, Mock
 from sqlalchemy.exc import SQLAlchemyError
 from xivo_dao.alchemy.ctimain import CtiMain
 
 from xivo_dao.data_handler.configuration import dao
+from xivo_dao.helpers.db_manager import mocked_dao_session
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.data_handler.exception import DataError
 
@@ -51,11 +51,9 @@ class TestConfigurationDao(DAOTestCase):
 
         assert_that(ctimain.live_reload_conf, equal_to(1))
 
-    @patch('xivo_dao.helpers.db_manager.DaoSession')
-    def test_set_live_reload_status_rollback(self, Session):
-        session = Mock()
+    @mocked_dao_session
+    def test_set_live_reload_status_rollback(self, session):
         session.commit.side_effect = SQLAlchemyError()
-        Session.return_value = session
 
         self.assertRaises(DataError, dao.set_live_reload_status, {'enabled': True})
         session.begin.assert_called_once_with()

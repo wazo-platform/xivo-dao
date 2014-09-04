@@ -16,8 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from hamcrest import assert_that, equal_to, contains, has_property, all_of, instance_of, contains_inanyorder
-from mock import Mock, patch
 from sqlalchemy.exc import SQLAlchemyError
+from mock import Mock
 
 from xivo_dao.data_handler.exception import NotFoundError
 from xivo_dao.data_handler.exception import DataError
@@ -26,6 +26,7 @@ from xivo_dao.alchemy.incall import Incall as IncallSchema
 from xivo_dao.alchemy.dialaction import Dialaction as DialactionSchema
 from xivo_dao.data_handler.voicemail import dao as voicemail_dao
 from xivo_dao.data_handler.voicemail.model import Voicemail
+from xivo_dao.helpers.db_manager import mocked_dao_session
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -518,11 +519,9 @@ class TestCreateVoicemail(DAOTestCase):
         self.assertEquals(row.mailbox, number)
         self.assertEquals(row.context, context)
 
-    @patch('xivo_dao.helpers.db_manager.DaoSession')
-    def test_create_with_database_error(self, Session):
-        session = Mock()
+    @mocked_dao_session
+    def test_create_with_database_error(self, session):
         session.commit.side_effect = SQLAlchemyError()
-        Session.return_value = session
 
         name = 'voicemail'
         number = '42'
@@ -607,11 +606,9 @@ class TestEditVoicemail(DAOTestCase):
         self.assertEquals(row.deletevoicemail, voicemail.delete_messages)
         self.assertEquals(row.skipcheckpass, 1)
 
-    @patch('xivo_dao.helpers.db_manager.DaoSession')
-    def test_edit_with_database_error(self, Session):
-        session = Mock()
+    @mocked_dao_session
+    def test_edit_with_database_error(self, session):
         session.commit.side_effect = SQLAlchemyError()
-        Session.return_value = session
 
         name = 'voicemail'
         number = '42'
@@ -666,11 +663,9 @@ class TestVoicemailDelete(VoicemailTestCase):
         self.check_voicemail_table(voicemail.id)
         self.check_incall_associated_to_nothing(incall.id)
 
-    @patch('xivo_dao.helpers.db_manager.DaoSession')
-    def test_delete_with_database_error(self, Session):
-        session = Mock()
+    @mocked_dao_session
+    def test_delete_with_database_error(self, session):
         session.commit.side_effect = SQLAlchemyError()
-        Session.return_value = session
 
         voicemail = self.mock_voicemail(number='42', context='default')
         voicemail.id = 1

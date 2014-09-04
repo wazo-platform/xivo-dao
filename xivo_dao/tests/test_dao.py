@@ -64,7 +64,6 @@ from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
 from xivo_dao.alchemy.func_key_type import FuncKeyType
 from xivo_dao.alchemy.func_key_destination_type import FuncKeyDestinationType
-from xivo_dao.helpers import config
 from xivo_dao.helpers import db_manager
 from xivo_dao.helpers.db_manager import Base
 from xivo.debug import trace_duration
@@ -74,20 +73,25 @@ logger = logging.getLogger(__name__)
 _expensive_setup_has_run = False
 _tables = []
 
+TEST_DB_URL = 'postgresql://asterisk:asterisk@localhost/asterisktest'
+
 
 def expensive_setup():
+    global _expensive_setup_has_run
+
     logger.debug("Connecting to database")
-    config.DB_URI = 'postgresql://asterisk:asterisk@localhost/asterisktest'
-    db_manager._init()
-    session = db_manager.DaoSession()
-    engine = session.bind
+    db_manager._init(TEST_DB_URL)
     logger.debug("Connected to database")
-    _init_tables(engine)
+    _init_tables()
+    _expensive_setup_has_run = True
 
 
 @trace_duration
-def _init_tables(engine):
+@db_manager.daosession
+def _init_tables(session):
     global _tables
+
+    engine = session.bind
     logger.debug("Cleaning tables")
     metadata = MetaData(bind=engine)
     metadata.reflect()
@@ -108,22 +112,26 @@ def afterTest(test):
     db_manager.close()
 
 
+@db_manager.daosession
+def _fetch_dao_session(session):
+    return session
+
+
 class DAOTestCase(unittest.TestCase):
 
     @classmethod
     @patch('xivo_dao.helpers.bus_manager.send_bus_command')
     def setUpClass(cls, send_bus_command):
         global _expensive_setup_has_run
+
         if _expensive_setup_has_run is False:
             expensive_setup()
-            _expensive_setup_has_run = True
 
-        cls.session = db_manager.DaoSession()
+        cls.session = _fetch_dao_session()
 
     @trace_duration
     def setUp(self):
         global _tables
-        self.session = db_manager.DaoSession()
         logger.debug("Emptying tables")
         self.session.begin()
         self.session.execute('TRUNCATE "%s" CASCADE;' % '","'.join(_tables))

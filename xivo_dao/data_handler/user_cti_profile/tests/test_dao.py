@@ -16,7 +16,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from hamcrest import *
-from mock import patch, Mock
 from sqlalchemy.exc import SQLAlchemyError
 
 from xivo_dao.alchemy.cti_profile import CtiProfile as CtiProfileSchema
@@ -24,6 +23,7 @@ from xivo_dao.data_handler.exception import NotFoundError
 from xivo_dao.data_handler.exception import DataError
 from xivo_dao.data_handler.user_cti_profile import dao as user_cti_profile_dao
 from xivo_dao.data_handler.user_cti_profile.model import UserCtiProfile
+from xivo_dao.helpers.db_manager import mocked_dao_session
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -71,11 +71,9 @@ class TestUserCtiProfile(DAOTestCase):
         assert_that(user.cti_profile_id, equal_to(cti_profile.id))
         assert_that(user.enableclient, 0)
 
-    @patch('xivo_dao.helpers.db_manager.DaoSession')
-    def test_edit_with_errors(self, Session):
-        session = Mock()
+    @mocked_dao_session
+    def test_edit_with_errors(self, session):
         session.commit.side_effect = SQLAlchemyError()
-        Session.return_value = session
 
         user_cti_profile = UserCtiProfile(user_id=1, cti_profile_id=2)
 

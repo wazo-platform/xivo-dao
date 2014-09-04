@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from mock import patch, Mock
-
 from xivo_dao import agent_status_dao
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
@@ -24,6 +22,7 @@ from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
 from xivo_dao.alchemy.agent_membership_status import AgentMembershipStatus
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
+from xivo_dao.helpers.db_manager import mocked_dao_session
 from sqlalchemy import and_
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -67,9 +66,8 @@ class TestAgentStatusDao(DAOTestCase):
         self.assertEquals(agent_status.interface, interface)
         self.assertEquals(agent_status.state_interface, state_interface)
 
-    @patch('xivo_dao.helpers.db_manager.DaoSession')
-    def test_log_in_agent_with_db_error(self, DaoSession):
-        session = DaoSession.return_value = Mock()
+    @mocked_dao_session
+    def test_log_in_agent_with_db_error(self, session):
         session.commit.side_effect = SQLAlchemyError()
 
         agent_id = 1

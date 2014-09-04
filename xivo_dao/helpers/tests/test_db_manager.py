@@ -16,28 +16,34 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import unittest
+
+from hamcrest import assert_that
+from hamcrest import equal_to
 from mock import patch, Mock, sentinel, call
 from xivo_dao.helpers import db_manager
+from xivo_dao.helpers.db_manager import mocked_dao_session
+from xivo_dao.helpers.db_manager import daosession
 from sqlalchemy.exc import InterfaceError
 
 
 class TestDBManager(unittest.TestCase):
 
-    @patch('xivo_dao.helpers.db_manager._execute_with_session')
-    def test_daosession_decorator(self, execute_mock):
-        execute_mock.return_value = sentinel
+    @mocked_dao_session
+    def test_daosession_decorator(self, session_mock):
+        args = (sentinel.arg1, sentinel.arg2)
+        kwargs = {'arg3': sentinel.arg3}
 
-        function_mock = Mock()
-        function_mock.__name__ = "tested_function"
-        args = ('arg1', 'arg2')
-        kwargs = {'arg3': 'arg3'}
+        @daosession
+        def f(session, arg1, arg2, arg3):
+            assert_that(session, equal_to(session_mock))
+            assert_that(arg1, equal_to(sentinel.arg1))
+            assert_that(arg2, equal_to(sentinel.arg2))
+            assert_that(arg3, equal_to(sentinel.arg3))
+            return sentinel.result
 
-        decorated_function = db_manager.daosession(function_mock)
+        result = f(*args, **kwargs)
 
-        result = decorated_function(*args, **kwargs)
-
-        execute_mock.assert_called_once_with(db_manager.DaoSession, function_mock, args, kwargs)
-        self.assertEqual(result, sentinel)
+        assert_that(result, equal_to(sentinel.result))
 
     @patch('xivo_dao.helpers.db_manager._apply_and_flush')
     def test_execute_with_session_with_reconnection(self, apply_and_flush_mock):
