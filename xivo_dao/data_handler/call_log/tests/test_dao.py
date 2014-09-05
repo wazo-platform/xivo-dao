@@ -25,6 +25,7 @@ from xivo_dao.alchemy.cel import CEL as CELSchema
 from xivo_dao.data_handler.call_log import dao as call_log_dao
 from xivo_dao.data_handler.call_log.model import CallLog
 from xivo_dao.data_handler.exception import DataError
+from xivo_dao.tests.helpers.session import mocked_dao_session
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -163,10 +164,8 @@ class TestCallLogDAO(DAOTestCase):
         assert_that(result[0].source_line_identity, equal_to(call_log_3.source_line_identity))
         assert_that(result[1].source_line_identity, equal_to(call_log_1.source_line_identity))
 
-    @patch('xivo_dao.helpers.db_manager.DaoSession')
-    def test_create_call_log(self, session_init):
-        session = Mock()
-        session_init.return_value = session
+    @mocked_dao_session
+    def test_create_call_log(self, session):
         expected_id = 13
         call_log = self._mock_call_log(id=expected_id)
         call_log_id = call_log_dao.create_call_log(session, call_log)
@@ -195,12 +194,10 @@ class TestCallLogDAO(DAOTestCase):
             all_of(has_property('id', cel_id_3), has_property('call_log_id', call_log_id_2)),
             all_of(has_property('id', cel_id_4), has_property('call_log_id', call_log_id_2))))
 
+    @mocked_dao_session
     @patch('xivo_dao.data_handler.call_log.dao.create_call_log')
-    @patch('xivo_dao.helpers.db_manager.DaoSession')
-    def test_create_from_list_db_error(self, session_init, create_call_log):
-        session = Mock()
+    def test_create_from_list_db_error(self, session, create_call_log):
         session.commit.side_effect = SQLAlchemyError()
-        session_init.return_value = session
         create_call_log.return_value = 13
 
         call_logs = (self._mock_call_log(), self._mock_call_log())
@@ -218,11 +215,9 @@ class TestCallLogDAO(DAOTestCase):
         call_log_rows = self.session.query(CallLogSchema).all()
         assert_that(call_log_rows, has_length(0))
 
-    @patch('xivo_dao.helpers.db_manager.DaoSession')
-    def test_delete_all_db_error(self, session_init):
-        session = Mock()
+    @mocked_dao_session
+    def test_delete_all_db_error(self, session):
         session.commit.side_effect = SQLAlchemyError()
-        session_init.return_value = session
 
         self.assertRaises(DataError, call_log_dao.delete_all)
         session.begin.assert_called_once_with()
@@ -238,11 +233,9 @@ class TestCallLogDAO(DAOTestCase):
         call_log_rows = self.session.query(CallLogSchema).all()
         assert_that(call_log_rows, contains(has_property('id', id_2)))
 
-    @patch('xivo_dao.helpers.db_manager.DaoSession')
-    def test_delete_from_list_db_error(self, session_init):
-        session = Mock()
+    @mocked_dao_session
+    def test_delete_from_list_db_error(self, session):
         session.commit.side_effect = SQLAlchemyError()
-        session_init.return_value = session
 
         self.assertRaises(DataError, call_log_dao.delete_from_list, [1, 2])
         session.begin.assert_called_once_with()

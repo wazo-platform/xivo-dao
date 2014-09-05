@@ -30,6 +30,7 @@ from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.data_handler.exception import DataError
 from xivo_dao.data_handler.exception import ResourceError
 from xivo_dao.data_handler.exception import NotFoundError
+from xivo_dao.tests.helpers.session import mocked_dao_session
 from hamcrest.library.collection.issequence_containinginorder import contains
 from hamcrest.library.collection.issequence_containing import has_items
 
@@ -475,11 +476,9 @@ class TestLineDao(DAOTestCase):
 
         self.assertRaises(NotFoundError, line_dao.edit, line)
 
-    @patch('xivo_dao.helpers.db_manager.DaoSession')
-    def test_edit_with_database_error(self, Session):
-        session = Mock()
+    @mocked_dao_session
+    def test_edit_with_database_error(self, session):
         session.commit.side_effect = SQLAlchemyError()
-        Session.return_value = session
 
         line_sip = self.add_usersip()
         line = LineSIP(id=123,
@@ -509,9 +508,8 @@ class TestLineDao(DAOTestCase):
                         .first())
         self.assertEquals(line_sip_row.setvar, 'XIVO_USERID=12')
 
-    @patch('xivo_dao.helpers.db_manager.DaoSession')
-    def test_update_xivo_userid_sip_db_error(self, Session):
-        session = Session.return_value = Mock()
+    @mocked_dao_session
+    def test_update_xivo_userid_sip_db_error(self, session):
         session.commit.side_effect = SQLAlchemyError()
         username = 'toto'
         secret = 'kiki'
@@ -525,9 +523,8 @@ class TestLineDao(DAOTestCase):
 
         self.assertRaises(DataError, line_dao.update_xivo_userid, line, main_user)
 
-    @patch('xivo_dao.helpers.db_manager.DaoSession')
-    def test_update_xivo_userid_not_sip(self, Session):
-        session = Session.return_value = Mock()
+    @mocked_dao_session
+    def test_update_xivo_userid_not_sip(self, session):
         line = Mock(protocol='sccp')
         main_user = Mock(id=12)
 
@@ -567,9 +564,8 @@ class TestLineDao(DAOTestCase):
 
         assert_that(updated_row.cid_name, is_not(equal_to('')))
 
-    @patch('xivo_dao.helpers.db_manager.DaoSession')
-    def test_delete_user_references_db_error(self, Session):
-        session = Session.return_value = Mock()
+    @mocked_dao_session
+    def test_delete_user_references_db_error(self, session):
         session.commit.side_effect = SQLAlchemyError()
         session.query.return_value.get.return_value = Mock(protocol='sip')
 
@@ -619,11 +615,9 @@ class TestLineDao(DAOTestCase):
 
         assert_that(line_created, is_not(has_property('number')))
 
-    @patch('xivo_dao.helpers.db_manager.DaoSession')
-    def test_create_sip_line_with_error_from_dao(self, Session):
-        session = Mock()
+    @mocked_dao_session
+    def test_create_sip_line_with_error_from_dao(self, session):
         session.commit.side_effect = SQLAlchemyError()
-        Session.return_value = session
 
         name = 'line'
         context = 'toto'
@@ -678,11 +672,9 @@ class TestLineDao(DAOTestCase):
 
         self.assertRaises(NotImplementedError, line_dao.create, line)
 
-    @patch('xivo_dao.helpers.db_manager.DaoSession')
-    def test_create_database_error(self, Session):
-        session = Mock()
+    @mocked_dao_session
+    def test_create_database_error(self, session):
         session.commit.side_effect = SQLAlchemyError()
-        Session.return_value = session
 
         name = 'line'
         context = 'toto'

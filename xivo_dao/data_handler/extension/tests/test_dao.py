@@ -26,6 +26,7 @@ from xivo_dao.data_handler.exception import NotFoundError
 from xivo_dao.data_handler.extension import dao as extension_dao
 from xivo_dao.data_handler.extension.model import Extension, ExtensionDestination
 from xivo_dao.data_handler.utils.search import SearchResult
+from xivo_dao.tests.helpers.session import mocked_dao_session
 
 
 class TestExtension(DAOTestCase):
@@ -314,11 +315,9 @@ class TestCreate(DAOTestCase):
 
         self.assertRaises(DataError, extension_dao.create, extension)
 
-    @patch('xivo_dao.helpers.db_manager.DaoSession')
-    def test_create_extension_with_error_from_dao(self, Session):
-        session = Mock()
+    @mocked_dao_session
+    def test_create_extension_with_error_from_dao(self, session):
         session.commit.side_effect = SQLAlchemyError()
-        Session.return_value = session
 
         exten = 'extension'
         context = 'toto'
@@ -358,11 +357,9 @@ class TestEdit(DAOTestCase):
         assert_that(row.type, equal_to('user'))
         assert_that(row.typeval, equal_to('0'))
 
-    @patch('xivo_dao.helpers.db_manager.DaoSession')
-    def test_edit_extension_with_error_from_dao(self, Session):
-        session = Mock()
+    @mocked_dao_session
+    def test_edit_extension_with_error_from_dao(self, session):
         session.commit.side_effect = SQLAlchemyError()
-        Session.return_value = session
 
         extension = Extension(exten='extension',
                               context='context')
@@ -408,9 +405,8 @@ class TestAssociateDestination(DAOTestCase):
 
         self.assert_extension_is_associated_to_incall(incall_row, extension_row)
 
-    @patch('xivo_dao.helpers.db_manager.DaoSession')
-    def test_associate_to_user_with_database_error(self, Session):
-        session = Session.return_value = Mock()
+    @mocked_dao_session
+    def test_associate_to_user_with_database_error(self, session):
         session.commit.side_effect = SQLAlchemyError()
 
         extension_row = Mock()
@@ -445,11 +441,9 @@ class TestDissociateExtension(DAOTestCase):
 
         self.assert_extension_not_associated(extension_row.id)
 
-    @patch('xivo_dao.helpers.db_manager.DaoSession')
-    def test_dissociate_extension_with_database_error(self, Session):
-        session = Mock()
+    @mocked_dao_session
+    def test_dissociate_extension_with_database_error(self, session):
         session.commit.side_effect = SQLAlchemyError()
-        Session.return_value = session
 
         extension_id = 1
 

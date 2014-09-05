@@ -25,6 +25,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session
 
 logger = logging.getLogger(__name__)
+_global_db_url = None
 
 
 def todict(self):
@@ -39,13 +40,13 @@ Base = declarative_base()
 Base.todict = todict
 
 _dao_engine = None
-DaoSession = None
+_DaoSession = None
 
 
 def daosession(func):
     @wraps(func)
     def wrapped(*args, **kwargs):
-        return _execute_with_session(DaoSession, func, args, kwargs)
+        return _execute_with_session(_DaoSession, func, args, kwargs)
     return wrapped
 
 
@@ -66,15 +67,19 @@ def _apply_and_flush(func, session, args, kwargs):
     return result
 
 
-def _init():
-    _init_asterisk()
+def _init(url=config.DB_URI):
+    global _global_db_url
+
+    _global_db_url = url
+    _init_asterisk(_global_db_url)
 
 
-def _init_asterisk():
+def _init_asterisk(url):
     global _dao_engine
-    global DaoSession
-    _dao_engine = _new_engine(config.DB_URI)
-    DaoSession = _new_scoped_session(_dao_engine)
+    global _DaoSession
+
+    _dao_engine = _new_engine(url)
+    _DaoSession = _new_scoped_session(_dao_engine)
 
 
 def _new_engine(url):
@@ -87,11 +92,11 @@ def _new_scoped_session(engine):
 
 def reinit():
     close()
-    _init()
+    _init(_global_db_url)
 
 
 def close():
-    DaoSession.close()
+    _DaoSession.close()
     _dao_engine.dispose()
 
 

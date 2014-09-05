@@ -16,7 +16,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from hamcrest import assert_that, equal_to, has_property, all_of, has_items, has_length, any_of, contains, is_, none
-from mock import patch, Mock
 from sqlalchemy.exc import SQLAlchemyError
 
 from xivo_dao.data_handler.utils.search import SearchResult
@@ -25,6 +24,7 @@ from xivo_dao.data_handler.exception import DataError
 from xivo_dao.data_handler.exception import NotFoundError
 from xivo_dao.data_handler.user import dao as user_dao
 from xivo_dao.data_handler.user.model import User
+from xivo_dao.tests.helpers.session import mocked_dao_session
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -545,11 +545,9 @@ class TestCreate(DAOTestCase):
         assert_that(row.preprocess_subroutine, equal_to(user.preprocess_subroutine))
         assert_that(row.userfield, equal_to(user.userfield))
 
-    @patch('xivo_dao.helpers.db_manager.DaoSession')
-    def test_create_with_database_error(self, Session):
-        session = Mock()
+    @mocked_dao_session
+    def test_create_with_database_error(self, session):
         session.commit.side_effect = SQLAlchemyError()
-        Session.return_value = session
 
         user = User(firstname='toto',
                     lastname='kiki',
@@ -649,11 +647,9 @@ class TestEdit(DAOTestCase):
 
         self.assertRaises(NotFoundError, user_dao.edit, user)
 
-    @patch('xivo_dao.helpers.db_manager.DaoSession')
-    def test_edit_with_database_error(self, Session):
-        session = Mock()
+    @mocked_dao_session
+    def test_edit_with_database_error(self, session):
         session.commit.side_effect = SQLAlchemyError()
-        Session.return_value = session
 
         user = User(id=123,
                     firstname='toto',

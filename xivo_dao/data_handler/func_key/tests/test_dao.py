@@ -30,6 +30,7 @@ from xivo_dao.alchemy.func_key_dest_forward import FuncKeyDestForward as FuncKey
 from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup as FuncKeyDestGroupSchema
 from xivo_dao.alchemy.func_key_dest_queue import FuncKeyDestQueue as FuncKeyDestQueueSchema
 from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser as FuncKeyDestUserSchema
+from xivo_dao.tests.helpers.session import mocked_dao_session
 
 
 class TestFuncKeyDao(DAOTestCase):
@@ -402,10 +403,9 @@ class TestFuncKeyCreate(TestFuncKeyDao):
 
         self.assert_func_key_row_created(user_destination_row)
 
-    @patch('xivo_dao.helpers.db_manager.DaoSession')
+    @mocked_dao_session
     @patch('xivo_dao.data_handler.func_key.dao.commit_or_abort')
-    def test_given_db_error_then_transaction_rollbacked(self, commit_or_abort, session_maker):
-        session = session_maker.return_value
+    def test_given_db_error_then_transaction_rollbacked(self, session, commit_or_abort):
         func_key = FuncKey(type='speeddial',
                            destination='user',
                            destination_id=1)
@@ -431,10 +431,9 @@ class TestFuncKeyDelete(TestFuncKeyDao):
         self.assert_func_key_deleted(func_key.id)
         self.assert_destination_deleted('user', destination_row.user_id)
 
-    @patch('xivo_dao.helpers.db_manager.DaoSession')
+    @mocked_dao_session
     @patch('xivo_dao.data_handler.func_key.dao.commit_or_abort')
-    def test_given_db_error_then_transaction_rollbacked(self, commit_or_abort, session_maker):
-        session = session_maker.return_value
+    def test_given_db_error_then_transaction_rollbacked(self, session, commit_or_abort):
         func_key = FuncKey(type='speeddial',
                            destination='user',
                            destination_id=1)
