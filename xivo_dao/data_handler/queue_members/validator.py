@@ -35,17 +35,27 @@ def validate_get_agent_queue_association(queue_id, agent_id):
     if not _agent_exists(agent_id):
         raise errors.not_found('Agent', agent_id=agent_id)
 
+
 def validate_associate_agent_queue(queue_id, agent_id):
-        if not _queue_exists(queue_id):
-            raise errors.not_found('Queue', queue_id=queue_id)
-        if not _agent_exists(agent_id):
-            raise errors.param_not_found('agent_id', 'Agent')
-        try:
-            queue_members_dao.get_by_queue_id_and_agent_id(queue_id, agent_id)
-            raise errors.resource_associated('Agent','Queue',
-                                             agent_id,queue_id )
-        except NotFoundError:
-            pass
+    if not _queue_exists(queue_id):
+        raise errors.not_found('Queue', queue_id=queue_id)
+    if not _agent_exists(agent_id):
+        raise errors.param_not_found('agent_id', 'Agent')
+    try:
+        queue_members_dao.get_by_queue_id_and_agent_id(queue_id, agent_id)
+        raise errors.resource_associated('Agent', 'Queue',
+                                         agent_id, queue_id)
+    except NotFoundError:
+        pass
+
+
+def validate_remove_agent_from_queue(agent_id, queue_id):
+    if not _queue_exists(queue_id):
+        raise errors.not_found('Queue', queue_id=queue_id)
+    if not _agent_exists(agent_id):
+        raise errors.not_found('Agent', agent_id=agent_id)
+    queue_members_dao.get_by_queue_id_and_agent_id(queue_id, agent_id)
+
 
 def _queue_exists(queue_id):
     try:

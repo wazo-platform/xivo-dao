@@ -24,9 +24,15 @@ def agent_queue_association_updated(queue_member):
     sysconf_command_agent_association_updated(queue_member)
     bus_event_agent_association_updated(queue_member)
 
+
 def agent_queue_associated(queue_member):
     sysconf_command_agent_associated(queue_member)
     bus_event_agent_queue_associated(queue_member)
+
+
+def agent_removed_from_queue(agent_id):
+    sysconf_command_agent_removed_from_queue(agent_id)
+
 
 def sysconf_command_agent_association_updated(queue_member):
     command = {
@@ -36,6 +42,7 @@ def sysconf_command_agent_association_updated(queue_member):
         'ctibus': []
     }
     sysconfd_connector.exec_request_handlers(command)
+
 
 def sysconf_command_agent_associated(queue_member):
     command = {
@@ -47,14 +54,25 @@ def sysconf_command_agent_associated(queue_member):
     sysconfd_connector.exec_request_handlers(command)
 
 
+def sysconf_command_agent_removed_from_queue(agent_id):
+    command = {
+        'dird': [],
+        'ipbx': [],
+        'agentbus': ['agent.edit.%s' % agent_id],
+        'ctibus': ['xivo[queuemember,update]']
+    }
+    sysconfd_connector.exec_request_handlers(command)
+
+
 def bus_event_agent_association_updated(queue_member):
     bus_event = event.AgentQueueAssociationEditedEvent(queue_member.queue_id,
                                                        queue_member.agent_id,
                                                        queue_member.penalty)
     bus_manager.send_bus_command(bus_event)
 
+
 def bus_event_agent_queue_associated(queue_member):
     bus_event = event.AgentQueueAssociatedEvent(queue_member.queue_id,
-                                                       queue_member.agent_id,
-                                                       queue_member.penalty)
+                                                queue_member.agent_id,
+                                                queue_member.penalty)
     bus_manager.send_bus_command(bus_event)

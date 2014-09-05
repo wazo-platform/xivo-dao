@@ -25,10 +25,10 @@ from xivo_dao.data_handler import errors
 @daosession
 def get_by_queue_id_and_agent_id(session, queue_id, agent_id):
     row = (session.query(QueueMemberSchema)
-                  .filter(QueueFeaturesSchema.name == QueueMemberSchema.queue_name)
-                  .filter(QueueMemberSchema.usertype == 'agent')
-                  .filter(QueueMemberSchema.userid == agent_id)
-                  .filter(QueueFeaturesSchema.id == queue_id)).first()
+           .filter(QueueFeaturesSchema.name == QueueMemberSchema.queue_name)
+           .filter(QueueMemberSchema.usertype == 'agent')
+           .filter(QueueMemberSchema.userid == agent_id)
+           .filter(QueueFeaturesSchema.id == queue_id)).first()
     if not row:
         raise errors.not_found('QueueMember', agent_id=agent_id, queue_id=queue_id)
     result = db_converter.to_model(row)
@@ -40,12 +40,13 @@ def get_by_queue_id_and_agent_id(session, queue_id, agent_id):
 def edit_agent_queue_association(session, queue_member):
     session.begin()
     row = (session.query(QueueMemberSchema)
-                  .filter(QueueFeaturesSchema.name == QueueMemberSchema.queue_name)
-                  .filter(QueueMemberSchema.usertype == 'agent')
-                  .filter(QueueMemberSchema.userid == queue_member.agent_id)
-                  .filter(QueueFeaturesSchema.id == queue_member.queue_id)).first()
+           .filter(QueueFeaturesSchema.name == QueueMemberSchema.queue_name)
+           .filter(QueueMemberSchema.usertype == 'agent')
+           .filter(QueueMemberSchema.userid == queue_member.agent_id)
+           .filter(QueueFeaturesSchema.id == queue_member.queue_id)).first()
     row.penalty = queue_member.penalty
     session.commit()
+
 
 @daosession
 def associate(session, queue_member):
@@ -75,3 +76,15 @@ def associate(session, queue_member):
     session.add(db_qm)
     session.commit()
     return queue_member
+
+
+@daosession
+def remove_agent_from_queue(session, agent_id, queue_id):
+    row = (session.query(QueueMemberSchema)
+           .filter(QueueMemberSchema.usertype == 'agent')
+           .filter(QueueMemberSchema.userid == agent_id)
+           .filter(QueueMemberSchema.queue_name == QueueFeaturesSchema.name)
+           .filter(QueueFeaturesSchema.id == queue_id)).first()
+    session.delete(row)
+
+    #

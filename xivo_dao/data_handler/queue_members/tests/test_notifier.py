@@ -23,7 +23,6 @@ from xivo_dao.data_handler.queue_members.model import QueueMemberAgent
 
 
 class TestQueueMembersNotifier(unittest.TestCase):
-
     def setUp(self):
         self.sysconfd_command = {
             'ctibus': [],
@@ -51,7 +50,7 @@ class TestQueueMembersNotifier(unittest.TestCase):
     @patch('xivo_dao.helpers.sysconfd_connector.exec_request_handlers')
     @patch('xivo_bus.resources.queue_members.event.AgentQueueAssociatedEvent')
     @patch('xivo_dao.helpers.bus_manager.send_bus_command')
-    def test_associated(self,send_bus_command, AgentQueueAssociatedEvent,exec_request_handler):
+    def test_associated(self, send_bus_command, AgentQueueAssociatedEvent, exec_request_handler):
         new_event = AgentQueueAssociatedEvent.return_value = Mock()
         queue_member = QueueMemberAgent(queue_id=2, agent_id=30, penalty=5)
         self.sysconfd_command['ctibus'] = ['xivo[queuemember,update]']
@@ -60,8 +59,19 @@ class TestQueueMembersNotifier(unittest.TestCase):
         notifier.agent_queue_associated(queue_member)
 
         AgentQueueAssociatedEvent.assert_called_once_with(queue_member.queue_id,
-                                                                 queue_member.agent_id,
-                                                                 queue_member.penalty)
+                                                          queue_member.agent_id,
+                                                          queue_member.penalty)
         send_bus_command.assert_called_once_with(new_event)
+
+        exec_request_handler.assert_called_once_with(self.sysconfd_command)
+
+    @patch('xivo_dao.helpers.sysconfd_connector.exec_request_handlers')
+    def test_removed_from_queue(self, exec_request_handler):
+        agent_id = 104
+
+        self.sysconfd_command['ctibus'] = ['xivo[queuemember,update]']
+        self.sysconfd_command['agentbus'] = ['agent.edit.%s' % agent_id]
+
+        notifier.agent_removed_from_queue(agent_id)
 
         exec_request_handler.assert_called_once_with(self.sysconfd_command)
