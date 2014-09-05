@@ -67,7 +67,7 @@ class TestFuncKeyService(TestCase):
         func_key_notifier_created.assert_called_once_with(func_key)
 
     @patch('xivo_dao.data_handler.func_key.dao.find_all_forwards')
-    def test_fund_all_fwd_unc(self, find_all_forwards):
+    def test_find_all_fwd_unc(self, find_all_forwards):
         expected_number = '1234'
         fwd_type = 'unconditional'
         user_id = 1
@@ -85,7 +85,7 @@ class TestFuncKeyService(TestCase):
         assert_that(result, contains(expected_number, ''))
 
     @patch('xivo_dao.data_handler.func_key.dao.find_all_forwards')
-    def test_fund_all_fwd_rna(self, find_all_forwards):
+    def test_find_all_fwd_rna(self, find_all_forwards):
         expected_number = '2345'
         fwd_type = 'noanswer'
         user_id = 1
@@ -103,7 +103,7 @@ class TestFuncKeyService(TestCase):
         assert_that(result, contains(expected_number, ''))
 
     @patch('xivo_dao.data_handler.func_key.dao.find_all_forwards')
-    def test_fund_all_fwd_busy(self, find_all_forwards):
+    def test_find_all_fwd_busy(self, find_all_forwards):
         expected_number = '1234'
         fwd_type = 'busy'
         user_id = 1

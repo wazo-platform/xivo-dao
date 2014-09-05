@@ -46,10 +46,10 @@ class ForwardTypeConverter(object):
         'busy': 'fwdbusy',
     }
 
-    reveresed_types = dict((value, key) for key, value in fwd_types.iteritems())
+    reversed_types = dict((value, key) for key, value in fwd_types.iteritems())
 
     def db_to_model(self, db_type):
-        return self.reveresed_types[db_type]
+        return self.reversed_types[db_type]
 
     def model_to_db(self, model_type):
         return self.fwd_types[model_type]
@@ -57,4 +57,3 @@ class ForwardTypeConverter(object):
 
 Hint = namedtuple('Hint', ['user_id', 'exten', 'type', 'number'])
 Forward = namedtuple('Forward', ['user_id', 'type', 'number'])
-
