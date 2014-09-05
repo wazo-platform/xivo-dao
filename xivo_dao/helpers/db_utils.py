@@ -20,7 +20,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 
 @contextmanager
-def commit_or_abort(session, error, element):
+def commit_or_abort(session, error=None, element=None):
     session.begin()
     yield
 
@@ -28,4 +28,7 @@ def commit_or_abort(session, error, element):
         session.commit()
     except SQLAlchemyError as e:
         session.rollback()
-        raise error(element, e)
+        if error:
+            raise error(element, e)
+        else:
+            raise
