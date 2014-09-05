@@ -18,7 +18,7 @@
 import warnings
 
 from contextlib import contextmanager
-from hamcrest import *
+from hamcrest import assert_that, contains, equal_to, has_entries, contains_inanyorder, has_length
 
 from mock import patch
 from xivo_dao import asterisk_conf_dao
@@ -29,7 +29,7 @@ from xivo_dao.alchemy.queuepenalty import QueuePenalty
 from xivo_dao.alchemy.queuepenaltychange import QueuePenaltyChange
 from xivo_dao.tests.test_dao import DAOTestCase
 
-from xivo_dao.data_handler.func_key.tests.test_dao import TestFuncKeyDao
+from xivo_dao.data_handler.func_key.model import Hint
 
 
 @contextmanager
@@ -250,14 +250,14 @@ class TestSccpConfDAO(DAOTestCase):
         assert_that(sccp_device, contains_inanyorder(*expected_result))
 
 
-class TestFindExtenProgfunckeysSettings(TestFuncKeyDao):
+@patch('xivo_dao.data_handler.func_key.services.find_all_hints')
+class TestFindExtenProgfunckeysSettings(DAOTestCase):
 
     def setUp(self):
-        TestFuncKeyDao.setUp(self)
+        DAOTestCase.setUp(self)
         self.context = 'mycontext'
-        self.prepare_user()
 
-    def prepare_user(self):
+    def create_user_and_deps(self):
         user_row = self.add_user()
         extension_row = self.add_extension(context=self.context, exten='1000')
         line_row = self.add_line(context=self.context)
@@ -267,34 +267,15 @@ class TestFindExtenProgfunckeysSettings(TestFuncKeyDao):
                            main_user=True,
                            main_line=True)
 
-        self.user = {'id': user_row.id,
-                     'template_id': user_row.func_key_private_template_id}
+        return user_row
 
-    def add_service_func_key(self, exten, typeval):
-        extension_row = self.add_extension(context='xivo-features',
-                                           exten=exten,
-                                           type='extenfeatures',
-                                           typeval=typeval)
-        func_key_row, destination_row = self.add_destination('service', extension_row.id)
-
-        return func_key_row
-
-    def add_service_func_key_to_user(self, exten, extentype, blf=True, position=1):
-        func_key_row = self.add_service_func_key(exten, extentype)
-
-        self.add_func_key_mapping(template_id=self.user['template_id'],
-                                  func_key_id=func_key_row.id,
-                                  destination_type_id=func_key_row.destination_type_id,
-                                  blf=blf,
-                                  position=position)
-
-    def add_old_func_key_to_user(self, exten, extentype, **kwargs):
+    def add_old_func_key_to_user(self, user_id, exten, extentype, **kwargs):
         self.add_extension(context='xivo-features',
                            exten=exten,
                            type='extenfeatures',
                            typeval=extentype)
 
-        params = {'iduserfeatures': self.user['id'],
+        params = {'iduserfeatures': user_id,
                   'fknum': 1,
                   'exten': None,
                   'typeextenumbers': 'extenfeatures',
@@ -308,30 +289,39 @@ class TestFindExtenProgfunckeysSettings(TestFuncKeyDao):
 
         self.add_function_key_to_user(**params)
 
-    def test_given_user_has_no_func_key_then_returns_empty_list(self):
-        result = asterisk_conf_dao.find_exten_progfunckeys_settings(self.context)
-
-        assert_that(result, contains())
-
-    def test_given_func_key_has_no_blf_then_returns_empty_list(self):
-        self.add_service_func_key_to_user('*90', 'enablevm', blf=False, position=1)
-        self.add_old_func_key_to_user('*26', 'callrecord', supervision=0, fknum=2)
+    def test_given_user_has_no_func_key_then_returns_empty_list(self, find_all_hints):
+        find_all_hints.return_value = []
 
         result = asterisk_conf_dao.find_exten_progfunckeys_settings(self.context)
 
         assert_that(result, contains())
 
-    def test_given_func_key_is_not_a_prog_func_key_then_returns_empty_list(self):
-        self.add_old_func_key_to_user('*98', 'vmusermsg', fknum=1, supervision=1, progfunckey=0)
+    def test_given_func_key_has_no_supervision_then_returns_empty_list(self, find_all_hints):
+        find_all_hints.return_value = []
+        user_row = self.create_user_and_deps()
+        self.add_old_func_key_to_user(user_row.id, '*26', 'callrecord', supervision=0)
 
         result = asterisk_conf_dao.find_exten_progfunckeys_settings(self.context)
 
         assert_that(result, contains())
 
-    def test_given_user_has_func_key_to_activate_voicemail_then_returns_hint(self):
-        self.add_service_func_key_to_user('*90', 'enablevm')
+    def test_given_func_key_is_not_a_prog_func_key_then_returns_empty_list(self, find_all_hints):
+        find_all_hints.return_value = []
+        user_row = self.create_user_and_deps()
+        self.add_old_func_key_to_user(user_row.id, '*98', 'vmusermsg', supervision=1, progfunckey=0)
 
-        expected = {'user_id': self.user['id'],
+        result = asterisk_conf_dao.find_exten_progfunckeys_settings(self.context)
+
+        assert_that(result, contains())
+
+    def test_given_user_has_func_key_to_activate_voicemail_then_returns_hint(self, find_all_hints):
+        user_row = self.create_user_and_deps()
+        find_all_hints.return_value = [Hint(user_id=user_row.id,
+                                            exten='*90',
+                                            type='enablevm',
+                                            number=None)]
+
+        expected = {'user_id': user_row.id,
                     'exten': None,
                     'typeextenumbers': 'extenfeatures',
                     'typevalextenumbers': 'enablevm',
@@ -340,14 +330,39 @@ class TestFindExtenProgfunckeysSettings(TestFuncKeyDao):
                     'leftexten': '*90'}
 
         result = asterisk_conf_dao.find_exten_progfunckeys_settings(self.context)
+        find_all_hints.assert_called_once_with(self.context)
 
         assert_that(result, contains(has_entries(expected)))
 
-    def test_given_user_has_new_func_key_and_old_func_key_then_returns_both_hints(self):
-        self.add_service_func_key_to_user('*90', 'enablevm', position=1)
-        self.add_old_func_key_to_user('*26', 'callrecord', fknum=2)
+    def test_given_user_has_func_key_to_activate_forward_then_returns_hint(self, find_all_hints):
+        user_row = self.create_user_and_deps()
+        find_all_hints.return_value = [Hint(user_id=user_row.id,
+                                            exten='_*21.',
+                                            type='fwdunc',
+                                            number='1234')]
 
-        new_func_key = {'user_id': self.user['id'],
+        expected = {'user_id': user_row.id,
+                    'exten': '1234',
+                    'typeextenumbers': 'extenfeatures',
+                    'typevalextenumbers': 'fwdunc',
+                    'typeextenumbersright': None,
+                    'typevalextenumbersright': None,
+                    'leftexten': '_*21.'}
+
+        result = asterisk_conf_dao.find_exten_progfunckeys_settings(self.context)
+        find_all_hints.assert_called_once_with(self.context)
+
+        assert_that(result, contains(has_entries(expected)))
+
+    def test_given_user_has_new_func_key_and_old_func_key_then_returns_both_hints(self, find_all_hints):
+        user_row = self.create_user_and_deps()
+        self.add_old_func_key_to_user(user_row.id, '*26', 'callrecord')
+        find_all_hints.return_value = [Hint(user_id=user_row.id,
+                                            exten='*90',
+                                            type='enablevm',
+                                            number=None)]
+
+        new_func_key = {'user_id': user_row.id,
                         'exten': None,
                         'typeextenumbers': 'extenfeatures',
                         'typevalextenumbers': 'enablevm',
@@ -355,7 +370,7 @@ class TestFindExtenProgfunckeysSettings(TestFuncKeyDao):
                         'typevalextenumbersright': None,
                         'leftexten': '*90'}
 
-        old_func_key = {'user_id': self.user['id'],
+        old_func_key = {'user_id': user_row.id,
                         'exten': None,
                         'typeextenumbers': 'extenfeatures',
                         'typevalextenumbers': 'callrecord',
@@ -369,10 +384,12 @@ class TestFindExtenProgfunckeysSettings(TestFuncKeyDao):
             has_entries(new_func_key),
             has_entries(old_func_key)))
 
-    def test_that_only_one_hint_is_generated_for_a_given_funckey(self):
-        self.add_service_func_key_to_user('*90', 'enablevm', position=1)
+    def test_given_func_key_is_in_different_context_then_no_hint_generated(self, find_all_hints):
+        find_all_hints.return_value = []
+        user_row = self.create_user_and_deps()
+        self.add_old_func_key_to_user(user_row.id, '*90', 'enablevm')
 
-        new_func_key = {'user_id': self.user['id'],
+        new_func_key = {'user_id': user_row.id,
                         'exten': None,
                         'typeextenumbers': 'extenfeatures',
                         'typevalextenumbers': 'enablevm',

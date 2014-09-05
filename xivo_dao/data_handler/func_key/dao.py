@@ -15,12 +15,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy.sql import null, and_
+
+from xivo_dao import alchemy as tbl
+
+from xivo_dao.data_handler.func_key.model import Hint, Forward, ForwardTypeConverter
 from xivo_dao.data_handler import errors
 from xivo_dao.data_handler.utils.search import SearchResult
 from xivo_dao.data_handler.exception import DataError
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.helpers.db_utils import commit_or_abort
-from xivo_dao.data_handler.func_key.model import db_converter, QueryHelper
+from xivo_dao.data_handler.func_key.database import db_converter, QueryHelper
 
 
 @daosession
@@ -78,3 +83,76 @@ def delete(session, func_key):
     with commit_or_abort(session, DataError.on_delete, 'FuncKey'):
         destination_query.delete()
         func_key_query.delete()
+
+
+@daosession
+def find_all_hints(session, context):
+    base = (
+        session.query(
+            tbl.UserFeatures.id.label('user_id'),
+            tbl.Extension.typeval.label('type'),
+            tbl.Extension.exten.label('exten'))
+        .join(tbl.UserLine,
+              and_(
+                  tbl.UserLine.user_id == tbl.UserFeatures.id,
+                  tbl.UserLine.main_user == True))
+        .join(tbl.LineFeatures,
+              tbl.LineFeatures.id == tbl.UserLine.line_id)
+        .join(tbl.FuncKeyMapping,
+              tbl.FuncKeyMapping.template_id == tbl.UserFeatures.func_key_private_template_id)
+        .filter(tbl.FuncKeyMapping.blf == True)
+        .filter(tbl.LineFeatures.context == context)
+    )
+
+    service_query = (
+        base.add_columns(
+            null().label('number'))
+        .join(tbl.FuncKeyDestService,
+              and_(
+                  tbl.FuncKeyMapping.func_key_id == tbl.FuncKeyDestService.func_key_id,
+                  tbl.FuncKeyMapping.destination_type_id == tbl.FuncKeyDestService.destination_type_id))
+        .join(tbl.Extension,
+              tbl.FuncKeyDestService.extension_id == tbl.Extension.id)
+    )
+
+    forward_query = (
+        base.add_columns(
+            tbl.FuncKeyDestForward.number.label('number'))
+        .join(
+            tbl.FuncKeyDestForward,
+            tbl.FuncKeyDestForward.func_key_id == tbl.FuncKeyMapping.func_key_id)
+        .join(
+            tbl.Extension,
+            tbl.FuncKeyDestForward.extension_id == tbl.Extension.id)
+    )
+
+    query = service_query.union(forward_query)
+
+    return [Hint(user_id=row.user_id,
+                 type=row.type,
+                 exten=row.exten,
+                 number=row.number)
+            for row in query]
+
+
+@daosession
+def find_all_forwards(session, user_id, fwd_type):
+    type_converter = ForwardTypeConverter()
+
+    query = (session.query(tbl.FuncKeyDestForward.number.label('number'),
+                           tbl.UserFeatures.id.label('user_id'),
+                           tbl.Extension.typeval.label('type'))
+             .join(tbl.Extension,
+                   tbl.FuncKeyDestForward.extension_id == tbl.Extension.id)
+             .join(tbl.FuncKeyMapping,
+                   tbl.FuncKeyMapping.func_key_id == tbl.FuncKeyDestForward.func_key_id)
+             .join(tbl.UserFeatures,
+                   tbl.UserFeatures.func_key_private_template_id == tbl.FuncKeyMapping.template_id)
+             .filter(tbl.UserFeatures.id == user_id)
+             .filter(tbl.Extension.typeval == type_converter.model_to_db(fwd_type))
+             )
+
+    return [Forward(user_id=row.user_id,
+                    type=type_converter.db_to_model(row.type),
+                    number=row.number)
+            for row in query]
