@@ -18,7 +18,6 @@
 from xivo_dao import cti_sheets_dao
 from xivo_dao.alchemy.ctisheetactions import CtiSheetActions
 from xivo_dao.alchemy.ctisheetevents import CtiSheetEvents
-from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -111,8 +110,7 @@ class TestCtiSheetsDAO(DAOTestCase):
         cti_sheetevent.link = 'XiVO'
         cti_sheetevent.unlink = ''
 
-        with commit_or_abort(self.session):
-            self.session.add(cti_sheetevent)
+        self.add_me(cti_sheetevent)
         return cti_sheetevent.id
 
     def _add_ctisheetactions(self, qt_ui='file:///tmp/test.ui'):
@@ -128,8 +126,7 @@ class TestCtiSheetsDAO(DAOTestCase):
         cti_sheetaction.deletable = 1
         cti_sheetaction.disable = 1
 
-        with commit_or_abort(self.session):
-            self.session.add(cti_sheetaction)
+        self.add_me(cti_sheetaction)
         return cti_sheetaction.id
 
     def _add_bad_ctisheetactions(self):
@@ -145,6 +142,5 @@ class TestCtiSheetsDAO(DAOTestCase):
         cti_sheetaction.deletable = 1
         cti_sheetaction.disable = 1
 
-        with commit_or_abort(self.session):
-            self.session.add(cti_sheetaction)
+        self.add_me(cti_sheetaction)
         return cti_sheetaction.id

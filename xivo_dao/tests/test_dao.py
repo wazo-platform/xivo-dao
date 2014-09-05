@@ -639,8 +639,7 @@ class DAOTestCase(unittest.TestCase):
         kwargs.setdefault('description', '')
         entity = EntitySchema(**kwargs)
 
-        with commit_or_abort(self.session):
-            self.session.add(entity)
+        self.add_me(entity)
 
         return entity
 

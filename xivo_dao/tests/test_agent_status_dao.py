@@ -23,7 +23,6 @@ from xivo_dao.alchemy.agent_membership_status import AgentMembershipStatus
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.tests.helpers.session import mocked_dao_session
-from xivo_dao.helpers.db_utils import commit_or_abort
 from sqlalchemy import and_
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -405,8 +404,7 @@ class TestAgentStatusDao(DAOTestCase):
         agent.language = ''
         agent.description = ''
 
-        with commit_or_abort(self.session):
-            self.session.add(agent)
+        self.add_me(agent)
 
         return agent
 
@@ -424,8 +422,7 @@ class TestAgentStatusDao(DAOTestCase):
         agent_status.interface = interface
         agent_status.state_interface = state_interface
 
-        with commit_or_abort(self.session):
-            self.session.add(agent_status)
+        self.add_me(agent_status)
 
         return agent_status
 
@@ -434,8 +431,7 @@ class TestAgentStatusDao(DAOTestCase):
                                                  queue_id=queue_id,
                                                  queue_name=queue_name,
                                                  penalty=queue_penalty)
-        with commit_or_abort(self.session):
-            self.session.add(agent_membership)
+        self.add_me(agent_membership)
 
         return agent_membership
 
@@ -445,8 +441,7 @@ class TestAgentStatusDao(DAOTestCase):
         queue.displayname = queue_name
         queue.number = queue_number
 
-        with commit_or_abort(self.session):
-            self.session.add(queue)
+        self.add_me(queue)
 
         return queue
 
@@ -460,5 +455,4 @@ class TestAgentStatusDao(DAOTestCase):
         queue_member.channel = 'foobar'
         queue_member.category = 'queue'
 
-        with commit_or_abort(self.session):
-            self.session.add(queue_member)
+        self.add_me(queue_member)

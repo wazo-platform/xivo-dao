@@ -23,7 +23,6 @@ from xivo_dao.alchemy.ldapfilter import LdapFilter
 from xivo_dao.alchemy.ldapserver import LdapServer
 from xivo_dao.alchemy.ctidirectories import CtiDirectories
 from xivo_dao.alchemy.ctidirectoryfields import CtiDirectoryFields
-from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -177,8 +176,7 @@ class TestCtiSheetsDAO(DAOTestCase):
         ctidirectoryfields.fieldname = fieldname
         ctidirectoryfields.value = value
 
-        with commit_or_abort(self.session):
-            self.session.add(ctidirectoryfields)
+        self.add_me(ctidirectoryfields)
 
     def _insert_ctidirectory(self, name, uri, match_direct, match_reverse):
         ctidirectory = CtiDirectories()
@@ -187,8 +185,7 @@ class TestCtiSheetsDAO(DAOTestCase):
         ctidirectory.match_direct = match_direct
         ctidirectory.match_reverse = match_reverse
 
-        with commit_or_abort(self.session):
-            self.session.add(ctidirectory)
+        self.add_me(ctidirectory)
 
         return ctidirectory
 
@@ -202,8 +199,7 @@ class TestCtiSheetsDAO(DAOTestCase):
         ldap.basedn = 'dc=lan-quebec,dc=avencall,dc=com'
         ldap.description = 'description'
 
-        with commit_or_abort(self.session):
-            self.session.add(ldap)
+        self.add_me(ldap)
 
         return ldap
 
@@ -216,7 +212,6 @@ class TestCtiSheetsDAO(DAOTestCase):
         ldapserver.protocolversion = '3'
         ldapserver.description = 'description'
 
-        with commit_or_abort(self.session):
-            self.session.add(ldapserver)
+        self.add_me(ldapserver)
 
         return ldapserver

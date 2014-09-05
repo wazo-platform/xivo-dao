@@ -18,7 +18,6 @@
 from xivo_dao import incall_dao
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.incall import Incall
-from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -30,8 +29,7 @@ class TestIncallDAO(DAOTestCase):
         incall.context = context
         incall.description = 'description'
 
-        with commit_or_abort(self.session):
-            self.session.add(incall)
+        self.add_me(incall)
 
         return incall.id
 
@@ -45,8 +43,7 @@ class TestIncallDAO(DAOTestCase):
         dialaction.actionarg2 = ''
         dialaction.linked = 1
 
-        with commit_or_abort(self.session):
-            self.session.add(dialaction)
+        self.add_me(dialaction)
 
     def test_get(self):
         incall_exten = '1001'

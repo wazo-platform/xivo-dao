@@ -19,7 +19,6 @@
 from xivo_dao import voicemail_dao
 from xivo_dao.alchemy.voicemail import Voicemail
 from xivo_dao.alchemy.contextmember import ContextMember
-from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -30,8 +29,7 @@ class VoicemailDAOTestCase(DAOTestCase):
         voicemail.mailbox = mailbox
         voicemail.context = context
 
-        with commit_or_abort(self.session):
-            self.session.add(voicemail)
+        self.add_me(voicemail)
 
         return voicemail.uniqueid
 

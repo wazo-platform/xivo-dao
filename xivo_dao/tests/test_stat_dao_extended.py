@@ -257,16 +257,14 @@ class TestStatDAO(DAOTestCase):
     def _insert_agent(self, aname):
         a = StatAgent(name=aname)
 
-        with commit_or_abort(self.session):
-            self.session.add(a)
+        self.add_me(a)
 
         return a.name, a.id
 
     def _insert_queue(self, qname):
         q = StatQueue(name=qname)
 
-        with commit_or_abort(self.session):
-            self.session.add(q)
+        self.add_me(q)
 
         return q.name, q.id
 

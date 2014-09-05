@@ -57,7 +57,6 @@ class TestStatQueueDAO(DAOTestCase):
         queue = StatQueue()
         queue.name = name
 
-        with commit_or_abort(self.session):
-            self.session.add(queue)
+        self.add_me(queue)
 
         return queue

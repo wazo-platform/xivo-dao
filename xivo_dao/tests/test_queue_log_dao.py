@@ -39,8 +39,7 @@ class TestQueueLogDAO(DAOTestCase):
     def _insert_agent(self, aname):
         a = StatAgent(name=aname)
 
-        with commit_or_abort(self.session):
-            self.session.add(a)
+        self.add_me(a)
 
         return a.name, a.id
 
@@ -64,8 +63,7 @@ class TestQueueLogDAO(DAOTestCase):
         if d5:
             queue_log.data5 = d5
 
-        with commit_or_abort(self.session):
-            self.session.add(queue_log)
+        self.add_me(queue_log)
 
     def _insert_entry_queue_full(self, t, callid, queuename):
         self._insert_entry_queue('FULL', self._build_timestamp(t), callid, queuename)

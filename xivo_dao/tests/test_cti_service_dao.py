@@ -21,7 +21,6 @@ from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
 from xivo_dao.alchemy.ctipresences import CtiPresences
 from xivo_dao.alchemy.cti_profile_service import CtiProfileService
 from xivo_dao.alchemy.cti_service import CtiService
-from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -31,8 +30,7 @@ class TestCtiServiceDAO(DAOTestCase):
         cti_profile = CtiProfile()
         cti_profile.name = 'test_name'
 
-        with commit_or_abort(self.session):
-            self.session.add(cti_profile)
+        self.add_me(cti_profile)
 
         result = cti_profile_dao.get_name(cti_profile.id)
 
@@ -42,24 +40,21 @@ class TestCtiServiceDAO(DAOTestCase):
         cti_presence = CtiPresences()
         cti_presence.name = name
 
-        with commit_or_abort(self.session):
-            self.session.add(cti_presence)
+        self.add_me(cti_presence)
         return cti_presence.id
 
     def _add_service(self, key):
         cti_service = CtiService()
         cti_service.key = key
 
-        with commit_or_abort(self.session):
-            self.session.add(cti_service)
+        self.add_me(cti_service)
         return cti_service.id
 
     def _add_phone_hints_group(self, name):
         cti_phone_hints_group = CtiPhoneHintsGroup()
         cti_phone_hints_group.name = name
 
-        with commit_or_abort(self.session):
-            self.session.add(cti_phone_hints_group)
+        self.add_me(cti_phone_hints_group)
         return cti_phone_hints_group.id
 
     def _add_profile(self, name):
@@ -68,8 +63,7 @@ class TestCtiServiceDAO(DAOTestCase):
         cti_profile.presence_id = self._add_presence('test_presence')
         cti_profile.phonehints_id = self._add_phone_hints_group('test_add_phone_hints_group')
 
-        with commit_or_abort(self.session):
-            self.session.add(cti_profile)
+        self.add_me(cti_profile)
         return cti_profile.id
 
     def _add_service_to_profile(self,
@@ -79,8 +73,7 @@ class TestCtiServiceDAO(DAOTestCase):
         cti_profile_service.service_id = service_id
         cti_profile_service.profile_id = profile_id
 
-        with commit_or_abort(self.session):
-            self.session.add(cti_profile_service)
+        self.add_me(cti_profile_service)
 
     def test_get_profiles(self):
         expected_result = {

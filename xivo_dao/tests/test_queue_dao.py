@@ -18,7 +18,6 @@
 from xivo_dao import queue_dao
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
-from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -123,8 +122,7 @@ class TestQueueDAO(DAOTestCase):
         queue.displayname = display_name
         queue.number = number
 
-        with commit_or_abort(self.session):
-            self.session.add(queue)
+        self.add_me(queue)
 
         return queue
 
@@ -138,5 +136,4 @@ class TestQueueDAO(DAOTestCase):
         queue_member.channel = 'foobar'
         queue_member.category = 'queue'
 
-        with commit_or_abort(self.session):
-            self.session.add(queue_member)
+        self.add_me(queue_member)

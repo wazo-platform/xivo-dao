@@ -18,7 +18,6 @@
 from xivo_dao import directory_dao
 from xivo_dao.alchemy.cti_contexts import CtiContexts
 from xivo_dao.alchemy.cti_displays import CtiDisplays
-from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -38,9 +37,7 @@ class TestDirectoryDAO(DAOTestCase):
             data='{ "10": [ "Name","name","","{db-name}" ],"20": [ "Number","number_office","","{db-number}" ],"30": [ "Location","","","{db-location}" ] }'
         )
 
-        with commit_or_abort(self.session):
-            self.session.add(cti_display)
-            self.session.add(cti_contexts)
+        self.add_me_all([cti_display, cti_contexts])
 
         result = directory_dao.get_directory_headers(context_name)
         expected_result = [
@@ -72,9 +69,7 @@ class TestDirectoryDAO(DAOTestCase):
             data='{ "10": [ "Name","name","","{db-name}" ],"20": [ "Number","number_office","","{db-number}" ],"30": [ "Location","","","{db-location}" ], "40": [ "Number","number_mobile","","{db-mobile}" ] }'
         )
 
-        with commit_or_abort(self.session):
-            self.session.add(cti_display)
-            self.session.add(cti_contexts)
+        self.add_me_all([cti_display, cti_contexts])
 
         result = directory_dao.get_directory_headers(context_name)
         expected_result = [

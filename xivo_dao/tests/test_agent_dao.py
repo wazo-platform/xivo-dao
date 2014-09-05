@@ -23,7 +23,6 @@ from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.tests.helpers.session import mocked_dao_session
-from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -180,8 +179,7 @@ class TestAgentDAO(DAOTestCase):
         agent.language = ''
         agent.description = ''
 
-        with commit_or_abort(self.session):
-            self.session.add(agent)
+        self.add_me(agent)
 
         return agent
 
@@ -192,8 +190,7 @@ class TestAgentDAO(DAOTestCase):
         queue.displayname = name
         queue.number = '3000'
 
-        with commit_or_abort(self.session):
-            self.session.add(queue)
+        self.add_me(queue)
 
         return queue
 
@@ -208,7 +205,6 @@ class TestAgentDAO(DAOTestCase):
         queue_member.category = 'queue'
         queue_member.position = 0
 
-        with commit_or_abort(self.session):
-            self.session.add(queue_member)
+        self.add_me(queue_member)
 
         return queue_member

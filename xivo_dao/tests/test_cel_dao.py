@@ -20,7 +20,6 @@ from datetime import datetime, timedelta
 from xivo_dao import cel_dao
 from xivo_dao.alchemy.cel import CEL
 from xivo_dao.helpers.cel_exception import CELException
-from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -62,9 +61,7 @@ def _new_cel(**kwargs):
 class TestCELDAO(DAOTestCase):
 
     def _insert_cels(self, cels):
-        with commit_or_abort(self.session):
-            for cel in cels:
-                self.session.add(cel)
+        self.add_me_all(cels)
 
     def test_caller_id_by_unique_id_when_unique_id_is_present(self):
         self._insert_cels([

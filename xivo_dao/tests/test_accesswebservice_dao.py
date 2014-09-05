@@ -19,7 +19,6 @@ import random
 
 from xivo_dao import accesswebservice_dao
 from xivo_dao.alchemy.accesswebservice import AccessWebService
-from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -50,7 +49,6 @@ class TestAccessWebServiceDao(DAOTestCase):
         access.host = host
         access.obj = ''
 
-        with commit_or_abort(self.session):
-            self.session.add(access)
+        self.add_me(access)
 
         return access

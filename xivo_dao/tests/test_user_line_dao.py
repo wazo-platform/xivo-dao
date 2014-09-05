@@ -20,7 +20,6 @@ from mock import patch
 from xivo_dao import user_line_dao
 from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.usersip import UserSIP
-from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.tests.test_dao import DAOTestCase
 
 USER_ID = 5
@@ -132,8 +131,7 @@ class TestUserLineDAO(DAOTestCase):
         line.cid_name = 'Tester One'
         line.cid_num = '1234'
 
-        with commit_or_abort(self.session):
-            self.session.add(line)
+        self.add_me(line)
 
         result = user_line_dao._get_cid_for_sccp_channel(channel)
         expected = ('"Tester One" <1234>', 'Tester One', '1234')
@@ -153,8 +151,7 @@ class TestUserLineDAO(DAOTestCase):
         line.callerid = '"Tester One" <1234>'
         line.category = 'user'
 
-        with commit_or_abort(self.session):
-            self.session.add(line)
+        self.add_me(line)
 
         result = user_line_dao._get_cid_for_sip_channel(channel)
         expected = (line.callerid, 'Tester One', '1234')

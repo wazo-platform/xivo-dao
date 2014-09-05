@@ -18,7 +18,6 @@
 from xivo_dao import stat_agent_dao
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.stat_agent import StatAgent
-from xivo_dao.helpers.db_utils import commit_or_abort
 
 
 class TestStatAgentDAO(DAOTestCase):
@@ -41,7 +40,6 @@ class TestStatAgentDAO(DAOTestCase):
         agent = StatAgent()
         agent.name = name
 
-        with commit_or_abort(self.session):
-            self.session.add(agent)
+        self.add_me(agent)
 
         return agent

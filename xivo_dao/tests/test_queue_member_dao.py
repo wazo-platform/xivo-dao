@@ -20,7 +20,6 @@ from mock import patch
 from xivo_dao import queue_member_dao
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
-from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -68,8 +67,7 @@ class TestQueueMemberDAO(DAOTestCase):
 
         queue_feature = QueueFeatures(name='queue1', displayname='queue1')
 
-        with commit_or_abort(self.session):
-            self.session.add(queue_feature)
+        self.add_me(queue_feature)
 
         queue_members = queue_member_dao.get_queue_members_for_queues()
 
@@ -118,5 +116,4 @@ class TestQueueMemberDAO(DAOTestCase):
         queue_member.category = 'queue' if is_queue else 'group'
         queue_member.position = 0
 
-        with commit_or_abort(self.session):
-            self.session.add(queue_member)
+        self.add_me(queue_member)

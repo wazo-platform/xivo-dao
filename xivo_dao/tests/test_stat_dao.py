@@ -324,7 +324,7 @@ class TestStatDAO(DAOTestCase):
             data2='linked_callid',
             data3='2'
         )
-        self.session.add(connect1)
+        self.add_me(connect1)
         connect2 = QueueLog(
             time=self.start + datetime.timedelta(minutes=5),
             callid='answered_2',
@@ -336,8 +336,7 @@ class TestStatDAO(DAOTestCase):
             data3='4'
         )
 
-        with commit_or_abort(self.session):
-            self.session.add(connect2)
+        self.add_me(connect2)
 
         result = stat_dao.get_login_intervals_in_range(self.session, self.start, self.end)
 
@@ -453,8 +452,7 @@ class TestStatDAO(DAOTestCase):
             data4=str(talktime)
         )
 
-        with commit_or_abort(self.session):
-            self.session.add_all([enterqueue, connect, transfer])
+        self.add_me_all([enterqueue, connect, transfer])
 
     def _insert_completed_call(self, time, callid, qname, aname, waittime, talktime, agent_complete):
         enterqueue = QueueLog(
@@ -488,8 +486,7 @@ class TestStatDAO(DAOTestCase):
             data2=str(talktime)
         )
 
-        with commit_or_abort(self.session):
-            self.session.add_all([enterqueue, connect, complete])
+        self.add_me_all([enterqueue, connect, complete])
 
     def _insert_full_call(self, t, callid, qname):
         full = QueueLog(
@@ -500,8 +497,7 @@ class TestStatDAO(DAOTestCase):
             event='FULL'
         )
 
-        with commit_or_abort(self.session):
-            self.session.add(full)
+        self.add_me(full)
 
     def _insert_joinempty_call(self, t, callid, qname):
         je = QueueLog(
@@ -512,8 +508,7 @@ class TestStatDAO(DAOTestCase):
             event='JOINEMPTY'
         )
 
-        with commit_or_abort(self.session):
-            self.session.add(je)
+        self.session.add_me(je)
 
     def _insert_leaveempty_call(self, t, callid, qname, waittime):
         enterqueue = QueueLog(
@@ -535,9 +530,7 @@ class TestStatDAO(DAOTestCase):
             event='LEAVEEMPTY'
         )
 
-        with commit_or_abort(self.session):
-            self.session.add(enterqueue)
-            self.session.add(le)
+        self.add_me_all([enterqueue, le])
 
     def _insert_closed_call(self, t, callid, qname):
         closed = QueueLog(
@@ -548,8 +541,7 @@ class TestStatDAO(DAOTestCase):
             event='CLOSED'
         )
 
-        with commit_or_abort(self.session):
-            self.session.add(closed)
+        self.add_me(closed)
 
     def _insert_ca_ratio_call(self, t, callid, qname):
         call = QueueLog(
@@ -560,8 +552,7 @@ class TestStatDAO(DAOTestCase):
             event='DIVERT_CA_RATIO'
         )
 
-        with commit_or_abort(self.session):
-            self.session.add(call)
+        self.add_me(call)
 
     def _insert_holdtime_call(self, t, callid, qname):
         call = QueueLog(
@@ -572,22 +563,19 @@ class TestStatDAO(DAOTestCase):
             event='DIVERT_HOLDTIME'
         )
 
-        with commit_or_abort(self.session):
-            self.session.add(call)
+        self.add_me(call)
 
     def _insert_agent(self, aname):
         a = StatAgent(name=aname)
 
-        with commit_or_abort(self.session):
-            self.session.add(a)
+        self.add_me(a)
 
         return a.name, a.id
 
     def _insert_queue(self, qname):
         q = StatQueue(name=qname)
 
-        with commit_or_abort(self.session):
-            self.session.add(q)
+        self.add_me(q)
 
         return q.name, q.id
 

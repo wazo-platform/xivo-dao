@@ -21,7 +21,6 @@ from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
-from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.tests.test_dao import DAOTestCase
 
 USER_ID = 5
@@ -38,8 +37,7 @@ class TestLineFeaturesDAO(DAOTestCase):
         sccpline.cid_name = 'Tester One'
         sccpline.cid_num = '1234'
 
-        with commit_or_abort(self.session):
-            self.session.add(sccpline)
+        self.add_me(sccpline)
 
         return sccpline
 
@@ -57,8 +55,7 @@ class TestLineFeaturesDAO(DAOTestCase):
         line.provisioningid = 123
         line.protocol = protocol
 
-        with commit_or_abort(self.session):
-            self.session.add(line)
+        self.add_me(line)
 
         peer_name = line_dao.get_peer_name(line.device)
 
@@ -79,8 +76,7 @@ class TestLineFeaturesDAO(DAOTestCase):
         line.provisioningid = 123
         line.protocol = protocol
 
-        with commit_or_abort(self.session):
-            self.session.add(line)
+        self.add_me(line)
 
         peer_name = line_dao.get_peer_name(line.device)
 

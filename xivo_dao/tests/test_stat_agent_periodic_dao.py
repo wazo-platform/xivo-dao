@@ -35,8 +35,7 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
         agent = StatAgent()
         agent.name = 'test_agent'
 
-        with commit_or_abort(self.session):
-            self.session.add(agent)
+        self.add_me(agent)
 
         return agent.name, agent.id
 
