@@ -17,17 +17,13 @@
 
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.rightcall import RightCall
+from xivo_dao.helpers.db_utils import commit_or_abort
 
 
 @daosession
 def add(session, rightcall):
-    session.begin()
-    try:
+    with commit_or_abort(session):
         session.add(rightcall)
-        session.commit()
-    except Exception:
-        session.rollback()
-        raise
 
 
 @daosession

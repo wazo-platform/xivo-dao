@@ -25,6 +25,7 @@ from xivo_dao.alchemy.contextnumbers import ContextNumbers as ContextNumberSchem
 from xivo_dao.data_handler.context.model import Context, ContextType, ContextRange
 from xivo_dao.data_handler.context import dao as context_dao
 from xivo_dao.data_handler.exception import NotFoundError
+from xivo_dao.helpers.db_utils import commit_or_abort
 
 
 class TestContextDao(DAOTestCase):
@@ -32,9 +33,8 @@ class TestContextDao(DAOTestCase):
     def _insert_contextnumber(self, **kwargs):
         context_number = ContextNumberSchema(**kwargs)
 
-        self.session.begin()
-        self.session.add(context_number)
-        self.session.commit()
+        with commit_or_abort(self.session):
+            self.session.add(context_number)
 
 
 class TestContextGet(TestContextDao):

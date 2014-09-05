@@ -18,6 +18,7 @@
 from xivo_dao import meetme_dao
 from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
 from xivo_dao.alchemy.staticmeetme import StaticMeetme
+from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -31,9 +32,8 @@ class TestMeetmeFeaturesDAO(DAOTestCase):
         static_meetme.var_val = var_val
         static_meetme.filename = 'meetme.conf'
 
-        self.session.begin()
-        self.session.add(static_meetme)
-        self.session.commit()
+        with commit_or_abort(self.session):
+            self.session.add(static_meetme)
 
         meetme = MeetmeFeatures()
         meetme.meetmeid = meetmeid
@@ -49,9 +49,8 @@ class TestMeetmeFeaturesDAO(DAOTestCase):
         meetme.emailbody = ''
         meetme.description = ''
 
-        self.session.begin()
-        self.session.add(meetme)
-        self.session.commit()
+        with commit_or_abort(self.session):
+            self.session.add(meetme)
 
         return meetme
 

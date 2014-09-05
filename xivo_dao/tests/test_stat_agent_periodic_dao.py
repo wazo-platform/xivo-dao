@@ -22,6 +22,7 @@ from sqlalchemy import func
 from xivo_dao import stat_agent_periodic_dao
 from xivo_dao.alchemy.stat_agent_periodic import StatAgentPeriodic
 from xivo_dao.alchemy.stat_agent import StatAgent
+from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -34,9 +35,8 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
         agent = StatAgent()
         agent.name = 'test_agent'
 
-        self.session.begin()
-        self.session.add(agent)
-        self.session.commit()
+        with commit_or_abort(self.session):
+            self.session.add(agent)
 
         return agent.name, agent.id
 
@@ -77,10 +77,9 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
             }
         }
 
-        self.session.begin()
-        for period_start, agents_stats in stats.iteritems():
-            stat_agent_periodic_dao.insert_stats(self.session, agents_stats, period_start)
-        self.session.commit()
+        with commit_or_abort(self.session):
+            for period_start, agents_stats in stats.iteritems():
+                stat_agent_periodic_dao.insert_stats(self.session, agents_stats, period_start)
 
         period_start = dt(2012, 01, 01, 01, 00, 00)
 
@@ -133,10 +132,9 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
             },
         }
 
-        self.session.begin()
-        for period_start, agents_stats in stats.iteritems():
-            stat_agent_periodic_dao.insert_stats(self.session, agents_stats, period_start)
-        self.session.commit()
+        with commit_or_abort(self.session):
+            for period_start, agents_stats in stats.iteritems():
+                stat_agent_periodic_dao.insert_stats(self.session, agents_stats, period_start)
 
         stat_agent_periodic_dao.remove_after(self.session, dt(2012, 1, 2))
 

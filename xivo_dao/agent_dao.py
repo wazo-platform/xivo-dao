@@ -20,6 +20,7 @@ from sqlalchemy.sql import select, and_
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
+from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
 
 
@@ -70,9 +71,8 @@ def add_agent(session, agent_features):
     if type(agent_features) != AgentFeatures:
         raise ValueError('Wrong object passed')
 
-    session.begin()
-    session.add(agent_features)
-    session.commit()
+    with commit_or_abort(session):
+        session.add(agent_features)
 
     return agent_features.id
 
@@ -81,15 +81,11 @@ def add_agent(session, agent_features):
 def del_agent(session, agentid):
     if agentid is None:
         raise ValueError('Agent ID is None')
-    try:
-        session.begin()
+
+    with commit_or_abort(session):
         session.query(AgentFeatures)\
             .filter(AgentFeatures.id == agentid)\
             .delete()
-        session.commit()
-    except Exception as e:
-        session.rollback()
-        raise e
 
 
 @daosession

@@ -26,15 +26,15 @@ from xivo_dao.data_handler.user_line import dao as user_line_dao
 from xivo_dao.data_handler.user_voicemail.model import db_converter
 from xivo_dao.data_handler.voicemail import dao as voicemail_dao
 
+from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
 
 
 @daosession
 def associate(session, user_voicemail):
-    session.begin()
-    _associate_voicemail_with_user(session, user_voicemail)
-    _associate_voicemail_with_line(session, user_voicemail)
-    session.commit()
+    with commit_or_abort(session):
+        _associate_voicemail_with_user(session, user_voicemail)
+        _associate_voicemail_with_line(session, user_voicemail)
 
 
 def _associate_voicemail_with_user(session, user_voicemail):
@@ -131,10 +131,9 @@ def find_by_voicemail_id(session, voicemail_id):
 
 @daosession
 def dissociate(session, user_voicemail):
-    session.begin()
-    _dissociate_voicemail_from_user(session, user_voicemail.user_id)
-    _dissociate_voicemail_from_line(session, user_voicemail.user_id)
-    session.commit()
+    with commit_or_abort(session):
+        _dissociate_voicemail_from_user(session, user_voicemail.user_id)
+        _dissociate_voicemail_from_line(session, user_voicemail.user_id)
 
 
 def _dissociate_voicemail_from_user(session, user_id):

@@ -24,6 +24,7 @@ from xivo_dao import stat_call_on_queue_dao
 from xivo_dao.alchemy.stat_call_on_queue import StatCallOnQueue
 from xivo_dao.alchemy.stat_queue import StatQueue
 from xivo_dao.alchemy.stat_agent import StatAgent
+from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -201,9 +202,8 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         other_call.queue_id = queue_id
         other_call.status = 'abandoned'
 
-        self.session.begin()
-        self.session.add(other_call)
-        self.session.commit()
+        with commit_or_abort(self.session):
+            self.session.add(other_call)
 
         stats_quarter_hour = stat_call_on_queue_dao.get_periodic_stats_quarter_hour(self.session, start, end)
 

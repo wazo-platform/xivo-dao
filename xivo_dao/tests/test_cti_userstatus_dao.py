@@ -18,6 +18,7 @@
 from xivo_dao import cti_userstatus_dao
 from xivo_dao.alchemy.ctipresences import CtiPresences
 from xivo_dao.alchemy.ctistatus import CtiStatus
+from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -132,9 +133,8 @@ class TestCtiUserStatusDAO(DAOTestCase):
         cti_presence = CtiPresences()
         cti_presence.name = name
 
-        self.session.begin()
-        self.session.add(cti_presence)
-        self.session.commit()
+        with commit_or_abort(self.session):
+            self.session.add(cti_presence)
         return cti_presence.id
 
     def _add_status(self, presence_id, name, actions, color, access_status):
@@ -146,7 +146,6 @@ class TestCtiUserStatusDAO(DAOTestCase):
         cti_status.color = color
         cti_status.access_status = access_status
 
-        self.session.begin()
-        self.session.add(cti_status)
-        self.session.commit()
+        with commit_or_abort(self.session):
+            self.session.add(cti_status)
         return cti_status.id

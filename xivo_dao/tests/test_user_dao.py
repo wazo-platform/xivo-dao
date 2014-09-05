@@ -32,6 +32,7 @@ from xivo_dao.alchemy.phonefunckey import PhoneFunckey
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.schedulepath import SchedulePath
+from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.alchemy.userfeatures import UserFeatures
 
 
@@ -443,9 +444,8 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         self.assertEqual(result, '')
 
-        self.session.begin()
-        user.destunc = '1002'
-        self.session.commit()
+        with commit_or_abort(self.session):
+            user.destunc = '1002'
 
         result = user_dao.get_dest_unc(user.id)
 
@@ -458,9 +458,8 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         self.assertFalse(result)
 
-        self.session.begin()
-        user.enableunc = 1
-        self.session.commit()
+        with commit_or_abort(self.session):
+            user.enableunc = 1
 
         result = user_dao.get_fwd_unc(user.id)
 
@@ -473,9 +472,8 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         self.assertEqual(result, '')
 
-        self.session.begin()
-        user.destbusy = '1002'
-        self.session.commit()
+        with commit_or_abort(self.session):
+            user.destbusy = '1002'
 
         result = user_dao.get_dest_busy(user.id)
 
@@ -488,9 +486,8 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         self.assertFalse(result)
 
-        self.session.begin()
-        user.enablebusy = 1
-        self.session.commit()
+        with commit_or_abort(self.session):
+            user.enablebusy = 1
 
         result = user_dao.get_fwd_busy(user.id)
 
@@ -503,9 +500,8 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         self.assertEqual(result, '')
 
-        self.session.begin()
-        user.destrna = '1002'
-        self.session.commit()
+        with commit_or_abort(self.session):
+            user.destrna = '1002'
 
         result = user_dao.get_dest_rna(user.id)
 
@@ -518,9 +514,8 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         self.assertFalse(result)
 
-        self.session.begin()
-        user.enablerna = 1
-        self.session.commit()
+        with commit_or_abort(self.session):
+            user.enablerna = 1
 
         result = user_dao.get_fwd_rna(user.id)
 

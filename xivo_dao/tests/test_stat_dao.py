@@ -22,6 +22,7 @@ from xivo_dao import stat_dao
 from xivo_dao.alchemy.queue_log import QueueLog
 from xivo_dao.alchemy.stat_agent import StatAgent
 from xivo_dao.alchemy.stat_queue import StatQueue
+from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.tests.test_dao import DAOTestCase
 
 TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
@@ -335,9 +336,8 @@ class TestStatDAO(DAOTestCase):
             data3='4'
         )
 
-        self.session.begin()
-        self.session.add(connect2)
-        self.session.commit()
+        with commit_or_abort(self.session):
+            self.session.add(connect2)
 
         result = stat_dao.get_login_intervals_in_range(self.session, self.start, self.end)
 
@@ -346,60 +346,54 @@ class TestStatDAO(DAOTestCase):
         self.assertEqual(expected, result)
 
     def _insert_agent_logins_logoffs(self, logins, logoffs):
-        self.session.begin()
+        with commit_or_abort(self.session):
+            for login in logins:
+                callback_login = QueueLog(
+                    time=login['time'],
+                    callid=login['callid'],
+                    queuename='NONE',
+                    agent=login['agent'],
+                    event='AGENTLOGIN',
+                    data1=login['chan_name']
+                )
+                self.session.add(callback_login)
 
-        for login in logins:
-            callback_login = QueueLog(
-                time=login['time'],
-                callid=login['callid'],
-                queuename='NONE',
-                agent=login['agent'],
-                event='AGENTLOGIN',
-                data1=login['chan_name']
-            )
-            self.session.add(callback_login)
-
-        for logoff in logoffs:
-            callback_logoff = QueueLog(
-                time=logoff['time'],
-                callid='NONE',
-                queuename='NONE',
-                agent=logoff['agent'],
-                event='AGENTLOGOFF',
-                data1=logoff['chan_name'],
-                data2=logoff['talktime'].seconds,
-            )
-            self.session.add(callback_logoff)
-
-        self.session.commit()
+            for logoff in logoffs:
+                callback_logoff = QueueLog(
+                    time=logoff['time'],
+                    callid='NONE',
+                    queuename='NONE',
+                    agent=logoff['agent'],
+                    event='AGENTLOGOFF',
+                    data1=logoff['chan_name'],
+                    data2=logoff['talktime'].seconds,
+                )
+                self.session.add(callback_logoff)
 
     def _insert_agent_callback_logins_logoffs(self, logins, logoffs):
-        self.session.begin()
+        with commit_or_abort(self.session):
+            for login in logins:
+                callback_login = QueueLog(
+                    time=login['time'],
+                    callid=login['callid'],
+                    queuename='NONE',
+                    agent=login['agent'],
+                    event='AGENTCALLBACKLOGIN',
+                    data1=login['chan_name']
+                )
+                self.session.add(callback_login)
 
-        for login in logins:
-            callback_login = QueueLog(
-                time=login['time'],
-                callid=login['callid'],
-                queuename='NONE',
-                agent=login['agent'],
-                event='AGENTCALLBACKLOGIN',
-                data1=login['chan_name']
-            )
-            self.session.add(callback_login)
-
-        for logoff in logoffs:
-            callback_logoff = QueueLog(
-                time=logoff['time'],
-                callid='NONE',
-                queuename='NONE',
-                agent=logoff['agent'],
-                event='AGENTCALLBACKLOGOFF',
-                data1=logoff['chan_name'],
-                data2=logoff['talktime'].seconds,
-            )
-            self.session.add(callback_logoff)
-
-        self.session.commit()
+            for logoff in logoffs:
+                callback_logoff = QueueLog(
+                    time=logoff['time'],
+                    callid='NONE',
+                    queuename='NONE',
+                    agent=logoff['agent'],
+                    event='AGENTCALLBACKLOGOFF',
+                    data1=logoff['chan_name'],
+                    data2=logoff['talktime'].seconds,
+                )
+                self.session.add(callback_logoff)
 
     def _insert_transfered_calls(self, transfered_calls):
         map(lambda transfered_call: self._insert_transfered_call(*transfered_call), transfered_calls)
@@ -459,9 +453,8 @@ class TestStatDAO(DAOTestCase):
             data4=str(talktime)
         )
 
-        self.session.begin()
-        self.session.add_all([enterqueue, connect, transfer])
-        self.session.commit()
+        with commit_or_abort(self.session):
+            self.session.add_all([enterqueue, connect, transfer])
 
     def _insert_completed_call(self, time, callid, qname, aname, waittime, talktime, agent_complete):
         enterqueue = QueueLog(
@@ -495,9 +488,8 @@ class TestStatDAO(DAOTestCase):
             data2=str(talktime)
         )
 
-        self.session.begin()
-        self.session.add_all([enterqueue, connect, complete])
-        self.session.commit()
+        with commit_or_abort(self.session):
+            self.session.add_all([enterqueue, connect, complete])
 
     def _insert_full_call(self, t, callid, qname):
         full = QueueLog(
@@ -508,9 +500,8 @@ class TestStatDAO(DAOTestCase):
             event='FULL'
         )
 
-        self.session.begin()
-        self.session.add(full)
-        self.session.commit()
+        with commit_or_abort(self.session):
+            self.session.add(full)
 
     def _insert_joinempty_call(self, t, callid, qname):
         je = QueueLog(
@@ -521,9 +512,8 @@ class TestStatDAO(DAOTestCase):
             event='JOINEMPTY'
         )
 
-        self.session.begin()
-        self.session.add(je)
-        self.session.commit()
+        with commit_or_abort(self.session):
+            self.session.add(je)
 
     def _insert_leaveempty_call(self, t, callid, qname, waittime):
         enterqueue = QueueLog(
@@ -545,10 +535,9 @@ class TestStatDAO(DAOTestCase):
             event='LEAVEEMPTY'
         )
 
-        self.session.begin()
-        self.session.add(enterqueue)
-        self.session.add(le)
-        self.session.commit()
+        with commit_or_abort(self.session):
+            self.session.add(enterqueue)
+            self.session.add(le)
 
     def _insert_closed_call(self, t, callid, qname):
         closed = QueueLog(
@@ -559,9 +548,8 @@ class TestStatDAO(DAOTestCase):
             event='CLOSED'
         )
 
-        self.session.begin()
-        self.session.add(closed)
-        self.session.commit()
+        with commit_or_abort(self.session):
+            self.session.add(closed)
 
     def _insert_ca_ratio_call(self, t, callid, qname):
         call = QueueLog(
@@ -572,9 +560,8 @@ class TestStatDAO(DAOTestCase):
             event='DIVERT_CA_RATIO'
         )
 
-        self.session.begin()
-        self.session.add(call)
-        self.session.commit()
+        with commit_or_abort(self.session):
+            self.session.add(call)
 
     def _insert_holdtime_call(self, t, callid, qname):
         call = QueueLog(
@@ -585,25 +572,22 @@ class TestStatDAO(DAOTestCase):
             event='DIVERT_HOLDTIME'
         )
 
-        self.session.begin()
-        self.session.add(call)
-        self.session.commit()
+        with commit_or_abort(self.session):
+            self.session.add(call)
 
     def _insert_agent(self, aname):
         a = StatAgent(name=aname)
 
-        self.session.begin()
-        self.session.add(a)
-        self.session.commit()
+        with commit_or_abort(self.session):
+            self.session.add(a)
 
         return a.name, a.id
 
     def _insert_queue(self, qname):
         q = StatQueue(name=qname)
 
-        self.session.begin()
-        self.session.add(q)
-        self.session.commit()
+        with commit_or_abort(self.session):
+            self.session.add(q)
 
         return q.name, q.id
 

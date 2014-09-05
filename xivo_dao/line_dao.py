@@ -19,6 +19,7 @@ from sqlalchemy.exc import DataError
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 from xivo.asterisk.extension import Extension
 from xivo_dao.alchemy.linefeatures import LineFeatures
+from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.usersip import UserSIP
 
@@ -80,31 +81,21 @@ def _format_interface(protocol, name):
 
 @daosession
 def create(session, line):
-    session.begin()
-    try:
+    with commit_or_abort(session):
         session.add(line)
-        session.commit()
-    except Exception:
-        session.rollback()
-        raise
 
     return line.id
 
 
 @daosession
 def delete(session, lineid):
-    session.begin()
-    try:
+    with commit_or_abort(session):
         line = session.query(LineFeatures).filter(LineFeatures.id == lineid).first()
         session.query(UserSIP).filter(UserSIP.id == line.protocolid).delete()
         (session.query(ExtensionSchema).filter(ExtensionSchema.exten == line.number)
                                        .filter(ExtensionSchema.context == line.context)
                                        .delete())
         session.delete(line)
-        session.commit()
-    except Exception:
-        session.rollback()
-        raise
 
 
 @daosession

@@ -18,6 +18,7 @@
 from sqlalchemy.sql.expression import and_
 from xivo_dao.alchemy.contextmember import ContextMember
 from xivo_dao.alchemy.voicemail import Voicemail
+from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
 
 
@@ -33,8 +34,7 @@ def get(session, voicemail_id):
 
 @daosession
 def add(session, voicemail):
-    session.begin()
-    try:
+    with commit_or_abort(session):
         session.add(voicemail)
         session.flush()
         contextmember = ContextMember(context=voicemail.context,
@@ -42,10 +42,6 @@ def add(session, voicemail):
                                       typeval=str(voicemail.uniqueid),
                                       varname='context')
         session.add(contextmember)
-        session.commit()
-    except Exception:
-        session.rollback()
-        raise
 
 
 @daosession
@@ -59,29 +55,19 @@ def id_from_mailbox(session, mailbox, context):
 
 @daosession
 def update(session, voicemailid, data):
-    session.begin()
-    try:
+    with commit_or_abort(session):
         session.query(Voicemail).filter(Voicemail.uniqueid == voicemailid).update(data)
-        session.commit()
-    except Exception:
-        session.rollback()
-        raise
 
 
 @daosession
 def delete(session, uniqueid):
-    session.begin()
-    try:
+    with commit_or_abort(session):
         impacted_rows = session.query(Voicemail).filter(Voicemail.uniqueid == uniqueid).delete()
         (session.query(ContextMember)
                 .filter(ContextMember.type == 'voicemail')
                 .filter(ContextMember.typeval == str(uniqueid))
                 .delete())
-        session.commit()
         return impacted_rows
-    except Exception:
-        session.rollback()
-        raise
 
 
 @daosession

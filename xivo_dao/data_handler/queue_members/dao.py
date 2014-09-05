@@ -14,6 +14,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy import QueueMember as QueueMemberSchema
 from xivo_dao.alchemy import QueueFeatures as QueueFeaturesSchema
@@ -37,11 +39,10 @@ def get_by_queue_id_and_agent_id(session, queue_id, agent_id):
 
 @daosession
 def edit_agent_queue_association(session, queue_member):
-    session.begin()
-    row = (session.query(QueueMemberSchema)
-                  .filter(QueueFeaturesSchema.name == QueueMemberSchema.queue_name)
-                  .filter(QueueMemberSchema.usertype == 'agent')
-                  .filter(QueueMemberSchema.userid == queue_member.agent_id)
-                  .filter(QueueFeaturesSchema.id == queue_member.queue_id)).first()
-    row.penalty = queue_member.penalty
-    session.commit()
+    with commit_or_abort(session):
+        row = (session.query(QueueMemberSchema)
+                      .filter(QueueFeaturesSchema.name == QueueMemberSchema.queue_name)
+                      .filter(QueueMemberSchema.usertype == 'agent')
+                      .filter(QueueMemberSchema.userid == queue_member.agent_id)
+                      .filter(QueueFeaturesSchema.id == queue_member.queue_id)).first()
+        row.penalty = queue_member.penalty

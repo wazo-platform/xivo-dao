@@ -18,6 +18,7 @@
 from xivo_dao import group_dao
 from xivo_dao.alchemy.groupfeatures import GroupFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
+from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -61,9 +62,8 @@ class TestGroupDAO(DAOTestCase):
         group.number = number
         group.context = context
 
-        self.session.begin()
-        self.session.add(group)
-        self.session.commit()
+        with commit_or_abort(self.session):
+            self.session.add(group)
 
         return group
 
@@ -77,6 +77,5 @@ class TestGroupDAO(DAOTestCase):
         queue_member.channel = 'foobar'
         queue_member.category = 'group'
 
-        self.session.begin()
-        self.session.add(queue_member)
-        self.session.commit()
+        with commit_or_abort(self.session):
+            self.session.add(queue_member)

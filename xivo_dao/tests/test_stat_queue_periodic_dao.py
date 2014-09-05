@@ -21,6 +21,7 @@ from sqlalchemy import func
 from xivo_dao import stat_queue_periodic_dao
 from xivo_dao.alchemy.stat_queue_periodic import StatQueuePeriodic
 from xivo_dao.alchemy.stat_queue import StatQueue
+from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -30,9 +31,8 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
         queue = StatQueue()
         queue.name = 'test_queue'
 
-        self.session.begin()
-        self.session.add(queue)
-        self.session.commit()
+        with commit_or_abort(self.session):
+            self.session.add(queue)
 
         return queue.name, queue.id
 
@@ -58,9 +58,8 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
         stats = self._get_stats_for_queue()
         period_start = datetime.datetime(2012, 01, 01, 00, 00, 00)
 
-        self.session.begin()
-        stat_queue_periodic_dao.insert_stats(self.session, stats, period_start)
-        self.session.commit()
+        with commit_or_abort(self.session):
+            stat_queue_periodic_dao.insert_stats(self.session, stats, period_start)
 
         try:
             result = (self.session.query(StatQueuePeriodic)
@@ -85,12 +84,11 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
         stats = self._get_stats_for_queue()
         start = datetime.datetime(2012, 01, 01, 00, 00, 00)
 
-        self.session.begin()
-        for minute_increment in [-5, 5, 15, 22, 35, 65, 120]:
-            delta = datetime.timedelta(minutes=minute_increment)
-            time = start + delta
-            stat_queue_periodic_dao.insert_stats(self.session, stats, time)
-        self.session.commit()
+        with commit_or_abort(self.session):
+            for minute_increment in [-5, 5, 15, 22, 35, 65, 120]:
+                delta = datetime.timedelta(minutes=minute_increment)
+                time = start + delta
+                stat_queue_periodic_dao.insert_stats(self.session, stats, time)
 
         result = stat_queue_periodic_dao.get_most_recent_time(self.session)
         expected = start + datetime.timedelta(minutes=120)
@@ -124,11 +122,10 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
             }
         }
 
-        self.session.begin()
-        stat_queue_periodic_dao.insert_stats(self.session, stats, datetime.datetime(2012, 1, 1))
-        stat_queue_periodic_dao.insert_stats(self.session, stats, datetime.datetime(2012, 1, 2))
-        stat_queue_periodic_dao.insert_stats(self.session, stats, datetime.datetime(2012, 1, 3))
-        self.session.commit()
+        with commit_or_abort(self.session):
+            stat_queue_periodic_dao.insert_stats(self.session, stats, datetime.datetime(2012, 1, 1))
+            stat_queue_periodic_dao.insert_stats(self.session, stats, datetime.datetime(2012, 1, 2))
+            stat_queue_periodic_dao.insert_stats(self.session, stats, datetime.datetime(2012, 1, 3))
 
         stat_queue_periodic_dao.remove_after(self.session, datetime.datetime(2012, 1, 2))
 

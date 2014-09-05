@@ -22,6 +22,7 @@ from datetime import timedelta
 from xivo_dao import queue_log_dao
 from xivo_dao.alchemy.stat_agent import StatAgent
 from xivo_dao.alchemy.queue_log import QueueLog
+from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.tests.test_dao import DAOTestCase
 
 ONE_HOUR = timedelta(hours=1)
@@ -38,9 +39,9 @@ class TestQueueLogDAO(DAOTestCase):
     def _insert_agent(self, aname):
         a = StatAgent(name=aname)
 
-        self.session.begin()
-        self.session.add(a)
-        self.session.commit()
+        with commit_or_abort(self.session):
+            self.session.add(a)
+
         return a.name, a.id
 
     def _insert_entry_queue(self, event, timestamp, callid, queuename, agent=None,
@@ -63,9 +64,8 @@ class TestQueueLogDAO(DAOTestCase):
         if d5:
             queue_log.data5 = d5
 
-        self.session.begin()
-        self.session.add(queue_log)
-        self.session.commit()
+        with commit_or_abort(self.session):
+            self.session.add(queue_log)
 
     def _insert_entry_queue_full(self, t, callid, queuename):
         self._insert_entry_queue('FULL', self._build_timestamp(t), callid, queuename)
@@ -370,29 +370,26 @@ class TestQueueLogDAO(DAOTestCase):
         self.assertEqual(res, 'two')
 
     def _insert_queue_log_data(self, queue_log_data):
-        self.session.begin()
-
-        lines = queue_log_data.split('\n')
-        lines.pop()
-        header = self._strip_content_list(lines.pop(0).split('|')[1:-1])
-        for line in lines:
-            tmp = self._strip_content_list(line[1:-1].split('|'))
-            data = dict(zip(header, tmp))
-            queue_log = QueueLog(
-                time=data['time'],
-                callid=data['callid'],
-                queuename=data['queuename'],
-                agent=data['agent'],
-                event=data['event'],
-                data1=data['data1'],
-                data2=data['data2'],
-                data3=data['data3'],
-                data4=data['data4'],
-                data5=data['data5']
-            )
-            self.session.add(queue_log)
-
-        self.session.commit()
+        with commit_or_abort(self.session):
+            lines = queue_log_data.split('\n')
+            lines.pop()
+            header = self._strip_content_list(lines.pop(0).split('|')[1:-1])
+            for line in lines:
+                tmp = self._strip_content_list(line[1:-1].split('|'))
+                data = dict(zip(header, tmp))
+                queue_log = QueueLog(
+                    time=data['time'],
+                    callid=data['callid'],
+                    queuename=data['queuename'],
+                    agent=data['agent'],
+                    event=data['event'],
+                    data1=data['data1'],
+                    data2=data['data2'],
+                    data3=data['data3'],
+                    data4=data['data4'],
+                    data5=data['data5']
+                )
+                self.session.add(queue_log)
 
     def _strip_content_list(self, lines):
         return [line.strip() for line in lines]

@@ -26,6 +26,7 @@ from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.userfeatures import UserFeatures
+from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
@@ -83,9 +84,8 @@ def disable_recording(user_id):
 
 @daosession
 def update(session, user_id, user_data_dict):
-    session.begin()
-    result = session.query(UserFeatures).filter(UserFeatures.id == user_id).update(user_data_dict)
-    session.commit()
+    with commit_or_abort(session):
+        result = session.query(UserFeatures).filter(UserFeatures.id == user_id).update(user_data_dict)
     return result
 
 
@@ -264,32 +264,21 @@ def get_all(session):
 
 @daosession
 def delete_all(session):
-    try:
-        session.begin()
+    with commit_or_abort(session):
         session.query(UserFeatures).delete()
-        session.commit()
-    except Exception as e:
-        session.rollback()
-        raise e
 
 
 @daosession
 def add_user(session, user):
     user.func_key_private_template_id = func_key_template_dao.create_private_template()
 
-    try:
-        session.begin()
+    with commit_or_abort(session):
         session.add(user)
-        session.commit()
-    except Exception as e:
-        session.rollback()
-        raise e
 
 
 @daosession
 def delete(session, userid):
-    session.begin()
-    try:
+    with commit_or_abort(session):
         result = session.query(UserFeatures).filter(UserFeatures.id == userid)\
                                             .delete()
         (session.query(QueueMember).filter(QueueMember.usertype == 'user')
@@ -308,11 +297,7 @@ def delete(session, userid):
         (session.query(SchedulePath).filter(SchedulePath.path == 'user')
                                     .filter(SchedulePath.pathid == userid)
                                     .delete())
-        session.commit()
-        return result
-    except Exception:
-        session.rollback()
-        raise
+    return result
 
 
 @daosession
@@ -322,20 +307,18 @@ def get_by_voicemailid(session, voicemailid):
 
 @daosession
 def get_user_config(session, user_id):
-    session.begin()
-    query = _user_config_query(session)
-    user = query.filter(UserFeatures.id == user_id).first()
-    session.commit()
+    with commit_or_abort(session):
+        query = _user_config_query(session)
+        user = query.filter(UserFeatures.id == user_id).first()
 
     return {str(user.id): _format_user(user)}
 
 
 @daosession
 def get_users_config(session):
-    session.begin()
-    query = _user_config_query(session)
-    users = query.all()
-    session.commit()
+    with commit_or_abort(session):
+        query = _user_config_query(session)
+        users = query.all()
 
     return dict((str(user.id), _format_user(user)) for user in users)
 

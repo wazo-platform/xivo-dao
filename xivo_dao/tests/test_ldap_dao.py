@@ -20,6 +20,7 @@ from hamcrest import *
 from xivo_dao import ldap_dao
 from xivo_dao.alchemy.ldapfilter import LdapFilter
 from xivo_dao.alchemy.ldapserver import LdapServer
+from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -111,9 +112,8 @@ class TestLdapDAO(DAOTestCase):
         ldap.additionaltype = kwargs.get('additionaltype', 'office')
         ldap.description = kwargs.get('description', '')
 
-        self.session.begin()
-        self.session.add(ldap)
-        self.session.commit()
+        with commit_or_abort(self.session):
+            self.session.add(ldap)
 
         return ldap
 
@@ -126,8 +126,7 @@ class TestLdapDAO(DAOTestCase):
         ldapserver.protocolversion = kwargs.get('protocolversion', None)
         ldapserver.description = kwargs.get('description', '')
 
-        self.session.begin()
-        self.session.add(ldapserver)
-        self.session.commit()
+        with commit_or_abort(self.session):
+            self.session.add(ldapserver)
 
         return ldapserver

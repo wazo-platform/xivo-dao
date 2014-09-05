@@ -19,6 +19,7 @@ from sqlalchemy import func, select
 from xivo_dao import user_line_dao
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
+from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
 
 
@@ -34,13 +35,8 @@ def add_agent_to_queue(session, agent_id, agent_number, queue_name):
     queue_member.category = 'queue'
     queue_member.position = next_position
 
-    try:
-        session.begin()
+    with commit_or_abort(session):
         session.add(queue_member)
-        session.commit()
-    except Exception:
-        session.rollback()
-        raise
 
 
 @daosession
@@ -91,24 +87,14 @@ def add_user_to_queue(session, user_id, queue):
     queue_member.category = 'queue'
     queue_member.position = next_position
 
-    try:
-        session.begin()
+    with commit_or_abort(session):
         session.add(queue_member)
-        session.commit()
-    except Exception:
-        session.rollback()
-        raise
 
 
 @daosession
 def delete_by_userid(session, userid):
-    session.begin()
-    try:
+    with commit_or_abort(session):
         (session.query(QueueMember)
                 .filter(QueueMember.usertype == 'user')
                 .filter(QueueMember.userid == userid)
                 .delete())
-        session.commit()
-    except Exception:
-        session.rollback()
-        raise

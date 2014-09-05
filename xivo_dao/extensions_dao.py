@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.alchemy.extension import Extension
+from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
 
 
@@ -27,13 +28,8 @@ def exten_by_name(session, funckey_name):
 
 @daosession
 def create(session, exten):
-    session.begin()
-    try:
+    with commit_or_abort(session):
         session.add(exten)
-        session.commit()
-    except Exception:
-        session.rollback()
-        raise
 
 
 @daosession
@@ -43,10 +39,5 @@ def get_by_exten(session, exten):
 
 @daosession
 def delete_by_exten(session, exten):
-    session.begin()
-    try:
+    with commit_or_abort(session):
         session.query(Extension).filter(Extension.exten == exten).delete()
-        session.commit()
-    except Exception:
-        session.rollback()
-        raise

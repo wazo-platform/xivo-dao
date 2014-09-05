@@ -20,6 +20,7 @@ from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
 from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.usercustom import UserCustom
+from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -38,9 +39,8 @@ class TrunkFeaturesDAOTestCase(DAOTestCase):
         usersip.type = 'peer'
         usersip.category = 'user'
 
-        self.session.begin()
-        map(self.session.add, [trunk, usersip])
-        self.session.commit()
+        with commit_or_abort(self.session):
+            map(self.session.add, [trunk, usersip])
 
         result = trunk_dao.find_by_proto_name('sip', trunk_name)
 
@@ -59,9 +59,8 @@ class TrunkFeaturesDAOTestCase(DAOTestCase):
         useriax.type = 'peer'
         useriax.category = 'user'
 
-        self.session.begin()
-        map(self.session.add, [trunk, useriax])
-        self.session.commit()
+        with commit_or_abort(self.session):
+            map(self.session.add, [trunk, useriax])
 
         result = trunk_dao.find_by_proto_name('iax', trunk_name)
 
@@ -80,9 +79,8 @@ class TrunkFeaturesDAOTestCase(DAOTestCase):
         usercustom.interface = dahdi_interface
         usercustom.category = 'user'
 
-        self.session.begin()
-        map(self.session.add, [trunk, usercustom])
-        self.session.commit()
+        with commit_or_abort(self.session):
+            map(self.session.add, [trunk, usercustom])
 
         result = trunk_dao.find_by_proto_name('custom', dahdi_interface)
 
@@ -101,9 +99,8 @@ class TrunkFeaturesDAOTestCase(DAOTestCase):
         usercustom.interface = dahdi_interface
         usercustom.category = 'user'
 
-        self.session.begin()
-        map(self.session.add, [trunk, usercustom])
-        self.session.commit()
+        with commit_or_abort(self.session):
+            map(self.session.add, [trunk, usercustom])
 
         result = trunk_dao.find_by_proto_name('custom', 'DAHDI/g1')
 
@@ -125,9 +122,8 @@ class TrunkFeaturesDAOTestCase(DAOTestCase):
         trunk3.protocolid = '5678'
         trunk3.protocol = 'sip'
 
-        self.session.begin()
-        map(self.session.add, [trunk1, trunk2, trunk3])
-        self.session.commit()
+        with commit_or_abort(self.session):
+            map(self.session.add, [trunk1, trunk2, trunk3])
 
         expected = sorted([trunk1.id, trunk2.id, trunk3.id])
         result = sorted(trunk_dao.get_ids())

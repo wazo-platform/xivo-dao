@@ -17,6 +17,7 @@
 
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
+from xivo_dao.helpers.db_utils import commit_or_abort
 
 
 def recording_preriquisites(session):
@@ -39,6 +40,5 @@ def recording_preriquisites(session):
     agent.language = 'fr_FR'
     agent.description = 'my_agent'
 
-    session.begin()
-    session.add_all([queue1, queue2, agent])
-    session.commit()
+    with commit_or_abort(session):
+        session.add_all([queue1, queue2, agent])

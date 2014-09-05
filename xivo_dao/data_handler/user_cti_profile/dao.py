@@ -15,13 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.alchemy.cti_profile import CtiProfile as CtiProfileSchema
 from xivo_dao.data_handler.cti_profile.model import db_converter as cti_profile_db_converter
 from xivo_dao.data_handler.exception import DataError
 from xivo_dao.data_handler import errors
-from sqlalchemy.exc import SQLAlchemyError
 
 
 @daosession
@@ -37,17 +37,12 @@ def find_profile_by_userid(session, userid):
 
 @daosession
 def edit(session, user_cti_profile):
-    session.begin()
-    try:
+    with commit_or_abort(session, DataError.on_edit, 'UserCtiProfile'):
         user = (session.query(UserSchema)
-            .filter(UserSchema.id == user_cti_profile.user_id)
-            .first())
+                .filter(UserSchema.id == user_cti_profile.user_id)
+                .first())
         if user_cti_profile.enabled is not None:
             user.enableclient = 1 if user_cti_profile.enabled else 0
         if user_cti_profile.cti_profile_id is not None:
             user.cti_profile_id = user_cti_profile.cti_profile_id
         session.add(user)
-        session.commit()
-    except SQLAlchemyError as e:
-        session.rollback()
-        raise DataError.on_edit('UserCtiProfile', e)

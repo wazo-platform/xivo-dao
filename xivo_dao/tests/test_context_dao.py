@@ -20,6 +20,7 @@ from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.context import Context
 from xivo_dao.alchemy.contexttype import ContextType
 from xivo_dao.alchemy.contextnumbers import ContextNumbers
+from xivo_dao.helpers.db_utils import commit_or_abort
 
 
 class TestContextDAO(DAOTestCase):
@@ -36,9 +37,8 @@ class TestContextDAO(DAOTestCase):
         context.contexttype = contexttype_name
         context.description = ''
 
-        self.session.begin()
-        self.session.add(context)
-        self.session.commit()
+        with commit_or_abort(self.session):
+            self.session.add(context)
 
     def _insert_contextnumbers(self, context_name):
         contextnumbers = ContextNumbers()
@@ -48,9 +48,8 @@ class TestContextDAO(DAOTestCase):
         contextnumbers.numberend = '1999'
         contextnumbers.didlength = 0
 
-        self.session.begin()
-        self.session.add(contextnumbers)
-        self.session.commit()
+        with commit_or_abort(self.session):
+            self.session.add(contextnumbers)
 
     def test_get(self):
         context_name = 'test_context'

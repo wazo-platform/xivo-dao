@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
+from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
 
 
@@ -109,14 +110,12 @@ def add_queue(session, queue):
     if type(queue) != QueueFeatures:
         raise ValueError('Wrong object passed')
 
-    session.begin()
-    session.add(queue)
-    session.commit()
+    with commit_or_abort(session):
+        session.add(queue)
 
 
 @daosession
 def delete_by_name(session, queue_name):
-    session.begin()
-    session.query(QueueFeatures).filter(QueueFeatures.name == queue_name)\
-                                .delete()
-    session.commit()
+    with commit_or_abort(session):
+        session.query(QueueFeatures).filter(QueueFeatures.name == queue_name)\
+                                    .delete()

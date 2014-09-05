@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.alchemy.rightcallmember import RightCallMember
+from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
 
 
@@ -25,13 +26,9 @@ def add_user_to_rightcall(session, userid, rightcallid):
     member.rightcallid = rightcallid
     member.type = 'user'
     member.typeval = str(userid)
-    session.begin()
-    try:
+
+    with commit_or_abort(session):
         session.add(member)
-        session.commit()
-    except Exception:
-        session.rollback()
-        raise
 
 
 @daosession
@@ -43,12 +40,7 @@ def get_by_userid(session, userid):
 
 @daosession
 def delete_by_userid(session, userid):
-    session.begin()
-    try:
+    with commit_or_abort(session):
         session.query(RightCallMember).filter(RightCallMember.type == 'user')\
                                       .filter(RightCallMember.typeval == str(userid))\
                                       .delete()
-        session.commit()
-    except Exception:
-        session.rollback()
-        raise
