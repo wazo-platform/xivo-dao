@@ -66,12 +66,17 @@ class TestQueueMembersNotifier(unittest.TestCase):
         exec_request_handler.assert_called_once_with(self.sysconfd_command)
 
     @patch('xivo_dao.helpers.sysconfd_connector.exec_request_handlers')
-    def test_removed_from_queue(self, exec_request_handler):
+    @patch('xivo_bus.resources.queue_members.event.AgentRemovedFromQueueEvent')
+    @patch('xivo_dao.helpers.bus_manager.send_bus_command')
+    def test_removed_from_queue(self, send_bus_command, AgentRemovedFromQueueEvent, exec_request_handler):
         agent_id = 104
+        queue_id = 25
+        new_event = AgentRemovedFromQueueEvent.return_value = Mock()
 
         self.sysconfd_command['ctibus'] = ['xivo[queuemember,update]']
         self.sysconfd_command['agentbus'] = ['agent.edit.%s' % agent_id]
 
-        notifier.agent_removed_from_queue(agent_id)
+        notifier.agent_removed_from_queue(agent_id, queue_id)
 
+        send_bus_command.assert_called_once_with(new_event)
         exec_request_handler.assert_called_once_with(self.sysconfd_command)

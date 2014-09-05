@@ -30,8 +30,9 @@ def agent_queue_associated(queue_member):
     bus_event_agent_queue_associated(queue_member)
 
 
-def agent_removed_from_queue(agent_id):
+def agent_removed_from_queue(agent_id, queue_id):
     sysconf_command_agent_removed_from_queue(agent_id)
+    bus_event_agent_removed_from_queue(agent_id, queue_id)
 
 
 def sysconf_command_agent_association_updated(queue_member):
@@ -75,4 +76,9 @@ def bus_event_agent_queue_associated(queue_member):
     bus_event = event.AgentQueueAssociatedEvent(queue_member.queue_id,
                                                 queue_member.agent_id,
                                                 queue_member.penalty)
+    bus_manager.send_bus_command(bus_event)
+
+
+def bus_event_agent_removed_from_queue(agent_id, queue_id):
+    bus_event = event.AgentRemovedFromQueueEvent(agent_id, queue_id)
     bus_manager.send_bus_command(bus_event)
