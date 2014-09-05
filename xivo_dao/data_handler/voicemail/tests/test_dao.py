@@ -26,7 +26,7 @@ from xivo_dao.alchemy.incall import Incall as IncallSchema
 from xivo_dao.alchemy.dialaction import Dialaction as DialactionSchema
 from xivo_dao.data_handler.voicemail import dao as voicemail_dao
 from xivo_dao.data_handler.voicemail.model import Voicemail
-from xivo_dao.helpers.db_manager import mocked_dao_session
+from xivo_dao.tests.helpers.session import mocked_dao_session
 from xivo_dao.tests.test_dao import DAOTestCase
 
 

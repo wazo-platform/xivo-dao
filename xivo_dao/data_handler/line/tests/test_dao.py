@@ -30,7 +30,7 @@ from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.data_handler.exception import DataError
 from xivo_dao.data_handler.exception import ResourceError
 from xivo_dao.data_handler.exception import NotFoundError
-from xivo_dao.helpers.db_manager import mocked_dao_session
+from xivo_dao.tests.helpers.session import mocked_dao_session
 from hamcrest.library.collection.issequence_containinginorder import contains
 from hamcrest.library.collection.issequence_containing import has_items
 

@@ -17,33 +17,12 @@
 
 import unittest
 
-from hamcrest import assert_that
-from hamcrest import equal_to
 from mock import patch, Mock, sentinel, call
 from xivo_dao.helpers import db_manager
-from xivo_dao.helpers.db_manager import mocked_dao_session
-from xivo_dao.helpers.db_manager import daosession
 from sqlalchemy.exc import InterfaceError
 
 
 class TestDBManager(unittest.TestCase):
-
-    @mocked_dao_session
-    def test_daosession_decorator(self, session_mock):
-        args = (sentinel.arg1, sentinel.arg2)
-        kwargs = {'arg3': sentinel.arg3}
-
-        @daosession
-        def f(session, arg1, arg2, arg3):
-            assert_that(session, equal_to(session_mock))
-            assert_that(arg1, equal_to(sentinel.arg1))
-            assert_that(arg2, equal_to(sentinel.arg2))
-            assert_that(arg3, equal_to(sentinel.arg3))
-            return sentinel.result
-
-        result = f(*args, **kwargs)
-
-        assert_that(result, equal_to(sentinel.result))
 
     @patch('xivo_dao.helpers.db_manager._apply_and_flush')
     def test_execute_with_session_with_reconnection(self, apply_and_flush_mock):

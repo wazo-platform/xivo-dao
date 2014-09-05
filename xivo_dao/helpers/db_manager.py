@@ -24,14 +24,6 @@ from sqlalchemy.exc import OperationalError, InterfaceError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session
 
-try:
-    from mock import patch
-    from mock import Mock
-except ImportError:
-    # These imports are only used while running the unittests and are not available in production
-    # They are in this module to respect the encapsulation of _DaoSession
-    pass
-
 logger = logging.getLogger(__name__)
 _global_db_url = None
 
@@ -49,17 +41,6 @@ Base.todict = todict
 
 _dao_engine = None
 _DaoSession = None
-
-
-def mocked_dao_session(f):
-    @wraps(f)
-    def wrapped(*args, **kwargs):
-        mocked_session = Mock(name='dao_session_mock')
-        with patch('xivo_dao.helpers.db_manager._DaoSession', Mock(return_value=mocked_session)):
-            new_args = list(args)
-            new_args.append(mocked_session)
-            return f(*new_args, **kwargs)
-    return wrapped
 
 
 def daosession(func):

@@ -21,7 +21,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from xivo_dao import callfilter_dao
 from xivo_dao.alchemy.callfilter import Callfilter
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
-from xivo_dao.helpers.db_manager import mocked_dao_session
+from xivo_dao.tests.helpers.session import mocked_dao_session
 from xivo_dao.tests.test_dao import DAOTestCase
 
 

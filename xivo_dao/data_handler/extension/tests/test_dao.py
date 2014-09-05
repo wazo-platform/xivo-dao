@@ -26,7 +26,7 @@ from xivo_dao.data_handler.exception import NotFoundError
 from xivo_dao.data_handler.extension import dao as extension_dao
 from xivo_dao.data_handler.extension.model import Extension, ExtensionDestination
 from xivo_dao.data_handler.utils.search import SearchResult
-from xivo_dao.helpers.db_manager import mocked_dao_session
+from xivo_dao.tests.helpers.session import mocked_dao_session
 
 
 class TestExtension(DAOTestCase):

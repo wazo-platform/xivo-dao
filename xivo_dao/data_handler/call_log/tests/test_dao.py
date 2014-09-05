@@ -25,7 +25,7 @@ from xivo_dao.alchemy.cel import CEL as CELSchema
 from xivo_dao.data_handler.call_log import dao as call_log_dao
 from xivo_dao.data_handler.call_log.model import CallLog
 from xivo_dao.data_handler.exception import DataError
-from xivo_dao.helpers.db_manager import mocked_dao_session
+from xivo_dao.tests.helpers.session import mocked_dao_session
 from xivo_dao.tests.test_dao import DAOTestCase
 
 

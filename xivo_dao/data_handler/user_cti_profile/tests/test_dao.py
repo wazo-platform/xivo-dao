@@ -23,7 +23,7 @@ from xivo_dao.data_handler.exception import NotFoundError
 from xivo_dao.data_handler.exception import DataError
 from xivo_dao.data_handler.user_cti_profile import dao as user_cti_profile_dao
 from xivo_dao.data_handler.user_cti_profile.model import UserCtiProfile
-from xivo_dao.helpers.db_manager import mocked_dao_session
+from xivo_dao.tests.helpers.session import mocked_dao_session
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
