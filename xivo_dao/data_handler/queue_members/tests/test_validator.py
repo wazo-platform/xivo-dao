@@ -19,7 +19,7 @@ import unittest
 
 from xivo_dao.data_handler.queue_members import validator
 from xivo_dao.data_handler.queue_members.model import QueueMemberAgent
-from xivo_dao.data_handler.exception import NotFoundError
+from xivo_dao.data_handler.exception import NotFoundError, ResourceError
 from xivo_dao.data_handler.exception import InputError
 
 
@@ -98,9 +98,20 @@ class TestQueueMembersValidator(unittest.TestCase):
 
     @patch('xivo_dao.agent_dao.get')
     @patch('xivo_dao.queue_dao.get')
-    def test_validate_associate_agent_queue_no_such_queue(self, patch_get_queue, patch_get_agent):
+    def test_validate_associate_agent_queue_no_such_agent(self, patch_get_queue, patch_get_agent):
         queue_id = 5
         agent_id = 3
         patch_get_agent.return_value = None
 
         self.assertRaises(InputError, validator.validate_associate_agent_queue, queue_id, agent_id)
+
+    @patch('xivo_dao.agent_dao.get')
+    @patch('xivo_dao.queue_dao.get')
+    @patch('xivo_dao.data_handler.queue_members.dao.get_by_queue_id_and_agent_id')
+    def test_validate_associate_agent_queue_already_exists(self,patch_get_by_queue_and_agent, patch_get_queue, patch_get_agent):
+        queue_id = 8
+        agent_id = 9
+        queue_member = QueueMemberAgent
+        patch_get_by_queue_and_agent.return_value = queue_member
+
+        self.assertRaises(ResourceError, validator.validate_associate_agent_queue, queue_id, agent_id)

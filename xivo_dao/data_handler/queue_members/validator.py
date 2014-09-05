@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao import queue_dao, agent_dao
+from xivo_dao.data_handler.exception import NotFoundError
 from xivo_dao.data_handler.queue_members import dao as queue_members_dao
 from xivo_dao.data_handler import errors
 
@@ -35,10 +36,16 @@ def validate_get_agent_queue_association(queue_id, agent_id):
         raise errors.not_found('Agent', agent_id=agent_id)
 
 def validate_associate_agent_queue(queue_id, agent_id):
-    if not _queue_exists(queue_id):
-        raise errors.not_found('Queue', queue_id=queue_id)
-    if not _agent_exists(agent_id):
-        raise errors.param_not_found('agent_id', 'Agent')
+        if not _queue_exists(queue_id):
+            raise errors.not_found('Queue', queue_id=queue_id)
+        if not _agent_exists(agent_id):
+            raise errors.param_not_found('agent_id', 'Agent')
+        try:
+            queue_members_dao.get_by_queue_id_and_agent_id(queue_id, agent_id)
+            raise errors.resource_associated('Agent','Queue',
+                                             agent_id,queue_id )
+        except NotFoundError:
+            pass
 
 def _queue_exists(queue_id):
     try:
