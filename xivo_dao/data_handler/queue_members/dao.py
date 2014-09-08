@@ -55,14 +55,14 @@ def associate(session, queue_member):
              .filter(AgentFeaturesSchema.id == queue_member.agent_id).first())
     queue = (session.query(QueueFeaturesSchema.name)
              .filter(QueueFeaturesSchema.id == queue_member.queue_id).first())
-    maxPosition = (session.query(func.max(QueueMemberSchema.position))
-                   .filter(QueueFeaturesSchema.name == QueueMemberSchema.queue_name)
-                   .filter(QueueMemberSchema.usertype == 'agent')).first()
+    current_max_pos = (session.query(func.max(QueueMemberSchema.position))
+                       .filter(QueueFeaturesSchema.name == QueueMemberSchema.queue_name)
+                       .filter(QueueMemberSchema.usertype == 'agent')).scalar()
 
-    if (maxPosition[0] is None):
-        maxPos = 0
+    if current_max_pos is None:
+        max_pos = 0
     else:
-        maxPos = maxPosition[0] + 1
+        max_pos = current_max_pos + 1
     db_qm = db_converter.to_source(queue_member)
     db_qm.queue_name = queue.name
     db_qm.interface = 'Agent/%s' % agent.number
@@ -70,7 +70,7 @@ def associate(session, queue_member):
     db_qm.usertype = 'agent'
     db_qm.channel = 'Agent'
     db_qm.category = 'queue'
-    db_qm.position = maxPos
+    db_qm.position = max_pos
 
     session.add(db_qm)
     session.commit()
