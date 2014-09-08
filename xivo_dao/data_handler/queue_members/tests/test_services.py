@@ -67,8 +67,9 @@ class TestQueueMembers(unittest.TestCase):
     def test_remove_agent_from_queue(self, patch_notify_remove, patch_remove, patch_validate):
         agent_id = 30
         queue_id = 20
+
         queue_members_services.remove_agent_from_queue(agent_id, queue_id)
 
         patch_validate.assert_called_once_with(agent_id, queue_id)
         patch_remove.assert_called_once_with(agent_id, queue_id)
-        patch_notify_remove.assert_called_once_with(agent_id)
+        patch_notify_remove.assert_called_once_with(agent_id, queue_id)

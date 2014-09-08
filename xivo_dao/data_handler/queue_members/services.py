@@ -41,4 +41,4 @@ def associate_agent_to_queue(queue_member):
 def remove_agent_from_queue(agent_id, queue_id):
     validator.validate_remove_agent_from_queue(agent_id, queue_id)
     queue_members_dao.remove_agent_from_queue(agent_id, queue_id)
-    notifier.agent_removed_from_queue(agent_id)
+    notifier.agent_removed_from_queue(agent_id, queue_id)
