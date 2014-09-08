@@ -58,7 +58,6 @@ def associate(session, queue_member):
     maxPosition = (session.query(func.max(QueueMemberSchema.position))
                    .filter(QueueFeaturesSchema.name == QueueMemberSchema.queue_name)
                    .filter(QueueMemberSchema.usertype == 'agent')).first()
-    print (maxPosition[0])
 
     if (maxPosition[0] is None):
         maxPos = 0
