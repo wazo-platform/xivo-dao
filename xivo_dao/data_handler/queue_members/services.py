@@ -14,8 +14,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
-from xivo_dao.data_handler.queue_members import dao as queue_members_dao, \
-    validator, notifier
+
+from xivo_dao.data_handler.queue_members import dao as queue_members_dao
+from xivo_dao.data_handler.queue_members import validator
+from xivo_dao.data_handler.queue_members import notifier
 
 
 def get_by_queue_id_and_agent_id(queue_id, agent_id):
