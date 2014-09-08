@@ -14,8 +14,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
-from xivo_dao.data_handler.queue_members import dao as queue_members_dao, \
-    validator, notifier
+
+from xivo_dao.data_handler.queue_members import dao as queue_members_dao
+from xivo_dao.data_handler.queue_members import validator
+from xivo_dao.data_handler.queue_members import notifier
 
 
 def get_by_queue_id_and_agent_id(queue_id, agent_id):
@@ -27,3 +29,16 @@ def edit_agent_queue_association(queue_member):
     validator.validate_edit_agent_queue_association(queue_member)
     queue_members_dao.edit_agent_queue_association(queue_member)
     notifier.agent_queue_association_updated(queue_member)
+
+
+def associate_agent_to_queue(queue_member):
+    validator.validate_associate_agent_queue(queue_member.queue_id, queue_member.agent_id)
+    qm = queue_members_dao.associate(queue_member)
+    notifier.agent_queue_associated(queue_member)
+    return qm
+
+
+def remove_agent_from_queue(agent_id, queue_id):
+    validator.validate_remove_agent_from_queue(agent_id, queue_id)
+    queue_members_dao.remove_agent_from_queue(agent_id, queue_id)
+    notifier.agent_removed_from_queue(agent_id)
