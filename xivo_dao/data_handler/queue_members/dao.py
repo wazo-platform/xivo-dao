@@ -14,8 +14,9 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
+from sqlalchemy import func
 from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.alchemy import QueueMember as QueueMemberSchema
+from xivo_dao.alchemy import QueueMember as QueueMemberSchema, AgentFeatures as AgentFeaturesSchema
 from xivo_dao.alchemy import QueueFeatures as QueueFeaturesSchema
 from xivo_dao.data_handler.queue_members.model import db_converter
 from xivo_dao.data_handler import errors
@@ -24,10 +25,10 @@ from xivo_dao.data_handler import errors
 @daosession
 def get_by_queue_id_and_agent_id(session, queue_id, agent_id):
     row = (session.query(QueueMemberSchema)
-                  .filter(QueueFeaturesSchema.name == QueueMemberSchema.queue_name)
-                  .filter(QueueMemberSchema.usertype == 'agent')
-                  .filter(QueueMemberSchema.userid == agent_id)
-                  .filter(QueueFeaturesSchema.id == queue_id)).first()
+           .filter(QueueFeaturesSchema.name == QueueMemberSchema.queue_name)
+           .filter(QueueMemberSchema.usertype == 'agent')
+           .filter(QueueMemberSchema.userid == agent_id)
+           .filter(QueueFeaturesSchema.id == queue_id)).first()
     if not row:
         raise errors.not_found('QueueMember', agent_id=agent_id, queue_id=queue_id)
     result = db_converter.to_model(row)
@@ -39,9 +40,51 @@ def get_by_queue_id_and_agent_id(session, queue_id, agent_id):
 def edit_agent_queue_association(session, queue_member):
     session.begin()
     row = (session.query(QueueMemberSchema)
-                  .filter(QueueFeaturesSchema.name == QueueMemberSchema.queue_name)
-                  .filter(QueueMemberSchema.usertype == 'agent')
-                  .filter(QueueMemberSchema.userid == queue_member.agent_id)
-                  .filter(QueueFeaturesSchema.id == queue_member.queue_id)).first()
+           .filter(QueueFeaturesSchema.name == QueueMemberSchema.queue_name)
+           .filter(QueueMemberSchema.usertype == 'agent')
+           .filter(QueueMemberSchema.userid == queue_member.agent_id)
+           .filter(QueueFeaturesSchema.id == queue_member.queue_id)).first()
     row.penalty = queue_member.penalty
     session.commit()
+
+
+@daosession
+def associate(session, queue_member):
+    session.begin()
+    agent = (session.query(AgentFeaturesSchema.number)
+             .filter(AgentFeaturesSchema.id == queue_member.agent_id).first())
+    queue = (session.query(QueueFeaturesSchema.name)
+             .filter(QueueFeaturesSchema.id == queue_member.queue_id).first())
+    maxPosition = (session.query(func.max(QueueMemberSchema.position))
+                   .filter(QueueFeaturesSchema.name == QueueMemberSchema.queue_name)
+                   .filter(QueueMemberSchema.usertype == 'agent')).first()
+    print (maxPosition[0])
+
+    if (maxPosition[0] is None):
+        maxPos = 0
+    else:
+        maxPos = maxPosition[0] + 1
+    db_qm = db_converter.to_source(queue_member)
+    db_qm.queue_name = queue.name
+    db_qm.interface = 'Agent/%s' % agent.number
+    db_qm.commented = 0
+    db_qm.usertype = 'agent'
+    db_qm.channel = 'Agent'
+    db_qm.category = 'queue'
+    db_qm.position = maxPos
+
+    session.add(db_qm)
+    session.commit()
+    return queue_member
+
+
+@daosession
+def remove_agent_from_queue(session, agent_id, queue_id):
+    row = (session.query(QueueMemberSchema)
+           .filter(QueueMemberSchema.usertype == 'agent')
+           .filter(QueueMemberSchema.userid == agent_id)
+           .filter(QueueMemberSchema.queue_name == QueueFeaturesSchema.name)
+           .filter(QueueFeaturesSchema.id == queue_id)).first()
+    session.delete(row)
+
+    #

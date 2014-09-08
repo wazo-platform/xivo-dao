@@ -26,7 +26,6 @@ DB_TO_MODEL_MAPPING = {
 
 
 class QueueMemberAgent(NewModel):
-
     def __init__(self, *args, **kwargs):
         NewModel.__init__(self, *args, **kwargs)
 
@@ -46,7 +45,6 @@ class QueueMemberAgent(NewModel):
 
 
 class QueueMemberAgentDbConverter(DatabaseConverter):
-
     def __init__(self):
         DatabaseConverter.__init__(self, DB_TO_MODEL_MAPPING, QueueMember, QueueMemberAgent)
 
