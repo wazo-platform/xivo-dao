@@ -85,5 +85,3 @@ def remove_agent_from_queue(session, agent_id, queue_id):
            .filter(QueueMemberSchema.queue_name == QueueFeaturesSchema.name)
            .filter(QueueFeaturesSchema.id == queue_id)).first()
     session.delete(row)
-
-    #
