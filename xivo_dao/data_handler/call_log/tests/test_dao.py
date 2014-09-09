@@ -40,6 +40,7 @@ class TestCallLogDAO(DAOTestCase):
 
     def tearDown(self):
         self.db_converter_patcher.stop()
+        super(TestCallLogDAO, self).tearDown()
 
     def test_find_all_not_found(self):
         expected_result = []
