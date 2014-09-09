@@ -30,13 +30,12 @@ TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 
 class TestStatDAO(DAOTestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        super(TestStatDAO, cls).setUpClass()
-        cls._create_functions()
+    _fn_created = False
 
     def setUp(self):
         DAOTestCase.setUp(self)
+        if not self._fn_created:
+            self._create_functions()
         self.start = t(2012, 07, 01)
         self.end = t(2012, 07, 31, 23, 59, 59, 999999)
         self.qname1, self.qid1 = self._insert_queue('q1')
@@ -579,8 +578,7 @@ class TestStatDAO(DAOTestCase):
 
         return q.name, q.id
 
-    @classmethod
-    def _create_functions(cls):
+    def _create_functions(self):
         # ## WARNING: These functions should always be the same as the one in xivo-manage-db
         fill_simple_calls_fn = '''\
 DROP FUNCTION IF EXISTS "fill_saturated_calls" (text, text);
@@ -605,7 +603,7 @@ $$
 $$
 LANGUAGE SQL;
 '''
-        cls.session.execute(fill_simple_calls_fn)
+        self.session.execute(fill_simple_calls_fn)
         fill_leaveempty_calls_fn = '''\
 DROP FUNCTION IF EXISTS "fill_leaveempty_calls" (text, text);
 CREATE OR REPLACE FUNCTION "fill_leaveempty_calls" (period_start text, period_end text)
@@ -630,7 +628,9 @@ FROM (SELECT
 $$
 LANGUAGE SQL;
 '''
-        cls.session.execute(fill_leaveempty_calls_fn)
+        self.session.execute(fill_leaveempty_calls_fn)
+
+        self._fn_created = True
 
     def test_merge_agent_statistics(self):
         stat_1 = {1: [(1, 2),
