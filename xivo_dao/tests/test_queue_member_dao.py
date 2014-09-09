@@ -67,9 +67,7 @@ class TestQueueMemberDAO(DAOTestCase):
 
         queue_feature = QueueFeatures(name='queue1', displayname='queue1')
 
-        self.session.begin()
-        self.session.add(queue_feature)
-        self.session.commit()
+        self.add_me(queue_feature)
 
         queue_members = queue_member_dao.get_queue_members_for_queues()
 
@@ -118,10 +116,4 @@ class TestQueueMemberDAO(DAOTestCase):
         queue_member.category = 'queue' if is_queue else 'group'
         queue_member.position = 0
 
-        try:
-            self.session.begin()
-            self.session.add(queue_member)
-            self.session.commit()
-        except Exception:
-            self.session.rollback()
-            raise
+        self.add_me(queue_member)

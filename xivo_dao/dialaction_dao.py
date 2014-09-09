@@ -16,18 +16,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.alchemy.dialaction import Dialaction
+from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
 
 
 @daosession
 def add(session, dialaction):
-    session.begin()
-    try:
+    with commit_or_abort(session):
         session.add(dialaction)
-        session.commit()
-    except Exception:
-        session.rollback()
-        raise
 
 
 @daosession
@@ -37,13 +33,8 @@ def get_by_userid(session, userid):
 
 @daosession
 def delete_by_userid(session, userid):
-    session.begin()
-    try:
+    with commit_or_abort(session):
         _request_by_userid(session, userid).delete()
-        session.commit()
-    except Exception:
-        session.rollback()
-        raise
 
 
 def _request_by_userid(session, userid):

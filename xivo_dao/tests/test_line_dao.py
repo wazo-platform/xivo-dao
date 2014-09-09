@@ -37,9 +37,7 @@ class TestLineFeaturesDAO(DAOTestCase):
         sccpline.cid_name = 'Tester One'
         sccpline.cid_num = '1234'
 
-        self.session.begin()
-        self.session.add(sccpline)
-        self.session.commit()
+        self.add_me(sccpline)
 
         return sccpline
 
@@ -57,9 +55,7 @@ class TestLineFeaturesDAO(DAOTestCase):
         line.provisioningid = 123
         line.protocol = protocol
 
-        self.session.begin()
-        self.session.add(line)
-        self.session.commit()
+        self.add_me(line)
 
         peer_name = line_dao.get_peer_name(line.device)
 
@@ -80,9 +76,7 @@ class TestLineFeaturesDAO(DAOTestCase):
         line.provisioningid = 123
         line.protocol = protocol
 
-        self.session.begin()
-        self.session.add(line)
-        self.session.commit()
+        self.add_me(line)
 
         peer_name = line_dao.get_peer_name(line.device)
 

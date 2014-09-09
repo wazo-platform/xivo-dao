@@ -132,9 +132,7 @@ class TestCtiUserStatusDAO(DAOTestCase):
         cti_presence = CtiPresences()
         cti_presence.name = name
 
-        self.session.begin()
-        self.session.add(cti_presence)
-        self.session.commit()
+        self.add_me(cti_presence)
         return cti_presence.id
 
     def _add_status(self, presence_id, name, actions, color, access_status):
@@ -146,7 +144,5 @@ class TestCtiUserStatusDAO(DAOTestCase):
         cti_status.color = color
         cti_status.access_status = access_status
 
-        self.session.begin()
-        self.session.add(cti_status)
-        self.session.commit()
+        self.add_me(cti_status)
         return cti_status.id

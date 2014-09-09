@@ -22,6 +22,7 @@ from xivo_dao.alchemy.agent_membership_status import AgentMembershipStatus
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
+from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
 
 
@@ -215,13 +216,8 @@ def log_in_agent(session, agent_id, agent_number, extension, context, interface,
 
 
 def _add_agent(session, agent):
-    try:
-        session.begin()
+    with commit_or_abort(session):
         session.add(agent)
-        session.commit()
-    except Exception:
-        session.rollback()
-        raise
 
 
 @daosession

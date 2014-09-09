@@ -38,9 +38,7 @@ class TrunkFeaturesDAOTestCase(DAOTestCase):
         usersip.type = 'peer'
         usersip.category = 'user'
 
-        self.session.begin()
-        map(self.session.add, [trunk, usersip])
-        self.session.commit()
+        self.add_me_all([trunk, usersip])
 
         result = trunk_dao.find_by_proto_name('sip', trunk_name)
 
@@ -59,9 +57,7 @@ class TrunkFeaturesDAOTestCase(DAOTestCase):
         useriax.type = 'peer'
         useriax.category = 'user'
 
-        self.session.begin()
-        map(self.session.add, [trunk, useriax])
-        self.session.commit()
+        self.add_me_all([trunk, useriax])
 
         result = trunk_dao.find_by_proto_name('iax', trunk_name)
 
@@ -80,9 +76,7 @@ class TrunkFeaturesDAOTestCase(DAOTestCase):
         usercustom.interface = dahdi_interface
         usercustom.category = 'user'
 
-        self.session.begin()
-        map(self.session.add, [trunk, usercustom])
-        self.session.commit()
+        self.add_me_all([trunk, usercustom])
 
         result = trunk_dao.find_by_proto_name('custom', dahdi_interface)
 
@@ -101,9 +95,7 @@ class TrunkFeaturesDAOTestCase(DAOTestCase):
         usercustom.interface = dahdi_interface
         usercustom.category = 'user'
 
-        self.session.begin()
-        map(self.session.add, [trunk, usercustom])
-        self.session.commit()
+        self.add_me_all([trunk, usercustom])
 
         result = trunk_dao.find_by_proto_name('custom', 'DAHDI/g1')
 
@@ -125,9 +117,7 @@ class TrunkFeaturesDAOTestCase(DAOTestCase):
         trunk3.protocolid = '5678'
         trunk3.protocol = 'sip'
 
-        self.session.begin()
-        map(self.session.add, [trunk1, trunk2, trunk3])
-        self.session.commit()
+        self.add_me_all([trunk1, trunk2, trunk3])
 
         expected = sorted([trunk1.id, trunk2.id, trunk3.id])
         result = sorted(trunk_dao.get_ids())

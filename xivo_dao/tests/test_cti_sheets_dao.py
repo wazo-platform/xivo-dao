@@ -110,9 +110,7 @@ class TestCtiSheetsDAO(DAOTestCase):
         cti_sheetevent.link = 'XiVO'
         cti_sheetevent.unlink = ''
 
-        self.session.begin()
-        self.session.add(cti_sheetevent)
-        self.session.commit()
+        self.add_me(cti_sheetevent)
         return cti_sheetevent.id
 
     def _add_ctisheetactions(self, qt_ui='file:///tmp/test.ui'):
@@ -128,9 +126,7 @@ class TestCtiSheetsDAO(DAOTestCase):
         cti_sheetaction.deletable = 1
         cti_sheetaction.disable = 1
 
-        self.session.begin()
-        self.session.add(cti_sheetaction)
-        self.session.commit()
+        self.add_me(cti_sheetaction)
         return cti_sheetaction.id
 
     def _add_bad_ctisheetactions(self):
@@ -146,7 +142,5 @@ class TestCtiSheetsDAO(DAOTestCase):
         cti_sheetaction.deletable = 1
         cti_sheetaction.disable = 1
 
-        self.session.begin()
-        self.session.add(cti_sheetaction)
-        self.session.commit()
+        self.add_me(cti_sheetaction)
         return cti_sheetaction.id

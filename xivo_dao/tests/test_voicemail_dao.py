@@ -29,9 +29,7 @@ class VoicemailDAOTestCase(DAOTestCase):
         voicemail.mailbox = mailbox
         voicemail.context = context
 
-        self.session.begin()
-        self.session.add(voicemail)
-        self.session.commit()
+        self.add_me(voicemail)
 
         return voicemail.uniqueid
 

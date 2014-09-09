@@ -15,16 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.dialpattern import DialPattern
 
 
 @daosession
 def delete(session, dialpattern_id):
-    session.begin()
-    try:
-        result = session.query(DialPattern).filter(DialPattern.id == dialpattern_id).delete()
-        session.commit()
-        return result
-    except Exception:
-        session.rollback()
+    with commit_or_abort(session):
+        return session.query(DialPattern).filter(DialPattern.id == dialpattern_id).delete()

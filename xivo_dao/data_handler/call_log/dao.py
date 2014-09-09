@@ -19,6 +19,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from xivo_dao.alchemy.call_log import CallLog as CallLogSchema
 from xivo_dao.alchemy.cel import CEL as CELSchema
 from xivo_dao.data_handler.exception import DataError
+from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.data_handler.call_log.model import db_converter
 
@@ -81,16 +82,10 @@ def find_all_outgoing_for_phone(session, identifier, limit):
 
 @daosession
 def create_from_list(session, call_logs):
-    session.begin()
-    for call_log in call_logs:
-        call_log_id = create_call_log(session, call_log)
-        _link_call_log(session, call_log, call_log_id)
-
-    try:
-        session.commit()
-    except SQLAlchemyError as e:
-        session.rollback()
-        raise DataError.on_create('CallLog', e)
+    with commit_or_abort(session, DataError.on_create, 'CallLog'):
+        for call_log in call_logs:
+            call_log_id = create_call_log(session, call_log)
+            _link_call_log(session, call_log, call_log_id)
 
 
 def create_call_log(session, call_log):
@@ -111,28 +106,18 @@ def _link_call_log(session, call_log, call_log_id):
 
 @daosession
 def delete_all(session):
-    session.begin()
-    session.query(CallLogSchema).delete()
-    try:
-        session.commit()
-    except SQLAlchemyError as e:
-        session.rollback()
-        raise DataError.on_delete('CallLog', e)
+    with commit_or_abort(session, DataError.on_delete, 'CallLog'):
+        session.query(CallLogSchema).delete()
 
 
 @daosession
 def delete_from_list(session, call_log_ids):
-    session.begin()
-    for call_log_id in call_log_ids:
-        (session
-         .query(CallLogSchema)
-         .filter(CallLogSchema.id == call_log_id)
-         .delete())
-    try:
-        session.commit()
-    except SQLAlchemyError as e:
-        session.rollback()
-        raise DataError.on_delete('CallLog', e)
+    with commit_or_abort(session, DataError.on_delete, 'CallLog'):
+        for call_log_id in call_log_ids:
+            (session
+             .query(CallLogSchema)
+             .filter(CallLogSchema.id == call_log_id)
+             .delete())
 
 
 def _converted_call_logs(rows):

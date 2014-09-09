@@ -40,8 +40,6 @@ class TestStatAgentDAO(DAOTestCase):
         agent = StatAgent()
         agent.name = name
 
-        self.session.begin()
-        self.session.add(agent)
-        self.session.commit()
+        self.add_me(agent)
 
         return agent

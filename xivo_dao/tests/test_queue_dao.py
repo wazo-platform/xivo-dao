@@ -122,9 +122,7 @@ class TestQueueDAO(DAOTestCase):
         queue.displayname = display_name
         queue.number = number
 
-        self.session.begin()
-        self.session.add(queue)
-        self.session.commit()
+        self.add_me(queue)
 
         return queue
 
@@ -138,6 +136,4 @@ class TestQueueDAO(DAOTestCase):
         queue_member.channel = 'foobar'
         queue_member.category = 'queue'
 
-        self.session.begin()
-        self.session.add(queue_member)
-        self.session.commit()
+        self.add_me(queue_member)

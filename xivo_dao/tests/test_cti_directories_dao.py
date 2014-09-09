@@ -176,9 +176,7 @@ class TestCtiSheetsDAO(DAOTestCase):
         ctidirectoryfields.fieldname = fieldname
         ctidirectoryfields.value = value
 
-        self.session.begin()
-        self.session.add(ctidirectoryfields)
-        self.session.commit()
+        self.add_me(ctidirectoryfields)
 
     def _insert_ctidirectory(self, name, uri, match_direct, match_reverse):
         ctidirectory = CtiDirectories()
@@ -187,9 +185,7 @@ class TestCtiSheetsDAO(DAOTestCase):
         ctidirectory.match_direct = match_direct
         ctidirectory.match_reverse = match_reverse
 
-        self.session.begin()
-        self.session.add(ctidirectory)
-        self.session.commit()
+        self.add_me(ctidirectory)
 
         return ctidirectory
 
@@ -203,9 +199,7 @@ class TestCtiSheetsDAO(DAOTestCase):
         ldap.basedn = 'dc=lan-quebec,dc=avencall,dc=com'
         ldap.description = 'description'
 
-        self.session.begin()
-        self.session.add(ldap)
-        self.session.commit()
+        self.add_me(ldap)
 
         return ldap
 
@@ -218,8 +212,6 @@ class TestCtiSheetsDAO(DAOTestCase):
         ldapserver.protocolversion = '3'
         ldapserver.description = 'description'
 
-        self.session.begin()
-        self.session.add(ldapserver)
-        self.session.commit()
+        self.add_me(ldapserver)
 
         return ldapserver

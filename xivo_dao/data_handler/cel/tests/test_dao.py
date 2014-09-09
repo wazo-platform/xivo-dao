@@ -21,6 +21,7 @@ from hamcrest import assert_that, contains, has_property, contains_inanyorder
 from xivo_dao.alchemy.cel import CEL as CELSchema
 from xivo_dao.data_handler.call_log.model import CallLog, db_converter
 from xivo_dao.data_handler.cel import dao as cel_dao
+from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -149,7 +150,6 @@ class TestCELDAO(DAOTestCase):
         return call_log_row.id
 
     def _link_call_to_cel(self, call_log_id, cel_id):
-        self.session.begin()
-        cel_row = self.session.query(CELSchema).get(cel_id)
-        cel_row.call_log_id = call_log_id
-        self.session.commit()
+        with commit_or_abort(self.session):
+            cel_row = self.session.query(CELSchema).get(cel_id)
+            cel_row.call_log_id = call_log_id

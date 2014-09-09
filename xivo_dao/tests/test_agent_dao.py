@@ -17,6 +17,7 @@
 
 from hamcrest import assert_that, equal_to
 
+from sqlalchemy.exc import SQLAlchemyError
 from xivo_dao import agent_dao
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
@@ -105,9 +106,9 @@ class TestAgentDAO(DAOTestCase):
 
     @mocked_dao_session
     def test_del_agent_db_error(self, session):
-        session.commit.side_effect = Exception()
+        session.commit.side_effect = SQLAlchemyError()
 
-        self.assertRaises(Exception, agent_dao.del_agent, 1)
+        self.assertRaises(SQLAlchemyError, agent_dao.del_agent, 1)
         session.rollback.assert_called_once_with()
 
     def test_agent_with_id(self):
@@ -178,9 +179,7 @@ class TestAgentDAO(DAOTestCase):
         agent.language = ''
         agent.description = ''
 
-        self.session.begin()
-        self.session.add(agent)
-        self.session.commit()
+        self.add_me(agent)
 
         return agent
 
@@ -191,9 +190,7 @@ class TestAgentDAO(DAOTestCase):
         queue.displayname = name
         queue.number = '3000'
 
-        self.session.begin()
-        self.session.add(queue)
-        self.session.commit()
+        self.add_me(queue)
 
         return queue
 
@@ -208,12 +205,6 @@ class TestAgentDAO(DAOTestCase):
         queue_member.category = 'queue'
         queue_member.position = 0
 
-        try:
-            self.session.begin()
-            self.session.add(queue_member)
-            self.session.commit()
-        except Exception:
-            self.session.rollback()
-            raise
+        self.add_me(queue_member)
 
         return queue_member

@@ -61,10 +61,7 @@ def _new_cel(**kwargs):
 class TestCELDAO(DAOTestCase):
 
     def _insert_cels(self, cels):
-        self.session.begin()
-        for cel in cels:
-            self.session.add(cel)
-        self.session.commit()
+        self.add_me_all(cels)
 
     def test_caller_id_by_unique_id_when_unique_id_is_present(self):
         self._insert_cels([

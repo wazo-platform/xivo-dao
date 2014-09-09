@@ -17,17 +17,13 @@
 
 from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.helpers.db_manager import daosession
+from xivo_dao.helpers.db_utils import commit_or_abort
 
 
 @daosession
 def create(session, usersip):
-    session.begin()
-    try:
+    with commit_or_abort(session):
         session.add(usersip)
-        session.commit()
-    except Exception:
-        session.rollback()
-        raise
 
 
 @daosession
@@ -37,10 +33,5 @@ def get(session, sipid):
 
 @daosession
 def delete(session, usersip_id):
-    session.begin()
-    try:
+    with commit_or_abort(session):
         session.query(UserSIP).filter(UserSIP.id == usersip_id).delete()
-        session.commit()
-    except Exception:
-        session.rollback()
-        raise

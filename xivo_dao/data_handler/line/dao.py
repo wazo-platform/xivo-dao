@@ -28,6 +28,7 @@ from xivo_dao.alchemy.usercustom import UserCustom as UserCustomSchema, \
 from xivo_dao.alchemy.sccpline import SCCPLine as SCCPLineSchema, SCCPLine
 from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
 from xivo_dao.alchemy.extension import Extension
+from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.data_handler import errors
 from xivo_dao.data_handler.exception import DataError
@@ -227,14 +228,9 @@ def create(session, line):
 
 
 def _commit_or_abort(session, error, *elements):
-    session.begin()
-    for element in elements:
-        session.add(element)
-    try:
-        session.commit()
-    except SQLAlchemyError as e:
-        session.rollback()
-        raise error('Line', e)
+    with commit_or_abort(session, error, 'Line'):
+        for element in elements:
+            session.add(element)
 
 
 @daosession
@@ -367,17 +363,13 @@ def _build_custom_line(line):
 
 @daosession
 def delete(session, line):
-    session.begin()
     try:
-        nb_row_affected = session.query(LineSchema).filter(LineSchema.id == line.id).delete()
-        _delete_line(session, line)
-        session.commit()
-    except IntegrityError as e:
+        with commit_or_abort(session, DataError.on_delete, 'Line'):
+            nb_row_affected = session.query(LineSchema).filter(LineSchema.id == line.id).delete()
+            _delete_line(session, line)
+    except IntegrityError:
         session.rollback()
         raise errors.resource_associated('Line', 'Resource', line_id=line.id)
-    except SQLAlchemyError, e:
-        session.rollback()
-        raise DataError.on_delete('Line', e)
 
     if nb_row_affected == 0:
         errors.not_found('Line', line.id)

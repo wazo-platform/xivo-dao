@@ -55,3 +55,15 @@ class TestCommitOrAbort(unittest.TestCase):
 
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
+
+    def test_on_error_rollback_and_raise_if_no_error_supplied(self):
+        row = Mock()
+        session = Mock()
+        session.commit.side_effect = SQLAlchemyError()
+
+        with self.assertRaises(SQLAlchemyError):
+            with db_utils.commit_or_abort(session):
+                session.add(row)
+
+        session.begin.assert_called_once_with()
+        session.rollback.assert_called_once_with()

@@ -32,9 +32,7 @@ class TestContextDao(DAOTestCase):
     def _insert_contextnumber(self, **kwargs):
         context_number = ContextNumberSchema(**kwargs)
 
-        self.session.begin()
-        self.session.add(context_number)
-        self.session.commit()
+        self.add_me(context_number)
 
 
 class TestContextGet(TestContextDao):

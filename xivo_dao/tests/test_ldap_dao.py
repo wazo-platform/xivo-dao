@@ -111,9 +111,7 @@ class TestLdapDAO(DAOTestCase):
         ldap.additionaltype = kwargs.get('additionaltype', 'office')
         ldap.description = kwargs.get('description', '')
 
-        self.session.begin()
-        self.session.add(ldap)
-        self.session.commit()
+        self.add_me(ldap)
 
         return ldap
 
@@ -126,8 +124,6 @@ class TestLdapDAO(DAOTestCase):
         ldapserver.protocolversion = kwargs.get('protocolversion', None)
         ldapserver.description = kwargs.get('description', '')
 
-        self.session.begin()
-        self.session.add(ldapserver)
-        self.session.commit()
+        self.add_me(ldapserver)
 
         return ldapserver

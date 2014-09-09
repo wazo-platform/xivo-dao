@@ -201,9 +201,7 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         other_call.queue_id = queue_id
         other_call.status = 'abandoned'
 
-        self.session.begin()
-        self.session.add(other_call)
-        self.session.commit()
+        self.add_me(other_call)
 
         stats_quarter_hour = stat_call_on_queue_dao.get_periodic_stats_quarter_hour(self.session, start, end)
 

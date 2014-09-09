@@ -15,30 +15,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.contextmember import ContextMember
 
 
 @daosession
 def add(session, contextmember):
-    session.begin()
-    try:
+    with commit_or_abort(session):
         session.add(contextmember)
-        session.commit()
-    except Exception:
-        session.rollback()
-        raise
 
 
 @daosession
 def delete_by_type_typeval(session, typename, typeval):
-    session.begin()
-    try:
+    with commit_or_abort(session):
         _request_type_typeval(session, typename, typeval).delete()
-        session.commit()
-    except Exception:
-        session.rollback()
-        raise
 
 
 @daosession

@@ -20,6 +20,7 @@ from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from sqlalchemy.sql.expression import and_, cast, func
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from sqlalchemy.types import Integer
+from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
@@ -106,13 +107,8 @@ def update_callfiltermember_state(session, callfiltermember_id, new_state):
 
 @daosession
 def add(session, callfilter):
-    session.begin()
-    try:
+    with commit_or_abort(session):
         session.add(callfilter)
-        session.commit()
-    except Exception:
-        session.rollback()
-        raise
 
 
 @daosession
@@ -127,13 +123,8 @@ def add_user_to_filter(session, userid, filterid, role):
     member.typeval = str(userid)
     member.callfilterid = filterid
     member.bstype = role
-    session.begin()
-    try:
+    with commit_or_abort(session):
         session.add(member)
-        session.commit()
-    except Exception:
-        session.rollback()
-        raise
 
 
 @daosession
@@ -143,13 +134,8 @@ def get_callfiltermembers_by_userid(session, userid):
 
 @daosession
 def delete_callfiltermember_by_userid(session, userid):
-    session.begin()
-    try:
+    with commit_or_abort(session):
         _request_member_by_userid(session, userid).delete()
-        session.commit()
-    except Exception:
-        session.rollback()
-        raise
 
 
 def _request_member_by_userid(session, userid):

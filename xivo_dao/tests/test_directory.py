@@ -37,10 +37,7 @@ class TestDirectoryDAO(DAOTestCase):
             data='{ "10": [ "Name","name","","{db-name}" ],"20": [ "Number","number_office","","{db-number}" ],"30": [ "Location","","","{db-location}" ] }'
         )
 
-        self.session.begin()
-        self.session.add(cti_display)
-        self.session.add(cti_contexts)
-        self.session.commit()
+        self.add_me_all([cti_display, cti_contexts])
 
         result = directory_dao.get_directory_headers(context_name)
         expected_result = [
@@ -72,10 +69,7 @@ class TestDirectoryDAO(DAOTestCase):
             data='{ "10": [ "Name","name","","{db-name}" ],"20": [ "Number","number_office","","{db-number}" ],"30": [ "Location","","","{db-location}" ], "40": [ "Number","number_mobile","","{db-mobile}" ] }'
         )
 
-        self.session.begin()
-        self.session.add(cti_display)
-        self.session.add(cti_contexts)
-        self.session.commit()
+        self.add_me_all([cti_display, cti_contexts])
 
         result = directory_dao.get_directory_headers(context_name)
         expected_result = [

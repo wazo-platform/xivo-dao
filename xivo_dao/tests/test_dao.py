@@ -66,6 +66,7 @@ from xivo_dao.alchemy.func_key_type import FuncKeyType
 from xivo_dao.alchemy.func_key_destination_type import FuncKeyDestinationType
 from xivo_dao.helpers import db_manager
 from xivo_dao.helpers.db_manager import Base
+from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo.debug import trace_duration
 
 logger = logging.getLogger(__name__)
@@ -133,9 +134,8 @@ class DAOTestCase(unittest.TestCase):
     def setUp(self):
         global _tables
         logger.debug("Emptying tables")
-        self.session.begin()
-        self.session.execute('TRUNCATE "%s" CASCADE;' % '","'.join(_tables))
-        self.session.commit()
+        with commit_or_abort(self.session):
+            self.session.execute('TRUNCATE "%s" CASCADE;' % '","'.join(_tables))
         logger.debug("Tables emptied")
 
     def add_user_line_with_exten(self, **kwargs):
@@ -639,9 +639,7 @@ class DAOTestCase(unittest.TestCase):
         kwargs.setdefault('description', '')
         entity = EntitySchema(**kwargs)
 
-        self.session.begin()
-        self.session.add(entity)
-        self.session.commit()
+        self.add_me(entity)
 
         return entity
 
@@ -651,18 +649,12 @@ class DAOTestCase(unittest.TestCase):
         return func_key_mapping
 
     def add_me(self, obj):
-        self.session.begin()
-        try:
+        with commit_or_abort(self.session):
             self.session.add(obj)
-            self.session.commit()
-        except Exception:
-            self.session.rollback()
-            raise
 
     def add_me_all(self, obj_list):
-        self.session.begin()
-        self.session.add_all(obj_list)
-        self.session.commit()
+        with commit_or_abort(self.session):
+            self.session.add_all(obj_list)
 
     _generate_int = itertools.count(1).next
 

@@ -23,6 +23,7 @@ from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
 from xivo_dao.data_handler.line_extension import dao as line_extension_dao
 from xivo_dao.data_handler.user_line_extension import dao as ule_dao
 from xivo_dao.data_handler.user_line.model import db_converter
+from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
 
 
@@ -90,12 +91,8 @@ def find_main_user_line(session, line_id):
 
 @daosession
 def associate(session, user_line):
-    session.begin()
-    try:
+    with commit_or_abort(session, DataError.on_create, 'UserLine'):
         user_line_id = _associate_user_line(session, user_line)
-    except SQLAlchemyError as e:
-        session.rollback()
-        raise DataError.on_create('UserLine', e)
 
     user_line.id = user_line_id
 
@@ -113,7 +110,7 @@ def _associate_user_line(session, user_line):
     else:
         _update_user_line(session, user_line)
 
-    session.commit()
+    session.flush()
 
     return _find_user_line_id(session, user_line)
 
@@ -142,14 +139,9 @@ def _find_user_line_id(session, user_line):
 
 @daosession
 def dissociate(session, user_line):
-    session.begin()
-    try:
+    with commit_or_abort(session, DataError.on_delete, 'UserLine'):
         _dissasociate_user_line(session, user_line)
         ule_dao.delete_association_if_necessary(session)
-        session.commit()
-    except SQLAlchemyError as e:
-        session.rollback()
-        raise DataError.on_delete('UserLine', e)
 
 
 def _dissasociate_user_line(session, user_line):

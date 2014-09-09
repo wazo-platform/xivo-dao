@@ -21,6 +21,7 @@ from xivo_dao.alchemy.contextnumbers import ContextNumbers as ContextNumberSchem
 from xivo_dao.data_handler.context.converters import context_converter
 from xivo_dao.data_handler.context.converters import range_converter
 from xivo_dao.data_handler.entity import dao as entity_dao
+from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.data_handler import errors
 
@@ -64,9 +65,8 @@ def create(session, context):
     context_row = context_converter.to_source(context)
     context_row.entity = entity_dao.default_entity_name()
 
-    session.begin()
-    session.add(context_row)
-    session.commit()
+    with commit_or_abort(session):
+        session.add(context_row)
 
     return context
 

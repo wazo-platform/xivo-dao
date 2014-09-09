@@ -21,6 +21,7 @@ from xivo_dao.data_handler import errors
 from xivo_dao.alchemy.voicemail import Voicemail as VoicemailSchema
 from xivo_dao.alchemy.dialaction import Dialaction as DialactionSchema
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
+from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.data_handler.voicemail.model import db_converter
 from xivo_dao.data_handler.voicemail.search import voicemail_search
@@ -85,14 +86,8 @@ def _get_voicemail_row(session, voicemail_id):
 @daosession
 def create(session, voicemail):
     voicemail_row = db_converter.to_source(voicemail)
-    session.begin()
-    session.add(voicemail_row)
-
-    try:
-        session.commit()
-    except SQLAlchemyError as e:
-        session.rollback()
-        raise DataError.on_create('voicemail', e)
+    with commit_or_abort(session, DataError.on_create, 'voicemail'):
+        session.add(voicemail_row)
 
     voicemail.id = voicemail_row.uniqueid
 
@@ -104,26 +99,15 @@ def edit(session, voicemail):
     voicemail_row = _get_voicemail_row(session, voicemail.id)
     db_converter.update_source(voicemail_row, voicemail)
 
-    session.begin()
-    session.add(voicemail_row)
-
-    try:
-        session.commit()
-    except SQLAlchemyError as e:
-        session.rollback()
-        raise DataError.on_edit('voicemail', e)
+    with commit_or_abort(session, DataError.on_edit, 'voicemail'):
+        session.add(voicemail_row)
 
 
 @daosession
 def delete(session, voicemail):
-    session.begin()
-    try:
+    with commit_or_abort(session, DataError.on_delete, 'voicemail'):
         _delete_voicemail(session, voicemail.id)
         _unlink_dialactions(session, voicemail.id)
-        session.commit()
-    except SQLAlchemyError as e:
-        session.rollback()
-        raise DataError.on_delete('voicemail', e)
 
 
 def _delete_voicemail(session, voicemail_id):

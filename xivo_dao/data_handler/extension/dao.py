@@ -19,6 +19,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.sql.expression import or_
 
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
+from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
 
 from xivo_dao.data_handler import errors
@@ -127,14 +128,8 @@ def create(session, extension):
     extension_row.type = 'user'
     extension_row.typeval = '0'
 
-    session.begin()
-    session.add(extension_row)
-
-    try:
-        session.commit()
-    except SQLAlchemyError as e:
-        session.rollback()
-        raise DataError.on_create('Extension', e)
+    with commit_or_abort(session, DataError.on_create, 'Extension'):
+        session.add(extension_row)
 
     extension.id = extension_row.id
 
@@ -146,25 +141,14 @@ def edit(session, extension):
     extension_row = _fetch_extension_row(session, extension.id)
     db_converter.update_source(extension_row, extension)
 
-    session.begin()
-    session.add(extension_row)
-
-    try:
-        session.commit()
-    except SQLAlchemyError as e:
-        session.rollback()
-        raise DataError.on_edit('Extension', e)
+    with commit_or_abort(session, DataError.on_edit, 'Extension'):
+        session.add(extension_row)
 
 
 @daosession
 def delete(session, extension):
-    session.begin()
-    try:
+    with commit_or_abort(session, DataError.on_delete, 'Extension'):
         session.query(ExtensionSchema).filter(ExtensionSchema.id == extension.id).delete()
-        session.commit()
-    except SQLAlchemyError, e:
-        session.rollback()
-        raise DataError.on_delete('Extension', e)
 
 
 def _new_query(session, order=None):
@@ -174,33 +158,20 @@ def _new_query(session, order=None):
 
 @daosession
 def associate_destination(session, extension_id, destination, destination_id):
-    session.begin()
-
-    updated_row = {'type': destination, 'typeval': str(destination_id)}
-    (session.query(ExtensionSchema)
-        .filter(ExtensionSchema.id == extension_id)
-        .update(updated_row))
-
-    try:
-        session.commit()
-    except SQLAlchemyError as e:
-        session.rollback()
-        raise DataError.on_edit('Extension', e)
+    with commit_or_abort(session, DataError.on_edit, 'Extension'):
+        updated_row = {'type': destination, 'typeval': str(destination_id)}
+        (session.query(ExtensionSchema)
+         .filter(ExtensionSchema.id == extension_id)
+         .update(updated_row))
 
 
 @daosession
 def dissociate_extension(session, extension_id):
-    session.begin()
-    (session.query(ExtensionSchema)
-     .filter(ExtensionSchema.id == extension_id)
-     .update({'type': 'user',
-              'typeval': '0'}))
-
-    try:
-        session.commit()
-    except SQLAlchemyError as e:
-        session.rollback()
-        raise DataError.on_edit('Extension', e)
+    with commit_or_abort(session, DataError.on_edit, 'Extension'):
+        (session.query(ExtensionSchema)
+         .filter(ExtensionSchema.id == extension_id)
+         .update({'type': 'user',
+                  'typeval': '0'}))
 
 
 @daosession

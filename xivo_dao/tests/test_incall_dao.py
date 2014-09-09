@@ -29,9 +29,8 @@ class TestIncallDAO(DAOTestCase):
         incall.context = context
         incall.description = 'description'
 
-        self.session.begin()
-        self.session.add(incall)
-        self.session.commit()
+        self.add_me(incall)
+
         return incall.id
 
     def _insert_dialaction(self, incall_id, action, actionarg1):
@@ -44,9 +43,7 @@ class TestIncallDAO(DAOTestCase):
         dialaction.actionarg2 = ''
         dialaction.linked = 1
 
-        self.session.begin()
-        self.session.add(dialaction)
-        self.session.commit()
+        self.add_me(dialaction)
 
     def test_get(self):
         incall_exten = '1001'

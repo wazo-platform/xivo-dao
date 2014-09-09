@@ -131,9 +131,7 @@ class TestUserLineDAO(DAOTestCase):
         line.cid_name = 'Tester One'
         line.cid_num = '1234'
 
-        self.session.begin()
-        self.session.add(line)
-        self.session.commit()
+        self.add_me(line)
 
         result = user_line_dao._get_cid_for_sccp_channel(channel)
         expected = ('"Tester One" <1234>', 'Tester One', '1234')
@@ -153,9 +151,7 @@ class TestUserLineDAO(DAOTestCase):
         line.callerid = '"Tester One" <1234>'
         line.category = 'user'
 
-        self.session.begin()
-        self.session.add(line)
-        self.session.commit()
+        self.add_me(line)
 
         result = user_line_dao._get_cid_for_sip_channel(channel)
         expected = (line.callerid, 'Tester One', '1234')

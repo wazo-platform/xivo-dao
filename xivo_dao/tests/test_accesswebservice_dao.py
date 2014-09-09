@@ -49,8 +49,6 @@ class TestAccessWebServiceDao(DAOTestCase):
         access.host = host
         access.obj = ''
 
-        self.session.begin()
-        self.session.add(access)
-        self.session.commit()
+        self.add_me(access)
 
         return access

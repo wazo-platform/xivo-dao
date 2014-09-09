@@ -31,9 +31,7 @@ class TestMeetmeFeaturesDAO(DAOTestCase):
         static_meetme.var_val = var_val
         static_meetme.filename = 'meetme.conf'
 
-        self.session.begin()
-        self.session.add(static_meetme)
-        self.session.commit()
+        self.add_me(static_meetme)
 
         meetme = MeetmeFeatures()
         meetme.meetmeid = meetmeid
@@ -49,9 +47,7 @@ class TestMeetmeFeaturesDAO(DAOTestCase):
         meetme.emailbody = ''
         meetme.description = ''
 
-        self.session.begin()
-        self.session.add(meetme)
-        self.session.commit()
+        self.add_me(meetme)
 
         return meetme
 

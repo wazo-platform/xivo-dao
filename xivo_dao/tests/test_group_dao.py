@@ -61,9 +61,7 @@ class TestGroupDAO(DAOTestCase):
         group.number = number
         group.context = context
 
-        self.session.begin()
-        self.session.add(group)
-        self.session.commit()
+        self.add_me(group)
 
         return group
 
@@ -77,6 +75,4 @@ class TestGroupDAO(DAOTestCase):
         queue_member.channel = 'foobar'
         queue_member.category = 'group'
 
-        self.session.begin()
-        self.session.add(queue_member)
-        self.session.commit()
+        self.add_me(queue_member)
