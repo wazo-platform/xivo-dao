@@ -78,5 +78,5 @@ class TestUserCtiProfile(DAOTestCase):
         user_cti_profile = UserCtiProfile(user_id=1, cti_profile_id=2)
 
         self.assertRaises(DataError, user_cti_profile_dao.edit, user_cti_profile)
-        session.begin.assert_called_once_with()
+        session.begin.assert_called_once_with(subtransactions=True)
         session.rollback.assert_called_once_with()

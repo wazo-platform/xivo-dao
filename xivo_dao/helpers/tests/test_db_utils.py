@@ -40,7 +40,7 @@ class TestCommitOrAbort(unittest.TestCase):
         with db_utils.commit_or_abort(session, error, element):
             session.add(row)
 
-        session.begin.assert_called_once_with()
+        session.begin.assert_called_once_with(subtransactions=True)
         session.commit.assert_called_once_with()
 
     def test_given_row_added_when_error_then_rollback_and_error_raised(self):
@@ -53,7 +53,7 @@ class TestCommitOrAbort(unittest.TestCase):
             with db_utils.commit_or_abort(session, CustomException, element):
                 session.add(row)
 
-        session.begin.assert_called_once_with()
+        session.begin.assert_called_once_with(subtransactions=True)
         session.rollback.assert_called_once_with()
 
     def test_on_error_rollback_and_raise_if_no_error_supplied(self):
@@ -65,5 +65,5 @@ class TestCommitOrAbort(unittest.TestCase):
             with db_utils.commit_or_abort(session):
                 session.add(row)
 
-        session.begin.assert_called_once_with()
+        session.begin.assert_called_once_with(subtransactions=True)
         session.rollback.assert_called_once_with()

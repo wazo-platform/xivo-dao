@@ -22,7 +22,7 @@ from xivo_dao.helpers.db_manager import daosession
 
 @contextmanager
 def commit_or_abort(session, error=None, element=None):
-    session.begin()
+    session.begin(subtransactions=True)
     yield
 
     try:

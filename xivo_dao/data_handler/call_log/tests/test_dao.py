@@ -204,7 +204,7 @@ class TestCallLogDAO(DAOTestCase):
         call_logs = (self._mock_call_log(), self._mock_call_log())
 
         self.assertRaises(DataError, call_log_dao.create_from_list, call_logs)
-        session.begin.assert_called_once_with()
+        session.begin.assert_called_once_with(subtransactions=True)
         session.rollback.assert_called_once_with()
 
     def test_delete_all(self):
@@ -221,7 +221,7 @@ class TestCallLogDAO(DAOTestCase):
         session.commit.side_effect = SQLAlchemyError()
 
         self.assertRaises(DataError, call_log_dao.delete_all)
-        session.begin.assert_called_once_with()
+        session.begin.assert_called_once_with(subtransactions=True)
         session.rollback.assert_called_once_with()
 
     def test_delete_from_list(self):
@@ -239,7 +239,7 @@ class TestCallLogDAO(DAOTestCase):
         session.commit.side_effect = SQLAlchemyError()
 
         self.assertRaises(DataError, call_log_dao.delete_from_list, [1, 2])
-        session.begin.assert_called_once_with()
+        session.begin.assert_called_once_with(subtransactions=True)
         session.rollback.assert_called_once_with()
 
     def _mock_call_log(self, cel_ids=None, date=None, id=None, source_line_identity=None, destination_line_identity=None, answered=False):
