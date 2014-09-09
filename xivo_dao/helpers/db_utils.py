@@ -17,6 +17,7 @@
 
 from contextlib import contextmanager
 from sqlalchemy.exc import SQLAlchemyError
+from xivo_dao.helpers.db_manager import daosession
 
 
 @contextmanager
@@ -32,3 +33,8 @@ def commit_or_abort(session, error=None, element=None):
             raise error(element, e)
         else:
             raise
+
+
+@daosession
+def get_dao_session(session):
+    return session
