@@ -326,7 +326,7 @@ class TestCreate(DAOTestCase):
                               context=context)
 
         self.assertRaises(DataError, extension_dao.create, extension)
-        session.begin.assert_called_once_with(subtransactions=True)
+        session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
 
 
@@ -365,7 +365,7 @@ class TestEdit(DAOTestCase):
                               context='context')
 
         self.assertRaises(DataError, extension_dao.edit, extension)
-        session.begin.assert_called_once_with(subtransactions=True)
+        session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
 
 

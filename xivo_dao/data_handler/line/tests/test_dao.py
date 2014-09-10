@@ -487,7 +487,7 @@ class TestLineDao(DAOTestCase):
                        protocolid=line_sip.id)
 
         self.assertRaises(DataError, line_dao.edit, line)
-        session.begin.assert_called_once_with(subtransactions=True)
+        session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
 
     def test_update_xivo_userid_sip(self):
@@ -629,7 +629,7 @@ class TestLineDao(DAOTestCase):
                        secret=secret)
 
         self.assertRaises(DataError, line_dao.create, line)
-        session.begin.assert_called_once_with(subtransactions=True)
+        session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
 
     def test_create_sip_line(self):

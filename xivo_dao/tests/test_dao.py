@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import datetime
+import functools
 import itertools
 import logging
 import random
@@ -118,6 +119,7 @@ class DAOTestCase(unittest.TestCase):
         self.session = Session(bind=self.connection)
         db_manager._DaoSession = lambda: self.session
         self.session.begin_nested()
+        self.session.begin = functools.partial(self.session.begin, subtransactions=True)
 
         @event.listens_for(self.session, 'after_transaction_end')
         def restart_savepoint(session, transaction):

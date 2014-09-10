@@ -532,7 +532,7 @@ class TestCreateVoicemail(DAOTestCase):
                               context=context)
 
         self.assertRaises(DataError, voicemail_dao.create, voicemail)
-        session.begin.assert_called_once_with(subtransactions=True)
+        session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
 
 
@@ -619,7 +619,7 @@ class TestEditVoicemail(DAOTestCase):
                               context=context)
 
         self.assertRaises(DataError, voicemail_dao.edit, voicemail)
-        session.begin.assert_called_once_with(subtransactions=True)
+        session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
 
 
@@ -671,7 +671,7 @@ class TestVoicemailDelete(VoicemailTestCase):
         voicemail.id = 1
 
         self.assertRaises(DataError, voicemail_dao.delete, voicemail)
-        session.begin.assert_called_once_with(subtransactions=True)
+        session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
 
     def create_incall_for_voicemail(self, voicemail, did, context):

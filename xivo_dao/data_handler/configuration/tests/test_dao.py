@@ -56,5 +56,5 @@ class TestConfigurationDao(DAOTestCase):
         session.commit.side_effect = SQLAlchemyError()
 
         self.assertRaises(DataError, dao.set_live_reload_status, {'enabled': True})
-        session.begin.assert_called_once_with(subtransactions=True)
+        session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
