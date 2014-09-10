@@ -17,7 +17,7 @@
 
 from datetime import datetime, timedelta
 from hamcrest import assert_that, equal_to, has_length, contains_inanyorder, has_property, contains, all_of
-from mock import Mock, patch
+from mock import patch
 from sqlalchemy.exc import SQLAlchemyError
 
 from xivo_dao.alchemy.call_log import CallLog as CallLogSchema
@@ -40,6 +40,7 @@ class TestCallLogDAO(DAOTestCase):
 
     def tearDown(self):
         self.db_converter_patcher.stop()
+        super(TestCallLogDAO, self).tearDown()
 
     def test_find_all_not_found(self):
         expected_result = []

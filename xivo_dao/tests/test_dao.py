@@ -16,12 +16,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import datetime
+import functools
 import itertools
 import logging
 import random
 import unittest
 
-from mock import patch
 from sqlalchemy.schema import MetaData
 
 from xivo_dao.alchemy.entity import Entity as EntitySchema
@@ -69,6 +69,10 @@ from xivo_dao.helpers.db_manager import Base
 from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo.debug import trace_duration
 
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.engine import create_engine
+from sqlalchemy import event
+
 logger = logging.getLogger(__name__)
 
 _expensive_setup_has_run = False
@@ -76,23 +80,20 @@ _tables = []
 
 TEST_DB_URL = 'postgresql://asterisk:asterisk@localhost/asterisktest'
 
+Session = sessionmaker()
+engine = create_engine(TEST_DB_URL)
+
 
 def expensive_setup():
     global _expensive_setup_has_run
-
-    logger.debug("Connecting to database")
-    db_manager._init(TEST_DB_URL)
-    logger.debug("Connected to database")
     _init_tables()
     _expensive_setup_has_run = True
 
 
 @trace_duration
-@db_manager.daosession
-def _init_tables(session):
+def _init_tables():
     global _tables
 
-    engine = session.bind
     logger.debug("Cleaning tables")
     metadata = MetaData(bind=engine)
     metadata.reflect()
@@ -107,36 +108,28 @@ def _init_tables(session):
     _tables = [table for table in metadata.tables.iterkeys()]
 
 
-# TODO implement this
-def afterTest(test):
-    logger.debug("Closing connection")
-    db_manager.close()
-
-
-@db_manager.daosession
-def _fetch_dao_session(session):
-    return session
-
-
 class DAOTestCase(unittest.TestCase):
 
-    @classmethod
-    @patch('xivo_dao.helpers.bus_manager.send_bus_command')
-    def setUpClass(cls, send_bus_command):
-        global _expensive_setup_has_run
-
-        if _expensive_setup_has_run is False:
+    def setUp(self):
+        if not _expensive_setup_has_run:
             expensive_setup()
 
-        cls.session = _fetch_dao_session()
+        self.connection = engine.connect()
+        self.trans = self.connection.begin()
+        self.session = Session(bind=self.connection)
+        db_manager._DaoSession = lambda: self.session
+        self.session.begin_nested()
+        self.session.begin = functools.partial(self.session.begin, subtransactions=True)
 
-    @trace_duration
-    def setUp(self):
-        global _tables
-        logger.debug("Emptying tables")
-        with commit_or_abort(self.session):
-            self.session.execute('TRUNCATE "%s" CASCADE;' % '","'.join(_tables))
-        logger.debug("Tables emptied")
+        @event.listens_for(self.session, 'after_transaction_end')
+        def restart_savepoint(session, transaction):
+            if transaction.nested and not transaction._parent.nested:
+                session.begin_nested()
+
+    def tearDown(self):
+        self.session.close()
+        self.trans.rollback()
+        self.connection.close()
 
     def add_user_line_with_exten(self, **kwargs):
         kwargs.setdefault('firstname', 'unittest')
@@ -459,9 +452,9 @@ class DAOTestCase(unittest.TestCase):
 
     def add_function_key_to_user(self, **kwargs):
         kwargs.setdefault('iduserfeatures', self._generate_int())
-        kwargs.setdefault('fknum', ''.join(random.choice('123456789') for _ in range(6)))
+        kwargs.setdefault('fknum', int(''.join(random.choice('123456789') for _ in range(6))))
         kwargs.setdefault('exten', ''.join(random.choice('0123456789_*X.') for _ in range(6)))
-        kwargs.setdefault('supervision', '0')
+        kwargs.setdefault('supervision', 0)
         kwargs.setdefault('label', 'toto')
         kwargs.setdefault('typeextenumbersright', 'user')
         kwargs.setdefault('typeextenumbers', None)

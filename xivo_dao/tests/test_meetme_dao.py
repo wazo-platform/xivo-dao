@@ -90,14 +90,14 @@ class TestMeetmeFeaturesDAO(DAOTestCase):
         self.assertEqual(meetme_blue.name, 'blue')
 
     def test_find_by_confno(self):
-        self._insert_meetme(1, 'red', '9000')
-        self._insert_meetme(2, 'blue', '9001')
+        red = self._insert_meetme(1, 'red', '9000')
+        blue = self._insert_meetme(2, 'blue', '9001')
 
         red_id = meetme_dao.find_by_confno('9000')
         blue_id = meetme_dao.find_by_confno('9001')
 
-        self.assertEqual(red_id, 1)
-        self.assertEqual(blue_id, 2)
+        self.assertEqual(red_id, red.id)
+        self.assertEqual(blue_id, blue.id)
 
     def test_find_by_confno_no_conf(self):
         self.assertRaises(LookupError, meetme_dao.find_by_confno, '1234')

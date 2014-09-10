@@ -25,6 +25,7 @@ from sqlalchemy.exc import InterfaceError
 class TestDBManager(unittest.TestCase):
 
     @patch('xivo_dao.helpers.db_manager._apply_and_flush')
+    @patch('xivo_dao.helpers.db_manager.reinit', Mock())
     def test_execute_with_session_with_reconnection(self, apply_and_flush_mock):
         function_mock = Mock()
         args = ()
