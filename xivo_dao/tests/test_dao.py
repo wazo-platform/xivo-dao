@@ -21,6 +21,7 @@ import itertools
 import logging
 import random
 import unittest
+import time
 import string
 
 from sqlalchemy.schema import MetaData
@@ -49,6 +50,7 @@ from xivo_dao.alchemy.sipauthentication import SIPAuthentication
 from xivo_dao.alchemy.pickup import Pickup
 from xivo_dao.alchemy.pickupmember import PickupMember
 from xivo_dao.alchemy.queuemember import QueueMember
+from xivo_dao.alchemy.queueinfo import QueueInfo
 from xivo_dao.alchemy.groupfeatures import GroupFeatures
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
@@ -303,6 +305,17 @@ class DAOTestCase(unittest.TestCase):
         queuefeatures = QueueFeatures(**kwargs)
         self.add_me(queuefeatures)
         return queuefeatures
+
+    def add_queue_info(self, **kwargs):
+        kwargs.setdefault('id', self._generate_int())
+        kwargs.setdefault('call_time_t', int(time.time()))
+        kwargs.setdefault('queue_name', self._random_name())
+        kwargs.setdefault('hold_time', self._generate_int())
+        kwargs.setdefault('talk_time', self._generate_int())
+        kwargs.setdefault('caller_uniqueid', str(self._generate_int()))
+        qi = QueueInfo(**kwargs)
+        self.add_me(qi)
+        return qi
 
     def add_meetmefeatures(self, **kwargs):
         kwargs.setdefault('id', self._generate_int())
