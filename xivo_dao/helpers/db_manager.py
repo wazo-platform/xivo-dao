@@ -25,7 +25,6 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session
 
 logger = logging.getLogger(__name__)
-_global_db_url = None
 
 
 def todict(self):
@@ -46,6 +45,8 @@ _DaoSession = None
 def daosession(func):
     @wraps(func)
     def wrapped(*args, **kwargs):
+        if not _DaoSession:
+            _init()
         return _execute_with_session(_DaoSession, func, args, kwargs)
     return wrapped
 
@@ -67,11 +68,8 @@ def _apply_and_flush(func, session, args, kwargs):
     return result
 
 
-def _init(url=config.DB_URI):
-    global _global_db_url
-
-    _global_db_url = url
-    _init_asterisk(_global_db_url)
+def _init():
+    _init_asterisk(config.DB_URI)
 
 
 def _init_asterisk(url):
@@ -92,12 +90,9 @@ def _new_scoped_session(engine):
 
 def reinit():
     close()
-    _init(_global_db_url)
+    _init()
 
 
 def close():
     _DaoSession.close()
     _dao_engine.dispose()
-
-
-_init()
