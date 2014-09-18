@@ -21,6 +21,8 @@ import itertools
 import logging
 import random
 import unittest
+import time
+import string
 
 from sqlalchemy.schema import MetaData
 
@@ -48,6 +50,7 @@ from xivo_dao.alchemy.sipauthentication import SIPAuthentication
 from xivo_dao.alchemy.pickup import Pickup
 from xivo_dao.alchemy.pickupmember import PickupMember
 from xivo_dao.alchemy.queuemember import QueueMember
+from xivo_dao.alchemy.queueinfo import QueueInfo
 from xivo_dao.alchemy.groupfeatures import GroupFeatures
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
@@ -214,7 +217,7 @@ class DAOTestCase(unittest.TestCase):
 
     def add_context(self, **kwargs):
         kwargs.setdefault('entity', 'entity_id')
-        kwargs.setdefault('name', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+        kwargs.setdefault('name', self._random_name())
         kwargs.setdefault('displayname', kwargs['name'].capitalize())
         kwargs.setdefault('description', 'Auto create context')
 
@@ -223,8 +226,8 @@ class DAOTestCase(unittest.TestCase):
         return context
 
     def add_context_include(self, **kwargs):
-        kwargs.setdefault('context', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
-        kwargs.setdefault('include', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+        kwargs.setdefault('context', self._random_name())
+        kwargs.setdefault('include', self._random_name())
         kwargs.setdefault('priority', 0)
 
         context_include = ContextInclude(**kwargs)
@@ -280,7 +283,7 @@ class DAOTestCase(unittest.TestCase):
         kwargs.setdefault('numgroup', self._generate_int())
         kwargs.setdefault('number', int(''.join(random.choice('123456789') for _ in range(6))))
         kwargs.setdefault('passwd', '')
-        kwargs.setdefault('context', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+        kwargs.setdefault('context', self._random_name())
         kwargs.setdefault('language', random.choice(['fr_FR', 'en_US']))
         kwargs.setdefault('description', 'description')
         agent = AgentFeatures(**kwargs)
@@ -289,7 +292,7 @@ class DAOTestCase(unittest.TestCase):
 
     def add_group(self, **kwargs):
         kwargs.setdefault('id', self._generate_int())
-        kwargs.setdefault('name', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+        kwargs.setdefault('name', self._random_name())
         kwargs.setdefault('context', '')
         group = GroupFeatures(**kwargs)
         self.add_me(group)
@@ -297,18 +300,29 @@ class DAOTestCase(unittest.TestCase):
 
     def add_queuefeatures(self, **kwargs):
         kwargs.setdefault('id', self._generate_int())
-        kwargs.setdefault('name', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+        kwargs.setdefault('name', self._random_name())
         kwargs.setdefault('displayname', kwargs['name'].capitalize())
         queuefeatures = QueueFeatures(**kwargs)
         self.add_me(queuefeatures)
         return queuefeatures
 
+    def add_queue_info(self, **kwargs):
+        kwargs.setdefault('id', self._generate_int())
+        kwargs.setdefault('call_time_t', int(time.time()))
+        kwargs.setdefault('queue_name', self._random_name())
+        kwargs.setdefault('hold_time', self._generate_int())
+        kwargs.setdefault('talk_time', self._generate_int())
+        kwargs.setdefault('caller_uniqueid', str(self._generate_int()))
+        qi = QueueInfo(**kwargs)
+        self.add_me(qi)
+        return qi
+
     def add_meetmefeatures(self, **kwargs):
         kwargs.setdefault('id', self._generate_int())
         kwargs.setdefault('meetmeid', self._generate_int())
-        kwargs.setdefault('name', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+        kwargs.setdefault('name', self._random_name())
         kwargs.setdefault('confno', ''.join(random.choice('0123456789') for _ in range(6)))
-        kwargs.setdefault('context', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+        kwargs.setdefault('context', self._random_name())
         kwargs.setdefault('admin_identification', 'all')
         kwargs.setdefault('admin_mode', 'all')
         kwargs.setdefault('admin_announcejoinleave', 'no')
@@ -321,7 +335,7 @@ class DAOTestCase(unittest.TestCase):
         return meetmefeatures
 
     def add_queue(self, **kwargs):
-        kwargs.setdefault('name', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+        kwargs.setdefault('name', self._random_name())
         kwargs.setdefault('category', random.choice(['group', 'queue']))
         queue = Queue(**kwargs)
         self.add_me(queue)
@@ -330,7 +344,7 @@ class DAOTestCase(unittest.TestCase):
     def add_queue_skill(self, **kwargs):
         kwargs.setdefault('id', self._generate_int())
         kwargs.setdefault('catid', self._generate_int())
-        kwargs.setdefault('name', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+        kwargs.setdefault('name', self._random_name())
         kwargs.setdefault('description', '')
         queue_skill = QueueSkill(**kwargs)
         self.add_me(queue_skill)
@@ -338,8 +352,8 @@ class DAOTestCase(unittest.TestCase):
 
     def add_queue_skill_rule(self, **kwargs):
         kwargs.setdefault('id', self._generate_int())
-        kwargs.setdefault('name', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
-        kwargs.setdefault('rule', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+        kwargs.setdefault('name', self._random_name())
+        kwargs.setdefault('rule', self._random_name())
         queue_skill_rule = QueueSkillRule(**kwargs)
         self.add_me(queue_skill_rule)
         return queue_skill_rule
@@ -351,19 +365,19 @@ class DAOTestCase(unittest.TestCase):
         kwargs.setdefault('commented', 0)
         kwargs.setdefault('filename', 'queues.conf')
         kwargs.setdefault('category', 'general')
-        kwargs.setdefault('var_name', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
-        kwargs.setdefault('var_val', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+        kwargs.setdefault('var_name', self._random_name())
+        kwargs.setdefault('var_val', self._random_name())
 
         static_queue = StaticQueue(**kwargs)
         self.add_me(static_queue)
         return static_queue
 
     def add_queue_member(self, **kwargs):
-        kwargs.setdefault('queue_name', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
-        kwargs.setdefault('interface', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+        kwargs.setdefault('queue_name', self._random_name())
+        kwargs.setdefault('interface', self._random_name())
         kwargs.setdefault('usertype', random.choice(['user', 'agent']))
         kwargs.setdefault('category', random.choice(['group', 'queue']))
-        kwargs.setdefault('channel', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+        kwargs.setdefault('channel', self._random_name())
         kwargs.setdefault('userid', self._generate_int())
 
         queue_member = QueueMember(**kwargs)
@@ -421,7 +435,7 @@ class DAOTestCase(unittest.TestCase):
 
     def add_usercustom(self, **kwargs):
         kwargs.setdefault('id', self._generate_int())
-        kwargs.setdefault('interface', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+        kwargs.setdefault('interface', self._random_name())
         kwargs.setdefault('category', 'user')
 
         usercustom = UserCustomSchema(**kwargs)
@@ -527,8 +541,8 @@ class DAOTestCase(unittest.TestCase):
         kwargs.setdefault('commented', 0)
         kwargs.setdefault('filename', 'musiconhold.conf')
         kwargs.setdefault('category', 'default')
-        kwargs.setdefault('var_name', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
-        kwargs.setdefault('var_val', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+        kwargs.setdefault('var_name', self._random_name())
+        kwargs.setdefault('var_val', self._random_name())
 
         musiconhold = MusicOnHold(**kwargs)
         self.add_me(musiconhold)
@@ -541,8 +555,8 @@ class DAOTestCase(unittest.TestCase):
         kwargs.setdefault('commented', 0)
         kwargs.setdefault('filename', 'meetme.conf')
         kwargs.setdefault('category', 'general')
-        kwargs.setdefault('var_name', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
-        kwargs.setdefault('var_val', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+        kwargs.setdefault('var_name', self._random_name())
+        kwargs.setdefault('var_val', self._random_name())
 
         static_meetme = StaticMeetme(**kwargs)
         self.add_me(static_meetme)
@@ -555,8 +569,8 @@ class DAOTestCase(unittest.TestCase):
         kwargs.setdefault('commented', 0)
         kwargs.setdefault('filename', 'voicemail.conf')
         kwargs.setdefault('category', 'general')
-        kwargs.setdefault('var_name', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
-        kwargs.setdefault('var_val', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+        kwargs.setdefault('var_name', self._random_name())
+        kwargs.setdefault('var_val', self._random_name())
 
         static_voicemail = StaticVoicemail(**kwargs)
         self.add_me(static_voicemail)
@@ -569,8 +583,8 @@ class DAOTestCase(unittest.TestCase):
         kwargs.setdefault('commented', 0)
         kwargs.setdefault('filename', 'sip.conf')
         kwargs.setdefault('category', 'general')
-        kwargs.setdefault('var_name', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
-        kwargs.setdefault('var_val', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+        kwargs.setdefault('var_name', self._random_name())
+        kwargs.setdefault('var_val', self._random_name())
 
         static_iax = StaticIAX(**kwargs)
         self.add_me(static_iax)
@@ -583,8 +597,8 @@ class DAOTestCase(unittest.TestCase):
         kwargs.setdefault('commented', 0)
         kwargs.setdefault('filename', 'sip.conf')
         kwargs.setdefault('category', 'general')
-        kwargs.setdefault('var_name', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
-        kwargs.setdefault('var_val', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+        kwargs.setdefault('var_name', self._random_name())
+        kwargs.setdefault('var_val', self._random_name())
 
         static_sip = StaticSIP(**kwargs)
         self.add_me(static_sip)
@@ -593,10 +607,10 @@ class DAOTestCase(unittest.TestCase):
     def add_sip_authentication(self, **kwargs):
         kwargs.setdefault('id', self._generate_int())
         kwargs.setdefault('usersip_id', self._generate_int())
-        kwargs.setdefault('user', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+        kwargs.setdefault('user', self._random_name())
         kwargs.setdefault('secretmode', 'md5')
-        kwargs.setdefault('secret', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
-        kwargs.setdefault('realm', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
+        kwargs.setdefault('secret', self._random_name())
+        kwargs.setdefault('realm', self._random_name())
 
         sip_authentication = SIPAuthentication(**kwargs)
         self.add_me(sip_authentication)
@@ -652,4 +666,4 @@ class DAOTestCase(unittest.TestCase):
     _generate_int = itertools.count(1).next
 
     def _random_name(self, length=6):
-        return ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(length))
+        return ''.join(random.choice(string.lowercase) for _ in range(length))
