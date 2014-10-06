@@ -27,6 +27,7 @@ from xivo_dao.alchemy.features import Features
 from xivo_dao.alchemy.iaxcallnumberlimits import IAXCallNumberLimits
 from xivo_dao.alchemy.queuepenalty import QueuePenalty
 from xivo_dao.alchemy.queuepenaltychange import QueuePenaltyChange
+from xivo_dao.alchemy.func_key_dest_custom import FuncKeyDestCustom
 from xivo_dao.tests.test_dao import DAOTestCase
 
 from xivo_dao.data_handler.func_key.model import Hint
@@ -226,28 +227,71 @@ class TestSccpConfDAO(DAOTestCase):
 
         assert_that(sccp_device, contains_inanyorder(*expected_result))
 
-    def test_find_sccp_speeddial_settings(self):
-        number = '4567'
-        sccp_device = self.add_sccpdevice(line=number)
-        sccp_line = self.add_sccpline(cid_num=number)
-        ule = self.add_user_line_with_exten(protocol='sccp',
-                                            protocolid=sccp_line.id,
-                                            exten=number)
-        phonefunckey = self.add_function_key_to_user(iduserfeatures=ule.user_id,
-                                                     exten=number)
 
-        expected_result = [
-            {'user_id': ule.user_id,
-             'fknum': phonefunckey.fknum,
-             'exten': number,
-             'supervision': 0,
-             'label': phonefunckey.label,
-             'device': sccp_device.device}
-        ]
+class TestFindSccpSpeeddialSettings(DAOTestCase):
 
-        sccp_device = asterisk_conf_dao.find_sccp_speeddial_settings()
+    def test_given_no_func_key_then_returns_empty_list(self):
+        result = asterisk_conf_dao.find_sccp_speeddial_settings()
 
-        assert_that(sccp_device, contains_inanyorder(*expected_result))
+        assert_that(result, contains())
+
+    def test_given_custom_func_key_then_returns_converted_func_key(self):
+        exten = '1000'
+        func_key_exten = '2000'
+        context = 'default'
+
+        user_row, sccp_device_row = self.add_user_with_sccp_device(exten=exten, context=context)
+        func_key_mapping_row = self.add_custom_func_key_to_user(user_row, func_key_exten)
+
+        result = asterisk_conf_dao.find_sccp_speeddial_settings()
+
+        expected = {'user_id': user_row.id,
+                    'fknum': func_key_mapping_row.position,
+                    'exten': func_key_exten,
+                    'supervision': int(func_key_mapping_row.blf),
+                    'label': func_key_mapping_row.label,
+                    'device': sccp_device_row.device}
+
+        assert_that(result, contains(expected))
+
+    def add_user_with_sccp_device(self, exten, context):
+        user_row = self.add_user()
+        sccp_device_row = self.add_sccpdevice(line=exten)
+        sccp_line_row = self.add_sccpline(name=exten,
+                                          cid_num=exten,
+                                          context=context)
+        extension_row = self.add_extension(exten=exten,
+                                           context=context)
+        line_row = self.add_line(context=context,
+                                 protocol='sccp',
+                                 protocolid=sccp_line_row.id)
+
+        self.add_user_line(user_id=user_row.id,
+                           line_id=line_row.id,
+                           extension_id=extension_row.id)
+
+        return user_row, sccp_device_row
+
+    def add_custom_func_key_to_user(self, user_row, func_key_exten):
+        func_key_type_row = self.add_func_key_type(name='speeddial')
+        func_key_dest_row = self.add_func_key_destination_type(id=10, name='custom')
+        func_key_row = self.add_func_key(type_id=func_key_type_row.id,
+                                         destination_type_id=func_key_dest_row.id)
+        self.add_func_key_dest_custom(func_key_id=func_key_row.id,
+                                      destination_type_id=func_key_dest_row.id,
+                                      exten=func_key_exten)
+        func_key_mapping = self.add_func_key_mapping(template_id=user_row.func_key_private_template_id,
+                                                     func_key_id=func_key_row.id,
+                                                     destination_type_id=func_key_dest_row.id,
+                                                     label='mylabel',
+                                                     position=2,
+                                                     blf=True)
+        return func_key_mapping
+
+    def add_func_key_dest_custom(self, **kwargs):
+        row = FuncKeyDestCustom(**kwargs)
+        self.add_me(row)
+        return row
 
 
 @patch('xivo_dao.data_handler.func_key.services.find_all_hints')

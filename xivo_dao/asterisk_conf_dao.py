@@ -18,7 +18,7 @@
 from collections import defaultdict
 
 from sqlalchemy.sql.expression import and_, or_, literal, cast
-from sqlalchemy.types import VARCHAR
+from sqlalchemy.types import VARCHAR, Integer
 
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.usersip import UserSIP
@@ -56,6 +56,9 @@ from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.queueskill import QueueSkill
 from xivo_dao.alchemy.agentqueueskill import AgentQueueSkill
 from xivo_dao.alchemy.queuepenaltychange import QueuePenaltyChange
+from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
+from xivo_dao.alchemy.func_key_dest_custom import FuncKeyDestCustom
+
 
 from xivo_dao.data_handler.func_key import services as func_key_services
 
@@ -144,29 +147,40 @@ def find_sccp_device_settings(session):
 
 @daosession
 def find_sccp_speeddial_settings(session):
-    rows = (session.query(PhoneFunckey,
-                          UserLine.user_id,
-                          SCCPDevice.device)
-            .filter(and_(UserLine.user_id == PhoneFunckey.iduserfeatures,
-                         UserLine.line_id == LineFeatures.id,
-                         UserLine.main_user == True,
-                         LineFeatures.protocol == 'sccp',
-                         LineFeatures.number == SCCPDevice.line))
-            .all())
+    query = (session.query(FuncKeyMapping.position.label('fknum'),
+                           FuncKeyMapping.label.label('label'),
+                           cast(FuncKeyMapping.blf, Integer).label('supervision'),
+                           FuncKeyDestCustom.exten.label('exten'),
+                           UserFeatures.id.label('user_id'),
+                           SCCPDevice.device.label('device'))
+             .join(UserFeatures,
+                   FuncKeyMapping.template_id == UserFeatures.func_key_private_template_id)
+             .join(FuncKeyDestCustom,
+                   FuncKeyDestCustom.func_key_id == FuncKeyMapping.func_key_id)
+             .join(UserLine,
+                   and_(
+                       UserLine.user_id == UserFeatures.id,
+                       UserLine.main_user == True))
+             .join(LineFeatures,
+                   UserLine.line_id == LineFeatures.id)
+             .join(SCCPLine,
+                   and_(
+                       LineFeatures.protocol == 'sccp',
+                       LineFeatures.protocolid == SCCPLine.id))
+             .join(SCCPDevice,
+                   SCCPLine.name == SCCPDevice.line)
+             .filter(LineFeatures.commented == 0)
+             )
 
-    res = []
-    for row in rows:
-        phonefunckey, user_id, device = row
-        tmp = {}
-        tmp['exten'] = phonefunckey.exten
-        tmp['fknum'] = phonefunckey.fknum
-        tmp['label'] = phonefunckey.label
-        tmp['supervision'] = phonefunckey.supervision
-        tmp['user_id'] = user_id
-        tmp['device'] = device
-        res.append(tmp)
+    keys = [{'exten': row.exten,
+            'fknum': row.fknum,
+            'label': row.label,
+            'supervision': row.supervision,
+            'user_id': row.user_id,
+            'device': row.device}
+            for row in query]
 
-    return res
+    return keys
 
 
 @daosession
