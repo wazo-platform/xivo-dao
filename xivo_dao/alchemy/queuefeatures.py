@@ -49,7 +49,7 @@ class QueueFeatures(Base):
     write_calling = Column(Integer, nullable=False, server_default='0')
     url = Column(String(255), nullable=False, server_default='')
     announceoverride = Column(String(128), nullable=False, server_default='')
-    timeout = Column(Integer, nullable=False, server_default='0')
+    timeout = Column(Integer)
     preprocess_subroutine = Column(String(39))
     announce_holdtime = Column(Integer, nullable=False, server_default='0')
     waittime = Column(Integer)
