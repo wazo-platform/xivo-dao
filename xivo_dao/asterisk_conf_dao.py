@@ -172,13 +172,15 @@ def find_sccp_speeddial_settings(session):
              .filter(LineFeatures.commented == 0)
              )
 
-    for row in query:
-        yield {'exten': row.exten,
-               'fknum': row.fknum,
-               'label': row.label,
-               'supervision': row.supervision,
-               'user_id': row.user_id,
-               'device': row.device}
+    keys = [{'exten': row.exten,
+            'fknum': row.fknum,
+            'label': row.label,
+            'supervision': row.supervision,
+            'user_id': row.user_id,
+            'device': row.device}
+            for row in query]
+
+    return keys
 
 
 @daosession
