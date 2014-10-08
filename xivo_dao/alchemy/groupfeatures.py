@@ -39,6 +39,6 @@ class GroupFeatures(Base):
     transfer_call = Column(Integer, nullable=False, server_default='0')
     write_caller = Column(Integer, nullable=False, server_default='0')
     write_calling = Column(Integer, nullable=False, server_default='0')
-    timeout = Column(Integer, nullable=False, server_default='0')
+    timeout = Column(Integer)
     preprocess_subroutine = Column(String(39))
     deleted = Column(Integer, nullable=False, server_default='0')
