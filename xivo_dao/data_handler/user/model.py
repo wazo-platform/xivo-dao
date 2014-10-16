@@ -76,6 +76,7 @@ class UserDbConverter(DatabaseConverter):
 
 
 class User(NewModel):
+    __name__ = 'user'
 
     MANDATORY = [
         'firstname',
@@ -135,3 +136,18 @@ class User(NewModel):
 
 
 db_converter = UserDbConverter()
+
+
+class UserDirectoryView(NewModel):
+    __name__ = 'user'
+
+    FIELDS = [
+        'id',
+        'line_id',
+        'agent_id',
+        'firstname',
+        'lastname',
+        'exten',
+        'mobile_phone_number'
+    ]
+    _RELATION = {}

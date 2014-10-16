@@ -70,6 +70,7 @@ outside_context_range = FormattedError(InputError, "Extension '{}' is outside of
 invalid_func_key_type = FormattedError(InputError, "FuncKey type '{}' does not exist")
 invalid_destination_type = FormattedError(InputError, "FuncKey destination type '{}' does not exist")
 param_not_found = FormattedError(InputError, "field '{}': {} was not found")
+invalid_query_parameter = FormattedError(InputError, "parameter '{}': '{}' is not valid")
 
 not_found = FormattedError(NotFoundError, "{} was not found")
 

@@ -184,11 +184,15 @@ class DAOTestCase(unittest.TestCase):
         kwargs.setdefault('commented_line', 0)
         kwargs.setdefault('device', 1)
         kwargs.setdefault('voicemail_id', None)
+        kwargs.setdefault('agentid', None)
+        kwargs.setdefault('mobilephonenumber', '+14184765458')
 
         user = self.add_user(firstname=kwargs['firstname'],
                              lastname=kwargs['lastname'],
                              callerid=kwargs['callerid'],
-                             voicemailid=kwargs['voicemail_id'])
+                             voicemailid=kwargs['voicemail_id'],
+                             mobilephonenumber=kwargs['mobilephonenumber'],
+                             agentid=kwargs['agentid'])
         line = self.add_line(context=kwargs['context'],
                              protocol=kwargs['protocol'],
                              protocolid=kwargs['protocolid'],
