@@ -49,7 +49,3 @@ def find_all_fwd_busy(user_id):
 
 def _filter_fwd_type(user_id, fwd_type):
     return [fwd.number or '' for fwd in dao.find_all_forwards(user_id, fwd_type)]
-
-
-def find_all_hints(context):
-    return dao.find_all_hints(context)

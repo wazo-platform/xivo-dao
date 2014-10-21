@@ -20,7 +20,7 @@ from hamcrest import assert_that, equal_to, contains
 
 from xivo_dao.tests.test_case import TestCase
 from xivo_dao.data_handler.func_key import services
-from xivo_dao.data_handler.func_key.model import FuncKey, Forward, Hint
+from xivo_dao.data_handler.func_key.model import FuncKey, Forward
 
 
 class TestFuncKeyService(TestCase):
@@ -119,18 +119,3 @@ class TestFuncKeyService(TestCase):
 
         find_all_forwards.assert_called_once_with(user_id, fwd_type)
         assert_that(result, contains(expected_number, ''))
-
-    @patch('xivo_dao.data_handler.func_key.dao.find_all_hints')
-    def test_find_all_hints(self, find_all_hints):
-        context = 'mycontext'
-        hint = Hint(user_id=1,
-                    exten='1234',
-                    type='enablevm',
-                    number=None)
-
-        find_all_hints.return_value = [hint]
-
-        result = services.find_all_hints(context)
-
-        assert_that(result, contains(hint))
-        find_all_hints.assert_called_once_with(context)
