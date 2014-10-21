@@ -55,5 +55,5 @@ class ForwardTypeConverter(object):
         return self.fwd_types[model_type]
 
 
-Hint = namedtuple('Hint', ['user_id', 'exten', 'type', 'number'])
+Hint = namedtuple('Hint', ['user_id', 'extension', 'argument'])
 Forward = namedtuple('Forward', ['user_id', 'type', 'number'])
