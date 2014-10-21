@@ -362,8 +362,8 @@ def find_pickup_members(session, protocol):
         Pickup, Pickup.id == PickupMember.pickupid,
     ).filter(
         and_(
-             Pickup.commented == 0,
-             LineFeatures.protocol == protocol,
+            Pickup.commented == 0,
+            LineFeatures.protocol == protocol,
         )
     )
 
