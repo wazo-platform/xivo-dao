@@ -19,135 +19,26 @@ from hamcrest import assert_that, equal_to, none, contains, contains_inanyorder,
 from mock import patch
 
 from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao.data_handler.func_key.tests.test_helpers import FuncKeyHelper
 
 from xivo_dao.data_handler.exception import NotFoundError, DataError
 from xivo_dao.data_handler.func_key.model import FuncKey, Hint, Forward
 from xivo_dao.data_handler.func_key import dao
 from xivo_dao.alchemy.func_key import FuncKey as FuncKeySchema
-from xivo_dao.alchemy.func_key_dest_service import FuncKeyDestService as FuncKeyDestServiceSchema
-from xivo_dao.alchemy.func_key_dest_conference import FuncKeyDestConference as FuncKeyDestConferenceSchema
-from xivo_dao.alchemy.func_key_dest_forward import FuncKeyDestForward as FuncKeyDestForwardSchema
-from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup as FuncKeyDestGroupSchema
-from xivo_dao.alchemy.func_key_dest_queue import FuncKeyDestQueue as FuncKeyDestQueueSchema
-from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser as FuncKeyDestUserSchema
 from xivo_dao.tests.helpers.session import mocked_dao_session
 
 
-class TestFuncKeyDao(DAOTestCase):
-
-    destinations = {
-        'user': (FuncKeyDestUserSchema, 'user_id', 1),
-        'group': (FuncKeyDestGroupSchema, 'group_id', 2),
-        'queue': (FuncKeyDestQueueSchema, 'queue_id', 3),
-        'conference': (FuncKeyDestConferenceSchema, 'conference_id', 4),
-        'service': (FuncKeyDestServiceSchema, 'extension_id', 5),
-        'forward': (FuncKeyDestForwardSchema, 'extension_id', 6),
-    }
+class TestFuncKeyDao(DAOTestCase, FuncKeyHelper):
 
     def setUp(self):
         super(TestFuncKeyDao, self).setUp()
-        self.setup_types()
-        self.setup_destination_types()
-
-    def setup_types(self):
-        row = self.add_func_key_type(name='speeddial')
-        self.speeddial_id = row.id
-
-    def setup_destination_types(self):
-        for name, destination in self.destinations.items():
-            self.add_func_key_destination_type(id=destination[2],
-                                               name=name)
-
-    def add_extenfeatures(self, exten, typeval):
-        extension_row = self.add_extension(exten=exten,
-                                           type='extenfeatures',
-                                           context='xivo-features',
-                                           typeval=typeval)
-        return extension_row
-
-    def add_user_destination(self, dest_id):
-        return self._add_destination('user', dest_id)
-
-    def add_group_destination(self, dest_id):
-        return self._add_destination('group', dest_id)
-
-    def add_queue_destination(self, dest_id):
-        return self._add_destination('queue', dest_id)
-
-    def add_conference_destination(self, dest_id):
-        return self._add_destination('conference', dest_id)
-
-    def add_service_destination(self, dest_id):
-        return self._add_destination('service', dest_id)
-
-    def add_forward_destination(self, extension_id, number=None):
-        destination_type_id = 6
-        func_key_row = self.create_func_key(destination_type_id)
-        destination_row = FuncKeyDestForwardSchema(func_key_id=func_key_row.id,
-                                                   extension_id=extension_id,
-                                                   destination_type_id=destination_type_id,
-                                                   number=number)
-        self.add_me(destination_row)
-        return destination_row
-
-    def create_func_key(self, dest_type_id):
-        return self.add_func_key(type_id=self.speeddial_id,
-                                 destination_type_id=dest_type_id)
-
-    def create_forward_func_key(self, exten, fwd_type, number=None):
-        extension_row = self.add_extenfeatures(exten, fwd_type)
-        return self.add_forward_destination(extension_row.id, number)
-
-    def create_service_func_key(self, exten, service_type):
-        extension_row = self.add_extenfeatures(exten, service_type)
-        return self.add_service_destination(extension_row.id)
-
-    def create_user_func_key(self):
-        user_row = self.add_user()
-        return self.add_user_destination(user_row.id)
-
-    def create_group_func_key(self):
-        group_row = self.add_group()
-        return self.add_group_destination(group_row.id)
-
-    def create_queue_func_key(self):
-        queue_row = self.add_queuefeatures()
-        return self.add_queue_destination(queue_row.id)
-
-    def create_conference_func_key(self):
-        conference_row = self.add_meetmefeatures()
-        return self.add_conference_destination(conference_row.id)
+        self.setup_funckeys()
 
     def row_to_model(self, row):
         return FuncKey(id=row.func_key_id,
                        type='speeddial',
                        destination=self._destination_name(row.destination_type_id),
                        destination_id=self._destination_id(row))
-
-    def find_destination(self, destination, destination_id):
-        schema, column_name, _ = self.destinations[destination]
-        column = getattr(schema, column_name)
-
-        row = (self.session.query(schema)
-               .filter(column == destination_id)
-               .first())
-
-        return row
-
-    def assert_destination_deleted(self, destination, destination_id):
-        row = self.find_destination(destination, destination_id)
-        assert_that(row, none())
-
-    def _add_destination(self, dest_type, dest_id):
-        schema, column, destination_type_id = self.destinations[dest_type]
-
-        func_key_row = self.create_func_key(destination_type_id)
-
-        destination_row = schema(**{'func_key_id': func_key_row.id,
-                                    column: dest_id})
-        self.add_me(destination_row)
-
-        return destination_row
 
     def _destination_name(self, type_id):
         for name, destination in self.destinations.items():
