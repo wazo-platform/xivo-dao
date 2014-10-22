@@ -32,12 +32,13 @@ class FuncKeyDestAgent(Base):
         ForeignKeyConstraint(['agent_id'],
                              ['agentfeatures.id']),
         UniqueConstraint('agent_id', 'action'),
-        CheckConstraint('destination_type_id = 11')
+        CheckConstraint('destination_type_id = 11'),
+        CheckConstraint("action IN ('login', 'logoff', 'toggle')"),
     )
 
     func_key_id = Column(Integer)
     destination_type_id = Column(Integer, server_default="11")
-    agent_id = Column(Integer)
+    agent_id = Column(Integer, nullable=False)
     action = Column(String(10), nullable=False)
 
     func_key = relationship("FuncKey")
