@@ -59,16 +59,16 @@ class TestHints(DAOTestCase, FuncKeyHelper):
         self.setup_funckeys()
         self.context = 'mycontext'
 
-    def add_user_and_func_key(self, protocol='sip', protocol_id=None, exten='1000', commented=0):
+    def add_user_and_func_key(self, protocol='sip', protocol_id=None, exten='1000', commented=0, enablehint=1):
         if not protocol_id:
             protocol_id = self.add_usersip().id
-        user_row = self.add_user_line_extension(protocol, protocol_id, exten, commented)
+        user_row = self.add_user_line_extension(protocol, protocol_id, exten, commented, enablehint)
         self.add_user_destination(user_row.id)
 
         return user_row
 
-    def add_user_line_extension(self, protocol, protocol_id, exten, commented=0):
-        user_row = self.add_user()
+    def add_user_line_extension(self, protocol, protocol_id, exten, commented=0, enablehint=1):
+        user_row = self.add_user(enablehint=enablehint)
         line_row = self.add_line(context=self.context,
                                  protocol=protocol,
                                  protocolid=protocol_id,
@@ -116,14 +116,17 @@ class TestUserHints(TestHints):
         assert_that(hint_dao.user_hints(self.context), contains(expected))
 
     def test_given_user_with_commented_line_then_returns_empty_list(self):
-        custom_row = self.add_usercustom(interface='zzzzzz', context=self.context)
-        self.add_user_and_func_key('custom', custom_row.id, '1002', commented=1)
+        self.add_user_and_func_key(exten='1002', commented=1)
+
+        assert_that(hint_dao.user_hints(self.context), contains())
+
+    def test_given_user_with_hints_disabled_then_returns_empty_list(self):
+        self.add_user_and_func_key(exten='1003', enablehint=0)
 
         assert_that(hint_dao.user_hints(self.context), contains())
 
     def test_given_user_when_querying_different_context_then_returns_empty_list(self):
-        custom_row = self.add_usercustom(interface='zzzzzz', context=self.context)
-        self.add_user_and_func_key('custom', custom_row.id, '1002')
+        self.add_user_and_func_key(exten='1004')
 
         assert_that(hint_dao.user_hints('othercontext'), contains())
 

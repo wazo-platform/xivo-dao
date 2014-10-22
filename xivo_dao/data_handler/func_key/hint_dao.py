@@ -106,6 +106,7 @@ def user_hints(session, context):
              .filter(UserLine.main_line == True)
              .filter(LineFeatures.commented == 0)
              .filter(Extension.context == context)
+             .filter(UserFeatures.enablehint == 1)
              )
 
     return tuple(Hint(user_id=row.user_id,
