@@ -178,7 +178,7 @@ def agent_hints(session, context):
             FROM
                 (VALUES
                     ('login', 'agentstaticlogin'),
-                    ('logoff', 'agentstaticlogin'),
+                    ('logoff', 'agentstaticlogoff'),
                     ('toggle', 'agentstaticlogtoggle')
                 )
                 AS action_tbl(agent_action, extension_action)
