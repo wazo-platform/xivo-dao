@@ -43,7 +43,7 @@ from xivo_dao.data_handler.func_key.model import Hint
 
 def _find_extenfeatures(session, typeval):
     return (session.query(Extension.exten)
-            .filter(Extension.context == 'xivo-extrafeatures')
+            .filter(Extension.context == 'xivo-features')
             .filter(Extension.type == 'extenfeatures')
             .filter(Extension.typeval == typeval)
             .scalar())

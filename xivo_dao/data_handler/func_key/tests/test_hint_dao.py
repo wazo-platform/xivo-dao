@@ -29,7 +29,7 @@ from xivo_dao.data_handler.func_key.model import Hint
 class TestProgfunckeyExtension(DAOTestCase):
 
     def test_given_progfunc_key_extension_then_returns_cleaned_progfunckey(self):
-        self.add_extension(context='xivo-extrafeatures',
+        self.add_extension(context='xivo-features',
                            exten='_*735.',
                            type='extenfeatures',
                            typeval='phoneprogfunckey')
@@ -42,7 +42,7 @@ class TestProgfunckeyExtension(DAOTestCase):
 class TestCalluserExtension(DAOTestCase):
 
     def test_given_calluser_extension_then_returns_cleaned_calluser(self):
-        self.add_extension(context='xivo-extrafeatures',
+        self.add_extension(context='xivo-features',
                            exten='_*666.',
                            type='extenfeatures',
                            typeval='calluser')
@@ -317,7 +317,7 @@ class TestBSFilterHints(TestHints):
 
     def setUp(self):
         super(TestBSFilterHints, self).setUp()
-        self.add_extension(context='xivo-extrafeatures',
+        self.add_extension(context='xivo-features',
                            exten='_*37.',
                            type='extenfeatures',
                            typeval='bsfilter')
