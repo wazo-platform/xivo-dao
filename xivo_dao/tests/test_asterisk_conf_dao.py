@@ -30,8 +30,6 @@ from xivo_dao.alchemy.queuepenaltychange import QueuePenaltyChange
 from xivo_dao.alchemy.func_key_dest_custom import FuncKeyDestCustom
 from xivo_dao.tests.test_dao import DAOTestCase
 
-from xivo_dao.data_handler.func_key.model import Hint
-
 
 @contextmanager
 def warning_filter(level):
@@ -333,122 +331,6 @@ class TestFindExtenProgfunckeysSettings(DAOTestCase):
 
         self.add_function_key_to_user(**params)
 
-    def test_given_user_has_no_func_key_then_returns_empty_list(self, find_all_hints):
-        find_all_hints.return_value = []
-
-        result = asterisk_conf_dao.find_exten_progfunckeys_settings(self.context)
-
-        assert_that(result, contains())
-
-    def test_given_func_key_has_no_supervision_then_returns_empty_list(self, find_all_hints):
-        find_all_hints.return_value = []
-        user_row = self.create_user_and_deps()
-        self.add_old_func_key_to_user(user_row.id, '*26', 'callrecord', supervision=0)
-
-        result = asterisk_conf_dao.find_exten_progfunckeys_settings(self.context)
-
-        assert_that(result, contains())
-
-    def test_given_func_key_is_not_a_prog_func_key_then_returns_empty_list(self, find_all_hints):
-        find_all_hints.return_value = []
-        user_row = self.create_user_and_deps()
-        self.add_old_func_key_to_user(user_row.id, '*98', 'vmusermsg', supervision=1, progfunckey=0)
-
-        result = asterisk_conf_dao.find_exten_progfunckeys_settings(self.context)
-
-        assert_that(result, contains())
-
-    def test_given_user_has_func_key_to_activate_voicemail_then_returns_hint(self, find_all_hints):
-        user_row = self.create_user_and_deps()
-        find_all_hints.return_value = [Hint(user_id=user_row.id,
-                                            exten='*90',
-                                            type='enablevm',
-                                            number=None)]
-
-        expected = {'user_id': user_row.id,
-                    'exten': None,
-                    'typeextenumbers': 'extenfeatures',
-                    'typevalextenumbers': 'enablevm',
-                    'typeextenumbersright': None,
-                    'typevalextenumbersright': None,
-                    'leftexten': '*90'}
-
-        result = asterisk_conf_dao.find_exten_progfunckeys_settings(self.context)
-        find_all_hints.assert_called_once_with(self.context)
-
-        assert_that(result, contains(has_entries(expected)))
-
-    def test_given_user_has_func_key_to_activate_forward_then_returns_hint(self, find_all_hints):
-        user_row = self.create_user_and_deps()
-        find_all_hints.return_value = [Hint(user_id=user_row.id,
-                                            exten='_*21.',
-                                            type='fwdunc',
-                                            number='1234')]
-
-        expected = {'user_id': user_row.id,
-                    'exten': '1234',
-                    'typeextenumbers': 'extenfeatures',
-                    'typevalextenumbers': 'fwdunc',
-                    'typeextenumbersright': None,
-                    'typevalextenumbersright': None,
-                    'leftexten': '_*21.'}
-
-        result = asterisk_conf_dao.find_exten_progfunckeys_settings(self.context)
-        find_all_hints.assert_called_once_with(self.context)
-
-        assert_that(result, contains(has_entries(expected)))
-
-    def test_given_user_has_new_func_key_and_old_func_key_then_returns_both_hints(self, find_all_hints):
-        user_row = self.create_user_and_deps()
-        self.add_old_func_key_to_user(user_row.id, '*26', 'callrecord')
-        find_all_hints.return_value = [Hint(user_id=user_row.id,
-                                            exten='*90',
-                                            type='enablevm',
-                                            number=None)]
-
-        new_func_key = {'user_id': user_row.id,
-                        'exten': None,
-                        'typeextenumbers': 'extenfeatures',
-                        'typevalextenumbers': 'enablevm',
-                        'typeextenumbersright': None,
-                        'typevalextenumbersright': None,
-                        'leftexten': '*90'}
-
-        old_func_key = {'user_id': user_row.id,
-                        'exten': None,
-                        'typeextenumbers': 'extenfeatures',
-                        'typevalextenumbers': 'callrecord',
-                        'typeextenumbersright': None,
-                        'typevalextenumbersright': None,
-                        'leftexten': '*26'}
-
-        result = asterisk_conf_dao.find_exten_progfunckeys_settings(self.context)
-
-        assert_that(result, contains_inanyorder(
-            has_entries(new_func_key),
-            has_entries(old_func_key)))
-
-    def test_given_func_key_is_in_different_context_then_no_hint_generated(self, find_all_hints):
-        find_all_hints.return_value = []
-        user_row = self.create_user_and_deps()
-        self.add_old_func_key_to_user(user_row.id, '*90', 'enablevm')
-
-        new_func_key = {'user_id': user_row.id,
-                        'exten': None,
-                        'typeextenumbers': 'extenfeatures',
-                        'typevalextenumbers': 'enablevm',
-                        'typeextenumbersright': None,
-                        'typevalextenumbersright': None,
-                        'leftexten': '*90'}
-
-        result = asterisk_conf_dao.find_exten_progfunckeys_settings(self.context)
-
-        assert_that(result, contains_inanyorder(has_entries(new_func_key)))
-
-        result = asterisk_conf_dao.find_exten_progfunckeys_settings('some-other-context')
-
-        assert_that(result, contains(), 'No hint should be generated in some other context')
-
 
 class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
 
@@ -592,24 +474,6 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
 
         assert_that(featuremap, contains_inanyorder(*expected_result))
 
-    def test_find_exten_progfunckeys_custom_settings(self):
-        number = '4567'
-        ule = self.add_user_line_with_exten(exten=number)
-        self.add_function_key_to_user(iduserfeatures=ule.user_id,
-                                      exten=number,
-                                      typeextenumbers=None,
-                                      typevalextenumbers=None,
-                                      supervision=1,
-                                      progfunckey=0)
-
-        expected_result = [
-            {'exten': number}
-        ]
-
-        funckeys = asterisk_conf_dao.find_exten_progfunckeys_custom_settings(ule.line.context)
-
-        assert_that(funckeys, contains_inanyorder(*expected_result))
-
     def test_find_exten_conferences_settings(self):
         conference = self.add_meetmefeatures(context='test')
         expected_result = [{'exten': conference.confno}]
@@ -744,36 +608,6 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         extensions = asterisk_conf_dao.find_exten_settings('default')
 
         assert_that(extensions, contains_inanyorder(*expected_result))
-
-    def test_find_exten_hints_settings_when_line_enabled(self):
-        context = 'tyoyoi'
-        vm = self.add_voicemail(context=context)
-        ule = self.add_user_line_with_exten(context=context,
-                                            voicemail_id=vm.uniqueid)
-
-        expected_result = [
-            {'protocol': ule.line.protocol,
-             'name': ule.line.name,
-             'voicemail_id': vm.uniqueid,
-             'number': ule.extension.exten,
-             'user_id': ule.user_id,
-             'enablevoicemail': 0}
-        ]
-
-        extensions = asterisk_conf_dao.find_exten_hints_settings(context)
-
-        assert_that(extensions, contains_inanyorder(*expected_result))
-
-    def test_find_exten_hints_settings_when_line_disabled(self):
-        context = 'mycontext'
-        vm = self.add_voicemail(context=context)
-        self.add_user_line_with_exten(context=context,
-                                      voicemail_id=vm.uniqueid,
-                                      commented_line=1)
-
-        extensions = asterisk_conf_dao.find_exten_hints_settings(context)
-
-        assert_that(extensions, contains())
 
     def test_find_context_settings(self):
         context1 = self.add_context()

@@ -18,7 +18,7 @@
 from collections import defaultdict
 
 from sqlalchemy.sql.expression import and_, or_, literal, cast
-from sqlalchemy.types import VARCHAR, Integer
+from sqlalchemy.types import Integer
 
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.usersip import UserSIP
@@ -38,7 +38,6 @@ from xivo_dao.alchemy.voicemail import Voicemail
 from xivo_dao.alchemy.context import Context
 from xivo_dao.alchemy.contextinclude import ContextInclude
 from xivo_dao.alchemy.extension import Extension
-from xivo_dao.alchemy.phonefunckey import PhoneFunckey
 from xivo_dao.alchemy.sccpdevice import SCCPDevice
 from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.userfeatures import UserFeatures
@@ -58,9 +57,6 @@ from xivo_dao.alchemy.agentqueueskill import AgentQueueSkill
 from xivo_dao.alchemy.queuepenaltychange import QueuePenaltyChange
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
 from xivo_dao.alchemy.func_key_dest_custom import FuncKeyDestCustom
-
-
-from xivo_dao.data_handler.func_key import services as func_key_services
 
 
 @daosession
@@ -197,81 +193,6 @@ def find_general_features_settings(session):
     return [row.todict() for row in rows]
 
 
-def find_exten_progfunckeys_settings(context_name):
-    old_progfunckeys = _find_old_progfunckeys(context_name)
-    new_progfunckeys = _find_new_progfunckeys(context_name)
-    return old_progfunckeys + new_progfunckeys
-
-
-def _find_new_progfunckeys(context_name):
-    hints = func_key_services.find_all_hints(context_name)
-
-    return [{'user_id': hint.user_id,
-             'leftexten': hint.exten,
-             'typeextenumbers': 'extenfeatures',
-             'typevalextenumbers': hint.type,
-             'typeextenumbersright': None,
-             'typevalextenumbersright': None,
-             'exten': hint.number}
-            for hint in hints]
-
-
-@daosession
-def _find_old_progfunckeys(session, context_name):
-    rows = (session.query(PhoneFunckey.iduserfeatures,
-                          PhoneFunckey.exten,
-                          PhoneFunckey.typeextenumbers,
-                          PhoneFunckey.typevalextenumbers,
-                          PhoneFunckey.typeextenumbersright,
-                          PhoneFunckey.typevalextenumbersright,
-                          Extension.exten.label('leftexten'))
-            .filter(and_(UserLine.user_id == PhoneFunckey.iduserfeatures,
-                         UserLine.main_user == True,
-                         UserLine.main_line == True,
-                         UserLine.line_id == LineFeatures.id,
-                         LineFeatures.context == context_name,
-                         PhoneFunckey.typeextenumbers != None,
-                         PhoneFunckey.typevalextenumbers != None,
-                         PhoneFunckey.supervision == 1,
-                         PhoneFunckey.progfunckey == 1,
-                         cast(PhoneFunckey.typeextenumbers, VARCHAR) == cast(Extension.type, VARCHAR),
-                         PhoneFunckey.typevalextenumbers != 'user',
-                         PhoneFunckey.typevalextenumbers == Extension.typeval))
-            .all())
-
-    res = []
-    for row in rows:
-        user_id, exten, typeextenumbers, typevalextenumbers, typeextenumbersright, typevalextenumbersright, leftexten = row
-        tmp = {}
-        tmp['user_id'] = user_id
-        tmp['exten'] = exten
-        tmp['typeextenumbers'] = typeextenumbers
-        tmp['typevalextenumbers'] = typevalextenumbers
-        tmp['typeextenumbersright'] = typeextenumbersright
-        tmp['typevalextenumbersright'] = typevalextenumbersright
-        tmp['leftexten'] = leftexten
-        res.append(tmp)
-
-    return res
-
-
-@daosession
-def find_exten_progfunckeys_custom_settings(session, context_name):
-    rows = (session.query(PhoneFunckey.exten)
-            .filter(and_(UserLine.user_id == PhoneFunckey.iduserfeatures,
-                         UserLine.line_id == LineFeatures.id,
-                         UserLine.main_user == True,
-                         UserLine.main_line == True,
-                         LineFeatures.context == context_name,
-                         PhoneFunckey.typeextenumbers == None,
-                         PhoneFunckey.typevalextenumbers == None,
-                         PhoneFunckey.supervision == 1,
-                         PhoneFunckey.progfunckey == 0))
-            .all())
-
-    return [{'exten': exten} for (exten,) in rows]
-
-
 @daosession
 def find_exten_conferences_settings(session, context_name):
     rows = (session.query(MeetmeFeatures.confno)
@@ -319,39 +240,6 @@ def find_exten_settings(session, context_name):
             .all())
 
     return [row.todict() for row in rows]
-
-
-@daosession
-def find_exten_hints_settings(session, context_name):
-    rows = (session.query(UserFeatures.id,
-                          UserFeatures.enablevoicemail,
-                          LineFeatures.number,
-                          LineFeatures.name,
-                          LineFeatures.protocol,
-                          Voicemail.uniqueid)
-            .join(UserLine, and_(UserLine.user_id == UserFeatures.id,
-                                 UserLine.main_user == True,
-                                 UserLine.main_line == True))
-            .join(LineFeatures, UserLine.line_id == LineFeatures.id)
-            .outerjoin(Voicemail, UserFeatures.voicemailid == Voicemail.uniqueid)
-            .filter(and_(LineFeatures.context == context_name,
-                         LineFeatures.commented == 0,
-                         UserFeatures.enablehint == 1))
-            .all())
-
-    res = []
-    for row in rows:
-        user_id, enablevoicemail, number, name, protocol, voicemail_id = row
-        tmp = {}
-        tmp['user_id'] = user_id
-        tmp['enablevoicemail'] = enablevoicemail
-        tmp['number'] = number
-        tmp['name'] = name
-        tmp['protocol'] = protocol
-        tmp['voicemail_id'] = voicemail_id
-        res.append(tmp)
-
-    return res
 
 
 @daosession
@@ -474,8 +362,8 @@ def find_pickup_members(session, protocol):
         Pickup, Pickup.id == PickupMember.pickupid,
     ).filter(
         and_(
-             Pickup.commented == 0,
-             LineFeatures.protocol == protocol,
+            Pickup.commented == 0,
+            LineFeatures.protocol == protocol,
         )
     )
 
