@@ -328,9 +328,11 @@ class TestBSFilterHints(TestHints):
     def create_boss_and_secretary(self, commented=0):
         boss_row = self.add_user_and_func_key(exten='1000')
         secretary_row = self.add_user_and_func_key(exten='1001')
+
         callfilter_row = self.add_call_filter('bsfilter', commented=commented)
-        boss_member_row = self.add_user_to_filter(boss_row.id, callfilter_row.id)
-        secretary_member_row = self.add_user_to_filter(secretary_row.id, callfilter_row.id, 'secretary')
+        boss_member_row = self.add_filter_member(callfilter_row.id, boss_row.id)
+        secretary_member_row = self.add_filter_member(callfilter_row.id, secretary_row.id, 'secretary')
+        self.add_bsfilter_destination(secretary_member_row.id)
         return boss_member_row, secretary_member_row
 
     def add_call_filter(self, name, commented=0):
@@ -343,7 +345,7 @@ class TestBSFilterHints(TestHints):
         self.add_me(callfilter)
         return callfilter
 
-    def add_user_to_filter(self, userid, filterid, role='boss'):
+    def add_filter_member(self, filterid, userid, role='boss'):
         member = Callfiltermember(type='user',
                                   typeval=str(userid),
                                   callfilterid=filterid,
