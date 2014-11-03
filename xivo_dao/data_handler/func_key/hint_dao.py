@@ -172,30 +172,11 @@ def forward_hints(session, context):
 
 @daosession
 def agent_hints(session, context):
-    agent_action = (
-        sql.text("""
-            SELECT
-                action_tbl.agent_action AS agent_action,
-                action_tbl.extension_action AS extension_action
-            FROM
-                (VALUES
-                    ('login', 'agentstaticlogin'),
-                    ('logoff', 'agentstaticlogoff'),
-                    ('toggle', 'agentstaticlogtoggle')
-                )
-                AS action_tbl(agent_action, extension_action)
-                 """)
-        .columns(agent_action=Unicode,
-                 extension_action=Unicode)
-        .alias('agent_action'))
-
     query = (session.query(sql.cast(FuncKeyDestAgent.agent_id, Unicode).label('argument'),
                            UserFeatures.id.label('user_id'),
                            Extension.exten.label('extension'))
-             .join(agent_action,
-                   FuncKeyDestAgent.action == agent_action.c.agent_action)
              .join(Extension,
-                   Extension.typeval == agent_action.c.extension_action)
+                   Extension.id == FuncKeyDestAgent.extension_id)
              .join(FuncKeyMapping,
                    FuncKeyDestAgent.func_key_id == FuncKeyMapping.func_key_id)
              .filter(Extension.commented == 0))
