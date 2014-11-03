@@ -16,11 +16,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 
+from xivo_dao.alchemy.infos import Infos as InfosSchema
 from xivo_dao.data_handler import errors
 from xivo_dao.data_handler.infos.model import db_converter
 from xivo_dao.helpers.db_manager import daosession
-
-from .model import Infos as InfosSchema
 
 
 @daosession
