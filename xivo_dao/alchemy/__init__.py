@@ -81,6 +81,7 @@ from xivo_dao.alchemy.general import General
 from xivo_dao.alchemy.groupfeatures import GroupFeatures
 from xivo_dao.alchemy.iaxcallnumberlimits import IAXCallNumberLimits
 from xivo_dao.alchemy.incall import Incall
+from xivo_dao.alchemy.infos import Infos
 from xivo_dao.alchemy.ldapfilter import LdapFilter
 from xivo_dao.alchemy.ldapserver import LdapServer
 from xivo_dao.alchemy.linefeatures import LineFeatures
@@ -140,10 +141,12 @@ from xivo_dao.alchemy.stats_conf_queue import StatsConfQueue
 from xivo_dao.alchemy.stats_conf_xivouser import StatsConfXivoUser
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
 from xivo_dao.alchemy.user import User
-from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.user_contact import UserContact
+from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.voicemail import Voicemail
+
+
