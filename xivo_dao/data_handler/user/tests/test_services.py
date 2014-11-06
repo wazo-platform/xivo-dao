@@ -15,13 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, equal_to
+from hamcrest import *
 from mock import patch, Mock
 
 from xivo_dao.data_handler.utils.search import SearchResult
 from xivo_dao.tests.test_case import TestCase
 from xivo_dao.data_handler.user import services as user_services
-from xivo_dao.data_handler.user.model import User
+from xivo_dao.data_handler.user.model import User, UserDirectoryView
 
 
 class TestGetUser(TestCase):
@@ -133,6 +133,23 @@ class TestFindUser(TestCase):
 
         self.assertEquals(expected_result, result)
         user_dao_find_all_by_fullname.assert_called_once_with(fullname)
+
+    @patch('xivo_dao.data_handler.user.dao.find_all_by_view_directory')
+    def test_find_all_by_view_directory(self, find_all_by_view_directory):
+        user_directory_view = UserDirectoryView(id=1,
+                                                line_id=2,
+                                                agent_id=3,
+                                                firstname='firstname',
+                                                lastname='lastname',
+                                                mobile_phone_number='mobilephonenumber',
+                                                exten='2134')
+
+        find_all_by_view_directory.return_value = [user_directory_view]
+
+        result = user_services.find_all_by_view_directory()
+
+        assert_that(result, contains(user_directory_view))
+        find_all_by_view_directory.assert_called_once_with()
 
 
 class TestCreate(TestCase):
