@@ -34,6 +34,7 @@ from xivo_dao.data_handler.entity import dao as entity_dao
 from xivo_dao.data_handler import errors
 from xivo_dao.data_handler.exception import DataError
 from xivo_dao.data_handler.user.search import user_search
+from xivo_dao.data_handler.user.view import user_view
 from xivo_dao.data_handler.user.model import UserDirectory
 from xivo_dao.data_handler.user.database import db_converter
 from xivo_dao.data_handler.utils.search import SearchResult
@@ -45,8 +46,10 @@ DEFAULT_ORDER = [UserSchema.lastname, UserSchema.firstname]
 
 @daosession
 def search(session, **parameters):
-    rows, total = user_search.search(session, parameters)
-    users = _rows_to_user_model(rows)
+    view = user_view.select(parameters.get('view'))
+    query = view.query(session)
+    rows, total = user_search.search_from_query(query, parameters)
+    users = view.convert_list(rows)
     return SearchResult(total, users)
 
 

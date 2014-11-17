@@ -496,6 +496,35 @@ class TestSimpleSearch(TestSearch):
 
         self.assert_search_returns_result(expected)
 
+    def test_given_directory_view_then_returns_one_result(self):
+        user = self.prepare_user(firstname='charles')
+        expected = SearchResult(1, [UserDirectory(id=user.id,
+                                                  line_id=None,
+                                                  agent_id=None,
+                                                  firstname='charles',
+                                                  lastname=None,
+                                                  mobile_phone_number=None,
+                                                  exten=None)])
+
+        self.assert_search_returns_result(expected, view='directory')
+
+    def test_given_user_with_line_and_agent_then_returns_one_directory_view_result(self):
+        agent_row = self.add_agent()
+        user_line_row = self.add_user_line_with_exten(firstname='danny',
+                                                      lastname='rogers',
+                                                      agentid=agent_row.id,
+                                                      mobilephonenumber='4185551234')
+
+        expected = SearchResult(1, [UserDirectory(id=user_line_row.user_id,
+                                                  line_id=user_line_row.line_id,
+                                                  agent_id=agent_row.id,
+                                                  firstname='danny',
+                                                  lastname='rogers',
+                                                  mobile_phone_number='4185551234',
+                                                  exten=user_line_row.extension.exten)])
+
+        self.assert_search_returns_result(expected, view='directory')
+
 
 class TestSearchGivenMultipleUsers(TestSearch):
 
