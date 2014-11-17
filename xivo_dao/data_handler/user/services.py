@@ -45,10 +45,6 @@ def find_all_by_fullname(fullname):
     return user_dao.find_all_by_fullname(fullname)
 
 
-def find_all_by_view_directory():
-    return user_dao.find_all_by_view_directory()
-
-
 def search(**parameters):
     return user_dao.search(**parameters)
 

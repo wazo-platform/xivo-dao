@@ -158,34 +158,6 @@ def _find_by_number_context(session, number, context):
 
 
 @daosession
-def find_all_by_view_directory(session):
-    query = (session.query(UserSchema.id.label('user_id'),
-                           LineSchema.id.label('line_id'),
-                           AgentSchema.id.label('agent_id'),
-                           UserSchema.firstname.label('user_firstname'),
-                           UserSchema.lastname.label('user_lastname'),
-                           UserSchema.mobilephonenumber.label('mobile_phone_number'),
-                           ExtensionSchema.exten.label('extension_exten'))
-             .outerjoin(AgentSchema, and_(AgentSchema.id == UserSchema.agentid))
-             .outerjoin(UserLineSchema, and_(UserLineSchema.user_id == UserSchema.id))
-             .outerjoin(LineSchema, and_(LineSchema.id == UserLineSchema.line_id,
-                                         LineSchema.commented == 0))
-             .outerjoin(ExtensionSchema, and_(ExtensionSchema.id == UserLineSchema.extension_id,
-                                              ExtensionSchema.commented == 0))
-             .filter(UserSchema.commented == 0)
-             .all())
-
-    return [UserDirectory(id=row.user_id,
-                          line_id=row.line_id,
-                          agent_id=row.agent_id,
-                          firstname=row.user_firstname,
-                          lastname=row.user_lastname,
-                          mobile_phone_number=row.mobile_phone_number,
-                          exten=row.extension_exten)
-            for row in query]
-
-
-@daosession
 def get_by_number_context(session, number, context):
     user = _find_by_number_context(session, number, context)
     if not user:
