@@ -34,7 +34,8 @@ from xivo_dao.data_handler.entity import dao as entity_dao
 from xivo_dao.data_handler import errors
 from xivo_dao.data_handler.exception import DataError
 from xivo_dao.data_handler.user.search import user_search
-from xivo_dao.data_handler.user.model import db_converter, UserDirectoryView
+from xivo_dao.data_handler.user.model import UserDirectoryView
+from xivo_dao.data_handler.user.database import db_converter
 from xivo_dao.data_handler.utils.search import SearchResult
 from xivo_dao.helpers.db_utils import commit_or_abort
 
