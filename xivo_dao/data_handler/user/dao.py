@@ -34,7 +34,7 @@ from xivo_dao.data_handler.entity import dao as entity_dao
 from xivo_dao.data_handler import errors
 from xivo_dao.data_handler.exception import DataError
 from xivo_dao.data_handler.user.search import user_search
-from xivo_dao.data_handler.user.model import UserDirectoryView
+from xivo_dao.data_handler.user.model import UserDirectory
 from xivo_dao.data_handler.user.database import db_converter
 from xivo_dao.data_handler.utils.search import SearchResult
 from xivo_dao.helpers.db_utils import commit_or_abort
@@ -172,13 +172,13 @@ def find_all_by_view_directory(session):
              .filter(UserSchema.commented == 0)
              .all())
 
-    return [UserDirectoryView(id=row.user_id,
-                              line_id=row.line_id,
-                              agent_id=row.agent_id,
-                              firstname=row.user_firstname,
-                              lastname=row.user_lastname,
-                              mobile_phone_number=row.mobile_phone_number,
-                              exten=row.extension_exten)
+    return [UserDirectory(id=row.user_id,
+                          line_id=row.line_id,
+                          agent_id=row.agent_id,
+                          firstname=row.user_firstname,
+                          lastname=row.user_lastname,
+                          mobile_phone_number=row.mobile_phone_number,
+                          exten=row.extension_exten)
             for row in query]
 
 

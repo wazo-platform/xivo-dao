@@ -21,7 +21,7 @@ from mock import patch, Mock
 from xivo_dao.data_handler.utils.search import SearchResult
 from xivo_dao.tests.test_case import TestCase
 from xivo_dao.data_handler.user import services as user_services
-from xivo_dao.data_handler.user.model import User, UserDirectoryView
+from xivo_dao.data_handler.user.model import User, UserDirectory
 
 
 class TestGetUser(TestCase):
@@ -136,13 +136,13 @@ class TestFindUser(TestCase):
 
     @patch('xivo_dao.data_handler.user.dao.find_all_by_view_directory')
     def test_find_all_by_view_directory(self, find_all_by_view_directory):
-        user_directory_view = UserDirectoryView(id=1,
-                                                line_id=2,
-                                                agent_id=3,
-                                                firstname='firstname',
-                                                lastname='lastname',
-                                                mobile_phone_number='mobilephonenumber',
-                                                exten='2134')
+        user_directory_view = UserDirectory(id=1,
+                                            line_id=2,
+                                            agent_id=3,
+                                            firstname='firstname',
+                                            lastname='lastname',
+                                            mobile_phone_number='mobilephonenumber',
+                                            exten='2134')
 
         find_all_by_view_directory.return_value = [user_directory_view]
 

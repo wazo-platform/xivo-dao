@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.helpers.new_model import NewModel
+from collections import namedtuple
 
 
 class User(NewModel):
@@ -78,16 +79,10 @@ class User(NewModel):
         return self.caller_id_from_fullname()
 
 
-class UserDirectoryView(NewModel):
-    __name__ = 'user'
-
-    FIELDS = [
-        'id',
-        'line_id',
-        'agent_id',
-        'firstname',
-        'lastname',
-        'exten',
-        'mobile_phone_number'
-    ]
-    _RELATION = {}
+UserDirectory = namedtuple('UserDirectory', ('id',
+                                             'line_id',
+                                             'agent_id',
+                                             'firstname',
+                                             'lastname',
+                                             'exten',
+                                             'mobile_phone_number'))

@@ -23,7 +23,7 @@ from xivo_dao.data_handler.utils.search import SearchResult
 from xivo_dao.data_handler.exception import DataError
 from xivo_dao.data_handler.exception import NotFoundError
 from xivo_dao.data_handler.user import dao as user_dao
-from xivo_dao.data_handler.user.model import User, UserDirectoryView
+from xivo_dao.data_handler.user.model import User, UserDirectory
 from xivo_dao.tests.helpers.session import mocked_dao_session
 from xivo_dao.tests.test_dao import DAOTestCase
 
@@ -349,13 +349,13 @@ class TestFindWithDirectoryView(DAOTestCase):
         agent = self.add_agent()
         user_line = self.add_user_line_without_exten(agent_id=agent.id)
 
-        user_directory_view = UserDirectoryView(id=user_line.user_id,
-                                                line_id=user_line.line_id,
-                                                agent_id=user_line.user.agentid,
-                                                firstname=user_line.user.firstname,
-                                                lastname=user_line.user.lastname,
-                                                mobile_phone_number=user_line.user.mobilephonenumber,
-                                                exten=None)
+        user_directory_view = UserDirectory(id=user_line.user_id,
+                                            line_id=user_line.line_id,
+                                            agent_id=user_line.user.agentid,
+                                            firstname=user_line.user.firstname,
+                                            lastname=user_line.user.lastname,
+                                            mobile_phone_number=user_line.user.mobilephonenumber,
+                                            exten=None)
 
         result = user_dao.find_all_by_view_directory()
 
@@ -363,25 +363,25 @@ class TestFindWithDirectoryView(DAOTestCase):
 
         user_line = self.add_user_line_without_exten(agent_id=agent.id)
 
-        user_directory_view = UserDirectoryView(id=user_line.user_id,
-                                                line_id=user_line.line_id,
-                                                agent_id=user_line.user.agentid,
-                                                firstname=user_line.user.firstname,
-                                                lastname=user_line.user.lastname,
-                                                mobile_phone_number=user_line.user.mobilephonenumber,
-                                                exten=None)
+        user_directory_view = UserDirectory(id=user_line.user_id,
+                                            line_id=user_line.line_id,
+                                            agent_id=user_line.user.agentid,
+                                            firstname=user_line.user.firstname,
+                                            lastname=user_line.user.lastname,
+                                            mobile_phone_number=user_line.user.mobilephonenumber,
+                                            exten=None)
 
     def test_find_all_one_user_with_no_exten(self):
         agent = self.add_agent()
         user_line = self.add_user_line_without_exten(agent_id=agent.id)
 
-        user_directory_view = UserDirectoryView(id=user_line.user_id,
-                                                line_id=user_line.line_id,
-                                                agent_id=user_line.user.agentid,
-                                                firstname=user_line.user.firstname,
-                                                lastname=user_line.user.lastname,
-                                                mobile_phone_number=user_line.user.mobilephonenumber,
-                                                exten=None)
+        user_directory_view = UserDirectory(id=user_line.user_id,
+                                            line_id=user_line.line_id,
+                                            agent_id=user_line.user.agentid,
+                                            firstname=user_line.user.firstname,
+                                            lastname=user_line.user.lastname,
+                                            mobile_phone_number=user_line.user.mobilephonenumber,
+                                            exten=None)
 
         result = user_dao.find_all_by_view_directory()
 
@@ -390,13 +390,13 @@ class TestFindWithDirectoryView(DAOTestCase):
     def test_find_all_one_user_with_no_agent(self):
         user_line = self.add_user_line_with_exten()
 
-        user_directory_view = UserDirectoryView(id=user_line.user_id,
-                                                line_id=user_line.line_id,
-                                                agent_id=user_line.user.agentid,
-                                                firstname=user_line.user.firstname,
-                                                lastname=user_line.user.lastname,
-                                                mobile_phone_number=user_line.user.mobilephonenumber,
-                                                exten=user_line.extension.exten)
+        user_directory_view = UserDirectory(id=user_line.user_id,
+                                            line_id=user_line.line_id,
+                                            agent_id=user_line.user.agentid,
+                                            firstname=user_line.user.firstname,
+                                            lastname=user_line.user.lastname,
+                                            mobile_phone_number=user_line.user.mobilephonenumber,
+                                            exten=user_line.extension.exten)
 
         result = user_dao.find_all_by_view_directory()
 
@@ -405,13 +405,13 @@ class TestFindWithDirectoryView(DAOTestCase):
     def test_find_all_one_user_with_no_line_and_no_agent(self):
         user = self.add_user()
 
-        user_directory_view = UserDirectoryView(id=user.id,
-                                                line_id=None,
-                                                agent_id=None,
-                                                firstname=user.firstname,
-                                                lastname=user.lastname,
-                                                mobile_phone_number=user.mobilephonenumber,
-                                                exten=None)
+        user_directory_view = UserDirectory(id=user.id,
+                                            line_id=None,
+                                            agent_id=None,
+                                            firstname=user.firstname,
+                                            lastname=user.lastname,
+                                            mobile_phone_number=user.mobilephonenumber,
+                                            exten=None)
 
         result = user_dao.find_all_by_view_directory()
 
@@ -423,29 +423,29 @@ class TestFindWithDirectoryView(DAOTestCase):
         user2 = self.add_user(agentid=agent2.id)
         user_line3 = self.add_user_line_with_exten()
 
-        user_directory_view1 = UserDirectoryView(id=user1.id,
-                                                 line_id=None,
-                                                 agent_id=None,
-                                                 firstname=user1.firstname,
-                                                 lastname=user1.lastname,
-                                                 mobile_phone_number=user1.mobilephonenumber,
-                                                 exten=None)
+        user_directory_view1 = UserDirectory(id=user1.id,
+                                             line_id=None,
+                                             agent_id=None,
+                                             firstname=user1.firstname,
+                                             lastname=user1.lastname,
+                                             mobile_phone_number=user1.mobilephonenumber,
+                                             exten=None)
 
-        user_directory_view2 = UserDirectoryView(id=user2.id,
-                                                 line_id=None,
-                                                 agent_id=agent2.id,
-                                                 firstname=user2.firstname,
-                                                 lastname=user2.lastname,
-                                                 mobile_phone_number=user2.mobilephonenumber,
-                                                 exten=None)
+        user_directory_view2 = UserDirectory(id=user2.id,
+                                             line_id=None,
+                                             agent_id=agent2.id,
+                                             firstname=user2.firstname,
+                                             lastname=user2.lastname,
+                                             mobile_phone_number=user2.mobilephonenumber,
+                                             exten=None)
 
-        user_directory_view3 = UserDirectoryView(id=user_line3.user_id,
-                                                 line_id=user_line3.line_id,
-                                                 agent_id=user_line3.user.agentid,
-                                                 firstname=user_line3.user.firstname,
-                                                 lastname=user_line3.user.lastname,
-                                                 mobile_phone_number=user_line3.user.mobilephonenumber,
-                                                 exten=user_line3.extension.exten)
+        user_directory_view3 = UserDirectory(id=user_line3.user_id,
+                                             line_id=user_line3.line_id,
+                                             agent_id=user_line3.user.agentid,
+                                             firstname=user_line3.user.firstname,
+                                             lastname=user_line3.user.lastname,
+                                             mobile_phone_number=user_line3.user.mobilephonenumber,
+                                             exten=user_line3.extension.exten)
 
         result = user_dao.find_all_by_view_directory()
 
