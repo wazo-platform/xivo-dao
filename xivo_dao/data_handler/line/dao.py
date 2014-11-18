@@ -19,7 +19,7 @@ import string
 import random
 
 from sqlalchemy.sql import and_
-from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+from sqlalchemy.exc import  IntegrityError
 from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
 from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema, UserSIP
 from xivo_dao.alchemy.useriax import UserIAX as UserIAXSchema, UserIAX
@@ -314,10 +314,10 @@ def _build_line_row(line, derived_line):
 
 
 def _build_sip_line(session, line):
-    if not hasattr(line, 'username'):
+    if getattr(line, 'username', None) is None:
         line.username = generate_random_hash(session, UserSIPSchema.name)
 
-    if not hasattr(line, 'secret'):
+    if getattr(line, 'secret', None) is None:
         line.secret = generate_random_hash(session, UserSIPSchema.secret)
 
     line.name = line.username
