@@ -257,7 +257,7 @@ class TestForwardHints(TestHints):
 class TestAgentHints(TestHints):
 
     def test_given_agent_func_key_then_returns_agent_hint(self):
-        destination_row = self.create_agent_func_key('_*31.', 'agentstaticlogin', 'login')
+        destination_row = self.create_agent_func_key('_*31.', 'agentstaticlogin')
 
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row)
@@ -269,7 +269,7 @@ class TestAgentHints(TestHints):
         assert_that(hint_dao.agent_hints(self.context), contains(expected))
 
     def test_given_commented_extension_then_returns_no_hints(self):
-        destination_row = self.create_agent_func_key('_*31.', 'agentstaticlogin', 'login')
+        destination_row = self.create_agent_func_key('_*31.', 'agentstaticlogin')
 
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row, blf=False)
@@ -277,7 +277,7 @@ class TestAgentHints(TestHints):
         assert_that(hint_dao.agent_hints(self.context), contains())
 
     def test_given_no_blf_then_returns_no_hints(self):
-        destination_row = self.create_agent_func_key('_*31.', 'agentstaticlogin', 'login')
+        destination_row = self.create_agent_func_key('_*31.', 'agentstaticlogin')
 
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row, blf=False)
@@ -285,7 +285,7 @@ class TestAgentHints(TestHints):
         assert_that(hint_dao.agent_hints(self.context), contains())
 
     def test_given_user_when_querying_other_context_then_returns_no_hints(self):
-        destination_row = self.create_agent_func_key('_*31.', 'agentstaticlogin', 'login')
+        destination_row = self.create_agent_func_key('_*31.', 'agentstaticlogin')
 
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row)

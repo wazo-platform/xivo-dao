@@ -83,13 +83,13 @@ class FuncKeyHelper(object):
         self.add_me(destination_row)
         return destination_row
 
-    def add_agent_destination(self, agent_id, action):
+    def add_agent_destination(self, agent_id, extension_id):
         destination_type_id = 11
         func_key_row = self.create_func_key(destination_type_id)
         destination_row = FuncKeyDestAgentSchema(func_key_id=func_key_row.id,
                                                  destination_type_id=destination_type_id,
                                                  agent_id=agent_id,
-                                                 action=action)
+                                                 extension_id=extension_id)
         self.add_me(destination_row)
         return destination_row
 
@@ -139,10 +139,10 @@ class FuncKeyHelper(object):
         conference_row = self.add_meetmefeatures()
         return self.add_conference_destination(conference_row.id)
 
-    def create_agent_func_key(self, exten, exten_action, action, commented=0):
+    def create_agent_func_key(self, exten, exten_action, commented=0):
         agent_row = self.add_agent()
-        self.add_extenfeatures(exten, exten_action, commented=commented)
-        return self.add_agent_destination(agent_row.id, action)
+        extension_row = self.add_extenfeatures(exten, exten_action, commented=commented)
+        return self.add_agent_destination(agent_row.id, extension_row.id)
 
     def create_custom_func_key(self, exten):
         return self.add_custom_destination(exten)

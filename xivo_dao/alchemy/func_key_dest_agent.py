@@ -19,7 +19,7 @@ from xivo_dao.helpers.db_manager import Base
 
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, ForeignKeyConstraint, CheckConstraint, PrimaryKeyConstraint, UniqueConstraint
-from sqlalchemy.types import Integer, String
+from sqlalchemy.types import Integer
 
 
 class FuncKeyDestAgent(Base):
@@ -31,15 +31,17 @@ class FuncKeyDestAgent(Base):
                              ['func_key.id', 'func_key.destination_type_id']),
         ForeignKeyConstraint(['agent_id'],
                              ['agentfeatures.id']),
-        UniqueConstraint('agent_id', 'action'),
+        ForeignKeyConstraint(['extension_id'],
+                             ['extensions.id']),
+        UniqueConstraint('agent_id', 'extension_id'),
         CheckConstraint('destination_type_id = 11'),
-        CheckConstraint("action IN ('login', 'logoff', 'toggle')"),
     )
 
     func_key_id = Column(Integer)
     destination_type_id = Column(Integer, server_default="11")
     agent_id = Column(Integer, nullable=False)
-    action = Column(String(10), nullable=False)
+    extension_id = Column(Integer, nullable=False)
 
     func_key = relationship("FuncKey")
     agent = relationship("AgentFeatures")
+    extension = relationship("Extension")
