@@ -34,6 +34,7 @@ from xivo_dao.alchemy.func_key_dest_service import FuncKeyDestService
 from xivo_dao.alchemy.func_key_dest_forward import FuncKeyDestForward
 from xivo_dao.alchemy.func_key_dest_agent import FuncKeyDestAgent
 from xivo_dao.alchemy.func_key_dest_custom import FuncKeyDestCustom
+from xivo_dao.alchemy.func_key_dest_bsfilter import FuncKeyDestBSFilter
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from xivo_dao.alchemy.callfilter import Callfilter
@@ -221,25 +222,26 @@ def custom_hints(session, context):
 
 @daosession
 def bsfilter_hints(session, context):
-    bsfilter_extension = _find_extenfeatures(session, 'bsfilter')
-    user_extension = aliased(Extension)
+    bsfilter_extension = _find_extenfeatures(session, 'bsfilter').strip('_.')
 
-    query = (session.query(Callfiltermember.id.label('argument'))
+    query = (session.query(sql.cast(FuncKeyDestBSFilter.filtermember_id, Unicode).label('argument'))
+             .join(Callfiltermember,
+                   Callfiltermember.id == FuncKeyDestBSFilter.filtermember_id)
              .join(Callfilter,
-                   Callfiltermember.callfilterid == Callfilter.id)
+                   Callfilter.id == Callfiltermember.callfilterid)
+             .join(UserFeatures,
+                   sql.cast(Callfiltermember.typeval, Integer) == UserFeatures.id)
              .join(UserLine,
-                   sql.and_(UserLine.user_id == sql.cast(Callfiltermember.typeval, Integer),
-                            UserLine.main_user == True,
-                            UserLine.main_line == True))
-             .join(user_extension,
-                   UserLine.extension_id == user_extension.id)
-             .filter(Callfiltermember.bstype == 'secretary')
-             .filter(user_extension.context == context)
+                   UserLine.user_id == UserFeatures.id)
+             .join(Extension,
+                   Extension.id == UserLine.extension_id)
              .filter(UserLine.main_user == True)
              .filter(UserLine.main_line == True)
-             .filter(Callfilter.commented == 0))
+             .filter(Extension.commented == 0)
+             .filter(Callfilter.commented == 0)
+             .filter(Extension.context == context))
 
     return tuple(Hint(user_id=None,
-                      extension=bsfilter_extension.strip('_.'),
-                      argument=str(row.argument))
+                      extension=bsfilter_extension,
+                      argument=row.argument)
                  for row in query)

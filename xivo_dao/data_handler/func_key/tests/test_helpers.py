@@ -8,6 +8,7 @@ from xivo_dao.alchemy.func_key_dest_queue import FuncKeyDestQueue as FuncKeyDest
 from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser as FuncKeyDestUserSchema
 from xivo_dao.alchemy.func_key_dest_agent import FuncKeyDestAgent as FuncKeyDestAgentSchema
 from xivo_dao.alchemy.func_key_dest_custom import FuncKeyDestCustom as FuncKeyDestCustomSchema
+from xivo_dao.alchemy.func_key_dest_bsfilter import FuncKeyDestBSFilter as FuncKeyDestBSFilterSchema
 
 
 class FuncKeyHelper(object):
@@ -23,7 +24,8 @@ class FuncKeyHelper(object):
         8: 'features',
         9: 'paging',
         10: 'custom',
-        11: 'agent'
+        11: 'agent',
+        12: 'bsfilter',
     }
 
     destinations = {
@@ -97,6 +99,15 @@ class FuncKeyHelper(object):
         destination_row = FuncKeyDestCustomSchema(func_key_id=func_key_row.id,
                                                   destination_type_id=destination_type_id,
                                                   exten=exten)
+        self.add_me(destination_row)
+        return destination_row
+
+    def add_bsfilter_destination(self, filtermember_id):
+        destination_type_id = 12
+        func_key_row = self.create_func_key(destination_type_id)
+        destination_row = FuncKeyDestBSFilterSchema(func_key_id=func_key_row.id,
+                                                    destination_type_id=destination_type_id,
+                                                    filtermember_id=filtermember_id)
         self.add_me(destination_row)
         return destination_row
 
