@@ -42,7 +42,7 @@ class FuncKeyHelper(object):
         self.setup_destination_types()
 
     def setup_types(self):
-        row = self.add_func_key_type(name='speeddial')
+        row = self.add_func_key_type(id=1, name='speeddial')
         self.speeddial_id = row.id
 
     def setup_destination_types(self):
