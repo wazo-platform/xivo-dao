@@ -17,49 +17,41 @@
 
 from xivo_dao import alchemy as tbl
 
-from xivo_dao.data_handler.func_key.model import Forward, ForwardTypeConverter
+from xivo_dao.data_handler.func_key.model import UserFuncKey, Forward, ForwardTypeConverter
 from xivo_dao.data_handler.exception import DataError
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.helpers.db_utils import commit_or_abort
-from xivo_dao.data_handler.func_key.database import db_converter, QueryHelper
-
-
-@daosession
-def find_all_by_destination(session, destination, destination_id):
-    if not QueryHelper.destination_exists(destination):
-        return []
-
-    query = QueryHelper(session).select_destination(destination, destination_id)
-
-    func_key_rows = query.all()
-    return [db_converter.to_model(row) for row in func_key_rows]
+from xivo_dao.data_handler.func_key.database import func_key_manager
 
 
 @daosession
 def create(session, func_key):
-    func_key_row = db_converter.create_func_key_row(func_key)
+    repository = func_key_manager.for_func_key(func_key)
     with commit_or_abort(session, DataError.on_create, 'FuncKey'):
-        session.add(func_key_row)
-
-    func_key.id = func_key_row.id
-
-    destination_row = db_converter.create_destination_row(func_key)
-    with commit_or_abort(session, DataError.on_create, 'FuncKey'):
-        session.add(destination_row)
-
-    return func_key
+        created_func_key = repository.create(session, func_key)
+    return created_func_key
 
 
 @daosession
 def delete(session, func_key):
-    helper = QueryHelper(session)
-    func_key_query = helper.delete_func_key(func_key.id)
-    destination_query = helper.delete_destination(func_key.destination,
-                                                  func_key.destination_id)
-
+    repository = func_key_manager.for_func_key(func_key)
     with commit_or_abort(session, DataError.on_delete, 'FuncKey'):
-        destination_query.delete()
-        func_key_query.delete()
+        repository.delete(session, func_key)
+
+
+@daosession
+def find_user_destination(session, user_id):
+    row = (session
+           .query(tbl.FuncKeyDestUser.func_key_id,
+                  tbl.FuncKeyDestUser.user_id)
+           .filter(tbl.FuncKeyDestUser.user_id == user_id)
+           .first())
+
+    if not row:
+        return None
+
+    return UserFuncKey(id=row.func_key_id,
+                       user_id=row.user_id)
 
 
 @daosession
