@@ -71,6 +71,7 @@ invalid_func_key_type = FormattedError(InputError, "FuncKey type '{}' does not e
 invalid_destination_type = FormattedError(InputError, "FuncKey destination type '{}' does not exist")
 param_not_found = FormattedError(InputError, "field '{}': {} was not found")
 invalid_query_parameter = FormattedError(InputError, "parameter '{}': '{}' is not valid")
+invalid_view = FormattedError(InputError, "view '{}' does not exist")
 
 not_found = FormattedError(NotFoundError, "{} was not found")
 

@@ -34,7 +34,9 @@ from xivo_dao.data_handler.entity import dao as entity_dao
 from xivo_dao.data_handler import errors
 from xivo_dao.data_handler.exception import DataError
 from xivo_dao.data_handler.user.search import user_search
-from xivo_dao.data_handler.user.model import db_converter, UserDirectoryView
+from xivo_dao.data_handler.user.view import user_view
+from xivo_dao.data_handler.user.model import UserDirectory
+from xivo_dao.data_handler.user.database import db_converter
 from xivo_dao.data_handler.utils.search import SearchResult
 from xivo_dao.helpers.db_utils import commit_or_abort
 
@@ -44,8 +46,10 @@ DEFAULT_ORDER = [UserSchema.lastname, UserSchema.firstname]
 
 @daosession
 def search(session, **parameters):
-    rows, total = user_search.search(session, parameters)
-    users = _rows_to_user_model(rows)
+    view = user_view.select(parameters.get('view'))
+    query = view.query(session)
+    rows, total = user_search.search_from_query(query, parameters)
+    users = view.convert_list(rows)
     return SearchResult(total, users)
 
 
@@ -151,34 +155,6 @@ def _find_by_number_context(session, number, context):
         return None
 
     return db_converter.to_model(user_row)
-
-
-@daosession
-def find_all_by_view_directory(session):
-    query = (session.query(UserSchema.id.label('user_id'),
-                           LineSchema.id.label('line_id'),
-                           AgentSchema.id.label('agent_id'),
-                           UserSchema.firstname.label('user_firstname'),
-                           UserSchema.lastname.label('user_lastname'),
-                           UserSchema.mobilephonenumber.label('mobile_phone_number'),
-                           ExtensionSchema.exten.label('extension_exten'))
-             .outerjoin(AgentSchema, and_(AgentSchema.id == UserSchema.agentid))
-             .outerjoin(UserLineSchema, and_(UserLineSchema.user_id == UserSchema.id))
-             .outerjoin(LineSchema, and_(LineSchema.id == UserLineSchema.line_id,
-                                         LineSchema.commented == 0))
-             .outerjoin(ExtensionSchema, and_(ExtensionSchema.id == UserLineSchema.extension_id,
-                                              ExtensionSchema.commented == 0))
-             .filter(UserSchema.commented == 0)
-             .all())
-
-    return [UserDirectoryView(id=row.user_id,
-                              line_id=row.line_id,
-                              agent_id=row.agent_id,
-                              firstname=row.user_firstname,
-                              lastname=row.user_lastname,
-                              mobile_phone_number=row.mobile_phone_number,
-                              exten=row.extension_exten)
-            for row in query]
 
 
 @daosession
