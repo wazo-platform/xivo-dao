@@ -15,32 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from mock import patch
-from hamcrest import assert_that, contains
+from mock import patch, Mock
+from hamcrest import assert_that, contains, equal_to
 
 from xivo_dao.tests.test_case import TestCase
 from xivo_dao.data_handler.func_key import services
-from xivo_dao.data_handler.func_key.model import FuncKey, Forward
+from xivo_dao.data_handler.func_key.model import UserFuncKey, Forward
+from xivo_dao.data_handler.user.model import User
 
 
 class TestFuncKeyService(TestCase):
-
-    @patch('xivo_dao.data_handler.func_key.validator.validate_create')
-    @patch('xivo_dao.data_handler.func_key.notifier.created')
-    @patch('xivo_dao.data_handler.func_key.dao.create')
-    def test_create(self, func_key_dao_create, func_key_notifier_created, validate_create):
-        func_key = FuncKey(type='speeddial',
-                           destination='user',
-                           destination_id=1)
-
-        func_key_dao_create.return_value = func_key
-
-        result = services.create(func_key)
-
-        self.assertEquals(type(result), FuncKey)
-        validate_create.assert_called_once_with(func_key)
-        func_key_dao_create.assert_called_once_with(func_key)
-        func_key_notifier_created.assert_called_once_with(func_key)
 
     @patch('xivo_dao.data_handler.func_key.dao.find_all_forwards')
     def test_find_all_fwd_unc(self, find_all_forwards):
@@ -95,3 +79,60 @@ class TestFuncKeyService(TestCase):
 
         find_all_forwards.assert_called_once_with(user_id, fwd_type)
         assert_that(result, contains(expected_number, ''))
+
+
+@patch('xivo_dao.data_handler.func_key.notifier.created')
+@patch('xivo_dao.data_handler.func_key.dao.create')
+class TestCreateUserDestination(TestCase):
+
+    def test_create_user_destination(self,
+                                     dao_create,
+                                     notifier_create):
+        user = Mock(User, id=1)
+        func_key = UserFuncKey(user_id=user.id)
+
+        result = services.create_user_destination(user)
+
+        assert_that(result, equal_to(dao_create.return_value))
+        dao_create.assert_called_once_with(func_key)
+        notifier_create.assert_called_once_with(dao_create.return_value)
+
+
+@patch('xivo_dao.data_handler.func_key.notifier.deleted')
+@patch('xivo_dao.data_handler.func_key.dao.delete')
+@patch('xivo_dao.data_handler.func_key_template.dao.remove_func_key_from_templates')
+@patch('xivo_dao.data_handler.func_key.dao.find_user_destination')
+class TestDeleteUserDestination(TestCase):
+
+    def test_delete_user_destination(self,
+                                     find_user_destination,
+                                     remove_func_key_from_templates,
+                                     dao_delete,
+                                     notifier_delete):
+        user = Mock(User, id=1)
+        func_key = UserFuncKey(user_id=user.id)
+
+        find_user_destination.return_value = func_key
+
+        services.delete_user_destination(user)
+
+        find_user_destination.assert_called_once_with(user.id)
+        dao_delete.assert_called_once_with(func_key)
+        remove_func_key_from_templates.assert_called_once_with(func_key)
+        notifier_delete.assert_called_once_with(func_key)
+
+    def test_delete_user_destination_when_destination_does_not_exist(self,
+                                                                     find_user_destination,
+                                                                     remove_func_key_from_templates,
+                                                                     dao_delete,
+                                                                     notifier_delete):
+        user = Mock(User, id=1)
+
+        find_user_destination.return_value = None
+
+        services.delete_user_destination(user)
+
+        find_user_destination.assert_called_once_with(user.id)
+        self.assertNotCalled(dao_delete)
+        self.assertNotCalled(remove_func_key_from_templates)
+        self.assertNotCalled(notifier_delete)

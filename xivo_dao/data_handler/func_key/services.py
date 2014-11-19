@@ -16,15 +16,28 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.data_handler.func_key import dao
-from xivo_dao.data_handler.func_key import validator
+from xivo_dao.data_handler.func_key_template import dao as template_dao
 from xivo_dao.data_handler.func_key import notifier
+from xivo_dao.data_handler.func_key.model import UserFuncKey
 
 
-def create(func_key):
-    validator.validate_create(func_key)
+def create_user_destination(user):
+    func_key = UserFuncKey(user_id=user.id)
     created_func_key = dao.create(func_key)
     notifier.created(created_func_key)
     return created_func_key
+
+
+def delete_user_destination(user):
+    func_key = dao.find_user_destination(user.id)
+    if func_key:
+        template_dao.remove_func_key_from_templates(func_key)
+        dao.delete(func_key)
+        notifier.deleted(func_key)
+
+
+def delete_bsfilter_destination(user):
+    pass
 
 
 def find_all_fwd_unc(user_id):

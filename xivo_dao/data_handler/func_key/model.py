@@ -20,19 +20,16 @@ from collections import namedtuple
 from xivo_dao.helpers.new_model import NewModel
 
 
-class FuncKey(NewModel):
+class UserFuncKey(NewModel):
 
     MANDATORY = [
-        'type',
-        'destination',
-        'destination_id',
+        'id',
+        'user_id'
     ]
 
     FIELDS = [
         'id',
-        'type',
-        'destination',
-        'destination_id',
+        'user_id'
     ]
 
     _RELATION = {}
