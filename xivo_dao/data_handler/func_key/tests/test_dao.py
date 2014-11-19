@@ -47,6 +47,19 @@ class TestFuncKeyCreate(TestFuncKeyDao):
         self.assert_func_key_row_created(user_destination_row)
         assert_that(created_func_key.id, equal_to(user_destination_row.func_key_id))
 
+    def test_given_bsfilter_destination_then_func_key_created(self):
+        user_row = self.add_user()
+        bsfilter_row = self.add_bsfilter()
+        member_row = self.add_filter_member(bsfilter_row.id, user_row.id, role='secretary')
+
+        func_key = BSFilterFuncKey(filter_id=bsfilter_row.id, secretary_id=user_row.id)
+
+        created_func_key = dao.create(func_key)
+
+        bsfilter_destination_row = self.find_destination('bsfilter', member_row.id)
+        self.assert_func_key_row_created(bsfilter_destination_row)
+        assert_that(created_func_key.id, equal_to(bsfilter_destination_row.func_key_id))
+
     @mocked_dao_session
     @patch('xivo_dao.data_handler.func_key.dao.commit_or_abort')
     def test_given_db_error_then_transaction_rollbacked(self, session, commit_or_abort):
@@ -75,6 +88,17 @@ class TestFuncKeyDelete(TestFuncKeyDao):
 
         self.assert_func_key_deleted(func_key.id)
         self.assert_destination_deleted('user', destination_row.user_id)
+
+    def test_given_bsfilter_destination_then_func_key_deleted(self):
+        filter_member_row, destination_row = self.create_bsfilter_func_key()
+        func_key = BSFilterFuncKey(id=destination_row.func_key_id,
+                                   filter_id=filter_member_row.callfilterid,
+                                   secretary_id=int(filter_member_row.typeval))
+
+        dao.delete(func_key)
+
+        self.assert_func_key_deleted(func_key.id)
+        self.assert_destination_deleted('bsfilter', destination_row.filtermember_id)
 
     @mocked_dao_session
     @patch('xivo_dao.data_handler.func_key.dao.commit_or_abort')

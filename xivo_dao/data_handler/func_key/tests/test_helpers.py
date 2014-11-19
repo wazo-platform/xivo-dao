@@ -35,6 +35,7 @@ class FuncKeyHelper(object):
         'conference': (FuncKeyDestConferenceSchema, 'conference_id', 4),
         'service': (FuncKeyDestServiceSchema, 'extension_id', 5),
         'forward': (FuncKeyDestForwardSchema, 'extension_id', 6),
+        'bsfilter': (FuncKeyDestBSFilterSchema, 'filtermember_id', 12),
     }
 
     def setup_funckeys(self):
@@ -146,6 +147,12 @@ class FuncKeyHelper(object):
 
     def create_custom_func_key(self, exten):
         return self.add_custom_destination(exten)
+
+    def create_bsfilter_func_key(self):
+        user_row = self.add_user()
+        bsfilter_row = self.add_bsfilter()
+        filter_member_row = self.add_filter_member(bsfilter_row.id, user_row.id, 'secretary')
+        return filter_member_row, self.add_bsfilter_destination(filter_member_row.id)
 
     def add_func_key_to_user(self, destination_row, user_row, position=1, blf=True):
         self.add_func_key_mapping(template_id=user_row.func_key_private_template_id,

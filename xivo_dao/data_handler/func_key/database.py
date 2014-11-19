@@ -2,7 +2,7 @@ import abc
 
 from xivo_dao import alchemy as tbl
 from xivo_dao.data_handler import errors
-from xivo_dao.data_handler.func_key.model import UserFuncKey
+from xivo_dao.data_handler.func_key.model import UserFuncKey, BSFilterFuncKey
 
 
 class FuncKeyManager(object):
@@ -74,4 +74,43 @@ class UserFuncKeyRespository(FuncKeyRepository):
         self.delete_func_key(session, func_key.id)
 
 
-func_key_manager = FuncKeyManager({UserFuncKey: UserFuncKeyRespository()})
+class BSFilterFuncKeyRespository(FuncKeyRepository):
+
+    type_id = 1
+    destination_type_id = 12
+
+    def create(self, session, func_key):
+        func_key_row = self.insert_func_key(session)
+        member_row = self._find_member_row(session, func_key)
+
+        destination_row = tbl.FuncKeyDestBSFilter(func_key_id=func_key_row.id,
+                                                  filtermember_id=member_row.id)
+        session.add(destination_row)
+        session.flush()
+
+        return BSFilterFuncKey(id=func_key_row.id,
+                               filter_id=func_key.filter_id,
+                               secretary_id=func_key.secretary_id)
+
+    def _find_member_row(self, session, func_key):
+        row = (session.query(tbl.Callfiltermember.id)
+               .filter(tbl.Callfiltermember.callfilterid == func_key.filter_id)
+               .filter(tbl.Callfiltermember.bstype == 'secretary')
+               .filter(tbl.Callfiltermember.typeval == str(func_key.secretary_id))
+               .first())
+
+        return row
+
+    def delete(self, session, func_key):
+        member_row = self._find_member_row(session, func_key)
+
+        (session
+         .query(tbl.FuncKeyDestBSFilter)
+         .filter(tbl.FuncKeyDestBSFilter.filtermember_id == member_row.id)
+         .delete())
+
+        self.delete_func_key(session, func_key.id)
+
+
+func_key_manager = FuncKeyManager({UserFuncKey: UserFuncKeyRespository(),
+                                   BSFilterFuncKey: BSFilterFuncKeyRespository()})
