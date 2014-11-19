@@ -137,7 +137,7 @@ class TestFindUser(TestCase):
 
 class TestCreate(TestCase):
 
-    @patch('xivo_dao.data_handler.func_key.destination.create_user_destination')
+    @patch('xivo_dao.data_handler.func_key.services.create_user_destination')
     @patch('xivo_dao.data_handler.dial_action.dao.create_default_dial_actions_for_user')
     @patch('xivo_dao.data_handler.func_key_template.dao.create_private_template')
     @patch('xivo_dao.data_handler.user.notifier.created')
@@ -200,7 +200,8 @@ class TestDelete(TestCase):
     @patch('xivo_dao.data_handler.func_key_template.dao.delete_private_template')
     @patch('xivo_dao.data_handler.user.notifier.deleted')
     @patch('xivo_dao.data_handler.user.dao.delete')
-    @patch('xivo_dao.data_handler.func_key.destination.delete_user_destination')
+    @patch('xivo_dao.data_handler.func_key.services.delete_bsfilter_destination')
+    @patch('xivo_dao.data_handler.func_key.services.delete_user_destination')
     @patch('xivo_dao.data_handler.user.validator.validate_delete')
     def test_delete(self,
                     user_validate_delete,

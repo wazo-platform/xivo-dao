@@ -20,7 +20,7 @@ from xivo_dao.data_handler.line import services as line_services
 from xivo_dao.data_handler.user import validator
 from xivo_dao.data_handler.voicemail import dao as voicemail_dao
 from xivo_dao.data_handler.func_key_template import dao as template_dao
-from xivo_dao.data_handler.func_key import destination as func_key_destination
+from xivo_dao.data_handler.func_key import services as func_key_service
 from xivo_dao.data_handler.dial_action import dao as dial_action_dao
 from xivo_dao.data_handler.exception import NotFoundError
 
@@ -60,7 +60,7 @@ def _create_user_in_database(user):
     user.private_template_id = template_dao.create_private_template()
     user = user_dao.create(user)
     dial_action_dao.create_default_dial_actions_for_user(user)
-    func_key_destination.create_user_destination(user)
+    func_key_service.create_user_destination(user)
     return user
 
 
@@ -75,7 +75,7 @@ def edit(user):
 
 def delete(user):
     validator.validate_delete(user)
-    func_key_destination.delete_user_destination(user)
+    func_key_service.delete_user_destination(user)
     user_dao.delete(user)
     template_dao.delete_private_template(user.private_template_id)
     notifier.deleted(user)
