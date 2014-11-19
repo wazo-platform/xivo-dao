@@ -26,6 +26,8 @@ import string
 
 from sqlalchemy.schema import MetaData
 
+from xivo_dao.alchemy.callfilter import Callfilter
+from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from xivo_dao.alchemy.entity import Entity as EntitySchema
 from xivo_dao.alchemy.incall import Incall
 from xivo_dao.alchemy.linefeatures import LineFeatures
@@ -657,6 +659,27 @@ class DAOTestCase(unittest.TestCase):
         self.add_me(entity)
 
         return entity
+
+    def add_bsfilter(self, **kwargs):
+        options = {'callfrom': 'internal',
+                   'type': 'bosssecretary',
+                   'bosssecretary': 'bossfirst-serial',
+                   'name': 'bsfilter',
+                   'description': '',
+                   'commented': 0}
+        options.update(kwargs)
+
+        callfilter = Callfilter(**options)
+        self.add_me(callfilter)
+        return callfilter
+
+    def add_filter_member(self, filterid, userid, role='boss'):
+        member = Callfiltermember(type='user',
+                                  typeval=str(userid),
+                                  callfilterid=filterid,
+                                  bstype=role)
+        self.add_me(member)
+        return member
 
     def add_func_key_mapping(self, **kwargs):
         func_key_mapping = FuncKeyMapping(**kwargs)

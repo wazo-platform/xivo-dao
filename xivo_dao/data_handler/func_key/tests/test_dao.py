@@ -22,7 +22,7 @@ from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.data_handler.func_key.tests.test_helpers import FuncKeyHelper
 
 from xivo_dao.data_handler.exception import DataError
-from xivo_dao.data_handler.func_key.model import UserFuncKey, Forward
+from xivo_dao.data_handler.func_key.model import UserFuncKey, BSFilterFuncKey, Forward
 from xivo_dao.data_handler.func_key import dao
 from xivo_dao.alchemy.func_key import FuncKey as FuncKeySchema
 from xivo_dao.tests.helpers.session import mocked_dao_session
@@ -158,3 +158,25 @@ class TestFindUserDestination(TestFuncKeyDao):
         result = dao.find_user_destination(user_func_key_row.user_id)
 
         assert_that(result, equal_to(expected))
+
+
+class TestFindBSFilterDestinationForUser(TestFuncKeyDao):
+
+    def test_given_no_bsfilter_then_returns_empty_list(self):
+        result = dao.find_bsfilter_destinations_for_user(1)
+
+        assert_that(result, contains())
+
+    def test_given_user_is_secretary_then_returns_one_func_key(self):
+        user_row = self.add_user_line_with_exten()
+        callfilter_row = self.add_bsfilter()
+        secretary_member_row = self.add_filter_member(callfilter_row.id, user_row.id, 'secretary')
+        bsfilter_func_key_row = self.add_bsfilter_destination(secretary_member_row.id)
+
+        expected = BSFilterFuncKey(id=bsfilter_func_key_row.func_key_id,
+                                   secretary_id=user_row.id,
+                                   filter_id=callfilter_row.id)
+
+        result = dao.find_bsfilter_destinations_for_user(user_row.id)
+
+        assert_that(result, contains(expected))

@@ -18,7 +18,7 @@
 from xivo_dao.helpers import bus_manager
 from xivo_bus.resources.func_key import event as func_key_event
 
-from xivo_dao.data_handler.func_key.model import UserFuncKey
+from xivo_dao.data_handler.func_key.model import UserFuncKey, BSFilterFuncKey
 
 
 def create_user_func_key(func_key):
@@ -29,9 +29,23 @@ def delete_user_func_key(func_key):
     return func_key_event.UserDeleteFuncKeyEvent(func_key.id, func_key.user_id)
 
 
-create_events = {UserFuncKey: create_user_func_key}
+def create_bsfilter_func_key(func_key):
+    return func_key_event.BSFilterCreateFuncKeyEvent(func_key.id,
+                                                     func_key.filter_id,
+                                                     func_key.secretary_id)
 
-delete_events = {UserFuncKey: delete_user_func_key}
+
+def delete_bsfilter_func_key(func_key):
+    return func_key_event.BSFilterDeleteFuncKeyEvent(func_key.id,
+                                                     func_key.filter_id,
+                                                     func_key.secretary_id)
+
+
+create_events = {UserFuncKey: create_user_func_key,
+                 BSFilterFuncKey: create_bsfilter_func_key}
+
+delete_events = {UserFuncKey: delete_user_func_key,
+                 BSFilterFuncKey: delete_bsfilter_func_key}
 
 
 def created(func_key):

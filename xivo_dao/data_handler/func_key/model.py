@@ -35,6 +35,23 @@ class UserFuncKey(NewModel):
     _RELATION = {}
 
 
+class BSFilterFuncKey(NewModel):
+
+    MANDATORY = [
+        'id',
+        'filter_id',
+        'secretary_id',
+    ]
+
+    FIELDS = [
+        'id',
+        'filter_id',
+        'secretary_id',
+    ]
+
+    _RELATION = {}
+
+
 class ForwardTypeConverter(object):
 
     fwd_types = {

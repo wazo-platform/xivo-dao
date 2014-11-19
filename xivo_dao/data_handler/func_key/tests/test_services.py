@@ -20,7 +20,7 @@ from hamcrest import assert_that, contains, equal_to
 
 from xivo_dao.tests.test_case import TestCase
 from xivo_dao.data_handler.func_key import services
-from xivo_dao.data_handler.func_key.model import UserFuncKey, Forward
+from xivo_dao.data_handler.func_key.model import UserFuncKey, BSFilterFuncKey, Forward
 from xivo_dao.data_handler.user.model import User
 
 
@@ -133,6 +133,50 @@ class TestDeleteUserDestination(TestCase):
         services.delete_user_destination(user)
 
         find_user_destination.assert_called_once_with(user.id)
+        self.assertNotCalled(dao_delete)
+        self.assertNotCalled(remove_func_key_from_templates)
+        self.assertNotCalled(notifier_delete)
+
+
+@patch('xivo_dao.data_handler.func_key.notifier.deleted')
+@patch('xivo_dao.data_handler.func_key.dao.delete')
+@patch('xivo_dao.data_handler.func_key_template.dao.remove_func_key_from_templates')
+@patch('xivo_dao.data_handler.func_key.dao.find_bsfilter_destinations_for_user')
+class TestDeleteBSFilterDestination(TestCase):
+
+    def test_delete_bsfilter_destination(self,
+                                         find_bsfilter_destinations_for_user,
+                                         remove_func_key_from_templates,
+                                         dao_delete,
+                                         notifier_delete):
+        user = Mock(User, id=1)
+        first_func_key = BSFilterFuncKey(secretary_id=user.id)
+        second_func_key = BSFilterFuncKey(secretary_id=user.id)
+
+        find_bsfilter_destinations_for_user.return_value = [first_func_key, second_func_key]
+
+        services.delete_bsfilter_destination(user)
+
+        find_bsfilter_destinations_for_user.assert_called_once_with(user.id)
+        dao_delete.assert_any_call(first_func_key)
+        dao_delete.assert_any_call(second_func_key)
+        remove_func_key_from_templates.assert_any_call(first_func_key)
+        remove_func_key_from_templates.assert_any_call(second_func_key)
+        notifier_delete.assert_any_call(first_func_key)
+        notifier_delete.assert_any_call(second_func_key)
+
+    def test_delete_bsfilter_destination_when_no_destinations(self,
+                                                              find_bsfilter_destinations_for_user,
+                                                              remove_func_key_from_templates,
+                                                              dao_delete,
+                                                              notifier_delete):
+        user = Mock(User, id=1)
+
+        find_bsfilter_destinations_for_user.return_value = []
+
+        services.delete_bsfilter_destination(user)
+
+        find_bsfilter_destinations_for_user.assert_called_once_with(user.id)
         self.assertNotCalled(dao_delete)
         self.assertNotCalled(remove_func_key_from_templates)
         self.assertNotCalled(notifier_delete)

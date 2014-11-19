@@ -206,6 +206,7 @@ class TestDelete(TestCase):
     def test_delete(self,
                     user_validate_delete,
                     delete_user_destination,
+                    delete_bsfilter_destination,
                     user_dao_delete,
                     user_notifier_deleted,
                     delete_private_template):
@@ -216,6 +217,7 @@ class TestDelete(TestCase):
         user_validate_delete.assert_called_once_with(user)
         user_dao_delete.assert_called_once_with(user)
         delete_user_destination.assert_called_once_with(user)
+        delete_bsfilter_destination.assert_called_once_with(user)
         user_notifier_deleted.assert_called_once_with(user)
         delete_private_template.assert_called_once_with(user.private_template_id)
 

@@ -76,6 +76,7 @@ def edit(user):
 def delete(user):
     validator.validate_delete(user)
     func_key_service.delete_user_destination(user)
+    func_key_service.delete_bsfilter_destination(user)
     user_dao.delete(user)
     template_dao.delete_private_template(user.private_template_id)
     notifier.deleted(user)

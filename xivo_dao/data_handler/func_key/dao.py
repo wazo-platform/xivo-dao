@@ -15,9 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy import Integer
+from sqlalchemy.sql import cast
+
 from xivo_dao import alchemy as tbl
 
-from xivo_dao.data_handler.func_key.model import UserFuncKey, Forward, ForwardTypeConverter
+from xivo_dao.data_handler.func_key.model import UserFuncKey, Forward, ForwardTypeConverter, BSFilterFuncKey
 from xivo_dao.data_handler.exception import DataError
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.helpers.db_utils import commit_or_abort
@@ -52,6 +55,22 @@ def find_user_destination(session, user_id):
 
     return UserFuncKey(id=row.func_key_id,
                        user_id=row.user_id)
+
+
+@daosession
+def find_bsfilter_destinations_for_user(session, user_id):
+    query = (session
+             .query(tbl.FuncKeyDestBSFilter.func_key_id,
+                    tbl.Callfiltermember.callfilterid.label('filter_id'),
+                    cast(tbl.Callfiltermember.typeval, Integer).label('secretary_id'))
+             .join(tbl.Callfiltermember,
+                   tbl.FuncKeyDestBSFilter.filtermember_id == tbl.Callfiltermember.id)
+             .filter(cast(tbl.Callfiltermember.typeval, Integer) == user_id))
+
+    return [BSFilterFuncKey(id=row.func_key_id,
+                            filter_id=row.filter_id,
+                            secretary_id=row.secretary_id)
+            for row in query]
 
 
 @daosession

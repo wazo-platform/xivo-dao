@@ -37,7 +37,11 @@ def delete_user_destination(user):
 
 
 def delete_bsfilter_destination(user):
-    pass
+    func_keys = dao.find_bsfilter_destinations_for_user(user.id)
+    for func_key in func_keys:
+        template_dao.remove_func_key_from_templates(func_key)
+        dao.delete(func_key)
+        notifier.deleted(func_key)
 
 
 def find_all_fwd_unc(user_id):

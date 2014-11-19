@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.tests.test_case import TestCase
-from xivo_dao.data_handler.func_key.model import UserFuncKey
+from xivo_dao.data_handler.func_key.model import UserFuncKey, BSFilterFuncKey
 from xivo_dao.data_handler.func_key import notifier
 
 from mock import patch, Mock
@@ -49,5 +49,35 @@ class TestNotifier(TestCase):
 
         UserDeleteFuncKeyEvent.assert_called_once_with(func_key.id,
                                                        func_key.user_id)
+
+        send_bus_command.assert_called_once_with(new_event)
+
+    @patch('xivo_bus.resources.func_key.event.BSFilterCreateFuncKeyEvent')
+    @patch('xivo_dao.helpers.bus_manager.send_bus_command')
+    def test_create_bsfilter_func_key(self, send_bus_command, BSFilterCreateFuncKeyEvent):
+        new_event = BSFilterCreateFuncKeyEvent.return_value = Mock()
+
+        func_key = BSFilterFuncKey(id=1, filter_id=2, secretary_id=3)
+
+        notifier.created(func_key)
+
+        BSFilterCreateFuncKeyEvent.assert_called_once_with(func_key.id,
+                                                           func_key.filter_id,
+                                                           func_key.secretary_id)
+
+        send_bus_command.assert_called_once_with(new_event)
+
+    @patch('xivo_bus.resources.func_key.event.BSFilterDeleteFuncKeyEvent')
+    @patch('xivo_dao.helpers.bus_manager.send_bus_command')
+    def test_delete_bsfilter_func_key(self, send_bus_command, BSFilterDeleteFuncKeyEvent):
+        new_event = BSFilterDeleteFuncKeyEvent.return_value = Mock()
+
+        func_key = BSFilterFuncKey(id=1, filter_id=2, secretary_id=3)
+
+        notifier.deleted(func_key)
+
+        BSFilterDeleteFuncKeyEvent.assert_called_once_with(func_key.id,
+                                                           func_key.filter_id,
+                                                           func_key.secretary_id)
 
         send_bus_command.assert_called_once_with(new_event)
