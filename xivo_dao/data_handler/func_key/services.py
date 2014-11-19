@@ -20,14 +20,6 @@ from xivo_dao.data_handler.func_key import validator
 from xivo_dao.data_handler.func_key import notifier
 
 
-def search(**parameters):
-    return dao.search(**parameters)
-
-
-def get(func_key_id):
-    return dao.get(func_key_id)
-
-
 def create(func_key):
     validator.validate_create(func_key)
     created_func_key = dao.create(func_key)

@@ -15,25 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.sql import null, and_
-
 from xivo_dao import alchemy as tbl
 
-from xivo_dao.data_handler.func_key.model import Hint, Forward, ForwardTypeConverter
-from xivo_dao.data_handler import errors
-from xivo_dao.data_handler.utils.search import SearchResult
+from xivo_dao.data_handler.func_key.model import Forward, ForwardTypeConverter
 from xivo_dao.data_handler.exception import DataError
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.data_handler.func_key.database import db_converter, QueryHelper
-
-
-@daosession
-def search(session, **parameters):
-    rows, total = QueryHelper(session).search(parameters)
-
-    func_keys = [db_converter.to_model(row) for row in rows]
-    return SearchResult(total, func_keys)
 
 
 @daosession
@@ -45,17 +33,6 @@ def find_all_by_destination(session, destination, destination_id):
 
     func_key_rows = query.all()
     return [db_converter.to_model(row) for row in func_key_rows]
-
-
-@daosession
-def get(session, func_key_id):
-    query = QueryHelper(session).select_func_key(func_key_id)
-    row = query.first()
-
-    if not row:
-        raise errors.not_found('FuncKey', id=func_key_id)
-
-    return db_converter.to_model(row)
 
 
 @daosession
