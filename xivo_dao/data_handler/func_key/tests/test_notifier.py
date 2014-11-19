@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.tests.test_case import TestCase
-from xivo_dao.data_handler.func_key.model import FuncKey
+from xivo_dao.data_handler.func_key.model import UserFuncKey
 from xivo_dao.data_handler.func_key import notifier
 
 from mock import patch, Mock
@@ -24,21 +24,30 @@ from mock import patch, Mock
 
 class TestNotifier(TestCase):
 
-    @patch('xivo_bus.resources.func_key.event.CreateFuncKeyEvent')
+    @patch('xivo_bus.resources.func_key.event.UserCreateFuncKeyEvent')
     @patch('xivo_dao.helpers.bus_manager.send_bus_command')
-    def test_created(self, send_bus_command, CreateFuncKeyEvent):
-        new_event = CreateFuncKeyEvent.return_value = Mock()
+    def test_create_user_func_key(self, send_bus_command, UserCreateFuncKeyEvent):
+        new_event = UserCreateFuncKeyEvent.return_value = Mock()
 
-        func_key = FuncKey(id=1,
-                           type='speeddial',
-                           destination='user',
-                           destination_id=2)
+        func_key = UserFuncKey(id=1, user_id=2)
 
         notifier.created(func_key)
 
-        CreateFuncKeyEvent.assert_called_once_with(func_key.id,
-                                                   func_key.type,
-                                                   func_key.destination,
-                                                   func_key.destination_id)
+        UserCreateFuncKeyEvent.assert_called_once_with(func_key.id,
+                                                       func_key.user_id)
+
+        send_bus_command.assert_called_once_with(new_event)
+
+    @patch('xivo_bus.resources.func_key.event.UserDeleteFuncKeyEvent')
+    @patch('xivo_dao.helpers.bus_manager.send_bus_command')
+    def test_delete_user_func_key(self, send_bus_command, UserDeleteFuncKeyEvent):
+        new_event = UserDeleteFuncKeyEvent.return_value = Mock()
+
+        func_key = UserFuncKey(id=1, user_id=2)
+
+        notifier.deleted(func_key)
+
+        UserDeleteFuncKeyEvent.assert_called_once_with(func_key.id,
+                                                       func_key.user_id)
 
         send_bus_command.assert_called_once_with(new_event)
