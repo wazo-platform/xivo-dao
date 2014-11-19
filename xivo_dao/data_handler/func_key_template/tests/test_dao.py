@@ -24,7 +24,7 @@ from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping as FuncKeyMappingSc
 
 from xivo_dao.data_handler.exception import DataError
 from xivo_dao.data_handler.func_key_template import dao
-from xivo_dao.data_handler.func_key.model import FuncKey
+from xivo_dao.data_handler.func_key.model import UserFuncKey
 
 
 class TestFuncKeyTemplateDao(DAOTestCase):
@@ -54,7 +54,7 @@ class TestFuncKeyTemplateDao(DAOTestCase):
                                            position=position)
         self.add_me(mapping_row)
 
-        return FuncKey(id=func_key_row.id)
+        return UserFuncKey(id=func_key_row.id)
 
 
 class TestCreatePrivateTemplate(TestFuncKeyTemplateDao):

@@ -18,10 +18,43 @@
 from xivo_dao.helpers import bus_manager
 from xivo_bus.resources.func_key import event as func_key_event
 
+from xivo_dao.data_handler.func_key.model import UserFuncKey, BSFilterFuncKey
+
+
+def create_user_func_key(func_key):
+    return func_key_event.UserCreateFuncKeyEvent(func_key.id, func_key.user_id)
+
+
+def delete_user_func_key(func_key):
+    return func_key_event.UserDeleteFuncKeyEvent(func_key.id, func_key.user_id)
+
+
+def create_bsfilter_func_key(func_key):
+    return func_key_event.BSFilterCreateFuncKeyEvent(func_key.id,
+                                                     func_key.filter_id,
+                                                     func_key.secretary_id)
+
+
+def delete_bsfilter_func_key(func_key):
+    return func_key_event.BSFilterDeleteFuncKeyEvent(func_key.id,
+                                                     func_key.filter_id,
+                                                     func_key.secretary_id)
+
+
+create_events = {UserFuncKey: create_user_func_key,
+                 BSFilterFuncKey: create_bsfilter_func_key}
+
+delete_events = {UserFuncKey: delete_user_func_key,
+                 BSFilterFuncKey: delete_bsfilter_func_key}
+
 
 def created(func_key):
-    event = func_key_event.CreateFuncKeyEvent(func_key.id,
-                                              func_key.type,
-                                              func_key.destination,
-                                              func_key.destination_id)
+    builder = create_events[func_key.__class__]
+    event = builder(func_key)
+    bus_manager.send_bus_command(event)
+
+
+def deleted(func_key):
+    builder = delete_events[func_key.__class__]
+    event = builder(func_key)
     bus_manager.send_bus_command(event)
