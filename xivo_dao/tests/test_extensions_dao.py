@@ -31,9 +31,11 @@ class TestExtensionsDAO(DAOTestCase):
                            exten='_*735')
         enablednd = extensions_dao.exten_by_name('enablednd')
         phoneprogfunckey = extensions_dao.exten_by_name('phoneprogfunckey')
+        foo = extensions_dao.exten_by_name('foo')
 
         self.assertEqual(enablednd, '*25')
         self.assertEqual(phoneprogfunckey, '_*735')
+        self.assertEqual(foo, '')
 
     def test_create(self):
         exten = Extension()
