@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -56,7 +56,7 @@ def bus_event_associated(user_line):
                                               user_line.line_id,
                                               user_line.main_user,
                                               user_line.main_line)
-    bus_manager.send_bus_command(bus_event)
+    bus_manager.send_bus_event(bus_event)
 
 
 def bus_event_dissociated(user_line):
@@ -64,4 +64,4 @@ def bus_event_dissociated(user_line):
                                                user_line.line_id,
                                                user_line.main_user,
                                                user_line.main_line)
-    bus_manager.send_bus_command(bus_event)
+    bus_manager.send_bus_event(bus_event)

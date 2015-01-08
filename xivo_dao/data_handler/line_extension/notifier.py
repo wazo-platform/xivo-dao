@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -52,7 +52,7 @@ def _generate_ctibus_commands(line_extension):
 def send_bus_association_events(line_extension):
     bus_event = event.LineExtensionAssociatedEvent(line_extension.line_id,
                                                    line_extension.extension_id)
-    bus_manager.send_bus_command(bus_event)
+    bus_manager.send_bus_event(bus_event)
 
 
 def dissociated(line_extension):
@@ -63,4 +63,4 @@ def dissociated(line_extension):
 def send_bus_dissociation_events(line_extension):
     bus_event = event.LineExtensionDissociatedEvent(line_extension.line_id,
                                                     line_extension.extension_id)
-    bus_manager.send_bus_command(bus_event)
+    bus_manager.send_bus_event(bus_event)

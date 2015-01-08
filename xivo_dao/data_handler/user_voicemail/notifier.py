@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -55,11 +55,11 @@ def bus_event_associated(user_voicemail):
     bus_event = event.UserVoicemailAssociatedEvent(user_voicemail.user_id,
                                                    user_voicemail.voicemail_id,
                                                    user_voicemail.enabled)
-    bus_manager.send_bus_command(bus_event)
+    bus_manager.send_bus_event(bus_event)
 
 
 def bus_event_dissociated(user_voicemail):
     bus_event = event.UserVoicemailDissociatedEvent(user_voicemail.user_id,
                                                     user_voicemail.voicemail_id,
                                                     False)
-    bus_manager.send_bus_command(bus_event)
+    bus_manager.send_bus_event(bus_event)

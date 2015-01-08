@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014 Avencall
+# Copyright (C) 2014-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -54,8 +54,8 @@ class TestSysconfReloadDialplan(unittest.TestCase):
 class TestBusEventCreated(unittest.TestCase):
 
     @patch('xivo_bus.resources.context.event.CreateContextEvent')
-    @patch('xivo_dao.helpers.bus_manager.send_bus_command')
-    def test_send_bus_event_created(self, send_bus_command, CreateContextEvent):
+    @patch('xivo_dao.helpers.bus_manager.send_bus_event')
+    def test_send_bus_event_created(self, send_bus_event, CreateContextEvent):
         new_event = CreateContextEvent.return_value = Mock()
 
         context = Context(name='foo',
@@ -70,4 +70,4 @@ class TestBusEventCreated(unittest.TestCase):
                                                    context.description,
                                                    context.type)
 
-        send_bus_command.assert_called_once_with(new_event)
+        send_bus_event.assert_called_once_with(new_event)

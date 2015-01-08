@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.bus_manager import send_bus_command
+from xivo_dao.helpers.bus_manager import send_bus_event
 from xivo_bus.resources.user.event import CreateUserEvent, \
     EditUserEvent, DeleteUserEvent
 from xivo_dao.helpers import sysconfd_connector
@@ -35,16 +35,16 @@ def _new_sysconfd_data(ctibus_command):
 def created(user):
     data = _new_sysconfd_data('xivo[user,add,%s]' % user.id)
     sysconfd_connector.exec_request_handlers(data)
-    send_bus_command(CreateUserEvent(user.id))
+    send_bus_event(CreateUserEvent(user.id))
 
 
 def edited(user):
     data = _new_sysconfd_data('xivo[user,edit,%s]' % user.id)
     sysconfd_connector.exec_request_handlers(data)
-    send_bus_command(EditUserEvent(user.id))
+    send_bus_event(EditUserEvent(user.id))
 
 
 def deleted(user):
     data = _new_sysconfd_data('xivo[user,delete,%s]' % user.id)
     sysconfd_connector.exec_request_handlers(data)
-    send_bus_command(DeleteUserEvent(user.id))
+    send_bus_event(DeleteUserEvent(user.id))

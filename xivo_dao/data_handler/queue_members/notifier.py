@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -69,16 +69,16 @@ def bus_event_agent_association_updated(queue_member):
     bus_event = event.AgentQueueAssociationEditedEvent(queue_member.queue_id,
                                                        queue_member.agent_id,
                                                        queue_member.penalty)
-    bus_manager.send_bus_command(bus_event)
+    bus_manager.send_bus_event(bus_event)
 
 
 def bus_event_agent_queue_associated(queue_member):
     bus_event = event.AgentQueueAssociatedEvent(queue_member.queue_id,
                                                 queue_member.agent_id,
                                                 queue_member.penalty)
-    bus_manager.send_bus_command(bus_event)
+    bus_manager.send_bus_event(bus_event)
 
 
 def bus_event_agent_removed_from_queue(agent_id, queue_id):
     bus_event = event.AgentRemovedFromQueueEvent(agent_id, queue_id)
-    bus_manager.send_bus_command(bus_event)
+    bus_manager.send_bus_event(bus_event)

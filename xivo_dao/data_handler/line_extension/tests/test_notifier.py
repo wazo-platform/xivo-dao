@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -59,8 +59,8 @@ class TestLineExtensionNotifier(unittest.TestCase):
         find_all_by_line_id.assert_called_once_with(line_extension.line_id)
 
     @patch('xivo_bus.resources.line_extension.event.LineExtensionAssociatedEvent')
-    @patch('xivo_dao.helpers.bus_manager.send_bus_command')
-    def test_send_bus_association_events(self, send_bus_command, LineExtensionAssociatedEvent):
+    @patch('xivo_dao.helpers.bus_manager.send_bus_event')
+    def test_send_bus_association_events(self, send_bus_event, LineExtensionAssociatedEvent):
         new_event = LineExtensionAssociatedEvent.return_value = Mock()
 
         line_extension = LineExtension(line_id=1, extension_id=2)
@@ -69,7 +69,7 @@ class TestLineExtensionNotifier(unittest.TestCase):
 
         LineExtensionAssociatedEvent.assert_called_once_with(line_extension.line_id,
                                                              line_extension.extension_id)
-        send_bus_command.assert_called_once_with(new_event)
+        send_bus_event.assert_called_once_with(new_event)
 
     @patch('xivo_dao.data_handler.line_extension.notifier.send_bus_dissociation_events')
     @patch('xivo_dao.data_handler.line_extension.notifier.send_sysconf_commands')
@@ -82,8 +82,8 @@ class TestLineExtensionNotifier(unittest.TestCase):
         send_bus_dissociation_events.assert_called_once_with(line_extension)
 
     @patch('xivo_bus.resources.line_extension.event.LineExtensionDissociatedEvent')
-    @patch('xivo_dao.helpers.bus_manager.send_bus_command')
-    def test_send_bus_dissociation_events(self, send_bus_command, LineExtensionDissociatedEvent):
+    @patch('xivo_dao.helpers.bus_manager.send_bus_event')
+    def test_send_bus_dissociation_events(self, send_bus_event, LineExtensionDissociatedEvent):
         new_event = LineExtensionDissociatedEvent.return_value = Mock()
 
         line_extension = LineExtension(line_id=1, extension_id=2)
@@ -92,4 +92,4 @@ class TestLineExtensionNotifier(unittest.TestCase):
 
         LineExtensionDissociatedEvent.assert_called_once_with(line_extension.line_id,
                                                               line_extension.extension_id)
-        send_bus_command.assert_called_once_with(new_event)
+        send_bus_event.assert_called_once_with(new_event)

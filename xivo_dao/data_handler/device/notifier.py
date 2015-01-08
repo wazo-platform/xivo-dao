@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,18 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.bus_manager import send_bus_command
+from xivo_dao.helpers.bus_manager import send_bus_event
 from xivo_bus.resources.device.event import CreateDeviceEvent, \
     EditDeviceEvent, DeleteDeviceEvent
 
 
 def created(device):
-    send_bus_command(CreateDeviceEvent(device.id))
+    send_bus_event(CreateDeviceEvent(device.id))
 
 
 def edited(device):
-    send_bus_command(EditDeviceEvent(device.id))
+    send_bus_event(EditDeviceEvent(device.id))
 
 
 def deleted(device):
-    send_bus_command(DeleteDeviceEvent(device.id))
+    send_bus_event(DeleteDeviceEvent(device.id))

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014 Avencall
+# Copyright (C) 2014-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,8 +30,7 @@ def _init_bus():
                                  durable=config.BUS_EXCHANGE_DURABLE)
 
 
-def send_bus_command(command):
-    # TODO rename to send_bus_event
+def send_bus_event(command):
     _once.once(_init_bus)
     _bus_client.publish_event(config.BUS_EXCHANGE_NAME,
                               config.BUS_BINDING_KEY,

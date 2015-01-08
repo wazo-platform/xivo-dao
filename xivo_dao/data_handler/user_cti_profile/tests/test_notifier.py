@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,8 +34,8 @@ class TestUserCtiProfileNotifier(unittest.TestCase):
 
     @patch('xivo_dao.helpers.sysconfd_connector.exec_request_handlers')
     @patch('xivo_bus.resources.user_cti_profile.event.UserCtiProfileEditedEvent')
-    @patch('xivo_dao.helpers.bus_manager.send_bus_command')
-    def test_edited(self, send_bus_command, UserCtiProfileDissociatedEvent, exec_request_handler):
+    @patch('xivo_dao.helpers.bus_manager.send_bus_event')
+    def test_edited(self, send_bus_event, UserCtiProfileDissociatedEvent, exec_request_handler):
         new_event = UserCtiProfileDissociatedEvent.return_value = Mock()
         user_cti_profile = UserCtiProfile(user_id=1, cti_profile_id=2, enabled=True)
         self.sysconfd_command['ctibus'] = ['xivo[user,edit,1]']
@@ -45,5 +45,5 @@ class TestUserCtiProfileNotifier(unittest.TestCase):
         UserCtiProfileDissociatedEvent.assert_called_once_with(user_cti_profile.user_id,
                                                                user_cti_profile.cti_profile_id,
                                                                user_cti_profile.enabled)
-        send_bus_command.assert_called_once_with(new_event)
+        send_bus_event.assert_called_once_with(new_event)
         exec_request_handler.assert_called_once_with(self.sysconfd_command)

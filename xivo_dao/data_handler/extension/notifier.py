@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.bus_manager import send_bus_command
+from xivo_dao.helpers.bus_manager import send_bus_event
 from xivo_bus.resources.extension.event import CreateExtensionEvent, \
     EditExtensionEvent, DeleteExtensionEvent
 from xivo_dao.helpers import sysconfd_connector
@@ -30,20 +30,20 @@ sysconfd_base_data = {
 
 def created(extension):
     sysconfd_connector.exec_request_handlers(sysconfd_base_data)
-    send_bus_command(CreateExtensionEvent(extension.id,
-                                          extension.exten,
-                                          extension.context))
-
-
-def edited(extension):
-    sysconfd_connector.exec_request_handlers(sysconfd_base_data)
-    send_bus_command(EditExtensionEvent(extension.id,
+    send_bus_event(CreateExtensionEvent(extension.id,
                                         extension.exten,
                                         extension.context))
 
 
+def edited(extension):
+    sysconfd_connector.exec_request_handlers(sysconfd_base_data)
+    send_bus_event(EditExtensionEvent(extension.id,
+                                      extension.exten,
+                                      extension.context))
+
+
 def deleted(extension):
     sysconfd_connector.exec_request_handlers(sysconfd_base_data)
-    send_bus_command(DeleteExtensionEvent(extension.id,
-                                          extension.exten,
-                                          extension.context))
+    send_bus_event(DeleteExtensionEvent(extension.id,
+                                        extension.exten,
+                                        extension.context))

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -56,8 +56,8 @@ class TestUserLineNotifier(unittest.TestCase):
         find_all_by_user_id.assert_called_once_with(user_line.user_id)
 
     @patch('xivo_bus.resources.user_line.event.UserLineAssociatedEvent')
-    @patch('xivo_dao.helpers.bus_manager.send_bus_command')
-    def test_bus_event_associated(self, send_bus_command, UserLineAssociatedEvent):
+    @patch('xivo_dao.helpers.bus_manager.send_bus_event')
+    def test_bus_event_associated(self, send_bus_event, UserLineAssociatedEvent):
         new_event = UserLineAssociatedEvent.return_value = Mock()
 
         user_line = UserLine(user_id=1, line_id=2)
@@ -68,7 +68,7 @@ class TestUserLineNotifier(unittest.TestCase):
                                                         user_line.line_id,
                                                         True,
                                                         True)
-        send_bus_command.assert_called_once_with(new_event)
+        send_bus_event.assert_called_once_with(new_event)
 
     @patch('xivo_dao.data_handler.user_line.notifier.sysconf_command_association_updated')
     @patch('xivo_dao.data_handler.user_line.notifier.bus_event_dissociated')
@@ -81,8 +81,8 @@ class TestUserLineNotifier(unittest.TestCase):
         bus_event_dissociated.assert_called_once_with(user_line)
 
     @patch('xivo_bus.resources.user_line.event.UserLineDissociatedEvent')
-    @patch('xivo_dao.helpers.bus_manager.send_bus_command')
-    def test_bus_event_dissociated(self, send_bus_command, UserLineDissociatedEvent):
+    @patch('xivo_dao.helpers.bus_manager.send_bus_event')
+    def test_bus_event_dissociated(self, send_bus_event, UserLineDissociatedEvent):
         new_event = UserLineDissociatedEvent.return_value = Mock()
 
         user_line = UserLine(user_id=1, line_id=2)
@@ -93,4 +93,4 @@ class TestUserLineNotifier(unittest.TestCase):
                                                          user_line.line_id,
                                                          True,
                                                          True)
-        send_bus_command.assert_called_once_with(new_event)
+        send_bus_event.assert_called_once_with(new_event)

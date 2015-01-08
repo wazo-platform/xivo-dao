@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ def edited(user_cti_profile):
     bus_event = event.UserCtiProfileEditedEvent(user_cti_profile.user_id,
                                                 user_cti_profile.cti_profile_id,
                                                 user_cti_profile.enabled)
-    bus_manager.send_bus_command(bus_event)
+    bus_manager.send_bus_event(bus_event)
     _send_sysconfd_command(user_cti_profile)
 
 

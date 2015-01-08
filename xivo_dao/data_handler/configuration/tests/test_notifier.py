@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -32,21 +32,21 @@ class TestUserCtiProfileNotifier(unittest.TestCase):
 
     @patch('xivo_dao.helpers.sysconfd_connector.exec_request_handlers')
     @patch('xivo_bus.resources.configuration.event.LiveRealoadEditedEvent')
-    @patch('xivo_dao.helpers.bus_manager.send_bus_command')
-    def test_disable_live_reload(self, send_bus_command, LiveRealoadEditedEvent, exec_request_handler):
+    @patch('xivo_dao.helpers.bus_manager.send_bus_event')
+    def test_disable_live_reload(self, send_bus_event, LiveRealoadEditedEvent, exec_request_handler):
         new_event = LiveRealoadEditedEvent.return_value = Mock()
         data = {'enabled': False}
 
         notifier.live_reload_status_changed(data)
 
         LiveRealoadEditedEvent.assert_called_once_with(False)
-        send_bus_command.assert_called_once_with(new_event)
+        send_bus_event.assert_called_once_with(new_event)
         self.assertFalse(exec_request_handler.called)
 
     @patch('xivo_dao.helpers.sysconfd_connector.exec_request_handlers')
     @patch('xivo_bus.resources.configuration.event.LiveRealoadEditedEvent')
-    @patch('xivo_dao.helpers.bus_manager.send_bus_command')
-    def test_enable_live_reload(self, send_bus_command, LiveRealoadEditedEvent, exec_request_handler):
+    @patch('xivo_dao.helpers.bus_manager.send_bus_event')
+    def test_enable_live_reload(self, send_bus_event, LiveRealoadEditedEvent, exec_request_handler):
         new_event = LiveRealoadEditedEvent.return_value = Mock()
         data = {'enabled': True}
         self.sysconfd_command['ctibus'] = ['xivo[cticonfig,update]']
@@ -54,5 +54,5 @@ class TestUserCtiProfileNotifier(unittest.TestCase):
         notifier.live_reload_status_changed(data)
 
         LiveRealoadEditedEvent.assert_called_once_with(True)
-        send_bus_command.assert_called_once_with(new_event)
+        send_bus_event.assert_called_once_with(new_event)
         exec_request_handler.assert_called_once_with(self.sysconfd_command)

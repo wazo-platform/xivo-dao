@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014 Avencall
+# Copyright (C) 2014-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -51,10 +51,10 @@ delete_events = {UserFuncKey: delete_user_func_key,
 def created(func_key):
     builder = create_events[func_key.__class__]
     event = builder(func_key)
-    bus_manager.send_bus_command(event)
+    bus_manager.send_bus_event(event)
 
 
 def deleted(func_key):
     builder = delete_events[func_key.__class__]
     event = builder(func_key)
-    bus_manager.send_bus_command(event)
+    bus_manager.send_bus_event(event)
