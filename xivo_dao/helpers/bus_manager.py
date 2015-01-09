@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+import logging
+
+logger = logging.getLogger(__name__)
 _bus_client = None
 
 
@@ -25,6 +28,7 @@ def install_bus_event_producer(bus_producer):
 
 def send_bus_event(event, routing_key):
     if not _bus_client:
-        raise RuntimeError('Tried to send bus events with a configured bus connection')
+        logger.warning('Trying to send %s on %s with a configured bus', event, routing_key)
+        return
 
     _bus_client.publish_event(_bus_client.exchange_name, routing_key, event)
