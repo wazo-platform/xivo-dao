@@ -32,6 +32,6 @@ def _init_bus():
 
 def send_bus_event(event, routing_key):
     _once.once(_init_bus)
-    _bus_client.publish_event(config.BUS_EXCHANGE_NAME,
+    _bus_client.publish_event(_bus_client.exchange_name,
                               routing_key,
                               event)
