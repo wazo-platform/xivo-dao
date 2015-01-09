@@ -15,26 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from provd.rest.client.client import new_provisioning_client
-from xivo_dao import provisioning_dao
+from xivo_dao.alchemy.provisioning import Provisioning
+from xivo_dao.helpers.db_manager import daosession
 
 
-def config_manager():
-    provisioning_client = _provd_client()
-    return provisioning_client.config_manager()
-
-
-def device_manager():
-    provisioning_client = _provd_client()
-    return provisioning_client.device_manager()
-
-
-def plugin_manager():
-    provisioning_client = _provd_client()
-    return provisioning_client.plugin_manager()
-
-
-def _provd_client():
-    host, port = provisioning_dao.get_provd_rest_host_and_port()
-    provd_url = "http://%s:%s/provd" % (host, port)
-    return new_provisioning_client(provd_url)
+@daosession
+def get_provd_rest_host_and_port(session):
+    result = (session.query(Provisioning.net4_ip_rest, Provisioning.rest_port).first())
+    if result is None:
+        return None
+    else:
+        return result
