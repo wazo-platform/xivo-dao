@@ -17,6 +17,3 @@
 
 DB_URI = 'postgresql://asterisk:proformatique@localhost/asterisk'
 SQL_DEBUG = False
-BUS_EXCHANGE_NAME = 'xivo'
-BUS_EXCHANGE_TYPE = 'topic'
-BUS_EXCHANGE_DURABLE = False

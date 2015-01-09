@@ -15,23 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo import moresynchro
-from xivo_bus.ctl.producer import BusProducer
-from xivo_dao.helpers import config
-
-_once = moresynchro.Once()
-_bus_client = BusProducer()
+_bus_client = None
 
 
-def _init_bus():
-    _bus_client.connect()
-    _bus_client.declare_exchange(config.BUS_EXCHANGE_NAME,
-                                 config.BUS_EXCHANGE_TYPE,
-                                 durable=config.BUS_EXCHANGE_DURABLE)
+def install_bus_event_producer(bus_producer):
+    global _bus_client
+    _bus_client = bus_producer
 
 
 def send_bus_event(event, routing_key):
-    _once.once(_init_bus)
-    _bus_client.publish_event(_bus_client.exchange_name,
-                              routing_key,
-                              event)
+    if not _bus_client:
+        raise RuntimeError('Tried to send bus events with a configured bus connection')
+
+    _bus_client.publish_event(_bus_client.exchange_name, routing_key, event)
