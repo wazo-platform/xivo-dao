@@ -19,6 +19,8 @@ from xivo_bus.resources.queue_members import event
 from xivo_dao.helpers import sysconfd_connector
 from xivo_dao.helpers import bus_manager
 
+routing_key = 'config.agent_queue_association.{}'
+
 
 def agent_queue_association_updated(queue_member):
     sysconf_command_agent_association_updated(queue_member)
@@ -69,16 +71,16 @@ def bus_event_agent_association_updated(queue_member):
     bus_event = event.AgentQueueAssociationEditedEvent(queue_member.queue_id,
                                                        queue_member.agent_id,
                                                        queue_member.penalty)
-    bus_manager.send_bus_event(bus_event)
+    bus_manager.send_bus_event(bus_event, routing_key.format('edited'))
 
 
 def bus_event_agent_queue_associated(queue_member):
     bus_event = event.AgentQueueAssociatedEvent(queue_member.queue_id,
                                                 queue_member.agent_id,
                                                 queue_member.penalty)
-    bus_manager.send_bus_event(bus_event)
+    bus_manager.send_bus_event(bus_event, routing_key.format('created'))
 
 
 def bus_event_agent_removed_from_queue(agent_id, queue_id):
     bus_event = event.AgentRemovedFromQueueEvent(agent_id, queue_id)
-    bus_manager.send_bus_event(bus_event)
+    bus_manager.send_bus_event(bus_event, routing_key.format('deleted'))

@@ -21,6 +21,8 @@ from xivo_dao.data_handler.user_line import dao as user_line_dao
 from xivo_dao.helpers import bus_manager
 from xivo_dao.helpers import sysconfd_connector
 
+routing_key = 'config.line_extension_association.{}'
+
 
 def associated(line_extension):
     send_sysconf_commands(line_extension)
@@ -52,7 +54,7 @@ def _generate_ctibus_commands(line_extension):
 def send_bus_association_events(line_extension):
     bus_event = event.LineExtensionAssociatedEvent(line_extension.line_id,
                                                    line_extension.extension_id)
-    bus_manager.send_bus_event(bus_event)
+    bus_manager.send_bus_event(bus_event, routing_key.format('created'))
 
 
 def dissociated(line_extension):
@@ -63,4 +65,4 @@ def dissociated(line_extension):
 def send_bus_dissociation_events(line_extension):
     bus_event = event.LineExtensionDissociatedEvent(line_extension.line_id,
                                                     line_extension.extension_id)
-    bus_manager.send_bus_event(bus_event)
+    bus_manager.send_bus_event(bus_event, routing_key.format('deleted'))

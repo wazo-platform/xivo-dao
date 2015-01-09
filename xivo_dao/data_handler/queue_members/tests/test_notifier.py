@@ -44,7 +44,7 @@ class TestQueueMembersNotifier(unittest.TestCase):
         AgentQueueAssociationEditedEvent.assert_called_once_with(queue_member.queue_id,
                                                                  queue_member.agent_id,
                                                                  queue_member.penalty)
-        send_bus_event.assert_called_once_with(new_event)
+        send_bus_event.assert_called_once_with(new_event, 'config.agent_queue_association.edited')
         exec_request_handler.assert_called_once_with(self.sysconfd_command)
 
     @patch('xivo_dao.helpers.sysconfd_connector.exec_request_handlers')
@@ -61,7 +61,7 @@ class TestQueueMembersNotifier(unittest.TestCase):
         AgentQueueAssociatedEvent.assert_called_once_with(queue_member.queue_id,
                                                           queue_member.agent_id,
                                                           queue_member.penalty)
-        send_bus_event.assert_called_once_with(new_event)
+        send_bus_event.assert_called_once_with(new_event, 'config.agent_queue_association.created')
 
         exec_request_handler.assert_called_once_with(self.sysconfd_command)
 
@@ -78,5 +78,5 @@ class TestQueueMembersNotifier(unittest.TestCase):
 
         notifier.agent_removed_from_queue(agent_id, queue_id)
 
-        send_bus_event.assert_called_once_with(new_event)
+        send_bus_event.assert_called_once_with(new_event, 'config.agent_queue_association.deleted')
         exec_request_handler.assert_called_once_with(self.sysconfd_command)

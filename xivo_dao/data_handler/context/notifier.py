@@ -41,4 +41,4 @@ def send_bus_event_created(context):
                                              context.display_name,
                                              context.description,
                                              context.type)
-    bus_manager.send_bus_event(created_event)
+    bus_manager.send_bus_event(created_event, 'config.context.created')

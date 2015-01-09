@@ -27,23 +27,28 @@ sysconfd_base_data = {
     'agentbus': []
 }
 
+routing_key = 'config.extension.{}'
+
 
 def created(extension):
     sysconfd_connector.exec_request_handlers(sysconfd_base_data)
-    send_bus_event(CreateExtensionEvent(extension.id,
-                                        extension.exten,
-                                        extension.context))
+    event = CreateExtensionEvent(extension.id,
+                                 extension.exten,
+                                 extension.context)
+    send_bus_event(event, routing_key.format('created'))
 
 
 def edited(extension):
     sysconfd_connector.exec_request_handlers(sysconfd_base_data)
-    send_bus_event(EditExtensionEvent(extension.id,
-                                      extension.exten,
-                                      extension.context))
+    event = EditExtensionEvent(extension.id,
+                               extension.exten,
+                               extension.context)
+    send_bus_event(event, routing_key.format('edited'))
 
 
 def deleted(extension):
     sysconfd_connector.exec_request_handlers(sysconfd_base_data)
-    send_bus_event(DeleteExtensionEvent(extension.id,
-                                        extension.exten,
-                                        extension.context))
+    event = DeleteExtensionEvent(extension.id,
+                                 extension.exten,
+                                 extension.context)
+    send_bus_event(event, routing_key.format('deleted'))

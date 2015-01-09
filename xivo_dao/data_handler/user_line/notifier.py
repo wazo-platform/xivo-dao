@@ -20,6 +20,8 @@ from xivo_dao.data_handler.user_line import dao as user_line_dao
 from xivo_dao.helpers import sysconfd_connector
 from xivo_dao.helpers import bus_manager
 
+routing_key = 'config.user_line_association.{}'
+
 
 def associated(user_line):
     sysconf_command_association_updated(user_line)
@@ -56,7 +58,7 @@ def bus_event_associated(user_line):
                                               user_line.line_id,
                                               user_line.main_user,
                                               user_line.main_line)
-    bus_manager.send_bus_event(bus_event)
+    bus_manager.send_bus_event(bus_event, routing_key.format('created'))
 
 
 def bus_event_dissociated(user_line):
@@ -64,4 +66,4 @@ def bus_event_dissociated(user_line):
                                                user_line.line_id,
                                                user_line.main_user,
                                                user_line.main_line)
-    bus_manager.send_bus_event(bus_event)
+    bus_manager.send_bus_event(bus_event, routing_key.format('deleted'))

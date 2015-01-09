@@ -30,8 +30,8 @@ def _init_bus():
                                  durable=config.BUS_EXCHANGE_DURABLE)
 
 
-def send_bus_event(command):
+def send_bus_event(event, routing_key):
     _once.once(_init_bus)
     _bus_client.publish_event(config.BUS_EXCHANGE_NAME,
-                              config.BUS_BINDING_KEY,
-                              command)
+                              routing_key,
+                              event)

@@ -69,7 +69,7 @@ class TestLineExtensionNotifier(unittest.TestCase):
 
         LineExtensionAssociatedEvent.assert_called_once_with(line_extension.line_id,
                                                              line_extension.extension_id)
-        send_bus_event.assert_called_once_with(new_event)
+        send_bus_event.assert_called_once_with(new_event, 'config.line_extension_association.created')
 
     @patch('xivo_dao.data_handler.line_extension.notifier.send_bus_dissociation_events')
     @patch('xivo_dao.data_handler.line_extension.notifier.send_sysconf_commands')
@@ -92,4 +92,4 @@ class TestLineExtensionNotifier(unittest.TestCase):
 
         LineExtensionDissociatedEvent.assert_called_once_with(line_extension.line_id,
                                                               line_extension.extension_id)
-        send_bus_event.assert_called_once_with(new_event)
+        send_bus_event.assert_called_once_with(new_event, 'config.line_extension_association.deleted')
