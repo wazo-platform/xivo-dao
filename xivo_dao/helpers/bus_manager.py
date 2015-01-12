@@ -28,7 +28,7 @@ def install_bus_event_producer(bus_producer):
 
 def send_bus_event(event, routing_key):
     if not _bus_client:
-        logger.warning('Trying to send %s on %s with a configured bus', event, routing_key)
+        logger.warning('Trying to send %s on %s with an unconfigured bus', event, routing_key)
         return
 
     _bus_client.publish_event(_bus_client.exchange_name, routing_key, event)
