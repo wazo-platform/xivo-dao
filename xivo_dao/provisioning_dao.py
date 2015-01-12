@@ -21,8 +21,4 @@ from xivo_dao.helpers.db_manager import daosession
 
 @daosession
 def get_provd_rest_host_and_port(session):
-    result = (session.query(Provisioning.net4_ip_rest, Provisioning.rest_port).first())
-    if result is None:
-        return None
-    else:
-        return result
+    return session.query(Provisioning.net4_ip_rest, Provisioning.rest_port).first()
