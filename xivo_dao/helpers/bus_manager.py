@@ -19,11 +19,14 @@ import logging
 
 logger = logging.getLogger(__name__)
 _bus_client = None
+_exchange_name = None
 
 
-def install_bus_event_producer(bus_producer):
+def install_bus_event_producer(bus_producer, exchange_name):
     global _bus_client
+    global _exchange_name
     _bus_client = bus_producer
+    _exchange_name = exchange_name
 
 
 def send_bus_event(event, routing_key):
@@ -31,4 +34,4 @@ def send_bus_event(event, routing_key):
         logger.warning('Trying to send %s on %s with an unconfigured bus', event, routing_key)
         return
 
-    _bus_client.publish_event(_bus_client.exchange_name, routing_key, event)
+    _bus_client.publish_event(_exchange_name, routing_key, event)
