@@ -28,16 +28,17 @@ class TestProvisionningDao(DAOTestCase):
         self.assertEqual(result, (u'127.0.0.1', 1234))
 
     def _insert_provisionning(self):
-        provisioning = Provisioning()
-        provisioning.net4_ip = ''
-        provisioning.net4_ip_rest = '127.0.0.1'
-        provisioning.username = 'admin'
-        provisioning.password = 'admin'
-        provisioning.dhcp_integration = 0
-        provisioning.rest_port = 1234
-        provisioning.http_port = 8667
-        provisioning.private = 0
-        provisioning.secure = 0
+        provisioning = Provisioning(
+            net4_ip='',
+            net4_ip_rest='127.0.0.1',
+            username='admin',
+            password='admin',
+            dhcp_integration=0,
+            rest_port=1234,
+            http_port=8667,
+            private=0,
+            secure=0,
+        )
 
         self.add_me(provisioning)
 
