@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -57,8 +57,8 @@ class TestUserVoicemailNotifier(unittest.TestCase):
         find_all_by_user_id.assert_called_once_with(user_voicemail.user_id)
 
     @patch('xivo_bus.resources.user_voicemail.event.UserVoicemailAssociatedEvent')
-    @patch('xivo_dao.helpers.bus_manager.send_bus_command')
-    def test_bus_event_associated(self, send_bus_command, UserVoiceailAssociatedEvent):
+    @patch('xivo_dao.helpers.bus_manager.send_bus_event')
+    def test_bus_event_associated(self, send_bus_event, UserVoiceailAssociatedEvent):
         new_event = UserVoiceailAssociatedEvent.return_value = Mock()
 
         user_voicemail = UserVoicemail(user_id=1, voicemail_id=2, enabled=True)
@@ -68,7 +68,7 @@ class TestUserVoicemailNotifier(unittest.TestCase):
         UserVoiceailAssociatedEvent.assert_called_once_with(user_voicemail.user_id,
                                                             user_voicemail.voicemail_id,
                                                             user_voicemail.enabled)
-        send_bus_command.assert_called_once_with(new_event)
+        send_bus_event.assert_called_once_with(new_event, 'config.user_voicemail_association.created')
 
     @patch('xivo_dao.data_handler.user_voicemail.notifier.sysconf_command_association_updated')
     @patch('xivo_dao.data_handler.user_voicemail.notifier.bus_event_dissociated')
@@ -81,8 +81,8 @@ class TestUserVoicemailNotifier(unittest.TestCase):
         bus_event_dissociated.assert_called_once_with(user_voicemail)
 
     @patch('xivo_bus.resources.user_voicemail.event.UserVoicemailDissociatedEvent')
-    @patch('xivo_dao.helpers.bus_manager.send_bus_command')
-    def test_bus_event_dissociated(self, send_bus_command, UserVoiceailDissociatedEvent):
+    @patch('xivo_dao.helpers.bus_manager.send_bus_event')
+    def test_bus_event_dissociated(self, send_bus_event, UserVoiceailDissociatedEvent):
         new_event = UserVoiceailDissociatedEvent.return_value = Mock()
 
         user_voicemail = UserVoicemail(user_id=1, voicemail_id=2)
@@ -92,4 +92,4 @@ class TestUserVoicemailNotifier(unittest.TestCase):
         UserVoiceailDissociatedEvent.assert_called_once_with(user_voicemail.user_id,
                                                              user_voicemail.voicemail_id,
                                                              False)
-        send_bus_command.assert_called_once_with(new_event)
+        send_bus_event.assert_called_once_with(new_event, 'config.user_voicemail_association.deleted')

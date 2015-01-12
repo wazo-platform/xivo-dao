@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2014 Avencall
+# Copyright (C) 2012-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,7 +17,3 @@
 
 DB_URI = 'postgresql://asterisk:proformatique@localhost/asterisk'
 SQL_DEBUG = False
-BUS_EXCHANGE_NAME = 'xivo'
-BUS_EXCHANGE_TYPE = 'fanout'
-BUS_EXCHANGE_DURABLE = False
-BUS_BINDING_KEY = ''

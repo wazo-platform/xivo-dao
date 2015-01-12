@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,12 +18,14 @@
 from xivo_bus.resources.user_cti_profile import event
 from xivo_dao.helpers import bus_manager, sysconfd_connector
 
+routing_key = 'config.user_cti_profile_association.{}'
+
 
 def edited(user_cti_profile):
     bus_event = event.UserCtiProfileEditedEvent(user_cti_profile.user_id,
                                                 user_cti_profile.cti_profile_id,
                                                 user_cti_profile.enabled)
-    bus_manager.send_bus_command(bus_event)
+    bus_manager.send_bus_event(bus_event, routing_key.format('edited'))
     _send_sysconfd_command(user_cti_profile)
 
 

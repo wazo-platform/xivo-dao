@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.bus_manager import send_bus_command
+from xivo_dao.helpers.bus_manager import send_bus_event
 from xivo_bus.resources.extension.event import CreateExtensionEvent, \
     EditExtensionEvent, DeleteExtensionEvent
 from xivo_dao.helpers import sysconfd_connector
@@ -27,23 +27,28 @@ sysconfd_base_data = {
     'agentbus': []
 }
 
+routing_key = 'config.extension.{}'
+
 
 def created(extension):
     sysconfd_connector.exec_request_handlers(sysconfd_base_data)
-    send_bus_command(CreateExtensionEvent(extension.id,
-                                          extension.exten,
-                                          extension.context))
+    event = CreateExtensionEvent(extension.id,
+                                 extension.exten,
+                                 extension.context)
+    send_bus_event(event, routing_key.format('created'))
 
 
 def edited(extension):
     sysconfd_connector.exec_request_handlers(sysconfd_base_data)
-    send_bus_command(EditExtensionEvent(extension.id,
-                                        extension.exten,
-                                        extension.context))
+    event = EditExtensionEvent(extension.id,
+                               extension.exten,
+                               extension.context)
+    send_bus_event(event, routing_key.format('edited'))
 
 
 def deleted(extension):
     sysconfd_connector.exec_request_handlers(sysconfd_base_data)
-    send_bus_command(DeleteExtensionEvent(extension.id,
-                                          extension.exten,
-                                          extension.context))
+    event = DeleteExtensionEvent(extension.id,
+                                 extension.exten,
+                                 extension.context)
+    send_bus_event(event, routing_key.format('deleted'))

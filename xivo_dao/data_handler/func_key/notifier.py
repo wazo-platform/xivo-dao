@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014 Avencall
+# Copyright (C) 2014-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,25 +20,32 @@ from xivo_bus.resources.func_key import event as func_key_event
 
 from xivo_dao.data_handler.func_key.model import UserFuncKey, BSFilterFuncKey
 
+bsfilter_routing_key = 'config.bsfilter.{}'
+user_routing_key = 'config.user.{}'
+
 
 def create_user_func_key(func_key):
-    return func_key_event.UserCreateFuncKeyEvent(func_key.id, func_key.user_id)
+    return (func_key_event.UserCreateFuncKeyEvent(func_key.id, func_key.user_id),
+            user_routing_key.format('created'))
 
 
 def delete_user_func_key(func_key):
-    return func_key_event.UserDeleteFuncKeyEvent(func_key.id, func_key.user_id)
+    return (func_key_event.UserDeleteFuncKeyEvent(func_key.id, func_key.user_id),
+            user_routing_key.format('deleted'))
 
 
 def create_bsfilter_func_key(func_key):
-    return func_key_event.BSFilterCreateFuncKeyEvent(func_key.id,
-                                                     func_key.filter_id,
-                                                     func_key.secretary_id)
+    return (func_key_event.BSFilterCreateFuncKeyEvent(func_key.id,
+                                                      func_key.filter_id,
+                                                      func_key.secretary_id),
+            bsfilter_routing_key.format('created'))
 
 
 def delete_bsfilter_func_key(func_key):
-    return func_key_event.BSFilterDeleteFuncKeyEvent(func_key.id,
-                                                     func_key.filter_id,
-                                                     func_key.secretary_id)
+    return (func_key_event.BSFilterDeleteFuncKeyEvent(func_key.id,
+                                                      func_key.filter_id,
+                                                      func_key.secretary_id),
+            bsfilter_routing_key.format('deleted'))
 
 
 create_events = {UserFuncKey: create_user_func_key,
@@ -50,11 +57,11 @@ delete_events = {UserFuncKey: delete_user_func_key,
 
 def created(func_key):
     builder = create_events[func_key.__class__]
-    event = builder(func_key)
-    bus_manager.send_bus_command(event)
+    event, routing_key = builder(func_key)
+    bus_manager.send_bus_event(event, routing_key)
 
 
 def deleted(func_key):
     builder = delete_events[func_key.__class__]
-    event = builder(func_key)
-    bus_manager.send_bus_command(event)
+    event, routing_key = builder(func_key)
+    bus_manager.send_bus_event(event, routing_key)

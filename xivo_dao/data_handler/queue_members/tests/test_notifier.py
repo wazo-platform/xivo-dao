@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -33,8 +33,8 @@ class TestQueueMembersNotifier(unittest.TestCase):
 
     @patch('xivo_dao.helpers.sysconfd_connector.exec_request_handlers')
     @patch('xivo_bus.resources.queue_members.event.AgentQueueAssociationEditedEvent')
-    @patch('xivo_dao.helpers.bus_manager.send_bus_command')
-    def test_edited(self, send_bus_command, AgentQueueAssociationEditedEvent, exec_request_handler):
+    @patch('xivo_dao.helpers.bus_manager.send_bus_event')
+    def test_edited(self, send_bus_event, AgentQueueAssociationEditedEvent, exec_request_handler):
         new_event = AgentQueueAssociationEditedEvent.return_value = Mock()
         queue_member = QueueMemberAgent(queue_id=2, agent_id=30, penalty=5)
         self.sysconfd_command['agentbus'] = ['agent.edit.%s' % queue_member.agent_id]
@@ -44,13 +44,13 @@ class TestQueueMembersNotifier(unittest.TestCase):
         AgentQueueAssociationEditedEvent.assert_called_once_with(queue_member.queue_id,
                                                                  queue_member.agent_id,
                                                                  queue_member.penalty)
-        send_bus_command.assert_called_once_with(new_event)
+        send_bus_event.assert_called_once_with(new_event, 'config.agent_queue_association.edited')
         exec_request_handler.assert_called_once_with(self.sysconfd_command)
 
     @patch('xivo_dao.helpers.sysconfd_connector.exec_request_handlers')
     @patch('xivo_bus.resources.queue_members.event.AgentQueueAssociatedEvent')
-    @patch('xivo_dao.helpers.bus_manager.send_bus_command')
-    def test_associated(self, send_bus_command, AgentQueueAssociatedEvent, exec_request_handler):
+    @patch('xivo_dao.helpers.bus_manager.send_bus_event')
+    def test_associated(self, send_bus_event, AgentQueueAssociatedEvent, exec_request_handler):
         new_event = AgentQueueAssociatedEvent.return_value = Mock()
         queue_member = QueueMemberAgent(queue_id=2, agent_id=30, penalty=5)
         self.sysconfd_command['ctibus'] = ['xivo[queuemember,update]']
@@ -61,14 +61,14 @@ class TestQueueMembersNotifier(unittest.TestCase):
         AgentQueueAssociatedEvent.assert_called_once_with(queue_member.queue_id,
                                                           queue_member.agent_id,
                                                           queue_member.penalty)
-        send_bus_command.assert_called_once_with(new_event)
+        send_bus_event.assert_called_once_with(new_event, 'config.agent_queue_association.created')
 
         exec_request_handler.assert_called_once_with(self.sysconfd_command)
 
     @patch('xivo_dao.helpers.sysconfd_connector.exec_request_handlers')
     @patch('xivo_bus.resources.queue_members.event.AgentRemovedFromQueueEvent')
-    @patch('xivo_dao.helpers.bus_manager.send_bus_command')
-    def test_removed_from_queue(self, send_bus_command, AgentRemovedFromQueueEvent, exec_request_handler):
+    @patch('xivo_dao.helpers.bus_manager.send_bus_event')
+    def test_removed_from_queue(self, send_bus_event, AgentRemovedFromQueueEvent, exec_request_handler):
         agent_id = 104
         queue_id = 25
         new_event = AgentRemovedFromQueueEvent.return_value = Mock()
@@ -78,5 +78,5 @@ class TestQueueMembersNotifier(unittest.TestCase):
 
         notifier.agent_removed_from_queue(agent_id, queue_id)
 
-        send_bus_command.assert_called_once_with(new_event)
+        send_bus_event.assert_called_once_with(new_event, 'config.agent_queue_association.deleted')
         exec_request_handler.assert_called_once_with(self.sysconfd_command)

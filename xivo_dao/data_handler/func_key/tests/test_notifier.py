@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014 Avencall
+# Copyright (C) 2014-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,8 +25,8 @@ from mock import patch, Mock
 class TestNotifier(TestCase):
 
     @patch('xivo_bus.resources.func_key.event.UserCreateFuncKeyEvent')
-    @patch('xivo_dao.helpers.bus_manager.send_bus_command')
-    def test_create_user_func_key(self, send_bus_command, UserCreateFuncKeyEvent):
+    @patch('xivo_dao.helpers.bus_manager.send_bus_event')
+    def test_create_user_func_key(self, send_bus_event, UserCreateFuncKeyEvent):
         new_event = UserCreateFuncKeyEvent.return_value = Mock()
 
         func_key = UserFuncKey(id=1, user_id=2)
@@ -36,11 +36,11 @@ class TestNotifier(TestCase):
         UserCreateFuncKeyEvent.assert_called_once_with(func_key.id,
                                                        func_key.user_id)
 
-        send_bus_command.assert_called_once_with(new_event)
+        send_bus_event.assert_called_once_with(new_event, 'config.user.created')
 
     @patch('xivo_bus.resources.func_key.event.UserDeleteFuncKeyEvent')
-    @patch('xivo_dao.helpers.bus_manager.send_bus_command')
-    def test_delete_user_func_key(self, send_bus_command, UserDeleteFuncKeyEvent):
+    @patch('xivo_dao.helpers.bus_manager.send_bus_event')
+    def test_delete_user_func_key(self, send_bus_event, UserDeleteFuncKeyEvent):
         new_event = UserDeleteFuncKeyEvent.return_value = Mock()
 
         func_key = UserFuncKey(id=1, user_id=2)
@@ -50,11 +50,11 @@ class TestNotifier(TestCase):
         UserDeleteFuncKeyEvent.assert_called_once_with(func_key.id,
                                                        func_key.user_id)
 
-        send_bus_command.assert_called_once_with(new_event)
+        send_bus_event.assert_called_once_with(new_event, 'config.user.deleted')
 
     @patch('xivo_bus.resources.func_key.event.BSFilterCreateFuncKeyEvent')
-    @patch('xivo_dao.helpers.bus_manager.send_bus_command')
-    def test_create_bsfilter_func_key(self, send_bus_command, BSFilterCreateFuncKeyEvent):
+    @patch('xivo_dao.helpers.bus_manager.send_bus_event')
+    def test_create_bsfilter_func_key(self, send_bus_event, BSFilterCreateFuncKeyEvent):
         new_event = BSFilterCreateFuncKeyEvent.return_value = Mock()
 
         func_key = BSFilterFuncKey(id=1, filter_id=2, secretary_id=3)
@@ -65,11 +65,11 @@ class TestNotifier(TestCase):
                                                            func_key.filter_id,
                                                            func_key.secretary_id)
 
-        send_bus_command.assert_called_once_with(new_event)
+        send_bus_event.assert_called_once_with(new_event, 'config.bsfilter.created')
 
     @patch('xivo_bus.resources.func_key.event.BSFilterDeleteFuncKeyEvent')
-    @patch('xivo_dao.helpers.bus_manager.send_bus_command')
-    def test_delete_bsfilter_func_key(self, send_bus_command, BSFilterDeleteFuncKeyEvent):
+    @patch('xivo_dao.helpers.bus_manager.send_bus_event')
+    def test_delete_bsfilter_func_key(self, send_bus_event, BSFilterDeleteFuncKeyEvent):
         new_event = BSFilterDeleteFuncKeyEvent.return_value = Mock()
 
         func_key = BSFilterFuncKey(id=1, filter_id=2, secretary_id=3)
@@ -80,4 +80,4 @@ class TestNotifier(TestCase):
                                                            func_key.filter_id,
                                                            func_key.secretary_id)
 
-        send_bus_command.assert_called_once_with(new_event)
+        send_bus_event.assert_called_once_with(new_event, 'config.bsfilter.deleted')

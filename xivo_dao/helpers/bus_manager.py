@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014 Avencall
+# Copyright (C) 2014-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,24 +15,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo import moresynchro
-from xivo_bus.ctl.producer import BusProducer
-from xivo_dao.helpers import config
+import logging
 
-_once = moresynchro.Once()
-_bus_client = BusProducer()
-
-
-def _init_bus():
-    _bus_client.connect()
-    _bus_client.declare_exchange(config.BUS_EXCHANGE_NAME,
-                                 config.BUS_EXCHANGE_TYPE,
-                                 durable=config.BUS_EXCHANGE_DURABLE)
+logger = logging.getLogger(__name__)
+_bus_client = None
+_exchange_name = None
 
 
-def send_bus_command(command):
-    # TODO rename to send_bus_event
-    _once.once(_init_bus)
-    _bus_client.publish_event(config.BUS_EXCHANGE_NAME,
-                              config.BUS_BINDING_KEY,
-                              command)
+def install_bus_event_producer(bus_producer, exchange_name):
+    global _bus_client
+    global _exchange_name
+    _bus_client = bus_producer
+    _exchange_name = exchange_name
+
+
+def send_bus_event(event, routing_key):
+    if not _bus_client:
+        logger.warning('Trying to send %s on %s with an unconfigured bus', event, routing_key)
+        return
+
+    _bus_client.publish_event(_exchange_name, routing_key, event)

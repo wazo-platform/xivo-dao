@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,6 +19,8 @@ from xivo_bus.resources.user_voicemail import event
 from xivo_dao.data_handler.user_line import dao as user_line_dao
 from xivo_dao.helpers import sysconfd_connector
 from xivo_dao.helpers import bus_manager
+
+routing_key = 'config.user_voicemail_association.{}'
 
 
 def associated(user_voicemail):
@@ -55,11 +57,11 @@ def bus_event_associated(user_voicemail):
     bus_event = event.UserVoicemailAssociatedEvent(user_voicemail.user_id,
                                                    user_voicemail.voicemail_id,
                                                    user_voicemail.enabled)
-    bus_manager.send_bus_command(bus_event)
+    bus_manager.send_bus_event(bus_event, routing_key.format('created'))
 
 
 def bus_event_dissociated(user_voicemail):
     bus_event = event.UserVoicemailDissociatedEvent(user_voicemail.user_id,
                                                     user_voicemail.voicemail_id,
                                                     False)
-    bus_manager.send_bus_command(bus_event)
+    bus_manager.send_bus_event(bus_event, routing_key.format('deleted'))
