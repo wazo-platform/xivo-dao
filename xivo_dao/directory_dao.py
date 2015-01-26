@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2014 Avencall
+# Copyright (C) 2012-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-import cjson
+import json
 import logging
 
 from xivo_dao.helpers.db_manager import daosession
@@ -63,7 +63,7 @@ def _get_display_filter_json(session, context):
 
 
 def _display_filter_from_json(display_filter_json):
-    display_data = cjson.decode(display_filter_json)
+    display_data = json.loads(display_filter_json)
     return display_data
 
 
