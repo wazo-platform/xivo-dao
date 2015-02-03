@@ -18,20 +18,21 @@
 import logging
 
 logger = logging.getLogger(__name__)
-_bus_client = None
-_exchange_name = None
+_bus_publish = None
+_marshaler = None
 
 
-def install_bus_event_producer(bus_producer, exchange_name):
-    global _bus_client
-    global _exchange_name
-    _bus_client = bus_producer
-    _exchange_name = exchange_name
+def install_bus_event_producer(bus_publish_fn, msg_marshaler):
+    global _bus_publish
+    global _marshaler
+    _bus_publish = bus_publish_fn
+    _marshaler = msg_marshaler
 
 
 def send_bus_event(event, routing_key):
-    if not _bus_client:
+    if not _bus_publish or not _marshaler:
         logger.warning('Trying to send %s on %s with an unconfigured bus', event, routing_key)
         return
 
-    _bus_client.publish_event(_exchange_name, routing_key, event)
+    msg = _marshaler.marshal_message(event)
+    _bus_publish(msg, routing_key=routing_key)
