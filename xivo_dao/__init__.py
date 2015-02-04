@@ -15,5 +15,75 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+import errno
+from sqlalchemy import create_engine
+from xivo_bus.ctl.config import BusConfig
+from xivo_bus.ctl.producer import BusProducer
+from xivo_dao.helpers import db_manager
+from xivo_dao.helpers import bus_manager
+from xivo.config_helper import ConfigParser, ErrorHandler
 
-from xivo_dao.helpers.bus_manager import install_bus_event_producer
+
+class BusContext(object):
+
+    def __init__(self, bus_config):
+        self._bus_config = bus_config
+
+    def new_producer(self):
+        return BusProducer(self._bus_config)
+
+    def exchange_name(self):
+        return self._bus_config.exchange_name
+
+    def exchange_type(self):
+        return self._bus_config.exchange_type
+
+    def exchange_durable(self):
+        return self._bus_config.exchange_durable
+
+    @classmethod
+    def new_from_config(cls, config):
+        bus_config = BusConfig(**config['bus'])
+        return cls(bus_config)
+
+
+class DBContext(object):
+
+    def __init__(self, url):
+        self._url = url
+
+    def new_engine(self):
+        return create_engine(self._url)
+
+    @classmethod
+    def new_from_config(cls, config):
+        url = config.get('db_uri', 'postgresql://asterisk:proformatique@localhost/asterisk')
+        return cls(url)
+
+
+def init_bus(bus_context):
+    bus_manager.on_bus_context_update(bus_context)
+
+
+def init_db(db_context):
+    db_manager.on_db_context_update(db_context)
+
+
+def init_bus_from_config(config):
+    init_bus(BusContext.new_from_config(config))
+
+
+def init_db_from_config(config):
+    init_db(DBContext.new_from_config(config))
+
+
+def new_default_config():
+    original_config = {
+        'config_file': '/etc/xivo-dao/config.yml',
+        'extra_config_files': '/etc/xivo-dao/conf.d',
+    }
+    config_parser = ConfigParser(ErrorHandler())
+    return config_parser.read_config_file_hierarchy(original_config)
+
+
+init_db(DBContext.new_from_config(new_default_config()))
