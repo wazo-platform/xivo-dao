@@ -1,8 +1,5 @@
-# svn urls are used here to be able to change directory
 git+https://github.com/xivo-pbx/xivo-lib-python.git
 git+https://github.com/xivo-pbx/xivo-bus.git
 git+https://github.com/xivo-pbx/xivo-provisioning.git
-mock
-pika
 psycopg2
 sqlalchemy==0.9.4
