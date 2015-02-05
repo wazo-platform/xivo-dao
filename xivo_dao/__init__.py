@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-import errno
 from sqlalchemy import create_engine
 from xivo_bus.ctl.config import BusConfig
 from xivo_bus.ctl.producer import BusProducer
