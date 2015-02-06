@@ -5,4 +5,5 @@ git+https://github.com/xivo-pbx/xivo-provisioning.git
 mock
 pika
 psycopg2
+pyaml
 sqlalchemy==0.9.4

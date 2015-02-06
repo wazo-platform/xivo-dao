@@ -22,11 +22,18 @@ _bus_client = None
 _exchange_name = None
 
 
-def install_bus_event_producer(bus_producer, exchange_name):
+def on_bus_context_update(bus_context):
     global _bus_client
     global _exchange_name
-    _bus_client = bus_producer
-    _exchange_name = exchange_name
+    if _bus_client:
+        _bus_client.close()
+
+    _bus_client = bus_context.new_producer()
+    _bus_client.connect()
+    _bus_client.declare_exchange(bus_context.exchange_name(),
+                                 bus_context.exchange_type(),
+                                 bus_context.exchange_durable())
+    _exchange_name = bus_context.exchange_name()
 
 
 def send_bus_event(event, routing_key):
