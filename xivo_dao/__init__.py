@@ -15,9 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy import create_engine
-from xivo_bus.ctl.config import BusConfig
-from xivo_bus.ctl.producer import BusProducer
 from xivo_dao.helpers import db_manager
 from xivo_dao.helpers import bus_manager
 from xivo.config_helper import ConfigParser, ErrorHandler
@@ -29,6 +26,7 @@ class BusContext(object):
         self._bus_config = bus_config
 
     def new_producer(self):
+        from xivo_bus.ctl.producer import BusProducer
         return BusProducer(self._bus_config)
 
     def exchange_name(self):
@@ -42,6 +40,7 @@ class BusContext(object):
 
     @classmethod
     def new_from_config(cls, config):
+        from xivo_bus.ctl.config import BusConfig
         bus_config = BusConfig(**config['bus'])
         return cls(bus_config)
 
@@ -52,6 +51,7 @@ class DBContext(object):
         self._url = url
 
     def new_engine(self):
+        from sqlalchemy import create_engine
         return create_engine(self._url)
 
     @classmethod
