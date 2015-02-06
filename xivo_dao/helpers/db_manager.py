@@ -18,8 +18,6 @@
 import logging
 from functools import wraps
 from sqlalchemy.orm.session import sessionmaker
-from sqlalchemy.engine import create_engine
-from xivo_dao.helpers import config
 from sqlalchemy.exc import OperationalError, InterfaceError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session
@@ -38,6 +36,7 @@ def todict(self):
 Base = declarative_base()
 Base.todict = todict
 
+_db_context = None
 _dao_engine = None
 _DaoSession = None
 
@@ -70,19 +69,11 @@ def _apply_and_flush(func, session, args, kwargs):
 
 
 def _init():
-    _init_asterisk(config.DB_URI)
-
-
-def _init_asterisk(url):
     global _dao_engine
     global _DaoSession
 
-    _dao_engine = _new_engine(url)
+    _dao_engine = _db_context.new_engine()
     _DaoSession = _new_scoped_session(_dao_engine)
-
-
-def _new_engine(url):
-    return create_engine(url, echo=config.SQL_DEBUG)
 
 
 def _new_scoped_session(engine):
@@ -95,5 +86,17 @@ def reinit():
 
 
 def close():
+    global _DaoSession
+    global _dao_engine
     _DaoSession.close()
+    _DaoSession = None
     _dao_engine.dispose()
+    _dao_engine = None
+
+
+def on_db_context_update(db_context):
+    global _db_context
+    if _DaoSession:
+        close()
+
+    _db_context = db_context

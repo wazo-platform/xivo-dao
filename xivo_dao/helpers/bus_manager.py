@@ -22,11 +22,19 @@ _bus_publish = None
 _marshaler = None
 
 
-def install_bus_event_producer(bus_publish_fn, msg_marshaler):
+def on_bus_context_update(bus_context):
     global _bus_publish
     global _marshaler
-    _bus_publish = bus_publish_fn
-    _marshaler = msg_marshaler
+    def _on_bus_publish_error(exc, interval):
+        logger.error('Error: %s', exc, exc_info=1)
+        logger.info('Retry in %s seconds...', interval)
+
+    bus_connection = bus_context.new_connection()
+    bus_producer = bus_context.new_bus_producer(bus_connection)
+    _bus_publish = bus_connection.ensure(bus_producer, bus_producer.publish,
+                                         errback=_on_bus_publish_error, max_retries=3,
+                                         interval_start=1)
+    _marshaler = bus_context.new_marshaler()
 
 
 def send_bus_event(event, routing_key):

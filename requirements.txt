@@ -2,4 +2,5 @@ git+https://github.com/xivo-pbx/xivo-lib-python.git
 git+https://github.com/xivo-pbx/xivo-bus.git
 git+https://github.com/xivo-pbx/xivo-provisioning.git
 psycopg2
+pyaml
 sqlalchemy==0.9.4
