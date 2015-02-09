@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,7 +19,10 @@ from xivo_dao import context_dao as old_context_dao
 from xivo_dao.data_handler.context import dao as context_dao
 from xivo_dao.data_handler import errors
 from xivo_dao.data_handler.context import validator
-from xivo_dao.data_handler.context import notifier
+try:
+    from xivo_dao.data_handler.context import notifier
+except ImportError:
+    notifier = None
 
 
 def find_by_name(context_name):

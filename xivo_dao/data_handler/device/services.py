@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,7 +18,10 @@
 from . import dao
 from . import validator
 from .model import DeviceOrdering
-from . import notifier
+try:
+    from . import notifier
+except ImportError:
+    notifier = None
 
 from urllib2 import URLError
 
