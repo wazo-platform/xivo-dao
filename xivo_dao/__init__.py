@@ -22,10 +22,11 @@ from xivo.config_helper import ConfigParser, ErrorHandler
 
 class BusContext(object):
 
-    def __init__(self, url, exchange_name, exchange_type):
+    def __init__(self, url, exchange_name, exchange_type, uuid):
         self._url = url
         self._exchange_name = exchange_name
         self._exchange_type = exchange_type
+        self._uuid = uuid
 
     def new_connection(self):
         from kombu import Connection
@@ -38,14 +39,15 @@ class BusContext(object):
 
     def new_marshaler(self):
         from xivo_bus import Marshaler
-        return Marshaler()
+        return Marshaler(self._uuid)
 
     @classmethod
     def new_from_config(cls, config):
         url = 'amqp://{username}:{password}@{host}:{port}//'.format(**config['bus'])
         exchange_name = config['bus']['exchange_name']
         exchange_type = config['bus']['exchange_type']
-        return cls(url, exchange_name, exchange_type)
+        uuid = config['uuid']
+        return cls(url, exchange_name, exchange_type, uuid)
 
 
 class DBContext(object):
