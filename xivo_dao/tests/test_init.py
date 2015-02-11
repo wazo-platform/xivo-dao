@@ -30,7 +30,8 @@ class TestBusContext(unittest.TestCase):
                 'password': 'bar',
                 'exchange_name': 'xivo',
                 'exchange_type': 'topic',
-            }
+            },
+            'uuid': '111-2222',
         }
 
         bus_context = BusContext.new_from_config(config)
