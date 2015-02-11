@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,13 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.exc import DataError
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 from xivo.asterisk.extension import Extension
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.usersip import UserSIP
+from xivo_dao.alchemy.enum import valid_trunk_protocols
 
 
 @daosession
@@ -36,13 +36,14 @@ def get_interface_from_exten_and_context(session, extension, context):
 
 @daosession
 def get_extension_from_protocol_interface(session, protocol, interface):
-    try:
-        line_row = (session.query(LineFeatures.number, LineFeatures.context)
-                    .filter(LineFeatures.protocol == protocol.lower())
-                    .filter(LineFeatures.name == interface)
-                    .first())
-    except DataError as e:
-        raise ValueError(e)
+    lowered_protocol = protocol.lower()
+    if lowered_protocol not in valid_trunk_protocols:
+        raise ValueError('{} is not a valid line protocol'.format(protocol))
+
+    line_row = (session.query(LineFeatures.number, LineFeatures.context)
+                .filter(LineFeatures.protocol == lowered_protocol)
+                .filter(LineFeatures.name == interface)
+                .first())
 
     if not line_row:
         message = 'no line with interface %s' % interface

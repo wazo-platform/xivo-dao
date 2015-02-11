@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014 Avencall
+# Copyright (C) 2014-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -169,11 +169,14 @@ schedule_path_type = Enum(
     metadata=Base.metadata
 )
 
-trunk_protocol = Enum(
+valid_trunk_protocols = [
     'sip',
     'iax',
     'sccp',
     'custom',
+]
+trunk_protocol = Enum(
+    *valid_trunk_protocols,
     name='trunk_protocol',
     metadata=Base.metadata
 )
