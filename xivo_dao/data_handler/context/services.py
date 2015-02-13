@@ -19,10 +19,7 @@ from xivo_dao import context_dao as old_context_dao
 from xivo_dao.data_handler.context import dao as context_dao
 from xivo_dao.data_handler import errors
 from xivo_dao.data_handler.context import validator
-try:
-    from xivo_dao.data_handler.context import notifier
-except ImportError:
-    notifier = None
+from xivo_dao.data_handler.context import notifier
 
 
 def find_by_name(context_name):
