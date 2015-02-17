@@ -18,10 +18,7 @@
 from . import dao
 from . import validator
 from .model import DeviceOrdering
-try:
-    from . import notifier
-except ImportError:
-    notifier = None
+from . import notifier
 
 from urllib2 import URLError
 

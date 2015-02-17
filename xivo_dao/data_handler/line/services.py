@@ -17,12 +17,8 @@
 
 import random
 
-try:
-    from . import notifier
-except ImportError:
-    notifier = None
+from . import notifier
 from . import dao
-
 
 from xivo_dao.data_handler import errors
 from xivo_dao.data_handler.device import services as device_services
