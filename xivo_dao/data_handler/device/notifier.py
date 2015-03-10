@@ -19,19 +19,16 @@ from xivo_dao.helpers.bus_manager import send_bus_event
 from xivo_bus.resources.device.event import CreateDeviceEvent, \
     EditDeviceEvent, DeleteDeviceEvent
 
-routing_key = 'config.device.{}'
-
-
 def created(device):
     event = CreateDeviceEvent(device.id)
-    send_bus_event(event, routing_key.format('created'))
+    send_bus_event(event, event.routing_key)
 
 
 def edited(device):
     event = EditDeviceEvent(device.id)
-    send_bus_event(event, routing_key.format('edited'))
+    send_bus_event(event, event.routing_key)
 
 
 def deleted(device):
     event = DeleteDeviceEvent(device.id)
-    send_bus_event(event, routing_key.format('deleted'))
+    send_bus_event(event, event.routing_key)
