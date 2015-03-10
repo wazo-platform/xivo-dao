@@ -31,28 +31,28 @@ class TestUserCtiProfileNotifier(unittest.TestCase):
                             }
 
     @patch('xivo_dao.helpers.sysconfd_connector.exec_request_handlers')
-    @patch('xivo_bus.resources.configuration.event.LiveRealoadEditedEvent')
+    @patch('xivo_bus.resources.configuration.event.LiveReloadEditedEvent')
     @patch('xivo_dao.helpers.bus_manager.send_bus_event')
-    def test_disable_live_reload(self, send_bus_event, LiveRealoadEditedEvent, exec_request_handler):
-        new_event = LiveRealoadEditedEvent.return_value = Mock()
+    def test_disable_live_reload(self, send_bus_event, LiveReloadEditedEvent, exec_request_handler):
+        new_event = LiveReloadEditedEvent.return_value = Mock()
         data = {'enabled': False}
 
         notifier.live_reload_status_changed(data)
 
-        LiveRealoadEditedEvent.assert_called_once_with(False)
+        LiveReloadEditedEvent.assert_called_once_with(False)
         send_bus_event.assert_called_once_with(new_event, 'config.live_reload.edited')
         self.assertFalse(exec_request_handler.called)
 
     @patch('xivo_dao.helpers.sysconfd_connector.exec_request_handlers')
-    @patch('xivo_bus.resources.configuration.event.LiveRealoadEditedEvent')
+    @patch('xivo_bus.resources.configuration.event.LiveReloadEditedEvent')
     @patch('xivo_dao.helpers.bus_manager.send_bus_event')
-    def test_enable_live_reload(self, send_bus_event, LiveRealoadEditedEvent, exec_request_handler):
-        new_event = LiveRealoadEditedEvent.return_value = Mock()
+    def test_enable_live_reload(self, send_bus_event, LiveReloadEditedEvent, exec_request_handler):
+        new_event = LiveReloadEditedEvent.return_value = Mock()
         data = {'enabled': True}
         self.sysconfd_command['ctibus'] = ['xivo[cticonfig,update]']
 
         notifier.live_reload_status_changed(data)
 
-        LiveRealoadEditedEvent.assert_called_once_with(True)
+        LiveReloadEditedEvent.assert_called_once_with(True)
         send_bus_event.assert_called_once_with(new_event, 'config.live_reload.edited')
         exec_request_handler.assert_called_once_with(self.sysconfd_command)
