@@ -36,7 +36,7 @@ class TestNotifier(TestCase):
         UserCreateFuncKeyEvent.assert_called_once_with(func_key.id,
                                                        func_key.user_id)
 
-        send_bus_event.assert_called_once_with(new_event, 'config.user.created')
+        send_bus_event.assert_called_once_with(new_event, new_event.routing_key)
 
     @patch('xivo_bus.resources.func_key.event.UserDeleteFuncKeyEvent')
     @patch('xivo_dao.helpers.bus_manager.send_bus_event')
@@ -50,7 +50,7 @@ class TestNotifier(TestCase):
         UserDeleteFuncKeyEvent.assert_called_once_with(func_key.id,
                                                        func_key.user_id)
 
-        send_bus_event.assert_called_once_with(new_event, 'config.user.deleted')
+        send_bus_event.assert_called_once_with(new_event, new_event.routing_key)
 
     @patch('xivo_bus.resources.func_key.event.BSFilterCreateFuncKeyEvent')
     @patch('xivo_dao.helpers.bus_manager.send_bus_event')
@@ -65,7 +65,7 @@ class TestNotifier(TestCase):
                                                            func_key.filter_id,
                                                            func_key.secretary_id)
 
-        send_bus_event.assert_called_once_with(new_event, 'config.bsfilter.created')
+        send_bus_event.assert_called_once_with(new_event, new_event.routing_key)
 
     @patch('xivo_bus.resources.func_key.event.BSFilterDeleteFuncKeyEvent')
     @patch('xivo_dao.helpers.bus_manager.send_bus_event')
@@ -80,4 +80,4 @@ class TestNotifier(TestCase):
                                                            func_key.filter_id,
                                                            func_key.secretary_id)
 
-        send_bus_event.assert_called_once_with(new_event, 'config.bsfilter.deleted')
+        send_bus_event.assert_called_once_with(new_event, new_event.routing_key)
