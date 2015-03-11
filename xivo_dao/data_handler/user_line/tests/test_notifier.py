@@ -68,7 +68,7 @@ class TestUserLineNotifier(unittest.TestCase):
                                                         user_line.line_id,
                                                         True,
                                                         True)
-        send_bus_event.assert_called_once_with(new_event, 'config.user_line_association.created')
+        send_bus_event.assert_called_once_with(new_event, new_event.routing_key)
 
     @patch('xivo_dao.data_handler.user_line.notifier.sysconf_command_association_updated')
     @patch('xivo_dao.data_handler.user_line.notifier.bus_event_dissociated')
@@ -93,4 +93,4 @@ class TestUserLineNotifier(unittest.TestCase):
                                                          user_line.line_id,
                                                          True,
                                                          True)
-        send_bus_event.assert_called_once_with(new_event, 'config.user_line_association.deleted')
+        send_bus_event.assert_called_once_with(new_event, new_event.routing_key)

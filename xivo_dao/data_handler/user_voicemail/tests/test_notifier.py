@@ -68,7 +68,7 @@ class TestUserVoicemailNotifier(unittest.TestCase):
         UserVoiceailAssociatedEvent.assert_called_once_with(user_voicemail.user_id,
                                                             user_voicemail.voicemail_id,
                                                             user_voicemail.enabled)
-        send_bus_event.assert_called_once_with(new_event, 'config.user_voicemail_association.created')
+        send_bus_event.assert_called_once_with(new_event, new_event.routing_key)
 
     @patch('xivo_dao.data_handler.user_voicemail.notifier.sysconf_command_association_updated')
     @patch('xivo_dao.data_handler.user_voicemail.notifier.bus_event_dissociated')
@@ -92,4 +92,4 @@ class TestUserVoicemailNotifier(unittest.TestCase):
         UserVoiceailDissociatedEvent.assert_called_once_with(user_voicemail.user_id,
                                                              user_voicemail.voicemail_id,
                                                              False)
-        send_bus_event.assert_called_once_with(new_event, 'config.user_voicemail_association.deleted')
+        send_bus_event.assert_called_once_with(new_event, new_event.routing_key)

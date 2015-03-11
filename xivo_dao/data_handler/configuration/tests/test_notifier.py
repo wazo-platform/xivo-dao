@@ -40,7 +40,7 @@ class TestUserCtiProfileNotifier(unittest.TestCase):
         notifier.live_reload_status_changed(data)
 
         LiveReloadEditedEvent.assert_called_once_with(False)
-        send_bus_event.assert_called_once_with(new_event, 'config.live_reload.edited')
+        send_bus_event.assert_called_once_with(new_event, new_event.routing_key)
         self.assertFalse(exec_request_handler.called)
 
     @patch('xivo_dao.helpers.sysconfd_connector.exec_request_handlers')
@@ -54,5 +54,5 @@ class TestUserCtiProfileNotifier(unittest.TestCase):
         notifier.live_reload_status_changed(data)
 
         LiveReloadEditedEvent.assert_called_once_with(True)
-        send_bus_event.assert_called_once_with(new_event, 'config.live_reload.edited')
+        send_bus_event.assert_called_once_with(new_event, new_event.routing_key)
         exec_request_handler.assert_called_once_with(self.sysconfd_command)
