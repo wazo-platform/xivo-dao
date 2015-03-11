@@ -12,10 +12,10 @@ Package: xivo-libdao
 Architecture: all
 Depends: ${python:Depends},
          ${misc:Depends},
+         xivo-bus (>= 15.05~20150311.194150.b00ca46-1),
          xivo-config (>= 13.02~20130128.173355.93cbb26-1),
          xivo-lib-python,
-         python-sqlalchemy,
-         xivo-bus (>> 13.22~20131104.153452.b42d9df-1)
+         python-sqlalchemy
 Description: XIVO telephony systems library for directories manager
  XIVO is a system based on a powerful IPBX, to bring an easy to
  install solution for telephony and related services.
