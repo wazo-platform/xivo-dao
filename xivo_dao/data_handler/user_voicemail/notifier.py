@@ -20,8 +20,6 @@ from xivo_dao.data_handler.user_line import dao as user_line_dao
 from xivo_dao.helpers import sysconfd_connector
 from xivo_dao.helpers import bus_manager
 
-routing_key = 'config.user_voicemail_association.{}'
-
 
 def associated(user_voicemail):
     sysconf_command_association_updated(user_voicemail)
@@ -57,11 +55,11 @@ def bus_event_associated(user_voicemail):
     bus_event = event.UserVoicemailAssociatedEvent(user_voicemail.user_id,
                                                    user_voicemail.voicemail_id,
                                                    user_voicemail.enabled)
-    bus_manager.send_bus_event(bus_event, routing_key.format('created'))
+    bus_manager.send_bus_event(bus_event, bus_event.routing_key)
 
 
 def bus_event_dissociated(user_voicemail):
     bus_event = event.UserVoicemailDissociatedEvent(user_voicemail.user_id,
                                                     user_voicemail.voicemail_id,
                                                     False)
-    bus_manager.send_bus_event(bus_event, routing_key.format('deleted'))
+    bus_manager.send_bus_event(bus_event, bus_event.routing_key)

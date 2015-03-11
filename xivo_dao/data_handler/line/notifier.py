@@ -20,8 +20,6 @@ from xivo_bus.resources.line.event import CreateLineEvent, \
     EditLineEvent, DeleteLineEvent
 from xivo_dao.helpers import sysconfd_connector
 
-routing_key = 'config.line.{}'
-
 
 def _new_sysconfd_data():
     return {
