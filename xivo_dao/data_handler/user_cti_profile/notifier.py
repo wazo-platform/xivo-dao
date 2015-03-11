@@ -18,14 +18,12 @@
 from xivo_bus.resources.user_cti_profile import event
 from xivo_dao.helpers import bus_manager, sysconfd_connector
 
-routing_key = 'config.user_cti_profile_association.{}'
-
 
 def edited(user_cti_profile):
     bus_event = event.UserCtiProfileEditedEvent(user_cti_profile.user_id,
                                                 user_cti_profile.cti_profile_id,
                                                 user_cti_profile.enabled)
-    bus_manager.send_bus_event(bus_event, routing_key.format('edited'))
+    bus_manager.send_bus_event(bus_event, bus_event.routing_key)
     _send_sysconfd_command(user_cti_profile)
 
 

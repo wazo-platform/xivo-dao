@@ -20,8 +20,8 @@ from xivo_dao.helpers import bus_manager, sysconfd_connector
 
 
 def live_reload_status_changed(data):
-    bus_event = event.LiveRealoadEditedEvent(data['enabled'])
-    bus_manager.send_bus_event(bus_event, 'config.live_reload.edited')
+    bus_event = event.LiveReloadEditedEvent(data['enabled'])
+    bus_manager.send_bus_event(bus_event, bus_event.routing_key)
     if data['enabled']:
         _send_sysconfd_command()
 

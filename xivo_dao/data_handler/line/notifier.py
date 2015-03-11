@@ -20,8 +20,6 @@ from xivo_bus.resources.line.event import CreateLineEvent, \
     EditLineEvent, DeleteLineEvent
 from xivo_dao.helpers import sysconfd_connector
 
-routing_key = 'config.line.{}'
-
 
 def _new_sysconfd_data():
     return {
@@ -35,16 +33,19 @@ def _new_sysconfd_data():
 def created(line):
     data = _new_sysconfd_data()
     sysconfd_connector.exec_request_handlers(data)
-    send_bus_event(CreateLineEvent(line.id), routing_key.format('created'))
+    event = CreateLineEvent(line.id)
+    send_bus_event(event, event.routing_key)
 
 
 def edited(line):
     data = _new_sysconfd_data()
     sysconfd_connector.exec_request_handlers(data)
-    send_bus_event(EditLineEvent(line.id), routing_key.format('edited'))
+    event = EditLineEvent(line.id)
+    send_bus_event(event, event.routing_key)
 
 
 def deleted(line):
     data = _new_sysconfd_data()
     sysconfd_connector.exec_request_handlers(data)
-    send_bus_event(DeleteLineEvent(line.id), routing_key.format('deleted'))
+    event = DeleteLineEvent(line.id)
+    send_bus_event(event, event.routing_key)

@@ -20,32 +20,25 @@ from xivo_bus.resources.func_key import event as func_key_event
 
 from xivo_dao.data_handler.func_key.model import UserFuncKey, BSFilterFuncKey
 
-bsfilter_routing_key = 'config.bsfilter.{}'
-user_routing_key = 'config.user.{}'
-
 
 def create_user_func_key(func_key):
-    return (func_key_event.UserCreateFuncKeyEvent(func_key.id, func_key.user_id),
-            user_routing_key.format('created'))
+    return (func_key_event.UserCreateFuncKeyEvent(func_key.id, func_key.user_id))
 
 
 def delete_user_func_key(func_key):
-    return (func_key_event.UserDeleteFuncKeyEvent(func_key.id, func_key.user_id),
-            user_routing_key.format('deleted'))
+    return (func_key_event.UserDeleteFuncKeyEvent(func_key.id, func_key.user_id))
 
 
 def create_bsfilter_func_key(func_key):
     return (func_key_event.BSFilterCreateFuncKeyEvent(func_key.id,
                                                       func_key.filter_id,
-                                                      func_key.secretary_id),
-            bsfilter_routing_key.format('created'))
+                                                      func_key.secretary_id))
 
 
 def delete_bsfilter_func_key(func_key):
     return (func_key_event.BSFilterDeleteFuncKeyEvent(func_key.id,
                                                       func_key.filter_id,
-                                                      func_key.secretary_id),
-            bsfilter_routing_key.format('deleted'))
+                                                      func_key.secretary_id))
 
 
 create_events = {UserFuncKey: create_user_func_key,
@@ -57,11 +50,11 @@ delete_events = {UserFuncKey: delete_user_func_key,
 
 def created(func_key):
     builder = create_events[func_key.__class__]
-    event, routing_key = builder(func_key)
-    bus_manager.send_bus_event(event, routing_key)
+    event = builder(func_key)
+    bus_manager.send_bus_event(event, event.routing_key)
 
 
 def deleted(func_key):
     builder = delete_events[func_key.__class__]
-    event, routing_key = builder(func_key)
-    bus_manager.send_bus_event(event, routing_key)
+    event = builder(func_key)
+    bus_manager.send_bus_event(event, event.routing_key)

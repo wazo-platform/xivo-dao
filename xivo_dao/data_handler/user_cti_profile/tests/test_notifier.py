@@ -45,5 +45,5 @@ class TestUserCtiProfileNotifier(unittest.TestCase):
         UserCtiProfileEditedEvent.assert_called_once_with(user_cti_profile.user_id,
                                                           user_cti_profile.cti_profile_id,
                                                           user_cti_profile.enabled)
-        send_bus_event.assert_called_once_with(new_event, 'config.user_cti_profile_association.edited')
+        send_bus_event.assert_called_once_with(new_event, new_event.routing_key)
         exec_request_handler.assert_called_once_with(self.sysconfd_command)

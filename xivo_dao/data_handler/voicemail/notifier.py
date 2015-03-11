@@ -20,8 +20,6 @@ from xivo_bus.resources.voicemail.event import CreateVoicemailEvent, \
     EditVoicemailEvent, DeleteVoicemailEvent
 from xivo_dao.helpers import sysconfd_connector
 
-routing_key = 'config.voicemail.{}'
-
 
 def _new_sysconfd_data(ctibus_command):
     return {
@@ -36,18 +34,18 @@ def created(voicemail):
     data = _new_sysconfd_data('xivo[voicemail,add,%s]' % voicemail.id)
     sysconfd_connector.exec_request_handlers(data)
     event = CreateVoicemailEvent(voicemail.id)
-    send_bus_event(event, routing_key.format('created'))
+    send_bus_event(event, event.routing_key)
 
 
 def edited(voicemail):
     data = _new_sysconfd_data('xivo[voicemail,edit,%s]' % voicemail.id)
     sysconfd_connector.exec_request_handlers(data)
     event = EditVoicemailEvent(voicemail.id)
-    send_bus_event(event, routing_key.format('edited'))
+    send_bus_event(event, event.routing_key)
 
 
 def deleted(voicemail):
     data = _new_sysconfd_data('xivo[voicemail,delete,%s]' % voicemail.id)
     sysconfd_connector.exec_request_handlers(data)
     event = DeleteVoicemailEvent(voicemail.id)
-    send_bus_event(event, routing_key.format('deleted'))
+    send_bus_event(event, event.routing_key)

@@ -70,4 +70,4 @@ class TestBusEventCreated(unittest.TestCase):
                                                    context.description,
                                                    context.type)
 
-        send_bus_event.assert_called_once_with(new_event, 'config.context.created')
+        send_bus_event.assert_called_once_with(new_event, new_event.routing_key)
