@@ -20,8 +20,6 @@ from xivo_bus.resources.user.event import CreateUserEvent, \
     EditUserEvent, DeleteUserEvent
 from xivo_dao.helpers import sysconfd_connector
 
-routing_key = 'config.user.{}'
-
 
 def _new_sysconfd_data(ctibus_command):
     return {
@@ -38,18 +36,18 @@ def created(user):
     data = _new_sysconfd_data('xivo[user,add,%s]' % user.id)
     sysconfd_connector.exec_request_handlers(data)
     event = CreateUserEvent(user.id)
-    send_bus_event(event, routing_key.format('created'))
+    send_bus_event(event, event.routing_key)
 
 
 def edited(user):
     data = _new_sysconfd_data('xivo[user,edit,%s]' % user.id)
     sysconfd_connector.exec_request_handlers(data)
     event = EditUserEvent(user.id)
-    send_bus_event(event, routing_key.format('edited'))
+    send_bus_event(event, event.routing_key)
 
 
 def deleted(user):
     data = _new_sysconfd_data('xivo[user,delete,%s]' % user.id)
     sysconfd_connector.exec_request_handlers(data)
     event = DeleteUserEvent(user.id)
-    send_bus_event(event, routing_key.format('deleted'))
+    send_bus_event(event, event.routing_key)
