@@ -472,6 +472,7 @@ class TestGetVoicemail(DAOTestCase):
             context=context,
             password='password',
             email='email',
+            pager='pager',
             language='fr_FR',
             tz='eu-fr',
             maxmsg=1,
@@ -490,6 +491,7 @@ class TestGetVoicemail(DAOTestCase):
         self.assertEquals(voicemail.context, voicemail_row.context)
         self.assertEquals(voicemail.password, voicemail_row.password)
         self.assertEquals(voicemail.email, voicemail_row.email)
+        self.assertEquals(voicemail.pager, voicemail_row.pager)
         self.assertEquals(voicemail.language, voicemail_row.language)
         self.assertEquals(voicemail.timezone, voicemail_row.tz)
         self.assertEquals(voicemail.max_messages, voicemail_row.maxmsg)
@@ -566,6 +568,7 @@ class TestEditVoicemail(DAOTestCase):
             context='default',
             password='password',
             email='email@email',
+            pager='pager@email',
             language='fr_FR',
             tz='eu-fr',
             attach=0,
@@ -580,6 +583,7 @@ class TestEditVoicemail(DAOTestCase):
         voicemail.number = '1001'
         voicemail.password = 'newpassword'
         voicemail.email = 'newemail@email.com'
+        voicemail.pager = 'newpager@email.com'
         voicemail.language = 'en_US'
         voicemail.timezone = 'en-ca'
         voicemail.max_messages = 10
@@ -599,6 +603,7 @@ class TestEditVoicemail(DAOTestCase):
         self.assertEquals(row.context, voicemail.context)
         self.assertEquals(row.password, voicemail.password)
         self.assertEquals(row.email, voicemail.email)
+        self.assertEquals(row.pager, voicemail.pager)
         self.assertEquals(row.language, voicemail.language)
         self.assertEquals(row.tz, voicemail.timezone)
         self.assertEquals(row.maxmsg, voicemail.max_messages)
