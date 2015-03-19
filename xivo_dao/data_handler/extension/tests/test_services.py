@@ -19,8 +19,10 @@ import unittest
 from mock import patch, Mock
 from hamcrest import assert_that, equal_to
 
+from xivo_dao.tests.test_case import TestCase
 from xivo_dao.data_handler.utils.search import SearchResult
 from xivo_dao.data_handler.extension.model import Extension
+from xivo_dao.data_handler.line_extension.model import LineExtension
 from xivo_dao.data_handler.extension import services as extension_services
 
 
@@ -69,25 +71,6 @@ class TestExtension(unittest.TestCase):
         extension_dao_create.assert_called_once_with(extension)
         extension_notifier_created.assert_called_once_with(extension)
 
-    @patch('xivo_dao.data_handler.extension.notifier.edited')
-    @patch('xivo_dao.data_handler.extension.dao.edit')
-    @patch('xivo_dao.data_handler.extension.validator.validate_edit')
-    def test_edit(self, validate_edit, extension_dao_edit, extension_notifier_edited):
-        exten = '1000'
-        context = 'toto'
-
-        extension = Extension(id=1,
-                              exten=exten,
-                              context=context)
-
-        extension_dao_edit.return_value = extension
-
-        extension_services.edit(extension)
-
-        validate_edit.assert_called_once_with(extension)
-        extension_dao_edit.assert_called_once_with(extension)
-        extension_notifier_edited.assert_called_once_with(extension)
-
     @patch('xivo_dao.data_handler.extension.notifier.deleted')
     @patch('xivo_dao.data_handler.extension.dao.delete')
     @patch('xivo_dao.data_handler.extension.validator.validate_delete')
@@ -103,3 +86,62 @@ class TestExtension(unittest.TestCase):
         validate_delete.assert_called_once_with(extension)
         extension_dao_delete.assert_called_once_with(extension)
         extension_notifier_deleted.assert_called_once_with(extension)
+
+
+@patch('xivo_dao.data_handler.line.dao.associate_extension')
+@patch('xivo_dao.data_handler.line_extension.dao.find_by_extension_id')
+@patch('xivo_dao.data_handler.extension.notifier.edited')
+@patch('xivo_dao.data_handler.extension.dao.edit')
+@patch('xivo_dao.data_handler.extension.validator.validate_edit')
+class TestExtensionEdit(TestCase):
+
+    def test_given_no_line_extension_then_only_extension_edited(self,
+                                                                validate_edit,
+                                                                extension_dao_edit,
+                                                                extension_notifier_edited,
+                                                                find_by_extension_id,
+                                                                associate_extension):
+        exten = '1000'
+        context = 'toto'
+
+        extension = Extension(id=1,
+                              exten=exten,
+                              context=context)
+
+        extension_dao_edit.return_value = extension
+        find_by_extension_id.return_value = None
+
+        extension_services.edit(extension)
+
+        validate_edit.assert_called_once_with(extension)
+        extension_dao_edit.assert_called_once_with(extension)
+        extension_notifier_edited.assert_called_once_with(extension)
+        find_by_extension_id.assert_called_once_with(extension.id)
+        self.assertNotCalled(associate_extension)
+
+    def test_given_line_extension_then_line_updated(self,
+                                                    validate_edit,
+                                                    extension_dao_edit,
+                                                    extension_notifier_edited,
+                                                    find_by_extension_id,
+                                                    associate_extension):
+        exten = '1000'
+        context = 'toto'
+
+        extension = Extension(id=1,
+                              exten=exten,
+                              context=context)
+
+        line_extension = LineExtension(extension_id=1,
+                                       line_id=2)
+
+        extension_dao_edit.return_value = extension
+        find_by_extension_id.return_value = line_extension
+
+        extension_services.edit(extension)
+
+        validate_edit.assert_called_once_with(extension)
+        extension_dao_edit.assert_called_once_with(extension)
+        extension_notifier_edited.assert_called_once_with(extension)
+        find_by_extension_id.assert_called_once_with(extension.id)
+        associate_extension.assert_called_once_with(extension, line_extension.line_id)

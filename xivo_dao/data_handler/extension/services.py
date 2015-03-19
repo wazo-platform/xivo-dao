@@ -18,6 +18,9 @@
 from . import dao
 from . import notifier
 
+from xivo_dao.data_handler.line_extension import dao as line_extension_dao
+from xivo_dao.data_handler.line import dao as line_dao
+
 from xivo_dao.data_handler.extension import validator
 
 
@@ -55,6 +58,9 @@ def create(extension):
 def edit(extension):
     validator.validate_edit(extension)
     dao.edit(extension)
+    line_extension = line_extension_dao.find_by_extension_id(extension.id)
+    if line_extension:
+        line_dao.associate_extension(extension, line_extension.line_id)
     notifier.edited(extension)
 
 
