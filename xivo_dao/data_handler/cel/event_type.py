@@ -33,6 +33,7 @@ class CELEventType(object):
         pickup,
         transfer,
         xivo_user_fwd,
+        xivo_from_s,
     ) = (
         'ANSWER',
         'APP_END',
@@ -49,4 +50,5 @@ class CELEventType(object):
         'PICKUP',
         'TRANSFER',
         'XIVO_USER_FWD',
+        'XIVO_FROM_S',
     )
