@@ -19,7 +19,6 @@ import unittest
 
 from hamcrest import assert_that, equal_to, same_instance, none, all_of, has_property, contains
 from mock import Mock, patch
-from urllib2 import HTTPError
 from StringIO import StringIO
 from contextlib import contextmanager
 
@@ -28,6 +27,7 @@ from xivo_dao.data_handler.device.model import Device
 from xivo_dao.data_handler.exception import DataError
 from xivo_dao.data_handler.exception import NotFoundError
 from xivo_dao.data_handler.exception import InputError
+from xivo_provd_client import NotFoundError as ProvdClientNotFoundError
 
 
 class TestDeviceDao(unittest.TestCase):
@@ -136,7 +136,7 @@ class TestDeviceDaoGetFind(TestDeviceDao):
         with self.provd_managers() as (device_manager, config_manager, _):
             device_manager.get.return_value = {'id': self.deviceid,
                                                'config': self.config_id}
-            config_manager.get.side_effect = HTTPError('', 404, '', '', StringIO(''))
+            config_manager.get.side_effect = ProvdClientNotFoundError()
 
             self.assertRaises(NotFoundError, device_dao.fetch_device_and_config, self.deviceid)
 
@@ -156,7 +156,7 @@ class TestDeviceDaoGetFind(TestDeviceDao):
 
     def test_fetch_device_and_config_when_device_does_not_exist(self):
         with self.provd_managers() as (device_manager, config_manager, _):
-            device_manager.get.side_effect = HTTPError('', 404, '', '', StringIO(''))
+            device_manager.get.side_effect = ProvdClientNotFoundError()
 
             device, config = device_dao.fetch_device_and_config(self.deviceid)
 
@@ -624,7 +624,7 @@ class TestDeviceDaoDelete(TestDeviceDao):
         device = Device(id='abcd')
 
         with self.provd_managers() as (device_manager, config_manager, _):
-            device_manager.remove.side_effect = HTTPError('', 404, '', '', StringIO(''))
+            device_manager.remove.side_effect = ProvdClientNotFoundError()
 
             self.assertRaises(NotFoundError, device_dao.delete, device)
             device_manager.remove.assert_called_once_with(device.id)

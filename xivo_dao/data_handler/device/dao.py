@@ -15,14 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from urllib2 import HTTPError
-
 from xivo_dao.data_handler import errors
 from xivo_dao.data_handler.device.model import DeviceOrdering
 from xivo_dao.data_handler.device import provd_converter
 from xivo_dao.data_handler.exception import DataError
 from xivo_dao.helpers import provd_connector
 from xivo_dao.data_handler.utils.search import SearchResult
+from xivo_provd_client import NotFoundError as ProvdClientNotFoundError
 
 DEFAULT_ORDER = [DeviceOrdering.ip, DeviceOrdering.mac]
 
@@ -55,20 +54,16 @@ def _get_config_from_provd(config_id):
     config_manager = provd_connector.config_manager()
     try:
         return config_manager.get(config_id)
-    except HTTPError as e:
-        if e.code == 404:
-            raise errors.not_found('Device', config=config_id)
-        raise
+    except ProvdClientNotFoundError:
+        raise errors.not_found('Device', config=config_id)
 
 
 def _find_device_from_provd(device_id):
     device_manager = provd_connector.device_manager()
     try:
         return device_manager.get(device_id)
-    except HTTPError as e:
-        if e.code == 404:
-            return None
-        raise
+    except ProvdClientNotFoundError:
+        return None
 
 
 def find(device_id):
@@ -171,10 +166,8 @@ def _delete_provd_device(device):
     provd_device_manager = provd_connector.device_manager()
     try:
         provd_device_manager.remove(device.id)
-    except HTTPError as e:
-        if e.code == 404:
-            raise errors.not_found('Device', id=device.id)
-        raise e
+    except ProvdClientNotFoundError:
+        raise errors.not_found('Device', id=device.id)
     except Exception as e:
         raise DataError.on_delete('Device', e)
 
