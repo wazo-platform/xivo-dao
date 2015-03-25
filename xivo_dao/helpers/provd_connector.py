@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from provd.rest.client.client import new_provisioning_client
 from xivo_dao import provisioning_dao
+from xivo_provd_client import new_provisioning_client
 
 
 def config_manager():
