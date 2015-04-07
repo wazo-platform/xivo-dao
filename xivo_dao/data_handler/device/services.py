@@ -29,6 +29,7 @@ from xivo_dao.data_handler.extension import dao as extension_dao
 from xivo_dao.data_handler.line import dao as line_dao
 from xivo_dao.data_handler.exception import DataError
 from xivo_dao.data_handler.device import provd_converter
+from xivo_provd_client.error import NotFoundError as ProvdClientNotFoundError
 
 
 def get(device_id):
@@ -143,6 +144,8 @@ def remove_all_line_from_device(device):
         provd_config_manager.update(config)
     except URLError as e:
         raise DataError.on_action('dissociate', 'LineDevice', e)
+    except ProvdClientNotFoundError:
+        pass
 
 
 def reset_to_autoprov(device):

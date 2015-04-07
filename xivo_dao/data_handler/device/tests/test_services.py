@@ -29,6 +29,7 @@ from xivo_dao.data_handler.line_extension.model import LineExtension
 from xivo_dao.data_handler.exception import DataError
 from xivo_dao.data_handler.exception import InputError
 from xivo_dao.helpers import provd_connector
+from xivo_provd_client.error import NotFoundError as ProvdClientNotFoundError
 
 
 class TestDeviceServices(unittest.TestCase):
@@ -685,6 +686,18 @@ class TestDeviceServices(unittest.TestCase):
         device_manager().update.side_effect = Exception('')
 
         self.assertRaises(DataError, device_services.reset_to_autoprov, device)
+
+    @patch('xivo_dao.data_handler.line.dao.reset_device')
+    @patch('xivo_dao.helpers.provd_connector.config_manager')
+    @patch('xivo_dao.helpers.provd_connector.device_manager')
+    def test_autoprov_no_config(self, device_manager, config_manager, reset_device):
+        device = Device(id=self.device_id)
+
+        config_manager().get.side_effect = ProvdClientNotFoundError()
+
+        device_services.reset_to_autoprov(device)
+
+        reset_device.assert_called_once_with(self.device_id)
 
     def _give_me_a_provd_configregistrar(self, proxy_main, proxy_backup=None):
         config_registrar_dict = {
