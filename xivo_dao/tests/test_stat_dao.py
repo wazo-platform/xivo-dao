@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,14 +18,87 @@
 import datetime
 from datetime import datetime as t
 
+from hamcrest import assert_that, equal_to
+
+from sqlalchemy import func
+
 from xivo_dao import stat_dao
+from xivo_dao import stat_call_on_queue_dao
 from xivo_dao.alchemy.queue_log import QueueLog
 from xivo_dao.alchemy.stat_agent import StatAgent
+from xivo_dao.alchemy.stat_call_on_queue import StatCallOnQueue
 from xivo_dao.alchemy.stat_queue import StatQueue
 from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.tests.test_dao import DAOTestCase
 
 TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
+
+
+class TestFillAnsweredCall(DAOTestCase):
+
+    def setUp(self):
+        DAOTestCase.setUp(self)
+        self.callid = '1404377805.6457'
+        self.enterqueue_event = QueueLog(
+            time='2014-07-03 10:57:11.559080',
+            callid=self.callid,
+            queuename='swk_allemagne',
+            agent='NONE',
+            event='ENTERQUEUE',
+            data2='00049242184770',
+            data3='1',
+        )
+        self.connect_event = QueueLog(
+            time='2014-07-03 10:57:19.461280',
+            callid=self.callid,
+            queuename='swk_allemagne',
+            agent='Agent/448',
+            event='CONNECT',
+            data1='8',
+            data2='1404377831.6460',
+            data3='4',
+        )
+        self.complete_agent_event = QueueLog(
+            time='2014-07-03 11:06:10.374302',
+            callid=self.callid,
+            queuename='swk_allemagne',
+            agent='Agent/448',
+            event='COMPLETEAGENT',
+            data1='8',
+            data2='531',
+            data3='1',
+        )
+
+    def test_that_incomplete_calls_are_not_added(self):
+        self.add_me_all([self.enterqueue_event, self.connect_event])
+
+        stat_dao.fill_answered_calls(self.session, t(2014, 7, 3, 10, 0, 0), t(2014, 7, 3, 10, 59, 59, 999999))
+
+        count = self.session.query(
+            func.count(StatCallOnQueue.callid)
+        ).filter(StatCallOnQueue.callid == self.callid).scalar()
+
+        assert_that(count, equal_to(0))
+
+    def test_that_completed_calls_cannot_be_added_twice(self):
+        # Given the same time boundaries, a call should be added and deleted to avoid duplicate calls
+        # this test case shows an example with a call starting at 10 and ending at 11 that will only
+        # be generated at 11 but that will not be deleted at 11
+        begin, end = t(2014, 7, 3, 11, 0, 0), t(2014, 7, 3, 11, 59, 59, 999999)
+        self.add_me_all([self.enterqueue_event, self.connect_event, self.complete_agent_event])
+
+        stat_dao.fill_answered_calls(self.session, begin, end)
+
+        callids = stat_call_on_queue_dao.find_all_callid_between_date(self.session, begin, end)
+        stat_call_on_queue_dao.remove_callids(self.session, callids)
+
+        stat_dao.fill_answered_calls(self.session, begin, end)
+
+        count = self.session.query(
+            func.count(StatCallOnQueue.callid)
+        ).filter(StatCallOnQueue.callid == self.callid).scalar()
+
+        assert_that(count, equal_to(1))
 
 
 class TestStatDAO(DAOTestCase):
