@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -113,4 +113,7 @@ def find_all_callid_between_date(session, start_date, end_date):
 
 
 def remove_callids(session, callids):
+    if not callids:
+        return
+
     session.query(StatCallOnQueue).filter(StatCallOnQueue.callid.in_(callids)).delete(synchronize_session='fetch')
