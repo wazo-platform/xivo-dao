@@ -105,9 +105,16 @@ def remove_after(session, date):
 
 
 def find_all_callid_between_date(session, start_date, end_date):
-    rows = (session.query(StatCallOnQueue.callid)
-            .filter(StatCallOnQueue.time.between(start_date, end_date))
-            .all())
+    sql = '''\
+      select foo.callid, foo.end from (
+        select callid,
+               time::TIMESTAMP + (talktime || ' seconds')::INTERVAL
+                               + (ringtime || ' seconds')::INTERVAL
+                               + (waittime || ' seconds')::INTERVAL AS end
+         from stat_call_on_queue) as foo
+       where foo.end between :start_date and :end_date
+    '''
+    rows = session.query('callid').from_statement(sql).params(start_date=start_date, end_date=end_date)
 
     return [row[0] for row in rows]
 
