@@ -27,6 +27,11 @@ class TestValidator(unittest.TestCase):
 
         self.assertRaises(InputError, validator.validate_live_reload_data, data)
 
+    def test_validate_data_enabled_is_none(self):
+        data = {'enabled': None}
+
+        self.assertRaises(InputError, validator.validate_live_reload_data, data)
+
     def test_validate_data_invalid_param(self):
         data = {'enabled': True,
                 'foo': 'bar'}
