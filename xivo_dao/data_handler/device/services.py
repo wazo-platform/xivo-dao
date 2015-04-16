@@ -35,7 +35,7 @@ def get(device_id):
     return dao.get(device_id)
 
 
-def search(**parameters):
+def search(parameters):
     if 'order' in parameters:
         DeviceOrdering.validate_order(parameters['order'])
     if 'direction' in parameters:
