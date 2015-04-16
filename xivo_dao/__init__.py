@@ -16,38 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.helpers import db_manager
-from xivo_dao.helpers import bus_manager
 from xivo.config_helper import ConfigParser, ErrorHandler
-
-
-class BusContext(object):
-
-    def __init__(self, url, exchange_name, exchange_type, uuid):
-        self._url = url
-        self._exchange_name = exchange_name
-        self._exchange_type = exchange_type
-        self._uuid = uuid
-
-    def new_connection(self):
-        from kombu import Connection
-        return Connection(self._url)
-
-    def new_bus_producer(self, connection):
-        from kombu import Exchange, Producer
-        exchange = Exchange(self._exchange_name, self._exchange_type)
-        return Producer(connection, exchange=exchange, auto_declare=True)
-
-    def new_marshaler(self):
-        from xivo_bus import Marshaler
-        return Marshaler(self._uuid)
-
-    @classmethod
-    def new_from_config(cls, config):
-        url = 'amqp://{username}:{password}@{host}:{port}//'.format(**config['bus'])
-        exchange_name = config['bus']['exchange_name']
-        exchange_type = config['bus']['exchange_type']
-        uuid = config['uuid']
-        return cls(url, exchange_name, exchange_type, uuid)
 
 
 class DBContext(object):
@@ -65,16 +34,8 @@ class DBContext(object):
         return cls(url)
 
 
-def init_bus(bus_context):
-    bus_manager.on_bus_context_update(bus_context)
-
-
 def init_db(db_context):
     db_manager.on_db_context_update(db_context)
-
-
-def init_bus_from_config(config):
-    init_bus(BusContext.new_from_config(config))
 
 
 def init_db_from_config(config):

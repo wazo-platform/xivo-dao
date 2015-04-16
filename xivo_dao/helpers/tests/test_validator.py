@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from mock import Mock, patch
-from hamcrest import *
+from hamcrest import assert_that, equal_to
 from unittest import TestCase
 
 from xivo_dao.helpers import validator
@@ -46,11 +46,11 @@ class TestValidator(TestCase):
         res = validator.is_positive_number(1234)
         assert_that(res, equal_to(True))
 
-    @patch('xivo_dao.data_handler.context.services.find_by_name')
+    @patch('xivo_dao.context_dao.get')
     def test_is_existing_context(self, mock_find):
-        expected_return = mock_find.return_value = Mock()
+        mock_find.return_value = Mock()
 
         result = validator.is_existing_context('abcd')
 
         mock_find.assert_called_once_with('abcd')
-        assert_that(result, same_instance(expected_return))
+        assert_that(result, equal_to(True))

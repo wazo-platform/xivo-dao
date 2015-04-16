@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-
-# Copyright (C) 2015 Avencall
+#
+# Copyright (C) 2014 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,18 +15,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-import unittest
-from xivo_dao import DBContext
+
+from xivo_dao.alchemy.infos import Infos as InfosSchema
+from xivo_dao.helpers import errors
+from xivo_dao.resources.infos.model import db_converter
+from xivo_dao.helpers.db_manager import daosession
 
 
-class TestDBContext(unittest.TestCase):
+@daosession
+def get(session):
+    row = (session.query(InfosSchema).first())
 
-    def test_new_from_config(self):
-        db_uri = 'postgresql://foobar'
-        config = {
-            'db_uri': db_uri,
-        }
-
-        db_context = DBContext.new_from_config(config)
-
-        self.assertEqual(db_context._url, db_uri)
+    if not row:
+        raise errors.not_found('Infos')
+    return db_converter.to_model(row)

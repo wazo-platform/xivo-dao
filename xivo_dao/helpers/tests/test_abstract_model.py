@@ -21,8 +21,8 @@ from hamcrest import all_of, assert_that, has_entries, has_key, is_not, same_ins
 from hamcrest.core import equal_to
 from mock import Mock
 from xivo_dao.helpers.abstract_model import AbstractModels
-from xivo_dao.data_handler.exception import InputError
-from xivo_dao.data_handler.line.model import Line, LineSIP
+from xivo_dao.helpers.exception import InputError
+from xivo_dao.resources.line.model import Line, LineSIP
 
 
 class TestModel(AbstractModels):

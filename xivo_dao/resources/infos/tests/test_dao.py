@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-
-# Copyright (C) 2015 Avencall
+#
+# Copyright (C) 2014 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,18 +15,27 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-import unittest
-from xivo_dao import DBContext
+import uuid
+
+from xivo_dao.alchemy.infos import Infos as InfosSchema
+from xivo_dao.resources.infos import dao as infos_dao
+from xivo_dao.resources.infos.model import Infos
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
-class TestDBContext(unittest.TestCase):
+class TestGetInfos(DAOTestCase):
 
-    def test_new_from_config(self):
-        db_uri = 'postgresql://foobar'
-        config = {
-            'db_uri': db_uri,
-        }
+    def test_get_with_one_infos(self):
+        xivo_uuid = unicode(uuid.uuid5(uuid.NAMESPACE_DNS, __name__))
+        infos_row = InfosSchema(
+            uuid=xivo_uuid,
+        )
+        self.add_me(infos_row)
 
-        db_context = DBContext.new_from_config(config)
+        expected_infos = Infos(
+            uuid=xivo_uuid,
+        )
 
-        self.assertEqual(db_context._url, db_uri)
+        infos = infos_dao.get()
+
+        self.assertEquals(expected_infos, infos)

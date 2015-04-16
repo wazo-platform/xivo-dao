@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.data_handler.context import services as context_services
+from xivo_dao import context_dao
 
 
 def is_positive_number(string):
@@ -26,4 +26,4 @@ def is_positive_number(string):
 
 
 def is_existing_context(context_name):
-    return context_services.find_by_name(context_name)
+    return context_dao.get(context_name) is not None

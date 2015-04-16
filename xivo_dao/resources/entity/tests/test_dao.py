@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2015 Avencall
+# Copyright (C) 2014 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,18 +15,26 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-import unittest
-from xivo_dao import DBContext
+
+from hamcrest import assert_that, equal_to
+from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao.resources.entity import dao
 
 
-class TestDBContext(unittest.TestCase):
+class TestDefaultEntityName(DAOTestCase):
+    def test_given_entity_then_return_entity_name(self):
+        entity_name = 'entity'
+        self.add_entity(name=entity_name)
 
-    def test_new_from_config(self):
-        db_uri = 'postgresql://foobar'
-        config = {
-            'db_uri': db_uri,
-        }
+        result = dao.default_entity_name()
 
-        db_context = DBContext.new_from_config(config)
+        assert_that(result, equal_to(entity_name))
 
-        self.assertEqual(db_context._url, db_uri)
+
+class TestDefaultEntityID(DAOTestCase):
+    def test_given_entity_then_return_entity_id(self):
+        entity = self.add_entity()
+
+        result = dao.default_entity_id()
+
+        assert_that(result, equal_to(entity.id))
