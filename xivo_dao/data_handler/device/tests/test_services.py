@@ -55,14 +55,14 @@ class TestDeviceServices(unittest.TestCase):
 
         device_dao_search.return_value = expected
 
-        result = device_services.search()
+        result = device_services.search({})
 
         self.assertEquals(result, expected)
         device_dao_search.assert_called_once_with()
 
     @patch('xivo_dao.data_handler.device.dao.search')
     def test_search_with_invalid_order(self, device_dao_search):
-        self.assertRaises(InputError, device_services.search, order='toto')
+        self.assertRaises(InputError, device_services.search, {'order': 'toto'})
         self.assertEquals(device_dao_search.call_count, 0)
 
     @patch('xivo_dao.data_handler.device.dao.search')
@@ -71,14 +71,14 @@ class TestDeviceServices(unittest.TestCase):
 
         device_dao_search.return_value = expected
 
-        result = device_services.search(order='ip')
+        result = device_services.search({'order': 'ip'})
 
         self.assertEquals(result, expected)
         device_dao_search.assert_called_once_with(order='ip')
 
     @patch('xivo_dao.data_handler.device.dao.search')
     def test_search_with_invalid_direction(self, device_dao_search):
-        self.assertRaises(InputError, device_services.search, direction='toto')
+        self.assertRaises(InputError, device_services.search, {'direction': 'toto'})
         self.assertEquals(device_dao_search.call_count, 0)
 
     @patch('xivo_dao.data_handler.device.dao.search')
@@ -87,19 +87,19 @@ class TestDeviceServices(unittest.TestCase):
 
         device_dao_search.return_value = expected
 
-        result = device_services.search(direction='desc')
+        result = device_services.search({'direction': 'desc'})
 
         self.assertEquals(result, expected)
         device_dao_search.assert_called_once_with(direction='desc')
 
     @patch('xivo_dao.data_handler.device.dao.search')
     def test_search_with_invalid_limit(self, device_dao_search):
-        self.assertRaises(InputError, device_services.search, limit=-1)
+        self.assertRaises(InputError, device_services.search, {'limit': -1})
         self.assertEquals(device_dao_search.call_count, 0)
 
     @patch('xivo_dao.data_handler.device.dao.search')
     def test_search_with_limit_at_0(self, device_dao_search):
-        self.assertRaises(InputError, device_services.search, limit=0)
+        self.assertRaises(InputError, device_services.search, {'limit': 0})
         self.assertEquals(device_dao_search.call_count, 0)
 
     @patch('xivo_dao.data_handler.device.dao.search')
@@ -108,14 +108,14 @@ class TestDeviceServices(unittest.TestCase):
 
         device_dao_search.return_value = expected
 
-        result = device_services.search(limit=1)
+        result = device_services.search({'limit': 1})
 
         self.assertEquals(result, expected)
         device_dao_search.assert_called_once_with(limit=1)
 
     @patch('xivo_dao.data_handler.device.dao.search')
     def test_search_with_invalid_skip(self, device_dao_search):
-        self.assertRaises(InputError, device_services.search, skip=-1)
+        self.assertRaises(InputError, device_services.search, {'skip': -1})
         self.assertEquals(device_dao_search.call_count, 0)
 
     @patch('xivo_dao.data_handler.device.dao.search')
@@ -124,7 +124,7 @@ class TestDeviceServices(unittest.TestCase):
 
         device_dao_search.return_value = expected
 
-        result = device_services.search(skip=0)
+        result = device_services.search({'skip': 0})
 
         self.assertEquals(result, expected)
 
@@ -136,7 +136,7 @@ class TestDeviceServices(unittest.TestCase):
 
         device_dao_search.return_value = expected
 
-        result = device_services.search(skip=1)
+        result = device_services.search({'skip': 1})
 
         self.assertEquals(result, expected)
         device_dao_search.assert_called_once_with(skip=1)
@@ -150,7 +150,7 @@ class TestDeviceServices(unittest.TestCase):
 
         device_dao_search.return_value = expected
 
-        result = device_services.search(search=search_term)
+        result = device_services.search({'search': search_term})
 
         self.assertEquals(result, expected)
         device_dao_search.assert_called_once_with(search=search_term)

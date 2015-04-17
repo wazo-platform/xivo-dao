@@ -22,7 +22,7 @@ LIVE_RELOAD_PARAM = 'enabled'
 
 
 def validate_live_reload_data(data):
-    if LIVE_RELOAD_PARAM not in data:
+    if data.get(LIVE_RELOAD_PARAM) is None:
         raise errors.missing(LIVE_RELOAD_PARAM)
     if len(data) > 1:
         params = data.keys()
