@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2014 Avencall
+# Copyright (C) 2012-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -862,3 +862,11 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.assertEqual(user_line2.user.firstname, user2_firstname)
         self.assertEqual(user_line1.line.id, user1_line_id)
         self.assertEqual(user_line2.line.id, user2_line_id)
+
+    def test_get_uuid_by_username_password(self):
+        user = self.add_user(loginclient='alice',
+                             passwdclient='s7cret')
+
+        result = user_dao.get_uuid_by_username_password('alice', 's7cret')
+
+        assert_that(result, equal_to(user.uuid))
