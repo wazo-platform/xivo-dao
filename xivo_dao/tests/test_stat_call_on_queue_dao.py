@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -268,6 +268,30 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         result = stat_call_on_queue_dao.find_all_callid_between_date(self.session, start, end)
 
         assert_that(result, contains(callid1, callid2, callid3))
+
+    def test_that_find_all_callid_between_date_includes_calls_started_before_start(self):
+        callid = '234235435'
+        _, queue_id = self._insert_queue_to_stat_queue()
+        _, agent_id = self._insert_agent_to_stat_agent()
+        call = StatCallOnQueue(
+            callid=callid,
+            time=datetime.datetime(2014, 1, 1, 10, 59, 59),
+            ringtime=1,
+            talktime=1,
+            waittime=1,
+            status='answered',
+            queue_id=queue_id,
+            agent_id=agent_id,
+        )
+
+        self.add_me(call)
+
+        result = stat_call_on_queue_dao.find_all_callid_between_date(
+            self.session,
+            datetime.datetime(2014, 1, 1, 11, 0, 0),
+            datetime.datetime(2014, 1, 1, 11, 59, 59))
+
+        assert_that(result, contains(callid))
 
     def test_remove_callid_before(self):
         callid1 = 'callid1'

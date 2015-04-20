@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -105,12 +105,22 @@ def remove_after(session, date):
 
 
 def find_all_callid_between_date(session, start_date, end_date):
-    rows = (session.query(StatCallOnQueue.callid)
-            .filter(StatCallOnQueue.time.between(start_date, end_date))
-            .all())
+    sql = '''\
+      select foo.callid, foo.end from (
+        select callid,
+               time::TIMESTAMP + (talktime || ' seconds')::INTERVAL
+                               + (ringtime || ' seconds')::INTERVAL
+                               + (waittime || ' seconds')::INTERVAL AS end
+         from stat_call_on_queue) as foo
+       where foo.end between :start_date and :end_date
+    '''
+    rows = session.query('callid').from_statement(sql).params(start_date=start_date, end_date=end_date)
 
     return [row[0] for row in rows]
 
 
 def remove_callids(session, callids):
+    if not callids:
+        return
+
     session.query(StatCallOnQueue).filter(StatCallOnQueue.callid.in_(callids)).delete(synchronize_session='fetch')
