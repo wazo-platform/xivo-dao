@@ -48,6 +48,7 @@ class UserFeatures(Base):
         Index('userfeatures__idx__lastname', 'lastname'),
         Index('userfeatures__idx__loginclient', 'loginclient'),
         Index('userfeatures__idx__musiconhold', 'musiconhold'),
+        Index('userfeatures__idx__uuid', 'uuid'),
         Index('userfeatures__idx__voicemailid', 'voicemailid'),
     )
 
