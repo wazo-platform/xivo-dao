@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2014 Avencall
+# Copyright (C) 2012-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -226,6 +226,18 @@ def get_name_number(session, user_id):
     if not res:
         raise LookupError('Cannot find a line from this user id %s' % user_id)
     return '%s %s' % (res.firstname, res.lastname), res.exten
+
+
+@daosession
+def get_uuid_by_username_password(session, username, password):
+    row = session.query(UserFeatures.uuid).filter(
+        and_(UserFeatures.loginclient == username,
+             UserFeatures.passwdclient == password)).first()
+
+    if not row:
+        raise LookupError('Invalid username or password')
+
+    return row.uuid
 
 
 @daosession
