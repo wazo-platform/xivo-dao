@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy import or_
+
 from xivo_dao.alchemy.call_log import CallLog as CallLogSchema
 from xivo_dao.alchemy.cel import CEL as CELSchema
 from xivo_dao.data_handler.exception import DataError
@@ -45,34 +47,11 @@ def find_all_in_period(session, start, end):
 
 
 @daosession
-def find_all_answered_for_phone(session, identifier, limit):
+def find_all_history_for_phone(session, identifier, limit):
     call_log_rows = (session
                      .query(CallLogSchema)
-                     .filter(CallLogSchema.destination_line_identity == identifier)
-                     .filter(CallLogSchema.answered == True)
-                     .order_by(CallLogSchema.date.desc())
-                     .limit(limit))
-
-    return _converted_call_logs(call_log_rows)
-
-
-@daosession
-def find_all_missed_for_phone(session, identifier, limit):
-    call_log_rows = (session
-                     .query(CallLogSchema)
-                     .filter(CallLogSchema.destination_line_identity == identifier)
-                     .filter(CallLogSchema.answered == False)
-                     .order_by(CallLogSchema.date.desc())
-                     .limit(limit))
-
-    return _converted_call_logs(call_log_rows)
-
-
-@daosession
-def find_all_outgoing_for_phone(session, identifier, limit):
-    call_log_rows = (session
-                     .query(CallLogSchema)
-                     .filter(CallLogSchema.source_line_identity == identifier)
+                     .filter(or_(CallLogSchema.destination_line_identity == identifier,
+                                 CallLogSchema.source_line_identity == identifier))
                      .order_by(CallLogSchema.date.desc())
                      .limit(limit))
 
