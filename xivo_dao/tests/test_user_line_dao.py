@@ -182,3 +182,8 @@ class TestUserLineDAO(DAOTestCase):
         result = user_line_dao.get_cid_for_channel(channel)
 
         self.assertEqual(result, cid)
+
+    def test_get_with_line_id_no_user_associated(self):
+        line = self.add_line()
+
+        self.assertRaises(LookupError, user_line_dao.get_with_line_id, line.id)
