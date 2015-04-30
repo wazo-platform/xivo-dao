@@ -323,6 +323,9 @@ def get_user_config(session, user_id):
         query = _user_config_query(session)
         user = query.filter(UserFeatures.id == user_id).first()
 
+    if not user:
+        raise LookupError('No user with ID %s' % user_id)
+
     return {str(user.id): _format_user(user)}
 
 

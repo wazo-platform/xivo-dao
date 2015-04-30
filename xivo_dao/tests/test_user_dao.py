@@ -788,6 +788,9 @@ class TestUserFeaturesDAO(DAOTestCase):
         assert_that(result[str(user.id)]['context'], none())
         assert_that(result[str(user.id)]['linelist'], equal_to([]))
 
+    def test_get_user_config_no_user(self):
+        self.assertRaises(LookupError, user_dao.get_user_config, 8921890)
+
     def test_get_users_config(self):
         user1 = self.add_user(
             firstname='John',
