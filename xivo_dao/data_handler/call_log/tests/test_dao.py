@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ from xivo_dao.tests.test_dao import DAOTestCase
 class TestCallLogDAO(DAOTestCase):
 
     def setUp(self):
-        DAOTestCase.setUp(self)
+        super(TestCallLogDAO, self).setUp()
         self.db_converter_patcher = patch('xivo_dao.data_handler.call_log.model.db_converter')
         self.db_converter = self.db_converter_patcher.start()
         self.call_log_rows = []
