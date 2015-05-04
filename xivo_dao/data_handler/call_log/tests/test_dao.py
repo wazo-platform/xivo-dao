@@ -128,12 +128,8 @@ class TestCallLogDAO(DAOTestCase):
         result = call_log_dao.find_all_missed_for_phone(identity, limit)
 
         assert_that(result, has_length(2))
-        assert_that(result[0].date, equal_to(call_log_1.date))
-        assert_that(result[0].destination_line_identity, equal_to(call_log_1.destination_line_identity))
-        assert_that(result[0].answered, equal_to(call_log_1.answered))
-        assert_that(result[1].date, equal_to(call_log_3.date))
-        assert_that(result[1].destination_line_identity, equal_to(call_log_3.destination_line_identity))
-        assert_that(result[1].answered, equal_to(call_log_3.answered))
+        assert_that(result[0].matches(call_log_1, ['date', 'destination_line_identity', 'answered']))
+        assert_that(result[1].matches(call_log_3, ['date', 'destination_line_identity', 'answered']))
 
     def test_find_all_outgoing_calls_for_phone_no_calls(self):
         identity = "sip/131313"
@@ -157,10 +153,8 @@ class TestCallLogDAO(DAOTestCase):
         result = call_log_dao.find_all_outgoing_for_phone(identity, limit)
 
         assert_that(result, has_length(2))
-        assert_that(result[0].date, equal_to(call_log_3.date))
-        assert_that(result[1].date, equal_to(call_log_1.date))
-        assert_that(result[0].source_line_identity, equal_to(call_log_3.source_line_identity))
-        assert_that(result[1].source_line_identity, equal_to(call_log_1.source_line_identity))
+        assert_that(result[0].matches(call_log_3, ['date', 'source_line_identity']))
+        assert_that(result[1].matches(call_log_1, ['date', 'source_line_identity']))
 
     @mocked_dao_session
     def test_create_call_log(self, session):
