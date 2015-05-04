@@ -46,10 +46,10 @@ class TestCallLogDAO(DAOTestCase):
         identity = "sip/131313"
         limit = 2
 
-        call_logs = call_log_0, call_log_1, _ = (
+        call_logs = call_log_0, call_log_1, call_log_2 = (
+            self._mock_call_log(date=datetime(2013, 1, 1, 13, 12, 30), destination_line_identity=identity, answered=True),
             self._mock_call_log(date=datetime(2015, 1, 1, 13, 10, 30), destination_line_identity=identity, answered=True),
             self._mock_call_log(date=datetime(2014, 1, 1, 13, 11, 30), destination_line_identity=identity, answered=True),
-            self._mock_call_log(date=datetime(2013, 1, 1, 13, 12, 30), destination_line_identity=identity, answered=True),
         )
 
         call_log_dao.create_from_list(call_logs)
@@ -57,8 +57,8 @@ class TestCallLogDAO(DAOTestCase):
         result = call_log_dao.find_all_history_for_phone(identity, limit)
 
         assert_that(result, has_length(2))
-        assert_that(result[0].matches(call_log_0, ['date', 'destination_line_identity', 'answered']))
-        assert_that(result[1].matches(call_log_1, ['date', 'destination_line_identity', 'answered']))
+        assert_that(result[0].matches(call_log_1, ['date', 'destination_line_identity', 'answered']))
+        assert_that(result[1].matches(call_log_2, ['date', 'destination_line_identity', 'answered']))
 
     def test_find_all_not_found(self):
         expected_result = []
