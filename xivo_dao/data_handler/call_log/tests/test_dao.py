@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from datetime import datetime, timedelta
+from datetime import datetime as dt
+from datetime import timedelta
 from hamcrest import (assert_that, empty, equal_to, has_length, contains_inanyorder, has_property,
                       contains, all_of, is_)
 from mock import patch
@@ -48,15 +49,15 @@ class TestCallLogDAO(DAOTestCase):
         limit = 7
 
         call_logs = c0, c1, c2, c3, c4, c5, c6, c7, c8 = (
-            self._mock_call_log(date=datetime(2015, 1, 1, 13, 10, 10), destination_line_identity=identity, answered=False),
-            self._mock_call_log(date=datetime(2015, 1, 1, 13, 11, 10), destination_line_identity=identity, answered=False),
-            self._mock_call_log(date=datetime(2015, 1, 1, 13, 12, 10), destination_line_identity=identity, answered=False),
-            self._mock_call_log(date=datetime(2015, 1, 1, 13, 12, 30), destination_line_identity=identity, answered=True),
-            self._mock_call_log(date=datetime(2015, 1, 1, 13, 10, 30), destination_line_identity=identity, answered=True),
-            self._mock_call_log(date=datetime(2015, 1, 1, 13, 11, 30), destination_line_identity=identity, answered=True),
-            self._mock_call_log(date=datetime(2015, 1, 1, 13, 10, 20), source_line_identity=identity),
-            self._mock_call_log(date=datetime(2015, 1, 1, 13, 11, 20), source_line_identity=identity),
-            self._mock_call_log(date=datetime(2015, 1, 1, 13, 12, 20), source_line_identity=identity),
+            self._mock_call_log(date=dt(2015, 1, 1, 13, 10, 10), destination_line_identity=identity, answered=False),
+            self._mock_call_log(date=dt(2015, 1, 1, 13, 11, 10), destination_line_identity=identity, answered=False),
+            self._mock_call_log(date=dt(2015, 1, 1, 13, 12, 10), destination_line_identity=identity, answered=False),
+            self._mock_call_log(date=dt(2015, 1, 1, 13, 12, 30), destination_line_identity=identity, answered=True),
+            self._mock_call_log(date=dt(2015, 1, 1, 13, 10, 30), destination_line_identity=identity, answered=True),
+            self._mock_call_log(date=dt(2015, 1, 1, 13, 11, 30), destination_line_identity=identity, answered=True),
+            self._mock_call_log(date=dt(2015, 1, 1, 13, 10, 20), source_line_identity=identity),
+            self._mock_call_log(date=dt(2015, 1, 1, 13, 11, 20), source_line_identity=identity),
+            self._mock_call_log(date=dt(2015, 1, 1, 13, 12, 20), source_line_identity=identity),
         )
 
         call_log_dao.create_from_list(call_logs)
@@ -95,19 +96,19 @@ class TestCallLogDAO(DAOTestCase):
 
     def test_find_all_in_period_not_found(self):
         expected_result = []
-        start, end = datetime(2013, 1, 1), datetime(2013, 2, 1)
+        start, end = dt(2013, 1, 1), dt(2013, 2, 1)
 
         result = call_log_dao.find_all_in_period(start, end)
 
         assert_that(result, equal_to(expected_result))
 
     def test_find_all_in_period_found(self):
-        call_logs = _, call_log_1, call_log_2, _ = (self._mock_call_log(date=datetime(2012, 1, 1, 13)),
-                                                    self._mock_call_log(date=datetime(2013, 1, 1, 13)),
-                                                    self._mock_call_log(date=datetime(2013, 1, 2, 13)),
-                                                    self._mock_call_log(date=datetime(2014, 1, 1, 13)))
-        start = datetime(2013, 1, 1, 12)
-        end = datetime(2013, 1, 3, 12)
+        call_logs = _, call_log_1, call_log_2, _ = (self._mock_call_log(date=dt(2012, 1, 1, 13)),
+                                                    self._mock_call_log(date=dt(2013, 1, 1, 13)),
+                                                    self._mock_call_log(date=dt(2013, 1, 2, 13)),
+                                                    self._mock_call_log(date=dt(2014, 1, 1, 13)))
+        start = dt(2013, 1, 1, 12)
+        end = dt(2013, 1, 3, 12)
         call_log_dao.create_from_list(call_logs)
 
         result = call_log_dao.find_all_in_period(start, end)
