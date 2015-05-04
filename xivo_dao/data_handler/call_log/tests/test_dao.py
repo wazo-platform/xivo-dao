@@ -16,7 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from datetime import datetime, timedelta
-from hamcrest import assert_that, equal_to, has_length, contains_inanyorder, has_property, contains, all_of
+from hamcrest import (assert_that, empty, equal_to, has_length, contains_inanyorder, has_property,
+                      contains, all_of, is_)
 from mock import patch
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -60,6 +61,11 @@ class TestCallLogDAO(DAOTestCase):
         assert_that(result[0].matches(call_log_1, ['date', 'destination_line_identity', 'answered']))
         assert_that(result[1].matches(call_log_2, ['date', 'destination_line_identity', 'answered']))
 
+    def test_find_all_history_for_phone_no_calls(self):
+        result = call_log_dao.find_all_history_for_phone('sip/foobar', 42)
+
+        assert_that(result, is_(empty()))
+
     def test_find_all_not_found(self):
         expected_result = []
 
@@ -98,22 +104,6 @@ class TestCallLogDAO(DAOTestCase):
         assert_that(result, contains_inanyorder(has_property('date', call_log_1.date),
                                                 has_property('date', call_log_2.date)))
 
-    def test_find_all_answered_for_phone_no_calls(self):
-        identity = "sip/131313"
-        limit = 10
-
-        result = call_log_dao.find_all_answered_for_phone(identity, limit)
-
-        assert_that(result, has_length(0))
-
-    def test_find_all_missed_calls_for_phone_no_calls(self):
-        identity = "sip/131313"
-        limit = 10
-
-        result = call_log_dao.find_all_missed_for_phone(identity, limit)
-
-        assert_that(result, has_length(0))
-
     def test_find_all_missed_for_phone_limited(self):
         identity = "sip/131313"
         limit = 2
@@ -130,14 +120,6 @@ class TestCallLogDAO(DAOTestCase):
         assert_that(result, has_length(2))
         assert_that(result[0].matches(call_log_1, ['date', 'destination_line_identity', 'answered']))
         assert_that(result[1].matches(call_log_3, ['date', 'destination_line_identity', 'answered']))
-
-    def test_find_all_outgoing_calls_for_phone_no_calls(self):
-        identity = "sip/131313"
-        limit = 10
-
-        result = call_log_dao.find_all_outgoing_for_phone(identity, limit)
-
-        assert_that(result, has_length(0))
 
     def test_find_all_outgoing_for_phone_limited(self):
         identity = "sip/131313"
