@@ -45,28 +45,33 @@ class TestCallLogDAO(DAOTestCase):
 
     def test_find_all_history_for_phone_limited(self):
         identity = "sip/131313"
-        limit = 5
+        limit = 7
 
-        call_logs = c0, c1, c2, c3, c4, c5 = (
+        call_logs = c0, c1, c2, c3, c4, c5, c6, c7, c8 = (
             self._mock_call_log(date=datetime(2015, 1, 1, 13, 10, 10), destination_line_identity=identity, answered=False),
             self._mock_call_log(date=datetime(2015, 1, 1, 13, 11, 10), destination_line_identity=identity, answered=False),
             self._mock_call_log(date=datetime(2015, 1, 1, 13, 12, 10), destination_line_identity=identity, answered=False),
             self._mock_call_log(date=datetime(2015, 1, 1, 13, 12, 30), destination_line_identity=identity, answered=True),
             self._mock_call_log(date=datetime(2015, 1, 1, 13, 10, 30), destination_line_identity=identity, answered=True),
             self._mock_call_log(date=datetime(2015, 1, 1, 13, 11, 30), destination_line_identity=identity, answered=True),
+            self._mock_call_log(date=datetime(2015, 1, 1, 13, 10, 20), source_line_identity=identity),
+            self._mock_call_log(date=datetime(2015, 1, 1, 13, 11, 20), source_line_identity=identity),
+            self._mock_call_log(date=datetime(2015, 1, 1, 13, 12, 20), source_line_identity=identity),
         )
 
         call_log_dao.create_from_list(call_logs)
 
         result = call_log_dao.find_all_history_for_phone(identity, limit)
 
-        assert_that(result, has_length(5))
+        assert_that(result, has_length(limit))
 
         assert_that(result[0].matches(c3, ['date', 'destination_line_identity', 'answered']))
-        assert_that(result[1].matches(c2, ['date', 'destination_line_identity', 'answered']))
-        assert_that(result[2].matches(c5, ['date', 'destination_line_identity', 'answered']))
-        assert_that(result[3].matches(c1, ['date', 'destination_line_identity', 'answered']))
-        assert_that(result[4].matches(c4, ['date', 'destination_line_identity', 'answered']))
+        assert_that(result[1].matches(c8, ['date', 'destination_line_identity', 'answered']))
+        assert_that(result[2].matches(c2, ['date', 'destination_line_identity', 'answered']))
+        assert_that(result[3].matches(c5, ['date', 'destination_line_identity', 'answered']))
+        assert_that(result[4].matches(c7, ['date', 'destination_line_identity', 'answered']))
+        assert_that(result[5].matches(c1, ['date', 'destination_line_identity', 'answered']))
+        assert_that(result[6].matches(c4, ['date', 'destination_line_identity', 'answered']))
 
     def test_find_all_history_for_phone_no_calls(self):
         result = call_log_dao.find_all_history_for_phone('sip/foobar', 42)
@@ -110,23 +115,6 @@ class TestCallLogDAO(DAOTestCase):
         assert_that(result, has_length(2))
         assert_that(result, contains_inanyorder(has_property('date', call_log_1.date),
                                                 has_property('date', call_log_2.date)))
-
-    def test_find_all_outgoing_for_phone_limited(self):
-        identity = "sip/131313"
-        limit = 2
-        call_logs = _, call_log_1, call_log_2, call_log_3, _ = (self._mock_call_log(),
-                                                                self._mock_call_log(date=datetime(2015, 1, 1, 13), source_line_identity=identity),
-                                                                self._mock_call_log(date=datetime(2011, 1, 1, 13), source_line_identity=identity),
-                                                                self._mock_call_log(date=datetime(2015, 2, 1, 13), source_line_identity=identity),
-                                                                self._mock_call_log())
-
-        call_log_dao.create_from_list(call_logs)
-
-        result = call_log_dao.find_all_outgoing_for_phone(identity, limit)
-
-        assert_that(result, has_length(2))
-        assert_that(result[0].matches(call_log_3, ['date', 'source_line_identity']))
-        assert_that(result[1].matches(call_log_1, ['date', 'source_line_identity']))
 
     @mocked_dao_session
     def test_create_call_log(self, session):
