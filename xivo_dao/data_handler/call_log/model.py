@@ -60,6 +60,7 @@ class CallLog(NewModel):
             mine = getattr(self, field, sentinel)
             others = getattr(other, field, sentinel)
             if mine != others:
+                print mine, '!=', others
                 return False
         else:
             return True
