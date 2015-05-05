@@ -19,8 +19,6 @@ from xivo_dao.alchemy.call_log import CallLog as CallLogSchema
 from xivo_dao.converters.database_converter import DatabaseConverter
 from xivo_dao.helpers.new_model import NewModel
 
-sentinel = object()
-
 
 class CallLog(NewModel):
     MANDATORY = [
@@ -54,17 +52,6 @@ class CallLog(NewModel):
 
     def add_related_cels(self, cel_ids):
         self._related_cels.extend(cel_ids)
-
-    def matches(self, other, fields):
-        for field in fields:
-            mine = getattr(self, field, sentinel)
-            others = getattr(other, field, sentinel)
-            if mine != others:
-                print mine, '!=', others
-                return False
-        else:
-            return True
-
 
 
 DB_TO_MODEL_MAPPING = {

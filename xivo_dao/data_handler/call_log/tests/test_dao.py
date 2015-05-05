@@ -64,15 +64,28 @@ class TestCallLogDAO(DAOTestCase):
 
         result = call_log_dao.find_all_history_for_phone(identity, limit)
 
-        assert_that(result, has_length(limit))
-
-        assert_that(result[0].matches(c3, ['date', 'destination_line_identity', 'answered']))
-        assert_that(result[1].matches(c8, ['date', 'destination_line_identity', 'answered']))
-        assert_that(result[2].matches(c2, ['date', 'destination_line_identity', 'answered']))
-        assert_that(result[3].matches(c5, ['date', 'destination_line_identity', 'answered']))
-        assert_that(result[4].matches(c7, ['date', 'destination_line_identity', 'answered']))
-        assert_that(result[5].matches(c1, ['date', 'destination_line_identity', 'answered']))
-        assert_that(result[6].matches(c4, ['date', 'destination_line_identity', 'answered']))
+        assert_that(result, contains(
+            all_of(has_property('date', c3.date),
+                   has_property('destination_line_identity', c3.destination_line_identity),
+                   has_property('answered', c3.answered)),
+            all_of(has_property('date', c8.date),
+                   has_property('destination_line_identity', c8.destination_line_identity),
+                   has_property('answered', c8.answered)),
+            all_of(has_property('date', c2.date),
+                   has_property('destination_line_identity', c2.destination_line_identity),
+                   has_property('answered', c2.answered)),
+            all_of(has_property('date', c5.date),
+                   has_property('destination_line_identity', c5.destination_line_identity),
+                   has_property('answered', c5.answered)),
+            all_of(has_property('date', c7.date),
+                   has_property('destination_line_identity', c7.destination_line_identity),
+                   has_property('answered', c7.answered)),
+            all_of(has_property('date', c1.date),
+                   has_property('destination_line_identity', c1.destination_line_identity),
+                   has_property('answered', c1.answered)),
+            all_of(has_property('date', c4.date),
+                   has_property('destination_line_identity', c4.destination_line_identity),
+                   has_property('answered', c4.answered))))
 
     def test_find_all_history_for_phone_no_calls(self):
         result = call_log_dao.find_all_history_for_phone('sip/foobar', 42)
