@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014 Avencall
+# Copyright (C) 2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,8 +22,17 @@ from xivo_dao.helpers.db_manager import daosession
 
 @contextmanager
 def commit_or_abort(session, error=None, element=None):
-    session.begin()
-    yield
+    try:
+        session.begin()
+    except SQLAlchemyError:
+        session.rollback()
+        session.begin()
+
+    try:
+        yield
+    except Exception:
+        session.rollback()
+        raise
 
     try:
         session.commit()
