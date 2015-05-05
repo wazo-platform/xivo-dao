@@ -198,7 +198,7 @@ class TestCallLogDAO(DAOTestCase):
         if cel_ids is None:
             cel_ids = ()
         if date is None:
-            date = datetime.now()
+            date = dt.now()
         call_log = CallLog(id=id,
                            date=date,
                            duration=timedelta(0),
