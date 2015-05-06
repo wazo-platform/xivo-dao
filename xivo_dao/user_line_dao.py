@@ -159,7 +159,7 @@ def get_with_line_id(session, line_id):
     protocol = get_protocol(line_id)
     protocol = protocol.lower()
     if protocol == 'sip':
-        return (
+        result = (
             session.query(
                 LineSchema,
                 UserSIP,
@@ -173,7 +173,7 @@ def get_with_line_id(session, line_id):
             .first()
         )
     elif protocol == 'iax':
-        return (
+        result = (
             session.query(
                 LineSchema,
                 UserIAX,
@@ -187,7 +187,7 @@ def get_with_line_id(session, line_id):
             .first()
         )
     elif protocol == 'sccp':
-        return (
+        result = (
             session.query(
                 LineSchema,
                 SCCPLine,
@@ -201,7 +201,7 @@ def get_with_line_id(session, line_id):
             .first()
         )
     elif protocol == 'custom':
-        return (
+        result = (
             session.query(
                 LineSchema,
                 UserCustom,
@@ -214,6 +214,12 @@ def get_with_line_id(session, line_id):
             .filter(LineSchema.protocolid == UserCustom.id)
             .first()
         )
+    else:
+        raise ValueError('invalid protocol %s' % protocol)
+
+    if not result:
+        raise LookupError('No line with ID %s or no user associated to line' % line_id)
+    return result
 
 
 def get_cid_for_channel(channel):

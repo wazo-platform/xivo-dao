@@ -36,6 +36,7 @@ def sysconfd_conn_request(method, action, args):
     args = json.dumps(args)
     conn.request(method, action, args)
     res = conn.getresponse()
+    res.read()
     if res.status != 200:
         raise SysconfdError('return status %s' % res.status)
     conn.close()
