@@ -73,7 +73,7 @@ class TestCommitOrAbort(unittest.TestCase):
 
         with self.assertRaises(LookupError):
             with db_utils.commit_or_abort(session):
-                raise LookupError
+                raise LookupError()
 
         session.begin.assert_called_once_with()
         self.assertEquals(session.commit.call_count, 0)
