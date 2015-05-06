@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from sqlalchemy import between, distinct
-from sqlalchemy.sql.expression import and_
+from sqlalchemy.sql.expression import and_, or_
 from sqlalchemy.sql.functions import min
 from xivo_dao.alchemy.queue_log import QueueLog
 from sqlalchemy import cast, TIMESTAMP, func
@@ -141,7 +141,60 @@ def _get_event_with_enterqueue(session, start, end, match, event):
 
 
 def get_queue_abandoned_call(session, start, end):
-    return _get_event_with_enterqueue(session, start, end, 'ABANDON', 'abandoned')
+    start_str = start.strftime(_STR_TIME_FMT)
+
+    pairs = []
+    enter_queue_event = None
+
+    queue_logs = (session
+                  .query(QueueLog.event,
+                         QueueLog.callid,
+                         QueueLog.queuename,
+                         QueueLog.data3,
+                         cast(QueueLog.time, TIMESTAMP).label('time'))
+                  .filter(and_(QueueLog.time >= start_str,
+                               or_(QueueLog.event == 'ENTERQUEUE',
+                                   QueueLog.event == 'ABANDON')))
+                  .order_by(QueueLog.callid, QueueLog.time))
+
+    to_skip = None
+    for queue_log in queue_logs.all():
+        # The first matched entry of a pair should be an ENTERQUEUE
+        if enter_queue_event is None and queue_log.event != 'ENTERQUEUE':
+            continue
+
+        # When a callid reaches the end of the range, skip all other queue_log for this callid
+        if to_skip and queue_log.callid == to_skip:
+            continue
+
+        if queue_log.event == 'ENTERQUEUE':
+            # The ENTERQUEUE happenned after the range, skip this callid
+            if queue_log.time > end:
+                to_skip = queue_log.callid
+                continue
+
+            # Found a ENTERQUEUE
+            enter_queue_event = queue_log
+            continue
+
+        # Only abandoned calls can reach this line
+        abandon_event = queue_log
+
+        # Does it have a matching ENTERQUEUE?
+        if abandon_event.callid != enter_queue_event.callid:
+            continue
+
+        pairs.append((enter_queue_event, abandon_event))
+
+    for enter_queue, abandon in pairs:
+        yield {
+            'callid': enter_queue.callid,
+            'queue_name': enter_queue.queuename,
+            'time': enter_queue.time,
+            'event': 'abandoned',
+            'talktime': 0,
+            'waittime': int(abandon.data3),
+        }
 
 
 def get_queue_timeout_call(session, start, end):
