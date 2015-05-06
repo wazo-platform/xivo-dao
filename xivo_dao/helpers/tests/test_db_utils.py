@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014 Avencall
+# Copyright (C) 2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -67,3 +67,25 @@ class TestCommitOrAbort(unittest.TestCase):
 
         session.begin.assert_called_once_with()
         session.rollback.assert_called_once_with()
+
+    def test_given_error_in_context_then_rollbacks_the_session(self):
+        session = Mock()
+
+        with self.assertRaises(LookupError):
+            with db_utils.commit_or_abort(session):
+                raise LookupError
+
+        session.begin.assert_called_once_with()
+        self.assertEquals(session.commit.call_count, 0)
+        session.rollback.assert_called_once_with()
+
+    def test_given_transaction_already_started_then_rollback_and_begin(self):
+        session = Mock()
+        session.begin.side_effect = [SQLAlchemyError('A transaction has already begun'), None]
+
+        with db_utils.commit_or_abort(session):
+            pass
+
+        self.assertEquals(session.begin.call_count, 2)
+        session.rollback.assert_called_once_with()
+        session.commit.assert_called_once_with()
