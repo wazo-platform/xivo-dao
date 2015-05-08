@@ -105,41 +105,6 @@ def _enumerate_periods(start, end, interval):
         tmp += interval
 
 
-def _get_event_with_enterqueue(session, start, end, match, event):
-    start = start.strftime(_STR_TIME_FMT)
-    end = end.strftime(_STR_TIME_FMT)
-
-    enter_queues = (session
-                    .query(QueueLog.callid,
-                           cast(QueueLog.time, TIMESTAMP).label('time'))
-                    .filter(and_(QueueLog.event == 'ENTERQUEUE',
-                                 between(QueueLog.time, start, end))))
-
-    enter_map = {}
-    for enter_queue in enter_queues.all():
-        enter_map[enter_queue.callid] = enter_queue.time
-
-    if enter_map:
-        res = (session
-               .query(QueueLog.event,
-                      QueueLog.queuename,
-                      cast(QueueLog.time, TIMESTAMP).label('time'),
-                      QueueLog.callid,
-                      QueueLog.data3)
-               .filter(and_(QueueLog.event == match,
-                            QueueLog.callid.in_(enter_map))))
-
-        for r in res.all():
-            yield {
-                'callid': r.callid,
-                'queue_name': r.queuename,
-                'time': enter_map[r.callid],
-                'event': event,
-                'talktime': 0,
-                'waittime': int(r.data3) if r.data3 else 0
-            }
-
-
 def _get_ended_call(session, start_str, end, queue_log_event, stat_event):
     pairs = []
     enter_queue_event = None
