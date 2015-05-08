@@ -140,9 +140,7 @@ def _get_event_with_enterqueue(session, start, end, match, event):
             }
 
 
-def get_queue_abandoned_call(session, start, end):
-    start_str = start.strftime(_STR_TIME_FMT)
-
+def _get_ended_call(session, start_str, end, queue_log_event, stat_event):
     pairs = []
     enter_queue_event = None
 
@@ -154,7 +152,7 @@ def get_queue_abandoned_call(session, start, end):
                          cast(QueueLog.time, TIMESTAMP).label('time'))
                   .filter(and_(QueueLog.time >= start_str,
                                or_(QueueLog.event == 'ENTERQUEUE',
-                                   QueueLog.event == 'ABANDON')))
+                                   QueueLog.event == queue_log_event)))
                   .order_by(QueueLog.callid, QueueLog.time))
 
     to_skip = None
@@ -177,24 +175,29 @@ def get_queue_abandoned_call(session, start, end):
             enter_queue_event = queue_log
             continue
 
-        # Only abandoned calls can reach this line
-        abandon_event = queue_log
+        # Only ended calls can reach this line
+        end_event = queue_log
 
         # Does it have a matching ENTERQUEUE?
-        if abandon_event.callid != enter_queue_event.callid:
+        if end_event.callid != enter_queue_event.callid:
             continue
 
-        pairs.append((enter_queue_event, abandon_event))
+        pairs.append((enter_queue_event, end_event))
 
-    for enter_queue, abandon in pairs:
+    for enter_queue, end_event in pairs:
         yield {
             'callid': enter_queue.callid,
             'queue_name': enter_queue.queuename,
             'time': enter_queue.time,
-            'event': 'abandoned',
+            'event': stat_event,
             'talktime': 0,
-            'waittime': int(abandon.data3),
+            'waittime': int(end_event.data3),
         }
+
+
+def get_queue_abandoned_call(session, start, end):
+    start_str = start.strftime(_STR_TIME_FMT)
+    return _get_ended_call(session, start_str, end, 'ABANDON', 'abandoned')
 
 
 def get_queue_timeout_call(session, start, end):
