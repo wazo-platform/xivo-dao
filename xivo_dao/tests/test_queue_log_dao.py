@@ -202,6 +202,27 @@ class TestQueueLogDAO(DAOTestCase):
         assert_that(abandoned_at_11_oclock, empty())
         assert_that(abandoned_at_12_oclock, has_length(1))
 
+    def test_get_queue_timeout_call_following_transfer_at_hour_border(self):
+        queue_logs = [
+            # New call in queue2
+            ('2015-05-06 11:59:52.991930', '1430927991.36', 'queue2', 'NONE', 'ENTERQUEUE', '', '0612345678', '1', '', ''),
+            ('2015-05-06 12:00:02.110492', '1430927991.36', 'queue2', 'Agent/1002', 'CONNECT', '10', '1430927992.37', '9', '', ''),
+            ('2015-05-06 12:00:10.804470', '1430927991.36', 'queue2', 'Agent/1002', 'COMPLETECALLER', '10', '8', '1', '', ''),
+            # Agent/1002 blind txfer the call to queue1
+            ('2015-05-06 12:00:10.883332', '1430927991.36', 'queue1', 'NONE', 'ENTERQUEUE', '', '0612345678', '1', '', ''),
+            ('2015-05-06 12:00:25.887220', '1430927991.36', 'queue1', 'Agent/1001', 'RINGNOANSWER', '15000', '', '', '', ''),
+            ('2015-05-06 12:00:29.197769', '1430927991.36', 'queue1', 'NONE', 'EXITWITHTIMEOUT', '1', '1', '20', '', ''),
+        ]
+        for queue_log in queue_logs:
+            queue_log_dao.insert_entry(*queue_log)
+
+        timeout_at_11_oclock = list(queue_log_dao.get_queue_timeout_call(self.session, datetime(2015, 5, 6, 11), datetime(2015, 5, 6, 11, 59, 59, 999999)))
+        timeout_at_12_oclock = list(queue_log_dao.get_queue_timeout_call(self.session, datetime(2015, 5, 6, 12), datetime(2015, 5, 6, 12, 59, 59, 999999)))
+
+        assert_that(timeout_at_11_oclock, empty())
+        assert_that(timeout_at_12_oclock, has_length(1))
+
+
     def test_get_queue_timeout_call(self):
         start = datetime(2012, 01, 01, 01, 00, 00)
         expected = self._insert_timeout(start, [-1, 0, 10, 30, 59, 60, 120])
