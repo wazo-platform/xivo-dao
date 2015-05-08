@@ -201,7 +201,8 @@ def get_queue_abandoned_call(session, start, end):
 
 
 def get_queue_timeout_call(session, start, end):
-    return _get_event_with_enterqueue(session, start, end, 'EXITWITHTIMEOUT', 'timeout')
+    start_str = start.strftime(_STR_TIME_FMT)
+    return _get_ended_call(session, start_str, end, 'EXITWITHTIMEOUT', 'timeout')
 
 
 def get_first_time(session):
