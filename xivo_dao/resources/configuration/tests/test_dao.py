@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,10 +20,10 @@ from hamcrest.core.core.isequal import equal_to
 from sqlalchemy.exc import SQLAlchemyError
 from xivo_dao.alchemy.ctimain import CtiMain
 
-from xivo_dao.data_handler.configuration import dao
+from xivo_dao.resources.configuration import dao
 from xivo_dao.tests.helpers.session import mocked_dao_session
 from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao.data_handler.exception import DataError
+from xivo_dao.helpers.exception import DataError
 
 
 class TestConfigurationDao(DAOTestCase):
