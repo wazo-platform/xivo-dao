@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
+
 from xivo_dao.helpers.new_model import NewModel
 from xivo_dao.converters.database_converter import DatabaseConverter
 from xivo_dao.alchemy.queuemember import QueueMember

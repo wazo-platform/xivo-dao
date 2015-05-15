@@ -17,7 +17,6 @@
 
 from sqlalchemy.sql.expression import and_
 
-from xivo_dao.alchemy.agentfeatures import AgentFeatures as AgentSchema
 from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
 from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
@@ -35,7 +34,6 @@ from xivo_dao.helpers import errors
 from xivo_dao.helpers.exception import DataError
 from xivo_dao.resources.user.search import user_search
 from xivo_dao.resources.user.view import user_view
-from xivo_dao.resources.user.model import UserDirectory
 from xivo_dao.resources.user.database import db_converter
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.helpers.db_utils import commit_or_abort
