@@ -12,7 +12,6 @@ Package: xivo-libdao
 Architecture: all
 Depends: ${python:Depends},
          ${misc:Depends},
-         xivo-bus (>= 15.05~20150311.194150.b00ca46-1),
          xivo-config (>= 13.02~20130128.173355.93cbb26-1),
          xivo-lib-python,
          xivo-provd-client,
