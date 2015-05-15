@@ -232,7 +232,8 @@ def get_name_number(session, user_id):
 def get_uuid_by_username_password(session, username, password):
     row = session.query(UserFeatures.uuid).filter(
         and_(UserFeatures.loginclient == username,
-             UserFeatures.passwdclient == password)).first()
+             UserFeatures.passwdclient == password,
+             UserFeatures.enableclient == 1)).first()
 
     if not row:
         raise LookupError('Invalid username or password')

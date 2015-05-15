@@ -868,8 +868,17 @@ class TestUserFeaturesDAO(DAOTestCase):
 
     def test_get_uuid_by_username_password(self):
         user = self.add_user(loginclient='alice',
-                             passwdclient='s7cret')
+                             passwdclient='s7cret',
+                             enableclient=1)
 
         result = user_dao.get_uuid_by_username_password('alice', 's7cret')
 
         assert_that(result, equal_to(user.uuid))
+
+    def test_get_uuid_by_username_password_no_match(self):
+        self.assertRaises(LookupError, user_dao.get_uuid_by_username_password, 'alice', 'lol')
+
+    def test_get_uuid_by_username_password_empty(self):
+        self.add_user(firstname='louis')
+
+        self.assertRaises(LookupError, user_dao.get_uuid_by_username_password, '', '')
