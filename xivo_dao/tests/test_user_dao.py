@@ -866,19 +866,32 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.assertEqual(user_line1.line.id, user1_line_id)
         self.assertEqual(user_line2.line.id, user2_line_id)
 
-    def test_get_uuid_by_username_password(self):
+    def test_get_uuid_by_username(self):
         user = self.add_user(loginclient='alice',
                              passwdclient='s7cret',
                              enableclient=1)
 
-        result = user_dao.get_uuid_by_username_password('alice', 's7cret')
+        result = user_dao.get_uuid_by_username('alice')
 
         assert_that(result, equal_to(user.uuid))
 
-    def test_get_uuid_by_username_password_no_match(self):
-        self.assertRaises(LookupError, user_dao.get_uuid_by_username_password, 'alice', 'lol')
+    def test_check_username_password(self):
+        self.add_user(loginclient='alice',
+                      passwdclient='s7cret',
+                      enableclient=1)
 
-    def test_get_uuid_by_username_password_empty(self):
+        result = user_dao.check_username_password('alice', 's7cret')
+
+        assert_that(result, equal_to(True))
+
+    def test_check_username_password_no_match(self):
+        result = user_dao.check_username_password('alice', 'lol')
+
+        assert_that(result, equal_to(False))
+
+    def test_check_username_password_empty(self):
         self.add_user(firstname='louis')
 
-        self.assertRaises(LookupError, user_dao.get_uuid_by_username_password, '', '')
+        result = user_dao.check_username_password('', '')
+
+        assert_that(result, equal_to(False))

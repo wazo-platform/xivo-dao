@@ -229,14 +229,23 @@ def get_name_number(session, user_id):
 
 
 @daosession
-def get_uuid_by_username_password(session, username, password):
-    row = session.query(UserFeatures.uuid).filter(
+def check_username_password(session, username, password):
+    row = session.query(UserFeatures).filter(
         and_(UserFeatures.loginclient == username,
              UserFeatures.passwdclient == password,
              UserFeatures.enableclient == 1)).first()
 
+    return row is not None
+
+
+@daosession
+def get_uuid_by_username(session, username):
+    row = session.query(UserFeatures.uuid).filter(
+        and_(UserFeatures.loginclient == username,
+             UserFeatures.enableclient == 1)).first()
+
     if not row:
-        raise LookupError('Invalid username or password')
+        return LookupError('Invalid username')
 
     return row.uuid
 
