@@ -19,7 +19,7 @@ import unittest
 
 from hamcrest import assert_that, equal_to, all_of, has_property, has_entries, has_length
 from xivo_dao.helpers.new_model import NewModel
-from xivo_dao.data_handler.exception import InputError
+from xivo_dao.helpers.exception import InputError
 
 
 class StubModel(NewModel):

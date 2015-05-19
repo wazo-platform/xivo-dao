@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -290,46 +290,6 @@ class TestFindSccpSpeeddialSettings(DAOTestCase):
         row = FuncKeyDestCustom(**kwargs)
         self.add_me(row)
         return row
-
-
-@patch('xivo_dao.data_handler.func_key.services.find_all_hints')
-class TestFindExtenProgfunckeysSettings(DAOTestCase):
-
-    def setUp(self):
-        DAOTestCase.setUp(self)
-        self.context = 'mycontext'
-
-    def create_user_and_deps(self):
-        user_row = self.add_user()
-        extension_row = self.add_extension(context=self.context, exten='1000')
-        line_row = self.add_line(context=self.context)
-        self.add_user_line(user_id=user_row.id,
-                           line_id=line_row.id,
-                           extension_id=extension_row.id,
-                           main_user=True,
-                           main_line=True)
-
-        return user_row
-
-    def add_old_func_key_to_user(self, user_id, exten, extentype, **kwargs):
-        self.add_extension(context='xivo-features',
-                           exten=exten,
-                           type='extenfeatures',
-                           typeval=extentype)
-
-        params = {'iduserfeatures': user_id,
-                  'fknum': 1,
-                  'exten': None,
-                  'typeextenumbers': 'extenfeatures',
-                  'typevalextenumbers': extentype,
-                  'typeextenumbersright': None,
-                  'typevalextenumbersright': None,
-                  'label': None,
-                  'supervision': 1,
-                  'progfunckey': 1}
-        params.update(kwargs)
-
-        self.add_function_key_to_user(**params)
 
 
 class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
