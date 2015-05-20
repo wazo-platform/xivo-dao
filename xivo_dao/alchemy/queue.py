@@ -58,8 +58,6 @@ class Queue(Base):
     strategy = Column(String(11))
     joinempty = Column(String(255))
     leavewhenempty = Column(String(255))
-    eventmemberstatus = Column(Integer, nullable=False, server_default='0')
-    eventwhencalled = Column(Integer, nullable=False, server_default='0')
     ringinuse = Column(Integer, nullable=False, server_default='0')
     reportholdtime = Column(Integer, nullable=False, server_default='0')
     memberdelay = Column(Integer)
