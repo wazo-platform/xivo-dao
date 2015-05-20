@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,15 +27,21 @@ from xivo_dao.helpers import errors
 
 
 @daosession
-def get(session, context_name):
-    context_row = (session.query(ContextSchema)
-                   .filter(ContextSchema.name == context_name)
-                   .first())
+def find(session, context_name):
+    row = (session.query(ContextSchema)
+           .filter(ContextSchema.name == context_name)
+           .first())
 
-    if not context_row:
+    return context_converter.to_model(row) if row else None
+
+
+def get(context_name):
+    context = find(context_name)
+
+    if not context:
         raise errors.not_found('Context', name=context_name)
 
-    return context_converter.to_model(context_row)
+    return context
 
 
 @daosession

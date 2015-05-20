@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -33,6 +33,26 @@ class TestContextDao(DAOTestCase):
         context_number = ContextNumberSchema(**kwargs)
 
         self.add_me(context_number)
+
+
+class TestContextFind(TestContextDao):
+
+    def test_given_no_context_then_returns_none(self):
+        context = context_dao.find('mycontext')
+
+        assert_that(context, none())
+
+    def test_given_context_exists_then_returns_context_model(self):
+        context_row = self.add_context()
+
+        expected_context = Context(name=context_row.name,
+                                   display_name=context_row.displayname,
+                                   type=context_row.contexttype,
+                                   description=context_row.description)
+
+        result = context_dao.find(context_row.name)
+
+        assert_that(result, equal_to(expected_context))
 
 
 class TestContextGet(TestContextDao):
