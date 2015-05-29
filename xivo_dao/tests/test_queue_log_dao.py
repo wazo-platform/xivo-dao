@@ -202,6 +202,19 @@ class TestQueueLogDAO(DAOTestCase):
         assert_that(abandoned_at_11_oclock, empty())
         assert_that(abandoned_at_12_oclock, has_length(1))
 
+    def test_get_queue_abandoned_call_no_enterqueue(self):
+        queue_logs = [
+            ('2015-05-06 12:00:10', '1', 'queue1', 'NONE', 'ENTERQUEUE', '', '0612345678', '1', '', ''),
+            ('2015-05-06 12:00:11', '1', 'queue1', 'NONE', 'ABANDON', '1', '1', '19', '', ''),
+            ('2015-05-06 12:00:12', '2', 'queue1', 'NONE', 'ABANDON', '1', '1', '30', '', ''),
+        ]
+        for queue_log in queue_logs:
+            queue_log_dao.insert_entry(*queue_log)
+
+        abandoned_at_12_oclock = list(queue_log_dao.get_queue_abandoned_call(self.session, datetime(2015, 5, 6, 12), datetime(2015, 5, 6, 12, 59, 59, 999999)))
+
+        assert_that(abandoned_at_12_oclock, has_length(1))
+
     def test_get_queue_timeout_call_following_transfer_at_hour_border(self):
         queue_logs = [
             # New call in queue2
