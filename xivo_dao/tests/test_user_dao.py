@@ -875,6 +875,21 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         assert_that(result, equal_to(user.uuid))
 
+    def test_get_uuid_by_email(self):
+        user = self.add_user(loginclient='alice',
+                             passwdclient='s7cret',
+                             voicemailid='124',
+                             enableclient=1)
+
+        voicemail = self.add_voicemail(mailbox='1234',
+                                       uniqueid='124',
+                                       context='default',
+                                       email='alice@merveille.com')
+
+        result = user_dao.get_uuid_by_email('alice@merveille.com')
+
+        assert_that(result, equal_to(user.uuid))
+
     def test_check_username_password(self):
         self.add_user(loginclient='alice',
                       passwdclient='s7cret',

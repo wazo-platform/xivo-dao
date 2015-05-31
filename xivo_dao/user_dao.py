@@ -26,6 +26,7 @@ from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.userfeatures import UserFeatures
+from xivo_dao.alchemy.voicemail import Voicemail
 from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.user_line import UserLine
@@ -246,6 +247,18 @@ def get_uuid_by_username(session, username):
 
     if not row:
         return LookupError('Invalid username')
+
+    return row.uuid
+
+
+@daosession
+def get_uuid_by_email(session, email):
+    row = session.query(UserFeatures.uuid, Voicemail.uniqueid).filter(
+        and_(UserFeatures.voicemailid == Voicemail.uniqueid,
+             Voicemail.email == email)).first()
+
+    if not row:
+        return LookupError('Invalid voicemail')
 
     return row.uuid
 
