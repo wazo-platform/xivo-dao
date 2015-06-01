@@ -1,0 +1,14 @@
+db:
+  image: postgres
+  expose:
+   - "5432"
+  environment:
+   - POSTGRES_USER=asterisk
+   - POSTGRES_PASSWORD=proformatique
+   - POSTGRES_DB=asterisk
+dao:
+  build: .
+  links:
+    - db
+  environment: 
+    - XIVO_TEST_DB_URL=postgresql://asterisk:proformatique@db/asterisk
