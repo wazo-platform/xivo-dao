@@ -84,6 +84,7 @@ invalid_direction = FormattedError(InputError, "direction: must be 'asc' or 'des
 invalid_ordering = FormattedError(InputError, "order: column '{}' was not found")
 wrong_type = FormattedError(InputError, "field '{}': wrong type. Should be a {}")
 outside_context_range = FormattedError(InputError, "Extension '{}' is outside of range for context '{}'")
+outside_park_range = FormattedError(InputError, "Parking position '{}' is outside of range")
 invalid_func_key_type = FormattedError(InputError, "FuncKey type '{}' does not exist")
 invalid_destination_type = FormattedError(InputError, "FuncKey destination type '{}' does not exist")
 param_not_found = FormattedError(InputError, "field '{}': {} was not found")
