@@ -11,3 +11,5 @@ ADD . /usr/src/dao
 WORKDIR /usr/src/dao
 RUN pip install -r requirements.txt
 RUN pip install -r test-requirements.txt
+
+CMD nosetests xivo_dao

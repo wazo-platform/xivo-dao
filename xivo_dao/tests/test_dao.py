@@ -19,6 +19,7 @@ import datetime
 import functools
 import itertools
 import logging
+import os
 import random
 import unittest
 import time
@@ -83,7 +84,7 @@ logger = logging.getLogger(__name__)
 _expensive_setup_has_run = False
 _tables = []
 
-TEST_DB_URL = 'postgresql://asterisk:asterisk@localhost/asterisktest'
+TEST_DB_URL = os.getenv('XIVO_TEST_DB_URL', 'postgresql://asterisk:asterisk@localhost/asterisktest')
 
 Session = sessionmaker()
 engine = create_engine(TEST_DB_URL)
