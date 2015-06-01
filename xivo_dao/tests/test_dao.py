@@ -46,6 +46,7 @@ from xivo_dao.alchemy.incall import Incall
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
 from xivo_dao.alchemy.musiconhold import MusicOnHold
+from xivo_dao.alchemy.paging import Paging
 from xivo_dao.alchemy.phonefunckey import PhoneFunckey
 from xivo_dao.alchemy.pickup import Pickup
 from xivo_dao.alchemy.pickupmember import PickupMember
@@ -686,6 +687,20 @@ class DAOTestCase(unittest.TestCase):
         func_key_mapping = FuncKeyMapping(**kwargs)
         self.add_me(func_key_mapping)
         return func_key_mapping
+
+    def add_features(self, **kwargs):
+        kwargs.setdefault('filename', 'features.conf')
+        kwargs.setdefault('category', 'general')
+        feature = Features(**kwargs)
+        self.add_me(feature)
+        return feature
+
+    def add_paging(self, **kwargs):
+        kwargs.setdefault('number', '1234')
+        kwargs.setdefault('timeout', 30)
+        paging = Paging(**kwargs)
+        self.add_me(paging)
+        return paging
 
     def add_me(self, obj):
         with commit_or_abort(self.session):
