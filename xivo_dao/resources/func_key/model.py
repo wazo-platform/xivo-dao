@@ -56,12 +56,16 @@ class FuncKey(Model):
 
 class UserDestination(Model):
 
+    type = 'user'
+
     FIELDS = ['user_id']
 
     MANDATORY = ['user_id']
 
 
 class GroupDestination(Model):
+
+    type = 'group'
 
     FIELDS = ['group_id']
 
@@ -70,12 +74,16 @@ class GroupDestination(Model):
 
 class QueueDestination(Model):
 
+    type = 'queue'
+
     FIELDS = ['queue_id']
 
     MANDATORY = ['queue_id']
 
 
 class ConferenceDestination(Model):
+
+    type = 'conference'
 
     FIELDS = ['conference_id']
 
@@ -84,12 +92,16 @@ class ConferenceDestination(Model):
 
 class PagingDestination(Model):
 
+    type = 'paging'
+
     FIELDS = ['paging_id']
 
     MANDATORY = ['paging_id']
 
 
 class BSFilterDestination(Model):
+
+    type = 'bsfilter'
 
     FIELDS = ['filter_member_id']
 
@@ -98,12 +110,16 @@ class BSFilterDestination(Model):
 
 class CustomDestination(Model):
 
+    type = 'custom'
+
     FIELDS = ['exten']
 
     MANDATORY = ['exten']
 
 
 class ServiceDestination(Model):
+
+    type = 'service'
 
     FIELDS = ['service']
 
@@ -112,12 +128,16 @@ class ServiceDestination(Model):
 
 class ForwardDestination(Model):
 
+    type = 'forward'
+
     FIELDS = ['forward', 'exten']
 
     MANDATORY = ['forward', 'exten']
 
 
 class TransferDestination(Model):
+
+    type = 'transfer'
 
     FIELDS = ['transfer', 'exten']
 
@@ -126,6 +146,8 @@ class TransferDestination(Model):
 
 class AgentDestination(Model):
 
+    type = 'agent'
+
     FIELDS = ['action', 'agent_id']
 
     MANDATORY = ['action', 'agent_id']
@@ -133,12 +155,16 @@ class AgentDestination(Model):
 
 class ParkPositionDestination(Model):
 
+    type = 'park_position'
+
     FIELDS = ['position']
 
     MANDATORY = ['position']
 
 
 class ParkingDestination(Model):
+
+    type = 'parking'
 
     FIELDS = []
 
