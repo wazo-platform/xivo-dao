@@ -26,6 +26,9 @@ from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser as FuncKeyDestUs
 from xivo_dao.alchemy.func_key_dest_agent import FuncKeyDestAgent as FuncKeyDestAgentSchema
 from xivo_dao.alchemy.func_key_dest_custom import FuncKeyDestCustom as FuncKeyDestCustomSchema
 from xivo_dao.alchemy.func_key_dest_bsfilter import FuncKeyDestBSFilter as FuncKeyDestBSFilterSchema
+from xivo_dao.alchemy.func_key_dest_paging import FuncKeyDestPaging as FuncKeyDestPagingSchema
+from xivo_dao.alchemy.func_key_dest_park_position import FuncKeyDestParkPosition as FuncKeyDestParkPositionSchema
+from xivo_dao.alchemy.func_key_dest_features import FuncKeyDestFeatures as FuncKeyDestFeaturesSchema
 
 
 class FuncKeyHelper(object):
@@ -52,6 +55,10 @@ class FuncKeyHelper(object):
         'conference': (FuncKeyDestConferenceSchema, 'conference_id', 4),
         'service': (FuncKeyDestServiceSchema, 'extension_id', 5),
         'forward': (FuncKeyDestForwardSchema, 'extension_id', 6),
+        'park_position': (FuncKeyDestParkPositionSchema, 'park_position', 7),
+        'features': (FuncKeyDestFeaturesSchema, 'features_id', 8),
+        'paging': (FuncKeyDestPagingSchema, 'paging_id', 9),
+        'custom': (FuncKeyDestCustomSchema, 'exten', 10),
         'bsfilter': (FuncKeyDestBSFilterSchema, 'filtermember_id', 12),
     }
 
@@ -91,6 +98,9 @@ class FuncKeyHelper(object):
     def add_service_destination(self, dest_id):
         return self._add_destination('service', dest_id)
 
+    def add_paging_destination(self, dest_id):
+        return self._add_destination('paging', dest_id)
+
     def add_forward_destination(self, extension_id, number=None):
         destination_type_id = 6
         func_key_row = self.create_func_key(destination_type_id)
@@ -129,6 +139,14 @@ class FuncKeyHelper(object):
         self.add_me(destination_row)
         return destination_row
 
+    def add_features_destination(self, features_id):
+        destination_type_id = 8
+        func_key_row = self.create_func_key(destination_type_id)
+        destination_row = FuncKeyDestFeaturesSchema(func_key_id=func_key_row.id,
+                                                    features_id=features_id)
+        self.add_me(destination_row)
+        return destination_row
+
     def create_func_key(self, dest_type_id):
         return self.add_func_key(type_id=self.speeddial_id,
                                  destination_type_id=dest_type_id)
@@ -157,6 +175,10 @@ class FuncKeyHelper(object):
         conference_row = self.add_meetmefeatures()
         return self.add_conference_destination(conference_row.id)
 
+    def create_paging_func_key(self):
+        paging_row = self.add_paging()
+        return self.add_paging_destination(paging_row.id)
+
     def create_agent_func_key(self, exten, exten_action, commented=0):
         agent_row = self.add_agent()
         extension_row = self.add_extenfeatures(exten, exten_action, commented=commented)
@@ -170,6 +192,12 @@ class FuncKeyHelper(object):
         bsfilter_row = self.add_bsfilter()
         filter_member_row = self.add_filter_member(bsfilter_row.id, user_row.id, 'secretary')
         return filter_member_row, self.add_bsfilter_destination(filter_member_row.id)
+
+    def create_features_func_key(self, category, name, value):
+        features_row = self.add_features(category=category,
+                                         var_name=name,
+                                         var_val=value)
+        return self.add_features_destination(features_row.id)
 
     def add_func_key_to_user(self, destination_row, user_row, position=1, blf=True):
         self.add_func_key_mapping(template_id=user_row.func_key_private_template_id,
