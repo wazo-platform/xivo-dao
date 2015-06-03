@@ -15,7 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, contains_inanyorder, equal_to, none
+from hamcrest import any_of
+from hamcrest import assert_that
+from hamcrest import contains_inanyorder
+from hamcrest import equal_to
+from hamcrest import none
+from mock import patch
 from xivo_dao import user_dao
 from xivo_dao.tests.test_dao import DAOTestCase
 
@@ -874,6 +879,35 @@ class TestUserFeaturesDAO(DAOTestCase):
         result = user_dao.get_uuid_by_username('alice')
 
         assert_that(result, equal_to(user.uuid))
+
+    def test_get_uuid_by_email_with_unknown_email(self):
+        user = self.add_user()
+        voicemail = self.add_voicemail(email='bob@cat.example.com')
+        self.link_user_and_voicemail(user, voicemail.uniqueid)
+
+        self.assertRaises(LookupError, user_dao.get_uuid_by_email, 'alice@merveille.com')
+
+    def test_get_uuid_by_email(self):
+        user = self.add_user()
+        voicemail = self.add_voicemail(email='alice@merveille.com')
+        self.link_user_and_voicemail(user, voicemail.uniqueid)
+
+        result = user_dao.get_uuid_by_email('alice@merveille.com')
+
+        assert_that(result, equal_to(user.uuid))
+
+    @patch('xivo_dao.user_dao.logger.warning')
+    def test_get_uuid_by_email_with_multiple_results(self, log_warning):
+        user1 = self.add_user()
+        user2 = self.add_user()
+        voicemail = self.add_voicemail(email='alice@merveille.com')
+        self.link_user_and_voicemail(user1, voicemail.uniqueid)
+        self.link_user_and_voicemail(user2, voicemail.uniqueid)
+
+        result = user_dao.get_uuid_by_email('alice@merveille.com')
+
+        assert_that(result, any_of(user1.uuid, user2.uuid))
+        log_warning.assert_called_once_with('multiple users share the same email `%s`', 'alice@merveille.com')
 
     def test_check_username_password(self):
         self.add_user(loginclient='alice',
