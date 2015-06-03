@@ -20,6 +20,13 @@ from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate as FuncKeyTemplateSchema
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping as FuncKeyMappingSchema
 from xivo_dao.helpers.exception import DataError
+from xivo_dao.resources.func_key_template.persistor import build_persistor
+
+@daosession
+def create(session, template):
+    persistor = build_persistor(session)
+    with commit_or_abort(session, DataError.on_create, 'FuncKeyTemplate'):
+        persistor.create(template)
 
 
 @daosession
