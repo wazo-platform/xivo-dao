@@ -250,7 +250,7 @@ def get_uuid_by_username(session, username):
              UserFeatures.enableclient == 1)).first()
 
     if not row:
-        return LookupError('Invalid username')
+        raise LookupError('Invalid username')
 
     return row.uuid
 

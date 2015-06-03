@@ -871,6 +871,20 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.assertEqual(user_line1.line.id, user1_line_id)
         self.assertEqual(user_line2.line.id, user2_line_id)
 
+    def test_get_uuid_by_username_with_unknown_username(self):
+        user = self.add_user(loginclient='alice',
+                             passwdclient='s7cret',
+                             enableclient=1)
+
+        self.assertRaises(LookupError, user_dao.get_uuid_by_username, 'bobby')
+
+    def test_get_uuid_by_username_with_disabled_cticlient(self):
+        user = self.add_user(loginclient='alice',
+                             passwdclient='s7cret',
+                             enableclient=0)
+
+        self.assertRaises(LookupError, user_dao.get_uuid_by_username, 'alice')
+
     def test_get_uuid_by_username(self):
         user = self.add_user(loginclient='alice',
                              passwdclient='s7cret',
