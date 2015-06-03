@@ -53,8 +53,13 @@ class ForwardExtensionConverter(object):
                 'fwdrna': 'noanswer',
                 'fwdunc': 'unconditional'}
 
+    TYPEVALS = {value: key for key, value in FORWARDS.iteritems()}
+
     def typevals(self):
         return self.FORWARDS.keys()
+
+    def to_typeval(self, forward):
+        return self.TYPEVALS[forward]
 
     def to_model(self, row):
         forward = self.FORWARDS[row.typeval]
@@ -73,8 +78,13 @@ class AgentActionExtensionConverter(object):
                'agentstaticlogoff': 'logout',
                'agentstaticlogtoggle': 'toggle'}
 
+    TYPEVALS = {value: key for key, value in ACTIONS.iteritems()}
+
     def typevals(self):
         return self.ACTIONS.keys()
+
+    def to_typeval(self, action):
+        return self.TYPEVALS[action]
 
     def to_model(self, row):
         action = self.ACTIONS[row.typeval]

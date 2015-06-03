@@ -24,8 +24,13 @@ class TransferExtensionConverter(object):
     TRANSFERS = {'blindxfer': 'blind',
                  'atxfer': 'attended'}
 
+    VAR_NAMES = {value: key for key, value in TRANSFERS.iteritems()}
+
     def var_names(self):
         return self.TRANSFERS.keys()
+
+    def to_var_name(self, transfer):
+        return self.VAR_NAMES[transfer]
 
     def to_model(self, row):
         transfer = self.TRANSFERS[row.var_name]
