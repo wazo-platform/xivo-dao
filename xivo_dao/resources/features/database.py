@@ -32,6 +32,9 @@ class TransferExtensionConverter(object):
     def to_var_name(self, transfer):
         return self.VAR_NAMES[transfer]
 
+    def to_transfer(self, var_name):
+        return self.TRANSFERS[var_name]
+
     def to_model(self, row):
         transfer = self.TRANSFERS[row.var_name]
         exten = row.var_val

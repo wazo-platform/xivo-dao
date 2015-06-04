@@ -61,6 +61,9 @@ class ForwardExtensionConverter(object):
     def to_typeval(self, forward):
         return self.TYPEVALS[forward]
 
+    def to_forward(self, typeval):
+        return self.FORWARDS[typeval]
+
     def to_model(self, row):
         forward = self.FORWARDS[row.typeval]
         exten = self.clean_exten(row.exten)
@@ -85,6 +88,9 @@ class AgentActionExtensionConverter(object):
 
     def to_typeval(self, action):
         return self.TYPEVALS[action]
+
+    def to_action(self, typeval):
+        return self.ACTIONS[typeval]
 
     def to_model(self, row):
         action = self.ACTIONS[row.typeval]
