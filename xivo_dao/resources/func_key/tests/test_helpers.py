@@ -17,6 +17,7 @@
 
 from hamcrest import assert_that, none
 
+from xivo_dao.alchemy.func_key import FuncKey as FuncKeySchema
 from xivo_dao.alchemy.func_key_dest_service import FuncKeyDestService as FuncKeyDestServiceSchema
 from xivo_dao.alchemy.func_key_dest_conference import FuncKeyDestConference as FuncKeyDestConferenceSchema
 from xivo_dao.alchemy.func_key_dest_forward import FuncKeyDestForward as FuncKeyDestForwardSchema
@@ -29,6 +30,7 @@ from xivo_dao.alchemy.func_key_dest_bsfilter import FuncKeyDestBSFilter as FuncK
 from xivo_dao.alchemy.func_key_dest_paging import FuncKeyDestPaging as FuncKeyDestPagingSchema
 from xivo_dao.alchemy.func_key_dest_park_position import FuncKeyDestParkPosition as FuncKeyDestParkPositionSchema
 from xivo_dao.alchemy.func_key_dest_features import FuncKeyDestFeatures as FuncKeyDestFeaturesSchema
+from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping as FuncKeyMappingSchema
 
 
 class FuncKeyHelper(object):
@@ -217,6 +219,13 @@ class FuncKeyHelper(object):
                                   position=position,
                                   blf=blf)
 
+    def add_destination_to_template(self, destination_row, template_row, position=1):
+        mapping_row = FuncKeyMappingSchema(template_id=template_row.id,
+                                           func_key_id=destination_row.func_key_id,
+                                           destination_type_id=destination_row.destination_type_id,
+                                           position=position)
+        self.add_me(mapping_row)
+
     def find_destination(self, destination, destination_id):
         schema, column_name, _ = self.destinations[destination]
         column = getattr(schema, column_name)
@@ -229,6 +238,10 @@ class FuncKeyHelper(object):
 
     def assert_destination_deleted(self, destination, destination_id):
         row = self.find_destination(destination, destination_id)
+        assert_that(row, none())
+
+    def assert_func_key_deleted(self, func_key_id):
+        row = self.session.query(FuncKeySchema).filter(FuncKeySchema.id == func_key_id).first()
         assert_that(row, none())
 
     def _add_destination(self, dest_type, dest_id):
