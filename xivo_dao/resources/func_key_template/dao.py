@@ -37,6 +37,12 @@ def get(session, template_id):
 
 
 @daosession
+def delete(session, template):
+    persistor = build_persistor(session)
+    return persistor.delete(template)
+
+
+@daosession
 def create_private_template(session):
     template = FuncKeyTemplateSchema(private=True)
 

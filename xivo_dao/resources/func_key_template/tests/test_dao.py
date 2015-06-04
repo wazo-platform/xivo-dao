@@ -18,8 +18,6 @@
 from hamcrest import assert_that, is_not, none, has_property, equal_to, calling, raises
 from mock import patch, ANY, Mock
 
-from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
-
 from xivo_dao.helpers.exception import NotFoundError
 from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -233,13 +231,6 @@ class TestFuncKeyTemplateGet(DAOTestCase, FuncKeyHelper):
         self.setup_types()
         self.setup_destination_types()
 
-    def add_destination_to_template(self, destination_row, template_row, position=1):
-        mapping_row = FuncKeyMapping(template_id=template_row.id,
-                                     func_key_id=destination_row.func_key_id,
-                                     destination_type_id=destination_row.destination_type_id,
-                                     position=position)
-        self.add_me(mapping_row)
-
     def prepare_template(self, template_row, destination_row, destination):
         self.add_destination_to_template(destination_row, template_row)
 
@@ -394,6 +385,78 @@ class TestFuncKeyTemplateGet(DAOTestCase, FuncKeyHelper):
         result = dao.get(template_row.id)
 
         assert_that(expected, equal_to(result))
+
+
+class TestFuncKeyTemplateDelete(DAOTestCase, FuncKeyHelper):
+
+    def setUp(self):
+        super(TestFuncKeyTemplateDelete, self).setUp()
+        self.setup_types()
+        self.setup_destination_types()
+
+    def prepare_template(self, destination_row=None, destination=None):
+        template_row = self.add_func_key_template()
+        template = FuncKeyTemplate(id=template_row.id,
+                                   name=template_row.name)
+
+        if destination_row and destination:
+            self.add_destination_to_template(destination_row, template_row)
+            template.keys = {1: destination}
+
+        return template
+
+    def test_given_template_with_no_funckeys_when_deleting_then_deletes_template(self):
+        template = self.prepare_template()
+
+        dao.delete(template)
+
+        result = self.session.query(FuncKeyTemplateSchema).get(template.id)
+
+        assert_that(result, none())
+
+    def test_given_template_with_destination_when_deleting_then_deletes_mappings(self):
+        destination_row = self.create_user_func_key()
+        template = self.prepare_template(destination_row,
+                                         UserDestination(user_id=destination_row.user_id))
+
+        dao.delete(template)
+
+        count = (self.session.query(FuncKeyMappingSchema)
+                 .filter(FuncKeyMappingSchema.template_id == template.id)
+                 .count())
+
+        assert_that(count, equal_to(0))
+
+    def test_given_template_with_forward_destination_when_deleting_then_deletes_forward(self):
+        destination_row = self.create_forward_func_key('_*22.', 'fwdrna', '1000')
+        template = self.prepare_template(destination_row,
+                                         ForwardDestination(forward='noanswer',
+                                                            exten='1000'))
+
+        dao.delete(template)
+
+        self.assert_destination_deleted('forward', destination_row.extension_id)
+        self.assert_func_key_deleted(destination_row.func_key_id)
+
+    def test_given_template_with_park_position_destination_when_deleting_then_deletes_park_position(self):
+        destination_row = self.create_park_position_func_key('701')
+        template = self.prepare_template(destination_row,
+                                         ParkPositionDestination(position=701))
+
+        dao.delete(template)
+
+        self.assert_destination_deleted('park_position', destination_row.park_position)
+        self.assert_func_key_deleted(destination_row.func_key_id)
+
+    def test_given_template_with_custom_destination_when_deleting_then_deletes_custom(self):
+        destination_row = self.create_custom_func_key('1234')
+        template = self.prepare_template(destination_row,
+                                         CustomDestination(exten='1234'))
+
+        dao.delete(template)
+
+        self.assert_destination_deleted('custom', destination_row.exten)
+        self.assert_func_key_deleted(destination_row.func_key_id)
 
 
 class TestCreatePrivateTemplate(TestFuncKeyTemplateDao):
