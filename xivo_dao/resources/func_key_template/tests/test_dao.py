@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014 Avencall
+# Copyright (C) 2014-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,9 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, is_not, none, has_property, equal_to
+from hamcrest import assert_that, is_not, none, has_property, equal_to, calling, raises
 from mock import patch, ANY, Mock
 
+from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
+
+from xivo_dao.helpers.exception import NotFoundError
 from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate as FuncKeyTemplateSchema
@@ -84,7 +87,6 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
 
         destination_type_id = self.destination_type_ids[destination_type]
         assert_that(mapping_row.destination_type_id, equal_to(destination_type_id))
-
 
     def test_given_template_then_creates_template_row(self):
         template = FuncKeyTemplate(name='foobar')
@@ -222,6 +224,177 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
         dao.create(template)
 
         self.assert_mapping_has_destination('features', destination_row)
+
+
+class TestFuncKeyTemplateGet(DAOTestCase, FuncKeyHelper):
+
+    def setUp(self):
+        super(TestFuncKeyTemplateGet, self).setUp()
+        self.setup_types()
+        self.setup_destination_types()
+
+    def add_destination_to_template(self, destination_row, template_row, position=1):
+        mapping_row = FuncKeyMapping(template_id=template_row.id,
+                                     func_key_id=destination_row.func_key_id,
+                                     destination_type_id=destination_row.destination_type_id,
+                                     position=position)
+        self.add_me(mapping_row)
+
+    def prepare_template(self, template_row, destination_row, destination):
+        self.add_destination_to_template(destination_row, template_row)
+
+        funckey = FuncKey(id=destination_row.func_key_id,
+                          destination=destination)
+
+        return FuncKeyTemplate(id=template_row.id,
+                               name=template_row.name,
+                               keys={1: funckey})
+
+    def test_given_no_template_then_raises_error(self):
+        assert_that(calling(dao.get).with_args(1),
+                    raises(NotFoundError))
+
+    def test_given_empty_template_when_getting_then_returns_model(self):
+        template_row = self.add_func_key_template(name='foobar')
+
+        expected = FuncKeyTemplate(id=template_row.id, name='foobar')
+
+        result = dao.get(template_row.id)
+
+        assert_that(expected, equal_to(result))
+
+    def test_given_template_with_user_destination_when_getting_then_returns_user_func_key(self):
+        template_row = self.add_func_key_template(name='foobar')
+        destination_row = self.create_user_func_key()
+        expected = self.prepare_template(template_row, destination_row,
+                                         UserDestination(user_id=destination_row.user_id))
+
+        result = dao.get(template_row.id)
+
+        assert_that(expected, equal_to(result))
+
+    def test_given_template_with_queue_destination_when_getting_then_returns_queue_func_key(self):
+        template_row = self.add_func_key_template(name='foobar')
+        destination_row = self.create_queue_func_key()
+        expected = self.prepare_template(template_row, destination_row,
+                                         QueueDestination(queue_id=destination_row.queue_id))
+
+        result = dao.get(template_row.id)
+
+        assert_that(expected, equal_to(result))
+
+    def test_given_template_with_group_destination_when_getting_then_returns_group_func_key(self):
+        template_row = self.add_func_key_template(name='foobar')
+        destination_row = self.create_group_func_key()
+        expected = self.prepare_template(template_row, destination_row,
+                                         GroupDestination(group_id=destination_row.group_id))
+
+        result = dao.get(template_row.id)
+
+        assert_that(expected, equal_to(result))
+
+    def test_given_template_with_conference_destination_when_getting_then_returns_conference_func_key(self):
+        template_row = self.add_func_key_template(name='foobar')
+        destination_row = self.create_conference_func_key()
+        expected = self.prepare_template(template_row, destination_row,
+                                         ConferenceDestination(conference_id=destination_row.conference_id))
+
+        result = dao.get(template_row.id)
+
+        assert_that(expected, equal_to(result))
+
+    def test_given_template_with_paging_destination_when_getting_then_returns_paging_func_key(self):
+        template_row = self.add_func_key_template(name='foobar')
+        destination_row = self.create_paging_func_key()
+        expected = self.prepare_template(template_row, destination_row,
+                                         PagingDestination(paging_id=destination_row.paging_id))
+
+        result = dao.get(template_row.id)
+
+        assert_that(expected, equal_to(result))
+
+    def test_given_template_with_bsfilter_destination_when_getting_then_returns_bsfilter_func_key(self):
+        template_row = self.add_func_key_template(name='foobar')
+        _, destination_row = self.create_bsfilter_func_key()
+        expected = self.prepare_template(template_row, destination_row,
+                                         BSFilterDestination(filter_member_id=destination_row.filtermember_id))
+
+        result = dao.get(template_row.id)
+
+        assert_that(expected, equal_to(result))
+
+    def test_given_template_with_service_destination_when_getting_then_returns_service_func_key(self):
+        template_row = self.add_func_key_template(name='foobar')
+        destination_row = self.create_service_func_key('*25', 'enablednd')
+        expected = self.prepare_template(template_row, destination_row,
+                                         ServiceDestination(service='enablednd'))
+
+        result = dao.get(template_row.id)
+
+        assert_that(expected, equal_to(result))
+
+    def test_given_template_with_forward_destination_when_getting_then_returns_service_func_key(self):
+        template_row = self.add_func_key_template(name='foobar')
+        destination_row = self.create_forward_func_key('_*23.', 'fwdbusy', '1000')
+        expected = self.prepare_template(template_row, destination_row,
+                                         ForwardDestination(forward='busy',
+                                                            exten='1000'))
+
+        result = dao.get(template_row.id)
+
+        assert_that(expected, equal_to(result))
+
+    def test_given_template_with_park_position_destination_when_getting_then_returns_service_func_key(self):
+        template_row = self.add_func_key_template(name='foobar')
+        destination_row = self.create_park_position_func_key('701')
+        expected = self.prepare_template(template_row, destination_row,
+                                         ParkPositionDestination(position=701))
+
+        result = dao.get(template_row.id)
+
+        assert_that(expected, equal_to(result))
+
+    def test_given_template_with_custom_destination_when_getting_then_returns_service_func_key(self):
+        template_row = self.add_func_key_template(name='foobar')
+        destination_row = self.create_custom_func_key('1234')
+        expected = self.prepare_template(template_row, destination_row,
+                                         CustomDestination(exten='1234'))
+
+        result = dao.get(template_row.id)
+
+        assert_that(expected, equal_to(result))
+
+    def test_given_template_with_agent_destination_when_getting_then_returns_service_func_key(self):
+        template_row = self.add_func_key_template(name='foobar')
+        destination_row = self.create_agent_func_key('_*31.', 'agentstaticlogin')
+        expected = self.prepare_template(template_row, destination_row,
+                                         AgentDestination(action='login',
+                                                          agent_id=destination_row.agent_id))
+
+        result = dao.get(template_row.id)
+
+        assert_that(expected, equal_to(result))
+
+    def test_given_template_with_transfer_destination_when_getting_then_returns_service_func_key(self):
+        template_row = self.add_func_key_template(name='foobar')
+        destination_row = self.create_features_func_key('featuremap', 'atxfer', '*2')
+        expected = self.prepare_template(template_row, destination_row,
+                                         TransferDestination(transfer='attended'))
+
+        result = dao.get(template_row.id)
+
+        assert_that(expected, equal_to(result))
+
+    def test_given_template_with_parking_destination_when_getting_then_returns_service_func_key(self):
+        template_row = self.add_func_key_template(name='foobar')
+        destination_row = self.create_features_func_key('general', 'parkext', '701')
+        expected = self.prepare_template(template_row, destination_row,
+                                         ParkingDestination())
+
+        result = dao.get(template_row.id)
+
+        assert_that(expected, equal_to(result))
+
 
 class TestCreatePrivateTemplate(TestFuncKeyTemplateDao):
 
