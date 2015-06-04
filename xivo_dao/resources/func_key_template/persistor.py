@@ -51,8 +51,8 @@ def build_persistor(session):
                               'park_position': ParkPositionPersistor,
                               'custom': CustomPersistor,
                               'agent': AgentPersistor,
-                              'transfer': TransferPersistor,
-                              'parking': ParkingPersistor,
+                              'transfer': FeaturesPersistor,
+                              'parking': FeaturesPersistor,
                               }
     return FuncKeyPersistor(session, destination_persistors)
 
@@ -274,11 +274,12 @@ class AgentPersistor(DestinationPersistor):
         return AgentActionExtensionConverter().to_typeval(action)
 
 
-class TransferPersistor(DestinationPersistor):
+class FeaturesPersistor(DestinationPersistor):
+
+
+
 
     def find_or_create(self, destination):
-        varname = self.find_var_name(destination.transfer)
-
         query = (self.session.query(FuncKeyDestFeatures)
                  .join(Features, FuncKeyDestFeatures.features_id == Features.id)
                  .filter(Features.var_name == varname)
@@ -287,19 +288,8 @@ class TransferPersistor(DestinationPersistor):
 
         return query.first()
 
-    def find_var_name(self, transfer):
-        return TransferExtensionConverter().to_var_name(transfer)
-
-
-class ParkingPersistor(DestinationPersistor):
-
-    VAR_NAME = 'parkext'
-
-    def find_or_create(self, destination):
-        query = (self.session.query(FuncKeyDestFeatures)
-                 .join(Features, FuncKeyDestFeatures.features_id == Features.id)
-                 .filter(Features.var_name == self.VAR_NAME)
-                 .filter(Features.commented == 0)
-                 )
-
-        return query.first()
+    def find_var_name(self, destination):
+        if destination.type == 'transfer':
+            return TransferExtensionConverter().to_var_name(destination.transfer)
+        elif destination.type == 'parking':
+            return 'parkext'
