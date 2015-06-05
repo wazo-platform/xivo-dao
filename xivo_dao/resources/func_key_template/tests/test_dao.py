@@ -32,34 +32,37 @@ from xivo_dao.resources.func_key.model import UserFuncKey, FuncKeyTemplate, Func
     AgentDestination, ParkPositionDestination, ParkingDestination
 
 
-class TestFuncKeyTemplateDao(DAOTestCase):
+class TestFuncKeyTemplateDao(DAOTestCase, FuncKeyHelper):
 
     def setUp(self):
         DAOTestCase.setUp(self)
-        func_key_type_row = self.add_func_key_type(name='speeddial')
-        destination_type_row = self.add_func_key_destination_type(id=1, name='user')
+        self.setup_types()
+        self.setup_destination_types()
 
-        self.type_id = func_key_type_row.id
-        self.destination_type_id = destination_type_row.id
-
-    def assert_template_empty(self, template_row):
+    def assert_template_empty(self, template_id):
         count = (self.session.query(FuncKeyMappingSchema)
-                 .filter(FuncKeyMappingSchema.template_id == template_row.id)
+                 .filter(FuncKeyMappingSchema.template_id == template_id)
                  .count())
 
         assert_that(count, equal_to(0))
 
-    def create_func_key_for_template(self, template_row, position):
-        func_key_row = self.add_func_key(type_id=self.type_id,
-                                         destination_type_id=self.destination_type_id)
+    def create_user_func_key_for_template(self, template_row, position):
+        destination_row = self.create_user_func_key()
+        self.add_destination_to_template(destination_row, template_row, position)
+        return UserFuncKey(id=destination_row.func_key_id)
 
-        mapping_row = FuncKeyMappingSchema(template_id=template_row.id,
-                                           func_key_id=func_key_row.id,
-                                           destination_type_id=func_key_row.destination_type_id,
-                                           position=position)
-        self.add_me(mapping_row)
+    def prepare_template(self, destination_row=None, destination=None, name=None, position=1):
+        template_row = self.add_func_key_template(name=name)
 
-        return UserFuncKey(id=func_key_row.id)
+        template = FuncKeyTemplate(id=template_row.id,
+                                   name=template_row.name)
+
+        if destination_row and destination:
+            self.add_destination_to_template(destination_row, template_row)
+            template.keys = {position: FuncKey(id=destination_row.func_key_id,
+                                               destination=destination)}
+
+        return template
 
 
 class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
@@ -224,22 +227,7 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
         self.assert_mapping_has_destination('features', destination_row)
 
 
-class TestFuncKeyTemplateGet(DAOTestCase, FuncKeyHelper):
-
-    def setUp(self):
-        super(TestFuncKeyTemplateGet, self).setUp()
-        self.setup_types()
-        self.setup_destination_types()
-
-    def prepare_template(self, template_row, destination_row, destination):
-        self.add_destination_to_template(destination_row, template_row)
-
-        funckey = FuncKey(id=destination_row.func_key_id,
-                          destination=destination)
-
-        return FuncKeyTemplate(id=template_row.id,
-                               name=template_row.name,
-                               keys={1: funckey})
+class TestFuncKeyTemplateGet(TestFuncKeyTemplateDao):
 
     def test_given_no_template_then_raises_error(self):
         assert_that(calling(dao.get).with_args(1),
@@ -255,155 +243,126 @@ class TestFuncKeyTemplateGet(DAOTestCase, FuncKeyHelper):
         assert_that(expected, equal_to(result))
 
     def test_given_template_with_user_destination_when_getting_then_returns_user_func_key(self):
-        template_row = self.add_func_key_template(name='foobar')
         destination_row = self.create_user_func_key()
-        expected = self.prepare_template(template_row, destination_row,
+        expected = self.prepare_template(destination_row,
                                          UserDestination(user_id=destination_row.user_id))
 
-        result = dao.get(template_row.id)
+        result = dao.get(expected.id)
 
         assert_that(expected, equal_to(result))
 
     def test_given_template_with_queue_destination_when_getting_then_returns_queue_func_key(self):
-        template_row = self.add_func_key_template(name='foobar')
         destination_row = self.create_queue_func_key()
-        expected = self.prepare_template(template_row, destination_row,
+        expected = self.prepare_template(destination_row,
                                          QueueDestination(queue_id=destination_row.queue_id))
 
-        result = dao.get(template_row.id)
+        result = dao.get(expected.id)
 
         assert_that(expected, equal_to(result))
 
     def test_given_template_with_group_destination_when_getting_then_returns_group_func_key(self):
-        template_row = self.add_func_key_template(name='foobar')
         destination_row = self.create_group_func_key()
-        expected = self.prepare_template(template_row, destination_row,
+        expected = self.prepare_template(destination_row,
                                          GroupDestination(group_id=destination_row.group_id))
 
-        result = dao.get(template_row.id)
+        result = dao.get(expected.id)
 
         assert_that(expected, equal_to(result))
 
     def test_given_template_with_conference_destination_when_getting_then_returns_conference_func_key(self):
-        template_row = self.add_func_key_template(name='foobar')
         destination_row = self.create_conference_func_key()
-        expected = self.prepare_template(template_row, destination_row,
+        expected = self.prepare_template(destination_row,
                                          ConferenceDestination(conference_id=destination_row.conference_id))
 
-        result = dao.get(template_row.id)
+        result = dao.get(expected.id)
 
         assert_that(expected, equal_to(result))
 
     def test_given_template_with_paging_destination_when_getting_then_returns_paging_func_key(self):
-        template_row = self.add_func_key_template(name='foobar')
         destination_row = self.create_paging_func_key()
-        expected = self.prepare_template(template_row, destination_row,
+        expected = self.prepare_template(destination_row,
                                          PagingDestination(paging_id=destination_row.paging_id))
 
-        result = dao.get(template_row.id)
+        result = dao.get(expected.id)
 
         assert_that(expected, equal_to(result))
 
     def test_given_template_with_bsfilter_destination_when_getting_then_returns_bsfilter_func_key(self):
-        template_row = self.add_func_key_template(name='foobar')
         _, destination_row = self.create_bsfilter_func_key()
-        expected = self.prepare_template(template_row, destination_row,
+        expected = self.prepare_template(destination_row,
                                          BSFilterDestination(filter_member_id=destination_row.filtermember_id))
 
-        result = dao.get(template_row.id)
+        result = dao.get(expected.id)
 
         assert_that(expected, equal_to(result))
 
     def test_given_template_with_service_destination_when_getting_then_returns_service_func_key(self):
-        template_row = self.add_func_key_template(name='foobar')
         destination_row = self.create_service_func_key('*25', 'enablednd')
-        expected = self.prepare_template(template_row, destination_row,
+        expected = self.prepare_template(destination_row,
                                          ServiceDestination(service='enablednd'))
 
-        result = dao.get(template_row.id)
+        result = dao.get(expected.id)
 
         assert_that(expected, equal_to(result))
 
     def test_given_template_with_forward_destination_when_getting_then_returns_service_func_key(self):
-        template_row = self.add_func_key_template(name='foobar')
         destination_row = self.create_forward_func_key('_*23.', 'fwdbusy', '1000')
-        expected = self.prepare_template(template_row, destination_row,
+        expected = self.prepare_template(destination_row,
                                          ForwardDestination(forward='busy',
                                                             exten='1000'))
 
-        result = dao.get(template_row.id)
+        result = dao.get(expected.id)
 
         assert_that(expected, equal_to(result))
 
     def test_given_template_with_park_position_destination_when_getting_then_returns_service_func_key(self):
-        template_row = self.add_func_key_template(name='foobar')
         destination_row = self.create_park_position_func_key('701')
-        expected = self.prepare_template(template_row, destination_row,
+        expected = self.prepare_template(destination_row,
                                          ParkPositionDestination(position=701))
 
-        result = dao.get(template_row.id)
+        result = dao.get(expected.id)
 
         assert_that(expected, equal_to(result))
 
     def test_given_template_with_custom_destination_when_getting_then_returns_service_func_key(self):
-        template_row = self.add_func_key_template(name='foobar')
         destination_row = self.create_custom_func_key('1234')
-        expected = self.prepare_template(template_row, destination_row,
+        expected = self.prepare_template(destination_row,
                                          CustomDestination(exten='1234'))
 
-        result = dao.get(template_row.id)
+        result = dao.get(expected.id)
 
         assert_that(expected, equal_to(result))
 
     def test_given_template_with_agent_destination_when_getting_then_returns_service_func_key(self):
-        template_row = self.add_func_key_template(name='foobar')
         destination_row = self.create_agent_func_key('_*31.', 'agentstaticlogin')
-        expected = self.prepare_template(template_row, destination_row,
+        expected = self.prepare_template(destination_row,
                                          AgentDestination(action='login',
                                                           agent_id=destination_row.agent_id))
 
-        result = dao.get(template_row.id)
+        result = dao.get(expected.id)
 
         assert_that(expected, equal_to(result))
 
     def test_given_template_with_transfer_destination_when_getting_then_returns_service_func_key(self):
-        template_row = self.add_func_key_template(name='foobar')
         destination_row = self.create_features_func_key('featuremap', 'atxfer', '*2')
-        expected = self.prepare_template(template_row, destination_row,
+        expected = self.prepare_template(destination_row,
                                          TransferDestination(transfer='attended'))
 
-        result = dao.get(template_row.id)
+        result = dao.get(expected.id)
 
         assert_that(expected, equal_to(result))
 
     def test_given_template_with_parking_destination_when_getting_then_returns_service_func_key(self):
-        template_row = self.add_func_key_template(name='foobar')
         destination_row = self.create_features_func_key('general', 'parkext', '701')
-        expected = self.prepare_template(template_row, destination_row,
+        expected = self.prepare_template(destination_row,
                                          ParkingDestination())
 
-        result = dao.get(template_row.id)
+        result = dao.get(expected.id)
 
         assert_that(expected, equal_to(result))
 
 
-class TestFuncKeyTemplateDelete(DAOTestCase, FuncKeyHelper):
-
-    def setUp(self):
-        super(TestFuncKeyTemplateDelete, self).setUp()
-        self.setup_types()
-        self.setup_destination_types()
-
-    def prepare_template(self, destination_row=None, destination=None):
-        template_row = self.add_func_key_template()
-        template = FuncKeyTemplate(id=template_row.id,
-                                   name=template_row.name)
-
-        if destination_row and destination:
-            self.add_destination_to_template(destination_row, template_row)
-            template.keys = {1: destination}
-
-        return template
+class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
 
     def test_given_template_with_no_funckeys_when_deleting_then_deletes_template(self):
         template = self.prepare_template()
@@ -459,12 +418,9 @@ class TestFuncKeyTemplateDelete(DAOTestCase, FuncKeyHelper):
         self.assert_func_key_deleted(destination_row.func_key_id)
 
 
+
+
 class TestCreatePrivateTemplate(TestFuncKeyTemplateDao):
-
-    def test_create_private_template(self):
-        template_id = dao.create_private_template()
-
-        self.assert_private_template_created(template_id)
 
     def assert_private_template_created(self, template_id):
         template_row = self.session.query(FuncKeyTemplateSchema).get(template_id)
@@ -472,6 +428,11 @@ class TestCreatePrivateTemplate(TestFuncKeyTemplateDao):
 
         assert_that(template_row, has_property('private', True))
         assert_that(template_row, has_property('name', none()))
+
+    def test_create_private_template(self):
+        template_id = dao.create_private_template()
+
+        self.assert_private_template_created(template_id)
 
     @patch('xivo_dao.resources.func_key_template.dao.commit_or_abort')
     def test_given_database_error_then_transaction_aborted(self, commit_or_abort):
@@ -484,16 +445,16 @@ class TestRemoveFuncKeyFromTemplate(TestFuncKeyTemplateDao):
 
     def test_given_one_func_key_mapped_when_removed_then_template_empty(self):
         template_row = self.add_func_key_template()
-        func_key = self.create_func_key_for_template(template_row, 1)
+        func_key = self.create_user_func_key_for_template(template_row, 1)
 
         dao.remove_func_key_from_templates(func_key)
 
-        self.assert_template_empty(template_row)
+        self.assert_template_empty(template_row.id)
 
     def test_given_two_func_keys_mapped_when_first_removed_then_other_func_key_remains(self):
         template_row = self.add_func_key_template()
-        first_func_key = self.create_func_key_for_template(template_row, 1)
-        second_func_key = self.create_func_key_for_template(template_row, 2)
+        first_func_key = self.create_user_func_key_for_template(template_row, 1)
+        second_func_key = self.create_user_func_key_for_template(template_row, 2)
 
         dao.remove_func_key_from_templates(first_func_key)
 
@@ -526,12 +487,12 @@ class TestDeletePrivateTemplate(TestFuncKeyTemplateDao):
 
     def test_given_template_with_one_func_key_then_template_and_mapping_deleted(self):
         template_row = self.add_func_key_template(private=True)
-        self.create_func_key_for_template(template_row, 1)
+        self.create_user_func_key_for_template(template_row, 1)
 
         dao.delete_private_template(template_row.id)
 
         self.assert_template_deleted(template_row)
-        self.assert_template_empty(template_row)
+        self.assert_template_empty(template_row.id)
 
     def assert_template_deleted(self, template_row):
         row = self.session.query(FuncKeyTemplateSchema).get(template_row.id)
