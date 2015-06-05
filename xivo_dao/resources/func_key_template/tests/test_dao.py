@@ -418,6 +418,94 @@ class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
         self.assert_func_key_deleted(destination_row.func_key_id)
 
 
+class TestFuncKeyTemplateEdit(TestFuncKeyTemplateDao):
+
+    def test_given_template_name_is_modified_when_editing_then_updates_name(self):
+        template = self.prepare_template(name='foobar')
+        template.name = 'newfoobar'
+
+        dao.edit(template)
+
+        template_row = self.session.query(FuncKeyTemplateSchema).get(template.id)
+        assert_that(template_row.name, equal_to('newfoobar'))
+
+    def test_given_func_key_modified_when_editing_then_updates_func_key(self):
+        destination_row = self.create_user_func_key()
+        template = self.prepare_template(destination_row,
+                                         UserDestination(user_id=destination_row.user_id))
+
+        template.keys[1].blf = True
+        template.keys[1].label = 'mylabel'
+
+        dao.edit(template)
+
+        mapping = (self.session.query(FuncKeyMappingSchema)
+                   .filter(FuncKeyMappingSchema.template_id == template.id)
+                   .first())
+
+        assert_that(mapping.blf, equal_to(True))
+        assert_that(mapping.label, equal_to('mylabel'))
+        assert_that(mapping.position, equal_to(1))
+
+    def test_given_destination_replaced_when_editing_then_replaces_destination(self):
+        first_destination_row = self.create_user_func_key()
+        updated_destination_row = self.create_queue_func_key()
+
+        template = self.prepare_template(first_destination_row,
+                                         UserDestination(user_id=first_destination_row.user_id))
+
+        updated_destination = QueueDestination(queue_id=updated_destination_row.queue_id)
+        template.keys[1].destination = updated_destination
+
+        dao.edit(template)
+
+        mapping = (self.session.query(FuncKeyMappingSchema)
+                   .filter(FuncKeyMappingSchema.template_id == template.id)
+                   .first())
+
+        assert_that(mapping.func_key_id, equal_to(updated_destination_row.func_key_id))
+        assert_that(mapping.destination_type_id, equal_to(updated_destination_row.destination_type_id))
+        assert_that(mapping.position, equal_to(1))
+
+    def test_given_func_key_removed_when_editing_then_removes_func_key(self):
+        destination_row = self.create_user_func_key()
+        template = self.prepare_template(destination_row,
+                                         UserDestination(user_id=destination_row.user_id))
+
+        template.keys = {}
+
+        dao.edit(template)
+
+        self.assert_template_empty(template.id)
+
+    def test_given_2_funckeys_when_only_1_modified_then_other_func_key_remains_unmodified(self):
+        template_row = self.add_func_key_template()
+        user_destination_row = self.create_user_func_key()
+        queue_destination_row = self.create_queue_func_key()
+        conference_destination_row = self.create_conference_func_key()
+
+        # queue func key will be replaced by conference func key during edit
+        self.add_destination_to_template(user_destination_row, template_row, position=1)
+        self.add_destination_to_template(queue_destination_row, template_row, position=2)
+
+        template = dao.get(template_row.id)
+
+        template.keys[2] = FuncKey(destination=ConferenceDestination(conference_id=conference_destination_row.conference_id))
+
+        dao.edit(template)
+
+        first_mapping_row = (self.session.query(FuncKeyMappingSchema)
+                             .filter(FuncKeyMappingSchema.template_id == template_row.id)
+                             .filter(FuncKeyMappingSchema.position == 1)
+                             .first())
+
+        second_mapping_row = (self.session.query(FuncKeyMappingSchema)
+                              .filter(FuncKeyMappingSchema.template_id == template_row.id)
+                              .filter(FuncKeyMappingSchema.position == 2)
+                              .first())
+
+        assert_that(first_mapping_row.func_key_id, equal_to(user_destination_row.func_key_id))
+        assert_that(second_mapping_row.func_key_id, equal_to(conference_destination_row.func_key_id))
 
 
 class TestCreatePrivateTemplate(TestFuncKeyTemplateDao):

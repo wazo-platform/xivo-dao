@@ -37,6 +37,13 @@ def get(session, template_id):
 
 
 @daosession
+def edit(session, template):
+    persistor = build_persistor(session)
+    with commit_or_abort(session, DataError.on_edit, 'FuncKeyTemplate'):
+        return persistor.edit(template)
+
+
+@daosession
 def delete(session, template):
     persistor = build_persistor(session)
     return persistor.delete(template)

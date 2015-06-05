@@ -107,11 +107,15 @@ class FuncKeyPersistor(object):
         return template
 
     def get_template(self, template_id):
+        template_row = self.get_template_row(template_id)
+        return m.FuncKeyTemplate(id=template_row.id,
+                                 name=template_row.name)
+
+    def get_template_row(self, template_id):
         template_row = self.session.query(FuncKeyTemplate).get(template_id)
         if not template_row:
             raise errors.not_found('FuncKeyTemplate', id=template_id)
-        return m.FuncKeyTemplate(id=template_row.id,
-                                 name=template_row.name)
+        return template_row
 
     def get_keys_for_template(self, template_id):
         return {mapping_row.position: self.build_func_key(mapping_row, dest_type)
@@ -137,10 +141,13 @@ class FuncKeyPersistor(object):
         return persistor.get(mapping_row.func_key_id)
 
     def delete(self, template):
+        self.remove_funckeys(template)
+        self.delete_template(template)
+
+    def remove_funckeys(self, template):
         for mapping_row, dest_type in self.query_mappings(template.id):
             self.delete_mapping(mapping_row)
             self.delete_destination(mapping_row, dest_type)
-        self.delete_template(template)
 
     def delete_mapping(self, mapping_row):
         (self.session.query(FuncKeyMapping)
@@ -157,6 +164,19 @@ class FuncKeyPersistor(object):
         (self.session.query(FuncKeyTemplate)
          .filter(FuncKeyTemplate.id == template.id)
          .delete())
+
+    def edit(self, template):
+        self.update_template(template)
+        self.update_funckeys(template)
+
+    def update_template(self, template):
+        template_row = self.get_template_row(template.id)
+        template_row.name = template.name
+        self.session.add(template_row)
+
+    def update_funckeys(self, template):
+        self.remove_funckeys(template)
+        self.add_funckeys(template.id, template.keys)
 
 
 class DestinationPersistor(object):
