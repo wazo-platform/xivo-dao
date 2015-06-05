@@ -25,20 +25,6 @@ class Model(NewModel):
     _RELATION = {}
 
 
-class FuncKeyTemplate(Model):
-
-    FIELDS = ['id',
-              'name',
-              'description',
-              'keys']
-
-    MANDATORY = ['name']
-
-    def __init__(self, **parameters):
-        parameters.setdefault('keys', {})
-        super(FuncKeyTemplate, self).__init__(**parameters)
-
-
 class FuncKey(Model):
 
     FIELDS = ['id',

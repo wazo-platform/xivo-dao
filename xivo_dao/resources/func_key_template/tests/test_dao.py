@@ -19,14 +19,19 @@ from hamcrest import assert_that, is_not, none, has_property, equal_to, calling,
 from mock import patch, ANY, Mock
 
 from xivo_dao.helpers.exception import NotFoundError
-from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
+from xivo_dao.helpers.exception import DataError
+
 from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
+
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate as FuncKeyTemplateSchema
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping as FuncKeyMappingSchema
 
-from xivo_dao.helpers.exception import DataError
 from xivo_dao.resources.func_key_template import dao
-from xivo_dao.resources.func_key.model import UserFuncKey, FuncKeyTemplate, FuncKey, \
+from xivo_dao.resources.func_key_template.model import FuncKeyTemplate
+
+from xivo_dao.resources.func_key.model import UserFuncKey
+from xivo_dao.resources.func_key.model import FuncKey, \
     UserDestination, QueueDestination, GroupDestination, ConferenceDestination, PagingDestination, \
     BSFilterDestination, CustomDestination, ServiceDestination, TransferDestination, ForwardDestination, \
     AgentDestination, ParkPositionDestination, ParkingDestination
