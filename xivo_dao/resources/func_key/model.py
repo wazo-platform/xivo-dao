@@ -125,9 +125,9 @@ class TransferDestination(Model):
 
     type = 'transfer'
 
-    FIELDS = ['transfer', 'exten']
+    FIELDS = ['transfer']
 
-    MANDATORY = ['forward', 'exten']
+    MANDATORY = ['transfer']
 
 
 class AgentDestination(Model):
