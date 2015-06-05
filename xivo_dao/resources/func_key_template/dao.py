@@ -27,7 +27,7 @@ from xivo_dao.resources.func_key_template.persistor import build_persistor
 def create(session, template):
     persistor = build_persistor(session)
     with commit_or_abort(session, DataError.on_create, 'FuncKeyTemplate'):
-        persistor.create(template)
+        return persistor.create(template)
 
 
 @daosession
