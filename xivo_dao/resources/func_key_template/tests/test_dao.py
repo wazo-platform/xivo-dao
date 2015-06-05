@@ -229,8 +229,7 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
     def test_given_template_has_transfer_func_key_when_creating_then_creates_mapping(self):
         destination_row = self.create_features_func_key('featuremap', 'blindxfer', '*1')
 
-        template = self.build_template_with_key(TransferDestination(transfer='blind',
-                                                                    exten='1000'))
+        template = self.build_template_with_key(TransferDestination(transfer='blind'))
 
         result = dao.create(template)
 
