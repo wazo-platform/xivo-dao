@@ -23,7 +23,6 @@ class FuncKeyTemplate(NewModel):
 
     FIELDS = ['id',
               'name',
-              'description',
               'keys']
 
     MANDATORY = ['name']
