@@ -45,3 +45,15 @@ def find_park_position_range(session):
         return None
 
     return tuple(int(x) for x in raw_range.split("-"))
+
+
+@daosession
+def get_value(session, feature_id):
+    value = (session.query(Features.var_val)
+             .filter(Features.id == feature_id)
+             .scalar())
+
+    if not value:
+        raise errors.not_found('Features', id=feature_id)
+
+    return value

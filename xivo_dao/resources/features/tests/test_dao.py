@@ -18,6 +18,8 @@
 
 from hamcrest import assert_that, contains, has_items, none, equal_to
 
+from xivo_dao.helpers.exception import NotFoundError
+
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.resources.features.model import TransferExtension
 from xivo_dao.resources.features import dao as feature_dao
@@ -89,3 +91,18 @@ class TestFindParkPositionRange(DAOTestCase):
         result = feature_dao.find_park_position_range()
 
         assert_that(result, equal_to(expected))
+
+
+class TestGetValue(DAOTestCase):
+
+    def test_when_getting_feature_by_id_then_returns_value(self):
+        self.add_features(id=12,
+                          var_name='parkext',
+                          var_val='700')
+
+        result = feature_dao.get_value(12)
+
+        assert_that(result, equal_to('700'))
+
+    def test_given_no_features_then_raises_error(self):
+        self.assertRaises(NotFoundError, feature_dao.get_value, 12)
