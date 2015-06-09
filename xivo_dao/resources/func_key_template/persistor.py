@@ -338,12 +338,14 @@ class BSFilterPersistor(DestinationPersistor):
 class ServicePersistor(DestinationPersistor):
 
     def get(self, func_key_id):
-        row = (self.session.query(Extension.typeval)
+        row = (self.session.query(Extension.typeval,
+                                  Extension.id)
                .join(FuncKeyDestService, FuncKeyDestService.extension_id == Extension.id)
                .filter(FuncKeyDestService.func_key_id == func_key_id)
                .first())
 
-        return fk_model.ServiceDestination(service=row.typeval)
+        return fk_model.ServiceDestination(service=row.typeval,
+                                           extension_id=row.id)
 
     def find_or_create(self, destination):
         query = (self.session.query(FuncKeyDestService)
@@ -366,6 +368,7 @@ class ForwardPersistor(DestinationPersistor):
 
     def get(self, func_key_id):
         row = (self.session.query(Extension.typeval,
+                                  Extension.id,
                                   FuncKeyDestForward.number)
                .join(FuncKeyDestForward, FuncKeyDestForward.extension_id == Extension.id)
                .filter(FuncKeyDestForward.func_key_id == func_key_id)
@@ -374,7 +377,8 @@ class ForwardPersistor(DestinationPersistor):
         forward = ForwardExtensionConverter().to_forward(row.typeval)
 
         return fk_model.ForwardDestination(forward=forward,
-                                           exten=row.number)
+                                           exten=row.number,
+                                           extension_id=row.id)
 
     def find_or_create(self, destination):
         func_key_row = self.create_func_key(self.TYPE_ID,
@@ -472,7 +476,8 @@ class AgentPersistor(DestinationPersistor):
 
     def get(self, func_key_id):
         row = (self.session.query(FuncKeyDestAgent.agent_id,
-                                  Extension.typeval)
+                                  Extension.typeval,
+                                  Extension.id)
                .join(Extension, FuncKeyDestAgent.extension_id == Extension.id)
                .filter(FuncKeyDestAgent.func_key_id == func_key_id)
                .first()
@@ -481,7 +486,8 @@ class AgentPersistor(DestinationPersistor):
         action = AgentActionExtensionConverter().to_action(row.typeval)
 
         return fk_model.AgentDestination(action=action,
-                                         agent_id=row.agent_id)
+                                         agent_id=row.agent_id,
+                                         extension_id=row.id)
 
     def find_or_create(self, destination):
         typeval = self.find_typeval(destination.action)
@@ -506,17 +512,19 @@ class AgentPersistor(DestinationPersistor):
 class FeaturesPersistor(DestinationPersistor):
 
     def get(self, func_key_id):
-        row = (self.session.query(Features.var_name)
+        row = (self.session.query(Features.var_name,
+                                  Features.id)
                .join(FuncKeyDestFeatures, FuncKeyDestFeatures.features_id == Features.id)
                .filter(FuncKeyDestFeatures.func_key_id == func_key_id)
                .first()
                )
 
         if row.var_name == 'parkext':
-            return fk_model.ParkingDestination()
+            return fk_model.ParkingDestination(feature_id=row.id)
 
         transfer = TransferExtensionConverter().to_transfer(row.var_name)
-        return fk_model.TransferDestination(transfer=transfer)
+        return fk_model.TransferDestination(transfer=transfer,
+                                            feature_id=row.id)
 
     def find_or_create(self, destination):
         varname = self.find_var_name(destination)

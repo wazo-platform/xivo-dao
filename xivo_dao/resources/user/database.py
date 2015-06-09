@@ -38,6 +38,7 @@ class UserDbConverter(DatabaseConverter):
         'voicemailid': 'voicemail_id',
         'preprocess_subroutine': 'preprocess_subroutine',
         'func_key_private_template_id': 'private_template_id',
+        'func_key_template_id': 'func_key_template_id',
     }
 
     def __init__(self):

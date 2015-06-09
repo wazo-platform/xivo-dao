@@ -319,7 +319,8 @@ class TestFuncKeyTemplateGet(TestFuncKeyTemplateDao):
     def test_given_template_has_service_func_key_when_getting_then_returns_service_func_key(self):
         destination_row = self.create_service_func_key('*25', 'enablednd')
         expected = self.prepare_template(destination_row,
-                                         ServiceDestination(service='enablednd'))
+                                         ServiceDestination(service='enablednd',
+                                                            extension_id=destination_row.extension_id))
 
         result = dao.get(expected.id)
 
@@ -329,7 +330,8 @@ class TestFuncKeyTemplateGet(TestFuncKeyTemplateDao):
         destination_row = self.create_forward_func_key('_*23.', 'fwdbusy', '1000')
         expected = self.prepare_template(destination_row,
                                          ForwardDestination(forward='busy',
-                                                            exten='1000'))
+                                                            exten='1000',
+                                                            extension_id=destination_row.extension_id))
 
         result = dao.get(expected.id)
 
@@ -357,7 +359,8 @@ class TestFuncKeyTemplateGet(TestFuncKeyTemplateDao):
         destination_row = self.create_agent_func_key('_*31.', 'agentstaticlogin')
         expected = self.prepare_template(destination_row,
                                          AgentDestination(action='login',
-                                                          agent_id=destination_row.agent_id))
+                                                          agent_id=destination_row.agent_id,
+                                                          extension_id=destination_row.extension_id))
 
         result = dao.get(expected.id)
 
@@ -366,7 +369,8 @@ class TestFuncKeyTemplateGet(TestFuncKeyTemplateDao):
     def test_given_template_has_transfer_func_key_when_getting_then_returns_transfer_func_key(self):
         destination_row = self.create_features_func_key('featuremap', 'atxfer', '*2')
         expected = self.prepare_template(destination_row,
-                                         TransferDestination(transfer='attended'))
+                                         TransferDestination(transfer='attended',
+                                                             feature_id=destination_row.features_id))
 
         result = dao.get(expected.id)
 
@@ -375,7 +379,7 @@ class TestFuncKeyTemplateGet(TestFuncKeyTemplateDao):
     def test_given_template_has_parking_func_key_when_getting_then_returns_parking_func_key(self):
         destination_row = self.create_features_func_key('general', 'parkext', '701')
         expected = self.prepare_template(destination_row,
-                                         ParkingDestination())
+                                         ParkingDestination(feature_id=destination_row.features_id))
 
         result = dao.get(expected.id)
 

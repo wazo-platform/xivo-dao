@@ -30,13 +30,15 @@ class FuncKey(Model):
     FIELDS = ['id',
               'destination',
               'label',
-              'blf']
+              'blf',
+              'inherited']
 
     MANDATORY = ['position',
                  'destination']
 
     def __init__(self, **parameters):
         parameters.setdefault('blf', False)
+        parameters.setdefault('inherited', True)
         super(FuncKey, self).__init__(**parameters)
 
 
@@ -107,7 +109,8 @@ class ServiceDestination(Model):
 
     type = 'service'
 
-    FIELDS = ['service']
+    FIELDS = ['service',
+              'extension_id']
 
     MANDATORY = ['service']
 
@@ -116,7 +119,9 @@ class ForwardDestination(Model):
 
     type = 'forward'
 
-    FIELDS = ['forward', 'exten']
+    FIELDS = ['forward',
+              'exten',
+              'extension_id']
 
     MANDATORY = ['forward', 'exten']
 
@@ -125,7 +130,8 @@ class TransferDestination(Model):
 
     type = 'transfer'
 
-    FIELDS = ['transfer']
+    FIELDS = ['transfer',
+              'feature_id']
 
     MANDATORY = ['transfer']
 
@@ -134,7 +140,7 @@ class AgentDestination(Model):
 
     type = 'agent'
 
-    FIELDS = ['action', 'agent_id']
+    FIELDS = ['action', 'agent_id', 'extension_id']
 
     MANDATORY = ['action', 'agent_id']
 
@@ -152,7 +158,7 @@ class ParkingDestination(Model):
 
     type = 'parking'
 
-    FIELDS = []
+    FIELDS = ['feature_id']
 
     MANDATORY = []
 
