@@ -102,6 +102,31 @@ def find_by_exten_context(session, exten, context):
     return db_converter.to_model(extension_row)
 
 
+def get_by_group_id(group_id):
+    return get_by_type('group', str(group_id))
+
+
+def get_by_queue_id(queue_id):
+    return get_by_type('queue', str(queue_id))
+
+
+def get_by_conference_id(queue_id):
+    return get_by_type('meetme', str(queue_id))
+
+
+@daosession
+def get_by_type(session, type_, typeval):
+    extension_row = (session.query(ExtensionSchema)
+                     .filter(ExtensionSchema.type == type_)
+                     .filter(ExtensionSchema.typeval == typeval)
+                     .first())
+
+    if not extension_row:
+        raise errors.not_found('Extension', type=type_, typeval=typeval)
+
+    return db_converter.to_model(extension_row)
+
+
 def _find_all_by_search(session, search, order):
     line_rows = (_new_query(session, order)
                  .filter(or_(ExtensionSchema.exten.ilike(search),

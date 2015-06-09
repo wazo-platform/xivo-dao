@@ -640,3 +640,62 @@ class TestFindAllAgentActionExtensions(DAOTestCase):
         result = extension_dao.find_all_agent_action_extensions()
 
         assert_that(result, contains())
+
+
+class TestGetByType(DAOTestCase):
+
+    def test_when_getting_by_type_typeval_then_returns_extension_model(self):
+        extension_row = self.add_extension(context='xivo-extrafeatures',
+                                           exten='*25',
+                                           type='extenfeatures',
+                                           typeval='enablednd')
+
+        expected = Extension(id=extension_row.id,
+                             exten='*25',
+                             context='xivo-extrafeatures')
+
+        result = extension_dao.get_by_type('extenfeatures', 'enablednd')
+
+        assert_that(result, equal_to(expected))
+
+    def test_given_no_extension_when_getting_then_raises_error(self):
+        self.assertRaises(NotFoundError, extension_dao.get_by_type, 'extenfeatures', 'bla')
+
+    def test_when_getting_by_group_id_then_returns_extension(self):
+        extension_row = self.add_extension(exten='2000',
+                                           type='group',
+                                           typeval='123')
+
+        expected = Extension(id=extension_row.id,
+                             exten='2000',
+                             context=extension_row.context)
+
+        result = extension_dao.get_by_group_id(123)
+
+        assert_that(result, equal_to(expected))
+
+    def test_when_getting_by_queue_id_then_returns_extension(self):
+        extension_row = self.add_extension(exten='3000',
+                                           type='queue',
+                                           typeval='123')
+
+        expected = Extension(id=extension_row.id,
+                             exten='3000',
+                             context=extension_row.context)
+
+        result = extension_dao.get_by_queue_id(123)
+
+        assert_that(result, equal_to(expected))
+
+    def test_when_getting_by_conference_id_then_returns_extension(self):
+        extension_row = self.add_extension(exten='4000',
+                                           type='meetme',
+                                           typeval='123')
+
+        expected = Extension(id=extension_row.id,
+                             exten='4000',
+                             context=extension_row.context)
+
+        result = extension_dao.get_by_conference_id(123)
+
+        assert_that(result, equal_to(expected))

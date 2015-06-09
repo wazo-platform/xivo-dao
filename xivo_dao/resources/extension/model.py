@@ -51,6 +51,9 @@ class Extension(NewModel):
         if self.commented is None:
             self.commented = False
 
+    def clean_exten(self):
+        return self.exten.strip('._')
+
 
 class ExtensionDestination(object):
     user = 'user'
