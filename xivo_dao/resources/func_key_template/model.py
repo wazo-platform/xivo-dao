@@ -32,3 +32,8 @@ class FuncKeyTemplate(NewModel):
     def __init__(self, **parameters):
         parameters.setdefault('keys', {})
         super(FuncKeyTemplate, self).__init__(**parameters)
+
+    def merge(self, other):
+        keys = dict(self.keys)
+        keys.update(other.keys)
+        return FuncKeyTemplate(keys=keys)
