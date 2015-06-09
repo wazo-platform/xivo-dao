@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@ import string
 import random
 
 from sqlalchemy.sql import and_
-from sqlalchemy.exc import  IntegrityError
+from sqlalchemy.exc import IntegrityError
 from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
 from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema, UserSIP
 from xivo_dao.alchemy.useriax import UserIAX as UserIAXSchema, UserIAX

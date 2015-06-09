@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
 
 from xivo_dao.helpers.abstract_model import AbstractModels
 from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
+import re
 
 
 class Line(AbstractModels):
@@ -120,6 +121,9 @@ class LineSIP(Line):
         if hasattr(self, 'username'):
             setattr(db_object, 'name', self.username)
         setattr(db_object, 'username', '')
+
+    def extract_displayname(self):
+        return re.match(r'^"(.+)"', self.callerid).group(1)
 
 
 class LineIAX(Line):
