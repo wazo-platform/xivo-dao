@@ -16,6 +16,8 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+from xivo_dao.helpers import errors
+
 from xivo_dao.alchemy.paging import Paging
 from xivo_dao.helpers.db_manager import daosession
 
@@ -27,3 +29,16 @@ def exists(session, paging_id):
              )
 
     return query.count() > 0
+
+
+@daosession
+def get_number(session, paging_id):
+    number = (session.query(Paging.number)
+              .filter(Paging.id == paging_id)
+              .scalar()
+              )
+
+    if not number:
+        raise errors.not_found('Paging', id=paging_id)
+
+    return number

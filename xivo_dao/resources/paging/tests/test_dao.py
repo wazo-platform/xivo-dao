@@ -20,6 +20,7 @@ from hamcrest import assert_that, equal_to
 
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.resources.paging import dao as paging_dao
+from xivo_dao.helpers.exception import NotFoundError
 
 
 class TestPagingExist(DAOTestCase):
@@ -35,3 +36,16 @@ class TestPagingExist(DAOTestCase):
         result = paging_dao.exists(paging_row.id)
 
         assert_that(result, equal_to(True))
+
+
+class TestGetNumber(DAOTestCase):
+
+    def test_when_getting_then_returns_number(self):
+        paging_row = self.add_paging(number='1234')
+
+        result = paging_dao.get_number(paging_row.id)
+
+        assert_that(result, equal_to('1234'))
+
+    def test_given_paging_doest_not_exist_then_raises_error(self):
+        self.assertRaises(NotFoundError, paging_dao.get_number, 13)

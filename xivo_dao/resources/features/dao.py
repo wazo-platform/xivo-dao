@@ -17,7 +17,10 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 from xivo_dao.alchemy.features import Features
+
+from xivo_dao.helpers import errors
 from xivo_dao.helpers.db_manager import daosession
+
 from xivo_dao.resources.features.database import transfer_converter
 
 
