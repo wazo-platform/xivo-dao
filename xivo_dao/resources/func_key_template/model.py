@@ -23,6 +23,7 @@ class FuncKeyTemplate(NewModel):
 
     FIELDS = ['id',
               'name',
+              'private',
               'keys']
 
     MANDATORY = ['name']
@@ -31,6 +32,7 @@ class FuncKeyTemplate(NewModel):
 
     def __init__(self, **parameters):
         parameters.setdefault('keys', {})
+        parameters.setdefault('private', False)
         super(FuncKeyTemplate, self).__init__(**parameters)
 
     def merge(self, other):

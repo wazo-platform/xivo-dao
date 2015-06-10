@@ -76,7 +76,7 @@ class FuncKeyPersistor(object):
         return template
 
     def add_template(self, template):
-        row = FuncKeyTemplate(name=template.name)
+        row = FuncKeyTemplate(name=template.name, private=False)
         self.session.add(row)
         self.session.flush()
         return row.id
@@ -113,7 +113,8 @@ class FuncKeyPersistor(object):
     def get_template(self, template_id):
         template_row = self.get_template_row(template_id)
         return tpl_model.FuncKeyTemplate(id=template_row.id,
-                                         name=template_row.name)
+                                         name=template_row.name,
+                                         private=template_row.private)
 
     def get_template_row(self, template_id):
         template_row = self.session.query(FuncKeyTemplate).get(template_id)
