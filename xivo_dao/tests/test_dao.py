@@ -64,6 +64,7 @@ from xivo_dao.alchemy.queue import Queue
 from xivo_dao.alchemy.queueskillrule import QueueSkillRule
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.queueskill import QueueSkill
+from xivo_dao.alchemy.features import Features
 from xivo_dao.alchemy.func_key import FuncKey
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
@@ -299,6 +300,12 @@ class DAOTestCase(unittest.TestCase):
         agent = AgentFeatures(**kwargs)
         self.add_me(agent)
         return agent
+
+    def add_features(self, **kwargs):
+        kwargs.setdefault('filename', 'features.conf')
+        features = Features(**kwargs)
+        self.add_me(features)
+        return features
 
     def add_group(self, **kwargs):
         kwargs.setdefault('id', self._generate_int())
