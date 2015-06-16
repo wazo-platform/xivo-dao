@@ -109,6 +109,9 @@ def _get_ended_call(session, start_str, end, queue_log_event, stat_event):
     pairs = []
     enter_queue_event = None
 
+    higher_boundary = end + timedelta(days=1)
+    end_str = higher_boundary.strftime(_STR_TIME_FMT)
+
     queue_logs = (session
                   .query(QueueLog.event,
                          QueueLog.callid,
@@ -116,6 +119,7 @@ def _get_ended_call(session, start_str, end, queue_log_event, stat_event):
                          QueueLog.data3,
                          cast(QueueLog.time, TIMESTAMP).label('time'))
                   .filter(and_(QueueLog.time >= start_str,
+                               QueueLog.time < end_str,
                                or_(QueueLog.event == 'ENTERQUEUE',
                                    QueueLog.event == queue_log_event)))
                   .order_by(QueueLog.callid, QueueLog.time))
