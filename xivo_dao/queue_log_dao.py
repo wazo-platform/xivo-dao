@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from sqlalchemy import between, distinct
-from sqlalchemy.sql.expression import and_
+from sqlalchemy.sql.expression import and_, or_
 from sqlalchemy.sql.functions import min
 from xivo_dao.alchemy.queue_log import QueueLog
 from sqlalchemy import cast, TIMESTAMP, func
@@ -105,47 +105,73 @@ def _enumerate_periods(start, end, interval):
         tmp += interval
 
 
-def _get_event_with_enterqueue(session, start, end, match, event):
-    start = start.strftime(_STR_TIME_FMT)
-    end = end.strftime(_STR_TIME_FMT)
+def _get_ended_call(session, start_str, end, queue_log_event, stat_event):
+    pairs = []
+    enter_queue_event = None
 
-    enter_queues = (session
-                    .query(QueueLog.callid,
-                           cast(QueueLog.time, TIMESTAMP).label('time'))
-                    .filter(and_(QueueLog.event == 'ENTERQUEUE',
-                                 between(QueueLog.time, start, end))))
+    higher_boundary = end + timedelta(days=1)
+    end_str = higher_boundary.strftime(_STR_TIME_FMT)
 
-    enter_map = {}
-    for enter_queue in enter_queues.all():
-        enter_map[enter_queue.callid] = enter_queue.time
+    queue_logs = (session
+                  .query(QueueLog.event,
+                         QueueLog.callid,
+                         QueueLog.queuename,
+                         QueueLog.data3,
+                         cast(QueueLog.time, TIMESTAMP).label('time'))
+                  .filter(and_(QueueLog.time >= start_str,
+                               QueueLog.time < end_str,
+                               or_(QueueLog.event == 'ENTERQUEUE',
+                                   QueueLog.event == queue_log_event)))
+                  .order_by(QueueLog.callid, QueueLog.time))
 
-    if enter_map:
-        res = (session
-               .query(QueueLog.event,
-                      QueueLog.queuename,
-                      cast(QueueLog.time, TIMESTAMP).label('time'),
-                      QueueLog.callid,
-                      QueueLog.data3)
-               .filter(and_(QueueLog.event == match,
-                            QueueLog.callid.in_(enter_map))))
+    to_skip = None
+    for queue_log in queue_logs.all():
+        # The first matched entry of a pair should be an ENTERQUEUE
+        if enter_queue_event is None and queue_log.event != 'ENTERQUEUE':
+            continue
 
-        for r in res.all():
-            yield {
-                'callid': r.callid,
-                'queue_name': r.queuename,
-                'time': enter_map[r.callid],
-                'event': event,
-                'talktime': 0,
-                'waittime': int(r.data3) if r.data3 else 0
-            }
+        # When a callid reaches the end of the range, skip all other queue_log for this callid
+        if to_skip and queue_log.callid == to_skip:
+            continue
+
+        if queue_log.event == 'ENTERQUEUE':
+            # The ENTERQUEUE happenned after the range, skip this callid
+            if queue_log.time > end:
+                to_skip = queue_log.callid
+                continue
+
+            # Found a ENTERQUEUE
+            enter_queue_event = queue_log
+            continue
+
+        # Only ended calls can reach this line
+        end_event = queue_log
+
+        # Does it have a matching ENTERQUEUE?
+        if end_event.callid != enter_queue_event.callid:
+            continue
+
+        pairs.append((enter_queue_event, end_event))
+
+    for enter_queue, end_event in pairs:
+        yield {
+            'callid': enter_queue.callid,
+            'queue_name': enter_queue.queuename,
+            'time': enter_queue.time,
+            'event': stat_event,
+            'talktime': 0,
+            'waittime': int(end_event.data3),
+        }
 
 
 def get_queue_abandoned_call(session, start, end):
-    return _get_event_with_enterqueue(session, start, end, 'ABANDON', 'abandoned')
+    start_str = start.strftime(_STR_TIME_FMT)
+    return _get_ended_call(session, start_str, end, 'ABANDON', 'abandoned')
 
 
 def get_queue_timeout_call(session, start, end):
-    return _get_event_with_enterqueue(session, start, end, 'EXITWITHTIMEOUT', 'timeout')
+    start_str = start.strftime(_STR_TIME_FMT)
+    return _get_ended_call(session, start_str, end, 'EXITWITHTIMEOUT', 'timeout')
 
 
 def get_first_time(session):
