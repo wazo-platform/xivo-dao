@@ -23,3 +23,14 @@ You can create the database by running these SQL commands:
 
 On debian based systems you can access the psql console with ```sudo -u postgres psql```
 
+Docker
+------
+
+To run test with docker:
+
+    docker build -t xivo/dao-test .
+    docker run -e XIVO_TEST_DB_URL=<postgres_uri> -it xivo/dao bash
+
+To run with docker-compose:
+
+    docker-compose up

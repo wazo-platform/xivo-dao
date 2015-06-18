@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,8 +16,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import random
+
 from datetime import datetime
 from datetime import timedelta
+from hamcrest import assert_that, has_length, empty
 
 from xivo_dao import queue_log_dao
 from xivo_dao.alchemy.stat_agent import StatAgent
@@ -33,7 +35,7 @@ TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 class TestQueueLogDAO(DAOTestCase):
 
     def setUp(self):
-        DAOTestCase.setUp(self)
+        super(TestQueueLogDAO, self).setUp()
         self.queue_name = 'q1'
 
     def _insert_agent(self, aname):
@@ -179,6 +181,60 @@ class TestQueueLogDAO(DAOTestCase):
         result = queue_log_dao.get_queue_abandoned_call(self.session, start, start + ONE_HOUR - ONE_MICROSECOND)
 
         self.assertEqual(sorted(result), sorted(expected))
+
+    def test_get_queue_abandoned_call_following_transfer_at_hour_border(self):
+        queue_logs = [
+            # New call in queue2
+            ('2015-05-06 11:59:52.991930', '1430927991.36', 'queue2', 'NONE', 'ENTERQUEUE', '', '0612345678', '1', '', ''),
+            ('2015-05-06 12:00:02.110492', '1430927991.36', 'queue2', 'Agent/1002', 'CONNECT', '10', '1430927992.37', '9', '', ''),
+            ('2015-05-06 12:00:10.804470', '1430927991.36', 'queue2', 'Agent/1002', 'COMPLETECALLER', '10', '8', '1', '', ''),
+            # Agent/1002 blind txfer the call to queue1
+            ('2015-05-06 12:00:10.883332', '1430927991.36', 'queue1', 'NONE', 'ENTERQUEUE', '', '0612345678', '1', '', ''),
+            ('2015-05-06 12:00:25.887220', '1430927991.36', 'queue1', 'Agent/1001', 'RINGNOANSWER', '15000', '', '', '', ''),
+            ('2015-05-06 12:00:29.197769', '1430927991.36', 'queue1', 'NONE', 'ABANDON', '1', '1', '19', '', ''),
+        ]
+        for queue_log in queue_logs:
+            queue_log_dao.insert_entry(*queue_log)
+
+        abandoned_at_11_oclock = list(queue_log_dao.get_queue_abandoned_call(self.session, datetime(2015, 5, 6, 11), datetime(2015, 5, 6, 11, 59, 59, 999999)))
+        abandoned_at_12_oclock = list(queue_log_dao.get_queue_abandoned_call(self.session, datetime(2015, 5, 6, 12), datetime(2015, 5, 6, 12, 59, 59, 999999)))
+
+        assert_that(abandoned_at_11_oclock, empty())
+        assert_that(abandoned_at_12_oclock, has_length(1))
+
+    def test_get_queue_abandoned_call_no_enterqueue(self):
+        queue_logs = [
+            ('2015-05-06 12:00:10', '1', 'queue1', 'NONE', 'ENTERQUEUE', '', '0612345678', '1', '', ''),
+            ('2015-05-06 12:00:11', '1', 'queue1', 'NONE', 'ABANDON', '1', '1', '19', '', ''),
+            ('2015-05-06 12:00:12', '2', 'queue1', 'NONE', 'ABANDON', '1', '1', '30', '', ''),
+        ]
+        for queue_log in queue_logs:
+            queue_log_dao.insert_entry(*queue_log)
+
+        abandoned_at_12_oclock = list(queue_log_dao.get_queue_abandoned_call(self.session, datetime(2015, 5, 6, 12), datetime(2015, 5, 6, 12, 59, 59, 999999)))
+
+        assert_that(abandoned_at_12_oclock, has_length(1))
+
+    def test_get_queue_timeout_call_following_transfer_at_hour_border(self):
+        queue_logs = [
+            # New call in queue2
+            ('2015-05-06 11:59:52.991930', '1430927991.36', 'queue2', 'NONE', 'ENTERQUEUE', '', '0612345678', '1', '', ''),
+            ('2015-05-06 12:00:02.110492', '1430927991.36', 'queue2', 'Agent/1002', 'CONNECT', '10', '1430927992.37', '9', '', ''),
+            ('2015-05-06 12:00:10.804470', '1430927991.36', 'queue2', 'Agent/1002', 'COMPLETECALLER', '10', '8', '1', '', ''),
+            # Agent/1002 blind txfer the call to queue1
+            ('2015-05-06 12:00:10.883332', '1430927991.36', 'queue1', 'NONE', 'ENTERQUEUE', '', '0612345678', '1', '', ''),
+            ('2015-05-06 12:00:25.887220', '1430927991.36', 'queue1', 'Agent/1001', 'RINGNOANSWER', '15000', '', '', '', ''),
+            ('2015-05-06 12:00:29.197769', '1430927991.36', 'queue1', 'NONE', 'EXITWITHTIMEOUT', '1', '1', '20', '', ''),
+        ]
+        for queue_log in queue_logs:
+            queue_log_dao.insert_entry(*queue_log)
+
+        timeout_at_11_oclock = list(queue_log_dao.get_queue_timeout_call(self.session, datetime(2015, 5, 6, 11), datetime(2015, 5, 6, 11, 59, 59, 999999)))
+        timeout_at_12_oclock = list(queue_log_dao.get_queue_timeout_call(self.session, datetime(2015, 5, 6, 12), datetime(2015, 5, 6, 12, 59, 59, 999999)))
+
+        assert_that(timeout_at_11_oclock, empty())
+        assert_that(timeout_at_12_oclock, has_length(1))
+
 
     def test_get_queue_timeout_call(self):
         start = datetime(2012, 01, 01, 01, 00, 00)

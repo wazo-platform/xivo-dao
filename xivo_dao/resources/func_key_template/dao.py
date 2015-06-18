@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014 Avencall
+# Copyright (C) 2014-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,6 +20,33 @@ from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate as FuncKeyTemplateSchema
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping as FuncKeyMappingSchema
 from xivo_dao.helpers.exception import DataError
+from xivo_dao.resources.func_key_template.persistor import build_persistor
+
+
+@daosession
+def create(session, template):
+    persistor = build_persistor(session)
+    with commit_or_abort(session, DataError.on_create, 'FuncKeyTemplate'):
+        return persistor.create(template)
+
+
+@daosession
+def get(session, template_id):
+    persistor = build_persistor(session)
+    return persistor.get(template_id)
+
+
+@daosession
+def edit(session, template):
+    persistor = build_persistor(session)
+    with commit_or_abort(session, DataError.on_edit, 'FuncKeyTemplate'):
+        return persistor.edit(template)
+
+
+@daosession
+def delete(session, template):
+    persistor = build_persistor(session)
+    return persistor.delete(template)
 
 
 @daosession

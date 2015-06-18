@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+import logging
+
 from sqlalchemy import and_
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
@@ -26,12 +28,15 @@ from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.userfeatures import UserFeatures
+from xivo_dao.alchemy.voicemail import Voicemail
 from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
-# the following import is necessary to laod CtiProfiles' definition:
+# the following import is necessary to load CtiProfiles' definition:
 from xivo_dao.resources.func_key_template import dao as func_key_template_dao
+
+logger = logging.getLogger(__name__)
 
 
 def enable_dnd(user_id):
@@ -245,9 +250,24 @@ def get_uuid_by_username(session, username):
              UserFeatures.enableclient == 1)).first()
 
     if not row:
-        return LookupError('Invalid username')
+        raise LookupError('Invalid username')
 
     return row.uuid
+
+
+@daosession
+def get_uuid_by_email(session, email):
+    rows = (session.query(UserFeatures.uuid)
+           .join(Voicemail, UserFeatures.voicemailid==Voicemail.uniqueid)
+            .filter(Voicemail.email == email).all())
+
+    if not rows:
+        raise LookupError('Invalid voicemail')
+
+    if len(rows) > 1:
+        logger.warning('multiple users share the same email `%s`', 'alice@merveille.com')
+
+    return rows[0].uuid
 
 
 @daosession

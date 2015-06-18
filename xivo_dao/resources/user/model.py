@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -42,6 +42,7 @@ class User(NewModel):
         'description',
         'preprocess_subroutine',
         'private_template_id',
+        'func_key_template_id',
     ]
 
     _RELATION = {

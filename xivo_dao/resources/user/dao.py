@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.sql.expression import and_
+from sqlalchemy.sql.expression import and_, or_
 
 from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
 from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
@@ -68,6 +68,7 @@ def find_all_by_fullname(session, fullname, order=None):
                  .all())
 
     return _rows_to_user_model(user_rows)
+
 
 
 def _user_query(session, order=None):
@@ -161,6 +162,16 @@ def get_by_number_context(session, number, context):
     if not user:
         raise errors.not_found('User', number=number, context=context)
     return user
+
+
+@daosession
+def find_all_by_template_id(session, template_id):
+    query = (session.query(UserSchema)
+             .filter(or_(UserSchema.func_key_template_id == template_id,
+                         UserSchema.func_key_private_template_id == template_id))
+             )
+
+    return [db_converter.to_model(row) for row in query]
 
 
 @daosession

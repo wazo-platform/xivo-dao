@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014 Avencall
+# Copyright (C) 2014-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,7 +20,150 @@ from collections import namedtuple
 from xivo_dao.helpers.new_model import NewModel
 
 
-class UserFuncKey(NewModel):
+class Model(NewModel):
+
+    _RELATION = {}
+
+
+class FuncKey(Model):
+
+    FIELDS = ['id',
+              'destination',
+              'label',
+              'blf',
+              'inherited']
+
+    MANDATORY = ['position',
+                 'destination']
+
+    def __init__(self, **parameters):
+        parameters.setdefault('blf', False)
+        parameters.setdefault('inherited', True)
+        super(FuncKey, self).__init__(**parameters)
+
+
+class UserDestination(Model):
+
+    type = 'user'
+
+    FIELDS = ['user_id']
+
+    MANDATORY = ['user_id']
+
+
+class GroupDestination(Model):
+
+    type = 'group'
+
+    FIELDS = ['group_id']
+
+    MANDATORY = ['group_id']
+
+
+class QueueDestination(Model):
+
+    type = 'queue'
+
+    FIELDS = ['queue_id']
+
+    MANDATORY = ['queue_id']
+
+
+class ConferenceDestination(Model):
+
+    type = 'conference'
+
+    FIELDS = ['conference_id']
+
+    MANDATORY = ['conference_id']
+
+
+class PagingDestination(Model):
+
+    type = 'paging'
+
+    FIELDS = ['paging_id']
+
+    MANDATORY = ['paging_id']
+
+
+class BSFilterDestination(Model):
+
+    type = 'bsfilter'
+
+    FIELDS = ['filter_member_id']
+
+    MANDATORY = ['filter_member_id']
+
+
+class CustomDestination(Model):
+
+    type = 'custom'
+
+    FIELDS = ['exten']
+
+    MANDATORY = ['exten']
+
+
+class ServiceDestination(Model):
+
+    type = 'service'
+
+    FIELDS = ['service',
+              'extension_id']
+
+    MANDATORY = ['service']
+
+
+class ForwardDestination(Model):
+
+    type = 'forward'
+
+    FIELDS = ['forward',
+              'exten',
+              'extension_id']
+
+    MANDATORY = ['forward', 'exten']
+
+
+class TransferDestination(Model):
+
+    type = 'transfer'
+
+    FIELDS = ['transfer',
+              'feature_id']
+
+    MANDATORY = ['transfer']
+
+
+class AgentDestination(Model):
+
+    type = 'agent'
+
+    FIELDS = ['action', 'agent_id', 'extension_id']
+
+    MANDATORY = ['action', 'agent_id']
+
+
+class ParkPositionDestination(Model):
+
+    type = 'park_position'
+
+    FIELDS = ['position']
+
+    MANDATORY = ['position']
+
+
+class ParkingDestination(Model):
+
+    type = 'parking'
+
+    FIELDS = ['feature_id']
+
+    MANDATORY = []
+
+
+class UserFuncKey(Model):
 
     MANDATORY = [
         'id',
@@ -32,10 +175,8 @@ class UserFuncKey(NewModel):
         'user_id'
     ]
 
-    _RELATION = {}
 
-
-class BSFilterFuncKey(NewModel):
+class BSFilterFuncKey(Model):
 
     MANDATORY = [
         'id',
@@ -48,8 +189,6 @@ class BSFilterFuncKey(NewModel):
         'filter_id',
         'secretary_id',
     ]
-
-    _RELATION = {}
 
 
 class ForwardTypeConverter(object):

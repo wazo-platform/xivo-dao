@@ -358,11 +358,9 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         assert_that(pickup_members, equal_to(expected))
 
     def test_find_features_settings(self):
-        self.add_features(category='general',
-                          var_name='atxfernoanswertimeout',
+        self.add_features(var_name='atxfernoanswertimeout',
                           var_val='15')
-        self.add_features(category='general',
-                          var_name='parkext',
+        self.add_features(var_name='parkext',
                           var_val='700')
         self.add_features(category='featuremap',
                           var_name='disconnect',
@@ -385,14 +383,11 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         assert_that(settings['featuremap_options'], contains_inanyorder(*expected_featuremap))
 
     def test_find_parking_settings(self):
-        self.add_features(category='general',
-                          var_name='parkeddynamic',
+        self.add_features(var_name='parkeddynamic',
                           var_val='no')
-        self.add_features(category='general',
-                          var_name='atxferdropcall',
+        self.add_features(var_name='atxferdropcall',
                           var_val='no')
-        self.add_features(category='general',
-                          var_name='parkext',
+        self.add_features(var_name='parkext',
                           var_val='700')
 
         expected_general = [

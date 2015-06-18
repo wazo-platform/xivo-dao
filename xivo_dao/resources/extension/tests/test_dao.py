@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, all_of, equal_to, has_items, has_length, has_property, none
-from mock import patch, Mock
+from hamcrest import assert_that, all_of, equal_to, has_items, has_length, has_property, none, contains
+from mock import Mock
 from sqlalchemy.exc import SQLAlchemyError
 
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -24,7 +24,8 @@ from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 from xivo_dao.helpers.exception import DataError
 from xivo_dao.helpers.exception import NotFoundError
 from xivo_dao.resources.extension import dao as extension_dao
-from xivo_dao.resources.extension.model import Extension, ExtensionDestination
+from xivo_dao.resources.extension.model import Extension, ExtensionDestination, \
+    ServiceExtension, ForwardExtension, AgentActionExtension
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.tests.helpers.session import mocked_dao_session
 
@@ -467,3 +468,234 @@ class TestGetTypeTypeval(DAOTestCase):
 
         assert_that(extension_type, equal_to('queue'))
         assert_that(typeval, equal_to('1234'))
+
+
+class TestFindAllServiceExtensions(DAOTestCase):
+
+    SERVICES = [("*90", "enablevm"),
+                ("*98", "vmusermsg"),
+                ("*92", "vmuserpurge"),
+                ("*10", "phonestatus"),
+                ("*9", "recsnd"),
+                ("*34", "calllistening"),
+                ("*36", "directoryaccess"),
+                ("*20", "fwdundoall"),
+                ("_*8.", "pickup"),
+                ("*26", "callrecord"),
+                ("*27", "incallfilter"),
+                ("*25", "enablednd")]
+
+    def prepare_extensions(self):
+        service_extensions = []
+
+        for exten, service in self.SERVICES:
+            extension_row = self.add_extension(type='extenfeatures',
+                                               context='xivo-features',
+                                               exten=exten,
+                                               typeval=service)
+
+            service_extension = ServiceExtension(id=extension_row.id,
+                                                 exten=extension_row.exten,
+                                                 service=extension_row.typeval)
+
+            service_extensions.append(service_extension)
+
+        return service_extensions
+
+    def test_given_no_extension_then_return_empty_list(self):
+        extensions = extension_dao.find_all_service_extensions()
+
+        assert_that(extensions, contains())
+
+    def test_given_all_service_extensions_then_returns_models(self):
+        expected = self.prepare_extensions()
+
+        result = extension_dao.find_all_service_extensions()
+
+        assert_that(result, has_items(*expected))
+
+    def test_given_extension_is_commented_then_returns_empty_list(self):
+        self.add_extension(type='extenfeatures',
+                           context='xivo-features',
+                           exten='*92',
+                           typeval='vmuserpurge',
+                           commented=1)
+
+        result = extension_dao.find_all_service_extensions()
+
+        assert_that(result, contains())
+
+
+class TestFindAllForwardExtensions(DAOTestCase):
+
+    def prepare_extensions(self):
+        extensions = []
+
+        row = self.add_extension(type='extenfeatures',
+                                 context='xivo-features',
+                                 exten='_*23.',
+                                 typeval='fwdbusy')
+        model = ForwardExtension(id=row.id,
+                                 exten='*23',
+                                 forward='busy')
+        extensions.append(model)
+
+        row = self.add_extension(type='extenfeatures',
+                                 context='xivo-features',
+                                 exten='_*22.',
+                                 typeval='fwdrna')
+        model = ForwardExtension(id=row.id,
+                                 exten='*22',
+                                 forward='noanswer')
+        extensions.append(model)
+
+        row = self.add_extension(type='extenfeatures',
+                                 context='xivo-features',
+                                 exten='_*21.',
+                                 typeval='fwdunc')
+        model = ForwardExtension(id=row.id,
+                                 exten='*21',
+                                 forward='unconditional')
+        extensions.append(model)
+
+        return extensions
+
+    def test_given_no_extension_then_return_empty_list(self):
+        extensions = extension_dao.find_all_forward_extensions()
+
+        assert_that(extensions, contains())
+
+    def test_given_all_forward_extensions_then_returns_models(self):
+        expected = self.prepare_extensions()
+
+        result = extension_dao.find_all_forward_extensions()
+
+        assert_that(result, has_items(*expected))
+
+    def test_given_extension_is_commented_then_returns_empty_list(self):
+        self.add_extension(type='extenfeatures',
+                           context='xivo-features',
+                           exten='_*23.',
+                           typeval='fwdbusy',
+                           commented=1)
+
+        result = extension_dao.find_all_forward_extensions()
+
+        assert_that(result, contains())
+
+
+class TestFindAllAgentActionExtensions(DAOTestCase):
+
+    def prepare_extensions(self):
+        extensions = []
+
+        row = self.add_extension(type='extenfeatures',
+                                 context='xivo-features',
+                                 exten='_*31.',
+                                 typeval='agentstaticlogin')
+        model = AgentActionExtension(id=row.id,
+                                     exten='*31',
+                                     action='login')
+        extensions.append(model)
+
+        row = self.add_extension(type='extenfeatures',
+                                 context='xivo-features',
+                                 exten='_*32.',
+                                 typeval='agentstaticlogoff')
+        model = AgentActionExtension(id=row.id,
+                                     exten='*32',
+                                     action='logout')
+        extensions.append(model)
+
+        row = self.add_extension(type='extenfeatures',
+                                 context='xivo-features',
+                                 exten='_*30.',
+                                 typeval='agentstaticlogtoggle')
+        model = AgentActionExtension(id=row.id,
+                                     exten='*30',
+                                     action='toggle')
+        extensions.append(model)
+
+        return extensions
+
+    def test_given_no_extension_then_return_empty_list(self):
+        extensions = extension_dao.find_all_agent_action_extensions()
+
+        assert_that(extensions, contains())
+
+    def test_given_all_agent_action_extensions_then_returns_models(self):
+        expected = self.prepare_extensions()
+
+        result = extension_dao.find_all_agent_action_extensions()
+
+        assert_that(result, has_items(*expected))
+
+    def test_given_extension_is_commented_then_returns_empty_list(self):
+        self.add_extension(type='extenfeatures',
+                           context='xivo-features',
+                           exten='_*30.',
+                           typeval='agentstaticlogtoggle',
+                           commented=1)
+
+        result = extension_dao.find_all_agent_action_extensions()
+
+        assert_that(result, contains())
+
+
+class TestGetByType(DAOTestCase):
+
+    def test_when_getting_by_type_typeval_then_returns_extension_model(self):
+        extension_row = self.add_extension(context='xivo-extrafeatures',
+                                           exten='*25',
+                                           type='extenfeatures',
+                                           typeval='enablednd')
+
+        expected = Extension(id=extension_row.id,
+                             exten='*25',
+                             context='xivo-extrafeatures')
+
+        result = extension_dao.get_by_type('extenfeatures', 'enablednd')
+
+        assert_that(result, equal_to(expected))
+
+    def test_given_no_extension_when_getting_then_raises_error(self):
+        self.assertRaises(NotFoundError, extension_dao.get_by_type, 'extenfeatures', 'bla')
+
+    def test_when_getting_by_group_id_then_returns_extension(self):
+        extension_row = self.add_extension(exten='2000',
+                                           type='group',
+                                           typeval='123')
+
+        expected = Extension(id=extension_row.id,
+                             exten='2000',
+                             context=extension_row.context)
+
+        result = extension_dao.get_by_group_id(123)
+
+        assert_that(result, equal_to(expected))
+
+    def test_when_getting_by_queue_id_then_returns_extension(self):
+        extension_row = self.add_extension(exten='3000',
+                                           type='queue',
+                                           typeval='123')
+
+        expected = Extension(id=extension_row.id,
+                             exten='3000',
+                             context=extension_row.context)
+
+        result = extension_dao.get_by_queue_id(123)
+
+        assert_that(result, equal_to(expected))
+
+    def test_when_getting_by_conference_id_then_returns_extension(self):
+        extension_row = self.add_extension(exten='4000',
+                                           type='meetme',
+                                           typeval='123')
+
+        expected = Extension(id=extension_row.id,
+                             exten='4000',
+                             context=extension_row.context)
+
+        result = extension_dao.get_by_conference_id(123)
+
+        assert_that(result, equal_to(expected))

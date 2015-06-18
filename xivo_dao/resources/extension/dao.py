@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,7 +23,8 @@ from xivo_dao.helpers.db_manager import daosession
 
 from xivo_dao.helpers import errors
 from xivo_dao.helpers.exception import DataError
-from xivo_dao.resources.extension.model import db_converter
+from xivo_dao.resources.extension.database import db_converter, \
+    fwd_converter, service_converter, agent_action_converter
 from xivo_dao.resources.extension.search import extension_search
 from xivo_dao.resources.utils.search import SearchResult
 
@@ -97,6 +98,31 @@ def find_by_exten_context(session, exten, context):
 
     if not extension_row:
         return None
+
+    return db_converter.to_model(extension_row)
+
+
+def get_by_group_id(group_id):
+    return get_by_type('group', str(group_id))
+
+
+def get_by_queue_id(queue_id):
+    return get_by_type('queue', str(queue_id))
+
+
+def get_by_conference_id(queue_id):
+    return get_by_type('meetme', str(queue_id))
+
+
+@daosession
+def get_by_type(session, type_, typeval):
+    extension_row = (session.query(ExtensionSchema)
+                     .filter(ExtensionSchema.type == type_)
+                     .filter(ExtensionSchema.typeval == typeval)
+                     .first())
+
+    if not extension_row:
+        raise errors.not_found('Extension', type=type_, typeval=typeval)
 
     return db_converter.to_model(extension_row)
 
@@ -183,3 +209,45 @@ def get_type_typeval(session, extension_id):
         raise errors.not_found('Extension', id=extension_id)
 
     return (row.type, row.typeval)
+
+
+@daosession
+def find_all_service_extensions(session):
+    typevals = service_converter.typevals()
+    query = (session.query(ExtensionSchema.id,
+                           ExtensionSchema.exten,
+                           ExtensionSchema.typeval)
+             .filter(ExtensionSchema.commented == 0)
+             .filter(ExtensionSchema.type == 'extenfeatures')
+             .filter(ExtensionSchema.typeval.in_(typevals))
+             )
+
+    return [service_converter.to_model(row) for row in query]
+
+
+@daosession
+def find_all_forward_extensions(session):
+    typevals = fwd_converter.typevals()
+    query = (session.query(ExtensionSchema.id,
+                           ExtensionSchema.exten,
+                           ExtensionSchema.typeval)
+             .filter(ExtensionSchema.commented == 0)
+             .filter(ExtensionSchema.type == 'extenfeatures')
+             .filter(ExtensionSchema.typeval.in_(typevals))
+             )
+
+    return [fwd_converter.to_model(row) for row in query]
+
+
+@daosession
+def find_all_agent_action_extensions(session):
+    typevals = agent_action_converter.typevals()
+    query = (session.query(ExtensionSchema.id,
+                           ExtensionSchema.exten,
+                           ExtensionSchema.typeval)
+             .filter(ExtensionSchema.commented == 0)
+             .filter(ExtensionSchema.type == 'extenfeatures')
+             .filter(ExtensionSchema.typeval.in_(typevals))
+             )
+
+    return [agent_action_converter.to_model(row) for row in query]
