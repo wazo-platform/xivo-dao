@@ -212,6 +212,9 @@ def find_features_settings(session):
         option = (row.var_name, row.var_val)
         if row.category == u'general':
             general_options.append(option)
+            if row.var_name == u'disconnect':
+                option = (u'atxferabort', row.var_val)
+                general_options.append(option)
         elif row.category == u'featuremap':
             featuremap_options.append(option)
 

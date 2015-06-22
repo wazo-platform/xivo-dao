@@ -382,6 +382,19 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         assert_that(settings['general_options'], contains_inanyorder(*expected_general))
         assert_that(settings['featuremap_options'], contains_inanyorder(*expected_featuremap))
 
+    def test_find_features_settings_atxfer_abort_same_as_disconnect(self):
+        self.add_features(var_name='disconnect',
+                          var_val='*0')
+
+        expected_general = [
+            ('disconnect', '*0'),
+            ('atxferabort', '*0'),
+        ]
+
+        settings = asterisk_conf_dao.find_features_settings()
+
+        assert_that(settings['general_options'], contains_inanyorder(*expected_general))
+
     def test_find_parking_settings(self):
         self.add_features(var_name='parkeddynamic',
                           var_val='no')
