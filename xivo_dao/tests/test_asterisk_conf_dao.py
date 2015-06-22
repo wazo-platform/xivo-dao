@@ -363,8 +363,8 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         self.add_features(var_name='parkext',
                           var_val='700')
         self.add_features(category='featuremap',
-                          var_name='disconnect',
-                          var_val='*0')
+                          var_name='atxfer',
+                          var_val='*2')
         self.add_features(category='featuremap',
                           var_name='automon',
                           var_val='*3')
@@ -373,7 +373,7 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
             ('atxfernoanswertimeout', '15'),
         ]
         expected_featuremap = [
-            ('disconnect', '*0'),
+            ('atxfer', '*2'),
             ('automon', '*3'),
         ]
 
@@ -383,17 +383,21 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         assert_that(settings['featuremap_options'], contains_inanyorder(*expected_featuremap))
 
     def test_find_features_settings_atxfer_abort_same_as_disconnect(self):
-        self.add_features(var_name='disconnect',
+        self.add_features(category='featuremap',
+                          var_name='disconnect',
                           var_val='*0')
 
         expected_general = [
-            ('disconnect', '*0'),
             ('atxferabort', '*0'),
+        ]
+        expected_featuremap = [
+            ('disconnect', '*0'),
         ]
 
         settings = asterisk_conf_dao.find_features_settings()
 
         assert_that(settings['general_options'], contains_inanyorder(*expected_general))
+        assert_that(settings['featuremap_options'], contains_inanyorder(*expected_featuremap))
 
     def test_find_parking_settings(self):
         self.add_features(var_name='parkeddynamic',
