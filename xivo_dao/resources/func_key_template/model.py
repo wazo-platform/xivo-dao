@@ -26,7 +26,7 @@ class FuncKeyTemplate(NewModel):
               'private',
               'keys']
 
-    MANDATORY = ['name']
+    MANDATORY = []
 
     _RELATION = {}
 

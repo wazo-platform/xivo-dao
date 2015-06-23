@@ -80,8 +80,7 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
                                      for key, value in self.destination_types.iteritems()}
 
     def build_template_with_key(self, destination, position=1):
-        return FuncKeyTemplate(name='foobar',
-                               keys={position: FuncKey(destination=destination)})
+        return FuncKeyTemplate(keys={position: FuncKey(destination=destination)})
 
     def assert_mapping_has_destination(self, destination_type, destination_row, position=1):
         mapping_row = (self.session.query(FuncKeyMappingSchema)
@@ -94,7 +93,19 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
         destination_type_id = self.destination_type_ids[destination_type]
         assert_that(mapping_row.destination_type_id, equal_to(destination_type_id))
 
-    def test_when_creating_a_template_then_template_row(self):
+    def test_when_creating_an_empty_template_then_template_row(self):
+        template = FuncKeyTemplate()
+
+        result = dao.create(template)
+
+        template_row = self.session.query(FuncKeyTemplateSchema).first()
+
+        assert_that(template_row.name, none())
+        assert_that(result.name, none())
+        assert_that(result.id, equal_to(template_row.id))
+        assert_that(result.keys, equal_to({}))
+
+    def test_when_creating_a_template_with_name_then_row_has_name(self):
         template = FuncKeyTemplate(name='foobar')
 
         result = dao.create(template)
@@ -102,8 +113,7 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
         template_row = self.session.query(FuncKeyTemplateSchema).first()
 
         assert_that(template_row.name, equal_to(template.name))
-        assert_that(result.name, equal_to(template_row.name))
-        assert_that(result.id, equal_to(template_row.id))
+        assert_that(result.name, equal_to(template.name))
 
     def test_given_template_has_user_func_key_when_creating_then_creates_mapping(self):
         destination_row = self.create_user_func_key()
@@ -254,9 +264,9 @@ class TestFuncKeyTemplateGet(TestFuncKeyTemplateDao):
                     raises(NotFoundError))
 
     def test_given_empty_template_when_getting_then_returns_empty_template(self):
-        template_row = self.add_func_key_template(name='foobar')
+        template_row = self.add_func_key_template()
 
-        expected = FuncKeyTemplate(id=template_row.id, name='foobar')
+        expected = FuncKeyTemplate(id=template_row.id)
 
         result = dao.get(template_row.id)
 
