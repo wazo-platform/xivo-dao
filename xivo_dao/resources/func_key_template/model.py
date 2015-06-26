@@ -37,5 +37,6 @@ class FuncKeyTemplate(NewModel):
 
     def merge(self, other):
         keys = dict(self.keys)
-        keys.update(other.keys)
+        other_keys = other.keys
+        keys.update(other_keys)
         return FuncKeyTemplate(keys=keys)

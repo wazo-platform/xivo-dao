@@ -56,11 +56,12 @@ class TestFuncKeyTemplateDao(DAOTestCase, FuncKeyHelper):
         self.add_destination_to_template(destination_row, template_row, position)
         return UserFuncKey(id=destination_row.func_key_id)
 
-    def prepare_template(self, destination_row=None, destination=None, name=None, position=1):
-        template_row = self.add_func_key_template(name=name)
+    def prepare_template(self, destination_row=None, destination=None, name=None, position=1, private=False):
+        template_row = self.add_func_key_template(name=name, private=private)
 
         template = FuncKeyTemplate(id=template_row.id,
-                                   name=template_row.name)
+                                   name=template_row.name,
+                                   private=private)
 
         if destination_row and destination:
             self.add_destination_to_template(destination_row, template_row)
@@ -315,6 +316,28 @@ class TestFuncKeyTemplateGet(TestFuncKeyTemplateDao):
         expected = FuncKeyTemplate(id=template_row.id)
 
         result = dao.get(template_row.id)
+
+        assert_that(expected, equal_to(result))
+
+    def test_given_template_is_private_then_func_keys_are_not_inherited(self):
+        destination_row = self.create_user_func_key()
+        expected = self.prepare_template(destination_row,
+                                         UserDestination(user_id=destination_row.user_id),
+                                         private=True)
+        expected.keys[1].inherited = False
+
+        result = dao.get(expected.id)
+
+        assert_that(expected, equal_to(result))
+
+    def test_given_template_is_public_then_func_keys_are_inherited(self):
+        destination_row = self.create_user_func_key()
+        expected = self.prepare_template(destination_row,
+                                         UserDestination(user_id=destination_row.user_id),
+                                         private=False)
+        expected.keys[1].inherited = True
+
+        result = dao.get(expected.id)
 
         assert_that(expected, equal_to(result))
 
