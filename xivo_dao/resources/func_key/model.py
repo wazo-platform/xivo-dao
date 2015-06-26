@@ -123,7 +123,7 @@ class ForwardDestination(Model):
               'exten',
               'extension_id']
 
-    MANDATORY = ['forward', 'exten']
+    MANDATORY = ['forward']
 
 
 class TransferDestination(Model):
