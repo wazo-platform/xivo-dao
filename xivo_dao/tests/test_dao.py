@@ -83,7 +83,7 @@ from sqlalchemy import event
 
 logger = logging.getLogger(__name__)
 
-_expensive_setup_has_run = False
+_create_tables = True
 _tables = []
 
 TEST_DB_URL = os.getenv('XIVO_TEST_DB_URL', 'postgresql://asterisk:asterisk@localhost/asterisktest')
@@ -93,9 +93,10 @@ engine = create_engine(TEST_DB_URL)
 
 
 def expensive_setup():
-    global _expensive_setup_has_run
-    _init_tables()
-    _expensive_setup_has_run = True
+    global _create_tables
+    if _create_tables and (os.environ.get('CREATE_TABLES', '1') == '1'):
+        _init_tables()
+        _create_tables = False
 
 
 @trace_duration
@@ -119,8 +120,7 @@ def _init_tables():
 class DAOTestCase(unittest.TestCase):
 
     def setUp(self):
-        if not _expensive_setup_has_run:
-            expensive_setup()
+        expensive_setup()
 
         self.connection = engine.connect()
         self.trans = self.connection.begin()
