@@ -352,7 +352,6 @@ class ServicePersistor(DestinationPersistor):
         query = (self.session.query(FuncKeyDestService)
                  .join(Extension, FuncKeyDestService.extension_id == Extension.id)
                  .filter(Extension.type == 'extenfeatures')
-                 .filter(Extension.commented == 0)
                  .filter(Extension.typeval == destination.service)
                  )
 
@@ -399,8 +398,7 @@ class ForwardPersistor(DestinationPersistor):
 
         query = (self.session.query(Extension.id)
                  .filter(Extension.type == 'extenfeatures')
-                 .filter(Extension.typeval == typeval)
-                 .filter(Extension.commented == 0))
+                 .filter(Extension.typeval == typeval))
 
         return query.scalar()
 
@@ -498,7 +496,6 @@ class AgentPersistor(DestinationPersistor):
                  .filter(FuncKeyDestAgent.agent_id == destination.agent_id)
                  .filter(Extension.type == 'extenfeatures')
                  .filter(Extension.typeval == typeval)
-                 .filter(Extension.commented == 0)
                  )
 
         return query.first()
@@ -533,7 +530,6 @@ class FeaturesPersistor(DestinationPersistor):
         query = (self.session.query(FuncKeyDestFeatures)
                  .join(Features, FuncKeyDestFeatures.features_id == Features.id)
                  .filter(Features.var_name == varname)
-                 .filter(Features.commented == 0)
                  )
 
         return query.first()

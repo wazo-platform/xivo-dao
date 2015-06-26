@@ -217,7 +217,6 @@ def find_all_service_extensions(session):
     query = (session.query(ExtensionSchema.id,
                            ExtensionSchema.exten,
                            ExtensionSchema.typeval)
-             .filter(ExtensionSchema.commented == 0)
              .filter(ExtensionSchema.type == 'extenfeatures')
              .filter(ExtensionSchema.typeval.in_(typevals))
              )
@@ -231,7 +230,6 @@ def find_all_forward_extensions(session):
     query = (session.query(ExtensionSchema.id,
                            ExtensionSchema.exten,
                            ExtensionSchema.typeval)
-             .filter(ExtensionSchema.commented == 0)
              .filter(ExtensionSchema.type == 'extenfeatures')
              .filter(ExtensionSchema.typeval.in_(typevals))
              )
@@ -245,7 +243,6 @@ def find_all_agent_action_extensions(session):
     query = (session.query(ExtensionSchema.id,
                            ExtensionSchema.exten,
                            ExtensionSchema.typeval)
-             .filter(ExtensionSchema.commented == 0)
              .filter(ExtensionSchema.type == 'extenfeatures')
              .filter(ExtensionSchema.typeval.in_(typevals))
              )

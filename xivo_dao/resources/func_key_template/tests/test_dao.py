@@ -178,6 +178,14 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
         self.assert_mapping_has_destination('service', destination_row)
         assert_that(result.keys[1].id, equal_to(destination_row.func_key_id))
 
+    def test_given_template_has_commented_service_func_key_when_creating_then_creates_mapping(self):
+        destination_row = self.create_service_func_key('*20', 'enablednd', commented=1)
+        template = self.build_template_with_key(ServiceDestination(service='enablednd'))
+
+        dao.create(template)
+
+        self.assert_mapping_has_destination('service', destination_row)
+
     def test_given_template_has_forward_func_key_when_creating_then_creates_mapping(self):
         extension_row = self.add_extenfeatures('*21', 'fwdbusy')
 
@@ -202,6 +210,16 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
         destination_row = self.find_destination('forward', extension_row.id)
         assert_that(destination_row.number, equal_to('1000'))
         assert_that(result.keys[1].id, equal_to(destination_row.func_key_id))
+
+    def test_given_template_has_commented_forward_func_key_when_creating_then_creates_destination(self):
+        extension_row = self.add_extenfeatures('*22', 'fwdrna', commented=1)
+
+        template = self.build_template_with_key(ForwardDestination(forward='noanswer'))
+
+        dao.create(template)
+
+        destination_row = self.find_destination('forward', extension_row.id)
+        self.assert_mapping_has_destination('forward', destination_row)
 
     def test_given_template_has_park_position_func_key_when_creating_then_creates_mapping(self):
         template = self.build_template_with_key(ParkPositionDestination(position=701))
@@ -236,6 +254,16 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
         self.assert_mapping_has_destination('agent', destination_row)
         assert_that(result.keys[1].id, equal_to(destination_row.func_key_id))
 
+    def test_given_template_has_commented_agent_func_key_when_creating_then_creates_mapping(self):
+        destination_row = self.create_agent_func_key('_*31.', 'agentstaticlogin', commented=1)
+
+        template = self.build_template_with_key(AgentDestination(action='login',
+                                                                 agent_id=destination_row.agent_id))
+
+        dao.create(template)
+
+        self.assert_mapping_has_destination('agent', destination_row)
+
     def test_given_template_has_transfer_func_key_when_creating_then_creates_mapping(self):
         destination_row = self.create_features_func_key('featuremap', 'blindxfer', '*1')
 
@@ -246,6 +274,15 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
         self.assert_mapping_has_destination('features', destination_row)
         assert_that(result.keys[1].id, equal_to(destination_row.func_key_id))
 
+    def test_given_template_has_commented_transfer_func_key_when_creating_then_creates_mapping(self):
+        destination_row = self.create_features_func_key('featuremap', 'blindxfer', '*1', commented=1)
+
+        template = self.build_template_with_key(TransferDestination(transfer='blind'))
+
+        dao.create(template)
+
+        self.assert_mapping_has_destination('features', destination_row)
+
     def test_given_template_has_parking_destination_when_creating_then_creates_mapping(self):
         destination_row = self.create_features_func_key('general', 'parkext', '700')
 
@@ -255,6 +292,15 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
 
         self.assert_mapping_has_destination('features', destination_row)
         assert_that(result.keys[1].id, equal_to(destination_row.func_key_id))
+
+    def test_given_template_has_commented_parking_destination_when_creating_then_creates_mapping(self):
+        destination_row = self.create_features_func_key('general', 'parkext', '700', commented=1)
+
+        template = self.build_template_with_key(ParkingDestination())
+
+        dao.create(template)
+
+        self.assert_mapping_has_destination('features', destination_row)
 
 
 class TestFuncKeyTemplateGet(TestFuncKeyTemplateDao):

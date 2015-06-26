@@ -485,18 +485,38 @@ class TestFindAllServiceExtensions(DAOTestCase):
                 ("*27", "incallfilter"),
                 ("*25", "enablednd")]
 
+    EXPECTED_SERVICES = [("*90", "enablevm"),
+                         ("*98", "vmusermsg"),
+                         ("*92", "vmuserpurge"),
+                         ("*10", "phonestatus"),
+                         ("*9", "recsnd"),
+                         ("*34", "calllistening"),
+                         ("*36", "directoryaccess"),
+                         ("*20", "fwdundoall"),
+                         ("*8", "pickup"),
+                         ("*26", "callrecord"),
+                         ("*27", "incallfilter"),
+                         ("*25", "enablednd"),
+                         ("*20", "fwdundoall")]
+
     def prepare_extensions(self):
         service_extensions = []
 
         for exten, service in self.SERVICES:
-            extension_row = self.add_extension(type='extenfeatures',
-                                               context='xivo-features',
-                                               exten=exten,
-                                               typeval=service)
+            self.add_extension(type='extenfeatures',
+                               context='xivo-features',
+                               exten=exten,
+                               typeval=service)
 
-            service_extension = ServiceExtension(id=extension_row.id,
-                                                 exten=extension_row.exten,
-                                                 service=extension_row.typeval)
+        for exten, service in self.EXPECTED_SERVICES:
+            exten_id = (self.session
+                        .query(ExtensionSchema.id)
+                        .filter(ExtensionSchema.typeval == service)
+                        .scalar())
+
+            service_extension = ServiceExtension(id=exten_id,
+                                                 exten=exten,
+                                                 service=service)
 
             service_extensions.append(service_extension)
 
@@ -514,16 +534,20 @@ class TestFindAllServiceExtensions(DAOTestCase):
 
         assert_that(result, has_items(*expected))
 
-    def test_given_extension_is_commented_then_returns_empty_list(self):
-        self.add_extension(type='extenfeatures',
-                           context='xivo-features',
-                           exten='*92',
-                           typeval='vmuserpurge',
-                           commented=1)
+    def test_given_extension_is_commented_then_returns_extension(self):
+        extension_row = self.add_extension(type='extenfeatures',
+                                           context='xivo-features',
+                                           exten='*92',
+                                           typeval='vmuserpurge',
+                                           commented=1)
+
+        expected = ServiceExtension(id=extension_row.id,
+                                    exten=extension_row.exten,
+                                    service=extension_row.typeval)
 
         result = extension_dao.find_all_service_extensions()
 
-        assert_that(result, contains())
+        assert_that(result, contains(expected))
 
 
 class TestFindAllForwardExtensions(DAOTestCase):
@@ -572,16 +596,20 @@ class TestFindAllForwardExtensions(DAOTestCase):
 
         assert_that(result, has_items(*expected))
 
-    def test_given_extension_is_commented_then_returns_empty_list(self):
-        self.add_extension(type='extenfeatures',
-                           context='xivo-features',
-                           exten='_*23.',
-                           typeval='fwdbusy',
-                           commented=1)
+    def test_given_extension_is_commented_then_returns_extension(self):
+        extension_row = self.add_extension(type='extenfeatures',
+                                           context='xivo-features',
+                                           exten='_*23.',
+                                           typeval='fwdbusy',
+                                           commented=1)
+
+        expected = ForwardExtension(id=extension_row.id,
+                                    exten='*23',
+                                    forward='busy')
 
         result = extension_dao.find_all_forward_extensions()
 
-        assert_that(result, contains())
+        assert_that(result, contains(expected))
 
 
 class TestFindAllAgentActionExtensions(DAOTestCase):
@@ -630,16 +658,20 @@ class TestFindAllAgentActionExtensions(DAOTestCase):
 
         assert_that(result, has_items(*expected))
 
-    def test_given_extension_is_commented_then_returns_empty_list(self):
-        self.add_extension(type='extenfeatures',
-                           context='xivo-features',
-                           exten='_*30.',
-                           typeval='agentstaticlogtoggle',
-                           commented=1)
+    def test_given_extension_is_commented_then_returns_extension(self):
+        extension_row = self.add_extension(type='extenfeatures',
+                                           context='xivo-features',
+                                           exten='_*30.',
+                                           typeval='agentstaticlogtoggle',
+                                           commented=1)
+
+        expected = AgentActionExtension(id=extension_row.id,
+                                        exten='*30',
+                                        action='toggle')
 
         result = extension_dao.find_all_agent_action_extensions()
 
-        assert_that(result, contains())
+        assert_that(result, contains(expected))
 
 
 class TestGetByType(DAOTestCase):

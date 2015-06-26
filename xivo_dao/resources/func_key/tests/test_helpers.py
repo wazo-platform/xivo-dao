@@ -203,10 +203,11 @@ class FuncKeyHelper(object):
         filter_member_row = self.add_filter_member(bsfilter_row.id, user_row.id, 'secretary')
         return filter_member_row, self.add_bsfilter_destination(filter_member_row.id)
 
-    def create_features_func_key(self, category, name, value):
+    def create_features_func_key(self, category, name, value, commented=0):
         features_row = self.add_features(category=category,
                                          var_name=name,
-                                         var_val=value)
+                                         var_val=value,
+                                         commented=commented)
         return self.add_features_destination(features_row.id)
 
     def create_park_position_func_key(self, position):
