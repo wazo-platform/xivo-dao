@@ -99,3 +99,4 @@ missing_association = FormattedError(ResourceError, "{} must be associated with 
 missing_cti_parameters = FormattedError(ResourceError, "User must have a username and password to enable a CtiProfile")
 unhandled_context_type = FormattedError(ResourceError, "ContextType '{}' cannot be associated")
 secondary_users = FormattedError(ResourceError, "There are secondary users associated to the line")
+not_permitted = FormattedError(ResourceError, "Operation not permitted. {}")
