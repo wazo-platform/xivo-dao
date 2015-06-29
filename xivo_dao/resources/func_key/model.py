@@ -192,6 +192,9 @@ class ParkingDestination(Destination):
 
     MANDATORY = []
 
+    def to_tuple(self):
+        return (('feature', 'parking'),)
+
 
 class OnlineRecordingDestination(Destination):
 
@@ -200,6 +203,9 @@ class OnlineRecordingDestination(Destination):
     FIELDS = ['feature_id']
 
     MANDATORY = []
+
+    def to_tuple(self):
+        return (('feature', 'onlinerec'),)
 
 
 class UserFuncKey(Model):
