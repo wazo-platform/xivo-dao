@@ -36,7 +36,7 @@ from xivo_dao.resources.func_key.model import UserFuncKey
 from xivo_dao.resources.func_key.model import FuncKey, \
     UserDestination, QueueDestination, GroupDestination, ConferenceDestination, PagingDestination, \
     BSFilterDestination, CustomDestination, ServiceDestination, TransferDestination, ForwardDestination, \
-    AgentDestination, ParkPositionDestination, ParkingDestination
+    AgentDestination, ParkPositionDestination, ParkingDestination, OnlineRecordingDestination
 
 
 class TestFuncKeyTemplateDao(DAOTestCase, FuncKeyHelper):
@@ -304,6 +304,16 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
         dao.create(template)
 
         self.assert_mapping_has_destination('features', destination_row)
+
+    def test_given_template_has_onlinerec_destination_when_creating_then_creates_mapping(self):
+        destination_row = self.create_features_func_key('features.conf', 'automon', '*3')
+
+        template = self.build_template_with_key(OnlineRecordingDestination())
+
+        result = dao.create(template)
+
+        self.assert_mapping_has_destination('features', destination_row)
+        assert_that(result.keys[1].id, equal_to(destination_row.func_key_id))
 
 
 class TestFuncKeyTemplateGet(TestFuncKeyTemplateDao):

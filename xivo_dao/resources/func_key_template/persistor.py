@@ -60,6 +60,7 @@ def build_persistor(session):
                               'transfer': FeaturesPersistor,
                               'parking': FeaturesPersistor,
                               'features': FeaturesPersistor,
+                              'onlinerec': FeaturesPersistor,
                               }
     return FuncKeyPersistor(session, destination_persistors)
 
@@ -528,6 +529,8 @@ class FeaturesPersistor(DestinationPersistor):
 
         if row.var_name == 'parkext':
             return fk_model.ParkingDestination(feature_id=row.id)
+        elif row.var_name == 'automon':
+            return fk_model.OnlineRecordingDestination(feature_id=row.id)
 
         transfer = TransferExtensionConverter().to_transfer(row.var_name)
         return fk_model.TransferDestination(transfer=transfer,
@@ -548,6 +551,8 @@ class FeaturesPersistor(DestinationPersistor):
             return TransferExtensionConverter().to_var_name(destination.transfer)
         elif destination.type == 'parking':
             return 'parkext'
+        elif destination.type == 'onlinerec':
+            return 'automon'
 
     def delete(self, func_key_id):
         pass

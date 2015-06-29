@@ -193,6 +193,15 @@ class ParkingDestination(Destination):
     MANDATORY = []
 
 
+class OnlineRecordingDestination(Destination):
+
+    type = 'onlinerec'
+
+    FIELDS = ['feature_id']
+
+    MANDATORY = []
+
+
 class UserFuncKey(Model):
 
     MANDATORY = [
