@@ -30,6 +30,7 @@ from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping as FuncKeyMappingSc
 
 from xivo_dao.resources.func_key_template import dao
 from xivo_dao.resources.func_key_template.model import FuncKeyTemplate
+from xivo_dao.resources.utils.search import SearchResult
 
 from xivo_dao.resources.func_key.model import UserFuncKey
 from xivo_dao.resources.func_key.model import FuncKey, \
@@ -708,3 +709,31 @@ class TestDeletePrivateTemplate(TestFuncKeyTemplateDao):
         dao.delete_private_template(template_id)
 
         commit_or_abort.assert_called_with(ANY, DataError.on_delete, 'FuncKeyTemplate')
+
+
+class TestFuncKeyTemplateSearch(TestFuncKeyTemplateDao):
+
+    def assert_search_returns_result(self, search_result, **parameters):
+        result = dao.search(**parameters)
+        assert_that(result, equal_to(search_result))
+
+    def test_given_no_templates_then_returns_empty_search_result(self):
+        expected = SearchResult(0, [])
+
+        self.assert_search_returns_result(expected)
+
+    def test_given_one_template_with_func_key_then_returns_one_result(self):
+        destination_row = self.create_user_func_key()
+        template = self.prepare_template(destination_row,
+                                         UserDestination(user_id=destination_row.user_id))
+
+        expected = SearchResult(1, [template])
+
+        self.assert_search_returns_result(expected)
+
+    def test_given_private_template_then_returns_empty_result(self):
+        self.add_func_key_template(private=True)
+
+        expected = SearchResult(0, [])
+
+        self.assert_search_returns_result(expected)
