@@ -156,6 +156,7 @@ class FuncKeyPersistor(object):
     def delete(self, template):
         self.remove_funckeys(template)
         self.delete_template(template)
+        self.session.flush()
 
     def remove_funckeys(self, template):
         for row in self.query_mappings(template.id):

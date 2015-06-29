@@ -24,6 +24,7 @@ from xivo_dao.helpers.exception import DataError
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 
+from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate as FuncKeyTemplateSchema
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping as FuncKeyMappingSchema
 
@@ -519,6 +520,18 @@ class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
 
         self.assert_destination_deleted('custom', destination_row.exten)
         self.assert_func_key_deleted(destination_row.func_key_id)
+
+    def test_given_template_is_associated_to_user_when_deleting_then_dissociates_user(self):
+        template_row = self.add_func_key_template()
+        user_row = self.add_user(func_key_template_id=template_row.id)
+
+        template = FuncKeyTemplate(id=template_row.id)
+        dao.delete(template)
+
+        func_key_template_id = (self.session.
+                                query(UserSchema.func_key_template_id)
+                                .filter(UserSchema.id == user_row.id).scalar())
+        assert_that(func_key_template_id, none())
 
 
 class TestFuncKeyTemplateEdit(TestFuncKeyTemplateDao):

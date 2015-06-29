@@ -98,7 +98,7 @@ class UserFeatures(Base):
     rightcallcode = Column(String(16))
     commented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text, nullable=False, default='')
-    func_key_template_id = Column(Integer, ForeignKey('func_key_template.id'))
+    func_key_template_id = Column(Integer, ForeignKey('func_key_template.id', ondelete="SET NULL"))
     func_key_private_template_id = Column(Integer, ForeignKey('func_key_template.id'), nullable=False)
 
     func_key_template = relationship("FuncKeyTemplate", foreign_keys=func_key_template_id)
