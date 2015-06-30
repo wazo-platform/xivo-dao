@@ -22,6 +22,10 @@ from xivo_dao.resources.extension.model import Extension, ForwardExtension, \
     ServiceExtension, AgentActionExtension
 
 
+def clean_exten(exten):
+    return exten.strip('_.')
+
+
 class ServiceExtensionConverter(object):
 
     SERVICES = ("enablevm",
@@ -42,8 +46,9 @@ class ServiceExtensionConverter(object):
         return cls.SERVICES
 
     def to_model(self, row):
+        exten = clean_exten(row.exten)
         return ServiceExtension(id=row.id,
-                                exten=row.exten,
+                                exten=exten,
                                 service=row.typeval)
 
 
@@ -66,13 +71,10 @@ class ForwardExtensionConverter(object):
 
     def to_model(self, row):
         forward = self.FORWARDS[row.typeval]
-        exten = self.clean_exten(row.exten)
+        exten = clean_exten(row.exten)
         return ForwardExtension(id=row.id,
                                 exten=exten,
                                 forward=forward)
-
-    def clean_exten(self, exten):
-        return exten.strip('._')
 
 
 class AgentActionExtensionConverter(object):
@@ -94,13 +96,10 @@ class AgentActionExtensionConverter(object):
 
     def to_model(self, row):
         action = self.ACTIONS[row.typeval]
-        exten = self.clean_exten(row.exten)
+        exten = clean_exten(row.exten)
         return AgentActionExtension(id=row.id,
                                     exten=exten,
                                     action=action)
-
-    def clean_exten(self, exten):
-        return exten.strip('._')
 
 
 class ExtensionDatabaseConverter(DatabaseConverter):

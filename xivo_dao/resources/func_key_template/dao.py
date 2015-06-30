@@ -17,10 +17,26 @@
 
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.helpers.db_utils import commit_or_abort
+
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate as FuncKeyTemplateSchema
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping as FuncKeyMappingSchema
+
 from xivo_dao.helpers.exception import DataError
+
+from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.resources.func_key_template.persistor import build_persistor
+from xivo_dao.resources.func_key_template.search import template_search
+
+
+@daosession
+def search(session, **parameters):
+    persistor = build_persistor(session)
+
+    query = session.query(FuncKeyTemplateSchema.id)
+    rows, total = template_search.search_from_query(query, parameters)
+
+    items = [persistor.get(row.id) for row in rows]
+    return SearchResult(total=total, items=items)
 
 
 @daosession

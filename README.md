@@ -12,6 +12,9 @@ Running unit tests
 3. Create a test database
 4. Run the tests with ```nosetests xivo_dao```
 
+To execute tests slightly faster, you can avoid recreating all the tables in the
+database by passing ```CREATE_TABLES=0``` on the command line
+
 Creating the test database
 --------------------------
 

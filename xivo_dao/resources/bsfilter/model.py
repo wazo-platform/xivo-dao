@@ -16,27 +16,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from xivo_dao.helpers.new_model import NewModel
+from collections import namedtuple
 
 
-class FuncKeyTemplate(NewModel):
-
-    FIELDS = ['id',
-              'name',
-              'private',
-              'keys']
-
-    MANDATORY = []
-
-    _RELATION = {}
-
-    def __init__(self, **parameters):
-        parameters.setdefault('keys', {})
-        parameters.setdefault('private', False)
-        super(FuncKeyTemplate, self).__init__(**parameters)
-
-    def merge(self, other):
-        keys = dict(self.keys)
-        other_keys = other.keys
-        keys.update(other_keys)
-        return FuncKeyTemplate(keys=keys)
+FilterMember = namedtuple('FilterMember', ['id', 'member_id', 'role'])

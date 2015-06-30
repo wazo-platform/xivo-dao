@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+import abc
+
 from collections import namedtuple
 
 from xivo_dao.helpers.new_model import NewModel
@@ -41,8 +43,24 @@ class FuncKey(Model):
         parameters.setdefault('inherited', True)
         super(FuncKey, self).__init__(**parameters)
 
+    def hash_destination(self):
+        return self.destination.to_tuple()
 
-class UserDestination(Model):
+
+class Destination(Model):
+
+    __metaclass__ = abc.ABCMeta
+
+    @abc.abstractproperty
+    def type(self):
+        return
+
+    def to_tuple(self):
+        parameters = ((key, getattr(self, key)) for key in self.FIELDS)
+        return tuple(sorted(parameters))
+
+
+class UserDestination(Destination):
 
     type = 'user'
 
@@ -51,7 +69,7 @@ class UserDestination(Model):
     MANDATORY = ['user_id']
 
 
-class GroupDestination(Model):
+class GroupDestination(Destination):
 
     type = 'group'
 
@@ -60,7 +78,7 @@ class GroupDestination(Model):
     MANDATORY = ['group_id']
 
 
-class QueueDestination(Model):
+class QueueDestination(Destination):
 
     type = 'queue'
 
@@ -69,7 +87,7 @@ class QueueDestination(Model):
     MANDATORY = ['queue_id']
 
 
-class ConferenceDestination(Model):
+class ConferenceDestination(Destination):
 
     type = 'conference'
 
@@ -78,7 +96,7 @@ class ConferenceDestination(Model):
     MANDATORY = ['conference_id']
 
 
-class PagingDestination(Model):
+class PagingDestination(Destination):
 
     type = 'paging'
 
@@ -87,7 +105,7 @@ class PagingDestination(Model):
     MANDATORY = ['paging_id']
 
 
-class BSFilterDestination(Model):
+class BSFilterDestination(Destination):
 
     type = 'bsfilter'
 
@@ -96,7 +114,7 @@ class BSFilterDestination(Model):
     MANDATORY = ['filter_member_id']
 
 
-class CustomDestination(Model):
+class CustomDestination(Destination):
 
     type = 'custom'
 
@@ -105,7 +123,7 @@ class CustomDestination(Model):
     MANDATORY = ['exten']
 
 
-class ServiceDestination(Model):
+class ServiceDestination(Destination):
 
     type = 'service'
 
@@ -114,8 +132,11 @@ class ServiceDestination(Model):
 
     MANDATORY = ['service']
 
+    def to_tuple(self):
+        return (('service', self.service),)
 
-class ForwardDestination(Model):
+
+class ForwardDestination(Destination):
 
     type = 'forward'
 
@@ -123,10 +144,13 @@ class ForwardDestination(Model):
               'exten',
               'extension_id']
 
-    MANDATORY = ['forward', 'exten']
+    MANDATORY = ['forward']
+
+    def to_tuple(self):
+        return (('exten', self.exten), ('forward', self.forward))
 
 
-class TransferDestination(Model):
+class TransferDestination(Destination):
 
     type = 'transfer'
 
@@ -135,8 +159,11 @@ class TransferDestination(Model):
 
     MANDATORY = ['transfer']
 
+    def to_tuple(self):
+        return (('transfer', self.transfer),)
 
-class AgentDestination(Model):
+
+class AgentDestination(Destination):
 
     type = 'agent'
 
@@ -144,8 +171,11 @@ class AgentDestination(Model):
 
     MANDATORY = ['action', 'agent_id']
 
+    def to_tuple(self):
+        return (('action', self.action), ('agent_id', self.agent_id))
 
-class ParkPositionDestination(Model):
+
+class ParkPositionDestination(Destination):
 
     type = 'park_position'
 
@@ -154,13 +184,28 @@ class ParkPositionDestination(Model):
     MANDATORY = ['position']
 
 
-class ParkingDestination(Model):
+class ParkingDestination(Destination):
 
     type = 'parking'
 
     FIELDS = ['feature_id']
 
     MANDATORY = []
+
+    def to_tuple(self):
+        return (('feature', 'parking'),)
+
+
+class OnlineRecordingDestination(Destination):
+
+    type = 'onlinerec'
+
+    FIELDS = ['feature_id']
+
+    MANDATORY = []
+
+    def to_tuple(self):
+        return (('feature', 'onlinerec'),)
 
 
 class UserFuncKey(Model):
