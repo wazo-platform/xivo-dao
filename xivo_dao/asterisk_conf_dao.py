@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -179,18 +179,75 @@ def find_sccp_speeddial_settings(session):
     return keys
 
 
+_PARKING_OPTIONS = [
+    'comebacktoorigin',
+    'context',
+    'courtesytone',
+    'findslot',
+    'parkedcallhangup',
+    'parkedcallrecording',
+    'parkedcallreparking',
+    'parkedcalltransfers',
+    'parkeddynamic',
+    'parkedmusicclass',
+    'parkedplay',
+    'parkext',
+    'parkinghints',
+    'parkingtime',
+    'parkpos',
+]
+
 @daosession
-def find_featuremap_features_settings(session):
-    rows = session.query(Features).filter(and_(Features.commented == 0, Features.category == 'featuremap')).all()
+def find_features_settings(session):
+    rows = (session.query(Features.category, Features.var_name, Features.var_val)
+            .filter(and_(Features.commented == 0,
+                         or_(and_(Features.category == 'general',
+                                  ~Features.var_name.in_(_PARKING_OPTIONS)),
+                             Features.category == 'featuremap')))
+            .all())
 
-    return [row.todict() for row in rows]
+    general_options = []
+    featuremap_options = []
+    for row in rows:
+        option = (row.var_name, row.var_val)
+        if row.category == u'general':
+            general_options.append(option)
+        elif row.category == u'featuremap':
+            featuremap_options.append(option)
+            if row.var_name == u'disconnect':
+                option = (u'atxferabort', row.var_val)
+                general_options.append(option)
+
+    return {
+        'general_options': general_options,
+        'featuremap_options': featuremap_options,
+    }
 
 
 @daosession
-def find_general_features_settings(session):
-    rows = session.query(Features).filter(and_(Features.commented == 0, Features.category == 'general')).all()
+def find_parking_settings(session):
+    rows = (session.query(Features.var_name, Features.var_val)
+            .filter(and_(Features.commented == 0,
+                         Features.category == 'general',
+                         Features.var_name.in_(_PARKING_OPTIONS)))
+            .all())
 
-    return [row.todict() for row in rows]
+    general_options = []
+    default_parking_lot_options = []
+    for row in rows:
+        option = (row.var_name, row.var_val)
+        if row.var_name == u'parkeddynamic':
+            general_options.append(option)
+        else:
+            default_parking_lot_options.append(option)
+
+    return {
+        'general_options': general_options,
+        'parking_lots': [{
+              'name': u'default',
+              'options': default_parking_lot_options,
+        }],
+    }
 
 
 @daosession

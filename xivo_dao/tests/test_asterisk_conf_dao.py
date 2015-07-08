@@ -23,7 +23,6 @@ from hamcrest import assert_that, contains, equal_to, has_entries, contains_inan
 from mock import patch
 from xivo_dao import asterisk_conf_dao
 from xivo_dao.alchemy.agentqueueskill import AgentQueueSkill
-from xivo_dao.alchemy.features import Features
 from xivo_dao.alchemy.iaxcallnumberlimits import IAXCallNumberLimits
 from xivo_dao.alchemy.queuepenalty import QueuePenalty
 from xivo_dao.alchemy.queuepenaltychange import QueuePenaltyChange
@@ -358,81 +357,68 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
 
         assert_that(pickup_members, equal_to(expected))
 
-    def test_find_featuremap_features_settings(self):
-        features = Features(id=1,
-                            category='featuremap',
-                            filename='features.conf',
-                            var_name='disconnect',
-                            var_val='*0')
-        self.add_me(features)
+    def test_find_features_settings(self):
+        self.add_features(var_name='atxfernoanswertimeout',
+                          var_val='15')
+        self.add_features(var_name='parkext',
+                          var_val='700')
+        self.add_features(category='featuremap',
+                          var_name='atxfer',
+                          var_val='*2')
+        self.add_features(category='featuremap',
+                          var_name='automon',
+                          var_val='*3')
 
-        features = Features(id=2,
-                            category='featuremap',
-                            filename='features.conf',
-                            var_name='automon',
-                            var_val='*3')
-        self.add_me(features)
-
-        expected_result = [
-            {'category': u'featuremap',
-             'cat_metric': 0,
-             'filename': u'features.conf',
-             'var_metric': 0,
-             'var_name': u'disconnect',
-             'var_val': u'*0',
-             'id': 1,
-             'commented': 0},
-            {'category': u'featuremap',
-             'cat_metric': 0,
-             'filename': u'features.conf',
-             'var_metric': 0,
-             'var_name': u'automon',
-             'var_val': u'*3',
-             'id': 2,
-             'commented': 0}
+        expected_general = [
+            ('atxfernoanswertimeout', '15'),
+        ]
+        expected_featuremap = [
+            ('atxfer', '*2'),
+            ('automon', '*3'),
         ]
 
-        featuremap = asterisk_conf_dao.find_featuremap_features_settings()
+        settings = asterisk_conf_dao.find_features_settings()
 
-        assert_that(featuremap, contains_inanyorder(*expected_result))
+        assert_that(settings['general_options'], contains_inanyorder(*expected_general))
+        assert_that(settings['featuremap_options'], contains_inanyorder(*expected_featuremap))
 
-    def test_find_general_features_settings(self):
-        features = Features(id=1,
-                            category='general',
-                            filename='features.conf',
-                            var_name='atxfernoanswertimeout',
-                            var_val='15')
-        self.add_me(features)
+    def test_find_features_settings_atxfer_abort_same_as_disconnect(self):
+        self.add_features(category='featuremap',
+                          var_name='disconnect',
+                          var_val='*0')
 
-        features = Features(id=2,
-                            category='general',
-                            filename='features.conf',
-                            var_name='atxferdropcall',
-                            var_val='10')
-        self.add_me(features)
-
-        expected_result = [
-            {'category': u'general',
-             'cat_metric': 0,
-             'filename': u'features.conf',
-             'var_metric': 0,
-             'var_name': u'atxfernoanswertimeout',
-             'var_val': u'15',
-             'id': 1,
-             'commented': 0},
-            {'category': u'general',
-             'cat_metric': 0,
-             'filename': u'features.conf',
-             'var_metric': 0,
-             'var_name': u'atxferdropcall',
-             'var_val': u'10',
-             'id': 2,
-             'commented': 0}
+        expected_general = [
+            ('atxferabort', '*0'),
+        ]
+        expected_featuremap = [
+            ('disconnect', '*0'),
         ]
 
-        featuremap = asterisk_conf_dao.find_general_features_settings()
+        settings = asterisk_conf_dao.find_features_settings()
 
-        assert_that(featuremap, contains_inanyorder(*expected_result))
+        assert_that(settings['general_options'], contains_inanyorder(*expected_general))
+        assert_that(settings['featuremap_options'], contains_inanyorder(*expected_featuremap))
+
+    def test_find_parking_settings(self):
+        self.add_features(var_name='parkeddynamic',
+                          var_val='no')
+        self.add_features(var_name='atxferdropcall',
+                          var_val='no')
+        self.add_features(var_name='parkext',
+                          var_val='700')
+
+        expected_general = [
+            ('parkeddynamic', 'no'),
+        ]
+        expected_parking_lots = [{
+            'name': u'default',
+            'options': [('parkext', '700')],
+        }]
+
+        settings = asterisk_conf_dao.find_parking_settings()
+
+        assert_that(settings['general_options'], contains_inanyorder(*expected_general))
+        assert_that(settings['parking_lots'], equal_to(expected_parking_lots))
 
     def test_find_exten_conferences_settings(self):
         conference = self.add_meetmefeatures(context='test')
@@ -1228,7 +1214,6 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
                 'queue-holdtime': None,
                 'monitor-type': None,
                 'joinempty': None,
-                'eventwhencalled': 0,
                 'announce-frequency': None,
                 'category': queue1.category,
                 'retry': None,
@@ -1265,7 +1250,6 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
                 'queue-minutes': None,
                 'servicelevel': None,
                 'maxlen': None,
-                'eventmemberstatus': 0,
                 'context': None,
                 'queue-seconds': None,
                 'commented': 0,
