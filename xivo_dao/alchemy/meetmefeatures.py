@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2007-2014 Avencall
+# Copyright (C) 2007-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -47,9 +47,9 @@ class MeetmeFeatures(Base):
                                        metadata=Base.metadata),
                                   nullable=False)
     admin_mode = Column(Enum('listen', 'talk', 'all',
-                               name='meetmefeatures_mode',
-                               metadata=Base.metadata),
-                              nullable=False)
+                             name='meetmefeatures_mode',
+                             metadata=Base.metadata),
+                        nullable=False)
     admin_announceusercount = Column(Integer, nullable=False, server_default='0')
     admin_announcejoinleave = Column(Enum('no', 'yes', 'noreview',
                                           name='meetmefeatures_announcejoinleave',
@@ -65,15 +65,15 @@ class MeetmeFeatures(Base):
     admin_enableexitcontext = Column(Integer, nullable=False, server_default='0')
     admin_exitcontext = Column(String(39))
     user_mode = Column(Enum('listen', 'talk', 'all',
-                               name='meetmefeatures_mode',
-                               metadata=Base.metadata),
-                              nullable=False)
+                            name='meetmefeatures_mode',
+                            metadata=Base.metadata),
+                       nullable=False)
     user_announceusercount = Column(Integer, nullable=False, server_default='0')
     user_hiddencalls = Column(Integer, nullable=False, server_default='0')
     user_announcejoinleave = Column(Enum('no', 'yes', 'noreview',
-                                          name='meetmefeatures_announcejoinleave',
-                                          metadata=Base.metadata),
-                                     nullable=False)
+                                         name='meetmefeatures_announcejoinleave',
+                                         metadata=Base.metadata),
+                                    nullable=False)
     user_initiallymuted = Column(Integer, nullable=False, server_default='0')
     user_musiconhold = Column(String(128))
     user_poundexit = Column(Integer, nullable=False, server_default='0')

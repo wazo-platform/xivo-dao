@@ -258,7 +258,7 @@ def get_uuid_by_username(session, username):
 @daosession
 def get_uuid_by_email(session, email):
     rows = (session.query(UserFeatures.uuid)
-           .join(Voicemail, UserFeatures.voicemailid==Voicemail.uniqueid)
+            .join(Voicemail, UserFeatures.voicemailid == Voicemail.uniqueid)
             .filter(Voicemail.email == email).all())
 
     if not rows:

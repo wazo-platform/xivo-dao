@@ -165,15 +165,14 @@ def find_sccp_speeddial_settings(session):
                        LineFeatures.protocolid == SCCPLine.id))
              .join(SCCPDevice,
                    SCCPLine.name == SCCPDevice.line)
-             .filter(LineFeatures.commented == 0)
-             )
+             .filter(LineFeatures.commented == 0))
 
     keys = [{'exten': row.exten,
-            'fknum': row.fknum,
-            'label': row.label,
-            'supervision': row.supervision,
-            'user_id': row.user_id,
-            'device': row.device}
+             'fknum': row.fknum,
+             'label': row.label,
+             'supervision': row.supervision,
+             'user_id': row.user_id,
+             'device': row.device}
             for row in query]
 
     return keys
@@ -196,6 +195,7 @@ _PARKING_OPTIONS = [
     'parkingtime',
     'parkpos',
 ]
+
 
 @daosession
 def find_features_settings(session):
@@ -244,8 +244,8 @@ def find_parking_settings(session):
     return {
         'general_options': general_options,
         'parking_lots': [{
-              'name': u'default',
-              'options': default_parking_lot_options,
+            'name': u'default',
+            'options': default_parking_lot_options,
         }],
     }
 
