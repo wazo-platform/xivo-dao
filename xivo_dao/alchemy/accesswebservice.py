@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from sqlalchemy.schema import Column, UniqueConstraint, Index
-from sqlalchemy.types import Integer, String, TEXT
+from sqlalchemy.types import Integer, String, Text
 
 from xivo_dao.helpers.db_manager import Base
 
@@ -37,6 +37,6 @@ class AccessWebService(Base):
     login = Column(String(64))
     passwd = Column(String(64))
     host = Column(String(255))
-    obj = Column(TEXT, nullable=False)
+    obj = Column(Text, nullable=False)
     disable = Column(Integer, nullable=False, server_default='0')
-    description = Column(TEXT, nullable=False)
+    description = Column(Text, nullable=False)
