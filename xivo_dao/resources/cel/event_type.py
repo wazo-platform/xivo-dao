@@ -23,8 +23,8 @@ class CELEventType(object):
         app_start,
         attended_transfer,
         blind_transfer,
-        bridge_end, # removed in asterisk 12
-        bridge_start, # removed in asterisk 12
+        bridge_end,  # removed in asterisk 12
+        bridge_start,  # removed in asterisk 12
         bridge_enter,
         bridge_exit,
         chan_start,
@@ -33,7 +33,7 @@ class CELEventType(object):
         hangup,
         linkedid_end,
         pickup,
-        transfer, # removed in asterisk 12
+        transfer,  # removed in asterisk 12
         xivo_user_fwd,
         xivo_from_s,
     ) = (

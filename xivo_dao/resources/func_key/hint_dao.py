@@ -107,8 +107,7 @@ def user_hints(session, context):
              .filter(UserLine.main_line == True)
              .filter(LineFeatures.commented == 0)
              .filter(Extension.context == context)
-             .filter(UserFeatures.enablehint == 1)
-             )
+             .filter(UserFeatures.enablehint == 1))
 
     return tuple(Hint(user_id=row.user_id,
                       extension=row.extension,
@@ -126,8 +125,7 @@ def conference_hints(session, context):
                        Extension.type == 'meetme',
                        Extension.typeval == sql.cast(MeetmeFeatures.id, Unicode)))
              .filter(MeetmeFeatures.commented == 0)
-             .filter(Extension.context == context)
-             )
+             .filter(Extension.context == context))
 
     return tuple(Hint(user_id=None,
                       extension=row.extension,

@@ -19,7 +19,6 @@ import unittest
 
 from hamcrest import assert_that, equal_to, same_instance, none, all_of, has_property, contains
 from mock import Mock, patch
-from StringIO import StringIO
 from contextlib import contextmanager
 
 from xivo_dao.resources.device import dao as device_dao
@@ -261,7 +260,7 @@ class TestDeviceDaoFindAll(TestDeviceDao):
             assert_that(device_manager.find.call_count, equal_to(0))
 
     def test_paginate_devices_no_pagination(self):
-        devices = [device1, device2, device3] = [Mock(), Mock(), Mock()]
+        devices = [Mock(), Mock(), Mock()]
         skip, limit = 0, None
 
         result = device_dao.paginate_devices(devices, skip, limit)
@@ -423,7 +422,7 @@ class TestDeviceDaoCreate(TestDeviceDao):
     def test_generate_device_id(self):
         device_id = 'abc1234'
 
-        with self.provd_managers() as (device_manager, config_manager, _):
+        with self.provd_managers() as (device_manager, _, _):
             device_manager.add.return_value = device_id
 
             result = device_dao.generate_device_id()
@@ -432,7 +431,7 @@ class TestDeviceDaoCreate(TestDeviceDao):
             device_manager.add.assert_called_once_with({})
 
     def test_generate_device_id_with_error(self):
-        with self.provd_managers() as (device_manager, config_manager, _):
+        with self.provd_managers() as (device_manager, _, _):
             device_manager.add.side_effect = Exception()
 
             self.assertRaises(DataError, device_dao.generate_device_id)
@@ -537,15 +536,15 @@ class TestDeviceDaoMacExists(TestDeviceDao):
 
         with self.provd_managers() as (device_manager, _, _):
             device_manager.find.return_value = [{u'added': u'auto',
-                                                u'config': u'cb20ee7c27e2483ba737e8061b40113d',
-                                                u'configured': True,
-                                                u'id': u'cb20ee7c27e2483ba737e8061b40113d',
-                                                u'ip': u'10.0.0.1',
-                                                u'mac': u'FF:FF:FF:FF:FF:FF',
-                                                u'model': u'820',
-                                                u'plugin': u'xivo-snom-8.7.3.19',
-                                                u'vendor': u'Snom',
-                                                u'version': u'8.7.3.19'}]
+                                                 u'config': u'cb20ee7c27e2483ba737e8061b40113d',
+                                                 u'configured': True,
+                                                 u'id': u'cb20ee7c27e2483ba737e8061b40113d',
+                                                 u'ip': u'10.0.0.1',
+                                                 u'mac': u'FF:FF:FF:FF:FF:FF',
+                                                 u'model': u'820',
+                                                 u'plugin': u'xivo-snom-8.7.3.19',
+                                                 u'vendor': u'Snom',
+                                                 u'version': u'8.7.3.19'}]
 
             result = device_dao.mac_exists(mac)
 
