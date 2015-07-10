@@ -130,15 +130,15 @@ class TestCallLogDAO(DAOTestCase):
         assert_that(result, contains_inanyorder(has_property('date', call_log_1.date),
                                                 has_property('date', call_log_2.date)))
 
-    @mocked_dao_session
-    def test_create_call_log(self, session):
+    def test_create_call_log(self):
         expected_id = 13
         call_log = self._mock_call_log(id=expected_id)
-        call_log_id = call_log_dao.create_call_log(session, call_log)
+        call_log_id = call_log_dao.create_call_log(self.session, call_log)
 
-        session.add.assert_called_once()
-        session.flush.assert_called_once()
         assert_that(call_log_id, equal_to(expected_id))
+
+        call_log_rows = self.session.query(CallLogSchema).all()
+        assert_that(call_log_rows, contains(has_property('id', call_log_id)))
 
     def test_create_from_list(self):
         cel_id_1, cel_id_2 = self.add_cel(), self.add_cel()
