@@ -100,10 +100,6 @@ class TestQueueLogDAO(DAOTestCase):
         self._insert_entry_queue('COMPLETECALLER', self._build_timestamp(time),
                                  callid, queuename, agent, d2=talktime)
 
-    def _insert_entry_queue_transfer(self, time, callid, queuename, agent, talktime):
-        self._insert_entry_queue('TRANSFER', self._build_timestamp(time),
-                                 callid, queuename, agent, d4=talktime)
-
     @staticmethod
     def _build_date(year, month, day, hour=0, minute=0, second=0, micro=0):
         return datetime(year, month, day, hour, minute, second, micro).strftime(TIMESTAMP_FORMAT)

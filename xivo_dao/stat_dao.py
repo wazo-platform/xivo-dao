@@ -25,7 +25,7 @@ INSERT INTO stat_call_on_queue (callid, "time", talktime, waittime, queue_id, ag
     WITH
     call_entries AS (
         SELECT
-            callid, queuename, agent, time, event, data1, data2, data3, data4
+            callid, queuename, agent, time, event, data1, data2, data3, data4, data5
         FROM
             queue_log
         WHERE
@@ -45,19 +45,27 @@ INSERT INTO stat_call_on_queue (callid, "time", talktime, waittime, queue_id, ag
             CASE
                 WHEN event IN ('COMPLETEAGENT', 'COMPLETECALLER')
                     THEN CAST (data2 AS INTEGER)
-                WHEN event = 'TRANSFER'
+                WHEN event IN ('BLINDTRANSFER', 'TRANSFER')
                     THEN CAST (data4 AS INTEGER)
+                WHEN event = 'ATTENDEDTRANSFER' and data1 IN ('BRIDGE', 'APP')
+                    THEN CAST (data4 AS INTEGER)
+                WHEN event = 'ATTENDEDTRANSFER' and data1 = 'LINK'
+                    THEN CAST (split_part(data5, '|', 1) AS INTEGER)
             END as talktime,
             CASE
                 WHEN event IN ('COMPLETEAGENT', 'COMPLETECALLER')
                     THEN CAST (data1 AS INTEGER)
-                WHEN event = 'TRANSFER'
+                WHEN event IN ('BLINDTRANSFER', 'TRANSFER')
                     THEN CAST (data3 AS INTEGER)
+                WHEN event = 'ATTENDEDTRANSFER' and data1 IN ('BRIDGE', 'APP')
+                    THEN CAST (data3 AS INTEGER)
+                WHEN event = 'ATTENDEDTRANSFER' and data1 = 'LINK'
+                    THEN CAST (data4 AS INTEGER)
             END as waittime
         FROM
             call_entries
         WHERE
-            event IN ('COMPLETEAGENT', 'COMPLETECALLER', 'TRANSFER')
+            event IN ('COMPLETEAGENT', 'COMPLETECALLER', 'ATTENDEDTRANSFER', 'BLINDTRANSFER', 'TRANSFER')
     ),
     completed_calls AS (
         SELECT
