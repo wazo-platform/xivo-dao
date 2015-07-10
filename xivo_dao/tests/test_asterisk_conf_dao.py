@@ -962,21 +962,22 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         assert_that(sip_pickup, contains_inanyorder(*expected_result))
 
     def test_find_sip_pickup_settings_no_pickup(self):
-        name1, user_id1 = self._create_user_with_usersip()
-        name2, user_id2 = self._create_user_with_usersip()
-        name3, user_id3 = self._create_user_with_usersip()
+        name1, user_id1 = self._create_user_with_usersip(exten='1001')
+        name2, user_id2 = self._create_user_with_usersip(exten='1002')
+        name3, user_id3 = self._create_user_with_usersip(exten='1003')
 
         with warning_filter('error'):
             sip_pickup = asterisk_conf_dao.find_sip_pickup_settings()
 
             assert_that(sip_pickup, contains_inanyorder())
 
-    def _create_user_with_usersip(self):
+    def _create_user_with_usersip(self, **kwargs):
         usersip = self.add_usersip(category='user')
         ule = self.add_user_line_with_exten(protocol='sip',
                                             protocolid=usersip.id,
                                             name_line=usersip.name,
-                                            context=usersip.context)
+                                            context=usersip.context,
+                                            **kwargs)
         return usersip.name, ule.user_id
 
     def test_find_iax_general_settings(self):

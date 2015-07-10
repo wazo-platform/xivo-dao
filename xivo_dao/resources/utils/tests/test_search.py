@@ -17,7 +17,11 @@
 
 from mock import Mock
 import unittest
-from hamcrest import assert_that, equal_to, contains, has_length
+from hamcrest import assert_that
+from hamcrest import equal_to
+from hamcrest import contains
+from hamcrest import contains_inanyorder
+from hamcrest import has_length
 
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.resources.utils.search import SearchConfig
@@ -184,4 +188,4 @@ class TestSearchConfig(unittest.TestCase):
 
         result = config.columns_for_searching()
 
-        assert_that(result, contains(column1, column2))
+        assert_that(result, contains_inanyorder(column1, column2))

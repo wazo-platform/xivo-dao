@@ -395,7 +395,7 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         result = user_dao.get_reachable_contexts(user_line.user.id)
 
-        self.assertEqual(result, [context, included_context])
+        assert_that(result, contains_inanyorder(context, included_context))
 
     def test_get_reachable_context_loop(self):
         context = 'my_context'
