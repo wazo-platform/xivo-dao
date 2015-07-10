@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import *
+from hamcrest import assert_that
+from hamcrest import has_entries
 
 from xivo_dao import ldap_dao
 from xivo_dao.alchemy.ldapfilter import LdapFilter

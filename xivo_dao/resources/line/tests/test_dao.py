@@ -15,7 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import *
+from hamcrest import all_of
+from hamcrest import assert_that
+from hamcrest import equal_to
+from hamcrest import has_length
+from hamcrest import has_property
+from hamcrest import is_not
+from hamcrest import none
 from mock import patch, Mock
 from sqlalchemy.exc import SQLAlchemyError
 

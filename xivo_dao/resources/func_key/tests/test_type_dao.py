@@ -15,8 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-
-from hamcrest import *
+from hamcrest import assert_that
+from hamcrest import has_property
+from hamcrest import none
 
 from xivo_dao.resources.func_key import type_dao as dao
 from xivo_dao.tests.test_dao import DAOTestCase

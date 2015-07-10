@@ -17,7 +17,9 @@
 
 import unittest
 
-from hamcrest import *
+from hamcrest import assert_that
+from hamcrest import equal_to
+
 from xivo_dao.resources.device import provd_converter
 from xivo_dao.resources.device.model import Device
 

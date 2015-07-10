@@ -15,7 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import *
+from hamcrest import assert_that
+from hamcrest import equal_to
+from hamcrest import none
 from sqlalchemy.exc import SQLAlchemyError
 
 from xivo_dao.alchemy.cti_profile import CtiProfile as CtiProfileSchema

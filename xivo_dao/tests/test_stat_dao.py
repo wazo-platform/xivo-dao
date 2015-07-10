@@ -123,8 +123,8 @@ class TestStatDAO(DAOTestCase):
     def test_fill_simple_calls_empty(self):
         try:
             stat_dao.fill_simple_calls(self.session, self.start, self.end)
-        except:
-            self.assertTrue(False, 'Should not happen')
+        except Exception:
+            self.fail('fill_simple_calls failed with no data')
 
     def test_get_login_intervals_in_range_calls_empty(self):
         result = stat_dao.get_login_intervals_in_range(self.session, self.start, self.end)
@@ -280,13 +280,11 @@ class TestStatDAO(DAOTestCase):
             {'time': self.start + datetime.timedelta(seconds=30),
              'callid': 'login_1',
              'agent': self.aname1,
-             'chan_name': 'SIP/1234-00001'
-             },
+             'chan_name': 'SIP/1234-00001'},
             {'time': self.start + datetime.timedelta(minutes=20),
              'callid': 'login_2',
              'agent': self.aname1,
-             'chan_name': 'SIP/1234-00002'
-             },
+             'chan_name': 'SIP/1234-00002'},
         ]
 
         cb_logoffs = [
@@ -294,14 +292,12 @@ class TestStatDAO(DAOTestCase):
              'callid': 'NONE',
              'agent': self.aname1,
              'chan_name': cb_logins[0]['chan_name'],
-             'talktime': logintimes[0],
-             },
+             'talktime': logintimes[0]},
             {'time': cb_logins[1]['time'] + logintimes[1],
              'callid': 'NONE',
              'agent': self.aname1,
              'chan_name': cb_logins[1]['chan_name'],
-             'talktime': logintimes[1],
-             },
+             'talktime': logintimes[1]},
         ]
 
         self._insert_agent_callback_logins_logoffs(cb_logins, cb_logoffs)
@@ -310,27 +306,23 @@ class TestStatDAO(DAOTestCase):
             {'time': self.start + datetime.timedelta(seconds=50),
              'callid': 'login_3',
              'agent': self.aname2,
-             'chan_name': 'SIP/5555-00001',
-             },
+             'chan_name': 'SIP/5555-00001'},
             {'time': self.start + datetime.timedelta(seconds=40),
              'callid': 'login_4',
              'agent': self.aname2,
-             'chan_name': 'SIP/5555-00002',
-             },
+             'chan_name': 'SIP/5555-00002'},
         ]
         logoffs = [
             {'time': logins[0]['time'] + logintimes[2],
              'callid': logins[0]['callid'],
              'agent': self.aname2,
              'chan_name': logins[0]['chan_name'],
-             'talktime': logintimes[2],
-             },
+             'talktime': logintimes[2]},
             {'time': logins[1]['time'] + logintimes[3],
              'callid': logins[1]['callid'],
              'agent': self.aname2,
              'chan_name': logins[1]['chan_name'],
-             'talktime': logintimes[3],
-             }
+             'talktime': logintimes[3]}
         ]
 
         self._insert_agent_logins_logoffs(logins, logoffs)
@@ -350,13 +342,11 @@ class TestStatDAO(DAOTestCase):
             {'time': self.start - datetime.timedelta(seconds=30),
              'callid': 'login_1',
              'agent': self.aname1,
-             'chan_name': 'SIP/1234-00001'
-             },
+             'chan_name': 'SIP/1234-00001'},
             {'time': self.start - datetime.timedelta(seconds=44),
              'callid': 'login_5',
              'agent': self.aname1,
-             'chan_name': 'SIP/1234-00003'
-             },
+             'chan_name': 'SIP/1234-00003'},
         ]
 
         self._insert_agent_callback_logins_logoffs(cb_logins, [])
@@ -365,13 +355,11 @@ class TestStatDAO(DAOTestCase):
             {'time': self.start - datetime.timedelta(seconds=50),
              'callid': 'login_3',
              'agent': self.aname2,
-             'chan_name': 'SIP/5555-00001',
-             },
+             'chan_name': 'SIP/5555-00001'},
             {'time': self.start - datetime.timedelta(seconds=59),
              'callid': 'login_4',
              'agent': self.aname1,
-             'chan_name': 'SIP/1234-00002'
-             },
+             'chan_name': 'SIP/1234-00002'},
         ]
 
         self._insert_agent_logins_logoffs(logins, [])

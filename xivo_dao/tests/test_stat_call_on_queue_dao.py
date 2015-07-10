@@ -17,7 +17,8 @@
 
 import datetime
 
-from hamcrest import *
+from hamcrest import assert_that
+from hamcrest import contains
 from sqlalchemy import func
 
 from xivo_dao import stat_call_on_queue_dao
