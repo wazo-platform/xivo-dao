@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@ class IsAnAgentQueueMember(BaseMatcher):
     def __init__(self, agent, queue_name):
         self.agent = agent
         self.queue_name = queue_name
-        self.error = "";
+        self.error = ""
 
     def _sub_match(self, property, expected, item):
         if not has_property(property, expected).matches(item):

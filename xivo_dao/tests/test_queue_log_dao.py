@@ -231,7 +231,6 @@ class TestQueueLogDAO(DAOTestCase):
         assert_that(timeout_at_11_oclock, empty())
         assert_that(timeout_at_12_oclock, has_length(1))
 
-
     def test_get_queue_timeout_call(self):
         start = datetime(2012, 01, 01, 01, 00, 00)
         expected = self._insert_timeout(start, [-1, 0, 10, 30, 59, 60, 120])

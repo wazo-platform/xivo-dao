@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2007-2014 Avencall
+# Copyright (C) 2007-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -223,9 +223,9 @@ def _add_agent(session, agent):
 @daosession
 def log_off_agent(session, agent_id):
     (session
-        .query(AgentLoginStatus)
-        .filter(AgentLoginStatus.agent_id == agent_id)
-        .delete(synchronize_session='fetch'))
+     .query(AgentLoginStatus)
+     .filter(AgentLoginStatus.agent_id == agent_id)
+     .delete(synchronize_session='fetch'))
 
 
 @daosession
@@ -240,34 +240,33 @@ def add_agent_to_queues(session, agent_id, queues):
 
 @daosession
 def remove_agent_from_queues(session, agent_id, queue_ids):
-
     (session
-        .query(AgentMembershipStatus)
-        .filter(AgentMembershipStatus.agent_id == agent_id)
-        .filter(AgentMembershipStatus.queue_id.in_(queue_ids))
-        .delete(synchronize_session='fetch'))
+     .query(AgentMembershipStatus)
+     .filter(AgentMembershipStatus.agent_id == agent_id)
+     .filter(AgentMembershipStatus.queue_id.in_(queue_ids))
+     .delete(synchronize_session='fetch'))
 
 
 @daosession
 def remove_agent_from_all_queues(session, agent_id):
     (session
-        .query(AgentMembershipStatus)
-        .filter(AgentMembershipStatus.agent_id == agent_id)
-        .delete(synchronize_session='fetch'))
+     .query(AgentMembershipStatus)
+     .filter(AgentMembershipStatus.agent_id == agent_id)
+     .delete(synchronize_session='fetch'))
 
 
 @daosession
 def remove_all_agents_from_queue(session, queue_id):
     (session
-        .query(AgentMembershipStatus)
-        .filter(AgentMembershipStatus.queue_id == queue_id)
-        .delete(synchronize_session='fetch'))
+     .query(AgentMembershipStatus)
+     .filter(AgentMembershipStatus.queue_id == queue_id)
+     .delete(synchronize_session='fetch'))
 
 
 @daosession
 def update_penalty(session, agent_id, queue_id, penalty):
     (session
-        .query(AgentMembershipStatus)
-        .filter(AgentMembershipStatus.queue_id == queue_id)
-        .filter(AgentMembershipStatus.agent_id == agent_id)
-        .update({'penalty': penalty}))
+     .query(AgentMembershipStatus)
+     .filter(AgentMembershipStatus.queue_id == queue_id)
+     .filter(AgentMembershipStatus.agent_id == agent_id)
+     .update({'penalty': penalty}))

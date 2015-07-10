@@ -70,7 +70,6 @@ def find_all_by_fullname(session, fullname, order=None):
     return _rows_to_user_model(user_rows)
 
 
-
 def _user_query(session, order=None):
     order = order or DEFAULT_ORDER
     return session.query(UserSchema).order_by(*order)
@@ -168,8 +167,7 @@ def get_by_number_context(session, number, context):
 def find_all_by_template_id(session, template_id):
     query = (session.query(UserSchema)
              .filter(or_(UserSchema.func_key_template_id == template_id,
-                         UserSchema.func_key_private_template_id == template_id))
-             )
+                         UserSchema.func_key_private_template_id == template_id)))
 
     return [db_converter.to_model(row) for row in query]
 
