@@ -16,6 +16,8 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+from xivo_dao.helpers import errors
+
 from xivo_dao.helpers.new_model import NewModel
 
 
@@ -40,3 +42,8 @@ class FuncKeyTemplate(NewModel):
         other_keys = other.keys
         keys.update(other_keys)
         return FuncKeyTemplate(keys=keys)
+
+    def get(self, position):
+        if position not in self.keys:
+            raise errors.not_found('FuncKey', template_id=self.id, position=position)
+        return self.keys[position]
