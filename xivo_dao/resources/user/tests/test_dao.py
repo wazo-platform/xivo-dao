@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2007-2014 Avencall
+# Copyright (C) 2007-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -339,6 +339,31 @@ class TestFind(DAOTestCase):
         user = user_dao.find_by_number_context(number, context)
 
         assert_that(user, is_(none()))
+
+
+class TestFindAllByTemplateId(DAOTestCase):
+
+    def test_given_private_template_associated_when_finding_then_returns_user(self):
+        user_row = self.add_user()
+
+        result = user_dao.find_all_by_template_id(user_row.func_key_private_template_id)
+
+        assert_that(result, contains(has_property('id', user_row.id)))
+
+    def test_given_public_template_associated_when_finding_then_returns_user(self):
+        template_row = self.add_func_key_template()
+        user_row = self.add_user(func_key_template_id=template_row.id)
+
+        result = user_dao.find_all_by_template_id(template_row.id)
+
+        assert_that(result, contains(has_property('id', user_row.id)))
+
+    def test_given_private_templates_excluded_when_finding_then_returns_empty_list(self):
+        user_row = self.add_user()
+
+        result = user_dao.find_all_by_template_id(user_row.func_key_private_template_id, private=False)
+
+        assert_that(result, contains())
 
 
 class TestSearch(DAOTestCase):
