@@ -164,11 +164,14 @@ def get_by_number_context(session, number, context):
 
 
 @daosession
-def find_all_by_template_id(session, template_id):
-    query = (session.query(UserSchema)
-             .filter(or_(UserSchema.func_key_template_id == template_id,
-                         UserSchema.func_key_private_template_id == template_id)))
+def find_all_by_template_id(session, template_id, private=True):
+    if private:
+        criteria = or_(UserSchema.func_key_template_id == template_id,
+                       UserSchema.func_key_private_template_id == template_id)
+    else:
+        criteria = (UserSchema.func_key_template_id == template_id)
 
+    query = session.query(UserSchema).filter(criteria)
     return [db_converter.to_model(row) for row in query]
 
 
