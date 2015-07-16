@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2014 Avencall
+# Copyright (C) 2014-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -32,5 +32,4 @@ class Directories(Base):
     uri = Column(String(255))
     dirtype = Column(String(20))
     name = Column(String(255))
-    tablename = Column(String(255))
     description = Column(Text, nullable=False)
