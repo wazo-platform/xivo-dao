@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2007-2014 Avencall
+# Copyright (C) 2007-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,10 +18,39 @@
 from xivo_dao import directory_dao
 from xivo_dao.alchemy.cti_contexts import CtiContexts
 from xivo_dao.alchemy.cti_displays import CtiDisplays
+from xivo_dao.alchemy.directories import Directories
 from xivo_dao.tests.test_dao import DAOTestCase
+
+from hamcrest import assert_that, equal_to, empty, has_length
 
 
 class TestDirectoryDAO(DAOTestCase):
+
+    def test_get_all(self):
+        configs = [
+            {'uri': 'http://localhost:9487', 'dirtype': 'xivo', 'name': 'XiVO'},
+            {'uri': 'http://mtl.lan.example.com:9487', 'dirtype': 'xivo', 'name': 'XiVO'},
+            {'uri': 'phonebook', 'dirtype': 'phonebook', 'name': 'phonebook'},
+            {'uri': 'file:///tmp/test.csv', 'dirtype': 'file', 'name': 'my_csv'},
+        ]
+        directories = [Directories(**config) for config in configs]
+        self.add_me_all(directories)
+
+        results = directory_dao.get_all()
+
+        assert_that(results, has_length(4))
+        for config in configs:
+            matching_results = [result for result in results
+                                if result['uri'] == config['uri'] and result['dirtype'] == config['dirtype']]
+            assert_that(matching_results, has_length(1))
+            matching_result = matching_results[0]
+            assert_that(matching_result['name'], equal_to(config['name']))
+            assert_that('id' in matching_result)
+
+    def test_get_all_no_directories(self):
+        results = directory_dao.get_all()
+
+        assert_that(results, empty())
 
     def test_get_directory_headers(self):
         display_name = 'mydisplay'

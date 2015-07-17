@@ -20,8 +20,7 @@ import logging
 
 from xivo_dao.helpers.db_manager import daosession
 
-from xivo_dao.alchemy.cti_contexts import CtiContexts
-from xivo_dao.alchemy.cti_displays import CtiDisplays
+from xivo_dao.alchemy import CtiContexts, CtiDisplays, Directories
 
 from sqlalchemy import and_
 
@@ -30,6 +29,19 @@ logger = logging.getLogger(__name__)
 
 
 NUMBER_TYPE = 'number'
+
+
+@daosession
+def get_all(session):
+    directories = session.query(Directories.id,
+                                Directories.uri,
+                                Directories.dirtype,
+                                Directories.name).all()
+
+    return [{'id': directory.id,
+             'uri': directory.uri,
+             'dirtype': directory.dirtype,
+             'name': directory.name} for directory in directories]
 
 
 @daosession
