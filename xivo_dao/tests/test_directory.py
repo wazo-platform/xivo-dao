@@ -16,41 +16,127 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao import directory_dao
-from xivo_dao.alchemy.cti_contexts import CtiContexts
-from xivo_dao.alchemy.cti_displays import CtiDisplays
-from xivo_dao.alchemy.directories import Directories
+from xivo_dao.alchemy import CtiContexts, CtiDirectories, CtiDirectoryFields, CtiDisplays, Directories
 from xivo_dao.tests.test_dao import DAOTestCase
 
-from hamcrest import assert_that, equal_to, empty, has_length
+from itertools import chain
+from hamcrest import assert_that, contains_inanyorder, empty
 
 
-class TestDirectoryDAO(DAOTestCase):
+class TestDirectorySources(DAOTestCase):
 
-    def test_get_all(self):
-        configs = [
+    def setUp(self):
+        super(TestDirectorySources, self).setUp()
+        self.directory_configs = [
             {'uri': 'http://localhost:9487', 'dirtype': 'xivo', 'name': 'XiVO'},
             {'uri': 'http://mtl.lan.example.com:9487', 'dirtype': 'xivo', 'name': 'XiVO'},
             {'uri': 'phonebook', 'dirtype': 'phonebook', 'name': 'phonebook'},
             {'uri': 'file:///tmp/test.csv', 'dirtype': 'file', 'name': 'my_csv'},
         ]
-        directories = [Directories(**config) for config in configs]
-        self.add_me_all(directories)
+        self.cti_directory_configs = [
+            {'id': 1,
+             'name': 'Internal',
+             'uri': 'http://localhost:9487',
+             'match_direct': '["firstname", "lastname"]'},
+            {'id': 2,
+             'name': 'mtl',
+             'uri': 'http://mtl.lan.example.com:9487',
+             'match_direct': '["lastname"]'},
+        ]
+        self.cti_directory_fields_configs = [
+            {'dir_id': 1,
+             'fieldname': 'number',
+             'value': '{exten}'},
+            {'dir_id': 1,
+             'fieldname': 'mobile',
+             'value': '{mobile_phone_number}'},
+            {'dir_id': 2,
+             'fieldname': 'number',
+             'value': '{exten}'},
+            {'dir_id': 2,
+             'fieldname': 'mobile',
+             'value': '{mobile_phone_number}'},
+            {'dir_id': 2,
+             'fieldname': 'name',
+             'value': '{firstname} {lastname}'},
+        ]
 
-        results = directory_dao.get_all()
+    def test_get_all_sources(self):
+        directories = [Directories(**config) for config in self.directory_configs]
+        cti_directories = [CtiDirectories(**config) for config in self.cti_directory_configs]
+        cti_directory_fields = [CtiDirectoryFields(**config) for config in self.cti_directory_fields_configs]
+        self.add_me_all(chain(directories, cti_directories, cti_directory_fields))
 
-        assert_that(results, has_length(4))
-        for config in configs:
-            matching_results = [result for result in results
-                                if result['uri'] == config['uri'] and result['dirtype'] == config['dirtype']]
-            assert_that(matching_results, has_length(1))
-            matching_result = matching_results[0]
-            assert_that(matching_result['name'], equal_to(config['name']))
-            assert_that('id' in matching_result)
+        result = directory_dao.get_all_sources()
 
-    def test_get_all_no_directories(self):
-        results = directory_dao.get_all()
+        expected = [
+            {'type': 'xivo',
+             'name': 'Internal',
+             'uri': 'http://localhost:9487',
+             'searched_columns': [
+                 'firstname',
+                 'lastname',
+             ],
+             'format_columns': {
+                 'number': '{exten}',
+                 'mobile': '{mobile_phone_number}',
+             }},
+            {'type': 'xivo',
+             'name': 'mtl',
+             'uri': 'http://mtl.lan.example.com:9487',
+             'searched_columns': [
+                 'lastname',
+             ],
+             'format_columns': {
+                 'number': '{exten}',
+                 'mobile': '{mobile_phone_number}',
+                 'name': '{firstname} {lastname}',
+             }}
+        ]
+
+        assert_that(result, contains_inanyorder(*expected))
+
+    def test_get_all_sources_no_fields(self):
+        directories = [Directories(**config) for config in self.directory_configs]
+        cti_directories = [CtiDirectories(**config) for config in self.cti_directory_configs]
+        cti_directory_fields = [CtiDirectoryFields(**config) for config in self.cti_directory_fields_configs]
+        self.add_me_all(chain(directories, cti_directories, cti_directory_fields[2:]))
+
+        result = directory_dao.get_all_sources()
+
+        expected = [
+            {'type': 'xivo',
+             'name': 'Internal',
+             'uri': 'http://localhost:9487',
+             'searched_columns': [
+                 'firstname',
+                 'lastname',
+             ],
+             'format_columns': {}},
+            {'type': 'xivo',
+             'name': 'mtl',
+             'uri': 'http://mtl.lan.example.com:9487',
+             'searched_columns': [
+                 'lastname',
+             ],
+             'format_columns': {
+                 'number': '{exten}',
+                 'mobile': '{mobile_phone_number}',
+                 'name': '{firstname} {lastname}',
+             }}
+        ]
+        from pprint import pprint
+        pprint(result)
+
+        assert_that(result, contains_inanyorder(*expected))
+
+    def test_get_all_sources_no_directories(self):
+        results = directory_dao.get_all_sources()
 
         assert_that(results, empty())
+
+
+class TestDirectoryDAO(DAOTestCase):
 
     def test_get_directory_headers(self):
         display_name = 'mydisplay'

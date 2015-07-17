@@ -18,11 +18,10 @@
 import json
 import logging
 
+from itertools import izip
+from sqlalchemy import and_, func
 from xivo_dao.helpers.db_manager import daosession
-
-from xivo_dao.alchemy import CtiContexts, CtiDisplays, Directories
-
-from sqlalchemy import and_
+from xivo_dao.alchemy import CtiContexts, CtiDirectories, CtiDirectoryFields, CtiDisplays, Directories
 
 
 logger = logging.getLogger(__name__)
@@ -32,16 +31,39 @@ NUMBER_TYPE = 'number'
 
 
 @daosession
-def get_all(session):
-    directories = session.query(Directories.id,
-                                Directories.uri,
-                                Directories.dirtype,
-                                Directories.name).all()
+def get_all_sources(session):
+    def format_columns(fields, value):
+        if fields == value == [None]:
+            return {}
 
-    return [{'id': directory.id,
-             'uri': directory.uri,
-             'dirtype': directory.dirtype,
-             'name': directory.name} for directory in directories]
+        return dict(izip(fields, value))
+
+    sources = session.query(
+        CtiDirectories.name,
+        CtiDirectories.uri,
+        Directories.dirtype,
+        CtiDirectories.match_direct,
+        func.array_agg(CtiDirectoryFields.fieldname).label('fields'),
+        func.array_agg(CtiDirectoryFields.value).label('values'),
+    ).join(
+        Directories,
+        Directories.uri == CtiDirectories.uri
+    ).outerjoin(
+        CtiDirectoryFields,
+        CtiDirectoryFields.dir_id == CtiDirectories.id
+    ).group_by(
+        CtiDirectories.name,
+        CtiDirectories.uri,
+        Directories.dirtype,
+        CtiDirectories.match_direct,
+    )
+
+    return [{'name': source.name,
+             'type': source.dirtype,
+             'uri': source.uri,
+             'searched_columns': json.loads(source.match_direct),
+             'format_columns': format_columns(source.fields, source.values)}
+            for source in sources.all()]
 
 
 @daosession

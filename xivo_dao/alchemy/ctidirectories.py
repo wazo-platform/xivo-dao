@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2014 Avencall
+# Copyright (C) 2012-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,6 +30,6 @@ class CtiDirectories(Base):
     uri = Column(String(255))
     delimiter = Column(String(20))
     match_direct = Column(Text, nullable=False)
-    match_reverse = Column(Text, nullable=False)
+    match_reverse = Column(Text, nullable=False, default='')
     description = Column(String(255))
     deletable = Column(Integer)
