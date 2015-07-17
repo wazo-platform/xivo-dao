@@ -30,6 +30,6 @@ class Directories(Base):
 
     id = Column(Integer, nullable=False)
     uri = Column(String(255))
-    dirtype = Column(String(20))
+    dirtype = Column(String(20), nullable=False)
     name = Column(String(255))
     description = Column(Text, nullable=False)
