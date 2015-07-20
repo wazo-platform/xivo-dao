@@ -42,6 +42,11 @@ class TestDirectorySources(DAOTestCase):
              'name': 'mtl',
              'uri': 'http://mtl.lan.example.com:9487',
              'match_direct': '["lastname"]'},
+            {'id': 3,
+             'name': 'acsvfile',
+             'uri': 'file:///tmp/test.csv',
+             'match_direct': '["firstname", "lastname"]',
+             'delimiter': '|'},
         ]
         self.cti_directory_fields_configs = [
             {'dir_id': 1,
@@ -59,6 +64,9 @@ class TestDirectorySources(DAOTestCase):
             {'dir_id': 2,
              'fieldname': 'name',
              'value': '{firstname} {lastname}'},
+            {'dir_id': 3,
+             'fieldname': 'name',
+             'value': '{firstname} {lastname}'},
         ]
 
     def test_get_all_sources(self):
@@ -73,6 +81,7 @@ class TestDirectorySources(DAOTestCase):
             {'type': 'xivo',
              'name': 'Internal',
              'uri': 'http://localhost:9487',
+             'delimiter': None,
              'searched_columns': [
                  'firstname',
                  'lastname',
@@ -84,6 +93,7 @@ class TestDirectorySources(DAOTestCase):
             {'type': 'xivo',
              'name': 'mtl',
              'uri': 'http://mtl.lan.example.com:9487',
+             'delimiter': None,
              'searched_columns': [
                  'lastname',
              ],
@@ -91,14 +101,25 @@ class TestDirectorySources(DAOTestCase):
                  'number': '{exten}',
                  'mobile': '{mobile_phone_number}',
                  'name': '{firstname} {lastname}',
-             }}
+             }},
+            {'type': 'file',
+             'name': 'acsvfile',
+             'uri': 'file:///tmp/test.csv',
+             'delimiter': '|',
+             'searched_columns': [
+                 'firstname',
+                 'lastname',
+             ],
+             'format_columns': {
+                 'name': '{firstname} {lastname}',
+             }},
         ]
 
         assert_that(result, contains_inanyorder(*expected))
 
     def test_get_all_sources_no_fields(self):
         directories = [Directories(**config) for config in self.directory_configs]
-        cti_directories = [CtiDirectories(**config) for config in self.cti_directory_configs]
+        cti_directories = [CtiDirectories(**config) for config in self.cti_directory_configs[:-1]]
         cti_directory_fields = [CtiDirectoryFields(**config) for config in self.cti_directory_fields_configs]
         self.add_me_all(chain(directories, cti_directories, cti_directory_fields[2:]))
 
@@ -108,6 +129,7 @@ class TestDirectorySources(DAOTestCase):
             {'type': 'xivo',
              'name': 'Internal',
              'uri': 'http://localhost:9487',
+             'delimiter': None,
              'searched_columns': [
                  'firstname',
                  'lastname',
@@ -116,6 +138,7 @@ class TestDirectorySources(DAOTestCase):
             {'type': 'xivo',
              'name': 'mtl',
              'uri': 'http://mtl.lan.example.com:9487',
+             'delimiter': None,
              'searched_columns': [
                  'lastname',
              ],

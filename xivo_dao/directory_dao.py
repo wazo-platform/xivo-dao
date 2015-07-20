@@ -42,6 +42,7 @@ def get_all_sources(session):
         CtiDirectories.name,
         CtiDirectories.uri,
         Directories.dirtype,
+        CtiDirectories.delimiter,
         CtiDirectories.match_direct,
         func.array_agg(CtiDirectoryFields.fieldname).label('fields'),
         func.array_agg(CtiDirectoryFields.value).label('values'),
@@ -55,12 +56,14 @@ def get_all_sources(session):
         CtiDirectories.name,
         CtiDirectories.uri,
         Directories.dirtype,
+        CtiDirectories.delimiter,
         CtiDirectories.match_direct,
     )
 
     return [{'name': source.name,
              'type': source.dirtype,
              'uri': source.uri,
+             'delimiter': source.delimiter,
              'searched_columns': json.loads(source.match_direct),
              'format_columns': format_columns(source.fields, source.values)}
             for source in sources.all()]
