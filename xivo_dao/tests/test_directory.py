@@ -125,8 +125,6 @@ class TestDirectorySources(DAOTestCase):
                  'name': '{firstname} {lastname}',
              }}
         ]
-        from pprint import pprint
-        pprint(result)
 
         assert_that(result, contains_inanyorder(*expected))
 
