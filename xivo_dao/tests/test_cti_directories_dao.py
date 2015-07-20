@@ -29,7 +29,7 @@ from xivo_dao.alchemy.directories import Directories
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
-class TestCtiSheetsDAO(DAOTestCase):
+class TestCtiDirectoriesDAO(DAOTestCase):
 
     def test_get_config(self):
         expected_result = {
@@ -37,7 +37,7 @@ class TestCtiSheetsDAO(DAOTestCase):
                 "uri": u"internal",
                 "type": "xivo",
                 "delimiter": "",
-                "name": "",
+                "name": "internal",
                 "match_direct": [
                     u"userfeatures.firstname",
                     u"userfeatures.lastname"
@@ -57,7 +57,7 @@ class TestCtiSheetsDAO(DAOTestCase):
                 "uri": u"phonebook",
                 "type": "phonebook",
                 "delimiter": "",
-                "name": "",
+                "name": "xivodir",
                 "match_direct": [
                     u"phonebook.firstname",
                     u"phonebook.lastname",
@@ -95,7 +95,7 @@ class TestCtiSheetsDAO(DAOTestCase):
                 "uri": u"ldapfilter://test-ldap-filter",
                 "type": "ldap",
                 "delimiter": "",
-                "name": "",
+                "name": "ldap1",
                 "match_direct": [
                     u"cn",
                     u"phoneNumber",

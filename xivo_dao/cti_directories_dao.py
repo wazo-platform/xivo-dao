@@ -27,21 +27,21 @@ def get_config(session):
     res = {}
     ctidirectories = _find_valid_directories(session)
     for directory in ctidirectories:
-
+        name = directory.name
         dird_match_direct = json.loads(directory.match_direct) if directory.match_direct else []
         dird_match_reverse = json.loads(directory.match_reverse) if directory.match_reverse else []
+        delimiter = directory.delimiter if directory.delimiter else ''
+        fields = _build_directoryfields(directory.id)
 
-        dir_id = directory.name
-        res[dir_id] = {}
-        res[dir_id]['uri'] = directory.uri
-        res[dir_id]['type'] = directory.dirtype
-        res[dir_id]['delimiter'] = directory.delimiter if directory.delimiter else ''
-        res[dir_id]['name'] = directory.description if directory.description else ''
-        res[dir_id]['match_direct'] = dird_match_direct
-        res[dir_id]['match_reverse'] = dird_match_reverse
-
-        directoryfields = _build_directoryfields(directory.id)
-        res[dir_id].update(directoryfields)
+        res[name] = {
+            'uri': directory.uri,
+            'type': directory.dirtype,
+            'delimiter': delimiter,
+            'name': directory.name,
+            'match_direct': dird_match_direct,
+            'match_reverse': dird_match_reverse,
+        }
+        res[name].update(fields)
 
     return res
 
