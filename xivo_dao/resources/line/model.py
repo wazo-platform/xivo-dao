@@ -48,19 +48,27 @@ class Line(AbstractModels):
     def __init__(self, *args, **kwargs):
         AbstractModels.__init__(self, *args, **kwargs)
 
+    def _clean_device_id(self):
+        if hasattr(self, 'device_id') and self.device_id == '':
+            self.device_id = None
+
     @classmethod
     def from_data_source(cls, db_object):
         model = super(Line, cls).from_data_source(db_object)
         model.provisioning_extension = str(model.provisioning_extension)
+        model._clean_device_id()
         return model
 
     def update_from_data_source(self, db_object):
         AbstractModels.update_from_data_source(self, db_object)
         self.provisioning_extension = str(self.provisioning_extension)
+        self._clean_device_id()
 
     def to_data_source(self, class_schema):
         source = AbstractModels.to_data_source(self, class_schema)
         source.provisioningid = int(source.provisioningid)
+        if source.device is None:
+            source.device = ''
         return source
 
     @property
@@ -90,6 +98,7 @@ class LineSIP(Line):
         obj = super(LineSIP, cls).from_data_source(db_object)
         if hasattr(obj, 'name'):
             obj.username = db_object.name
+
         return obj
 
     def to_data_source(self, class_schema):
@@ -121,6 +130,8 @@ class LineSIP(Line):
         if hasattr(self, 'username'):
             setattr(db_object, 'name', self.username)
         setattr(db_object, 'username', '')
+        if hasattr(db_object, 'device') and db_object.device is None:
+            db_object.device = ''
 
     def extract_displayname(self):
         return re.match(r'^"(.+)"', self.callerid).group(1)
