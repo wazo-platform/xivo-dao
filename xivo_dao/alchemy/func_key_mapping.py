@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014 Avencall
+# Copyright (C) 2014-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ class FuncKeyMapping(Base):
     destination_type_id = Column(Integer, primary_key=True)
     label = Column(String(128))
     position = Column(Integer, nullable=False)
-    blf = Column(Boolean, nullable=False, server_default='False')
+    blf = Column(Boolean, nullable=False, server_default='True')
 
     func_key_template = relationship("FuncKeyTemplate")
     func_key = relationship("FuncKey")

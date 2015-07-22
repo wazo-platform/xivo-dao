@@ -118,6 +118,18 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
         assert_that(template_row.name, equal_to(template.name))
         assert_that(result.name, equal_to(template.name))
 
+    def test_given_template_has_func_key_when_creating_then_blf_is_activated_by_default(self):
+        destination_row = self.create_user_func_key()
+        template = self.build_template_with_key(UserDestination(user_id=destination_row.user_id))
+
+        dao.create(template)
+
+        mapping_row = (self.session.query(FuncKeyMappingSchema)
+                       .filter(FuncKeyMappingSchema.func_key_id == destination_row.func_key_id)
+                       .first())
+
+        assert_that(mapping_row.blf, equal_to(True))
+
     def test_given_template_has_user_func_key_when_creating_then_creates_mapping(self):
         destination_row = self.create_user_func_key()
         template = self.build_template_with_key(UserDestination(user_id=destination_row.user_id))
@@ -561,7 +573,7 @@ class TestFuncKeyTemplateEdit(TestFuncKeyTemplateDao):
         template = self.prepare_template(destination_row,
                                          UserDestination(user_id=destination_row.user_id))
 
-        template.keys[1].blf = True
+        template.keys[1].blf = False
         template.keys[1].label = 'mylabel'
 
         dao.edit(template)
@@ -570,7 +582,7 @@ class TestFuncKeyTemplateEdit(TestFuncKeyTemplateDao):
                    .filter(FuncKeyMappingSchema.template_id == template.id)
                    .first())
 
-        assert_that(mapping.blf, equal_to(True))
+        assert_that(mapping.blf, equal_to(False))
         assert_that(mapping.label, equal_to('mylabel'))
         assert_that(mapping.position, equal_to(1))
 

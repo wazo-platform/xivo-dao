@@ -39,7 +39,7 @@ class FuncKey(Model):
                  'destination']
 
     def __init__(self, **parameters):
-        parameters.setdefault('blf', False)
+        parameters.setdefault('blf', True)
         parameters.setdefault('inherited', True)
         super(FuncKey, self).__init__(**parameters)
 
