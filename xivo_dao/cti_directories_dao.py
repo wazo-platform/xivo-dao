@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2014 Avencall
+# Copyright (C) 2012-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,8 +19,7 @@ import json
 
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao import ldap_dao
-from xivo_dao.alchemy.ctidirectories import CtiDirectories
-from xivo_dao.alchemy.ctidirectoryfields import CtiDirectoryFields
+from xivo_dao.alchemy import CtiDirectories, CtiDirectoryFields, Directories
 
 
 @daosession
@@ -28,31 +27,49 @@ def get_config(session):
     res = {}
     ctidirectories = _find_valid_directories(session)
     for directory in ctidirectories:
-
+        name = directory.name
         dird_match_direct = json.loads(directory.match_direct) if directory.match_direct else []
         dird_match_reverse = json.loads(directory.match_reverse) if directory.match_reverse else []
+        delimiter = directory.delimiter if directory.delimiter else ''
+        fields = _build_directoryfields(directory.id)
 
-        dir_id = directory.name
-        res[dir_id] = {}
-        res[dir_id]['uri'] = directory.uri
-        res[dir_id]['delimiter'] = directory.delimiter if directory.delimiter else ''
-        res[dir_id]['name'] = directory.description if directory.description else ''
-        res[dir_id]['match_direct'] = dird_match_direct
-        res[dir_id]['match_reverse'] = dird_match_reverse
-
-        directoryfields = _build_directoryfields(directory.id)
-        res[dir_id].update(directoryfields)
+        res[name] = {
+            'uri': directory.uri,
+            'type': directory.dirtype,
+            'delimiter': delimiter,
+            'name': directory.description,
+            'match_direct': dird_match_direct,
+            'match_reverse': dird_match_reverse,
+        }
+        res[name].update(fields)
 
     return res
 
 
 def _find_valid_directories(session):
-    ctidirectories = session.query(CtiDirectories)
+    ctidirectories = session.query(
+        CtiDirectories.id,
+        CtiDirectories.uri,
+        CtiDirectories.name,
+        CtiDirectories.delimiter,
+        CtiDirectories.description,
+        CtiDirectories.match_direct,
+        CtiDirectories.match_reverse,
+        Directories.dirtype,
+    ).outerjoin(
+        Directories,
+        Directories.uri == CtiDirectories.uri
+    )
     valid = []
 
-    for directory in ctidirectories:
-        if _valid_uri(directory.uri):
-            valid.append(directory)
+    for directory in ctidirectories.all():
+        if not _valid_uri(directory.uri):
+            continue
+
+        if not directory.dirtype:
+            directory.dirtype = 'ldap'
+
+        valid.append(directory)
 
     return valid
 

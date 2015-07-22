@@ -32,4 +32,4 @@ class Directories(Base):
     uri = Column(String(255))
     dirtype = Column(String(20), nullable=False)
     name = Column(String(255))
-    description = Column(Text, nullable=False)
+    description = Column(Text, nullable=False, default='')
