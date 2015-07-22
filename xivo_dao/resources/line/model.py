@@ -66,8 +66,9 @@ class Line(AbstractModels):
 
     def to_data_source(self, class_schema):
         source = AbstractModels.to_data_source(self, class_schema)
-        source.provisioningid = int(source.provisioningid)
-        if source.device is None:
+        if hasattr(source, 'provisioningid'):
+            source.provisioningid = int(source.provisioningid)
+        if hasattr(source, 'device') and source.device is None:
             source.device = ''
         return source
 
@@ -102,31 +103,31 @@ class LineSIP(Line):
         return obj
 
     def to_data_source(self, class_schema):
-        obj = AbstractModels.to_data_source(self, class_schema)
+        obj = super(LineSIP, self).to_data_source(class_schema)
         if hasattr(self, 'username'):
             obj.name = self.username
         del obj.username
         return obj
 
     def to_data_dict(self):
-        data_dict = AbstractModels.to_data_dict(self)
+        data_dict = super(LineSIP, self).to_data_dict()
         if hasattr(self, 'username'):
             data_dict['name'] = self.username
         del data_dict['username']
         return data_dict
 
     def update_from_data(self, data_dict):
-        AbstractModels.update_from_data(self, data_dict)
+        super(LineSIP, self).update_from_data(data_dict)
         if 'name' in data_dict:
             self.username = data_dict['name']
 
     def update_from_data_source(self, db_object):
-        AbstractModels.update_from_data_source(self, db_object)
+        super(LineSIP, self).update_from_data_source(db_object)
         if hasattr(db_object, 'name'):
             self.username = db_object.name
 
     def update_data_source(self, db_object):
-        AbstractModels.update_data_source(self, db_object)
+        super(LineSIP, self).update_data_source(db_object)
         if hasattr(self, 'username'):
             setattr(db_object, 'name', self.username)
         setattr(db_object, 'username', '')
