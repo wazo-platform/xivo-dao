@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -61,6 +61,16 @@ class TestLineDao(DAOTestCase):
         assert_that(line.device_slot, equal_to(line_row.num))
         assert_that(line.device_id, equal_to(line_row.device))
         assert_that(line.provisioning_extension, equal_to(str(line_row.provisioningid)))
+
+    def test_get_when_device_id_is_empty_strings(self):
+        line_sip = self.add_usersip()
+        line_row = self.add_line(protocolid=line_sip.id,
+                                 device='')
+
+        line = line_dao.get(line_row.id)
+
+        assert_that(line.id, equal_to(line_row.id))
+        assert_that(line.device_id, none())
 
     def test_get_custom_line(self):
         line_interface = '123456789'
@@ -481,6 +491,21 @@ class TestLineDao(DAOTestCase):
                        protocolid=line_sip.id)
 
         self.assertRaises(NotFoundError, line_dao.edit, line)
+
+    def test_edit_when_removing_device(self):
+        line_sip_row = self.add_usersip()
+        line_row = self.add_line(protocolid=line_sip_row.id,
+                                 device='abcd')
+
+        line = line_dao.get(line_row.id)
+        line.device_id = None
+        line_dao.edit(line)
+
+        line_row = (self.session.query(LineSchema)
+                    .filter(LineSchema.id == line.id)
+                    .first())
+
+        assert_that(line_row.device, equal_to(''))
 
     @mocked_dao_session
     def test_edit_with_database_error(self, session):
