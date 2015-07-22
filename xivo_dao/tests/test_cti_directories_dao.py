@@ -37,7 +37,7 @@ class TestCtiDirectoriesDAO(DAOTestCase):
                 "uri": u"internal",
                 "type": "xivo",
                 "delimiter": "",
-                "name": "internal",
+                "name": "Repertoire XiVO interne",
                 "match_direct": [
                     u"userfeatures.firstname",
                     u"userfeatures.lastname"
@@ -57,7 +57,7 @@ class TestCtiDirectoriesDAO(DAOTestCase):
                 "uri": u"phonebook",
                 "type": "phonebook",
                 "delimiter": "",
-                "name": "xivodir",
+                "name": "Repertoire XiVO externe",
                 "match_direct": [
                     u"phonebook.firstname",
                     u"phonebook.lastname",
@@ -95,7 +95,7 @@ class TestCtiDirectoriesDAO(DAOTestCase):
                 "uri": u"ldapfilter://test-ldap-filter",
                 "type": "ldap",
                 "delimiter": "",
-                "name": "ldap1",
+                "name": "",
                 "match_direct": [
                     u"cn",
                     u"phoneNumber",
@@ -115,14 +115,14 @@ class TestCtiDirectoriesDAO(DAOTestCase):
         }
 
         match_direct = '["userfeatures.firstname","userfeatures.lastname"]'
-        ctidirectory = self._insert_ctidirectory('internal', 'internal', 'xivo', match_direct, '')
+        ctidirectory = self._insert_ctidirectory('internal', 'internal', 'xivo', match_direct, '', 'Repertoire XiVO interne')
         self._insert_ctidirectoryfields(ctidirectory.id, 'firstname', 'userfeatures.firstname')
         self._insert_ctidirectoryfields(ctidirectory.id, 'lastname', 'userfeatures.lastname')
         self._insert_ctidirectoryfields(ctidirectory.id, 'phone', 'linefeatures.number')
 
         match_direct = '["phonebook.firstname","phonebook.lastname","phonebook.displayname","phonebook.society","phonebooknumber.office.number"]'
         match_reverse = '["phonebooknumber.office.number","phonebooknumber.mobile.number"]'
-        ctidirectory = self._insert_ctidirectory('xivodir', 'phonebook', 'phonebook', match_direct, match_reverse)
+        ctidirectory = self._insert_ctidirectory('xivodir', 'phonebook', 'phonebook', match_direct, match_reverse, 'Repertoire XiVO externe')
         self._insert_ctidirectoryfields(ctidirectory.id, 'company', 'phonebook.society')
         self._insert_ctidirectoryfields(ctidirectory.id, 'firstname', 'phonebook.firstname')
         self._insert_ctidirectoryfields(ctidirectory.id, 'lastname', 'phonebook.lastname')
@@ -184,12 +184,13 @@ class TestCtiDirectoriesDAO(DAOTestCase):
 
         self.add_me(ctidirectoryfields)
 
-    def _insert_ctidirectory(self, name, uri, type_, match_direct, match_reverse):
+    def _insert_ctidirectory(self, name, uri, type_, match_direct, match_reverse, description=''):
         ctidirectory = CtiDirectories()
         ctidirectory.name = name
         ctidirectory.uri = uri
         ctidirectory.match_direct = match_direct
         ctidirectory.match_reverse = match_reverse
+        ctidirectory.description = description
         self.add_me(ctidirectory)
 
         if type_:

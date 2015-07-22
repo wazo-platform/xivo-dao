@@ -37,7 +37,7 @@ def get_config(session):
             'uri': directory.uri,
             'type': directory.dirtype,
             'delimiter': delimiter,
-            'name': directory.name,
+            'name': directory.description,
             'match_direct': dird_match_direct,
             'match_reverse': dird_match_reverse,
         }
