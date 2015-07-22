@@ -372,18 +372,18 @@ class TestSearch(DAOTestCase):
         user_row = self.add_user(**parameters)
         user = User(id=user_row.id,
                     firstname=user_row.firstname,
-                    lastname=user_row.lastname,
-                    timezone=user_row.timezone,
-                    language=user_row.language,
-                    description=user_row.description,
+                    lastname=user_row.lastname or None,
+                    timezone=user_row.timezone or None,
+                    language=user_row.language or None,
+                    description=user_row.description or None,
                     caller_id=user_row.callerid,
-                    outgoing_caller_id=user_row.outcallerid,
+                    outgoing_caller_id=user_row.outcallerid or None,
                     mobile_phone_number=(user_row.mobilephonenumber or None),
                     password=(user_row.passwdclient or None),
-                    username=user_row.loginclient,
-                    music_on_hold=user_row.musiconhold,
-                    preprocess_subroutine=user_row.preprocess_subroutine,
-                    userfield=user_row.userfield,
+                    username=user_row.loginclient or None,
+                    music_on_hold=user_row.musiconhold or None,
+                    preprocess_subroutine=user_row.preprocess_subroutine or None,
+                    userfield=user_row.userfield or None,
                     private_template_id=user_row.func_key_private_template_id)
         return user
 
