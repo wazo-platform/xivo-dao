@@ -520,40 +520,6 @@ class TestCreate(DAOTestCase):
         assert_that(row.entityid, equal_to(self.entity.id))
         assert_that(created_user.caller_id, equal_to(caller_id))
 
-    def test_create_with_custom_caller_id_including_quotes(self):
-        caller_id = '"Charlie Chaplin"'
-        user = self.prepare_user(firstname='firstname',
-                                 lastname='lastname',
-                                 caller_id=caller_id)
-
-        created_user = user_dao.create(user)
-
-        row = (self.session.query(UserSchema)
-               .filter(UserSchema.firstname == user.firstname)
-               .filter(UserSchema.lastname == user.lastname)
-               .first())
-
-        assert_that(row.id, equal_to(created_user.id))
-        assert_that(row.callerid, equal_to(caller_id))
-        assert_that(created_user.caller_id, equal_to(caller_id))
-
-    def test_create_with_caller_id_having_only_number(self):
-        caller_id = '<1000>'
-        user = self.prepare_user(firstname='firstname',
-                                 lastname='lastname',
-                                 caller_id=caller_id)
-
-        created_user = user_dao.create(user)
-
-        row = (self.session.query(UserSchema)
-               .filter(UserSchema.firstname == user.firstname)
-               .filter(UserSchema.lastname == user.lastname)
-               .first())
-
-        assert_that(row.id, equal_to(created_user.id))
-        assert_that(row.callerid, equal_to(caller_id))
-        assert_that(created_user.caller_id, equal_to(caller_id))
-
     def test_create_with_all_fields(self):
         user = self.prepare_user(firstname='firstname',
                                  lastname='lastname',
