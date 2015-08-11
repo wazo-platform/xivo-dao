@@ -498,6 +498,7 @@ class TestCreate(DAOTestCase):
         caller_id = '"toto kiki"'
         user = self.prepare_user(firstname='toto',
                                  lastname='kiki',
+                                 caller_id=caller_id,
                                  language='fr_FR',
                                  music_on_hold='musiconhold',
                                  preprocess_subroutine='preprocess_subroutine')

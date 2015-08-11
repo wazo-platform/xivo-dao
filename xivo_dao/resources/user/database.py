@@ -53,8 +53,6 @@ class UserDbConverter(DatabaseConverter):
         return model
 
     def _convert_model_fields(self, model):
-        if not model.caller_id:
-            model.caller_id = self._generate_caller_id(model)
         for field in ('password',
                       'mobile_phone_number',
                       'lastname',
@@ -67,9 +65,6 @@ class UserDbConverter(DatabaseConverter):
             if getattr(model, field) == '':
                 setattr(model, field, None)
 
-    def _generate_caller_id(self, model):
-        return '"{}"'.format(model.fullname)
-
     def update_source(self, source, model):
         super(UserDbConverter, self).update_source(source, model)
         self._convert_source_fields(source, model)
@@ -80,8 +75,6 @@ class UserDbConverter(DatabaseConverter):
         return source
 
     def _convert_source_fields(self, source, model):
-        if not source.callerid:
-            source.callerid = self._generate_caller_id(model)
         for field in ('passwdclient',
                       'mobilephonenumber',
                       'lastname',
