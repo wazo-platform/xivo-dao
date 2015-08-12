@@ -19,6 +19,8 @@ from sqlalchemy.schema import Column, PrimaryKeyConstraint, ForeignKeyConstraint
 from sqlalchemy.types import Integer
 from sqlalchemy.orm import relationship
 
+from xivo_dao.alchemy.cti_profile import CtiProfile
+from xivo_dao.alchemy.cti_service import CtiService
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -38,5 +40,5 @@ class CtiProfileService(Base):
     profile_id = Column(Integer)
     service_id = Column(Integer)
 
-    cti_profile = relationship("CtiProfile")
-    cti_service = relationship("CtiService")
+    cti_profile = relationship(CtiProfile)
+    cti_service = relationship(CtiService)

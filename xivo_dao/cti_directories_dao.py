@@ -19,7 +19,9 @@ import json
 
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao import ldap_dao
-from xivo_dao.alchemy import CtiDirectories, CtiDirectoryFields, Directories
+from xivo_dao.alchemy.ctidirectories import CtiDirectories
+from xivo_dao.alchemy.ctidirectoryfields import CtiDirectoryFields
+from xivo_dao.alchemy.directories import Directories
 
 
 @daosession

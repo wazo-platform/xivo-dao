@@ -21,9 +21,9 @@ from xivo_dao.resources.queue_members import dao as queue_members_dao
 from xivo_dao.resources.queue_members.model import QueueMemberAgent
 from xivo_dao.helpers.exception import NotFoundError
 from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao.alchemy import QueueMember as QueueMemberSchema
-from xivo_dao.alchemy import QueueFeatures as QueueFeaturesSchema
-from xivo_dao.alchemy import AgentFeatures as AgentFeaturesSchema
+from xivo_dao.alchemy.agentfeatures import AgentFeatures as AgentFeaturesSchema
+from xivo_dao.alchemy.queuefeatures import QueueFeatures as QueueFeaturesSchema
+from xivo_dao.alchemy.queuemember import QueueMember as QueueMemberSchema
 
 
 class IsAnAgentQueueMember(BaseMatcher):

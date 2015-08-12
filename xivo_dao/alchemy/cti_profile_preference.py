@@ -19,6 +19,8 @@ from sqlalchemy.schema import Column, PrimaryKeyConstraint, ForeignKeyConstraint
 from sqlalchemy.types import Integer, String
 from sqlalchemy.orm import relationship
 
+from xivo_dao.alchemy.cti_profile import CtiProfile
+from xivo_dao.alchemy.cti_preference import CtiPreference
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -39,5 +41,5 @@ class CtiProfilePreference(Base):
     preference_id = Column(Integer)
     value = Column(String(255))
 
-    cti_profile = relationship("CtiProfile")
-    cti_preference = relationship("CtiPreference")
+    cti_profile = relationship(CtiProfile)
+    cti_preference = relationship(CtiPreference)

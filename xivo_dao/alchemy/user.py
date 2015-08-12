@@ -20,6 +20,7 @@ from sqlalchemy.schema import Column, PrimaryKeyConstraint, ForeignKeyConstraint
     UniqueConstraint
 from sqlalchemy.types import Integer, String, Enum, Text
 
+from xivo_dao.alchemy.entity import Entity
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -50,4 +51,4 @@ class User(Base):
     dupdate = Column(Integer, nullable=False, server_default='0')
     obj = Column(Text, nullable=False)
 
-    entity = relationship('Entity')
+    entity = relationship(Entity)

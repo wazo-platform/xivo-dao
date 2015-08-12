@@ -20,6 +20,8 @@ from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint, CheckConstra
 from sqlalchemy.types import Integer, Boolean, String
 from sqlalchemy.orm import relationship
 
+from xivo_dao.alchemy.func_key import FuncKey
+from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -40,5 +42,5 @@ class FuncKeyMapping(Base):
     position = Column(Integer, nullable=False)
     blf = Column(Boolean, nullable=False, server_default='True')
 
-    func_key_template = relationship("FuncKeyTemplate")
-    func_key = relationship("FuncKey")
+    func_key_template = relationship(FuncKeyTemplate)
+    func_key = relationship(FuncKey)

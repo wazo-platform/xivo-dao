@@ -21,7 +21,11 @@ import logging
 from itertools import izip
 from sqlalchemy import and_, func
 from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.alchemy import CtiContexts, CtiDirectories, CtiDirectoryFields, CtiDisplays, Directories
+from xivo_dao.alchemy.cti_contexts import CtiContexts
+from xivo_dao.alchemy.cti_displays import CtiDisplays
+from xivo_dao.alchemy.ctidirectories import CtiDirectories
+from xivo_dao.alchemy.ctidirectoryfields import CtiDirectoryFields
+from xivo_dao.alchemy.directories import Directories
 
 
 logger = logging.getLogger(__name__)

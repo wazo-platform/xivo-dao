@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from xivo_dao.alchemy.func_key import FuncKey
+from xivo_dao.alchemy.paging import Paging
 from xivo_dao.helpers.db_manager import Base
 
 from sqlalchemy.orm import relationship
@@ -38,5 +40,5 @@ class FuncKeyDestPaging(Base):
     destination_type_id = Column(Integer, server_default="9")
     paging_id = Column(Integer)
 
-    func_key = relationship("FuncKey")
-    paging = relationship("Paging")
+    func_key = relationship(FuncKey)
+    paging = relationship(Paging)

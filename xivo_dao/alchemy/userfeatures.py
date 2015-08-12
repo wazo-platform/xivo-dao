@@ -23,6 +23,9 @@ from sqlalchemy.types import Integer, String, Text, Enum
 from sqlalchemy.orm import relationship
 
 from xivo_dao.alchemy import enum
+from xivo_dao.alchemy.cti_profile import CtiProfile
+from xivo_dao.alchemy.entity import Entity
+from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -101,10 +104,10 @@ class UserFeatures(Base):
     func_key_template_id = Column(Integer, ForeignKey('func_key_template.id', ondelete="SET NULL"))
     func_key_private_template_id = Column(Integer, ForeignKey('func_key_template.id'), nullable=False)
 
-    func_key_template = relationship("FuncKeyTemplate", foreign_keys=func_key_template_id)
-    func_key_template_private = relationship("FuncKeyTemplate", foreign_keys=func_key_private_template_id)
-    cti_profile = relationship("CtiProfile", foreign_keys=cti_profile_id)
-    entity = relationship("Entity", foreign_keys=entityid)
+    func_key_template = relationship(FuncKeyTemplate, foreign_keys=func_key_template_id)
+    func_key_template_private = relationship(FuncKeyTemplate, foreign_keys=func_key_private_template_id)
+    cti_profile = relationship(CtiProfile, foreign_keys=cti_profile_id)
+    entity = relationship(Entity, foreign_keys=entityid)
 
     @property
     def fullname(self):

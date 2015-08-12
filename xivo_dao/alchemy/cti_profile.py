@@ -19,6 +19,8 @@ from sqlalchemy.schema import Column, ForeignKeyConstraint, PrimaryKeyConstraint
 from sqlalchemy.types import Integer, String
 from sqlalchemy.orm import relationship
 
+from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
+from xivo_dao.alchemy.ctipresences import CtiPresences
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -40,5 +42,5 @@ class CtiProfile(Base):
     presence_id = Column(Integer)
     phonehints_id = Column(Integer)
 
-    ctipresences = relationship("CtiPresences")
-    ctiphonehintsgroup = relationship("CtiPhoneHintsGroup")
+    ctipresences = relationship(CtiPresences)
+    ctiphonehintsgroup = relationship(CtiPhoneHintsGroup)

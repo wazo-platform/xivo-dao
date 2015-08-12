@@ -19,6 +19,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, ForeignKeyConstraint, Index
 from sqlalchemy.types import Integer, String, Enum
 
+from xivo_dao.alchemy.phonebook import Phonebook
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -41,4 +42,4 @@ class PhonebookNumber(Base):
                        metadata=Base.metadata),
                   nullable=False)
 
-    phonebook = relationship('Phonebook')
+    phonebook = relationship(Phonebook)

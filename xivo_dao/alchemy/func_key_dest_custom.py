@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from xivo_dao.alchemy.func_key import FuncKey
 from xivo_dao.helpers.db_manager import Base
 
 from sqlalchemy.orm import relationship
@@ -36,4 +37,4 @@ class FuncKeyDestCustom(Base):
     destination_type_id = Column(Integer, server_default="10")
     exten = Column(String(40), nullable=False)
 
-    func_key = relationship("FuncKey")
+    func_key = relationship(FuncKey)

@@ -21,7 +21,10 @@ from xivo_dao.resources.utils.view import ViewSelector, View, ModelView
 from xivo_dao.resources.user.model import UserDirectory
 from xivo_dao.resources.user.database import db_converter
 
-from xivo_dao.alchemy import UserFeatures, LineFeatures, Extension, UserLine
+from xivo_dao.alchemy.extension import Extension
+from xivo_dao.alchemy.linefeatures import LineFeatures
+from xivo_dao.alchemy.userfeatures import UserFeatures
+from xivo_dao.alchemy.user_line import UserLine
 
 
 class UserView(ModelView):

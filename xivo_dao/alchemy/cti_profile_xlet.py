@@ -19,6 +19,9 @@ from sqlalchemy.schema import Column, PrimaryKeyConstraint, ForeignKeyConstraint
 from sqlalchemy.types import Integer, Boolean
 from sqlalchemy.orm import relationship
 
+from xivo_dao.alchemy.cti_profile import CtiProfile
+from xivo_dao.alchemy.cti_xlet import CtiXlet
+from xivo_dao.alchemy.cti_xlet_layout import CtiXletLayout
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -47,6 +50,6 @@ class CtiProfileXlet(Base):
     scrollable = Column(Boolean, server_default='True')
     order = Column(Integer)
 
-    cti_xlet = relationship("CtiXlet")
-    cti_profile = relationship("CtiProfile")
-    cti_xlet_layout = relationship("CtiXletLayout")
+    cti_xlet = relationship(CtiXlet)
+    cti_profile = relationship(CtiProfile)
+    cti_xlet_layout = relationship(CtiXletLayout)

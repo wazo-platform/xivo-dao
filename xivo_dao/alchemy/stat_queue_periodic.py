@@ -19,6 +19,7 @@ from sqlalchemy.schema import Column, ForeignKey
 from sqlalchemy.types import Integer, TIMESTAMP
 from sqlalchemy.orm import relationship
 
+from xivo_dao.alchemy.stat_queue import StatQueue
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -40,4 +41,4 @@ class StatQueuePeriodic(Base):
     timeout = Column(Integer, nullable=False, server_default='0')
     queue_id = Column(Integer, ForeignKey("stat_queue.id"))
 
-    stat_queue = relationship("StatQueue", foreign_keys=queue_id)
+    stat_queue = relationship(StatQueue, foreign_keys=queue_id)

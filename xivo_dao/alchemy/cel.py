@@ -19,6 +19,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, Index, ForeignKeyConstraint
 from sqlalchemy.types import DateTime, Integer, String
 
+from xivo_dao.alchemy.call_log import CallLog
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -57,4 +58,4 @@ class CEL(Base):
     peer = Column(String(80), nullable=False)
     call_log_id = Column(Integer)
 
-    call_log = relationship('CallLog')
+    call_log = relationship(CallLog)

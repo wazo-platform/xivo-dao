@@ -20,6 +20,9 @@ from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint, \
     PrimaryKeyConstraint
 from sqlalchemy.orm import relationship
 
+from xivo_dao.alchemy.extension import Extension
+from xivo_dao.alchemy.linefeatures import LineFeatures
+from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -38,6 +41,6 @@ class UserLine(Base):
     main_user = Column(Boolean, nullable=False)
     main_line = Column(Boolean, nullable=False)
 
-    linefeatures = relationship("LineFeatures", foreign_keys=line_id)
-    userfeatures = relationship("UserFeatures", foreign_keys=user_id)
-    extensions = relationship("Extension", foreign_keys=extension_id)
+    linefeatures = relationship(LineFeatures, foreign_keys=line_id)
+    userfeatures = relationship(UserFeatures, foreign_keys=user_id)
+    extensions = relationship(Extension, foreign_keys=extension_id)

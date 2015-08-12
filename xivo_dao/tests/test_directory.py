@@ -16,7 +16,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao import directory_dao
-from xivo_dao.alchemy import CtiContexts, CtiDirectories, CtiDirectoryFields, CtiDisplays, Directories
+from xivo_dao.alchemy.cti_contexts import CtiContexts
+from xivo_dao.alchemy.cti_displays import CtiDisplays
+from xivo_dao.alchemy.ctidirectories import CtiDirectories
+from xivo_dao.alchemy.ctidirectoryfields import CtiDirectoryFields
+from xivo_dao.alchemy.directories import Directories
 from xivo_dao.tests.test_dao import DAOTestCase
 
 from itertools import chain

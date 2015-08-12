@@ -19,6 +19,7 @@ from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
 from sqlalchemy.types import Integer, String, Text
 
 from xivo_dao.alchemy import enum
+from xivo_dao.alchemy.entity import Entity
 from xivo_dao.helpers.db_manager import Base
 from sqlalchemy.sql.schema import ForeignKeyConstraint
 from sqlalchemy.orm import relationship
@@ -46,4 +47,4 @@ class Callfilter(Base):
     commented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text, nullable=False)
 
-    entity = relationship('Entity')
+    entity = relationship(Entity)
