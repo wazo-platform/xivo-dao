@@ -184,6 +184,7 @@ def create(session, user):
         session.add(user_row)
 
     user.id = user_row.id
+    user.caller_id = user_row.callerid
 
     return user
 

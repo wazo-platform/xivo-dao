@@ -287,6 +287,13 @@ class DAOTestCase(unittest.TestCase):
             kwargs['func_key_private_template_id'] = func_key_template.id
 
         kwargs.setdefault('id', self._generate_int())
+        kwargs.setdefault('firstname', 'John')
+
+        fullname = kwargs['firstname']
+        if 'lastname' in kwargs:
+            fullname += " " + kwargs['lastname']
+
+        kwargs.setdefault('callerid', '"{}"'.format(fullname))
         user = UserFeatures(**kwargs)
         self.add_me(user)
         return user
