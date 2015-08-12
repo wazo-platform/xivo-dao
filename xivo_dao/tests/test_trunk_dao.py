@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2014 Avencall
+# Copyright (C) 2012-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -103,30 +103,6 @@ class TrunkFeaturesDAOTestCase(DAOTestCase):
 
     def test_null_input(self):
         self.assertRaises(ValueError, trunk_dao.find_by_proto_name, None, 'my_trunk')
-
-    def test_get_ids(self):
-        trunk1 = TrunkFeatures()
-        trunk1.protocolid = '1234'
-        trunk1.protocol = 'sip'
-
-        trunk2 = TrunkFeatures()
-        trunk2.protocolid = '4321'
-        trunk2.protocol = 'iax'
-
-        trunk3 = TrunkFeatures()
-        trunk3.protocolid = '5678'
-        trunk3.protocol = 'sip'
-
-        self.add_me_all([trunk1, trunk2, trunk3])
-
-        expected = sorted([trunk1.id, trunk2.id, trunk3.id])
-        result = sorted(trunk_dao.get_ids())
-
-        self.assertEqual(expected, result)
-
-    def test_get_ids_empty(self):
-        result = trunk_dao.get_ids()
-        self.assertEqual([], result)
 
     def test_find_by_proto_name_agent(self):
         self.assertRaises(ValueError, trunk_dao.find_by_proto_name, 'Agent', 1)

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2014 Avencall
+# Copyright (C) 2012-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -55,11 +55,6 @@ def _trunk_table_lookup_field(protocol):
         table = UserCustom
         field = UserCustom.interface
     return table, field
-
-
-@daosession
-def get_ids(session):
-    return [item.id for item in session.query(TrunkFeatures.id)]
 
 
 @daosession
