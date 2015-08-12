@@ -20,6 +20,7 @@ from mock import patch, ANY, Mock
 
 from xivo_dao.helpers.exception import NotFoundError
 from xivo_dao.helpers.exception import DataError
+from xivo_dao.helpers.exception import InputError
 
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
@@ -326,6 +327,14 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
 
         self.assert_mapping_has_destination('features', destination_row)
         assert_that(result.keys[1].id, equal_to(destination_row.func_key_id))
+
+    def test_given_destination_funckey_does_not_exist_then_raises_error(self):
+        self.create_paging_func_key()
+
+        template = self.build_template_with_key(PagingDestination(paging_id=999999999))
+
+        assert_that(calling(dao.create).with_args(template),
+                    raises(InputError))
 
 
 class TestFuncKeyTemplateGet(TestFuncKeyTemplateDao):

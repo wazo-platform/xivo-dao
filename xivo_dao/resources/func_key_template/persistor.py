@@ -101,7 +101,12 @@ class FuncKeyPersistor(object):
 
     def find_or_create_destination(self, destination):
         persistor = self.build_persistor(destination.type)
-        return persistor.find_or_create(destination)
+        destination_row = persistor.find_or_create(destination)
+        if not destination_row:
+            raise errors.param_not_found('destination',
+                                         'func key representing destination',
+                                         type=destination.type)
+        return destination_row
 
     def build_persistor(self, dest_type):
         persistor_cls = self.persistors[dest_type]
