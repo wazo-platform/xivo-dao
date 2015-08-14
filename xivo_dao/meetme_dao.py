@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -45,14 +45,6 @@ def is_a_meetme(session, number):
            .query(func.count(MeetmeFeatures.confno).label('count'))
            .filter(MeetmeFeatures.confno == number)).first()
     return row.count != 0
-
-
-@daosession
-def find_by_name(session, meetme_name):
-    res = session.query(MeetmeFeatures).filter(MeetmeFeatures.name == meetme_name)
-    if res.count() == 0:
-        return ''
-    return res[0]
 
 
 @daosession

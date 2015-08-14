@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2007-2014 Avencall
+# Copyright (C) 2007-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -78,16 +78,6 @@ class TestMeetmeFeaturesDAO(DAOTestCase):
 
     def test_get_no_result(self):
         self.assertRaises(LookupError, lambda: meetme_dao.get(1))
-
-    def test_find_by_name(self):
-        self._insert_meetme(1, 'red', '9000')
-        self._insert_meetme(2, 'blue', '9001')
-
-        meetme_red = meetme_dao.find_by_name('red')
-        meetme_blue = meetme_dao.find_by_name('blue')
-
-        self.assertEqual(meetme_red.name, 'red')
-        self.assertEqual(meetme_blue.name, 'blue')
 
     def test_find_by_confno(self):
         red = self._insert_meetme(1, 'red', '9000')
