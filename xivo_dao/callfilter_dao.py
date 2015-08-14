@@ -106,11 +106,6 @@ def update_callfiltermember_state(session, callfiltermember_id, new_state):
 
 
 @daosession
-def get_callfiltermembers_by_userid(session, userid):
-    return _request_member_by_userid(session, userid).all()
-
-
-@daosession
 def delete_callfiltermember_by_userid(session, userid):
     with commit_or_abort(session):
         _request_member_by_userid(session, userid).delete()
