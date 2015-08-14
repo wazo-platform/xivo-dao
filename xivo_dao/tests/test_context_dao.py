@@ -19,7 +19,6 @@ from xivo_dao import context_dao
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.context import Context
 from xivo_dao.alchemy.contexttype import ContextType
-from xivo_dao.alchemy.contextnumbers import ContextNumbers
 
 
 class TestContextDAO(DAOTestCase):
@@ -38,16 +37,6 @@ class TestContextDAO(DAOTestCase):
 
         self.add_me(context)
 
-    def _insert_contextnumbers(self, context_name):
-        contextnumbers = ContextNumbers()
-        contextnumbers.context = context_name
-        contextnumbers.type = 'user'
-        contextnumbers.numberbeg = '1000'
-        contextnumbers.numberend = '1999'
-        contextnumbers.didlength = 0
-
-        self.add_me(contextnumbers)
-
     def test_get(self):
         context_name = 'test_context'
         self._insert_context(context_name)
@@ -55,26 +44,3 @@ class TestContextDAO(DAOTestCase):
         context = context_dao.get(context_name)
 
         self.assertEqual(context.name, context_name)
-
-    def test_all(self):
-        context_name1 = 'test_context1'
-        self._insert_context(context_name1, contexttype_name='internal1')
-        self._insert_contextnumbers(context_name1)
-
-        context_name2 = 'test_context2'
-        self._insert_context(context_name2, contexttype_name='internal2')
-        self._insert_contextnumbers(context_name2)
-
-        context_full_infos = context_dao.all()
-
-        for row in context_full_infos:
-            context, contextnumbers, contexttype, contextinclude = row
-
-            assert(context.name in [context_name1, context_name2])
-            assert(contextnumbers.context in [context_name1, context_name2])
-            self.assertEqual(contextinclude, None)
-            self.assertEqual(contexttype.name, context.contexttype)
-
-    def test_all_empty(self):
-        result = context_dao.all()
-        self.assertEqual([], result)
