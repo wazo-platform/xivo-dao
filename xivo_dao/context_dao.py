@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2014 Avencall
+# Copyright (C) 2012-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,16 +25,6 @@ from xivo_dao.helpers.db_manager import daosession
 @daosession
 def get(session, context_name):
     return session.query(Context).filter(Context.name == context_name).first()
-
-
-@daosession
-def get_join_elements(session, context_name):
-    return (session.query(Context, ContextNumbers, ContextType, ContextInclude)
-            .join((ContextNumbers, Context.name == ContextNumbers.context),
-                  (ContextType, Context.contexttype == ContextType.name))
-            .outerjoin((ContextInclude, Context.name == ContextInclude.context))
-            .filter(Context.name == context_name)
-            .first())
 
 
 @daosession

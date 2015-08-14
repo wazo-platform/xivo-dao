@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2007-2014 Avencall
+# Copyright (C) 2007-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -55,18 +55,6 @@ class TestContextDAO(DAOTestCase):
         context = context_dao.get(context_name)
 
         self.assertEqual(context.name, context_name)
-
-    def test_get_join_elements(self):
-        context_name = 'test_context'
-        self._insert_context(context_name)
-        self._insert_contextnumbers(context_name)
-
-        context, contextnumbers, contexttype, contextinclude = context_dao.get_join_elements(context_name)
-
-        self.assertEqual(context.name, context_name)
-        self.assertEqual(contextnumbers.context, context_name)
-        self.assertEqual(contextinclude, None)
-        self.assertEqual(contexttype.name, context.contexttype)
 
     def test_all(self):
         context_name1 = 'test_context1'
