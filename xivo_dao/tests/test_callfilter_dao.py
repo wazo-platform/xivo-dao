@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from mock import Mock
 from sqlalchemy.exc import SQLAlchemyError
 
 from xivo_dao import callfilter_dao
@@ -146,27 +145,6 @@ class TestGetSecretariesIdByContext(BaseTestCallFilterDAO):
 
 
 class TestCallFilterDAO(BaseTestCallFilterDAO):
-
-    def test_add(self):
-        callfilter = Callfilter()
-        callfilter.callfrom = 'internal'
-        callfilter.type = 'bosssecretary'
-        callfilter.bosssecretary = 'bossfirst-serial'
-        callfilter.name = 'test'
-        callfilter.description = ''
-
-        callfilter_dao.add(callfilter)
-
-        result = self.session.query(Callfilter).first()
-        self.assertEquals(result.name, 'test')
-
-    @mocked_dao_session
-    def test_add_with_db_error(self, session):
-        session.commit.side_effect = SQLAlchemyError()
-        callfilter = Mock(Callfilter)
-
-        self.assertRaises(SQLAlchemyError, callfilter_dao.add, callfilter)
-        session.rollback.assert_called_once_with()
 
     def test_get_with_no_filter(self):
         filter_id = 1

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -103,12 +103,6 @@ def is_activated_by_callfilter_id(session, callfilter_id):
 def update_callfiltermember_state(session, callfiltermember_id, new_state):
     data_dict = {'active': int(new_state)}
     session.query(Callfiltermember).filter(Callfiltermember.id == callfiltermember_id).update(data_dict)
-
-
-@daosession
-def add(session, callfilter):
-    with commit_or_abort(session):
-        session.add(callfilter)
 
 
 @daosession
