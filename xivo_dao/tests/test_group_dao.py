@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2014 Avencall
+# Copyright (C) 2012-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,13 +22,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestGroupDAO(DAOTestCase):
-
-    def test_get_name(self):
-        group = self._insert_group('test_name', '1234', 'my_ctx')
-
-        result = group_dao.get_name(group.id)
-
-        self.assertEqual(result, group.name)
 
     def test_get_name_number(self):
         group = self._insert_group('test_name', '1234', 'my_ctx')
