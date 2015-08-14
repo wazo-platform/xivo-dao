@@ -16,11 +16,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo.asterisk.extension import Extension
-from xivo_dao import line_dao, user_line_dao
+from xivo_dao import line_dao
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.sccpline import SCCPLine
-from xivo_dao.alchemy.usersip import UserSIP
-from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 from xivo_dao.tests.test_dao import DAOTestCase
 
 USER_ID = 5
@@ -170,25 +168,6 @@ class TestLineFeaturesDAO(DAOTestCase):
         extension = line_dao.get_extension_from_protocol_interface(protocol, name)
 
         self.assertEquals(extension, expected_extension)
-
-    def test_delete(self):
-        usersip_id = 2
-        self.add_usersip(id=usersip_id)
-        line = self.add_line(number=LINE_NUMBER,
-                             context='default',
-                             protocol='sip',
-                             protocolid=usersip_id)
-        exten = self.add_extension(exten=LINE_NUMBER,
-                                   context='default')
-
-        line_dao.delete(line.id)
-
-        self.assertFalse(user_line_dao.is_phone_exten(LINE_NUMBER))
-
-        inserted_usersip = self.session.query(UserSIP).filter(UserSIP.id == usersip_id).first()
-        self.assertEquals(None, inserted_usersip)
-        inserted_extension = self.session.query(ExtensionSchema).filter(ExtensionSchema.id == exten.id).first()
-        self.assertEquals(None, inserted_extension)
 
     def test_get(self):
         line = self.add_line()
