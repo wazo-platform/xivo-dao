@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2007-2014 Avencall
+# Copyright (C) 2007-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -44,19 +44,6 @@ class TestIncallDAO(DAOTestCase):
         dialaction.linked = 1
 
         self.add_me(dialaction)
-
-    def test_get(self):
-        incall_exten = '1001'
-        incall_action = 'user'
-        incall_actionarg1 = '42'
-        incall_id = self._insert_incall(incall_exten)
-        self._insert_dialaction(incall_id, incall_action, incall_actionarg1)
-
-        incall = incall_dao.get(incall_id)
-
-        self.assertEqual(incall.id, incall_id)
-        self.assertEqual(incall.action, incall_action)
-        self.assertEqual(incall.actionarg1, incall_actionarg1)
 
     def test_get_by_exten(self):
         incall_exten = '1001'
