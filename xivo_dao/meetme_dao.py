@@ -55,10 +55,6 @@ def find_by_confno(session, meetme_confno):
     return res[0].id
 
 
-def get_name(meetme_id):
-    return get(meetme_id).name
-
-
 @daosession
 def has_pin(session, meetme_id):
     meetme = get(meetme_id)
