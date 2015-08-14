@@ -837,40 +837,6 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.assertTrue(user2.id in result)
         self.assertFalse(user3.id in result)
 
-    def test_get_user_join_line(self):
-        user_line = self.add_user_line_with_exten(exten="1234")
-
-        resultuser, resultline = user_dao.get_user_join_line(user_line.user.id)
-        self.assertEqual(user_line.user.firstname, resultuser.firstname)
-        self.assertEqual(user_line.line.id, resultline.id)
-        self.assertEqual(resultline.number, "1234")
-
-    def test_get_user_join_line_no_result(self):
-        result = user_dao.get_user_join_line(1)
-        self.assertEqual(result, None)
-
-    def test_get_user_join_line_no_line(self):
-        user = self.add_user(firstname="test")
-        resultuser, resultline = user_dao.get_user_join_line(user.id)
-        self.assertEqual(user.firstname, resultuser.firstname)
-        self.assertEqual(None, resultline)
-
-    def test_get_all_join_lines(self):
-        user_line1 = self.add_user_line_with_exten(exten="1234")
-        user_line2 = self.add_user_line_with_exten(exten="1235")
-
-        result = user_dao.get_all_join_line()
-
-        user1_firstname = result[0][0].firstname
-        user2_firstname = result[1][0].firstname
-        user1_line_id = result[0][1].id
-        user2_line_id = result[1][1].id
-
-        self.assertEqual(user_line1.user.firstname, user1_firstname)
-        self.assertEqual(user_line2.user.firstname, user2_firstname)
-        self.assertEqual(user_line1.line.id, user1_line_id)
-        self.assertEqual(user_line2.line.id, user2_line_id)
-
     def test_get_uuid_by_username_with_unknown_username(self):
         user = self.add_user(loginclient='alice',
                              passwdclient='s7cret',

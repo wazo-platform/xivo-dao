@@ -478,24 +478,3 @@ def _format_user(user):
         'voicemailid': user.voicemailid,
         'voicemailtype': user.voicemailtype,
     }
-
-
-@daosession
-def get_user_join_line(session, userid):
-    return (session.query(UserFeatures, LineFeatures)
-            .outerjoin(UserLine, and_(UserFeatures.id == UserLine.user_id,
-                                      UserLine.main_user == True,
-                                      UserLine.main_line == True))
-            .outerjoin(LineFeatures, LineFeatures.id == UserLine.line_id)
-            .filter(UserFeatures.id == userid)
-            .first())
-
-
-@daosession
-def get_all_join_line(session):
-    return (session.query(UserFeatures, LineFeatures)
-            .outerjoin(UserLine, and_(UserFeatures.id == UserLine.user_id,
-                                      UserLine.main_user == True,
-                                      UserLine.main_line == True))
-            .outerjoin(LineFeatures, LineFeatures.id == UserLine.line_id)
-            .all())
