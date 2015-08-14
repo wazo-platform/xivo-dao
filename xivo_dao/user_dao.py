@@ -32,8 +32,6 @@ from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
-# the following import is necessary to load CtiProfiles' definition:
-from xivo_dao.resources.func_key_template import dao as func_key_template_dao
 
 logger = logging.getLogger(__name__)
 
@@ -277,14 +275,6 @@ def get_context(session, user_id):
 @daosession
 def get_all(session):
     return session.query(UserFeatures).all()
-
-
-@daosession
-def add_user(session, user):
-    user.func_key_private_template_id = func_key_template_dao.create_private_template()
-
-    with commit_or_abort(session):
-        session.add(user)
 
 
 @daosession

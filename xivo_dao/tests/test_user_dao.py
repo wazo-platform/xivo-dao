@@ -560,13 +560,6 @@ class TestUserFeaturesDAO(DAOTestCase):
         self.assertEqual(result[1].firstname, user2.firstname)
         self.assertEqual(2, len(result))
 
-    def test_add_user(self):
-        user = UserFeatures()
-        user.firstname = 'test_user'
-        user_dao.add_user(user)
-        result = user_dao.get_all()
-        self.assertEqual(result, [user])
-
     def test_update(self):
         user = self.add_user(firstname='test')
         data = {'firstname': 'test_first',
