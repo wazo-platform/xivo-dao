@@ -92,23 +92,6 @@ class TestMeetmeFeaturesDAO(DAOTestCase):
     def test_find_by_confno_no_conf(self):
         self.assertRaises(LookupError, meetme_dao.find_by_confno, '1234')
 
-    def test_has_pin_true(self):
-        red = self._insert_meetme(1, 'red', '9000', '1234')
-
-        result = meetme_dao.has_pin(red.id)
-
-        self.assertTrue(result)
-
-    def test_has_pin_false(self):
-        red = self._insert_meetme(1, 'red', '9000')
-
-        result = meetme_dao.has_pin(red.id)
-
-        self.assertFalse(result)
-
-    def test_has_pin_no_confroom(self):
-        self.assertRaises(LookupError, meetme_dao.has_pin, 1)
-
     def test_get_configs(self):
         self._insert_meetme(1, 'red', '9000', context='default')
         self._insert_meetme(2, 'blue', '9001', '1234', context='test')

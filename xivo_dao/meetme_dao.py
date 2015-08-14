@@ -55,13 +55,6 @@ def find_by_confno(session, meetme_confno):
     return res[0].id
 
 
-@daosession
-def has_pin(session, meetme_id):
-    meetme = get(meetme_id)
-    var_val = session.query(StaticMeetme.var_val).filter(StaticMeetme.id == meetme.meetmeid)
-    return _has_pin_from_var_val(var_val[0].var_val)
-
-
 def _has_pin_from_var_val(var_val):
     try:
         _, pin = var_val.split(',', 1)
