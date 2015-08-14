@@ -343,11 +343,6 @@ def delete(session, userid):
 
 
 @daosession
-def get_by_voicemailid(session, voicemailid):
-    return session.query(UserFeatures).filter(UserFeatures.voicemailid == voicemailid).all()
-
-
-@daosession
 def get_user_config(session, user_id):
     with commit_or_abort(session):
         query = _user_config_query(session)

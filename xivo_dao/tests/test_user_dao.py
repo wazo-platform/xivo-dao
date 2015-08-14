@@ -814,29 +814,6 @@ class TestUserFeaturesDAO(DAOTestCase):
         assert_that(result[user1_id]['firstname'], equal_to(user1.firstname))
         assert_that(result[user2_id]['firstname'], equal_to(user2.firstname))
 
-    def test_get_by_voicemailid(self):
-        user1 = self.add_user(
-            firstname='John',
-            lastname='Jackson',
-            voicemailid=1
-        )
-        user2 = self.add_user(
-            firstname='Jack',
-            lastname='Johnson',
-            voicemailid=1
-        )
-        user3 = self.add_user(
-            firstname='Christopher',
-            lastname='Christopherson',
-            voicemailid=2
-        )
-
-        result = user_dao.get_by_voicemailid(1)
-        result = [user.id for user in result]
-        self.assertTrue(user1.id in result)
-        self.assertTrue(user2.id in result)
-        self.assertFalse(user3.id in result)
-
     def test_get_uuid_by_username_with_unknown_username(self):
         user = self.add_user(loginclient='alice',
                              passwdclient='s7cret',
