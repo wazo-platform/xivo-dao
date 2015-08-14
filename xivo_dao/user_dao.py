@@ -18,7 +18,6 @@
 import logging
 
 from sqlalchemy import and_
-from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from xivo_dao.alchemy.contextinclude import ContextInclude
 from xivo_dao.alchemy.dialaction import Dialaction
@@ -163,18 +162,6 @@ def get_reachable_contexts(session, user_id):
     line_contexts = [context[0] for context in res]
 
     return _get_nested_contexts(line_contexts)
-
-
-@daosession
-def get_agent_number(session, user_id):
-    row = (session
-           .query(AgentFeatures.number, UserFeatures.agentid)
-           .filter(and_(UserFeatures.id == user_id,
-                        AgentFeatures.id == UserFeatures.agentid))
-           .first())
-    if not row:
-        raise LookupError('Could not find a agent number for user %s', user_id)
-    return row.number
 
 
 @daosession

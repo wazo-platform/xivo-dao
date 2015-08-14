@@ -24,7 +24,6 @@ from mock import patch
 from xivo_dao import user_dao
 from xivo_dao.tests.test_dao import DAOTestCase
 
-from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.callfilter import Callfilter
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from xivo_dao.alchemy.contextinclude import ContextInclude
@@ -399,25 +398,6 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         for context in [context, included_context, looping_context]:
             self.assertTrue(context in result)
-
-    def test_get_agent_number(self):
-        self.assertRaises(LookupError, user_dao.get_agent_number, 1)
-
-        agent = AgentFeatures()
-        agent.number = '1234'
-        agent.numgroup = 0
-        agent.passwd = ''
-        agent.context = 'ctx'
-        agent.language = 'fr'
-        agent.description = 'description'
-
-        self.add_me(agent)
-
-        user = self.add_user(agentid=agent.id)
-
-        result = user_dao.get_agent_number(user.id)
-
-        self.assertEqual(result, agent.number)
 
     def test_get_dest_unc(self):
         user = self.add_user()
