@@ -280,14 +280,6 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         self.assertEqual(res, None)
 
-    def test_get_profile(self):
-        user_profile_id = self._add_profile('test_profile')
-        user = self.add_user(firstname='test_agent', cti_profile_id=user_profile_id)
-
-        result = user_dao.get_profile(user.id)
-
-        self.assertEqual(result, user_profile_id)
-
     def _add_presence(self, name):
         cti_presence = CtiPresences()
         cti_presence.name = name

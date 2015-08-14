@@ -135,10 +135,6 @@ def agent_id(user_id):
         return None
 
 
-def get_profile(user_id):
-    return get(user_id).cti_profile_id
-
-
 @daosession
 def _get_included_contexts(session, context):
     return [line.include for line in (session.query(ContextInclude.include)
