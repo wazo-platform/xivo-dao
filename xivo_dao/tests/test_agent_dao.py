@@ -56,21 +56,6 @@ class TestAgentDAO(DAOTestCase):
     def test_agent_interface_not_exist(self):
         self.assertRaises(LookupError, agent_dao.agent_interface(1))
 
-    def test_add_agent(self):
-        agent = AgentFeatures()
-        agent.numgroup = 6
-        agent.number = '15'
-        agent.passwd = ''
-        agent.context = self.agent_context
-        agent.language = ''
-        agent.description = ''
-        agent_dao.add_agent(agent)
-        self.assertTrue(agent.id > 0)
-        self.assertTrue(agent.number == '15')
-
-    def test_add_agent_bad_args(self):
-        self.assertRaises(ValueError, agent_dao.add_agent, None)
-
     def test_del_agent(self):
         agent_dao.del_agent(self._insert_agent().id)
         self.assertTrue(agent_dao.all() == [])

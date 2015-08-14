@@ -52,17 +52,6 @@ def _get_one(session, agentid):
 
 
 @daosession
-def add_agent(session, agent_features):
-    if type(agent_features) != AgentFeatures:
-        raise ValueError('Wrong object passed')
-
-    with commit_or_abort(session):
-        session.add(agent_features)
-
-    return agent_features.id
-
-
-@daosession
 def del_agent(session, agentid):
     if agentid is None:
         raise ValueError('Agent ID is None')
