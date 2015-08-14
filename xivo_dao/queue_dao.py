@@ -16,7 +16,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
-from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
 
 
@@ -90,10 +89,3 @@ WHERE
 def get_display_name_number(queue_id):
     queue = get(queue_id)
     return queue.displayname, queue.number
-
-
-@daosession
-def delete_by_name(session, queue_name):
-    with commit_or_abort(session):
-        session.query(QueueFeatures).filter(QueueFeatures.name == queue_name)\
-                                    .delete()

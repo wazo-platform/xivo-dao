@@ -81,12 +81,6 @@ class TestQueueDAO(DAOTestCase):
         expected.append(self._insert_queue('name2', 'display2', '3002'))
         self.assertTrue(queue_dao.all_queues() == expected)
 
-    def test_delete_by_name(self):
-        queue_name = 'name'
-        self._insert_queue(queue_name, 'display_name', '3000')
-        queue_dao.delete_by_name(queue_name)
-        self.assertRaises(LookupError, queue_dao.id_from_name, queue_name)
-
     def _insert_user(self, user_id, agent_id):
         return self.add_user(id=user_id, firstname='John', agentid=agent_id)
 
