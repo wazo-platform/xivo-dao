@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2014 Avencall
+# Copyright (C) 2012-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -55,15 +55,6 @@ def queue_name(session, queue_id):
         raise LookupError('No such queue')
     else:
         return result.name
-
-
-def is_a_queue(name):
-    try:
-        id_from_name(name)
-    except LookupError:
-        return False
-    else:
-        return True
 
 
 @daosession

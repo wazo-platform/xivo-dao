@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -36,13 +36,6 @@ class TestQueueDAO(DAOTestCase):
         result = queue_dao.queue_name(queue.id)
 
         self.assertEquals(result, 'my_queue')
-
-    def test_is_a_queue(self):
-        self.assertFalse(queue_dao.is_a_queue('not_a_queue'))
-
-        self._insert_queue('a_queue', 'My Queue')
-
-        self.assertTrue(queue_dao.is_a_queue('a_queue'))
 
     def test_get_queue_name(self):
         self.assertRaises(LookupError, queue_dao.get_queue_name, 1)
