@@ -20,7 +20,6 @@ from sqlalchemy.sql import select, and_
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
-from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
 
 
@@ -49,17 +48,6 @@ def _get_one(session, agentid):
     if result is None:
         raise LookupError('No such agent')
     return result
-
-
-@daosession
-def del_agent(session, agentid):
-    if agentid is None:
-        raise ValueError('Agent ID is None')
-
-    with commit_or_abort(session):
-        session.query(AgentFeatures)\
-            .filter(AgentFeatures.id == agentid)\
-            .delete()
 
 
 @daosession

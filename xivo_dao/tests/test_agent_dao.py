@@ -17,12 +17,10 @@
 
 from hamcrest import assert_that, equal_to
 
-from sqlalchemy.exc import SQLAlchemyError
 from xivo_dao import agent_dao
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
-from xivo_dao.tests.helpers.session import mocked_dao_session
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -55,20 +53,6 @@ class TestAgentDAO(DAOTestCase):
 
     def test_agent_interface_not_exist(self):
         self.assertRaises(LookupError, agent_dao.agent_interface(1))
-
-    def test_del_agent(self):
-        agent_dao.del_agent(self._insert_agent().id)
-        self.assertTrue(agent_dao.all() == [])
-
-    def test_del_agent_bad_args(self):
-        self.assertRaises(ValueError, agent_dao.del_agent, None)
-
-    @mocked_dao_session
-    def test_del_agent_db_error(self, session):
-        session.commit.side_effect = SQLAlchemyError()
-
-        self.assertRaises(SQLAlchemyError, agent_dao.del_agent, 1)
-        session.rollback.assert_called_once_with()
 
     def test_agent_with_id(self):
         agent = self._insert_agent()
