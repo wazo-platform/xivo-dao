@@ -280,12 +280,6 @@ def get_all(session):
 
 
 @daosession
-def delete_all(session):
-    with commit_or_abort(session):
-        session.query(UserFeatures).delete()
-
-
-@daosession
 def add_user(session, user):
     user.func_key_private_template_id = func_key_template_dao.create_private_template()
 
