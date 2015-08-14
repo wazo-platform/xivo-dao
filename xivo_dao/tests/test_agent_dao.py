@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -32,19 +32,6 @@ class TestAgentDAO(DAOTestCase):
     agent1_number = '1001'
     agent2_number = '1002'
     agent_context = 'test'
-
-    def test_agent_number(self):
-        agent = self._insert_agent()
-
-        number = agent_dao.agent_number(agent.id)
-
-        self.assertEqual(number, self.agent_number)
-
-    def test_test_agent_number_bad_args(self):
-        self.assertRaises(ValueError, agent_dao.agent_number, None)
-
-    def test_agent_number_unknown(self):
-        self.assertRaises(LookupError, lambda: agent_dao.agent_number(-1))
 
     def test_agent_context(self):
         agent = self._insert_agent()
@@ -92,7 +79,7 @@ class TestAgentDAO(DAOTestCase):
         agent.description = ''
         agent_dao.add_agent(agent)
         self.assertTrue(agent.id > 0)
-        self.assertTrue(agent_dao.agent_number(agent.id) == '15')
+        self.assertTrue(agent.number == '15')
 
     def test_add_agent_bad_args(self):
         self.assertRaises(ValueError, agent_dao.add_agent, None)
