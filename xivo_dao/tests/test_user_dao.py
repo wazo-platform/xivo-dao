@@ -280,21 +280,6 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         self.assertEqual(res, None)
 
-    def test_is_agent_yes(self):
-        agent_id = 5
-        user = self.add_user(firstname='test_agent', agentid=agent_id)
-
-        result = user_dao.is_agent(user.id)
-
-        self.assertEqual(result, True)
-
-    def test_is_agent_no(self):
-        user = self.add_user(firstname='test_agent')
-
-        result = user_dao.is_agent(user.id)
-
-        self.assertEqual(result, False)
-
     def test_get_profile(self):
         user_profile_id = self._add_profile('test_profile')
         user = self.add_user(firstname='test_agent', cti_profile_id=user_profile_id)

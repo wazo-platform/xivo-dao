@@ -135,14 +135,6 @@ def agent_id(user_id):
         return None
 
 
-def is_agent(user_id):
-    try:
-        id = agent_id(user_id)
-        return id is not None
-    except LookupError:
-        return False
-
-
 def get_profile(user_id):
     return get(user_id).cti_profile_id
 
