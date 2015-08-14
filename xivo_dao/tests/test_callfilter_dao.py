@@ -187,13 +187,6 @@ class TestCallFilterDAO(BaseTestCallFilterDAO):
         self.assertIn(boss_id, member_ids)
         self.assertIn(secretary_id, member_ids)
 
-    @mocked_dao_session
-    def test_delete_callfiltermember_by_userid_with_db_error(self, session):
-        session.commit.side_effect = SQLAlchemyError()
-
-        self.assertRaises(SQLAlchemyError, callfilter_dao.delete_callfiltermember_by_userid, 1)
-        session.rollback.assert_called_once_with()
-
     def test_does_secretary_filter_boss_with_no_filters(self):
         boss_id = 1
         secretary_id = 2

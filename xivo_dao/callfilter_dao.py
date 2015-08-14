@@ -20,7 +20,6 @@ from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from sqlalchemy.sql.expression import and_, cast, func
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from sqlalchemy.types import Integer
-from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
@@ -103,12 +102,6 @@ def is_activated_by_callfilter_id(session, callfilter_id):
 def update_callfiltermember_state(session, callfiltermember_id, new_state):
     data_dict = {'active': int(new_state)}
     session.query(Callfiltermember).filter(Callfiltermember.id == callfiltermember_id).update(data_dict)
-
-
-@daosession
-def delete_callfiltermember_by_userid(session, userid):
-    with commit_or_abort(session):
-        _request_member_by_userid(session, userid).delete()
 
 
 def _request_member_by_userid(session, userid):
