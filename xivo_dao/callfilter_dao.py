@@ -102,8 +102,3 @@ def is_activated_by_callfilter_id(session, callfilter_id):
 def update_callfiltermember_state(session, callfiltermember_id, new_state):
     data_dict = {'active': int(new_state)}
     session.query(Callfiltermember).filter(Callfiltermember.id == callfiltermember_id).update(data_dict)
-
-
-def _request_member_by_userid(session, userid):
-    return (session.query(Callfiltermember).filter(Callfiltermember.type == 'user')
-                                           .filter(Callfiltermember.typeval == str(userid)))
