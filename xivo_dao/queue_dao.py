@@ -87,10 +87,6 @@ WHERE
     return row is not None
 
 
-def get_queue_name(queue_id):
-    return get(queue_id).name
-
-
 def get_display_name_number(queue_id):
     queue = get(queue_id)
     return queue.displayname, queue.number
