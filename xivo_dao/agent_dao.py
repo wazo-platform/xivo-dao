@@ -41,16 +41,6 @@ def agent_interface(session, agentid):
         return None
 
 
-@daosession
-def agent_id(session, agent_number):
-    if agent_number is None:
-        raise ValueError('Agent number is None')
-    result = session.query(AgentFeatures.id).filter(AgentFeatures.number == agent_number).first()
-    if result is None:
-        raise LookupError('No such agent')
-    return str(result.id)
-
-
 def _get_one(session, agentid):
     # field id != field agentid used only for joining with staticagent table.
     if agentid is None:
