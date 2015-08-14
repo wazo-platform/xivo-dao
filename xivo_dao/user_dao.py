@@ -273,11 +273,6 @@ def get_context(session, user_id):
 
 
 @daosession
-def get_all(session):
-    return session.query(UserFeatures).all()
-
-
-@daosession
 def delete(session, userid):
     with commit_or_abort(session):
         result = session.query(UserFeatures).filter(UserFeatures.id == userid)\
