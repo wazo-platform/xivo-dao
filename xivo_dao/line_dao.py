@@ -81,14 +81,6 @@ def _format_interface(protocol, name):
 
 
 @daosession
-def create(session, line):
-    with commit_or_abort(session):
-        session.add(line)
-
-    return line.id
-
-
-@daosession
 def delete(session, lineid):
     with commit_or_abort(session):
         line = session.query(LineFeatures).filter(LineFeatures.id == lineid).first()
