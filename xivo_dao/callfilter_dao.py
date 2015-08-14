@@ -106,11 +106,6 @@ def update_callfiltermember_state(session, callfiltermember_id, new_state):
 
 
 @daosession
-def get_by_name(session, name):
-    return session.query(Callfilter).filter(Callfilter.name == name).all()
-
-
-@daosession
 def add_user_to_filter(session, userid, filterid, role):
     member = Callfiltermember()
     member.type = 'user'

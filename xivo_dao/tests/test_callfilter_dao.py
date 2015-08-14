@@ -187,14 +187,6 @@ class TestCallFilterDAO(BaseTestCallFilterDAO):
         self.assertIn(boss_id, member_ids)
         self.assertIn(secretary_id, member_ids)
 
-    def test_get_by_name(self):
-        self._insert_call_filter('test')
-
-        result = callfilter_dao.get_by_name('test')
-
-        self.assertEquals(1, len(result))
-        self.assertEquals('test', result[0].name)
-
     def test_add_user_to_filter(self):
         filterid = self._insert_call_filter('test')
 
