@@ -81,16 +81,6 @@ class TestQueueDAO(DAOTestCase):
         expected.append(self._insert_queue('name2', 'display2', '3002'))
         self.assertTrue(queue_dao.all_queues() == expected)
 
-    def test_add_queue(self):
-        queue = QueueFeatures()
-        name = u'àç__-\'"é'
-        queue.name = name
-        queue.displayname = name + 'display'
-        queue.number = '3003'
-        queue_dao.add_queue(queue)
-        self.assertTrue(queue.id > 0)
-        self.assertTrue(queue_dao.queue_name(queue.id) == name)
-
     def test_delete_by_name(self):
         queue_name = 'name'
         self._insert_queue(queue_name, 'display_name', '3000')
