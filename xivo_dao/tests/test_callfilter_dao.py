@@ -163,7 +163,7 @@ class TestCallFilterDAO(BaseTestCallFilterDAO):
     def test_get_with_filter_having_members(self):
         boss_id = 1
         filter_id = self._insert_call_filter('testfilter')
-        callfilter_dao.add_user_to_filter(boss_id, filter_id, 'boss')
+        self._add_user_to_filter(boss_id, filter_id, 'boss')
 
         result = callfilter_dao.get(filter_id)
 
@@ -177,8 +177,8 @@ class TestCallFilterDAO(BaseTestCallFilterDAO):
         boss_id = 1
         secretary_id = 2
         filter_id = self._insert_call_filter('testfilter')
-        callfilter_dao.add_user_to_filter(boss_id, filter_id, 'boss')
-        callfilter_dao.add_user_to_filter(secretary_id, filter_id, 'secretary')
+        self._add_user_to_filter(boss_id, filter_id, 'boss')
+        self._add_user_to_filter(secretary_id, filter_id, 'secretary')
 
         result = callfilter_dao.get(filter_id)
 
@@ -186,24 +186,6 @@ class TestCallFilterDAO(BaseTestCallFilterDAO):
         member_ids = [int(c[1].typeval) for c in result]
         self.assertIn(boss_id, member_ids)
         self.assertIn(secretary_id, member_ids)
-
-    def test_add_user_to_filter(self):
-        filterid = self._insert_call_filter('test')
-
-        callfilter_dao.add_user_to_filter(1, filterid, 'boss')
-
-        member = self.session.query(Callfiltermember).first()
-        self.assertEquals('1', member.typeval)
-        self.assertEquals('user', member.type)
-        self.assertEquals(filterid, member.callfilterid)
-        self.assertEquals('boss', member.bstype)
-
-    @mocked_dao_session
-    def test_add_user_to_filter_with_db_error(self, session):
-        session.commit.side_effect = SQLAlchemyError()
-
-        self.assertRaises(SQLAlchemyError, callfilter_dao.add_user_to_filter, 1, 2, 'boss')
-        session.rollback.assert_called_once_with()
 
     def test_get_callfiltermember_by_userid(self):
         filterid1 = self._insert_call_filter('test1')
@@ -261,7 +243,7 @@ class TestCallFilterDAO(BaseTestCallFilterDAO):
         boss_id = 1
         secretary_id = 2
         filter_id = self._insert_call_filter('test1')
-        callfilter_dao.add_user_to_filter(boss_id, filter_id, 'boss')
+        self._add_user_to_filter(boss_id, filter_id, 'boss')
 
         result = callfilter_dao.does_secretary_filter_boss(boss_id, secretary_id)
 
@@ -271,7 +253,7 @@ class TestCallFilterDAO(BaseTestCallFilterDAO):
         boss_id = 1
         secretary_id = 2
         filter_id = self._insert_call_filter('test1')
-        callfilter_dao.add_user_to_filter(secretary_id, filter_id, 'secretary')
+        self._add_user_to_filter(secretary_id, filter_id, 'secretary')
 
         result = callfilter_dao.does_secretary_filter_boss(boss_id, secretary_id)
 
@@ -282,8 +264,8 @@ class TestCallFilterDAO(BaseTestCallFilterDAO):
         secretary_id = 2
         boss_filter_id = self._insert_call_filter('bossfilter')
         secretatry_filter_id = self._insert_call_filter('secretaryfilter')
-        callfilter_dao.add_user_to_filter(boss_id, boss_filter_id, 'boss')
-        callfilter_dao.add_user_to_filter(secretary_id, secretatry_filter_id, 'secretary')
+        self._add_user_to_filter(boss_id, boss_filter_id, 'boss')
+        self._add_user_to_filter(secretary_id, secretatry_filter_id, 'secretary')
 
         result = callfilter_dao.does_secretary_filter_boss(boss_id, secretary_id)
 
@@ -293,8 +275,8 @@ class TestCallFilterDAO(BaseTestCallFilterDAO):
         boss_id = 1
         secretary_id = 2
         filter_id = self._insert_call_filter('testfilter')
-        callfilter_dao.add_user_to_filter(boss_id, filter_id, 'boss')
-        callfilter_dao.add_user_to_filter(secretary_id, filter_id, 'secretary')
+        self._add_user_to_filter(boss_id, filter_id, 'boss')
+        self._add_user_to_filter(secretary_id, filter_id, 'secretary')
 
         result = callfilter_dao.does_secretary_filter_boss(boss_id, secretary_id)
 
@@ -305,9 +287,9 @@ class TestCallFilterDAO(BaseTestCallFilterDAO):
         first_secretary_id = 20
         second_secretary_id = 21
         filter_id = self._insert_call_filter('testfilter')
-        callfilter_dao.add_user_to_filter(boss_id, filter_id, 'boss')
-        callfilter_dao.add_user_to_filter(first_secretary_id, filter_id, 'secretary')
-        callfilter_dao.add_user_to_filter(second_secretary_id, filter_id, 'secretary')
+        self._add_user_to_filter(boss_id, filter_id, 'boss')
+        self._add_user_to_filter(first_secretary_id, filter_id, 'secretary')
+        self._add_user_to_filter(second_secretary_id, filter_id, 'secretary')
 
         first_result = callfilter_dao.does_secretary_filter_boss(boss_id, first_secretary_id)
         second_result = callfilter_dao.does_secretary_filter_boss(boss_id, second_secretary_id)
@@ -320,9 +302,9 @@ class TestCallFilterDAO(BaseTestCallFilterDAO):
         second_boss_id = 2
         secretary_id = 20
         filter_id = self._insert_call_filter('testfilter')
-        callfilter_dao.add_user_to_filter(secretary_id, filter_id, 'secretary')
-        callfilter_dao.add_user_to_filter(first_boss_id, filter_id, 'boss')
-        callfilter_dao.add_user_to_filter(second_boss_id, filter_id, 'boss')
+        self._add_user_to_filter(secretary_id, filter_id, 'secretary')
+        self._add_user_to_filter(first_boss_id, filter_id, 'boss')
+        self._add_user_to_filter(second_boss_id, filter_id, 'boss')
 
         first_result = callfilter_dao.does_secretary_filter_boss(first_boss_id, secretary_id)
         second_result = callfilter_dao.does_secretary_filter_boss(second_boss_id, secretary_id)

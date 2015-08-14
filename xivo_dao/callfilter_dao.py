@@ -106,17 +106,6 @@ def update_callfiltermember_state(session, callfiltermember_id, new_state):
 
 
 @daosession
-def add_user_to_filter(session, userid, filterid, role):
-    member = Callfiltermember()
-    member.type = 'user'
-    member.typeval = str(userid)
-    member.callfilterid = filterid
-    member.bstype = role
-    with commit_or_abort(session):
-        session.add(member)
-
-
-@daosession
 def get_callfiltermembers_by_userid(session, userid):
     return _request_member_by_userid(session, userid).all()
 
