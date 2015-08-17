@@ -21,6 +21,8 @@ from sqlalchemy.schema import Column, ForeignKey, CheckConstraint, \
 from sqlalchemy.types import Integer
 from sqlalchemy.orm import relationship
 
+from xivo_dao.alchemy.func_key import FuncKey
+from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -37,5 +39,5 @@ class FuncKeyDestUser(Base):
     user_id = Column(Integer, ForeignKey('userfeatures.id'), primary_key=True)
     destination_type_id = Column(Integer, primary_key=True, server_default="1")
 
-    func_key = relationship("FuncKey")
-    userfeatures = relationship("UserFeatures")
+    func_key = relationship(FuncKey)
+    userfeatures = relationship(UserFeatures)

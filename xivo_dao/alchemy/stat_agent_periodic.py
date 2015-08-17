@@ -21,6 +21,7 @@ from sqlalchemy.types import Integer, TIMESTAMP
 from sqlalchemy.dialects.postgresql import INTERVAL
 from sqlalchemy.orm import relationship
 
+from xivo_dao.alchemy.stat_agent import StatAgent
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -42,4 +43,4 @@ class StatAgentPeriodic(Base):
     wrapup_time = Column(INTERVAL, nullable=False, server_default='0')
     agent_id = Column(Integer)
 
-    stat_agent = relationship("StatAgent", foreign_keys=agent_id)
+    stat_agent = relationship(StatAgent, foreign_keys=agent_id)

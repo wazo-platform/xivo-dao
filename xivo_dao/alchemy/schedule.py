@@ -18,8 +18,9 @@
 from sqlalchemy.schema import Column, PrimaryKeyConstraint
 from sqlalchemy.types import Integer, String, Text
 
-from xivo_dao.helpers.db_manager import Base
 from xivo_dao.alchemy import enum
+from xivo_dao.alchemy.entity import Entity
+from xivo_dao.helpers.db_manager import Base
 from sqlalchemy.sql.schema import ForeignKeyConstraint
 from sqlalchemy.orm import relationship
 
@@ -44,4 +45,4 @@ class Schedule(Base):
     description = Column(Text)
     commented = Column(Integer, nullable=False, server_default='0')
 
-    entity = relationship('Entity')
+    entity = relationship(Entity)

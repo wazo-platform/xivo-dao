@@ -21,6 +21,8 @@ from sqlalchemy.schema import Column, ForeignKey, CheckConstraint, \
 from sqlalchemy.types import Integer
 from sqlalchemy.orm import relationship
 
+from xivo_dao.alchemy.func_key import FuncKey
+from xivo_dao.alchemy.groupfeatures import GroupFeatures
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -37,5 +39,5 @@ class FuncKeyDestGroup(Base):
     destination_type_id = Column(Integer, primary_key=True, server_default="2")
     group_id = Column(Integer, ForeignKey('groupfeatures.id'), primary_key=True)
 
-    func_key = relationship("FuncKey")
-    groupfeatures = relationship("GroupFeatures")
+    func_key = relationship(FuncKey)
+    groupfeatures = relationship(GroupFeatures)

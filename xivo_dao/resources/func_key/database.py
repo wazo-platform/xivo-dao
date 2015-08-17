@@ -17,7 +17,10 @@
 
 import abc
 
-from xivo_dao import alchemy as tbl
+from xivo_dao.alchemy.callfiltermember import Callfiltermember
+from xivo_dao.alchemy.func_key import FuncKey
+from xivo_dao.alchemy.func_key_dest_bsfilter import FuncKeyDestBSFilter
+from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
 from xivo_dao.helpers import errors
 from xivo_dao.resources.func_key.model import UserFuncKey, BSFilterFuncKey
 
@@ -55,16 +58,16 @@ class FuncKeyRepository(object):
         return
 
     def insert_func_key(self, session):
-        row = tbl.FuncKey(type_id=self.type_id,
-                          destination_type_id=self.destination_type_id)
+        row = FuncKey(type_id=self.type_id,
+                      destination_type_id=self.destination_type_id)
         session.add(row)
         session.flush()
         return row
 
     def delete_func_key(self, session, func_key_id):
         (session
-         .query(tbl.FuncKey)
-         .filter(tbl.FuncKey.id == func_key_id)
+         .query(FuncKey)
+         .filter(FuncKey.id == func_key_id)
          .delete())
 
 
@@ -75,8 +78,8 @@ class UserFuncKeyRespository(FuncKeyRepository):
 
     def create(self, session, func_key):
         func_key_row = self.insert_func_key(session)
-        user_destination_row = tbl.FuncKeyDestUser(func_key_id=func_key_row.id,
-                                                   user_id=func_key.user_id)
+        user_destination_row = FuncKeyDestUser(func_key_id=func_key_row.id,
+                                               user_id=func_key.user_id)
         session.add(user_destination_row)
         session.flush()
 
@@ -84,8 +87,8 @@ class UserFuncKeyRespository(FuncKeyRepository):
 
     def delete(self, session, func_key):
         (session
-         .query(tbl.FuncKeyDestUser)
-         .filter(tbl.FuncKeyDestUser.func_key_id == func_key.id)
+         .query(FuncKeyDestUser)
+         .filter(FuncKeyDestUser.func_key_id == func_key.id)
          .delete())
 
         self.delete_func_key(session, func_key.id)
@@ -100,8 +103,8 @@ class BSFilterFuncKeyRespository(FuncKeyRepository):
         func_key_row = self.insert_func_key(session)
         member_row = self._find_member_row(session, func_key)
 
-        destination_row = tbl.FuncKeyDestBSFilter(func_key_id=func_key_row.id,
-                                                  filtermember_id=member_row.id)
+        destination_row = FuncKeyDestBSFilter(func_key_id=func_key_row.id,
+                                              filtermember_id=member_row.id)
         session.add(destination_row)
         session.flush()
 
@@ -110,10 +113,10 @@ class BSFilterFuncKeyRespository(FuncKeyRepository):
                                secretary_id=func_key.secretary_id)
 
     def _find_member_row(self, session, func_key):
-        row = (session.query(tbl.Callfiltermember.id)
-               .filter(tbl.Callfiltermember.callfilterid == func_key.filter_id)
-               .filter(tbl.Callfiltermember.bstype == 'secretary')
-               .filter(tbl.Callfiltermember.typeval == str(func_key.secretary_id))
+        row = (session.query(Callfiltermember.id)
+               .filter(Callfiltermember.callfilterid == func_key.filter_id)
+               .filter(Callfiltermember.bstype == 'secretary')
+               .filter(Callfiltermember.typeval == str(func_key.secretary_id))
                .first())
 
         return row
@@ -122,8 +125,8 @@ class BSFilterFuncKeyRespository(FuncKeyRepository):
         member_row = self._find_member_row(session, func_key)
 
         (session
-         .query(tbl.FuncKeyDestBSFilter)
-         .filter(tbl.FuncKeyDestBSFilter.filtermember_id == member_row.id)
+         .query(FuncKeyDestBSFilter)
+         .filter(FuncKeyDestBSFilter.filtermember_id == member_row.id)
          .delete())
 
         self.delete_func_key(session, func_key.id)

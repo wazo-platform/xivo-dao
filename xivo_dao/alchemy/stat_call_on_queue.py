@@ -19,6 +19,8 @@ from sqlalchemy.schema import Column, ForeignKey, Index
 from sqlalchemy.types import String, TIMESTAMP, Integer, Enum
 from sqlalchemy.orm import relationship
 
+from xivo_dao.alchemy.stat_queue import StatQueue
+from xivo_dao.alchemy.stat_agent import StatAgent
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -50,5 +52,5 @@ class StatCallOnQueue(Base):
     queue_id = Column(Integer, ForeignKey("stat_queue.id"))
     agent_id = Column(Integer, ForeignKey("stat_agent.id"))
 
-    stat_queue = relationship("StatQueue", foreign_keys=queue_id)
-    stat_agent = relationship("StatAgent", foreign_keys=agent_id)
+    stat_queue = relationship(StatQueue, foreign_keys=queue_id)
+    stat_agent = relationship(StatAgent, foreign_keys=agent_id)

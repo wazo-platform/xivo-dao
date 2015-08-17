@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from xivo_dao.alchemy.agentfeatures import AgentFeatures
+from xivo_dao.alchemy.extension import Extension
+from xivo_dao.alchemy.func_key import FuncKey
 from xivo_dao.helpers.db_manager import Base
 
 from sqlalchemy.orm import relationship
@@ -42,6 +45,6 @@ class FuncKeyDestAgent(Base):
     agent_id = Column(Integer, nullable=False)
     extension_id = Column(Integer, nullable=False)
 
-    func_key = relationship("FuncKey")
-    agent = relationship("AgentFeatures")
-    extension = relationship("Extension")
+    func_key = relationship(FuncKey)
+    agent = relationship(AgentFeatures)
+    extension = relationship(Extension)

@@ -19,6 +19,8 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, ForeignKeyConstraint
 from sqlalchemy.types import Integer
 
+from xivo_dao.alchemy.phonebook import Phonebook
+from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -38,5 +40,5 @@ class UserContact(Base):
     user_id = Column(Integer)
     phonebook_id = Column(Integer)
 
-    phonebook = relationship('Phonebook', foreign_keys=phonebook_id)
-    user = relationship('UserFeatures', foreign_keys=user_id)
+    phonebook = relationship(Phonebook, foreign_keys=phonebook_id)
+    user = relationship(UserFeatures, foreign_keys=user_id)

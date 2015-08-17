@@ -15,7 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from xivo_dao.alchemy.func_key import FuncKey
+from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
 from xivo_dao.helpers.db_manager import Base
+
 from sqlalchemy.schema import Column, ForeignKey, ForeignKeyConstraint, CheckConstraint
 from sqlalchemy.types import Integer
 from sqlalchemy.orm import relationship
@@ -34,5 +37,5 @@ class FuncKeyDestConference(Base):
     destination_type_id = Column(Integer, primary_key=True, server_default="4")
     conference_id = Column(Integer, ForeignKey('meetmefeatures.id'), primary_key=True)
 
-    func_key = relationship("FuncKey")
-    conference = relationship("MeetmeFeatures")
+    func_key = relationship(FuncKey)
+    conference = relationship(MeetmeFeatures)

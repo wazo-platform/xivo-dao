@@ -18,13 +18,18 @@
 from sqlalchemy import Integer
 from sqlalchemy.sql import cast
 
-from xivo_dao import alchemy as tbl
-
-from xivo_dao.resources.func_key.model import UserFuncKey, Forward, ForwardTypeConverter, BSFilterFuncKey
-from xivo_dao.helpers.exception import DataError
+from xivo_dao.alchemy.callfiltermember import Callfiltermember
+from xivo_dao.alchemy.extension import Extension
+from xivo_dao.alchemy.func_key_dest_bsfilter import FuncKeyDestBSFilter
+from xivo_dao.alchemy.func_key_dest_forward import FuncKeyDestForward
+from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
+from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
+from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.helpers.db_utils import commit_or_abort
+from xivo_dao.helpers.exception import DataError
 from xivo_dao.resources.func_key.database import func_key_manager
+from xivo_dao.resources.func_key.model import UserFuncKey, Forward, ForwardTypeConverter, BSFilterFuncKey
 
 
 @daosession
@@ -45,9 +50,9 @@ def delete(session, func_key):
 @daosession
 def find_user_destination(session, user_id):
     row = (session
-           .query(tbl.FuncKeyDestUser.func_key_id,
-                  tbl.FuncKeyDestUser.user_id)
-           .filter(tbl.FuncKeyDestUser.user_id == user_id)
+           .query(FuncKeyDestUser.func_key_id,
+                  FuncKeyDestUser.user_id)
+           .filter(FuncKeyDestUser.user_id == user_id)
            .first())
 
     if not row:
@@ -60,12 +65,12 @@ def find_user_destination(session, user_id):
 @daosession
 def find_bsfilter_destinations_for_user(session, user_id):
     query = (session
-             .query(tbl.FuncKeyDestBSFilter.func_key_id,
-                    tbl.Callfiltermember.callfilterid.label('filter_id'),
-                    cast(tbl.Callfiltermember.typeval, Integer).label('secretary_id'))
-             .join(tbl.Callfiltermember,
-                   tbl.FuncKeyDestBSFilter.filtermember_id == tbl.Callfiltermember.id)
-             .filter(cast(tbl.Callfiltermember.typeval, Integer) == user_id))
+             .query(FuncKeyDestBSFilter.func_key_id,
+                    Callfiltermember.callfilterid.label('filter_id'),
+                    cast(Callfiltermember.typeval, Integer).label('secretary_id'))
+             .join(Callfiltermember,
+                   FuncKeyDestBSFilter.filtermember_id == Callfiltermember.id)
+             .filter(cast(Callfiltermember.typeval, Integer) == user_id))
 
     return [BSFilterFuncKey(id=row.func_key_id,
                             filter_id=row.filter_id,
@@ -77,17 +82,17 @@ def find_bsfilter_destinations_for_user(session, user_id):
 def find_all_forwards(session, user_id, fwd_type):
     type_converter = ForwardTypeConverter()
 
-    query = (session.query(tbl.FuncKeyDestForward.number.label('number'),
-                           tbl.UserFeatures.id.label('user_id'),
-                           tbl.Extension.typeval.label('type'))
-             .join(tbl.Extension,
-                   tbl.FuncKeyDestForward.extension_id == tbl.Extension.id)
-             .join(tbl.FuncKeyMapping,
-                   tbl.FuncKeyMapping.func_key_id == tbl.FuncKeyDestForward.func_key_id)
-             .join(tbl.UserFeatures,
-                   tbl.UserFeatures.func_key_private_template_id == tbl.FuncKeyMapping.template_id)
-             .filter(tbl.UserFeatures.id == user_id)
-             .filter(tbl.Extension.typeval == type_converter.model_to_db(fwd_type))
+    query = (session.query(FuncKeyDestForward.number.label('number'),
+                           UserFeatures.id.label('user_id'),
+                           Extension.typeval.label('type'))
+             .join(Extension,
+                   FuncKeyDestForward.extension_id == Extension.id)
+             .join(FuncKeyMapping,
+                   FuncKeyMapping.func_key_id == FuncKeyDestForward.func_key_id)
+             .join(UserFeatures,
+                   UserFeatures.func_key_private_template_id == FuncKeyMapping.template_id)
+             .filter(UserFeatures.id == user_id)
+             .filter(Extension.typeval == type_converter.model_to_db(fwd_type))
              )
 
     return [Forward(user_id=row.user_id,

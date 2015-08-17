@@ -18,8 +18,9 @@
 from sqlalchemy import func
 from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.alchemy import QueueMember as QueueMemberSchema, AgentFeatures as AgentFeaturesSchema
-from xivo_dao.alchemy import QueueFeatures as QueueFeaturesSchema
+from xivo_dao.alchemy.agentfeatures import AgentFeatures as AgentFeaturesSchema
+from xivo_dao.alchemy.queuefeatures import QueueFeatures as QueueFeaturesSchema
+from xivo_dao.alchemy.queuemember import QueueMember as QueueMemberSchema
 from xivo_dao.resources.queue_members.model import db_converter
 from xivo_dao.helpers import errors
 
