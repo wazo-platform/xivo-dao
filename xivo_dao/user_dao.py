@@ -18,7 +18,6 @@
 import logging
 
 from sqlalchemy import and_
-from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from xivo_dao.alchemy.contextinclude import ContextInclude
 from xivo_dao.alchemy.dialaction import Dialaction
@@ -33,8 +32,6 @@ from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
-# the following import is necessary to load CtiProfiles' definition:
-from xivo_dao.resources.func_key_template import dao as func_key_template_dao
 
 logger = logging.getLogger(__name__)
 
@@ -135,18 +132,6 @@ def agent_id(user_id):
         return None
 
 
-def is_agent(user_id):
-    try:
-        id = agent_id(user_id)
-        return id is not None
-    except LookupError:
-        return False
-
-
-def get_profile(user_id):
-    return get(user_id).cti_profile_id
-
-
 @daosession
 def _get_included_contexts(session, context):
     return [line.include for line in (session.query(ContextInclude.include)
@@ -175,18 +160,6 @@ def get_reachable_contexts(session, user_id):
     line_contexts = [context[0] for context in res]
 
     return _get_nested_contexts(line_contexts)
-
-
-@daosession
-def get_agent_number(session, user_id):
-    row = (session
-           .query(AgentFeatures.number, UserFeatures.agentid)
-           .filter(and_(UserFeatures.id == user_id,
-                        AgentFeatures.id == UserFeatures.agentid))
-           .first())
-    if not row:
-        raise LookupError('Could not find a agent number for user %s', user_id)
-    return row.number
 
 
 @daosession
@@ -300,25 +273,6 @@ def get_context(session, user_id):
 
 
 @daosession
-def get_all(session):
-    return session.query(UserFeatures).all()
-
-
-@daosession
-def delete_all(session):
-    with commit_or_abort(session):
-        session.query(UserFeatures).delete()
-
-
-@daosession
-def add_user(session, user):
-    user.func_key_private_template_id = func_key_template_dao.create_private_template()
-
-    with commit_or_abort(session):
-        session.add(user)
-
-
-@daosession
 def delete(session, userid):
     with commit_or_abort(session):
         result = session.query(UserFeatures).filter(UserFeatures.id == userid)\
@@ -340,11 +294,6 @@ def delete(session, userid):
                                     .filter(SchedulePath.pathid == userid)
                                     .delete())
     return result
-
-
-@daosession
-def get_by_voicemailid(session, voicemailid):
-    return session.query(UserFeatures).filter(UserFeatures.voicemailid == voicemailid).all()
 
 
 @daosession
@@ -478,24 +427,3 @@ def _format_user(user):
         'voicemailid': user.voicemailid,
         'voicemailtype': user.voicemailtype,
     }
-
-
-@daosession
-def get_user_join_line(session, userid):
-    return (session.query(UserFeatures, LineFeatures)
-            .outerjoin(UserLine, and_(UserFeatures.id == UserLine.user_id,
-                                      UserLine.main_user == True,
-                                      UserLine.main_line == True))
-            .outerjoin(LineFeatures, LineFeatures.id == UserLine.line_id)
-            .filter(UserFeatures.id == userid)
-            .first())
-
-
-@daosession
-def get_all_join_line(session):
-    return (session.query(UserFeatures, LineFeatures)
-            .outerjoin(UserLine, and_(UserFeatures.id == UserLine.user_id,
-                                      UserLine.main_user == True,
-                                      UserLine.main_line == True))
-            .outerjoin(LineFeatures, LineFeatures.id == UserLine.line_id)
-            .all())

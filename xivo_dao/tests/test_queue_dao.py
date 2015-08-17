@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -37,24 +37,8 @@ class TestQueueDAO(DAOTestCase):
 
         self.assertEquals(result, 'my_queue')
 
-    def test_is_a_queue(self):
-        self.assertFalse(queue_dao.is_a_queue('not_a_queue'))
-
-        self._insert_queue('a_queue', 'My Queue')
-
-        self.assertTrue(queue_dao.is_a_queue('a_queue'))
-
-    def test_get_queue_name(self):
-        self.assertRaises(LookupError, queue_dao.get_queue_name, 1)
-
-        queue = self._insert_queue('my_queue', 'My Queue')
-
-        result = queue_dao.get_queue_name(queue.id)
-
-        self.assertEqual(result, queue.name)
-
     def test_get_name_number(self):
-        self.assertRaises(LookupError, queue_dao.get_queue_name, 1)
+        self.assertRaises(LookupError, queue_dao.get_display_name_number, 1)
 
         queue = self._insert_queue('my_queue', 'My Queue', '3000')
 
@@ -96,22 +80,6 @@ class TestQueueDAO(DAOTestCase):
         expected.append(self._insert_queue('name1', 'display1', '3001'))
         expected.append(self._insert_queue('name2', 'display2', '3002'))
         self.assertTrue(queue_dao.all_queues() == expected)
-
-    def test_add_queue(self):
-        queue = QueueFeatures()
-        name = u'àç__-\'"é'
-        queue.name = name
-        queue.displayname = name + 'display'
-        queue.number = '3003'
-        queue_dao.add_queue(queue)
-        self.assertTrue(queue.id > 0)
-        self.assertTrue(queue_dao.queue_name(queue.id) == name)
-
-    def test_delete_by_name(self):
-        queue_name = 'name'
-        self._insert_queue(queue_name, 'display_name', '3000')
-        queue_dao.delete_by_name(queue_name)
-        self.assertRaises(LookupError, queue_dao.id_from_name, queue_name)
 
     def _insert_user(self, user_id, agent_id):
         return self.add_user(id=user_id, firstname='John', agentid=agent_id)

@@ -24,7 +24,6 @@ from mock import patch
 from xivo_dao import user_dao
 from xivo_dao.tests.test_dao import DAOTestCase
 
-from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.callfilter import Callfilter
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from xivo_dao.alchemy.contextinclude import ContextInclude
@@ -280,29 +279,6 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         self.assertEqual(res, None)
 
-    def test_is_agent_yes(self):
-        agent_id = 5
-        user = self.add_user(firstname='test_agent', agentid=agent_id)
-
-        result = user_dao.is_agent(user.id)
-
-        self.assertEqual(result, True)
-
-    def test_is_agent_no(self):
-        user = self.add_user(firstname='test_agent')
-
-        result = user_dao.is_agent(user.id)
-
-        self.assertEqual(result, False)
-
-    def test_get_profile(self):
-        user_profile_id = self._add_profile('test_profile')
-        user = self.add_user(firstname='test_agent', cti_profile_id=user_profile_id)
-
-        result = user_dao.get_profile(user.id)
-
-        self.assertEqual(result, user_profile_id)
-
     def _add_presence(self, name):
         cti_presence = CtiPresences()
         cti_presence.name = name
@@ -422,25 +398,6 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         for context in [context, included_context, looping_context]:
             self.assertTrue(context in result)
-
-    def test_get_agent_number(self):
-        self.assertRaises(LookupError, user_dao.get_agent_number, 1)
-
-        agent = AgentFeatures()
-        agent.number = '1234'
-        agent.numgroup = 0
-        agent.passwd = ''
-        agent.context = 'ctx'
-        agent.language = 'fr'
-        agent.description = 'description'
-
-        self.add_me(agent)
-
-        user = self.add_user(agentid=agent.id)
-
-        result = user_dao.get_agent_number(user.id)
-
-        self.assertEqual(result, agent.number)
 
     def test_get_dest_unc(self):
         user = self.add_user()
@@ -594,28 +551,6 @@ class TestUserFeaturesDAO(DAOTestCase):
         context = user_dao.get_context(user.id)
 
         self.assertEqual(context, None)
-
-    def test_get_all(self):
-        user1 = self.add_user(firstname='test_user_1')
-        user2 = self.add_user(firstname='test_user_2')
-        result = user_dao.get_all()
-        self.assertEqual(result[0].firstname, user1.firstname)
-        self.assertEqual(result[1].firstname, user2.firstname)
-        self.assertEqual(2, len(result))
-
-    def test_delete_all(self):
-        self.add_user(firstname='test_user_1')
-        self.add_user(firstname='test_user_2')
-        user_dao.delete_all()
-        result = user_dao.get_all()
-        self.assertEqual(result, [])
-
-    def test_add_user(self):
-        user = UserFeatures()
-        user.firstname = 'test_user'
-        user_dao.add_user(user)
-        result = user_dao.get_all()
-        self.assertEqual(result, [user])
 
     def test_update(self):
         user = self.add_user(firstname='test')
@@ -813,63 +748,6 @@ class TestUserFeaturesDAO(DAOTestCase):
         assert_that(result, contains_inanyorder(user1_id, user2_id))
         assert_that(result[user1_id]['firstname'], equal_to(user1.firstname))
         assert_that(result[user2_id]['firstname'], equal_to(user2.firstname))
-
-    def test_get_by_voicemailid(self):
-        user1 = self.add_user(
-            firstname='John',
-            lastname='Jackson',
-            voicemailid=1
-        )
-        user2 = self.add_user(
-            firstname='Jack',
-            lastname='Johnson',
-            voicemailid=1
-        )
-        user3 = self.add_user(
-            firstname='Christopher',
-            lastname='Christopherson',
-            voicemailid=2
-        )
-
-        result = user_dao.get_by_voicemailid(1)
-        result = [user.id for user in result]
-        self.assertTrue(user1.id in result)
-        self.assertTrue(user2.id in result)
-        self.assertFalse(user3.id in result)
-
-    def test_get_user_join_line(self):
-        user_line = self.add_user_line_with_exten(exten="1234")
-
-        resultuser, resultline = user_dao.get_user_join_line(user_line.user.id)
-        self.assertEqual(user_line.user.firstname, resultuser.firstname)
-        self.assertEqual(user_line.line.id, resultline.id)
-        self.assertEqual(resultline.number, "1234")
-
-    def test_get_user_join_line_no_result(self):
-        result = user_dao.get_user_join_line(1)
-        self.assertEqual(result, None)
-
-    def test_get_user_join_line_no_line(self):
-        user = self.add_user(firstname="test")
-        resultuser, resultline = user_dao.get_user_join_line(user.id)
-        self.assertEqual(user.firstname, resultuser.firstname)
-        self.assertEqual(None, resultline)
-
-    def test_get_all_join_lines(self):
-        user_line1 = self.add_user_line_with_exten(exten="1234")
-        user_line2 = self.add_user_line_with_exten(exten="1235")
-
-        result = user_dao.get_all_join_line()
-
-        user1_firstname = result[0][0].firstname
-        user2_firstname = result[1][0].firstname
-        user1_line_id = result[0][1].id
-        user2_line_id = result[1][1].id
-
-        self.assertEqual(user_line1.user.firstname, user1_firstname)
-        self.assertEqual(user_line2.user.firstname, user2_firstname)
-        self.assertEqual(user_line1.line.id, user1_line_id)
-        self.assertEqual(user_line2.line.id, user2_line_id)
 
     def test_get_uuid_by_username_with_unknown_username(self):
         user = self.add_user(loginclient='alice',

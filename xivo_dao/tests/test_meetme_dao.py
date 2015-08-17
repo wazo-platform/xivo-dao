@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2007-2014 Avencall
+# Copyright (C) 2007-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -79,16 +79,6 @@ class TestMeetmeFeaturesDAO(DAOTestCase):
     def test_get_no_result(self):
         self.assertRaises(LookupError, lambda: meetme_dao.get(1))
 
-    def test_find_by_name(self):
-        self._insert_meetme(1, 'red', '9000')
-        self._insert_meetme(2, 'blue', '9001')
-
-        meetme_red = meetme_dao.find_by_name('red')
-        meetme_blue = meetme_dao.find_by_name('blue')
-
-        self.assertEqual(meetme_red.name, 'red')
-        self.assertEqual(meetme_blue.name, 'blue')
-
     def test_find_by_confno(self):
         red = self._insert_meetme(1, 'red', '9000')
         blue = self._insert_meetme(2, 'blue', '9001')
@@ -101,30 +91,6 @@ class TestMeetmeFeaturesDAO(DAOTestCase):
 
     def test_find_by_confno_no_conf(self):
         self.assertRaises(LookupError, meetme_dao.find_by_confno, '1234')
-
-    def test_get_name(self):
-        red = self._insert_meetme(1, 'red', '9000')
-
-        result = meetme_dao.get_name(red.id)
-
-        self.assertEqual(result, 'red')
-
-    def test_has_pin_true(self):
-        red = self._insert_meetme(1, 'red', '9000', '1234')
-
-        result = meetme_dao.has_pin(red.id)
-
-        self.assertTrue(result)
-
-    def test_has_pin_false(self):
-        red = self._insert_meetme(1, 'red', '9000')
-
-        result = meetme_dao.has_pin(red.id)
-
-        self.assertFalse(result)
-
-    def test_has_pin_no_confroom(self):
-        self.assertRaises(LookupError, meetme_dao.has_pin, 1)
 
     def test_get_configs(self):
         self._insert_meetme(1, 'red', '9000', context='default')

@@ -15,12 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 from xivo.asterisk.extension import Extension
 from xivo_dao.alchemy.linefeatures import LineFeatures
-from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.enum import valid_trunk_protocols
 
 
@@ -78,25 +75,6 @@ def _format_interface(protocol, name):
         return name
     else:
         return '%s/%s' % (protocol.upper(), name)
-
-
-@daosession
-def create(session, line):
-    with commit_or_abort(session):
-        session.add(line)
-
-    return line.id
-
-
-@daosession
-def delete(session, lineid):
-    with commit_or_abort(session):
-        line = session.query(LineFeatures).filter(LineFeatures.id == lineid).first()
-        session.query(UserSIP).filter(UserSIP.id == line.protocolid).delete()
-        (session.query(ExtensionSchema).filter(ExtensionSchema.exten == line.number)
-                                       .filter(ExtensionSchema.context == line.context)
-                                       .delete())
-        session.delete(line)
 
 
 @daosession

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2014 Avencall
+# Copyright (C) 2012-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,10 +23,6 @@ from xivo_dao.helpers.db_manager import daosession
 @daosession
 def get(session, group_id):
     return session.query(GroupFeatures).filter(GroupFeatures.id == group_id).first()
-
-
-def get_name(group_id):
-    return get(group_id).name
 
 
 def get_name_number(group_id):

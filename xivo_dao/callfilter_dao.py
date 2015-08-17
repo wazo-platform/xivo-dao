@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,7 +20,6 @@ from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from sqlalchemy.sql.expression import and_, cast, func
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from sqlalchemy.types import Integer
-from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
@@ -103,41 +102,3 @@ def is_activated_by_callfilter_id(session, callfilter_id):
 def update_callfiltermember_state(session, callfiltermember_id, new_state):
     data_dict = {'active': int(new_state)}
     session.query(Callfiltermember).filter(Callfiltermember.id == callfiltermember_id).update(data_dict)
-
-
-@daosession
-def add(session, callfilter):
-    with commit_or_abort(session):
-        session.add(callfilter)
-
-
-@daosession
-def get_by_name(session, name):
-    return session.query(Callfilter).filter(Callfilter.name == name).all()
-
-
-@daosession
-def add_user_to_filter(session, userid, filterid, role):
-    member = Callfiltermember()
-    member.type = 'user'
-    member.typeval = str(userid)
-    member.callfilterid = filterid
-    member.bstype = role
-    with commit_or_abort(session):
-        session.add(member)
-
-
-@daosession
-def get_callfiltermembers_by_userid(session, userid):
-    return _request_member_by_userid(session, userid).all()
-
-
-@daosession
-def delete_callfiltermember_by_userid(session, userid):
-    with commit_or_abort(session):
-        _request_member_by_userid(session, userid).delete()
-
-
-def _request_member_by_userid(session, userid):
-    return (session.query(Callfiltermember).filter(Callfiltermember.type == 'user')
-                                           .filter(Callfiltermember.typeval == str(userid)))

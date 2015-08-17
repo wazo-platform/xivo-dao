@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2014 Avencall
+# Copyright (C) 2012-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,7 +16,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
-from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
 
 
@@ -57,15 +56,6 @@ def queue_name(session, queue_id):
         return result.name
 
 
-def is_a_queue(name):
-    try:
-        id_from_name(name)
-    except LookupError:
-        return False
-    else:
-        return True
-
-
 @daosession
 def is_user_member_of_queue(session, user_id, queue_id):
     statement = '''\
@@ -96,26 +86,6 @@ WHERE
     return row is not None
 
 
-def get_queue_name(queue_id):
-    return get(queue_id).name
-
-
 def get_display_name_number(queue_id):
     queue = get(queue_id)
     return queue.displayname, queue.number
-
-
-@daosession
-def add_queue(session, queue):
-    if type(queue) != QueueFeatures:
-        raise ValueError('Wrong object passed')
-
-    with commit_or_abort(session):
-        session.add(queue)
-
-
-@daosession
-def delete_by_name(session, queue_name):
-    with commit_or_abort(session):
-        session.query(QueueFeatures).filter(QueueFeatures.name == queue_name)\
-                                    .delete()

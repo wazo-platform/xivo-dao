@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2007-2014 Avencall
+# Copyright (C) 2007-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,17 +20,11 @@ from sqlalchemy.sql import select, and_
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
-from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
 
 
 _Agent = namedtuple('_Agent', ['id', 'number', 'queues'])
 _Queue = namedtuple('_Queue', ['id', 'name', 'penalty'])
-
-
-@daosession
-def agent_number(session, agentid):
-    return _get_one(session, agentid).number
 
 
 @daosession
@@ -46,16 +40,6 @@ def agent_interface(session, agentid):
         return None
 
 
-@daosession
-def agent_id(session, agent_number):
-    if agent_number is None:
-        raise ValueError('Agent number is None')
-    result = session.query(AgentFeatures.id).filter(AgentFeatures.number == agent_number).first()
-    if result is None:
-        raise LookupError('No such agent')
-    return str(result.id)
-
-
 def _get_one(session, agentid):
     # field id != field agentid used only for joining with staticagent table.
     if agentid is None:
@@ -64,28 +48,6 @@ def _get_one(session, agentid):
     if result is None:
         raise LookupError('No such agent')
     return result
-
-
-@daosession
-def add_agent(session, agent_features):
-    if type(agent_features) != AgentFeatures:
-        raise ValueError('Wrong object passed')
-
-    with commit_or_abort(session):
-        session.add(agent_features)
-
-    return agent_features.id
-
-
-@daosession
-def del_agent(session, agentid):
-    if agentid is None:
-        raise ValueError('Agent ID is None')
-
-    with commit_or_abort(session):
-        session.query(AgentFeatures)\
-            .filter(AgentFeatures.id == agentid)\
-            .delete()
 
 
 @daosession

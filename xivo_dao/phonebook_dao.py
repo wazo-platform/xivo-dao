@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2014 Avencall
+# Copyright (C) 2012-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,11 +34,6 @@ def get_phonebookaddress(session, phonebook_id):
 @daosession
 def get_phonebooknumber(session, phonebook_id):
     return session.query(PhonebookNumber).filter(PhonebookNumber.phonebookid == phonebook_id).all()
-
-
-@daosession
-def all(session):
-    return session.query(Phonebook).all()
 
 
 @daosession

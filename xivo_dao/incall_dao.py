@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2014 Avencall
+# Copyright (C) 2012-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,14 +20,6 @@ from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.helpers.db_manager import daosession
 from sqlalchemy.sql.expression import cast
 from sqlalchemy.types import Integer
-
-
-@daosession
-def get(session, incall_id):
-    query = _new_query(session)
-    return (query
-            .filter(Incall.id == incall_id)
-            .first())
 
 
 @daosession

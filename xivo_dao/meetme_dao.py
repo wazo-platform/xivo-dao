@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -48,30 +48,11 @@ def is_a_meetme(session, number):
 
 
 @daosession
-def find_by_name(session, meetme_name):
-    res = session.query(MeetmeFeatures).filter(MeetmeFeatures.name == meetme_name)
-    if res.count() == 0:
-        return ''
-    return res[0]
-
-
-@daosession
 def find_by_confno(session, meetme_confno):
     res = session.query(MeetmeFeatures).filter(MeetmeFeatures.confno == meetme_confno)
     if res.count() == 0:
         raise LookupError('No such conference room: %s', meetme_confno)
     return res[0].id
-
-
-def get_name(meetme_id):
-    return get(meetme_id).name
-
-
-@daosession
-def has_pin(session, meetme_id):
-    meetme = get(meetme_id)
-    var_val = session.query(StaticMeetme.var_val).filter(StaticMeetme.id == meetme.meetmeid)
-    return _has_pin_from_var_val(var_val[0].var_val)
 
 
 def _has_pin_from_var_val(var_val):

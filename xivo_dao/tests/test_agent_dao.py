@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,12 +17,10 @@
 
 from hamcrest import assert_that, equal_to
 
-from sqlalchemy.exc import SQLAlchemyError
 from xivo_dao import agent_dao
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
-from xivo_dao.tests.helpers.session import mocked_dao_session
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -32,19 +30,6 @@ class TestAgentDAO(DAOTestCase):
     agent1_number = '1001'
     agent2_number = '1002'
     agent_context = 'test'
-
-    def test_agent_number(self):
-        agent = self._insert_agent()
-
-        number = agent_dao.agent_number(agent.id)
-
-        self.assertEqual(number, self.agent_number)
-
-    def test_test_agent_number_bad_args(self):
-        self.assertRaises(ValueError, agent_dao.agent_number, None)
-
-    def test_agent_number_unknown(self):
-        self.assertRaises(LookupError, lambda: agent_dao.agent_number(-1))
 
     def test_agent_context(self):
         agent = self._insert_agent()
@@ -68,48 +53,6 @@ class TestAgentDAO(DAOTestCase):
 
     def test_agent_interface_not_exist(self):
         self.assertRaises(LookupError, agent_dao.agent_interface(1))
-
-    def test_agent_id(self):
-        agent = self._insert_agent()
-
-        agent_id = agent_dao.agent_id(self.agent_number)
-
-        self.assertEqual(str(agent.id), agent_id)
-
-    def test_agent_id_bad_args(self):
-        self.assertRaises(ValueError, agent_dao.agent_id, None)
-
-    def test_agent_id_inexistant(self):
-        self.assertRaises(LookupError, agent_dao.agent_id, '2345')
-
-    def test_add_agent(self):
-        agent = AgentFeatures()
-        agent.numgroup = 6
-        agent.number = '15'
-        agent.passwd = ''
-        agent.context = self.agent_context
-        agent.language = ''
-        agent.description = ''
-        agent_dao.add_agent(agent)
-        self.assertTrue(agent.id > 0)
-        self.assertTrue(agent_dao.agent_number(agent.id) == '15')
-
-    def test_add_agent_bad_args(self):
-        self.assertRaises(ValueError, agent_dao.add_agent, None)
-
-    def test_del_agent(self):
-        agent_dao.del_agent(self._insert_agent().id)
-        self.assertTrue(agent_dao.all() == [])
-
-    def test_del_agent_bad_args(self):
-        self.assertRaises(ValueError, agent_dao.del_agent, None)
-
-    @mocked_dao_session
-    def test_del_agent_db_error(self, session):
-        session.commit.side_effect = SQLAlchemyError()
-
-        self.assertRaises(SQLAlchemyError, agent_dao.del_agent, 1)
-        session.rollback.assert_called_once_with()
 
     def test_agent_with_id(self):
         agent = self._insert_agent()

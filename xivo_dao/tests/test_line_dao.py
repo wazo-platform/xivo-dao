@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,11 +16,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo.asterisk.extension import Extension
-from xivo_dao import line_dao, user_line_dao
+from xivo_dao import line_dao
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.sccpline import SCCPLine
-from xivo_dao.alchemy.usersip import UserSIP
-from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 from xivo_dao.tests.test_dao import DAOTestCase
 
 USER_ID = 5
@@ -170,45 +168,6 @@ class TestLineFeaturesDAO(DAOTestCase):
         extension = line_dao.get_extension_from_protocol_interface(protocol, name)
 
         self.assertEquals(extension, expected_extension)
-
-    def test_create(self):
-        expected_line = LineFeatures()
-        expected_line.number = '1234'
-        expected_line.protocolid = 1
-        expected_line.protocol = 'sip'
-        expected_line.name = 'name'
-        expected_line.context = 'default'
-        expected_line.provisioningid = 123456
-
-        line_id = line_dao.create(expected_line)
-
-        line = line_dao.get(line_id)
-
-        self.assertEquals(line.number, expected_line.number)
-        self.assertEquals(line.protocolid, expected_line.protocolid)
-        self.assertEquals(line.protocol, expected_line.protocol)
-        self.assertEquals(line.name, expected_line.name)
-        self.assertEquals(line.context, expected_line.context)
-        self.assertEquals(line.provisioningid, expected_line.provisioningid)
-
-    def test_delete(self):
-        usersip_id = 2
-        self.add_usersip(id=usersip_id)
-        line = self.add_line(number=LINE_NUMBER,
-                             context='default',
-                             protocol='sip',
-                             protocolid=usersip_id)
-        exten = self.add_extension(exten=LINE_NUMBER,
-                                   context='default')
-
-        line_dao.delete(line.id)
-
-        self.assertFalse(user_line_dao.is_phone_exten(LINE_NUMBER))
-
-        inserted_usersip = self.session.query(UserSIP).filter(UserSIP.id == usersip_id).first()
-        self.assertEquals(None, inserted_usersip)
-        inserted_extension = self.session.query(ExtensionSchema).filter(ExtensionSchema.id == exten.id).first()
-        self.assertEquals(None, inserted_extension)
 
     def test_get(self):
         line = self.add_line()
