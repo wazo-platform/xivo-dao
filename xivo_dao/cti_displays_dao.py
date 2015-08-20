@@ -17,6 +17,7 @@
 
 import json
 
+from xivo_dao.alchemy.cti_contexts import CtiContexts
 from xivo_dao.alchemy.cti_displays import CtiDisplays
 from xivo_dao.helpers.db_manager import daosession
 
@@ -25,3 +26,16 @@ from xivo_dao.helpers.db_manager import daosession
 def get_config(session):
     rows = session.query(CtiDisplays)
     return {row.name: json.loads(row.data) for row in rows.all()}
+
+
+@daosession
+def get_profile_association(session):
+    rows = session.query(
+        CtiDisplays.name.label('display'),
+        CtiContexts.name,
+    ).join(
+        CtiContexts,
+        CtiContexts.display == CtiDisplays.name
+    )
+
+    return {row.name: row.display for row in rows.all()}

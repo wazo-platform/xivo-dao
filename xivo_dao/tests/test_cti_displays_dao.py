@@ -17,13 +17,15 @@
 
 from hamcrest import assert_that, equal_to
 from xivo_dao import cti_displays_dao
+from xivo_dao.alchemy.cti_contexts import CtiContexts
 from xivo_dao.alchemy.cti_displays import CtiDisplays
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestCTIDisplaysDAO(DAOTestCase):
 
-    def test_get_config(self):
+    def setUp(self):
+        super(TestCTIDisplaysDAO, self).setUp()
         display_configs = [
             ('switchboard', '{ "10": [ "", "status", "", ""],"20": [ "Name", "name", "", "{db-firstname} {db-lastname}"],"30": [ "Number", "number_office", "", "{db-phone}"]}'),
             ('Display', '{ "10": [ "Firstname", "", "", "{db-firstname}"],"20": [ "Lastname", "", "", "{db-lastname}"],"30": [ "Number", "", "", "{db-number}"] }'),
@@ -35,6 +37,7 @@ class TestCTIDisplaysDAO(DAOTestCase):
             )
             self.add_me(display)
 
+    def test_get_config(self):
         result = cti_displays_dao.get_config()
 
         expected = {'switchboard': {'10': ['', 'status', '', ''],
@@ -43,5 +46,44 @@ class TestCTIDisplaysDAO(DAOTestCase):
                     'Display': {'10': ['Firstname', '', '', '{db-firstname}'],
                                 '20': ['Lastname', '', '', '{db-lastname}'],
                                 '30': ['Number', '', '', '{db-number}']}}
+
+        assert_that(result, equal_to(expected))
+
+    def test_display_profile_association(self):
+        profile_configs = [
+            ('__switchboard_directory', 'switchboard,garbage', 'switchboard'),
+            ('default', 'ldapone,csvws', 'Display'),
+        ]
+        for config in profile_configs:
+            cti_config = CtiContexts(
+                name=config[0],
+                directories=config[1],
+                display=config[2],
+            )
+            self.add_me(cti_config)
+
+        result = cti_displays_dao.get_profile_association()
+
+        expected = {'__switchboard_directory': 'switchboard',
+                    'default': 'Display'}
+
+        assert_that(result, equal_to(expected))
+
+    def test_display_profile_association_invalid_display(self):
+        profile_configs = [
+            ('__switchboard_directory', 'switchboard,garbage', 'switchboard'),
+            ('default', 'ldapone,csvws', 'NOT'),
+        ]
+        for config in profile_configs:
+            cti_config = CtiContexts(
+                name=config[0],
+                directories=config[1],
+                display=config[2],
+            )
+            self.add_me(cti_config)
+
+        result = cti_displays_dao.get_profile_association()
+
+        expected = {'__switchboard_directory': 'switchboard'}
 
         assert_that(result, equal_to(expected))
