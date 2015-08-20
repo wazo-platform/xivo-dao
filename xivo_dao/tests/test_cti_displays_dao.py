@@ -49,9 +49,9 @@ class TestCTIDisplaysDAO(DAOTestCase):
 
         assert_that(result, equal_to(expected))
 
-    def test_display_profile_association(self):
+    def test_get_profile_configuration(self):
         profile_configs = [
-            ('__switchboard_directory', 'switchboard,garbage', 'switchboard'),
+            ('__switchboard_directory', 'xivodir,garbage', 'switchboard'),
             ('default', 'ldapone,csvws', 'Display'),
         ]
         for config in profile_configs:
@@ -62,16 +62,18 @@ class TestCTIDisplaysDAO(DAOTestCase):
             )
             self.add_me(cti_config)
 
-        result = cti_displays_dao.get_profile_association()
+        result = cti_displays_dao.get_profile_configuration()
 
-        expected = {'__switchboard_directory': 'switchboard',
-                    'default': 'Display'}
+        expected = {'__switchboard_directory': {'display': 'switchboard',
+                                                'sources': ['xivodir', 'garbage']},
+                    'default': {'display': 'Display',
+                                'sources': ['ldapone', 'csvws']}}
 
         assert_that(result, equal_to(expected))
 
-    def test_display_profile_association_invalid_display(self):
+    def test_get_profile_association_invalid_display(self):
         profile_configs = [
-            ('__switchboard_directory', 'switchboard,garbage', 'switchboard'),
+            ('__switchboard_directory', 'xivodir,garbage', 'switchboard'),
             ('default', 'ldapone,csvws', 'NOT'),
         ]
         for config in profile_configs:
@@ -82,8 +84,9 @@ class TestCTIDisplaysDAO(DAOTestCase):
             )
             self.add_me(cti_config)
 
-        result = cti_displays_dao.get_profile_association()
+        result = cti_displays_dao.get_profile_configuration()
 
-        expected = {'__switchboard_directory': 'switchboard'}
+        expected = {'__switchboard_directory': {'display': 'switchboard',
+                                                'sources': ['xivodir', 'garbage']}}
 
         assert_that(result, equal_to(expected))

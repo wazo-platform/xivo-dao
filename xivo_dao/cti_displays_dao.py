@@ -29,13 +29,15 @@ def get_config(session):
 
 
 @daosession
-def get_profile_association(session):
+def get_profile_configuration(session):
     rows = session.query(
         CtiDisplays.name.label('display'),
         CtiContexts.name,
+        CtiContexts.directories,
     ).join(
         CtiContexts,
         CtiContexts.display == CtiDisplays.name
     )
 
-    return {row.name: row.display for row in rows.all()}
+    return {row.name: {'display': row.display,
+                       'sources': row.directories.split(',')} for row in rows.all()}
