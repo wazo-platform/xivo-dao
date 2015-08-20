@@ -188,6 +188,7 @@ class TestAgentStatusDao(DAOTestCase):
         self.assertEqual(statuses[0].logged, False)
         self.assertEqual(statuses[0].extension, None)
         self.assertEqual(statuses[0].context, None)
+        self.assertEqual(statuses[0].state_interface, None)
 
     def test_get_statuses_of_logged_agent(self):
         agent = self._insert_agent(42, '12')
@@ -201,6 +202,7 @@ class TestAgentStatusDao(DAOTestCase):
         self.assertEqual(statuses[0].logged, True)
         self.assertEqual(statuses[0].extension, agent_login_status.extension)
         self.assertEqual(statuses[0].context, agent_login_status.context)
+        self.assertEqual(statuses[0].state_interface, agent_login_status.state_interface)
 
     def test_get_statuses_of_logged_for_queue(self):
         agent = self._insert_agent(42, '12')

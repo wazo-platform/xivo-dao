@@ -107,6 +107,7 @@ def get_statuses(session):
                    AgentFeatures.number.label('agent_number'),
                    AgentLoginStatus.extension.label('extension'),
                    AgentLoginStatus.context.label('context'),
+                   AgentLoginStatus.state_interface.label('state_interface'),
                    case([(AgentLoginStatus.agent_id == None, False)], else_=True).label('logged'))
             .outerjoin((AgentLoginStatus, AgentFeatures.id == AgentLoginStatus.agent_id))
             .all())
