@@ -47,3 +47,4 @@ class Voicemail(Base):
     skipcheckpass = Column(Integer, nullable=False, server_default='0')
     options = Column(ARRAY(String, dimensions=2),
                      nullable=False, server_default='{}')
+    commented = Column(Integer, nullable=False, server_default='0')
