@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -454,7 +454,8 @@ class TestGetVoicemail(DAOTestCase):
             id=voicemail_id,
             attach_audio=False,
             delete_messages=False,
-            ask_password=True
+            ask_password=True,
+            options=[]
         )
 
         voicemail = voicemail_dao.get(voicemail_id)
@@ -465,6 +466,8 @@ class TestGetVoicemail(DAOTestCase):
         name = 'voicemail name'
         number = '42'
         context = 'context-42'
+        options = [['saycid', 'yes'],
+                   ['emailsubject', 'subject']]
 
         voicemail_row = VoicemailSchema(
             fullname=name,
@@ -478,7 +481,8 @@ class TestGetVoicemail(DAOTestCase):
             maxmsg=1,
             attach=1,
             deletevoicemail=None,
-            skipcheckpass=0
+            skipcheckpass=0,
+            options=options
         )
 
         self.add_me(voicemail_row)
@@ -498,6 +502,7 @@ class TestGetVoicemail(DAOTestCase):
         self.assertEquals(voicemail.attach_audio, True)
         self.assertEquals(voicemail.delete_messages, False)
         self.assertEquals(voicemail.ask_password, True)
+        self.assertEquals(voicemail.options, options)
 
 
 class TestCreateVoicemail(DAOTestCase):
@@ -520,6 +525,48 @@ class TestCreateVoicemail(DAOTestCase):
         self.assertEquals(row.fullname, name)
         self.assertEquals(row.mailbox, number)
         self.assertEquals(row.context, context)
+        self.assertEquals(row.options, [])
+
+    def test_create_with_all_parameters(self):
+        options = [['saycid', 'yes'],
+                   ['emailsubject', 'subject']]
+
+        voicemail = Voicemail(
+            name='voicemail',
+            number='1000',
+            context='context',
+            password='password',
+            email='email',
+            pager='pager',
+            language='fr_FR',
+            timezone='eu-fr',
+            max_messages=1,
+            attach_audio=True,
+            delete_messages=True,
+            ask_password=True,
+            options=options
+        )
+
+        created_voicemail = voicemail_dao.create(voicemail)
+
+        row = (self.session.query(VoicemailSchema)
+               .filter(VoicemailSchema.mailbox == voicemail.number)
+               .first())
+
+        self.assertEquals(row.uniqueid, created_voicemail.id)
+        self.assertEquals(row.fullname, 'voicemail')
+        self.assertEquals(row.mailbox, '1000')
+        self.assertEquals(row.context, 'context')
+        self.assertEquals(row.password, 'password')
+        self.assertEquals(row.email, 'email')
+        self.assertEquals(row.pager, 'pager')
+        self.assertEquals(row.language, 'fr_FR')
+        self.assertEquals(row.tz, 'eu-fr')
+        self.assertEquals(row.maxmsg, 1)
+        self.assertEquals(row.attach, 1)
+        self.assertEquals(row.deletevoicemail, 1)
+        self.assertEquals(row.skipcheckpass, 0)
+        self.assertEquals(row.options, options)
 
     @mocked_dao_session
     def test_create_with_database_error(self, session):
@@ -563,6 +610,9 @@ class TestEditVoicemail(DAOTestCase):
         self.assertEquals(row.context, context)
 
     def test_edit_with_all_parameters(self):
+        expected_options = [['envelope', 'yes'],
+                            ['minsecs', '10']]
+
         voicemail_row = self.add_voicemail(
             mailbox='1000',
             context='default',
@@ -574,7 +624,8 @@ class TestEditVoicemail(DAOTestCase):
             attach=0,
             deletevoicemail=0,
             maxmsg=0,
-            skipcheckpass=0
+            skipcheckpass=0,
+            options=[['saycid', 'yes']]
         )
 
         voicemail = voicemail_dao.get(voicemail_row.uniqueid)
@@ -590,6 +641,7 @@ class TestEditVoicemail(DAOTestCase):
         voicemail.attach_audio = True
         voicemail.delete_messages = True
         voicemail.ask_password = False
+        voicemail.options = expected_options
 
         voicemail_dao.edit(voicemail)
 
@@ -610,6 +662,7 @@ class TestEditVoicemail(DAOTestCase):
         self.assertEquals(row.attach, voicemail.attach_audio)
         self.assertEquals(row.deletevoicemail, voicemail.delete_messages)
         self.assertEquals(row.skipcheckpass, 1)
+        self.assertEquals(row.options, expected_options)
 
     @mocked_dao_session
     def test_edit_with_database_error(self, session):

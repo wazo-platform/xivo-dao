@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -87,9 +87,7 @@ def create(session, voicemail):
     with commit_or_abort(session, DataError.on_create, 'voicemail'):
         session.add(voicemail_row)
 
-    voicemail.id = voicemail_row.uniqueid
-
-    return voicemail
+    return db_converter.to_model(voicemail_row)
 
 
 @daosession

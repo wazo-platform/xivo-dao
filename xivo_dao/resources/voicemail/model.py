@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -41,7 +41,8 @@ class Voicemail(NewModel):
         'max_messages',
         'attach_audio',
         'delete_messages',
-        'ask_password'
+        'ask_password',
+        'options',
     ]
 
     _RELATION = {
@@ -66,6 +67,7 @@ class VoicemailDBConverter(DatabaseConverter):
         'language': 'language',
         'tz': 'timezone',
         'maxmsg': 'max_messages',
+        'options': 'options',
     }
 
     def __init__(self):

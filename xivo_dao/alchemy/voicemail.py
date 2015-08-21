@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2014 Avencall
+# Copyright (C) 2012-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,7 +17,8 @@
 
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint, \
     Index
-from sqlalchemy.types import Integer, String, Text, Float, Enum
+from sqlalchemy.types import Integer, String
+from sqlalchemy.dialects.postgresql import ARRAY
 
 from xivo_dao.helpers.db_manager import Base
 
@@ -38,43 +39,11 @@ class Voicemail(Base):
     fullname = Column(String(80), nullable=False, server_default='')
     email = Column(String(80))
     pager = Column(String(80))
-    dialout = Column(String(39))
-    callback = Column(String(39))
-    exitcontext = Column(String(39))
     language = Column(String(20))
     tz = Column(String(80))
     attach = Column(Integer)
-    saycid = Column(Integer)
-    review = Column(Integer)
-    operator = Column(Integer)
-    envelope = Column(Integer)
-    sayduration = Column(Integer)
-    saydurationm = Column(Integer)
-    sendvoicemail = Column(Integer)
     deletevoicemail = Column(Integer, nullable=False, server_default='0')
-    forcename = Column(Integer)
-    forcegreetings = Column(Integer)
-    hidefromdir = Column(Enum('no', 'yes', name='voicemail_hidefromdir', metadata=Base.metadata),
-                         nullable=False,
-                         server_default='no')
     maxmsg = Column(Integer)
-    emailsubject = Column(String(1024))
-    emailbody = Column(Text)
-    imapuser = Column(String(1024))
-    imappassword = Column(String(1024))
-    imapfolder = Column(String(1024))
-    imapvmsharedid = Column(String(1024))
-    attachfmt = Column(String(1024))
-    serveremail = Column(String(1024))
-    locale = Column(String(1024))
-    tempgreetwarn = Column(Integer)
-    messagewrap = Column(Integer)
-    moveheard = Column(Integer)
-    minsecs = Column(Integer)
-    maxsecs = Column(Integer)
-    nextaftercmd = Column(Integer)
-    backupdeleted = Column(Integer)
-    volgain = Column(Float)
-    passwordlocation = Column(Enum('spooldir', 'voicemail', name='voicemail_passwordlocation', metadata=Base.metadata))
-    commented = Column(Integer, nullable=False, server_default='0')
     skipcheckpass = Column(Integer, nullable=False, server_default='0')
+    options = Column(ARRAY(String, dimensions=2),
+                     nullable=False, server_default='{}')
