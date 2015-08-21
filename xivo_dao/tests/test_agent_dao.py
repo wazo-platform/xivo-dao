@@ -44,15 +44,16 @@ class TestAgentDAO(DAOTestCase):
     def test_agent_interface(self):
         agent = self._insert_agent()
 
-        interface = agent_dao.agent_interface(agent.id)
+        interface = agent_dao.find_agent_interface(agent.id)
 
         self.assertEqual(interface, 'Agent/%s' % self.agent_number)
 
     def test_agent_interface_bad_args(self):
-        self.assertRaises(ValueError, agent_dao.agent_interface, None)
+        self.assertRaises(ValueError, agent_dao.find_agent_interface, None)
 
     def test_agent_interface_not_exist(self):
-        self.assertRaises(LookupError, agent_dao.agent_interface(1))
+        interface = agent_dao.find_agent_interface(1)
+        self.assertEquals(interface, None)
 
     def test_agent_with_id(self):
         agent = self._insert_agent()

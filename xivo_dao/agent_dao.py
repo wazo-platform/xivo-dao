@@ -33,7 +33,7 @@ def agent_context(session, agentid):
 
 
 @daosession
-def agent_interface(session, agentid):
+def find_agent_interface(session, agentid):
     try:
         return 'Agent/%s' % _get_one(session, agentid).number
     except LookupError:
