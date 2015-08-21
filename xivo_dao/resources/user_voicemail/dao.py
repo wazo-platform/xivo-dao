@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,16 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
-from xivo_dao.alchemy.sccpdevice import SCCPDevice as SCCPDeviceSchema
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
-from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema
 
 from xivo_dao.helpers import errors
 
-from xivo_dao.resources.user_line import dao as user_line_dao
 from xivo_dao.resources.user_voicemail.model import db_converter
-from xivo_dao.resources.voicemail import dao as voicemail_dao
 
 from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
@@ -34,7 +29,6 @@ from xivo_dao.helpers.db_manager import daosession
 def associate(session, user_voicemail):
     with commit_or_abort(session):
         _associate_voicemail_with_user(session, user_voicemail)
-        _associate_voicemail_with_line(session, user_voicemail)
 
 
 def _associate_voicemail_with_user(session, user_voicemail):
@@ -44,39 +38,8 @@ def _associate_voicemail_with_user(session, user_voicemail):
 
     if user_row:
         user_row.voicemailid = user_voicemail.voicemail_id
-        user_row.voicemailtype = 'asterisk'
         user_row.enablevoicemail = int(user_voicemail.enabled)
         session.add(user_row)
-
-
-def _associate_voicemail_with_line(session, user_voicemail):
-    voicemail = voicemail_dao.get(user_voicemail.voicemail_id)
-    user_lines = _find_main_user_lines(user_voicemail.user_id)
-
-    for user_line in user_lines:
-        _associate_voicemail_with_protocol(session, voicemail, user_line.line_id)
-
-
-def _find_main_user_lines(user_id):
-    user_lines = user_line_dao.find_all_by_user_id(user_id)
-    return [user_line for user_line in user_lines if user_line.main_user]
-
-
-def _associate_voicemail_with_protocol(session, voicemail, line_id):
-    line_row = (session.query(LineSchema.protocol, LineSchema.protocolid)
-                .filter(LineSchema.id == line_id)
-                .first())
-
-    if line_row.protocol == 'sip':
-        (session
-         .query(UserSIPSchema)
-         .filter(UserSIPSchema.id == line_row.protocolid)
-         .update({'mailbox': voicemail.number_at_context}))
-    elif line_row.protocol == 'sccp':
-        (session
-         .query(SCCPDeviceSchema)
-         .filter(SCCPDeviceSchema.id == line_row.protocolid)
-         .update({'voicemail': voicemail.number}))
 
 
 def _fetch_by_user_id(session, user_id):
@@ -133,7 +96,6 @@ def find_by_voicemail_id(session, voicemail_id):
 def dissociate(session, user_voicemail):
     with commit_or_abort(session):
         _dissociate_voicemail_from_user(session, user_voicemail.user_id)
-        _dissociate_voicemail_from_line(session, user_voicemail.user_id)
 
 
 def _dissociate_voicemail_from_user(session, user_id):
@@ -142,29 +104,5 @@ def _dissociate_voicemail_from_user(session, user_id):
                 .first())
     if user_row:
         user_row.voicemailid = None
-        user_row.voicemailtype = None
         user_row.enablevoicemail = 0
         session.add(user_row)
-
-
-def _dissociate_voicemail_from_line(session, user_id):
-    user_lines = _find_main_user_lines(user_id)
-    for user_line in user_lines:
-        _dissociate_voicemail_from_protocol(session, user_line.line_id)
-
-
-def _dissociate_voicemail_from_protocol(session, line_id):
-    line_row = (session.query(LineSchema.protocol, LineSchema.protocolid)
-                .filter(LineSchema.id == line_id)
-                .first())
-
-    if line_row.protocol == 'sip':
-        (session
-         .query(UserSIPSchema)
-         .filter(UserSIPSchema.id == line_row.protocolid)
-         .update({'mailbox': None}))
-    elif line_row.protocol == 'sccp':
-        (session
-         .query(SCCPDeviceSchema)
-         .filter(SCCPDeviceSchema.id == line_row.protocolid)
-         .update({'voicemail': ''}))
