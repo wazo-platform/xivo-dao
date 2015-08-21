@@ -216,8 +216,7 @@ class TestSccpConfDAO(DAOTestCase):
             {'id': sccp_device.id,
              'name': sccp_device.name,
              'device': sccp_device.device,
-             'line': sccp_device.line,
-             'voicemail': sccp_device.voicemail}
+             'line': sccp_device.line}
         ]
 
         sccp_device = asterisk_conf_dao.find_sccp_device_settings()
@@ -598,57 +597,25 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         vm = self.add_voicemail()
         self.add_voicemail(commented=1)
 
-        expected_result = [
-            {'imapuser': None,
-             'backupdeleted': None,
-             'serveremail': None,
-             'tempgreetwarn': None,
-             'passwordlocation': None,
-             'attachfmt': None,
-             'emailbody': None,
-             'saydurationm': None,
-             'deletevoicemail': 0,
-             'operator': None,
-             'locale': None,
-             'emailsubject': None,
-             'maxmsg': None,
-             'tz': None,
-             'forcename': None,
-             'saycid': None,
-             'exitcontext': None,
-             'attach': None,
-             'sayduration': None,
-             'volgain': None,
-             'maxsecs': None,
-             'email': None,
-             'nextaftercmd': None,
-             'moveheard': None,
-             'hidefromdir': 'no',
-             'envelope': None,
-             'mailbox': vm.mailbox,
-             'imapvmsharedid': None,
-             'dialout': None,
-             'uniqueid': vm.uniqueid,
-             'forcegreetings': None,
-             'password': u'',
-             'pager': None,
-             'sendvoicemail': None,
-             'language': None,
-             'minsecs': None,
-             'commented': 0,
-             'callback': None,
-             'imappassword': None,
-             'context': vm.context,
-             'skipcheckpass': 0,
-             'fullname': vm.fullname,
-             'review': None,
-             'messagewrap': None,
-             'imapfolder': None}
-        ]
+        expected = {'uniqueid': vm.uniqueid,
+                    'deletevoicemail': 0,
+                    'maxmsg': None,
+                    'tz': None,
+                    'attach': None,
+                    'mailbox': vm.mailbox,
+                    'uniqueid': vm.uniqueid,
+                    'password': u'',
+                    'pager': None,
+                    'language': None,
+                    'commented': 0,
+                    'context': vm.context,
+                    'skipcheckpass': 0,
+                    'fullname': vm.fullname,
+                    'options': []}
 
         voicemails = asterisk_conf_dao.find_voicemail_activated()
 
-        assert_that(voicemails, contains_inanyorder(*expected_result))
+        assert_that(voicemails, contains(has_entries(expected)))
 
     def test_find_voicemail_general_settings(self):
         vms1 = self.add_voicemail_general_settings()
@@ -744,7 +711,6 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
              'md5secret': u'',
              'regserver': None,
              'directmedia': None,
-             'mailbox': None,
              'qualifyfreq': None,
              'host': u'dynamic',
              'promiscredir': None,
@@ -851,7 +817,6 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
              'md5secret': u'',
              'regserver': None,
              'directmedia': None,
-             'mailbox': None,
              'qualifyfreq': None,
              'host': u'dynamic',
              'promiscredir': None,

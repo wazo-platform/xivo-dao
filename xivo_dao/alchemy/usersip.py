@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2014 Avencall
+# Copyright (C) 2012-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -46,7 +46,6 @@ class UserSIP(Base):
     allowtransfer = Column(Integer)
     fromuser = Column(String(80))
     fromdomain = Column(String(255))
-    mailbox = Column(String(80))
     subscribemwi = Column(Integer, nullable=False, server_default='0')
     buggymwi = Column(Integer)
     call_limit = Column('call-limit', Integer, nullable=False, server_default='0')
@@ -146,7 +145,6 @@ class UserSIP(Base):
         PrimaryKeyConstraint('id'),
         UniqueConstraint('name'),
         Index('usersip__idx__category', 'category'),
-        Index('usersip__idx__mailbox', 'mailbox'),
         CheckConstraint(
             directmedia.in_(
                 ['no', 'yes', 'nonat', 'update', 'update,nonat', 'outgoing'])),

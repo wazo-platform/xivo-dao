@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2014 Avencall
+# Copyright (C) 2012-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -29,4 +29,3 @@ class SCCPDevice(Base):
     name = Column(String(80), nullable=False)
     device = Column(String(80), nullable=False)
     line = Column(String(80), nullable=False, server_default='')
-    voicemail = Column(String(80), nullable=False, server_default='')

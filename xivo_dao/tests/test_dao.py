@@ -467,7 +467,6 @@ class DAOTestCase(unittest.TestCase):
         kwargs.setdefault('device', 'SEP001122334455')
         kwargs.setdefault('line', '1000')
         kwargs.setdefault('id', self._generate_int())
-        kwargs.setdefault('voicemail', '1234')
 
         sccpdevice = SCCPDeviceSchema(**kwargs)
         self.add_me(sccpdevice)

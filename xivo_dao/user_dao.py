@@ -361,7 +361,6 @@ def _user_config_query(session):
         UserFeatures.timezone,
         UserFeatures.userfield,
         UserFeatures.voicemailid,
-        UserFeatures.voicemailtype,
         LineFeatures.id.label('line_id'),
         LineFeatures.context.label('line_context'))
         .outerjoin(UserLine, and_(UserLine.main_user == True,
@@ -425,5 +424,4 @@ def _format_user(user):
         'timezone': user.timezone,
         'userfield': user.userfield,
         'voicemailid': user.voicemailid,
-        'voicemailtype': user.voicemailtype,
     }
