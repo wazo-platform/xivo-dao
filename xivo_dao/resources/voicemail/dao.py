@@ -18,7 +18,6 @@
 from xivo_dao.helpers import errors
 from xivo_dao.alchemy.voicemail import Voicemail as VoicemailSchema
 from xivo_dao.alchemy.dialaction import Dialaction as DialactionSchema
-from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.resources.voicemail.model import db_converter
@@ -117,16 +116,3 @@ def _unlink_dialactions(session, voicemail_id):
      .filter(DialactionSchema.action == 'voicemail')
      .filter(DialactionSchema.actionarg1 == str(voicemail_id))
      .update({'linked': 0}))
-
-
-@daosession
-def is_voicemail_linked(session, voicemail):
-    user_links = _count_user_links(session, voicemail)
-    return user_links > 0
-
-
-def _count_user_links(session, voicemail):
-    count = (session.query(UserSchema)
-             .filter(UserSchema.voicemailid == voicemail.id)
-             .count())
-    return count
