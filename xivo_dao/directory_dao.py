@@ -68,7 +68,7 @@ def get_all_sources(session):
              'type': source.dirtype,
              'uri': source.uri,
              'delimiter': source.delimiter,
-             'searched_columns': json.loads(source.match_direct),
+             'searched_columns': json.loads(source.match_direct or '[]'),
              'format_columns': format_columns(source.fields, source.values)}
             for source in sources.all()]
 

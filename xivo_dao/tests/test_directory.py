@@ -45,7 +45,7 @@ class TestDirectorySources(DAOTestCase):
             {'id': 2,
              'name': 'mtl',
              'uri': 'http://mtl.lan.example.com:9487',
-             'match_direct': '["lastname"]'},
+             'match_direct': ''},
             {'id': 3,
              'name': 'acsvfile',
              'uri': 'file:///tmp/test.csv',
@@ -98,9 +98,7 @@ class TestDirectorySources(DAOTestCase):
              'name': 'mtl',
              'uri': 'http://mtl.lan.example.com:9487',
              'delimiter': None,
-             'searched_columns': [
-                 'lastname',
-             ],
+             'searched_columns': [],
              'format_columns': {
                  'number': '{exten}',
                  'mobile': '{mobile_phone_number}',
@@ -143,9 +141,7 @@ class TestDirectorySources(DAOTestCase):
              'name': 'mtl',
              'uri': 'http://mtl.lan.example.com:9487',
              'delimiter': None,
-             'searched_columns': [
-                 'lastname',
-             ],
+             'searched_columns': [],
              'format_columns': {
                  'number': '{exten}',
                  'mobile': '{mobile_phone_number}',
