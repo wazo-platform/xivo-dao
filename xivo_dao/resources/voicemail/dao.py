@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy import sql
+
 from xivo_dao.helpers import errors
 from xivo_dao.alchemy.voicemail import Voicemail as VoicemailSchema
 from xivo_dao.alchemy.dialaction import Dialaction as DialactionSchema
@@ -116,3 +118,14 @@ def _unlink_dialactions(session, voicemail_id):
      .filter(DialactionSchema.action == 'voicemail')
      .filter(DialactionSchema.actionarg1 == str(voicemail_id))
      .update({'linked': 0}))
+
+
+@daosession
+def find_enabled_voicemails(session):
+    query = (session.query(VoicemailSchema)
+             .filter(VoicemailSchema.commented == 0)
+             .order_by(sql.asc(VoicemailSchema.context),
+                       sql.asc(VoicemailSchema.mailbox))
+             )
+
+    return [db_converter.to_model(row) for row in query]

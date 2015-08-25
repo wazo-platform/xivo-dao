@@ -763,3 +763,44 @@ class TestVoicemailDelete(VoicemailTestCase):
                  .count())
 
         self.assertTrue(count > 0, "incall still associated to a dialaction")
+
+
+class TestFindEnabledVoicemails(DAOTestCase):
+
+    def build_voicemail(self, **kwargs):
+        voicemail_row = self.add_voicemail(**kwargs)
+
+        return Voicemail(id=voicemail_row.uniqueid,
+                         name=voicemail_row.fullname,
+                         number=voicemail_row.mailbox,
+                         context=voicemail_row.context,
+                         attach_audio=bool(voicemail_row.attach),
+                         delete_messages=bool(voicemail_row.deletevoicemail),
+                         ask_password=not bool(voicemail_row.skipcheckpass),
+                         options=voicemail_row.options)
+
+    def test_given_no_voicemails_then_returns_empty_list(self):
+        result = voicemail_dao.find_enabled_voicemails()
+
+        assert_that(result, contains())
+
+    def test_given_one_enabled_voicemail_then_returns_list_with_one_item(self):
+        expected = contains(self.build_voicemail())
+
+        result = voicemail_dao.find_enabled_voicemails()
+        assert_that(result, expected)
+
+    def test_given_one_disabled_voicemail_then_returns_empty_list(self):
+        self.build_voicemail(commented=1)
+
+        result = voicemail_dao.find_enabled_voicemails()
+        assert_that(result, contains())
+
+    def test_given_multiple_voicemails_when_queried_then_results_sorted_by_context_and_number(self):
+        voicemail1 = self.build_voicemail(mailbox='1001', context='vmctx')
+        voicemail2 = self.build_voicemail(mailbox='1000', context='vmctx')
+        voicemail3 = self.build_voicemail(mailbox='1001', context='default')
+        voicemail4 = self.build_voicemail(mailbox='1000', context='default')
+
+        result = voicemail_dao.find_enabled_voicemails()
+        assert_that(result, contains(voicemail4, voicemail3, voicemail2, voicemail1))
