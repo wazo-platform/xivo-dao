@@ -87,6 +87,34 @@ class TestDirectoryLdapSources(DAOTestCase):
 
         assert_that(result, contains_inanyorder(*expected))
 
+    def test_that_a_missing_ldap_config_does_not_break_get_all_sources(self):
+        directory_with_no_matching_config = CtiDirectories(
+            name='brokenldap',
+            uri='ldapfilter://missingldapconfig',
+            match_direct='["cn"]',
+            match_reverse='["telephoneNumber"]',
+        )
+        self.add_me(directory_with_no_matching_config)
+
+        result = directory_dao.get_all_sources()
+
+        expected = [
+            {'type': 'ldap',
+             'name': 'ldapdirectory',
+             'ldap_uri': 'ldaps://myldap.example.com:636',
+             'ldap_base_dn': 'dc=example,dc=com',
+             'ldap_username': 'cn=admin,dc=example,dc=com',
+             'ldap_password': '53c8e7',
+             'searched_columns': ['cn'],
+             'format_columns': {
+                 'firstname': '{givenName}',
+                 'lastname': '{sn}',
+                 'number': '{telephoneNumber}',
+             }},
+        ]
+
+        assert_that(result, contains_inanyorder(*expected))
+
 
 class TestDirectoryNonLdapSources(DAOTestCase):
 

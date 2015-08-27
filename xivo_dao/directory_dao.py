@@ -68,26 +68,23 @@ def _get_ldap_sources(session):
         CtiDirectories.match_direct,
     )
 
-    partial_configs = {}
+    source_configs = []
     for dir in ldap_cti_directories.all():
         _, _, name = dir.uri.partition('ldapfilter://')
-        partial_configs[name] = {'type': 'ldap',
-                                 'name': dir.name,
-                                 'searched_columns': json.loads(dir.match_direct),
-                                 'format_columns': _format_columns(dir.fields, dir.values)}
+        try:
+            ldap_config = ldap_dao.build_ldapinfo_from_ldapfilter(name)
+        except LookupError:
+            logger.warning('Skipping LDAP source %s', dir.name)
+            continue
 
-    ldap_configs = {filter_name: ldap_dao.build_ldapinfo_from_ldapfilter(filter_name)
-                    for filter_name in partial_configs.iterkeys()}
-
-    source_configs = []
-    for filter_name in partial_configs.iterkeys():
-        ldap_config = ldap_configs[filter_name]
-        source_config = partial_configs[filter_name]
-        source_config.update({'ldap_uri': ldap_config['uri'],
-                              'ldap_base_dn': ldap_config['basedn'],
-                              'ldap_username': ldap_config['username'],
-                              'ldap_password': ldap_config['password']})
-        source_configs.append(source_config)
+        source_configs.append({'type': 'ldap',
+                               'name': dir.name,
+                               'searched_columns': json.loads(dir.match_direct),
+                               'format_columns': _format_columns(dir.fields, dir.values),
+                               'ldap_uri': ldap_config['uri'],
+                               'ldap_base_dn': ldap_config['basedn'],
+                               'ldap_username': ldap_config['username'],
+                               'ldap_password': ldap_config['password']})
 
     return source_configs
 
