@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -39,4 +39,4 @@ class LdapServer(Base):
     protocolversion = Column(enum.ldapserver_protocolversion, nullable=False, server_default='3')
     disable = Column(Integer, nullable=False, server_default='0')
     dcreate = Column(Integer, nullable=False, server_default='0')
-    description = Column(Text, nullable=False)
+    description = Column(Text, nullable=False, default='')

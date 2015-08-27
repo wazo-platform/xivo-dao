@@ -17,6 +17,7 @@
 
 import json
 import logging
+import ldap_dao
 
 from itertools import izip
 from sqlalchemy import and_, func
@@ -34,14 +35,61 @@ logger = logging.getLogger(__name__)
 NUMBER_TYPE = 'number'
 
 
+def _format_columns(fields, value):
+    if fields == value == [None]:
+        return {}
+
+    return dict(izip(fields, value))
+
+
 @daosession
 def get_all_sources(session):
-    def format_columns(fields, value):
-        if fields == value == [None]:
-            return {}
+    nonldap_sources = _get_nonldap_sources(session)
+    ldap_sources = _get_ldap_sources(session)
 
-        return dict(izip(fields, value))
+    return nonldap_sources + ldap_sources
 
+
+def _get_ldap_sources(session):
+    ldap_cti_directories = session.query(
+        CtiDirectories.name,
+        CtiDirectories.uri,
+        CtiDirectories.match_direct,
+        func.array_agg(CtiDirectoryFields.fieldname).label('fields'),
+        func.array_agg(CtiDirectoryFields.value).label('values'),
+    ).outerjoin(
+        CtiDirectoryFields,
+        CtiDirectoryFields.dir_id == CtiDirectories.id
+    ).filter(
+        CtiDirectories.uri.like('ldapfilter://%%')
+    ).group_by(
+        CtiDirectories.name,
+        CtiDirectories.uri,
+        CtiDirectories.match_direct,
+    )
+
+    source_configs = []
+    for dir in ldap_cti_directories.all():
+        _, _, name = dir.uri.partition('ldapfilter://')
+        try:
+            ldap_config = ldap_dao.build_ldapinfo_from_ldapfilter(name)
+        except LookupError:
+            logger.warning('Skipping LDAP source %s', dir.name)
+            continue
+
+        source_configs.append({'type': 'ldap',
+                               'name': dir.name,
+                               'searched_columns': json.loads(dir.match_direct or '[]'),
+                               'format_columns': _format_columns(dir.fields, dir.values),
+                               'ldap_uri': ldap_config['uri'],
+                               'ldap_base_dn': ldap_config['basedn'],
+                               'ldap_username': ldap_config['username'],
+                               'ldap_password': ldap_config['password']})
+
+    return source_configs
+
+
+def _get_nonldap_sources(session):
     sources = session.query(
         CtiDirectories.name,
         CtiDirectories.uri,
@@ -69,7 +117,7 @@ def get_all_sources(session):
              'uri': source.uri,
              'delimiter': source.delimiter,
              'searched_columns': json.loads(source.match_direct or '[]'),
-             'format_columns': format_columns(source.fields, source.values)}
+             'format_columns': _format_columns(source.fields, source.values)}
             for source in sources.all()]
 
 

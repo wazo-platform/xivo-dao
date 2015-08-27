@@ -21,16 +21,127 @@ from xivo_dao.alchemy.cti_displays import CtiDisplays
 from xivo_dao.alchemy.ctidirectories import CtiDirectories
 from xivo_dao.alchemy.ctidirectoryfields import CtiDirectoryFields
 from xivo_dao.alchemy.directories import Directories
+from xivo_dao.alchemy.ldapserver import LdapServer
+from xivo_dao.alchemy.ldapfilter import LdapFilter
 from xivo_dao.tests.test_dao import DAOTestCase
 
 from itertools import chain
 from hamcrest import assert_that, contains_inanyorder, empty
 
 
-class TestDirectorySources(DAOTestCase):
+class TestDirectoryLdapSources(DAOTestCase):
 
     def setUp(self):
-        super(TestDirectorySources, self).setUp()
+        super(TestDirectoryLdapSources, self).setUp()
+        ldap_server = LdapServer(
+            name='myldap',
+            host='myldap.example.com',
+            port=636,
+            securitylayer='ssl',
+            protocolversion='3',
+        )
+        self.add_me(ldap_server)
+        ldap_filter = LdapFilter(
+            ldapserverid=ldap_server.id,
+            name='thefilter',
+            user='cn=admin,dc=example,dc=com',
+            passwd='53c8e7',
+            basedn='dc=example,dc=com',
+            attrdisplayname='cn',
+            attrphonenumber='telephoneNumber',
+            additionaltype='office',
+        )
+        self.add_me(ldap_filter)
+        self.cti_directory = CtiDirectories(
+            name='ldapdirectory',
+            uri='ldapfilter://{}'.format(ldap_filter.name),
+            match_direct='["cn"]',
+            match_reverse='["telephoneNumber"]',
+        )
+        self.add_me(self.cti_directory)
+        fields = {'firstname': '{givenName}',
+                  'lastname': '{sn}',
+                  'number': '{telephoneNumber}'}
+        for name, column in fields.iteritems():
+            self.add_me(CtiDirectoryFields(dir_id=self.cti_directory.id,
+                                           fieldname=name,
+                                           value=column))
+
+    def test_get_all_sources(self):
+        result = directory_dao.get_all_sources()
+
+        expected = [
+            {'type': 'ldap',
+             'name': 'ldapdirectory',
+             'ldap_uri': 'ldaps://myldap.example.com:636',
+             'ldap_base_dn': 'dc=example,dc=com',
+             'ldap_username': 'cn=admin,dc=example,dc=com',
+             'ldap_password': '53c8e7',
+             'searched_columns': ['cn'],
+             'format_columns': {
+                 'firstname': '{givenName}',
+                 'lastname': '{sn}',
+                 'number': '{telephoneNumber}',
+             }},
+        ]
+
+        assert_that(result, contains_inanyorder(*expected))
+
+    def test_that_a_missing_ldap_config_does_not_break_get_all_sources(self):
+        directory_with_no_matching_config = CtiDirectories(
+            name='brokenldap',
+            uri='ldapfilter://missingldapconfig',
+            match_direct='["cn"]',
+            match_reverse='["telephoneNumber"]',
+        )
+        self.add_me(directory_with_no_matching_config)
+
+        result = directory_dao.get_all_sources()
+
+        expected = [
+            {'type': 'ldap',
+             'name': 'ldapdirectory',
+             'ldap_uri': 'ldaps://myldap.example.com:636',
+             'ldap_base_dn': 'dc=example,dc=com',
+             'ldap_username': 'cn=admin,dc=example,dc=com',
+             'ldap_password': '53c8e7',
+             'searched_columns': ['cn'],
+             'format_columns': {
+                 'firstname': '{givenName}',
+                 'lastname': '{sn}',
+                 'number': '{telephoneNumber}',
+             }},
+        ]
+
+        assert_that(result, contains_inanyorder(*expected))
+
+    def test_ldap_with_no_direct_match(self):
+        self.cti_directory.match_direct = ''
+
+        result = directory_dao.get_all_sources()
+
+        expected = [
+            {'type': 'ldap',
+             'name': 'ldapdirectory',
+             'ldap_uri': 'ldaps://myldap.example.com:636',
+             'ldap_base_dn': 'dc=example,dc=com',
+             'ldap_username': 'cn=admin,dc=example,dc=com',
+             'ldap_password': '53c8e7',
+             'searched_columns': [],
+             'format_columns': {
+                 'firstname': '{givenName}',
+                 'lastname': '{sn}',
+                 'number': '{telephoneNumber}',
+             }},
+        ]
+
+        assert_that(result, contains_inanyorder(*expected))
+
+
+class TestDirectoryNonLdapSources(DAOTestCase):
+
+    def setUp(self):
+        super(TestDirectoryNonLdapSources, self).setUp()
         self.directory_configs = [
             {'uri': 'http://localhost:9487', 'dirtype': 'xivo', 'name': 'XiVO'},
             {'uri': 'http://mtl.lan.example.com:9487', 'dirtype': 'xivo', 'name': 'XiVO'},

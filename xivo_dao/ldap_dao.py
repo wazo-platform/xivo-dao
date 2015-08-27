@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2014 Avencall
+# Copyright (C) 2012-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,30 +30,48 @@ def find_ldapserver_with_id(session, ldapserver_id):
     return session.query(LdapServer).filter(LdapServer.id == ldapserver_id).first()
 
 
-def build_ldapinfo_from_ldapfilter(ldap_filter_name):
-    ldapfilter = find_ldapfilter_with_name(ldap_filter_name)
-    ldapserver = find_ldapserver_with_id(ldapfilter.ldapserverid)
+@daosession
+def build_ldapinfo_from_ldapfilter(session, ldap_filter_name):
+    ldap_config = session.query(
+        LdapFilter.name,
+        LdapFilter.user,
+        LdapFilter.passwd,
+        LdapFilter.basedn,
+        LdapFilter.filter,
+        LdapServer.securitylayer,
+        LdapServer.host,
+        LdapServer.port).join(
+            LdapServer,
+            LdapServer.id == LdapFilter.ldapserverid
+        ).filter(
+            LdapFilter.name == ldap_filter_name,
+            LdapFilter.commented == 0,
+            LdapServer.disable == 0,
+        ).first()
 
-    ssl = ldapserver.securitylayer == 'ssl'
-    host = ldapserver.host or 'localhost'
-    port = ldapserver.port or _determine_default_port(ssl)
+    if not ldap_config:
+        raise LookupError('No ldap config matching filter %s', ldap_filter_name)
+
+    ssl = ldap_config.securitylayer == 'ssl'
+    host = ldap_config.host or 'localhost'
+    port = ldap_config.port or _determine_default_port(ssl)
 
     username = u''
     password = u''
     basedn = None
     basefilter = None
 
-    if ldapfilter.user:
-        username = ldapfilter.user.encode('utf8').replace('\\', '\\\\')
+    if ldap_config.user:
+        username = ldap_config.user.encode('utf8').replace('\\', '\\\\')
 
-    if ldapfilter.passwd:
-        password = ldapfilter.passwd.encode('utf8')
+    if ldap_config.passwd:
+        password = ldap_config.passwd.encode('utf8')
 
-    if ldapfilter.basedn:
-        basedn = ldapfilter.basedn.encode('utf8')
+    if ldap_config.basedn:
+        basedn = ldap_config.basedn.encode('utf8')
 
-    if ldapfilter.filter:
-        basefilter = ldapfilter.filter.encode('utf8')
+    if ldap_config.filter:
+        basefilter = ldap_config.filter.encode('utf8')
 
     ldapinfo = {'username': username,
                 'password': password,

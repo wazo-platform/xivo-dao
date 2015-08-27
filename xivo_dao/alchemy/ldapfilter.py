@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -42,4 +42,4 @@ class LdapFilter(Base):
     additionaltype = Column(enum.ldapfilter_additionaltype, nullable=False)
     additionaltext = Column(String(16), nullable=False, server_default='')
     commented = Column(Integer, nullable=False, server_default='0')
-    description = Column(Text, nullable=False)
+    description = Column(Text, nullable=False, default='')
