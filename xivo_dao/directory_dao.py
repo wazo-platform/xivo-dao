@@ -79,7 +79,7 @@ def _get_ldap_sources(session):
 
         source_configs.append({'type': 'ldap',
                                'name': dir.name,
-                               'searched_columns': json.loads(dir.match_direct),
+                               'searched_columns': json.loads(dir.match_direct or '[]'),
                                'format_columns': _format_columns(dir.fields, dir.values),
                                'ldap_uri': ldap_config['uri'],
                                'ldap_base_dn': ldap_config['basedn'],

@@ -52,18 +52,18 @@ class TestDirectoryLdapSources(DAOTestCase):
             additionaltype='office',
         )
         self.add_me(ldap_filter)
-        cti_directory = CtiDirectories(
+        self.cti_directory = CtiDirectories(
             name='ldapdirectory',
             uri='ldapfilter://{}'.format(ldap_filter.name),
             match_direct='["cn"]',
             match_reverse='["telephoneNumber"]',
         )
-        self.add_me(cti_directory)
+        self.add_me(self.cti_directory)
         fields = {'firstname': '{givenName}',
                   'lastname': '{sn}',
                   'number': '{telephoneNumber}'}
         for name, column in fields.iteritems():
-            self.add_me(CtiDirectoryFields(dir_id=cti_directory.id,
+            self.add_me(CtiDirectoryFields(dir_id=self.cti_directory.id,
                                            fieldname=name,
                                            value=column))
 
@@ -106,6 +106,28 @@ class TestDirectoryLdapSources(DAOTestCase):
              'ldap_username': 'cn=admin,dc=example,dc=com',
              'ldap_password': '53c8e7',
              'searched_columns': ['cn'],
+             'format_columns': {
+                 'firstname': '{givenName}',
+                 'lastname': '{sn}',
+                 'number': '{telephoneNumber}',
+             }},
+        ]
+
+        assert_that(result, contains_inanyorder(*expected))
+
+    def test_ldap_with_no_direct_match(self):
+        self.cti_directory.match_direct = ''
+
+        result = directory_dao.get_all_sources()
+
+        expected = [
+            {'type': 'ldap',
+             'name': 'ldapdirectory',
+             'ldap_uri': 'ldaps://myldap.example.com:636',
+             'ldap_base_dn': 'dc=example,dc=com',
+             'ldap_username': 'cn=admin,dc=example,dc=com',
+             'ldap_password': '53c8e7',
+             'searched_columns': [],
              'format_columns': {
                  'firstname': '{givenName}',
                  'lastname': '{sn}',
