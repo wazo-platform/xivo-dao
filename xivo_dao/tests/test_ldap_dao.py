@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -40,6 +40,9 @@ class TestLdapDAO(DAOTestCase):
         ldapfilter_result = ldap_dao.find_ldapfilter_with_name(ldapfilter.name)
 
         self.assertEqual(ldapfilter.name, ldapfilter_result.name)
+
+    def test_build_ldapinfo_from_ldapfilter_not_found(self):
+        self.assertRaises(LookupError, ldap_dao.build_ldapinfo_from_ldapfilter, 'unknown')
 
     def test_build_ldapinfo_from_ldapfilter_minimum_fields(self):
         filter_name = 'filtername'

@@ -47,6 +47,9 @@ def build_ldapinfo_from_ldapfilter(session, ldap_filter_name):
             LdapFilter.name == ldap_filter_name,
         ).first()
 
+    if not ldap_config:
+        raise LookupError('No ldap config matching filter %s', ldap_filter_name)
+
     ssl = ldap_config.securitylayer == 'ssl'
     host = ldap_config.host or 'localhost'
     port = ldap_config.port or _determine_default_port(ssl)
