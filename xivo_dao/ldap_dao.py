@@ -45,6 +45,8 @@ def build_ldapinfo_from_ldapfilter(session, ldap_filter_name):
             LdapServer.id == LdapFilter.ldapserverid
         ).filter(
             LdapFilter.name == ldap_filter_name,
+            LdapFilter.commented == 0,
+            LdapServer.disable == 0,
         ).first()
 
     if not ldap_config:

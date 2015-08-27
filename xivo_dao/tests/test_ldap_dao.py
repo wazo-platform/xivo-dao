@@ -44,6 +44,20 @@ class TestLdapDAO(DAOTestCase):
     def test_build_ldapinfo_from_ldapfilter_not_found(self):
         self.assertRaises(LookupError, ldap_dao.build_ldapinfo_from_ldapfilter, 'unknown')
 
+    def test_build_ldapinfo_from_ldapfilter_disabled_filter(self):
+        filter_name = 'filtername'
+        ldap_server = self._insert_ldapserver(name='ldapserver_test')
+        ldap_filter = self._insert_ldapfilter(ldap_server.id, name=filter_name, commented=1)
+
+        self.assertRaises(LookupError, ldap_dao.build_ldapinfo_from_ldapfilter, ldap_filter.name)
+
+    def test_build_ldapinfo_from_ldapfilter_disabled_server(self):
+        filter_name = 'filtername'
+        ldap_server = self._insert_ldapserver(name='ldapserver_test', disable=1)
+        ldap_filter = self._insert_ldapfilter(ldap_server.id, name=filter_name)
+
+        self.assertRaises(LookupError, ldap_dao.build_ldapinfo_from_ldapfilter, ldap_filter.name)
+
     def test_build_ldapinfo_from_ldapfilter_minimum_fields(self):
         filter_name = 'filtername'
         ldap_server = self._insert_ldapserver(name='ldapserver_test')
@@ -114,6 +128,7 @@ class TestLdapDAO(DAOTestCase):
         ldap.filter = kwargs.get('filter', None)
         ldap.additionaltype = kwargs.get('additionaltype', 'office')
         ldap.description = kwargs.get('description', '')
+        ldap.commented = kwargs.get('commented', '0')
 
         self.add_me(ldap)
 
@@ -127,6 +142,7 @@ class TestLdapDAO(DAOTestCase):
         ldapserver.securitylayer = kwargs.get('securitylayer', None)
         ldapserver.protocolversion = kwargs.get('protocolversion', None)
         ldapserver.description = kwargs.get('description', '')
+        ldapserver.disable = kwargs.get('disable', '0')
 
         self.add_me(ldapserver)
 
