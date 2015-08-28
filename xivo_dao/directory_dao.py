@@ -20,10 +20,8 @@ import logging
 import ldap_dao
 
 from itertools import izip
-from sqlalchemy import and_, func
+from sqlalchemy import func
 from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.alchemy.cti_contexts import CtiContexts
-from xivo_dao.alchemy.cti_displays import CtiDisplays
 from xivo_dao.alchemy.ctidirectories import CtiDirectories
 from xivo_dao.alchemy.ctidirectoryfields import CtiDirectoryFields
 from xivo_dao.alchemy.directories import Directories
@@ -119,66 +117,3 @@ def _get_nonldap_sources(session):
              'searched_columns': json.loads(source.match_direct or '[]'),
              'format_columns': _format_columns(source.fields, source.values)}
             for source in sources.all()]
-
-
-@daosession
-def get_directory_headers(session, context):
-    attribute_list = _get_attribute_list(session, context)
-    header_list = _merge_number_attributes(attribute_list)
-    return header_list
-
-
-def _get_attribute_list(session, context):
-    display_filter_json = _get_display_filter_json(session, context)
-    if not display_filter_json:
-        return []
-    display_filter = _display_filter_from_json(display_filter_json)
-    attribute_list = _extract_attributes_from_display_filter(display_filter)
-    return attribute_list
-
-
-def _get_display_filter_json(session, context):
-    raw_display_data = session.query(
-        CtiDisplays.data
-    ).filter(
-        and_(CtiContexts.name == context,
-             CtiContexts.display == CtiDisplays.name)
-    ).first()
-
-    if not raw_display_data:
-        return ''
-    else:
-        return raw_display_data.data
-
-
-def _display_filter_from_json(display_filter_json):
-    display_data = json.loads(display_filter_json)
-    return display_data
-
-
-def _extract_attributes_from_display_filter(display_data):
-    NAME_INDEX, TYPE_INDEX = 0, 1
-
-    results = []
-    indices = sorted(display_data.keys())
-    for position in indices:
-        entry = display_data[position]
-        name = entry[NAME_INDEX]
-        field_type = NUMBER_TYPE if entry[TYPE_INDEX].startswith('number_') else entry[TYPE_INDEX]
-        pair = name, field_type
-        results.append(pair)
-    return results
-
-
-def _merge_number_attributes(attribute_list):
-    first_number_type = True
-    header_list = []
-    for attribute in attribute_list:
-        attribute_name, attribute_type = attribute
-        if attribute_type == NUMBER_TYPE:
-            if first_number_type:
-                header_list.append(attribute)
-                first_number_type = False
-        else:
-            header_list.append(attribute)
-    return header_list
