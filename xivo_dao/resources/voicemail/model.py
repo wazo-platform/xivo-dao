@@ -42,6 +42,7 @@ class Voicemail(NewModel):
         'attach_audio',
         'delete_messages',
         'ask_password',
+        'enabled',
         'options',
     ]
 
@@ -83,6 +84,7 @@ class VoicemailDBConverter(DatabaseConverter):
         model.attach_audio = bool(source.attach)
         model.delete_messages = bool(source.deletevoicemail)
         model.ask_password = (not source.skipcheckpass)
+        model.enabled = (not source.commented)
 
         if model.password == '':
             model.password = None
@@ -104,6 +106,8 @@ class VoicemailDBConverter(DatabaseConverter):
             source.deletevoicemail = int(bool(model.delete_messages))
         if model.ask_password is not None:
             source.skipcheckpass = int(not model.ask_password)
+        if model.enabled is not None:
+            source.commented = int(not model.enabled)
 
         if source.password is None:
             source.password = ''

@@ -455,6 +455,7 @@ class TestGetVoicemail(DAOTestCase):
             attach_audio=False,
             delete_messages=False,
             ask_password=True,
+            enabled=True,
             options=[]
         )
 
@@ -544,6 +545,7 @@ class TestCreateVoicemail(DAOTestCase):
             attach_audio=True,
             delete_messages=True,
             ask_password=True,
+            enabled=True,
             options=options
         )
 
@@ -566,6 +568,7 @@ class TestCreateVoicemail(DAOTestCase):
         self.assertEquals(row.attach, 1)
         self.assertEquals(row.deletevoicemail, 1)
         self.assertEquals(row.skipcheckpass, 0)
+        self.assertEquals(row.commented, 0)
         self.assertEquals(row.options, options)
 
     @mocked_dao_session
@@ -625,6 +628,7 @@ class TestEditVoicemail(DAOTestCase):
             deletevoicemail=0,
             maxmsg=0,
             skipcheckpass=0,
+            commented=0,
             options=[['saycid', 'yes']]
         )
 
@@ -641,6 +645,7 @@ class TestEditVoicemail(DAOTestCase):
         voicemail.attach_audio = True
         voicemail.delete_messages = True
         voicemail.ask_password = False
+        voicemail.enabled = False
         voicemail.options = expected_options
 
         voicemail_dao.edit(voicemail)
@@ -662,6 +667,7 @@ class TestEditVoicemail(DAOTestCase):
         self.assertEquals(row.attach, voicemail.attach_audio)
         self.assertEquals(row.deletevoicemail, voicemail.delete_messages)
         self.assertEquals(row.skipcheckpass, 1)
+        self.assertEquals(row.commented, 1)
         self.assertEquals(row.options, expected_options)
 
     @mocked_dao_session
@@ -777,6 +783,7 @@ class TestFindEnabledVoicemails(DAOTestCase):
                          attach_audio=bool(voicemail_row.attach),
                          delete_messages=bool(voicemail_row.deletevoicemail),
                          ask_password=not bool(voicemail_row.skipcheckpass),
+                         enabled=not bool(voicemail_row.commented),
                          options=voicemail_row.options)
 
     def test_given_no_voicemails_then_returns_empty_list(self):
