@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2014 Avencall
+# Copyright (C) 2012-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,14 +16,28 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import json
+
+from xivo_dao.alchemy.cti_contexts import CtiContexts
 from xivo_dao.alchemy.cti_displays import CtiDisplays
 from xivo_dao.helpers.db_manager import daosession
 
 
 @daosession
 def get_config(session):
-    res = {}
-    rows = (session.query(CtiDisplays).all())
-    for row in rows:
-        res[row.name] = json.loads(row.data)
-    return res
+    rows = session.query(CtiDisplays)
+    return {row.name: json.loads(row.data) for row in rows.all()}
+
+
+@daosession
+def get_profile_configuration(session):
+    rows = session.query(
+        CtiDisplays.name.label('display'),
+        CtiContexts.name,
+        CtiContexts.directories,
+    ).join(
+        CtiContexts,
+        CtiContexts.display == CtiDisplays.name
+    )
+
+    return {row.name: {'display': row.display,
+                       'sources': row.directories.split(',')} for row in rows.all()}
