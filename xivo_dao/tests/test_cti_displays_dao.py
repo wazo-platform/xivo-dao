@@ -90,3 +90,23 @@ class TestCTIDisplaysDAO(DAOTestCase):
                                                 'sources': ['xivodir', 'garbage']}}
 
         assert_that(result, equal_to(expected))
+
+    def test_get_profile_association_no_selection(self):
+        profile_configs = [
+            ('__switchboard_directory', '', 'switchboard'),
+            ('default', 'ldapone,csvws', 'NOT'),
+        ]
+        for config in profile_configs:
+            cti_config = CtiContexts(
+                name=config[0],
+                directories=config[1],
+                display=config[2],
+            )
+            self.add_me(cti_config)
+
+        result = cti_displays_dao.get_profile_configuration()
+
+        expected = {'__switchboard_directory': {'display': 'switchboard',
+                                                'sources': []}}
+
+        assert_that(result, equal_to(expected))

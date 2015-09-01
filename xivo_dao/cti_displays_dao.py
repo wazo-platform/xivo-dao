@@ -40,4 +40,5 @@ def get_profile_configuration(session):
     )
 
     return {row.name: {'display': row.display,
-                       'sources': row.directories.split(',')} for row in rows.all()}
+                       'sources': row.directories.split(',')
+                       if row.directories else []} for row in rows.all()}
