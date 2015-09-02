@@ -37,18 +37,6 @@ class TestCTIDisplaysDAO(DAOTestCase):
             )
             self.add_me(display)
 
-    def test_get_config(self):
-        result = cti_displays_dao.get_config()
-
-        expected = {'switchboard': {'10': ['', 'status', '', ''],
-                                    '20': ['Name', 'name', '', '{db-firstname} {db-lastname}'],
-                                    '30': ['Number', 'number_office', '', '{db-phone}']},
-                    'Display': {'10': ['Firstname', '', '', '{db-firstname}'],
-                                '20': ['Lastname', '', '', '{db-lastname}'],
-                                '30': ['Number', '', '', '{db-number}']}}
-
-        assert_that(result, equal_to(expected))
-
     def test_get_profile_configuration(self):
         profile_configs = [
             ('__switchboard_directory', 'xivodir,garbage', 'switchboard'),

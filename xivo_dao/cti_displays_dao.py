@@ -15,17 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-import json
-
 from xivo_dao.alchemy.cti_contexts import CtiContexts
 from xivo_dao.alchemy.cti_displays import CtiDisplays
 from xivo_dao.helpers.db_manager import daosession
-
-
-@daosession
-def get_config(session):
-    rows = session.query(CtiDisplays)
-    return {row.name: json.loads(row.data) for row in rows.all()}
 
 
 @daosession
