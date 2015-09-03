@@ -19,7 +19,7 @@ import uuid
 
 from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint, Index, \
     UniqueConstraint, ForeignKeyConstraint
-from sqlalchemy.types import Integer, String, Text, Enum
+from sqlalchemy.types import Integer, String, Text
 from sqlalchemy.orm import relationship
 
 from xivo_dao.alchemy import enum
@@ -59,9 +59,6 @@ class UserFeatures(Base):
     uuid = Column(String(38), nullable=False, default=_new_uuid)
     firstname = Column(String(128), nullable=False, server_default='')
     lastname = Column(String(128), nullable=False, server_default='')
-    voicemailtype = Column(Enum('asterisk', 'exchange',
-                                name='userfeatures_voicemailtype',
-                                metadata=Base.metadata))
     voicemailid = Column(Integer)
     agentid = Column(Integer)
     pictureid = Column(Integer)

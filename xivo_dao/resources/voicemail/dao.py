@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,10 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy import sql
+
 from xivo_dao.helpers import errors
 from xivo_dao.alchemy.voicemail import Voicemail as VoicemailSchema
 from xivo_dao.alchemy.dialaction import Dialaction as DialactionSchema
-from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.resources.voicemail.model import db_converter
@@ -87,9 +88,7 @@ def create(session, voicemail):
     with commit_or_abort(session, DataError.on_create, 'voicemail'):
         session.add(voicemail_row)
 
-    voicemail.id = voicemail_row.uniqueid
-
-    return voicemail
+    return db_converter.to_model(voicemail_row)
 
 
 @daosession
@@ -122,13 +121,11 @@ def _unlink_dialactions(session, voicemail_id):
 
 
 @daosession
-def is_voicemail_linked(session, voicemail):
-    user_links = _count_user_links(session, voicemail)
-    return user_links > 0
+def find_enabled_voicemails(session):
+    query = (session.query(VoicemailSchema)
+             .filter(VoicemailSchema.commented == 0)
+             .order_by(sql.asc(VoicemailSchema.context),
+                       sql.asc(VoicemailSchema.mailbox))
+             )
 
-
-def _count_user_links(session, voicemail):
-    count = (session.query(UserSchema)
-             .filter(UserSchema.voicemailid == voicemail.id)
-             .count())
-    return count
+    return [db_converter.to_model(row) for row in query]

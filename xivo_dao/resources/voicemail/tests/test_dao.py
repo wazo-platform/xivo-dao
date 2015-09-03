@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -62,7 +62,7 @@ class TestSearchVoicemail(DAOTestCase):
             name=name,
             context=context,
             number=number,
-            attach_audio=False,
+            attach_audio=None,
             delete_messages=False,
             ask_password=True,
         )
@@ -90,7 +90,7 @@ class TestSearchVoicemail(DAOTestCase):
             name='voicemail1',
             context=context,
             number='1000',
-            attach_audio=False,
+            attach_audio=None,
             delete_messages=False,
             ask_password=True,
         )
@@ -100,7 +100,7 @@ class TestSearchVoicemail(DAOTestCase):
             name='voicemail2',
             context=context,
             number='1001',
-            attach_audio=False,
+            attach_audio=None,
             delete_messages=False,
             ask_password=True,
         )
@@ -151,7 +151,7 @@ class TestSearchVoicemail(DAOTestCase):
             name='voicemail1',
             context=context,
             number='1001',
-            attach_audio=False,
+            attach_audio=None,
             delete_messages=False,
             ask_password=True,
         )
@@ -161,7 +161,7 @@ class TestSearchVoicemail(DAOTestCase):
             name='voicemail2',
             context=context,
             number='1000',
-            attach_audio=False,
+            attach_audio=None,
             delete_messages=False,
             ask_password=True,
         )
@@ -191,7 +191,7 @@ class TestSearchVoicemail(DAOTestCase):
             name='voicemail1',
             context=context,
             number='1001',
-            attach_audio=False,
+            attach_audio=None,
             delete_messages=False,
             ask_password=True,
         )
@@ -201,7 +201,7 @@ class TestSearchVoicemail(DAOTestCase):
             name='voicemail2',
             context=context,
             number='1000',
-            attach_audio=False,
+            attach_audio=None,
             delete_messages=False,
             ask_password=True,
         )
@@ -231,7 +231,7 @@ class TestSearchVoicemail(DAOTestCase):
             name='voicemail2',
             context=context,
             number='1000',
-            attach_audio=False,
+            attach_audio=None,
             delete_messages=False,
             ask_password=True,
         )
@@ -265,7 +265,7 @@ class TestSearchVoicemail(DAOTestCase):
             name='voicemail2',
             context=context,
             number='1000',
-            attach_audio=False,
+            attach_audio=None,
             delete_messages=False,
             ask_password=True,
         )
@@ -299,7 +299,7 @@ class TestSearchVoicemail(DAOTestCase):
             name='voicemail1',
             context=context,
             number='1001',
-            attach_audio=False,
+            attach_audio=None,
             delete_messages=False,
             ask_password=True,
         )
@@ -309,7 +309,7 @@ class TestSearchVoicemail(DAOTestCase):
             name='voicemail3',
             context=context,
             number='1002',
-            attach_audio=False,
+            attach_audio=None,
             delete_messages=False,
             ask_password=True,
         )
@@ -355,7 +355,7 @@ class TestSearchVoicemail(DAOTestCase):
             name='voicemail4',
             context=context,
             number='1004',
-            attach_audio=False,
+            attach_audio=None,
             delete_messages=False,
             ask_password=True,
         )
@@ -365,7 +365,7 @@ class TestSearchVoicemail(DAOTestCase):
             name='voicemail3',
             context=context,
             number='1003',
-            attach_audio=False,
+            attach_audio=None,
             delete_messages=False,
             ask_password=True,
         )
@@ -452,19 +452,25 @@ class TestGetVoicemail(DAOTestCase):
             number=number,
             context=context,
             id=voicemail_id,
-            attach_audio=False,
+            attach_audio=None,
             delete_messages=False,
-            ask_password=True
+            ask_password=True,
+            enabled=True,
+            options=[]
         )
+
+        print expected_voicemail.attach_audio
 
         voicemail = voicemail_dao.get(voicemail_id)
 
-        self.assertEquals(expected_voicemail, voicemail)
+        assert_that(voicemail, equal_to(expected_voicemail))
 
     def test_get_with_one_voicemail_and_all_properties(self):
         name = 'voicemail name'
         number = '42'
         context = 'context-42'
+        options = [['saycid', 'yes'],
+                   ['emailsubject', 'subject']]
 
         voicemail_row = VoicemailSchema(
             fullname=name,
@@ -478,7 +484,8 @@ class TestGetVoicemail(DAOTestCase):
             maxmsg=1,
             attach=1,
             deletevoicemail=None,
-            skipcheckpass=0
+            skipcheckpass=0,
+            options=options
         )
 
         self.add_me(voicemail_row)
@@ -498,6 +505,7 @@ class TestGetVoicemail(DAOTestCase):
         self.assertEquals(voicemail.attach_audio, True)
         self.assertEquals(voicemail.delete_messages, False)
         self.assertEquals(voicemail.ask_password, True)
+        self.assertEquals(voicemail.options, options)
 
 
 class TestCreateVoicemail(DAOTestCase):
@@ -520,6 +528,50 @@ class TestCreateVoicemail(DAOTestCase):
         self.assertEquals(row.fullname, name)
         self.assertEquals(row.mailbox, number)
         self.assertEquals(row.context, context)
+        self.assertEquals(row.options, [])
+
+    def test_create_with_all_parameters(self):
+        options = [['saycid', 'yes'],
+                   ['emailsubject', 'subject']]
+
+        voicemail = Voicemail(
+            name='voicemail',
+            number='1000',
+            context='context',
+            password='password',
+            email='email',
+            pager='pager',
+            language='fr_FR',
+            timezone='eu-fr',
+            max_messages=1,
+            attach_audio=True,
+            delete_messages=True,
+            ask_password=True,
+            enabled=True,
+            options=options
+        )
+
+        created_voicemail = voicemail_dao.create(voicemail)
+
+        row = (self.session.query(VoicemailSchema)
+               .filter(VoicemailSchema.mailbox == voicemail.number)
+               .first())
+
+        self.assertEquals(row.uniqueid, created_voicemail.id)
+        self.assertEquals(row.fullname, 'voicemail')
+        self.assertEquals(row.mailbox, '1000')
+        self.assertEquals(row.context, 'context')
+        self.assertEquals(row.password, 'password')
+        self.assertEquals(row.email, 'email')
+        self.assertEquals(row.pager, 'pager')
+        self.assertEquals(row.language, 'fr_FR')
+        self.assertEquals(row.tz, 'eu-fr')
+        self.assertEquals(row.maxmsg, 1)
+        self.assertEquals(row.attach, 1)
+        self.assertEquals(row.deletevoicemail, 1)
+        self.assertEquals(row.skipcheckpass, 0)
+        self.assertEquals(row.commented, 0)
+        self.assertEquals(row.options, options)
 
     @mocked_dao_session
     def test_create_with_database_error(self, session):
@@ -563,6 +615,9 @@ class TestEditVoicemail(DAOTestCase):
         self.assertEquals(row.context, context)
 
     def test_edit_with_all_parameters(self):
+        expected_options = [['envelope', 'yes'],
+                            ['minsecs', '10']]
+
         voicemail_row = self.add_voicemail(
             mailbox='1000',
             context='default',
@@ -574,7 +629,9 @@ class TestEditVoicemail(DAOTestCase):
             attach=0,
             deletevoicemail=0,
             maxmsg=0,
-            skipcheckpass=0
+            skipcheckpass=0,
+            commented=0,
+            options=[['saycid', 'yes']]
         )
 
         voicemail = voicemail_dao.get(voicemail_row.uniqueid)
@@ -590,6 +647,8 @@ class TestEditVoicemail(DAOTestCase):
         voicemail.attach_audio = True
         voicemail.delete_messages = True
         voicemail.ask_password = False
+        voicemail.enabled = False
+        voicemail.options = expected_options
 
         voicemail_dao.edit(voicemail)
 
@@ -610,6 +669,8 @@ class TestEditVoicemail(DAOTestCase):
         self.assertEquals(row.attach, voicemail.attach_audio)
         self.assertEquals(row.deletevoicemail, voicemail.delete_messages)
         self.assertEquals(row.skipcheckpass, 1)
+        self.assertEquals(row.commented, 1)
+        self.assertEquals(row.options, expected_options)
 
     @mocked_dao_session
     def test_edit_with_database_error(self, session):
@@ -712,25 +773,43 @@ class TestVoicemailDelete(VoicemailTestCase):
         self.assertTrue(count > 0, "incall still associated to a dialaction")
 
 
-class TestIsVoicemailLinked(VoicemailTestCase):
+class TestFindEnabledVoicemails(DAOTestCase):
 
-    def test_is_voicemail_linked_no_links(self):
-        voicemail = self.create_voicemail(number='42', context='default')
+    def build_voicemail(self, **kwargs):
+        voicemail_row = self.add_voicemail(**kwargs)
 
-        result = voicemail_dao.is_voicemail_linked(voicemail)
+        return Voicemail(id=voicemail_row.uniqueid,
+                         name=voicemail_row.fullname,
+                         number=voicemail_row.mailbox,
+                         context=voicemail_row.context,
+                         attach_audio=bool(voicemail_row.attach) if voicemail_row.attach is not None else None,
+                         delete_messages=bool(voicemail_row.deletevoicemail),
+                         ask_password=not bool(voicemail_row.skipcheckpass),
+                         enabled=not bool(voicemail_row.commented),
+                         options=voicemail_row.options)
 
-        self.assertFalse(result)
+    def test_given_no_voicemails_then_returns_empty_list(self):
+        result = voicemail_dao.find_enabled_voicemails()
 
-    def test_is_voicemail_linked_with_user(self):
-        voicemail = self.create_voicemail(number='42', context='default')
-        self.create_user_with_voicemail(voicemail,
-                                        firstname='Joe')
+        assert_that(result, contains())
 
-        result = voicemail_dao.is_voicemail_linked(voicemail)
+    def test_given_one_enabled_voicemail_then_returns_list_with_one_item(self):
+        expected = contains(self.build_voicemail())
 
-        self.assertTrue(result)
+        result = voicemail_dao.find_enabled_voicemails()
+        assert_that(result, expected)
 
-    def create_user_with_voicemail(self, voicemail, firstname='John', lastname='Doe'):
-        user_row = self.add_user(firstname=firstname,
-                                 lastname=lastname)
-        self.link_user_and_voicemail(user_row, voicemail.id)
+    def test_given_one_disabled_voicemail_then_returns_empty_list(self):
+        self.build_voicemail(commented=1)
+
+        result = voicemail_dao.find_enabled_voicemails()
+        assert_that(result, contains())
+
+    def test_given_multiple_voicemails_when_queried_then_results_sorted_by_context_and_number(self):
+        voicemail1 = self.build_voicemail(mailbox='1001', context='vmctx')
+        voicemail2 = self.build_voicemail(mailbox='1000', context='vmctx')
+        voicemail3 = self.build_voicemail(mailbox='1001', context='default')
+        voicemail4 = self.build_voicemail(mailbox='1000', context='default')
+
+        result = voicemail_dao.find_enabled_voicemails()
+        assert_that(result, contains(voicemail4, voicemail3, voicemail2, voicemail1))

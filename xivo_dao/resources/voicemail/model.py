@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -41,7 +41,9 @@ class Voicemail(NewModel):
         'max_messages',
         'attach_audio',
         'delete_messages',
-        'ask_password'
+        'ask_password',
+        'enabled',
+        'options',
     ]
 
     _RELATION = {
@@ -66,6 +68,7 @@ class VoicemailDBConverter(DatabaseConverter):
         'language': 'language',
         'tz': 'timezone',
         'maxmsg': 'max_messages',
+        'options': 'options',
     }
 
     def __init__(self):
@@ -78,9 +81,12 @@ class VoicemailDBConverter(DatabaseConverter):
         return model
 
     def _convert_model_fields(self, source, model):
-        model.attach_audio = bool(source.attach)
-        model.delete_messages = bool(source.deletevoicemail)
         model.ask_password = (not source.skipcheckpass)
+        model.enabled = (not source.commented)
+        model.delete_messages = bool(source.deletevoicemail)
+
+        if source.attach is not None:
+            model.attach_audio = bool(source.attach)
 
         if model.password == '':
             model.password = None
@@ -102,6 +108,8 @@ class VoicemailDBConverter(DatabaseConverter):
             source.deletevoicemail = int(bool(model.delete_messages))
         if model.ask_password is not None:
             source.skipcheckpass = int(not model.ask_password)
+        if model.enabled is not None:
+            source.commented = int(not model.enabled)
 
         if source.password is None:
             source.password = ''

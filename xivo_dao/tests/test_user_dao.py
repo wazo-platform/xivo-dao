@@ -705,7 +705,6 @@ class TestUserFeaturesDAO(DAOTestCase):
                 'timezone': None,
                 'userfield': u'',
                 'voicemailid': None,
-                'voicemailtype': None,
             }
         }
 

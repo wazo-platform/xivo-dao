@@ -136,9 +136,29 @@ def find_sccp_line_settings(session):
 
 @daosession
 def find_sccp_device_settings(session):
-    rows = session.query(SCCPDevice).all()
+    query = (session.query(SCCPDevice,
+                           Voicemail.mailbox)
+             .outerjoin(SCCPLine,
+                        SCCPLine.name == SCCPDevice.line)
+             .outerjoin(LineFeatures,
+                        and_(LineFeatures.protocol == 'sccp',
+                             LineFeatures.protocolid == SCCPLine.id))
+             .outerjoin(UserLine,
+                        and_(UserLine.line_id == LineFeatures.id,
+                             UserLine.main_user == True))
+             .outerjoin(UserFeatures,
+                        UserFeatures.id == UserLine.user_id)
+             .outerjoin(Voicemail,
+                        Voicemail.uniqueid == UserFeatures.voicemailid)
+             )
 
-    return [row.todict() for row in rows]
+    devices = []
+    for row in query:
+        device = row.SCCPDevice.todict()
+        device['voicemail'] = row.mailbox
+        devices.append(device)
+
+    return devices
 
 
 @daosession
@@ -366,33 +386,36 @@ def find_sip_trunk_settings(session):
 
 @daosession
 def find_sip_user_settings(session):
-    def gen_user(user_sip, number, moh):
-        user_config = user_sip.todict()
-        user_config['number'] = number
-        user_config['mohsuggest'] = moh
-        return user_config
-
-    rows = (
+    query = (
         session.query(
             UserSIP,
             LineFeatures.number,
-            UserFeatures.musiconhold,
+            UserFeatures.musiconhold.label('mohsuggest'),
+            (Voicemail.mailbox + '@' + Voicemail.context).label('mailbox')
         ).join(
             LineFeatures, and_(LineFeatures.protocolid == UserSIP.id,
                                LineFeatures.protocol == 'sip')
         ).outerjoin(
-            UserLine, UserLine.line_id == LineFeatures.id
+            UserLine, and_(UserLine.line_id == LineFeatures.id,
+                           UserLine.main_user == True)
         ).outerjoin(
             UserFeatures, UserFeatures.id == UserLine.user_id
+        ).outerjoin(
+            Voicemail, UserFeatures.voicemailid == Voicemail.uniqueid
         ).filter(
             and_(
                 UserSIP.category == 'user',
                 UserSIP.commented == 0,
             )
-        ).all()
+        )
     )
 
-    return (gen_user(*row) for row in rows)
+    for row in query:
+        sip_user = row.UserSIP.todict()
+        sip_user['mohsuggest'] = row.mohsuggest
+        sip_user['number'] = row.number
+        sip_user['mailbox'] = row.mailbox
+        yield sip_user
 
 
 @daosession

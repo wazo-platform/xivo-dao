@@ -18,7 +18,8 @@
 import warnings
 
 from contextlib import contextmanager
-from hamcrest import assert_that, contains, equal_to, has_entries, contains_inanyorder, has_length
+from hamcrest import assert_that, contains, equal_to, has_entries, \
+    contains_inanyorder, has_length, none, has_entry
 
 from mock import patch
 from xivo_dao import asterisk_conf_dao
@@ -209,20 +210,37 @@ class TestSccpConfDAO(DAOTestCase):
 
         assert_that(sccp_general_settings, contains_inanyorder(*expected_result))
 
-    def test_find_sccp_device_settings(self):
+    def test_find_sccp_device_settings_no_voicemail(self):
         sccp_device = self.add_sccpdevice()
 
-        expected_result = [
-            {'id': sccp_device.id,
-             'name': sccp_device.name,
-             'device': sccp_device.device,
-             'line': sccp_device.line,
-             'voicemail': sccp_device.voicemail}
-        ]
+        expected_device = {'id': sccp_device.id,
+                           'name': sccp_device.name,
+                           'device': sccp_device.device,
+                           'line': sccp_device.line,
+                           'voicemail': None}
 
         sccp_device = asterisk_conf_dao.find_sccp_device_settings()
 
-        assert_that(sccp_device, contains_inanyorder(*expected_result))
+        assert_that(sccp_device, contains(expected_device))
+
+    def test_find_sccp_device_settings(self):
+        extension = self.add_extension(exten='1000', context='default')
+        sccp_device = self.add_sccpdevice(line=extension.exten)
+        sccp_line = self.add_sccpline(name=extension.exten, context=extension.context)
+        line = self.add_line(protocol='sccp', protocolid=sccp_line.id, context=extension.context)
+        voicemail = self.add_voicemail(mailbox='2000')
+        user = self.add_user(voicemailid=voicemail.uniqueid)
+        self.add_user_line(user_id=user.id, line_id=line.id)
+
+        expected_device = {'id': sccp_device.id,
+                           'name': sccp_device.name,
+                           'device': sccp_device.device,
+                           'line': sccp_device.line,
+                           'voicemail': voicemail.mailbox}
+
+        sccp_device = asterisk_conf_dao.find_sccp_device_settings()
+
+        assert_that(sccp_device, contains(expected_device))
 
 
 class TestFindSccpSpeeddialSettings(DAOTestCase):
@@ -598,57 +616,25 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         vm = self.add_voicemail()
         self.add_voicemail(commented=1)
 
-        expected_result = [
-            {'imapuser': None,
-             'backupdeleted': None,
-             'serveremail': None,
-             'tempgreetwarn': None,
-             'passwordlocation': None,
-             'attachfmt': None,
-             'emailbody': None,
-             'saydurationm': None,
-             'deletevoicemail': 0,
-             'operator': None,
-             'locale': None,
-             'emailsubject': None,
-             'maxmsg': None,
-             'tz': None,
-             'forcename': None,
-             'saycid': None,
-             'exitcontext': None,
-             'attach': None,
-             'sayduration': None,
-             'volgain': None,
-             'maxsecs': None,
-             'email': None,
-             'nextaftercmd': None,
-             'moveheard': None,
-             'hidefromdir': 'no',
-             'envelope': None,
-             'mailbox': vm.mailbox,
-             'imapvmsharedid': None,
-             'dialout': None,
-             'uniqueid': vm.uniqueid,
-             'forcegreetings': None,
-             'password': u'',
-             'pager': None,
-             'sendvoicemail': None,
-             'language': None,
-             'minsecs': None,
-             'commented': 0,
-             'callback': None,
-             'imappassword': None,
-             'context': vm.context,
-             'skipcheckpass': 0,
-             'fullname': vm.fullname,
-             'review': None,
-             'messagewrap': None,
-             'imapfolder': None}
-        ]
+        expected = {'uniqueid': vm.uniqueid,
+                    'deletevoicemail': 0,
+                    'maxmsg': None,
+                    'tz': None,
+                    'attach': None,
+                    'mailbox': vm.mailbox,
+                    'uniqueid': vm.uniqueid,
+                    'password': u'',
+                    'pager': None,
+                    'language': None,
+                    'commented': 0,
+                    'context': vm.context,
+                    'skipcheckpass': 0,
+                    'fullname': vm.fullname,
+                    'options': []}
 
         voicemails = asterisk_conf_dao.find_voicemail_activated()
 
-        assert_that(voicemails, contains_inanyorder(*expected_result))
+        assert_that(voicemails, contains(has_entries(expected)))
 
     def test_find_voicemail_general_settings(self):
         vms1 = self.add_voicemail_general_settings()
@@ -744,7 +730,6 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
              'md5secret': u'',
              'regserver': None,
              'directmedia': None,
-             'mailbox': None,
              'qualifyfreq': None,
              'host': u'dynamic',
              'promiscredir': None,
@@ -807,113 +792,128 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
 
         assert_that(sip_trunk, contains_inanyorder(*expected_result))
 
+    def test_find_sip_user_settings_no_voicemail(self):
+        usersip = self.add_usersip(category='user')
+        self.add_user_line_with_exten(
+            protocol='sip',
+            protocolid=usersip.id,
+            name_line=usersip.name,
+            context=usersip.context,
+        )
+
+        results = asterisk_conf_dao.find_sip_user_settings()
+
+        assert_that(results, contains(has_entry('mailbox', none())))
+
     def test_find_sip_user_settings(self):
         usersip = self.add_usersip(category='user')
+        voicemail = self.add_voicemail(mailbox='1000', context='default')
+        mailbox = '1000@default'
+
         ule = self.add_user_line_with_exten(
             protocol='sip',
             protocolid=usersip.id,
             name_line=usersip.name,
             context=usersip.context,
             musiconhold='mymusic',
+            voicemail_id=voicemail.uniqueid
         )
 
-        expected_result = [
-            {'number': ule.line.number,
-             'protocol': ule.line.protocol,
-             'buggymwi': None,
-             'amaflags': u'default',
-             'sendrpid': None,
-             'videosupport': None,
-             'regseconds': 0,
-             'maxcallbitrate': None,
-             'registertrying': None,
-             'session-minse': None,
-             'mohinterpret': None,
-             'rtpholdtimeout': None,
-             'session-expires': None,
-             'defaultip': None,
-             'ignoresdpversion': None,
-             'vmexten': None,
-             'name': usersip.name,
-             'callingpres': None,
-             'textsupport': None,
-             'unsolicited_mailbox': None,
-             'outboundproxy': None,
-             'fromuser': None,
-             'cid_number': None,
-             'commented': 0,
-             'useclientcode': None,
-             'call-limit': 0,
-             'progressinband': None,
-             'port': None,
-             'transport': None,
-             'category': u'user',
-             'md5secret': u'',
-             'regserver': None,
-             'directmedia': None,
-             'mailbox': None,
-             'qualifyfreq': None,
-             'host': u'dynamic',
-             'promiscredir': None,
-             'disallow': None,
-             'allowoverlap': None,
-             'accountcode': None,
-             'dtmfmode': None,
-             'language': None,
-             'usereqphone': None,
-             'qualify': None,
-             'trustrpid': None,
-             'context': ule.line.context,
-             'timert1': None,
-             'session-refresher': None,
-             'maxforwards': None,
-             'allowsubscribe': None,
-             'session-timers': None,
-             'busylevel': None,
-             'callcounter': None,
-             'callerid': None,
-             'encryption': None,
-             'remotesecret': None,
-             'secret': u'',
-             'use_q850_reason': None,
-             'type': u'friend',
-             'username': None,
-             'callbackextension': None,
-             'disallowed_methods': None,
-             'rfc2833compensate': None,
-             'g726nonstandard': None,
-             'contactdeny': None,
-             'snom_aoc_enabled': None,
-             'fullname': None,
-             't38pt_udptl': None,
-             'fullcontact': None,
-             'subscribemwi': 0,
-             'mohsuggest': 'mymusic',
-             'id': usersip.id,
-             'autoframing': None,
-             't38pt_usertpsource': None,
-             'ipaddr': u'',
-             'fromdomain': None,
-             'allowtransfer': None,
-             'nat': None,
-             'setvar': u'',
-             'contactpermit': None,
-             'rtpkeepalive': None,
-             'insecure': None,
-             'permit': None,
-             'parkinglot': None,
-             'lastms': u'',
-             'subscribecontext': None,
-             'regexten': None,
-             'deny': None,
-             'timerb': None,
-             'rtptimeout': None,
-             'allow': None}
-        ]
+        expected = {'number': ule.line.number,
+                    'protocol': ule.line.protocol,
+                    'buggymwi': None,
+                    'amaflags': u'default',
+                    'sendrpid': None,
+                    'videosupport': None,
+                    'regseconds': 0,
+                    'maxcallbitrate': None,
+                    'registertrying': None,
+                    'session-minse': None,
+                    'mohinterpret': None,
+                    'rtpholdtimeout': None,
+                    'session-expires': None,
+                    'defaultip': None,
+                    'ignoresdpversion': None,
+                    'vmexten': None,
+                    'name': usersip.name,
+                    'callingpres': None,
+                    'textsupport': None,
+                    'unsolicited_mailbox': None,
+                    'outboundproxy': None,
+                    'fromuser': None,
+                    'cid_number': None,
+                    'commented': 0,
+                    'useclientcode': None,
+                    'call-limit': 0,
+                    'progressinband': None,
+                    'port': None,
+                    'transport': None,
+                    'category': u'user',
+                    'md5secret': u'',
+                    'regserver': None,
+                    'directmedia': None,
+                    'qualifyfreq': None,
+                    'host': u'dynamic',
+                    'promiscredir': None,
+                    'disallow': None,
+                    'allowoverlap': None,
+                    'accountcode': None,
+                    'dtmfmode': None,
+                    'language': None,
+                    'usereqphone': None,
+                    'qualify': None,
+                    'trustrpid': None,
+                    'context': ule.line.context,
+                    'timert1': None,
+                    'session-refresher': None,
+                    'maxforwards': None,
+                    'allowsubscribe': None,
+                    'session-timers': None,
+                    'busylevel': None,
+                    'callcounter': None,
+                    'callerid': None,
+                    'encryption': None,
+                    'remotesecret': None,
+                    'secret': u'',
+                    'use_q850_reason': None,
+                    'type': u'friend',
+                    'username': None,
+                    'callbackextension': None,
+                    'disallowed_methods': None,
+                    'rfc2833compensate': None,
+                    'g726nonstandard': None,
+                    'contactdeny': None,
+                    'snom_aoc_enabled': None,
+                    'fullname': None,
+                    't38pt_udptl': None,
+                    'fullcontact': None,
+                    'subscribemwi': 0,
+                    'mohsuggest': 'mymusic',
+                    'id': usersip.id,
+                    'autoframing': None,
+                    't38pt_usertpsource': None,
+                    'ipaddr': u'',
+                    'fromdomain': None,
+                    'allowtransfer': None,
+                    'nat': None,
+                    'setvar': u'',
+                    'contactpermit': None,
+                    'rtpkeepalive': None,
+                    'insecure': None,
+                    'permit': None,
+                    'parkinglot': None,
+                    'lastms': u'',
+                    'subscribecontext': None,
+                    'regexten': None,
+                    'deny': None,
+                    'timerb': None,
+                    'rtptimeout': None,
+                    'mailbox': mailbox,
+                    'allow': None}
 
-        sip_user = asterisk_conf_dao.find_sip_user_settings()
+        results = asterisk_conf_dao.find_sip_user_settings()
 
-        assert_that(sip_user, contains_inanyorder(*expected_result))
+        assert_that(results, contains(has_entries(expected)))
 
     def test_find_sip_user_settings_no_xivo_user(self):
         number, context = '1001', 'myctx'
@@ -932,11 +932,11 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
             context=context,
         )
 
-        sip_user_conf = next(asterisk_conf_dao.find_sip_user_settings())
+        results = asterisk_conf_dao.find_sip_user_settings()
 
-        assert_that(sip_user_conf, has_entries('protocol', 'sip',
-                                               'number', number,
-                                               'context', context))
+        assert_that(results, contains(has_entries('protocol', 'sip',
+                                                  'number', number,
+                                                  'context', context)))
 
     def test_find_sip_pickup_settings(self):
         category_to_conf_reverse_map = {'pickupgroup': 'member',
