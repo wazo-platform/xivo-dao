@@ -81,10 +81,12 @@ class VoicemailDBConverter(DatabaseConverter):
         return model
 
     def _convert_model_fields(self, source, model):
-        model.attach_audio = bool(source.attach)
-        model.delete_messages = bool(source.deletevoicemail)
         model.ask_password = (not source.skipcheckpass)
         model.enabled = (not source.commented)
+        model.delete_messages = bool(source.deletevoicemail)
+
+        if source.attach is not None:
+            model.attach_audio = bool(source.attach)
 
         if model.password == '':
             model.password = None

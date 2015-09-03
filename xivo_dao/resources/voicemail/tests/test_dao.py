@@ -62,7 +62,7 @@ class TestSearchVoicemail(DAOTestCase):
             name=name,
             context=context,
             number=number,
-            attach_audio=False,
+            attach_audio=None,
             delete_messages=False,
             ask_password=True,
         )
@@ -90,7 +90,7 @@ class TestSearchVoicemail(DAOTestCase):
             name='voicemail1',
             context=context,
             number='1000',
-            attach_audio=False,
+            attach_audio=None,
             delete_messages=False,
             ask_password=True,
         )
@@ -100,7 +100,7 @@ class TestSearchVoicemail(DAOTestCase):
             name='voicemail2',
             context=context,
             number='1001',
-            attach_audio=False,
+            attach_audio=None,
             delete_messages=False,
             ask_password=True,
         )
@@ -151,7 +151,7 @@ class TestSearchVoicemail(DAOTestCase):
             name='voicemail1',
             context=context,
             number='1001',
-            attach_audio=False,
+            attach_audio=None,
             delete_messages=False,
             ask_password=True,
         )
@@ -161,7 +161,7 @@ class TestSearchVoicemail(DAOTestCase):
             name='voicemail2',
             context=context,
             number='1000',
-            attach_audio=False,
+            attach_audio=None,
             delete_messages=False,
             ask_password=True,
         )
@@ -191,7 +191,7 @@ class TestSearchVoicemail(DAOTestCase):
             name='voicemail1',
             context=context,
             number='1001',
-            attach_audio=False,
+            attach_audio=None,
             delete_messages=False,
             ask_password=True,
         )
@@ -201,7 +201,7 @@ class TestSearchVoicemail(DAOTestCase):
             name='voicemail2',
             context=context,
             number='1000',
-            attach_audio=False,
+            attach_audio=None,
             delete_messages=False,
             ask_password=True,
         )
@@ -231,7 +231,7 @@ class TestSearchVoicemail(DAOTestCase):
             name='voicemail2',
             context=context,
             number='1000',
-            attach_audio=False,
+            attach_audio=None,
             delete_messages=False,
             ask_password=True,
         )
@@ -265,7 +265,7 @@ class TestSearchVoicemail(DAOTestCase):
             name='voicemail2',
             context=context,
             number='1000',
-            attach_audio=False,
+            attach_audio=None,
             delete_messages=False,
             ask_password=True,
         )
@@ -299,7 +299,7 @@ class TestSearchVoicemail(DAOTestCase):
             name='voicemail1',
             context=context,
             number='1001',
-            attach_audio=False,
+            attach_audio=None,
             delete_messages=False,
             ask_password=True,
         )
@@ -309,7 +309,7 @@ class TestSearchVoicemail(DAOTestCase):
             name='voicemail3',
             context=context,
             number='1002',
-            attach_audio=False,
+            attach_audio=None,
             delete_messages=False,
             ask_password=True,
         )
@@ -355,7 +355,7 @@ class TestSearchVoicemail(DAOTestCase):
             name='voicemail4',
             context=context,
             number='1004',
-            attach_audio=False,
+            attach_audio=None,
             delete_messages=False,
             ask_password=True,
         )
@@ -365,7 +365,7 @@ class TestSearchVoicemail(DAOTestCase):
             name='voicemail3',
             context=context,
             number='1003',
-            attach_audio=False,
+            attach_audio=None,
             delete_messages=False,
             ask_password=True,
         )
@@ -452,16 +452,18 @@ class TestGetVoicemail(DAOTestCase):
             number=number,
             context=context,
             id=voicemail_id,
-            attach_audio=False,
+            attach_audio=None,
             delete_messages=False,
             ask_password=True,
             enabled=True,
             options=[]
         )
 
+        print expected_voicemail.attach_audio
+
         voicemail = voicemail_dao.get(voicemail_id)
 
-        self.assertEquals(expected_voicemail, voicemail)
+        assert_that(voicemail, equal_to(expected_voicemail))
 
     def test_get_with_one_voicemail_and_all_properties(self):
         name = 'voicemail name'
@@ -780,7 +782,7 @@ class TestFindEnabledVoicemails(DAOTestCase):
                          name=voicemail_row.fullname,
                          number=voicemail_row.mailbox,
                          context=voicemail_row.context,
-                         attach_audio=bool(voicemail_row.attach),
+                         attach_audio=bool(voicemail_row.attach) if voicemail_row.attach is not None else None,
                          delete_messages=bool(voicemail_row.deletevoicemail),
                          ask_password=not bool(voicemail_row.skipcheckpass),
                          enabled=not bool(voicemail_row.commented),
