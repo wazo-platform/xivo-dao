@@ -416,7 +416,9 @@ class TestSimpleSearch(TestSearch):
                                                   firstname='charles',
                                                   lastname=None,
                                                   mobile_phone_number=None,
-                                                  exten=None)])
+                                                  exten=None,
+                                                  userfield=None,
+                                                  description=None)])
 
         self.assert_search_returns_result(expected, view='directory')
 
@@ -425,7 +427,9 @@ class TestSimpleSearch(TestSearch):
         user_line_row = self.add_user_line_with_exten(firstname='danny',
                                                       lastname='rogers',
                                                       agentid=agent_row.id,
-                                                      mobilephonenumber='4185551234')
+                                                      mobilephonenumber='4185551234',
+                                                      userfield='userfield',
+                                                      description='desc')
 
         expected = SearchResult(1, [UserDirectory(id=user_line_row.user_id,
                                                   line_id=user_line_row.line_id,
@@ -433,7 +437,9 @@ class TestSimpleSearch(TestSearch):
                                                   firstname='danny',
                                                   lastname='rogers',
                                                   mobile_phone_number='4185551234',
-                                                  exten=user_line_row.extension.exten)])
+                                                  exten=user_line_row.extension.exten,
+                                                  userfield='userfield',
+                                                  description='desc')])
 
         self.assert_search_returns_result(expected, view='directory')
 
