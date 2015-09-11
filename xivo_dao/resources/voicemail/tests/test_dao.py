@@ -672,21 +672,9 @@ class TestEditVoicemail(DAOTestCase):
         self.assertEquals(row.commented, 1)
         self.assertEquals(row.options, expected_options)
 
-    @mocked_dao_session
-    def test_edit_with_database_error(self, session):
-        session.commit.side_effect = SQLAlchemyError()
 
-        name = 'voicemail'
-        number = '42'
-        context = 'default'
 
-        voicemail = Voicemail(name=name,
-                              number=number,
-                              context=context)
 
-        self.assertRaises(DataError, voicemail_dao.edit, voicemail)
-        session.begin.assert_called_once_with()
-        session.rollback.assert_called_once_with()
 
 
 class VoicemailTestCase(DAOTestCase):
