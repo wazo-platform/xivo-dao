@@ -154,6 +154,8 @@ class DAOTestCase(unittest.TestCase):
         kwargs.setdefault('musiconhold', 'default')
         kwargs.setdefault('agentid', None)
         kwargs.setdefault('mobilephonenumber', '')
+        kwargs.setdefault('description', '')
+        kwargs.setdefault('userfield', '')
 
         user = self.add_user(firstname=kwargs['firstname'],
                              lastname=kwargs['lastname'],
@@ -161,7 +163,9 @@ class DAOTestCase(unittest.TestCase):
                              voicemailid=kwargs['voicemail_id'],
                              musiconhold=kwargs['musiconhold'],
                              agentid=kwargs['agentid'],
-                             mobilephonenumber=kwargs['mobilephonenumber'])
+                             mobilephonenumber=kwargs['mobilephonenumber'],
+                             userfield=kwargs['userfield'],
+                             description=kwargs['description'])
         line = self.add_line(number=kwargs['exten'],
                              context=kwargs['context'],
                              protocol=kwargs['protocol'],

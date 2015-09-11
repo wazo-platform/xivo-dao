@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014 Avencall
+# Copyright (C) 2014-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -42,6 +42,8 @@ class DirectoryView(View):
                                UserFeatures.firstname.label('firstname'),
                                func.nullif(UserFeatures.lastname, '').label('lastname'),
                                func.nullif(UserFeatures.mobilephonenumber, '').label('mobile_phone_number'),
+                               func.nullif(UserFeatures.userfield, '').label('userfield'),
+                               func.nullif(UserFeatures.description, '').label('description'),
                                Extension.exten.label('exten'))
                  .outerjoin(UserLine,
                             and_(UserLine.user_id == UserFeatures.id))
@@ -60,7 +62,9 @@ class DirectoryView(View):
                              firstname=row.firstname,
                              lastname=row.lastname,
                              mobile_phone_number=row.mobile_phone_number,
-                             exten=row.exten)
+                             exten=row.exten,
+                             userfield=row.userfield,
+                             description=row.description)
 
 
 user_view = ViewSelector(default=UserView(),

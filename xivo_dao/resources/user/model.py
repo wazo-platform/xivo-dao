@@ -61,4 +61,6 @@ UserDirectory = namedtuple('UserDirectory', ('id',
                                              'firstname',
                                              'lastname',
                                              'exten',
-                                             'mobile_phone_number'))
+                                             'mobile_phone_number',
+                                             'userfield',
+                                             'description'))
