@@ -672,9 +672,43 @@ class TestEditVoicemail(DAOTestCase):
         self.assertEquals(row.commented, 1)
         self.assertEquals(row.options, expected_options)
 
+    def test_edit_with_null_parameters(self):
+        voicemail_row = self.add_voicemail(
+            mailbox='1000',
+            context='default',
+            password='password',
+            email='email@email',
+            pager='pager@email',
+            language='fr_FR',
+            tz='eu-fr',
+            attach=1,
+            maxmsg=10,
+        )
 
+        voicemail = voicemail_dao.get(voicemail_row.uniqueid)
 
+        voicemail.password = None
+        voicemail.email = None
+        voicemail.pager = None
+        voicemail.language = None
+        voicemail.timezone = None
+        voicemail.max_messages = None
+        voicemail.attach_audio = None
 
+        voicemail_dao.edit(voicemail)
+
+        row = (self.session.query(VoicemailSchema)
+               .filter(VoicemailSchema.uniqueid == voicemail.id)
+               .first())
+
+        self.assertEquals(row.uniqueid, voicemail.id)
+        self.assertEquals(row.password, '')
+        self.assertEquals(row.email, None)
+        self.assertEquals(row.pager, None)
+        self.assertEquals(row.language, None)
+        self.assertEquals(row.tz, None)
+        self.assertEquals(row.maxmsg, None)
+        self.assertEquals(row.attach, None)
 
 
 class VoicemailTestCase(DAOTestCase):

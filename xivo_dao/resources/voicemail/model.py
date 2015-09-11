@@ -99,19 +99,31 @@ class VoicemailDBConverter(DatabaseConverter):
 
     def update_source(self, source, model):
         DatabaseConverter.update_source(self, source, model)
-        self._convert_source_fields(source, model)
+        self._update_source_fields(source, model)
+
+    def _update_source_fields(self, source, model):
+        attach = int(model.attach_audio) if model.attach_audio is not None else None
+        password = '' if model.password is None else model.password
+        deletevoicemail = int(model.delete_messages)
+        skipcheckpass = int(not model.ask_password)
+        commented = int(not model.enabled)
+
+        source.attach = attach
+        source.deletevoicemail = deletevoicemail
+        source.skipcheckpass = skipcheckpass
+        source.commented = commented
+        source.password = password
 
     def _convert_source_fields(self, source, model):
         if model.attach_audio is not None:
             source.attach = int(bool(model.attach_audio))
         if model.delete_messages is not None:
-            source.deletevoicemail = int(bool(model.delete_messages))
+            source.deletevoicemail = int(model.delete_messages)
         if model.ask_password is not None:
             source.skipcheckpass = int(not model.ask_password)
         if model.enabled is not None:
             source.commented = int(not model.enabled)
-
-        if source.password is None:
+        if model.password is None:
             source.password = ''
 
 
