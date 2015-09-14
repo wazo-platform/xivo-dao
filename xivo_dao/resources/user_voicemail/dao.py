@@ -79,17 +79,13 @@ def find_by_user_id(session, user_id):
 
 
 @daosession
-def find_by_voicemail_id(session, voicemail_id):
-    row = (session.query(UserSchema.id.label('user_id'),
-                         UserSchema.voicemailid.label('voicemail_id'),
-                         UserSchema.enablevoicemail)
-           .filter(UserSchema.voicemailid == voicemail_id)
-           .first())
+def find_all_by_voicemail_id(session, voicemail_id):
+    query = (session.query(UserSchema.id.label('user_id'),
+                           UserSchema.voicemailid.label('voicemail_id'),
+                           UserSchema.enablevoicemail)
+             .filter(UserSchema.voicemailid == voicemail_id))
 
-    if not row:
-        return None
-
-    return db_converter.to_model(row)
+    return [db_converter.to_model(row) for row in query]
 
 
 @daosession
