@@ -75,6 +75,10 @@ def _get_ldap_sources(session):
             logger.warning('Skipping LDAP source %s', dir.name)
             continue
 
+        custom_filter = ldap_config.get('filter') or ''
+        if custom_filter:
+            custom_filter = '({})'.format(custom_filter)
+
         source_configs.append({'type': 'ldap',
                                'name': dir.name,
                                'searched_columns': json.loads(dir.match_direct or '[]'),
@@ -82,7 +86,8 @@ def _get_ldap_sources(session):
                                'ldap_uri': ldap_config['uri'],
                                'ldap_base_dn': ldap_config['basedn'],
                                'ldap_username': ldap_config['username'],
-                               'ldap_password': ldap_config['password']})
+                               'ldap_password': ldap_config['password'],
+                               'ldap_custom_filter': custom_filter})
 
     return source_configs
 
