@@ -27,6 +27,7 @@ import string
 
 from sqlalchemy.schema import MetaData
 
+from xivo_dao.alchemy.accessfeatures import AccessFeatures
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.callfilter import Callfilter
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
@@ -712,6 +713,12 @@ class DAOTestCase(unittest.TestCase):
         paging = Paging(**kwargs)
         self.add_me(paging)
         return paging
+
+    def add_accessfeatures(self, host, **kwargs):
+        kwargs.setdefault('feature', 'phonebook')
+        accessfeature = AccessFeatures(host=host, **kwargs)
+        self.add_me(accessfeature)
+        return accessfeature
 
     def add_me(self, obj):
         with commit_or_abort(self.session):
