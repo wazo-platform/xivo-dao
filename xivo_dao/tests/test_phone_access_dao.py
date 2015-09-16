@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, equal_to
+from hamcrest import assert_that, contains, contains_inanyorder, empty
 
 from xivo_dao import phone_access_dao
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -29,7 +29,7 @@ class TestPhoneAccessDao(DAOTestCase):
 
         hosts = phone_access_dao.get_authorized_subnets()
 
-        assert_that(hosts, equal_to([host]))
+        assert_that(hosts, contains(host))
 
     def test_get_authorized_subnets_with_commented(self):
         host = '169.254.0.0/16'
@@ -38,4 +38,14 @@ class TestPhoneAccessDao(DAOTestCase):
 
         hosts = phone_access_dao.get_authorized_subnets()
 
-        assert_that(hosts, equal_to([]))
+        assert_that(hosts, empty())
+
+    def test_get_authorized_subnets_multiple_results(self):
+        hosts = ['169.254.0.0/16', '192.168.1.1']
+
+        for host in hosts:
+            self.add_accessfeatures(host)
+
+        hosts = phone_access_dao.get_authorized_subnets()
+
+        assert_that(hosts, contains_inanyorder(*hosts))
