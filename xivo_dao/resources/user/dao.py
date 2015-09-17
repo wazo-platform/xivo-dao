@@ -190,6 +190,7 @@ def create(session, user):
     with commit_or_abort(session, DataError.on_create, 'User'):
         session.add(user_row)
 
+    user.uuid = user_row.uuid
     user.id = user_row.id
     user.caller_id = user_row.callerid
 

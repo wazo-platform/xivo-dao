@@ -26,6 +26,7 @@ from hamcrest import has_items
 from hamcrest import has_length
 from hamcrest import has_property
 from hamcrest import is_
+from hamcrest import is_not
 from hamcrest import none
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -588,6 +589,7 @@ class TestCreate(DAOTestCase):
                .first())
 
         assert_that(row.id, equal_to(created_user.id))
+        assert_that(row.uuid, equal_to(created_user.uuid))
         assert_that(row.firstname, equal_to(user.firstname))
         assert_that(row.lastname, equal_to(user.lastname))
         assert_that(row.timezone, equal_to(user.timezone))
@@ -601,6 +603,18 @@ class TestCreate(DAOTestCase):
         assert_that(row.musiconhold, equal_to(user.music_on_hold))
         assert_that(row.preprocess_subroutine, equal_to(user.preprocess_subroutine))
         assert_that(row.userfield, equal_to(user.userfield))
+
+    def test_that_create_returns_the_generated_uuid(self):
+        user = self.prepare_user(firstname='John')
+
+        created_user = user_dao.create(user)
+
+        row = (self.session.query(UserSchema)
+               .filter(UserSchema.firstname == user.firstname)
+               .first())
+
+        assert_that(created_user.uuid, is_not(None))
+        assert_that(row.uuid, is_not(None))
 
     @mocked_dao_session
     def test_create_with_database_error(self, session):
