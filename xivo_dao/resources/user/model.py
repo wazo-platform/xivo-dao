@@ -28,6 +28,7 @@ class User(NewModel):
 
     FIELDS = [
         'id',
+        'uuid',
         'firstname',
         'lastname',
         'caller_id',

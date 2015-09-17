@@ -26,6 +26,7 @@ class UserDbConverter(DatabaseConverter):
 
     DB_TO_MODEL_MAPPING = {
         'id': 'id',
+        'uuid': 'uuid',
         'firstname': 'firstname',
         'lastname': 'lastname',
         'outcallerid': 'outgoing_caller_id',

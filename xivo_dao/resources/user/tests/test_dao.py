@@ -408,6 +408,7 @@ class TestSearch(DAOTestCase):
     def prepare_user(self, **parameters):
         user_row = self.add_user(**parameters)
         user = User(id=user_row.id,
+                    uuid=user_row.uuid,
                     firstname=user_row.firstname,
                     lastname=user_row.lastname or None,
                     timezone=user_row.timezone or None,
