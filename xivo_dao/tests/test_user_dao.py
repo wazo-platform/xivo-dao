@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+import uuid
+
 from hamcrest import any_of
 from hamcrest import assert_that
 from hamcrest import contains_inanyorder
@@ -799,6 +801,12 @@ class TestUserFeaturesDAO(DAOTestCase):
 
         assert_that(result, any_of(user1.uuid, user2.uuid))
         log_warning.assert_called_once_with('multiple users share the same email `%s`', 'alice@merveille.com')
+
+    def test_that_the_user_uuid_is_unique(self):
+        shared_uuid = str(uuid.uuid4())
+
+        self.add_user(uuid=shared_uuid)
+        self.assertRaises(Exception, self.add_user, uuid=shared_uuid)
 
     def test_check_username_password(self):
         self.add_user(loginclient='alice',
