@@ -45,6 +45,7 @@ class UserFeatures(Base):
                              ('entity.id',),
                              ondelete='RESTRICT'),
         UniqueConstraint('func_key_private_template_id'),
+        UniqueConstraint('uuid', name='userfeatures_uuid'),
         Index('userfeatures__idx__agentid', 'agentid'),
         Index('userfeatures__idx__entityid', 'entityid'),
         Index('userfeatures__idx__firstname', 'firstname'),
