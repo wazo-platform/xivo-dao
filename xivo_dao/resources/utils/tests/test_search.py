@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014 Avencall
+# Copyright (C) 2014-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -79,10 +79,10 @@ class TestSearchSystem(DAOTestCase):
                           self.search.search,
                           self.session, {'limit': 0})
 
-    def test_given_skip_is_negative_number_then_raises_error(self):
+    def test_given_offset_is_negative_number_then_raises_error(self):
         self.assertRaises(InputError,
                           self.search.search,
-                          self.session, {'skip': -1})
+                          self.session, {'offset': -1})
 
     def test_given_limit_then_returns_same_number_of_rows_as_limit(self):
         self.add_user()
@@ -93,7 +93,25 @@ class TestSearchSystem(DAOTestCase):
         assert_that(total, equal_to(2))
         assert_that(rows, has_length(1))
 
-    def test_given_skip_then_skips_a_number_of_rows(self):
+    def test_given_offset_then_offsets_a_number_of_rows(self):
+        self.add_user(lastname='Abigale')
+        last_user_row = self.add_user(lastname='Zintrabi')
+
+        rows, total = self.search.search(self.session, {'offset': 1})
+
+        assert_that(total, equal_to(2))
+        assert_that(rows, contains(last_user_row))
+
+    def test_given_offset_is_zero_then_does_not_offset_rows(self):
+        first_user_row = self.add_user(lastname='Abigale')
+        last_user_row = self.add_user(lastname='Zintrabi')
+
+        rows, total = self.search.search(self.session, {'offset': 0})
+
+        assert_that(total, equal_to(2))
+        assert_that(rows, contains(first_user_row, last_user_row))
+
+    def test_given_skip_then_offset_a_number_of_rows(self):
         self.add_user(lastname='Abigale')
         last_user_row = self.add_user(lastname='Zintrabi')
 
@@ -101,15 +119,6 @@ class TestSearchSystem(DAOTestCase):
 
         assert_that(total, equal_to(2))
         assert_that(rows, contains(last_user_row))
-
-    def test_given_skip_is_zero_then_does_not_skip_rows(self):
-        first_user_row = self.add_user(lastname='Abigale')
-        last_user_row = self.add_user(lastname='Zintrabi')
-
-        rows, total = self.search.search(self.session, {'skip': 0})
-
-        assert_that(total, equal_to(2))
-        assert_that(rows, contains(first_user_row, last_user_row))
 
     def test_given_search_term_then_searches_in_columns_and_uses_default_sort(self):
         user_row1 = self.add_user(firstname='a123bcd', lastname='eeefghi')

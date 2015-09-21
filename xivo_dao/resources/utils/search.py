@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014 Avencall
+# Copyright (C) 2014-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -65,7 +65,7 @@ class SearchSystem(object):
         'order': None,
         'direction': 'asc',
         'limit': None,
-        'skip': 0
+        'offset': 0
     }
 
     def __init__(self, config):
@@ -81,19 +81,21 @@ class SearchSystem(object):
 
         query = self._filter(query, parameters['search'])
         sorted_query = self._sort(query, parameters['order'], parameters['direction'])
-        paginated_query = self._paginate(sorted_query, parameters['limit'], parameters['skip'])
+        paginated_query = self._paginate(sorted_query, parameters['limit'], parameters['offset'])
 
         return paginated_query.all(), sorted_query.count()
 
     def _populate_parameters(self, parameters=None):
         new_params = dict(self.DEFAULTS)
         if parameters:
+            parameters['offset'] = parameters.pop('skip', parameters.get('offset', self.DEFAULTS['offset']))
             new_params.update(parameters)
+
         return new_params
 
     def _validate_parameters(self, parameters):
-        if parameters['skip'] < 0:
-            raise errors.wrong_type('skip', 'positive number')
+        if parameters['offset'] < 0:
+            raise errors.wrong_type('offset', 'positive number')
 
         if parameters['limit'] is not None and parameters['limit'] <= 0:
             raise errors.wrong_type('limit', 'positive number')
@@ -119,9 +121,9 @@ class SearchSystem(object):
 
         return query.order_by(direction(column))
 
-    def _paginate(self, query, limit=None, skip=0):
-        if skip > 0:
-            query = query.offset(skip)
+    def _paginate(self, query, limit=None, offset=0):
+        if offset > 0:
+            query = query.offset(offset)
 
         if limit:
             query = query.limit(limit)
