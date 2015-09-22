@@ -105,6 +105,13 @@ def get(session, user_id):
     return db_converter.to_model(user_row)
 
 
+@daosession
+def get_by_uuid(session, user_uuid):
+    query = session.query(UserSchema).filter(UserSchema.uuid == str(user_uuid))
+    user_row = _user_row_from_query(query, user_uuid)
+    return db_converter.to_model(user_row)
+
+
 def _fetch_commented_user_row(session, user_id):
     query = session.query(UserSchema).filter(UserSchema.id == user_id)
     return _user_row_from_query(query, user_id)
@@ -183,6 +190,7 @@ def create(session, user):
     with commit_or_abort(session, DataError.on_create, 'User'):
         session.add(user_row)
 
+    user.uuid = user_row.uuid
     user.id = user_row.id
     user.caller_id = user_row.callerid
 

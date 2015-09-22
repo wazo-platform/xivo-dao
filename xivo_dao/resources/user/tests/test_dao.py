@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+import uuid
+
 from hamcrest import all_of
 from hamcrest import any_of
 from hamcrest import assert_that
@@ -24,6 +26,7 @@ from hamcrest import has_items
 from hamcrest import has_length
 from hamcrest import has_property
 from hamcrest import is_
+from hamcrest import is_not
 from hamcrest import none
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -122,6 +125,41 @@ class TestGet(DAOTestCase):
                                       commented_line=1)
 
         self.assertRaises(NotFoundError, user_dao.get_by_number_context, number, context)
+
+    def test_get_by_uuid(self):
+        user_row = self.add_user(firstname='Paul',
+                                 lastname='Rogers',
+                                 callerid='"Cool dude"',
+                                 outcallerid='"Cool dude going out"',
+                                 loginclient='paulrogers',
+                                 passwdclient='paulrogers',
+                                 musiconhold='mymusic',
+                                 mobilephonenumber='4185551234',
+                                 userfield='userfield',
+                                 timezone='America/Montreal',
+                                 language='fr_FR',
+                                 description='Really cool dude',
+                                 preprocess_subroutine='preprocess_subroutine')
+        voicemail_row = self.add_voicemail(mailbox='1234', context='default')
+        self.link_user_and_voicemail(user_row, voicemail_row.uniqueid)
+
+        user = user_dao.get_by_uuid(uuid.UUID(user_row.uuid))
+
+        assert_that(user.id, equal_to(user.id))
+        assert_that(user.lastname, equal_to(user_row.lastname))
+        assert_that(user.caller_id, equal_to(user_row.callerid))
+        assert_that(user.outgoing_caller_id, equal_to(user_row.outcallerid))
+        assert_that(user.username, equal_to(user_row.loginclient))
+        assert_that(user.password, equal_to(user_row.passwdclient))
+        assert_that(user.music_on_hold, equal_to(user_row.musiconhold))
+        assert_that(user.mobile_phone_number, equal_to(user_row.mobilephonenumber))
+        assert_that(user.userfield, equal_to(user_row.userfield))
+        assert_that(user.timezone, equal_to(user_row.timezone))
+        assert_that(user.language, equal_to(user_row.language))
+        assert_that(user.description, equal_to(user_row.description))
+        assert_that(user.preprocess_subroutine, equal_to(user_row.preprocess_subroutine))
+        assert_that(user.voicemail_id, equal_to(voicemail_row.uniqueid))
+        assert_that(user.private_template_id, equal_to(user_row.func_key_private_template_id))
 
 
 class TestFind(DAOTestCase):
@@ -371,6 +409,7 @@ class TestSearch(DAOTestCase):
     def prepare_user(self, **parameters):
         user_row = self.add_user(**parameters)
         user = User(id=user_row.id,
+                    uuid=user_row.uuid,
                     firstname=user_row.firstname,
                     lastname=user_row.lastname or None,
                     timezone=user_row.timezone or None,
@@ -550,6 +589,7 @@ class TestCreate(DAOTestCase):
                .first())
 
         assert_that(row.id, equal_to(created_user.id))
+        assert_that(row.uuid, equal_to(created_user.uuid))
         assert_that(row.firstname, equal_to(user.firstname))
         assert_that(row.lastname, equal_to(user.lastname))
         assert_that(row.timezone, equal_to(user.timezone))
@@ -563,6 +603,18 @@ class TestCreate(DAOTestCase):
         assert_that(row.musiconhold, equal_to(user.music_on_hold))
         assert_that(row.preprocess_subroutine, equal_to(user.preprocess_subroutine))
         assert_that(row.userfield, equal_to(user.userfield))
+
+    def test_that_create_returns_the_generated_uuid(self):
+        user = self.prepare_user(firstname='John')
+
+        created_user = user_dao.create(user)
+
+        row = (self.session.query(UserSchema)
+               .filter(UserSchema.firstname == user.firstname)
+               .first())
+
+        assert_that(created_user.uuid, is_not(None))
+        assert_that(row.uuid, is_not(None))
 
     @mocked_dao_session
     def test_create_with_database_error(self, session):
