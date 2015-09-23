@@ -459,8 +459,6 @@ class TestGetVoicemail(DAOTestCase):
             options=[]
         )
 
-        print expected_voicemail.attach_audio
-
         voicemail = voicemail_dao.get(voicemail_id)
 
         assert_that(voicemail, equal_to(expected_voicemail))
