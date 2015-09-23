@@ -23,17 +23,31 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 class TestAdminUserDAO(DAOTestCase):
 
-    def test_check_username_password(self):
+    def test_given_right_credentials_when_check_username_password_then_return_true(self):
         self.add_admin(login='foo', passwd='bar')
 
         valid = admin_dao.check_username_password('foo', 'bar')
 
         assert_that(valid, equal_to(True))
 
-    def test_check_username_password_invalid(self):
+    def test_given_invalid_account_when_check_username_password_then_return_false(self):
         self.add_admin(login='foo', passwd='bar', valid=0)
 
         valid = admin_dao.check_username_password('foo', 'bar')
+
+        assert_that(valid, equal_to(False))
+
+    def test_given_invalid_login_when_check_username_password_then_return_false(self):
+        self.add_admin(login='foo', passwd='bar')
+
+        valid = admin_dao.check_username_password('alice', 'bar')
+
+        assert_that(valid, equal_to(False))
+
+    def test_given_invalid_password_when_check_username_password_then_return_false(self):
+        self.add_admin(login='foo', passwd='bar')
+
+        valid = admin_dao.check_username_password('foo', 'superdupersecret')
 
         assert_that(valid, equal_to(False))
 
