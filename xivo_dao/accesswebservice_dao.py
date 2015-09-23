@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -40,3 +40,25 @@ def get_allowed_hosts(session):
                            AccessWebService.disable == 0)).all())
     result = [item[0].encode('utf-8', 'ignore') for item in result]
     return result
+
+
+@daosession
+def get_user_id(session, login):
+    result = (session
+              .query(AccessWebService.id)
+              .filter(and_(AccessWebService.login == login,
+                           AccessWebService.disable == 0)).scalar())
+    if result is None:
+        raise LookupError('No such webservice user: {}'.format(login))
+    return result
+
+
+@daosession
+def check_username_password(session, login, password):
+    result = (session
+              .query(AccessWebService.login)
+              .filter(and_(AccessWebService.login == login,
+                           AccessWebService.passwd == password,
+                           AccessWebService.disable == 0)).all())
+
+    return len(result) > 0

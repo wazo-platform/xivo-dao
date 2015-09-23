@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2014 Avencall
+# Copyright (C) 2014-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -49,6 +49,6 @@ class User(Base):
     time = Column(Integer, nullable=False, server_default='0')
     dcreate = Column(Integer, nullable=False, server_default='0')
     dupdate = Column(Integer, nullable=False, server_default='0')
-    obj = Column(Text, nullable=False)
+    obj = Column(Text, nullable=False, default='')
 
     entity = relationship(Entity)

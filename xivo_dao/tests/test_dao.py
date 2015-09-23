@@ -67,6 +67,7 @@ from xivo_dao.alchemy.staticmeetme import StaticMeetme
 from xivo_dao.alchemy.staticqueue import StaticQueue
 from xivo_dao.alchemy.staticsip import StaticSIP
 from xivo_dao.alchemy.staticvoicemail import StaticVoicemail
+from xivo_dao.alchemy.user import User
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.usercustom import UserCustom as UserCustomSchema
 from xivo_dao.alchemy.userfeatures import UserFeatures
@@ -139,6 +140,11 @@ class DAOTestCase(unittest.TestCase):
         self.session.close()
         self.trans.rollback()
         self.connection.close()
+
+    def add_admin(self, **kwargs):
+        admin = User(**kwargs)
+        self.add_me(admin)
+        return admin
 
     def add_user_line_with_exten(self, **kwargs):
         kwargs.setdefault('firstname', 'unittest')
