@@ -28,3 +28,9 @@ def check_username_password(session, username, password):
                                           User.valid == 1)).first()
 
     return row is not None
+
+
+@daosession
+def get_admin_id(session, username):
+    return session.query(User.id).filter(and_(User.login == username,
+                                              User.valid == 1)).scalar()

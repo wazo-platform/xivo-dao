@@ -36,3 +36,10 @@ class TestAdminUserDAO(DAOTestCase):
         valid = admin_dao.check_username_password('foo', 'bar')
 
         assert_that(valid, equal_to(False))
+
+    def test_get_admin_id(self):
+        admin = self.add_admin(login='foo', passwd='bar')
+
+        result = admin_dao.get_admin_id('foo')
+
+        assert_that(result, equal_to(admin.id))
