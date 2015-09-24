@@ -35,3 +35,10 @@ def get_config(session):
         res['*']['didextens'] = {}
         res['*']['didextens']['*'] = json.loads(row.directories)
     return res
+
+
+@daosession
+def get_context_names(session):
+    rows = session.query(CtiContexts.name).all()
+
+    return [row.name for row in rows]
