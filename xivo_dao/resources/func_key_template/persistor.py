@@ -534,7 +534,7 @@ class FeaturesPersistor(DestinationPersistor):
 
         if row.var_name == 'parkext':
             return fk_model.ParkingDestination(feature_id=row.id)
-        elif row.var_name == 'automon':
+        elif row.var_name == 'automixmon':
             return fk_model.OnlineRecordingDestination(feature_id=row.id)
 
         transfer = TransferExtensionConverter().to_transfer(row.var_name)
@@ -557,7 +557,7 @@ class FeaturesPersistor(DestinationPersistor):
         elif destination.type == 'parking':
             return 'parkext'
         elif destination.type == 'onlinerec':
-            return 'automon'
+            return 'automixmon'
 
     def delete(self, func_key_id):
         pass
