@@ -672,7 +672,7 @@ class TestUserFeaturesDAO(DAOTestCase):
                 'destbusy': u'',
                 'destrna': u'',
                 'destunc': u'',
-                'enableautomon': 0,
+                'enableonlinerec': 0,
                 'enablebusy': 0,
                 'enableclient': 0,
                 'enablednd': 0,
