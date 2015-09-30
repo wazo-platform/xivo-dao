@@ -151,13 +151,6 @@ netiface_type = Enum(
     metadata=Base.metadata
 )
 
-serverfeatures_type = Enum(
-    'xivo',
-    'ldap',
-    name='serverfeatures_type',
-    metadata=Base.metadata
-)
-
 schedule_path_type = Enum(
     'user',
     'group',
