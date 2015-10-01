@@ -163,3 +163,11 @@ class LineFeatures(Base):
     @position.setter
     def position(self, value):
         self.num = value
+
+    @property
+    def device_slot(self):
+        return self.num
+
+    @property
+    def device_id(self):
+        return self.device
