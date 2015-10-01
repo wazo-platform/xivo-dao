@@ -48,6 +48,7 @@ class LineFeatures(Base):
         PrimaryKeyConstraint('id'),
         UniqueConstraint('name'),
         UniqueConstraint('protocol', 'protocolid'),
+        UniqueConstraint('provisioningid'),
         Index('linefeatures__idx__context', 'context'),
         Index('linefeatures__idx__device', 'device'),
         Index('linefeatures__idx__number', 'number'),
@@ -62,7 +63,7 @@ class LineFeatures(Base):
     name = Column(String(128))
     number = Column(String(40))
     context = Column(String(39), nullable=False)
-    provisioningid = Column(Integer, nullable=False, server_default='0')
+    provisioningid = Column(Integer, nullable=False)
     num = Column(Integer, server_default='1')
     ipfrom = Column(String(15))
     commented = Column(Integer, nullable=False, server_default='0')
@@ -139,21 +140,21 @@ class LineFeatures(Base):
         self.protocolid = value
 
     @property
+    def provisioning_extension(self):
+        return self.provisioning_code
+
+    @property
     def provisioning_code(self):
         if self.provisioningid is None:
-            return None
-        if self.provisioningid == 0:
             return None
         return unicode(self.provisioningid)
 
     @provisioning_code.setter
     def provisioning_code(self, value):
         if value is None:
-            self.provisioningid = 0
+            self.provisioningid = None
         elif value.isdigit():
             self.provisioningid = int(value)
-        else:
-            raise ValueError("provisioning_code '{}' are not digits".format(value))
 
     @property
     def position(self):

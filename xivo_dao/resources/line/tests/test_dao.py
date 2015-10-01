@@ -147,8 +147,6 @@ class TestLineDaoEdit(TestLineDao):
         assert_that(edited_line.protocol, none())
         assert_that(edited_line.endpoint_id, none())
         assert_that(edited_line.protocolid, none())
-        assert_that(edited_line.provisioning_code, none())
-        assert_that(edited_line.provisioningid, equal_to(0))
 
     def test_given_line_has_sip_endpoint_when_editing_then_usersip_updated(self):
         usersip_row = self.add_usersip(context="default",
