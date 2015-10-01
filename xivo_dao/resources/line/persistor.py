@@ -55,6 +55,12 @@ class LinePersistor(object):
                 .options(joinedload(Line.sip_endpoint))
                 .options(joinedload(Line.sccp_endpoint)))
 
+    def find_by(self, column_name, value):
+        column = getattr(Line, column_name, None)
+        if column is None:
+            raise errors.unknown(column_name)
+        return self.query().filter(column == value).first()
+
     def create(self, line):
         if line.provisioning_code is None:
             line.provisioning_code = self.generate_provisioning_code()

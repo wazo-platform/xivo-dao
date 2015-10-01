@@ -29,6 +29,7 @@ from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.resources.line import dao as line_dao
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.helpers.exception import NotFoundError
+from xivo_dao.helpers.exception import InputError
 
 
 class TestLineDao(DAOTestCase):
@@ -39,6 +40,18 @@ class TestLineDao(DAOTestCase):
         line = Line(**properties)
         self.add_me(line)
         return line
+
+
+class TestLineDaoFindBy(TestLineDao):
+
+    def test_given_column_does_not_exist_then_raises_error(self):
+        self.assertRaises(InputError, line_dao.find_by, 'column', 1)
+
+    def test_find_by(self):
+        line = self.add_line(provisioningid=234567)
+        result = line_dao.find_by('provisioningid', 234567)
+
+        assert_that(result.id, equal_to(line.id))
 
 
 class TestLineDaoGet(TestLineDao):

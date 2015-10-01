@@ -23,6 +23,11 @@ from xivo_dao.resources.line.persistor import LinePersistor
 
 
 @daosession
+def find_by(session, column, value):
+    return LinePersistor(session).find_by(column, value)
+
+
+@daosession
 def search(session, **parameters):
     return LinePersistor(session).search(parameters)
 
