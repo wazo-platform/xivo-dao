@@ -19,7 +19,6 @@ from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
 from sqlalchemy.types import Integer, String, Text
 
 from xivo_dao.helpers.db_manager import Base
-from xivo_dao.alchemy import enum
 
 
 class LdapFilter(Base):
@@ -37,9 +36,5 @@ class LdapFilter(Base):
     passwd = Column(String(255))
     basedn = Column(String(255), nullable=False, server_default='')
     filter = Column(String(255), nullable=False, server_default='')
-    attrdisplayname = Column(String(255), nullable=False, server_default='')
-    attrphonenumber = Column(String(255), nullable=False, server_default='')
-    additionaltype = Column(enum.ldapfilter_additionaltype, nullable=False)
-    additionaltext = Column(String(16), nullable=False, server_default='')
     commented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text, nullable=False, default='')

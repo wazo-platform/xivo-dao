@@ -45,9 +45,6 @@ class TestDirectoryLdapSources(DAOTestCase):
             user='cn=admin,dc=example,dc=com',
             passwd='53c8e7',
             basedn='dc=example,dc=com',
-            attrdisplayname='cn',
-            attrphonenumber='telephoneNumber',
-            additionaltype='office',
         )
         self.add_me(ldap_filter_1)
         ldap_filter_2 = LdapFilter(
@@ -56,9 +53,6 @@ class TestDirectoryLdapSources(DAOTestCase):
             user='cn=admin,dc=example,dc=com',
             passwd='53c8e7',
             basedn='dc=example,dc=com',
-            attrdisplayname='cn',
-            attrphonenumber='telephoneNumber',
-            additionaltype='office',
             filter='l=Québec',
         )
         self.add_me(ldap_filter_2)
