@@ -44,11 +44,16 @@ class LinePersistor(object):
         return line
 
     def find(self, line_id):
+        line = self.query().filter(Line.id == line_id).first()
+        if line:
+            self.session.expunge(line)
+        return line
+
+    def query(self):
         return (self.session
                 .query(Line)
-                .options(joinedload('sip_endpoint'),
-                         joinedload('sccp_endpoint'))
-                .get(line_id))
+                .options(joinedload(Line.sip_endpoint))
+                .options(joinedload(Line.sccp_endpoint)))
 
     def create(self, line):
         if line.provisioning_code is None:
