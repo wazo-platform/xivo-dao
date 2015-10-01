@@ -319,7 +319,7 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
         self.assert_mapping_has_destination('features', destination_row)
 
     def test_given_template_has_onlinerec_destination_when_creating_then_creates_mapping(self):
-        destination_row = self.create_features_func_key('features.conf', 'automon', '*3')
+        destination_row = self.create_features_func_key('features.conf', 'automixmon', '*3')
 
         template = self.build_template_with_key(OnlineRecordingDestination())
 

@@ -74,7 +74,7 @@ class UserFeatures(Base):
     enablehint = Column(Integer, nullable=False, server_default='1')
     enablevoicemail = Column(Integer, nullable=False, server_default='0')
     enablexfer = Column(Integer, nullable=False, server_default='1')
-    enableautomon = Column(Integer, nullable=False, server_default='0')
+    enableonlinerec = Column(Integer, nullable=False, server_default='0')
     callrecord = Column(Integer, nullable=False, server_default='0')
     incallfilter = Column(Integer, nullable=False, server_default='0')
     enablednd = Column(Integer, nullable=False, server_default='0')

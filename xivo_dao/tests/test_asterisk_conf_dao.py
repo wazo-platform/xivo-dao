@@ -384,7 +384,7 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
                           var_name='atxfer',
                           var_val='*2')
         self.add_features(category='featuremap',
-                          var_name='automon',
+                          var_name='automixmon',
                           var_val='*3')
 
         expected_general = [
@@ -392,7 +392,7 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         ]
         expected_featuremap = [
             ('atxfer', '*2'),
-            ('automon', '*3'),
+            ('automixmon', '*3'),
         ]
 
         settings = asterisk_conf_dao.find_features_settings()
