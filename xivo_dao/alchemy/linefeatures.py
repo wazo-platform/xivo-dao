@@ -22,6 +22,7 @@ from sqlalchemy.types import Integer, String, Text
 from sqlalchemy.schema import Column, UniqueConstraint, PrimaryKeyConstraint, \
     Index
 
+from xivo_dao.helpers.exception import InputError
 from xivo_dao.helpers.db_manager import Base
 from xivo_dao.alchemy import enum
 
@@ -85,43 +86,87 @@ class LineFeatures(Base):
 
     @property
     def caller_id_name(self):
-        if self.protocol == 'sccp':
-            return self.sccp_endpoint.cid_name
-        elif self.protocol == 'sip':
+        if self.protocol == 'sip':
             return self._sip_caller_id_name()
+        elif self.protocol == 'sccp':
+            return self._sccp_caller_id_name()
+
+    def _sip_caller_id_name(self):
+        if self.sip_endpoint is None:
+            return None
+
+        match = caller_id_regex.match(self.sip_endpoint.callerid)
+        if not match:
+            return None
+
+        return match.group('name')
+
+    def _sccp_caller_id_name(self):
+        if self.sccp_endpoint is None:
+            return None
+
+        return self.sccp_endpoint.cid_name
 
     @caller_id_name.setter
     def caller_id_name(self, value):
+        if value is None:
+            raise InputError("cannot set caller name to None")
         if self.protocol == 'sip':
-            callerid = self.CALLER_ID.format(name=value,
-                                             num=self._sip_caller_id_num())
-            self.sip_endpoint.callerid = callerid
+            self._set_sip_caller_id_name(value)
         elif self.protocol == 'sccp':
-            self.sccp_endpoint.cid_name = value
+            self._set_sccp_caller_id_name(value)
+        else:
+            raise InputError("Line is not associated to an endpoint")
+
+    def _set_sip_caller_id_name(self, value):
+        num = self._sip_caller_id_num()
+        callerid = self.CALLER_ID.format(name=value, num=num)
+        self.sip_endpoint.callerid = callerid
+
+    def _set_sccp_caller_id_name(self, value):
+        self.sccp_endpoint.cid_name = value
 
     @property
     def caller_id_num(self):
-        if self.protocol == 'sccp':
-            return self.sccp_endpoint.cid_num
-        elif self.protocol == 'sip':
+        if self.protocol == 'sip':
             return self._sip_caller_id_num()
+        elif self.protocol == 'sccp':
+            return self._sccp_caller_id_num()
+
+    def _sip_caller_id_num(self):
+        if self.sip_endpoint is None:
+            return None
+
+        match = caller_id_regex.match(self.sip_endpoint.callerid)
+        if not match:
+            return None
+
+        return match.group('num')
+
+    def _sccp_caller_id_num(self):
+        if self.sccp_endpoint is None:
+            return None
+
+        return self.sccp_endpoint.cid_num
 
     @caller_id_num.setter
     def caller_id_num(self, value):
+        if value is None:
+            raise InputError("Cannot set caller num to None")
         if self.protocol == 'sip':
-            callerid = self.CALLER_ID.format(name=self._sip_caller_id_name(),
-                                             num=value)
-            self.sip_endpoint.callerid = callerid
+            self._set_sip_caller_id_num(value)
         elif self.protocol == 'sccp':
-            self.sccp_endpoint.cid_num = value
+            self._set_sccp_caller_id_num(value)
+        else:
+            raise InputError("Line is not associated to an endpoint")
 
-    def _sip_caller_id_name(self):
-        match = caller_id_regex.match(self.sip_endpoint.callerid)
-        return match.group('name')
+    def _set_sip_caller_id_num(self, value):
+        name = self._sip_caller_id_name()
+        callerid = self.CALLER_ID.format(name=name, num=value)
+        self.sip_endpoint.callerid = callerid
 
-    def _sip_caller_id_num(self):
-        match = caller_id_regex.match(self.sip_endpoint.callerid)
-        return match.group('num')
+    def _set_sccp_caller_id_num(self, value):
+        self.sccp_endpoint.cid_num = value
 
     @property
     def endpoint(self):

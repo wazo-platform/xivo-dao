@@ -154,6 +154,20 @@ class TestLineDaoEdit(TestLineDao):
         assert_that(edited_line.endpoint_id, none())
         assert_that(edited_line.protocolid, none())
 
+    def test_given_line_has_no_endpoint_when_setting_caller_id_to_null_then_raises_error(self):
+        line_row = self.add_line()
+
+        line = line_dao.get(line_row.id)
+        self.assertRaises(InputError, setattr, line, 'caller_id_name', None)
+        self.assertRaises(InputError, setattr, line, 'caller_id_num', None)
+
+    def test_given_line_has_no_endpoint_when_setting_caller_id_then_raises_error(self):
+        line_row = self.add_line()
+
+        line = line_dao.get(line_row.id)
+        self.assertRaises(InputError, setattr, line, 'caller_id_name', "John Smith")
+        self.assertRaises(InputError, setattr, line, 'caller_id_num', "1000")
+
     def test_given_line_has_sip_endpoint_when_editing_then_usersip_updated(self):
         usersip_row = self.add_usersip(callerid='"John Smith" <1000>')
         line_row = self.add_line(protocol='sip',
@@ -167,6 +181,15 @@ class TestLineDaoEdit(TestLineDao):
 
         edited_usersip = self.session.query(UserSIP).get(usersip_row.id)
         assert_that(edited_usersip.callerid, equal_to('"Roger Rabbit" <2000>'))
+
+    def test_given_line_has_sip_endpoint_when_setting_caller_id_to_null_then_raises_error(self):
+        usersip_row = self.add_usersip(callerid='"John Smith" <1000>')
+        line_row = self.add_line(protocol='sip',
+                                 protocolid=usersip_row.id)
+
+        line = line_dao.get(line_row.id)
+        self.assertRaises(InputError, setattr, line, 'caller_id_name', None)
+        self.assertRaises(InputError, setattr, line, 'caller_id_num', None)
 
     def test_given_line_has_sccp_endpoint_when_editing_then_usersip_updated(self):
         sccpline_row = self.add_sccpline(cid_name="John Smith",
@@ -184,6 +207,16 @@ class TestLineDaoEdit(TestLineDao):
         assert_that(edited_sccpline.cid_name, equal_to("Roger Rabbit"))
         assert_that(edited_sccpline.cid_num, equal_to("2000"))
 
+    def test_given_line_has_sccp_endpoint_when_setting_caller_id_to_null_then_raises_error(self):
+        sccpline_row = self.add_sccpline(cid_name="John Smith",
+                                         cid_num="1000")
+        line_row = self.add_line(protocol='sccp',
+                                 protocolid=sccpline_row.id)
+
+        line = line_dao.get(line_row.id)
+        self.assertRaises(InputError, setattr, line, 'caller_id_name', None)
+        self.assertRaises(InputError, setattr, line, 'caller_id_num', None)
+
 
 class TestLineCreate(DAOTestCase):
 
@@ -198,6 +231,8 @@ class TestLineCreate(DAOTestCase):
         assert_that(created_line.endpoint, none())
         assert_that(created_line.endpoint_id, none())
         assert_that(created_line.provisioning_code, has_length(6))
+        assert_that(created_line.caller_id_name, none())
+        assert_that(created_line.caller_id_num, none())
 
     def test_create_all_parameters(self):
         line = Line(context='default',
@@ -217,6 +252,12 @@ class TestLineCreate(DAOTestCase):
         assert_that(created_line.protocolid, equal_to(1234))
         assert_that(created_line.provisioning_code, equal_to('123456'))
         assert_that(created_line.provisioningid, equal_to(123456))
+        assert_that(created_line.caller_id_name, none())
+        assert_that(created_line.caller_id_num, none())
+
+    def test_when_creating_with_caller_id_then_raises_error(self):
+        self.assertRaises(InputError, Line, caller_id_name="John Smith")
+        self.assertRaises(InputError, Line, caller_id_num="1000")
 
 
 class TestLineDaoDelete(DAOTestCase):
