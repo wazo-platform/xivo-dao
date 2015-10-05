@@ -34,6 +34,7 @@ from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from xivo_dao.alchemy.cel import CEL as CELSchema
 from xivo_dao.alchemy.context import Context
 from xivo_dao.alchemy.contextinclude import ContextInclude
+from xivo_dao.alchemy.contextnumbers import ContextNumbers
 from xivo_dao.alchemy.cti_contexts import CtiContexts
 from xivo_dao.alchemy.dialpattern import DialPattern
 from xivo_dao.alchemy.entity import Entity as EntitySchema
@@ -258,6 +259,12 @@ class DAOTestCase(unittest.TestCase):
         context_include = ContextInclude(**kwargs)
         self.add_me(context_include)
         return context_include
+
+    def add_context_number(self, **kwargs):
+        kwargs.setdefault('type', 'user')
+        context_number = ContextNumbers(**kwargs)
+        self.add_me(context_number)
+        return context_number
 
     def add_cti_context(self, **kwargs):
         kwargs.setdefault('name', '')
