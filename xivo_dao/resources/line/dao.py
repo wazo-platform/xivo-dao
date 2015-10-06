@@ -46,7 +46,7 @@ def create(session, line):
 @daosession
 def edit(session, line):
     with commit_or_abort(session, DataError.on_edit, 'Line'):
-        return LinePersistor(session).edit(line)
+        LinePersistor(session).edit(line)
 
 
 @daosession

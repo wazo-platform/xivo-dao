@@ -185,15 +185,11 @@ def find_all_by_template_id(session, template_id, private=True):
 
 @daosession
 def create(session, user):
-    fixes = UserFixes(session)
-
     user_row = db_converter.to_source(user)
     user_row.entityid = entity_dao.default_entity_id()
 
     with commit_or_abort(session, DataError.on_create, 'User'):
         session.add(user_row)
-        session.flush()
-        fixes.fix_user(user_row.id)
 
     user.uuid = user_row.uuid
     user.id = user_row.id
@@ -204,7 +200,6 @@ def create(session, user):
 
 @daosession
 def edit(session, user):
-    fixes = UserFixes(session)
 
     user_row = _fetch_commented_user_row(session, user.id)
 
@@ -213,7 +208,7 @@ def edit(session, user):
     with commit_or_abort(session, DataError.on_edit, 'User'):
         session.add(user_row)
         session.flush()
-        fixes.fix_user(user_row.id)
+        UserFixes(session).fix(user_row.id)
 
 
 @daosession

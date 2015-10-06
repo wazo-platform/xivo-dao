@@ -91,11 +91,12 @@ class LineFixes(object):
 
     def fix_sccp_caller_id(self, line_id, protocol_id):
         _, caller_id = self.get_user_and_caller_id(line_id)
-        match = caller_id_regex.match(caller_id)
-        if match:
-            self.update_sccpline(protocol_id,
-                                 match.group('name'),
-                                 match.group('num'))
+        if caller_id:
+            match = caller_id_regex.match(caller_id)
+            if match:
+                self.update_sccpline(protocol_id,
+                                     match.group('name'),
+                                     match.group('num'))
 
     def update_sccpline(self, protocol_id, name, num):
         (self.session
