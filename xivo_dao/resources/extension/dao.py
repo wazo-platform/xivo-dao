@@ -182,24 +182,6 @@ def _new_query(session, order=None):
 
 
 @daosession
-def associate_destination(session, extension_id, destination, destination_id):
-    with commit_or_abort(session, DataError.on_edit, 'Extension'):
-        updated_row = {'type': destination, 'typeval': str(destination_id)}
-        (session.query(ExtensionSchema)
-         .filter(ExtensionSchema.id == extension_id)
-         .update(updated_row))
-
-
-@daosession
-def dissociate_extension(session, extension_id):
-    with commit_or_abort(session, DataError.on_edit, 'Extension'):
-        (session.query(ExtensionSchema)
-         .filter(ExtensionSchema.id == extension_id)
-         .update({'type': 'user',
-                  'typeval': '0'}))
-
-
-@daosession
 def get_type_typeval(session, extension_id):
     row = (session.query(ExtensionSchema.type, ExtensionSchema.typeval)
            .filter(ExtensionSchema.id == extension_id)

@@ -16,7 +16,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from hamcrest import assert_that, all_of, equal_to, has_items, has_length, has_property, none, contains
-from mock import Mock
 from sqlalchemy.exc import SQLAlchemyError
 
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -24,7 +23,7 @@ from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 from xivo_dao.helpers.exception import DataError
 from xivo_dao.helpers.exception import NotFoundError
 from xivo_dao.resources.extension import dao as extension_dao
-from xivo_dao.resources.extension.model import Extension, ExtensionDestination, \
+from xivo_dao.resources.extension.model import Extension, \
     ServiceExtension, ForwardExtension, AgentActionExtension
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.tests.helpers.session import mocked_dao_session
@@ -386,88 +385,6 @@ class TestDelete(DAOTestCase):
         row = self.session.query(ExtensionSchema).filter(ExtensionSchema.id == expected_extension.id).first()
 
         self.assertEquals(row, None)
-
-
-class TestAssociateDestination(DAOTestCase):
-
-    def test_associate_to_user(self):
-        extension_row = self.add_extension()
-        user_row = self.add_user()
-
-        extension_dao.associate_destination(extension_row.id, ExtensionDestination.user, user_row.id)
-
-        self.assert_extension_is_associated_to_user(user_row, extension_row)
-
-    def test_associate_to_incall(self):
-        extension_row = self.add_extension()
-        incall_row = self.add_incall()
-
-        extension_dao.associate_destination(extension_row.id, ExtensionDestination.incall, incall_row.id)
-
-        self.assert_extension_is_associated_to_incall(incall_row, extension_row)
-
-    @mocked_dao_session
-    def test_associate_to_user_with_database_error(self, session):
-        session.commit.side_effect = SQLAlchemyError()
-
-        extension_row = Mock()
-        user_row = Mock()
-
-        self.assertRaises(DataError,
-                          extension_dao.associate_destination,
-                          extension_row.id,
-                          'user',
-                          user_row.id)
-
-        session.commit.assert_called_once_with()
-        session.rollback.assert_called_once_with()
-
-    def assert_extension_is_associated_to_user(self, user_row, extension_row):
-        updated_extension = self.session.query(ExtensionSchema).get(extension_row.id)
-        assert_that(updated_extension.type, equal_to('user'))
-        assert_that(updated_extension.typeval, equal_to(str(user_row.id)))
-
-    def assert_extension_is_associated_to_incall(self, incall_row, extension_row):
-        updated_extension = self.session.query(ExtensionSchema).get(extension_row.id)
-        assert_that(updated_extension.type, equal_to('incall'))
-        assert_that(updated_extension.typeval, equal_to(str(incall_row.id)))
-
-
-class TestDissociateExtension(DAOTestCase):
-
-    def test_dissociate_extension(self):
-        extension_row = self.add_extension(type='user', typeval='1234')
-
-        extension_dao.dissociate_extension(extension_row.id)
-
-        self.assert_extension_not_associated(extension_row.id)
-
-    @mocked_dao_session
-    def test_dissociate_extension_with_database_error(self, session):
-        session.commit.side_effect = SQLAlchemyError()
-
-        extension_id = 1
-
-        self.assertRaises(DataError, extension_dao.dissociate_extension, extension_id)
-
-    def assert_extension_not_associated(self, extension_id):
-        updated_extension = self.session.query(ExtensionSchema).get(extension_id)
-        assert_that(updated_extension.type, equal_to('user'))
-        assert_that(updated_extension.typeval, equal_to('0'))
-
-
-class TestGetTypeTypeval(DAOTestCase):
-
-    def test_given_no_extension_then_raises_error(self):
-        self.assertRaises(NotFoundError, extension_dao.get_type_typeval, 1)
-
-    def test_given_an_extension_then_returns_type_and_typeval(self):
-        extension_row = self.add_extension(type='queue', typeval='1234')
-
-        extension_type, typeval = extension_dao.get_type_typeval(extension_row.id)
-
-        assert_that(extension_type, equal_to('queue'))
-        assert_that(typeval, equal_to('1234'))
 
 
 class TestFindAllServiceExtensions(DAOTestCase):
