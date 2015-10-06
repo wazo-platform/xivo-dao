@@ -18,7 +18,7 @@
 
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.user_line import UserLine
-from xivo_dao.alchemy.linefeatures import LineFeatures as Line
+from xivo_dao.resources.line.fixes import LineFixes
 
 
 class ExtensionFixes(object):
@@ -26,33 +26,57 @@ class ExtensionFixes(object):
     def __init__(self, session):
         self.session = session
 
+    def fix(self, extension_id):
+        self.fix_extension(extension_id)
+        self.fix_line(extension_id)
+        self.session.flush()
+
     def fix_extension(self, extension_id):
-        number, context = self.get_number_context(extension_id)
-        line_id = self.find_line_id(extension_id)
+        user_id, _ = self.find_user_and_line_id(extension_id)
+        if user_id:
+            self.adjust_destination(extension_id, user_id)
+        else:
+            self.reset_destination(extension_id)
+
+    def fix_line(self, extension_id):
+        _, line_id = self.find_user_and_line_id(extension_id)
         if line_id:
-            self.update_line_number_and_context(line_id, number, context)
-            self.session.flush()
+            self.adjust_line(line_id)
 
-    def get_number_context(self, extension_id):
+    def find_user_and_line_id(self, extension_id):
         row = (self.session
-               .query(Extension.exten,
-                      Extension.context)
-               .filter(Extension.id == extension_id)
+               .query(UserLine.user_id,
+                      UserLine.line_id)
+               .filter(UserLine.main_user == True)  # noqa
+               .filter(UserLine.main_line == True)
+               .filter(UserLine.extension_id == extension_id)
                .first())
-        return row.exten, row.context
 
-    def find_line_id(self, extension_id):
+        return (row.user_id, row.line_id) if row else (None, None)
+
+    def adjust_destination(self, extension_id, user_id):
+        (self.session
+         .query(Extension)
+         .filter(Extension.id == extension_id)
+         .update({'type': 'user',
+                  'typeval': str(user_id)}))
+
+    def reset_destination(self, extension_id):
+        destination = self.get_destination(extension_id)
+        if destination == 'user':
+            self.remove_destination_id(extension_id)
+
+    def get_destination(self, extension_id):
         return (self.session
-                .query(Line.id)
-                .join(UserLine, UserLine.line_id == Line.id)
-                .filter(UserLine.main_user == True)
-                .filter(UserLine.main_line == True)
-                .filter(UserLine.extension_id == extension_id)
+                .query(Extension.type)
+                .filter(Extension.id == extension_id)
                 .scalar())
 
-    def update_line_number_and_context(self, line_id, number, context):
-        (self.session
-         .query(Line)
-         .filter(Line.id == line_id)
-         .update({'number': number,
-                  'context': context}))
+    def remove_destination_id(self, extension_id):
+            (self.session
+             .query(Extension)
+             .filter(Extension.id == extension_id)
+             .update({'typeval': '0'}))
+
+    def adjust_line(self, line_id):
+        LineFixes(self.session).fix(line_id)
