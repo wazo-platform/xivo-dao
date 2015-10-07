@@ -22,6 +22,17 @@ from sqlalchemy.sql.schema import CheckConstraint
 from sqlalchemy.types import Integer, String, Text, Enum
 from xivo_dao.alchemy import enum
 
+from xivo_dao.helpers import errors
+
+EXCLUDE_OPTIONS = {'id',
+                   'name',
+                   'username',
+                   'secret',
+                   'type',
+                   'host',
+                   'context',
+                   'category'}
+
 
 class UserSIP(Base):
 
@@ -149,3 +160,66 @@ class UserSIP(Base):
             directmedia.in_(
                 ['no', 'yes', 'nonat', 'update', 'update,nonat', 'outgoing'])),
     )
+
+    @property
+    def options(self):
+        return list(self.map_options())
+
+    def map_options(self):
+        for column, attribute in self.option_names():
+            for value in self.map_option(attribute):
+                yield [column, value]
+
+    def map_option(self, name):
+        if name == 'subscribemwi':
+            if self.subscribemwi == 1:
+                yield 'yes'
+            else:
+                yield 'no'
+        elif name == 'allow':
+            allow = self.allow.split(",") if self.allow else []
+            for value in allow:
+                yield value
+        else:
+            yield unicode(getattr(self, name))
+
+    @options.setter
+    def options(self, options):
+        option_names = dict(self.option_names())
+        self.reset_options(option_names)
+        self.set_options(option_names, options)
+
+    def reset_options(self, option_names):
+        defaults = self.option_defaults()
+        for column, attribute in option_names.iteritems():
+            value = defaults.get(column, None)
+            setattr(self, attribute, value)
+
+    def set_options(self, option_names, options):
+        for column, value in options:
+            if column not in option_names:
+                raise errors.unknown(column)
+            attribute = option_names[column]
+            self.set_option(attribute, value)
+
+    def set_option(self, attribute, value):
+        if attribute == 'subscribemwi':
+            self.subscribemwi = 1 if value == 'yes' else 0
+        elif attribute == 'allow':
+            allow = self.allow.split(',') if self.allow else []
+            allow.append(value)
+            self.allow = ",".join(allow)
+        else:
+            setattr(self, attribute, value)
+
+    def option_names(self):
+        for column in self.__table__.columns:
+            if column.name not in EXCLUDE_OPTIONS:
+                yield column.name, column.name.replace("-", "_")
+
+    def option_defaults(self):
+        defaults = {}
+        for column in self.__table__.columns:
+            if column.server_default:
+                defaults[column.name] = column.server_default.arg
+        return defaults
