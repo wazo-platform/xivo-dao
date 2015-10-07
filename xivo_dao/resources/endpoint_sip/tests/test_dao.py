@@ -30,7 +30,7 @@ from hamcrest import contains_string
 from xivo_dao.alchemy.usersip import UserSIP as SIPEndpoint
 from xivo_dao.helpers.exception import InputError
 from xivo_dao.helpers.exception import NotFoundError
-from xivo_dao.resources.sip_endpoint import dao
+from xivo_dao.resources.endpoint_sip import dao
 from xivo_dao.tests.test_dao import DAOTestCase
 
 ALL_OPTIONS = [

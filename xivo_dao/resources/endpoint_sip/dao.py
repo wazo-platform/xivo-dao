@@ -20,7 +20,7 @@ from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.helpers.exception import DataError
 
-from xivo_dao.resources.sip_endpoint.persistor import SipPersistor
+from xivo_dao.resources.endpoint_sip.persistor import SipPersistor
 
 
 @daosession

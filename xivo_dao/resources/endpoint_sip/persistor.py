@@ -21,7 +21,7 @@ import random
 
 from xivo_dao.alchemy.usersip import UserSIP as SIP
 from xivo_dao.helpers import errors
-from xivo_dao.resources.sip_endpoint.search import sip_search
+from xivo_dao.resources.endpoint_sip.search import sip_search
 from xivo_dao.resources.utils.search import SearchResult
 
 
