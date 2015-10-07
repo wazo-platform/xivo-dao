@@ -20,6 +20,8 @@ from hamcrest import assert_that
 from hamcrest import equal_to
 from hamcrest import none
 from hamcrest import contains
+from hamcrest import is_not
+from hamcrest import has_item
 from hamcrest import has_items
 from hamcrest import has_property
 from hamcrest import has_properties
@@ -163,6 +165,20 @@ class TestSipEndpointDaoGet(TestSipEndpointDAO):
         assert_that(sip.options, has_items(["language", "fr_FR"],
                                            ["amaflags", "omit"],
                                            ["buggymwi", "1"]))
+
+    def test_given_row_with_option_set_to_null_then_option_not_returned(self):
+        row = self.add_usersip(language=None,
+                               call_limit=0,
+                               regseconds=0,
+                               allow=None,
+                               setvar='')
+
+        sip = dao.get(row.id)
+        assert_that(sip.options, is_not(has_item(has_item("language"))))
+        assert_that(sip.options, is_not(has_item(has_item("call_limit"))))
+        assert_that(sip.options, is_not(has_item(has_item("regseconds"))))
+        assert_that(sip.options, is_not(has_item(has_item("allow"))))
+        assert_that(sip.options, is_not(has_item(has_item("setvar"))))
 
 
 class TestSipEndpointDaoSearch(DAOTestCase):

@@ -31,7 +31,8 @@ EXCLUDE_OPTIONS = {'id',
                    'type',
                    'host',
                    'context',
-                   'category'}
+                   'category',
+                   'commented'}
 
 
 class UserSIP(Base):
@@ -176,12 +177,21 @@ class UserSIP(Base):
                 yield 'yes'
             else:
                 yield 'no'
+        elif name == 'call_limit':
+            if self.call_limit != 0:
+                yield unicode(self.call_limit)
+        elif name == 'regseconds':
+            if self.regseconds != 0:
+                yield unicode(self.regseconds)
         elif name == 'allow':
-            allow = self.allow.split(",") if self.allow else []
-            for value in allow:
-                yield value
+            if self.allow is not None:
+                allow = self.allow.split(",") if self.allow else []
+                for value in allow:
+                    yield value
         else:
-            yield unicode(getattr(self, name))
+            value = getattr(self, name, None)
+            if value is not None and value != "":
+                yield unicode(value)
 
     @options.setter
     def options(self, options):
