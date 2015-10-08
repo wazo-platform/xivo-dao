@@ -177,9 +177,6 @@ class UserSIP(Base):
                 yield 'yes'
             else:
                 yield 'no'
-        elif name == 'call_limit':
-            if self.call_limit != 0:
-                yield unicode(self.call_limit)
         elif name == 'regseconds':
             if self.regseconds != 0:
                 yield unicode(self.regseconds)
