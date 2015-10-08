@@ -126,7 +126,6 @@ class TestLdapDAO(DAOTestCase):
         ldap.passwd = kwargs.get('passwd', None)
         ldap.basedn = kwargs.get('basedn', None)
         ldap.filter = kwargs.get('filter', None)
-        ldap.additionaltype = kwargs.get('additionaltype', 'office')
         ldap.description = kwargs.get('description', '')
         ldap.commented = kwargs.get('commented', '0')
 

@@ -106,7 +106,6 @@ from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.schedule import Schedule
 from xivo_dao.alchemy.schedule_time import ScheduleTime
 from xivo_dao.alchemy.schedulepath import SchedulePath
-from xivo_dao.alchemy.serverfeatures import ServerFeatures
 from xivo_dao.alchemy.session import Session
 from xivo_dao.alchemy.sipauthentication import SIPAuthentication
 from xivo_dao.alchemy.stat_agent import StatAgent

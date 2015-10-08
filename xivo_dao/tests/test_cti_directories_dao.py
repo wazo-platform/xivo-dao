@@ -208,7 +208,6 @@ class TestCtiDirectoriesDAO(DAOTestCase):
         ldap.name = name
         ldap.user = user
         ldap.passwd = passwd
-        ldap.additionaltype = 'office'
         ldap.basedn = 'dc=lan-quebec,dc=avencall,dc=com'
         ldap.description = 'description'
 
