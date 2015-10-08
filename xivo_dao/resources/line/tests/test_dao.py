@@ -303,3 +303,15 @@ class TestLineDaoSearch(DAOTestCase):
 
         assert_that(search_result.total, equal_to(1))
         assert_that(search_result.items, contains(has_property('id', line1.id)))
+
+    def test_search_returns_sip_line_associated(self):
+        usersip = self.add_usersip()
+        line = self.add_line(context='default', protocol='sip', protocolid=usersip.id)
+
+        search_result = line_dao.search()
+        assert_that(search_result.total, equal_to(1))
+
+        line = search_result.items[0]
+        assert_that(line.protocol, equal_to('sip'))
+        assert_that(line.protocolid, usersip.id)
+        assert_that(line.sip_endpoint.id, equal_to(usersip.id))

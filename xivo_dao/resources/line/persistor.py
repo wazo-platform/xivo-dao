@@ -34,7 +34,7 @@ class LinePersistor(object):
         self.session = session
 
     def search(self, params):
-        rows, total = line_search.search(self.session, params)
+        rows, total = line_search.search_from_query(self.query(), params)
         return SearchResult(total, rows)
 
     def get(self, line_id):
