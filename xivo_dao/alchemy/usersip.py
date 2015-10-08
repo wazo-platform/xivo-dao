@@ -22,7 +22,7 @@ from sqlalchemy.sql.schema import CheckConstraint
 from sqlalchemy.types import Integer, String, Text, Enum
 from xivo_dao.alchemy import enum
 
-from xivo_dao.helpers import errors
+from xivo_dao.helpers.exception import InputError
 
 EXCLUDE_OPTIONS = {'id',
                    'name',
@@ -208,7 +208,7 @@ class UserSIP(Base):
     def set_options(self, option_names, options):
         for column, value in options:
             if column not in option_names:
-                raise errors.unknown(column)
+                raise InputError("Unknown options parameter: {}".format(column))
             attribute = option_names[column]
             self.set_option(attribute, value)
 
