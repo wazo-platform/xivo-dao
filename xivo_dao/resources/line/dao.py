@@ -28,6 +28,11 @@ def find_by(session, column, value):
 
 
 @daosession
+def find_all_by(session, column, value):
+    return LinePersistor(session).find_all_by(column, value)
+
+
+@daosession
 def search(session, **parameters):
     return LinePersistor(session).search(parameters)
 
