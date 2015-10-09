@@ -219,7 +219,8 @@ class TestCreateUserIncall(TestIncallDAO):
         TestIncallDAO.setUp(self)
 
         user_row = self.add_user()
-        extension_row = self.add_extension(exten='1000', context='from-extern')
+        extension_row = self.add_extension(exten='1000', context='from-extern',
+                                           type="user", typeval="0")
 
         self.user_id = user_row.id
         self.exten = extension_row.exten
@@ -238,6 +239,11 @@ class TestCreateUserIncall(TestIncallDAO):
         created_incall = dao.create(self.incall)
 
         self.assert_dialaction_row_created(created_incall.id)
+
+    def test_given_user_incall_then_updates_extension_destination(self):
+        created_incall = dao.create(self.incall)
+
+        self.assert_extension_updated(created_incall)
 
     def assert_incall_row_created(self, incall_id):
         count = (self.session.query(IncallSchema)
@@ -261,6 +267,12 @@ class TestCreateUserIncall(TestIncallDAO):
 
         assert_that(count, equal_to(1), "dialaction was not created")
 
+    def assert_extension_updated(self, incall):
+        extension = self.session.query(Extension).first()
+
+        assert_that(extension.type, equal_to('incall'))
+        assert_that(extension.typeval, equal_to(str(incall.id)))
+
 
 class TestDeleteUserIncall(TestIncallDAO):
 
@@ -278,6 +290,13 @@ class TestDeleteUserIncall(TestIncallDAO):
 
         self.assert_dialaction_row_deleted(incall.id)
 
+    def test_given_user_incall_model_then_removes_extension_destination(self):
+        incall = self.create_user_incall()
+
+        dao.delete(incall)
+
+        self.assert_extension_destination_removed(incall)
+
     def assert_incall_row_deleted(self, incall_id):
         count = (self.session.query(IncallSchema)
                  .filter(IncallSchema.id == incall_id)
@@ -292,3 +311,8 @@ class TestDeleteUserIncall(TestIncallDAO):
                  .count())
 
         assert_that(count, equal_to(0), "dialaction row was not deleted")
+
+    def assert_extension_destination_removed(self, incall):
+        extension = self.session.query(Extension).get(incall.extension_id)
+        assert_that(extension.type, equal_to('user'))
+        assert_that(extension.typeval, equal_to('0'))

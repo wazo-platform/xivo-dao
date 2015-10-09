@@ -20,6 +20,7 @@ from hamcrest import assert_that, equal_to
 
 from xivo_dao.alchemy.linefeatures import LineFeatures as Line
 from xivo_dao.alchemy.extension import Extension
+from xivo_dao.alchemy.incall import Incall
 from xivo_dao.tests.test_dao import DAOTestCase
 
 from xivo_dao.resources.extension.fixes import ExtensionFixes
@@ -84,7 +85,16 @@ class TestExtensionFixes(DAOTestCase):
         assert_that(extension.type, equal_to('user'))
         assert_that(extension.typeval, equal_to('0'))
 
-    def test_given_extension_destination_is_other_than_user_then_destination_is_unchanged(self):
+    def test_given_extension_is_not_associated_to_incall_then_destination_reset(self):
+        extension = self.add_extension(exten="1000", context="from-extern",
+                                       type="incall", typeval="1234")
+
+        self.fixes.fix(extension.id)
+        extension = self.session.query(Extension).first()
+        assert_that(extension.type, equal_to('user'))
+        assert_that(extension.typeval, equal_to('0'))
+
+    def test_given_extension_destination_is_other_than_user_or_incall_then_destination_is_unchanged(self):
         extension = self.add_extension(exten="1000", context="default",
                                        type="queue", typeval="1234")
 
@@ -93,3 +103,19 @@ class TestExtensionFixes(DAOTestCase):
         extension = self.session.query(Extension).first()
         assert_that(extension.type, equal_to('queue'))
         assert_that(extension.typeval, equal_to('1234'))
+
+    def test_given_extension_destination_is_incall_then_incall_updated(self):
+        incall = self.add_incall(exten="1000", context="other-extern")
+        extension = self.add_extension(exten="1001", context="from-extern",
+                                       type="incall", typeval=str(incall.id))
+        self.add_dialaction(event='answer',
+                            category='incall',
+                            categoryval=str(incall.id),
+                            action='user',
+                            actionarg1='1234')
+
+        self.fixes.fix(extension.id)
+
+        incall = self.session.query(Incall).first()
+        assert_that(incall.exten, equal_to('1001'))
+        assert_that(incall.context, equal_to('from-extern'))
