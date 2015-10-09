@@ -95,6 +95,9 @@ class LineFeatures(Base):
         if self.sip_endpoint is None:
             return None
 
+        if self.sip_endpoint.callerid is None:
+            return None
+
         match = caller_id_regex.match(self.sip_endpoint.callerid)
         if not match:
             return None
@@ -135,6 +138,9 @@ class LineFeatures(Base):
 
     def _sip_caller_id_num(self):
         if self.sip_endpoint is None:
+            return None
+
+        if self.sip_endpoint.callerid is None:
             return None
 
         match = caller_id_regex.match(self.sip_endpoint.callerid)
