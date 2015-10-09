@@ -73,6 +73,8 @@ class LinePersistor(object):
     def create(self, line):
         if line.provisioning_code is None:
             line.provisioning_code = self.generate_provisioning_code()
+        if line.configregistrar is None:
+            line.configregistrar = 'default'
 
         self.session.add(line)
         self.session.flush()

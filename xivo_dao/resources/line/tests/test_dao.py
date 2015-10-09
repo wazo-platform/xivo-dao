@@ -249,6 +249,7 @@ class TestLineCreate(DAOTestCase):
         assert_that(created_line.provisioning_code, has_length(6))
         assert_that(created_line.caller_id_name, none())
         assert_that(created_line.caller_id_num, none())
+        assert_that(created_line.configregistrar, equal_to('default'))
 
     def test_create_all_parameters(self):
         line = Line(context='default',
