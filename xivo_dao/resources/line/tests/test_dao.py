@@ -47,11 +47,11 @@ class TestLineDao(DAOTestCase):
 class TestLineDaoFindBy(TestLineDao):
 
     def test_given_column_does_not_exist_then_raises_error(self):
-        self.assertRaises(InputError, line_dao.find_by, 'column', 1)
+        self.assertRaises(InputError, line_dao.find_by, column=1)
 
     def test_find_by(self):
         line = self.add_line(provisioningid=234567)
-        result = line_dao.find_by('provisioningid', 234567)
+        result = line_dao.find_by(provisioningid=234567)
 
         assert_that(result.id, equal_to(line.id))
 
@@ -59,12 +59,12 @@ class TestLineDaoFindBy(TestLineDao):
 class TestLineDaoFindAllBy(TestLineDao):
 
     def test_given_column_does_not_exist_then_raises_error(self):
-        self.assertRaises(InputError, line_dao.find_by, 'column', 1)
+        self.assertRaises(InputError, line_dao.find_by, column=1)
 
     def test_find_all_by(self):
         line1 = self.add_line(device='deviceid', provisioningid=123456)
         line2 = self.add_line(device='deviceid', provisioningid=234567)
-        result = line_dao.find_all_by('device', 'deviceid')
+        result = line_dao.find_all_by(device='deviceid')
 
         assert_that(result, has_items(has_property('id', line1.id),
                                       has_property('id', line2.id)))

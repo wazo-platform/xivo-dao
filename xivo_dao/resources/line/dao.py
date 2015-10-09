@@ -23,13 +23,13 @@ from xivo_dao.resources.line.persistor import LinePersistor
 
 
 @daosession
-def find_by(session, column, value):
-    return LinePersistor(session).find_by(column, value)
+def find_by(session, **criteria):
+    return LinePersistor(session).find_by(criteria)
 
 
 @daosession
-def find_all_by(session, column, value):
-    return LinePersistor(session).find_all_by(column, value)
+def find_all_by(session, **criteria):
+    return LinePersistor(session).find_all_by(criteria)
 
 
 @daosession

@@ -55,13 +55,19 @@ class LinePersistor(object):
                 .options(joinedload(Line.sip_endpoint))
                 .options(joinedload(Line.sccp_endpoint)))
 
-    def find_by(self, column_name, value):
-        column = self._get_column(column_name)
-        return self.query().filter(column == value).first()
+    def find_by(self, criteria):
+        query = self.build_criteria(criteria)
+        return query.first()
 
-    def find_all_by(self, column_name, value):
-        column = self._get_column(column_name)
-        query = self.query().filter(column == value)
+    def build_criteria(self, criteria):
+        query = self.query()
+        for name, value in criteria.iteritems():
+            column = self._get_column(name)
+            query = query.filter(column == value)
+        return query
+
+    def find_all_by(self, criteria):
+        query = self.build_criteria(criteria)
         return query.all()
 
     def _get_column(self, column_name):
