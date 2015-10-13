@@ -18,6 +18,8 @@
 
 import re
 
+from sqlalchemy import func
+
 from xivo_dao.alchemy.userfeatures import UserFeatures as User
 from xivo_dao.alchemy.linefeatures import LineFeatures as Line
 from xivo_dao.alchemy.extension import Extension
@@ -29,7 +31,7 @@ caller_id_regex = re.compile(r'''
                              "                      #name start
                              (?P<name>[^"]+)        #inside ""
                              "                      #name end
-                             \s+                    #space between name and number
+                             \s*                    #space between name and number
                              (
                              <                      #number start
                              (?P<num>\+?[\dA-Z]+)   #inside <>
@@ -44,17 +46,18 @@ class LineFixes(object):
         self.session = session
 
     def fix(self, line_id):
-        self.fix_caller_id(line_id)
+        self.fix_protocol(line_id)
         self.fix_number_and_context(line_id)
+        self.fix_name(line_id)
         self.session.flush()
 
-    def fix_caller_id(self, line_id):
+    def fix_protocol(self, line_id):
         protocol, protocol_id = self.find_protocol(line_id)
         if protocol:
             if protocol == 'sip':
-                self.fix_sip_caller_id(line_id, protocol_id)
+                self.fix_sip(line_id, protocol_id)
             elif protocol == 'sccp':
-                self.fix_sccp_caller_id(line_id, protocol_id)
+                self.fix_sccp(line_id, protocol_id)
 
     def find_protocol(self, line_id):
         row = (self.session
@@ -65,38 +68,65 @@ class LineFixes(object):
 
         return row.protocol, row.protocolid
 
-    def fix_sip_caller_id(self, line_id, protocol_id):
-        user_id, caller_id = self.get_user_and_caller_id(line_id)
-        setvar = 'XIVO_USERID={}'.format(user_id) if user_id else ''
-        self.update_usersip(protocol_id, caller_id, setvar)
+    def fix_sip(self, line_id, protocol_id):
+        user_id, name, num = self.get_user_and_caller_id(line_id)
+        context = self.get_line_context(line_id)
 
-    def update_usersip(self, protocol_id, caller_id, setvar):
+        setvar = 'XIVO_USERID={}'.format(user_id) if user_id else ''
+
+        if name and num:
+            caller_id = '"{}" <{}>'.format(name, num)
+        elif name:
+            caller_id = '"{}"'.format(name)
+        else:
+            caller_id = None
+
+        self.update_usersip(protocol_id, caller_id, setvar, context)
+
+    def update_usersip(self, protocol_id, caller_id, setvar, context):
         (self.session
          .query(UserSIP)
          .filter(UserSIP.id == protocol_id)
          .update({'callerid': caller_id,
-                  'setvar': setvar}))
+                  'setvar': setvar,
+                  'context': context}))
 
     def get_user_and_caller_id(self, line_id):
         row = (self.session
                .query(User.id,
-                      User.callerid)
+                      User.callerid,
+                      Extension.exten)
                .join(UserLine, UserLine.user_id == User.id)
+               .outerjoin(Extension, UserLine.extension_id == Extension.id)
                .filter(UserLine.line_id == line_id)
                .filter(UserLine.main_user == True)  # noqa
                .filter(UserLine.main_line == True)
                .first())
 
-        return (row.id, row.callerid) if row else (None, None)
+        if row:
+            name, num = self.extrapolate_caller_id(row)
+            return row.id, name, num
 
-    def fix_sccp_caller_id(self, line_id, protocol_id):
-        _, caller_id = self.get_user_and_caller_id(line_id)
-        if caller_id:
-            match = caller_id_regex.match(caller_id)
-            if match:
-                self.update_sccpline(protocol_id,
-                                     match.group('name'),
-                                     match.group('num'))
+        return None, None, None
+
+    def get_line_context(self, line_id):
+        return (self.session.query(Line.context)
+                .filter(Line.id == line_id)
+                .scalar())
+
+    def extrapolate_caller_id(self, row):
+        user_match = caller_id_regex.match(row.callerid)
+        name = user_match.group('name')
+        num = user_match.group('num')
+        if not num:
+            num = row.exten
+        return name, num
+
+    def fix_sccp(self, line_id, protocol_id):
+        _, name, num = self.get_user_and_caller_id(line_id)
+        if name:
+            num = num or ''
+            self.update_sccpline(protocol_id, name, num)
 
     def update_sccpline(self, protocol_id, name, num):
         (self.session
@@ -136,3 +166,19 @@ class LineFixes(object):
          .query(Line)
          .filter(Line.id == line_id)
          .update({'number': ''}))
+
+    def fix_name(self, line_id):
+        name = self.find_line_name(line_id)
+        self.update_line_name(line_id, name)
+
+    def find_line_name(self, line_id):
+        return (self.session.query(func.coalesce(UserSIP.name, SCCPLine.name))
+                .outerjoin(Line.sip_endpoint)
+                .outerjoin(Line.sccp_endpoint)
+                .filter(Line.id == line_id)
+                .scalar())
+
+    def update_line_name(self, line_id, name):
+        (self.session.query(Line)
+         .filter(Line.id == line_id)
+         .update({'name': name}))
