@@ -81,6 +81,8 @@ class LinePersistor(object):
             line.provisioning_code = self.generate_provisioning_code()
         if line.configregistrar is None:
             line.configregistrar = 'default'
+        if line.ipfrom is None:
+            line.ipfrom = ''
 
         self.session.add(line)
         self.session.flush()

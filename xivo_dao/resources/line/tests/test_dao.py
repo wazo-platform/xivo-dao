@@ -250,6 +250,7 @@ class TestLineCreate(DAOTestCase):
         assert_that(created_line.caller_id_name, none())
         assert_that(created_line.caller_id_num, none())
         assert_that(created_line.configregistrar, equal_to('default'))
+        assert_that(created_line.ipfrom, equal_to(''))
 
     def test_create_all_parameters(self):
         line = Line(context='default',
