@@ -221,4 +221,11 @@ class LineFeatures(Base):
 
     @property
     def device_id(self):
+        if self.device == '':
+            return None
         return self.device
+
+    @device_id.setter
+    def device_id(self, value):
+        value = value or ''
+        self.device = value
