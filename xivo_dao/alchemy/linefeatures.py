@@ -49,7 +49,6 @@ class LineFeatures(Base):
         PrimaryKeyConstraint('id'),
         UniqueConstraint('name'),
         UniqueConstraint('protocol', 'protocolid'),
-        UniqueConstraint('provisioningid'),
         Index('linefeatures__idx__context', 'context'),
         Index('linefeatures__idx__device', 'device'),
         Index('linefeatures__idx__number', 'number'),
