@@ -35,6 +35,7 @@ from xivo_dao.helpers.exception import DataError
 from xivo_dao.resources.user.search import user_search
 from xivo_dao.resources.user.view import user_view
 from xivo_dao.resources.user.database import db_converter
+from xivo_dao.resources.user.fixes import UserFixes
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.helpers.db_utils import commit_or_abort
 
@@ -199,12 +200,15 @@ def create(session, user):
 
 @daosession
 def edit(session, user):
+
     user_row = _fetch_commented_user_row(session, user.id)
 
     db_converter.update_source(user_row, user)
 
     with commit_or_abort(session, DataError.on_edit, 'User'):
         session.add(user_row)
+        session.flush()
+        UserFixes(session).fix(user_row.id)
 
 
 @daosession

@@ -26,6 +26,7 @@ from xivo_dao.helpers.exception import DataError
 from xivo_dao.resources.extension.database import db_converter, \
     fwd_converter, service_converter, agent_action_converter
 from xivo_dao.resources.extension.search import extension_search
+from xivo_dao.resources.extension.fixes import ExtensionFixes
 from xivo_dao.resources.utils.search import SearchResult
 
 DEFAULT_ORDER = ExtensionSchema.exten
@@ -168,6 +169,8 @@ def edit(session, extension):
 
     with commit_or_abort(session, DataError.on_edit, 'Extension'):
         session.add(extension_row)
+        session.flush()
+        ExtensionFixes(session).fix(extension_row.id)
 
 
 @daosession
@@ -179,24 +182,6 @@ def delete(session, extension):
 def _new_query(session, order=None):
     order = order or DEFAULT_ORDER
     return session.query(ExtensionSchema).order_by(order)
-
-
-@daosession
-def associate_destination(session, extension_id, destination, destination_id):
-    with commit_or_abort(session, DataError.on_edit, 'Extension'):
-        updated_row = {'type': destination, 'typeval': str(destination_id)}
-        (session.query(ExtensionSchema)
-         .filter(ExtensionSchema.id == extension_id)
-         .update(updated_row))
-
-
-@daosession
-def dissociate_extension(session, extension_id):
-    with commit_or_abort(session, DataError.on_edit, 'Extension'):
-        (session.query(ExtensionSchema)
-         .filter(ExtensionSchema.id == extension_id)
-         .update({'type': 'user',
-                  'typeval': '0'}))
 
 
 @daosession

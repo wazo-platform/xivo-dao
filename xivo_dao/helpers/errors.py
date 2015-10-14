@@ -95,6 +95,7 @@ not_found = FormattedError(NotFoundError, "{} was not found")
 
 resource_exists = FormattedError(ResourceError, "{} already exists")
 resource_associated = FormattedError(ResourceError, "{} is associated with a {}")
+resource_not_associated = FormattedError(ResourceError, "{} is not associated with {}")
 missing_association = FormattedError(ResourceError, "{} must be associated with a {}")
 missing_cti_parameters = FormattedError(ResourceError, "User must have a username and password to enable a CtiProfile")
 unhandled_context_type = FormattedError(ResourceError, "ContextType '{}' cannot be associated")

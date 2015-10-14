@@ -22,11 +22,17 @@ from xivo_dao.resources.user_line_extension import dao as ule_dao
 from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
 
+from xivo_dao.resources.user.fixes import UserFixes
+from xivo_dao.resources.line.fixes import LineFixes
+from xivo_dao.resources.extension.fixes import ExtensionFixes
+
 
 @daosession
 def associate(session, line_extension):
     with commit_or_abort(session):
         _associate_ule(session, line_extension)
+        session.flush()
+        _fix_associations(session, line_extension)
     return line_extension
 
 
@@ -57,7 +63,7 @@ def find_all_by_line_id(session, line_id):
     query = (session.query(UserLineSchema.line_id,
                            UserLineSchema.extension_id)
              .filter(UserLineSchema.line_id == line_id)
-             .filter(UserLineSchema.extension_id != None)
+             .filter(UserLineSchema.extension_id != None)  # noqa
              .distinct())
 
     return [db_converter.to_model(row) for row in query]
@@ -102,6 +108,8 @@ def get_by_extension_id(extension_id):
 def dissociate(session, line_extension):
     with commit_or_abort(session):
         _dissociate_ule(session, line_extension)
+        session.flush()
+        _fix_associations(session, line_extension)
         ule_dao.delete_association_if_necessary(session)
 
 
@@ -109,3 +117,22 @@ def _dissociate_ule(session, line_extension):
     (session.query(UserLineSchema)
      .filter(UserLineSchema.line_id == line_extension.line_id)
      .update({'extension_id': None}))
+
+
+def _fix_associations(session, line_extension):
+    user_line = (session.query(UserLineSchema)
+                 .filter(UserLineSchema.extension_id == line_extension.extension_id)
+                 .filter(UserLineSchema.line_id == line_extension.line_id)
+                 .filter(UserLineSchema.main_user == True)  # noqa
+                 .filter(UserLineSchema.main_line == True)  # noqa
+                 .first())
+
+    if not user_line:
+        return
+
+    if user_line.user_id:
+        UserFixes(session).fix_user(user_line.user_id)
+    if user_line.line_id:
+        LineFixes(session).fix(user_line.line_id)
+    if user_line.extension_id:
+        ExtensionFixes(session).fix_extension(user_line.extension_id)

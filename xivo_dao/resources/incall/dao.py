@@ -39,7 +39,7 @@ def find_all_line_extensions_by_line_id(session, line_id):
              .join(Dialaction,
                    and_(Dialaction.action == 'user',
                         cast(Dialaction.actionarg1, Integer) == UserLine.user_id,
-                        UserLine.main_line == True))
+                        UserLine.main_line == True))  # noqa
              .join(Incall,
                    and_(Dialaction.category == 'incall',
                         cast(Dialaction.categoryval, Integer) == Incall.id))
@@ -58,7 +58,7 @@ def find_line_extension_by_extension_id(session, extension_id):
              .join(Dialaction,
                    and_(Dialaction.action == 'user',
                         cast(Dialaction.actionarg1, Integer) == UserLine.user_id,
-                        UserLine.main_line == True))
+                        UserLine.main_line == True))  # noqa
              .join(Incall,
                    and_(Dialaction.category == 'incall',
                         cast(Dialaction.categoryval, Integer) == Incall.id))
@@ -98,17 +98,31 @@ def find_by_extension_id(session, extension_id):
 def create(session, incall):
     extension = extension_dao.get(incall.extension_id)
 
-    incall_row = incall_db_converter.to_incall(incall, extension)
     with commit_or_abort(session, DataError.on_create, 'Incall'):
-        session.add(incall_row)
-
-    incall.id = incall_row.id
-
-    dialaction_row = incall_db_converter.to_dialaction(incall)
-    with commit_or_abort(session, DataError.on_create, 'Incall'):
-        session.add(dialaction_row)
+        incall.id = _create_incall(session, incall, extension)
+        _update_extension(session, incall)
+        _create_dialaction(session, incall)
 
     return incall
+
+
+def _create_incall(session, incall, extension):
+    incall_row = incall_db_converter.to_incall(incall, extension)
+    session.add(incall_row)
+    session.flush()
+    return incall_row.id
+
+
+def _update_extension(session, incall):
+    (session.query(Extension)
+     .filter(Extension.id == incall.extension_id)
+     .update({'type': 'incall', 'typeval': str(incall.id)})
+     )
+
+
+def _create_dialaction(session, incall):
+    dialaction_row = incall_db_converter.to_dialaction(incall)
+    session.add(dialaction_row)
 
 
 @daosession
@@ -120,6 +134,10 @@ def delete(session, incall):
                         .filter(Dialaction.category == 'incall')
                         .filter(Dialaction.categoryval == str(incall.id)))
 
+    extension_query = (session.query(Extension)
+                       .filter(Extension.id == incall.extension_id))
+
     with commit_or_abort(session, DataError.on_delete, 'Incall'):
         incall_query.delete()
         dialaction_query.delete()
+        extension_query.update({'type': 'user', 'typeval': '0'})

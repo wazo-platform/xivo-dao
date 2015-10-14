@@ -24,6 +24,10 @@ from xivo_dao.resources.user_line.model import db_converter
 from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo_dao.helpers.db_manager import daosession
 
+from xivo_dao.resources.user.fixes import UserFixes
+from xivo_dao.resources.line.fixes import LineFixes
+from xivo_dao.resources.extension.fixes import ExtensionFixes
+
 
 @daosession
 def find_by_user_id_and_line_id(session, user_id, line_id):
@@ -64,7 +68,7 @@ def find_all_by_user_id(session, user_id):
 def find_all_by_line_id(session, line_id):
     rows = (session.query(UserLineSchema)
             .filter(UserLineSchema.line_id == line_id)
-            .filter(UserLineSchema.user_id != None)
+            .filter(UserLineSchema.user_id != None)  # noqa
             .all())
 
     if not rows:
@@ -76,7 +80,7 @@ def find_all_by_line_id(session, line_id):
 @daosession
 def find_main_user_line(session, line_id):
     row = (session.query(UserLineSchema)
-           .filter(UserLineSchema.main_user == True)
+           .filter(UserLineSchema.main_user == True)  # noqa
            .filter(UserLineSchema.line_id == line_id)
            .filter(UserLineSchema.user_id != None)
            .first())
@@ -91,6 +95,8 @@ def find_main_user_line(session, line_id):
 def associate(session, user_line):
     with commit_or_abort(session, DataError.on_create, 'UserLine'):
         user_line_id = _associate_user_line(session, user_line)
+        session.flush()
+        _fix_associations(session, user_line)
 
     user_line.id = user_line_id
 
@@ -100,7 +106,7 @@ def associate(session, user_line):
 def _associate_user_line(session, user_line):
     count = (session.query(UserLineSchema)
              .filter(UserLineSchema.line_id == user_line.line_id)
-             .filter(UserLineSchema.user_id == None)
+             .filter(UserLineSchema.user_id == None)  # noqa
              .count())
 
     if count == 0:
@@ -123,7 +129,7 @@ def _create_user_line(session, user_line):
 
 def _update_user_line(session, user_line):
     (session.query(UserLineSchema)
-     .filter(UserLineSchema.user_id == None)
+     .filter(UserLineSchema.user_id == None)  # noqa
      .filter(UserLineSchema.line_id == user_line.line_id)
      .update({'user_id': user_line.user_id}))
 
@@ -139,6 +145,8 @@ def _find_user_line_id(session, user_line):
 def dissociate(session, user_line):
     with commit_or_abort(session, DataError.on_delete, 'UserLine'):
         _dissasociate_user_line(session, user_line)
+        session.flush()
+        _fix_associations(session, user_line)
         ule_dao.delete_association_if_necessary(session)
 
 
@@ -156,7 +164,26 @@ def _dissasociate_user_line(session, user_line):
 def line_has_secondary_user(session, user_line):
     count = (session.query(UserLineSchema)
              .filter(UserLineSchema.line_id == user_line.line_id)
-             .filter(UserLineSchema.main_user == False)
+             .filter(UserLineSchema.main_user == False)  # noqa
              .count())
 
     return count > 0
+
+
+def _fix_associations(session, user_line):
+    user_line = (session.query(UserLineSchema)
+                 .filter(UserLineSchema.user_id == user_line.user_id)
+                 .filter(UserLineSchema.line_id == user_line.line_id)
+                 .filter(UserLineSchema.main_user == True)  # noqa
+                 .filter(UserLineSchema.main_line == True)  # noqa
+                 .first())
+
+    if not user_line:
+        return
+
+    if user_line.user_id:
+        UserFixes(session).fix_user(user_line.user_id)
+    if user_line.line_id:
+        LineFixes(session).fix(user_line.line_id)
+    if user_line.extension_id:
+        ExtensionFixes(session).fix_extension(user_line.extension_id)

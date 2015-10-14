@@ -36,6 +36,7 @@ from xivo_dao.alchemy.context import Context
 from xivo_dao.alchemy.contextinclude import ContextInclude
 from xivo_dao.alchemy.contextnumbers import ContextNumbers
 from xivo_dao.alchemy.cti_contexts import CtiContexts
+from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.dialpattern import DialPattern
 from xivo_dao.alchemy.entity import Entity as EntitySchema
 from xivo_dao.alchemy.extension import Extension
@@ -458,6 +459,11 @@ class DAOTestCase(unittest.TestCase):
         dialpattern = DialPattern(**kwargs)
         self.add_me(dialpattern)
         return dialpattern
+
+    def add_dialaction(self, **kwargs):
+        dialaction = Dialaction(**kwargs)
+        self.add_me(dialaction)
+        return dialaction
 
     def add_usersip(self, **kwargs):
         kwargs.setdefault('name', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
