@@ -25,6 +25,8 @@ from sqlalchemy.schema import Column, UniqueConstraint, PrimaryKeyConstraint, \
 from xivo_dao.helpers.exception import InputError
 from xivo_dao.helpers.db_manager import Base
 from xivo_dao.alchemy import enum
+from xivo_dao.alchemy.sccpline import SCCPLine
+from xivo_dao.alchemy.usersip import UserSIP
 
 
 caller_id_regex = re.compile(r'''
@@ -69,14 +71,14 @@ class LineFeatures(Base):
     commented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text)
 
-    sip_endpoint = relationship("UserSIP",
+    sip_endpoint = relationship(UserSIP,
                                 primaryjoin="""and_(
                                     LineFeatures.protocol == 'sip',
                                     LineFeatures.protocolid == UserSIP.id
                                 )""",
                                 foreign_keys=[protocolid])
 
-    sccp_endpoint = relationship("SCCPLine",
+    sccp_endpoint = relationship(SCCPLine,
                                  primaryjoin="""and_(
                                  LineFeatures.protocol == 'sccp',
                                  LineFeatures.protocolid == SCCPLine.id
