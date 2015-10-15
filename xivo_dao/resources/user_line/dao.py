@@ -65,6 +65,17 @@ def find_all_by_user_id(session, user_id):
 
 
 @daosession
+def find_main_by_user_id(session, user_id):
+    row = (session.query(UserLineSchema)
+           .filter(UserLineSchema.user_id == user_id)
+           .filter(UserLineSchema.main_user == True)  # noqa
+           .filter(UserLineSchema.main_line == True)  # noqa
+           .first())
+
+    return db_converter.to_model(row) if row else None
+
+
+@daosession
 def find_all_by_line_id(session, line_id):
     rows = (session.query(UserLineSchema)
             .filter(UserLineSchema.line_id == line_id)
