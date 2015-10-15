@@ -109,6 +109,49 @@ class TestUserLineFindByUserIdAndLineId(DAOTestCase):
                     )
 
 
+class TestUserLineFindMainByUserId(DAOTestCase):
+
+    def test_given_user_is_not_main_then_returns_null(self):
+        user = self.add_user()
+        line = self.add_line()
+        self.add_user_line(user_id=user.id, line_id=line.id, main_user=False, main_line=True)
+
+        result = user_line_dao.find_main_by_user_id(user.id)
+        assert_that(result, none())
+
+    def test_given_line_is_not_main_then_returns_null(self):
+        user = self.add_user()
+        line = self.add_line()
+        self.add_user_line(user_id=user.id, line_id=line.id, main_user=True, main_line=False)
+
+        result = user_line_dao.find_main_by_user_id(user.id)
+        assert_that(result, none())
+
+    def test_given_user_and_line_are_main_then_returns_user_line(self):
+        user = self.add_user()
+        line = self.add_line()
+        self.add_user_line(user_id=user.id, line_id=line.id, main_user=True, main_line=True)
+
+        result = user_line_dao.find_main_by_user_id(user.id)
+
+        assert_that(result.user_id, equal_to(user.id))
+        assert_that(result.line_id, equal_to(line.id))
+
+    def test_given_multiple_users_associated_then_returns_main_user(self):
+        main_user = self.add_user()
+        other_user = self.add_user()
+        line = self.add_line()
+        self.add_user_line(user_id=main_user.id, line_id=line.id,
+                           main_user=True, main_line=True)
+        self.add_user_line(user_id=other_user.id, line_id=line.id,
+                           main_user=False, main_line=True)
+
+        result = user_line_dao.find_main_by_user_id(main_user.id)
+
+        assert_that(result.user_id, equal_to(main_user.id))
+        assert_that(result.line_id, equal_to(line.id))
+
+
 class TestUserLineFindAllByUserId(DAOTestCase):
 
     def test_find_all_by_user_id_no_user_line(self):
