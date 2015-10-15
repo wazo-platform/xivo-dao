@@ -23,7 +23,7 @@ from xivo_dao.resources.utils.search import SearchConfig
 
 
 config = SearchConfig(table=UserSIP,
-                      columns={'username': UserSIP.username,
+                      columns={'username': UserSIP.name,
                                'type': UserSIP.type,
                                'host': UserSIP.host},
                       default_sort='username')

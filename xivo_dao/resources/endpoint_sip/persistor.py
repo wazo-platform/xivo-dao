@@ -70,8 +70,8 @@ class SipPersistor(object):
         return row
 
     def fill_default_values(self, sip):
-        if sip.username is None:
-            sip.username = self.find_hash(SIP.username)
+        if sip.name is None:
+            sip.name = self.find_hash(SIP.name)
         if sip.secret is None:
             sip.secret = self.find_hash(SIP.secret)
         if sip.type is None:
@@ -80,7 +80,6 @@ class SipPersistor(object):
             sip.host = 'dynamic'
         if sip.category is None:
             sip.category = 'user'
-        sip.name = sip.username
 
     def find_hash(self, column):
         exists = True

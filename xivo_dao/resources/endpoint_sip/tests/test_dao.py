@@ -128,12 +128,12 @@ class TestSipEndpointDaoFindBy(TestSipEndpointDAO):
         self.assertRaises(InputError, dao.find_by, 'column', 1)
 
     def test_given_row_with_value_does_not_exist_then_returns_null(self):
-        result = dao.find_by('username', 'abcd')
+        result = dao.find_by('name', 'abcd')
         assert_that(result, none())
 
     def test_find_by(self):
-        sip = self.add_usersip(username='myusername')
-        result = dao.find_by('username', 'myusername')
+        sip = self.add_usersip(name='myname')
+        result = dao.find_by('name', 'myname')
 
         assert_that(result.id, equal_to(sip.id))
 
@@ -144,14 +144,15 @@ class TestSipEndpointDaoGet(TestSipEndpointDAO):
         self.assertRaises(NotFoundError, dao.get, 1)
 
     def test_given_row_with_minimal_parameters_then_returns_model(self):
-        row = self.add_usersip(username='username',
+        row = self.add_usersip(name='username',
                                secret='secret',
                                type='friend',
                                host='dynamic')
 
         sip = dao.get(row.id)
         assert_that(sip.id, equal_to(row.id))
-        assert_that(sip.username, equal_to('username'))
+        assert_that(sip.name, equal_to('username'))
+        assert_that(sip.username, none())
         assert_that(sip.secret, equal_to('secret'))
         assert_that(sip.type, equal_to('friend'))
         assert_that(sip.host, equal_to('dynamic'))
@@ -184,9 +185,9 @@ class TestSipEndpointDaoGet(TestSipEndpointDAO):
 class TestSipEndpointDaoSearch(DAOTestCase):
 
     def test_search(self):
-        sip1 = self.add_usersip(username="alice",
+        sip1 = self.add_usersip(name="alice",
                                 secret="abygale")
-        self.add_usersip(username="henry",
+        self.add_usersip(name="henry",
                          secret="ford")
 
         search_result = dao.search(search='alice')
@@ -204,15 +205,15 @@ class TestSipEndpointDaoCreate(DAOTestCase):
         row = self.session.query(SIPEndpoint).first()
 
         assert_that(created_sip.id, equal_to(row.id))
-        assert_that(created_sip.username, has_length(8))
-        assert_that(created_sip.name, equal_to(created_sip.username))
+        assert_that(created_sip.name, has_length(8))
+        assert_that(created_sip.username, none())
         assert_that(created_sip.secret, has_length(8))
         assert_that(created_sip.type, equal_to('friend'))
         assert_that(created_sip.host, equal_to('dynamic'))
         assert_that(created_sip.category, equal_to('user'))
 
     def test_create_predefined_parameters(self):
-        sip = SIPEndpoint(username='myusername',
+        sip = SIPEndpoint(name='myusername',
                           secret='mysecret',
                           host="127.0.0.1",
                           type="peer")
@@ -221,8 +222,8 @@ class TestSipEndpointDaoCreate(DAOTestCase):
         row = self.session.query(SIPEndpoint).first()
 
         assert_that(created_sip.id, equal_to(row.id))
-        assert_that(created_sip.username, equal_to('myusername'))
         assert_that(created_sip.name, equal_to('myusername'))
+        assert_that(created_sip.username, none())
         assert_that(created_sip.secret, equal_to('mysecret'))
         assert_that(created_sip.type, equal_to('peer'))
         assert_that(created_sip.host, equal_to('127.0.0.1'))
@@ -329,7 +330,7 @@ class TestSipEndpointDaoEdit(DAOTestCase):
         row = self.add_usersip()
         sip = dao.get(row.id)
 
-        sip.username = 'username'
+        sip.name = 'username'
         sip.secret = 'secret'
         sip.type = 'peer'
         sip.host = '127.0.0.1'
@@ -337,7 +338,7 @@ class TestSipEndpointDaoEdit(DAOTestCase):
         dao.edit(sip)
 
         row = self.session.query(SIPEndpoint).first()
-        assert_that(row.username, equal_to('username'))
+        assert_that(row.name, equal_to('username'))
         assert_that(row.secret, equal_to('secret'))
         assert_that(row.type, equal_to('peer'))
         assert_that(row.host, equal_to('127.0.0.1'))
