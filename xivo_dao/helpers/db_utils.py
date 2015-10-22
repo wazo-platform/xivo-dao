@@ -39,3 +39,16 @@ def commit_or_abort(session, error=None, element=None):
 @daosession
 def get_dao_session(session):
     return session
+
+
+@contextmanager
+def session_scope():
+    session = Session()
+    try:
+        yield session
+        session.commit()
+    except:
+        session.rollback()
+        raise
+    finally:
+        session.remove()
