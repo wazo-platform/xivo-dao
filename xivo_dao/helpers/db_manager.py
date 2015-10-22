@@ -17,12 +17,21 @@
 
 import logging
 from functools import wraps
-from sqlalchemy.orm.session import sessionmaker
-from sqlalchemy.exc import OperationalError, InterfaceError
+from sqlalchemy import event, exc
+from sqlalchemy import create_engine
+from sqlalchemy.pool import Pool
+from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import scoped_session
+
+from xivo.config_helper import ConfigParser, ErrorHandler
+
+DEFAULT_DB_URI = 'postgresql://asterisk:proformatique@localhost/asterisk'
+TESTING = False
+
 
 logger = logging.getLogger(__name__)
+Session = scoped_session(sessionmaker())
+Base = declarative_base()
 
 
 def todict(self):
@@ -33,70 +42,45 @@ def todict(self):
 
     return d
 
-Base = declarative_base()
 Base.todict = todict
 
-_db_context = None
-_dao_engine = None
-_DaoSession = None
+
+@event.listens_for(Pool, "checkout")
+def ping_connection(dbapi_connection, connection_record, connection_proxy):
+    cursor = dbapi_connection.cursor()
+    try:
+        cursor.execute("SELECT 1")
+    except:
+        raise exc.DisconnectionError()
+    cursor.close()
 
 
 def daosession(func):
     @wraps(func)
     def wrapped(*args, **kwargs):
-        if not _DaoSession:
-            _init()
-        return _execute_with_session(_DaoSession, func, args, kwargs)
+        session = Session()
+        result = func(session, *args, **kwargs)
+        session.commit()
+        return result
     return wrapped
 
 
-def _execute_with_session(session_class, func, args, kwargs):
-    try:
-        session = session_class()
-        return _apply_and_flush(func, session, args, kwargs)
-    except (OperationalError, InterfaceError) as e:
-        logger.warning('error while executing request in DB: %s', e)
-        logger.info('reinitializing the DB connection and retrying the request')
-        reinit()
-        session = session_class()
-        return _apply_and_flush(func, session, args, kwargs)
+def init_db(db_uri):
+    engine = create_engine(db_uri)
+    Session.configure(bind=engine)
+    Base.metadata.bind = engine
 
 
-def _apply_and_flush(func, session, args, kwargs):
-    result = func(session, *args, **kwargs)
-    session.flush()
-    return result
+def init_db_from_config(config=None):
+    config = config or default_config()
+    url = config.get('db_uri', DEFAULT_DB_URI)
+    init_db(url)
 
 
-def _init():
-    global _dao_engine
-    global _DaoSession
-
-    _dao_engine = _db_context.new_engine()
-    _DaoSession = _new_scoped_session(_dao_engine)
-
-
-def _new_scoped_session(engine):
-    return scoped_session(sessionmaker(bind=engine, autoflush=False, autocommit=True))
-
-
-def reinit():
-    close()
-    _init()
-
-
-def close():
-    global _DaoSession
-    global _dao_engine
-    _DaoSession.close()
-    _DaoSession = None
-    _dao_engine.dispose()
-    _dao_engine = None
-
-
-def on_db_context_update(db_context):
-    global _db_context
-    if _DaoSession:
-        close()
-
-    _db_context = db_context
+def default_config():
+    config = {
+        'config_file': '/etc/xivo-dao/config.yml',
+        'extra_config_files': '/etc/xivo-dao/conf.d',
+    }
+    config_parser = ConfigParser(ErrorHandler())
+    return config_parser.read_config_file_hierarchy(config)

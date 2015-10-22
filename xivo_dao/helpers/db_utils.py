@@ -23,19 +23,11 @@ from xivo_dao.helpers.db_manager import daosession
 @contextmanager
 def commit_or_abort(session, error=None, element=None):
     try:
-        session.begin()
-    except SQLAlchemyError:
-        session.rollback()
-        session.begin()
-
-    try:
         yield
+        session.commit()
     except Exception:
         session.rollback()
         raise
-
-    try:
-        session.commit()
     except SQLAlchemyError as e:
         session.rollback()
         if error:
