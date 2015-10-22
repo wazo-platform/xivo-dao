@@ -746,11 +746,11 @@ class DAOTestCase(unittest.TestCase):
 
     def add_me(self, obj):
         self.session.add(obj)
-        self.session.commit()
+        self.session.flush()
 
     def add_me_all(self, obj_list):
         self.session.add_all(obj_list)
-        self.session.commit()
+        self.session.flush()
 
     _generate_int = itertools.count(1).next
 

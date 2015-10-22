@@ -60,7 +60,6 @@ def daosession(func):
     def wrapped(*args, **kwargs):
         session = Session()
         result = func(session, *args, **kwargs)
-        session.commit()
         return result
     return wrapped
 

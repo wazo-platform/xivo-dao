@@ -17,14 +17,14 @@
 
 from contextlib import contextmanager
 from sqlalchemy.exc import SQLAlchemyError
-from xivo_dao.helpers.db_manager import daosession
+from xivo_dao.helpers.db_manager import daosession, Session
 
 
 @contextmanager
 def commit_or_abort(session, error=None, element=None):
     try:
         yield
-        session.commit()
+        session.flush()
     except SQLAlchemyError as e:
         session.rollback()
         if error:
