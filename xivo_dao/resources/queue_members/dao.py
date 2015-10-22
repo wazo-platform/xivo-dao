@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from sqlalchemy import func
-from xivo_dao.helpers.db_utils import commit_or_abort
+from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.agentfeatures import AgentFeatures as AgentFeaturesSchema
 from xivo_dao.alchemy.queuefeatures import QueueFeatures as QueueFeaturesSchema
@@ -41,7 +41,7 @@ def get_by_queue_id_and_agent_id(session, queue_id, agent_id):
 
 @daosession
 def edit_agent_queue_association(session, queue_member):
-    with commit_or_abort(session):
+    with flush_session(session):
         row = (session.query(QueueMemberSchema)
                       .filter(QueueFeaturesSchema.name == QueueMemberSchema.queue_name)
                       .filter(QueueMemberSchema.usertype == 'agent')
@@ -52,7 +52,7 @@ def edit_agent_queue_association(session, queue_member):
 
 @daosession
 def associate(session, queue_member):
-    with commit_or_abort(session):
+    with flush_session(session):
         agent = (session.query(AgentFeaturesSchema.number)
                  .filter(AgentFeaturesSchema.id == queue_member.agent_id).first())
         queue = (session.query(QueueFeaturesSchema.name)

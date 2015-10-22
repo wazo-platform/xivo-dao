@@ -26,7 +26,7 @@ from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.helpers.db_utils import commit_or_abort
+from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.helpers.exception import DataError
 from xivo_dao.resources.func_key.database import func_key_manager
 from xivo_dao.resources.func_key.model import UserFuncKey, Forward, ForwardTypeConverter, BSFilterFuncKey
@@ -35,7 +35,7 @@ from xivo_dao.resources.func_key.model import UserFuncKey, Forward, ForwardTypeC
 @daosession
 def create(session, func_key):
     repository = func_key_manager.for_func_key(func_key)
-    with commit_or_abort(session, DataError.on_create, 'FuncKey'):
+    with flush_session(session):
         created_func_key = repository.create(session, func_key)
     return created_func_key
 
@@ -43,7 +43,7 @@ def create(session, func_key):
 @daosession
 def delete(session, func_key):
     repository = func_key_manager.for_func_key(func_key)
-    with commit_or_abort(session, DataError.on_delete, 'FuncKey'):
+    with flush_session(session):
         repository.delete(session, func_key)
 
 

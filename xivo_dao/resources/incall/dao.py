@@ -29,7 +29,7 @@ from xivo_dao.resources.incall.model import db_converter as incall_db_converter
 from xivo_dao.resources.line_extension.model import db_converter as line_extension_db_converter
 
 from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.helpers.db_utils import commit_or_abort
+from xivo_dao.helpers.db_utils import flush_session
 
 
 @daosession
@@ -98,7 +98,7 @@ def find_by_extension_id(session, extension_id):
 def create(session, incall):
     extension = extension_dao.get(incall.extension_id)
 
-    with commit_or_abort(session, DataError.on_create, 'Incall'):
+    with flush_session(session):
         incall.id = _create_incall(session, incall, extension)
         _update_extension(session, incall)
         _create_dialaction(session, incall)
@@ -137,7 +137,7 @@ def delete(session, incall):
     extension_query = (session.query(Extension)
                        .filter(Extension.id == incall.extension_id))
 
-    with commit_or_abort(session, DataError.on_delete, 'Incall'):
+    with flush_session(session):
         incall_query.delete()
         dialaction_query.delete()
         extension_query.update({'type': 'user', 'typeval': '0'})

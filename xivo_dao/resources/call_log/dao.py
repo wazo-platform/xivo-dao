@@ -20,7 +20,7 @@ from sqlalchemy import or_
 from xivo_dao.alchemy.call_log import CallLog as CallLogSchema
 from xivo_dao.alchemy.cel import CEL as CELSchema
 from xivo_dao.helpers.exception import DataError
-from xivo_dao.helpers.db_utils import commit_or_abort
+from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.resources.call_log.model import db_converter
 
@@ -60,7 +60,7 @@ def find_all_history_for_phone(session, identifier, limit):
 
 @daosession
 def create_from_list(session, call_logs):
-    with commit_or_abort(session, DataError.on_create, 'CallLog'):
+    with flush_session(session):
         for call_log in call_logs:
             call_log_id = create_call_log(session, call_log)
             _link_call_log(session, call_log, call_log_id)
@@ -84,13 +84,13 @@ def _link_call_log(session, call_log, call_log_id):
 
 @daosession
 def delete_all(session):
-    with commit_or_abort(session, DataError.on_delete, 'CallLog'):
+    with flush_session(session):
         session.query(CallLogSchema).delete()
 
 
 @daosession
 def delete_from_list(session, call_log_ids):
-    with commit_or_abort(session, DataError.on_delete, 'CallLog'):
+    with flush_session(session):
         for call_log_id in call_log_ids:
             (session
              .query(CallLogSchema)

@@ -19,7 +19,7 @@ from xivo_dao.helpers import errors
 from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
 from xivo_dao.resources.line_extension.model import db_converter
 from xivo_dao.resources.user_line_extension import dao as ule_dao
-from xivo_dao.helpers.db_utils import commit_or_abort
+from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.helpers.db_manager import daosession
 
 from xivo_dao.resources.user.fixes import UserFixes
@@ -29,7 +29,7 @@ from xivo_dao.resources.extension.fixes import ExtensionFixes
 
 @daosession
 def associate(session, line_extension):
-    with commit_or_abort(session):
+    with flush_session(session):
         _associate_ule(session, line_extension)
         session.flush()
         _fix_associations(session, line_extension)
@@ -106,7 +106,7 @@ def get_by_extension_id(extension_id):
 
 @daosession
 def dissociate(session, line_extension):
-    with commit_or_abort(session):
+    with flush_session(session):
         _dissociate_ule(session, line_extension)
         session.flush()
         _fix_associations(session, line_extension)

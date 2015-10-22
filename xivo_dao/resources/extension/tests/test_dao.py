@@ -19,7 +19,6 @@ from hamcrest import assert_that, all_of, equal_to, has_items, has_length, has_p
 
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
-from xivo_dao.helpers.exception import DataError
 from xivo_dao.helpers.exception import NotFoundError
 from xivo_dao.resources.extension import dao as extension_dao
 from xivo_dao.resources.extension.model import Extension, \
@@ -298,20 +297,6 @@ class TestCreate(DAOTestCase):
         assert_that(row.commented, equal_to(1))
         assert_that(row.type, equal_to('user'))
         assert_that(row.typeval, equal_to('0'))
-
-    def test_create_same_exten_and_context(self):
-        exten = 'extension'
-        context = 'toto'
-
-        extension = Extension(exten=exten,
-                              context=context)
-
-        extension_dao.create(extension)
-
-        extension = Extension(exten=exten,
-                              context=context)
-
-        self.assertRaises(DataError, extension_dao.create, extension)
 
 
 class TestEdit(DAOTestCase):

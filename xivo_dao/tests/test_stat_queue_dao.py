@@ -17,7 +17,7 @@
 
 from xivo_dao import stat_queue_dao
 from xivo_dao.alchemy.stat_queue import StatQueue
-from xivo_dao.helpers.db_utils import commit_or_abort
+from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -39,7 +39,7 @@ class TestStatQueueDAO(DAOTestCase):
 
         all_queues = sorted(old_queues + new_queues)
 
-        with commit_or_abort(self.session):
+        with flush_session(self.session):
             stat_queue_dao.insert_if_missing(self.session, all_queues)
 
         result = sorted(r.name for r in self.session.query(StatQueue.name))

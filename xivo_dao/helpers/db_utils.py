@@ -16,21 +16,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from contextlib import contextmanager
-from sqlalchemy.exc import SQLAlchemyError
 from xivo_dao.helpers.db_manager import daosession, Session
 
 
 @contextmanager
-def commit_or_abort(session, error=None, element=None):
+def flush_session(session):
     try:
         yield
         session.flush()
-    except SQLAlchemyError as e:
-        session.rollback()
-        if error:
-            raise error(element, e)
-        else:
-            raise
     except Exception:
         session.rollback()
         raise

@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.helpers.db_utils import commit_or_abort
+from xivo_dao.helpers.db_utils import flush_session
 
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate as FuncKeyTemplateSchema
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping as FuncKeyMappingSchema
@@ -42,7 +42,7 @@ def search(session, **parameters):
 @daosession
 def create(session, template):
     persistor = build_persistor(session)
-    with commit_or_abort(session, DataError.on_create, 'FuncKeyTemplate'):
+    with flush_session(session):
         return persistor.create(template)
 
 
@@ -55,7 +55,7 @@ def get(session, template_id):
 @daosession
 def edit(session, template):
     persistor = build_persistor(session)
-    with commit_or_abort(session, DataError.on_edit, 'FuncKeyTemplate'):
+    with flush_session(session):
         return persistor.edit(template)
 
 
@@ -69,7 +69,7 @@ def delete(session, template):
 def create_private_template(session):
     template = FuncKeyTemplateSchema(private=True)
 
-    with commit_or_abort(session, DataError.on_create, 'FuncKeyTemplate'):
+    with flush_session(session):
         session.add(template)
 
     return template.id
@@ -77,7 +77,7 @@ def create_private_template(session):
 
 @daosession
 def remove_func_key_from_templates(session, func_key):
-    with commit_or_abort(session, DataError.on_delete, 'FuncKeyTemplate'):
+    with flush_session(session):
         (session.query(FuncKeyMappingSchema)
          .filter(FuncKeyMappingSchema.func_key_id == func_key.id)
          .delete())
@@ -85,7 +85,7 @@ def remove_func_key_from_templates(session, func_key):
 
 @daosession
 def delete_private_template(session, template_id):
-    with commit_or_abort(session, DataError.on_delete, 'FuncKeyTemplate'):
+    with flush_session(session):
         (session.query(FuncKeyMappingSchema)
          .filter(FuncKeyMappingSchema.template_id == template_id)
          .delete())

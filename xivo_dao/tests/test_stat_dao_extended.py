@@ -21,7 +21,7 @@ from xivo_dao import stat_dao
 from xivo_dao.alchemy.queue_log import QueueLog
 from xivo_dao.alchemy.stat_agent import StatAgent
 from xivo_dao.alchemy.stat_queue import StatQueue
-from xivo_dao.helpers.db_utils import commit_or_abort
+from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -230,7 +230,7 @@ class TestStatDAO(DAOTestCase):
         self.assertEqual(result, expected)
 
     def _insert_queue_log_data(self, queue_log_data):
-        with commit_or_abort(self.session):
+        with flush_session(self.session):
             lines = queue_log_data.split('\n')
             lines.pop()
             header = self._strip_content_list(lines.pop(0).split('|')[1:-1])

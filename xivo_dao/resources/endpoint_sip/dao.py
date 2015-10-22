@@ -16,7 +16,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from xivo_dao.helpers.db_utils import commit_or_abort
+from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.helpers.exception import DataError
 
@@ -40,17 +40,17 @@ def get(session, line_id):
 
 @daosession
 def create(session, line):
-    with commit_or_abort(session, DataError.on_create, 'SIPEndpoint'):
+    with flush_session(session):
         return SipPersistor(session).create(line)
 
 
 @daosession
 def edit(session, line):
-    with commit_or_abort(session, DataError.on_edit, 'SIPEndpoint'):
+    with flush_session(session):
         SipPersistor(session).edit(line)
 
 
 @daosession
 def delete(session, line):
-    with commit_or_abort(session, DataError.on_delete, 'SIPEndpoint'):
+    with flush_session(session):
         return SipPersistor(session).delete(line)

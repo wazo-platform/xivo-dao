@@ -20,7 +20,7 @@ from sqlalchemy import sql
 from xivo_dao.helpers import errors
 from xivo_dao.alchemy.voicemail import Voicemail as VoicemailSchema
 from xivo_dao.alchemy.dialaction import Dialaction as DialactionSchema
-from xivo_dao.helpers.db_utils import commit_or_abort
+from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.resources.voicemail.model import db_converter
 from xivo_dao.resources.voicemail.search import voicemail_search
@@ -85,7 +85,7 @@ def _get_voicemail_row(session, voicemail_id):
 @daosession
 def create(session, voicemail):
     voicemail_row = db_converter.to_source(voicemail)
-    with commit_or_abort(session, DataError.on_create, 'voicemail'):
+    with flush_session(session):
         session.add(voicemail_row)
 
     return db_converter.to_model(voicemail_row)
@@ -96,13 +96,13 @@ def edit(session, voicemail):
     voicemail_row = _get_voicemail_row(session, voicemail.id)
     db_converter.update_source(voicemail_row, voicemail)
 
-    with commit_or_abort(session, DataError.on_edit, 'voicemail'):
+    with flush_session(session):
         session.add(voicemail_row)
 
 
 @daosession
 def delete(session, voicemail):
-    with commit_or_abort(session, DataError.on_delete, 'voicemail'):
+    with flush_session(session):
         _delete_voicemail(session, voicemail.id)
         _unlink_dialactions(session, voicemail.id)
 

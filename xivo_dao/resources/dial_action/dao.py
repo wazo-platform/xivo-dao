@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.helpers.db_utils import commit_or_abort
+from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.alchemy.dialaction import Dialaction as DialactionSchema
 from xivo_dao.helpers.exception import DataError
 
@@ -30,7 +30,7 @@ USER_EVENTS = [
 
 @daosession
 def create_default_dial_actions_for_user(session, user):
-    with commit_or_abort(session, DataError.on_create, 'Dialaction'):
+    with flush_session(session):
         for event in USER_EVENTS:
             dialaction = _create_user_dial_action(user.id, event)
             session.add(dialaction)

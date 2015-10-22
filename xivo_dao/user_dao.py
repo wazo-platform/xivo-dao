@@ -28,7 +28,7 @@ from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.alchemy.voicemail import Voicemail
-from xivo_dao.helpers.db_utils import commit_or_abort
+from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
@@ -86,7 +86,7 @@ def disable_recording(user_id):
 
 @daosession
 def update(session, user_id, user_data_dict):
-    with commit_or_abort(session):
+    with flush_session(session):
         result = session.query(UserFeatures).filter(UserFeatures.id == user_id).update(user_data_dict)
     return result
 
@@ -274,7 +274,7 @@ def get_context(session, user_id):
 
 @daosession
 def delete(session, userid):
-    with commit_or_abort(session):
+    with flush_session(session):
         result = session.query(UserFeatures).filter(UserFeatures.id == userid)\
                                             .delete()
         (session.query(QueueMember).filter(QueueMember.usertype == 'user')
@@ -298,7 +298,7 @@ def delete(session, userid):
 
 @daosession
 def get_user_config(session, user_id):
-    with commit_or_abort(session):
+    with flush_session(session):
         query = _user_config_query(session)
         user = query.filter(UserFeatures.id == user_id).first()
 
@@ -310,7 +310,7 @@ def get_user_config(session, user_id):
 
 @daosession
 def get_users_config(session):
-    with commit_or_abort(session):
+    with flush_session(session):
         query = _user_config_query(session)
         users = query.all()
 
