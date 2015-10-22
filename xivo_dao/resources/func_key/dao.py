@@ -27,7 +27,6 @@ from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.helpers.db_utils import flush_session
-from xivo_dao.helpers.exception import DataError
 from xivo_dao.resources.func_key.database import func_key_manager
 from xivo_dao.resources.func_key.model import UserFuncKey, Forward, ForwardTypeConverter, BSFilterFuncKey
 

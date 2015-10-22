@@ -21,8 +21,6 @@ from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate as FuncKeyTemplateSchema
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping as FuncKeyMappingSchema
 
-from xivo_dao.helpers.exception import DataError
-
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.resources.func_key_template.persistor import build_persistor
 from xivo_dao.resources.func_key_template.search import template_search

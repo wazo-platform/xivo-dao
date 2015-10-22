@@ -16,7 +16,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.helpers import errors
-from xivo_dao.helpers.exception import DataError
 from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
 from xivo_dao.resources.line_extension import dao as line_extension_dao
 from xivo_dao.resources.user_line_extension import dao as ule_dao

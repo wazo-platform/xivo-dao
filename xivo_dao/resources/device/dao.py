@@ -18,7 +18,6 @@
 from xivo_dao.helpers import errors
 from xivo_dao.resources.device.model import DeviceOrdering
 from xivo_dao.resources.device import provd_converter
-from xivo_dao.helpers.exception import DataError
 from xivo_dao.helpers import provd_connector
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_provd_client import NotFoundError as ProvdClientNotFoundError
@@ -168,8 +167,6 @@ def _delete_provd_device(device):
         provd_device_manager.remove(device.id)
     except ProvdClientNotFoundError:
         raise errors.not_found('Device', id=device.id)
-    except Exception as e:
-        raise DataError.on_delete('Device', e)
 
 
 def _delete_provd_config(device):
@@ -192,12 +189,7 @@ def create(device):
 
 def _create_provd_device(device_id, provd_device):
     device_manager = provd_connector.device_manager()
-
-    try:
-        device_manager.update(provd_device)
-    except Exception as e:
-        device_manager.remove(device_id)
-        raise DataError.on_create('Device', e)
+    device_manager.update(provd_device)
 
 
 def _create_provd_config(device_id, provd_config):
@@ -208,15 +200,12 @@ def _create_provd_config(device_id, provd_config):
     except Exception as e:
         device_manager = provd_connector.device_manager()
         device_manager.remove(device_id)
-        raise DataError.on_create('Device', e)
+        raise e
 
 
 def generate_device_id():
     device_manager = provd_connector.device_manager()
-    try:
-        return device_manager.add({})
-    except Exception as e:
-        raise DataError.on_create('Device', e)
+    return device_manager.add({})
 
 
 def edit(device):
@@ -233,18 +222,12 @@ def edit(device):
 
 def _update_provd_config(provd_config):
     config_manager = provd_connector.config_manager()
-    try:
-        config_manager.update(provd_config)
-    except Exception as e:
-        raise DataError.on_edit('Device', e)
+    config_manager.update(provd_config)
 
 
 def _update_provd_device(provd_device):
     device_manager = provd_connector.device_manager()
-    try:
-        device_manager.update(provd_device)
-    except Exception as e:
-        raise DataError.on_edit('Device', e)
+    device_manager.update(provd_device)
 
 
 def mac_exists(mac):

@@ -31,7 +31,6 @@ from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.resources.entity import dao as entity_dao
 
 from xivo_dao.helpers import errors
-from xivo_dao.helpers.exception import DataError
 from xivo_dao.resources.user.search import user_search
 from xivo_dao.resources.user.view import user_view
 from xivo_dao.resources.user.database import db_converter

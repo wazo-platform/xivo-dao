@@ -22,7 +22,6 @@ from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.helpers.db_manager import daosession
 
 from xivo_dao.helpers import errors
-from xivo_dao.helpers.exception import DataError
 from xivo_dao.resources.extension.database import db_converter, \
     fwd_converter, service_converter, agent_action_converter
 from xivo_dao.resources.extension.search import extension_search

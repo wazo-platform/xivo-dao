@@ -18,7 +18,6 @@
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.alchemy.dialaction import Dialaction as DialactionSchema
-from xivo_dao.helpers.exception import DataError
 
 USER_EVENTS = [
     'noanswer',

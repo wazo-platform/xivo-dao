@@ -18,7 +18,6 @@
 
 from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.helpers.exception import DataError
 
 from xivo_dao.resources.endpoint_sip.persistor import SipPersistor
 

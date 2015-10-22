@@ -18,7 +18,6 @@
 from xivo_dao.resources.device.model import Device
 from xivo_dao.helpers import provd_connector
 from xivo import caller_id
-from xivo_dao.helpers.exception import DataError
 
 PROVD_DEVICE_KEYS = [
     'id',
@@ -80,12 +79,9 @@ def _build_parent_ids(device):
 
 def link_device_config(device):
     provd_device_manager = provd_connector.device_manager()
-    try:
-        provd_device = provd_device_manager.get(device.id)
-        provd_device['config'] = device.id
-        provd_device_manager.update(provd_device)
-    except Exception as e:
-        raise DataError.on_action('link', 'Device', e)
+    provd_device = provd_device_manager.get(device.id)
+    provd_device['config'] = device.id
+    provd_device_manager.update(provd_device)
 
 
 def populate_sip_line(config, confregistrar, line, extension):

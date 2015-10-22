@@ -39,23 +39,3 @@ class ResourceError(ServiceError):
 class NotFoundError(ServiceError):
 
     prefix = "Resource Not Found"
-
-
-class DataError(IOError):
-
-    @classmethod
-    def on_create(cls, resource, error):
-        return cls.on_action('create', resource, error)
-
-    @classmethod
-    def on_edit(cls, resource, error):
-        return cls.on_action('edit', resource, error)
-
-    @classmethod
-    def on_delete(cls, resource, error):
-        return cls.on_action('delete', resource, error)
-
-    @classmethod
-    def on_action(cls, resource, action, error):
-        msg = "Could not %s %s: %s" % (resource, action, error)
-        return cls(msg)

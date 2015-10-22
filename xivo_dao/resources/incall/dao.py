@@ -22,8 +22,6 @@ from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.incall import Incall
 from xivo_dao.alchemy.user_line import UserLine
 
-from xivo_dao.helpers.exception import DataError
-
 from xivo_dao.resources.extension import dao as extension_dao
 from xivo_dao.resources.incall.model import db_converter as incall_db_converter
 from xivo_dao.resources.line_extension.model import db_converter as line_extension_db_converter

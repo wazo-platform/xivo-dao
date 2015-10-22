@@ -20,7 +20,6 @@ from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.alchemy.cti_profile import CtiProfile as CtiProfileSchema
 from xivo_dao.resources.cti_profile.model import db_converter as cti_profile_db_converter
-from xivo_dao.helpers.exception import DataError
 from xivo_dao.helpers import errors
 
 

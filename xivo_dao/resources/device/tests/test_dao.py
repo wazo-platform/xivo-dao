@@ -23,7 +23,6 @@ from contextlib import contextmanager
 
 from xivo_dao.resources.device import dao as device_dao
 from xivo_dao.resources.device.model import Device
-from xivo_dao.helpers.exception import DataError
 from xivo_dao.helpers.exception import NotFoundError
 from xivo_dao.helpers.exception import InputError
 from xivo_provd_client import NotFoundError as ProvdClientNotFoundError
@@ -382,43 +381,6 @@ class TestDeviceDaoCreate(TestDeviceDao):
 
             assert_that(result.id, equal_to(device_id))
 
-    @patch('xivo_dao.resources.device.provd_converter.to_source')
-    @patch('xivo_dao.resources.device.dao.generate_device_id')
-    def test_create_with_device_manager_error(self, generate_device_id, provd_to_source):
-        device_id = 'abcd1234'
-        device = Device()
-
-        provd_device = Mock()
-        provd_config = Mock()
-
-        generate_device_id.return_value = device_id
-        provd_to_source.return_value = (provd_device, provd_config)
-
-        with self.provd_managers() as (device_manager, config_manager, _):
-            device_manager.update.side_effect = Exception()
-
-            self.assertRaises(DataError, device_dao.create, device)
-
-            assert_that(config_manager.add.call_count, equal_to(0))
-
-    @patch('xivo_dao.resources.device.provd_converter.to_source')
-    @patch('xivo_dao.resources.device.dao.generate_device_id')
-    def test_create_with_config_manager_error(self, generate_device_id, provd_to_source):
-        device_id = 'abcd1234'
-        device = Device()
-
-        provd_device = Mock()
-        provd_config = Mock()
-
-        generate_device_id.return_value = device_id
-        provd_to_source.return_value = (provd_device, provd_config)
-
-        with self.provd_managers() as (device_manager, config_manager, _):
-            config_manager.add.side_effect = Exception()
-
-            self.assertRaises(DataError, device_dao.create, device)
-            device_manager.remove.assert_called_once_with(device_id)
-
     def test_generate_device_id(self):
         device_id = 'abc1234'
 
@@ -428,13 +390,6 @@ class TestDeviceDaoCreate(TestDeviceDao):
             result = device_dao.generate_device_id()
 
             self.assertEquals(result, device_id)
-            device_manager.add.assert_called_once_with({})
-
-    def test_generate_device_id_with_error(self):
-        with self.provd_managers() as (device_manager, _, _):
-            device_manager.add.side_effect = Exception()
-
-            self.assertRaises(DataError, device_dao.generate_device_id)
             device_manager.add.assert_called_once_with({})
 
 
@@ -484,38 +439,6 @@ class TestDeviceDaoEdit(TestDeviceDao):
 
             assert_that(config_manager.get.call_count, equal_to(0))
             assert_that(config_manager.update.call_count, equal_to(0))
-
-    @patch('xivo_dao.resources.device.provd_converter.build_edit')
-    def test_edit_with_error_on_config_update(self, provd_build_edit):
-        device_id = 'abc1234'
-        config_id = 'def456'
-        device = Device(id=device_id)
-
-        provd_device = {'id': device_id, 'config': config_id}
-        provd_config = Mock()
-
-        provd_build_edit.return_value = (provd_device, provd_config)
-
-        with self.provd_managers() as (device_manager, config_manager, _):
-            device_manager.get.return_value = provd_device
-            config_manager.get.return_value = provd_config
-            config_manager.update.side_effect = Exception
-
-            self.assertRaises(DataError, device_dao.edit, device)
-
-    @patch('xivo_dao.resources.device.provd_converter.build_edit')
-    def test_edit_with_error_on_device_update(self, provd_build_edit):
-        device_id = 'abc1234'
-        device = Device(id=device_id)
-
-        provd_build_edit.return_value = ({}, {})
-
-        with self.provd_managers() as (device_manager, config_manager, _):
-            device_manager.get.return_value = {}
-            config_manager.get.return_value = {}
-            device_manager.update.side_effect = Exception
-
-            self.assertRaises(DataError, device_dao.edit, device)
 
 
 class TestDeviceDaoMacExists(TestDeviceDao):
@@ -626,15 +549,5 @@ class TestDeviceDaoDelete(TestDeviceDao):
             device_manager.remove.side_effect = ProvdClientNotFoundError()
 
             self.assertRaises(NotFoundError, device_dao.delete, device)
-            device_manager.remove.assert_called_once_with(device.id)
-            self.assertEquals(config_manager.remove.call_count, 0)
-
-    def test_delete_with_error(self):
-        device = Device(id='abcd')
-
-        with self.provd_managers() as (device_manager, config_manager, _):
-            device_manager.remove.side_effect = Exception
-
-            self.assertRaises(DataError, device_dao.delete, device)
             device_manager.remove.assert_called_once_with(device.id)
             self.assertEquals(config_manager.remove.call_count, 0)

@@ -19,7 +19,6 @@ from sqlalchemy import or_
 
 from xivo_dao.alchemy.call_log import CallLog as CallLogSchema
 from xivo_dao.alchemy.cel import CEL as CELSchema
-from xivo_dao.helpers.exception import DataError
 from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.resources.call_log.model import db_converter
