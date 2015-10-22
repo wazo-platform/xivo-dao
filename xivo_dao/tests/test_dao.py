@@ -79,6 +79,8 @@ from xivo_dao.helpers.db_manager import Base
 from xivo.debug import trace_duration
 
 from sqlalchemy.engine import create_engine
+from sqlalchemy.pool import NullPool
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy import event
 
 logger = logging.getLogger(__name__)
@@ -106,29 +108,34 @@ def _init_tables():
     logger.debug("Tables cleaned")
 
 
+Session = sessionmaker()
+
+
 class DAOTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        db_manager.TESTING = True
-        cls.engine = create_engine(TEST_DB_URL)
+        cls.engine = create_engine(TEST_DB_URL, poolclass=NullPool)
         Base.metadata.bind = cls.engine
         expensive_setup()
-        cls.session = db_manager.Session
 
     def setUp(self):
         self.connection = self.engine.connect()
         self.trans = self.connection.begin()
-        self.session.configure(bind=self.connection)
+
+        self.session = Session(bind=self.connection)
+        db_manager.Session = lambda: self.session
+
         self.session.begin_nested()
 
         @event.listens_for(self.session, 'after_transaction_end')
         def restart_savepoint(session, transaction):
             if transaction.nested and not transaction._parent.nested:
+                session.expire_all()
                 session.begin_nested()
 
     def tearDown(self):
-        self.session.remove()
+        self.session.close()
         self.trans.rollback()
         self.connection.close()
 
