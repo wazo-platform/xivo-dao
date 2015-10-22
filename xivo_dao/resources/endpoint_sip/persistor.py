@@ -36,13 +36,13 @@ class SipPersistor(object):
             raise errors.unknown(name)
 
         row = self.session.query(SIP).filter(column == value).first()
-        return self.detach(row)
+        return row
 
     def get(self, id):
         row = self.session.query(SIP).filter(SIP.id == id).first()
         if not row:
             raise errors.not_found('SIPEndpoint', id=id)
-        return self.detach(row)
+        return row
 
     def search(self, params):
         rows, total = sip_search.search(self.session, params)
@@ -50,24 +50,20 @@ class SipPersistor(object):
 
     def create(self, sip):
         self.fill_default_values(sip)
-        self.session.add(sip)
-        self.session.flush()
-        self.detach(sip)
+        self.persist(sip)
         return self.get(sip.id)
 
-    def edit(self, sip):
+    def persist(self, sip):
         self.session.add(sip)
         self.session.flush()
-        self.detach(sip)
+        self.session.expire(sip)
+
+    def edit(self, sip):
+        self.persist(sip)
 
     def delete(self, sip):
         self.session.query(SIP).filter(SIP.id == sip.id).delete()
         self.session.flush()
-
-    def detach(self, row):
-        if row:
-            self.session.expunge(row)
-        return row
 
     def fill_default_values(self, sip):
         if sip.name is None:

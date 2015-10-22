@@ -44,10 +44,7 @@ class LinePersistor(object):
         return line
 
     def find(self, line_id):
-        line = self.query().filter(Line.id == line_id).first()
-        if line:
-            self.session.expunge(line)
-        return line
+        return self.query().filter(Line.id == line_id).first()
 
     def query(self):
         return (self.session
