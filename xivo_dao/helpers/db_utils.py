@@ -25,15 +25,15 @@ def commit_or_abort(session, error=None, element=None):
     try:
         yield
         session.commit()
-    except Exception:
-        session.rollback()
-        raise
     except SQLAlchemyError as e:
         session.rollback()
         if error:
             raise error(element, e)
         else:
             raise
+    except Exception:
+        session.rollback()
+        raise
 
 
 @daosession
