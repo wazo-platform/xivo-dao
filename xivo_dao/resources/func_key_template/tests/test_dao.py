@@ -16,10 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from hamcrest import assert_that, is_not, none, has_property, equal_to, calling, raises
-from mock import patch, ANY, Mock
 
 from xivo_dao.helpers.exception import NotFoundError
-from xivo_dao.helpers.exception import DataError
 from xivo_dao.helpers.exception import InputError
 
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -670,12 +668,6 @@ class TestCreatePrivateTemplate(TestFuncKeyTemplateDao):
 
         self.assert_private_template_created(template_id)
 
-    @patch('xivo_dao.resources.func_key_template.dao.commit_or_abort')
-    def test_given_database_error_then_transaction_aborted(self, commit_or_abort):
-        dao.create_private_template()
-
-        commit_or_abort.assert_called_with(ANY, DataError.on_create, 'FuncKeyTemplate')
-
 
 class TestRemoveFuncKeyFromTemplate(TestFuncKeyTemplateDao):
 
@@ -695,13 +687,6 @@ class TestRemoveFuncKeyFromTemplate(TestFuncKeyTemplateDao):
         dao.remove_func_key_from_templates(first_func_key)
 
         self.assert_template_contains_func_key(template_row, second_func_key)
-
-    @patch('xivo_dao.resources.func_key_template.dao.commit_or_abort')
-    def test_given_database_error_then_transaction_aborted(self, commit_or_abort):
-        func_key = Mock(id=1)
-        dao.remove_func_key_from_templates(func_key)
-
-        commit_or_abort.assert_called_with(ANY, DataError.on_delete, 'FuncKeyTemplate')
 
     def assert_template_contains_func_key(self, template_row, func_key_row):
         count = (self.session.query(FuncKeyMappingSchema)
@@ -733,13 +718,6 @@ class TestDeletePrivateTemplate(TestFuncKeyTemplateDao):
     def assert_template_deleted(self, template_row):
         row = self.session.query(FuncKeyTemplateSchema).get(template_row.id)
         assert_that(row, none())
-
-    @patch('xivo_dao.resources.func_key_template.dao.commit_or_abort')
-    def test_given_database_error_then_transaction_aborted(self, commit_or_abort):
-        template_id = 1
-        dao.delete_private_template(template_id)
-
-        commit_or_abort.assert_called_with(ANY, DataError.on_delete, 'FuncKeyTemplate')
 
 
 class TestFuncKeyTemplateSearch(TestFuncKeyTemplateDao):
