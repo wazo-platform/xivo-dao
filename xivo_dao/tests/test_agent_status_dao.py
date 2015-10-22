@@ -22,9 +22,7 @@ from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
 from xivo_dao.alchemy.agent_membership_status import AgentMembershipStatus
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
-from xivo_dao.tests.helpers.session import mocked_dao_session
 from sqlalchemy import and_
-from sqlalchemy.exc import SQLAlchemyError
 
 
 class TestAgentStatusDao(DAOTestCase):
@@ -65,23 +63,6 @@ class TestAgentStatusDao(DAOTestCase):
         self.assertEquals(agent_status.context, context)
         self.assertEquals(agent_status.interface, interface)
         self.assertEquals(agent_status.state_interface, state_interface)
-
-    @mocked_dao_session
-    def test_log_in_agent_with_db_error(self, session):
-        session.commit.side_effect = SQLAlchemyError()
-
-        agent_id = 1
-        agent_number = '2'
-        extension = '1001'
-        context = 'default'
-        interface = 'sip/abcdef'
-        state_interface = interface
-
-        self.assertRaises(SQLAlchemyError,
-                          agent_status_dao.log_in_agent,
-                          agent_id, agent_number, extension, context, interface, state_interface)
-
-        session.rollback.assert_called_once_with()
 
     def test_log_off_agent(self):
         agent_id = 1

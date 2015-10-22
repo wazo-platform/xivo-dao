@@ -28,15 +28,12 @@ from hamcrest import has_property
 from hamcrest import is_
 from hamcrest import is_not
 from hamcrest import none
-from sqlalchemy.exc import SQLAlchemyError
 
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.resources.utils.search import SearchResult
-from xivo_dao.helpers.exception import DataError
 from xivo_dao.helpers.exception import NotFoundError
 from xivo_dao.resources.user import dao as user_dao
 from xivo_dao.resources.user.model import User, UserDirectory
-from xivo_dao.tests.helpers.session import mocked_dao_session
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -615,18 +612,6 @@ class TestCreate(DAOTestCase):
 
         assert_that(created_user.uuid, is_not(None))
         assert_that(row.uuid, is_not(None))
-
-    @mocked_dao_session
-    def test_create_with_database_error(self, session):
-        session.commit.side_effect = SQLAlchemyError()
-
-        user = User(firstname='toto',
-                    lastname='kiki',
-                    language='fr_FR')
-
-        self.assertRaises(DataError, user_dao.create, user)
-        session.begin.assert_called_once_with()
-        session.rollback.assert_called_once_with()
 
 
 class TestEdit(DAOTestCase):

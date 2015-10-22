@@ -20,14 +20,11 @@ from datetime import timedelta
 from hamcrest import (assert_that, empty, equal_to, has_length, contains_inanyorder, has_property,
                       contains, all_of, is_)
 from mock import patch
-from sqlalchemy.exc import SQLAlchemyError
 
 from xivo_dao.alchemy.call_log import CallLog as CallLogSchema
 from xivo_dao.alchemy.cel import CEL as CELSchema
 from xivo_dao.resources.call_log import dao as call_log_dao
 from xivo_dao.resources.call_log.model import CallLog
-from xivo_dao.helpers.exception import DataError
-from xivo_dao.tests.helpers.session import mocked_dao_session
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -160,18 +157,6 @@ class TestCallLogDAO(DAOTestCase):
             all_of(has_property('id', cel_id_3), has_property('call_log_id', call_log_id_2)),
             all_of(has_property('id', cel_id_4), has_property('call_log_id', call_log_id_2))))
 
-    @mocked_dao_session
-    @patch('xivo_dao.resources.call_log.dao.create_call_log')
-    def test_create_from_list_db_error(self, session, create_call_log):
-        session.commit.side_effect = SQLAlchemyError()
-        create_call_log.return_value = 13
-
-        call_logs = (self._mock_call_log(), self._mock_call_log())
-
-        self.assertRaises(DataError, call_log_dao.create_from_list, call_logs)
-        session.begin.assert_called_once_with()
-        session.rollback.assert_called_once_with()
-
     def test_delete_all(self):
         call_logs = (self._mock_call_log(), self._mock_call_log())
         call_log_dao.create_from_list(call_logs)
@@ -180,14 +165,6 @@ class TestCallLogDAO(DAOTestCase):
 
         call_log_rows = self.session.query(CallLogSchema).all()
         assert_that(call_log_rows, has_length(0))
-
-    @mocked_dao_session
-    def test_delete_all_db_error(self, session):
-        session.commit.side_effect = SQLAlchemyError()
-
-        self.assertRaises(DataError, call_log_dao.delete_all)
-        session.begin.assert_called_once_with()
-        session.rollback.assert_called_once_with()
 
     def test_delete_from_list(self):
         id_1, id_2, id_3 = [42, 43, 44]
@@ -198,14 +175,6 @@ class TestCallLogDAO(DAOTestCase):
 
         call_log_rows = self.session.query(CallLogSchema).all()
         assert_that(call_log_rows, contains(has_property('id', id_2)))
-
-    @mocked_dao_session
-    def test_delete_from_list_db_error(self, session):
-        session.commit.side_effect = SQLAlchemyError()
-
-        self.assertRaises(DataError, call_log_dao.delete_from_list, [1, 2])
-        session.begin.assert_called_once_with()
-        session.rollback.assert_called_once_with()
 
     def _mock_call_log(self, cel_ids=None, date=None, id=None, source_line_identity=None, destination_line_identity=None, answered=False):
         if cel_ids is None:
