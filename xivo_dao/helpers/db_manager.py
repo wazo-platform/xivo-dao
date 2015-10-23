@@ -74,7 +74,7 @@ def _legacy_session(session, func, *args, **kwargs):
         session.rollback()
         raise
     finally:
-        session.remove()
+        Session.remove()
     return result
 
 
