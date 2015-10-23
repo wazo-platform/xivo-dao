@@ -87,10 +87,9 @@ def init_db(db_uri, legacy_mode=False):
     LEGACY_MODE = legacy_mode
 
 
-def init_db_from_config(config=None):
+def init_db_from_config(config=None, legacy_mode=False):
     config = config or default_config()
     url = config.get('db_uri', DEFAULT_DB_URI)
-    legacy_mode = config.get('legacy_mode', False)
     init_db(url, legacy_mode)
 
 
