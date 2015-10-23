@@ -15,4 +15,4 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.db_manager import init_db_from_config, default_config
+from xivo_dao.helpers.db_manager import init_db, init_db_from_config, default_config
