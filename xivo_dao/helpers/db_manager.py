@@ -69,18 +69,19 @@ def daosession(func):
 def _legacy_session(session, func, *args, **kwargs):
     try:
         result = func(session, *args, **kwargs)
-        session.commit()
+        session.flush()
     except Exception:
         session.rollback()
         raise
-    finally:
-        Session.remove()
     return result
 
 
 def init_db(db_uri, legacy_mode=False):
     engine = create_engine(db_uri)
-    Session.configure(bind=engine)
+    if legacy_mode:
+        Session.configure(bind=engine, autoflush=True, autocommit=False)
+    else:
+        Session.configure(bind=engine)
     Base.metadata.bind = engine
 
     global LEGACY_MODE
