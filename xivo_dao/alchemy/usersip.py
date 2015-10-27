@@ -60,7 +60,7 @@ class UserSIP(Base):
     fromdomain = Column(String(255))
     subscribemwi = Column(Integer, nullable=False, server_default='0')
     buggymwi = Column(Integer)
-    call_limit = Column('call-limit', Integer, nullable=False, server_default='0')
+    call_limit = Column('call-limit', Integer, nullable=False, server_default='10')
     callerid = Column(String(160))
     fullname = Column(String(80))
     cid_number = Column(String(80))

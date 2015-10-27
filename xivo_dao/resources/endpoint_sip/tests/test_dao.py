@@ -169,14 +169,12 @@ class TestSipEndpointDaoGet(TestSipEndpointDAO):
 
     def test_given_row_with_option_set_to_null_then_option_not_returned(self):
         row = self.add_usersip(language=None,
-                               call_limit=0,
                                regseconds=0,
                                allow=None,
                                setvar='')
 
         sip = dao.get(row.id)
         assert_that(sip.options, is_not(has_item(has_item("language"))))
-        assert_that(sip.options, is_not(has_item(has_item("call_limit"))))
         assert_that(sip.options, is_not(has_item(has_item("regseconds"))))
         assert_that(sip.options, is_not(has_item(has_item("allow"))))
         assert_that(sip.options, is_not(has_item(has_item("setvar"))))
@@ -361,7 +359,7 @@ class TestSipEndpointDaoEdit(DAOTestCase):
             'unsolicited_mailbox': none(),
             'fromuser': none(),
             'useclientcode': none(),
-            'call_limit': 0,
+            'call_limit': 10,
             'progressinband': none(),
             'transport': none(),
             'directmedia': none(),
