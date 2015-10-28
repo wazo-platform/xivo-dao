@@ -18,11 +18,10 @@
 from sqlalchemy.sql.expression import or_
 
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
-from xivo_dao.helpers.db_utils import commit_or_abort
+from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.helpers.db_manager import daosession
 
 from xivo_dao.helpers import errors
-from xivo_dao.helpers.exception import DataError
 from xivo_dao.resources.extension.database import db_converter, \
     fwd_converter, service_converter, agent_action_converter
 from xivo_dao.resources.extension.search import extension_search
@@ -154,7 +153,7 @@ def create(session, extension):
     extension_row.type = 'user'
     extension_row.typeval = '0'
 
-    with commit_or_abort(session, DataError.on_create, 'Extension'):
+    with flush_session(session):
         session.add(extension_row)
 
     extension.id = extension_row.id
@@ -167,7 +166,7 @@ def edit(session, extension):
     extension_row = _fetch_extension_row(session, extension.id)
     db_converter.update_source(extension_row, extension)
 
-    with commit_or_abort(session, DataError.on_edit, 'Extension'):
+    with flush_session(session):
         session.add(extension_row)
         session.flush()
         ExtensionFixes(session).fix(extension_row.id)
@@ -175,7 +174,7 @@ def edit(session, extension):
 
 @daosession
 def delete(session, extension):
-    with commit_or_abort(session, DataError.on_delete, 'Extension'):
+    with flush_session(session):
         session.query(ExtensionSchema).filter(ExtensionSchema.id == extension.id).delete()
 
 

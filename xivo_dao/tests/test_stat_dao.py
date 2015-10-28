@@ -28,7 +28,7 @@ from xivo_dao.alchemy.queue_log import QueueLog
 from xivo_dao.alchemy.stat_agent import StatAgent
 from xivo_dao.alchemy.stat_call_on_queue import StatCallOnQueue
 from xivo_dao.alchemy.stat_queue import StatQueue
-from xivo_dao.helpers.db_utils import commit_or_abort
+from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.tests.test_dao import DAOTestCase
 
 TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
@@ -405,7 +405,7 @@ class TestStatDAO(DAOTestCase):
         self.assertEqual(expected, result)
 
     def _insert_agent_logins_logoffs(self, logins, logoffs):
-        with commit_or_abort(self.session):
+        with flush_session(self.session):
             for login in logins:
                 callback_login = QueueLog(
                     time=login['time'],
@@ -430,7 +430,7 @@ class TestStatDAO(DAOTestCase):
                 self.session.add(callback_logoff)
 
     def _insert_agent_callback_logins_logoffs(self, logins, logoffs):
-        with commit_or_abort(self.session):
+        with flush_session(self.session):
             for login in logins:
                 callback_login = QueueLog(
                     time=login['time'],

@@ -18,12 +18,12 @@
 from xivo_dao.alchemy.schedule import Schedule
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.helpers.db_utils import commit_or_abort
+from xivo_dao.helpers.db_utils import flush_session
 
 
 @daosession
 def add(session, schedule):
-    with commit_or_abort(session):
+    with flush_session(session):
         session.add(schedule)
 
 
@@ -35,7 +35,7 @@ def add_user_to_schedule(session, userid, scheduleid, order=0):
     schedulepath.pathid = userid
     schedulepath.order = order
 
-    with commit_or_abort(session):
+    with flush_session(session):
         session.add(schedulepath)
 
 
@@ -49,7 +49,7 @@ def get_schedules_for_user(session, userid):
 
 @daosession
 def remove_user_from_all_schedules(session, userid):
-    with commit_or_abort(session):
+    with flush_session(session):
         session.query(SchedulePath).filter(SchedulePath.path == 'user')\
                                    .filter(SchedulePath.pathid == userid)\
                                    .delete()

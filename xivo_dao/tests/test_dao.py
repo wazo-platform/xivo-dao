@@ -16,7 +16,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import datetime
-import functools
 import itertools
 import logging
 import os
@@ -24,8 +23,6 @@ import random
 import unittest
 import time
 import string
-
-from sqlalchemy.schema import MetaData
 
 from xivo_dao.alchemy.accessfeatures import AccessFeatures
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
@@ -79,22 +76,18 @@ from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.voicemail import Voicemail as VoicemailSchema
 from xivo_dao.helpers import db_manager
 from xivo_dao.helpers.db_manager import Base
-from xivo_dao.helpers.db_utils import commit_or_abort
 from xivo.debug import trace_duration
 
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy.engine import create_engine
+from sqlalchemy.pool import NullPool
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy import event
 
 logger = logging.getLogger(__name__)
 
 _create_tables = True
-_tables = []
 
 TEST_DB_URL = os.getenv('XIVO_TEST_DB_URL', 'postgresql://asterisk:asterisk@localhost/asterisktest')
-
-Session = sessionmaker()
-engine = create_engine(TEST_DB_URL)
 
 
 def expensive_setup():
@@ -106,37 +99,39 @@ def expensive_setup():
 
 @trace_duration
 def _init_tables():
-    global _tables
-
     logger.debug("Cleaning tables")
-    metadata = MetaData(bind=engine)
-    metadata.reflect()
+    Base.metadata.reflect()
     logger.debug("drop all tables")
-    metadata.drop_all()
+    Base.metadata.drop_all()
     logger.debug("create all tables")
-    Base.metadata.create_all(bind=engine)
-    engine.dispose()
+    Base.metadata.create_all()
     logger.debug("Tables cleaned")
-    metadata = MetaData(bind=engine)
-    metadata.reflect()
-    _tables = [table for table in metadata.tables.iterkeys()]
+
+
+Session = sessionmaker()
 
 
 class DAOTestCase(unittest.TestCase):
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
+        cls.engine = create_engine(TEST_DB_URL, poolclass=NullPool)
+        Base.metadata.bind = cls.engine
         expensive_setup()
 
-        self.connection = engine.connect()
+    def setUp(self):
+        self.connection = self.engine.connect()
         self.trans = self.connection.begin()
+
         self.session = Session(bind=self.connection)
-        db_manager._DaoSession = lambda: self.session
+        db_manager.Session = lambda: self.session
+
         self.session.begin_nested()
-        self.session.begin = functools.partial(self.session.begin, subtransactions=True)
 
         @event.listens_for(self.session, 'after_transaction_end')
         def restart_savepoint(session, transaction):
             if transaction.nested and not transaction._parent.nested:
+                session.expire_all()
                 session.begin_nested()
 
     def tearDown(self):
@@ -750,12 +745,12 @@ class DAOTestCase(unittest.TestCase):
         return accessfeature
 
     def add_me(self, obj):
-        with commit_or_abort(self.session):
-            self.session.add(obj)
+        self.session.add(obj)
+        self.session.flush()
 
     def add_me_all(self, obj_list):
-        with commit_or_abort(self.session):
-            self.session.add_all(obj_list)
+        self.session.add_all(obj_list)
+        self.session.flush()
 
     _generate_int = itertools.count(1).next
 

@@ -17,13 +17,10 @@
 
 from hamcrest import assert_that, equal_to
 
-from mock import patch, ANY
-
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.dialaction import Dialaction as DialactionSchema
 from xivo_dao.resources.user.model import User
 from xivo_dao.resources.dial_action import dao as dial_action_dao
-from xivo_dao.helpers.exception import DataError
 
 
 class TestDialActionDAO(DAOTestCase):
@@ -37,14 +34,6 @@ class TestDialActionDAO(DAOTestCase):
         self.assert_user_has_dialaction(user, 'busy')
         self.assert_user_has_dialaction(user, 'congestion')
         self.assert_user_has_dialaction(user, 'chanunavail')
-
-    @patch('xivo_dao.resources.dial_action.dao.commit_or_abort')
-    def test_create_default_dial_actions_catches_database_error(self, commit_or_abort):
-        user = User(id=1)
-
-        dial_action_dao.create_default_dial_actions_for_user(user)
-
-        commit_or_abort.assert_called_once_with(ANY, DataError.on_create, 'Dialaction')
 
     def assert_user_has_dialaction(self, user, event):
         count = (self.session.query(DialactionSchema)

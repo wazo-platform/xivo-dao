@@ -21,13 +21,13 @@ from xivo_dao.helpers import errors
 
 from xivo_dao.resources.user_voicemail.model import db_converter
 
-from xivo_dao.helpers.db_utils import commit_or_abort
+from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.helpers.db_manager import daosession
 
 
 @daosession
 def associate(session, user_voicemail):
-    with commit_or_abort(session):
+    with flush_session(session):
         _associate_voicemail_with_user(session, user_voicemail)
 
 
@@ -90,7 +90,7 @@ def find_all_by_voicemail_id(session, voicemail_id):
 
 @daosession
 def dissociate(session, user_voicemail):
-    with commit_or_abort(session):
+    with flush_session(session):
         _dissociate_voicemail_from_user(session, user_voicemail.user_id)
 
 

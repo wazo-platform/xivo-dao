@@ -16,17 +16,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from hamcrest import assert_that, all_of, equal_to, has_items, has_length, has_property, none, contains
-from sqlalchemy.exc import SQLAlchemyError
 
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
-from xivo_dao.helpers.exception import DataError
 from xivo_dao.helpers.exception import NotFoundError
 from xivo_dao.resources.extension import dao as extension_dao
 from xivo_dao.resources.extension.model import Extension, \
     ServiceExtension, ForwardExtension, AgentActionExtension
 from xivo_dao.resources.utils.search import SearchResult
-from xivo_dao.tests.helpers.session import mocked_dao_session
 
 
 class TestExtension(DAOTestCase):
@@ -301,34 +298,6 @@ class TestCreate(DAOTestCase):
         assert_that(row.type, equal_to('user'))
         assert_that(row.typeval, equal_to('0'))
 
-    def test_create_same_exten_and_context(self):
-        exten = 'extension'
-        context = 'toto'
-
-        extension = Extension(exten=exten,
-                              context=context)
-
-        extension_dao.create(extension)
-
-        extension = Extension(exten=exten,
-                              context=context)
-
-        self.assertRaises(DataError, extension_dao.create, extension)
-
-    @mocked_dao_session
-    def test_create_extension_with_error_from_dao(self, session):
-        session.commit.side_effect = SQLAlchemyError()
-
-        exten = 'extension'
-        context = 'toto'
-
-        extension = Extension(exten=exten,
-                              context=context)
-
-        self.assertRaises(DataError, extension_dao.create, extension)
-        session.begin.assert_called_once_with()
-        session.rollback.assert_called_once_with()
-
 
 class TestEdit(DAOTestCase):
 
@@ -356,17 +325,6 @@ class TestEdit(DAOTestCase):
         assert_that(row.commented, equal_to(1))
         assert_that(row.type, equal_to('user'))
         assert_that(row.typeval, equal_to('0'))
-
-    @mocked_dao_session
-    def test_edit_extension_with_error_from_dao(self, session):
-        session.commit.side_effect = SQLAlchemyError()
-
-        extension = Extension(exten='extension',
-                              context='context')
-
-        self.assertRaises(DataError, extension_dao.edit, extension)
-        session.begin.assert_called_once_with()
-        session.rollback.assert_called_once_with()
 
 
 class TestDelete(DAOTestCase):

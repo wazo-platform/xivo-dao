@@ -21,7 +21,7 @@ from sqlalchemy import func
 from xivo_dao import stat_queue_periodic_dao
 from xivo_dao.alchemy.stat_queue_periodic import StatQueuePeriodic
 from xivo_dao.alchemy.stat_queue import StatQueue
-from xivo_dao.helpers.db_utils import commit_or_abort
+from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -57,7 +57,7 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
         stats = self._get_stats_for_queue()
         period_start = datetime.datetime(2012, 01, 01, 00, 00, 00)
 
-        with commit_or_abort(self.session):
+        with flush_session(self.session):
             stat_queue_periodic_dao.insert_stats(self.session, stats, period_start)
 
         try:
@@ -83,7 +83,7 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
         stats = self._get_stats_for_queue()
         start = datetime.datetime(2012, 01, 01, 00, 00, 00)
 
-        with commit_or_abort(self.session):
+        with flush_session(self.session):
             for minute_increment in [-5, 5, 15, 22, 35, 65, 120]:
                 delta = datetime.timedelta(minutes=minute_increment)
                 time = start + delta
@@ -121,7 +121,7 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
             }
         }
 
-        with commit_or_abort(self.session):
+        with flush_session(self.session):
             stat_queue_periodic_dao.insert_stats(self.session, stats, datetime.datetime(2012, 1, 1))
             stat_queue_periodic_dao.insert_stats(self.session, stats, datetime.datetime(2012, 1, 2))
             stat_queue_periodic_dao.insert_stats(self.session, stats, datetime.datetime(2012, 1, 3))

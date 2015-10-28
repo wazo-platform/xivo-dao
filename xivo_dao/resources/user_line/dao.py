@@ -16,12 +16,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.helpers import errors
-from xivo_dao.helpers.exception import DataError
 from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
 from xivo_dao.resources.line_extension import dao as line_extension_dao
 from xivo_dao.resources.user_line_extension import dao as ule_dao
 from xivo_dao.resources.user_line.model import db_converter
-from xivo_dao.helpers.db_utils import commit_or_abort
+from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.helpers.db_manager import daosession
 
 from xivo_dao.resources.user.fixes import UserFixes
@@ -104,7 +103,7 @@ def find_main_user_line(session, line_id):
 
 @daosession
 def associate(session, user_line):
-    with commit_or_abort(session, DataError.on_create, 'UserLine'):
+    with flush_session(session):
         user_line_id = _associate_user_line(session, user_line)
         session.flush()
         _fix_associations(session, user_line)
@@ -154,7 +153,7 @@ def _find_user_line_id(session, user_line):
 
 @daosession
 def dissociate(session, user_line):
-    with commit_or_abort(session, DataError.on_delete, 'UserLine'):
+    with flush_session(session):
         _dissasociate_user_line(session, user_line)
         session.flush()
         _fix_associations(session, user_line)

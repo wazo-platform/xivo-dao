@@ -31,13 +31,12 @@ from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.resources.entity import dao as entity_dao
 
 from xivo_dao.helpers import errors
-from xivo_dao.helpers.exception import DataError
 from xivo_dao.resources.user.search import user_search
 from xivo_dao.resources.user.view import user_view
 from xivo_dao.resources.user.database import db_converter
 from xivo_dao.resources.user.fixes import UserFixes
 from xivo_dao.resources.utils.search import SearchResult
-from xivo_dao.helpers.db_utils import commit_or_abort
+from xivo_dao.helpers.db_utils import flush_session
 
 
 DEFAULT_ORDER = [UserSchema.lastname, UserSchema.firstname]
@@ -188,7 +187,7 @@ def create(session, user):
     user_row = db_converter.to_source(user)
     user_row.entityid = entity_dao.default_entity_id()
 
-    with commit_or_abort(session, DataError.on_create, 'User'):
+    with flush_session(session):
         session.add(user_row)
 
     user.uuid = user_row.uuid
@@ -205,7 +204,7 @@ def edit(session, user):
 
     db_converter.update_source(user_row, user)
 
-    with commit_or_abort(session, DataError.on_edit, 'User'):
+    with flush_session(session):
         session.add(user_row)
         session.flush()
         UserFixes(session).fix(user_row.id)
@@ -213,7 +212,7 @@ def edit(session, user):
 
 @daosession
 def delete(session, user):
-    with commit_or_abort(session, DataError.on_delete, 'User'):
+    with flush_session(session):
         _delete_user(session, user.id)
 
 

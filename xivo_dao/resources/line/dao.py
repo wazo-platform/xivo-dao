@@ -15,9 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.db_utils import commit_or_abort
+from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.helpers.exception import DataError
 
 from xivo_dao.resources.line.persistor import LinePersistor
 
@@ -44,17 +43,17 @@ def get(session, line_id):
 
 @daosession
 def create(session, line):
-    with commit_or_abort(session, DataError.on_create, 'Line'):
+    with flush_session(session):
         return LinePersistor(session).create(line)
 
 
 @daosession
 def edit(session, line):
-    with commit_or_abort(session, DataError.on_edit, 'Line'):
+    with flush_session(session):
         LinePersistor(session).edit(line)
 
 
 @daosession
 def delete(session, line):
-    with commit_or_abort(session, DataError.on_delete, 'Line'):
+    with flush_session(session):
         return LinePersistor(session).delete(line)

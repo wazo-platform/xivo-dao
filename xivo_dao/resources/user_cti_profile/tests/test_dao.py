@@ -18,14 +18,11 @@
 from hamcrest import assert_that
 from hamcrest import equal_to
 from hamcrest import none
-from sqlalchemy.exc import SQLAlchemyError
 
 from xivo_dao.alchemy.cti_profile import CtiProfile as CtiProfileSchema
 from xivo_dao.helpers.exception import NotFoundError
-from xivo_dao.helpers.exception import DataError
 from xivo_dao.resources.user_cti_profile import dao as user_cti_profile_dao
 from xivo_dao.resources.user_cti_profile.model import UserCtiProfile
-from xivo_dao.tests.helpers.session import mocked_dao_session
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -72,13 +69,3 @@ class TestUserCtiProfile(DAOTestCase):
 
         assert_that(user.cti_profile_id, equal_to(cti_profile.id))
         assert_that(user.enableclient, 0)
-
-    @mocked_dao_session
-    def test_edit_with_errors(self, session):
-        session.commit.side_effect = SQLAlchemyError()
-
-        user_cti_profile = UserCtiProfile(user_id=1, cti_profile_id=2)
-
-        self.assertRaises(DataError, user_cti_profile_dao.edit, user_cti_profile)
-        session.begin.assert_called_once_with()
-        session.rollback.assert_called_once_with()

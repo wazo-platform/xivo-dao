@@ -16,16 +16,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from hamcrest import assert_that, none, contains, is_not, equal_to
-from mock import patch
 
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 
-from xivo_dao.helpers.exception import DataError
 from xivo_dao.resources.func_key.model import UserFuncKey, BSFilterFuncKey, Forward
 from xivo_dao.resources.func_key import dao
 from xivo_dao.alchemy.func_key import FuncKey as FuncKeySchema
-from xivo_dao.tests.helpers.session import mocked_dao_session
 
 
 class TestFuncKeyDao(DAOTestCase, FuncKeyHelper):
@@ -60,14 +57,6 @@ class TestFuncKeyCreate(TestFuncKeyDao):
         self.assert_func_key_row_created(bsfilter_destination_row)
         assert_that(created_func_key.id, equal_to(bsfilter_destination_row.func_key_id))
 
-    @mocked_dao_session
-    @patch('xivo_dao.resources.func_key.dao.commit_or_abort')
-    def test_given_db_error_then_transaction_rollbacked(self, session, commit_or_abort):
-        func_key = UserFuncKey(id=1, user_id=2)
-
-        dao.create(func_key)
-        commit_or_abort.assert_any_call(session, DataError.on_create, 'FuncKey')
-
     def assert_func_key_row_created(self, destination_row):
         assert_that(destination_row, is_not(none()))
 
@@ -99,15 +88,6 @@ class TestFuncKeyDelete(TestFuncKeyDao):
 
         self.assert_func_key_deleted(func_key.id)
         self.assert_destination_deleted('bsfilter', destination_row.filtermember_id)
-
-    @mocked_dao_session
-    @patch('xivo_dao.resources.func_key.dao.commit_or_abort')
-    def test_given_db_error_then_transaction_rollbacked(self, session, commit_or_abort):
-        func_key = UserFuncKey(id=1, user_id=2)
-
-        dao.delete(func_key)
-
-        commit_or_abort.assert_any_call(session, DataError.on_delete, 'FuncKey')
 
     def assert_func_key_deleted(self, func_key_id):
         row = (self.session.query(FuncKeySchema)

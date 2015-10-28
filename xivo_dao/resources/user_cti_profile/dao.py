@@ -15,12 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.db_utils import commit_or_abort
+from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.alchemy.cti_profile import CtiProfile as CtiProfileSchema
 from xivo_dao.resources.cti_profile.model import db_converter as cti_profile_db_converter
-from xivo_dao.helpers.exception import DataError
 from xivo_dao.helpers import errors
 
 
@@ -37,7 +36,7 @@ def find_profile_by_userid(session, userid):
 
 @daosession
 def edit(session, user_cti_profile):
-    with commit_or_abort(session, DataError.on_edit, 'UserCtiProfile'):
+    with flush_session(session):
         user = (session.query(UserSchema)
                 .filter(UserSchema.id == user_cti_profile.user_id)
                 .first())

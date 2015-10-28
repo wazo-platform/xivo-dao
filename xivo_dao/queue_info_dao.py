@@ -17,7 +17,7 @@
 
 from sqlalchemy import and_
 from xivo_dao.alchemy.queueinfo import QueueInfo
-from xivo_dao.helpers.db_utils import commit_or_abort
+from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.helpers.db_manager import daosession
 
 
@@ -30,7 +30,7 @@ def add_entry(session, call_time, queue_name, caller_id_num, uniqueid):
         caller_uniqueid=uniqueid,
     )
 
-    with commit_or_abort(session):
+    with flush_session(session):
         session.add(entry)
 
 
@@ -41,7 +41,7 @@ def _find_by_uniqueid_calltime(session, uniqueid, calltime):
 
 @daosession
 def update_holdtime(session, uniqueid, calltime, holdtime, answerer=None):
-    with commit_or_abort(session):
+    with flush_session(session):
         qi = _find_by_uniqueid_calltime(session, uniqueid, calltime)
         qi.hold_time = holdtime
         if answerer:
@@ -50,6 +50,6 @@ def update_holdtime(session, uniqueid, calltime, holdtime, answerer=None):
 
 @daosession
 def update_talktime(session, uniqueid, calltime, talktime):
-    with commit_or_abort(session):
+    with flush_session(session):
         qi = _find_by_uniqueid_calltime(session, uniqueid, calltime)
         qi.talk_time = talktime

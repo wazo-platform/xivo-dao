@@ -15,10 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.db_utils import commit_or_abort
+from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.ctimain import CtiMain
-from xivo_dao.helpers.exception import DataError
 
 
 @daosession
@@ -30,5 +29,5 @@ def is_live_reload_enabled(session):
 @daosession
 def set_live_reload_status(session, data):
     value = 1 if data['enabled'] else 0
-    with commit_or_abort(session, DataError.on_edit, 'Configuration'):
+    with flush_session(session):
         session.query(CtiMain).update({'live_reload_conf': value})
