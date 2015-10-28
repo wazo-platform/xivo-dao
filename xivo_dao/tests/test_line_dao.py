@@ -88,9 +88,7 @@ class TestLineFeaturesDAO(DAOTestCase):
         name = 'abcdef'
         context = 'foobar'
 
-        extension_row = self.add_extension(exten=LINE_NUMBER, context=context)
-        line_row = self.add_line(context=context, name=name, protocol=protocol)
-        self.add_user_line(line_id=line_row.id, extension_id=extension_row.id)
+        self.add_user_line_without_user(exten=LINE_NUMBER, context=context, name=name, protocol=protocol)
 
         interface = line_dao.get_interface_from_exten_and_context(LINE_NUMBER, context)
 
@@ -101,9 +99,7 @@ class TestLineFeaturesDAO(DAOTestCase):
         name = '1001'
         context = 'foobar'
 
-        extension_row = self.add_extension(exten=LINE_NUMBER, context=context)
-        line_row = self.add_line(context=context, name=name, protocol=protocol)
-        self.add_user_line(line_id=line_row.id, extension_id=extension_row.id)
+        self.add_user_line_without_user(exten=LINE_NUMBER, context=context, name=name, protocol=protocol)
 
         interface = line_dao.get_interface_from_exten_and_context(LINE_NUMBER, context)
 
@@ -114,9 +110,7 @@ class TestLineFeaturesDAO(DAOTestCase):
         name = 'dahdi/g1/12345'
         context = 'foobar'
 
-        extension_row = self.add_extension(exten=LINE_NUMBER, context=context)
-        line_row = self.add_line(context=context, name=name, protocol=protocol)
-        self.add_user_line(line_id=line_row.id, extension_id=extension_row.id)
+        self.add_user_line_without_user(exten=LINE_NUMBER, context=context, name=name, protocol=protocol)
 
         interface = line_dao.get_interface_from_exten_and_context(LINE_NUMBER, context)
 
@@ -134,9 +128,7 @@ class TestLineFeaturesDAO(DAOTestCase):
         context = 'default'
 
         expected_extension = Extension(number=LINE_NUMBER, context=context, is_internal=True)
-        extension_row = self.add_extension(exten=LINE_NUMBER, context=context)
-        line_row = self.add_line(context=context, name=name, protocol=protocol)
-        self.add_user_line(line_id=line_row.id, extension_id=extension_row.id)
+        self.add_user_line_without_user(exten=LINE_NUMBER, context=context, name=name, protocol=protocol)
 
         extension = line_dao.get_extension_from_protocol_interface(protocol, name)
 
@@ -154,12 +146,8 @@ class TestLineFeaturesDAO(DAOTestCase):
         name = LINE_NUMBER
         context = 'default'
 
-        expected_extension = Extension(number=LINE_NUMBER,
-                                       context=context,
-                                       is_internal=True)
-        extension_row = self.add_extension(exten=LINE_NUMBER, context=context)
-        line_row = self.add_line(context=context, name=name, protocol=protocol.lower())
-        self.add_user_line(line_id=line_row.id, extension_id=extension_row.id)
+        expected_extension = Extension(number=LINE_NUMBER, context=context, is_internal=True)
+        self.add_user_line_without_user(exten=LINE_NUMBER, context=context, name=name, protocol=protocol.lower())
 
         extension = line_dao.get_extension_from_protocol_interface(protocol, name)
 

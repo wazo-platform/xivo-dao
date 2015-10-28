@@ -225,6 +225,33 @@ class DAOTestCase(unittest.TestCase):
 
         return user_line
 
+    def add_user_line_without_user(self, **kwargs):
+        kwargs.setdefault('name', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
+        kwargs.setdefault('context', 'foocontext')
+        kwargs.setdefault('protocol', 'sip')
+        kwargs.setdefault('protocolid', self._generate_int())
+        kwargs.setdefault('provisioningid', int(''.join(random.choice('123456789') for _ in range(6))))
+        kwargs.setdefault('device', 1)
+
+        kwargs.setdefault('exten', None)
+        kwargs.setdefault('type', 'user')
+
+        line = self.add_line(name=kwargs['name'],
+                             context=kwargs['context'],
+                             protocol=kwargs['protocol'],
+                             protocolid=kwargs['protocolid'],
+                             provisioningid=kwargs['provisioningid'],
+                             device=kwargs['device'])
+        extension = self.add_extension(exten=kwargs['exten'],
+                                       context=kwargs['context'],
+                                       type=kwargs['type'])
+        user_line = self.add_user_line(line_id=line.id, extension_id=extension.id)
+
+        user_line.extension = extension
+        user_line.line = line
+
+        return user_line
+
     def add_line(self, **kwargs):
         kwargs.setdefault('name', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
         kwargs.setdefault('context', 'foocontext')
@@ -279,12 +306,6 @@ class DAOTestCase(unittest.TestCase):
         user_line = UserLine(**kwargs)
         self.add_me(user_line)
         return user_line
-
-    def add_user_line_without_user(self):
-        line_row = self.add_line()
-        extension_row = self.add_extension()
-        user_line_row = self.add_user_line(line_id=line_row.id, extension_id=extension_row.id)
-        return user_line_row
 
     def add_extension(self, **kwargs):
         kwargs.setdefault('type', 'user')
