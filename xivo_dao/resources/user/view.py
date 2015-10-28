@@ -15,14 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.sql import and_, func
+from sqlalchemy.sql import func
 
 from xivo_dao.resources.utils.view import ViewSelector, View, ModelView
 from xivo_dao.resources.user.model import UserDirectory
 from xivo_dao.resources.user.database import db_converter
 
 from xivo_dao.alchemy.extension import Extension
-from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.alchemy.user_line import UserLine
 
@@ -44,15 +43,7 @@ class DirectoryView(View):
                                func.nullif(UserFeatures.mobilephonenumber, '').label('mobile_phone_number'),
                                func.nullif(UserFeatures.userfield, '').label('userfield'),
                                func.nullif(UserFeatures.description, '').label('description'),
-                               Extension.exten.label('exten'))
-                 .outerjoin(UserLine,
-                            and_(UserLine.user_id == UserFeatures.id))
-                 .outerjoin(LineFeatures,
-                            and_(LineFeatures.id == UserLine.line_id,
-                                 LineFeatures.commented == 0))
-                 .outerjoin(Extension,
-                            and_(Extension.id == UserLine.extension_id,
-                                 Extension.commented == 0)))
+                               Extension.exten.label('exten')))
         return query
 
     def convert(self, row):
