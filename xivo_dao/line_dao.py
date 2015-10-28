@@ -17,17 +17,24 @@
 
 from xivo.asterisk.extension import Extension
 from xivo_dao.alchemy.linefeatures import LineFeatures
+from xivo_dao.alchemy.user_line import UserLine
+from xivo_dao.alchemy.extension import Extension as ExtensionTable
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.enum import valid_trunk_protocols
 
 
 @daosession
 def get_interface_from_exten_and_context(session, extension, context):
-    res = (session.query(LineFeatures.protocol, LineFeatures.name)
-           .filter(LineFeatures.number == extension)
-           .filter(LineFeatures.context == context)).first()
+    res = (session
+           .query(LineFeatures.protocol, LineFeatures.name)
+           .join(UserLine, UserLine.line_id == LineFeatures.id)
+           .join(ExtensionTable, UserLine.extension_id == ExtensionTable.id)
+           .filter(ExtensionTable.exten == extension)
+           .filter(ExtensionTable.context == context)).first()
+
     if res is None:
         raise LookupError('no line with extension %s and context %s' % (extension, context))
+
     return _format_interface(res.protocol, res.name)
 
 
@@ -37,16 +44,19 @@ def get_extension_from_protocol_interface(session, protocol, interface):
     if lowered_protocol not in valid_trunk_protocols:
         raise ValueError('{} is not a valid line protocol'.format(protocol))
 
-    line_row = (session.query(LineFeatures.number, LineFeatures.context)
-                .filter(LineFeatures.protocol == lowered_protocol)
-                .filter(LineFeatures.name == interface)
-                .first())
+    row = (session
+           .query(ExtensionTable.exten, ExtensionTable.context)
+           .join(UserLine, UserLine.extension_id == ExtensionTable.id)
+           .join(LineFeatures, UserLine.line_id == LineFeatures.id)
+           .filter(LineFeatures.protocol == lowered_protocol)
+           .filter(LineFeatures.name == interface)
+           .first())
 
-    if not line_row:
+    if not row:
         message = 'no line with interface %s' % interface
         raise LookupError(message)
 
-    extension = Extension(number=line_row[0], context=line_row[1], is_internal=True)
+    extension = Extension(number=row.exten, context=row.context, is_internal=True)
     return extension
 
 
