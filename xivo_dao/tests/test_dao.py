@@ -171,8 +171,7 @@ class DAOTestCase(unittest.TestCase):
                              mobilephonenumber=kwargs['mobilephonenumber'],
                              userfield=kwargs['userfield'],
                              description=kwargs['description'])
-        line = self.add_line(number=kwargs['exten'],
-                             context=kwargs['context'],
+        line = self.add_line(context=kwargs['context'],
                              protocol=kwargs['protocol'],
                              protocolid=kwargs['protocolid'],
                              name=kwargs['name_line'],

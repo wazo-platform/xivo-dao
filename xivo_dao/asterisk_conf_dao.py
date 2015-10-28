@@ -120,13 +120,14 @@ def find_sccp_line_settings(session):
                           UserFeatures.language,
                           UserLine.user_id,
                           LineFeatures.context,
-                          LineFeatures.number)
+                          Extension.exten)
             .join(LineFeatures, and_(LineFeatures.protocolid == SCCPLine.id,
                                      LineFeatures.protocol == 'sccp'))
             .join(UserLine, and_(UserLine.line_id == LineFeatures.id,
                                  UserLine.main_line == True))
             .join(UserFeatures, and_(UserFeatures.id == UserLine.user_id,
                                      UserLine.main_user == True))
+            .join(Extension, Extension.id == UserLine.extension_id)
             .filter(LineFeatures.commented == 0)
             .all())
 
@@ -389,7 +390,7 @@ def find_sip_user_settings(session):
     query = (
         session.query(
             UserSIP,
-            LineFeatures.number,
+            Extension.exten,
             UserFeatures.musiconhold.label('mohsuggest'),
             (Voicemail.mailbox + '@' + Voicemail.context).label('mailbox')
         ).join(
@@ -402,6 +403,8 @@ def find_sip_user_settings(session):
             UserFeatures, UserFeatures.id == UserLine.user_id
         ).outerjoin(
             Voicemail, UserFeatures.voicemailid == Voicemail.uniqueid
+        ).outerjoin(
+            Extension, UserLine.extension_id == Extension.id
         ).filter(
             and_(
                 UserSIP.category == 'user',
@@ -413,7 +416,7 @@ def find_sip_user_settings(session):
     for row in query:
         sip_user = row.UserSIP.todict()
         sip_user['mohsuggest'] = row.mohsuggest
-        sip_user['number'] = row.number
+        sip_user['number'] = row.exten
         sip_user['mailbox'] = row.mailbox
         yield sip_user
 

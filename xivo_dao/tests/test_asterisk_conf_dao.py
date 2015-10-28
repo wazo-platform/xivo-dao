@@ -174,7 +174,7 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
             'user_id': ule.user_id,
             'name': sccp_line.name,
             'language': None,
-            'number': ule.line.number,
+            'number': ule.extension.exten,
             'cid_name': u'Tester One',
             'context': u'foocontext',
             'cid_num': sccp_line.cid_num,
@@ -819,7 +819,7 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
             voicemail_id=voicemail.uniqueid
         )
 
-        expected = {'number': ule.line.number,
+        expected = {'number': ule.extension.exten,
                     'protocol': ule.line.protocol,
                     'buggymwi': None,
                     'amaflags': u'default',
@@ -921,16 +921,11 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
             category='user',
             context=context,
         )
-        self.add_line(
-            number=number,
-            context=context,
-            protocolid=user_sip.id,
-            name='name',
-        )
-        self.add_extension(
-            exten=number,
-            context=context,
-        )
+        self.add_user_line_without_user(exten=number,
+                                        context=context,
+                                        protocol='sip',
+                                        protocolid=user_sip.id,
+                                        name='name')
 
         results = asterisk_conf_dao.find_sip_user_settings()
 
