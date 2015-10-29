@@ -20,6 +20,8 @@ from xivo_dao.alchemy.sccpline import SCCPLine as SCCP
 from xivo_dao.alchemy.linefeatures import LineFeatures as Line
 from xivo_dao.helpers import errors
 from xivo_dao.resources.line.fixes import LineFixes
+from xivo_dao.resources.utils.search import SearchResult
+from xivo_dao.resources.endpoint_sccp.search import sccp_search
 
 
 class SccpPersistor(object):
@@ -30,7 +32,7 @@ class SccpPersistor(object):
     def get(self, id):
         sccp = self.find(id)
         if not sccp:
-            raise errors.not_found('SCCP', id=id)
+            raise errors.not_found('SCCPEndpoint', id=id)
         return sccp
 
     def find(self, id):
@@ -38,6 +40,10 @@ class SccpPersistor(object):
                .filter(SCCP.id == id)
                .first())
         return row
+
+    def search(self, params):
+        rows, total = sccp_search.search(self.session, params)
+        return SearchResult(total, rows)
 
     def create(self, sccp):
         self.fill_default_values(sccp)

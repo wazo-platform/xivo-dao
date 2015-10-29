@@ -21,6 +21,7 @@ from hamcrest import equal_to
 from hamcrest import none
 from hamcrest import contains
 from hamcrest import has_items
+from hamcrest import has_property
 
 from xivo_dao.alchemy.sccpline import SCCPLine as SCCP
 from xivo_dao.alchemy.linefeatures import LineFeatures as Line
@@ -75,6 +76,17 @@ class TestSccpEndpointDaoFind(TestSccpDao):
 
         assert_that(sccp.id, equal_to(row.id))
         assert_that(sccp.options, contains())
+
+
+class TestSccpEndpointDaoSearch(TestSccpDao):
+
+    def test_search(self):
+        row = self.add_sccpline()
+
+        search_result = dao.search()
+
+        assert_that(search_result.total, equal_to(1))
+        assert_that(search_result.items, contains(has_property('id', row.id)))
 
 
 class TestSccpEndpointDaoCreate(TestSccpDao):

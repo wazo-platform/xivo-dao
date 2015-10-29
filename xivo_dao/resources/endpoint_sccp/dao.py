@@ -32,6 +32,11 @@ def find(session, id):
 
 
 @daosession
+def search(session, **parameters):
+    return SccpPersistor(session).search(parameters)
+
+
+@daosession
 def create(session, sccp):
     with flush_session(session):
         return SccpPersistor(session).create(sccp)
