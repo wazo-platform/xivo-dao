@@ -230,3 +230,6 @@ class UserSIP(Base):
             if column.server_default:
                 defaults[column.name] = column.server_default.arg
         return defaults
+
+    def protocol(self):
+        return 'sip'

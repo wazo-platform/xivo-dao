@@ -84,3 +84,6 @@ class SCCPLine(Base):
         values = text.split(",") if text else []
         values.append(value)
         setattr(self, column, ",".join(values))
+
+    def protocol(self):
+        return 'sccp'

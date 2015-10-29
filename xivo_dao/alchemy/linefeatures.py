@@ -230,3 +230,9 @@ class LineFeatures(Base):
     def device_id(self, value):
         value = value or ''
         self.device = value
+
+    def is_associated(self):
+        return self.protocol is not None and self.protocolid is not None
+
+    def is_associated_with(self, endpoint):
+        return self.protocol == endpoint.protocol() and self.protocolid == endpoint.id
