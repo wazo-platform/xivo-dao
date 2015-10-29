@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014 Avencall
+# Copyright (C) 2014-2015 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,7 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy.sql import and_
+
 from xivo_dao.alchemy.userfeatures import UserFeatures
+from xivo_dao.alchemy.linefeatures import LineFeatures
+from xivo_dao.alchemy.user_line import UserLine
+from xivo_dao.alchemy.extension import Extension
 from xivo_dao.resources.utils.search import SearchSystem
 from xivo_dao.resources.utils.search import SearchConfig
 
@@ -26,8 +31,29 @@ config = SearchConfig(table=UserFeatures,
                                'fullname': (UserFeatures.firstname + " " + UserFeatures.lastname),
                                'caller_id': UserFeatures.callerid,
                                'description': UserFeatures.description,
-                               'userfield': UserFeatures.userfield},
-                      search=['fullname', 'caller_id', 'description', 'userfield'],
+                               'userfield': UserFeatures.userfield,
+                               'mobile_phone_number': UserFeatures.mobilephonenumber,
+                               'exten': Extension.exten},
+                      search=['fullname', 'caller_id', 'description', 'userfield', 'mobile_phone_number', 'exten'],
                       default_sort='lastname')
 
-user_search = SearchSystem(config)
+
+class UserSearchSystem(SearchSystem):
+
+    def search_from_query(self, query, parameters):
+        query = self._search_on_extension(query)
+        return super(UserSearchSystem, self).search_from_query(query, parameters)
+
+    def _search_on_extension(self, query):
+        return (query
+                .outerjoin(UserLine,
+                           UserLine.user_id == UserFeatures.id)
+                .outerjoin(LineFeatures,
+                           and_(LineFeatures.id == UserLine.line_id,
+                                LineFeatures.commented == 0))
+                .outerjoin(Extension,
+                           and_(UserLine.extension_id == Extension.id,
+                                Extension.commented == 0)))
+
+
+user_search = UserSearchSystem(config)
