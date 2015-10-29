@@ -230,3 +230,12 @@ class TestLineFixes(DAOTestCase):
 
         line = self.session.query(Line).first()
         assert_that(line.name, none())
+
+    def test_given_associated_protocol_is_no_longer_associated_then_protocol_removed(self):
+        line = self.add_line(protocol='sip', protocolid=1234)
+
+        self.fixes.fix(line.id)
+
+        line = self.session.query(Line).first()
+        assert_that(line.protocol, none())
+        assert_that(line.protocolid, none())

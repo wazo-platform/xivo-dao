@@ -20,8 +20,10 @@ import string
 import random
 
 from xivo_dao.alchemy.usersip import UserSIP as SIP
+from xivo_dao.alchemy.linefeatures import LineFeatures as Line
 from xivo_dao.helpers import errors
 from xivo_dao.resources.endpoint_sip.search import sip_search
+from xivo_dao.resources.line.fixes import LineFixes
 from xivo_dao.resources.utils.search import SearchResult
 
 
@@ -63,7 +65,16 @@ class SipPersistor(object):
 
     def delete(self, sip):
         self.session.query(SIP).filter(SIP.id == sip.id).delete()
+        self.dissociate_line(sip)
         self.session.flush()
+
+    def dissociate_line(self, sip):
+        line_id = (self.session.query(Line.id)
+                   .filter(Line.protocol == 'sip')
+                   .filter(Line.protocolid == sip.id)
+                   .scalar())
+        if line_id:
+            LineFixes(self.session).fix(line_id)
 
     def fill_default_values(self, sip):
         if sip.name is None:

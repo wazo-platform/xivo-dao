@@ -53,18 +53,28 @@ class LineFixes(object):
 
     def fix_protocol(self, line_id):
         protocol, protocol_id = self.find_protocol(line_id)
-        if protocol:
-            if protocol == 'sip':
-                self.fix_sip(line_id, protocol_id)
-            elif protocol == 'sccp':
-                self.fix_sccp(line_id, protocol_id)
+        if protocol == 'sip':
+            self.fix_sip(line_id, protocol_id)
+        elif protocol == 'sccp':
+            self.fix_sccp(line_id, protocol_id)
+        else:
+            self.remove_protocol(line_id)
 
     def find_protocol(self, line_id):
         row = (self.session
                .query(Line.protocol,
-                      Line.protocolid)
+                      Line.protocolid,
+                      UserSIP.id.label('sip_id'),
+                      SCCPLine.id.label('sccp_id'))
+               .outerjoin(Line.sip_endpoint)
+               .outerjoin(Line.sccp_endpoint)
                .filter(Line.id == line_id)
                .first())
+
+        if row.protocol == 'sip' and row.sip_id is None:
+            return None, None
+        elif row.protocol == 'sccp' and row.sccp_id is None:
+            return None, None
 
         return row.protocol, row.protocolid
 
@@ -134,6 +144,12 @@ class LineFixes(object):
          .filter(SCCPLine.id == protocol_id)
          .update({'cid_name': name,
                   'cid_num': num}))
+
+    def remove_protocol(self, line_id):
+        (self.session.query(Line)
+         .filter(Line.id == line_id)
+         .update({'protocol': None,
+                  'protocolid': None}))
 
     def fix_number_and_context(self, line_id):
         number, context = self.find_number_and_context(line_id)
