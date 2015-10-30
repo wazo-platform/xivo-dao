@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from contextlib import contextmanager
+from xivo_dao.helpers import db_manager
 from xivo_dao.helpers.db_manager import daosession, Session
 
 
@@ -23,7 +24,10 @@ from xivo_dao.helpers.db_manager import daosession, Session
 def flush_session(session):
     try:
         yield
-        session.flush()
+        if db_manager.LEGACY_MODE:
+            session.commit()
+        else:
+            session.flush()
     except Exception:
         session.rollback()
         raise
