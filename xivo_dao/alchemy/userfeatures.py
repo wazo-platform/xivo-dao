@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import uuid
+import re
 
 from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint, Index, \
     UniqueConstraint, ForeignKeyConstraint
@@ -31,6 +32,19 @@ from xivo_dao.helpers.db_manager import Base
 
 def _new_uuid():
     return str(uuid.uuid4())
+
+
+caller_id_regex = re.compile(r'''
+                             "                      #name start
+                             (?P<name>[^"]+)        #inside ""
+                             "                      #name end
+                             \s*                    #space between name and number
+                             (
+                             <                      #number start
+                             (?P<num>\+?[\dA-Z]+)   #inside <>
+                             >                      #number end
+                             )?                     #number is optional
+                             ''', re.VERBOSE)
 
 
 class UserFeatures(Base):
@@ -110,3 +124,10 @@ class UserFeatures(Base):
     @property
     def fullname(self):
         return ' '.join([self.firstname, self.lastname])
+
+    def extrapolate_caller_id(self, extension=None):
+        default_num = extension.exten if extension else None
+        user_match = caller_id_regex.match(self.callerid)
+        name = user_match.group('name')
+        num = user_match.group('num')
+        return name, (num or default_num)

@@ -85,6 +85,8 @@ class LineFeatures(Base):
                                  )""",
                                  foreign_keys=[protocolid])
 
+    user_lines = relationship("UserLine")
+
     @property
     def caller_id_name(self):
         if self.protocol == 'sip':
@@ -238,3 +240,22 @@ class LineFeatures(Base):
 
     def is_associated_with(self, endpoint):
         return endpoint.same_protocol(self.protocol, self.protocolid)
+
+    def remove_endpoint(self):
+        self.protocol = None
+        self.protocolid = None
+
+    def update_extension(self, extension):
+        self.number = extension.exten
+        self.context = extension.context
+
+    def clear_extension(self):
+        self.number = ''
+
+    def update_name(self):
+        if self.sip_endpoint:
+            self.name = self.sip_endpoint.name
+        elif self.sccp_endpoint:
+            self.name = self.sccp_endpoint.name
+        else:
+            self.name = None

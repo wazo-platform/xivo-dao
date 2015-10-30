@@ -233,3 +233,18 @@ class UserSIP(Base):
 
     def same_protocol(self, protocol, id):
         return protocol == 'sip' and self.id == id
+
+    def update_caller_id(self, user, extension=None):
+        name, num = user.extrapolate_caller_id(extension)
+        self.callerid = '"{}"'.format(name)
+        if num:
+            self.callerid += " <{}>".format(num)
+
+    def update_setvar(self, user):
+        self.setvar = 'XIVO_USERID={}'.format(user.id)
+
+    def clear_caller_id(self):
+        self.callerid = None
+
+    def clear_setvar(self):
+        self.setvar = ''

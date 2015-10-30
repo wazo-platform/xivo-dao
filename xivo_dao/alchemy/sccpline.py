@@ -87,3 +87,12 @@ class SCCPLine(Base):
 
     def same_protocol(self, protocol, id):
         return protocol == 'sccp' and self.id == id
+
+    def update_extension(self, extension):
+        self.name = extension.exten
+        self.context = extension.context
+
+    def update_caller_id(self, user, extension=None):
+        name, num = user.extrapolate_caller_id(extension)
+        self.cid_name = name or ''
+        self.cid_num = num or ''

@@ -16,25 +16,11 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-import re
-
 from xivo_dao.alchemy.userfeatures import UserFeatures as User
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.voicemail import Voicemail
 
 from xivo_dao.resources.line.fixes import LineFixes
-
-caller_id_regex = re.compile(r'''
-                             "                      #name start
-                             (?P<name>[^"]+)        #inside ""
-                             "                      #name end
-                             \s+                    #space between name and number
-                             (
-                             <                      #number start
-                             (?P<num>\+?[\dA-Z]+)   #inside <>
-                             >                      #number end
-                             )?                     #number is optional
-                             ''', re.VERBOSE)
 
 
 class UserFixes(object):
