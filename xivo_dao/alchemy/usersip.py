@@ -205,7 +205,7 @@ class UserSIP(Base):
     def set_options(self, option_names, options):
         for column, value in options:
             if column not in option_names:
-                raise InputError("Unknown options parameter: {}".format(column))
+                raise InputError("Unknown SIP options: {}".format(column))
             attribute = option_names[column]
             self.set_option(attribute, value)
 
@@ -231,5 +231,5 @@ class UserSIP(Base):
                 defaults[column.name] = column.server_default.arg
         return defaults
 
-    def protocol(self):
-        return 'sip'
+    def same_protocol(self, protocol, id):
+        return protocol == 'sip' and self.id == id

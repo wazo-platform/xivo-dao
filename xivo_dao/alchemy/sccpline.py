@@ -77,7 +77,7 @@ class SCCPLine(Base):
             elif name == "disallow":
                 self.add_comma_option("disallow", value)
             else:
-                raise InputError("Unknown options parameter: {}".format(name))
+                raise InputError("Unknown SCCP options: {}".format(name))
 
     def add_comma_option(self, column, value):
         text = getattr(self, column, None)
@@ -85,5 +85,5 @@ class SCCPLine(Base):
         values.append(value)
         setattr(self, column, ",".join(values))
 
-    def protocol(self):
-        return 'sccp'
+    def same_protocol(self, protocol, id):
+        return protocol == 'sccp' and self.id == id

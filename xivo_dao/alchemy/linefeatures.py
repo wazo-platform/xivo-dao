@@ -237,4 +237,4 @@ class LineFeatures(Base):
         return self.protocol is not None and self.protocolid is not None
 
     def is_associated_with(self, endpoint):
-        return self.protocol == endpoint.protocol() and self.protocolid == endpoint.id
+        return endpoint.same_protocol(self.protocol, self.protocolid)
