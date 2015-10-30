@@ -26,6 +26,7 @@ from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.sccpline import SCCPLine
+from xivo_dao.alchemy.sccpdevice import SCCPDevice
 
 caller_id_regex = re.compile(r'''
                              "                      #name start
@@ -133,17 +134,57 @@ class LineFixes(object):
         return name, num
 
     def fix_sccp(self, line_id, protocol_id):
-        _, name, num = self.get_user_and_caller_id(line_id)
-        if name:
-            num = num or ''
-            self.update_sccpline(protocol_id, name, num)
+        self.fix_sccp_device(line_id, protocol_id)
+        self.fix_sccp_line(line_id, protocol_id)
 
-    def update_sccpline(self, protocol_id, name, num):
-        (self.session
-         .query(SCCPLine)
-         .filter(SCCPLine.id == protocol_id)
-         .update({'cid_name': name,
-                  'cid_num': num}))
+    def fix_sccp_device(self, line_id, protocol_id):
+        exten, context = self.find_exten_and_context(line_id)
+        if exten and context:
+            current_name = (self.session.query(Line.name)
+                            .filter(Line.id == line_id)
+                            .scalar())
+
+            (self.session.query(SCCPDevice)
+             .filter(SCCPDevice.line == current_name)
+             .update({'line': exten}))
+
+    def fix_sccp_line(self, line_id, protocol_id):
+        _, cid_name, cid_num = self.get_user_and_caller_id(line_id)
+        exten, context = self.find_exten_and_context(line_id)
+
+        fields = {}
+
+        if exten and context:
+            fields['name'] = exten
+            fields['context'] = context
+
+        if cid_name:
+            fields['cid_name'] = cid_name
+            fields['cid_num'] = cid_num or ''
+
+        self.update_sccpline(protocol_id, fields)
+
+    def find_exten_and_context(self, line_id):
+        row = (self.session.query(Extension.exten,
+                                  Extension.context)
+               .join(UserLine,
+                     UserLine.extension_id == Extension.id)
+               .join(Line,
+                     Line.id == UserLine.line_id)
+               .filter(UserLine.main_line == True)  # noqa
+               .filter(UserLine.main_user == True)
+               .first())
+
+        if row:
+            return row.exten, row.context
+        return None, None
+
+    def update_sccpline(self, protocol_id, fields):
+        if fields:
+            (self.session
+             .query(SCCPLine)
+             .filter(SCCPLine.id == protocol_id)
+             .update(fields))
 
     def remove_protocol(self, line_id):
         (self.session.query(Line)
