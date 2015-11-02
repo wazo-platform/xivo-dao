@@ -96,3 +96,6 @@ class SCCPLine(Base):
         name, num = user.extrapolate_caller_id(extension)
         self.cid_name = name or ''
         self.cid_num = num or ''
+
+    def endpoint_protocol(self):
+        return 'sccp'

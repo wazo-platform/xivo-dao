@@ -241,6 +241,10 @@ class LineFeatures(Base):
     def is_associated_with(self, endpoint):
         return endpoint.same_protocol(self.protocol, self.protocolid)
 
+    def associate_endpoint(self, endpoint):
+        self.protocol = endpoint.endpoint_protocol()
+        self.protocolid = endpoint.id
+
     def remove_endpoint(self):
         self.protocol = None
         self.protocolid = None

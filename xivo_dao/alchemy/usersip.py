@@ -248,3 +248,6 @@ class UserSIP(Base):
 
     def clear_setvar(self):
         self.setvar = ''
+
+    def endpoint_protocol(self):
+        return 'sip'
