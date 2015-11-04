@@ -254,8 +254,8 @@ class DAOTestCase(unittest.TestCase):
     def add_line(self, **kwargs):
         kwargs.setdefault('name', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
         kwargs.setdefault('context', 'foocontext')
-        kwargs.setdefault('protocol', 'sip')
-        kwargs.setdefault('protocolid', self._generate_int())
+        kwargs.setdefault('protocol', kwargs.get('endpoint', 'sip'))
+        kwargs.setdefault('protocolid', kwargs.get('endpoint_id', self._generate_int()))
         kwargs.setdefault('provisioningid', int(''.join(random.choice('123456789') for _ in range(6))))
         kwargs.setdefault('id', self._generate_int())
 
