@@ -30,6 +30,7 @@ from hamcrest import all_of
 from hamcrest import contains_string
 
 from xivo_dao.alchemy.usersip import UserSIP as SIPEndpoint
+from xivo_dao.alchemy.linefeatures import LineFeatures as Line
 from xivo_dao.helpers.exception import InputError
 from xivo_dao.helpers.exception import NotFoundError
 from xivo_dao.resources.endpoint_sip import dao
@@ -465,3 +466,14 @@ class TestSipEndpointDaoDelete(TestSipEndpointDAO):
 
         row = self.session.query(SIPEndpoint).first()
         assert_that(row, none())
+
+    def test_given_endpoint_is_associated_to_line_then_line_is_dissociated(self):
+        sip_row = self.add_usersip()
+        line_row = self.add_line(endpoint='sip', endpoint_id=sip_row.id)
+
+        sip = dao.get(sip_row.id)
+        dao.delete(sip)
+
+        line_row = self.session.query(Line).get(line_row.id)
+        assert_that(line_row.endpoint, none())
+        assert_that(line_row.endpoint_id, none())
