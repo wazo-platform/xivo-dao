@@ -205,7 +205,7 @@ class UserSIP(Base):
     def set_options(self, option_names, options):
         for column, value in options:
             if column not in option_names:
-                raise InputError("Unknown options parameter: {}".format(column))
+                raise InputError("Unknown SIP options: {}".format(column))
             attribute = option_names[column]
             self.set_option(attribute, value)
 
@@ -230,3 +230,24 @@ class UserSIP(Base):
             if column.server_default:
                 defaults[column.name] = column.server_default.arg
         return defaults
+
+    def same_protocol(self, protocol, id):
+        return protocol == 'sip' and self.id == id
+
+    def update_caller_id(self, user, extension=None):
+        name, num = user.extrapolate_caller_id(extension)
+        self.callerid = '"{}"'.format(name)
+        if num:
+            self.callerid += " <{}>".format(num)
+
+    def update_setvar(self, user):
+        self.setvar = 'XIVO_USERID={}'.format(user.id)
+
+    def clear_caller_id(self):
+        self.callerid = None
+
+    def clear_setvar(self):
+        self.setvar = ''
+
+    def endpoint_protocol(self):
+        return 'sip'

@@ -21,6 +21,7 @@ from hamcrest import assert_that, equal_to, none
 from xivo_dao.alchemy.linefeatures import LineFeatures as Line
 from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.sccpline import SCCPLine
+from xivo_dao.alchemy.sccpdevice import SCCPDevice
 from xivo_dao.resources.line.fixes import LineFixes
 from xivo_dao.tests.test_dao import DAOTestCase
 
@@ -158,6 +159,36 @@ class TestLineFixes(DAOTestCase):
         sccp = self.session.query(SCCPLine).first()
         assert_that(sccp.cid_name, equal_to('John Smith'))
         assert_that(sccp.cid_num, equal_to('1000'))
+
+    def test_given_sccp_line_has_user_and_extension_then_name_and_context_updated(self):
+        user = self.add_user(callerid='"John Smith" <1000>')
+        sccp = self.add_sccpline(cid_name="Roger Rabbit", cid_num="2000")
+        line = self.add_line(protocol='sccp', protocolid=sccp.id)
+        extension = self.add_extension(exten="3000", context="default")
+        self.add_user_line(user_id=user.id, line_id=line.id, extension_id=extension.id,
+                           main_user=True, main_line=True)
+
+        self.fixes.fix(line.id)
+
+        sccp = self.session.query(SCCPLine).first()
+        assert_that(sccp.name, equal_to('3000'))
+        assert_that(sccp.context, equal_to('default'))
+
+    def test_given_sccp_line_has_device_then_number_updated(self):
+        user = self.add_user()
+        sccp = self.add_sccpline(name='1000', context='default',
+                                 cid_name="Roger Rabbit", cid_num="2000")
+        device = self.add_sccpdevice(line='1000')
+        line = self.add_line(name='1000', number='1000', context='default',
+                             protocol='sccp', protocolid=sccp.id)
+        extension = self.add_extension(exten="2000", context="default")
+        self.add_user_line(user_id=user.id, line_id=line.id, extension_id=extension.id,
+                           main_user=True, main_line=True)
+
+        self.fixes.fix(line.id)
+
+        device = self.session.query(SCCPDevice).first()
+        assert_that(device.line, equal_to('2000'))
 
     def test_given_line_has_multiple_users_then_sccp_caller_id_updated(self):
         main_user = self.add_user(callerid='"John Smith" <1000>')
