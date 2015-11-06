@@ -14,3 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+# explicitly import modules with circular relationship
+from xivo_dao.alchemy.linefeatures import LineFeatures
+from xivo_dao.alchemy.user_line import UserLine
