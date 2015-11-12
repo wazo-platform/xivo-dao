@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from __future__ import unicode_literals
+
 from xivo_dao.helpers.db_manager import Base
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint, \
     Index
@@ -236,7 +238,7 @@ class UserSIP(Base):
 
     def update_caller_id(self, user, extension=None):
         name, num = user.extrapolate_caller_id(extension)
-        self.callerid = '"{}"'.format(name)
+        self.callerid = u'"{}"'.format(name)
         if num:
             self.callerid += " <{}>".format(num)
 

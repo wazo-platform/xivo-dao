@@ -16,6 +16,8 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+from __future__ import unicode_literals
+
 from hamcrest import assert_that
 from hamcrest import equal_to
 from hamcrest import none
@@ -69,7 +71,7 @@ ALL_OPTIONS = [
     ['session-timers', 'originate'],
     ['busylevel', '1'],
     ['callcounter', '0'],
-    ['callerid', '"customcallerid" <1234>'],
+    ['callerid', '"cûstomcallerid" <1234>'],
     ['encryption', '1'],
     ['use_q850_reason', '1'],
     ['disallowed_methods', 'disallowsip'],
@@ -262,7 +264,7 @@ class TestSipEndpointDaoCreate(DAOTestCase):
             'session_timers': 'originate',
             'busylevel': 1,
             'callcounter': 0,
-            'callerid': '"customcallerid" <1234>',
+            'callerid': '"cûstomcallerid" <1234>',
             'encryption': 1,
             'use_q850_reason': 1,
             'disallowed_methods': 'disallowsip',

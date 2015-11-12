@@ -16,6 +16,8 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+from __future__ import unicode_literals
+
 from hamcrest import assert_that
 from hamcrest import equal_to
 from hamcrest import none
@@ -31,7 +33,7 @@ from xivo_dao.resources.endpoint_sccp import dao
 from xivo_dao.tests.test_dao import DAOTestCase
 
 ALL_OPTIONS = [
-    ["cid_name", "John Smith"],
+    ["cid_name", "Jôhn Smith"],
     ["cid_num", "5551234567"],
     ["allow", "gsm"],
     ["allow", "g729"],
@@ -107,7 +109,7 @@ class TestSccpEndpointDaoCreate(TestSccpDao):
 
     def test_create_all_parameters(self):
         options = [
-            ["cid_name", "John Smith"],
+            ["cid_name", "Jôhn Smith"],
             ["cid_num", "5551234567"],
             ["allow", "gsm"],
             ["allow", "ulaw"],
@@ -123,7 +125,7 @@ class TestSccpEndpointDaoCreate(TestSccpDao):
         assert_that(created_sccp.id, equal_to(sccp_row.id))
         assert_that(created_sccp.options, has_items(*options))
 
-        assert_that(sccp_row.cid_name, equal_to('John Smith'))
+        assert_that(sccp_row.cid_name, equal_to('Jôhn Smith'))
         assert_that(sccp_row.cid_num, equal_to('5551234567'))
         assert_that(sccp_row.allow, equal_to("gsm,ulaw"))
         assert_that(sccp_row.disallow, equal_to("g729,alaw"))
@@ -174,7 +176,7 @@ class TestSccpEndpointDaoEdit(TestSccpDao):
     def test_given_cid_name_and_num_set_when_removed_then_cid_name_and_num_not_deleted(self):
         row = self.add_sccpline(context='',
                                 name='',
-                                cid_name='John Smith',
+                                cid_name='Jôhn Smith',
                                 cid_num='5551234567')
 
         sccp = dao.get(row.id)
@@ -183,13 +185,13 @@ class TestSccpEndpointDaoEdit(TestSccpDao):
 
         row = self.session.query(SCCP).first()
 
-        assert_that(row.cid_name, "John Smith")
+        assert_that(row.cid_name, "Jôhn Smith")
         assert_that(row.cid_num, "5551234567")
 
     def test_given_cid_name_and_num_set_when_altered_then_cid_name_and_num_updated(self):
         row = self.add_sccpline(context='',
                                 name='',
-                                cid_name='John Smith',
+                                cid_name='Jôhn Smith',
                                 cid_num='5551234567')
 
         sccp = dao.get(row.id)

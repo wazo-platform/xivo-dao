@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from __future__ import unicode_literals
+
 import uuid
 
 from hamcrest import all_of
@@ -56,7 +58,7 @@ class TestGet(DAOTestCase):
         self.assertRaises(NotFoundError, user_dao.get, 42)
 
     def test_get_required_fields(self):
-        user_row = self.add_user(firstname='Paul')
+        user_row = self.add_user(firstname='Pâul')
 
         user = user_dao.get(user_row.id)
 
@@ -65,17 +67,17 @@ class TestGet(DAOTestCase):
         assert_that(user.private_template_id, equal_to(user_row.func_key_private_template_id))
 
     def test_get_commented(self):
-        user_row = self.add_user(firstname='Paul', commented=1)
+        user_row = self.add_user(firstname='Pâul', commented=1)
 
         user = user_dao.get(user_row.id)
 
         assert_that(user.id, equal_to(user_row.id))
 
     def test_get_all_fields(self):
-        user_row = self.add_user(firstname='Paul',
-                                 lastname='Rogers',
-                                 callerid='"Cool dude"',
-                                 outcallerid='"Cool dude going out"',
+        user_row = self.add_user(firstname='Pâul',
+                                 lastname='Rôgers',
+                                 callerid='"Côol dude"',
+                                 outcallerid='"Côol dude going out"',
                                  loginclient='paulrogers',
                                  passwdclient='paulrogers',
                                  musiconhold='mymusic',
@@ -124,10 +126,10 @@ class TestGet(DAOTestCase):
         self.assertRaises(NotFoundError, user_dao.get_by_number_context, number, context)
 
     def test_get_by_uuid(self):
-        user_row = self.add_user(firstname='Paul',
-                                 lastname='Rogers',
-                                 callerid='"Cool dude"',
-                                 outcallerid='"Cool dude going out"',
+        user_row = self.add_user(firstname='Pâul',
+                                 lastname='Rôgers',
+                                 callerid='"Côol dude"',
+                                 outcallerid='"Côol dude going out"',
                                  loginclient='paulrogers',
                                  passwdclient='paulrogers',
                                  musiconhold='mymusic',
@@ -168,7 +170,7 @@ class TestFind(DAOTestCase):
         assert_that(users, equal_to(expected))
 
     def test_find_all_one_user(self):
-        firstname = 'Pascal'
+        firstname = 'Pâscal'
         user = self.add_user(firstname=firstname)
 
         users = user_dao.find_all()
@@ -179,7 +181,7 @@ class TestFind(DAOTestCase):
         assert_that(user_found, has_property('firstname', firstname))
 
     def test_find_all_one_user_commented(self):
-        firstname = 'Pascal'
+        firstname = 'Pâscal'
         user = self.add_user(firstname=firstname, commented=1)
 
         users = user_dao.find_all()
@@ -190,8 +192,8 @@ class TestFind(DAOTestCase):
         assert_that(user_found, has_property('firstname', firstname))
 
     def test_find_all_two_users(self):
-        firstname1 = 'Pascal'
-        firstname2 = 'George'
+        firstname1 = 'Pâscal'
+        firstname2 = 'Géorge'
 
         user1 = self.add_user(firstname=firstname1)
         user2 = self.add_user(firstname=firstname2)
@@ -209,9 +211,9 @@ class TestFind(DAOTestCase):
         ))
 
     def test_find_all_default_order_by_lastname_firstname(self):
-        user1 = self.add_user(firstname='Jules', lastname='Santerre')
-        user2 = self.add_user(firstname='Vicky', lastname='Bourbon')
-        user3 = self.add_user(firstname='Anne', lastname='Bourbon')
+        user1 = self.add_user(firstname='Jûles', lastname='Sânterre')
+        user2 = self.add_user(firstname='Vîcky', lastname='Bôurbon')
+        user3 = self.add_user(firstname='Ânne', lastname='Bôurbon')
 
         users = user_dao.find_all()
         assert_that(users, has_length(3))
@@ -221,8 +223,8 @@ class TestFind(DAOTestCase):
         assert_that(users[2].id, equal_to(user1.id))
 
     def test_find_all_order_by_firstname(self):
-        user_last = self.add_user(firstname='Bob', lastname='Alzard')
-        user_first = self.add_user(firstname='Albert', lastname='Breton')
+        user_last = self.add_user(firstname='Bôb', lastname='Alzârd')
+        user_first = self.add_user(firstname='Âlbert', lastname='Bréton')
 
         users = user_dao.find_all(order=['firstname'])
 
@@ -230,8 +232,8 @@ class TestFind(DAOTestCase):
         assert_that(users[1].id, equal_to(user_last.id))
 
     def test_find_all_order_by_lastname(self):
-        user_last = self.add_user(firstname='Albert', lastname='Breton')
-        user_first = self.add_user(firstname='Bob', lastname='Alzard')
+        user_last = self.add_user(firstname='Âlbert', lastname='Bréton')
+        user_first = self.add_user(firstname='Bôb', lastname='Âlzard')
 
         users = user_dao.find_all(order=['lastname'])
 
@@ -244,8 +246,8 @@ class TestFind(DAOTestCase):
         assert_that(result, equal_to(None))
 
     def test_find_user_not_right_firstname(self):
-        firstname = 'Lord'
-        lastname = 'Sanderson'
+        firstname = 'Lôrd'
+        lastname = 'Sânderson'
         wrong_firstname = 'Gregory'
 
         self.add_user(firstname=firstname, lastname=lastname)
@@ -255,11 +257,11 @@ class TestFind(DAOTestCase):
         assert_that(result, equal_to(None))
 
     def test_find_user(self):
-        firstname = 'Lord'
-        lastname = 'Sanderson'
+        firstname = 'Lôrd'
+        lastname = 'Sânderson'
         user = self.add_user(firstname=firstname, lastname=lastname)
 
-        result = user_dao.find_user('Lord', 'Sanderson')
+        result = user_dao.find_user('Lôrd', 'Sânderson')
 
         assert_that(result, all_of(
             has_property('id', user.id),
@@ -268,8 +270,8 @@ class TestFind(DAOTestCase):
         ))
 
     def test_find_user_two_users_same_name(self):
-        firstname = 'Lord'
-        lastname = 'Sanderson'
+        firstname = 'Lôrd'
+        lastname = 'Sânderson'
 
         user1 = self.add_user(firstname=firstname, lastname=lastname)
         user2 = self.add_user(firstname=firstname, lastname=lastname)
@@ -284,8 +286,8 @@ class TestFind(DAOTestCase):
         assert_that(result, has_length(0))
 
     def test_find_all_by_fullname(self):
-        firstname = 'Lord'
-        lastname = 'Sanderson'
+        firstname = 'Lôrd'
+        lastname = 'Sânderson'
         fullname = '%s %s' % (firstname, lastname)
 
         user = self.add_user(firstname=firstname, lastname=lastname)
@@ -301,8 +303,8 @@ class TestFind(DAOTestCase):
             )))
 
     def test_find_all_by_fullname_lowercase(self):
-        firstname = 'Lord'
-        lastname = 'Sanderson'
+        firstname = 'Lôrd'
+        lastname = 'Sânderson'
         fullname = '%s %s' % (firstname, lastname)
 
         user = self.add_user(firstname=firstname, lastname=lastname)
@@ -318,9 +320,9 @@ class TestFind(DAOTestCase):
             )))
 
     def test_find_all_by_fullname_partial(self):
-        firstname = 'Lord'
-        lastname = 'Sanderson'
-        partial_fullname = 'd san'
+        firstname = 'Lôrd'
+        lastname = 'Sânderson'
+        partial_fullname = 'd sân'
 
         user = self.add_user(firstname=firstname, lastname=lastname)
 
@@ -335,11 +337,11 @@ class TestFind(DAOTestCase):
             )))
 
     def test_find_all_by_fullname_two_users_default_order(self):
-        search_term = 'lord'
+        search_term = 'lôrd'
 
-        user_last = self.add_user(firstname='Lord', lastname='Sanderson')
-        user_first = self.add_user(firstname='Great', lastname='Lord')
-        self.add_user(firstname='Toto', lastname='Tata')
+        user_last = self.add_user(firstname='Lôrd', lastname='Sânderson')
+        user_first = self.add_user(firstname='Gréat', lastname='Lôrd')
+        self.add_user(firstname='Tôto', lastname='Tâta')
 
         result = user_dao.find_all_by_fullname(search_term)
 
@@ -445,11 +447,11 @@ class TestSimpleSearch(TestSearch):
         self.assert_search_returns_result(expected)
 
     def test_given_directory_view_then_returns_one_result(self):
-        user = self.prepare_user(firstname='charles')
+        user = self.prepare_user(firstname='chârles')
         expected = SearchResult(1, [UserDirectory(id=user.id,
                                                   line_id=None,
                                                   agent_id=None,
-                                                  firstname='charles',
+                                                  firstname='chârles',
                                                   lastname=None,
                                                   mobile_phone_number=None,
                                                   exten=None,
@@ -460,8 +462,8 @@ class TestSimpleSearch(TestSearch):
 
     def test_given_user_with_line_and_agent_then_returns_one_directory_view_result(self):
         agent_row = self.add_agent()
-        user_line_row = self.add_user_line_with_exten(firstname='danny',
-                                                      lastname='rogers',
+        user_line_row = self.add_user_line_with_exten(firstname='dânny',
+                                                      lastname='rôgers',
                                                       agentid=agent_row.id,
                                                       mobilephonenumber='4185551234',
                                                       userfield='userfield',
@@ -470,8 +472,8 @@ class TestSimpleSearch(TestSearch):
         expected = SearchResult(1, [UserDirectory(id=user_line_row.user_id,
                                                   line_id=user_line_row.line_id,
                                                   agent_id=agent_row.id,
-                                                  firstname='danny',
-                                                  lastname='rogers',
+                                                  firstname='dânny',
+                                                  lastname='rôgers',
                                                   mobile_phone_number='4185551234',
                                                   exten=user_line_row.extension.exten,
                                                   userfield='userfield',
@@ -537,7 +539,7 @@ class TestCreate(DAOTestCase):
         return User(**kwargs)
 
     def test_create(self):
-        caller_id = '"toto kiki"'
+        caller_id = '"tôto kiki"'
         user = self.prepare_user(firstname='toto',
                                  lastname='kiki',
                                  caller_id=caller_id,
@@ -569,8 +571,8 @@ class TestCreate(DAOTestCase):
                                  timezone='America/Montreal',
                                  language='en_US',
                                  description='description',
-                                 caller_id='"firstname lastname" <1000>',
-                                 outgoing_caller_id='outgoing_caller_id',
+                                 caller_id='"fîrstname lâstname" <1000>',
+                                 outgoing_caller_id='ôutgoing_caller_id',
                                  mobile_phone_number='1234567890',
                                  username='username',
                                  password='password',
@@ -648,10 +650,10 @@ class TestEdit(DAOTestCase):
         assert_that(row.preprocess_subroutine, equal_to(expected_preprocess_subroutine))
 
     def test_edit_all_fields(self):
-        user_row = self.add_user(firstname='Paul',
-                                 lastname='Rogers',
-                                 callerid='"Cool dude"',
-                                 outcallerid='"Cool dude going out"',
+        user_row = self.add_user(firstname='Pâul',
+                                 lastname='Rôgers',
+                                 callerid='"Côol dude"',
+                                 outcallerid='"Côol dude going out"',
                                  loginclient='paulrogers',
                                  passwdclient='paulrogers',
                                  musiconhold='mymusic',
@@ -704,8 +706,8 @@ class TestEdit(DAOTestCase):
 
     def test_edit_caller_id_with_number(self):
         caller_id = '<1000>'
-        user_row = self.add_user(firstname='Paul',
-                                 callerid='"Paul"')
+        user_row = self.add_user(firstname='Pâul',
+                                 callerid='"Pâul"')
 
         user = user_dao.get(user_row.id)
         user.caller_id = "<1000>"
@@ -723,8 +725,8 @@ class TestEdit(DAOTestCase):
 class TestDelete(DAOTestCase):
 
     def test_delete(self):
-        firstname = 'Gadou'
-        lastname = 'Pipo'
+        firstname = 'Gâdou'
+        lastname = 'Pîpo'
         user = self.add_user(firstname=firstname,
                              lastname=lastname)
 
@@ -742,6 +744,6 @@ class TestDelete(DAOTestCase):
 class TestIsCtiEnabled(DAOTestCase):
 
     def test_is_cti_enabled(self):
-        user = self.add_user(firstname='Pierre', enableclient=1)
+        user = self.add_user(firstname='Piérre', enableclient=1)
 
         self.assertTrue(user_dao.is_cti_enabled(user.id))

@@ -16,6 +16,8 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+from __future__ import unicode_literals
+
 from hamcrest import assert_that, equal_to, none
 
 from xivo_dao.alchemy.linefeatures import LineFeatures as Line
@@ -33,8 +35,8 @@ class TestLineFixes(DAOTestCase):
         self.fixes = LineFixes(self.session)
 
     def test_given_user_only_has_caller_name_then_sip_caller_id_updated(self):
-        user = self.add_user(callerid='"John Smith"')
-        sip = self.add_usersip(callerid='"Roger Rabbit" <2000>')
+        user = self.add_user(callerid='"Jôhn Smith"')
+        sip = self.add_usersip(callerid='"Rôger Rabbit" <2000>')
         line = self.add_line(protocol='sip', protocolid=sip.id)
         self.add_user_line(user_id=user.id, line_id=line.id,
                            main_user=True, main_line=True)
@@ -45,8 +47,8 @@ class TestLineFixes(DAOTestCase):
         assert_that(sip.callerid, equal_to(user.callerid))
 
     def test_given_user_has_caller_name_and_number_then_sip_caller_id_updated(self):
-        user = self.add_user(callerid='"John Smith" <1000>')
-        sip = self.add_usersip(callerid='"Roger Rabbit" <2000>')
+        user = self.add_user(callerid='"Jôhn Smith" <1000>')
+        sip = self.add_usersip(callerid='"Rôger Rabbit" <2000>')
         line = self.add_line(protocol='sip', protocolid=sip.id)
         self.add_user_line(user_id=user.id, line_id=line.id,
                            main_user=True, main_line=True)
@@ -57,8 +59,8 @@ class TestLineFixes(DAOTestCase):
         assert_that(sip.callerid, equal_to(user.callerid))
 
     def test_given_user_has_caller_name_and_extension_then_sip_caller_id_updated(self):
-        user = self.add_user(callerid='"John Smith"')
-        sip = self.add_usersip(callerid='"Roger Rabbit" <2000>')
+        user = self.add_user(callerid='"Jôhn Smith"')
+        sip = self.add_usersip(callerid='"Rôger Rabbit" <2000>')
         line = self.add_line(protocol='sip', protocolid=sip.id)
         extension = self.add_extension(exten="3000", context="default")
         self.add_user_line(user_id=user.id, line_id=line.id, extension_id=extension.id,
@@ -67,11 +69,11 @@ class TestLineFixes(DAOTestCase):
         self.fixes.fix(line.id)
 
         sip = self.session.query(UserSIP).first()
-        assert_that(sip.callerid, equal_to('"John Smith" <3000>'))
+        assert_that(sip.callerid, equal_to('"Jôhn Smith" <3000>'))
 
     def test_given_user_has_caller_number_and_extension_then_caller_number_updated(self):
-        user = self.add_user(callerid='"John Smith" <1000>')
-        sip = self.add_usersip(callerid='"Roger Rabbit" <2000>')
+        user = self.add_user(callerid='"Jôhn Smith" <1000>')
+        sip = self.add_usersip(callerid='"Rôger Rabbit" <2000>')
         line = self.add_line(protocol='sip', protocolid=sip.id)
         extension = self.add_extension(exten="3000", context="default")
         self.add_user_line(user_id=user.id, line_id=line.id, extension_id=extension.id,
@@ -80,11 +82,11 @@ class TestLineFixes(DAOTestCase):
         self.fixes.fix(line.id)
 
         sip = self.session.query(UserSIP).first()
-        assert_that(sip.callerid, equal_to('"John Smith" <1000>'))
+        assert_that(sip.callerid, equal_to('"Jôhn Smith" <1000>'))
 
     def test_given_user_has_sip_line_then_xivo_userid_updated(self):
-        user = self.add_user(callerid='"John Smith" <1000>')
-        sip = self.add_usersip(callerid='"Roger Rabbit" <2000>')
+        user = self.add_user(callerid='"Jôhn Smith" <1000>')
+        sip = self.add_usersip(callerid='"Rôger Rabbit" <2000>')
         line = self.add_line(protocol='sip', protocolid=sip.id)
         self.add_user_line(user_id=user.id, line_id=line.id,
                            main_user=True, main_line=True)
@@ -95,8 +97,8 @@ class TestLineFixes(DAOTestCase):
         assert_that(sip.setvar, equal_to('XIVO_USERID={}'.format(user.id)))
 
     def test_given_user_has_sip_line_then_context_updated(self):
-        user = self.add_user(callerid='"John Smith" <1000>')
-        sip = self.add_usersip(callerid='"Roger Rabbit" <2000>')
+        user = self.add_user(callerid='"Jôhn Smith" <1000>')
+        sip = self.add_usersip(callerid='"Rôger Rabbit" <2000>')
         line = self.add_line(protocol='sip', protocolid=sip.id, context='mycontext')
         self.add_user_line(user_id=user.id, line_id=line.id,
                            main_user=True, main_line=True)
@@ -107,8 +109,8 @@ class TestLineFixes(DAOTestCase):
         assert_that(sip.context, equal_to('mycontext'))
 
     def test_given_user_only_has_caller_name_then_sccp_caller_id_updated(self):
-        user = self.add_user(callerid='"John Smith"')
-        sccp = self.add_sccpline(cid_name="Roger Rabbit", cid_num="2000")
+        user = self.add_user(callerid='"Jôhn Smith"')
+        sccp = self.add_sccpline(cid_name="Rôger Rabbit", cid_num="2000")
         line = self.add_line(protocol='sccp', protocolid=sccp.id)
         self.add_user_line(user_id=user.id, line_id=line.id,
                            main_user=True, main_line=True)
@@ -116,12 +118,12 @@ class TestLineFixes(DAOTestCase):
         self.fixes.fix(line.id)
 
         sccp = self.session.query(SCCPLine).first()
-        assert_that(sccp.cid_name, equal_to('John Smith'))
+        assert_that(sccp.cid_name, equal_to('Jôhn Smith'))
         assert_that(sccp.cid_num, equal_to(''))
 
     def test_given_user_has_caller_name_and_number_then_sccp_caller_id_updated(self):
-        user = self.add_user(callerid='"John Smith" <1000>')
-        sccp = self.add_sccpline(cid_name="Roger Rabbit", cid_num="2000")
+        user = self.add_user(callerid='"Jôhn Smith" <1000>')
+        sccp = self.add_sccpline(cid_name="Rôger Rabbit", cid_num="2000")
         line = self.add_line(protocol='sccp', protocolid=sccp.id)
         self.add_user_line(user_id=user.id, line_id=line.id,
                            main_user=True, main_line=True)
@@ -129,12 +131,12 @@ class TestLineFixes(DAOTestCase):
         self.fixes.fix(line.id)
 
         sccp = self.session.query(SCCPLine).first()
-        assert_that(sccp.cid_name, equal_to('John Smith'))
+        assert_that(sccp.cid_name, equal_to('Jôhn Smith'))
         assert_that(sccp.cid_num, equal_to('1000'))
 
     def test_given_user_has_caller_name_and_extension_then_sccp_caller_id_updated(self):
-        user = self.add_user(callerid='"John Smith"')
-        sccp = self.add_sccpline(cid_name="Roger Rabbit", cid_num="2000")
+        user = self.add_user(callerid='"Jôhn Smith"')
+        sccp = self.add_sccpline(cid_name="Rôger Rabbit", cid_num="2000")
         line = self.add_line(protocol='sccp', protocolid=sccp.id)
         extension = self.add_extension(exten="3000", context="default")
         self.add_user_line(user_id=user.id, line_id=line.id, extension_id=extension.id,
@@ -143,12 +145,12 @@ class TestLineFixes(DAOTestCase):
         self.fixes.fix(line.id)
 
         sccp = self.session.query(SCCPLine).first()
-        assert_that(sccp.cid_name, equal_to('John Smith'))
+        assert_that(sccp.cid_name, equal_to('Jôhn Smith'))
         assert_that(sccp.cid_num, equal_to('3000'))
 
     def test_given_user_has_caller_number_and_extension_then_sccp_caller_number_updated(self):
-        user = self.add_user(callerid='"John Smith" <1000>')
-        sccp = self.add_sccpline(cid_name="Roger Rabbit", cid_num="2000")
+        user = self.add_user(callerid='"Jôhn Smith" <1000>')
+        sccp = self.add_sccpline(cid_name="Rôger Rabbit", cid_num="2000")
         line = self.add_line(protocol='sccp', protocolid=sccp.id)
         extension = self.add_extension(exten="3000", context="default")
         self.add_user_line(user_id=user.id, line_id=line.id, extension_id=extension.id,
@@ -157,12 +159,12 @@ class TestLineFixes(DAOTestCase):
         self.fixes.fix(line.id)
 
         sccp = self.session.query(SCCPLine).first()
-        assert_that(sccp.cid_name, equal_to('John Smith'))
+        assert_that(sccp.cid_name, equal_to('Jôhn Smith'))
         assert_that(sccp.cid_num, equal_to('1000'))
 
     def test_given_sccp_line_has_user_and_extension_then_name_and_context_updated(self):
-        user = self.add_user(callerid='"John Smith" <1000>')
-        sccp = self.add_sccpline(cid_name="Roger Rabbit", cid_num="2000")
+        user = self.add_user(callerid='"Jôhn Smith" <1000>')
+        sccp = self.add_sccpline(cid_name="Rôger Rabbit", cid_num="2000")
         line = self.add_line(protocol='sccp', protocolid=sccp.id)
         extension = self.add_extension(exten="3000", context="default")
         self.add_user_line(user_id=user.id, line_id=line.id, extension_id=extension.id,
@@ -177,7 +179,7 @@ class TestLineFixes(DAOTestCase):
     def test_given_sccp_line_has_device_then_number_updated(self):
         user = self.add_user()
         sccp = self.add_sccpline(name='1000', context='default',
-                                 cid_name="Roger Rabbit", cid_num="2000")
+                                 cid_name="Rôger Rabbit", cid_num="2000")
         device = self.add_sccpdevice(line='1000')
         line = self.add_line(name='1000', number='1000', context='default',
                              protocol='sccp', protocolid=sccp.id)
@@ -191,9 +193,9 @@ class TestLineFixes(DAOTestCase):
         assert_that(device.line, equal_to('2000'))
 
     def test_given_line_has_multiple_users_then_sccp_caller_id_updated(self):
-        main_user = self.add_user(callerid='"John Smith" <1000>')
-        other_user = self.add_user(callerid='"George Green" <1001>')
-        sccp = self.add_sccpline(cid_name="Roger Rabbit", cid_num="2000")
+        main_user = self.add_user(callerid='"Jôhn Smith" <1000>')
+        other_user = self.add_user(callerid='"Géorge Green" <1001>')
+        sccp = self.add_sccpline(cid_name="Rôger Rabbit", cid_num="2000")
         line = self.add_line(protocol='sccp', protocolid=sccp.id)
         self.add_user_line(user_id=main_user.id, line_id=line.id,
                            main_user=True, main_line=True)
@@ -203,11 +205,11 @@ class TestLineFixes(DAOTestCase):
         self.fixes.fix(line.id)
 
         sccp = self.session.query(SCCPLine).first()
-        assert_that(sccp.cid_name, equal_to("John Smith"))
+        assert_that(sccp.cid_name, equal_to("Jôhn Smith"))
         assert_that(sccp.cid_num, equal_to("1000"))
 
     def test_given_line_not_associated_to_user_then_sip_caller_and_user_id_cleared(self):
-        sip = self.add_usersip(callerid='"Roger Rabbit" <2000>')
+        sip = self.add_usersip(callerid='"Rôger Rabbit" <2000>')
         line = self.add_line(protocol='sip', protocolid=sip.id)
 
         self.fixes.fix(line.id)
@@ -237,7 +239,7 @@ class TestLineFixes(DAOTestCase):
         assert_that(line.context, equal_to('mycontext'))
 
     def test_given_line_has_sip_name_then_line_name_updated(self):
-        sip = self.add_usersip(callerid='"Roger Rabbit" <2000>', name="sipname")
+        sip = self.add_usersip(callerid='"Rôger Rabbit" <2000>', name="sipname")
         line = self.add_line(name="linename", protocol='sip', protocolid=sip.id)
 
         self.fixes.fix(line.id)
