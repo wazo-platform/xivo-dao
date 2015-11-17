@@ -47,6 +47,7 @@ from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
 from xivo_dao.alchemy.func_key_type import FuncKeyType
 from xivo_dao.alchemy.groupfeatures import GroupFeatures
 from xivo_dao.alchemy.incall import Incall
+from xivo_dao.alchemy.infos import Infos
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
 from xivo_dao.alchemy.musiconhold import MusicOnHold
@@ -765,6 +766,11 @@ class DAOTestCase(unittest.TestCase):
         accessfeature = AccessFeatures(host=host, **kwargs)
         self.add_me(accessfeature)
         return accessfeature
+
+    def add_infos(self):
+        infos = Infos()
+        self.add_me(infos)
+        return infos
 
     def add_me(self, obj):
         self.session.add(obj)

@@ -40,6 +40,7 @@ from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.alchemy.userfeatures import UserFeatures
+from xivo_dao.alchemy.infos import Infos
 
 
 class TestUserFeaturesDAO(DAOTestCase):
@@ -641,7 +642,16 @@ class TestUserFeaturesDAO(DAOTestCase):
         result = user_dao.delete(1)
         self.assertEqual(result, 0)
 
+    def test_that_get_user_config_contains_the_xivo_uuid(self):
+        infos = self.add_infos()
+        user_line = self.add_user_line_with_exten()
+
+        user_config = user_dao.get_user_config(user_line.user.id)
+
+        assert_that(user_config[str(user_line.user.id)]['xivo_uuid'], equal_to(infos.uuid))
+
     def test_get_user_config(self):
+        infos = self.add_infos()
         firstname = u'Jack'
         lastname = u'Strap'
         fullname = u'%s %s' % (firstname, lastname)
@@ -707,6 +717,7 @@ class TestUserFeaturesDAO(DAOTestCase):
                 'timezone': None,
                 'userfield': u'',
                 'voicemailid': None,
+                'xivo_uuid': infos.uuid,
             }
         }
 
@@ -722,6 +733,7 @@ class TestUserFeaturesDAO(DAOTestCase):
         assert_that(result, equal_to(expected))
 
     def test_get_user_config_with_no_line(self):
+        self.add_infos()
         user = self.add_user()
 
         result = user_dao.get_user_config(user.id)
@@ -730,9 +742,11 @@ class TestUserFeaturesDAO(DAOTestCase):
         assert_that(result[str(user.id)]['linelist'], equal_to([]))
 
     def test_get_user_config_no_user(self):
+        self.add_infos()
         self.assertRaises(LookupError, user_dao.get_user_config, 8921890)
 
     def test_get_users_config(self):
+        self.add_infos()
         user1 = self.add_user(
             firstname='John',
             lastname='Jackson',
