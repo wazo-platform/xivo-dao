@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, is_not, none, has_property, equal_to, calling, raises
+from hamcrest import assert_that, none, equal_to, calling, raises
 
 from xivo_dao.helpers.exception import NotFoundError
 from xivo_dao.helpers.exception import InputError
@@ -31,7 +31,6 @@ from xivo_dao.resources.func_key_template import dao
 from xivo_dao.resources.func_key_template.model import FuncKeyTemplate
 from xivo_dao.resources.utils.search import SearchResult
 
-from xivo_dao.resources.func_key.model import UserFuncKey
 from xivo_dao.resources.func_key.model import FuncKey, \
     UserDestination, QueueDestination, GroupDestination, ConferenceDestination, PagingDestination, \
     BSFilterDestination, CustomDestination, ServiceDestination, TransferDestination, ForwardDestination, \
@@ -51,11 +50,6 @@ class TestFuncKeyTemplateDao(DAOTestCase, FuncKeyHelper):
                  .count())
 
         assert_that(count, equal_to(0))
-
-    def create_user_func_key_for_template(self, template_row, position):
-        destination_row = self.create_user_func_key()
-        self.add_destination_to_template(destination_row, template_row, position)
-        return UserFuncKey(id=destination_row.func_key_id)
 
     def prepare_template(self, destination_row=None, destination=None, name=None, position=1, private=False):
         template_row = self.add_func_key_template(name=name, private=private)
@@ -652,72 +646,6 @@ class TestFuncKeyTemplateEdit(TestFuncKeyTemplateDao):
 
         assert_that(first_mapping_row.func_key_id, equal_to(user_destination_row.func_key_id))
         assert_that(second_mapping_row.func_key_id, equal_to(conference_destination_row.func_key_id))
-
-
-class TestCreatePrivateTemplate(TestFuncKeyTemplateDao):
-
-    def assert_private_template_created(self, template_id):
-        template_row = self.session.query(FuncKeyTemplateSchema).get(template_id)
-        assert_that(template_row, is_not(none()))
-
-        assert_that(template_row, has_property('private', True))
-        assert_that(template_row, has_property('name', none()))
-
-    def test_create_private_template(self):
-        template_id = dao.create_private_template()
-
-        self.assert_private_template_created(template_id)
-
-
-class TestRemoveFuncKeyFromTemplate(TestFuncKeyTemplateDao):
-
-    def test_given_one_func_key_mapped_when_removed_then_template_empty(self):
-        template_row = self.add_func_key_template()
-        func_key = self.create_user_func_key_for_template(template_row, 1)
-
-        dao.remove_func_key_from_templates(func_key)
-
-        self.assert_template_empty(template_row.id)
-
-    def test_given_two_func_keys_mapped_when_first_removed_then_other_func_key_remains(self):
-        template_row = self.add_func_key_template()
-        first_func_key = self.create_user_func_key_for_template(template_row, 1)
-        second_func_key = self.create_user_func_key_for_template(template_row, 2)
-
-        dao.remove_func_key_from_templates(first_func_key)
-
-        self.assert_template_contains_func_key(template_row, second_func_key)
-
-    def assert_template_contains_func_key(self, template_row, func_key_row):
-        count = (self.session.query(FuncKeyMappingSchema)
-                 .filter(FuncKeyMappingSchema.template_id == template_row.id)
-                 .filter(FuncKeyMappingSchema.func_key_id == func_key_row.id)
-                 .count())
-
-        assert_that(count, equal_to(1))
-
-
-class TestDeletePrivateTemplate(TestFuncKeyTemplateDao):
-
-    def test_given_empty_template_then_template_deleted(self):
-        template_row = self.add_func_key_template(private=True)
-
-        dao.delete_private_template(template_row.id)
-
-        self.assert_template_deleted(template_row)
-
-    def test_given_template_with_one_func_key_then_template_and_mapping_deleted(self):
-        template_row = self.add_func_key_template(private=True)
-        self.create_user_func_key_for_template(template_row, 1)
-
-        dao.delete_private_template(template_row.id)
-
-        self.assert_template_deleted(template_row)
-        self.assert_template_empty(template_row.id)
-
-    def assert_template_deleted(self, template_row):
-        row = self.session.query(FuncKeyTemplateSchema).get(template_row.id)
-        assert_that(row, none())
 
 
 class TestFuncKeyTemplateSearch(TestFuncKeyTemplateDao):

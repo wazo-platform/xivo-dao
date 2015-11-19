@@ -19,7 +19,6 @@ from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.helpers.db_utils import flush_session
 
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate as FuncKeyTemplateSchema
-from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping as FuncKeyMappingSchema
 
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.resources.func_key_template.persistor import build_persistor
@@ -61,33 +60,3 @@ def edit(session, template):
 def delete(session, template):
     persistor = build_persistor(session)
     return persistor.delete(template)
-
-
-@daosession
-def create_private_template(session):
-    template = FuncKeyTemplateSchema(private=True)
-
-    with flush_session(session):
-        session.add(template)
-
-    return template.id
-
-
-@daosession
-def remove_func_key_from_templates(session, func_key):
-    with flush_session(session):
-        (session.query(FuncKeyMappingSchema)
-         .filter(FuncKeyMappingSchema.func_key_id == func_key.id)
-         .delete())
-
-
-@daosession
-def delete_private_template(session, template_id):
-    with flush_session(session):
-        (session.query(FuncKeyMappingSchema)
-         .filter(FuncKeyMappingSchema.template_id == template_id)
-         .delete())
-
-        (session.query(FuncKeyTemplateSchema)
-         .filter(FuncKeyTemplateSchema.id == template_id)
-         .delete())

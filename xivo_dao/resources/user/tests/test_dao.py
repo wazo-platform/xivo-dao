@@ -36,6 +36,7 @@ from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from xivo_dao.alchemy.func_key import FuncKey
+from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
 from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.helpers.exception import NotFoundError, InputError
@@ -593,6 +594,7 @@ class TestDelete(TestUser):
         assert_that(self.session.query(Callfiltermember).first(), none())
         assert_that(self.session.query(FuncKeyDestUser).first(), none())
         assert_that(self.session.query(FuncKey).first(), none())
+        assert_that(self.session.query(FuncKeyTemplate).first(), none())
 
     def add_right_call_member(self, **kwargs):
         member = RightCallMember(**kwargs)

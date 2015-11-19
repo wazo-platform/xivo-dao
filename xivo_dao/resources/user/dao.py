@@ -19,6 +19,7 @@ from xivo_dao.helpers.db_manager import daosession
 
 from xivo_dao.resources.user.persistor import UserPersistor
 from xivo_dao.resources.func_key.persistor import DestinationPersistor
+from xivo_dao.resources.func_key_template.persistor import build_persistor as build_template_persistor
 from xivo_dao.resources.user.search import user_search
 from xivo_dao.resources.user.view import user_view
 from xivo_dao.resources.user.fixes import UserFixes
@@ -71,3 +72,5 @@ def edit(session, user):
 def delete(session, user):
     DestinationPersistor(session).delete_user_destination(user)
     UserPersistor(session, user_view, user_search).delete(user)
+    template_persistor = build_template_persistor(session)
+    template_persistor.delete(user.func_key_template_private)
