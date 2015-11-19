@@ -253,6 +253,18 @@ class TestForwardHints(TestHints):
 
         assert_that(hint_dao.forward_hints('othercontext'), contains())
 
+    def test_forward_extension_with_xxx_pattern_is_cleaned(self):
+        destination_row = self.create_forward_func_key('_*23XXXX', 'fwdbusy', '1234')
+
+        user_row = self.add_user_and_func_key()
+        self.add_func_key_to_user(destination_row, user_row)
+
+        expected = Hint(user_id=user_row.id,
+                        extension='*23',
+                        argument='1234')
+
+        assert_that(hint_dao.forward_hints(self.context), contains(expected))
+
 
 class TestAgentHints(TestHints):
 
@@ -291,6 +303,18 @@ class TestAgentHints(TestHints):
         self.add_func_key_to_user(destination_row, user_row)
 
         assert_that(hint_dao.agent_hints('othercontext'), contains())
+
+    def test_agent_extension_with_xxx_pattern_is_cleaned(self):
+        destination_row = self.create_agent_func_key('_*31XXXX', 'agentstaticlogin')
+
+        user_row = self.add_user_and_func_key()
+        self.add_func_key_to_user(destination_row, user_row)
+
+        expected = Hint(user_id=user_row.id,
+                        extension='*31',
+                        argument=str(destination_row.agent_id))
+
+        assert_that(hint_dao.agent_hints(self.context), contains(expected))
 
 
 class TestCustomHints(TestHints):
