@@ -60,7 +60,7 @@ def create(session, user):
 
 @daosession
 def edit(session, user):
-    UserPersistor(session, user_view, user_search).create(user)
+    UserPersistor(session, user_view, user_search).edit(user)
     UserFixes(session).fix(user.id)
 
 

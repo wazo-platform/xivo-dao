@@ -74,8 +74,13 @@ class UserPersistor(object):
         self.prepare_template(user)
         self.prepare_entity(user)
         user.fill_caller_id()
+
         self.session.add(user)
         self.session.flush()
+
+        self.create_dial_actions(user)
+        self.session.flush()
+
         return user
 
     def prepare_template(self, user):
@@ -86,6 +91,10 @@ class UserPersistor(object):
     def prepare_entity(self, user):
         if not user.has_entity():
             user.entity_id = Entity.query_default_id().as_scalar()
+
+    def create_dial_actions(self, user):
+        for dialaction in Dialaction.new_user_actions(user):
+            self.session.add(dialaction)
 
     def edit(self, user):
         self.session.add(user)

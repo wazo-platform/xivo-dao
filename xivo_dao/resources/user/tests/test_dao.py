@@ -343,6 +343,26 @@ class TestCreate(TestUser):
         super(TestCreate, self).setUp()
         self.entity = self.add_entity()
 
+    def assert_dial_action_created(self, user, event):
+        dialaction = (self.session.query(Dialaction)
+                      .filter_by(event=event,
+                                 category='user',
+                                 categoryval=str(user.id),
+                                 action='none',
+                                 linked=1)
+                      .first())
+
+        assert_that(dialaction, is_not(none()))
+
+    def test_given_user_created_then_diactions_also_created(self):
+        user = User(firstname="dialactions")
+        created_user = user_dao.create(user)
+
+        self.assert_dial_action_created(created_user, 'noanswer')
+        self.assert_dial_action_created(created_user, 'busy')
+        self.assert_dial_action_created(created_user, 'congestion')
+        self.assert_dial_action_created(created_user, 'chanunavail')
+
     def test_create_minimal_fields(self):
         user = User(firstname='Jôhn')
         created_user = user_dao.create(user)
@@ -560,7 +580,6 @@ class TestDelete(TestUser):
         user = user_dao.create(User(firstname='Delete'))
         self.add_queue_member(usertype='user', userid=user.id)
         self.add_right_call_member(type='user', typeval=str(user.id))
-        self.add_dialaction(event='noanswer', category='user', categoryval=str(user.id), action='none')
         self.add_schedule_path(path='user', pathid=user.id)
         call_filter = self.add_bsfilter()
         self.add_filter_member(call_filter.id, user.id)

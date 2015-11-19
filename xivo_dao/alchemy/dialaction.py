@@ -24,6 +24,11 @@ from xivo_dao.alchemy import enum
 
 class Dialaction(Base):
 
+    USER_EVENTS = ('noanswer',
+                   'busy',
+                   'congestion',
+                   'chanunavail')
+
     __tablename__ = 'dialaction'
     __table_args__ = (
         PrimaryKeyConstraint('event', 'category', 'categoryval'),
@@ -37,3 +42,14 @@ class Dialaction(Base):
     actionarg1 = Column(String(255))
     actionarg2 = Column(String(255))
     linked = Column(Integer, nullable=False, server_default='0')
+
+    @classmethod
+    def new_user_actions(cls, user):
+        for event in cls.USER_EVENTS:
+            yield cls(event=event,
+                      category='user',
+                      categoryval=str(user.id),
+                      action='none',
+                      actionarg1=None,
+                      actionarg2=None,
+                      linked=1)
