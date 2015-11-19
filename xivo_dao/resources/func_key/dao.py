@@ -15,66 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy import Integer
-from sqlalchemy.sql import cast
-
-from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from xivo_dao.alchemy.extension import Extension
-from xivo_dao.alchemy.func_key_dest_bsfilter import FuncKeyDestBSFilter
 from xivo_dao.alchemy.func_key_dest_forward import FuncKeyDestForward
-from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.helpers.db_utils import flush_session
-from xivo_dao.resources.func_key.database import func_key_manager
-from xivo_dao.resources.func_key.model import UserFuncKey, Forward, ForwardTypeConverter, BSFilterFuncKey
-
-
-@daosession
-def create(session, func_key):
-    repository = func_key_manager.for_func_key(func_key)
-    with flush_session(session):
-        created_func_key = repository.create(session, func_key)
-    return created_func_key
-
-
-@daosession
-def delete(session, func_key):
-    repository = func_key_manager.for_func_key(func_key)
-    with flush_session(session):
-        repository.delete(session, func_key)
-
-
-@daosession
-def find_user_destination(session, user_id):
-    row = (session
-           .query(FuncKeyDestUser.func_key_id,
-                  FuncKeyDestUser.user_id)
-           .filter(FuncKeyDestUser.user_id == user_id)
-           .first())
-
-    if not row:
-        return None
-
-    return UserFuncKey(id=row.func_key_id,
-                       user_id=row.user_id)
-
-
-@daosession
-def find_bsfilter_destinations_for_user(session, user_id):
-    query = (session
-             .query(FuncKeyDestBSFilter.func_key_id,
-                    Callfiltermember.callfilterid.label('filter_id'),
-                    cast(Callfiltermember.typeval, Integer).label('secretary_id'))
-             .join(Callfiltermember,
-                   FuncKeyDestBSFilter.filtermember_id == Callfiltermember.id)
-             .filter(cast(Callfiltermember.typeval, Integer) == user_id))
-
-    return [BSFilterFuncKey(id=row.func_key_id,
-                            filter_id=row.filter_id,
-                            secretary_id=row.secretary_id)
-            for row in query]
+from xivo_dao.resources.func_key.model import Forward, ForwardTypeConverter
 
 
 @daosession
