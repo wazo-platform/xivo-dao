@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from __future__ import unicode_literals
+
 import uuid
 import re
 
@@ -22,6 +24,8 @@ from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint, Index, \
     UniqueConstraint, ForeignKeyConstraint
 from sqlalchemy.types import Integer, String, Text
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
+from sqlalchemy.ext.hybrid import hybrid_property
 
 from xivo_dao.alchemy import enum
 from xivo_dao.alchemy.cti_profile import CtiProfile
@@ -73,7 +77,6 @@ class UserFeatures(Base):
     id = Column(Integer, nullable=False)
     uuid = Column(String(38), nullable=False, default=_new_uuid)
     firstname = Column(String(128), nullable=False, server_default='')
-    lastname = Column(String(128), nullable=False, server_default='')
     voicemailid = Column(Integer)
     agentid = Column(Integer)
     pictureid = Column(Integer)
@@ -101,7 +104,6 @@ class UserFeatures(Base):
     musiconhold = Column(String(128), nullable=False, server_default='')
     outcallerid = Column(String(80), nullable=False, server_default='')
     mobilephonenumber = Column(String(128), nullable=False, server_default='')
-    userfield = Column(String(128), nullable=False, server_default='')
     bsfilter = Column(enum.generic_bsfilter, nullable=False, server_default='no')
     preprocess_subroutine = Column(String(39))
     timezone = Column(String(128))
@@ -112,18 +114,17 @@ class UserFeatures(Base):
     ringforward = Column(String(64))
     rightcallcode = Column(String(16))
     commented = Column(Integer, nullable=False, server_default='0')
-    description = Column(Text, nullable=False, default='')
     func_key_template_id = Column(Integer, ForeignKey('func_key_template.id', ondelete="SET NULL"))
     func_key_private_template_id = Column(Integer, ForeignKey('func_key_template.id'), nullable=False)
+
+    webi_lastname = Column('lastname', String(128), nullable=False, server_default='')
+    webi_userfield = Column('userfield', String(128), nullable=False, server_default='')
+    webi_description = Column('description', Text, nullable=False, default='')
 
     func_key_template = relationship(FuncKeyTemplate, foreign_keys=func_key_template_id)
     func_key_template_private = relationship(FuncKeyTemplate, foreign_keys=func_key_private_template_id)
     cti_profile = relationship(CtiProfile, foreign_keys=cti_profile_id)
     entity = relationship(Entity, foreign_keys=entityid)
-
-    @property
-    def fullname(self):
-        return ' '.join([self.firstname, self.lastname])
 
     def extrapolate_caller_id(self, extension=None):
         default_num = extension.exten if extension else None
@@ -131,3 +132,209 @@ class UserFeatures(Base):
         name = user_match.group('name')
         num = user_match.group('num')
         return name, (num or default_num)
+
+    def has_private_template(self):
+        return self.func_key_private_template_id is not None or self.func_key_template_private is not None
+
+    def has_entity(self):
+        return self.entity is not None or self.entityid is not None
+
+    def fill_caller_id(self):
+        if self.caller_id is None:
+            self.caller_id = '"{}"'.format(self.fullname)
+
+    @hybrid_property
+    def fullname(self):
+        name = self.firstname
+        if self.lastname:
+            name += " {}".format(self.lastname)
+        return name
+
+    @fullname.expression
+    def fullname(cls):
+        return func.trim(cls.firstname + " " + cls.webi_lastname)
+
+    @hybrid_property
+    def username(self):
+        if self.loginclient == '':
+            return None
+        return self.loginclient
+
+    @username.expression
+    def username(cls):
+        return func.nullif(cls.loginclient, '')
+
+    @username.setter
+    def username(self, value):
+        if value is None:
+            self.loginclient = ''
+        else:
+            self.loginclient = value
+
+    @hybrid_property
+    def password(self):
+        if self.passwdclient == '':
+            return None
+        return self.passwdclient
+
+    @password.expression
+    def password(cls):
+        return func.nullif(cls.passwdclient, '')
+
+    @password.setter
+    def password(self, value):
+        if value is None:
+            self.passwdclient = ''
+        else:
+            self.passwdclient = value
+
+    @hybrid_property
+    def entity_id(self):
+        return self.entityid
+
+    @entity_id.setter
+    def entity_id(self, value):
+        self.entityid = value
+
+    @hybrid_property
+    def caller_id(self):
+        if self.callerid == '':
+            return None
+        return self.callerid
+
+    @caller_id.expression
+    def caller_id(cls):
+        return func.nullif(cls.callerid, '')
+
+    @caller_id.setter
+    def caller_id(self, value):
+        if value is None:
+            self.callerid = ''
+        else:
+            self.callerid = value
+
+    @hybrid_property
+    def outgoing_caller_id(self):
+        if self.outcallerid == '':
+            return None
+        return self.outcallerid
+
+    @outgoing_caller_id.expression
+    def outgoing_caller_id(cls):
+        return func.nullif(cls.outcallerid, '')
+
+    @outgoing_caller_id.setter
+    def outgoing_caller_id(self, value):
+        if value is None:
+            self.outcallerid = ''
+        else:
+            self.outcallerid = value
+
+    @hybrid_property
+    def music_on_hold(self):
+        if self.musiconhold == '':
+            return None
+        return self.musiconhold
+
+    @music_on_hold.expression
+    def music_on_hold(cls):
+        return func.nullif(cls.musiconhold, '')
+
+    @music_on_hold.setter
+    def music_on_hold(self, value):
+        if value is None:
+            self.musiconhold = ''
+        else:
+            self.musiconhold = value
+
+    @hybrid_property
+    def mobile_phone_number(self):
+        if self.mobilephonenumber == '':
+            return None
+        return self.mobilephonenumber
+
+    @mobile_phone_number.expression
+    def mobile_phone_number(cls):
+        return func.nullif(cls.mobilephonenumber, '')
+
+    @mobile_phone_number.setter
+    def mobile_phone_number(self, value):
+        if value is None:
+            self.mobilephonenumber = ''
+        else:
+            self.mobilephonenumber = value
+
+    @hybrid_property
+    def voicemail_id(self):
+        return self.voicemailid
+
+    @voicemail_id.setter
+    def voicemail_id(self, value):
+        self.voicemailid = value
+
+    @hybrid_property
+    def userfield(self):
+        if self.webi_userfield == '':
+            return None
+        return self.webi_userfield
+
+    @userfield.expression
+    def userfield(cls):
+        return func.nullif(cls.webi_userfield, '')
+
+    @userfield.setter
+    def userfield(self, value):
+        if value is None:
+            self.webi_userfield = ''
+        else:
+            self.webi_userfield = value
+
+    @hybrid_property
+    def lastname(self):
+        if self.webi_lastname == '':
+            return None
+        return self.webi_lastname
+
+    @lastname.expression
+    def lastname(cls):
+        return func.nullif(cls.webi_lastname, '')
+
+    @lastname.setter
+    def lastname(self, value):
+        if value is None:
+            self.webi_lastname = ''
+        else:
+            self.webi_lastname = value
+
+    @hybrid_property
+    def description(self):
+        if self.webi_description == '':
+            return None
+        return self.webi_description
+
+    @description.expression
+    def description(cls):
+        return func.nullif(cls.webi_description, '')
+
+    @description.setter
+    def description(self, value):
+        if value is None:
+            self.webi_description = ''
+        else:
+            self.webi_description = value
+
+    @hybrid_property
+    def template_id(self):
+        return self.func_key_template_id
+
+    @template_id.setter
+    def template_id(self, value):
+        self.func_key_template_id = value
+
+    @hybrid_property
+    def private_template_id(self):
+        return self.func_key_private_template_id
+
+    @private_template_id.setter
+    def private_template_id(self, value):
+        self.func_key_private_template_id = value

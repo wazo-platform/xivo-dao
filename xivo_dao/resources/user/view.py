@@ -17,34 +17,36 @@
 
 from sqlalchemy.sql import func
 
-from xivo_dao.resources.utils.view import ViewSelector, View, ModelView
+from xivo_dao.resources.utils.view import ViewSelector, View
 from xivo_dao.resources.user.model import UserDirectory
-from xivo_dao.resources.user.database import db_converter
 
 from xivo_dao.alchemy.extension import Extension
-from xivo_dao.alchemy.userfeatures import UserFeatures
+from xivo_dao.alchemy.userfeatures import UserFeatures as User
 from xivo_dao.alchemy.voicemail import Voicemail
 from xivo_dao.alchemy.user_line import UserLine
 
 
-class UserView(ModelView):
+class UserView(View):
 
-    table = UserFeatures
-    db_converter = db_converter
+    def query(self, session):
+        return session.query(User)
+
+    def convert(self, model):
+        return model
 
 
 class DirectoryView(View):
 
     def query(self, session):
-        query = (session.query(UserFeatures.id.label('id'),
+        query = (session.query(User.id.label('id'),
                                UserLine.line_id.label('line_id'),
-                               UserFeatures.agentid.label('agent_id'),
-                               UserFeatures.firstname.label('firstname'),
-                               func.nullif(UserFeatures.lastname, '').label('lastname'),
-                               func.nullif(UserFeatures.mobilephonenumber, '').label('mobile_phone_number'),
+                               User.agentid.label('agent_id'),
+                               User.firstname.label('firstname'),
+                               func.nullif(User.lastname, '').label('lastname'),
+                               func.nullif(User.mobilephonenumber, '').label('mobile_phone_number'),
                                Voicemail.mailbox.label('voicemail_number'),
-                               func.nullif(UserFeatures.userfield, '').label('userfield'),
-                               func.nullif(UserFeatures.description, '').label('description'),
+                               func.nullif(User.userfield, '').label('userfield'),
+                               func.nullif(User.description, '').label('description'),
                                Extension.exten.label('exten')))
         return query
 

@@ -19,7 +19,7 @@ from hamcrest import assert_that, equal_to
 
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.dialaction import Dialaction as DialactionSchema
-from xivo_dao.resources.user.model import User
+from xivo_dao.alchemy.userfeatures import UserFeatures as User
 from xivo_dao.resources.dial_action import dao as dial_action_dao
 
 

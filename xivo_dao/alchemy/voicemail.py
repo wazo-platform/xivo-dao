@@ -19,6 +19,7 @@ from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint, \
     Index
 from sqlalchemy.types import Integer, String
 from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.ext.hybrid import hybrid_property
 
 from xivo_dao.helpers.db_manager import Base
 
@@ -48,3 +49,11 @@ class Voicemail(Base):
     options = Column(ARRAY(String, dimensions=2),
                      nullable=False, server_default='{}')
     commented = Column(Integer, nullable=False, server_default='0')
+
+    @hybrid_property
+    def id(self):
+        return self.uniqueid
+
+    @id.setter
+    def id(self, value):
+        self.uniqueid = value

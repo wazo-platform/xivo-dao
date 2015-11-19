@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy import sql
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
 from sqlalchemy.types import Integer, String, Text
 
@@ -45,3 +46,11 @@ class Entity(Base):
     disable = Column(Integer, nullable=False, server_default='0')
     dcreate = Column(Integer, nullable=False, server_default='0')
     description = Column(Text, nullable=False)
+
+    @classmethod
+    def query_default_id(cls):
+        return sql.select([cls.id]).limit(1)
+
+    @classmethod
+    def query_default_name(cls):
+        return sql.select([cls.name]).limit(1)

@@ -47,7 +47,7 @@ class UserFixes(object):
     def get_voicemail_id_and_fullname(self, user_id):
         row = (self.session
                .query(User.voicemailid,
-                      (User.firstname + " " + User.lastname).label('fullname'))
+                      User.fullname.label('fullname'))
                .filter(User.id == user_id)
                .first())
         return row.voicemailid, row.fullname.strip()

@@ -15,46 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.new_model import NewModel
 from collections import namedtuple
-
-
-class User(NewModel):
-    __name__ = 'user'
-
-    MANDATORY = [
-        'firstname',
-    ]
-
-    FIELDS = [
-        'id',
-        'uuid',
-        'firstname',
-        'lastname',
-        'caller_id',
-        'outgoing_caller_id',
-        'username',
-        'password',
-        'music_on_hold',
-        'mobile_phone_number',
-        'voicemail_number',
-        'userfield',
-        'timezone',
-        'language',
-        'description',
-        'preprocess_subroutine',
-        'private_template_id',
-        'func_key_template_id',
-    ]
-
-    _RELATION = {
-        'voicemailid': 'voicemail_id'
-    }
-
-    @property
-    def fullname(self):
-        lastname = self.lastname or ''
-        return ' '.join([self.firstname, lastname]).strip()
 
 
 UserDirectory = namedtuple('UserDirectory', ('id',

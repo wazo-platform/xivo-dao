@@ -21,13 +21,9 @@ from xivo_dao.helpers.db_manager import daosession
 
 @daosession
 def default_entity_name(session):
-    return _default_entity(session).name
+    return session.execute(EntitySchema.query_default_name()).scalar()
 
 
 @daosession
 def default_entity_id(session):
-    return _default_entity(session).id
-
-
-def _default_entity(session):
-    return session.query(EntitySchema).first()
+    return session.execute(EntitySchema.query_default_id()).scalar()
