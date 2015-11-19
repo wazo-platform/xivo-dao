@@ -18,6 +18,7 @@
 from xivo_dao.helpers.db_manager import daosession
 
 from xivo_dao.resources.user.persistor import UserPersistor
+from xivo_dao.resources.func_key.persistor import DestinationPersistor
 from xivo_dao.resources.user.search import user_search
 from xivo_dao.resources.user.view import user_view
 from xivo_dao.resources.user.fixes import UserFixes
@@ -55,7 +56,9 @@ def find_all_by(session, **criteria):
 
 @daosession
 def create(session, user):
-    return UserPersistor(session, user_view, user_search).create(user)
+    created_user = UserPersistor(session, user_view, user_search).create(user)
+    DestinationPersistor(session).create_user_destination(created_user)
+    return created_user
 
 
 @daosession
@@ -66,4 +69,5 @@ def edit(session, user):
 
 @daosession
 def delete(session, user):
+    DestinationPersistor(session).delete_user_destination(user)
     UserPersistor(session, user_view, user_search).delete(user)
