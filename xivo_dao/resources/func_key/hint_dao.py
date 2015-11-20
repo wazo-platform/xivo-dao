@@ -15,10 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-import re
-
 from sqlalchemy import sql, literal_column, Unicode, Integer
 from sqlalchemy.orm import aliased
+
+from xivo.xivo_helpers import clean_extension
 
 from xivo_dao.helpers.db_manager import daosession
 
@@ -42,8 +42,6 @@ from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from xivo_dao.alchemy.callfilter import Callfilter
 
 from xivo_dao.resources.func_key.model import Hint
-
-_find_asterisk_pattern_char = re.compile('[[NXZ!.]').search
 
 
 def _find_extenfeatures(session, typeval):
@@ -69,41 +67,16 @@ def _common_filter(query, context):
             .filter(FuncKeyMapping.blf == True))
 
 
-def _clean_extension(exten):
-    """
-    Return an extension from an Asterisk extension pattern.
-    """
-    if exten is None:
-        return ''
-
-    exten = str(exten)
-
-    if exten.startswith('_'):
-        exten = exten[1:]
-        e = _position_of_asterisk_pattern_char(exten)
-        if e is not None:
-            exten = exten[:e]
-
-    return exten
-
-
-def _position_of_asterisk_pattern_char(ast_pattern):
-    mo = _find_asterisk_pattern_char(ast_pattern)
-    if not mo:
-        return None
-    return mo.start()
-
-
 @daosession
 def progfunckey_extension(session):
     extension = _find_extenfeatures(session, 'phoneprogfunckey')
-    return _clean_extension(extension)
+    return clean_extension(extension)
 
 
 @daosession
 def calluser_extension(session):
     extension = _find_extenfeatures(session, 'calluser')
-    return _clean_extension(extension)
+    return clean_extension(extension)
 
 
 @daosession
@@ -192,7 +165,7 @@ def forward_hints(session, context):
     query = _common_filter(query, context)
 
     return tuple(Hint(user_id=row.user_id,
-                      extension=_clean_extension(row.extension),
+                      extension=clean_extension(row.extension),
                       argument=row.argument)
                  for row in query)
 
@@ -210,7 +183,7 @@ def agent_hints(session, context):
     query = _common_filter(query, context)
 
     return tuple(Hint(user_id=row.user_id,
-                      extension=_clean_extension(row.extension),
+                      extension=clean_extension(row.extension),
                       argument=row.argument)
                  for row in query)
 
@@ -230,7 +203,7 @@ def custom_hints(session, context):
 
 @daosession
 def bsfilter_hints(session, context):
-    bsfilter_extension = _clean_extension(_find_extenfeatures(session, 'bsfilter'))
+    bsfilter_extension = clean_extension(_find_extenfeatures(session, 'bsfilter'))
 
     query = (session.query(sql.cast(FuncKeyDestBSFilter.filtermember_id, Unicode).label('argument'))
              .join(Callfiltermember,
