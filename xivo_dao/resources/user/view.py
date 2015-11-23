@@ -23,6 +23,7 @@ from xivo_dao.resources.user.database import db_converter
 
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.userfeatures import UserFeatures
+from xivo_dao.alchemy.voicemail import Voicemail
 from xivo_dao.alchemy.user_line import UserLine
 
 
@@ -41,6 +42,7 @@ class DirectoryView(View):
                                UserFeatures.firstname.label('firstname'),
                                func.nullif(UserFeatures.lastname, '').label('lastname'),
                                func.nullif(UserFeatures.mobilephonenumber, '').label('mobile_phone_number'),
+                               Voicemail.mailbox.label('voicemail_number'),
                                func.nullif(UserFeatures.userfield, '').label('userfield'),
                                func.nullif(UserFeatures.description, '').label('description'),
                                Extension.exten.label('exten')))
@@ -53,6 +55,7 @@ class DirectoryView(View):
                              firstname=row.firstname,
                              lastname=row.lastname,
                              mobile_phone_number=row.mobile_phone_number,
+                             voicemail_number=row.voicemail_number,
                              exten=row.exten,
                              userfield=row.userfield,
                              description=row.description)

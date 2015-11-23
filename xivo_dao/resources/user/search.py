@@ -19,6 +19,7 @@ from sqlalchemy.sql import and_
 
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.alchemy.linefeatures import LineFeatures
+from xivo_dao.alchemy.voicemail import Voicemail
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.resources.utils.search import SearchSystem
@@ -33,6 +34,7 @@ config = SearchConfig(table=UserFeatures,
                                'description': UserFeatures.description,
                                'userfield': UserFeatures.userfield,
                                'mobile_phone_number': UserFeatures.mobilephonenumber,
+                               'voicemail_number': Voicemail.mailbox,
                                'exten': Extension.exten},
                       search=['fullname', 'caller_id', 'description', 'userfield', 'mobile_phone_number', 'exten'],
                       default_sort='lastname')
@@ -53,7 +55,10 @@ class UserSearchSystem(SearchSystem):
                                 LineFeatures.commented == 0))
                 .outerjoin(Extension,
                            and_(UserLine.extension_id == Extension.id,
-                                Extension.commented == 0)))
+                                Extension.commented == 0))
+                .outerjoin(Voicemail,
+                           and_(UserFeatures.voicemailid == Voicemail.uniqueid,
+                                Voicemail.commented == 0)))
 
 
 user_search = UserSearchSystem(config)
