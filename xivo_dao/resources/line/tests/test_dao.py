@@ -198,7 +198,6 @@ class TestLineDaoEdit(TestLineDao):
         line_dao.edit(line)
 
         edited_usersip = self.session.query(UserSIP).get(usersip_row.id)
-        print edited_usersip.callerid
         assert_that(edited_usersip.callerid, equal_to('"Rôger Rabbit" <2000>'))
 
     def test_given_line_has_sip_endpoint_when_setting_caller_id_to_null_then_raises_error(self):
