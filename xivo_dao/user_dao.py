@@ -21,6 +21,7 @@ from sqlalchemy import and_
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from xivo_dao.alchemy.contextinclude import ContextInclude
 from xivo_dao.alchemy.dialaction import Dialaction
+from xivo_dao.alchemy.infos import Infos
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.phonefunckey import PhoneFunckey
 from xivo_dao.alchemy.queuemember import QueueMember
@@ -362,7 +363,8 @@ def _user_config_query(session):
         UserFeatures.userfield,
         UserFeatures.voicemailid,
         LineFeatures.id.label('line_id'),
-        LineFeatures.context.label('line_context'))
+        LineFeatures.context.label('line_context'),
+        Infos.uuid.label('xivo_uuid'))
         .outerjoin(UserLine, and_(UserLine.main_user == True,
                                   UserLine.main_line == True,
                                   UserLine.user_id == UserFeatures.id))
@@ -424,4 +426,5 @@ def _format_user(user):
         'timezone': user.timezone,
         'userfield': user.userfield,
         'voicemailid': user.voicemailid,
+        'xivo_uuid': user.xivo_uuid,
     }
