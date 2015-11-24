@@ -338,3 +338,7 @@ class UserFeatures(Base):
     @private_template_id.setter
     def private_template_id(self, value):
         self.func_key_private_template_id = value
+
+    @hybrid_property
+    def cti_enabled(self):
+        return self.enableclient == 1
