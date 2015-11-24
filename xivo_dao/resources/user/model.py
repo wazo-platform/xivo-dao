@@ -15,16 +15,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from collections import namedtuple
 
+class UserDirectory(object):
 
-UserDirectory = namedtuple('UserDirectory', ('id',
-                                             'line_id',
-                                             'agent_id',
-                                             'firstname',
-                                             'lastname',
-                                             'exten',
-                                             'mobile_phone_number',
-                                             'voicemail_number',
-                                             'userfield',
-                                             'description'))
+    def __init__(self, id, line_id, agent_id, firstname, lastname, exten,
+                 mobile_phone_number, voicemail_number, userfield, description):
+        self.id = id
+        self.line_id = line_id
+        self.agent_id = agent_id
+        self.firstname = firstname
+        self.lastname = lastname
+        self.exten = exten
+        self.mobile_phone_number = mobile_phone_number
+        self.voicemail_number = voicemail_number
+        self.userfield = userfield
+        self.description = description
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
