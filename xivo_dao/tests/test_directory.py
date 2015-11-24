@@ -252,6 +252,10 @@ class TestDirectoryNonLdapSources(DAOTestCase):
             {'type': 'xivo',
              'name': 'Internal',
              'uri': 'http://localhost:9487',
+             'xivo_username': None,
+             'xivo_password': None,
+             'xivo_verify_certificate': False,
+             'xivo_custom_ca_path': None,
              'delimiter': None,
              'searched_columns': [
                  'firstname',
@@ -264,6 +268,10 @@ class TestDirectoryNonLdapSources(DAOTestCase):
             {'type': 'xivo',
              'name': 'mtl',
              'uri': 'http://mtl.lan.example.com:9487',
+             'xivo_username': None,
+             'xivo_password': None,
+             'xivo_verify_certificate': False,
+             'xivo_custom_ca_path': None,
              'delimiter': None,
              'searched_columns': [],
              'format_columns': {
@@ -298,6 +306,10 @@ class TestDirectoryNonLdapSources(DAOTestCase):
             {'type': 'xivo',
              'name': 'Internal',
              'uri': 'http://localhost:9487',
+             'xivo_username': None,
+             'xivo_password': None,
+             'xivo_verify_certificate': False,
+             'xivo_custom_ca_path': None,
              'delimiter': None,
              'searched_columns': [
                  'firstname',
@@ -307,6 +319,10 @@ class TestDirectoryNonLdapSources(DAOTestCase):
             {'type': 'xivo',
              'name': 'mtl',
              'uri': 'http://mtl.lan.example.com:9487',
+             'xivo_username': None,
+             'xivo_password': None,
+             'xivo_verify_certificate': False,
+             'xivo_custom_ca_path': None,
              'delimiter': None,
              'searched_columns': [],
              'format_columns': {
