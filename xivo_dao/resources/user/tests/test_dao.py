@@ -447,6 +447,12 @@ class TestCreate(TestUser):
                                         voicemailid=voicemail.id,
                                         musiconhold='music_on_hold'))
 
+    def test_that_the_user_uuid_is_unique(self):
+        shared_uuid = str(uuid.uuid4())
+        self.prepare_user(firstname='Alice', uuid=shared_uuid)
+
+        self.assertRaises(Exception, user_dao.create, User(firstname='Jôhn', uuid=shared_uuid))
+
 
 class TestEdit(TestUser):
 
