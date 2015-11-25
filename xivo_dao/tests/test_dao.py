@@ -82,7 +82,7 @@ from xivo_dao.helpers.db_manager import Base
 from xivo.debug import trace_duration
 
 from sqlalchemy.engine import create_engine
-from sqlalchemy.pool import NullPool
+from sqlalchemy.pool import StaticPool
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import event
 
@@ -113,13 +113,18 @@ def _init_tables():
 
 Session = sessionmaker()
 
+engine = None
+
 
 class DAOTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.engine = create_engine(TEST_DB_URL, poolclass=NullPool)
-        Base.metadata.bind = cls.engine
+        global engine
+        if not engine:
+            engine = create_engine(TEST_DB_URL, poolclass=StaticPool)
+
+        cls.engine = Base.metadata.bind = engine
         expensive_setup()
 
     def setUp(self):
@@ -141,7 +146,6 @@ class DAOTestCase(unittest.TestCase):
         self.session.close()
         self.session.remove()
         self.trans.rollback()
-        self.connection.close()
 
     def add_admin(self, **kwargs):
         admin = User(**kwargs)
