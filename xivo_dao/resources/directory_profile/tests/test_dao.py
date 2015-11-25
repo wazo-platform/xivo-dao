@@ -32,11 +32,11 @@ class TestDirectoryProfileDao(DAOTestCase):
         incall = self.add_incall()
         dialaction = self.add_dialaction(event='answer',
                                          category='incall',
-                                         categoryval=int(incall.id),
+                                         categoryval=str(incall.id),
                                          action='user',
                                          actionarg1=str(user_line.user.id))
 
-        result_uuid, result_context = profile_dao.find_by_incall_id(incall_id=dialaction.categoryval)
+        result_uuid, result_context = profile_dao.find_by_incall_id(incall_id=incall.id)
 
         assert_that(result_context, equal_to(user_line.line.context))
         assert_that(result_uuid, equal_to(user_line.user.uuid))
