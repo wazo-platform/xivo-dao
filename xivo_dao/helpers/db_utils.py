@@ -17,7 +17,7 @@
 
 from contextlib import contextmanager
 from xivo_dao.helpers import db_manager
-from xivo_dao.helpers.db_manager import daosession, Session
+from xivo_dao.helpers.db_manager import daosession
 
 
 @contextmanager
@@ -40,7 +40,7 @@ def get_dao_session(session):
 
 @contextmanager
 def session_scope():
-    session = Session()
+    session = db_manager.Session()
     try:
         yield session
         session.commit()
@@ -48,4 +48,4 @@ def session_scope():
         session.rollback()
         raise
     finally:
-        Session.remove()
+        db_manager.Session.remove()

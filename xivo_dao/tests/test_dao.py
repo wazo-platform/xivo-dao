@@ -126,8 +126,8 @@ class DAOTestCase(unittest.TestCase):
         self.connection = self.engine.connect()
         self.trans = self.connection.begin()
 
-        self.session = Session(bind=self.connection)
-        db_manager.Session = lambda: self.session
+        db_manager.Session.configure(bind=self.connection)
+        self.session = db_manager.Session
 
         self.session.begin_nested()
 
@@ -139,6 +139,7 @@ class DAOTestCase(unittest.TestCase):
 
     def tearDown(self):
         self.session.close()
+        self.session.remove()
         self.trans.rollback()
         self.connection.close()
 
