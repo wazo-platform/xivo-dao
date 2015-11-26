@@ -53,6 +53,7 @@ def _get_ldap_sources(session):
         CtiDirectories.name,
         CtiDirectories.uri,
         CtiDirectories.match_direct,
+        CtiDirectories.match_reverse,
         func.array_agg(CtiDirectoryFields.fieldname).label('fields'),
         func.array_agg(CtiDirectoryFields.value).label('values'),
     ).outerjoin(
@@ -64,6 +65,7 @@ def _get_ldap_sources(session):
         CtiDirectories.name,
         CtiDirectories.uri,
         CtiDirectories.match_direct,
+        CtiDirectories.match_reverse,
     )
 
     source_configs = []
@@ -82,6 +84,7 @@ def _get_ldap_sources(session):
         source_configs.append({'type': 'ldap',
                                'name': dir.name,
                                'searched_columns': json.loads(dir.match_direct or '[]'),
+                               'first_matched_columns': json.loads(dir.match_reverse or '[]'),
                                'format_columns': _format_columns(dir.fields, dir.values),
                                'ldap_uri': ldap_config['uri'],
                                'ldap_base_dn': ldap_config['basedn'],
@@ -99,6 +102,7 @@ def _get_nonldap_sources(session):
         Directories.dirtype,
         CtiDirectories.delimiter,
         CtiDirectories.match_direct,
+        CtiDirectories.match_reverse,
         func.array_agg(CtiDirectoryFields.fieldname).label('fields'),
         func.array_agg(CtiDirectoryFields.value).label('values'),
     ).join(
@@ -113,6 +117,7 @@ def _get_nonldap_sources(session):
         Directories.dirtype,
         CtiDirectories.delimiter,
         CtiDirectories.match_direct,
+        CtiDirectories.match_reverse,
     )
 
     return [{'name': source.name,
@@ -120,5 +125,6 @@ def _get_nonldap_sources(session):
              'uri': source.uri,
              'delimiter': source.delimiter,
              'searched_columns': json.loads(source.match_direct or '[]'),
+             'first_matched_columns': json.loads(source.match_reverse or '[]'),
              'format_columns': _format_columns(source.fields, source.values)}
             for source in sources.all()]

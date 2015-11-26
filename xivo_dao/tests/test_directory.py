@@ -81,37 +81,41 @@ class TestDirectoryLdapSources(DAOTestCase):
                                            fieldname=name,
                                            value=column))
 
+        self.expected_result_1 = {
+            'type': 'ldap',
+            'name': 'ldapdirectory_1',
+            'ldap_uri': 'ldaps://myldap.example.com:636',
+            'ldap_base_dn': 'dc=example,dc=com',
+            'ldap_username': 'cn=admin,dc=example,dc=com',
+            'ldap_password': '53c8e7',
+            'ldap_custom_filter': '',
+            'searched_columns': ['cn'],
+            'first_matched_columns': ['telephoneNumber'],
+            'format_columns': {
+                'firstname': '{givenName}',
+                'lastname': '{sn}',
+                'number': '{telephoneNumber}',
+            }}
+        self.expected_result_2 = {
+            'type': 'ldap',
+            'name': 'ldapdirectory_2',
+            'ldap_uri': 'ldaps://myldap.example.com:636',
+            'ldap_base_dn': 'dc=example,dc=com',
+            'ldap_username': 'cn=admin,dc=example,dc=com',
+            'ldap_password': '53c8e7',
+            'ldap_custom_filter': '(l=Québec)',
+            'searched_columns': ['cn'],
+            'first_matched_columns': ['telephoneNumber'],
+            'format_columns': {
+                'firstname': '{givenName}',
+                'lastname': '{sn}',
+                'number': '{telephoneNumber}',
+            }}
+
     def test_get_all_sources(self):
         result = directory_dao.get_all_sources()
 
-        expected = [
-            {'type': 'ldap',
-             'name': 'ldapdirectory_1',
-             'ldap_uri': 'ldaps://myldap.example.com:636',
-             'ldap_base_dn': 'dc=example,dc=com',
-             'ldap_username': 'cn=admin,dc=example,dc=com',
-             'ldap_password': '53c8e7',
-             'ldap_custom_filter': '',
-             'searched_columns': ['cn'],
-             'format_columns': {
-                 'firstname': '{givenName}',
-                 'lastname': '{sn}',
-                 'number': '{telephoneNumber}',
-             }},
-            {'type': 'ldap',
-             'name': 'ldapdirectory_2',
-             'ldap_uri': 'ldaps://myldap.example.com:636',
-             'ldap_base_dn': 'dc=example,dc=com',
-             'ldap_username': 'cn=admin,dc=example,dc=com',
-             'ldap_password': '53c8e7',
-             'ldap_custom_filter': '(l=Québec)',
-             'searched_columns': ['cn'],
-             'format_columns': {
-                 'firstname': '{givenName}',
-                 'lastname': '{sn}',
-                 'number': '{telephoneNumber}',
-             }},
-        ]
+        expected = [self.expected_result_1, self.expected_result_2]
 
         assert_that(result, contains_inanyorder(*expected))
 
@@ -126,34 +130,7 @@ class TestDirectoryLdapSources(DAOTestCase):
 
         result = directory_dao.get_all_sources()
 
-        expected = [
-            {'type': 'ldap',
-             'name': 'ldapdirectory_1',
-             'ldap_uri': 'ldaps://myldap.example.com:636',
-             'ldap_base_dn': 'dc=example,dc=com',
-             'ldap_username': 'cn=admin,dc=example,dc=com',
-             'ldap_password': '53c8e7',
-             'ldap_custom_filter': '',
-             'searched_columns': ['cn'],
-             'format_columns': {
-                 'firstname': '{givenName}',
-                 'lastname': '{sn}',
-                 'number': '{telephoneNumber}',
-             }},
-            {'type': 'ldap',
-             'name': 'ldapdirectory_2',
-             'ldap_uri': 'ldaps://myldap.example.com:636',
-             'ldap_base_dn': 'dc=example,dc=com',
-             'ldap_username': 'cn=admin,dc=example,dc=com',
-             'ldap_password': '53c8e7',
-             'ldap_custom_filter': '(l=Québec)',
-             'searched_columns': ['cn'],
-             'format_columns': {
-                 'firstname': '{givenName}',
-                 'lastname': '{sn}',
-                 'number': '{telephoneNumber}',
-             }},
-        ]
+        expected = [self.expected_result_1, self.expected_result_2]
 
         assert_that(result, contains_inanyorder(*expected))
 
@@ -162,34 +139,20 @@ class TestDirectoryLdapSources(DAOTestCase):
 
         result = directory_dao.get_all_sources()
 
-        expected = [
-            {'type': 'ldap',
-             'name': 'ldapdirectory_1',
-             'ldap_uri': 'ldaps://myldap.example.com:636',
-             'ldap_base_dn': 'dc=example,dc=com',
-             'ldap_username': 'cn=admin,dc=example,dc=com',
-             'ldap_password': '53c8e7',
-             'ldap_custom_filter': '',
-             'searched_columns': [],
-             'format_columns': {
-                 'firstname': '{givenName}',
-                 'lastname': '{sn}',
-                 'number': '{telephoneNumber}',
-             }},
-            {'type': 'ldap',
-             'name': 'ldapdirectory_2',
-             'ldap_uri': 'ldaps://myldap.example.com:636',
-             'ldap_base_dn': 'dc=example,dc=com',
-             'ldap_username': 'cn=admin,dc=example,dc=com',
-             'ldap_password': '53c8e7',
-             'ldap_custom_filter': '(l=Québec)',
-             'searched_columns': ['cn'],
-             'format_columns': {
-                 'firstname': '{givenName}',
-                 'lastname': '{sn}',
-                 'number': '{telephoneNumber}',
-             }},
-        ]
+        expected_result_1 = dict(self.expected_result_1)
+        expected_result_1['searched_columns'] = []
+        expected = [expected_result_1, self.expected_result_2]
+
+        assert_that(result, contains_inanyorder(*expected))
+
+    def test_ldap_with_no_reverse_match(self):
+        self.cti_directory_1.match_reverse = ''
+
+        result = directory_dao.get_all_sources()
+
+        expected_result_1 = dict(self.expected_result_1)
+        expected_result_1['first_matched_columns'] = []
+        expected = [expected_result_1, self.expected_result_2]
 
         assert_that(result, contains_inanyorder(*expected))
 
@@ -208,15 +171,18 @@ class TestDirectoryNonLdapSources(DAOTestCase):
             {'id': 1,
              'name': 'Internal',
              'uri': 'http://localhost:9487',
-             'match_direct': '["firstname", "lastname"]'},
+             'match_direct': '["firstname", "lastname"]',
+             'match_reverse': '["exten"]'},
             {'id': 2,
              'name': 'mtl',
              'uri': 'http://mtl.lan.example.com:9487',
-             'match_direct': ''},
+             'match_direct': '',
+             'match_reverse': '[]'},
             {'id': 3,
              'name': 'acsvfile',
              'uri': 'file:///tmp/test.csv',
              'match_direct': '["firstname", "lastname"]',
+             'match_reverse': '["exten"]',
              'delimiter': '|'},
         ]
         self.cti_directory_fields_configs = [
@@ -240,6 +206,48 @@ class TestDirectoryNonLdapSources(DAOTestCase):
              'value': '{firstname} {lastname}'},
         ]
 
+        self.expected_result_1 = {
+            'type': 'xivo',
+            'name': 'Internal',
+            'uri': 'http://localhost:9487',
+            'delimiter': None,
+            'searched_columns': [
+                'firstname',
+                'lastname',
+            ],
+            'first_matched_columns': ['exten'],
+            'format_columns': {
+                'number': '{exten}',
+                'mobile': '{mobile_phone_number}',
+            }}
+
+        self.expected_result_2 = {
+            'type': 'xivo',
+            'name': 'mtl',
+            'uri': 'http://mtl.lan.example.com:9487',
+            'delimiter': None,
+            'searched_columns': [],
+            'first_matched_columns': [],
+            'format_columns': {
+                'number': '{exten}',
+                'mobile': '{mobile_phone_number}',
+                'name': '{firstname} {lastname}',
+            }}
+
+        self.expected_result_3 = {
+            'type': 'file',
+            'name': 'acsvfile',
+            'uri': 'file:///tmp/test.csv',
+            'delimiter': '|',
+            'searched_columns': [
+                'firstname',
+                'lastname',
+            ],
+            'first_matched_columns': ['exten'],
+            'format_columns': {
+                'name': '{firstname} {lastname}',
+            }}
+
     def test_get_all_sources(self):
         directories = [Directories(**config) for config in self.directory_configs]
         cti_directories = [CtiDirectories(**config) for config in self.cti_directory_configs]
@@ -248,41 +256,7 @@ class TestDirectoryNonLdapSources(DAOTestCase):
 
         result = directory_dao.get_all_sources()
 
-        expected = [
-            {'type': 'xivo',
-             'name': 'Internal',
-             'uri': 'http://localhost:9487',
-             'delimiter': None,
-             'searched_columns': [
-                 'firstname',
-                 'lastname',
-             ],
-             'format_columns': {
-                 'number': '{exten}',
-                 'mobile': '{mobile_phone_number}',
-             }},
-            {'type': 'xivo',
-             'name': 'mtl',
-             'uri': 'http://mtl.lan.example.com:9487',
-             'delimiter': None,
-             'searched_columns': [],
-             'format_columns': {
-                 'number': '{exten}',
-                 'mobile': '{mobile_phone_number}',
-                 'name': '{firstname} {lastname}',
-             }},
-            {'type': 'file',
-             'name': 'acsvfile',
-             'uri': 'file:///tmp/test.csv',
-             'delimiter': '|',
-             'searched_columns': [
-                 'firstname',
-                 'lastname',
-             ],
-             'format_columns': {
-                 'name': '{firstname} {lastname}',
-             }},
-        ]
+        expected = [self.expected_result_1, self.expected_result_2, self.expected_result_3]
 
         assert_that(result, contains_inanyorder(*expected))
 
@@ -294,27 +268,9 @@ class TestDirectoryNonLdapSources(DAOTestCase):
 
         result = directory_dao.get_all_sources()
 
-        expected = [
-            {'type': 'xivo',
-             'name': 'Internal',
-             'uri': 'http://localhost:9487',
-             'delimiter': None,
-             'searched_columns': [
-                 'firstname',
-                 'lastname',
-             ],
-             'format_columns': {}},
-            {'type': 'xivo',
-             'name': 'mtl',
-             'uri': 'http://mtl.lan.example.com:9487',
-             'delimiter': None,
-             'searched_columns': [],
-             'format_columns': {
-                 'number': '{exten}',
-                 'mobile': '{mobile_phone_number}',
-                 'name': '{firstname} {lastname}',
-             }}
-        ]
+        expected_result_1 = dict(self.expected_result_1)
+        expected_result_1['format_columns'] = {}
+        expected = [expected_result_1, self.expected_result_2]
 
         assert_that(result, contains_inanyorder(*expected))
 
