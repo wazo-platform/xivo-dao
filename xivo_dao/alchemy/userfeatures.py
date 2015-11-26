@@ -126,6 +126,10 @@ class UserFeatures(Base):
     cti_profile = relationship(CtiProfile, foreign_keys=cti_profile_id)
     entity = relationship(Entity, foreign_keys=entityid)
 
+    main_line_rel = relationship("UserLine",
+                                 primaryjoin="""and_(UserFeatures.id == UserLine.user_id,
+                                                     UserLine.main_line == True)""")
+
     def extrapolate_caller_id(self, extension=None):
         default_num = extension.exten if extension else None
         user_match = caller_id_regex.match(self.callerid)
