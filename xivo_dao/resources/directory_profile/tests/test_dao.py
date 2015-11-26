@@ -30,16 +30,16 @@ class TestDirectoryProfileDao(DAOTestCase):
     def test_find_by_incall_id(self):
         user_line = self.add_user_line_with_exten(context='default')
         incall = self.add_incall()
-        dialaction = self.add_dialaction(event='answer',
-                                         category='incall',
-                                         categoryval=str(incall.id),
-                                         action='user',
-                                         actionarg1=str(user_line.user.id))
+        self.add_dialaction(event='answer',
+                            category='incall',
+                            categoryval=str(incall.id),
+                            action='user',
+                            actionarg1=str(user_line.user.id))
 
-        result_uuid, result_context = profile_dao.find_by_incall_id(incall_id=incall.id)
+        result = profile_dao.find_by_incall_id(incall_id=incall.id)
 
-        assert_that(result_context, equal_to(user_line.line.context))
-        assert_that(result_uuid, equal_to(user_line.user.uuid))
+        assert_that(result.profile, equal_to(user_line.line.context))
+        assert_that(result.xivo_user_uuid, equal_to(user_line.user.uuid))
 
     def test_find_by_incall_id_return_none_when_not_found(self):
 
