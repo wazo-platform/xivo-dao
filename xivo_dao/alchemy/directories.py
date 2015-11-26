@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from sqlalchemy.schema import Column, PrimaryKeyConstraint
-from sqlalchemy.types import Integer, String, Text
+from sqlalchemy.types import Boolean, Integer, String, Text
 
 from xivo_dao.helpers.db_manager import Base
 
@@ -33,3 +33,7 @@ class Directories(Base):
     dirtype = Column(String(20), nullable=False)
     name = Column(String(255))
     description = Column(Text, nullable=False, default='')
+    xivo_username = Column(Text)
+    xivo_password = Column(Text)
+    xivo_verify_certificate = Column(Boolean, nullable=False, server_default='False')
+    xivo_custom_ca_path = Column(Text)

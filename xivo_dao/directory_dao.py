@@ -100,6 +100,10 @@ def _get_nonldap_sources(session):
         CtiDirectories.name,
         CtiDirectories.uri,
         Directories.dirtype,
+        Directories.xivo_username,
+        Directories.xivo_password,
+        Directories.xivo_verify_certificate,
+        Directories.xivo_custom_ca_path,
         CtiDirectories.delimiter,
         CtiDirectories.match_direct,
         CtiDirectories.match_reverse,
@@ -115,16 +119,31 @@ def _get_nonldap_sources(session):
         CtiDirectories.name,
         CtiDirectories.uri,
         Directories.dirtype,
+        Directories.xivo_username,
+        Directories.xivo_password,
+        Directories.xivo_verify_certificate,
+        Directories.xivo_custom_ca_path,
         CtiDirectories.delimiter,
         CtiDirectories.match_direct,
         CtiDirectories.match_reverse,
     )
 
-    return [{'name': source.name,
-             'type': source.dirtype,
-             'uri': source.uri,
-             'delimiter': source.delimiter,
-             'searched_columns': json.loads(source.match_direct or '[]'),
-             'first_matched_columns': json.loads(source.match_reverse or '[]'),
-             'format_columns': _format_columns(source.fields, source.values)}
-            for source in sources.all()]
+    source_configs = []
+    for source in sources.all():
+        source_config = {
+            'name': source.name,
+            'type': source.dirtype,
+            'uri': source.uri,
+            'delimiter': source.delimiter,
+            'searched_columns': json.loads(source.match_direct or '[]'),
+            'first_matched_columns': json.loads(source.match_reverse or '[]'),
+            'format_columns': _format_columns(source.fields, source.values),
+        }
+        if source.dirtype == 'xivo':
+            source_config['xivo_username'] = source.xivo_username
+            source_config['xivo_password'] = source.xivo_password
+            source_config['xivo_verify_certificate'] = source.xivo_verify_certificate
+            source_config['xivo_custom_ca_path'] = source.xivo_custom_ca_path
+        source_configs.append(source_config)
+
+    return source_configs
