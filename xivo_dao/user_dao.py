@@ -29,6 +29,14 @@ logger = logging.getLogger(__name__)
 
 
 @daosession
+def get(session, user_id):
+    result = session.query(UserFeatures).filter(UserFeatures.id == int(user_id)).first()
+    if result is None:
+        raise LookupError()
+    return result
+
+
+@daosession
 def get_user_by_number_context(session, exten, context):
     user = (session.query(UserFeatures)
             .join(ExtensionSchema, and_(ExtensionSchema.context == context,
