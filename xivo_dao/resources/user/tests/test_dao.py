@@ -19,411 +19,221 @@ from __future__ import unicode_literals
 
 import uuid
 
-from hamcrest import all_of
-from hamcrest import any_of
 from hamcrest import assert_that
-from hamcrest import contains
 from hamcrest import equal_to
-from hamcrest import has_items
-from hamcrest import has_length
 from hamcrest import has_property
-from hamcrest import is_
+from hamcrest import has_properties
 from hamcrest import is_not
 from hamcrest import none
+from hamcrest import has_items
+from hamcrest import contains
 
-from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
+from xivo_dao.alchemy.userfeatures import UserFeatures as User
+from xivo_dao.alchemy.schedule import Schedule
+from xivo_dao.alchemy.schedulepath import SchedulePath
+from xivo_dao.alchemy.rightcallmember import RightCallMember
+from xivo_dao.alchemy.queuemember import QueueMember
+from xivo_dao.alchemy.dialaction import Dialaction
+from xivo_dao.alchemy.callfiltermember import Callfiltermember
+from xivo_dao.alchemy.func_key import FuncKey
+from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
+from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
 from xivo_dao.resources.utils.search import SearchResult
-from xivo_dao.helpers.exception import NotFoundError
+from xivo_dao.helpers.exception import NotFoundError, InputError
 from xivo_dao.resources.user import dao as user_dao
-from xivo_dao.resources.user.model import User, UserDirectory
+from xivo_dao.resources.user.model import UserDirectory
 from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 
 
-class TestGet(DAOTestCase):
+class TestUser(DAOTestCase, FuncKeyHelper):
 
-    def test_get_main_user_by_line_id_not_found(self):
-        line_id = 654
+    def setUp(self):
+        super(TestUser, self).setUp()
+        self.setup_funckeys()
 
-        self.assertRaises(NotFoundError, user_dao.get_main_user_by_line_id, line_id)
+    def prepare_user(self, **kwargs):
+        template_row = self.add_func_key_template(private=True)
+        kwargs.setdefault('func_key_private_template_id', template_row.id)
+        user = User(**kwargs)
+        self.session.add(user)
+        self.session.flush()
+        return user
 
-    def test_get_main_user_by_line_id(self):
-        user_line = self.add_user_line_with_exten()
-        line_id = user_line.line.id
 
-        result = user_dao.get_main_user_by_line_id(line_id)
+class TestFind(TestUser):
 
-        assert_that(result, has_property('id', user_line.user.id))
+    def test_find_no_user(self):
+        result = user_dao.find(42)
 
-    def test_get_inexistant(self):
+        assert_that(result, none())
+
+    def test_find(self):
+        user_row = self.add_user(firstname='Pâul',
+                                 lastname='Rôgers',
+                                 callerid='"Côol dude"',
+                                 outcallerid='"Côol dude going out"',
+                                 loginclient='paulrogers',
+                                 passwdclient='paulrogers',
+                                 musiconhold='mymusic',
+                                 mobilephonenumber='4185551234',
+                                 userfield='userfield',
+                                 timezone='America/Montreal',
+                                 language='fr_FR',
+                                 description='Really cool dude',
+                                 preprocess_subroutine='preprocess_subroutine')
+
+        voicemail_row = self.add_voicemail(mailbox='1234', context='default')
+        self.link_user_and_voicemail(user_row, voicemail_row.uniqueid)
+
+        user = user_dao.find(user_row.id)
+
+        assert_that(user.id, equal_to(user.id))
+        assert_that(user.lastname, equal_to(user_row.lastname))
+        assert_that(user.caller_id, equal_to(user_row.callerid))
+        assert_that(user.outgoing_caller_id, equal_to(user_row.outcallerid))
+        assert_that(user.username, equal_to(user_row.loginclient))
+        assert_that(user.password, equal_to(user_row.passwdclient))
+        assert_that(user.music_on_hold, equal_to(user_row.musiconhold))
+        assert_that(user.mobile_phone_number, equal_to(user_row.mobilephonenumber))
+        assert_that(user.userfield, equal_to(user_row.userfield))
+        assert_that(user.timezone, equal_to(user_row.timezone))
+        assert_that(user.language, equal_to(user_row.language))
+        assert_that(user.description, equal_to(user_row.description))
+        assert_that(user.preprocess_subroutine, equal_to(user_row.preprocess_subroutine))
+        assert_that(user.voicemail_id, equal_to(voicemail_row.uniqueid))
+        assert_that(user.private_template_id, equal_to(user_row.func_key_private_template_id))
+
+
+class TestGet(TestUser):
+
+    def test_get_no_user(self):
         self.assertRaises(NotFoundError, user_dao.get, 42)
 
-    def test_get_required_fields(self):
-        user_row = self.add_user(firstname='Pâul')
-
-        user = user_dao.get(user_row.id)
-
-        assert_that(user.id, equal_to(user_row.id))
-        assert_that(user.firstname, equal_to(user_row.firstname))
-        assert_that(user.private_template_id, equal_to(user_row.func_key_private_template_id))
-
-    def test_get_commented(self):
-        user_row = self.add_user(firstname='Pâul', commented=1)
-
-        user = user_dao.get(user_row.id)
-
-        assert_that(user.id, equal_to(user_row.id))
-
-    def test_get_all_fields(self):
-        user_row = self.add_user(firstname='Pâul',
-                                 lastname='Rôgers',
-                                 callerid='"Côol dude"',
-                                 outcallerid='"Côol dude going out"',
-                                 loginclient='paulrogers',
-                                 passwdclient='paulrogers',
-                                 musiconhold='mymusic',
-                                 mobilephonenumber='4185551234',
-                                 userfield='userfield',
-                                 timezone='America/Montreal',
-                                 language='fr_FR',
-                                 description='Really cool dude',
-                                 preprocess_subroutine='preprocess_subroutine')
-        voicemail_row = self.add_voicemail(mailbox='1234', context='default')
-        self.link_user_and_voicemail(user_row, voicemail_row.uniqueid)
+    def test_get(self):
+        user_row = self.add_user()
 
         user = user_dao.get(user_row.id)
 
         assert_that(user.id, equal_to(user.id))
-        assert_that(user.lastname, equal_to(user_row.lastname))
-        assert_that(user.caller_id, equal_to(user_row.callerid))
-        assert_that(user.outgoing_caller_id, equal_to(user_row.outcallerid))
-        assert_that(user.username, equal_to(user_row.loginclient))
-        assert_that(user.password, equal_to(user_row.passwdclient))
-        assert_that(user.music_on_hold, equal_to(user_row.musiconhold))
-        assert_that(user.mobile_phone_number, equal_to(user_row.mobilephonenumber))
-        assert_that(user.userfield, equal_to(user_row.userfield))
-        assert_that(user.timezone, equal_to(user_row.timezone))
-        assert_that(user.language, equal_to(user_row.language))
-        assert_that(user.description, equal_to(user_row.description))
-        assert_that(user.preprocess_subroutine, equal_to(user_row.preprocess_subroutine))
-        assert_that(user.voicemail_id, equal_to(voicemail_row.uniqueid))
-        assert_that(user.private_template_id, equal_to(user_row.func_key_private_template_id))
 
-    def test_get_by_number_context(self):
-        context, number = 'default', '1234'
-        user_line = self.add_user_line_with_exten(exten=number,
-                                                  context=context)
 
-        user = user_dao.get_by_number_context(number, context)
+class TestFindBy(TestUser):
 
-        assert_that(user.id, equal_to(user_line.user_id))
+    def test_given_column_does_not_exist_then_error_raised(self):
+        self.assertRaises(InputError, user_dao.find_by, invalid=42)
 
-    def test_get_by_number_context_line_commented(self):
-        context, number = 'default', '1234'
-        self.add_user_line_with_exten(number=number,
-                                      context=context,
-                                      commented_line=1)
+    def test_find_by_uuid(self):
+        user_uuid = str(uuid.uuid4())
+        user_row = self.add_user(uuid=user_uuid)
 
-        self.assertRaises(NotFoundError, user_dao.get_by_number_context, number, context)
+        user = user_dao.find_by(uuid=user_uuid)
+
+        assert_that(user.id, equal_to(user_row.id))
+        assert_that(user.uuid, equal_to(user_uuid))
+
+    def test_find_by_template_id(self):
+        user_row = self.add_user()
+
+        user = user_dao.find_by(template_id=user_row.func_key_template_id)
+
+        assert_that(user.id, equal_to(user_row.id))
+        assert_that(user.func_key_template_id, equal_to(user_row.func_key_template_id))
+
+    def test_find_by_private_template_id(self):
+        user_row = self.add_user()
+
+        user = user_dao.find_by(private_template_id=user_row.func_key_private_template_id)
+
+        assert_that(user.id, equal_to(user_row.id))
+        assert_that(user.func_key_private_template_id, equal_to(user_row.func_key_private_template_id))
+
+    def test_find_by_fullname(self):
+        user_row = self.add_user(firstname='Jôhn', lastname='Smîth')
+
+        user = user_dao.find_by(fullname='Jôhn Smîth')
+
+        assert_that(user.id, equal_to(user_row.id))
+        assert_that(user.firstname, equal_to('Jôhn'))
+        assert_that(user.lastname, equal_to('Smîth'))
+
+    def test_given_user_does_not_exist_then_returns_null(self):
+        user = user_dao.find_by(firstname='42')
+
+        assert_that(user, none())
+
+
+class TestGetBy(TestUser):
+
+    def test_given_column_does_not_exist_then_error_raised(self):
+        self.assertRaises(InputError, user_dao.get_by, invalid=42)
 
     def test_get_by_uuid(self):
-        user_row = self.add_user(firstname='Pâul',
-                                 lastname='Rôgers',
-                                 callerid='"Côol dude"',
-                                 outcallerid='"Côol dude going out"',
-                                 loginclient='paulrogers',
-                                 passwdclient='paulrogers',
-                                 musiconhold='mymusic',
-                                 mobilephonenumber='4185551234',
-                                 userfield='userfield',
-                                 timezone='America/Montreal',
-                                 language='fr_FR',
-                                 description='Really cool dude',
-                                 preprocess_subroutine='preprocess_subroutine')
-        voicemail_row = self.add_voicemail(mailbox='1234', context='default')
-        self.link_user_and_voicemail(user_row, voicemail_row.uniqueid)
+        user_uuid = str(uuid.uuid4())
+        user_row = self.add_user(uuid=user_uuid)
 
-        user = user_dao.get_by_uuid(uuid.UUID(user_row.uuid))
+        user = user_dao.get_by(uuid=user_uuid)
 
-        assert_that(user.id, equal_to(user.id))
-        assert_that(user.lastname, equal_to(user_row.lastname))
-        assert_that(user.caller_id, equal_to(user_row.callerid))
-        assert_that(user.outgoing_caller_id, equal_to(user_row.outcallerid))
-        assert_that(user.username, equal_to(user_row.loginclient))
-        assert_that(user.password, equal_to(user_row.passwdclient))
-        assert_that(user.music_on_hold, equal_to(user_row.musiconhold))
-        assert_that(user.mobile_phone_number, equal_to(user_row.mobilephonenumber))
-        assert_that(user.userfield, equal_to(user_row.userfield))
-        assert_that(user.timezone, equal_to(user_row.timezone))
-        assert_that(user.language, equal_to(user_row.language))
-        assert_that(user.description, equal_to(user_row.description))
-        assert_that(user.preprocess_subroutine, equal_to(user_row.preprocess_subroutine))
-        assert_that(user.voicemail_id, equal_to(voicemail_row.uniqueid))
-        assert_that(user.private_template_id, equal_to(user_row.func_key_private_template_id))
+        assert_that(user.id, equal_to(user_row.id))
+        assert_that(user.uuid, equal_to(user_uuid))
 
-
-class TestFind(DAOTestCase):
-
-    def test_find_all_no_users(self):
-        expected = []
-        users = user_dao.find_all()
-
-        assert_that(users, equal_to(expected))
-
-    def test_find_all_one_user(self):
-        firstname = 'Pâscal'
-        user = self.add_user(firstname=firstname)
-
-        users = user_dao.find_all()
-        assert_that(users, has_length(1))
-
-        user_found = users[0]
-        assert_that(user_found, has_property('id', user.id))
-        assert_that(user_found, has_property('firstname', firstname))
-
-    def test_find_all_one_user_commented(self):
-        firstname = 'Pâscal'
-        user = self.add_user(firstname=firstname, commented=1)
-
-        users = user_dao.find_all()
-        assert_that(users, has_length(1))
-
-        user_found = users[0]
-        assert_that(user_found, has_property('id', user.id))
-        assert_that(user_found, has_property('firstname', firstname))
-
-    def test_find_all_two_users(self):
-        firstname1 = 'Pâscal'
-        firstname2 = 'Géorge'
-
-        user1 = self.add_user(firstname=firstname1)
-        user2 = self.add_user(firstname=firstname2)
-
-        users = user_dao.find_all()
-        assert_that(users, has_length(2))
-
-        assert_that(users, has_items(
-            all_of(
-                has_property('id', user1.id),
-                has_property('firstname', firstname1)),
-            all_of(
-                has_property('id', user2.id),
-                has_property('firstname', firstname2))
-        ))
-
-    def test_find_all_default_order_by_lastname_firstname(self):
-        user1 = self.add_user(firstname='Jûles', lastname='Sânterre')
-        user2 = self.add_user(firstname='Vîcky', lastname='Bôurbon')
-        user3 = self.add_user(firstname='Ânne', lastname='Bôurbon')
-
-        users = user_dao.find_all()
-        assert_that(users, has_length(3))
-
-        assert_that(users[0].id, equal_to(user3.id))
-        assert_that(users[1].id, equal_to(user2.id))
-        assert_that(users[2].id, equal_to(user1.id))
-
-    def test_find_all_order_by_firstname(self):
-        user_last = self.add_user(firstname='Bôb', lastname='Alzârd')
-        user_first = self.add_user(firstname='Âlbert', lastname='Bréton')
-
-        users = user_dao.find_all(order=['firstname'])
-
-        assert_that(users[0].id, equal_to(user_first.id))
-        assert_that(users[1].id, equal_to(user_last.id))
-
-    def test_find_all_order_by_lastname(self):
-        user_last = self.add_user(firstname='Âlbert', lastname='Bréton')
-        user_first = self.add_user(firstname='Bôb', lastname='Âlzard')
-
-        users = user_dao.find_all(order=['lastname'])
-
-        assert_that(users[0].id, equal_to(user_first.id))
-        assert_that(users[1].id, equal_to(user_last.id))
-
-    def test_find_user_no_user(self):
-        result = user_dao.find_user('abc', 'def')
-
-        assert_that(result, equal_to(None))
-
-    def test_find_user_not_right_firstname(self):
-        firstname = 'Lôrd'
-        lastname = 'Sânderson'
-        wrong_firstname = 'Gregory'
-
-        self.add_user(firstname=firstname, lastname=lastname)
-
-        result = user_dao.find_user(wrong_firstname, lastname)
-
-        assert_that(result, equal_to(None))
-
-    def test_find_user(self):
-        firstname = 'Lôrd'
-        lastname = 'Sânderson'
-        user = self.add_user(firstname=firstname, lastname=lastname)
-
-        result = user_dao.find_user('Lôrd', 'Sânderson')
-
-        assert_that(result, all_of(
-            has_property('id', user.id),
-            has_property('firstname', firstname),
-            has_property('lastname', lastname)
-        ))
-
-    def test_find_user_two_users_same_name(self):
-        firstname = 'Lôrd'
-        lastname = 'Sânderson'
-
-        user1 = self.add_user(firstname=firstname, lastname=lastname)
-        user2 = self.add_user(firstname=firstname, lastname=lastname)
-
-        result = user_dao.find_user(firstname, lastname)
-
-        assert_that(result, has_property('id', any_of(user1.id, user2.id)))
-
-    def test_find_all_by_fullname_no_users(self):
-        result = user_dao.find_all_by_fullname('')
-
-        assert_that(result, has_length(0))
-
-    def test_find_all_by_fullname(self):
-        firstname = 'Lôrd'
-        lastname = 'Sânderson'
-        fullname = '%s %s' % (firstname, lastname)
-
-        user = self.add_user(firstname=firstname, lastname=lastname)
-
-        result = user_dao.find_all_by_fullname(fullname)
-
-        assert_that(result, has_length(1))
-        assert_that(result, contains(
-            all_of(
-                has_property('id', user.id),
-                has_property('firstname', firstname),
-                has_property('lastname', lastname)
-            )))
-
-    def test_find_all_by_fullname_lowercase(self):
-        firstname = 'Lôrd'
-        lastname = 'Sânderson'
-        fullname = '%s %s' % (firstname, lastname)
-
-        user = self.add_user(firstname=firstname, lastname=lastname)
-
-        result = user_dao.find_all_by_fullname(fullname.lower())
-
-        assert_that(result, has_length(1))
-        assert_that(result, contains(
-            all_of(
-                has_property('id', user.id),
-                has_property('firstname', firstname),
-                has_property('lastname', lastname)
-            )))
-
-    def test_find_all_by_fullname_partial(self):
-        firstname = 'Lôrd'
-        lastname = 'Sânderson'
-        partial_fullname = 'd sân'
-
-        user = self.add_user(firstname=firstname, lastname=lastname)
-
-        result = user_dao.find_all_by_fullname(partial_fullname)
-
-        assert_that(result, has_length(1))
-        assert_that(result, contains(
-            all_of(
-                has_property('id', user.id),
-                has_property('firstname', firstname),
-                has_property('lastname', lastname)
-            )))
-
-    def test_find_all_by_fullname_two_users_default_order(self):
-        search_term = 'lôrd'
-
-        user_last = self.add_user(firstname='Lôrd', lastname='Sânderson')
-        user_first = self.add_user(firstname='Gréat', lastname='Lôrd')
-        self.add_user(firstname='Tôto', lastname='Tâta')
-
-        result = user_dao.find_all_by_fullname(search_term)
-
-        assert_that(result, has_length(2))
-        assert_that(result, contains(
-            has_property('id', user_first.id),
-            has_property('id', user_last.id),
-        ))
-
-    def test_find_by_number_context_inexistant(self):
-        context, number = 'default', '1234'
-
-        user = user_dao.find_by_number_context(number, context)
-
-        assert_that(user, is_(none()))
-
-    def test_find_by_number_context(self):
-        context, number = 'default', '1234'
-        user_line = self.add_user_line_with_exten(exten=number,
-                                                  context=context)
-
-        user = user_dao.find_by_number_context(number, context)
-
-        assert_that(user.id, equal_to(user_line.user_id))
-
-    def test_find_by_number_context_line_commented(self):
-        context, number = 'default', '1234'
-        self.add_user_line_with_exten(number=number,
-                                      context=context,
-                                      commented_line=1)
-
-        user = user_dao.find_by_number_context(number, context)
-
-        assert_that(user, is_(none()))
-
-
-class TestFindAllByTemplateId(DAOTestCase):
-
-    def test_given_private_template_associated_when_finding_then_returns_user(self):
+    def test_get_by_template_id(self):
         user_row = self.add_user()
 
-        result = user_dao.find_all_by_template_id(user_row.func_key_private_template_id)
+        user = user_dao.get_by(template_id=user_row.func_key_template_id)
 
-        assert_that(result, contains(has_property('id', user_row.id)))
+        assert_that(user.id, equal_to(user_row.id))
+        assert_that(user.func_key_template_id, equal_to(user_row.func_key_template_id))
 
-    def test_given_public_template_associated_when_finding_then_returns_user(self):
-        template_row = self.add_func_key_template()
-        user_row = self.add_user(func_key_template_id=template_row.id)
-
-        result = user_dao.find_all_by_template_id(template_row.id)
-
-        assert_that(result, contains(has_property('id', user_row.id)))
-
-    def test_given_private_templates_excluded_when_finding_then_returns_empty_list(self):
+    def test_get_by_private_template_id(self):
         user_row = self.add_user()
 
-        result = user_dao.find_all_by_template_id(user_row.func_key_private_template_id, private=False)
+        user = user_dao.get_by(private_template_id=user_row.func_key_private_template_id)
+
+        assert_that(user.id, equal_to(user_row.id))
+        assert_that(user.func_key_private_template_id, equal_to(user_row.func_key_private_template_id))
+
+    def test_get_by_fullname(self):
+        user_row = self.add_user(firstname='Jôhn', lastname='Smîth')
+
+        user = user_dao.get_by(fullname='Jôhn Smîth')
+
+        assert_that(user.id, equal_to(user_row.id))
+        assert_that(user.firstname, equal_to('Jôhn'))
+        assert_that(user.lastname, equal_to('Smîth'))
+
+    def test_given_user_does_not_exist_then_raises_error(self):
+        self.assertRaises(NotFoundError, user_dao.get_by, firstname='42')
+
+
+class TestFindAllBy(TestUser):
+
+    def test_find_all_by_no_users(self):
+        result = user_dao.find_all_by(firstname='toto')
 
         assert_that(result, contains())
 
+    def test_find_all_by_renamed_column(self):
+        template_row = self.add_func_key_template()
+        user1 = self.add_user(func_key_template_id=template_row.id)
+        user2 = self.add_user(func_key_template_id=template_row.id)
 
-class TestSearch(DAOTestCase):
+        users = user_dao.find_all_by(template_id=template_row.id)
 
-    def prepare_user(self, **parameters):
-        user_row = self.add_user(**parameters)
-        user = User(id=user_row.id,
-                    uuid=user_row.uuid,
-                    firstname=user_row.firstname,
-                    lastname=user_row.lastname or None,
-                    timezone=user_row.timezone or None,
-                    language=user_row.language or None,
-                    description=user_row.description or None,
-                    caller_id=user_row.callerid,
-                    outgoing_caller_id=user_row.outcallerid or None,
-                    mobile_phone_number=(user_row.mobilephonenumber or None),
-                    password=(user_row.passwdclient or None),
-                    username=user_row.loginclient or None,
-                    music_on_hold=user_row.musiconhold or None,
-                    preprocess_subroutine=user_row.preprocess_subroutine or None,
-                    userfield=user_row.userfield or None,
-                    private_template_id=user_row.func_key_private_template_id)
-        return user
+        assert_that(users, has_items(has_property('id', user1.id),
+                                     has_property('id', user2.id)))
+
+    def test_find_all_by_native_column(self):
+        user1 = self.add_user(firstname="Rîchard")
+        user2 = self.add_user(firstname="Rîchard")
+
+        users = user_dao.find_all_by(firstname='Rîchard')
+
+        assert_that(users, has_items(has_property('id', user1.id),
+                                     has_property('id', user2.id)))
+
+
+class TestSearch(TestUser):
 
     def assert_search_returns_result(self, search_result, **parameters):
         result = user_dao.search(**parameters)
@@ -431,9 +241,6 @@ class TestSearch(DAOTestCase):
 
 
 class TestSimpleSearch(TestSearch):
-
-    def setUp(self):
-        super(TestSearch, self).setUp()
 
     def test_given_no_users_then_returns_no_empty_result(self):
         expected = SearchResult(0, [])
@@ -531,143 +338,142 @@ class TestSearchGivenMultipleUsers(TestSearch):
                                           limit=1)
 
 
-class TestCreate(DAOTestCase):
+class TestCreate(TestUser):
 
     def setUp(self):
-        DAOTestCase.setUp(self)
+        super(TestCreate, self).setUp()
         self.entity = self.add_entity()
 
-    def prepare_user(self, **kwargs):
-        private_template_row = self.add_func_key_template(private=True)
-        kwargs.setdefault('private_template_id', private_template_row.id)
-        return User(**kwargs)
+    def assert_dial_action_created(self, user, event):
+        dialaction = (self.session.query(Dialaction)
+                      .filter_by(event=event,
+                                 category='user',
+                                 categoryval=str(user.id),
+                                 action='none',
+                                 linked=1)
+                      .first())
 
-    def test_create(self):
-        caller_id = '"tôto kiki"'
-        user = self.prepare_user(firstname='toto',
-                                 lastname='kiki',
-                                 caller_id=caller_id,
-                                 language='fr_FR',
-                                 music_on_hold='musiconhold',
-                                 preprocess_subroutine='preprocess_subroutine')
+        assert_that(dialaction, is_not(none()))
 
+    def test_given_user_created_then_diactions_also_created(self):
+        user = User(firstname="dialactions")
         created_user = user_dao.create(user)
 
-        row = (self.session.query(UserSchema)
-               .filter(UserSchema.firstname == user.firstname)
-               .filter(UserSchema.lastname == user.lastname)
-               .first())
+        self.assert_dial_action_created(created_user, 'noanswer')
+        self.assert_dial_action_created(created_user, 'busy')
+        self.assert_dial_action_created(created_user, 'congestion')
+        self.assert_dial_action_created(created_user, 'chanunavail')
 
-        assert_that(row.id, equal_to(created_user.id))
-        assert_that(row.firstname, equal_to(user.firstname))
-        assert_that(row.lastname, equal_to(user.lastname))
-        assert_that(row.language, equal_to(user.language))
-        assert_that(row.musiconhold, equal_to(user.music_on_hold))
-        assert_that(row.preprocess_subroutine, equal_to(user.preprocess_subroutine))
-        assert_that(row.func_key_private_template_id, equal_to(user.private_template_id))
-        assert_that(row.callerid, equal_to(caller_id))
-        assert_that(row.entityid, equal_to(self.entity.id))
-        assert_that(created_user.caller_id, equal_to(caller_id))
+    def test_create_minimal_fields(self):
+        user = User(firstname='Jôhn')
+        created_user = user_dao.create(user)
+
+        row = self.session.query(User).first()
+
+        assert_that(created_user, has_properties(id=row.id,
+                                                 uuid=row.uuid,
+                                                 firstname="Jôhn",
+                                                 lastname=none(),
+                                                 timezone=none(),
+                                                 language=none(),
+                                                 description=none(),
+                                                 outgoing_caller_id=none(),
+                                                 mobile_phone_number=none(),
+                                                 caller_id='"Jôhn"',
+                                                 music_on_hold=none(),
+                                                 username=none(),
+                                                 password=none(),
+                                                 preprocess_subroutine=none(),
+                                                 userfield=none(),
+                                                 voicemail_id=none()))
+
+        assert_that(row, has_properties(id=is_not(none()),
+                                        uuid=is_not(none()),
+                                        entityid=self.entity.id,
+                                        callerid='"Jôhn"',
+                                        outcallerid='',
+                                        mobilephonenumber='',
+                                        loginclient='',
+                                        passwdclient='',
+                                        musiconhold='',
+                                        voicemailid=none(),
+                                        func_key_private_template_id=is_not(none())
+                                        ))
 
     def test_create_with_all_fields(self):
-        user = self.prepare_user(firstname='firstname',
-                                 lastname='lastname',
-                                 timezone='America/Montreal',
-                                 language='en_US',
-                                 description='description',
-                                 caller_id='"fîrstname lâstname" <1000>',
-                                 outgoing_caller_id='ôutgoing_caller_id',
-                                 mobile_phone_number='1234567890',
-                                 username='username',
-                                 password='password',
-                                 music_on_hold='music_on_hold',
-                                 preprocess_subroutine='preprocess_subroutine',
-                                 userfield='userfield')
+        voicemail = self.add_voicemail()
+        user = User(firstname='Jôhn',
+                    lastname='Smîth',
+                    timezone='America/Montreal',
+                    language='en_US',
+                    description='description',
+                    caller_id='"fîrstname lâstname" <1000>',
+                    outgoing_caller_id='ôutgoing_caller_id',
+                    mobile_phone_number='1234567890',
+                    username='username',
+                    password='password',
+                    music_on_hold='music_on_hold',
+                    preprocess_subroutine='preprocess_subroutine',
+                    voicemail_id=voicemail.id,
+                    userfield='userfield')
 
         created_user = user_dao.create(user)
 
-        row = (self.session.query(UserSchema)
-               .filter(UserSchema.firstname == user.firstname)
-               .filter(UserSchema.lastname == user.lastname)
-               .first())
+        row = self.session.query(User).first()
 
-        assert_that(row.id, equal_to(created_user.id))
-        assert_that(row.uuid, equal_to(created_user.uuid))
-        assert_that(row.firstname, equal_to(user.firstname))
-        assert_that(row.lastname, equal_to(user.lastname))
-        assert_that(row.timezone, equal_to(user.timezone))
-        assert_that(row.language, equal_to(user.language))
-        assert_that(row.description, equal_to(user.description))
-        assert_that(row.callerid, equal_to(user.caller_id))
-        assert_that(row.outcallerid, equal_to(user.outgoing_caller_id))
-        assert_that(row.mobilephonenumber, equal_to(user.mobile_phone_number))
-        assert_that(row.loginclient, equal_to(user.username))
-        assert_that(row.passwdclient, equal_to(user.password))
-        assert_that(row.musiconhold, equal_to(user.music_on_hold))
-        assert_that(row.preprocess_subroutine, equal_to(user.preprocess_subroutine))
-        assert_that(row.userfield, equal_to(user.userfield))
+        assert_that(created_user, has_properties(id=row.id,
+                                                 uuid=row.uuid,
+                                                 entity_id=self.entity.id,
+                                                 firstname="Jôhn",
+                                                 lastname='Smîth',
+                                                 timezone='America/Montreal',
+                                                 language='en_US',
+                                                 description='description',
+                                                 caller_id='"fîrstname lâstname" <1000>',
+                                                 outgoing_caller_id='ôutgoing_caller_id',
+                                                 mobile_phone_number='1234567890',
+                                                 username='username',
+                                                 password='password',
+                                                 music_on_hold='music_on_hold',
+                                                 preprocess_subroutine='preprocess_subroutine',
+                                                 voicemail_id=voicemail.id,
+                                                 userfield='userfield'))
 
-    def test_that_create_returns_the_generated_uuid(self):
-        user = self.prepare_user(firstname='John')
+        assert_that(row, has_properties(callerid='"fîrstname lâstname" <1000>',
+                                        outcallerid='ôutgoing_caller_id',
+                                        mobilephonenumber='1234567890',
+                                        loginclient='username',
+                                        passwdclient='password',
+                                        voicemailid=voicemail.id,
+                                        musiconhold='music_on_hold'))
 
-        created_user = user_dao.create(user)
+    def test_that_the_user_uuid_is_unique(self):
+        shared_uuid = str(uuid.uuid4())
+        self.prepare_user(firstname='Alice', uuid=shared_uuid)
 
-        row = (self.session.query(UserSchema)
-               .filter(UserSchema.firstname == user.firstname)
-               .first())
-
-        assert_that(created_user.uuid, is_not(None))
-        assert_that(row.uuid, is_not(None))
+        self.assertRaises(Exception, user_dao.create, User(firstname='Jôhn', uuid=shared_uuid))
 
 
-class TestEdit(DAOTestCase):
-
-    def test_edit(self):
-        firstname = 'Robert'
-        lastname = 'Raleur'
-        music_on_hold = 'music_on_hold'
-        preprocess_subroutine = 'preprocess_subroutine'
-
-        expected_lastname = 'Lereu'
-        expected_music_on_hold = 'expected_music_on_hold'
-        expected_preprocess_subroutine = 'expected_preprocess_subroutine'
-
-        user = self.add_user(firstname=firstname,
-                             lastname=lastname,
-                             musiconhold=music_on_hold,
-                             preprocess_subroutine=preprocess_subroutine)
-
-        user = user_dao.get(user.id)
-        user.lastname = expected_lastname
-        user.music_on_hold = expected_music_on_hold
-        user.preprocess_subroutine = expected_preprocess_subroutine
-
-        user_dao.edit(user)
-
-        row = (self.session.query(UserSchema)
-               .filter(UserSchema.id == user.id)
-               .first())
-
-        assert_that(row.firstname, equal_to(firstname))
-        assert_that(row.lastname, equal_to(expected_lastname))
-        assert_that(row.musiconhold, equal_to(expected_music_on_hold))
-        assert_that(row.preprocess_subroutine, equal_to(expected_preprocess_subroutine))
+class TestEdit(TestUser):
 
     def test_edit_all_fields(self):
-        user_row = self.add_user(firstname='Pâul',
-                                 lastname='Rôgers',
-                                 callerid='"Côol dude"',
-                                 outcallerid='"Côol dude going out"',
-                                 loginclient='paulrogers',
-                                 passwdclient='paulrogers',
-                                 musiconhold='mymusic',
-                                 mobilephonenumber='4185551234',
-                                 userfield='userfield',
-                                 timezone='America/Montreal',
-                                 language='fr_FR',
-                                 description='Really cool dude')
+        old_voicemail = self.add_voicemail()
+        new_voicemail = self.add_voicemail()
+        user = user_dao.create(User(firstname='Pâul',
+                                    lastname='Rôgers',
+                                    caller_id='"Côol dude"',
+                                    outgoing_caller_id='"Côol dude going out"',
+                                    username='paulrogers',
+                                    password='paulrogers',
+                                    music_on_hold='mymusic',
+                                    mobile_phone_number='4185551234',
+                                    userfield='userfield',
+                                    timezone='America/Montreal',
+                                    language='fr_FR',
+                                    voicemail_id=old_voicemail.id,
+                                    description='Really cool dude'))
 
-        user = user_dao.get(user_row.id)
+        user = user_dao.get(user.id)
         user.firstname = 'firstname'
         user.lastname = 'lastname'
         user.timezone = 'America/Montreal'
@@ -681,73 +487,131 @@ class TestEdit(DAOTestCase):
         user.music_on_hold = 'music_on_hold'
         user.preprocess_subroutine = 'preprocess_subroutine'
         user.userfield = 'userfield'
+        user.voicemail_id = new_voicemail.id
 
         user_dao.edit(user)
 
-        row = (self.session.query(UserSchema)
-               .filter(UserSchema.id == user.id)
-               .first())
+        row = self.session.query(User).first()
 
-        assert_that(row.id, equal_to(user.id))
-        assert_that(row.firstname, equal_to(user.firstname))
-        assert_that(row.lastname, equal_to(user.lastname))
-        assert_that(row.timezone, equal_to(user.timezone))
-        assert_that(row.language, equal_to(user.language))
-        assert_that(row.description, equal_to(user.description))
-        assert_that(row.callerid, equal_to(user.caller_id))
-        assert_that(row.outcallerid, equal_to(user.outgoing_caller_id))
-        assert_that(row.mobilephonenumber, equal_to(user.mobile_phone_number))
-        assert_that(row.loginclient, equal_to(user.username))
-        assert_that(row.passwdclient, equal_to(user.password))
-        assert_that(row.musiconhold, equal_to(user.music_on_hold))
-        assert_that(row.preprocess_subroutine, equal_to(user.preprocess_subroutine))
-        assert_that(row.userfield, equal_to(user.userfield))
+        assert_that(row, has_properties(firstname='firstname',
+                                        lastname='lastname',
+                                        timezone='America/Montreal',
+                                        language='en_US',
+                                        description='description',
+                                        caller_id='"John Sparrow"',
+                                        outgoing_caller_id='outgoing_caller_id',
+                                        mobile_phone_number='1234567890',
+                                        username='username',
+                                        password='password',
+                                        music_on_hold='music_on_hold',
+                                        preprocess_subroutine='preprocess_subroutine',
+                                        voicemail_id=new_voicemail.id,
+                                        userfield='userfield'))
 
-    def test_edit_with_unknown_user(self):
-        user = User(id=123, lastname='unknown')
+    def test_edit_set_fields_to_null(self):
+        voicemail = self.add_voicemail()
+        user = user_dao.create(User(firstname='Pâul',
+                                    lastname='Rôgers',
+                                    caller_id='"Côol dude"',
+                                    outgoing_caller_id='"Côol dude going out"',
+                                    username='paulrogers',
+                                    password='paulrogers',
+                                    music_on_hold='mymusic',
+                                    mobile_phone_number='4185551234',
+                                    userfield='userfield',
+                                    timezone='America/Montreal',
+                                    language='fr_FR',
+                                    voicemail_id=voicemail.id,
+                                    description='Really cool dude'))
 
-        self.assertRaises(NotFoundError, user_dao.edit, user)
+        user = user_dao.get(user.id)
+        user.lastname = None
+        user.outgoing_caller_id = None
+        user.username = None
+        user.password = None
+        user.music_on_hold = None
+        user.mobile_phone_number = None
+        user.userfield = None
+        user.timezone = None
+        user.language = None
+        user.description = None
+        user.voicemail_id = None
+
+        user_dao.edit(user)
+
+        row = self.session.query(User).first()
+
+        assert_that(row, has_properties(id=user.id,
+                                        uuid=user.uuid,
+                                        firstname="Pâul",
+                                        lastname=none(),
+                                        timezone=none(),
+                                        language=none(),
+                                        description=none(),
+                                        outcallerid='',
+                                        mobilephonenumber='',
+                                        musiconhold='',
+                                        loginclient='',
+                                        passwdclient='',
+                                        preprocess_subroutine=none(),
+                                        voicemailid=none(),
+                                        userfield=none()))
 
     def test_edit_caller_id_with_number(self):
         caller_id = '<1000>'
-        user_row = self.add_user(firstname='Pâul',
-                                 callerid='"Pâul"')
+        user = user_dao.create(User(firstname='Pâul'))
 
-        user = user_dao.get(user_row.id)
-        user.caller_id = "<1000>"
+        user = user_dao.get(user.id)
+        user.caller_id = caller_id
 
         user_dao.edit(user)
 
-        row = (self.session.query(UserSchema)
-               .filter(UserSchema.id == user.id)
-               .first())
+        row = self.session.query(User).first()
 
         assert_that(row.id, equal_to(user.id))
         assert_that(row.callerid, equal_to(caller_id))
 
 
-class TestDelete(DAOTestCase):
+class TestDelete(TestUser):
 
     def test_delete(self):
-        firstname = 'Gâdou'
-        lastname = 'Pîpo'
-        user = self.add_user(firstname=firstname,
-                             lastname=lastname)
-
+        user = user_dao.create(User(firstname='Delete'))
         user = user_dao.get(user.id)
 
         user_dao.delete(user)
 
-        row = (self.session.query(UserSchema)
-               .filter(UserSchema.id == user.id)
-               .first())
+        row = self.session.query(User).first()
+        assert_that(row, none())
 
-        assert_that(row, equal_to(None))
+    def test_delete_references_to_other_tables(self):
+        user = user_dao.create(User(firstname='Delete'))
+        self.add_queue_member(usertype='user', userid=user.id)
+        self.add_right_call_member(type='user', typeval=str(user.id))
+        self.add_schedule_path(path='user', pathid=user.id)
+        call_filter = self.add_bsfilter()
+        self.add_filter_member(call_filter.id, user.id)
 
+        user_dao.delete(user)
 
-class TestIsCtiEnabled(DAOTestCase):
+        assert_that(self.session.query(QueueMember).first(), none())
+        assert_that(self.session.query(RightCallMember).first(), none())
+        assert_that(self.session.query(Dialaction).first(), none())
+        assert_that(self.session.query(SchedulePath).first(), none())
+        assert_that(self.session.query(Callfiltermember).first(), none())
+        assert_that(self.session.query(FuncKeyDestUser).first(), none())
+        assert_that(self.session.query(FuncKey).first(), none())
+        assert_that(self.session.query(FuncKeyTemplate).first(), none())
 
-    def test_is_cti_enabled(self):
-        user = self.add_user(firstname='Piérre', enableclient=1)
+    def add_right_call_member(self, **kwargs):
+        member = RightCallMember(**kwargs)
+        self.session.add(member)
+        self.session.flush()
+        return member
 
-        self.assertTrue(user_dao.is_cti_enabled(user.id))
+    def add_schedule_path(self, **kwargs):
+        kwargs['schedule'] = Schedule()
+        kwargs.setdefault('order', 1)
+        schedule_path = SchedulePath(**kwargs)
+        self.session.add(schedule_path)
+        self.session.flush()
+        return schedule_path

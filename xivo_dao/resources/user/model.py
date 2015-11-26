@@ -15,55 +15,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.new_model import NewModel
-from collections import namedtuple
 
+class UserDirectory(object):
 
-class User(NewModel):
-    __name__ = 'user'
+    def __init__(self, id, line_id, agent_id, firstname, lastname, exten,
+                 mobile_phone_number, voicemail_number, userfield, description):
+        self.id = id
+        self.line_id = line_id
+        self.agent_id = agent_id
+        self.firstname = firstname
+        self.lastname = lastname
+        self.exten = exten
+        self.mobile_phone_number = mobile_phone_number
+        self.voicemail_number = voicemail_number
+        self.userfield = userfield
+        self.description = description
 
-    MANDATORY = [
-        'firstname',
-    ]
-
-    FIELDS = [
-        'id',
-        'uuid',
-        'firstname',
-        'lastname',
-        'caller_id',
-        'outgoing_caller_id',
-        'username',
-        'password',
-        'music_on_hold',
-        'mobile_phone_number',
-        'voicemail_number',
-        'userfield',
-        'timezone',
-        'language',
-        'description',
-        'preprocess_subroutine',
-        'private_template_id',
-        'func_key_template_id',
-    ]
-
-    _RELATION = {
-        'voicemailid': 'voicemail_id'
-    }
-
-    @property
-    def fullname(self):
-        lastname = self.lastname or ''
-        return ' '.join([self.firstname, lastname]).strip()
-
-
-UserDirectory = namedtuple('UserDirectory', ('id',
-                                             'line_id',
-                                             'agent_id',
-                                             'firstname',
-                                             'lastname',
-                                             'exten',
-                                             'mobile_phone_number',
-                                             'voicemail_number',
-                                             'userfield',
-                                             'description'))
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__

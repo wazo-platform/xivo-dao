@@ -208,34 +208,6 @@ class OnlineRecordingDestination(Destination):
         return (('feature', 'onlinerec'),)
 
 
-class UserFuncKey(Model):
-
-    MANDATORY = [
-        'id',
-        'user_id'
-    ]
-
-    FIELDS = [
-        'id',
-        'user_id'
-    ]
-
-
-class BSFilterFuncKey(Model):
-
-    MANDATORY = [
-        'id',
-        'filter_id',
-        'secretary_id',
-    ]
-
-    FIELDS = [
-        'id',
-        'filter_id',
-        'secretary_id',
-    ]
-
-
 class ForwardTypeConverter(object):
 
     fwd_types = {

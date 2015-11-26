@@ -51,3 +51,9 @@ class UserLine(Base):
                                       UserLine.main_user == True,
                                       UserLine.main_line == True)"""
                                       )
+
+    main_line_rel = relationship("LineFeatures",
+                                 primaryjoin="""and_(UserLine.line_id == LineFeatures.id,
+                                 UserLine.main_user == True,
+                                 UserLine.main_line == True)"""
+                                 )

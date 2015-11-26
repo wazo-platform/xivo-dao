@@ -41,3 +41,8 @@ class FuncKeyDestUser(Base):
 
     func_key = relationship(FuncKey)
     userfeatures = relationship(UserFeatures)
+
+    @classmethod
+    def for_user(cls, func_key, user):
+        destination = cls(func_key=func_key, userfeatures=user)
+        return destination

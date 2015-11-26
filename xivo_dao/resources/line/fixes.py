@@ -51,7 +51,7 @@ class LineFixes(object):
                      Load(UserSIP).load_only("id", "callerid", "setvar", "context"),
                      Load(SCCPLine).load_only("id", "name", "context", "cid_name", "cid_num"),
                      Load(SCCPDevice).load_only("id", "line"),
-                     Load(UserFeatures).load_only("id", "firstname", "lastname", "callerid"),
+                     Load(UserFeatures).load_only("id", "firstname", "webi_lastname", "callerid"),
                      Load(Extension).load_only("id", "exten", "context"))
                  .filter(LineFeatures.id == line_id)
                  )
