@@ -173,7 +173,7 @@ class TestSearchConfig(unittest.TestCase):
 
         self.assertRaises(InputError, config.column_for_sorting, 'column2')
 
-    def test_given_list_of_search_columns_then_returns_only_columns_for_searching(self):
+    def test_given_list_of_search_columns_then_returns_only_all_search_columns(self):
         table = Mock()
         column = Mock()
 
@@ -182,11 +182,11 @@ class TestSearchConfig(unittest.TestCase):
                               search=['column1'],
                               default_sort='column1')
 
-        result = config.columns_for_searching()
+        result = config.all_search_columns()
 
         assert_that(result, contains(column))
 
-    def test_given_list_of_columns_then_returns_all_columns_for_searching(self):
+    def test_given_list_of_columns_then_returns_all_all_search_columns(self):
         table = Mock()
         column1 = Mock()
         column2 = Mock()
@@ -195,6 +195,6 @@ class TestSearchConfig(unittest.TestCase):
                               columns={'column1': column1, 'column2': column2},
                               default_sort='column1')
 
-        result = config.columns_for_searching()
+        result = config.all_search_columns()
 
         assert_that(result, contains_inanyorder(column1, column2))

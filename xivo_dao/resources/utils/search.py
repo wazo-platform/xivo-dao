@@ -34,7 +34,7 @@ class SearchConfig(object):
         self._search = search
         self._sort = sort
 
-    def columns_for_searching(self):
+    def all_search_columns(self):
         if self._search:
             return [self._columns[s] for s in self._search]
         return self._columns.values()
@@ -108,7 +108,7 @@ class SearchSystem(object):
             return query
 
         criteria = []
-        for column in self.config.columns_for_searching():
+        for column in self.config.all_search_columns():
             expression = sql.cast(column, sa.String).ilike('%%%s%%' % term)
             criteria.append(expression)
 
