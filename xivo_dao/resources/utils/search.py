@@ -39,6 +39,9 @@ class SearchConfig(object):
             return [self._columns[s] for s in self._search]
         return self._columns.values()
 
+    def column_for_searching(self, column_name):
+        return self._columns.get(column_name)
+
     def column_for_sorting(self, name=None):
         column_name = self._get_sort_column_name(name)
         return self._columns[column_name]

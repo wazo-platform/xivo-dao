@@ -198,3 +198,29 @@ class TestSearchConfig(unittest.TestCase):
         result = config.all_search_columns()
 
         assert_that(result, contains_inanyorder(column1, column2))
+
+    def test_that_column_for_searching_results_the_column(self):
+        table = Mock()
+        column1 = Mock()
+        column2 = Mock()
+
+        config = SearchConfig(table=table,
+                              columns={'column1': column1, 'column2': column2},
+                              default_sort='column1')
+
+        result = config.column_for_searching('column1')
+
+        assert_that(result, equal_to(column1))
+
+    def test_that_column_for_searching_results_the_column_or_none(self):
+        table = Mock()
+        column1 = Mock()
+        column2 = Mock()
+
+        config = SearchConfig(table=table,
+                              columns={'column1': column1, 'column2': column2},
+                              default_sort='column1')
+
+        result = config.column_for_searching('column3')
+
+        assert_that(result, equal_to(None))
