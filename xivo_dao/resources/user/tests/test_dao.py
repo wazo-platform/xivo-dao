@@ -264,7 +264,8 @@ class TestSimpleSearch(TestSearch):
                                                   voicemail_number=None,
                                                   exten=None,
                                                   userfield=None,
-                                                  description=None)])
+                                                  description=None,
+                                                  context=None)])
 
         self.assert_search_returns_result(expected, view='directory')
 
@@ -288,7 +289,8 @@ class TestSimpleSearch(TestSearch):
                                                   voicemail_number='2002',
                                                   exten=user_line_row.extension.exten,
                                                   userfield='userfield',
-                                                  description='desc')])
+                                                  description='desc',
+                                                  context=user_line_row.extension.context)])
 
         self.assert_search_returns_result(expected, view='directory')
 
