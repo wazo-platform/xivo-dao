@@ -120,16 +120,11 @@ class SearchSystem(object):
         return query
 
     def _filter_exact_match(self, query, parameters):
-        criteria = []
         for column_name, value in parameters.iteritems():
             column = self.config.column_for_searching(column_name)
             if column is not None:
-                criteria.append(column == value)
+                query = query.filter(column == value)
 
-        if not criteria:
-            return query
-
-        query = query.filter(sql.and_(*criteria))
         return query
 
     def _sort(self, query, order=None, direction='asc'):
