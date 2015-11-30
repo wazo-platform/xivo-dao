@@ -35,7 +35,8 @@ config = SearchConfig(table=UserFeatures,
                                'userfield': UserFeatures.userfield,
                                'mobile_phone_number': UserFeatures.mobilephonenumber,
                                'voicemail_number': Voicemail.mailbox,
-                               'exten': Extension.exten},
+                               'exten': Extension.exten,
+                               'context': Extension.context},
                       search=['fullname', 'caller_id', 'description', 'userfield', 'mobile_phone_number', 'exten'],
                       default_sort='lastname')
 

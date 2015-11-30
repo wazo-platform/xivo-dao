@@ -47,7 +47,8 @@ class DirectoryView(View):
                                Voicemail.mailbox.label('voicemail_number'),
                                func.nullif(User.userfield, '').label('userfield'),
                                func.nullif(User.description, '').label('description'),
-                               Extension.exten.label('exten')))
+                               Extension.exten.label('exten'),
+                               Extension.context.label('context')))
         return query
 
     def convert(self, row):
@@ -60,7 +61,8 @@ class DirectoryView(View):
                              voicemail_number=row.voicemail_number,
                              exten=row.exten,
                              userfield=row.userfield,
-                             description=row.description)
+                             description=row.description,
+                             context=row.context)
 
 
 user_view = ViewSelector(default=UserView(),

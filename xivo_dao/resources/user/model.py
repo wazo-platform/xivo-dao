@@ -18,8 +18,8 @@
 
 class UserDirectory(object):
 
-    def __init__(self, id, line_id, agent_id, firstname, lastname, exten,
-                 mobile_phone_number, voicemail_number, userfield, description):
+    def __init__(self, id, line_id, agent_id, firstname, lastname, exten, mobile_phone_number,
+                 voicemail_number, userfield, description, context):
         self.id = id
         self.line_id = line_id
         self.agent_id = agent_id
@@ -30,6 +30,7 @@ class UserDirectory(object):
         self.voicemail_number = voicemail_number
         self.userfield = userfield
         self.description = description
+        self.context = context
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
