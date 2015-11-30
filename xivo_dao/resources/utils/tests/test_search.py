@@ -38,7 +38,8 @@ class TestSearchSystem(DAOTestCase):
         self.config = SearchConfig(table=UserFeatures,
                                    columns={'lastname': UserFeatures.lastname,
                                             'firstname': UserFeatures.firstname,
-                                            'simultcalls': UserFeatures.simultcalls},
+                                            'simultcalls': UserFeatures.simultcalls,
+                                            'userfield': UserFeatures.userfield},
                                    default_sort='lastname')
         self.search = SearchSystem(self.config)
 
@@ -139,6 +140,34 @@ class TestSearchSystem(DAOTestCase):
         assert_that(total, equal_to(1))
         assert_that(rows, contains(user_row2))
 
+    def test_given_exact_match_numeric_term_in_param(self):
+        self.add_user(firstname='Alice', lastname='First', simultcalls=3)
+        user_row2 = self.add_user(firstname='Alice', lastname='Second', simultcalls=2)
+
+        rows, total = self.search.search(self.session, {'search': 'ali', 'simultcalls': '2'})
+
+        assert_that(total, equal_to(1))
+        assert_that(rows, contains(user_row2))
+
+    def test_given_exact_match_userfield_term_in_param(self):
+        self.add_user(firstname='Alice', lastname='First', userfield='mtl')
+        user_row2 = self.add_user(firstname='Alice', lastname='Second', userfield='qc')
+
+        rows, total = self.search.search(self.session, {'search': 'ali', 'userfield': 'qc'})
+
+        assert_that(total, equal_to(1))
+        assert_that(rows, contains(user_row2))
+
+    def test_given_no_search_with_params(self):
+        self.add_user(firstname=u'Alïce', userfield='mtl')
+        user_row2 = self.add_user(firstname=u'Bõb', userfield='qc')
+        user_row3 = self.add_user(firstname=u'Çharles', userfield='qc')
+
+        rows, total = self.search.search(self.session, {'userfield': 'qc'})
+
+        assert_that(total, equal_to(2))
+        assert_that(rows, contains(user_row2, user_row3))
+
 
 class TestSearchConfig(unittest.TestCase):
 
@@ -173,7 +202,7 @@ class TestSearchConfig(unittest.TestCase):
 
         self.assertRaises(InputError, config.column_for_sorting, 'column2')
 
-    def test_given_list_of_search_columns_then_returns_only_columns_for_searching(self):
+    def test_given_list_of_search_columns_then_returns_only_all_search_columns(self):
         table = Mock()
         column = Mock()
 
@@ -182,11 +211,11 @@ class TestSearchConfig(unittest.TestCase):
                               search=['column1'],
                               default_sort='column1')
 
-        result = config.columns_for_searching()
+        result = config.all_search_columns()
 
         assert_that(result, contains(column))
 
-    def test_given_list_of_columns_then_returns_all_columns_for_searching(self):
+    def test_given_list_of_columns_then_returns_all_all_search_columns(self):
         table = Mock()
         column1 = Mock()
         column2 = Mock()
@@ -195,6 +224,32 @@ class TestSearchConfig(unittest.TestCase):
                               columns={'column1': column1, 'column2': column2},
                               default_sort='column1')
 
-        result = config.columns_for_searching()
+        result = config.all_search_columns()
 
         assert_that(result, contains_inanyorder(column1, column2))
+
+    def test_that_column_for_searching_results_the_column(self):
+        table = Mock()
+        column1 = Mock()
+        column2 = Mock()
+
+        config = SearchConfig(table=table,
+                              columns={'column1': column1, 'column2': column2},
+                              default_sort='column1')
+
+        result = config.column_for_searching('column1')
+
+        assert_that(result, equal_to(column1))
+
+    def test_that_column_for_searching_results_the_column_or_none(self):
+        table = Mock()
+        column1 = Mock()
+        column2 = Mock()
+
+        config = SearchConfig(table=table,
+                              columns={'column1': column1, 'column2': column2},
+                              default_sort='column1')
+
+        result = config.column_for_searching('column3')
+
+        assert_that(result, equal_to(None))

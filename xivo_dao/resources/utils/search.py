@@ -34,10 +34,13 @@ class SearchConfig(object):
         self._search = search
         self._sort = sort
 
-    def columns_for_searching(self):
+    def all_search_columns(self):
         if self._search:
             return [self._columns[s] for s in self._search]
         return self._columns.values()
+
+    def column_for_searching(self, column_name):
+        return self._columns.get(column_name)
 
     def column_for_sorting(self, name=None):
         column_name = self._get_sort_column_name(name)
@@ -80,6 +83,7 @@ class SearchSystem(object):
         self._validate_parameters(parameters)
 
         query = self._filter(query, parameters['search'])
+        query = self._filter_exact_match(query, parameters)
         sorted_query = self._sort(query, parameters['order'], parameters['direction'])
         paginated_query = self._paginate(sorted_query, parameters['limit'], parameters['offset'])
 
@@ -108,11 +112,19 @@ class SearchSystem(object):
             return query
 
         criteria = []
-        for column in self.config.columns_for_searching():
+        for column in self.config.all_search_columns():
             expression = sql.cast(column, sa.String).ilike('%%%s%%' % term)
             criteria.append(expression)
 
         query = query.filter(sql.or_(*criteria))
+        return query
+
+    def _filter_exact_match(self, query, parameters):
+        for column_name, value in parameters.iteritems():
+            column = self.config.column_for_searching(column_name)
+            if column is not None:
+                query = query.filter(column == value)
+
         return query
 
     def _sort(self, query, order=None, direction='asc'):
