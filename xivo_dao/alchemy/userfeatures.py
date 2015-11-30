@@ -344,5 +344,41 @@ class UserFeatures(Base):
         self.func_key_private_template_id = value
 
     @hybrid_property
+    def supervision_enabled(self):
+        return self.enablehint == 1
+
+    @supervision_enabled.setter
+    def supervision_enabled(self, value):
+        self.enablehint = int(value == 1) if value is not None else None
+
+    @hybrid_property
+    def call_transfer_enabled(self):
+        return self.enablexfer == 1
+
+    @call_transfer_enabled.setter
+    def call_transfer_enabled(self, value):
+        self.enablexfer = int(value == 1) if value is not None else None
+
+    @hybrid_property
+    def ring_seconds(self):
+        return self.ringseconds
+
+    @ring_seconds.setter
+    def ring_seconds(self, value):
+        self.ringseconds = value
+
+    @hybrid_property
+    def simultaneous_calls(self):
+        return self.simultcalls
+
+    @simultaneous_calls.setter
+    def simultaneous_calls(self, value):
+        self.simultcalls = value
+
+    @hybrid_property
     def cti_enabled(self):
         return self.enableclient == 1
+
+    @cti_enabled.setter
+    def cti_enabled(self, value):
+        self.enableclient = int(value == 1) if value is not None else None
