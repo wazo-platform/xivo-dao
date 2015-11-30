@@ -61,33 +61,45 @@ class TestSearchGivenMultipleExtensions(TestExtension):
 
     def setUp(self):
         TestExtension.setUp(self)
-        self.extension1 = self.prepare_extension(exten='1000')
-        self.extension2 = self.prepare_extension(exten='1001')
-        self.extension3 = self.prepare_extension(exten='1002')
-        self.extension4 = self.prepare_extension(exten='1103')
+        self.extension1 = self.prepare_extension(exten='1000', context='inside')
+        self.extension2 = self.prepare_extension(exten='1001', context='inside')
+        self.extension3 = self.prepare_extension(exten='1002', context='inside')
+        self.extension4 = self.prepare_extension(exten='1103', context='inside')
+        self.extension5 = self.prepare_extension(exten='1103', context='default')
 
     def test_when_searching_then_returns_one_result(self):
         expected = SearchResult(1, [self.extension2])
 
         self.assert_search_returns_result(expected, search='1001')
 
+    def test_when_searching_with_a_context(self):
+        expected_all_1103 = SearchResult(2, [self.extension4, self.extension5])
+        self.assert_search_returns_result(expected_all_1103, search='1103')
+
+        expected_1103_inside = SearchResult(1, [self.extension4])
+        self.assert_search_returns_result(expected_1103_inside, search='1103', context='inside')
+
+        expected_all_inside = SearchResult(4, [self.extension1, self.extension2,
+                                               self.extension3, self.extension4])
+        self.assert_search_returns_result(expected_all_inside, context='inside', order='exten')
+
     def test_when_sorting_then_returns_result_in_ascending_order(self):
         expected = SearchResult(4, [self.extension1, self.extension2, self.extension3, self.extension4])
 
-        self.assert_search_returns_result(expected, order='exten')
+        self.assert_search_returns_result(expected, order='exten', context='inside')
 
     def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
         expected = SearchResult(4, [self.extension4, self.extension3, self.extension2, self.extension1])
 
-        self.assert_search_returns_result(expected, order='exten', direction='desc')
+        self.assert_search_returns_result(expected, order='exten', direction='desc', context='inside')
 
     def test_when_limiting_then_returns_right_number_of_items(self):
-        expected = SearchResult(4, [self.extension1])
+        expected = SearchResult(5, [self.extension1])
 
         self.assert_search_returns_result(expected, limit=1)
 
     def test_when_skipping_then_returns_right_number_of_items(self):
-        expected = SearchResult(4, [self.extension2, self.extension3, self.extension4])
+        expected = SearchResult(5, [self.extension2, self.extension3, self.extension4, self.extension5])
 
         self.assert_search_returns_result(expected, skip=1)
 
