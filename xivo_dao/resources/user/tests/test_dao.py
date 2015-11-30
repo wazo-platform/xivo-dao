@@ -297,15 +297,25 @@ class TestSearchGivenMultipleUsers(TestSearch):
 
     def setUp(self):
         super(TestSearch, self).setUp()
-        self.user1 = self.prepare_user(firstname='Ashton', lastname='ToujoursFrais')
-        self.user2 = self.prepare_user(firstname='Beaugarte', lastname='Cougar')
-        self.user3 = self.prepare_user(firstname='Casa', lastname='Grecque')
-        self.user4 = self.prepare_user(firstname='Dunkin', lastname='Donuts')
+        self.user1 = self.prepare_user(firstname='Ashton', lastname='ToujoursFrais', description='resto')
+        self.user2 = self.prepare_user(firstname='Beaugarte', lastname='Cougar', description='bar')
+        self.user3 = self.prepare_user(firstname='Casa', lastname='Grecque', description='resto')
+        self.user4 = self.prepare_user(firstname='Dunkin', lastname='Donuts', description='resto')
 
     def test_when_searching_then_returns_one_result(self):
         expected = SearchResult(1, [self.user2])
 
         self.assert_search_returns_result(expected, search='eau')
+
+    def test_when_searching_with_an_extra_argument(self):
+        expected_resto = SearchResult(1, [self.user1])
+        self.assert_search_returns_result(expected_resto, search='ou', description='resto')
+
+        expected_bar = SearchResult(1, [self.user2])
+        self.assert_search_returns_result(expected_bar, search='ou', description='bar')
+
+        expected_all_resto = SearchResult(3, [self.user1, self.user3, self.user4])
+        self.assert_search_returns_result(expected_all_resto, description='resto', order='firstname')
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
         expected = SearchResult(4, [self.user1, self.user2, self.user3, self.user4])
