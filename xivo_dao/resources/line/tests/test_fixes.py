@@ -235,7 +235,7 @@ class TestLineFixes(DAOTestCase):
         self.fixes.fix(line.id)
 
         line = self.session.query(Line).first()
-        assert_that(line.number, equal_to(''))
+        assert_that(line.number, none())
         assert_that(line.context, equal_to('mycontext'))
 
     def test_given_line_has_sip_name_then_line_name_updated(self):

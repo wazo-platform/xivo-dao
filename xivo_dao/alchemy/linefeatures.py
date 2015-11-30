@@ -256,12 +256,12 @@ class LineFeatures(Base):
         self.context = extension.context
 
     def clear_extension(self):
-        self.number = ''
+        self.number = None
 
     def update_name(self):
-        if self.sip_endpoint:
+        if self.sip_endpoint and self.sip_endpoint.name not in ("", None):
             self.name = self.sip_endpoint.name
-        elif self.sccp_endpoint:
+        elif self.sccp_endpoint and self.sccp_endpoint.name not in ("", None):
             self.name = self.sccp_endpoint.name
         else:
             self.name = None
