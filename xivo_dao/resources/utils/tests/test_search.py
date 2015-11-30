@@ -38,7 +38,8 @@ class TestSearchSystem(DAOTestCase):
         self.config = SearchConfig(table=UserFeatures,
                                    columns={'lastname': UserFeatures.lastname,
                                             'firstname': UserFeatures.firstname,
-                                            'simultcalls': UserFeatures.simultcalls},
+                                            'simultcalls': UserFeatures.simultcalls,
+                                            'userfield': UserFeatures.userfield},
                                    default_sort='lastname')
         self.search = SearchSystem(self.config)
 
@@ -138,6 +139,34 @@ class TestSearchSystem(DAOTestCase):
 
         assert_that(total, equal_to(1))
         assert_that(rows, contains(user_row2))
+
+    def test_given_exact_match_numeric_term_in_param(self):
+        self.add_user(firstname='Alice', lastname='First', simultcalls=3)
+        user_row2 = self.add_user(firstname='Alice', lastname='Second', simultcalls=2)
+
+        rows, total = self.search.search(self.session, {'search': 'ali', 'simultcalls': '2'})
+
+        assert_that(total, equal_to(1))
+        assert_that(rows, contains(user_row2))
+
+    def test_given_exact_match_userfield_term_in_param(self):
+        self.add_user(firstname='Alice', lastname='First', userfield='mtl')
+        user_row2 = self.add_user(firstname='Alice', lastname='Second', userfield='qc')
+
+        rows, total = self.search.search(self.session, {'search': 'ali', 'userfield': 'qc'})
+
+        assert_that(total, equal_to(1))
+        assert_that(rows, contains(user_row2))
+
+    def test_given_no_search_with_params(self):
+        self.add_user(firstname=u'Alïce', userfield='mtl')
+        user_row2 = self.add_user(firstname=u'Bõb', userfield='qc')
+        user_row3 = self.add_user(firstname=u'Çharles', userfield='qc')
+
+        rows, total = self.search.search(self.session, {'userfield': 'qc'})
+
+        assert_that(total, equal_to(2))
+        assert_that(rows, contains(user_row2, user_row3))
 
 
 class TestSearchConfig(unittest.TestCase):
