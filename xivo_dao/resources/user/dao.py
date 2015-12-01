@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from xivo_dao.resources.utils.search import SearchResult
+from xivo_dao.alchemy.userfeatures import UserFeatures as User
 from xivo_dao.helpers.db_manager import daosession
 
 from xivo_dao.resources.user.persistor import UserPersistor
@@ -23,6 +25,16 @@ from xivo_dao.resources.func_key_template.persistor import build_persistor as bu
 from xivo_dao.resources.user.search import user_search
 from xivo_dao.resources.user.view import user_view
 from xivo_dao.resources.user.fixes import UserFixes
+
+
+@daosession
+def legacy_search(session, term):
+    users = (session.query(User)
+             .filter(User.fullname.ilike(u'%{}%'.format(term)))
+             .all()
+             )
+
+    return SearchResult(len(users), users)
 
 
 @daosession
