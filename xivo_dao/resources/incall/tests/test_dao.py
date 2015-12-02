@@ -228,7 +228,8 @@ class TestCreateUserIncall(TestIncallDAO):
 
         self.incall = Incall(destination='user',
                              destination_id=user_row.id,
-                             extension_id=extension_row.id)
+                             extension_id=extension_row.id,
+                             ring_seconds=10)
 
     def test_given_user_incall_then_creates_incall_row(self):
         created_incall = dao.create(self.incall)
@@ -236,9 +237,10 @@ class TestCreateUserIncall(TestIncallDAO):
         self.assert_incall_row_created(created_incall.id)
 
     def test_given_user_incall_then_creates_dialaction_row(self):
+        ring_seconds = self.incall.ring_seconds
         created_incall = dao.create(self.incall)
 
-        self.assert_dialaction_row_created(created_incall.id)
+        self.assert_dialaction_row_created(created_incall.id, ring_seconds)
 
     def test_given_user_incall_then_updates_extension_destination(self):
         created_incall = dao.create(self.incall)
@@ -255,13 +257,14 @@ class TestCreateUserIncall(TestIncallDAO):
         assert_that(count, equal_to(1), "incall %s@%s was not created" % (self.exten,
                                                                           self.context))
 
-    def assert_dialaction_row_created(self, incall_id):
+    def assert_dialaction_row_created(self, incall_id, ring_seconds):
         count = (self.session.query(Dialaction)
                  .filter(Dialaction.event == 'answer')
                  .filter(Dialaction.category == 'incall')
                  .filter(Dialaction.categoryval == str(incall_id))
                  .filter(Dialaction.action == 'user')
                  .filter(Dialaction.actionarg1 == str(self.user_id))
+                 .filter(Dialaction.actionarg2 == str(ring_seconds))
                  .filter(Dialaction.linked == 1)
                  .count())
 

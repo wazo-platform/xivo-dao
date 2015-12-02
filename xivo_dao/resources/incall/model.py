@@ -36,15 +36,17 @@ class Incall(NewModel):
         'destination_id',
         'extension_id',
         'description',
+        'ring_seconds',
     ]
 
     _RELATION = {}
 
     @classmethod
-    def user_destination(cls, user_id, extension_id):
+    def user_destination(cls, user_id, extension_id, ring_seconds=None):
         return cls(destination='user',
                    destination_id=user_id,
-                   extension_id=extension_id)
+                   extension_id=extension_id,
+                   ring_seconds=ring_seconds)
 
 
 class IncallDbConverter(DatabaseConverter):
@@ -79,6 +81,7 @@ class IncallDbConverter(DatabaseConverter):
                                           categoryval=incall.id,
                                           action=incall.destination,
                                           actionarg1=incall.destination_id,
+                                          actionarg2=str(incall.ring_seconds),
                                           linked=1)
         return dialaction_row
 
