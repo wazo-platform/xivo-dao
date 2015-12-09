@@ -1,4 +1,4 @@
-xivo-dao (13.02~20130131.124922.ae70e6f-2) squeeze-xivo-skaro-dev; urgency=low
+xivo-dao (13.02~20130131.124922.ae70e6f) xivo-dev; urgency=low
 
   * add dependency on xivo-config (needed for database migration)
 
