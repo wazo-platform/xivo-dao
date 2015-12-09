@@ -15,124 +15,53 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers import errors
-from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
-from xivo_dao.resources.line_extension.model import db_converter
-from xivo_dao.resources.user_line_extension import dao as ule_dao
-from xivo_dao.helpers.db_utils import flush_session
-from xivo_dao.helpers.db_manager import daosession
-
-from xivo_dao.resources.user.fixes import UserFixes
-from xivo_dao.resources.line.fixes import LineFixes
-from xivo_dao.resources.extension.fixes import ExtensionFixes
+from xivo_dao.alchemy.user_line import UserLine
 
 
-@daosession
-def associate(session, line_extension):
-    with flush_session(session):
-        _associate_ule(session, line_extension)
-        session.flush()
-        _fix_associations(session, line_extension)
-    return line_extension
+from xivo_dao.helpers.db_manager import Session
+from xivo_dao.resources.user_line.persistor import Persistor
 
 
-def _associate_ule(session, line_extension):
-    count = (session.query(UserLineSchema)
-             .filter(UserLineSchema.line_id == line_extension.line_id)
-             .count())
-
-    if count > 0:
-        _update_ules(session, line_extension)
-    else:
-        _create_ule(session, line_extension)
+def persistor():
+    return Persistor(Session, 'LineExtension', 'extension_id')
 
 
-def _update_ules(session, line_extension):
-    (session.query(UserLineSchema)
-     .filter(UserLineSchema.line_id == line_extension.line_id)
-     .update({'extension_id': line_extension.extension_id}))
+def get_by(**criteria):
+    return persistor().get_by(**criteria)
 
 
-def _create_ule(session, line_extension):
-    user_line_row = db_converter.to_source(line_extension)
-    session.add(user_line_row)
+def find_all_by(**criteria):
+    return persistor().find_all_by(**criteria)
 
 
-@daosession
-def find_all_by_line_id(session, line_id):
-    query = (session.query(UserLineSchema.line_id,
-                           UserLineSchema.extension_id)
-             .filter(UserLineSchema.line_id == line_id)
-             .filter(UserLineSchema.extension_id != None)  # noqa
-             .distinct())
+def associate(line, extension):
+    return persistor().associate_line_extension(line, extension)
 
-    return [db_converter.to_model(row) for row in query]
+
+def dissociate(line, extension):
+    return persistor().dissociate_line_extension(line, extension)
+
+
+def find_all_by_line_id(line_id):
+    return (Session.query(UserLine.line_id,
+                          UserLine.extension_id)
+            .filter(UserLine.line_id == line_id)
+            .filter(UserLine.extension_id != None)  # noqa
+            .distinct()
+            .all())
 
 
 def find_by_line_id(line_id):
-    line_extensions = find_all_by_line_id(line_id)
-    return line_extensions[0] if line_extensions else None
+    return persistor().find_by(line_id=line_id)
 
 
 def get_by_line_id(line_id):
-    line_extension = find_by_line_id(line_id)
-
-    if line_extension is None:
-        raise errors.not_found('LineExtension', line_id=line_id)
-
-    return line_extension
+    return persistor().get_by(line_id=line_id)
 
 
-@daosession
-def find_by_extension_id(session, extension_id):
-    user_line_row = (session.query(UserLineSchema)
-                     .filter(UserLineSchema.extension_id == extension_id)
-                     .first())
-
-    if not user_line_row:
-        return None
-
-    return db_converter.to_model(user_line_row)
+def find_by_extension_id(extension_id):
+    return persistor().find_by(extension_id=extension_id)
 
 
 def get_by_extension_id(extension_id):
-    line_extension = find_by_extension_id(extension_id)
-
-    if line_extension is None:
-        raise errors.not_found('LineExtension', extension_id=extension_id)
-
-    return line_extension
-
-
-@daosession
-def dissociate(session, line_extension):
-    with flush_session(session):
-        _dissociate_ule(session, line_extension)
-        session.flush()
-        _fix_associations(session, line_extension)
-        ule_dao.delete_association_if_necessary(session)
-
-
-def _dissociate_ule(session, line_extension):
-    (session.query(UserLineSchema)
-     .filter(UserLineSchema.line_id == line_extension.line_id)
-     .update({'extension_id': None}))
-
-
-def _fix_associations(session, line_extension):
-    user_line = (session.query(UserLineSchema)
-                 .filter(UserLineSchema.extension_id == line_extension.extension_id)
-                 .filter(UserLineSchema.line_id == line_extension.line_id)
-                 .filter(UserLineSchema.main_user == True)  # noqa
-                 .filter(UserLineSchema.main_line == True)  # noqa
-                 .first())
-
-    if not user_line:
-        return
-
-    if user_line.user_id:
-        UserFixes(session).fix_user(user_line.user_id)
-    if user_line.line_id:
-        LineFixes(session).fix(user_line.line_id)
-    if user_line.extension_id:
-        ExtensionFixes(session).fix_extension(user_line.extension_id)
+    return persistor().get_by(extension_id=extension_id)
