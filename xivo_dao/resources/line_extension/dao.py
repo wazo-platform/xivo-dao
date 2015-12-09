@@ -55,13 +55,5 @@ def find_by_line_id(line_id):
     return persistor().find_by(line_id=line_id)
 
 
-def get_by_line_id(line_id):
-    return persistor().get_by(line_id=line_id)
-
-
 def find_by_extension_id(extension_id):
     return persistor().find_by(extension_id=extension_id)
-
-
-def get_by_extension_id(extension_id):
-    return persistor().get_by(extension_id=extension_id)

@@ -15,12 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, all_of, has_property, none, is_not, contains, equal_to, has_properties, has_items
+from hamcrest import assert_that, has_property, none, is_not, contains, equal_to, has_properties, has_items
 
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.resources.line_extension import dao
-
-from xivo_dao.helpers.exception import NotFoundError
 
 from xivo_dao.alchemy.user_line import UserLine
 
@@ -154,33 +152,6 @@ class TestFindAllByLineId(TestLineExtensionDAO):
                                                     extension_id=main_ule.extension_id)))
 
 
-class TestGetByLineId(TestLineExtensionDAO):
-
-    def test_get_by_line_id_no_line(self):
-        self.assertRaises(NotFoundError, dao.get_by_line_id, 1)
-
-    def test_get_by_line_id_no_extension(self):
-        user_line_row = self.add_user_line_without_exten()
-
-        self.assertRaises(NotFoundError, dao.get_by_line_id, user_line_row.line_id)
-
-    def test_get_by_line_id_with_extension(self):
-        user_line_row = self.add_user_line_with_exten()
-
-        line_extension = dao.get_by_line_id(user_line_row.line_id)
-
-        assert_that(line_extension, equal_to(user_line_row))
-
-    def test_get_by_line_id_with_multiple_users(self):
-        main_ule = self.add_user_line_with_exten()
-        secondary_ule = self.prepare_secondary_user_associated(main_ule)
-
-        line_extension = dao.get_by_line_id(secondary_ule.line_id)
-
-        assert_that(line_extension.line_id, equal_to(main_ule.line_id))
-        assert_that(line_extension.extension_id, equal_to(main_ule.extension_id))
-
-
 class TestFindAllByExtensionId(TestLineExtensionDAO):
 
     def test_find_by_extension_id_no_links(self):
@@ -217,33 +188,6 @@ class TestFindAllByExtensionId(TestLineExtensionDAO):
 
         assert_that(result.line_id, equal_to(main_ule.line_id))
         assert_that(result.extension_id, equal_to(main_ule.extension_id))
-
-
-class TestGetByExtensionId(TestLineExtensionDAO):
-
-    def test_get_by_extension_id_no_line(self):
-        extension_row = self.add_extension()
-
-        self.assertRaises(NotFoundError, dao.get_by_extension_id, extension_row.id)
-
-    def test_get_by_extension_id_with_line(self):
-        user_line_row = self.add_user_line_with_exten()
-
-        line_extension = dao.get_by_extension_id(user_line_row.extension_id)
-
-        assert_that(line_extension, all_of(
-            has_property('line_id', user_line_row.line_id),
-            has_property('extension_id', user_line_row.extension_id)))
-
-    def test_get_by_extension_id_with_multiple_users(self):
-        main_ule = self.add_user_line_with_exten()
-        secondary_ule = self.prepare_secondary_user_associated(main_ule)
-
-        line_extension = dao.get_by_extension_id(secondary_ule.extension_id)
-
-        assert_that(line_extension, all_of(
-            has_property('line_id', main_ule.line_id),
-            has_property('extension_id', main_ule.extension_id)))
 
 
 class TestDissociateLineExtension(TestLineExtensionDAO):
