@@ -27,14 +27,6 @@ def get_by(**criteria):
     return persistor().get_by(**criteria)
 
 
-def find_by_user_id_and_line_id(user_id, line_id):
-    return persistor().find_by(user_id=user_id, line_id=line_id)
-
-
-def get_by_user_id_and_line_id(user_id, line_id):
-    return persistor().get_by(user_id=user_id, line_id=line_id)
-
-
 def find_all_by_user_id(user_id):
     return persistor().find_all_by(user_id=user_id)
 
