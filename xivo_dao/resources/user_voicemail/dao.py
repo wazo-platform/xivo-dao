@@ -25,6 +25,56 @@ from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.helpers.db_manager import daosession
 
 
+COLUMNS = {'user_id': UserSchema.id,
+           'voicemail_id': UserSchema.voicemailid}
+
+
+def find_query(session, criteria):
+    query = (session.query(UserSchema.id.label('user_id'),
+                           UserSchema.voicemailid.label('voicemail_id'),
+                           UserSchema.enablevoicemail)
+             .filter(UserSchema.voicemailid != None)  # noqa
+             .filter(UserSchema.voicemailid != 0))
+    for name, value in criteria.iteritems():
+        column = COLUMNS.get(name)
+        if not column:
+            raise errors.unknown(column)
+        query = query.filter(column == value)
+    return query
+
+
+@daosession
+def find_by(session, **criteria):
+    query = find_query(session, criteria)
+    row = query.first()
+    return db_converter.to_model(row) if row else None
+
+
+def get_by(**criteria):
+    extension = find_by(**criteria)
+    if not extension:
+        raise errors.not_found('UserVoicemail', **criteria)
+    return extension
+
+
+@daosession
+def find_all_by(session, **criteria):
+    query = find_query(session, criteria)
+    return [db_converter.to_model(row) for row in query]
+
+
+def get_by_user_id(user_id):
+    return get_by(user_id=user_id)
+
+
+def find_by_user_id(user_id):
+    return find_by(user_id=user_id)
+
+
+def find_all_by_voicemail_id(voicemail_id):
+    return find_all_by(voicemail_id=voicemail_id)
+
+
 @daosession
 def associate(session, user_voicemail):
     with flush_session(session):
@@ -50,42 +100,6 @@ def _fetch_by_user_id(session, user_id):
            .first())
 
     return row
-
-
-@daosession
-def get_by_user_id(session, user_id):
-    row = _fetch_by_user_id(session, user_id)
-
-    if not row:
-        raise errors.not_found('User', id=user_id)
-
-    if row.voicemail_id is None or row.voicemail_id == 0:
-        raise errors.not_found('UserVoicemail', user_id=user_id)
-
-    return db_converter.to_model(row)
-
-
-@daosession
-def find_by_user_id(session, user_id):
-    row = _fetch_by_user_id(session, user_id)
-
-    if not row:
-        return None
-
-    if row.voicemail_id is None or row.voicemail_id == 0:
-        return None
-
-    return db_converter.to_model(row)
-
-
-@daosession
-def find_all_by_voicemail_id(session, voicemail_id):
-    query = (session.query(UserSchema.id.label('user_id'),
-                           UserSchema.voicemailid.label('voicemail_id'),
-                           UserSchema.enablevoicemail)
-             .filter(UserSchema.voicemailid == voicemail_id))
-
-    return [db_converter.to_model(row) for row in query]
 
 
 @daosession
