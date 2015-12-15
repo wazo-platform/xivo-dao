@@ -128,15 +128,15 @@ class TestSipEndpointDAO(DAOTestCase):
 class TestSipEndpointDaoFindBy(TestSipEndpointDAO):
 
     def test_given_column_does_not_exist_then_raises_error(self):
-        self.assertRaises(InputError, dao.find_by, 'column', 1)
+        self.assertRaises(InputError, dao.find_by, column=1)
 
     def test_given_row_with_value_does_not_exist_then_returns_null(self):
-        result = dao.find_by('name', 'abcd')
+        result = dao.find_by(name='abcd')
         assert_that(result, none())
 
     def test_find_by(self):
         sip = self.add_usersip(name='myname')
-        result = dao.find_by('name', 'myname')
+        result = dao.find_by(name='myname')
 
         assert_that(result.id, equal_to(sip.id))
 
