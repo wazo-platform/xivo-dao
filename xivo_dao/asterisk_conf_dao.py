@@ -392,6 +392,7 @@ def find_sip_user_settings(session):
             UserSIP,
             Extension.exten,
             UserFeatures.musiconhold.label('mohsuggest'),
+            UserFeatures.uuid.label('uuid'),
             (Voicemail.mailbox + '@' + Voicemail.context).label('mailbox')
         ).join(
             LineFeatures, and_(LineFeatures.protocolid == UserSIP.id,
@@ -418,6 +419,7 @@ def find_sip_user_settings(session):
         sip_user['mohsuggest'] = row.mohsuggest
         sip_user['number'] = row.exten
         sip_user['mailbox'] = row.mailbox
+        sip_user['uuid'] = row.uuid
         yield sip_user
 
 
