@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, contains, has_items, equal_to, none
+from hamcrest import assert_that, contains, has_items, equal_to, none, has_properties
 
 from xivo_dao.alchemy.incall import Incall as IncallSchema
 from xivo_dao.alchemy.dialaction import Dialaction
@@ -23,7 +23,6 @@ from xivo_dao.alchemy.extension import Extension
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.resources.incall import dao
 from xivo_dao.resources.incall.model import Incall
-from xivo_dao.resources.line_extension.model import LineExtension
 
 
 class TestIncallDAO(DAOTestCase):
@@ -57,11 +56,11 @@ class TestIncallDAO(DAOTestCase):
 
         return incall_row
 
-    def add_secondary_user(self, line_extension):
+    def add_secondary_user(self, line_id, extension_id):
         user_row = self.add_user()
         return self.add_user_line(user_id=user_row.id,
-                                  line_id=line_extension.line_id,
-                                  extension_id=line_extension.extension_id,
+                                  line_id=line_id,
+                                  extension_id=extension_id,
                                   main_user=False,
                                   main_line=True)
 
@@ -86,12 +85,10 @@ class TestFindAllLineExtensionsByLineId(TestIncallDAO):
 
         self.create_incall_row_for_user(user_line_row.user_id, extension_row.id)
 
-        line_extension = LineExtension(line_id=user_line_row.line_id,
-                                       extension_id=extension_row.id)
+        result = dao.find_all_line_extensions_by_line_id(user_line_row.line_id)
 
-        result = dao.find_all_line_extensions_by_line_id(line_extension.line_id)
-
-        assert_that(result, contains(line_extension))
+        assert_that(result, contains(has_properties(line_id=user_line_row.line_id,
+                                                    extension_id=extension_row.id)))
 
     def test_given_line_with_multiple_users_then_returns_one_item(self):
         user_line_row = self.add_user_line_with_exten(exten='1000', context='default')
@@ -99,13 +96,12 @@ class TestFindAllLineExtensionsByLineId(TestIncallDAO):
 
         self.create_incall_row_for_user(user_line_row.user_id, extension_row.id)
 
-        line_extension = LineExtension(line_id=user_line_row.line_id,
-                                       extension_id=extension_row.id)
-        self.add_secondary_user(line_extension)
+        self.add_secondary_user(user_line_row.line_id, extension_row.id)
 
-        result = dao.find_all_line_extensions_by_line_id(line_extension.line_id)
+        result = dao.find_all_line_extensions_by_line_id(user_line_row.line_id)
 
-        assert_that(result, contains(line_extension))
+        assert_that(result, contains(has_properties(line_id=user_line_row.line_id,
+                                                    extension_id=extension_row.id)))
 
     def test_given_2_incalls_on_same_user_then_returns_two_items(self):
         user_line_row = self.add_user_line_with_exten(exten='1000', context='default')
@@ -115,14 +111,11 @@ class TestFindAllLineExtensionsByLineId(TestIncallDAO):
         self.create_incall_row_for_user(user_line_row.user_id, extension_row.id)
         self.create_incall_row_for_user(user_line_row.user_id, second_extension_row.id)
 
-        first_line_extension = LineExtension(line_id=user_line_row.line_id,
-                                             extension_id=extension_row.id)
-        second_line_extension = LineExtension(line_id=user_line_row.line_id,
-                                              extension_id=second_extension_row.id)
-
         result = dao.find_all_line_extensions_by_line_id(user_line_row.line_id)
 
-        assert_that(result, has_items(first_line_extension, second_line_extension))
+        assert_that(result, has_items(
+            has_properties(line_id=user_line_row.line_id, extension_id=extension_row.id),
+            has_properties(line_id=user_line_row.line_id, extension_id=second_extension_row.id)))
 
     def test_given_2_lines_then_returns_one_item_with_right_line_id(self):
         first_user_line_row = self.add_user_line_with_exten(exten='1000', context='default')
@@ -133,12 +126,10 @@ class TestFindAllLineExtensionsByLineId(TestIncallDAO):
         self.create_incall_row_for_user(first_user_line_row.user_id, first_extension_row.id)
         self.create_incall_row_for_user(second_user_line_row.user_id, second_extension_row.id)
 
-        line_extension = LineExtension(line_id=first_user_line_row.line_id,
-                                       extension_id=first_extension_row.id)
-
         result = dao.find_all_line_extensions_by_line_id(first_user_line_row.line_id)
 
-        assert_that(result, contains(line_extension))
+        assert_that(result, contains(has_properties(line_id=first_user_line_row.line_id,
+                                                    extension_id=first_extension_row.id)))
 
 
 class TestFindLineExtensionByExtensionId(TestIncallDAO):
@@ -161,12 +152,10 @@ class TestFindLineExtensionByExtensionId(TestIncallDAO):
 
         self.create_incall_row_for_user(user_line_row.user_id, extension_row.id)
 
-        line_extension = LineExtension(line_id=user_line_row.line_id,
-                                       extension_id=extension_row.id)
+        result = dao.find_line_extension_by_extension_id(extension_row.id)
 
-        result = dao.find_line_extension_by_extension_id(line_extension.extension_id)
-
-        assert_that(result, equal_to(line_extension))
+        assert_that(result, has_properties(line_id=user_line_row.line_id,
+                                           extension_id=extension_row.id))
 
     def test_given_2_incalls_on_same_user_then_returns_correct_item(self):
         user_line_row = self.add_user_line_with_exten(exten='1000', context='default')
@@ -176,12 +165,10 @@ class TestFindLineExtensionByExtensionId(TestIncallDAO):
         self.create_incall_row_for_user(user_line_row.user_id, extension_row.id)
         self.create_incall_row_for_user(user_line_row.user_id, second_extension_row.id)
 
-        line_extension = LineExtension(line_id=user_line_row.line_id,
-                                       extension_id=extension_row.id)
+        result = dao.find_line_extension_by_extension_id(extension_row.id)
 
-        result = dao.find_line_extension_by_extension_id(line_extension.extension_id)
-
-        assert_that(result, equal_to(line_extension))
+        assert_that(result, has_properties(line_id=user_line_row.line_id,
+                                           extension_id=extension_row.id))
 
 
 class TestFindByExtensionId(TestIncallDAO):

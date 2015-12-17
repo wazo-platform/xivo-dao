@@ -24,7 +24,6 @@ from xivo_dao.alchemy.user_line import UserLine
 
 from xivo_dao.resources.extension import dao as extension_dao
 from xivo_dao.resources.incall.model import db_converter as incall_db_converter
-from xivo_dao.resources.line_extension.model import db_converter as line_extension_db_converter
 
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.helpers.db_utils import flush_session
@@ -46,7 +45,7 @@ def find_all_line_extensions_by_line_id(session, line_id):
                         Incall.context == Extension.context))
              .filter(UserLine.line_id == line_id))
 
-    return [line_extension_db_converter.to_model(row) for row in query]
+    return query.all()
 
 
 @daosession
@@ -65,11 +64,7 @@ def find_line_extension_by_extension_id(session, extension_id):
                         Incall.context == Extension.context))
              .filter(Extension.id == extension_id))
 
-    row = query.first()
-    if not row:
-        return None
-
-    return line_extension_db_converter.to_model(row)
+    return query.first()
 
 
 @daosession
