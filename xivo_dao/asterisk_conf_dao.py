@@ -91,7 +91,7 @@ def find_sccp_line_settings(session):
     sccp_pickup_members = find_pickup_members('sccp')
 
     def line_config(protocolid, name, cid_name, cid_num, allow, disallow,
-                    language, user_id, context, number):
+                    language, user_id, context, number, uuid):
         line = {
             'name': name,
             'cid_name': cid_name,
@@ -100,6 +100,7 @@ def find_sccp_line_settings(session):
             'number': number,
             'context': context,
             'language': language,
+            'uuid': uuid,
         }
 
         if allow:
@@ -120,7 +121,8 @@ def find_sccp_line_settings(session):
                           UserFeatures.language,
                           UserLine.user_id,
                           LineFeatures.context,
-                          Extension.exten)
+                          Extension.exten,
+                          UserFeatures.uuid)
             .join(LineFeatures, and_(LineFeatures.protocolid == SCCPLine.id,
                                      LineFeatures.protocol == 'sccp'))
             .join(UserLine, and_(UserLine.line_id == LineFeatures.id,
@@ -392,6 +394,7 @@ def find_sip_user_settings(session):
             UserSIP,
             Extension.exten,
             UserFeatures.musiconhold.label('mohsuggest'),
+            UserFeatures.uuid.label('uuid'),
             (Voicemail.mailbox + '@' + Voicemail.context).label('mailbox')
         ).join(
             LineFeatures, and_(LineFeatures.protocolid == UserSIP.id,
@@ -418,6 +421,7 @@ def find_sip_user_settings(session):
         sip_user['mohsuggest'] = row.mohsuggest
         sip_user['number'] = row.exten
         sip_user['mailbox'] = row.mailbox
+        sip_user['uuid'] = row.uuid
         yield sip_user
 
 
