@@ -32,13 +32,14 @@ class SipPersistor(object):
     def __init__(self, session):
         self.session = session
 
-    def find_by(self, name, value):
-        column = getattr(SIP, name, None)
-        if not column:
-            raise errors.unknown(name)
-
-        row = self.session.query(SIP).filter(column == value).first()
-        return row
+    def find_by(self, criteria):
+        query = self.session.query(SIP)
+        for name, value in criteria.iteritems():
+            column = getattr(SIP, name, None)
+            if not column:
+                raise errors.unknown(name)
+            query = query.filter(column == value)
+        return query.first()
 
     def get(self, id):
         row = self.session.query(SIP).filter(SIP.id == id).first()
