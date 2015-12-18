@@ -23,6 +23,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.types import Integer, String, Text
 from sqlalchemy.schema import Column, UniqueConstraint, PrimaryKeyConstraint, \
     Index
+from sqlalchemy.ext.hybrid import hybrid_property
 
 from xivo_dao.helpers.exception import InputError
 from xivo_dao.helpers.db_manager import Base
@@ -179,7 +180,7 @@ class LineFeatures(Base):
     def _set_sccp_caller_id_num(self, value):
         self.sccp_endpoint.cid_num = value
 
-    @property
+    @hybrid_property
     def endpoint(self):
         return self.protocol
 
@@ -187,7 +188,7 @@ class LineFeatures(Base):
     def endpoint(self, value):
         self.protocol = value
 
-    @property
+    @hybrid_property
     def endpoint_id(self):
         return self.protocolid
 
@@ -195,7 +196,7 @@ class LineFeatures(Base):
     def endpoint_id(self, value):
         self.protocolid = value
 
-    @property
+    @hybrid_property
     def provisioning_extension(self):
         return self.provisioning_code
 
@@ -212,7 +213,7 @@ class LineFeatures(Base):
         elif value.isdigit():
             self.provisioningid = int(value)
 
-    @property
+    @hybrid_property
     def position(self):
         return self.num
 
@@ -220,7 +221,7 @@ class LineFeatures(Base):
     def position(self, value):
         self.num = value
 
-    @property
+    @hybrid_property
     def device_slot(self):
         return self.num
 

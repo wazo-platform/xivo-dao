@@ -62,6 +62,8 @@ class UserFeatures(Base):
         ForeignKeyConstraint(('entityid',),
                              ('entity.id',),
                              ondelete='RESTRICT'),
+        ForeignKeyConstraint(('voicemailid',),
+                             ('voicemail.uniqueid',)),
         UniqueConstraint('func_key_private_template_id'),
         UniqueConstraint('uuid', name='userfeatures_uuid'),
         Index('userfeatures__idx__agentid', 'agentid'),
@@ -129,6 +131,8 @@ class UserFeatures(Base):
     main_line_rel = relationship("UserLine",
                                  primaryjoin="""and_(UserFeatures.id == UserLine.user_id,
                                                      UserLine.main_line == True)""")
+    voicemail = relationship("Voicemail")
+    cti_profile = relationship("CtiProfile")
 
     def extrapolate_caller_id(self, extension=None):
         default_num = extension.exten if extension else None
