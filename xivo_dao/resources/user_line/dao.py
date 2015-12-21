@@ -27,6 +27,10 @@ def get_by(**criteria):
     return persistor().get_by(**criteria)
 
 
+def find_by(**criteria):
+    return persistor().find_by(**criteria)
+
+
 def find_all_by_user_id(user_id):
     return persistor().find_all_by(user_id=user_id)
 

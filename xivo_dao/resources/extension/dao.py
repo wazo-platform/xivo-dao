@@ -31,49 +31,54 @@ from xivo_dao.resources.utils.search import SearchResult
 DEFAULT_ORDER = ExtensionSchema.exten
 
 
+def find_query(session, criteria):
+    query = session.query(ExtensionSchema)
+    for name, value in criteria.iteritems():
+        column = getattr(ExtensionSchema, name, None)
+        if not column:
+            raise errors.unknown(column)
+        query = query.filter(column == value)
+    return query
+
+
 @daosession
-def get(session, extension_id):
-    row = _fetch_extension_row(session, extension_id)
-    return db_converter.to_model(row)
+def find_by(session, **criteria):
+    query = find_query(session, criteria)
+    row = query.first()
+    return db_converter.to_model(row) if row else None
 
 
-def _fetch_extension_row(session, extension_id):
-    row = session.query(ExtensionSchema).get(extension_id)
-    if not row:
-        raise errors.not_found('Extension', id=extension_id)
-    return row
+def get_by(**criteria):
+    extension = find_by(**criteria)
+    if not extension:
+        raise errors.not_found('Extension', **criteria)
+    return extension
+
+
+@daosession
+def find_all_by(session, **criteria):
+    query = find_query(session, criteria)
+    return [db_converter.to_model(row) for row in query]
+
+
+def get(extension_id):
+    return get_by(id=extension_id)
 
 
 @daosession
 def get_by_exten_context(session, exten, context):
-    res = (session.query(ExtensionSchema)
-           .filter(ExtensionSchema.exten == exten)
-           .filter(ExtensionSchema.context == context)
-           ).first()
-
-    if not res:
-        raise errors.not_found('Extension', exten=exten, context=context)
-
-    return db_converter.to_model(res)
+    return get_by(exten=exten, context=context)
 
 
 @daosession
 def find(session, extension_id):
-    extension_row = (session.query(ExtensionSchema)
-                     .filter(ExtensionSchema.id == extension_id)
-                     .first())
-
-    if not extension_row:
-        return None
-
-    return db_converter.to_model(extension_row)
+    return find_by(id=extension_id)
 
 
 @daosession
 def search(session, **parameters):
     rows, total = extension_search.search(session, parameters)
-
-    extensions = _rows_to_extension_model(rows)
+    extensions = [db_converter.to_model(row) for row in rows]
     return SearchResult(total, extensions)
 
 
@@ -91,60 +96,31 @@ def find_by_context(session, context, order=None):
 
 @daosession
 def find_by_exten_context(session, exten, context):
-    extension_row = (session.query(ExtensionSchema)
-                     .filter(ExtensionSchema.exten == exten)
-                     .filter(ExtensionSchema.context == context)
-                     .first())
+    return find_by(exten=exten, context=context)
 
-    if not extension_row:
-        return None
 
-    return db_converter.to_model(extension_row)
+def get_by_type(type_, typeval):
+    return get_by(type=type_, typeval=str(typeval))
 
 
 def get_by_group_id(group_id):
-    return get_by_type('group', str(group_id))
+    return get_by_type('group', group_id)
 
 
 def get_by_queue_id(queue_id):
-    return get_by_type('queue', str(queue_id))
+    return get_by_type('queue', queue_id)
 
 
-def get_by_conference_id(queue_id):
-    return get_by_type('meetme', str(queue_id))
-
-
-@daosession
-def get_by_type(session, type_, typeval):
-    extension_row = (session.query(ExtensionSchema)
-                     .filter(ExtensionSchema.type == type_)
-                     .filter(ExtensionSchema.typeval == typeval)
-                     .first())
-
-    if not extension_row:
-        raise errors.not_found('Extension', type=type_, typeval=typeval)
-
-    return db_converter.to_model(extension_row)
+def get_by_conference_id(conference_id):
+    return get_by_type('meetme', conference_id)
 
 
 def _find_all_by_search(session, search, order):
-    line_rows = (_new_query(session, order)
-                 .filter(or_(ExtensionSchema.exten.ilike(search),
-                             ExtensionSchema.context.ilike(search)))
-                 .all())
+    query = (_new_query(session, order)
+             .filter(or_(ExtensionSchema.exten.ilike(search),
+                         ExtensionSchema.context.ilike(search))))
 
-    return _rows_to_extension_model(line_rows)
-
-
-def _rows_to_extension_model(extension_rows):
-    if not extension_rows:
-        return []
-
-    extensions = []
-    for extension_row in extension_rows:
-        extensions.append(db_converter.to_model(extension_row))
-
-    return extensions
+    return [db_converter.to_model(row) for row in query]
 
 
 @daosession
@@ -163,7 +139,7 @@ def create(session, extension):
 
 @daosession
 def edit(session, extension):
-    extension_row = _fetch_extension_row(session, extension.id)
+    extension_row = find_query(session, {'id': extension.id}).one()
     db_converter.update_source(extension_row, extension)
 
     with flush_session(session):
