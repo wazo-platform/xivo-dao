@@ -17,8 +17,10 @@
 
 import json
 
+from xivo_dao.alchemy.ctidirectories import CtiDirectories
 from xivo_dao.alchemy.cti_contexts import CtiContexts
 from xivo_dao.alchemy.cti_displays import CtiDisplays
+from xivo_dao.alchemy.directories import Directories
 from xivo_dao.helpers.db_manager import daosession
 
 
@@ -39,6 +41,29 @@ def get_profile_configuration(session):
         CtiContexts.display == CtiDisplays.name
     )
 
-    return {row.name: {'display': row.display,
-                       'sources': row.directories.split(',')
-                       if row.directories else []} for row in rows.all()}
+    results = {row.name: {'display': row.display,
+                          'sources': row.directories.split(',')
+                          if row.directories else []} for row in rows.all()}
+
+    sources = set()
+    for config in results.itervalues():
+        for source in config['sources']:
+            sources.add(source)
+
+    if sources:
+        rows = session.query(
+            CtiDirectories.name,
+            Directories.dirtype,
+        ).join(
+            Directories,
+            Directories.uri == CtiDirectories.uri
+        ).filter(CtiDirectories.name.in_(sources))
+        name_to_type = {row.name: row.dirtype for row in rows.all()}
+    else:
+        name_to_type = {}
+
+    for context, config in results.iteritems():
+        types = [name_to_type.get(name, 'ldap') for name in config['sources']]
+        config['types'] = types
+
+    return results
