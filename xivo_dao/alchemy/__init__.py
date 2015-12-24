@@ -17,7 +17,9 @@
 
 # explicitly import modules that are referenced in relationship to prevent
 # "mapper initialization" errors
+from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.userfeatures import UserFeatures
+from xivo_dao.alchemy.voicemail import Voicemail
