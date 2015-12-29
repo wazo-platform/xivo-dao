@@ -1,4 +1,4 @@
-from debian:wheezy
+from debian:jessie
 
 RUN apt-get -yqq update \
     && apt-get -yqq install python-pip \
