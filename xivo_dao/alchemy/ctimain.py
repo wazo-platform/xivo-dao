@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2014 Avencall
+# Copyright (C) 2012-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,7 +26,6 @@ class CtiMain(Base):
     __tablename__ = 'ctimain'
 
     id = Column(Integer, primary_key=True)
-    commandset = Column(String(20))
     ami_ip = Column(String(16))
     ami_port = Column(Integer)
     ami_login = Column(String(64))
@@ -34,8 +33,6 @@ class CtiMain(Base):
     cti_ip = Column(String(16))
     cti_port = Column(Integer)
     cti_active = Column(Integer, nullable=False, server_default='1')
-    ctis_ip = Column(String(16))
-    ctis_port = Column(Integer)
     ctis_active = Column(Integer, nullable=False, server_default='1')
     webi_ip = Column(String(16))
     webi_port = Column(Integer)
