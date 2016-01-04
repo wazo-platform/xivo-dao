@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2015 Avencall
+# Copyright (C) 2013-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@ from __future__ import unicode_literals
 
 import re
 
+from sqlalchemy.sql import cast, func
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import Integer, String, Text
 from sqlalchemy.schema import Column, UniqueConstraint, PrimaryKeyConstraint, \
@@ -200,11 +201,15 @@ class LineFeatures(Base):
     def provisioning_extension(self):
         return self.provisioning_code
 
-    @property
+    @hybrid_property
     def provisioning_code(self):
         if self.provisioningid is None:
             return None
         return unicode(self.provisioningid)
+
+    @provisioning_code.expression
+    def provisioning_code(cls):
+        return cast(func.nullif(cls.provisioningid, 0), String)
 
     @provisioning_code.setter
     def provisioning_code(self, value):
