@@ -50,6 +50,9 @@ class TestCTIDisplaysDAO(DAOTestCase):
         assert_that(result, equal_to(expected))
 
     def test_get_profile_configuration(self):
+        self.add_directory(name='xivodir', dirtype='xivo')
+        self.add_directory(name='garbage', dirtype='phonebook')
+        self.add_directory(name='csvws', dirtype='csv')
         profile_configs = [
             ('__switchboard_directory', 'xivodir,garbage', 'switchboard'),
             ('default', 'ldapone,csvws', 'Display'),
@@ -65,13 +68,17 @@ class TestCTIDisplaysDAO(DAOTestCase):
         result = cti_displays_dao.get_profile_configuration()
 
         expected = {'__switchboard_directory': {'display': 'switchboard',
-                                                'sources': ['xivodir', 'garbage']},
+                                                'sources': ['xivodir', 'garbage'],
+                                                'types': ['xivo', 'phonebook'],},
                     'default': {'display': 'Display',
-                                'sources': ['ldapone', 'csvws']}}
+                                'sources': ['ldapone', 'csvws'],
+                                'types': ['ldap', 'csv']}}
 
         assert_that(result, equal_to(expected))
 
     def test_get_profile_association_invalid_display(self):
+        self.add_directory(name='xivodir', dirtype='xivo')
+        self.add_directory(name='garbage', dirtype='phonebook')
         profile_configs = [
             ('__switchboard_directory', 'xivodir,garbage', 'switchboard'),
             ('default', 'ldapone,csvws', 'NOT'),
@@ -87,7 +94,8 @@ class TestCTIDisplaysDAO(DAOTestCase):
         result = cti_displays_dao.get_profile_configuration()
 
         expected = {'__switchboard_directory': {'display': 'switchboard',
-                                                'sources': ['xivodir', 'garbage']}}
+                                                'sources': ['xivodir', 'garbage'],
+                                                'types': ['xivo', 'phonebook']}}
 
         assert_that(result, equal_to(expected))
 
@@ -107,6 +115,7 @@ class TestCTIDisplaysDAO(DAOTestCase):
         result = cti_displays_dao.get_profile_configuration()
 
         expected = {'__switchboard_directory': {'display': 'switchboard',
-                                                'sources': []}}
+                                                'sources': [],
+                                                'types': []}}
 
         assert_that(result, equal_to(expected))

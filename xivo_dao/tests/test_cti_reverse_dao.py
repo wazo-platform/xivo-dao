@@ -27,14 +27,17 @@ class TestCTIReverseDAO(DAOTestCase):
 
     def setUp(self):
         super(TestCTIReverseDAO, self).setUp()
+        self.add_directory(name='xivodir', dirtype='xivo')
+        self.add_directory(name='internal', dirtype='phonebook')
         reverse = CtiReverseDirectories(
-            directories='["xivodir", "personal", "internal"]',
+            directories='["xivodir", "ldapdev", "internal"]',
         )
         self.add_me(reverse)
 
     def test_get_config(self):
         result = cti_reverse_dao.get_config()
 
-        expected = ['xivodir', 'personal', 'internal']
+        expected = {'sources': [u'xivodir', u'ldapdev', u'internal'],
+                    'types': [u'xivo', u'ldap', u'phonebook']}
 
         assert_that(result, equal_to(expected))

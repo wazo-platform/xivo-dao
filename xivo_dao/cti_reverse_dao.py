@@ -17,11 +17,28 @@
 
 import json
 
+from xivo_dao.alchemy.ctidirectories import CtiDirectories
 from xivo_dao.alchemy.ctireversedirectories import CtiReverseDirectories
+from xivo_dao.alchemy.directories import Directories
 from xivo_dao.helpers.db_manager import daosession
 
 
 @daosession
 def get_config(session):
     rows = session.query(CtiReverseDirectories)
-    return json.loads(rows.first().directories)
+    sources = json.loads(rows.first().directories)
+    if sources:
+        rows = session.query(
+            CtiDirectories.name,
+            Directories.dirtype,
+        ).join(
+            Directories,
+            Directories.uri == CtiDirectories.uri
+        ).filter(CtiDirectories.name.in_(sources))
+        name_to_type = {row.name: row.dirtype for row in rows.all()}
+    else:
+        name_to_type = {}
+
+    types = [name_to_type.get(name, u'ldap') for name in sources]
+
+    return {'sources': sources, 'types': types}
