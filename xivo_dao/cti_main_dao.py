@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2014 Avencall
+# Copyright (C) 2012-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,24 +21,21 @@ from xivo_dao.helpers.db_manager import daosession
 
 @daosession
 def get_config(session):
-    res = {}
     row = (session.query(CtiMain).first())
-    main = {}
-    main['incoming_tcp'] = {}
-    main['incoming_tcp']['CTI'] = (row.cti_ip, row.cti_port, row.cti_active)
-    main['incoming_tcp']['CTIS'] = (row.ctis_ip, row.ctis_port, row.ctis_active)
-    main['incoming_tcp']['WEBI'] = (row.webi_ip, row.webi_port, row.webi_active)
-    main['incoming_tcp']['INFO'] = (row.info_ip, row.info_port, row.info_active)
-    main['certfile'] = row.tlscertfile
-    main['keyfile'] = row.tlsprivkeyfile
-    main['sockettimeout'] = row.socket_timeout
-    main['logintimeout'] = row.login_timeout
-    main['context_separation'] = row.context_separation
-    main['live_reload_conf'] = row.live_reload_conf
-    res['main'] = main
-    res['ipbx_connection'] = {}
-    res['ipbx_connection']['ipaddress'] = row.ami_ip
-    res['ipbx_connection']['ipport'] = row.ami_port
-    res['ipbx_connection']['username'] = row.ami_login
-    res['ipbx_connection']['password'] = row.ami_password
-    return res
+    main = {'incoming_tcp': {'CTI': (row.cti_ip, row.cti_port, row.cti_active),
+                             'WEBI': (row.webi_ip, row.webi_port, row.webi_active),
+                             'INFO': (row.info_ip, row.info_port, row.info_active)},
+            'sockettimeout': row.socket_timeout,
+            'logintimeout': row.login_timeout,
+            'context_separation': row.context_separation,
+            'live_reload_conf': row.live_reload_conf,
+            'starttls': bool(row.ctis_active)}
+    if row.tlscertfile:
+        main['certfile'] = row.tlscertfile
+    if row.tlsprivkeyfile:
+        main['keyfile'] = row.tlsprivkeyfile
+    return {'main': main,
+            'ipbx_connection': {'ipaddress': row.ami_ip,
+                                'ipport': row.ami_port,
+                                'username': row.ami_login,
+                                'password': row.ami_password}}
