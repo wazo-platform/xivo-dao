@@ -384,7 +384,7 @@ def find_sip_trunk_settings(session):
     rows = session.query(UserSIP).filter(and_(UserSIP.category == 'trunk',
                                               UserSIP.commented == 0)).all()
 
-    return [row.todict() for row in rows]
+    return [row.todict(exclude=['options']) for row in rows]
 
 
 @daosession
