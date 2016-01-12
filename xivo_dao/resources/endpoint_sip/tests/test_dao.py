@@ -18,6 +18,8 @@
 
 from __future__ import unicode_literals
 
+import unittest
+
 from hamcrest import assert_that
 from hamcrest import equal_to
 from hamcrest import none
@@ -182,6 +184,24 @@ class TestSipEndpointDaoGet(TestSipEndpointDAO):
         assert_that(sip.options, is_not(has_item(has_item("allow"))))
         assert_that(sip.options, is_not(has_item(has_item("setvar"))))
 
+    def test_given_row_with_additional_options_then_returns_model(self):
+        options = [
+            ["foo", "bar"],
+            ["foo", "baz"],
+            ["spam", "eggs"]
+        ]
+
+        row = self.add_usersip(options=options)
+
+        sip = dao.get(row.id)
+        assert_that(sip.options, has_items(*options))
+
+    def test_given_row_has_native_and_additional_options_then_all_options_returned(self):
+        row = self.add_usersip(language="fr_FR", _options=[["foo", "bar"]])
+
+        sip = dao.get(row.id)
+        assert_that(sip.options, has_items(["language", "fr_FR"], ["foo", "bar"]))
+
 
 class TestSipEndpointDaoSearch(DAOTestCase):
 
@@ -230,7 +250,7 @@ class TestSipEndpointDaoCreate(DAOTestCase):
         assert_that(created_sip.host, equal_to('127.0.0.1'))
         assert_that(created_sip.category, equal_to('user'))
 
-    def test_create_with_optional_parameters(self):
+    def test_create_with_native_options(self):
         expected_options = has_properties({
             'buggymwi': 1,
             'amaflags': 'default',
@@ -321,8 +341,21 @@ class TestSipEndpointDaoCreate(DAOTestCase):
         assert_that(created_sip, expected_options)
         assert_that(created_sip.options, has_items(*ALL_OPTIONS))
 
-    def test_create_invalid_option_raises_error(self):
-        self.assertRaises(InputError, SIPEndpoint, options=[['invalid', 'invalid']])
+    def test_create_with_additional_options(self):
+        options = [
+            ["language", "fr_FR"],
+            ["foo", "bar"],
+            ["foo", "baz"],
+            ["spam", "eggs"]
+        ]
+
+        sip = SIPEndpoint(options=options)
+        created_sip = dao.create(sip)
+
+        row = self.session.query(SIPEndpoint).first()
+
+        assert_that(created_sip.id, equal_to(row.id))
+        assert_that(created_sip.options, has_items(*options))
 
 
 class TestSipEndpointDaoEdit(DAOTestCase):
@@ -425,6 +458,7 @@ class TestSipEndpointDaoEdit(DAOTestCase):
             'port': none(),
             'outboundproxy': none(),
             'remotesecret': none(),
+            '_options': contains(),
         })
 
         sip = dao.create(SIPEndpoint(options=ALL_OPTIONS))
@@ -457,6 +491,66 @@ class TestSipEndpointDaoEdit(DAOTestCase):
         assert_that(row.subscribemwi, equal_to(0))
         assert_that(row.allow, equal_to("ulaw,alaw"))
 
+    def test_edit_additional_options(self):
+        row = self.add_usersip(_options=[
+            ["foo", "bar"],
+            ["foo", "baz"],
+            ["spam", "eggs"],
+        ])
+
+        sip = dao.get(row.id)
+        sip.options = [
+            ["foo", "newbar"],
+            ["foo", "newbaz"],
+            ["spam", "neweggs"],
+        ]
+
+        dao.edit(sip)
+
+        row = self.session.query(SIPEndpoint).first()
+        assert_that(row._options, has_items(
+            ["foo", "newbar"],
+            ["foo", "newbaz"],
+            ["spam", "neweggs"],
+        ))
+
+    def test_edit_both_native_and_additional_options(self):
+        row = self.add_usersip(language="fr_FR",
+                               amaflags="default",
+                               subscribemwi=1,
+                               allow="g729,gsm",
+                               _options=[
+                                   ["foo", "bar"],
+                                   ["foo", "baz"],
+                                   ["spam", "eggs"],
+                               ])
+
+        new_options = [
+            ["language", "en_US"],
+            ["amaflags", "omit"],
+            ["subscribemwi", "no"],
+            ["allow", "ulaw"],
+            ["allow", "alaw"],
+            ["foo", "newbar"],
+            ["foo", "newbaz"],
+            ["spam", "neweggs"],
+        ]
+
+        sip = dao.get(row.id)
+        sip.options = new_options
+        dao.edit(sip)
+
+        row = self.session.query(SIPEndpoint).first()
+        assert_that(row.options, has_items(*new_options))
+        assert_that(row.language, equal_to("en_US"))
+        assert_that(row.amaflags, equal_to("omit"))
+        assert_that(row.subscribemwi, equal_to(0))
+        assert_that(row.allow, equal_to("ulaw,alaw"))
+        assert_that(row._options, has_items(
+            ["foo", "newbar"],
+            ["foo", "newbaz"],
+            ["spam", "neweggs"],
+        ))
 
 class TestSipEndpointDaoDelete(TestSipEndpointDAO):
 
