@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2015 Avencall
+# Copyright (C) 2012-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,7 +26,6 @@ from sqlalchemy.ext.declarative import declarative_base
 from xivo.config_helper import ConfigParser, ErrorHandler
 
 DEFAULT_DB_URI = 'postgresql://asterisk:proformatique@localhost/asterisk'
-LEGACY_MODE = False
 
 
 logger = logging.getLogger(__name__)
@@ -59,33 +58,14 @@ def daosession(func):
     @wraps(func)
     def wrapped(*args, **kwargs):
         session = Session()
-        if LEGACY_MODE:
-            return _legacy_session(session, func, *args, **kwargs)
-        else:
-            return func(session, *args, **kwargs)
+        return func(session, *args, **kwargs)
     return wrapped
-
-
-def _legacy_session(session, func, *args, **kwargs):
-    try:
-        result = func(session, *args, **kwargs)
-        session.flush()
-    except Exception:
-        session.rollback()
-        raise
-    return result
 
 
 def init_db(db_uri, legacy_mode=False):
     engine = create_engine(db_uri)
-    if legacy_mode:
-        Session.configure(bind=engine, autoflush=True, autocommit=False)
-    else:
-        Session.configure(bind=engine)
+    Session.configure(bind=engine)
     Base.metadata.bind = engine
-
-    global LEGACY_MODE
-    LEGACY_MODE = legacy_mode
 
 
 def init_db_from_config(config=None, legacy_mode=False):
