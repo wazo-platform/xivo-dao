@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2015 Avencall
+# Copyright (C) 2015-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,10 +24,7 @@ from xivo_dao.helpers.db_manager import daosession
 def flush_session(session):
     try:
         yield
-        if db_manager.LEGACY_MODE:
-            session.commit()
-        else:
-            session.flush()
+        session.flush()
     except Exception:
         session.rollback()
         raise
