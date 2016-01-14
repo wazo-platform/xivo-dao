@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2015 Avencall
+# Copyright (C) 2013-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -377,14 +377,6 @@ def find_sip_authentication_settings(session):
     rows = session.query(SIPAuthentication).all()
 
     return [row.todict() for row in rows]
-
-
-@daosession
-def find_sip_trunk_settings(session):
-    rows = session.query(UserSIP).filter(and_(UserSIP.category == 'trunk',
-                                              UserSIP.commented == 0)).all()
-
-    return [row.todict(exclude=['options']) for row in rows]
 
 
 @daosession
