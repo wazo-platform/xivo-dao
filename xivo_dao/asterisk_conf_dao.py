@@ -384,7 +384,9 @@ def find_sip_user_settings(session):
     query = (
         session.query(
             UserSIP,
-            Extension.exten,
+            LineFeatures.protocol,
+            LineFeatures.context,
+            Extension.exten.label('number'),
             UserFeatures.musiconhold.label('mohsuggest'),
             UserFeatures.uuid.label('uuid'),
             (Voicemail.mailbox + '@' + Voicemail.context).label('mailbox')
@@ -393,7 +395,7 @@ def find_sip_user_settings(session):
                                LineFeatures.protocol == 'sip')
         ).outerjoin(
             UserLine, and_(UserLine.line_id == LineFeatures.id,
-                           UserLine.main_user == True)
+                           UserLine.main_user == True)  # noqa
         ).outerjoin(
             UserFeatures, UserFeatures.id == UserLine.user_id
         ).outerjoin(
@@ -408,13 +410,7 @@ def find_sip_user_settings(session):
         )
     )
 
-    for row in query:
-        sip_user = row.UserSIP.todict()
-        sip_user['mohsuggest'] = row.mohsuggest
-        sip_user['number'] = row.exten
-        sip_user['mailbox'] = row.mailbox
-        sip_user['uuid'] = row.uuid
-        yield sip_user
+    return query.all()
 
 
 @daosession

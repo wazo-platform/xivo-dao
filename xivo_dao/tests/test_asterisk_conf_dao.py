@@ -20,7 +20,7 @@ import uuid
 
 from contextlib import contextmanager
 from hamcrest import assert_that, contains, equal_to, has_entries, \
-    contains_inanyorder, has_length, none, has_entry
+    contains_inanyorder, has_length, none, has_properties
 
 from mock import patch
 from xivo_dao import asterisk_conf_dao
@@ -717,190 +717,6 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
 
         assert_that(sip_authentication, contains_inanyorder(*expected_result))
 
-
-    def test_find_sip_user_settings_no_voicemail(self):
-        usersip = self.add_usersip(category='user')
-        self.add_user_line_with_exten(
-            protocol='sip',
-            protocolid=usersip.id,
-            name_line=usersip.name,
-            context=usersip.context,
-        )
-
-        results = asterisk_conf_dao.find_sip_user_settings()
-
-        assert_that(results, contains(has_entry('mailbox', none())))
-
-    def test_find_sip_user_settings(self):
-        usersip = self.add_usersip(category='user')
-        voicemail = self.add_voicemail(mailbox='1000', context='default')
-        mailbox = '1000@default'
-
-        ule = self.add_user_line_with_exten(
-            protocol='sip',
-            protocolid=usersip.id,
-            name_line=usersip.name,
-            context=usersip.context,
-            musiconhold='mymusic',
-            voicemail_id=voicemail.uniqueid
-        )
-
-        expected = {'number': ule.extension.exten,
-                    'protocol': ule.line.protocol,
-                    'buggymwi': None,
-                    'amaflags': u'default',
-                    'sendrpid': None,
-                    'videosupport': None,
-                    'regseconds': 0,
-                    'maxcallbitrate': None,
-                    'registertrying': None,
-                    'session-minse': None,
-                    'mohinterpret': None,
-                    'rtpholdtimeout': None,
-                    'session-expires': None,
-                    'defaultip': None,
-                    'ignoresdpversion': None,
-                    'vmexten': None,
-                    'name': usersip.name,
-                    'callingpres': None,
-                    'textsupport': None,
-                    'unsolicited_mailbox': None,
-                    'outboundproxy': None,
-                    'fromuser': None,
-                    'cid_number': None,
-                    'commented': 0,
-                    'useclientcode': None,
-                    'call-limit': 10,
-                    'progressinband': None,
-                    'port': None,
-                    'transport': None,
-                    'category': u'user',
-                    'md5secret': u'',
-                    'regserver': None,
-                    'directmedia': None,
-                    'qualifyfreq': None,
-                    'host': u'dynamic',
-                    'promiscredir': None,
-                    'disallow': None,
-                    'allowoverlap': None,
-                    'accountcode': None,
-                    'dtmfmode': None,
-                    'language': None,
-                    'usereqphone': None,
-                    'qualify': None,
-                    'trustrpid': None,
-                    'context': ule.line.context,
-                    'timert1': None,
-                    'session-refresher': None,
-                    'maxforwards': None,
-                    'allowsubscribe': None,
-                    'session-timers': None,
-                    'busylevel': None,
-                    'callcounter': None,
-                    'callerid': None,
-                    'encryption': None,
-                    'remotesecret': None,
-                    'secret': u'',
-                    'use_q850_reason': None,
-                    'type': u'friend',
-                    'username': None,
-                    'callbackextension': None,
-                    'disallowed_methods': None,
-                    'rfc2833compensate': None,
-                    'g726nonstandard': None,
-                    'contactdeny': None,
-                    'snom_aoc_enabled': None,
-                    'fullname': None,
-                    't38pt_udptl': None,
-                    'fullcontact': None,
-                    'subscribemwi': 0,
-                    'mohsuggest': 'mymusic',
-                    'id': usersip.id,
-                    'autoframing': None,
-                    't38pt_usertpsource': None,
-                    'ipaddr': u'',
-                    'fromdomain': None,
-                    'allowtransfer': None,
-                    'nat': None,
-                    'setvar': u'',
-                    'contactpermit': None,
-                    'rtpkeepalive': None,
-                    'insecure': None,
-                    'permit': None,
-                    'parkinglot': None,
-                    'lastms': u'',
-                    'subscribecontext': None,
-                    'regexten': None,
-                    'deny': None,
-                    'timerb': None,
-                    'rtptimeout': None,
-                    'mailbox': mailbox,
-                    'allow': None}
-
-        results = asterisk_conf_dao.find_sip_user_settings()
-
-        assert_that(results, contains(has_entries(expected)))
-
-    def test_find_sip_user_settings_no_xivo_user(self):
-        number, context = '1001', 'myctx'
-        user_sip = self.add_usersip(
-            category='user',
-            context=context,
-        )
-        self.add_user_line_without_user(exten=number,
-                                        context=context,
-                                        protocol='sip',
-                                        protocolid=user_sip.id,
-                                        name='name')
-
-        results = asterisk_conf_dao.find_sip_user_settings()
-
-        assert_that(results, contains(has_entries('protocol', 'sip',
-                                                  'number', number,
-                                                  'context', context)))
-
-    def test_find_sip_pickup_settings(self):
-        category_to_conf_reverse_map = {'pickupgroup': 'member',
-                                        'callgroup': 'pickup'}
-        pickup = self.add_pickup()
-
-        name1, user_id1 = self._create_user_with_usersip()
-        name2, user_id2 = self._create_user_with_usersip()
-        name3, user_id3 = self._create_user_with_usersip()
-
-        user_member_category = self.add_pickup_member_user(pickup, user_id1)
-        group_member_category = self.add_pickup_member_group(pickup, user_id2)
-        queue_member_category = self.add_pickup_member_queue(pickup, user_id3)
-
-        expected_result = [
-            (name1, category_to_conf_reverse_map[user_member_category], pickup.id),
-            (name2, category_to_conf_reverse_map[group_member_category], pickup.id),
-            (name3, category_to_conf_reverse_map[queue_member_category], pickup.id),
-        ]
-
-        sip_pickup = asterisk_conf_dao.find_sip_pickup_settings()
-
-        assert_that(sip_pickup, contains_inanyorder(*expected_result))
-
-    def test_find_sip_pickup_settings_no_pickup(self):
-        name1, user_id1 = self._create_user_with_usersip(exten='1001')
-        name2, user_id2 = self._create_user_with_usersip(exten='1002')
-        name3, user_id3 = self._create_user_with_usersip(exten='1003')
-
-        with warning_filter('error'):
-            sip_pickup = asterisk_conf_dao.find_sip_pickup_settings()
-
-            assert_that(sip_pickup, contains_inanyorder())
-
-    def _create_user_with_usersip(self, **kwargs):
-        usersip = self.add_usersip(category='user')
-        ule = self.add_user_line_with_exten(protocol='sip',
-                                            protocolid=usersip.id,
-                                            name_line=usersip.name,
-                                            context=usersip.context,
-                                            **kwargs)
-        return usersip.name, ule.user_id
-
     def test_find_iax_general_settings(self):
         iax1 = self.add_iax_general_settings()
         iax2 = self.add_iax_general_settings()
@@ -1327,3 +1143,104 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         result = asterisk_conf_dao.find_queue_penalties_settings()
 
         assert_that(result, contains_inanyorder(*expected_result))
+
+    def test_find_sip_pickup_settings(self):
+        category_to_conf_reverse_map = {'pickupgroup': 'member',
+                                        'callgroup': 'pickup'}
+        pickup = self.add_pickup()
+
+        name1, user_id1 = self._create_user_with_usersip()
+        name2, user_id2 = self._create_user_with_usersip()
+        name3, user_id3 = self._create_user_with_usersip()
+
+        user_member_category = self.add_pickup_member_user(pickup, user_id1)
+        group_member_category = self.add_pickup_member_group(pickup, user_id2)
+        queue_member_category = self.add_pickup_member_queue(pickup, user_id3)
+
+        expected_result = [
+            (name1, category_to_conf_reverse_map[user_member_category], pickup.id),
+            (name2, category_to_conf_reverse_map[group_member_category], pickup.id),
+            (name3, category_to_conf_reverse_map[queue_member_category], pickup.id),
+        ]
+
+        sip_pickup = asterisk_conf_dao.find_sip_pickup_settings()
+
+        assert_that(sip_pickup, contains_inanyorder(*expected_result))
+
+    def test_find_sip_pickup_settings_no_pickup(self):
+        name1, user_id1 = self._create_user_with_usersip(exten='1001')
+        name2, user_id2 = self._create_user_with_usersip(exten='1002')
+        name3, user_id3 = self._create_user_with_usersip(exten='1003')
+
+        with warning_filter('error'):
+            sip_pickup = asterisk_conf_dao.find_sip_pickup_settings()
+
+            assert_that(sip_pickup, contains_inanyorder())
+
+    def _create_user_with_usersip(self, **kwargs):
+        usersip = self.add_usersip(category='user')
+        ule = self.add_user_line_with_exten(protocol='sip',
+                                            protocolid=usersip.id,
+                                            name_line=usersip.name,
+                                            context=usersip.context,
+                                            **kwargs)
+        return usersip.name, ule.user_id
+
+
+class TestFindSipUserSettings(DAOTestCase):
+
+    def test_given_no_sip_accounts_then_returns_empty_list(self):
+        result = asterisk_conf_dao.find_sip_user_settings()
+        assert_that(result, contains())
+
+    def test_given_sip_account_is_not_category_user_then_returns_empty_list(self):
+        self.add_usersip(category='trunk')
+        result = asterisk_conf_dao.find_sip_user_settings()
+        assert_that(result, contains())
+
+    def test_given_sip_account_is_deactivated_then_returns_empty_list(self):
+        self.add_usersip(category='user', commented=1)
+        result = asterisk_conf_dao.find_sip_user_settings()
+        assert_that(result, contains())
+
+    def test_given_line_has_no_resources_associated_then_resource_fields_are_null(self):
+        sip = self.add_usersip(category='user')
+        self.add_line(protocol='sip', protocolid=sip.id)
+
+        expected = {'number': none(),
+                    'mailbox': none(),
+                    'mohsuggest': none(),
+                    'uuid': none()}
+
+        results = asterisk_conf_dao.find_sip_user_settings()
+
+        assert_that(results, contains(has_properties(expected)))
+
+    def test_given_sip_has_all_resources_associated_then_all_resources_found_in_result(self):
+        extension = self.add_extension(exten="1000", context="default")
+        voicemail = self.add_voicemail(mailbox='1000', context='default')
+        user = self.add_user(firstname="John", lastname="Smith", voicemailid=voicemail.id, musiconhold='musiconhold')
+        sip = self.add_usersip(category='user')
+        line = self.add_line(protocol='sip', protocolid=sip.id, context="default")
+        self.add_user_line(user_id=user.id, line_id=line.id, extension_id=extension.id)
+
+        mailbox = '{}@{}'.format(voicemail.mailbox, voicemail.context)
+
+        expected = {'number': extension.exten,
+                    'context': line.context,
+                    'protocol': line.protocol,
+                    'mailbox': mailbox,
+                    'mohsuggest': user.musiconhold,
+                    'uuid': user.uuid}
+
+        results = asterisk_conf_dao.find_sip_user_settings()
+
+        assert_that(results, contains(has_properties(expected)))
+
+    def test_given_sip_account_when_querying_then_same_sip_account_row_is_returned(self):
+        sip = self.add_usersip(category='user')
+        self.add_line(protocol='sip', protocolid=sip.id)
+
+        results = asterisk_conf_dao.find_sip_user_settings()
+
+        assert_that(results, contains(has_properties(UserSIP=sip)))
