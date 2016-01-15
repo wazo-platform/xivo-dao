@@ -154,7 +154,7 @@ class UserSIP(Base):
     textsupport = Column(Integer)
     commented = Column(Integer, nullable=False, server_default='0')
     _options = Column("options", ARRAY(String, dimensions=2),
-                      nullable=False, server_default='{}')
+                      nullable=False, default=list, server_default='{}')
 
     __table_args__ = (
         PrimaryKeyConstraint('id'),
@@ -228,11 +228,7 @@ class UserSIP(Base):
             setattr(self, attribute, value)
 
     def add_extra_option(self, name, value):
-        options = getattr(self, '_options', None)
-        if options is None:
-            options = []
-        options.append([name, value])
-        self._options = options
+        self._options.append([name, value])
 
     def option_names(self, exclude=None):
         exclude = set(exclude or []).union(self.EXCLUDE)
