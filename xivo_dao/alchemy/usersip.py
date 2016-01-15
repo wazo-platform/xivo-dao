@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2015 Avencall
+# Copyright (C) 2012-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,22 +26,20 @@ from sqlalchemy.types import Integer, String, Text, Enum
 from xivo_dao.alchemy import enum
 
 from xivo_dao.helpers.exception import InputError
-
-EXCLUDE_OPTIONS = {'id',
-                   'name',
+DEFAULT_EXCLUDE = {'name',
                    'username',
                    'secret',
                    'type',
                    'host',
                    'context',
-                   'category',
-                   'commented',
-                   'options'}
+                   'category'}
 
 
 class UserSIP(Base):
 
     __tablename__ = 'usersip'
+
+    EXCLUDE = {'id', 'commented', 'options'}
 
     id = Column(Integer, nullable=False)
     name = Column(String(40), nullable=False)
@@ -170,11 +168,14 @@ class UserSIP(Base):
 
     @property
     def options(self):
-        native_options = list(self.map_options())
+        return self.all_options(DEFAULT_EXCLUDE)
+
+    def all_options(self, exclude=None):
+        native_options = list(self.map_options(exclude))
         return native_options + self._options
 
-    def map_options(self):
-        for column, attribute in self.option_names():
+    def map_options(self, exclude=None):
+        for column, attribute in self.option_names(exclude):
             for value in self.map_option(attribute):
                 yield [column, value]
 
@@ -199,7 +200,7 @@ class UserSIP(Base):
 
     @options.setter
     def options(self, options):
-        option_names = dict(self.option_names())
+        option_names = dict(self.option_names(DEFAULT_EXCLUDE))
         self.reset_options(option_names)
         self.set_options(option_names, options)
 
@@ -235,9 +236,10 @@ class UserSIP(Base):
         options.append([name, value])
         self._options = options
 
-    def option_names(self):
+    def option_names(self, exclude=None):
+        exclude = set(exclude or []).union(self.EXCLUDE)
         for column in self.__table__.columns:
-            if column.name not in EXCLUDE_OPTIONS:
+            if column.name not in exclude:
                 yield column.name, column.name.replace("-", "_")
 
     def option_defaults(self):
