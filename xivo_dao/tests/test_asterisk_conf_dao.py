@@ -1176,7 +1176,6 @@ class TestFindSipUserSettings(DAOTestCase, PickupHelperMixin):
         self.add_line(protocol='sip', protocolid=sip.id)
 
         expected = {'number': none(),
-                    'context': none(),
                     'mailbox': none(),
                     'mohsuggest': none(),
                     'uuid': none(),
