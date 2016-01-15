@@ -185,8 +185,7 @@ class UserSIP(Base):
             else:
                 yield 'no'
         elif name == 'regseconds':
-            if self.regseconds != 0:
-                yield unicode(self.regseconds)
+            yield unicode(self.regseconds)
         elif name == 'allow':
             if self.allow is not None:
                 allow = self.allow.split(",") if self.allow else []

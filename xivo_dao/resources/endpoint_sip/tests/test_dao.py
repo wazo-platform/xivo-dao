@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 
-# Copyright (C) 2015 Avencall
+# Copyright (C) 2015-2016 Avencall
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -174,13 +174,11 @@ class TestSipEndpointDaoGet(TestSipEndpointDAO):
 
     def test_given_row_with_option_set_to_null_then_option_not_returned(self):
         row = self.add_usersip(language=None,
-                               regseconds=0,
                                allow=None,
                                setvar='')
 
         sip = dao.get(row.id)
         assert_that(sip.options, is_not(has_item(has_item("language"))))
-        assert_that(sip.options, is_not(has_item(has_item("regseconds"))))
         assert_that(sip.options, is_not(has_item(has_item("allow"))))
         assert_that(sip.options, is_not(has_item(has_item("setvar"))))
 
