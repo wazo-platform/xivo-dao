@@ -518,8 +518,8 @@ def find_pickup_members(session, protocol):
         and_(
             PickupMember.membertype == 'group',
             QueueMember.usertype == 'user',
-            UserLine.main_user == True,
-            UserLine.main_line == True,
+            UserLine.main_user == True,  # noqa
+            UserLine.main_line == True,  # noqa
         )
     )
 
@@ -535,8 +535,8 @@ def find_pickup_members(session, protocol):
         and_(
             PickupMember.membertype == 'queue',
             QueueMember.usertype == 'user',
-            UserLine.main_user == True,
-            UserLine.main_line == True,
+            UserLine.main_user == True,  # noqa
+            UserLine.main_line == True,  # noqa
         )
     )
 

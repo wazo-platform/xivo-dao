@@ -25,7 +25,6 @@ from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.types import Integer, String, Text, Enum
 from xivo_dao.alchemy import enum
 
-from xivo_dao.helpers.exception import InputError
 DEFAULT_EXCLUDE = {'name',
                    'username',
                    'secret',
@@ -155,7 +154,7 @@ class UserSIP(Base):
     textsupport = Column(Integer)
     commented = Column(Integer, nullable=False, server_default='0')
     _options = Column("options", ARRAY(String, dimensions=2),
-                     nullable=False, server_default='{}')
+                      nullable=False, server_default='{}')
 
     __table_args__ = (
         PrimaryKeyConstraint('id'),
