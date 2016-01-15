@@ -20,7 +20,7 @@ import uuid
 
 from contextlib import contextmanager
 from hamcrest import assert_that, contains, equal_to, has_entries, \
-    contains_inanyorder, has_length, none, has_properties
+    contains_inanyorder, has_length, none, has_properties, has_items
 
 from mock import patch
 from xivo_dao import asterisk_conf_dao
@@ -66,11 +66,12 @@ class PickupHelperMixin(object):
     def _category_to_conf(self, category):
         return self._category_to_conf_map[category]
 
-    def add_pickup_member_user(self, pickup, user_id):
+    def add_pickup_member_user(self, pickup, user_id, category='member'):
         args = {
             'pickupid': pickup.id,
             'membertype': 'user',
             'memberid': user_id,
+            'category': category,
         }
 
         pickup_member = self.add_pickup_member(**args)
@@ -1144,39 +1145,6 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
 
         assert_that(result, contains_inanyorder(*expected_result))
 
-    def test_find_sip_pickup_settings(self):
-        category_to_conf_reverse_map = {'pickupgroup': 'member',
-                                        'callgroup': 'pickup'}
-        pickup = self.add_pickup()
-
-        name1, user_id1 = self._create_user_with_usersip()
-        name2, user_id2 = self._create_user_with_usersip()
-        name3, user_id3 = self._create_user_with_usersip()
-
-        user_member_category = self.add_pickup_member_user(pickup, user_id1)
-        group_member_category = self.add_pickup_member_group(pickup, user_id2)
-        queue_member_category = self.add_pickup_member_queue(pickup, user_id3)
-
-        expected_result = [
-            (name1, category_to_conf_reverse_map[user_member_category], pickup.id),
-            (name2, category_to_conf_reverse_map[group_member_category], pickup.id),
-            (name3, category_to_conf_reverse_map[queue_member_category], pickup.id),
-        ]
-
-        sip_pickup = asterisk_conf_dao.find_sip_pickup_settings()
-
-        assert_that(sip_pickup, contains_inanyorder(*expected_result))
-
-    def test_find_sip_pickup_settings_no_pickup(self):
-        name1, user_id1 = self._create_user_with_usersip(exten='1001')
-        name2, user_id2 = self._create_user_with_usersip(exten='1002')
-        name3, user_id3 = self._create_user_with_usersip(exten='1003')
-
-        with warning_filter('error'):
-            sip_pickup = asterisk_conf_dao.find_sip_pickup_settings()
-
-            assert_that(sip_pickup, contains_inanyorder())
-
     def _create_user_with_usersip(self, **kwargs):
         usersip = self.add_usersip(category='user')
         ule = self.add_user_line_with_exten(protocol='sip',
@@ -1187,7 +1155,7 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         return usersip.name, ule.user_id
 
 
-class TestFindSipUserSettings(DAOTestCase):
+class TestFindSipUserSettings(DAOTestCase, PickupHelperMixin):
 
     def test_given_no_sip_accounts_then_returns_empty_list(self):
         result = asterisk_conf_dao.find_sip_user_settings()
@@ -1208,9 +1176,12 @@ class TestFindSipUserSettings(DAOTestCase):
         self.add_line(protocol='sip', protocolid=sip.id)
 
         expected = {'number': none(),
+                    'context': none(),
                     'mailbox': none(),
                     'mohsuggest': none(),
-                    'uuid': none()}
+                    'uuid': none(),
+                    'namedcallgroup': none(),
+                    'namedpickupgroup': none()}
 
         results = asterisk_conf_dao.find_sip_user_settings()
 
@@ -1244,3 +1215,34 @@ class TestFindSipUserSettings(DAOTestCase):
         results = asterisk_conf_dao.find_sip_user_settings()
 
         assert_that(results, contains(has_properties(UserSIP=sip)))
+
+    def test_given_sip_account_has_pickups_then_pickups_are_returned(self):
+        sip = self.add_usersip(category='user')
+        line = self.add_line(protocol='sip', protocolid=sip.id)
+        user = self.add_user()
+        self.add_user_line(user_id=user.id, line_id=line.id)
+
+        pickup1 = self.add_pickup()
+        pickup2 = self.add_pickup()
+        pickup3 = self.add_pickup()
+        pickup4 = self.add_pickup()
+
+        self.add_pickup_member_user(pickup1, user.id, category='member')
+        self.add_pickup_member_user(pickup2, user.id, category='member')
+        self.add_pickup_member_user(pickup3, user.id, category='pickup')
+        self.add_pickup_member_user(pickup4, user.id, category='pickup')
+
+        results = list(asterisk_conf_dao.find_sip_user_settings())
+        assert_that(results, has_length(1))
+
+        namedcallgroup = results[0].namedcallgroup
+        namedpickupgroup = results[0].namedpickupgroup
+
+        call_groups = namedcallgroup.split(',')
+        pickup_groups = namedpickupgroup.split(',')
+
+        assert_that(call_groups, has_items(str(pickup3.id),
+                                           str(pickup4.id)))
+
+        assert_that(pickup_groups, has_items(str(pickup1.id),
+                                             str(pickup2.id)))
