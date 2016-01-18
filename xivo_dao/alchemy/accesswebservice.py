@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -37,6 +37,5 @@ class AccessWebService(Base):
     login = Column(String(64))
     passwd = Column(String(64))
     host = Column(String(255))
-    obj = Column(Text, nullable=False)
     disable = Column(Integer, nullable=False, server_default='0')
     description = Column(Text, nullable=False)
