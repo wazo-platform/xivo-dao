@@ -18,27 +18,30 @@
 from __future__ import unicode_literals
 
 from xivo_dao.helpers.db_manager import Base
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint, \
-    Index
+from sqlalchemy.schema import Column
+from sqlalchemy.schema import PrimaryKeyConstraint
+from sqlalchemy.schema import UniqueConstraint
+from sqlalchemy.schema import Index
 from sqlalchemy.sql.schema import CheckConstraint
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.types import Integer, String, Text, Enum
 from xivo_dao.alchemy import enum
 
-DEFAULT_EXCLUDE = {'name',
-                   'username',
-                   'secret',
-                   'type',
-                   'host',
-                   'context',
-                   'category'}
+EXCLUDE_OPTIONS = {'id',
+                   'commented',
+                   'options'}
+EXCLUDE_OPTIONS_CONFD = {'name',
+                         'username',
+                         'secret',
+                         'type',
+                         'host',
+                         'context',
+                         'category'}
 
 
 class UserSIP(Base):
 
     __tablename__ = 'usersip'
-
-    EXCLUDE = {'id', 'commented', 'options'}
 
     id = Column(Integer, nullable=False)
     name = Column(String(40), nullable=False)
@@ -167,74 +170,73 @@ class UserSIP(Base):
 
     @property
     def options(self):
-        return self.all_options(DEFAULT_EXCLUDE)
+        return self.all_options(EXCLUDE_OPTIONS_CONFD)
 
     def all_options(self, exclude=None):
-        native_options = list(self.map_options(exclude))
+        native_options = list(self.native_options(exclude))
         return native_options + self._options
 
-    def map_options(self, exclude=None):
-        for column, attribute in self.option_names(exclude):
-            for value in self.map_option(attribute):
+    def native_options(self, exclude=None):
+        for column in self.native_option_names(exclude):
+            for value in self.native_option(column):
                 yield [column, value]
 
-    def map_option(self, name):
-        if name == 'subscribemwi':
-            if self.subscribemwi == 1:
-                yield 'yes'
-            else:
-                yield 'no'
-        elif name == 'regseconds':
+    def native_option(self, column_name):
+        if column_name == 'subscribemwi':
+            yield 'yes' if self.subscribemwi == 1 else 'no'
+        elif column_name == 'regseconds':
             yield unicode(self.regseconds)
-        elif name == 'allow':
-            if self.allow is not None:
-                allow = self.allow.split(",") if self.allow else []
-                for value in allow:
+        elif column_name == 'allow':
+            if self.allow:
+                for value in self.allow.split(","):
                     yield value
         else:
-            value = getattr(self, name, None)
+            value = getattr(self, self._attribute(column_name), None)
             if value is not None and value != "":
                 yield unicode(value)
 
     @options.setter
     def options(self, options):
-        option_names = dict(self.option_names(DEFAULT_EXCLUDE))
-        self.reset_options(option_names)
+        option_names = self.native_option_names(EXCLUDE_OPTIONS_CONFD)
+        self.reset_options()
         self.set_options(option_names, options)
 
-    def reset_options(self, option_names):
+    def reset_options(self):
+        self.reset_extra_options()
+        self.reset_native_options()
+
+    def reset_extra_options(self):
         self._options = []
+
+    def reset_native_options(self):
         defaults = self.option_defaults()
-        for column, attribute in option_names.iteritems():
+        for column in self.native_option_names(EXCLUDE_OPTIONS_CONFD):
             value = defaults.get(column, None)
-            setattr(self, attribute, value)
+            setattr(self, self._attribute(column), value)
 
     def set_options(self, option_names, options):
         for column, value in options:
             if column in option_names:
-                attribute = option_names[column]
-                self.set_option(attribute, value)
+                self.set_native_option(column, value)
             else:
                 self.add_extra_option(column, value)
 
-    def set_option(self, attribute, value):
-        if attribute == 'subscribemwi':
+    def set_native_option(self, column, value):
+        if column == 'subscribemwi':
             self.subscribemwi = 1 if value == 'yes' else 0
-        elif attribute == 'allow':
+        elif column == 'allow':
             allow = self.allow.split(',') if self.allow else []
             allow.append(value)
             self.allow = ",".join(allow)
         else:
-            setattr(self, attribute, value)
+            setattr(self, self._attribute(column), value)
 
     def add_extra_option(self, name, value):
         self._options.append([name, value])
 
-    def option_names(self, exclude=None):
-        exclude = set(exclude or []).union(self.EXCLUDE)
-        for column in self.__table__.columns:
-            if column.name not in exclude:
-                yield column.name, column.name.replace("-", "_")
+    def native_option_names(self, exclude=None):
+        exclude = set(exclude or []).union(EXCLUDE_OPTIONS)
+        return set(column.name for column in self.__table__.columns) - exclude
 
     def option_defaults(self):
         defaults = {}
@@ -263,3 +265,6 @@ class UserSIP(Base):
 
     def endpoint_protocol(self):
         return 'sip'
+
+    def _attribute(self, column_name):
+        return column_name.replace("-", "_")
