@@ -33,11 +33,14 @@ Session = scoped_session(sessionmaker())
 Base = declarative_base()
 
 
-def todict(self):
+def todict(self, exclude=None):
+    exclude = exclude or []
     d = {}
     for c in self.__table__.columns:
-        value = getattr(self, c.name.replace('-', '_'))
-        d[c.name] = value
+        name = c.name.replace('-', '_')
+        if name not in exclude:
+            value = getattr(self, name)
+            d[c.name] = value
 
     return d
 

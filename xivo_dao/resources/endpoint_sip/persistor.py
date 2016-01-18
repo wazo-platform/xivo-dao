@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 
-# Copyright (C) 2015 Avencall
+# Copyright (C) 2015-2016 Avencall
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -33,13 +33,19 @@ class SipPersistor(object):
         self.session = session
 
     def find_by(self, criteria):
+        return self.find_query(criteria).first()
+
+    def find_all_by(self, criteria):
+        return self.find_query(criteria).all()
+
+    def find_query(self, criteria):
         query = self.session.query(SIP)
         for name, value in criteria.iteritems():
             column = getattr(SIP, name, None)
             if not column:
                 raise errors.unknown(name)
             query = query.filter(column == value)
-        return query.first()
+        return query
 
     def get(self, id):
         row = self.session.query(SIP).filter(SIP.id == id).first()

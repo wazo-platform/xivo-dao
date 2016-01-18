@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2015 Avencall
+# Copyright (C) 2012-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,23 +18,25 @@
 from __future__ import unicode_literals
 
 from xivo_dao.helpers.db_manager import Base
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint, \
-    Index
+from sqlalchemy.schema import Column
+from sqlalchemy.schema import PrimaryKeyConstraint
+from sqlalchemy.schema import UniqueConstraint
+from sqlalchemy.schema import Index
 from sqlalchemy.sql.schema import CheckConstraint
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.types import Integer, String, Text, Enum
 from xivo_dao.alchemy import enum
 
-from xivo_dao.helpers.exception import InputError
-
 EXCLUDE_OPTIONS = {'id',
-                   'name',
-                   'username',
-                   'secret',
-                   'type',
-                   'host',
-                   'context',
-                   'category',
-                   'commented'}
+                   'commented',
+                   'options'}
+EXCLUDE_OPTIONS_CONFD = {'name',
+                         'username',
+                         'secret',
+                         'type',
+                         'host',
+                         'context',
+                         'category'}
 
 
 class UserSIP(Base):
@@ -154,6 +156,8 @@ class UserSIP(Base):
     disallowed_methods = Column(String(1024))
     textsupport = Column(Integer)
     commented = Column(Integer, nullable=False, server_default='0')
+    _options = Column("options", ARRAY(String, dimensions=2),
+                      nullable=False, default=list, server_default='{}')
 
     __table_args__ = (
         PrimaryKeyConstraint('id'),
@@ -166,65 +170,73 @@ class UserSIP(Base):
 
     @property
     def options(self):
-        return list(self.map_options())
+        return self.all_options(EXCLUDE_OPTIONS_CONFD)
 
-    def map_options(self):
-        for column, attribute in self.option_names():
-            for value in self.map_option(attribute):
+    def all_options(self, exclude=None):
+        native_options = list(self.native_options(exclude))
+        return native_options + self._options
+
+    def native_options(self, exclude=None):
+        for column in self.native_option_names(exclude):
+            for value in self.native_option(column):
                 yield [column, value]
 
-    def map_option(self, name):
-        if name == 'subscribemwi':
-            if self.subscribemwi == 1:
-                yield 'yes'
-            else:
-                yield 'no'
-        elif name == 'regseconds':
-            if self.regseconds != 0:
-                yield unicode(self.regseconds)
-        elif name == 'allow':
-            if self.allow is not None:
-                allow = self.allow.split(",") if self.allow else []
-                for value in allow:
+    def native_option(self, column_name):
+        if column_name == 'subscribemwi':
+            yield 'yes' if self.subscribemwi == 1 else 'no'
+        elif column_name == 'regseconds':
+            yield unicode(self.regseconds)
+        elif column_name == 'allow':
+            if self.allow:
+                for value in self.allow.split(","):
                     yield value
         else:
-            value = getattr(self, name, None)
+            value = getattr(self, self._attribute(column_name), None)
             if value is not None and value != "":
                 yield unicode(value)
 
     @options.setter
     def options(self, options):
-        option_names = dict(self.option_names())
-        self.reset_options(option_names)
+        option_names = self.native_option_names(EXCLUDE_OPTIONS_CONFD)
+        self.reset_options()
         self.set_options(option_names, options)
 
-    def reset_options(self, option_names):
+    def reset_options(self):
+        self.reset_extra_options()
+        self.reset_native_options()
+
+    def reset_extra_options(self):
+        self._options = []
+
+    def reset_native_options(self):
         defaults = self.option_defaults()
-        for column, attribute in option_names.iteritems():
+        for column in self.native_option_names(EXCLUDE_OPTIONS_CONFD):
             value = defaults.get(column, None)
-            setattr(self, attribute, value)
+            setattr(self, self._attribute(column), value)
 
     def set_options(self, option_names, options):
         for column, value in options:
-            if column not in option_names:
-                raise InputError("Unknown SIP options: {}".format(column))
-            attribute = option_names[column]
-            self.set_option(attribute, value)
+            if column in option_names:
+                self.set_native_option(column, value)
+            else:
+                self.add_extra_option(column, value)
 
-    def set_option(self, attribute, value):
-        if attribute == 'subscribemwi':
+    def set_native_option(self, column, value):
+        if column == 'subscribemwi':
             self.subscribemwi = 1 if value == 'yes' else 0
-        elif attribute == 'allow':
+        elif column == 'allow':
             allow = self.allow.split(',') if self.allow else []
             allow.append(value)
             self.allow = ",".join(allow)
         else:
-            setattr(self, attribute, value)
+            setattr(self, self._attribute(column), value)
 
-    def option_names(self):
-        for column in self.__table__.columns:
-            if column.name not in EXCLUDE_OPTIONS:
-                yield column.name, column.name.replace("-", "_")
+    def add_extra_option(self, name, value):
+        self._options.append([name, value])
+
+    def native_option_names(self, exclude=None):
+        exclude = set(exclude or []).union(EXCLUDE_OPTIONS)
+        return set(column.name for column in self.__table__.columns) - exclude
 
     def option_defaults(self):
         defaults = {}
@@ -253,3 +265,6 @@ class UserSIP(Base):
 
     def endpoint_protocol(self):
         return 'sip'
+
+    def _attribute(self, column_name):
+        return column_name.replace("-", "_")
