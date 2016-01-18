@@ -18,12 +18,11 @@
 
 from __future__ import unicode_literals
 
-import unittest
-
 from hamcrest import assert_that
 from hamcrest import equal_to
 from hamcrest import none
 from hamcrest import contains
+from hamcrest import empty
 from hamcrest import is_not
 from hamcrest import has_item
 from hamcrest import has_items
@@ -456,7 +455,7 @@ class TestSipEndpointDaoEdit(DAOTestCase):
             'port': none(),
             'outboundproxy': none(),
             'remotesecret': none(),
-            '_options': contains(),
+            '_options': empty(),
         })
 
         sip = dao.create(SIPEndpoint(options=ALL_OPTIONS))

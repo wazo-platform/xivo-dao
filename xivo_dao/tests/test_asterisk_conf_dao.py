@@ -1240,8 +1240,8 @@ class TestFindSipUserSettings(DAOTestCase, PickupHelperMixin):
         call_groups = namedcallgroup.split(',')
         pickup_groups = namedpickupgroup.split(',')
 
-        assert_that(call_groups, has_items(str(pickup3.id),
-                                           str(pickup4.id)))
+        assert_that(call_groups, contains_inanyorder(str(pickup3.id),
+                                                     str(pickup4.id)))
 
-        assert_that(pickup_groups, has_items(str(pickup1.id),
-                                             str(pickup2.id)))
+        assert_that(pickup_groups, contains_inanyorder(str(pickup1.id),
+                                                       str(pickup2.id)))
