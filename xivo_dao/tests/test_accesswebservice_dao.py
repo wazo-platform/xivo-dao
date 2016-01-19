@@ -53,6 +53,14 @@ class TestAccessWebServiceDao(DAOTestCase):
 
         self.assertRaises(LookupError, accesswebservice_dao.get_user_id, 'test_login')
 
+    def test_get_services(self):
+        user = self._insert_access_web_service()
+
+        results = accesswebservice_dao.get_services()
+
+        assert_that(results[0].login, equal_to(user.login))
+        assert_that(results[0].passwd, equal_to(user.passwd))
+
     def test_given_disabled_user_when_check_username_password_then_return_false(self):
         self._insert_access_web_service(disable=1)
 

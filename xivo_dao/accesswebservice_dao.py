@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2015 Avencall
+# Copyright (C) 2013-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -62,3 +62,13 @@ def check_username_password(session, login, password):
                            AccessWebService.disable == 0)).all())
 
     return len(result) > 0
+
+
+@daosession
+def get_services(session):
+    results = (session
+               .query(AccessWebService.login,
+                      AccessWebService.passwd)
+               .filter(and_(AccessWebService.login != None,
+                            AccessWebService.disable == 0)).all())
+    return results
