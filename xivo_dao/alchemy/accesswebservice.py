@@ -40,4 +40,4 @@ class AccessWebService(Base):
     host = Column(String(255))
     acl = Column(ARRAY(String), nullable=False, server_default='{}')
     disable = Column(Integer, nullable=False, server_default='0')
-    description = Column(Text, nullable=False)
+    description = Column(Text, nullable=False, server_default='')
