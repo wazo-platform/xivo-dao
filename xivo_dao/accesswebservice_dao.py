@@ -72,3 +72,12 @@ def get_services(session):
                .filter(and_(AccessWebService.login != None,
                             AccessWebService.disable == 0)).all())
     return results
+
+
+@daosession
+def get_user_acl(session, login):
+    result = (session
+              .query(AccessWebService.acl)
+              .filter(and_(AccessWebService.login == login,
+                           AccessWebService.disable == 0)).first())
+    return result.acl

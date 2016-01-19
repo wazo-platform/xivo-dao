@@ -61,6 +61,13 @@ class TestAccessWebServiceDao(DAOTestCase):
         assert_that(results[0].login, equal_to(user.login))
         assert_that(results[0].passwd, equal_to(user.passwd))
 
+    def test_get_user_acl(self):
+        user = self._insert_access_web_service()
+
+        result = accesswebservice_dao.get_user_acl(user.login)
+
+        assert_that(result, equal_to(user.acl))
+
     def test_given_disabled_user_when_check_username_password_then_return_false(self):
         self._insert_access_web_service(disable=1)
 
@@ -93,6 +100,7 @@ class TestAccessWebServiceDao(DAOTestCase):
         kwargs.setdefault('name', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
         kwargs.setdefault('login', 'test_login')
         kwargs.setdefault('passwd', 'test_password')
+        kwargs.setdefault('acl', ['dird.#', 'confd.#'])
         kwargs.setdefault('description', '')
         kwargs.setdefault('disable', 0)
         kwargs.setdefault('host', '')
