@@ -17,6 +17,7 @@
 
 from sqlalchemy.schema import Column, UniqueConstraint, Index
 from sqlalchemy.types import Integer, String, Text
+from sqlalchemy.dialects.postgresql import ARRAY
 
 from xivo_dao.helpers.db_manager import Base
 
@@ -37,5 +38,6 @@ class AccessWebService(Base):
     login = Column(String(64))
     passwd = Column(String(64))
     host = Column(String(255))
+    acl = Column(ARRAY(String), nullable=False, server_default='{}')
     disable = Column(Integer, nullable=False, server_default='0')
-    description = Column(Text, nullable=False)
+    description = Column(Text, nullable=False, server_default='')
