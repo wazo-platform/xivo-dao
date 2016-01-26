@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2015 Avencall
+# Copyright (C) 2013-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@ from hamcrest import has_items
 from xivo_dao.alchemy.linefeatures import LineFeatures as Line
 from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.sccpline import SCCPLine
+from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.resources.line import dao as line_dao
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.helpers.exception import NotFoundError
@@ -129,6 +130,16 @@ class TestLineDaoGet(TestLineDao):
         assert_that(line.caller_id_name, equal_to("Jôhn Smith"))
         assert_that(line.caller_id_num, equal_to("1000"))
 
+    def test_given_line_has_custom_endpoint_when_getting_then_line_has_no_caller_id(self):
+        custom_row = self.add_usercustom()
+        line_row = self.add_line(protocol='custom',
+                                 protocolid=custom_row.id)
+
+        line = line_dao.get(line_row.id)
+
+        assert_that(line.caller_id_name, none())
+        assert_that(line.caller_id_num, none())
+
 
 class TestLineDaoEdit(TestLineDao):
 
@@ -181,6 +192,14 @@ class TestLineDaoEdit(TestLineDao):
 
     def test_given_line_has_no_endpoint_when_setting_caller_id_then_raises_error(self):
         line_row = self.add_line()
+
+        line = line_dao.get(line_row.id)
+        self.assertRaises(InputError, setattr, line, 'caller_id_name', "Jôhn Smith")
+        self.assertRaises(InputError, setattr, line, 'caller_id_num', "1000")
+
+    def test_given_line_has_custom_endpoint_when_setting_caller_id_then_raises_error(self):
+        custom_row = self.add_usercustom()
+        line_row = self.add_line(protocol='custom', protocolid=custom_row.id)
 
         line = line_dao.get(line_row.id)
         self.assertRaises(InputError, setattr, line, 'caller_id_name', "Jôhn Smith")
@@ -309,6 +328,16 @@ class TestLineDaoDelete(DAOTestCase):
 
         deleted_sccp = self.session.query(SCCPLine).get(sccpline_row.id)
         assert_that(deleted_sccp, none())
+
+    def test_given_line_has_custom_endpoint_when_deleting_then_custom_endpoint_deleted(self):
+        custom_row = self.add_usercustom()
+        line_row = self.add_line(protocol='custom',
+                                 protocolid=custom_row.id)
+
+        line_dao.delete(line_row)
+
+        deleted_custom = self.session.query(UserCustom).get(custom_row.id)
+        assert_that(deleted_custom, none())
 
 
 class TestLineDaoSearch(DAOTestCase):

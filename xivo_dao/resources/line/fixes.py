@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 
-# Copyright (C) 2015 Avencall
+# Copyright (C) 2015-2016 Avencall
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@ from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.sccpdevice import SCCPDevice
+from xivo_dao.alchemy.usercustom import UserCustom
 
 
 class LineFixes(object):
@@ -38,9 +39,11 @@ class LineFixes(object):
                                     SCCPLine,
                                     SCCPDevice,
                                     UserFeatures,
+                                    UserCustom,
                                     Extension)
                  .outerjoin(LineFeatures.sip_endpoint)
                  .outerjoin(LineFeatures.sccp_endpoint)
+                 .outerjoin(LineFeatures.custom_endpoint)
                  .outerjoin(SCCPDevice,
                             SCCPLine.name == SCCPDevice.line)
                  .outerjoin(LineFeatures.user_lines)
@@ -52,6 +55,7 @@ class LineFixes(object):
                      Load(SCCPLine).load_only("id", "name", "context", "cid_name", "cid_num"),
                      Load(SCCPDevice).load_only("id", "line"),
                      Load(UserFeatures).load_only("id", "firstname", "webi_lastname", "callerid"),
+                     Load(UserCustom).load_only("id", "context"),
                      Load(Extension).load_only("id", "exten", "context"))
                  .filter(LineFeatures.id == line_id)
                  )
@@ -69,6 +73,8 @@ class LineFixes(object):
             self.fix_sip(row)
         elif protocol == 'sccp':
             self.fix_sccp(row)
+        elif protocol == 'custom':
+            self.fix_custom(row)
         else:
             self.remove_endpoint(row)
 
@@ -118,3 +124,9 @@ class LineFixes(object):
 
     def fix_name(self, row):
         row.LineFeatures.update_name()
+
+    def fix_custom(self, row):
+        if row.UserCustom:
+            row.UserCustom.context = row.LineFeatures.context
+        else:
+            self.remove_endpoint(row)

@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 
-# Copyright (C) 2015 Avencall
+# Copyright (C) 2015-2016 Avencall
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ from xivo_dao.alchemy.linefeatures import LineFeatures as Line
 from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.sccpdevice import SCCPDevice
+from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.resources.line.fixes import LineFixes
 from xivo_dao.tests.test_dao import DAOTestCase
 
@@ -264,8 +265,26 @@ class TestLineFixes(DAOTestCase):
         line = self.session.query(Line).first()
         assert_that(line.name, none())
 
-    def test_given_associated_protocol_is_no_longer_associated_then_protocol_removed(self):
+    def test_given_sip_protocol_is_no_longer_associated_then_protocol_removed(self):
         line = self.add_line(protocol='sip', protocolid=1234)
+
+        self.fixes.fix(line.id)
+
+        line = self.session.query(Line).first()
+        assert_that(line.protocol, none())
+        assert_that(line.protocolid, none())
+
+    def test_given_line_is_associated_to_custom_protocol_then_context_updated(self):
+        custom = self.add_usercustom(context=None)
+        line = self.add_line(protocol='custom', protocolid=custom.id, context='default')
+
+        self.fixes.fix(line.id)
+
+        custom = self.session.query(UserCustom).first()
+        assert_that(custom.context, equal_to('default'))
+
+    def test_given_custom_protocol_is_no_longer_assocaited_then_protocol_removed(self):
+        line = self.add_line(protocol='custom', protocolid=1234)
 
         self.fixes.fix(line.id)
 
