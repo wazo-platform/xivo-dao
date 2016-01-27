@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2014 Avencall
+# Copyright (C) 2012-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,9 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy import sql
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint, \
     Index
-from sqlalchemy.types import Integer, String, Enum
+from sqlalchemy.types import Integer, String, Enum, Boolean
+from sqlalchemy.ext.hybrid import hybrid_property
 
 from xivo_dao.helpers.db_manager import Base
 from xivo_dao.alchemy import enum
@@ -45,3 +47,24 @@ class UserCustom(Base):
                            name='usercustom_category',
                            metadata=Base.metadata),
                       nullable=False)
+
+    @hybrid_property
+    def enabled(self):
+        return not bool(self.commented)
+
+    @enabled.expression
+    def enabled(cls):
+        return sql.not_(sql.cast(cls.commented, Boolean))
+
+    @enabled.setter
+    def enabled(self, value):
+        if value is None:
+            self.commented = None
+        else:
+            self.commented = int(value is False)
+
+    def endpoint_protocol(self):
+        return 'custom'
+
+    def same_protocol(self, protocol, protocolid):
+        return protocol == 'custom' and self.id == int(protocolid)

@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 
-# Copyright (C) 2015 Avencall
+# Copyright (C) 2015-2016 Avencall
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@ from sqlalchemy.orm import joinedload
 from xivo_dao.alchemy.linefeatures import LineFeatures as Line
 from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.sccpline import SCCPLine
+from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.helpers import errors
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.resources.line.search import line_search
@@ -99,6 +100,11 @@ class LinePersistor(object):
             (self.session
              .query(SCCPLine)
              .filter(SCCPLine.id == line.protocolid)
+             .delete())
+        elif line.protocol == 'custom':
+            (self.session
+             .query(UserCustom)
+             .filter(UserCustom.id == line.protocolid)
              .delete())
         self.session.delete(line)
         self.session.flush()

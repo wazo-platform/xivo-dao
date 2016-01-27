@@ -31,6 +31,7 @@ from xivo_dao.helpers.db_manager import Base
 from xivo_dao.alchemy import enum
 from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.usersip import UserSIP
+from xivo_dao.alchemy.usercustom import UserCustom
 
 
 caller_id_regex = re.compile(r'''
@@ -89,6 +90,13 @@ class LineFeatures(Base):
                                  )""",
                                  foreign_keys=[protocolid])
 
+    custom_endpoint = relationship(UserCustom,
+                                   primaryjoin="""and_(
+                                   LineFeatures.protocol == 'custom',
+                                   LineFeatures.protocolid == UserCustom.id
+                                   )""",
+                                   foreign_keys=[protocolid])
+
     user_lines = relationship("UserLine")
 
     @property
@@ -125,6 +133,8 @@ class LineFeatures(Base):
             self._set_sip_caller_id_name(value)
         elif self.protocol == 'sccp':
             self._set_sccp_caller_id_name(value)
+        elif self.protocol == 'custom':
+            raise InputError("Cannot set caller id on endpoint of type 'custom'")
         else:
             raise InputError("Line is not associated to an endpoint")
 
@@ -170,6 +180,8 @@ class LineFeatures(Base):
             self._set_sip_caller_id_num(value)
         elif self.protocol == 'sccp':
             self._set_sccp_caller_id_num(value)
+        elif self.protocol == 'custom':
+            raise InputError("Cannot set caller id on endpoint of type 'custom'")
         else:
             raise InputError("Line is not associated to an endpoint")
 
