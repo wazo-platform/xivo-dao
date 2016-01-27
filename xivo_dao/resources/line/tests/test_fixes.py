@@ -274,14 +274,17 @@ class TestLineFixes(DAOTestCase):
         assert_that(line.protocol, none())
         assert_that(line.protocolid, none())
 
-    def test_given_line_is_associated_to_custom_protocol_then_context_updated(self):
-        custom = self.add_usercustom(context=None)
+    def test_given_line_is_associated_to_custom_protocol_then_context_and_interface_updated(self):
+        custom = self.add_usercustom(context=None, interface='custom/abcdef')
         line = self.add_line(protocol='custom', protocolid=custom.id, context='default')
 
         self.fixes.fix(line.id)
 
         custom = self.session.query(UserCustom).first()
+        line = self.session.query(Line).first()
+
         assert_that(custom.context, equal_to('default'))
+        assert_that(line.name, equal_to('custom/abcdef'))
 
     def test_given_custom_protocol_is_no_longer_assocaited_then_protocol_removed(self):
         line = self.add_line(protocol='custom', protocolid=1234)

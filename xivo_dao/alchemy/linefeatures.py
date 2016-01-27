@@ -281,5 +281,7 @@ class LineFeatures(Base):
             self.name = self.sip_endpoint.name
         elif self.sccp_endpoint and self.sccp_endpoint.name not in ("", None):
             self.name = self.sccp_endpoint.name
+        elif self.custom_endpoint and self.custom_endpoint.interface not in ("", None):
+            self.name = self.custom_endpoint.interface
         else:
             self.name = None
