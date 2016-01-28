@@ -17,7 +17,10 @@
 
 from __future__ import unicode_literals
 
+from collections import Iterable
+
 from xivo_dao.helpers.db_manager import Base
+from xivo_dao.helpers import errors
 from sqlalchemy.schema import Column
 from sqlalchemy.schema import PrimaryKeyConstraint
 from sqlalchemy.schema import UniqueConstraint
@@ -215,11 +218,27 @@ class UserSIP(Base):
             setattr(self, self._attribute(column), value)
 
     def set_options(self, option_names, options):
-        for column, value in options:
+        self.validate_options(options)
+        for option in options:
+            self.validate_option(option)
+            column, value = option
             if column in option_names:
                 self.set_native_option(column, value)
             else:
                 self.add_extra_option(column, value)
+
+    def validate_options(self, options):
+        if not isinstance(options, Iterable):
+            raise errors.wrong_type('options', 'list of pair of strings')
+
+    def validate_option(self, option):
+        if not isinstance(option, Iterable):
+            raise errors.wrong_type('options', 'list of pair of strings')
+        if not len(option) == 2:
+            raise errors.wrong_type('options', 'list of pair of strings')
+        for i in option:
+            if not isinstance(i, (str, unicode)):
+                raise errors.wrong_type('options', "value '{}' is not a string".format(i))
 
     def set_native_option(self, column, value):
         if column == 'subscribemwi':
