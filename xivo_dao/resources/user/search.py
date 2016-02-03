@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014-2015 Avencall
+# Copyright (C) 2014-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@ config = SearchConfig(table=UserFeatures,
                                'caller_id': UserFeatures.callerid,
                                'description': UserFeatures.description,
                                'userfield': UserFeatures.userfield,
+                               'email': UserFeatures.email,
                                'mobile_phone_number': UserFeatures.mobilephonenumber,
                                'music_on_hold': UserFeatures.musiconhold,
                                'outgoing_caller_id': UserFeatures.outcallerid,
@@ -44,6 +45,7 @@ config = SearchConfig(table=UserFeatures,
                               'caller_id',
                               'description',
                               'userfield',
+                              'email',
                               'mobile_phone_number',
                               'music_on_hold',
                               'preprocess_subroutine',

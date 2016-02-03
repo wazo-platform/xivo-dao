@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014-2015 Avencall
+# Copyright (C) 2014-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -43,6 +43,7 @@ class DirectoryView(View):
                                User.agentid.label('agent_id'),
                                User.firstname.label('firstname'),
                                func.nullif(User.lastname, '').label('lastname'),
+                               func.nullif(User.email, '').label('email'),
                                func.nullif(User.mobilephonenumber, '').label('mobile_phone_number'),
                                Voicemail.mailbox.label('voicemail_number'),
                                func.nullif(User.userfield, '').label('userfield'),
@@ -57,6 +58,7 @@ class DirectoryView(View):
                              agent_id=row.agent_id,
                              firstname=row.firstname,
                              lastname=row.lastname,
+                             email=row.email,
                              mobile_phone_number=row.mobile_phone_number,
                              voicemail_number=row.voicemail_number,
                              exten=row.exten,

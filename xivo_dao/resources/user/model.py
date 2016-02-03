@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2015 Avencall
+# Copyright (C) 2013-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,14 +18,15 @@
 
 class UserDirectory(object):
 
-    def __init__(self, id, line_id, agent_id, firstname, lastname, exten, mobile_phone_number,
-                 voicemail_number, userfield, description, context):
+    def __init__(self, id, line_id, agent_id, firstname, lastname, exten, email,
+                 mobile_phone_number, voicemail_number, userfield, description, context):
         self.id = id
         self.line_id = line_id
         self.agent_id = agent_id
         self.firstname = firstname
         self.lastname = lastname
         self.exten = exten
+        self.email = email
         self.mobile_phone_number = mobile_phone_number
         self.voicemail_number = voicemail_number
         self.userfield = userfield
