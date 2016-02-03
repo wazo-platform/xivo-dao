@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2015 Avencall
+# Copyright (C) 2013-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -79,6 +79,7 @@ class UserFeatures(Base):
     id = Column(Integer, nullable=False)
     uuid = Column(String(38), nullable=False, default=_new_uuid)
     firstname = Column(String(128), nullable=False, server_default='')
+    email = Column(String(128))
     voicemailid = Column(Integer)
     agentid = Column(Integer)
     pictureid = Column(Integer)
