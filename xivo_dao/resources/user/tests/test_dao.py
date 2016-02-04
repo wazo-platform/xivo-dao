@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2007-2015 Avencall
+# Copyright (C) 2007-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -272,6 +272,7 @@ class TestSimpleSearch(TestSearch):
                                                   agent_id=None,
                                                   firstname='chârles',
                                                   lastname=None,
+                                                  email=None,
                                                   mobile_phone_number=None,
                                                   voicemail_number=None,
                                                   exten=None,
@@ -297,6 +298,7 @@ class TestSimpleSearch(TestSearch):
                                                   agent_id=agent_row.id,
                                                   firstname='dânny',
                                                   lastname='rôgers',
+                                                  email=None,
                                                   mobile_phone_number='4185551234',
                                                   voicemail_number='2002',
                                                   exten=user_line_row.extension.exten,
