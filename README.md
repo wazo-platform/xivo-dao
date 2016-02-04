@@ -4,27 +4,36 @@ xivo-dao [![Build Status](https://travis-ci.org/xivo-pbx/xivo-dao.png?branch=mas
 xivo-dao is a library used internally by XiVO to access and modify
 different data sources (e.g. postgres database, provisoning database).
 
-Running unit tests
-==================
+Creating the test database
+--------------------------
 
-1. Install PostgreSQL
-2. Install dependencies with ```pip install -r requirements.txt```
-3. Create a test database
-4. Run the tests with ```nosetests xivo_dao```
+```
+apt-get install postgres-9.4
+sudo -u postgres psql
+```
+
+Then:
+
+```
+CREATE DATABASE asterisktest;
+CREATE USER asterisk WITH PASSWORD 'asterisk';
+GRANT ALL ON DATABASE asterisktest TO asterisk;
+```
+
+Running unit tests
+------------------
+
+You need the test database ``asterisktest`` installed (see above).
+
+```
+apt-get install libpq-dev python-dev libyaml-dev
+pip install tox
+tox --recreate -e py27
+```
 
 To execute tests slightly faster, you can avoid recreating all the tables in the
 database by passing ```CREATE_TABLES=0``` on the command line
 
-Creating the test database
---------------------------
-
-You can create the database by running these SQL commands:
-
-    CREATE DATABASE asterisktest;
-    CREATE USER asterisk WITH PASSWORD 'asterisk';
-    GRANT ALL ON DATABASE asterisktest TO asterisk;
-
-On debian based systems you can access the psql console with ```sudo -u postgres psql```
 
 Docker
 ------
