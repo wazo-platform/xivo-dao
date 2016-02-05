@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2015 Avencall
+# Copyright (C) 2012-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import any_of
 from hamcrest import assert_that
 from hamcrest import equal_to
 
@@ -41,30 +40,3 @@ class TestUserFeaturesDAO(DAOTestCase):
                                       commented_line=1)
 
         self.assertRaises(LookupError, user_dao.get_user_by_number_context, number, context)
-
-    def test_get_uuid_by_email_with_unknown_email(self):
-        user = self.add_user()
-        voicemail = self.add_voicemail(email='bob@cat.example.com')
-        self.link_user_and_voicemail(user, voicemail.uniqueid)
-
-        self.assertRaises(LookupError, user_dao.get_uuid_by_email, 'alice@merveille.com')
-
-    def test_get_uuid_by_email(self):
-        user = self.add_user()
-        voicemail = self.add_voicemail(email='alice@merveille.com')
-        self.link_user_and_voicemail(user, voicemail.uniqueid)
-
-        result = user_dao.get_uuid_by_email('alice@merveille.com')
-
-        assert_that(result, equal_to(user.uuid))
-
-    def test_get_uuid_by_email_with_multiple_results(self):
-        user1 = self.add_user()
-        user2 = self.add_user()
-        voicemail = self.add_voicemail(email='alice@merveille.com')
-        self.link_user_and_voicemail(user1, voicemail.uniqueid)
-        self.link_user_and_voicemail(user2, voicemail.uniqueid)
-
-        result = user_dao.get_uuid_by_email('alice@merveille.com')
-
-        assert_that(result, any_of(user1.uuid, user2.uuid))

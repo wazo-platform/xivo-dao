@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2015 Avencall
+# Copyright (C) 2012-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,7 +21,6 @@ from sqlalchemy import and_
 
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.userfeatures import UserFeatures
-from xivo_dao.alchemy.voicemail import Voicemail
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
@@ -55,18 +54,3 @@ def get_user_by_number_context(session, exten, context):
         raise LookupError('No user with number %s in context %s', (exten, context))
 
     return user
-
-
-@daosession
-def get_uuid_by_email(session, email):
-    rows = (session.query(UserFeatures.uuid)
-            .join(Voicemail, UserFeatures.voicemailid == Voicemail.uniqueid)
-            .filter(Voicemail.email == email).all())
-
-    if not rows:
-        raise LookupError('Invalid voicemail')
-
-    if len(rows) > 1:
-        logger.warning('multiple users share the same email `%s`', 'alice@merveille.com')
-
-    return rows[0].uuid
