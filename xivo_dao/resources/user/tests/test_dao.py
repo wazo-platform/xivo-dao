@@ -268,6 +268,7 @@ class TestSimpleSearch(TestSearch):
     def test_given_directory_view_then_returns_one_result(self):
         user = self.prepare_user(firstname='chârles')
         expected = SearchResult(1, [UserDirectory(id=user.id,
+                                                  uuid=user.uuid,
                                                   line_id=None,
                                                   agent_id=None,
                                                   firstname='chârles',
@@ -294,6 +295,7 @@ class TestSimpleSearch(TestSearch):
                                                       description='desc')
 
         expected = SearchResult(1, [UserDirectory(id=user_line_row.user_id,
+                                                  uuid=user_line_row.user.uuid,
                                                   line_id=user_line_row.line_id,
                                                   agent_id=agent_row.id,
                                                   firstname='dânny',
