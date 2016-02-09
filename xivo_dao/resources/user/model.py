@@ -18,9 +18,10 @@
 
 class UserDirectory(object):
 
-    def __init__(self, id, line_id, agent_id, firstname, lastname, exten, email,
+    def __init__(self, id, uuid, line_id, agent_id, firstname, lastname, exten, email,
                  mobile_phone_number, voicemail_number, userfield, description, context):
         self.id = id
+        self.uuid = uuid
         self.line_id = line_id
         self.agent_id = agent_id
         self.firstname = firstname

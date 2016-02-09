@@ -39,6 +39,7 @@ class DirectoryView(View):
 
     def query(self, session):
         query = (session.query(User.id.label('id'),
+                               User.uuid.label('uuid'),
                                UserLine.line_id.label('line_id'),
                                User.agentid.label('agent_id'),
                                User.firstname.label('firstname'),
@@ -54,6 +55,7 @@ class DirectoryView(View):
 
     def convert(self, row):
         return UserDirectory(id=row.id,
+                             uuid=row.uuid,
                              line_id=row.line_id,
                              agent_id=row.agent_id,
                              firstname=row.firstname,
