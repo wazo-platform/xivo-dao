@@ -242,11 +242,15 @@ class LineFeatures(Base):
     def device_slot(self):
         return self.num
 
-    @property
+    @hybrid_property
     def device_id(self):
         if self.device == '':
             return None
         return self.device
+
+    @device_id.expression
+    def device_id(cls):
+        return func.nullif(cls.device, '')
 
     @device_id.setter
     def device_id(self, value):
@@ -285,3 +289,9 @@ class LineFeatures(Base):
             self.name = self.custom_endpoint.interface
         else:
             self.name = None
+
+    def associate_device(self, device):
+        self.device = device.id
+
+    def remove_device(self):
+        self.device = ''
