@@ -26,8 +26,9 @@ config = SearchConfig(table=Voicemail,
                                'email': Voicemail.email,
                                'context': Voicemail.context,
                                'language': Voicemail.language,
-                               'timezone': Voicemail.tz},
-                      search=['name', 'number', 'email'],
+                               'timezone': Voicemail.tz,
+                               'pager': Voicemail.pager},
+                      search=['name', 'number', 'email', 'pager'],
                       default_sort='number')
 
 voicemail_search = SearchSystem(config)
