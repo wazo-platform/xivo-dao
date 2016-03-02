@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2015 Avencall
+# Copyright (C) 2012-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -95,9 +95,14 @@ class SCCPLine(Base):
         self.context = extension.context
 
     def update_caller_id(self, user, extension=None):
-        name, num = user.extrapolate_caller_id(extension)
+        name, user_num = user.extrapolate_caller_id(extension)
         self.cid_name = name or ''
-        self.cid_num = num or ''
+        if extension:
+            self.cid_num = extension.exten
+        elif user_num:
+            self.cid_num = user_num
+        else:
+            self.cid_num = ''
 
     def endpoint_protocol(self):
         return 'sccp'

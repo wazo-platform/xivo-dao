@@ -161,7 +161,7 @@ class TestLineFixes(DAOTestCase):
 
         sccp = self.session.query(SCCPLine).first()
         assert_that(sccp.cid_name, equal_to('Jôhn Smith'))
-        assert_that(sccp.cid_num, equal_to('1000'))
+        assert_that(sccp.cid_num, equal_to('3000'))
 
     def test_given_sccp_line_has_user_and_extension_then_name_and_context_updated(self):
         user = self.add_user(callerid='"Jôhn Smith" <1000>')
