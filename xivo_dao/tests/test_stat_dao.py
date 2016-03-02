@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2015 Avencall
+# Copyright (C) 2013-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -454,8 +454,8 @@ class TestStatDAO(DAOTestCase):
                 )
                 self.session.add(callback_logoff)
 
-    def _insert_transfered_calls(self, transfered_calls):
-        map(lambda transfered_call: self._insert_transfered_call(*transfered_call), transfered_calls)
+    def _insert_transferred_calls(self, transferred_calls):
+        map(lambda transferred_call: self._insert_transferred_call(*transferred_call), transferred_calls)
 
     def _insert_closed_calls(self, closed_calls):
         map(lambda closed_call: self._insert_closed_call(*closed_call), closed_calls)
@@ -478,7 +478,7 @@ class TestStatDAO(DAOTestCase):
     def _insert_holdtime_calls(self, holdtime_calls):
         map(lambda holdtime_call: self._insert_holdtime_call(*holdtime_call), holdtime_calls)
 
-    def _insert_transfered_call(self, time, callid, qname, aname, waittime, talktime):
+    def _insert_transferred_call(self, time, callid, qname, aname, waittime, talktime):
         enterqueue = QueueLog(
             time=time.strftime(TIMESTAMP_FORMAT),
             callid=callid,
