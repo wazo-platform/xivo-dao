@@ -20,7 +20,7 @@ import uuid
 
 from contextlib import contextmanager
 from hamcrest import assert_that, contains, equal_to, has_entries, \
-    contains_inanyorder, has_length, none, has_properties, has_items
+    contains_inanyorder, has_length, none, has_properties, has_entry
 
 from mock import patch
 from xivo_dao import asterisk_conf_dao
@@ -294,6 +294,19 @@ class TestFindSccpSpeeddialSettings(DAOTestCase):
 
         assert_that(result, contains(expected))
 
+    def test_given_func_key_with_label_then_characters_are_escaped(self):
+        exten = '1000'
+        func_key_exten = '2000'
+        context = 'default'
+        label = '\nhe;l\tlo\r'
+
+        user_row, sccp_device_row = self.add_user_with_sccp_device(exten=exten, context=context)
+        self.add_custom_func_key_to_user(user_row, func_key_exten, label=label)
+
+        result = asterisk_conf_dao.find_sccp_speeddial_settings()
+
+        assert_that(result, contains(has_entry('label', 'hello')))
+
     def add_user_with_sccp_device(self, exten, context):
         user_row = self.add_user()
         sccp_device_row = self.add_sccpdevice(line=exten)
@@ -312,7 +325,7 @@ class TestFindSccpSpeeddialSettings(DAOTestCase):
 
         return user_row, sccp_device_row
 
-    def add_custom_func_key_to_user(self, user_row, func_key_exten):
+    def add_custom_func_key_to_user(self, user_row, func_key_exten, label='mylabel'):
         func_key_type_row = self.add_func_key_type(name='speeddial')
         func_key_dest_row = self.add_func_key_destination_type(id=10, name='custom')
         func_key_row = self.add_func_key(type_id=func_key_type_row.id,
@@ -323,7 +336,7 @@ class TestFindSccpSpeeddialSettings(DAOTestCase):
         func_key_mapping = self.add_func_key_mapping(template_id=user_row.func_key_private_template_id,
                                                      func_key_id=func_key_row.id,
                                                      destination_type_id=func_key_dest_row.id,
-                                                     label='mylabel',
+                                                     label=label,
                                                      position=2,
                                                      blf=True)
         return func_key_mapping

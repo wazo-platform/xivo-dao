@@ -167,7 +167,7 @@ def find_sccp_device_settings(session):
 @daosession
 def find_sccp_speeddial_settings(session):
     query = (session.query(FuncKeyMapping.position.label('fknum'),
-                           FuncKeyMapping.label.label('label'),
+                           func.translate(FuncKeyMapping.label, '\n\r\t;', '').label('label'),
                            cast(FuncKeyMapping.blf, Integer).label('supervision'),
                            FuncKeyDestCustom.exten.label('exten'),
                            UserFeatures.id.label('user_id'),
