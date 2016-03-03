@@ -179,7 +179,7 @@ class LineFeatures(Base):
         if self.protocol == 'sip':
             self._set_sip_caller_id_num(value)
         elif self.protocol == 'sccp':
-            self._set_sccp_caller_id_num(value)
+            raise InputError("Cannot set caller id num on endpoint of type 'sccp'")
         elif self.protocol == 'custom':
             raise InputError("Cannot set caller id on endpoint of type 'custom'")
         else:
@@ -189,9 +189,6 @@ class LineFeatures(Base):
         name = self._sip_caller_id_name()
         callerid = self.CALLER_ID.format(name=name, num=value)
         self.sip_endpoint.callerid = callerid
-
-    def _set_sccp_caller_id_num(self, value):
-        self.sccp_endpoint.cid_num = value
 
     @hybrid_property
     def endpoint(self):
