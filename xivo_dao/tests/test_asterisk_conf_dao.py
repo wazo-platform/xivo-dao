@@ -20,7 +20,7 @@ import uuid
 
 from contextlib import contextmanager
 from hamcrest import assert_that, contains, equal_to, has_entries, \
-    contains_inanyorder, has_length, none, has_properties, has_entry
+    contains_inanyorder, has_length, none, has_properties
 
 from mock import patch
 from xivo_dao import asterisk_conf_dao
@@ -294,9 +294,9 @@ class TestFindSccpSpeeddialSettings(DAOTestCase):
 
         assert_that(result, contains(expected))
 
-    def test_given_func_key_with_label_then_characters_are_escaped(self):
+    def test_given_func_key_with_invalid_characters_then_characters_are_escaped(self):
         exten = '1000'
-        func_key_exten = '2000'
+        func_key_exten = '\n2;0\t0\r0'
         context = 'default'
         label = '\nhe;l\tlo\r'
 
@@ -305,7 +305,8 @@ class TestFindSccpSpeeddialSettings(DAOTestCase):
 
         result = asterisk_conf_dao.find_sccp_speeddial_settings()
 
-        assert_that(result, contains(has_entry('label', 'hello')))
+        assert_that(result, contains(has_entries(exten='2000',
+                                                 label='hello')))
 
     def add_user_with_sccp_device(self, exten, context):
         user_row = self.add_user()
