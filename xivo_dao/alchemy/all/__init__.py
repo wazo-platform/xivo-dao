@@ -113,6 +113,7 @@ from xivo_dao.alchemy.stat_agent_periodic import StatAgentPeriodic
 from xivo_dao.alchemy.stat_call_on_queue import StatCallOnQueue
 from xivo_dao.alchemy.stat_queue import StatQueue
 from xivo_dao.alchemy.stat_queue_periodic import StatQueuePeriodic
+from xivo_dao.alchemy.stat_switchboard_queue import StatSwitchboardQueue
 from xivo_dao.alchemy.staticiax import StaticIAX
 from xivo_dao.alchemy.staticmeetme import StaticMeetme
 from xivo_dao.alchemy.staticqueue import StaticQueue
