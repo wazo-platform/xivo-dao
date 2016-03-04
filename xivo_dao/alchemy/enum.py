@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014-2015 Avencall
+# Copyright (C) 2014-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -148,6 +148,15 @@ schedule_path_type = Enum(
     'outcall',
     'voicemenu',
     name='schedule_path_type',
+    metadata=Base.metadata
+)
+
+stat_switchboard_endtype = Enum(
+    'abandoned',
+    'completed',
+    'forwarded',
+    'transferred',
+    name='stat_switchboard_endtype',
     metadata=Base.metadata
 )
 
