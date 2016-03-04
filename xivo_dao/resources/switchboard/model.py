@@ -18,8 +18,9 @@
 
 class Switchboard(object):
 
-    def __init__(self, id):
+    def __init__(self, id, display_name):
         self.id = id
+        self.display_name = display_name
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
