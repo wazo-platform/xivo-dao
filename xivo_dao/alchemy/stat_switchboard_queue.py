@@ -36,7 +36,7 @@ class StatSwitchboardQueue(Base):
         Index('stat_switchboard_queue__idx__time', 'time'),
     )
 
-    id = Column(Integer, nullable=False, primary_key=True)
+    id = Column(Integer, nullable=False)
     time = Column(DateTime, nullable=False)
     end_type = Column(stat_switchboard_endtype, nullable=False)
     wait_time = Column(Float, nullable=False)
