@@ -22,3 +22,8 @@ from xivo_dao.resources.switchboard.persistor import SwitchboardPersistor
 @daosession
 def search(session, **parameters):
     return SwitchboardPersistor(session).search(parameters)
+
+
+@daosession
+def stats(session, switchboard_id, start=None, end=None):
+    return SwitchboardPersistor(session).stats(switchboard_id, start, end)

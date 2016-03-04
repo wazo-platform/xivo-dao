@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from xivo_dao.alchemy.stat_switchboard_queue import StatSwitchboardQueue
+from xivo_dao.helpers import errors
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.resources.switchboard.search import switchboard_search
 from xivo_dao.resources.switchboard.view import switchboard_view
@@ -30,3 +32,23 @@ class SwitchboardPersistor(object):
         rows, total = switchboard_search.search_from_query(query, parameters)
         users = switchboard_view.convert_list(rows)
         return SearchResult(total, users)
+
+    def stats(self, switchboard_id, start, end):
+        if not self.switchboard_has_stats(switchboard_id):
+            raise errors.not_found('Switchboard', id=switchboard_id)
+
+        query = (self.session
+                 .query(StatSwitchboardQueue)
+                 .filter_by(queue_id=int(switchboard_id)))
+        if start:
+            query = query.filter(StatSwitchboardQueue.time > start)
+        if end:
+            query = query.filter(StatSwitchboardQueue.time < end)
+        return query.all()
+
+    def switchboard_has_stats(self, switchboard_id):
+        existing = (self.session
+                    .query(StatSwitchboardQueue)
+                    .filter_by(queue_id=int(switchboard_id))
+                    .first())
+        return existing is not None
