@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.stat_switchboard_queue import StatSwitchboardQueue
 from xivo_dao.resources.utils.view import View
 from xivo_dao.resources.switchboard.model import Switchboard
@@ -23,11 +24,14 @@ from xivo_dao.resources.switchboard.model import Switchboard
 class SwitchboardView(View):
 
     def query(self, session):
-        query = session.query(StatSwitchboardQueue.queue_id.label('id')).distinct()
+        query = (session
+                 .query(StatSwitchboardQueue.queue_id.distinct().label('id'),
+                        QueueFeatures.displayname.label('display_name'))
+                 .join(StatSwitchboardQueue.queue))
         return query
 
     def convert(self, row):
-        return Switchboard(id=row.id)
+        return Switchboard(id=row.id, display_name=row.display_name)
 
 
 switchboard_view = SwitchboardView()
