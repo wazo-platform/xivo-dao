@@ -66,6 +66,7 @@ class UserFeatures(Base):
                              ('voicemail.uniqueid',)),
         UniqueConstraint('func_key_private_template_id'),
         UniqueConstraint('uuid', name='userfeatures_uuid'),
+        UniqueConstraint('email', name='userfeatures_email'),
         Index('userfeatures__idx__agentid', 'agentid'),
         Index('userfeatures__idx__entityid', 'entityid'),
         Index('userfeatures__idx__firstname', 'firstname'),
