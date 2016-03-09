@@ -415,6 +415,8 @@ class TestCreate(TestUser):
                                                  userfield=none(),
                                                  voicemail_id=none(),
                                                  call_transfer_enabled=True,
+                                                 dnd_enabled=False,
+                                                 incallfilter_enabled=False,
                                                  supervision_enabled=True,
                                                  simultaneous_calls=5,
                                                  ring_seconds=30))
@@ -431,6 +433,8 @@ class TestCreate(TestUser):
                                         voicemailid=none(),
                                         enablehint=1,
                                         enablexfer=1,
+                                        incallfilter=0,
+                                        enablednd=0,
                                         func_key_private_template_id=is_not(none())
                                         ))
 
@@ -450,8 +454,10 @@ class TestCreate(TestUser):
                     preprocess_subroutine='preprocess_subroutine',
                     voicemail_id=voicemail.id,
                     userfield='userfield',
-                    supervision_enabled=False,
                     call_transfer_enabled=False,
+                    dnd_enabled=True,
+                    incallfilter_enabled=True,
+                    supervision_enabled=False,
                     ring_seconds=60,
                     simultaneous_calls=10)
 
@@ -475,8 +481,10 @@ class TestCreate(TestUser):
                                                  music_on_hold='music_on_hold',
                                                  preprocess_subroutine='preprocess_subroutine',
                                                  voicemail_id=voicemail.id,
-                                                 supervision_enabled=False,
                                                  call_transfer_enabled=False,
+                                                 dnd_enabled=True,
+                                                 incallfilter_enabled=True,
+                                                 supervision_enabled=False,
                                                  ring_seconds=60,
                                                  simultaneous_calls=10,
                                                  userfield='userfield'))
@@ -489,6 +497,8 @@ class TestCreate(TestUser):
                                         voicemailid=voicemail.id,
                                         enablehint=0,
                                         enablexfer=0,
+                                        incallfilter=1,
+                                        enablednd=1,
                                         musiconhold='music_on_hold'))
 
     def test_that_the_user_uuid_is_unique(self):
@@ -532,8 +542,10 @@ class TestEdit(TestUser):
         user.preprocess_subroutine = 'preprocess_subroutine'
         user.userfield = 'userfield'
         user.voicemail_id = new_voicemail.id
-        user.supervision_enabled = False
         user.call_transfer_enabled = False
+        user.dnd_enabled = True
+        user.incallfilter_enabled = True
+        user.supervision_enabled = False
         user.ring_seconds = 60
         user.simultaneous_calls = 5
 
@@ -554,8 +566,10 @@ class TestEdit(TestUser):
                                         music_on_hold='music_on_hold',
                                         preprocess_subroutine='preprocess_subroutine',
                                         voicemail_id=new_voicemail.id,
-                                        supervision_enabled=False,
                                         call_transfer_enabled=False,
+                                        dnd_enabled=True,
+                                        incallfilter_enabled=True,
+                                        supervision_enabled=False,
                                         ring_seconds=60,
                                         simultaneous_calls=5,
                                         userfield='userfield'))

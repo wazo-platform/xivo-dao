@@ -350,6 +350,22 @@ class UserFeatures(Base):
         self.func_key_private_template_id = value
 
     @hybrid_property
+    def incallfilter_enabled(self):
+        return self.incallfilter == 1
+
+    @incallfilter_enabled.setter
+    def incallfilter_enabled(self, value):
+        self.incallfilter = int(value == 1) if value is not None else None
+
+    @hybrid_property
+    def dnd_enabled(self):
+        return self.enablednd == 1
+
+    @dnd_enabled.setter
+    def dnd_enabled(self, value):
+        self.enablednd = int(value == 1) if value is not None else None
+
+    @hybrid_property
     def supervision_enabled(self):
         return self.enablehint == 1
 
