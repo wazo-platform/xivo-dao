@@ -420,6 +420,12 @@ class TestCreate(TestUser):
                                                  supervision_enabled=True,
                                                  call_record_enabled=False,
                                                  online_call_record_enabled=False,
+                                                 busy_enabled=False,
+                                                 busy_destination=None,
+                                                 noanswer_enabled=False,
+                                                 noanswer_destination=None,
+                                                 unconditional_enabled=False,
+                                                 unconditional_destination=None,
                                                  simultaneous_calls=5,
                                                  ring_seconds=30))
 
@@ -439,6 +445,12 @@ class TestCreate(TestUser):
                                         enablednd=0,
                                         enableonlinerec=0,
                                         callrecord=0,
+                                        enablebusy=0,
+                                        destbusy='',
+                                        enablerna=0,
+                                        destrna='',
+                                        enableunc=0,
+                                        destunc='',
                                         func_key_private_template_id=is_not(none())
                                         ))
 
@@ -464,6 +476,12 @@ class TestCreate(TestUser):
                     supervision_enabled=False,
                     call_record_enabled=True,
                     online_call_record_enabled=True,
+                    busy_enabled=True,
+                    busy_destination='123',
+                    noanswer_enabled=True,
+                    noanswer_destination='456',
+                    unconditional_enabled=True,
+                    unconditional_destination='789',
                     ring_seconds=60,
                     simultaneous_calls=10)
 
@@ -493,6 +511,12 @@ class TestCreate(TestUser):
                                                  supervision_enabled=False,
                                                  call_record_enabled=True,
                                                  online_call_record_enabled=True,
+                                                 busy_enabled=True,
+                                                 busy_destination='123',
+                                                 noanswer_enabled=True,
+                                                 noanswer_destination='456',
+                                                 unconditional_enabled=True,
+                                                 unconditional_destination='789',
                                                  ring_seconds=60,
                                                  simultaneous_calls=10,
                                                  userfield='userfield'))
@@ -509,6 +533,12 @@ class TestCreate(TestUser):
                                         enablednd=1,
                                         enableonlinerec=1,
                                         callrecord=1,
+                                        enablebusy=1,
+                                        destbusy='123',
+                                        enablerna=1,
+                                        destrna='456',
+                                        enableunc=1,
+                                        destunc='789',
                                         musiconhold='music_on_hold'))
 
     def test_that_the_user_uuid_is_unique(self):
@@ -558,6 +588,12 @@ class TestEdit(TestUser):
         user.supervision_enabled = False
         user.call_record_enabled = True
         user.online_call_record_enabled = True
+        user.busy_enabled = True
+        user.busy_destination = '123'
+        user.noanswer_enabled = True
+        user.noanswer_destination = '456'
+        user.unconditional_enabled = True
+        user.unconditional_destination = '789'
         user.ring_seconds = 60
         user.simultaneous_calls = 5
 
@@ -584,6 +620,12 @@ class TestEdit(TestUser):
                                         supervision_enabled=False,
                                         call_record_enabled=True,
                                         online_call_record_enabled=True,
+                                        busy_enabled=True,
+                                        busy_destination='123',
+                                        noanswer_enabled=True,
+                                        noanswer_destination='456',
+                                        unconditional_enabled=True,
+                                        unconditional_destination='789',
                                         ring_seconds=60,
                                         simultaneous_calls=5,
                                         userfield='userfield'))

@@ -420,3 +420,78 @@ class UserFeatures(Base):
     @cti_enabled.setter
     def cti_enabled(self, value):
         self.enableclient = int(value == 1) if value is not None else None
+
+    @hybrid_property
+    def busy_enabled(self):
+        return self.enablebusy == 1
+
+    @busy_enabled.setter
+    def busy_enabled(self, value):
+        self.enablebusy = int(value == 1) if value is not None else None
+
+    @hybrid_property
+    def busy_destination(self):
+        if self.destbusy == '':
+            return None
+        return self.destbusy
+
+    @busy_destination.expression
+    def busy_destination(cls):
+        return func.nullif(cls.destbusy, '')
+
+    @busy_destination.setter
+    def busy_destination(self, value):
+        if value is None:
+            self.destbusy = ''
+        else:
+            self.destbusy = value
+
+    @hybrid_property
+    def noanswer_enabled(self):
+        return self.enablerna == 1
+
+    @noanswer_enabled.setter
+    def noanswer_enabled(self, value):
+        self.enablerna = int(value == 1) if value is not None else None
+
+    @hybrid_property
+    def noanswer_destination(self):
+        if self.destrna == '':
+            return None
+        return self.destrna
+
+    @noanswer_destination.expression
+    def noanswer_destination(cls):
+        return func.nullif(cls.destrna, '')
+
+    @noanswer_destination.setter
+    def noanswer_destination(self, value):
+        if value is None:
+            self.destrna = ''
+        else:
+            self.destrna = value
+
+    @hybrid_property
+    def unconditional_enabled(self):
+        return self.enableunc == 1
+
+    @unconditional_enabled.setter
+    def unconditional_enabled(self, value):
+        self.enableunc = int(value == 1) if value is not None else None
+
+    @hybrid_property
+    def unconditional_destination(self):
+        if self.destunc == '':
+            return None
+        return self.destunc
+
+    @unconditional_destination.expression
+    def unconditional_destination(cls):
+        return func.nullif(cls.destunc, '')
+
+    @unconditional_destination.setter
+    def unconditional_destination(self, value):
+        if value is None:
+            self.destunc = ''
+        else:
+            self.destunc = value
