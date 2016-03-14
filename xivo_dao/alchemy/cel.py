@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, Index, ForeignKeyConstraint
-from sqlalchemy.types import DateTime, Integer, String
+from sqlalchemy.types import DateTime, Integer, Text, UnicodeText
 
 from xivo_dao.alchemy.call_log import CallLog
 from xivo_dao.helpers.db_manager import Base
@@ -36,26 +36,26 @@ class CEL(Base):
     )
 
     id = Column(Integer, primary_key=True, nullable=False)
-    eventtype = Column(String(30), nullable=False)
+    eventtype = Column(Text, nullable=False)
     eventtime = Column(DateTime, nullable=False)
-    userdeftype = Column(String(255), nullable=False)
-    cid_name = Column(String(80, convert_unicode=True), nullable=False)
-    cid_num = Column(String(80, convert_unicode=True), nullable=False)
-    cid_ani = Column(String(80), nullable=False)
-    cid_rdnis = Column(String(80), nullable=False)
-    cid_dnid = Column(String(80), nullable=False)
-    exten = Column(String(80, convert_unicode=True), nullable=False)
-    context = Column(String(80), nullable=False)
-    channame = Column(String(80, convert_unicode=True), nullable=False)
-    appname = Column(String(80), nullable=False)
-    appdata = Column(String(512), nullable=False)
+    userdeftype = Column(Text, nullable=False)
+    cid_name = Column(UnicodeText, nullable=False)
+    cid_num = Column(UnicodeText, nullable=False)
+    cid_ani = Column(Text, nullable=False)
+    cid_rdnis = Column(Text, nullable=False)
+    cid_dnid = Column(Text, nullable=False)
+    exten = Column(UnicodeText, nullable=False)
+    context = Column(Text, nullable=False)
+    channame = Column(UnicodeText, nullable=False)
+    appname = Column(Text, nullable=False)
+    appdata = Column(Text, nullable=False)
     amaflags = Column(Integer, nullable=False)
-    accountcode = Column(String(20), nullable=False)
-    peeraccount = Column(String(20), nullable=False)
-    uniqueid = Column(String(150), nullable=False)
-    linkedid = Column(String(150), nullable=False)
-    userfield = Column(String(255), nullable=False)
-    peer = Column(String(80), nullable=False)
+    accountcode = Column(Text, nullable=False)
+    peeraccount = Column(Text, nullable=False)
+    uniqueid = Column(Text, nullable=False)
+    linkedid = Column(Text, nullable=False)
+    userfield = Column(Text, nullable=False)
+    peer = Column(Text, nullable=False)
     call_log_id = Column(Integer)
 
     call_log = relationship(CallLog)
