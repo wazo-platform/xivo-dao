@@ -418,6 +418,8 @@ class TestCreate(TestUser):
                                                  dnd_enabled=False,
                                                  incallfilter_enabled=False,
                                                  supervision_enabled=True,
+                                                 call_record_enabled=False,
+                                                 online_call_record_enabled=False,
                                                  simultaneous_calls=5,
                                                  ring_seconds=30))
 
@@ -435,6 +437,8 @@ class TestCreate(TestUser):
                                         enablexfer=1,
                                         incallfilter=0,
                                         enablednd=0,
+                                        enableonlinerec=0,
+                                        callrecord=0,
                                         func_key_private_template_id=is_not(none())
                                         ))
 
@@ -458,6 +462,8 @@ class TestCreate(TestUser):
                     dnd_enabled=True,
                     incallfilter_enabled=True,
                     supervision_enabled=False,
+                    call_record_enabled=True,
+                    online_call_record_enabled=True,
                     ring_seconds=60,
                     simultaneous_calls=10)
 
@@ -485,6 +491,8 @@ class TestCreate(TestUser):
                                                  dnd_enabled=True,
                                                  incallfilter_enabled=True,
                                                  supervision_enabled=False,
+                                                 call_record_enabled=True,
+                                                 online_call_record_enabled=True,
                                                  ring_seconds=60,
                                                  simultaneous_calls=10,
                                                  userfield='userfield'))
@@ -499,6 +507,8 @@ class TestCreate(TestUser):
                                         enablexfer=0,
                                         incallfilter=1,
                                         enablednd=1,
+                                        enableonlinerec=1,
+                                        callrecord=1,
                                         musiconhold='music_on_hold'))
 
     def test_that_the_user_uuid_is_unique(self):
@@ -546,6 +556,8 @@ class TestEdit(TestUser):
         user.dnd_enabled = True
         user.incallfilter_enabled = True
         user.supervision_enabled = False
+        user.call_record_enabled = True
+        user.online_call_record_enabled = True
         user.ring_seconds = 60
         user.simultaneous_calls = 5
 
@@ -570,6 +582,8 @@ class TestEdit(TestUser):
                                         dnd_enabled=True,
                                         incallfilter_enabled=True,
                                         supervision_enabled=False,
+                                        call_record_enabled=True,
+                                        online_call_record_enabled=True,
                                         ring_seconds=60,
                                         simultaneous_calls=5,
                                         userfield='userfield'))

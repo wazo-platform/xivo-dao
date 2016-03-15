@@ -382,6 +382,22 @@ class UserFeatures(Base):
         self.enablexfer = int(value == 1) if value is not None else None
 
     @hybrid_property
+    def call_record_enabled(self):
+        return self.callrecord == 1
+
+    @call_record_enabled.setter
+    def call_record_enabled(self, value):
+        self.callrecord = int(value == 1) if value is not None else None
+
+    @hybrid_property
+    def online_call_record_enabled(self):
+        return self.enableonlinerec == 1
+
+    @online_call_record_enabled.setter
+    def online_call_record_enabled(self, value):
+        self.enableonlinerec = int(value == 1) if value is not None else None
+
+    @hybrid_property
     def ring_seconds(self):
         return self.ringseconds
 
