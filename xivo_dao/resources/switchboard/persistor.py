@@ -44,7 +44,7 @@ class SwitchboardPersistor(object):
             query = query.filter(StatSwitchboardQueue.time > start)
         if end:
             query = query.filter(StatSwitchboardQueue.time < end)
-        return query.all()
+        return query
 
     def switchboard_has_stats(self, switchboard_id):
         existing = (self.session
