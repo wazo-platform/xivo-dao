@@ -34,8 +34,4 @@ def get_config(session):
         main['certfile'] = row.tlscertfile
     if row.tlsprivkeyfile:
         main['keyfile'] = row.tlsprivkeyfile
-    return {'main': main,
-            'ipbx_connection': {'ipaddress': row.ami_ip,
-                                'ipport': row.ami_port,
-                                'username': row.ami_login,
-                                'password': row.ami_password}}
+    return {'main': main}

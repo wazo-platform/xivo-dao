@@ -26,10 +26,6 @@ class CtiMain(Base):
     __tablename__ = 'ctimain'
 
     id = Column(Integer, primary_key=True)
-    ami_ip = Column(String(16))
-    ami_port = Column(Integer)
-    ami_login = Column(String(64))
-    ami_password = Column(String(64))
     cti_ip = Column(String(16))
     cti_port = Column(Integer)
     cti_active = Column(Integer, nullable=False, server_default='1')
