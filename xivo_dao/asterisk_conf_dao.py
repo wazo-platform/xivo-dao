@@ -18,7 +18,7 @@
 from collections import defaultdict
 
 from sqlalchemy.sql.expression import and_, or_, literal, cast, func
-from sqlalchemy.types import Integer, String
+from sqlalchemy.types import Integer
 
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.usersip import UserSIP
@@ -380,55 +380,9 @@ def find_sip_authentication_settings(session):
     return [row.todict() for row in rows]
 
 
-def _build_sip_pickup_query(session):
-    pickup_members = (
-        session.query(
-            PickupMember.category,
-            PickupMember.pickupid.label('pickup_id'),
-            UserSIP.id.label('sip_id')
-        )
-        .join(UserFeatures,
-              and_(PickupMember.membertype == 'user',
-                   PickupMember.memberid == UserFeatures.id))
-        .join(UserLine,
-              UserLine.user_id == UserFeatures.id)
-        .join(LineFeatures,
-              UserLine.line_id == LineFeatures.id)
-        .join(UserSIP,
-              and_(LineFeatures.protocol == 'sip',
-                   LineFeatures.protocolid == UserSIP.id))
-    ).cte(name="pickup_members")
-
-    pickup_groups = (
-        session.query(
-            pickup_members.c.sip_id,
-            func.string_agg(
-                cast(pickup_members.c.pickup_id, String),
-                ','
-            ).label('pickup_ids')
-        )
-        .filter(pickup_members.c.category == 'member')
-        .group_by(pickup_members.c.sip_id)
-    ).cte(name="pickup_groups")
-
-    call_groups = (
-        session.query(
-            pickup_members.c.sip_id,
-            func.string_agg(
-                cast(pickup_members.c.pickup_id, String),
-                ','
-            ).label('pickup_ids')
-        )
-        .filter(pickup_members.c.category == 'pickup')
-        .group_by(pickup_members.c.sip_id)
-    ).cte(name="pickup_category")
-
-    return pickup_groups, call_groups
-
-
 @daosession
 def find_sip_user_settings(session):
-    pickup_groups, call_groups = _build_sip_pickup_query(session)
+    pickup_members = find_pickup_members('sip')
 
     query = (
         session.query(
@@ -439,8 +393,6 @@ def find_sip_user_settings(session):
             UserFeatures.musiconhold.label('mohsuggest'),
             UserFeatures.uuid.label('uuid'),
             (Voicemail.mailbox + '@' + Voicemail.context).label('mailbox'),
-            pickup_groups.c.pickup_ids.label('namedpickupgroup'),
-            call_groups.c.pickup_ids.label('namedcallgroup')
         ).join(
             LineFeatures, and_(LineFeatures.protocolid == UserSIP.id,
                                LineFeatures.protocol == 'sip')
@@ -453,12 +405,6 @@ def find_sip_user_settings(session):
             Voicemail, UserFeatures.voicemailid == Voicemail.uniqueid
         ).outerjoin(
             Extension, UserLine.extension_id == Extension.id
-        ).outerjoin(
-            pickup_groups,
-            pickup_groups.c.sip_id == UserSIP.id
-        ).outerjoin(
-            call_groups,
-            call_groups.c.sip_id == UserSIP.id
         ).filter(
             and_(
                 UserSIP.category == 'user',
@@ -467,7 +413,11 @@ def find_sip_user_settings(session):
         )
     )
 
-    return query
+    for row in query.all():
+        groups = pickup_members.get(row.UserSIP.id, {})
+        row.namedpickupgroup = ','.join(str(id) for id in groups.get('pickupgroup', []))
+        row.namedcallgroup = ','.join(str(id) for id in groups.get('callgroup', []))
+        yield row
 
 
 @daosession
