@@ -80,6 +80,7 @@ class TestLineDaoGet(TestLineDao):
 
     def test_get_minimal_parameters(self):
         line_row = self.add_line(context='default',
+                                 registrar='default',
                                  provisioningid=123456)
 
         line = line_dao.get(line_row.id)
@@ -92,9 +93,11 @@ class TestLineDaoGet(TestLineDao):
         assert_that(line.endpoint_id, none())
         assert_that(line.caller_id_name, none())
         assert_that(line.caller_id_num, none())
+        assert_that(line.registrar, equal_to('default'))
 
     def test_get_all_parameters(self):
         line_row = self.add_line(context='default',
+                                 registrar='default',
                                  protocol='sip',
                                  protocolid=1234,
                                  provisioningid=123456,
@@ -108,6 +111,7 @@ class TestLineDaoGet(TestLineDao):
         assert_that(line.provisioning_code, '123456')
         assert_that(line.endpoint, equal_to('sip'))
         assert_that(line.endpoint_id, equal_to(1234))
+        assert_that(line.registrar, equal_to('default'))
 
     def test_given_line_has_sip_endpoint_when_getting_then_line_has_caller_id(self):
         usersip_row = self.add_usersip(callerid='"Jôhn Smith" <1000>')
@@ -152,6 +156,7 @@ class TestLineDaoEdit(TestLineDao):
         line.endpoint_id = 1234
         line.provisioning_code = '234567'
         line.position = 3
+        line.registrar = 'otherregistrar'
 
         line_dao.edit(line)
 
@@ -165,6 +170,7 @@ class TestLineDaoEdit(TestLineDao):
         assert_that(edited_line.provisioning_code, equal_to('234567'))
         assert_that(edited_line.provisioningid, equal_to(234567))
         assert_that(edited_line.position, equal_to(3))
+        assert_that(edited_line.registrar, equal_to('otherregistrar'))
 
     def test_edit_null_parameters(self):
         line_row = self.add_line(endpoint='sccp',
@@ -278,6 +284,7 @@ class TestLineCreate(DAOTestCase):
         assert_that(created_line.caller_id_name, none())
         assert_that(created_line.caller_id_num, none())
         assert_that(created_line.configregistrar, equal_to('default'))
+        assert_that(created_line.registrar, equal_to('default'))
         assert_that(created_line.ipfrom, equal_to(''))
 
     def test_create_all_parameters(self):
@@ -285,7 +292,8 @@ class TestLineCreate(DAOTestCase):
                     endpoint='sip',
                     endpoint_id=1234,
                     provisioning_code='123456',
-                    position=2)
+                    position=2,
+                    registrar='otherregistrar')
 
         created_line = line_dao.create(line)
 
@@ -300,6 +308,7 @@ class TestLineCreate(DAOTestCase):
         assert_that(created_line.provisioningid, equal_to(123456))
         assert_that(created_line.caller_id_name, none())
         assert_that(created_line.caller_id_num, none())
+        assert_that(created_line.registrar, equal_to('otherregistrar'))
 
     def test_when_creating_with_caller_id_then_raises_error(self):
         self.assertRaises(InputError, Line, caller_id_name="Jôhn Smith")

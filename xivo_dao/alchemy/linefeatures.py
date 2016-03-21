@@ -254,6 +254,14 @@ class LineFeatures(Base):
         value = value or ''
         self.device = value
 
+    @hybrid_property
+    def registrar(self):
+        return self.configregistrar
+
+    @registrar.setter
+    def registrar(self, value):
+        self.configregistrar = value
+
     def is_associated(self, protocol=None):
         if protocol:
             return self.protocol == protocol and self.protocolid is not None
