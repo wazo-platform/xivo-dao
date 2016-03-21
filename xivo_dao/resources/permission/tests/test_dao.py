@@ -58,7 +58,7 @@ class TestFind(TestPermission):
     def test_find(self):
         permission_row = self.add_permission(name='Bôb',
                                              password='âS$%?^ééé',
-                                             mode='1',
+                                             mode='allow',
                                              extensions=['123', '456'],
                                              enabled=True,
                                              description='description')
@@ -174,7 +174,7 @@ class TestSearchGivenMultiplePermissions(TestSearch):
 
     def setUp(self):
         super(TestSearch, self).setUp()
-        self.permission1 = self.add_permission(name='Ashton', description='resto')
+        self.permission1 = self.add_permission(name='Ashton', description='resto', mode='allow')
         self.permission2 = self.add_permission(name='Beaugarton', description='bar')
         self.permission3 = self.add_permission(name='Casa', description='resto')
         self.permission4 = self.add_permission(name='Dunkin', description='resto')
@@ -193,6 +193,13 @@ class TestSearchGivenMultiplePermissions(TestSearch):
 
         expected_all_resto = SearchResult(3, [self.permission1, self.permission3, self.permission4])
         self.assert_search_returns_result(expected_all_resto, description='resto', order='name')
+
+    def test_when_searching_with_a_custom_extra_argument(self):
+        expected_allow = SearchResult(1, [self.permission1])
+        self.assert_search_returns_result(expected_allow, mode='allow')
+
+        expected_all_deny = SearchResult(3, [self.permission2, self.permission3, self.permission4])
+        self.assert_search_returns_result(expected_all_deny, mode='deny')
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
         expected = SearchResult(4, [self.permission1, self.permission2, self.permission3, self.permission4])
@@ -227,6 +234,9 @@ class TestSearchGivenMultiplePermissions(TestSearch):
 
 class TestCreate(TestPermission):
 
+    def test_when_creating_with_invalid_mode_then_raises_error(self):
+        self.assertRaises(InputError, Permission, mode='invalid_mode')
+
     def test_create_minimal_fields(self):
         permission = Permission(name='Jôhn')
         created_permission = permission_dao.create(permission)
@@ -236,7 +246,7 @@ class TestCreate(TestPermission):
         assert_that(created_permission, has_properties(id=row.id,
                                                        name="Jôhn",
                                                        password=none(),
-                                                       mode=0,
+                                                       mode='deny',
                                                        enabled=True,
                                                        description=none(),
                                                        extensions=[]))
@@ -252,7 +262,7 @@ class TestCreate(TestPermission):
     def test_create_with_all_fields(self):
         permission = Permission(name='rîghtcall1',
                                 password='P$WDéẁ',
-                                mode=1,
+                                mode='allow',
                                 enabled=False,
                                 description='description',
                                 extensions=['123', '456'])
@@ -264,7 +274,7 @@ class TestCreate(TestPermission):
         assert_that(created_permission, has_properties(id=row.id,
                                                        name='rîghtcall1',
                                                        password='P$WDéẁ',
-                                                       mode=1,
+                                                       mode='allow',
                                                        enabled=False,
                                                        description='description',
                                                        extensions=['123', '456']))
@@ -287,7 +297,7 @@ class TestEdit(TestPermission):
     def test_edit_all_fields(self):
         permission = permission_dao.create(Permission(name='rîghtcall1',
                                                       password='P$WDéẁ',
-                                                      mode=0,
+                                                      mode='deny',
                                                       enabled=True,
                                                       description='tototo',
                                                       extensions=['123', '456']))
@@ -295,7 +305,7 @@ class TestEdit(TestPermission):
         permission = permission_dao.get(permission.id)
         permission.name = 'denỳallfriends'
         permission.password = 'Alhahlalahl'
-        permission.mode = 1
+        permission.mode = 'allow'
         permission.enabled = False
         permission.description = 'description'
         permission.extensions = ['789', '321', '654']
@@ -321,7 +331,7 @@ class TestEdit(TestPermission):
     def test_edit_set_fields_to_null(self):
         permission = permission_dao.create(Permission(name='rîghtcall1',
                                                       password='P$WDéẁ',
-                                                      mode=0,
+                                                      mode='deny',
                                                       enabled=True,
                                                       description='tototo',
                                                       extensions=['123', '456']))

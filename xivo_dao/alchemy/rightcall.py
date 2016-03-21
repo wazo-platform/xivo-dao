@@ -18,11 +18,12 @@
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
-from sqlalchemy.sql import cast, func, not_
+from sqlalchemy.sql import case, cast, func, not_
 from sqlalchemy.types import Boolean, Integer, String, Text
 
 from xivo_dao.alchemy.rightcallexten import RightCallExten
 from xivo_dao.helpers.db_manager import Base
+from xivo_dao.helpers.exception import InputError
 
 
 class RightCall(Base):
@@ -60,11 +61,23 @@ class RightCall(Base):
 
     @hybrid_property
     def mode(self):
-        return self.authorization
+        if self.authorization == 1:
+            return 'allow'
+        else:
+            return 'deny'
+
+    @mode.expression
+    def mode(cls):
+        return case([(cls.authorization == 1, 'allow')], else_='deny')
 
     @mode.setter
     def mode(self, value):
-        self.authorization = value
+        if value == 'allow':
+            self.authorization = 1
+        elif value == 'deny':
+            self.authorization = 0
+        else:
+            raise InputError("cannot set mode to {}. Only 'allow' or 'deny' are authorized".format(value))
 
     @hybrid_property
     def enabled(self):
