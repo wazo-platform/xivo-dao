@@ -347,6 +347,25 @@ class TestEdit(TestPermission):
         assert_that(row, has_properties(passwd='',
                                         description=none()))
 
+    def test_edit_extensions_with_same_value(self):
+        permission = permission_dao.create(Permission(name='rîghtcall1',
+                                                      extensions=['123', '456']))
+
+        permission = permission_dao.get(permission.id)
+        permission.extensions = ['789', '123']
+
+        permission_dao.edit(permission)
+
+        row = self.session.query(Permission).first()
+
+        assert_that(row, has_properties(name='rîghtcall1',
+                                        rightcallextens=has_length(2)))
+
+        assert_that(row.rightcallextens[0], has_properties(rightcallid=row.id,
+                                                           exten='789'))
+        assert_that(row.rightcallextens[1], has_properties(rightcallid=row.id,
+                                                           exten='123'))
+
 
 class TestDelete(TestPermission):
 

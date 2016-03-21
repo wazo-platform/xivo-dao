@@ -97,4 +97,10 @@ class RightCall(Base):
 
     @extensions.setter
     def extensions(self, values):
-        self.rightcallextens = [RightCallExten(rightcallid=self.id, exten=value) for value in values]
+        old_rightcallextens = {rightcallexten.exten: rightcallexten for rightcallexten in self.rightcallextens}
+        self.rightcallextens = []
+        for value in values:
+            if value in old_rightcallextens:
+                self.rightcallextens.append(old_rightcallextens[value])
+            else:
+                self.rightcallextens.append(RightCallExten(rightcallid=self.id, exten=value))
