@@ -18,14 +18,15 @@
 from __future__ import unicode_literals
 
 from hamcrest import (assert_that,
+                      contains,
+                      contains_inanyorder,
                       equal_to,
-                      has_length,
-                      has_property,
-                      has_properties,
-                      is_not,
-                      none,
                       has_items,
-                      contains)
+                      has_length,
+                      has_properties,
+                      has_property,
+                      is_not,
+                      none)
 
 
 from xivo_dao.alchemy.rightcall import RightCall as Permission
@@ -286,10 +287,35 @@ class TestCreate(TestPermission):
                                         description='description',
                                         rightcallextens=has_length(2)))
 
-        assert_that(row.rightcallextens[0], has_properties(rightcallid=row.id,
-                                                           exten='123'))
-        assert_that(row.rightcallextens[1], has_properties(rightcallid=row.id,
-                                                           exten='456'))
+        assert_that(row.rightcallextens, contains_inanyorder(has_properties(rightcallid=row.id,
+                                                                            exten='123'),
+                                                             has_properties(rightcallid=row.id,
+                                                                            exten='456')))
+
+    def test_create_duplicate_extension(self):
+        permission = Permission(name='Jôhn', extensions=['123', '123'])
+        created_permission = permission_dao.create(permission)
+
+        row = self.session.query(Permission).first()
+
+        assert_that(created_permission, has_properties(id=row.id,
+                                                       name="Jôhn",
+                                                       password=none(),
+                                                       mode='deny',
+                                                       enabled=True,
+                                                       description=none(),
+                                                       extensions=['123']))
+
+        assert_that(row, has_properties(id=is_not(none()),
+                                        name='Jôhn',
+                                        passwd='',
+                                        authorization=0,
+                                        commented=0,
+                                        description=none(),
+                                        rightcallextens=has_length(1)))
+
+        assert_that(row.rightcallextens, contains(has_properties(rightcallid=row.id,
+                                                                 exten='123')))
 
 
 class TestEdit(TestPermission):
@@ -321,12 +347,12 @@ class TestEdit(TestPermission):
                                         description='description',
                                         rightcallextens=has_length(3)))
 
-        assert_that(row.rightcallextens[0], has_properties(rightcallid=row.id,
-                                                           exten='789'))
-        assert_that(row.rightcallextens[1], has_properties(rightcallid=row.id,
-                                                           exten='321'))
-        assert_that(row.rightcallextens[2], has_properties(rightcallid=row.id,
-                                                           exten='654'))
+        assert_that(row.rightcallextens, contains_inanyorder(has_properties(rightcallid=row.id,
+                                                                            exten='789'),
+                                                             has_properties(rightcallid=row.id,
+                                                                            exten='321'),
+                                                             has_properties(rightcallid=row.id,
+                                                                            exten='654')))
 
     def test_edit_set_fields_to_null(self):
         permission = permission_dao.create(Permission(name='rîghtcall1',
@@ -361,10 +387,10 @@ class TestEdit(TestPermission):
         assert_that(row, has_properties(name='rîghtcall1',
                                         rightcallextens=has_length(2)))
 
-        assert_that(row.rightcallextens[0], has_properties(rightcallid=row.id,
-                                                           exten='789'))
-        assert_that(row.rightcallextens[1], has_properties(rightcallid=row.id,
-                                                           exten='123'))
+        assert_that(row.rightcallextens, contains_inanyorder(has_properties(rightcallid=row.id,
+                                                                            exten='789'),
+                                                             has_properties(rightcallid=row.id,
+                                                                            exten='123')))
 
 
 class TestDelete(TestPermission):
