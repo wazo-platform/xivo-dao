@@ -34,6 +34,21 @@ class LineFixes(object):
         self.session = session
 
     def fix(self, line_id):
+        row = self.get_row(line_id)
+        self.fix_protocol(row)
+        self.fix_number_and_context(row)
+        self.fix_name(row)
+        self.fix_caller_id(row)
+        self.session.flush()
+
+    def fix_line(self, line_id):
+        row = self.get_row(line_id)
+        self.fix_protocol(row)
+        self.fix_number_and_context(row)
+        self.fix_name(row)
+        self.session.flush()
+
+    def get_row(self, line_id):
         query = (self.session.query(LineFeatures,
                                     UserSIP,
                                     SCCPLine,
@@ -60,12 +75,7 @@ class LineFixes(object):
                  .filter(LineFeatures.id == line_id)
                  )
 
-        row = query.first()
-
-        self.fix_protocol(row)
-        self.fix_number_and_context(row)
-        self.fix_name(row)
-        self.session.flush()
+        return query.first()
 
     def fix_protocol(self, row):
         protocol = row.LineFeatures.protocol
@@ -86,12 +96,6 @@ class LineFixes(object):
 
     def update_usersip(self, row):
         row.UserSIP.context = row.LineFeatures.context
-        if row.UserFeatures:
-            row.UserSIP.update_setvar(row.UserFeatures)
-            row.UserSIP.update_caller_id(row.UserFeatures, row.Extension)
-        else:
-            row.UserSIP.clear_setvar()
-            row.UserSIP.clear_caller_id()
 
     def remove_endpoint(self, row):
         row.LineFeatures.remove_endpoint()
@@ -113,9 +117,6 @@ class LineFixes(object):
         if row.Extension:
             row.SCCPLine.update_extension(row.Extension)
 
-        if row.UserFeatures:
-            row.SCCPLine.update_caller_id(row.UserFeatures, row.Extension)
-
     def fix_number_and_context(self, row):
         if row.Extension:
             row.LineFeatures.update_extension(row.Extension)
@@ -130,3 +131,11 @@ class LineFixes(object):
             row.UserCustom.context = row.LineFeatures.context
         else:
             self.remove_endpoint(row)
+
+    def fix_caller_id(self, row):
+        if row.UserFeatures:
+            if row.LineFeatures.protocol == "sip":
+                row.UserSIP.update_setvar(row.UserFeatures)
+                row.UserSIP.update_caller_id(row.UserFeatures, row.Extension)
+            elif row.LineFeatures.protocol == "sccp":
+                row.SCCPLine.update_caller_id(row.UserFeatures, row.Extension)

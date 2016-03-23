@@ -209,16 +209,6 @@ class TestLineFixes(DAOTestCase):
         assert_that(sccp.cid_name, equal_to("Jôhn Smith"))
         assert_that(sccp.cid_num, equal_to("1000"))
 
-    def test_given_line_not_associated_to_user_then_sip_caller_and_user_id_cleared(self):
-        sip = self.add_usersip(callerid='"Rôger Rabbit" <2000>')
-        line = self.add_line(protocol='sip', protocolid=sip.id)
-
-        self.fixes.fix(line.id)
-
-        sip = self.session.query(UserSIP).first()
-        assert_that(sip.callerid, none())
-        assert_that(sip.setvar, equal_to(''))
-
     def test_given_extension_associated_to_line_then_number_and_context_updated(self):
         line = self.add_line(context="mycontext", number="2000")
         extension = self.add_extension(exten="1000", context="default")

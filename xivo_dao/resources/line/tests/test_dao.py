@@ -202,8 +202,10 @@ class TestLineDaoEdit(TestLineDao):
         usersip_row = self.add_usersip(callerid='"Jôhn Smith" <1000>')
         line_row = self.add_line(protocol='sip',
                                  protocolid=usersip_row.id)
+        line_id = line_row.id
+        self.session.expire(line_row)
 
-        line = line_dao.get(line_row.id)
+        line = line_dao.get(line_id)
         line.caller_id_name = "Rôger Rabbit"
         line.caller_id_num = "2000"
 
