@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2015 Avencall
+# Copyright (C) 2015-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -99,6 +99,7 @@ resource_associated = FormattedError(ResourceError, "{} is associated with a {}"
 resource_not_associated = FormattedError(ResourceError, "{} is not associated with {}")
 missing_association = FormattedError(ResourceError, "{} must be associated with a {}")
 missing_cti_parameters = FormattedError(ResourceError, "User must have a username and password to enable a CtiProfile")
+forward_destination_null = FormattedError(ResourceError, "Forward must be disabled to remove destination")
 unhandled_context_type = FormattedError(ResourceError, "ContextType '{}' cannot be associated")
 secondary_users = FormattedError(ResourceError, "There are secondary users associated to the line")
 not_permitted = FormattedError(ResourceError, "Operation not permitted. {}")
