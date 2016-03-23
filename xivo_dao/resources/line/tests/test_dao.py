@@ -152,8 +152,6 @@ class TestLineDaoEdit(TestLineDao):
 
         line = line_dao.get(line_row.id)
         line.context = 'mycontext'
-        line.endpoint = 'sccp'
-        line.endpoint_id = 1234
         line.provisioning_code = '234567'
         line.position = 3
         line.registrar = 'otherregistrar'
@@ -163,10 +161,6 @@ class TestLineDaoEdit(TestLineDao):
         edited_line = self.session.query(Line).get(line_row.id)
         assert_that(edited_line.id, equal_to(line.id))
         assert_that(edited_line.context, equal_to('mycontext'))
-        assert_that(edited_line.endpoint, equal_to('sccp'))
-        assert_that(edited_line.protocol, equal_to('sccp'))
-        assert_that(edited_line.endpoint_id, equal_to(1234))
-        assert_that(edited_line.protocolid, equal_to(1234))
         assert_that(edited_line.provisioning_code, equal_to('234567'))
         assert_that(edited_line.provisioningid, equal_to(234567))
         assert_that(edited_line.position, equal_to(3))
@@ -188,13 +182,6 @@ class TestLineDaoEdit(TestLineDao):
         assert_that(edited_line.protocol, none())
         assert_that(edited_line.endpoint_id, none())
         assert_that(edited_line.protocolid, none())
-
-    def test_given_line_has_no_endpoint_when_setting_caller_id_to_null_then_raises_error(self):
-        line_row = self.add_line()
-
-        line = line_dao.get(line_row.id)
-        self.assertRaises(InputError, setattr, line, 'caller_id_name', None)
-        self.assertRaises(InputError, setattr, line, 'caller_id_num', None)
 
     def test_given_line_has_no_endpoint_when_setting_caller_id_then_raises_error(self):
         line_row = self.add_line()
@@ -309,6 +296,13 @@ class TestLineCreate(DAOTestCase):
         assert_that(created_line.caller_id_name, none())
         assert_that(created_line.caller_id_num, none())
         assert_that(created_line.registrar, equal_to('otherregistrar'))
+
+    def test_when_setting_caller_id_to_null_then_nothing_happens(self):
+        line = Line(context='default',
+                    position=1,
+                    registrar='default')
+        line.caller_id_name = None
+        line.caller_id_num = None
 
     def test_when_creating_with_caller_id_then_raises_error(self):
         self.assertRaises(InputError, Line, caller_id_name="Jôhn Smith")

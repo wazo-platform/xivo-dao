@@ -128,15 +128,17 @@ class LineFeatures(Base):
     @caller_id_name.setter
     def caller_id_name(self, value):
         if value is None:
-            raise InputError("cannot set caller name to None")
-        if self.protocol == 'sip':
-            self._set_sip_caller_id_name(value)
-        elif self.protocol == 'sccp':
-            self._set_sccp_caller_id_name(value)
-        elif self.protocol == 'custom':
-            raise InputError("Cannot set caller id on endpoint of type 'custom'")
+            if self.protocol is not None:
+                raise InputError("Cannot set caller id to None")
         else:
-            raise InputError("Line is not associated to an endpoint")
+            if self.protocol == 'sip':
+                self._set_sip_caller_id_name(value)
+            elif self.protocol == 'sccp':
+                self._set_sccp_caller_id_name(value)
+            elif self.protocol == 'custom':
+                raise InputError("Cannot set caller id on endpoint of type 'custom'")
+            else:
+                raise InputError("Unsupported caller id protocol")
 
     def _set_sip_caller_id_name(self, value):
         num = self._sip_caller_id_num()
@@ -175,15 +177,17 @@ class LineFeatures(Base):
     @caller_id_num.setter
     def caller_id_num(self, value):
         if value is None:
-            raise InputError("Cannot set caller num to None")
-        if self.protocol == 'sip':
-            self._set_sip_caller_id_num(value)
-        elif self.protocol == 'sccp':
-            raise InputError("Cannot set caller id num on endpoint of type 'sccp'")
-        elif self.protocol == 'custom':
-            raise InputError("Cannot set caller id on endpoint of type 'custom'")
+            if self.protocol is not None:
+                raise InputError("Cannot set caller id num to None")
         else:
-            raise InputError("Line is not associated to an endpoint")
+            if self.protocol == 'sip':
+                self._set_sip_caller_id_num(value)
+            elif self.protocol == 'sccp':
+                raise InputError("Cannot set caller id num on endpoint of type 'sccp'")
+            elif self.protocol == 'custom':
+                raise InputError("Cannot set caller id on endpoint of type 'custom'")
+            else:
+                raise InputError("Unsupported caller id protocol")
 
     def _set_sip_caller_id_num(self, value):
         name = self._sip_caller_id_name()
