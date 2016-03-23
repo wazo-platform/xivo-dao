@@ -1192,9 +1192,7 @@ class TestFindSipUserSettings(DAOTestCase, PickupHelperMixin):
         expected = {'number': none(),
                     'mailbox': none(),
                     'mohsuggest': none(),
-                    'uuid': none(),
-                    'namedcallgroup': none(),
-                    'namedpickupgroup': none()}
+                    'uuid': none()}
 
         results = asterisk_conf_dao.find_sip_user_settings()
 
@@ -1228,34 +1226,3 @@ class TestFindSipUserSettings(DAOTestCase, PickupHelperMixin):
         results = asterisk_conf_dao.find_sip_user_settings()
 
         assert_that(results, contains(has_properties(UserSIP=sip)))
-
-    def test_given_sip_account_has_pickups_then_pickups_are_returned(self):
-        sip = self.add_usersip(category='user')
-        line = self.add_line(protocol='sip', protocolid=sip.id)
-        user = self.add_user()
-        self.add_user_line(user_id=user.id, line_id=line.id)
-
-        pickup1 = self.add_pickup()
-        pickup2 = self.add_pickup()
-        pickup3 = self.add_pickup()
-        pickup4 = self.add_pickup()
-
-        self.add_pickup_member_user(pickup1, user.id, category='member')
-        self.add_pickup_member_user(pickup2, user.id, category='member')
-        self.add_pickup_member_user(pickup3, user.id, category='pickup')
-        self.add_pickup_member_user(pickup4, user.id, category='pickup')
-
-        results = list(asterisk_conf_dao.find_sip_user_settings())
-        assert_that(results, has_length(1))
-
-        namedcallgroup = results[0].namedcallgroup
-        namedpickupgroup = results[0].namedpickupgroup
-
-        call_groups = namedcallgroup.split(',')
-        pickup_groups = namedpickupgroup.split(',')
-
-        assert_that(call_groups, contains_inanyorder(str(pickup3.id),
-                                                     str(pickup4.id)))
-
-        assert_that(pickup_groups, contains_inanyorder(str(pickup1.id),
-                                                       str(pickup2.id)))
