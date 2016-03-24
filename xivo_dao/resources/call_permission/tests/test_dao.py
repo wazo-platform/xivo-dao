@@ -29,201 +29,208 @@ from hamcrest import (assert_that,
                       none)
 
 
-from xivo_dao.alchemy.rightcall import RightCall as Permission
+from xivo_dao.alchemy.rightcall import RightCall as CallPermission
 from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.helpers.exception import NotFoundError, InputError
-from xivo_dao.resources.permission import dao as permission_dao
+from xivo_dao.resources.call_permission import dao as call_permission_dao
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
-class TestPermission(DAOTestCase):
+class TestCallPermission(DAOTestCase):
 
-    def add_permission(self, **kwargs):
+    def add_call_permission(self, **kwargs):
         kwargs.setdefault('name', 'Bôb')
         kwargs.setdefault('enabled', True)
 
-        permission = Permission(**kwargs)
-        self.session.add(permission)
+        call_permission = CallPermission(**kwargs)
+        self.session.add(call_permission)
         self.session.flush()
-        return permission
+        return call_permission
 
 
-class TestFind(TestPermission):
+class TestFind(TestCallPermission):
 
     def test_find_no_user(self):
-        result = permission_dao.find(42)
+        result = call_permission_dao.find(42)
 
         assert_that(result, none())
 
     def test_find(self):
-        permission_row = self.add_permission(name='Bôb',
-                                             password='âS$%?^ééé',
-                                             mode='allow',
-                                             extensions=['123', '456'],
-                                             enabled=True,
-                                             description='description')
+        call_permission_row = self.add_call_permission(name='Bôb',
+                                                       password='âS$%?^ééé',
+                                                       mode='allow',
+                                                       extensions=['123', '456'],
+                                                       enabled=True,
+                                                       description='description')
 
-        permission = permission_dao.find(permission_row.id)
+        call_permission = call_permission_dao.find(call_permission_row.id)
 
-        assert_that(permission.id, equal_to(permission.id))
-        assert_that(permission.name, equal_to(permission_row.name))
-        assert_that(permission.password, equal_to(permission_row.password))
-        assert_that(permission.mode, equal_to(permission_row.mode))
-        assert_that(permission.enabled, equal_to(permission_row.enabled))
-        assert_that(permission.description, equal_to(permission_row.description))
-        assert_that(permission.extensions, equal_to(permission_row.extensions))
+        assert_that(call_permission.id, equal_to(call_permission.id))
+        assert_that(call_permission.name, equal_to(call_permission_row.name))
+        assert_that(call_permission.password, equal_to(call_permission_row.password))
+        assert_that(call_permission.mode, equal_to(call_permission_row.mode))
+        assert_that(call_permission.enabled, equal_to(call_permission_row.enabled))
+        assert_that(call_permission.description, equal_to(call_permission_row.description))
+        assert_that(call_permission.extensions, equal_to(call_permission_row.extensions))
 
 
-class TestGet(TestPermission):
+class TestGet(TestCallPermission):
 
     def test_get_no_user(self):
-        self.assertRaises(NotFoundError, permission_dao.get, 42)
+        self.assertRaises(NotFoundError, call_permission_dao.get, 42)
 
     def test_get(self):
-        permission_row = self.add_permission()
+        call_permission_row = self.add_call_permission()
 
-        permission = permission_dao.get(permission_row.id)
+        call_permission = call_permission_dao.get(call_permission_row.id)
 
-        assert_that(permission.id, equal_to(permission.id))
+        assert_that(call_permission.id, equal_to(call_permission.id))
 
 
-class TestFindBy(TestPermission):
+class TestFindBy(TestCallPermission):
 
     def test_given_column_does_not_exist_then_error_raised(self):
-        self.assertRaises(InputError, permission_dao.find_by, invalid=42)
+        self.assertRaises(InputError, call_permission_dao.find_by, invalid=42)
 
     def test_find_by_name(self):
-        permission_row = self.add_permission(name='Jôhn')
+        call_permission_row = self.add_call_permission(name='Jôhn')
 
-        permission = permission_dao.find_by(name='Jôhn')
+        call_permission = call_permission_dao.find_by(name='Jôhn')
 
-        assert_that(permission.id, equal_to(permission_row.id))
-        assert_that(permission.name, equal_to('Jôhn'))
+        assert_that(call_permission.id, equal_to(call_permission_row.id))
+        assert_that(call_permission.name, equal_to('Jôhn'))
 
     def test_given_user_does_not_exist_then_returns_null(self):
-        user = permission_dao.find_by(name='42')
+        user = call_permission_dao.find_by(name='42')
 
         assert_that(user, none())
 
 
-class TestGetBy(TestPermission):
+class TestGetBy(TestCallPermission):
 
     def test_given_column_does_not_exist_then_error_raised(self):
-        self.assertRaises(InputError, permission_dao.get_by, invalid=42)
+        self.assertRaises(InputError, call_permission_dao.get_by, invalid=42)
 
     def test_get_by_name(self):
-        permission_row = self.add_permission(name='Jôhn')
+        call_permission_row = self.add_call_permission(name='Jôhn')
 
-        permission = permission_dao.get_by(name='Jôhn')
+        call_permission = call_permission_dao.get_by(name='Jôhn')
 
-        assert_that(permission.id, equal_to(permission_row.id))
-        assert_that(permission.name, equal_to('Jôhn'))
+        assert_that(call_permission.id, equal_to(call_permission_row.id))
+        assert_that(call_permission.name, equal_to('Jôhn'))
 
     def test_given_user_does_not_exist_then_raises_error(self):
-        self.assertRaises(NotFoundError, permission_dao.get_by, name='42')
+        self.assertRaises(NotFoundError, call_permission_dao.get_by, name='42')
 
 
-class TestFindAllBy(TestPermission):
+class TestFindAllBy(TestCallPermission):
 
     def test_find_all_by_no_users(self):
-        result = permission_dao.find_all_by(name='toto')
+        result = call_permission_dao.find_all_by(name='toto')
 
         assert_that(result, contains())
 
     def test_find_all_by_renamed_column(self):
-        permission1 = self.add_permission(name='bob', enabled=True)
-        permission2 = self.add_permission(name='alice', enabled=True)
+        call_permission1 = self.add_call_permission(name='bob', enabled=True)
+        call_permission2 = self.add_call_permission(name='alice', enabled=True)
 
-        permissions = permission_dao.find_all_by(enabled=True)
+        call_permissions = call_permission_dao.find_all_by(enabled=True)
 
-        assert_that(permissions, has_items(has_property('id', permission1.id),
-                                           has_property('id', permission2.id)))
+        assert_that(call_permissions, has_items(has_property('id', call_permission1.id),
+                                                has_property('id', call_permission2.id)))
 
     def test_find_all_by_native_column(self):
-        permission1 = self.add_permission(name='bob', description='description')
-        permission2 = self.add_permission(name='alice', description='description')
+        call_permission1 = self.add_call_permission(name='bob', description='description')
+        call_permission2 = self.add_call_permission(name='alice', description='description')
 
-        permissions = permission_dao.find_all_by(description='description')
+        call_permissions = call_permission_dao.find_all_by(description='description')
 
-        assert_that(permissions, has_items(has_property('id', permission1.id),
-                                           has_property('id', permission2.id)))
+        assert_that(call_permissions, has_items(has_property('id', call_permission1.id),
+                                                has_property('id', call_permission2.id)))
 
 
-class TestSearch(TestPermission):
+class TestSearch(TestCallPermission):
 
     def assert_search_returns_result(self, search_result, **parameters):
-        result = permission_dao.search(**parameters)
+        result = call_permission_dao.search(**parameters)
         assert_that(result, equal_to(search_result))
 
 
 class TestSimpleSearch(TestSearch):
 
-    def test_given_no_permissions_then_returns_no_empty_result(self):
+    def test_given_no_call_permissions_then_returns_no_empty_result(self):
         expected = SearchResult(0, [])
 
         self.assert_search_returns_result(expected)
 
-    def test_given_one_commented_permission_then_returns_one_result(self):
-        permission = self.add_permission(name='bob')
-        expected = SearchResult(1, [permission])
+    def test_given_one_commented_call_permission_then_returns_one_result(self):
+        call_permission = self.add_call_permission(name='bob')
+        expected = SearchResult(1, [call_permission])
 
         self.assert_search_returns_result(expected)
 
 
-class TestSearchGivenMultiplePermissions(TestSearch):
+class TestSearchGivenMultipleCallPermissions(TestSearch):
 
     def setUp(self):
         super(TestSearch, self).setUp()
-        self.permission1 = self.add_permission(name='Ashton', description='resto', mode='allow')
-        self.permission2 = self.add_permission(name='Beaugarton', description='bar')
-        self.permission3 = self.add_permission(name='Casa', description='resto')
-        self.permission4 = self.add_permission(name='Dunkin', description='resto')
+        self.call_permission1 = self.add_call_permission(name='Ashton', description='resto', mode='allow')
+        self.call_permission2 = self.add_call_permission(name='Beaugarton', description='bar')
+        self.call_permission3 = self.add_call_permission(name='Casa', description='resto')
+        self.call_permission4 = self.add_call_permission(name='Dunkin', description='resto')
 
     def test_when_searching_then_returns_one_result(self):
-        expected = SearchResult(1, [self.permission2])
+        expected = SearchResult(1, [self.call_permission2])
 
         self.assert_search_returns_result(expected, search='eau')
 
     def test_when_searching_with_an_extra_argument(self):
-        expected_resto = SearchResult(1, [self.permission1])
+        expected_resto = SearchResult(1, [self.call_permission1])
         self.assert_search_returns_result(expected_resto, search='ton', description='resto')
 
-        expected_bar = SearchResult(1, [self.permission2])
+        expected_bar = SearchResult(1, [self.call_permission2])
         self.assert_search_returns_result(expected_bar, search='ton', description='bar')
 
-        expected_all_resto = SearchResult(3, [self.permission1, self.permission3, self.permission4])
+        expected_all_resto = SearchResult(3, [self.call_permission1, self.call_permission3, self.call_permission4])
         self.assert_search_returns_result(expected_all_resto, description='resto', order='name')
 
     def test_when_searching_with_a_custom_extra_argument(self):
-        expected_allow = SearchResult(1, [self.permission1])
+        expected_allow = SearchResult(1, [self.call_permission1])
         self.assert_search_returns_result(expected_allow, mode='allow')
 
-        expected_all_deny = SearchResult(3, [self.permission2, self.permission3, self.permission4])
+        expected_all_deny = SearchResult(3, [self.call_permission2, self.call_permission3, self.call_permission4])
         self.assert_search_returns_result(expected_all_deny, mode='deny')
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
-        expected = SearchResult(4, [self.permission1, self.permission2, self.permission3, self.permission4])
+        expected = SearchResult(4,
+                                [self.call_permission1,
+                                 self.call_permission2,
+                                 self.call_permission3,
+                                 self.call_permission4])
 
         self.assert_search_returns_result(expected, order='name')
 
     def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
-        expected = SearchResult(4, [self.permission4, self.permission3, self.permission2, self.permission1])
+        expected = SearchResult(4, [self.call_permission4,
+                                    self.call_permission3,
+                                    self.call_permission2,
+                                    self.call_permission1])
 
         self.assert_search_returns_result(expected, order='name', direction='desc')
 
     def test_when_limiting_then_returns_right_number_of_items(self):
-        expected = SearchResult(4, [self.permission1])
+        expected = SearchResult(4, [self.call_permission1])
 
         self.assert_search_returns_result(expected, limit=1)
 
     def test_when_skipping_then_returns_right_number_of_items(self):
-        expected = SearchResult(4, [self.permission2, self.permission3, self.permission4])
+        expected = SearchResult(4, [self.call_permission2, self.call_permission3, self.call_permission4])
 
         self.assert_search_returns_result(expected, skip=1)
 
     def test_when_doing_a_paginated_search_then_returns_a_paginated_result(self):
-        expected = SearchResult(3, [self.permission2])
+        expected = SearchResult(3, [self.call_permission2])
 
         self.assert_search_returns_result(expected,
                                           search='a',
@@ -233,24 +240,24 @@ class TestSearchGivenMultiplePermissions(TestSearch):
                                           limit=1)
 
 
-class TestCreate(TestPermission):
+class TestCreate(TestCallPermission):
 
     def test_when_creating_with_invalid_mode_then_raises_error(self):
-        self.assertRaises(InputError, Permission, mode='invalid_mode')
+        self.assertRaises(InputError, CallPermission, mode='invalid_mode')
 
     def test_create_minimal_fields(self):
-        permission = Permission(name='Jôhn')
-        created_permission = permission_dao.create(permission)
+        call_permission = CallPermission(name='Jôhn')
+        created_call_permission = call_permission_dao.create(call_permission)
 
-        row = self.session.query(Permission).first()
+        row = self.session.query(CallPermission).first()
 
-        assert_that(created_permission, has_properties(id=row.id,
-                                                       name="Jôhn",
-                                                       password=none(),
-                                                       mode='deny',
-                                                       enabled=True,
-                                                       description=none(),
-                                                       extensions=[]))
+        assert_that(created_call_permission, has_properties(id=row.id,
+                                                            name="Jôhn",
+                                                            password=none(),
+                                                            mode='deny',
+                                                            enabled=True,
+                                                            description=none(),
+                                                            extensions=[]))
 
         assert_that(row, has_properties(id=is_not(none()),
                                         name='Jôhn',
@@ -261,24 +268,24 @@ class TestCreate(TestPermission):
                                         rightcallextens=[]))
 
     def test_create_with_all_fields(self):
-        permission = Permission(name='rîghtcall1',
-                                password='P$WDéẁ',
-                                mode='allow',
-                                enabled=False,
-                                description='description',
-                                extensions=['123', '456'])
+        call_permission = CallPermission(name='rîghtcall1',
+                                         password='P$WDéẁ',
+                                         mode='allow',
+                                         enabled=False,
+                                         description='description',
+                                         extensions=['123', '456'])
 
-        created_permission = permission_dao.create(permission)
+        created_call_permission = call_permission_dao.create(call_permission)
 
-        row = self.session.query(Permission).first()
+        row = self.session.query(CallPermission).first()
 
-        assert_that(created_permission, has_properties(id=row.id,
-                                                       name='rîghtcall1',
-                                                       password='P$WDéẁ',
-                                                       mode='allow',
-                                                       enabled=False,
-                                                       description='description',
-                                                       extensions=['123', '456']))
+        assert_that(created_call_permission, has_properties(id=row.id,
+                                                            name='rîghtcall1',
+                                                            password='P$WDéẁ',
+                                                            mode='allow',
+                                                            enabled=False,
+                                                            description='description',
+                                                            extensions=['123', '456']))
 
         assert_that(row, has_properties(name='rîghtcall1',
                                         passwd='P$WDéẁ',
@@ -293,18 +300,18 @@ class TestCreate(TestPermission):
                                                                             exten='456')))
 
     def test_create_duplicate_extension(self):
-        permission = Permission(name='Jôhn', extensions=['123', '123'])
-        created_permission = permission_dao.create(permission)
+        call_permission = CallPermission(name='Jôhn', extensions=['123', '123'])
+        created_call_permission = call_permission_dao.create(call_permission)
 
-        row = self.session.query(Permission).first()
+        row = self.session.query(CallPermission).first()
 
-        assert_that(created_permission, has_properties(id=row.id,
-                                                       name="Jôhn",
-                                                       password=none(),
-                                                       mode='deny',
-                                                       enabled=True,
-                                                       description=none(),
-                                                       extensions=['123']))
+        assert_that(created_call_permission, has_properties(id=row.id,
+                                                            name="Jôhn",
+                                                            password=none(),
+                                                            mode='deny',
+                                                            enabled=True,
+                                                            description=none(),
+                                                            extensions=['123']))
 
         assert_that(row, has_properties(id=is_not(none()),
                                         name='Jôhn',
@@ -318,27 +325,27 @@ class TestCreate(TestPermission):
                                                                  exten='123')))
 
 
-class TestEdit(TestPermission):
+class TestEdit(TestCallPermission):
 
     def test_edit_all_fields(self):
-        permission = permission_dao.create(Permission(name='rîghtcall1',
-                                                      password='P$WDéẁ',
-                                                      mode='deny',
-                                                      enabled=True,
-                                                      description='tototo',
-                                                      extensions=['123', '456']))
+        call_permission = call_permission_dao.create(CallPermission(name='rîghtcall1',
+                                                                    password='P$WDéẁ',
+                                                                    mode='deny',
+                                                                    enabled=True,
+                                                                    description='tototo',
+                                                                    extensions=['123', '456']))
 
-        permission = permission_dao.get(permission.id)
-        permission.name = 'denỳallfriends'
-        permission.password = 'Alhahlalahl'
-        permission.mode = 'allow'
-        permission.enabled = False
-        permission.description = 'description'
-        permission.extensions = ['789', '321', '654']
+        call_permission = call_permission_dao.get(call_permission.id)
+        call_permission.name = 'denỳallfriends'
+        call_permission.password = 'Alhahlalahl'
+        call_permission.mode = 'allow'
+        call_permission.enabled = False
+        call_permission.description = 'description'
+        call_permission.extensions = ['789', '321', '654']
 
-        permission_dao.edit(permission)
+        call_permission_dao.edit(call_permission)
 
-        row = self.session.query(Permission).first()
+        row = self.session.query(CallPermission).first()
 
         assert_that(row, has_properties(name='denỳallfriends',
                                         passwd='Alhahlalahl',
@@ -355,34 +362,34 @@ class TestEdit(TestPermission):
                                                                             exten='654')))
 
     def test_edit_set_fields_to_null(self):
-        permission = permission_dao.create(Permission(name='rîghtcall1',
-                                                      password='P$WDéẁ',
-                                                      mode='deny',
-                                                      enabled=True,
-                                                      description='tototo',
-                                                      extensions=['123', '456']))
+        call_permission = call_permission_dao.create(CallPermission(name='rîghtcall1',
+                                                                    password='P$WDéẁ',
+                                                                    mode='deny',
+                                                                    enabled=True,
+                                                                    description='tototo',
+                                                                    extensions=['123', '456']))
 
-        permission = permission_dao.get(permission.id)
-        permission.password = None
-        permission.description = None
+        call_permission = call_permission_dao.get(call_permission.id)
+        call_permission.password = None
+        call_permission.description = None
 
-        permission_dao.edit(permission)
+        call_permission_dao.edit(call_permission)
 
-        row = self.session.query(Permission).first()
+        row = self.session.query(CallPermission).first()
 
         assert_that(row, has_properties(passwd='',
                                         description=none()))
 
     def test_edit_extensions_with_same_value(self):
-        permission = permission_dao.create(Permission(name='rîghtcall1',
-                                                      extensions=['123', '456']))
+        call_permission = call_permission_dao.create(CallPermission(name='rîghtcall1',
+                                                                    extensions=['123', '456']))
 
-        permission = permission_dao.get(permission.id)
-        permission.extensions = ['789', '123']
+        call_permission = call_permission_dao.get(call_permission.id)
+        call_permission.extensions = ['789', '123']
 
-        permission_dao.edit(permission)
+        call_permission_dao.edit(call_permission)
 
-        row = self.session.query(Permission).first()
+        row = self.session.query(CallPermission).first()
 
         assert_that(row, has_properties(name='rîghtcall1',
                                         rightcallextens=has_length(2)))
@@ -393,15 +400,15 @@ class TestEdit(TestPermission):
                                                                             exten='123')))
 
 
-class TestDelete(TestPermission):
+class TestDelete(TestCallPermission):
 
     def test_delete(self):
-        permission = permission_dao.create(Permission(name='Delete'))
-        permission = permission_dao.get(permission.id)
+        call_permission = call_permission_dao.create(CallPermission(name='Delete'))
+        call_permission = call_permission_dao.get(call_permission.id)
 
-        permission_dao.delete(permission)
+        call_permission_dao.delete(call_permission)
 
-        row = self.session.query(Permission).first()
+        row = self.session.query(CallPermission).first()
         assert_that(row, none())
 
     def test_delete_references_to_other_tables(self):
@@ -409,13 +416,13 @@ class TestDelete(TestPermission):
         group = self.add_group()
         incall = self.add_incall()
         outcall = self.add_outcall()
-        permission = permission_dao.create(Permission(name='Delete'))
-        self.add_right_call_member(rightcallid=permission.id, type='user', typeval=str(user.id))
-        self.add_right_call_member(rightcallid=permission.id, type='group', typeval=str(group.id))
-        self.add_right_call_member(rightcallid=permission.id, type='incall', typeval=str(incall.id))
-        self.add_right_call_member(rightcallid=permission.id, type='outcall', typeval=str(outcall.id))
+        call_permission = call_permission_dao.create(CallPermission(name='Delete'))
+        self.add_right_call_member(rightcallid=call_permission.id, type='user', typeval=str(user.id))
+        self.add_right_call_member(rightcallid=call_permission.id, type='group', typeval=str(group.id))
+        self.add_right_call_member(rightcallid=call_permission.id, type='incall', typeval=str(incall.id))
+        self.add_right_call_member(rightcallid=call_permission.id, type='outcall', typeval=str(outcall.id))
 
-        permission_dao.delete(permission)
+        call_permission_dao.delete(call_permission)
 
         assert_that(self.session.query(RightCallMember).first(), none())
 

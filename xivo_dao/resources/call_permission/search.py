@@ -16,17 +16,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 
-from xivo_dao.alchemy.rightcall import RightCall as Permission
+from xivo_dao.alchemy.rightcall import RightCall as CallPermission
 from xivo_dao.resources.utils.search import SearchSystem
 from xivo_dao.resources.utils.search import SearchConfig
 
 
-config = SearchConfig(table=Permission,
-                      columns={'id': Permission.id,
-                               'name': Permission.name,
-                               'description': Permission.description,
-                               'enabled': Permission.enabled,
-                               'mode': Permission.mode},
+config = SearchConfig(table=CallPermission,
+                      columns={'id': CallPermission.id,
+                               'name': CallPermission.name,
+                               'description': CallPermission.description,
+                               'enabled': CallPermission.enabled,
+                               'mode': CallPermission.mode},
                       default_sort='name')
 
-permission_search = SearchSystem(config)
+call_permission_search = SearchSystem(config)

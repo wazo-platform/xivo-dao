@@ -16,32 +16,32 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from xivo_dao.alchemy.rightcall import RightCall as Permission
+from xivo_dao.alchemy.rightcall import RightCall as CallPermission
 from xivo_dao.alchemy.rightcallmember import RightCallMember
 
 from xivo_dao.helpers import errors
 from xivo_dao.resources.utils.search import SearchResult
 
 
-class PermissionPersistor(object):
+class CallPermissionPersistor(object):
 
-    def __init__(self, session, permission_search):
+    def __init__(self, session, call_permission_search):
         self.session = session
-        self.permission_search = permission_search
+        self.call_permission_search = call_permission_search
 
     def find_by(self, criteria):
         query = self._find_query(criteria)
         return query.first()
 
     def _find_query(self, criteria):
-        query = self.session.query(Permission)
+        query = self.session.query(CallPermission)
         for name, value in criteria.iteritems():
             column = self._get_column(name)
             query = query.filter(column == value)
         return query
 
     def _get_column(self, name):
-        column = getattr(Permission, name, None)
+        column = getattr(CallPermission, name, None)
         if column is None:
             raise errors.unknown(name)
         return column
@@ -49,7 +49,7 @@ class PermissionPersistor(object):
     def get_by(self, criteria):
         user = self.find_by(criteria)
         if not user:
-            raise errors.not_found('Permission', **criteria)
+            raise errors.not_found('CallPermission', **criteria)
         return user
 
     def find_all_by(self, criteria):
@@ -57,21 +57,21 @@ class PermissionPersistor(object):
         return query.all()
 
     def search(self, parameters):
-        rows, total = self.permission_search.search(self.session, parameters)
+        rows, total = self.call_permission_search.search(self.session, parameters)
         return SearchResult(total, rows)
 
-    def create(self, permission):
-        self.session.add(permission)
+    def create(self, call_permission):
+        self.session.add(call_permission)
         self.session.flush()
-        return permission
+        return call_permission
 
-    def edit(self, permission):
-        self.session.add(permission)
+    def edit(self, call_permission):
+        self.session.add(call_permission)
         self.session.flush()
 
-    def delete(self, permission):
+    def delete(self, call_permission):
         (self.session.query(RightCallMember)
-         .filter(RightCallMember.rightcallid == permission.id)
+         .filter(RightCallMember.rightcallid == call_permission.id)
          .delete())
-        self.session.delete(permission)
+        self.session.delete(call_permission)
         self.session.flush()

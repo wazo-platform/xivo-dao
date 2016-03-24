@@ -17,50 +17,50 @@
 
 from xivo_dao.helpers.db_manager import daosession
 
-from xivo_dao.resources.permission.persistor import PermissionPersistor
-from xivo_dao.resources.permission.search import permission_search
+from xivo_dao.resources.call_permission.persistor import CallPermissionPersistor
+from xivo_dao.resources.call_permission.search import call_permission_search
 
 
 @daosession
 def search(session, **parameters):
-    return PermissionPersistor(session, permission_search).search(parameters)
+    return CallPermissionPersistor(session, call_permission_search).search(parameters)
 
 
 @daosession
-def get(session, permission_id):
-    return PermissionPersistor(session, permission_search).get_by({'id': permission_id})
+def get(session, call_permission_id):
+    return CallPermissionPersistor(session, call_permission_search).get_by({'id': call_permission_id})
 
 
 @daosession
 def get_by(session, **criteria):
-    return PermissionPersistor(session, permission_search).get_by(criteria)
+    return CallPermissionPersistor(session, call_permission_search).get_by(criteria)
 
 
 @daosession
-def find(session, permission_id):
-    return PermissionPersistor(session, permission_search).find_by({'id': permission_id})
+def find(session, call_permission_id):
+    return CallPermissionPersistor(session, call_permission_search).find_by({'id': call_permission_id})
 
 
 @daosession
 def find_by(session, **criteria):
-    return PermissionPersistor(session, permission_search).find_by(criteria)
+    return CallPermissionPersistor(session, call_permission_search).find_by(criteria)
 
 
 @daosession
 def find_all_by(session, **criteria):
-    return PermissionPersistor(session, permission_search).find_all_by(criteria)
+    return CallPermissionPersistor(session, call_permission_search).find_all_by(criteria)
 
 
 @daosession
 def create(session, user):
-    return PermissionPersistor(session, permission_search).create(user)
+    return CallPermissionPersistor(session, call_permission_search).create(user)
 
 
 @daosession
 def edit(session, user):
-    PermissionPersistor(session, permission_search).edit(user)
+    CallPermissionPersistor(session, call_permission_search).edit(user)
 
 
 @daosession
 def delete(session, user):
-    PermissionPersistor(session, permission_search).delete(user)
+    CallPermissionPersistor(session, call_permission_search).delete(user)
