@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2015 Avencall
+# Copyright (C) 2013-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@ from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.helpers.db_manager import daosession
 
 from xivo_dao.resources.line.persistor import LinePersistor
+from xivo_dao.resources.line.fixes import LineFixes
 
 
 @daosession
@@ -51,6 +52,7 @@ def create(session, line):
 def edit(session, line):
     with flush_session(session):
         LinePersistor(session).edit(line)
+        LineFixes(session).fix_line(line.id)
 
 
 @daosession
