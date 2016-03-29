@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-#
-# Copyright (C) 2014-2016 Avencall
+
+# Copyright (C) 2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,20 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint, UniqueConstraint
-from sqlalchemy.types import Integer, String
 
-from xivo_dao.helpers.db_manager import Base
+from xivo_dao.alchemy.rightcall import RightCall as CallPermission
+from xivo_dao.resources.utils.search import SearchSystem
+from xivo_dao.resources.utils.search import SearchConfig
 
 
-class RightCallExten(Base):
+config = SearchConfig(table=CallPermission,
+                      columns={'id': CallPermission.id,
+                               'name': CallPermission.name,
+                               'description': CallPermission.description,
+                               'enabled': CallPermission.enabled,
+                               'mode': CallPermission.mode},
+                      default_sort='name')
 
-    __tablename__ = 'rightcallexten'
-    __table_args__ = (
-        PrimaryKeyConstraint('id'),
-        UniqueConstraint('rightcallid', 'exten'),
-    )
-
-    id = Column(Integer, nullable=False)
-    rightcallid = Column(Integer, ForeignKey('rightcall.id'), nullable=False, server_default='0')
-    exten = Column(String(40), nullable=False, server_default='')
+call_permission_search = SearchSystem(config)

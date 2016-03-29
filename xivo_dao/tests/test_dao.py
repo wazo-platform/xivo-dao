@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2015 Avencall
+# Copyright (C) 2013-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -63,6 +63,7 @@ from xivo_dao.alchemy.queueinfo import QueueInfo
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.queueskill import QueueSkill
 from xivo_dao.alchemy.queueskillrule import QueueSkillRule
+from xivo_dao.alchemy.outcall import Outcall
 from xivo_dao.alchemy.sccpdevice import SCCPDevice as SCCPDeviceSchema
 from xivo_dao.alchemy.sccpgeneralsettings import SCCPGeneralSettings
 from xivo_dao.alchemy.sccpline import SCCPLine as SCCPLineSchema
@@ -334,6 +335,14 @@ class DAOTestCase(unittest.TestCase):
         incall = Incall(**kwargs)
         self.add_me(incall)
         return incall
+
+    def add_outcall(self, **kwargs):
+        kwargs.setdefault('name', 'outcall_name')
+        kwargs.setdefault('context', 'to-extern')
+
+        outcall = Outcall(**kwargs)
+        self.add_me(outcall)
+        return outcall
 
     def add_user(self, **kwargs):
         if 'func_key_private_template_id' not in kwargs:
