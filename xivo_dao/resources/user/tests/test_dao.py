@@ -62,6 +62,30 @@ class TestUser(DAOTestCase, FuncKeyHelper):
         return user
 
 
+class TestFindByIdUuid(TestUser):
+
+    def test_given_no_user_when_finding_then_returns_none(self):
+        assert_that(user_dao.find_by_id_uuid(1), none())
+
+    def test_given_no_user_when_getting_then_returns_none(self):
+        self.assertRaises(NotFoundError, user_dao.get_by_id_uuid, 1)
+
+    def test_given_one_user_when_finding_by_its_id_then_returns_the_user(self):
+        user_row = self.add_user()
+
+        result = user_dao.find_by_id_uuid(user_row.id)
+
+        assert_that(result.id, equal_to(user_row.id))
+
+    def test_given_one_user_when_finding_by_its_uuid_then_returns_the_user(self):
+        user_row = self.add_user()
+
+        result = user_dao.find_by_id_uuid(user_row.uuid)
+
+        assert_that(result.id, equal_to(user_row.id))
+        assert_that(result.uuid, equal_to(user_row.uuid))
+
+
 class TestFind(TestUser):
 
     def test_find_no_user(self):

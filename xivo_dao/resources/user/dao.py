@@ -53,8 +53,12 @@ def get_by(**criteria):
     return persistor().get_by(criteria)
 
 
+def find_by_id_uuid(id):
+    return persistor().find_by_id_uuid(id)
 
 
+def get_by_id_uuid(id):
+    return persistor().get_by_id_uuid(id)
 
 
 def find(user_id):
