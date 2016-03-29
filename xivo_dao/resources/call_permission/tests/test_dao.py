@@ -66,13 +66,13 @@ class TestFind(TestCallPermission):
 
         call_permission = call_permission_dao.find(call_permission_row.id)
 
-        assert_that(call_permission.id, equal_to(call_permission.id))
+        assert_that(call_permission.id, equal_to(call_permission_row.id))
         assert_that(call_permission.name, equal_to(call_permission_row.name))
         assert_that(call_permission.password, equal_to(call_permission_row.password))
         assert_that(call_permission.mode, equal_to(call_permission_row.mode))
         assert_that(call_permission.enabled, equal_to(call_permission_row.enabled))
         assert_that(call_permission.description, equal_to(call_permission_row.description))
-        assert_that(call_permission.extensions, equal_to(call_permission_row.extensions))
+        assert_that(call_permission.extensions, contains_inanyorder(*call_permission_row.extensions))
 
 
 class TestGet(TestCallPermission):
@@ -285,7 +285,7 @@ class TestCreate(TestCallPermission):
                                                             mode='allow',
                                                             enabled=False,
                                                             description='description',
-                                                            extensions=['123', '456']))
+                                                            extensions=contains_inanyorder('123', '456')))
 
         assert_that(row, has_properties(name='rîghtcall1',
                                         passwd='P$WDéẁ',
