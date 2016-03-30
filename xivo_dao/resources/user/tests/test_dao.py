@@ -77,10 +77,26 @@ class TestFindByIdUuid(TestUser):
 
         assert_that(result.id, equal_to(user_row.id))
 
-    def test_given_one_user_when_finding_by_its_uuid_then_returns_the_user(self):
+    def test_given_one_user_when_finding_by_its_string_id_then_returns_the_user(self):
+        user_row = self.add_user()
+
+        result = user_dao.find_by_id_uuid(str(user_row.id))
+
+        assert_that(result.id, equal_to(user_row.id))
+
+    def test_given_one_user_when_finding_by_its_string_uuid_then_returns_the_user(self):
         user_row = self.add_user()
 
         result = user_dao.find_by_id_uuid(user_row.uuid)
+
+        assert_that(result.id, equal_to(user_row.id))
+        assert_that(result.uuid, equal_to(user_row.uuid))
+
+    def test_given_one_user_when_finding_by_its_uuid_then_returns_the_user(self):
+        user_uuid = uuid.uuid4()
+        user_row = self.add_user(uuid=str(user_uuid))
+
+        result = user_dao.find_by_id_uuid(user_uuid)
 
         assert_that(result.id, equal_to(user_row.id))
         assert_that(result.uuid, equal_to(user_row.uuid))

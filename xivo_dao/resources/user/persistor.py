@@ -38,10 +38,14 @@ class UserPersistor(object):
 
     def find_by_id_uuid(self, id):
         query = self.session.query(User)
-        if isinstance(id, (str, unicode)):
-            query = query.filter_by(uuid=id)
-        else:
+        if isinstance(id, int):
             query = query.filter_by(id=id)
+        else:
+            id = str(id)
+            if id.isdigit():
+                query = query.filter_by(id=int(id))
+            else:
+                query = query.filter_by(uuid=id)
         return query.first()
 
     def get_by_id_uuid(self, id):
