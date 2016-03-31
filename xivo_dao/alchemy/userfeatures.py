@@ -22,9 +22,9 @@ import re
 
 from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint, Index, \
     UniqueConstraint, ForeignKeyConstraint
-from sqlalchemy.types import Integer, String, Text
+from sqlalchemy.types import Integer, String, Text, Boolean
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
+from sqlalchemy.sql import func, cast, not_
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from xivo_dao.alchemy import enum
@@ -495,3 +495,15 @@ class UserFeatures(Base):
             self.destunc = ''
         else:
             self.destunc = value
+
+    @hybrid_property
+    def enabled(self):
+        return self.commented == 0
+
+    @enabled.expression
+    def enabled(cls):
+        return not_(cast(cls.commented, Boolean))
+
+    @enabled.setter
+    def enabled(self, value):
+        self.commented = int(value == 0)

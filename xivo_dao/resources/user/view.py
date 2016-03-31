@@ -15,13 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.sql import func
+from sqlalchemy.sql import func, case
 
 from xivo_dao.resources.utils.view import ViewSelector, View
-from xivo_dao.resources.user.model import UserDirectory
+from xivo_dao.resources.user.model import UserDirectory, UserSummary
 
+from xivo_dao.alchemy.entity import Entity
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.userfeatures import UserFeatures as User
+from xivo_dao.alchemy.linefeatures import LineFeatures as Line
 from xivo_dao.alchemy.voicemail import Voicemail
 from xivo_dao.alchemy.user_line import UserLine
 
@@ -69,5 +71,37 @@ class DirectoryView(View):
                              context=row.context)
 
 
+class SummaryView(View):
+
+    def query(self, session):
+        query = (session.query(User.id.label('id'),
+                               User.uuid.label('uuid'),
+                               User.firstname.label('firstname'),
+                               func.nullif(User.lastname, '').label('lastname'),
+                               User.enabled.label('enabled'),
+                               case([
+                                   (Line.endpoint == "sip", Line.provisioning_code)
+                               ],
+                                   else_=None).label('provisioning_code'),
+                               Line.endpoint.label('protocol'),
+                               Extension.exten.label('extension'),
+                               Extension.context.label('context'),
+                               Entity.name.label('entity')))
+        return query
+
+    def convert(self, row):
+        return UserSummary(id=row.id,
+                           uuid=row.uuid,
+                           firstname=row.firstname,
+                           lastname=row.lastname,
+                           enabled=row.enabled,
+                           provisioning_code=row.provisioning_code,
+                           protocol=row.protocol,
+                           extension=row.extension,
+                           context=row.context,
+                           entity=row.entity)
+
+
 user_view = ViewSelector(default=UserView(),
-                         directory=DirectoryView())
+                         directory=DirectoryView(),
+                         summary=SummaryView())

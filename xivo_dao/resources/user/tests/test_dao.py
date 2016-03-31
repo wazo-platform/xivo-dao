@@ -28,6 +28,7 @@ from hamcrest import none
 from hamcrest import has_items
 from hamcrest import contains
 
+from xivo_dao.alchemy.entity import Entity
 from xivo_dao.alchemy.userfeatures import UserFeatures as User
 from xivo_dao.alchemy.schedule import Schedule
 from xivo_dao.alchemy.schedulepath import SchedulePath
@@ -41,7 +42,7 @@ from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.helpers.exception import NotFoundError, InputError
 from xivo_dao.resources.user import dao as user_dao
-from xivo_dao.resources.user.model import UserDirectory
+from xivo_dao.resources.user.model import UserDirectory, UserSummary
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 
@@ -282,6 +283,43 @@ class TestSimpleSearch(TestSearch):
                                                   context=None)])
 
         self.assert_search_returns_result(expected, view='directory')
+
+    def test_given_user_without_line_when_using_summary_view_then_returns_summary_result(self):
+        user = self.prepare_user(firstname='chârles')
+        entity_name = self.session.query(Entity.name).filter_by(id=user.entity_id).scalar()
+
+        expected = SearchResult(1, [UserSummary(id=user.id,
+                                                uuid=user.uuid,
+                                                firstname='chârles',
+                                                lastname=None,
+                                                entity=entity_name,
+                                                enabled=True,
+                                                extension=None,
+                                                context=None,
+                                                provisioning_code=None,
+                                                protocol=None,
+                                                )])
+
+        self.assert_search_returns_result(expected, view='summary')
+
+    def test_given_user_with_line_when_using_summary_view_then_returns_summary_result(self):
+        user_line = self.add_user_line_with_exten(firstname='dânny',
+                                                  lastname='rôgers')
+        entity_name = self.session.query(Entity.name).filter_by(id=user_line.user.entity_id).scalar()
+
+        expected = SearchResult(1, [UserSummary(id=user_line.user_id,
+                                                uuid=user_line.user.uuid,
+                                                firstname='dânny',
+                                                lastname='rôgers',
+                                                entity=entity_name,
+                                                enabled=True,
+                                                extension=user_line.extension.exten,
+                                                context=user_line.extension.context,
+                                                provisioning_code=user_line.linefeatures.provisioning_code,
+                                                protocol=user_line.linefeatures.endpoint,
+                                                )])
+
+        self.assert_search_returns_result(expected, view='summary')
 
     def test_given_user_with_line_and_agent_then_returns_one_directory_view_result(self):
         agent_row = self.add_agent()
