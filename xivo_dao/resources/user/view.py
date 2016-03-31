@@ -78,6 +78,7 @@ class SummaryView(View):
                                User.uuid.label('uuid'),
                                User.firstname.label('firstname'),
                                func.nullif(User.lastname, '').label('lastname'),
+                               User.enabled.label('enabled'),
                                case([
                                    (Line.endpoint == "sip", Line.provisioning_code)
                                ],
@@ -93,6 +94,7 @@ class SummaryView(View):
                            uuid=row.uuid,
                            firstname=row.firstname,
                            lastname=row.lastname,
+                           enabled=row.enabled,
                            provisioning_code=row.provisioning_code,
                            protocol=row.protocol,
                            extension=row.extension,

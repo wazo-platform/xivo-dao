@@ -40,12 +40,13 @@ class UserDirectory(object):
 
 class UserSummary(object):
 
-    def __init__(self, id, uuid, firstname, lastname, provisioning_code, protocol,
+    def __init__(self, id, uuid, firstname, lastname, enabled, provisioning_code, protocol,
                  extension, context, entity):
         self.id = id
         self.uuid = uuid
         self.firstname = firstname
         self.lastname = lastname
+        self.enabled = enabled
         self.provisioning_code = provisioning_code
         self.protocol = protocol
         self.extension = extension
