@@ -17,6 +17,7 @@
 
 from sqlalchemy.sql import and_
 
+from xivo_dao.alchemy.entity import Entity
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.voicemail import Voicemail
@@ -27,7 +28,9 @@ from xivo_dao.resources.utils.search import SearchConfig
 
 
 config = SearchConfig(table=UserFeatures,
-                      columns={'firstname': UserFeatures.firstname,
+                      columns={'id': UserFeatures.id,
+                               'uuid': UserFeatures.uuid,
+                               'firstname': UserFeatures.firstname,
                                'lastname': UserFeatures.lastname,
                                'fullname': (UserFeatures.firstname + " " + UserFeatures.lastname),
                                'caller_id': UserFeatures.callerid,
@@ -38,8 +41,11 @@ config = SearchConfig(table=UserFeatures,
                                'music_on_hold': UserFeatures.musiconhold,
                                'outgoing_caller_id': UserFeatures.outcallerid,
                                'preprocess_subroutine': UserFeatures.preprocess_subroutine,
+                               'entity': Entity.name,
                                'voicemail_number': Voicemail.mailbox,
+                               'provisioning_code': LineFeatures.provisioning_code,
                                'exten': Extension.exten,
+                               'extension': Extension.exten,
                                'context': Extension.context},
                       search=['fullname',
                               'caller_id',
@@ -50,7 +56,8 @@ config = SearchConfig(table=UserFeatures,
                               'music_on_hold',
                               'preprocess_subroutine',
                               'outgoing_caller_id',
-                              'exten'],
+                              'exten',
+                              'provisioning_code'],
                       default_sort='lastname')
 
 
@@ -62,6 +69,8 @@ class UserSearchSystem(SearchSystem):
 
     def _search_on_extension(self, query):
         return (query
+                .outerjoin(Entity,
+                           UserFeatures.entity_id == Entity.id)
                 .outerjoin(UserLine,
                            UserLine.user_id == UserFeatures.id)
                 .outerjoin(LineFeatures,

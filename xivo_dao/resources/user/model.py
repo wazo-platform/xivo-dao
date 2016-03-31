@@ -36,3 +36,21 @@ class UserDirectory(object):
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
+
+
+class UserSummary(object):
+
+    def __init__(self, id, uuid, firstname, lastname, provisioning_code, protocol,
+                 extension, context, entity):
+        self.id = id
+        self.uuid = uuid
+        self.firstname = firstname
+        self.lastname = lastname
+        self.provisioning_code = provisioning_code
+        self.protocol = protocol
+        self.extension = extension
+        self.context = context
+        self.entity = entity
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
