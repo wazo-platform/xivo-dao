@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 
-# Copyright (C) 2015 Avencall
+# Copyright (C) 2015-2016 Avencall
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,6 +35,24 @@ class UserPersistor(object):
         self.session = session
         self.user_view = user_view
         self.user_search = user_search
+
+    def find_by_id_uuid(self, id):
+        query = self.session.query(User)
+        if isinstance(id, int):
+            query = query.filter_by(id=id)
+        else:
+            id = str(id)
+            if id.isdigit():
+                query = query.filter_by(id=int(id))
+            else:
+                query = query.filter_by(uuid=id)
+        return query.first()
+
+    def get_by_id_uuid(self, id):
+        user = self.find_by_id_uuid(id)
+        if not user:
+            raise errors.not_found('User', id=id)
+        return user
 
     def find_by(self, criteria):
         query = self._find_query(criteria)

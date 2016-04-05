@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2015 Avencall
+# Copyright (C) 2013-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,9 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from xivo_dao.helpers.db_manager import Session
+
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.alchemy.userfeatures import UserFeatures as User
-from xivo_dao.helpers.db_manager import daosession
 
 from xivo_dao.resources.user.persistor import UserPersistor
 from xivo_dao.resources.func_key.persistor import DestinationPersistor
@@ -27,9 +28,12 @@ from xivo_dao.resources.user.view import user_view
 from xivo_dao.resources.user.fixes import UserFixes
 
 
-@daosession
-def legacy_search(session, term):
-    users = (session.query(User)
+def persistor():
+    return UserPersistor(Session, user_view, user_search)
+
+
+def legacy_search(term):
+    users = (Session.query(User)
              .filter(User.fullname.ilike(u'%{}%'.format(term)))
              .all()
              )
@@ -37,52 +41,51 @@ def legacy_search(session, term):
     return SearchResult(len(users), users)
 
 
-@daosession
-def search(session, **parameters):
-    return UserPersistor(session, user_view, user_search).search(parameters)
+def search(**parameters):
+    return persistor().search(parameters)
 
 
-@daosession
-def get(session, user_id):
-    return UserPersistor(session, user_view, user_search).get_by({'id': user_id})
+def get(user_id):
+    return persistor().get_by({'id': user_id})
 
 
-@daosession
-def get_by(session, **criteria):
-    return UserPersistor(session, user_view, user_search).get_by(criteria)
+def get_by(**criteria):
+    return persistor().get_by(criteria)
 
 
-@daosession
-def find(session, user_id):
-    return UserPersistor(session, user_view, user_search).find_by({'id': user_id})
+def find_by_id_uuid(id):
+    return persistor().find_by_id_uuid(id)
 
 
-@daosession
-def find_by(session, **criteria):
-    return UserPersistor(session, user_view, user_search).find_by(criteria)
+def get_by_id_uuid(id):
+    return persistor().get_by_id_uuid(id)
 
 
-@daosession
-def find_all_by(session, **criteria):
-    return UserPersistor(session, user_view, user_search).find_all_by(criteria)
+def find(user_id):
+    return persistor().find_by({'id': user_id})
 
 
-@daosession
-def create(session, user):
-    created_user = UserPersistor(session, user_view, user_search).create(user)
-    DestinationPersistor(session).create_user_destination(created_user)
+def find_by(**criteria):
+    return persistor().find_by(criteria)
+
+
+def find_all_by(**criteria):
+    return persistor().find_all_by(criteria)
+
+
+def create(user):
+    created_user = persistor().create(user)
+    DestinationPersistor(Session).create_user_destination(created_user)
     return created_user
 
 
-@daosession
-def edit(session, user):
-    UserPersistor(session, user_view, user_search).edit(user)
-    UserFixes(session).fix(user.id)
+def edit(user):
+    persistor().edit(user)
+    UserFixes(Session).fix(user.id)
 
 
-@daosession
-def delete(session, user):
-    DestinationPersistor(session).delete_user_destination(user)
-    UserPersistor(session, user_view, user_search).delete(user)
-    template_persistor = build_template_persistor(session)
+def delete(user):
+    DestinationPersistor(Session).delete_user_destination(user)
+    persistor().delete(user)
+    template_persistor = build_template_persistor(Session)
     template_persistor.delete(user.func_key_template_private)
