@@ -37,19 +37,7 @@ from xivo_dao.resources.call_permission import dao as call_permission_dao
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
-class TestCallPermission(DAOTestCase):
-
-    def add_call_permission(self, **kwargs):
-        kwargs.setdefault('name', 'Bôb')
-        kwargs.setdefault('enabled', True)
-
-        call_permission = CallPermission(**kwargs)
-        self.session.add(call_permission)
-        self.session.flush()
-        return call_permission
-
-
-class TestFind(TestCallPermission):
+class TestFind(DAOTestCase):
 
     def test_find_no_user(self):
         result = call_permission_dao.find(42)
@@ -75,7 +63,7 @@ class TestFind(TestCallPermission):
         assert_that(call_permission.extensions, contains_inanyorder(*call_permission_row.extensions))
 
 
-class TestGet(TestCallPermission):
+class TestGet(DAOTestCase):
 
     def test_get_no_user(self):
         self.assertRaises(NotFoundError, call_permission_dao.get, 42)
@@ -88,7 +76,7 @@ class TestGet(TestCallPermission):
         assert_that(call_permission.id, equal_to(call_permission.id))
 
 
-class TestFindBy(TestCallPermission):
+class TestFindBy(DAOTestCase):
 
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, call_permission_dao.find_by, invalid=42)
@@ -107,7 +95,7 @@ class TestFindBy(TestCallPermission):
         assert_that(user, none())
 
 
-class TestGetBy(TestCallPermission):
+class TestGetBy(DAOTestCase):
 
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, call_permission_dao.get_by, invalid=42)
@@ -124,7 +112,7 @@ class TestGetBy(TestCallPermission):
         self.assertRaises(NotFoundError, call_permission_dao.get_by, name='42')
 
 
-class TestFindAllBy(TestCallPermission):
+class TestFindAllBy(DAOTestCase):
 
     def test_find_all_by_no_users(self):
         result = call_permission_dao.find_all_by(name='toto')
@@ -150,7 +138,7 @@ class TestFindAllBy(TestCallPermission):
                                                 has_property('id', call_permission2.id)))
 
 
-class TestSearch(TestCallPermission):
+class TestSearch(DAOTestCase):
 
     def assert_search_returns_result(self, search_result, **parameters):
         result = call_permission_dao.search(**parameters)
@@ -240,7 +228,7 @@ class TestSearchGivenMultipleCallPermissions(TestSearch):
                                           limit=1)
 
 
-class TestCreate(TestCallPermission):
+class TestCreate(DAOTestCase):
 
     def test_when_creating_with_invalid_mode_then_raises_error(self):
         self.assertRaises(InputError, CallPermission, mode='invalid_mode')
@@ -325,7 +313,7 @@ class TestCreate(TestCallPermission):
                                                                  exten='123')))
 
 
-class TestEdit(TestCallPermission):
+class TestEdit(DAOTestCase):
 
     def test_edit_all_fields(self):
         call_permission = call_permission_dao.create(CallPermission(name='rîghtcall1',
@@ -400,7 +388,7 @@ class TestEdit(TestCallPermission):
                                                                             exten='123')))
 
 
-class TestDelete(TestCallPermission):
+class TestDelete(DAOTestCase):
 
     def test_delete(self):
         call_permission = call_permission_dao.create(CallPermission(name='Delete'))
