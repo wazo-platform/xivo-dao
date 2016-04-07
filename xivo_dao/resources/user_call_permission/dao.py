@@ -35,14 +35,6 @@ def find_all_by(**criteria):
     return persistor().find_all_by(**criteria)
 
 
-def find_all_by_user_id(user_id):
-    return find_all_by(user_id=user_id)
-
-
-def find_all_by_call_permission_id(call_permission_id):
-    return find_all_by(call_permission_id=call_permission_id)
-
-
 def associate(user, call_permission):
     return persistor().associate_user_call_permission(user, call_permission)
 
