@@ -31,6 +31,7 @@ class Persistor(object):
 
     def _find_query(self, criteria):
         query = self.session.query(UserCallPermission)
+        query = query.filter(UserCallPermission.type == 'user')
         for name, value in criteria.iteritems():
             column = self._get_column(name)
             query = query.filter(column == value)

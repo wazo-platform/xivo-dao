@@ -277,7 +277,7 @@ class DAOTestCase(unittest.TestCase):
         return line
 
     def add_call_permission(self, **kwargs):
-        kwargs.setdefault('name', ''.join(random.choice('0123456789abcdefghijklmnopqrstuvwxyz') for _ in range(9)))
+        kwargs.setdefault('name', self._random_name())
         kwargs.setdefault('enabled', True)
 
         call_permission = CallPermission(**kwargs)
@@ -297,6 +297,12 @@ class DAOTestCase(unittest.TestCase):
         user_call_permission = UserCallPermission(**kwargs)
         self.add_me(user_call_permission)
         return user_call_permission
+
+    def add_group_call_permission(self, **kwargs):
+        kwargs.setdefault('type', 'group')
+        group_call_permission = UserCallPermission(**kwargs)
+        self.add_me(group_call_permission)
+        return group_call_permission
 
     def add_context(self, **kwargs):
         kwargs.setdefault('entity', 'entity_id')

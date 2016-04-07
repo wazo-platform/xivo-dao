@@ -19,6 +19,7 @@ from hamcrest import (assert_that,
                       empty,
                       equal_to,
                       has_properties,
+                      has_length,
                       none,
                       has_items,
                       contains)
@@ -102,6 +103,23 @@ class TestFindAllBy(DAOTestCase):
 
         assert_that(result, has_items(
             has_properties({'user_id': user1.id,
+                            'call_permission_id': call_permission.id}),
+        ))
+
+    def test_find_all_by_when_group_associate_to_call_permission(self):
+        call_permission = self.add_call_permission()
+        user = self.add_user()
+        group = self.add_group()
+        self.add_user_call_permission(user_id=user.id,
+                                      call_permission_id=call_permission.id)
+        self.add_group_call_permission(typeval=group.id,
+                                       call_permission_id=call_permission.id)
+
+        result = user_call_permission_dao.find_all_by(call_permission_id=call_permission.id)
+
+        assert_that(result, has_length(1))
+        assert_that(result, has_items(
+            has_properties({'user_id': user.id,
                             'call_permission_id': call_permission.id}),
         ))
 
