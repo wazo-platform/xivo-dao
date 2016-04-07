@@ -65,7 +65,7 @@ from xivo_dao.alchemy.queueskill import QueueSkill
 from xivo_dao.alchemy.queueskillrule import QueueSkillRule
 from xivo_dao.alchemy.outcall import Outcall
 from xivo_dao.alchemy.rightcall import RightCall as CallPermission
-from xivo_dao.alchemy.rightcallmember import RightCallMember as AssociationCallPermission
+from xivo_dao.alchemy.rightcallmember import RightCallMember as UserCallPermission
 from xivo_dao.alchemy.sccpdevice import SCCPDevice as SCCPDeviceSchema
 from xivo_dao.alchemy.sccpgeneralsettings import SCCPGeneralSettings
 from xivo_dao.alchemy.sccpline import SCCPLine as SCCPLineSchema
@@ -294,12 +294,9 @@ class DAOTestCase(unittest.TestCase):
         return user_call_permission
 
     def add_user_call_permission(self, **kwargs):
-        return self.add_association_call_permission(**kwargs)
-
-    def add_association_call_permission(self, **kwargs):
-        association_call_permission = AssociationCallPermission(**kwargs)
-        self.add_me(association_call_permission)
-        return association_call_permission
+        user_call_permission = UserCallPermission(**kwargs)
+        self.add_me(user_call_permission)
+        return user_call_permission
 
     def add_context(self, **kwargs):
         kwargs.setdefault('entity', 'entity_id')
