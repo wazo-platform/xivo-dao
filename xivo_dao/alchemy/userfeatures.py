@@ -510,8 +510,17 @@ class UserFeatures(Base):
 
     @hybrid_property
     def call_permission_password(self):
+        if self.rightcallcode == '':
+            return None
         return self.rightcallcode
+
+    @call_permission_password.expression
+    def call_permission_password(cls):
+        return func.nullif(cls.rightcallcode, '')
 
     @call_permission_password.setter
     def call_permission_password(self, value):
-        self.rightcallcode = value
+        if value == '':
+            self.rightcallcode = None
+        else:
+            self.rightcallcode = value
