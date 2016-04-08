@@ -367,6 +367,8 @@ class UserFeatures(Base):
 
     @hybrid_property
     def supervision_enabled(self):
+        if self.enablehint is None:
+            return None
         return self.enablehint == 1
 
     @supervision_enabled.setter
@@ -375,6 +377,8 @@ class UserFeatures(Base):
 
     @hybrid_property
     def call_transfer_enabled(self):
+        if self.enablexfer is None:
+            return None
         return self.enablexfer == 1
 
     @call_transfer_enabled.setter
@@ -383,6 +387,8 @@ class UserFeatures(Base):
 
     @hybrid_property
     def call_record_enabled(self):
+        if self.callrecord is None:
+            return None
         return self.callrecord == 1
 
     @call_record_enabled.setter
@@ -391,6 +397,8 @@ class UserFeatures(Base):
 
     @hybrid_property
     def online_call_record_enabled(self):
+        if self.enableonlinerec is None:
+            return None
         return self.enableonlinerec == 1
 
     @online_call_record_enabled.setter
@@ -399,6 +407,8 @@ class UserFeatures(Base):
 
     @hybrid_property
     def ring_seconds(self):
+        if self.ringseconds is None:
+            return None
         return self.ringseconds
 
     @ring_seconds.setter
@@ -407,6 +417,8 @@ class UserFeatures(Base):
 
     @hybrid_property
     def simultaneous_calls(self):
+        if self.simultcalls is None:
+            return None
         return self.simultcalls
 
     @simultaneous_calls.setter
@@ -415,6 +427,8 @@ class UserFeatures(Base):
 
     @hybrid_property
     def cti_enabled(self):
+        if self.enableclient is None:
+            return None
         return self.enableclient == 1
 
     @cti_enabled.setter
@@ -423,6 +437,8 @@ class UserFeatures(Base):
 
     @hybrid_property
     def busy_enabled(self):
+        if self.enablebusy is None:
+            return None
         return self.enablebusy == 1
 
     @busy_enabled.setter
@@ -448,6 +464,8 @@ class UserFeatures(Base):
 
     @hybrid_property
     def noanswer_enabled(self):
+        if self.enablerna is None:
+            return None
         return self.enablerna == 1
 
     @noanswer_enabled.setter
@@ -473,6 +491,8 @@ class UserFeatures(Base):
 
     @hybrid_property
     def unconditional_enabled(self):
+        if self.enableunc is None:
+            return None
         return self.enableunc == 1
 
     @unconditional_enabled.setter
@@ -498,6 +518,8 @@ class UserFeatures(Base):
 
     @hybrid_property
     def enabled(self):
+        if self.commented is None:
+            return None
         return self.commented == 0
 
     @enabled.expression
