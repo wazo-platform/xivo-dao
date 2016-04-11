@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,7 +17,9 @@
 
 from sqlalchemy.schema import Column, UniqueConstraint, Index, \
     PrimaryKeyConstraint
-from sqlalchemy.types import Integer, String
+from sqlalchemy.types import Integer, String, Boolean
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.sql import cast
 
 from xivo_dao.helpers.db_manager import Base
 from xivo_dao.alchemy import enum
@@ -45,3 +47,20 @@ class Extension(Base):
     @property
     def name(self):
         return self.typeval
+
+    def clean_exten(self):
+        return self.exten.strip('._')
+
+    @hybrid_property
+    def legacy_commented(self):
+        return bool(self.commented)
+
+    @legacy_commented.expression
+    def legacy_commented(cls):
+        return cast(cls.commented, Boolean)
+
+    @legacy_commented.setter
+    def legacy_commented(self, value):
+        if value is not None:
+            value = int(value)
+        self.commented = value
