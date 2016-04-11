@@ -407,8 +407,6 @@ class UserFeatures(Base):
 
     @hybrid_property
     def ring_seconds(self):
-        if self.ringseconds is None:
-            return None
         return self.ringseconds
 
     @ring_seconds.setter
@@ -417,8 +415,6 @@ class UserFeatures(Base):
 
     @hybrid_property
     def simultaneous_calls(self):
-        if self.simultcalls is None:
-            return None
         return self.simultcalls
 
     @simultaneous_calls.setter
