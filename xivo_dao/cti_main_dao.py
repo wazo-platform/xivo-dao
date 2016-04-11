@@ -22,12 +22,7 @@ from xivo_dao.helpers.db_manager import daosession
 @daosession
 def get_config(session):
     row = (session.query(CtiMain).first())
-    main = {'incoming_tcp': {'CTI': (row.cti_ip, row.cti_port, row.cti_active),
-                             'WEBI': (row.webi_ip, row.webi_port, row.webi_active),
-                             'INFO': (row.info_ip, row.info_port, row.info_active)},
-            'sockettimeout': row.socket_timeout,
-            'logintimeout': row.login_timeout,
-            'context_separation': row.context_separation,
+    main = {'context_separation': row.context_separation,
             'live_reload_conf': row.live_reload_conf,
             'starttls': bool(row.ctis_active)}
     if row.tlscertfile:
