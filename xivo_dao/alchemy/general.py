@@ -30,4 +30,3 @@ class General(Base):
 
     id = Column(Integer, nullable=False)
     timezone = Column(String(128))
-    dundi = Column(Integer, nullable=False, server_default='0')
