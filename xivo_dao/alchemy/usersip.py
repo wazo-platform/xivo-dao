@@ -39,7 +39,8 @@ EXCLUDE_OPTIONS_CONFD = {'name',
                          'type',
                          'host',
                          'context',
-                         'category'}
+                         'category',
+                         'protocol'}
 
 
 class UserSIP(Base):
