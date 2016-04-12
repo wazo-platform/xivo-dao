@@ -41,3 +41,7 @@ def associate(user, call_permission):
 
 def dissociate(user, call_permission):
     return persistor().dissociate_user_call_permission(user, call_permission)
+
+
+def dissociate_all_by_user(user):
+    return persistor().dissociate_all_call_permissions_by_user(user)

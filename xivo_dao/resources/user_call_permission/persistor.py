@@ -64,3 +64,10 @@ class Persistor(object):
         self.session.delete(user_call_permission)
         self.session.flush()
         return user_call_permission
+
+    def dissociate_all_call_permissions_by_user(self, user):
+        user_call_permissions = self.find_all_by(user_id=user.id)
+        for user_call_permission in user_call_permissions:
+            self.session.delete(user_call_permission)
+        self.session.flush()
+        return user_call_permissions

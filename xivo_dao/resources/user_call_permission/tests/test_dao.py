@@ -163,7 +163,7 @@ class TestGetBy(DAOTestCase):
         assert_that(result, equal_to(user_call_permission))
 
 
-class TestAssociateUserCallPermission(DAOTestCase):
+class TestAssociate(DAOTestCase):
 
     def test_associate_user_with_call_permission(self):
         user = self.add_user()
@@ -175,7 +175,7 @@ class TestAssociateUserCallPermission(DAOTestCase):
                                             'call_permission_id': call_permission.id}))
 
 
-class TestDissociateUserLine(DAOTestCase):
+class TestDissociate(DAOTestCase):
 
     def test_dissociate_user_call_permission(self):
         user_call_permission = self.add_user_call_permission_with_user_and_call_permission()
@@ -184,6 +184,24 @@ class TestDissociateUserLine(DAOTestCase):
 
         result = (self.session.query(UserCallPermission)
                   .filter(UserCallPermission.id == user_call_permission.id)
+                  .first())
+
+        assert_that(result, none())
+
+
+class TestDissociateAllByUser(DAOTestCase):
+
+    def test_dissociate_all_by_user(self):
+        user = self.add_user()
+        call_permission1 = self.add_call_permission()
+        call_permission2 = self.add_call_permission()
+        user_call_permission_dao.associate(user, call_permission1)
+        user_call_permission_dao.associate(user, call_permission2)
+
+        user_call_permission_dao.dissociate_all_by_user(user)
+
+        result = (self.session.query(UserCallPermission)
+                  .filter(UserCallPermission.user_id == user.id)
                   .first())
 
         assert_that(result, none())
