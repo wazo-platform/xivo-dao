@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 
-# Copyright (C) 2015 Avencall
+# Copyright (C) 2015-2016 Avencall
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,9 +16,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from xivo_dao.converters.database_converter import DatabaseConverter
-from xivo_dao.alchemy.extension import Extension as ExtensionSchema
-from xivo_dao.resources.extension.model import Extension, ForwardExtension, \
+from xivo_dao.resources.extension.model import ForwardExtension, \
     ServiceExtension, AgentActionExtension
 
 
@@ -102,39 +100,6 @@ class AgentActionExtensionConverter(object):
                                     action=action)
 
 
-class ExtensionDatabaseConverter(DatabaseConverter):
-
-    DB_TO_MODEL_MAPPING = {
-        'id': 'id',
-        'exten': 'exten',
-        'context': 'context',
-    }
-
-    def __init__(self):
-        DatabaseConverter.__init__(self, self.DB_TO_MODEL_MAPPING, ExtensionSchema, Extension)
-
-    def to_model(self, source):
-        model = DatabaseConverter.to_model(self, source)
-        self._convert_model_fields(source, model)
-        return model
-
-    def _convert_model_fields(self, source, model):
-        model.commented = bool(source.commented)
-
-    def to_source(self, model):
-        source = DatabaseConverter.to_source(self, model)
-        self._convert_source_fields(source, model)
-        return source
-
-    def update_source(self, source, model):
-        DatabaseConverter.update_source(self, source, model)
-        self._convert_source_fields(source, model)
-
-    def _convert_source_fields(self, source, model):
-        source.commented = int(model.commented)
-
-
-db_converter = ExtensionDatabaseConverter()
 service_converter = ServiceExtensionConverter()
 fwd_converter = ForwardExtensionConverter()
 agent_action_converter = AgentActionExtensionConverter()

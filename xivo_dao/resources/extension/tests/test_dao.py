@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2015 Avencall
+# Copyright (C) 2013-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,14 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, all_of, equal_to, has_items, has_length, has_property, none, contains
+from hamcrest import assert_that, all_of, equal_to, has_items, has_property, none, contains, has_properties, contains_inanyorder
 
 from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao.alchemy.extension import Extension as ExtensionSchema
-from xivo_dao.helpers.exception import NotFoundError
+from xivo_dao.alchemy.extension import Extension
+from xivo_dao.helpers.exception import NotFoundError, InputError
 from xivo_dao.resources.extension import dao as extension_dao
-from xivo_dao.resources.extension.model import Extension, \
-    ServiceExtension, ForwardExtension, AgentActionExtension
+from xivo_dao.resources.extension.model import ServiceExtension, ForwardExtension, AgentActionExtension
 from xivo_dao.resources.utils.search import SearchResult
 
 
@@ -37,7 +36,13 @@ class TestExtension(DAOTestCase):
 
     def assert_search_returns_result(self, search_result, **parameters):
         result = extension_dao.search(**parameters)
-        assert_that(result, equal_to(search_result))
+        expected_extensions = [
+            has_properties(id=e.id, exten=e.exten, context=e.context, commented=e.commented)
+            for e in search_result.items
+        ]
+        expected = has_properties(total=search_result.total,
+                                  items=contains_inanyorder(*expected_extensions))
+        assert_that(result, expected)
 
 
 class TestSimpleSearch(TestExtension):
@@ -181,54 +186,55 @@ class TestFind(DAOTestCase):
             has_property('context', extension_row.context)))
 
 
-class TestFindByExten(DAOTestCase):
+class TestFindBy(TestExtension):
 
-    def test_find_by_exten_no_extens(self):
-        expected = []
-        extens = extension_dao.find_by_exten('123')
+    def test_given_column_does_not_exist_then_error_raised(self):
+        self.assertRaises(InputError, extension_dao.find_by, invalid=42)
 
-        assert_that(extens, equal_to(expected))
+    def test_given_extension_does_not_exist_then_returns_null(self):
+        extension = extension_dao.find_by(exten='invalid')
 
-    def test_find_by_exten(self):
-        expected_exten = '1234'
+        assert_that(extension, none())
 
-        exten = self.add_extension(exten=expected_exten)
-        self.add_extension(exten='1236')
-        self.add_extension(exten='8652')
+    def test_given_extension_exists_then_returns_extension(self):
+        row = self.add_extension(exten='1000')
 
-        extens = extension_dao.find_by_exten(expected_exten)
+        result = extension_dao.find_by(exten='1000')
 
-        assert_that(extens, has_length(1))
-        assert_that(extens, has_items(
-            all_of(
-                has_property('id', exten.id),
-                has_property('exten', expected_exten))
-        ))
+        assert_that(result.id, equal_to(row.id))
 
 
-class TestFindByContext(DAOTestCase):
+class TestGetBy(TestExtension):
 
-    def test_find_by_context_no_extens(self):
-        expected = []
-        extens = extension_dao.find_by_context('fuh')
+    def test_given_column_does_not_exist_then_error_raised(self):
+        self.assertRaises(InputError, extension_dao.get_by, invalid=42)
 
-        assert_that(extens, equal_to(expected))
+    def test_given_extension_does_not_exist_then_raises_error(self):
+        self.assertRaises(NotFoundError, extension_dao.get_by, exten='42')
 
-    def test_find_by_context(self):
-        expected_context = 'hhi'
+    def test_given_extension_exists_then_returns_extension(self):
+        row = self.add_extension(exten='1000')
 
-        exten = self.add_extension(context=expected_context)
-        self.add_extension(context='guj')
-        self.add_extension(context='asc')
+        result = extension_dao.find_by(exten='1000')
 
-        extens = extension_dao.find_by_context(expected_context)
+        assert_that(result.id, equal_to(row.id))
 
-        assert_that(extens, has_length(1))
-        assert_that(extens, has_items(
-            all_of(
-                has_property('id', exten.id),
-                has_property('context', expected_context))
-        ))
+
+class TestFindAllBy(TestExtension):
+
+    def test_find_all_by_no_extensions(self):
+        result = extension_dao.find_all_by(exten='invalid')
+
+        assert_that(result, contains())
+
+    def test_find_all_by_native_column(self):
+        extension1 = self.add_extension(exten='1000', context='mycontext')
+        extension2 = self.add_extension(exten='1001', context='mycontext')
+
+        extensions = extension_dao.find_all_by(context='mycontext')
+
+        assert_that(extensions, has_items(has_property('id', extension1.id),
+                                          has_property('id', extension2.id)))
 
 
 class TestGet(DAOTestCase):
@@ -246,66 +252,38 @@ class TestGet(DAOTestCase):
         assert_that(extension.exten, equal_to(exten))
 
 
-class TestGetByExten(DAOTestCase):
-
-    def test_get_by_exten_context_no_exist(self):
-        self.assertRaises(NotFoundError, extension_dao.get_by_exten_context, '1234', 'default')
-
-    def test_get_by_exten_context(self):
-        exten = 'sdklfj'
-        context = 'toto'
-
-        expected_extension = self.add_extension(exten=exten,
-                                                context=context)
-
-        extension = extension_dao.get_by_exten_context(exten, context)
-
-        assert_that(extension.id, equal_to(expected_extension.id))
-        assert_that(extension.exten, equal_to(exten))
-        assert_that(extension.context, equal_to(context))
-
-
-class TestFindByExtenContext(DAOTestCase):
-
-    def test_find_by_exten_context_no_extensions(self):
-        expected = None
-        result = extension_dao.find_by_exten_context('1000', 'default')
-
-        assert_that(expected, equal_to(result))
-
-    def test_find_by_exten_context_one_extension(self):
-        exten = 'sdklfj'
-        context = 'toto'
-        extension_row = self.add_extension(exten=exten,
-                                           context=context)
-
-        result = extension_dao.find_by_exten_context(exten, context)
-
-        assert_that(result, all_of(
-            has_property('id', extension_row.id),
-            has_property('exten', exten),
-            has_property('context', context)
-        ))
-
-
 class TestCreate(DAOTestCase):
 
     def test_create(self):
         exten = 'extension'
         context = 'toto'
-        commented = True
 
         extension = Extension(exten=exten,
-                              context=context,
-                              commented=commented)
+                              context=context)
 
         created_extension = extension_dao.create(extension)
 
-        row = self.session.query(ExtensionSchema).filter(ExtensionSchema.id == created_extension.id).first()
+        row = self.session.query(Extension).filter(Extension.id == created_extension.id).first()
 
         assert_that(row.id, equal_to(created_extension.id))
         assert_that(row.exten, equal_to(exten))
         assert_that(row.context, equal_to(context))
+        assert_that(row.commented, equal_to(0))
+        assert_that(row.type, equal_to('user'))
+        assert_that(row.typeval, equal_to('0'))
+
+    def test_create_all_parameters(self):
+        extension = Extension(exten='1000',
+                              context='default',
+                              commented=1)
+
+        created_extension = extension_dao.create(extension)
+
+        row = self.session.query(Extension).filter(Extension.id == created_extension.id).first()
+
+        assert_that(row.id, equal_to(created_extension.id))
+        assert_that(row.exten, equal_to('1000'))
+        assert_that(row.context, equal_to('default'))
         assert_that(row.commented, equal_to(1))
         assert_that(row.type, equal_to('user'))
         assert_that(row.typeval, equal_to('0'))
@@ -320,16 +298,17 @@ class TestEdit(DAOTestCase):
     def test_edit(self):
         exten = 'extension'
         context = 'toto'
-        commented = True
+        commented = 1
+        row = self.add_extension()
 
-        extension = Extension(id=self.existing_extension.id,
-                              exten=exten,
-                              context=context,
-                              commented=commented)
+        extension = extension_dao.get(row.id)
+        extension.exten = exten
+        extension.context = context
+        extension.commented = commented
 
         extension_dao.edit(extension)
 
-        row = self.session.query(ExtensionSchema).get(extension.id)
+        row = self.session.query(Extension).get(extension.id)
 
         assert_that(row.id, equal_to(extension.id))
         assert_that(row.exten, equal_to(exten))
@@ -352,7 +331,7 @@ class TestDelete(DAOTestCase):
 
         extension_dao.delete(extension)
 
-        row = self.session.query(ExtensionSchema).filter(ExtensionSchema.id == expected_extension.id).first()
+        row = self.session.query(Extension).filter(Extension.id == expected_extension.id).first()
 
         self.assertEquals(row, None)
 
@@ -397,8 +376,8 @@ class TestFindAllServiceExtensions(DAOTestCase):
 
         for exten, service in self.EXPECTED_SERVICES:
             exten_id = (self.session
-                        .query(ExtensionSchema.id)
-                        .filter(ExtensionSchema.typeval == service)
+                        .query(Extension.id)
+                        .filter(Extension.typeval == service)
                         .scalar())
 
             service_extension = ServiceExtension(id=exten_id,
@@ -559,62 +538,3 @@ class TestFindAllAgentActionExtensions(DAOTestCase):
         result = extension_dao.find_all_agent_action_extensions()
 
         assert_that(result, contains(expected))
-
-
-class TestGetByType(DAOTestCase):
-
-    def test_when_getting_by_type_typeval_then_returns_extension_model(self):
-        extension_row = self.add_extension(context='xivo-extrafeatures',
-                                           exten='*25',
-                                           type='extenfeatures',
-                                           typeval='enablednd')
-
-        expected = Extension(id=extension_row.id,
-                             exten='*25',
-                             context='xivo-extrafeatures')
-
-        result = extension_dao.get_by_type('extenfeatures', 'enablednd')
-
-        assert_that(result, equal_to(expected))
-
-    def test_given_no_extension_when_getting_then_raises_error(self):
-        self.assertRaises(NotFoundError, extension_dao.get_by_type, 'extenfeatures', 'bla')
-
-    def test_when_getting_by_group_id_then_returns_extension(self):
-        extension_row = self.add_extension(exten='2000',
-                                           type='group',
-                                           typeval='123')
-
-        expected = Extension(id=extension_row.id,
-                             exten='2000',
-                             context=extension_row.context)
-
-        result = extension_dao.get_by_group_id(123)
-
-        assert_that(result, equal_to(expected))
-
-    def test_when_getting_by_queue_id_then_returns_extension(self):
-        extension_row = self.add_extension(exten='3000',
-                                           type='queue',
-                                           typeval='123')
-
-        expected = Extension(id=extension_row.id,
-                             exten='3000',
-                             context=extension_row.context)
-
-        result = extension_dao.get_by_queue_id(123)
-
-        assert_that(result, equal_to(expected))
-
-    def test_when_getting_by_conference_id_then_returns_extension(self):
-        extension_row = self.add_extension(exten='4000',
-                                           type='meetme',
-                                           typeval='123')
-
-        expected = Extension(id=extension_row.id,
-                             exten='4000',
-                             context=extension_row.context)
-
-        result = extension_dao.get_by_conference_id(123)
-
-        assert_that(result, equal_to(expected))

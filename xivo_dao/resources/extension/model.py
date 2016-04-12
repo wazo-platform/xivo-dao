@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2015 Avencall
+# Copyright (C) 2013-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,42 +17,9 @@
 
 from collections import namedtuple
 
-from xivo_dao.helpers.new_model import NewModel
-from xivo_dao.alchemy.extension import Extension as ExtensionSchema
-
 ServiceExtension = namedtuple('ServiceExtension', ['id', 'exten', 'service'])
 ForwardExtension = namedtuple('ForwardExtension', ['id', 'exten', 'forward'])
 AgentActionExtension = namedtuple('AgentActionExtension', ['id', 'exten', 'action'])
-
-
-class Extension(NewModel):
-
-    MANDATORY = [
-        'exten',
-        'context',
-    ]
-
-    FIELDS = [
-        'id',
-        'exten',
-        'context',
-        'commented',
-    ]
-
-    SEARCH_COLUMNS = [
-        ExtensionSchema.exten,
-        ExtensionSchema.context
-    ]
-
-    _RELATION = {}
-
-    def __init__(self, *args, **kwargs):
-        NewModel.__init__(self, *args, **kwargs)
-        if self.commented is None:
-            self.commented = False
-
-    def clean_exten(self):
-        return self.exten.strip('._')
 
 
 class ExtensionDestination(object):
