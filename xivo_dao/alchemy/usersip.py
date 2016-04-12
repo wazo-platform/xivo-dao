@@ -190,10 +190,6 @@ class UserSIP(Base):
             yield 'yes' if self.subscribemwi == 1 else 'no'
         elif column_name == 'regseconds':
             yield unicode(self.regseconds)
-        elif column_name == 'allow':
-            if self.allow:
-                for value in self.allow.split(","):
-                    yield value
         else:
             value = getattr(self, self._attribute(column_name), None)
             if value is not None and value != "":
@@ -244,10 +240,6 @@ class UserSIP(Base):
     def set_native_option(self, column, value):
         if column == 'subscribemwi':
             self.subscribemwi = 1 if value == 'yes' else 0
-        elif column == 'allow':
-            allow = self.allow.split(',') if self.allow else []
-            allow.append(value)
-            self.allow = ",".join(allow)
         else:
             setattr(self, self._attribute(column), value)
 
