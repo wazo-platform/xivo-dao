@@ -50,10 +50,10 @@ class SCCPLine(Base):
         if self.cid_num != "":
             options.append(["cid_num", self.cid_num])
 
-        if self.allow is not None:
-            options.append(["allow", self.allow])
         if self.disallow is not None:
             options.append(["disallow", self.disallow])
+        if self.allow is not None:
+            options.append(["allow", self.allow])
 
         return options
 
