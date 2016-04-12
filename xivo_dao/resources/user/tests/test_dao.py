@@ -27,6 +27,7 @@ from hamcrest import is_not
 from hamcrest import none
 from hamcrest import has_items
 from hamcrest import contains
+from hamcrest import not_
 
 from xivo_dao.alchemy.entity import Entity
 from xivo_dao.alchemy.userfeatures import UserFeatures as User
@@ -118,6 +119,8 @@ class TestFind(TestUser):
                                  passwdclient='paulrogers',
                                  musiconhold='mymusic',
                                  mobilephonenumber='4185551234',
+                                 commented=1,
+                                 rightcallcode='1234',
                                  userfield='userfield',
                                  timezone='America/Montreal',
                                  language='fr_FR',
@@ -137,6 +140,8 @@ class TestFind(TestUser):
         assert_that(user.password, equal_to(user_row.passwdclient))
         assert_that(user.music_on_hold, equal_to(user_row.musiconhold))
         assert_that(user.mobile_phone_number, equal_to(user_row.mobilephonenumber))
+        assert_that(user.enabled, not_(equal_to(bool(user_row.commented))))
+        assert_that(user.call_permission_password, equal_to(user_row.rightcallcode))
         assert_that(user.userfield, equal_to(user_row.userfield))
         assert_that(user.timezone, equal_to(user_row.timezone))
         assert_that(user.language, equal_to(user_row.language))
@@ -485,6 +490,8 @@ class TestCreate(TestUser):
                                                  description=none(),
                                                  outgoing_caller_id=none(),
                                                  mobile_phone_number=none(),
+                                                 call_permission_password=none(),
+                                                 enabled=True,
                                                  caller_id='"Jôhn"',
                                                  music_on_hold=none(),
                                                  username=none(),
@@ -513,6 +520,8 @@ class TestCreate(TestUser):
                                         callerid='"Jôhn"',
                                         outcallerid='',
                                         mobilephonenumber='',
+                                        rightcallcode=none(),
+                                        commented=0,
                                         loginclient='',
                                         passwdclient='',
                                         musiconhold='',
@@ -542,6 +551,8 @@ class TestCreate(TestUser):
                     caller_id='"fîrstname lâstname" <1000>',
                     outgoing_caller_id='ôutgoing_caller_id',
                     mobile_phone_number='1234567890',
+                    call_permission_password='1234',
+                    enabled=False,
                     username='username',
                     password='password',
                     music_on_hold='music_on_hold',
@@ -578,6 +589,8 @@ class TestCreate(TestUser):
                                                  caller_id='"fîrstname lâstname" <1000>',
                                                  outgoing_caller_id='ôutgoing_caller_id',
                                                  mobile_phone_number='1234567890',
+                                                 call_permission_password='1234',
+                                                 enabled=False,
                                                  username='username',
                                                  password='password',
                                                  music_on_hold='music_on_hold',
@@ -602,6 +615,8 @@ class TestCreate(TestUser):
         assert_that(row, has_properties(callerid='"fîrstname lâstname" <1000>',
                                         outcallerid='ôutgoing_caller_id',
                                         mobilephonenumber='1234567890',
+                                        rightcallcode='1234',
+                                        commented=1,
                                         loginclient='username',
                                         passwdclient='password',
                                         voicemailid=voicemail.id,
@@ -639,6 +654,8 @@ class TestEdit(TestUser):
                                     password='paulrogers',
                                     music_on_hold='mymusic',
                                     mobile_phone_number='4185551234',
+                                    call_permission_password='5678',
+                                    enabled=True,
                                     userfield='userfield',
                                     timezone='America/Montreal',
                                     language='fr_FR',
@@ -654,6 +671,8 @@ class TestEdit(TestUser):
         user.caller_id = '"John Sparrow"'
         user.outgoing_caller_id = 'outgoing_caller_id'
         user.mobile_phone_number = '1234567890'
+        user.call_permission_password = '1234'
+        user.enabled = False
         user.username = 'username'
         user.password = 'password'
         user.music_on_hold = 'music_on_hold'
@@ -687,6 +706,8 @@ class TestEdit(TestUser):
                                         caller_id='"John Sparrow"',
                                         outgoing_caller_id='outgoing_caller_id',
                                         mobile_phone_number='1234567890',
+                                        call_permission_password='1234',
+                                        enabled=False,
                                         username='username',
                                         password='password',
                                         music_on_hold='music_on_hold',
@@ -718,6 +739,7 @@ class TestEdit(TestUser):
                                     password='paulrogers',
                                     music_on_hold='mymusic',
                                     mobile_phone_number='4185551234',
+                                    call_permission_password='5678',
                                     userfield='userfield',
                                     timezone='America/Montreal',
                                     language='fr_FR',
@@ -731,6 +753,7 @@ class TestEdit(TestUser):
         user.password = None
         user.music_on_hold = None
         user.mobile_phone_number = None
+        user.call_permission_password = None
         user.userfield = None
         user.timezone = None
         user.language = None
@@ -750,6 +773,7 @@ class TestEdit(TestUser):
                                         description=none(),
                                         outcallerid='',
                                         mobilephonenumber='',
+                                        rightcallcode=none(),
                                         musiconhold='',
                                         loginclient='',
                                         passwdclient='',
