@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from sqlalchemy.schema import Column, PrimaryKeyConstraint
-from sqlalchemy.types import Integer, String
+from sqlalchemy.types import Integer, String, Boolean
 
 from xivo_dao.helpers.db_manager import Base
 
@@ -30,3 +30,4 @@ class General(Base):
 
     id = Column(Integer, nullable=False)
     timezone = Column(String(128))
+    configured = Column(Boolean, nullable=False, server_default='False')
