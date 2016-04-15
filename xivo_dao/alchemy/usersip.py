@@ -21,6 +21,8 @@ from collections import Iterable
 
 from xivo_dao.helpers.db_manager import Base
 from xivo_dao.helpers import errors
+from xivo_dao.helpers.asterisk import convert_ast_true_to_int,\
+    convert_int_to_ast_true
 from sqlalchemy.schema import Column
 from sqlalchemy.schema import PrimaryKeyConstraint
 from sqlalchemy.schema import UniqueConstraint
@@ -41,6 +43,28 @@ EXCLUDE_OPTIONS_CONFD = {'name',
                          'context',
                          'category',
                          'protocol'}
+AST_TRUE_INTEGER_COLUMNS = {
+    'allowoverlap',
+    'allowsubscribe',
+    'allowtransfer',
+    'autoframing',
+    'buggymwi',
+    'callcounter',
+    'encryption',
+    'g726nonstandard',
+    'ignoresdpversion',
+    'promiscredir',
+    'rfc2833compensate',
+    'snom_aoc_enabled',
+    'subscribemwi',
+    't38pt_udptl',
+    't38pt_usertpsource',
+    'textsupport',
+    'trustrpid',
+    'use_q850_reason',
+    'useclientcode',
+    'usereqphone',
+}
 
 
 class UserSIP(Base):
@@ -187,14 +211,15 @@ class UserSIP(Base):
                 yield [column, value]
 
     def native_option(self, column_name):
-        if column_name == 'subscribemwi':
-            return 'yes' if self.subscribemwi == 1 else 'no'
-        elif column_name == 'regseconds':
+        if column_name == 'regseconds':
             return unicode(self.regseconds)
         else:
             value = getattr(self, self._attribute(column_name), None)
             if value is not None and value != "":
-                return unicode(value)
+                if column_name in AST_TRUE_INTEGER_COLUMNS:
+                    return convert_int_to_ast_true(value)
+                else:
+                    return unicode(value)
         return None
 
     @options.setter
@@ -240,10 +265,9 @@ class UserSIP(Base):
                 raise errors.wrong_type('options', "value '{}' is not a string".format(i))
 
     def set_native_option(self, column, value):
-        if column == 'subscribemwi':
-            self.subscribemwi = 1 if value == 'yes' else 0
-        else:
-            setattr(self, self._attribute(column), value)
+        if column in AST_TRUE_INTEGER_COLUMNS:
+            value = convert_ast_true_to_int(value)
+        setattr(self, self._attribute(column), value)
 
     def add_extra_option(self, name, value):
         self._options.append([name, value])
