@@ -1192,6 +1192,7 @@ class TestFindSipUserSettings(DAOTestCase, PickupHelperMixin):
         expected = {'number': none(),
                     'mailbox': none(),
                     'mohsuggest': none(),
+                    'user_id': none(),
                     'uuid': none()}
 
         results = asterisk_conf_dao.find_sip_user_settings()
@@ -1213,6 +1214,7 @@ class TestFindSipUserSettings(DAOTestCase, PickupHelperMixin):
                     'protocol': line.protocol,
                     'mailbox': mailbox,
                     'mohsuggest': user.musiconhold,
+                    'user_id': user.id,
                     'uuid': user.uuid}
 
         results = asterisk_conf_dao.find_sip_user_settings()

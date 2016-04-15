@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 
-# Copyright (C) 2015 Avencall
+# Copyright (C) 2015-2016 Avencall
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -59,7 +59,6 @@ class TestUserFixes(DAOTestCase):
 
         sip = self.session.query(UserSIP).first()
         assert_that(sip.callerid, equal_to(main_user.callerid))
-        assert_that(sip.setvar, equal_to('XIVO_USERID={}'.format(main_user.id)))
 
     def test_given_line_has_multiple_users_then_sccp_caller_id_updated(self):
         main_user = self.add_user(callerid='"John Smith" <1000>')

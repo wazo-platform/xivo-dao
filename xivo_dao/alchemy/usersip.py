@@ -134,7 +134,6 @@ class UserSIP(Base):
     deny = Column(String(31))
     permit = Column(String(31))
     defaultip = Column(String(255))
-    setvar = Column(String(100), nullable=False, server_default='')
     host = Column(String(255), nullable=False, server_default='dynamic')
     port = Column(Integer)
     regexten = Column(String(80))
@@ -292,14 +291,8 @@ class UserSIP(Base):
         if num:
             self.callerid += " <{}>".format(num)
 
-    def update_setvar(self, user):
-        self.setvar = 'XIVO_USERID={}'.format(user.id)
-
     def clear_caller_id(self):
         self.callerid = None
-
-    def clear_setvar(self):
-        self.setvar = ''
 
     def endpoint_protocol(self):
         return 'sip'

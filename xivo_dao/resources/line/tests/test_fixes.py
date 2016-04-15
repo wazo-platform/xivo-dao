@@ -85,18 +85,6 @@ class TestLineFixes(DAOTestCase):
         sip = self.session.query(UserSIP).first()
         assert_that(sip.callerid, equal_to('"Jôhn Smith" <1000>'))
 
-    def test_given_user_has_sip_line_then_xivo_userid_updated(self):
-        user = self.add_user(callerid='"Jôhn Smith" <1000>')
-        sip = self.add_usersip(callerid='"Rôger Rabbit" <2000>')
-        line = self.add_line(protocol='sip', protocolid=sip.id)
-        self.add_user_line(user_id=user.id, line_id=line.id,
-                           main_user=True, main_line=True)
-
-        self.fixes.fix(line.id)
-
-        sip = self.session.query(UserSIP).first()
-        assert_that(sip.setvar, equal_to('XIVO_USERID={}'.format(user.id)))
-
     def test_given_user_has_sip_line_then_context_updated(self):
         user = self.add_user(callerid='"Jôhn Smith" <1000>')
         sip = self.add_usersip(callerid='"Rôger Rabbit" <2000>')
