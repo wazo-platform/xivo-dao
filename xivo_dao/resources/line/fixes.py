@@ -66,7 +66,7 @@ class LineFixes(object):
                  .outerjoin(UserLine.main_extension_rel)
                  .options(
                      Load(LineFeatures).load_only("id", "name", "number", "context"),
-                     Load(UserSIP).load_only("id", "callerid", "setvar", "context"),
+                     Load(UserSIP).load_only("id", "callerid", "context"),
                      Load(SCCPLine).load_only("id", "name", "context", "cid_name", "cid_num"),
                      Load(SCCPDevice).load_only("id", "line"),
                      Load(UserFeatures).load_only("id", "firstname", "webi_lastname", "callerid"),
@@ -135,7 +135,6 @@ class LineFixes(object):
     def fix_caller_id(self, row):
         if row.UserFeatures:
             if row.LineFeatures.protocol == "sip":
-                row.UserSIP.update_setvar(row.UserFeatures)
                 row.UserSIP.update_caller_id(row.UserFeatures, row.Extension)
             elif row.LineFeatures.protocol == "sccp":
                 row.SCCPLine.update_caller_id(row.UserFeatures, row.Extension)

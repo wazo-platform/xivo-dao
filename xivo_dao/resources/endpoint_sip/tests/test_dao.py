@@ -95,7 +95,6 @@ ALL_OPTIONS = [
     ['rtptimeout', '15'],
     ['disallow', 'all'],
     ['allow', 'gsm'],
-    ['setvar', 'setvar'],
     ['accountcode', 'accountcode'],
     ['md5secret', 'abcdefg'],
     ['mohinterpret', 'mohinterpret'],
@@ -171,12 +170,12 @@ class TestSipEndpointDaoGet(TestSipEndpointDAO):
     def test_given_row_with_option_set_to_null_then_option_not_returned(self):
         row = self.add_usersip(language=None,
                                allow=None,
-                               setvar='')
+                               callerid='')
 
         sip = dao.get(row.id)
         assert_that(sip.options, is_not(has_item(has_item("language"))))
         assert_that(sip.options, is_not(has_item(has_item("allow"))))
-        assert_that(sip.options, is_not(has_item(has_item("setvar"))))
+        assert_that(sip.options, is_not(has_item(has_item("callerid"))))
 
     def test_given_row_with_additional_options_then_returns_model(self):
         options = [
@@ -301,7 +300,6 @@ class TestSipEndpointDaoCreate(DAOTestCase):
             'rtptimeout': 15,
             'disallow': 'all',
             'allow': 'gsm',
-            'setvar': 'setvar',
             'accountcode': 'accountcode',
             'md5secret': 'abcdefg',
             'mohinterpret': 'mohinterpret',
@@ -427,7 +425,6 @@ class TestSipEndpointDaoEdit(DAOTestCase):
             'rtptimeout': none(),
             'disallow': none(),
             'allow': none(),
-            'setvar': '',
             'accountcode': none(),
             'md5secret': '',
             'mohinterpret': none(),

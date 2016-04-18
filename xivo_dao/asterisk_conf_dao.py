@@ -391,6 +391,7 @@ def find_sip_user_settings(session):
             LineFeatures.context,
             Extension.exten.label('number'),
             UserFeatures.musiconhold.label('mohsuggest'),
+            UserFeatures.id.label('user_id'),
             UserFeatures.uuid.label('uuid'),
             (Voicemail.mailbox + '@' + Voicemail.context).label('mailbox'),
         ).join(
