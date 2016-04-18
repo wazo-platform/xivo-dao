@@ -95,7 +95,6 @@ ALL_OPTIONS = [
     ['timerb', '1'],
     ['rtptimeout', '15'],
     ['disallow', 'all'],
-    ['allow', 'g723'],
     ['allow', 'gsm'],
     ['setvar', 'setvar'],
     ['accountcode', 'accountcode'],
@@ -303,7 +302,7 @@ class TestSipEndpointDaoCreate(DAOTestCase):
             'timerb': 1,
             'rtptimeout': 15,
             'disallow': 'all',
-            'allow': all_of(contains_string('g723'), contains_string('gsm')),
+            'allow': 'gsm',
             'setvar': 'setvar',
             'accountcode': 'accountcode',
             'md5secret': 'abcdefg',
@@ -473,8 +472,7 @@ class TestSipEndpointDaoEdit(DAOTestCase):
             ["language", "en_US"],
             ["amaflags", "omit"],
             ["subscribemwi", "no"],
-            ["allow", "ulaw"],
-            ["allow", "alaw"],
+            ["allow", "ulaw,alaw"],
         ]
 
         dao.edit(sip)
@@ -523,8 +521,7 @@ class TestSipEndpointDaoEdit(DAOTestCase):
             ["language", "en_US"],
             ["amaflags", "omit"],
             ["subscribemwi", "no"],
-            ["allow", "ulaw"],
-            ["allow", "alaw"],
+            ["allow", "ulaw,alaw"],
             ["foo", "newbar"],
             ["foo", "newbaz"],
             ["spam", "neweggs"],

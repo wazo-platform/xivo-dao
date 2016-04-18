@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 
-# Copyright (C) 2015 Avencall
+# Copyright (C) 2015-2016 Avencall
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,9 +35,8 @@ from xivo_dao.tests.test_dao import DAOTestCase
 ALL_OPTIONS = [
     ["cid_name", "Jôhn Smith"],
     ["cid_num", "5551234567"],
-    ["allow", "gsm"],
-    ["allow", "g729"],
-    ["disallow", "alaw"]
+    ["disallow", "all"],
+    ["allow", "gsm,g729"],
 ]
 
 
@@ -111,10 +110,8 @@ class TestSccpEndpointDaoCreate(TestSccpDao):
         options = [
             ["cid_name", "Jôhn Smith"],
             ["cid_num", "5551234567"],
-            ["allow", "gsm"],
-            ["allow", "ulaw"],
-            ["disallow", "g729"],
-            ["disallow", "alaw"]
+            ["disallow", "all"],
+            ["allow", "gsm,ulaw"],
         ]
 
         sccp = SCCP(options=options)
@@ -128,7 +125,7 @@ class TestSccpEndpointDaoCreate(TestSccpDao):
         assert_that(sccp_row.cid_name, equal_to('Jôhn Smith'))
         assert_that(sccp_row.cid_num, equal_to('5551234567'))
         assert_that(sccp_row.allow, equal_to("gsm,ulaw"))
-        assert_that(sccp_row.disallow, equal_to("g729,alaw"))
+        assert_that(sccp_row.disallow, equal_to("all"))
 
     def test_given_option_does_not_exist_then_raises_error(self):
         self.assertRaises(InputError, SCCP, options=[["invalid", "invalid"]])

@@ -50,12 +50,10 @@ class SCCPLine(Base):
         if self.cid_num != "":
             options.append(["cid_num", self.cid_num])
 
-        if self.allow is not None:
-            for value in self.allow.split(","):
-                options.append(["allow", value])
         if self.disallow is not None:
-            for value in self.disallow.split(","):
-                options.append(["disallow", value])
+            options.append(["disallow", self.disallow])
+        if self.allow is not None:
+            options.append(["allow", self.allow])
 
         return options
 
@@ -75,17 +73,11 @@ class SCCPLine(Base):
             elif name == "cid_num":
                 self.cid_num = value
             elif name == "allow":
-                self.add_comma_option("allow", value)
+                self.allow = value
             elif name == "disallow":
-                self.add_comma_option("disallow", value)
+                self.disallow = value
             else:
                 raise InputError("Unknown SCCP options: {}".format(name))
-
-    def add_comma_option(self, column, value):
-        text = getattr(self, column, None)
-        values = text.split(",") if text else []
-        values.append(value)
-        setattr(self, column, ",".join(values))
 
     def same_protocol(self, protocol, id):
         return protocol == 'sccp' and self.id == id
