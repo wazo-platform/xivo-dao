@@ -52,6 +52,7 @@ def create(session, line):
 def edit(session, line):
     with flush_session(session):
         LinePersistor(session).edit(line)
+        session.expire(line)
         LineFixes(session).fix_line(line.id)
 
 

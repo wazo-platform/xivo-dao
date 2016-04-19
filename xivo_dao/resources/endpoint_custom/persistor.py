@@ -69,14 +69,14 @@ class CustomPersistor(object):
     def edit(self, custom):
         self.session.add(custom)
         self.session.flush()
+        self._fix_line(custom)
 
     def delete(self, custom):
         self.session.query(Custom).filter_by(id=custom.id).delete()
         self.session.flush()
-        self.dissociate_line(custom)
-        self.session.flush()
+        self._fix_line(custom)
 
-    def dissociate_line(self, custom):
+    def _fix_line(self, custom):
         line_id = (self.session.query(Line.id)
                    .filter(Line.protocol == 'custom')
                    .filter(Line.protocolid == custom.id)

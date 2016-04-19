@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 
-# Copyright (C) 2015 Avencall
+# Copyright (C) 2015-2016 Avencall
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -68,10 +68,9 @@ class SccpPersistor(object):
     def delete(self, sccp):
         self.session.query(SCCP).filter(SCCP.id == sccp.id).delete()
         self.session.flush()
-        self.dissociate_line(sccp)
-        self.session.flush()
+        self._fix_line(sccp)
 
-    def dissociate_line(self, sccp):
+    def _fix_line(self, sccp):
         line_id = (self.session.query(Line.id)
                    .filter(Line.protocol == 'sccp')
                    .filter(Line.protocolid == sccp.id)

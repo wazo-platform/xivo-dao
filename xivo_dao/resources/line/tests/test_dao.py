@@ -256,6 +256,42 @@ class TestLineDaoEdit(TestLineDao):
         line = line_dao.get(line_row.id)
         self.assertRaises(InputError, setattr, line, 'caller_id_num', '2000')
 
+    def test_linefeatures_name_updated_after_sip_endpoint_association(self):
+        usersip_row = self.add_usersip()
+        line_row = self.add_line()
+
+        line = line_dao.get(line_row.id)
+        _force_relationship_loading = line.sip_endpoint
+        line.associate_endpoint(usersip_row)
+        line_dao.edit(line)
+
+        edited_linefeatures = self.session.query(Line).get(line_row.id)
+        assert_that(edited_linefeatures.name, equal_to(usersip_row.name))
+
+    def test_linefeatures_name_updated_after_sccp_endpoint_association(self):
+        sccpline_row = self.add_sccpline()
+        line_row = self.add_line()
+
+        line = line_dao.get(line_row.id)
+        _force_relationship_loading = line.sccp_endpoint
+        line.associate_endpoint(sccpline_row)
+        line_dao.edit(line)
+
+        edited_linefeatures = self.session.query(Line).get(line_row.id)
+        assert_that(edited_linefeatures.name, equal_to(sccpline_row.name))
+
+    def test_linefeatures_name_updated_after_custom_endpoint_association(self):
+        usercustom_row = self.add_usercustom()
+        line_row = self.add_line()
+
+        line = line_dao.get(line_row.id)
+        _force_relationship_loading = line.custom_endpoint
+        line.associate_endpoint(usercustom_row)
+        line_dao.edit(line)
+
+        edited_linefeatures = self.session.query(Line).get(line_row.id)
+        assert_that(edited_linefeatures.name, equal_to(usercustom_row.interface))
+
 
 class TestLineCreate(DAOTestCase):
 

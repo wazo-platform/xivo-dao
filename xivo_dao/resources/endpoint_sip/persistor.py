@@ -69,13 +69,13 @@ class SipPersistor(object):
 
     def edit(self, sip):
         self.persist(sip)
+        self._fix_line(sip)
 
     def delete(self, sip):
         self.session.query(SIP).filter(SIP.id == sip.id).delete()
-        self.dissociate_line(sip)
-        self.session.flush()
+        self._fix_line(sip)
 
-    def dissociate_line(self, sip):
+    def _fix_line(self, sip):
         line_id = (self.session.query(Line.id)
                    .filter(Line.protocol == 'sip')
                    .filter(Line.protocolid == sip.id)
