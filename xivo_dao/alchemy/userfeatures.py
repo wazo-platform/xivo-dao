@@ -23,7 +23,8 @@ import re
 from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint, Index, \
     UniqueConstraint, ForeignKeyConstraint
 from sqlalchemy.types import Integer, String, Text, Boolean
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, column_property
+from sqlalchemy.orm.properties import ColumnProperty
 from sqlalchemy.sql import func, cast, not_
 from sqlalchemy.ext.hybrid import hybrid_property
 
@@ -32,6 +33,12 @@ from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.alchemy.entity import Entity
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
 from xivo_dao.helpers.db_manager import Base
+
+
+class EmailComparator(ColumnProperty.Comparator):
+
+    def __eq__(self, other):
+        return func.lower(self.__clause_element__()) == func.lower(other)
 
 
 def _new_uuid():
@@ -80,7 +87,8 @@ class UserFeatures(Base):
     id = Column(Integer, nullable=False)
     uuid = Column(String(38), nullable=False, default=_new_uuid)
     firstname = Column(String(128), nullable=False, server_default='')
-    email = Column(String(128))
+    email = column_property(Column(String(128)),
+                            comparator_factory=EmailComparator)
     voicemailid = Column(Integer)
     agentid = Column(Integer)
     pictureid = Column(Integer)

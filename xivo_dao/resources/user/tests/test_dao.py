@@ -150,6 +150,28 @@ class TestFind(TestUser):
         assert_that(user.voicemail_id, equal_to(voicemail_row.uniqueid))
         assert_that(user.private_template_id, equal_to(user_row.func_key_private_template_id))
 
+    def test_that_email_address_is_case_insensitive_when_comparing(self):
+        user_row = self.add_user(firstname='Pâul',
+                                 lastname='Rôgers',
+                                 callerid='"Côol dude"',
+                                 outcallerid='"Côol dude going out"',
+                                 loginclient='paulrogers',
+                                 passwdclient='paulrogers',
+                                 musiconhold='mymusic',
+                                 mobilephonenumber='4185551234',
+                                 commented=1,
+                                 email='paul.rogers@example.com',
+                                 rightcallcode='1234',
+                                 userfield='userfield',
+                                 timezone='America/Montreal',
+                                 language='fr_FR',
+                                 description='Really cool dude',
+                                 preprocess_subroutine='preprocess_subroutine')
+
+        user = user_dao.find_by(email='Paul.Rogers@Example.COM')
+
+        assert_that(user_row.id, equal_to(user.id))
+
 
 class TestGet(TestUser):
 
