@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2007-2014 Avencall
+# Copyright (C) 2007-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,9 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy import text
 from sqlalchemy.schema import Column, UniqueConstraint, PrimaryKeyConstraint
 from sqlalchemy.types import Integer, String, DateTime
-from sqlalchemy.sql import func
 
 from xivo_dao.helpers.db_manager import Base
 
@@ -37,4 +37,4 @@ class AgentLoginStatus(Base):
     context = Column(String(80), nullable=False)
     interface = Column(String(128), nullable=False)
     state_interface = Column(String(128), nullable=False)
-    login_at = Column(DateTime, nullable=False, server_default=func.now())
+    login_at = Column(DateTime, nullable=False, server_default=text("(current_timestamp at time zone 'utc')"))
