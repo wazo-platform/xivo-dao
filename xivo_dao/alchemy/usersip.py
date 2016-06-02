@@ -169,7 +169,6 @@ class UserSIP(Base):
                                     name='usersip_session_refresher',
                                     metadata=Base.metadata))
     callbackextension = Column(String(255))
-    registertrying = Column(Integer)
     timert1 = Column(Integer)
     timerb = Column(Integer)
     qualifyfreq = Column(Integer)
