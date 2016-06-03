@@ -56,6 +56,7 @@ class CEL(Base):
     linkedid = Column(Text, nullable=False)
     userfield = Column(Text, nullable=False)
     peer = Column(Text, nullable=False)
+    extra = Column(Text)
     call_log_id = Column(Integer)
 
     call_log = relationship(CallLog)
