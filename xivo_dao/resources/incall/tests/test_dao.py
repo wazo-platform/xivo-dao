@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014 Avencall
+# Copyright (C) 2014-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -228,6 +228,14 @@ class TestCreateUserIncall(TestIncallDAO):
         created_incall = dao.create(self.incall)
 
         self.assert_dialaction_row_created(created_incall.id, ring_seconds)
+
+    def test_given_incall_without_ring_seconds_then_creates_dialaction_row_without_ring_seconds(self):
+        self.incall.ring_seconds = None
+
+        created_incall = dao.create(self.incall)
+
+        expected_ring_seconds = ''
+        self.assert_dialaction_row_created(created_incall.id, expected_ring_seconds)
 
     def test_given_user_incall_then_updates_extension_destination(self):
         created_incall = dao.create(self.incall)

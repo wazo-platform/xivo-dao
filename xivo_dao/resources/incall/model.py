@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014 Avencall
+# Copyright (C) 2014-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -81,7 +81,8 @@ class IncallDbConverter(DatabaseConverter):
                                           categoryval=incall.id,
                                           action=incall.destination,
                                           actionarg1=incall.destination_id,
-                                          actionarg2=str(incall.ring_seconds),
+                                          actionarg2=('' if incall.ring_seconds is None
+                                                      else str(incall.ring_seconds)),
                                           linked=1)
         return dialaction_row
 
