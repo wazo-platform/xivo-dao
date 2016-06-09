@@ -45,6 +45,6 @@ To run test with docker:
 
 To run with docker-compose:
 
-    docker-compose up db  # only once
+    docker-compose up -d db  # only once
     # wait a bit
     docker-compose build dao && docker-compose up dao  # repeat to run against new code

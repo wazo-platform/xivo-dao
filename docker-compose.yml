@@ -10,5 +10,5 @@ dao:
   build: .
   links:
     - db
-  environment: 
+  environment:
     - XIVO_TEST_DB_URL=postgresql://asterisk:proformatique@db/asterisk
