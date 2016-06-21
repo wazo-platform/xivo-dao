@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2007-2014 Avencall
+# Copyright (C) 2007-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -47,6 +47,7 @@ class QueueFeatures(Base):
     transfer_call = Column(Integer, nullable=False, server_default='0')
     write_caller = Column(Integer, nullable=False, server_default='0')
     write_calling = Column(Integer, nullable=False, server_default='0')
+    ignore_forward = Column(Integer, nullable=False, server_default='1')
     url = Column(String(255), nullable=False, server_default='')
     announceoverride = Column(String(128), nullable=False, server_default='')
     timeout = Column(Integer)
