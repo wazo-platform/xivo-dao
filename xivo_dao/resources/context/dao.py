@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2015 Avencall
+# Copyright (C) 2013-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,11 +16,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.alchemy.context import Context as ContextSchema
+from xivo_dao.alchemy.entity import Entity as EntitySchema
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 from xivo_dao.alchemy.contextnumbers import ContextNumbers as ContextNumberSchema
 from xivo_dao.resources.context.converters import context_converter
 from xivo_dao.resources.context.converters import range_converter
-from xivo_dao.resources.entity import dao as entity_dao
 from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.helpers import errors
@@ -69,7 +69,7 @@ def get_by_extension_id(extension_id):
 @daosession
 def create(session, context):
     context_row = context_converter.to_source(context)
-    context_row.entity = entity_dao.default_entity_name()
+    context_row.entity = session.execute(EntitySchema.query_default_name()).scalar()
 
     with flush_session(session):
         session.add(context_row)
