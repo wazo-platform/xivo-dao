@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,8 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import sql
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
+from sqlalchemy.sql import func
 from sqlalchemy.types import Integer, String, Text
 
 from xivo_dao.helpers.db_manager import Base
@@ -54,3 +56,20 @@ class Entity(Base):
     @classmethod
     def query_default_name(cls):
         return sql.select([cls.name]).limit(1)
+
+    @hybrid_property
+    def display_name(self):
+        if self.displayname == '':
+            return None
+        return self.displayname
+
+    @display_name.expression
+    def display_name(cls):
+        return func.nullif(cls.displayname, '')
+
+    @display_name.setter
+    def display_name(self, value):
+        if value is None:
+            self.displayname = ''
+        else:
+            self.displayname = value

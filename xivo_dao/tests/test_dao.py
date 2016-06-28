@@ -775,7 +775,6 @@ class DAOTestCase(unittest.TestCase):
 
     def add_entity(self, **kwargs):
         kwargs.setdefault('name', 'entity')
-        kwargs.setdefault('displayname', 'entity')
         kwargs.setdefault('description', '')
         entity = EntitySchema(**kwargs)
 
