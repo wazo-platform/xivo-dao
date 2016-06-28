@@ -47,10 +47,10 @@ class CallPermissionPersistor(object):
         return column
 
     def get_by(self, criteria):
-        user = self.find_by(criteria)
-        if not user:
+        call_permission = self.find_by(criteria)
+        if not call_permission:
             raise errors.not_found('CallPermission', **criteria)
-        return user
+        return call_permission
 
     def find_all_by(self, criteria):
         query = self._find_query(criteria)

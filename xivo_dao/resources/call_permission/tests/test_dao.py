@@ -39,7 +39,7 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 class TestFind(DAOTestCase):
 
-    def test_find_no_user(self):
+    def test_find_no_call_permission(self):
         result = call_permission_dao.find(42)
 
         assert_that(result, none())
@@ -65,7 +65,7 @@ class TestFind(DAOTestCase):
 
 class TestGet(DAOTestCase):
 
-    def test_get_no_user(self):
+    def test_get_no_call_permission(self):
         self.assertRaises(NotFoundError, call_permission_dao.get, 42)
 
     def test_get(self):
@@ -89,10 +89,10 @@ class TestFindBy(DAOTestCase):
         assert_that(call_permission.id, equal_to(call_permission_row.id))
         assert_that(call_permission.name, equal_to('Jôhn'))
 
-    def test_given_user_does_not_exist_then_returns_null(self):
-        user = call_permission_dao.find_by(name='42')
+    def test_given_call_permission_does_not_exist_then_returns_null(self):
+        call_permission = call_permission_dao.find_by(name='42')
 
-        assert_that(user, none())
+        assert_that(call_permission, none())
 
 
 class TestGetBy(DAOTestCase):
@@ -108,13 +108,13 @@ class TestGetBy(DAOTestCase):
         assert_that(call_permission.id, equal_to(call_permission_row.id))
         assert_that(call_permission.name, equal_to('Jôhn'))
 
-    def test_given_user_does_not_exist_then_raises_error(self):
+    def test_given_call_permission_does_not_exist_then_raises_error(self):
         self.assertRaises(NotFoundError, call_permission_dao.get_by, name='42')
 
 
 class TestFindAllBy(DAOTestCase):
 
-    def test_find_all_by_no_users(self):
+    def test_find_all_by_no_call_permissions(self):
         result = call_permission_dao.find_all_by(name='toto')
 
         assert_that(result, contains())
