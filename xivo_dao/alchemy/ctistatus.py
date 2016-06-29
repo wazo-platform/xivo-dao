@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2014 Avencall
+# Copyright (C) 2012-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy import ForeignKey
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
 from sqlalchemy.types import Integer, String
 
@@ -30,7 +31,7 @@ class CtiStatus(Base):
     )
 
     id = Column(Integer)
-    presence_id = Column(Integer)
+    presence_id = Column(Integer, ForeignKey('ctipresences.id', ondelete='CASCADE'))
     name = Column(String(255), nullable=False)
     display_name = Column(String(255))
     actions = Column(String(255))
