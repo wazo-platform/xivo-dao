@@ -52,15 +52,15 @@ def find_all_by(session, **criteria):
 
 
 @daosession
-def create(session, user):
-    return CallPermissionPersistor(session, call_permission_search).create(user)
+def create(session, call_permission):
+    return CallPermissionPersistor(session, call_permission_search).create(call_permission)
 
 
 @daosession
-def edit(session, user):
-    CallPermissionPersistor(session, call_permission_search).edit(user)
+def edit(session, call_permission):
+    CallPermissionPersistor(session, call_permission_search).edit(call_permission)
 
 
 @daosession
-def delete(session, user):
-    CallPermissionPersistor(session, call_permission_search).delete(user)
+def delete(session, call_permission):
+    CallPermissionPersistor(session, call_permission_search).delete(call_permission)
