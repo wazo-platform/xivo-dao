@@ -102,7 +102,7 @@ class UserFeatures(Base):
     cti_profile_id = Column(Integer)
     enablehint = Column(Integer, nullable=False, server_default='1')
     enablevoicemail = Column(Integer, nullable=False, server_default='0')
-    enablexfer = Column(Integer, nullable=False, server_default='1')
+    enablexfer = Column(Integer, nullable=False, server_default='0')
     dtmf_hangup = Column(Integer, nullable=False, server_default='0')
     enableonlinerec = Column(Integer, nullable=False, server_default='0')
     callrecord = Column(Integer, nullable=False, server_default='0')

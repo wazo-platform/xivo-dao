@@ -521,7 +521,7 @@ class TestCreate(TestUser):
                                                  preprocess_subroutine=none(),
                                                  userfield=none(),
                                                  voicemail_id=none(),
-                                                 call_transfer_enabled=True,
+                                                 call_transfer_enabled=False,
                                                  dtmf_hangup_enabled=False,
                                                  dnd_enabled=False,
                                                  incallfilter_enabled=False,
@@ -550,7 +550,7 @@ class TestCreate(TestUser):
                                         musiconhold='',
                                         voicemailid=none(),
                                         enablehint=1,
-                                        enablexfer=1,
+                                        enablexfer=0,
                                         dtmf_hangup=0,
                                         incallfilter=0,
                                         enablednd=0,
@@ -583,8 +583,8 @@ class TestCreate(TestUser):
                     preprocess_subroutine='preprocess_subroutine',
                     voicemail_id=voicemail.id,
                     userfield='userfield',
-                    call_transfer_enabled=False,
-                    dtmf_hangup_enabled=False,
+                    call_transfer_enabled=True,
+                    dtmf_hangup_enabled=True,
                     dnd_enabled=True,
                     incallfilter_enabled=True,
                     supervision_enabled=False,
@@ -621,8 +621,8 @@ class TestCreate(TestUser):
                                                  music_on_hold='music_on_hold',
                                                  preprocess_subroutine='preprocess_subroutine',
                                                  voicemail_id=voicemail.id,
-                                                 call_transfer_enabled=False,
-                                                 dtmf_hangup_enabled=False,
+                                                 call_transfer_enabled=True,
+                                                 dtmf_hangup_enabled=True,
                                                  dnd_enabled=True,
                                                  incallfilter_enabled=True,
                                                  supervision_enabled=False,
@@ -647,8 +647,8 @@ class TestCreate(TestUser):
                                         passwdclient='password',
                                         voicemailid=voicemail.id,
                                         enablehint=0,
-                                        enablexfer=0,
-                                        dtmf_hangup=0,
+                                        enablexfer=1,
+                                        dtmf_hangup=1,
                                         incallfilter=1,
                                         enablednd=1,
                                         enableonlinerec=1,
@@ -706,8 +706,8 @@ class TestEdit(TestUser):
         user.preprocess_subroutine = 'preprocess_subroutine'
         user.userfield = 'userfield'
         user.voicemail_id = new_voicemail.id
-        user.call_transfer_enabled = False
-        user.dtmf_hangup_enabled = False
+        user.call_transfer_enabled = True
+        user.dtmf_hangup_enabled = True
         user.dnd_enabled = True
         user.incallfilter_enabled = True
         user.supervision_enabled = False
@@ -741,8 +741,8 @@ class TestEdit(TestUser):
                                         music_on_hold='music_on_hold',
                                         preprocess_subroutine='preprocess_subroutine',
                                         voicemail_id=new_voicemail.id,
-                                        call_transfer_enabled=False,
-                                        dtmf_hangup_enabled=False,
+                                        call_transfer_enabled=True,
+                                        dtmf_hangup_enabled=True,
                                         dnd_enabled=True,
                                         incallfilter_enabled=True,
                                         supervision_enabled=False,
