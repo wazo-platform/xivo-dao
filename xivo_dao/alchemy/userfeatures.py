@@ -102,7 +102,8 @@ class UserFeatures(Base):
     cti_profile_id = Column(Integer)
     enablehint = Column(Integer, nullable=False, server_default='1')
     enablevoicemail = Column(Integer, nullable=False, server_default='0')
-    enablexfer = Column(Integer, nullable=False, server_default='1')
+    enablexfer = Column(Integer, nullable=False, server_default='0')
+    dtmf_hangup = Column(Integer, nullable=False, server_default='0')
     enableonlinerec = Column(Integer, nullable=False, server_default='0')
     callrecord = Column(Integer, nullable=False, server_default='0')
     incallfilter = Column(Integer, nullable=False, server_default='0')
@@ -392,6 +393,16 @@ class UserFeatures(Base):
     @call_transfer_enabled.setter
     def call_transfer_enabled(self, value):
         self.enablexfer = int(value == 1) if value is not None else None
+
+    @hybrid_property
+    def dtmf_hangup_enabled(self):
+        if self.dtmf_hangup is None:
+            return None
+        return self.dtmf_hangup == 1
+
+    @dtmf_hangup_enabled.setter
+    def dtmf_hangup_enabled(self, value):
+        self.dtmf_hangup = int(value == 1) if value is not None else None
 
     @hybrid_property
     def call_record_enabled(self):
