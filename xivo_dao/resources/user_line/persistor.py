@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 
-# Copyright (C) 2015 Avencall
+# Copyright (C) 2015-2016 Avencall
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@ from xivo_dao.resources.extension.fixes import ExtensionFixes
 
 from xivo_dao.helpers import errors
 from xivo_dao.alchemy.user_line import UserLine
+from xivo_dao.alchemy.queuemember import QueueMember
 
 
 class Persistor(object):
@@ -96,6 +97,7 @@ class Persistor(object):
 
     def dissociate_user_line(self, user, line):
         user_line = self.get_by(user_id=user.id, line_id=line.id)
+        self.delete_queue_member(user_line)
 
         if user_line.extension_id is None or not user_line.main_user:
             self.session.delete(user_line)
@@ -107,6 +109,12 @@ class Persistor(object):
         self.fix_associations(user_line)
 
         return user_line
+
+    def delete_queue_member(self, user_line):
+        (self.session.query(QueueMember)
+         .filter(QueueMember.usertype == 'user')
+         .filter(QueueMember.userid == user_line.user_id)
+         .delete())
 
     def dissociate_line_extension(self, line, extension):
         user_lines = self.find_all_by(line_id=line.id, extension_id=extension.id)

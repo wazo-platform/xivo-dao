@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 from hamcrest import assert_that, equal_to, has_property, instance_of, all_of, none, has_items, contains_inanyorder, contains, is_not, has_length
 
 from xivo_dao.alchemy.user_line import UserLine
+from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.resources.user_line import dao as user_line_dao
 from xivo_dao.tests.test_dao import DAOTestCase
 
@@ -271,6 +272,18 @@ class TestAssociateUserLine(DAOTestCase):
 
 
 class TestDissociateUserLine(DAOTestCase):
+
+    def test_dissociate_user_line_with_queue_member(self):
+        user_line = self.add_user_line_with_queue_member()
+
+        user_line_dao.dissociate(user_line.user, user_line.line)
+
+        result = (self.session.query(QueueMember)
+                  .filter(QueueMember.usertype == 'user')
+                  .filter(QueueMember.userid == user_line.user_id)
+                  .first())
+
+        assert_that(result, none())
 
     def test_dissociate_main_user_line_without_exten(self):
         user_line = self.add_user_line_without_exten()
