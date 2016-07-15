@@ -24,10 +24,12 @@ from xivo_dao.alchemy.linefeatures import LineFeatures as Line
 from xivo_dao.helpers import errors
 from xivo_dao.resources.endpoint_sip.search import sip_search
 from xivo_dao.resources.line.fixes import LineFixes
-from xivo_dao.resources.utils.search import SearchResult
+from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
 
 
-class SipPersistor(object):
+class SipPersistor(CriteriaBuilderMixin):
+
+    _search_table = SIP
 
     def __init__(self, session):
         self.session = session
@@ -40,12 +42,7 @@ class SipPersistor(object):
 
     def find_query(self, criteria):
         query = self.session.query(SIP)
-        for name, value in criteria.iteritems():
-            column = getattr(SIP, name, None)
-            if not column:
-                raise errors.unknown(name)
-            query = query.filter(column == value)
-        return query
+        return self.build_criteria(query, criteria)
 
     def get(self, id):
         row = self.session.query(SIP).filter(SIP.id == id).first()
