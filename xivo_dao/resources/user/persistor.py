@@ -26,10 +26,12 @@ from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
 from xivo_dao.alchemy.entity import Entity
 
 from xivo_dao.helpers import errors
-from xivo_dao.resources.utils.search import SearchResult
+from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
 
 
-class UserPersistor(object):
+class UserPersistor(CriteriaBuilderMixin):
+
+    _search_table = User
 
     def __init__(self, session, user_view, user_search):
         self.session = session
@@ -60,16 +62,7 @@ class UserPersistor(object):
 
     def _find_query(self, criteria):
         query = self.session.query(User)
-        for name, value in criteria.iteritems():
-            column = self._get_column(name)
-            query = query.filter(column == value)
-        return query
-
-    def _get_column(self, name):
-        column = getattr(User, name, None)
-        if column is None:
-            raise errors.unknown(name)
-        return column
+        return self.build_criteria(query, criteria)
 
     def get_by(self, criteria):
         user = self.find_by(criteria)
