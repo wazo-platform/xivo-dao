@@ -16,6 +16,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+from xivo_dao.resources.utils.search import CriteriaBuilderMixin
 from xivo_dao.resources.user.fixes import UserFixes
 from xivo_dao.resources.line.fixes import LineFixes
 from xivo_dao.resources.extension.fixes import ExtensionFixes
@@ -25,7 +26,9 @@ from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.queuemember import QueueMember
 
 
-class Persistor(object):
+class Persistor(CriteriaBuilderMixin):
+
+    _search_table = UserLine
 
     def __init__(self, session, resource, exclude):
         self.session = session
@@ -35,12 +38,7 @@ class Persistor(object):
     def find_query(self, criteria):
         column = getattr(UserLine, self.exclude)
         query = self.session.query(UserLine).filter(column != None)  # noqa
-        for name, value in criteria.iteritems():
-            column = getattr(UserLine, name, None)
-            if not column:
-                raise errors.unknown(name)
-            query = query.filter(column == value)
-        return query
+        return self.build_criteria(query, criteria)
 
     def find_by(self, **criteria):
         return self.find_query(criteria).first()
