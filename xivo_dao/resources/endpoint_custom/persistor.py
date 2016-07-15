@@ -20,11 +20,13 @@ from xivo_dao.alchemy.usercustom import UserCustom as Custom
 from xivo_dao.alchemy.linefeatures import LineFeatures as Line
 from xivo_dao.helpers import errors
 from xivo_dao.resources.line.fixes import LineFixes
-from xivo_dao.resources.utils.search import SearchResult
+from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
 from xivo_dao.resources.endpoint_custom.search import custom_search
 
 
-class CustomPersistor(object):
+class CustomPersistor(CriteriaBuilderMixin):
+
+    _search_table = Custom
 
     def __init__(self, session):
         self.session = session
@@ -37,12 +39,7 @@ class CustomPersistor(object):
 
     def find_query(self, criteria):
         query = self.session.query(Custom)
-        for name, value in criteria.iteritems():
-            column = getattr(Custom, name, None)
-            if not column:
-                raise errors.unknown(name)
-            query = query.filter(column == value)
-        return query
+        return self.build_criteria(query, criteria)
 
     def find_by(self, criteria):
         return self.find_query(criteria).first()
