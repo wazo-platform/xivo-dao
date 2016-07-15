@@ -25,11 +25,13 @@ from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.helpers import errors
-from xivo_dao.resources.utils.search import SearchResult
+from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
 from xivo_dao.resources.line.search import line_search
 
 
-class LinePersistor(object):
+class LinePersistor(CriteriaBuilderMixin):
+
+    _search_table = Line
 
     def __init__(self, session):
         self.session = session
@@ -54,25 +56,12 @@ class LinePersistor(object):
                 .options(joinedload(Line.sccp_endpoint)))
 
     def find_by(self, criteria):
-        query = self.build_criteria(criteria)
+        query = self.build_criteria(self.query(), criteria)
         return query.first()
 
-    def build_criteria(self, criteria):
-        query = self.query()
-        for name, value in criteria.iteritems():
-            column = self._get_column(name)
-            query = query.filter(column == value)
-        return query
-
     def find_all_by(self, criteria):
-        query = self.build_criteria(criteria)
+        query = self.build_criteria(self.query(), criteria)
         return query.all()
-
-    def _get_column(self, column_name):
-        column = getattr(Line, column_name, None)
-        if column is None:
-            raise errors.unknown(column_name)
-        return column
 
     def create(self, line):
         if line.provisioning_code is None:
