@@ -95,8 +95,8 @@ class TestUserLineFindAllByUserId(DAOTestCase):
                            main_line=True)
         self.add_user_line(user_id=user.id,
                            line_id=line2.id,
-                           main_user=False,
-                           main_line=True)
+                           main_user=True,
+                           main_line=False)
 
         result = user_line_dao.find_all_by_user_id(user.id)
 
@@ -142,19 +142,19 @@ class TestUserLineFindMainUserLine(DAOTestCase):
         assert_that(result, none())
 
     def test_find_main_user_line(self):
-        user = self.add_user()
-        line1 = self.add_line()
-        line2 = self.add_line()
-        main_user_line = self.add_user_line(user_id=user.id,
-                                            line_id=line1.id,
+        user1 = self.add_user()
+        user2 = self.add_user()
+        line = self.add_line()
+        main_user_line = self.add_user_line(user_id=user1.id,
+                                            line_id=line.id,
                                             main_user=True,
                                             main_line=True)
-        self.add_user_line(user_id=user.id,
-                           line_id=line2.id,
+        self.add_user_line(user_id=user2.id,
+                           line_id=line.id,
                            main_user=False,
                            main_line=True)
 
-        result = user_line_dao.find_main_user_line(line1.id)
+        result = user_line_dao.find_main_user_line(line.id)
 
         assert_that(result, instance_of(UserLine))
         assert_that(result,
