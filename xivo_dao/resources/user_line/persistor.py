@@ -61,12 +61,13 @@ class Persistor(CriteriaBuilderMixin):
         if user_line:
             user_line.user_id = user.id
         else:
-            main = self.find_by(main_user=True, line_id=line.id)
+            main_user_line = self.find_by(main_user=True, line_id=line.id)
+            user_main_line = self.find_by(main_line=True, user_id=user.id)
             user_line = UserLine(user_id=user.id,
                                  line_id=line.id,
-                                 main_line=True,
-                                 main_user=(False if main else True),
-                                 extension_id=(main.extension_id if main else None))
+                                 main_line=(False if user_main_line else True),
+                                 main_user=(False if main_user_line else True),
+                                 extension_id=(main_user_line.extension_id if main_user_line else None))
 
         self.session.add(user_line)
         self.session.flush()
@@ -97,10 +98,14 @@ class Persistor(CriteriaBuilderMixin):
         user_line = self.get_by(user_id=user.id, line_id=line.id)
         self.delete_queue_member(user_line)
 
+        if user_line.main_line:
+            self._set_random_main_line(user)
+
         if user_line.extension_id is None or not user_line.main_user:
             self.session.delete(user_line)
         else:
             user_line.user_id = None
+            user_line.main_line = False
             self.session.add(user_line)
 
         self.session.flush()
@@ -113,6 +118,17 @@ class Persistor(CriteriaBuilderMixin):
          .filter(QueueMember.usertype == 'user')
          .filter(QueueMember.userid == user_line.user_id)
          .delete())
+
+    def _set_random_main_line(self, user):
+        random_user_line = (self.session.query(UserLine)
+                            .filter(UserLine.user_id == user.id)
+                            .filter(UserLine.main_line == False)  # noqa
+                            .first())
+        if random_user_line:
+            (self.session.query(UserLine)
+             .filter(UserLine.user_id == user.id)
+             .filter(UserLine.line_id == random_user_line.line_id)
+             .update({'main_line': True}))
 
     def dissociate_line_extension(self, line, extension):
         user_lines = self.find_all_by(line_id=line.id, extension_id=extension.id)

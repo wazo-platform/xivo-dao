@@ -313,8 +313,8 @@ class TestDissociateUserLine(DAOTestCase):
 
         user_line_dao.dissociate(secondary_user_line.userfeatures, secondary_user_line.linefeatures)
 
-        self.assert_main_user_line_associated(main_user_line)
-        self.assert_secondary_user_line_deleted(secondary_user_line)
+        self.assert_user_line_associated(main_user_line)
+        self.assert_user_line_deleted(secondary_user_line)
 
     def prepare_secondary_user_line(self, main_user_line):
         user_row = self.add_user()
@@ -324,21 +324,49 @@ class TestDissociateUserLine(DAOTestCase):
                                   main_user=False,
                                   main_line=True)
 
-    def assert_main_user_line_associated(self, main_user_line):
+    def test_dissociate_user_secondary_line(self):
+        user_main_line = self.add_user_line_with_exten()
+        user_secondary_line = self.prepare_user_secondary_line(user_main_line)
+
+        user_line_dao.dissociate(user_secondary_line.userfeatures, user_secondary_line.linefeatures)
+
+        self.assert_user_line_associated(user_main_line, main_line=True)
+        self.assert_user_line_deleted(user_secondary_line)
+
+    def test_dissociate_user_main_line_when_has_secondary_line(self):
+        user_main_line = self.add_user_line_with_exten()
+        user_secondary_line = self.prepare_user_secondary_line(user_main_line)
+
+        user_line_dao.dissociate(user_main_line.userfeatures, user_main_line.linefeatures)
+
+        self.assert_user_line_associated(user_secondary_line, main_line=True)
+        self.assert_user_line_deleted(user_main_line)
+
+    def prepare_user_secondary_line(self, user_main_line):
+        line = self.add_line()
+        return self.add_user_line(user_id=user_main_line.user_id,
+                                  line_id=line.id,
+                                  extension_id=user_main_line.extension_id,
+                                  main_user=True,
+                                  main_line=False)
+
+    def assert_user_line_associated(self, user_line, main_line=True):
         row = (self.session.query(UserLine)
-               .filter(UserLine.user_id == main_user_line.user_id)
-               .filter(UserLine.line_id == main_user_line.line_id)
+               .filter(UserLine.user_id == user_line.user_id)
+               .filter(UserLine.line_id == user_line.line_id)
+               .filter(UserLine.main_line == main_line)
                .first())
 
         assert_that(row, is_not(none()))
 
-    def assert_secondary_user_line_deleted(self, secondary_user_line):
-        row = (self.session.query(UserLine)
-               .filter(UserLine.user_id == secondary_user_line.user_id)
-               .filter(UserLine.line_id == secondary_user_line.line_id)
-               .first())
+    def assert_user_line_deleted(self, user_line):
+        if user_line.user_id is not None:
+            row = (self.session.query(UserLine)
+                   .filter(UserLine.user_id == user_line.user_id)
+                   .filter(UserLine.line_id == user_line.line_id)
+                   .first())
 
-        assert_that(row, none())
+            assert_that(row, none())
 
 
 class TestUserLineFindAllByLineId(DAOTestCase):
