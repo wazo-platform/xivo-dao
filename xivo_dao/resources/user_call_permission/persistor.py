@@ -18,9 +18,12 @@
 
 from xivo_dao.helpers import errors
 from xivo_dao.alchemy.rightcallmember import RightCallMember as UserCallPermission
+from xivo_dao.resources.utils.search import CriteriaBuilderMixin
 
 
-class Persistor(object):
+class Persistor(CriteriaBuilderMixin):
+
+    _search_table = UserCallPermission
 
     def __init__(self, session):
         self.session = session
@@ -30,18 +33,8 @@ class Persistor(object):
         return query.first()
 
     def _find_query(self, criteria):
-        query = self.session.query(UserCallPermission)
-        query = query.filter(UserCallPermission.type == 'user')
-        for name, value in criteria.iteritems():
-            column = self._get_column(name)
-            query = query.filter(column == value)
-        return query
-
-    def _get_column(self, name):
-        column = getattr(UserCallPermission, name, None)
-        if column is None:
-            raise errors.unknown(name)
-        return column
+        query = self.session.query(UserCallPermission).filter(UserCallPermission.type == 'user')
+        return self.build_criteria(query, criteria)
 
     def get_by(self, **criteria):
         user_call_permission = self.find_by(**criteria)

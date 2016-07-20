@@ -18,11 +18,13 @@
 
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.helpers import errors
-from xivo_dao.resources.utils.search import SearchResult
+from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
 from xivo_dao.resources.extension.search import extension_search
 
 
-class ExtensionPersistor(object):
+class ExtensionPersistor(CriteriaBuilderMixin):
+
+    _search_table = Extension
 
     def __init__(self, session):
         self.session = session
@@ -43,16 +45,7 @@ class ExtensionPersistor(object):
 
     def _find_query(self, criteria):
         query = self.session.query(Extension)
-        for name, value in criteria.iteritems():
-            column = self._get_column(name)
-            query = query.filter(column == value)
-        return query
-
-    def _get_column(self, name):
-        column = getattr(Extension, name, None)
-        if column is None:
-            raise errors.unknown(name)
-        return column
+        return self.build_criteria(query, criteria)
 
     def search(self, params):
         rows, total = extension_search.search(self.session, params)

@@ -20,10 +20,12 @@ from xivo_dao.alchemy.rightcall import RightCall as CallPermission
 from xivo_dao.alchemy.rightcallmember import RightCallMember
 
 from xivo_dao.helpers import errors
-from xivo_dao.resources.utils.search import SearchResult
+from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
 
 
-class CallPermissionPersistor(object):
+class CallPermissionPersistor(CriteriaBuilderMixin):
+
+    _search_table = CallPermission
 
     def __init__(self, session, call_permission_search):
         self.session = session
@@ -35,16 +37,7 @@ class CallPermissionPersistor(object):
 
     def _find_query(self, criteria):
         query = self.session.query(CallPermission)
-        for name, value in criteria.iteritems():
-            column = self._get_column(name)
-            query = query.filter(column == value)
-        return query
-
-    def _get_column(self, name):
-        column = getattr(CallPermission, name, None)
-        if column is None:
-            raise errors.unknown(name)
-        return column
+        return self.build_criteria(query, criteria)
 
     def get_by(self, criteria):
         call_permission = self.find_by(criteria)

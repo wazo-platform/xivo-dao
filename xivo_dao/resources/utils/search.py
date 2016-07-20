@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014-2015 Avencall
+# Copyright (C) 2014-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,6 +23,21 @@ from sqlalchemy import sql
 from xivo_dao.helpers import errors
 
 SearchResult = namedtuple('SearchResult', ['total', 'items'])
+
+
+class CriteriaBuilderMixin(object):
+
+    def build_criteria(self, query, criteria):
+        for name, value in criteria.iteritems():
+            column = self._get_column(name)
+            query = query.filter(column == value)
+        return query
+
+    def _get_column(self, name):
+        column = getattr(self._search_table, name, None)
+        if column is None:
+            raise errors.unknown(name)
+        return column
 
 
 class SearchConfig(object):

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014-2015 Avencall
+# Copyright (C) 2014-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,20 +15,67 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from mock import Mock
 import unittest
+
+from mock import Mock, sentinel as s
 from hamcrest import assert_that
+from hamcrest import calling
 from hamcrest import equal_to
 from hamcrest import contains
 from hamcrest import contains_inanyorder
 from hamcrest import has_length
+from hamcrest import is_in
+from hamcrest import raises
 
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.resources.utils.search import SearchConfig
 from xivo_dao.resources.utils.search import SearchSystem
+from xivo_dao.resources.utils.search import CriteriaBuilderMixin
 from xivo_dao.helpers.exception import InputError
 
 from xivo_dao.alchemy.userfeatures import UserFeatures
+
+
+class TestCriteriaBuilderMixin(unittest.TestCase):
+
+    class Table(object):
+
+        id = s.id
+        name = s.name
+        number = s.number
+
+    class QueryMock(object):
+
+        filter_by = []
+
+        def filter(self, expr):
+            self.filter_by.append(expr)
+            return self
+
+        def assert_filter_by(self, expr):
+            assert_that(expr, is_in(self.filter_by))
+
+    def setUp(self):
+        class TestedClass(CriteriaBuilderMixin):
+
+            _search_table = self.Table
+
+        self.klass = TestedClass()
+        self.query = self.QueryMock()
+
+    def test_that_build_criteria_with_unknown_column_raises(self):
+        criteria = {'foo': 'bar'}
+
+        assert_that(calling(self.klass.build_criteria).with_args(self.query, criteria),
+                    raises(InputError))
+
+    def test_that_criterias_are_filtered(self):
+        criteria = {'name': 'foo', 'number': 'bar'}
+
+        resulting_query = self.klass.build_criteria(self.query, criteria)
+
+        resulting_query.assert_filter_by(s.name == 'foo')
+        resulting_query.assert_filter_by(s.number == 'bar')
 
 
 class TestSearchSystem(DAOTestCase):

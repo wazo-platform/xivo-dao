@@ -19,10 +19,12 @@
 from xivo_dao.alchemy.entity import Entity
 
 from xivo_dao.helpers import errors
-from xivo_dao.resources.utils.search import SearchResult
+from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
 
 
-class EntityPersistor(object):
+class EntityPersistor(CriteriaBuilderMixin):
+
+    _search_table = Entity
 
     def __init__(self, session, entity_search):
         self.session = session
@@ -34,16 +36,7 @@ class EntityPersistor(object):
 
     def _find_query(self, criteria):
         query = self.session.query(Entity)
-        for name, value in criteria.iteritems():
-            column = self._get_column(name)
-            query = query.filter(column == value)
-        return query
-
-    def _get_column(self, name):
-        column = getattr(Entity, name, None)
-        if column is None:
-            raise errors.unknown(name)
-        return column
+        return self.build_criteria(query, criteria)
 
     def get_by(self, criteria):
         entity = self.find_by(criteria)
