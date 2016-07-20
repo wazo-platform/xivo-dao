@@ -53,16 +53,19 @@ class Persistor(CriteriaBuilderMixin):
         return self.find_query(criteria).all()
 
     def associate_user_line(self, user, line):
+        main_user_line = self.find_by(main_user=True, line_id=line.id)
+        user_main_line = self.find_by(main_line=True, user_id=user.id)
+
+        # Should be removed when extensions will be in its own table
         user_line = (self.session.query(UserLine)
                      .filter(UserLine.line_id == line.id)
                      .filter(UserLine.user_id == None)  # noqa
                      .first())
-
         if user_line:
             user_line.user_id = user.id
+            user_line.main_line = False if user_main_line else True
+            user_line.main_user = False if main_user_line else True
         else:
-            main_user_line = self.find_by(main_user=True, line_id=line.id)
-            user_main_line = self.find_by(main_line=True, user_id=user.id)
             user_line = UserLine(user_id=user.id,
                                  line_id=line.id,
                                  main_line=(False if user_main_line else True),

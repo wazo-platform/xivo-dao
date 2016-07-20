@@ -15,7 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, equal_to, has_property, instance_of, all_of, none, has_items, contains_inanyorder, contains, is_not, has_length
+from hamcrest import (assert_that,
+                      all_of,
+                      contains,
+                      contains_inanyorder,
+                      equal_to,
+                      has_items,
+                      has_length,
+                      has_properties,
+                      has_property,
+                      instance_of,
+                      is_not,
+                      none)
 
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.queuemember import QueueMember
@@ -269,6 +280,66 @@ class TestAssociateUserLine(DAOTestCase):
             has_property('extension_id', extension.id),
             has_property('main_user', False),
             has_property('main_line', True)))
+
+    def test_associate_user_with_secondary_line(self):
+        user = self.add_user()
+        line1 = self.add_line()
+        line2 = self.add_line()
+        user_main_line = self.add_user_line(user_id=user.id,
+                                            line_id=line1.id,
+                                            main_user=True,
+                                            main_line=True)
+
+        user_line_dao.associate(user, line2)
+
+        result_user_line1 = (self.session.query(UserLine)
+                             .filter(UserLine.id == user_main_line.id)
+                             .first())
+        result_user_line2 = (self.session.query(UserLine)
+                             .filter(UserLine.user_id == user.id)
+                             .filter(UserLine.line_id == line2.id)
+                             .first())
+
+        assert_that(result_user_line1, has_properties(user_id=user.id,
+                                                      line_id=line1.id,
+                                                      main_user=True,
+                                                      main_line=True))
+        assert_that(result_user_line2, has_properties(user_id=user.id,
+                                                      line_id=line2.id,
+                                                      main_user=True,
+                                                      main_line=False))
+
+    # XXX: Delete this test when line_extension tables will be created
+    def test_associate_user_with_secondary_line_and_existing_secondary_line_extension(self):
+        user = self.add_user()
+        line1 = self.add_line()
+        line2 = self.add_line()
+        user_main_line = self.add_user_line(user_id=user.id,
+                                            line_id=line1.id,
+                                            main_user=True,
+                                            main_line=True)
+        extension = self.add_extension()
+        self.add_user_line(line_id=line2.id,
+                           extension_id=extension.id)
+
+        user_line_dao.associate(user, line2)
+
+        result_user_line1 = (self.session.query(UserLine)
+                             .filter(UserLine.id == user_main_line.id)
+                             .first())
+        result_user_line2 = (self.session.query(UserLine)
+                             .filter(UserLine.user_id == user.id)
+                             .filter(UserLine.line_id == line2.id)
+                             .first())
+
+        assert_that(result_user_line1, has_properties(user_id=user.id,
+                                                      line_id=line1.id,
+                                                      main_user=True,
+                                                      main_line=True))
+        assert_that(result_user_line2, has_properties(user_id=user.id,
+                                                      line_id=line2.id,
+                                                      main_user=True,
+                                                      main_line=False))
 
 
 class TestDissociateUserLine(DAOTestCase):
