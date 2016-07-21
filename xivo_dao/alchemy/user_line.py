@@ -48,8 +48,7 @@ class UserLine(Base):
 
     main_extension_rel = relationship("Extension",
                                       primaryjoin="""and_(UserLine.extension_id == Extension.id,
-                                      UserLine.main_user == True,
-                                      UserLine.main_line == True)"""
+                                      UserLine.main_user == True)"""
                                       )
 
     main_line_rel = relationship("LineFeatures",
