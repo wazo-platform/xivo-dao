@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 
-# Copyright (C) 2015 Avencall
+# Copyright (C) 2015-2016 Avencall
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -74,6 +74,28 @@ class TestExtensionFixes(DAOTestCase):
         extension = self.session.query(Extension).first()
         assert_that(extension.type, equal_to('user'))
         assert_that(extension.typeval, equal_to(str(main_user.id)))
+
+    def test_given_user_has_multiple_lines_then_all_extensions_updated(self):
+        extension1 = self.add_extension(exten='1800')
+        extension2 = self.add_extension(exten='1801')
+        line1 = self.add_line()
+        line2 = self.add_line()
+        user = self.add_user()
+        self.add_user_line(user_id=user.id, line_id=line1.id, extension_id=extension1.id,
+                           main_user=True, main_line=True)
+        self.add_user_line(user_id=user.id, line_id=line2.id, extension_id=extension2.id,
+                           main_user=True, main_line=False)
+
+        self.fixes.fix(extension1.id)
+        self.fixes.fix(extension2.id)
+
+        extension = self.session.query(Extension).filter(Extension.exten == extension1.exten).first()
+        assert_that(extension.type, equal_to('user'))
+        assert_that(extension.typeval, equal_to(str(user.id)))
+
+        extension = self.session.query(Extension).filter(Extension.exten == extension2.exten).first()
+        assert_that(extension.type, equal_to('user'))
+        assert_that(extension.typeval, equal_to(str(user.id)))
 
     def test_given_extension_is_not_associated_to_user_then_destination_reset(self):
         extension = self.add_extension(exten="1000", context="default",
