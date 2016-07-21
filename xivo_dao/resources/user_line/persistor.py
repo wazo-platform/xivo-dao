@@ -151,7 +151,7 @@ class Persistor(CriteriaBuilderMixin):
     def fix_associations(self, user_line):
         if user_line.user_id and user_line.main_user:
             UserFixes(self.session).fix_user(user_line.user_id)
-        if user_line.line_id and user_line.main_line:
+        if user_line.line_id:
             LineFixes(self.session).fix(user_line.line_id)
         if user_line.extension_id:
             ExtensionFixes(self.session).fix_extension(user_line.extension_id)

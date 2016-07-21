@@ -61,6 +61,5 @@ class UserFixes(object):
         return (self.session
                 .query(UserLine.line_id)
                 .filter(UserLine.main_user == True)  # noqa
-                .filter(UserLine.main_line == True)
                 .filter(UserLine.user_id == user_id)
                 .all())
