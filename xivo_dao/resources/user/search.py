@@ -74,7 +74,8 @@ class UserSearchSystem(SearchSystem):
                 .outerjoin(Entity,
                            UserFeatures.entity_id == Entity.id)
                 .outerjoin(UserLine,
-                           UserLine.user_id == UserFeatures.id)
+                           and_(UserLine.user_id == UserFeatures.id,
+                                UserLine.main_line == True))  # noqa
                 .outerjoin(LineFeatures,
                            and_(LineFeatures.id == UserLine.line_id,
                                 LineFeatures.commented == 0))
