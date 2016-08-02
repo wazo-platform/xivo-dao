@@ -102,7 +102,7 @@ class Persistor(CriteriaBuilderMixin):
         self.delete_queue_member(user_line)
 
         if user_line.main_line:
-            self._set_random_main_line(user)
+            self._set_oldest_main_line(user)
 
         if user_line.extension_id is None or not user_line.main_user:
             self.session.delete(user_line)
@@ -122,15 +122,16 @@ class Persistor(CriteriaBuilderMixin):
          .filter(QueueMember.userid == user_line.user_id)
          .delete())
 
-    def _set_random_main_line(self, user):
-        random_user_line = (self.session.query(UserLine)
+    def _set_oldest_main_line(self, user):
+        oldest_user_line = (self.session.query(UserLine)
                             .filter(UserLine.user_id == user.id)
                             .filter(UserLine.main_line == False)  # noqa
+                            .order_by(UserLine.line_id.asc())
                             .first())
-        if random_user_line:
+        if oldest_user_line:
             (self.session.query(UserLine)
              .filter(UserLine.user_id == user.id)
-             .filter(UserLine.line_id == random_user_line.line_id)
+             .filter(UserLine.line_id == oldest_user_line.line_id)
              .update({'main_line': True}))
 
     def dissociate_line_extension(self, line, extension):
