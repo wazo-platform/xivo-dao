@@ -388,6 +388,29 @@ class TestSimpleSearch(TestSearch):
 
         self.assert_search_returns_result(expected, view='summary')
 
+    def test_given_user_with_multi_lines_when_using_summary_view_then_returns_summary_one_result(self):
+        user_line = self.add_user_line_with_exten(firstname='dânny',
+                                                  lastname='rôgers')
+        line = self.add_line()
+        self.add_user_line(user_id=user_line.user.id,
+                           line_id=line.id,
+                           main_line=False)
+        entity_name = self.session.query(Entity.name).filter_by(id=user_line.user.id).scalar()
+
+        expected = SearchResult(1, [UserSummary(id=user_line.user_id,
+                                                uuid=user_line.user.uuid,
+                                                firstname='dânny',
+                                                lastname='rôgers',
+                                                entity=entity_name,
+                                                enabled=True,
+                                                extension=user_line.extension.exten,
+                                                context=user_line.extension.context,
+                                                provisioning_code=user_line.linefeatures.provisioning_code,
+                                                protocol=user_line.linefeatures.endpoint,
+                                                )])
+
+        self.assert_search_returns_result(expected, view='summary')
+
     def test_given_user_with_line_and_agent_then_returns_one_directory_view_result(self):
         agent_row = self.add_agent()
         voicemail_row = self.add_voicemail(mailbox='2002')

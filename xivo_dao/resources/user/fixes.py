@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 
-# Copyright (C) 2015 Avencall
+# Copyright (C) 2015-2016 Avencall
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@ class UserFixes(object):
 
     def fix(self, user_id):
         self.fix_user(user_id)
-        self.fix_line(user_id)
+        self.fix_lines(user_id)
         self.session.flush()
 
     def fix_user(self, user_id):
@@ -52,15 +52,14 @@ class UserFixes(object):
                .first())
         return row.voicemailid, row.fullname.strip()
 
-    def fix_line(self, user_id):
-        line_id = self.find_line_id(user_id)
-        if line_id:
-            LineFixes(self.session).fix(line_id)
+    def fix_lines(self, user_id):
+        user_lines = self.find_user_line(user_id)
+        for user_line in user_lines:
+            LineFixes(self.session).fix(user_line.line_id)
 
-    def find_line_id(self, user_id):
+    def find_user_line(self, user_id):
         return (self.session
                 .query(UserLine.line_id)
                 .filter(UserLine.main_user == True)  # noqa
-                .filter(UserLine.main_line == True)
                 .filter(UserLine.user_id == user_id)
-                .scalar())
+                .all())

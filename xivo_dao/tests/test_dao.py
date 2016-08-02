@@ -629,7 +629,7 @@ class DAOTestCase(unittest.TestCase):
         return sccpdevice
 
     def add_sccpline(self, **kwargs):
-        kwargs.setdefault('name', '1234')
+        kwargs.setdefault('name', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
         kwargs.setdefault('context', 'default')
         kwargs.setdefault('cid_name', 'Tester One')
         kwargs.setdefault('cid_num', '1234')

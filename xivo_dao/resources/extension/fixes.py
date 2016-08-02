@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 
-# Copyright (C) 2015 Avencall
+# Copyright (C) 2015-2016 Avencall
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -33,13 +33,14 @@ class ExtensionFixes(object):
 
     def fix(self, extension_id):
         self.fix_extension(extension_id)
-        self.fix_line(extension_id)
+        self.fix_lines(extension_id)
         self.session.flush()
 
     def fix_extension(self, extension_id):
-        user_id, _ = self.find_user_and_line_id(extension_id)
-        if user_id:
-            self.adjust_for_user(extension_id, user_id)
+        user_lines = self.find_user_lines(extension_id)
+        if user_lines:
+            for user_line in user_lines:
+                self.adjust_for_user(extension_id, user_line.user_id)
             return
 
         incall_id = self.find_incall_id(extension_id)
@@ -49,21 +50,18 @@ class ExtensionFixes(object):
 
         self.reset_destination(extension_id)
 
-    def fix_line(self, extension_id):
-        _, line_id = self.find_user_and_line_id(extension_id)
-        if line_id:
-            self.adjust_line(line_id)
+    def fix_lines(self, extension_id):
+        user_lines = self.find_user_lines(extension_id)
+        for user_line in user_lines:
+            self.adjust_line(user_line.line_id)
 
-    def find_user_and_line_id(self, extension_id):
-        row = (self.session
+    def find_user_lines(self, extension_id):
+        return (self.session
                .query(UserLine.user_id,
                       UserLine.line_id)
                .filter(UserLine.main_user == True)  # noqa
-               .filter(UserLine.main_line == True)
                .filter(UserLine.extension_id == extension_id)
-               .first())
-
-        return (row.user_id, row.line_id) if row else (None, None)
+               .all())
 
     def adjust_for_user(self, extension_id, user_id):
         (self.session

@@ -53,20 +53,24 @@ class Persistor(CriteriaBuilderMixin):
         return self.find_query(criteria).all()
 
     def associate_user_line(self, user, line):
+        main_user_line = self.find_by(main_user=True, line_id=line.id)
+        user_main_line = self.find_by(main_line=True, user_id=user.id)
+
+        # Should be removed when extensions will be in its own table
         user_line = (self.session.query(UserLine)
                      .filter(UserLine.line_id == line.id)
                      .filter(UserLine.user_id == None)  # noqa
                      .first())
-
         if user_line:
             user_line.user_id = user.id
+            user_line.main_line = False if user_main_line else True
+            user_line.main_user = False if main_user_line else True
         else:
-            main = self.find_by(main_user=True, line_id=line.id)
             user_line = UserLine(user_id=user.id,
                                  line_id=line.id,
-                                 main_line=True,
-                                 main_user=(False if main else True),
-                                 extension_id=(main.extension_id if main else None))
+                                 main_line=(False if user_main_line else True),
+                                 main_user=(False if main_user_line else True),
+                                 extension_id=(main_user_line.extension_id if main_user_line else None))
 
         self.session.add(user_line)
         self.session.flush()
@@ -97,10 +101,14 @@ class Persistor(CriteriaBuilderMixin):
         user_line = self.get_by(user_id=user.id, line_id=line.id)
         self.delete_queue_member(user_line)
 
+        if user_line.main_line:
+            self._set_oldest_main_line(user)
+
         if user_line.extension_id is None or not user_line.main_user:
             self.session.delete(user_line)
         else:
             user_line.user_id = None
+            user_line.main_line = False
             self.session.add(user_line)
 
         self.session.flush()
@@ -113,6 +121,18 @@ class Persistor(CriteriaBuilderMixin):
          .filter(QueueMember.usertype == 'user')
          .filter(QueueMember.userid == user_line.user_id)
          .delete())
+
+    def _set_oldest_main_line(self, user):
+        oldest_user_line = (self.session.query(UserLine)
+                            .filter(UserLine.user_id == user.id)
+                            .filter(UserLine.main_line == False)  # noqa
+                            .order_by(UserLine.line_id.asc())
+                            .first())
+        if oldest_user_line:
+            (self.session.query(UserLine)
+             .filter(UserLine.user_id == user.id)
+             .filter(UserLine.line_id == oldest_user_line.line_id)
+             .update({'main_line': True}))
 
     def dissociate_line_extension(self, line, extension):
         user_lines = self.find_all_by(line_id=line.id, extension_id=extension.id)
@@ -132,7 +152,7 @@ class Persistor(CriteriaBuilderMixin):
     def fix_associations(self, user_line):
         if user_line.user_id and user_line.main_user:
             UserFixes(self.session).fix_user(user_line.user_id)
-        if user_line.line_id and user_line.main_line:
+        if user_line.line_id:
             LineFixes(self.session).fix(user_line.line_id)
         if user_line.extension_id:
             ExtensionFixes(self.session).fix_extension(user_line.extension_id)
