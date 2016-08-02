@@ -125,8 +125,7 @@ def find_sccp_line_settings(session):
                           UserFeatures.uuid)
             .join(LineFeatures, and_(LineFeatures.protocolid == SCCPLine.id,
                                      LineFeatures.protocol == 'sccp'))
-            .join(UserLine, and_(UserLine.line_id == LineFeatures.id,
-                                 UserLine.main_line == True))
+            .join(UserLine, and_(UserLine.line_id == LineFeatures.id))
             .join(UserFeatures, and_(UserFeatures.id == UserLine.user_id,
                                      UserLine.main_user == True))
             .join(Extension, Extension.id == UserLine.extension_id)
