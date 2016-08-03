@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -46,11 +46,11 @@ def find_all_in_period(session, start, end):
 
 
 @daosession
-def find_all_history_for_phone(session, identifier, limit):
+def find_all_history_for_phones(session, identifiers, limit):
     call_log_rows = (session
                      .query(CallLogSchema)
-                     .filter(or_(CallLogSchema.destination_line_identity == identifier,
-                                 CallLogSchema.source_line_identity == identifier))
+                     .filter(or_(CallLogSchema.destination_line_identity.in_(identifiers),
+                                 CallLogSchema.source_line_identity.in_(identifiers)))
                      .order_by(CallLogSchema.date.desc())
                      .limit(limit))
 

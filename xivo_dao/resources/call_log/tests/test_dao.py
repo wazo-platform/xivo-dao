@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2015 Avencall
+# Copyright (C) 2013-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -41,25 +41,31 @@ class TestCallLogDAO(DAOTestCase):
         self.db_converter_patcher.stop()
         super(TestCallLogDAO, self).tearDown()
 
-    def test_find_all_history_for_phone_limited(self):
-        identity = "sip/131313"
+    def test_find_all_history_for_phones_limited(self):
+        identities = ["sip/131313", "sip/1234"]
         limit = 7
 
         call_logs = c0, c1, c2, c3, c4, c5, c6, c7, c8 = (
-            self._mock_call_log(date=dt(2015, 1, 1, 13, 10, 10), destination_line_identity=identity, answered=False),
-            self._mock_call_log(date=dt(2015, 1, 1, 13, 11, 10), destination_line_identity=identity, answered=False),
-            self._mock_call_log(date=dt(2015, 1, 1, 13, 12, 10), destination_line_identity=identity, answered=False),
-            self._mock_call_log(date=dt(2015, 1, 1, 13, 12, 30), destination_line_identity=identity, answered=True),
-            self._mock_call_log(date=dt(2015, 1, 1, 13, 10, 30), destination_line_identity=identity, answered=True),
-            self._mock_call_log(date=dt(2015, 1, 1, 13, 11, 30), destination_line_identity=identity, answered=True),
-            self._mock_call_log(date=dt(2015, 1, 1, 13, 10, 20), source_line_identity=identity),
-            self._mock_call_log(date=dt(2015, 1, 1, 13, 11, 20), source_line_identity=identity),
-            self._mock_call_log(date=dt(2015, 1, 1, 13, 12, 20), source_line_identity=identity),
+            self._mock_call_log(date=dt(2015, 1, 1, 13, 10, 10),
+                                destination_line_identity=identities[0], answered=False),
+            self._mock_call_log(date=dt(2015, 1, 1, 13, 11, 10),
+                                destination_line_identity=identities[1], answered=False),
+            self._mock_call_log(date=dt(2015, 1, 1, 13, 12, 10),
+                                destination_line_identity=identities[0], answered=False),
+            self._mock_call_log(date=dt(2015, 1, 1, 13, 12, 30),
+                                destination_line_identity=identities[1], answered=True),
+            self._mock_call_log(date=dt(2015, 1, 1, 13, 10, 30),
+                                destination_line_identity=identities[1], answered=True),
+            self._mock_call_log(date=dt(2015, 1, 1, 13, 11, 30),
+                                destination_line_identity=identities[0], answered=True),
+            self._mock_call_log(date=dt(2015, 1, 1, 13, 10, 20), source_line_identity=identities[0]),
+            self._mock_call_log(date=dt(2015, 1, 1, 13, 11, 20), source_line_identity=identities[1]),
+            self._mock_call_log(date=dt(2015, 1, 1, 13, 12, 20), source_line_identity=identities[1]),
         )
 
         call_log_dao.create_from_list(call_logs)
 
-        result = call_log_dao.find_all_history_for_phone(identity, limit)
+        result = call_log_dao.find_all_history_for_phones(identities, limit)
 
         assert_that(result, contains(
             all_of(has_property('date', c3.date),
@@ -84,8 +90,8 @@ class TestCallLogDAO(DAOTestCase):
                    has_property('destination_line_identity', c4.destination_line_identity),
                    has_property('answered', c4.answered))))
 
-    def test_find_all_history_for_phone_no_calls(self):
-        result = call_log_dao.find_all_history_for_phone('sip/foobar', 42)
+    def test_find_all_history_for_phones_no_calls(self):
+        result = call_log_dao.find_all_history_for_phones(['sip/foobar'], 42)
 
         assert_that(result, is_(empty()))
 
