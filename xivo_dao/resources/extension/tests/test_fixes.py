@@ -39,7 +39,7 @@ class TestExtensionFixes(DAOTestCase):
     def test_given_extension_associated_to_line_then_number_and_context_updated(self):
         line = self.add_line(context="mycontext", number="2000")
         extension = self.add_extension(exten="1000", context="default")
-        self.add_user_line(user_id=None, line_id=line.id, extension_id=extension.id)
+        self.add_line_extension(line_id=line.id, extension_id=extension.id)
 
         self.fixes.fix(extension.id)
 
@@ -51,7 +51,8 @@ class TestExtensionFixes(DAOTestCase):
         extension = self.add_extension()
         line = self.add_line()
         user = self.add_user()
-        self.add_user_line(user_id=user.id, line_id=line.id, extension_id=extension.id)
+        self.add_user_line(user_id=user.id, line_id=line.id)
+        self.add_line_extension(line_id=line.id, extension_id=extension.id)
 
         self.fixes.fix(extension.id)
 
@@ -64,9 +65,10 @@ class TestExtensionFixes(DAOTestCase):
         line = self.add_line()
         main_user = self.add_user()
         other_user = self.add_user()
-        self.add_user_line(user_id=main_user.id, line_id=line.id, extension_id=extension.id,
+        self.add_line_extension(line_id=line.id, extension_id=extension.id)
+        self.add_user_line(user_id=main_user.id, line_id=line.id,
                            main_user=True, main_line=True)
-        self.add_user_line(user_id=other_user.id, line_id=line.id, extension_id=extension.id,
+        self.add_user_line(user_id=other_user.id, line_id=line.id,
                            main_user=False, main_line=True)
 
         self.fixes.fix(extension.id)
@@ -81,10 +83,14 @@ class TestExtensionFixes(DAOTestCase):
         line1 = self.add_line()
         line2 = self.add_line()
         user = self.add_user()
-        self.add_user_line(user_id=user.id, line_id=line1.id, extension_id=extension1.id,
+        self.add_user_line(user_id=user.id, line_id=line1.id,
                            main_user=True, main_line=True)
-        self.add_user_line(user_id=user.id, line_id=line2.id, extension_id=extension2.id,
+        self.add_user_line(user_id=user.id, line_id=line2.id,
                            main_user=True, main_line=False)
+        self.add_line_extension(line_id=line1.id, extension_id=extension1.id,
+                                main_extension=True)
+        self.add_line_extension(line_id=line2.id, extension_id=extension2.id,
+                                main_extension=True)
 
         self.fixes.fix(extension1.id)
         self.fixes.fix(extension2.id)

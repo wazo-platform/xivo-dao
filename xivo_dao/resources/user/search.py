@@ -22,6 +22,7 @@ from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.voicemail import Voicemail
 from xivo_dao.alchemy.user_line import UserLine
+from xivo_dao.alchemy.line_extension import LineExtension
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.resources.utils.search import SearchSystem
 from xivo_dao.resources.utils.search import SearchConfig
@@ -79,8 +80,11 @@ class UserSearchSystem(SearchSystem):
                 .outerjoin(LineFeatures,
                            and_(LineFeatures.id == UserLine.line_id,
                                 LineFeatures.commented == 0))
+                .outerjoin(LineExtension,
+                           UserLine.line_id == LineExtension.line_id)
                 .outerjoin(Extension,
-                           and_(UserLine.extension_id == Extension.id,
+                           and_(LineExtension.extension_id == Extension.id,
+                                LineExtension.main_extension == True,  # noqa
                                 Extension.commented == 0))
                 .outerjoin(Voicemail,
                            and_(UserFeatures.voicemailid == Voicemail.uniqueid,

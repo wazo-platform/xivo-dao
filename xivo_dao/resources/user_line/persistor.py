@@ -19,7 +19,6 @@
 from xivo_dao.resources.utils.search import CriteriaBuilderMixin
 from xivo_dao.resources.user.fixes import UserFixes
 from xivo_dao.resources.line.fixes import LineFixes
-from xivo_dao.resources.extension.fixes import ExtensionFixes
 
 from xivo_dao.helpers import errors
 from xivo_dao.alchemy.user_line import UserLine
@@ -56,46 +55,16 @@ class Persistor(CriteriaBuilderMixin):
         main_user_line = self.find_by(main_user=True, line_id=line.id)
         user_main_line = self.find_by(main_line=True, user_id=user.id)
 
-        # Should be removed when extensions will be in its own table
-        user_line = (self.session.query(UserLine)
-                     .filter(UserLine.line_id == line.id)
-                     .filter(UserLine.user_id == None)  # noqa
-                     .first())
-        if user_line:
-            user_line.user_id = user.id
-            user_line.main_line = False if user_main_line else True
-            user_line.main_user = False if main_user_line else True
-        else:
-            user_line = UserLine(user_id=user.id,
-                                 line_id=line.id,
-                                 main_line=(False if user_main_line else True),
-                                 main_user=(False if main_user_line else True),
-                                 extension_id=(main_user_line.extension_id if main_user_line else None))
+        user_line = UserLine(user_id=user.id,
+                             line_id=line.id,
+                             main_line=(False if user_main_line else True),
+                             main_user=(False if main_user_line else True))
 
         self.session.add(user_line)
         self.session.flush()
         self.fix_associations(user_line)
 
         return user_line
-
-    def associate_line_extension(self, line, extension):
-        user_lines = (self.session.query(UserLine)
-                     .filter(UserLine.line_id == line.id)
-                     .filter(UserLine.extension_id == None)  # noqa
-                     .all())
-
-        if len(user_lines) == 0:
-            user_lines = [UserLine(line_id=line.id,
-                                   main_line=True,
-                                   main_user=True)]
-
-        for user_line in user_lines:
-            user_line.extension_id = extension.id
-            self.session.add(user_line)
-            self.session.flush()
-            self.fix_associations(user_line)
-
-        return user_lines
 
     def dissociate_user_line(self, user, line):
         user_line = self.get_by(user_id=user.id, line_id=line.id)
@@ -104,13 +73,7 @@ class Persistor(CriteriaBuilderMixin):
         if user_line.main_line:
             self._set_oldest_main_line(user)
 
-        if user_line.extension_id is None or not user_line.main_user:
-            self.session.delete(user_line)
-        else:
-            user_line.user_id = None
-            user_line.main_line = False
-            self.session.add(user_line)
-
+        self.session.delete(user_line)
         self.session.flush()
         self.fix_associations(user_line)
 
@@ -129,10 +92,8 @@ class Persistor(CriteriaBuilderMixin):
                             .order_by(UserLine.line_id.asc())
                             .first())
         if oldest_user_line:
-            (self.session.query(UserLine)
-             .filter(UserLine.user_id == user.id)
-             .filter(UserLine.line_id == oldest_user_line.line_id)
-             .update({'main_line': True}))
+            oldest_user_line.main_line = True
+            self.session.add(oldest_user_line)
 
     def dissociate_line_extension(self, line, extension):
         user_lines = self.find_all_by(line_id=line.id, extension_id=extension.id)
@@ -150,9 +111,6 @@ class Persistor(CriteriaBuilderMixin):
         return user_lines
 
     def fix_associations(self, user_line):
-        if user_line.user_id and user_line.main_user:
+        if user_line.main_user:
             UserFixes(self.session).fix_user(user_line.user_id)
-        if user_line.line_id:
-            LineFixes(self.session).fix(user_line.line_id)
-        if user_line.extension_id:
-            ExtensionFixes(self.session).fix_extension(user_line.extension_id)
+        LineFixes(self.session).fix(user_line.line_id)

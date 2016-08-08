@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2015 Avencall
+# Copyright (C) 2013-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -69,9 +69,9 @@ class TestUserVoicemailGetByUserId(TestUserVoicemail):
         self.assertRaises(NotFoundError, user_voicemail_dao.get_by_user_id, user_row.id)
 
     def test_get_by_user_id_with_user_without_voicemail(self):
-        user_row = self.add_user_line_with_exten(firstname='King', exten='1000', context='default')
+        user_line = self.add_user_line_with_exten(firstname='King', exten='1000', context='default')
 
-        self.assertRaises(NotFoundError, user_voicemail_dao.get_by_user_id, user_row.id)
+        self.assertRaises(NotFoundError, user_voicemail_dao.get_by_user_id, user_line.user.id)
 
     def test_get_by_user_id_with_voicemail(self):
         user_row, voicemail_row = self.create_user_and_voicemail(firstname='King', exten='1000', context='default')
@@ -99,9 +99,9 @@ class TestUserVoicemailFindByUserId(TestUserVoicemail):
         assert_that(result, none())
 
     def test_find_by_user_id_with_user_without_voicemail(self):
-        user_row = self.add_user_line_with_exten(firstname='King', exten='1000', context='default')
+        user_line = self.add_user_line_with_exten(firstname='King', exten='1000', context='default')
 
-        result = user_voicemail_dao.find_by_user_id(user_row.id)
+        result = user_voicemail_dao.find_by_user_id(user_line.user.id)
 
         assert_that(result, none())
 

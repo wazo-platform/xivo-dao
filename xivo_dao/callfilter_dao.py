@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2015 Avencall
+# Copyright (C) 2013-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@ from xivo_dao.alchemy.userfeatures import UserFeatures
 from sqlalchemy.types import Integer
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.user_line import UserLine
+from xivo_dao.alchemy.line_extension import LineExtension
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 
 
@@ -52,10 +53,12 @@ def get(session, callfilter_id):
 def get_secretaries_id_by_context(session, context):
     return (session.query(Callfiltermember.id)
             .join(UserLine, and_(UserLine.user_id == cast(Callfiltermember.typeval, Integer),
-                                 UserLine.main_user == True,
-                                 UserLine.main_line == True))
+                                 UserLine.main_user == True,  # noqa
+                                 UserLine.main_line == True))  # noqa
+            .join(LineExtension, and_(UserLine.line_id == LineExtension.line_id,
+                                      LineExtension.main_extension == True))  # noqa
             .join(ExtensionSchema, and_(ExtensionSchema.context == context,
-                                        UserLine.extension_id == ExtensionSchema.id))
+                                        LineExtension.extension_id == ExtensionSchema.id))
             .filter(and_(Callfiltermember.type == 'user',
                          Callfiltermember.bstype == 'secretary'))
             .all())

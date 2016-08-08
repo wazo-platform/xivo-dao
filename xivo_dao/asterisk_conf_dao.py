@@ -26,6 +26,7 @@ from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
 from xivo_dao.alchemy.user_line import UserLine
+from xivo_dao.alchemy.line_extension import LineExtension
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.pickup import Pickup
@@ -125,10 +126,12 @@ def find_sccp_line_settings(session):
                           UserFeatures.uuid)
             .join(LineFeatures, and_(LineFeatures.protocolid == SCCPLine.id,
                                      LineFeatures.protocol == 'sccp'))
-            .join(UserLine, and_(UserLine.line_id == LineFeatures.id))
+            .join(UserLine, UserLine.line_id == LineFeatures.id)
             .join(UserFeatures, and_(UserFeatures.id == UserLine.user_id,
                                      UserLine.main_user == True))
-            .join(Extension, Extension.id == UserLine.extension_id)
+            .join(LineExtension, and_(LineFeatures.id == LineExtension.line_id,
+                                      LineExtension.main_extension == True)) # noqa
+            .join(Extension, LineExtension.extension_id == Extension.id)
             .filter(LineFeatures.commented == 0)
             .all())
 
@@ -308,13 +311,11 @@ def find_extenfeatures_settings(session, features=None):
 @daosession
 def find_exten_settings(session, context_name):
     rows = (session.query(Extension)
-            .outerjoin(UserLine, and_(UserLine.extension_id == Extension.id,
-                                      UserLine.main_user == True,
-                                      UserLine.main_line == True))
-            .outerjoin(LineFeatures, LineFeatures.id == UserLine.line_id)
+            .outerjoin(LineExtension, Extension.id == LineExtension.extension_id)
+            .outerjoin(LineFeatures, LineFeatures.id == LineExtension.line_id)
             .filter(and_(Extension.context == context_name,
                          Extension.commented == 0,
-                         or_(UserLine.line_id == None,
+                         or_(LineExtension.line_id == None,  # noqa
                              LineFeatures.commented == 0)))
             .order_by('exten')
             .all())
@@ -404,7 +405,9 @@ def find_sip_user_settings(session):
         ).outerjoin(
             Voicemail, UserFeatures.voicemailid == Voicemail.uniqueid
         ).outerjoin(
-            Extension, UserLine.extension_id == Extension.id
+            LineExtension, UserLine.line_id == LineExtension.line_id
+        ).outerjoin(
+            Extension, Extension.id == LineExtension.extension_id
         ).filter(
             and_(
                 UserSIP.category == 'user',

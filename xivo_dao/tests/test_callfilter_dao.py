@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2015 Avencall
+# Copyright (C) 2013-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -97,14 +97,14 @@ class TestGetSecretariesIdByContext(BaseTestCallFilterDAO):
 
         self.add_user_line(user_id=main_user.id,
                            line_id=line.id,
-                           extension_id=extension.id,
                            main_user=True,
                            main_line=True)
         self.add_user_line(user_id=secondary_user.id,
                            line_id=line.id,
-                           extension_id=extension.id,
                            main_user=False,
                            main_line=True)
+        self.add_line_extension(line_id=line.id,
+                                extension_id=extension.id)
 
         member = self._add_user_to_filter(main_user.id, filter_id, 'secretary')
 
@@ -124,14 +124,16 @@ class TestGetSecretariesIdByContext(BaseTestCallFilterDAO):
 
         self.add_user_line(user_id=user.id,
                            line_id=main_line.id,
-                           extension_id=extension.id,
                            main_user=True,
                            main_line=True)
         self.add_user_line(user_id=user.id,
                            line_id=secondary_line.id,
-                           extension_id=extension.id,
                            main_user=True,
                            main_line=False)
+        self.add_line_extension(line_id=main_line.id,
+                                extension_id=extension.id)
+        self.add_line_extension(line_id=secondary_line.id,
+                                extension_id=extension.id)
 
         member = self._add_user_to_filter(user.id, filter_id, 'secretary')
 

@@ -395,7 +395,7 @@ class TestSimpleSearch(TestSearch):
         self.add_user_line(user_id=user_line.user.id,
                            line_id=line.id,
                            main_line=False)
-        entity_name = self.session.query(Entity.name).filter_by(id=user_line.user.id).scalar()
+        entity_name = self.session.query(Entity.name).filter_by(id=user_line.user.entity_id).scalar()
 
         expected = SearchResult(1, [UserSummary(id=user_line.user_id,
                                                 uuid=user_line.user.uuid,

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2015 Avencall
+# Copyright (C) 2013-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,9 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy import and_
+
 from xivo.asterisk.extension import Extension
 from xivo_dao.alchemy.linefeatures import LineFeatures
-from xivo_dao.alchemy.user_line import UserLine
+from xivo_dao.alchemy.line_extension import LineExtension
 from xivo_dao.alchemy.extension import Extension as ExtensionTable
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.enum import valid_trunk_protocols
@@ -27,8 +29,8 @@ from xivo_dao.alchemy.enum import valid_trunk_protocols
 def get_interface_from_exten_and_context(session, extension, context):
     res = (session
            .query(LineFeatures.protocol, LineFeatures.name)
-           .join(UserLine, UserLine.line_id == LineFeatures.id)
-           .join(ExtensionTable, UserLine.extension_id == ExtensionTable.id)
+           .join(LineExtension, LineExtension.line_id == LineFeatures.id)
+           .join(ExtensionTable, LineExtension.extension_id == ExtensionTable.id)
            .filter(ExtensionTable.exten == extension)
            .filter(ExtensionTable.context == context)).first()
 
@@ -46,8 +48,10 @@ def get_extension_from_protocol_interface(session, protocol, interface):
 
     row = (session
            .query(ExtensionTable.exten, ExtensionTable.context)
-           .join(UserLine, UserLine.extension_id == ExtensionTable.id)
-           .join(LineFeatures, UserLine.line_id == LineFeatures.id)
+           .join(LineExtension,
+                 and_(LineExtension.extension_id == ExtensionTable.id,
+                      LineExtension.main_extension == True))  # noqa
+           .join(LineFeatures, LineExtension.line_id == LineFeatures.id)
            .filter(LineFeatures.protocol == lowered_protocol)
            .filter(LineFeatures.name == interface)
            .first())
