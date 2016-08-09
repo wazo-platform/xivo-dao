@@ -28,6 +28,7 @@ from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.resources.line_extension import dao
 
 from xivo_dao.alchemy.line_extension import LineExtension
+from xivo_dao.helpers.exception import InputError
 
 
 class TestLineExtensionDAO(DAOTestCase):
@@ -83,6 +84,22 @@ class TestAssociateLineExtension(TestLineExtensionDAO):
                           .filter(LineExtension.main_extension == main_extension)
                           .first())
         assert_that(line_extension, is_not(none()))
+
+
+class TestFindBy(TestLineExtensionDAO):
+
+    def test_given_column_does_not_exist_then_raises_error(self):
+        self.assertRaises(InputError, dao.find_by, column=1)
+
+    def test_find_by(self):
+        line = self.add_line()
+        extension = self.add_extension()
+        expected = self.add_line_extension(line_id=line.id,
+                                           extension_id=extension.id)
+
+        line_extension = dao.find_by(line_id=expected.line_id)
+
+        assert_that(line_extension, equal_to(expected))
 
 
 class TestFindByLineId(TestLineExtensionDAO):

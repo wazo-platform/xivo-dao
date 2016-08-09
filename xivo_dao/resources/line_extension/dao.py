@@ -24,6 +24,10 @@ def get_by(**criteria):
     return LineExtensionPersistor(Session).get_by(**criteria)
 
 
+def find_by(**criteria):
+    return LineExtensionPersistor(Session).find_by(**criteria)
+
+
 def find_all_by(**criteria):
     return LineExtensionPersistor(Session).find_all_by(**criteria)
 
