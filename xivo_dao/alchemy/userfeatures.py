@@ -87,7 +87,7 @@ class UserFeatures(Base):
     id = Column(Integer, nullable=False)
     uuid = Column(String(38), nullable=False, default=_new_uuid)
     firstname = Column(String(128), nullable=False, server_default='')
-    email = column_property(Column(String(128)),
+    email = column_property(Column(String(254)),
                             comparator_factory=EmailComparator)
     voicemailid = Column(Integer)
     agentid = Column(Integer)
@@ -97,7 +97,7 @@ class UserFeatures(Base):
     ringseconds = Column(Integer, nullable=False, server_default='30')
     simultcalls = Column(Integer, nullable=False, server_default='5')
     enableclient = Column(Integer, nullable=False, server_default='0')
-    loginclient = Column(String(64), nullable=False, server_default='')
+    loginclient = Column(String(254), nullable=False, server_default='')
     passwdclient = Column(String(64), nullable=False, server_default='')
     cti_profile_id = Column(Integer)
     enablehint = Column(Integer, nullable=False, server_default='1')
