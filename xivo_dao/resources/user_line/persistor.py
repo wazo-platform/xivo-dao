@@ -95,21 +95,6 @@ class Persistor(CriteriaBuilderMixin):
             oldest_user_line.main_line = True
             self.session.add(oldest_user_line)
 
-    def dissociate_line_extension(self, line, extension):
-        user_lines = self.find_all_by(line_id=line.id, extension_id=extension.id)
-        for user_line in user_lines:
-
-            if user_line.user_id is None:
-                self.session.delete(user_line)
-            else:
-                user_line.extension_id = None
-                self.session.add(user_line)
-
-            self.session.flush()
-            self.fix_associations(user_line)
-
-        return user_lines
-
     def fix_associations(self, user_line):
         if user_line.main_user:
             UserFixes(self.session).fix_user(user_line.user_id)
