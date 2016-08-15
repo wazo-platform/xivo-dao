@@ -106,8 +106,8 @@ def user_hints(session, context):
                         sql.and_(
                             LineFeatures.protocol == 'custom',
                             LineFeatures.protocolid == UserCustom.id))
-             .outerjoin(LineExtension,
-                        UserLine.line_id == LineExtension.line_id)
+             .join(LineExtension,
+                   UserLine.line_id == LineExtension.line_id)
              .join(FuncKeyDestUser,
                    FuncKeyDestUser.user_id == UserFeatures.id)
              .filter(UserLine.main_user == True)
