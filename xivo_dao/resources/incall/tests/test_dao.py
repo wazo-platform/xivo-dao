@@ -56,13 +56,12 @@ class TestIncallDAO(DAOTestCase):
 
         return incall_row
 
-    def add_secondary_user(self, line_id, extension_id):
-        user_row = self.add_user()
-        return self.add_user_line(user_id=user_row.id,
-                                  line_id=line_id,
-                                  extension_id=extension_id,
-                                  main_user=False,
-                                  main_line=True)
+    def add_secondary_user(self, line_id):
+        user = self.add_user()
+        self.add_user_line(user_id=user.id,
+                           line_id=line_id,
+                           main_user=False,
+                           main_line=True)
 
 
 class TestFindAllLineExtensionsByLineId(TestIncallDAO):
@@ -96,7 +95,7 @@ class TestFindAllLineExtensionsByLineId(TestIncallDAO):
 
         self.create_incall_row_for_user(user_line_row.user_id, extension_row.id)
 
-        self.add_secondary_user(user_line_row.line_id, extension_row.id)
+        self.add_secondary_user(user_line_row.line_id)
 
         result = dao.find_all_line_extensions_by_line_id(user_line_row.line_id)
 
@@ -142,7 +141,7 @@ class TestFindLineExtensionByExtensionId(TestIncallDAO):
     def test_given_user_with_internal_extension_then_returns_nothing(self):
         user_line_row = self.add_user_line_with_exten(exten='1000', context='default')
 
-        result = dao.find_line_extension_by_extension_id(user_line_row.extension_id)
+        result = dao.find_line_extension_by_extension_id(user_line_row.extension.id)
 
         assert_that(result, none())
 
@@ -188,7 +187,7 @@ class TestFindByExtensionId(TestIncallDAO):
     def test_given_extension_to_line_then_returns_none(self):
         user_line_row = self.add_user_line_with_exten()
 
-        result = dao.find_by_extension_id(user_line_row.extension_id)
+        result = dao.find_by_extension_id(user_line_row.extension.id)
 
         assert_that(result, none())
 

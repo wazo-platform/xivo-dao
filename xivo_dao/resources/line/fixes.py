@@ -21,6 +21,7 @@ from sqlalchemy.orm import Load
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.user_line import UserLine
+from xivo_dao.alchemy.line_extension import LineExtension
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.sccpline import SCCPLine
@@ -63,7 +64,8 @@ class LineFixes(object):
                             SCCPLine.name == SCCPDevice.line)
                  .outerjoin(LineFeatures.user_lines)
                  .outerjoin(UserLine.main_user_rel)
-                 .outerjoin(UserLine.main_extension_rel)
+                 .outerjoin(LineFeatures.line_extensions)
+                 .outerjoin(LineExtension.main_extension_rel)
                  .options(
                      Load(LineFeatures).load_only("id", "name", "number", "context"),
                      Load(UserSIP).load_only("id", "callerid", "context"),

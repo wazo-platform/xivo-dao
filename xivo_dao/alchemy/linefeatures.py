@@ -98,6 +98,7 @@ class LineFeatures(Base):
                                    foreign_keys=[protocolid])
 
     user_lines = relationship("UserLine")
+    line_extensions = relationship("LineExtension")
 
     @property
     def caller_id_name(self):

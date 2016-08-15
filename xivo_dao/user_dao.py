@@ -19,11 +19,12 @@ import logging
 
 from sqlalchemy import and_
 
+from xivo_dao.alchemy.extension import Extension
+from xivo_dao.alchemy.line_extension import LineExtension
 from xivo_dao.alchemy.linefeatures import LineFeatures
+from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.alchemy.user_line import UserLine
-from xivo_dao.alchemy.extension import Extension as ExtensionSchema
 
 logger = logging.getLogger(__name__)
 
@@ -39,15 +40,14 @@ def get(session, user_id):
 @daosession
 def get_user_by_number_context(session, exten, context):
     user = (session.query(UserFeatures)
-            .join(ExtensionSchema, and_(ExtensionSchema.context == context,
-                                        ExtensionSchema.exten == exten,
-                                        ExtensionSchema.commented == 0))
-            .join(LineFeatures, and_(LineFeatures.commented == 0))
+            .join(Extension, and_(Extension.context == context,
+                                  Extension.exten == exten,
+                                  Extension.commented == 0))
+            .join(LineExtension, LineExtension.extension_id == Extension.id)
             .join(UserLine, and_(UserLine.user_id == UserFeatures.id,
-                                 UserLine.extension_id == ExtensionSchema.id,
-                                 UserLine.line_id == LineFeatures.id,
-                                 UserLine.main_line == True,
-                                 UserLine.main_line == True))
+                                 UserLine.line_id == LineExtension.line_id,
+                                 UserLine.main_line == True))  # noqa
+            .join(LineFeatures, and_(LineFeatures.commented == 0))
             .first())
 
     if not user:

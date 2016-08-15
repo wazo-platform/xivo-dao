@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014-2015 Avencall
+# Copyright (C) 2014-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.user_line import UserLine
+from xivo_dao.alchemy.line_extension import LineExtension
 from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.usercustom import UserCustom
@@ -59,11 +60,14 @@ def _common_filter(query, context):
                        FuncKeyMapping.template_id == UserFeatures.func_key_private_template_id)
             .join(UserLine,
                   UserFeatures.id == UserLine.user_id)
+            .join(LineExtension,
+                  LineExtension.line_id == UserLine.line_id)
             .join(user_extension,
-                  UserLine.extension_id == user_extension.id)
+                  LineExtension.extension_id == user_extension.id)
             .filter(user_extension.context == context)
             .filter(UserLine.main_user == True)
             .filter(UserLine.main_line == True)
+            .filter(LineExtension.main_extension == True)
             .filter(FuncKeyMapping.blf == True))
 
 
@@ -102,11 +106,13 @@ def user_hints(session, context):
                         sql.and_(
                             LineFeatures.protocol == 'custom',
                             LineFeatures.protocolid == UserCustom.id))
-             .join(UserLine.extensions)
+             .join(LineExtension,
+                   UserLine.line_id == LineExtension.line_id)
              .join(FuncKeyDestUser,
                    FuncKeyDestUser.user_id == UserFeatures.id)
              .filter(UserLine.main_user == True)
              .filter(UserLine.main_line == True)
+             .filter(LineExtension.main_extension == True)
              .filter(LineFeatures.commented == 0)
              .filter(Extension.context == context)
              .filter(UserFeatures.enablehint == 1))
@@ -214,10 +220,13 @@ def bsfilter_hints(session, context):
                    sql.cast(Callfiltermember.typeval, Integer) == UserFeatures.id)
              .join(UserLine,
                    UserLine.user_id == UserFeatures.id)
+             .join(LineExtension,
+                   UserLine.line_id == LineExtension.line_id)
              .join(Extension,
-                   Extension.id == UserLine.extension_id)
+                   Extension.id == LineExtension.extension_id)
              .filter(UserLine.main_user == True)
              .filter(UserLine.main_line == True)
+             .filter(LineExtension.main_extension == True)
              .filter(Extension.commented == 0)
              .filter(Callfilter.commented == 0)
              .filter(Extension.context == context))

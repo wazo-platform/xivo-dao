@@ -64,8 +64,9 @@ class TestLineFixes(DAOTestCase):
         sip = self.add_usersip(callerid='"Rôger Rabbit" <2000>')
         line = self.add_line(protocol='sip', protocolid=sip.id)
         extension = self.add_extension(exten="3000", context="default")
-        self.add_user_line(user_id=user.id, line_id=line.id, extension_id=extension.id,
+        self.add_user_line(user_id=user.id, line_id=line.id,
                            main_user=True, main_line=True)
+        self.add_line_extension(line_id=line.id, extension_id=extension.id)
 
         self.fixes.fix(line.id)
 
@@ -77,8 +78,9 @@ class TestLineFixes(DAOTestCase):
         sip = self.add_usersip(callerid='"Rôger Rabbit" <2000>')
         line = self.add_line(protocol='sip', protocolid=sip.id)
         extension = self.add_extension(exten="3000", context="default")
-        self.add_user_line(user_id=user.id, line_id=line.id, extension_id=extension.id,
+        self.add_user_line(user_id=user.id, line_id=line.id,
                            main_user=True, main_line=True)
+        self.add_line_extension(line_id=line.id, extension_id=extension.id)
 
         self.fixes.fix(line.id)
 
@@ -128,8 +130,9 @@ class TestLineFixes(DAOTestCase):
         sccp = self.add_sccpline(cid_name="Rôger Rabbit", cid_num="2000")
         line = self.add_line(protocol='sccp', protocolid=sccp.id)
         extension = self.add_extension(exten="3000", context="default")
-        self.add_user_line(user_id=user.id, line_id=line.id, extension_id=extension.id,
+        self.add_user_line(user_id=user.id, line_id=line.id,
                            main_user=True, main_line=True)
+        self.add_line_extension(line_id=line.id, extension_id=extension.id)
 
         self.fixes.fix(line.id)
 
@@ -142,8 +145,9 @@ class TestLineFixes(DAOTestCase):
         sccp = self.add_sccpline(cid_name="Rôger Rabbit", cid_num="2000")
         line = self.add_line(protocol='sccp', protocolid=sccp.id)
         extension = self.add_extension(exten="3000", context="default")
-        self.add_user_line(user_id=user.id, line_id=line.id, extension_id=extension.id,
+        self.add_user_line(user_id=user.id, line_id=line.id,
                            main_user=True, main_line=True)
+        self.add_line_extension(line_id=line.id, extension_id=extension.id)
 
         self.fixes.fix(line.id)
 
@@ -156,8 +160,9 @@ class TestLineFixes(DAOTestCase):
         sccp = self.add_sccpline(cid_name="Rôger Rabbit", cid_num="2000")
         line = self.add_line(protocol='sccp', protocolid=sccp.id)
         extension = self.add_extension(exten="3000", context="default")
-        self.add_user_line(user_id=user.id, line_id=line.id, extension_id=extension.id,
+        self.add_user_line(user_id=user.id, line_id=line.id,
                            main_user=True, main_line=True)
+        self.add_line_extension(line_id=line.id, extension_id=extension.id)
 
         self.fixes.fix(line.id)
 
@@ -173,8 +178,9 @@ class TestLineFixes(DAOTestCase):
         line = self.add_line(name='1000', number='1000', context='default',
                              protocol='sccp', protocolid=sccp.id)
         extension = self.add_extension(exten="2000", context="default")
-        self.add_user_line(user_id=user.id, line_id=line.id, extension_id=extension.id,
+        self.add_user_line(user_id=user.id, line_id=line.id,
                            main_user=True, main_line=True)
+        self.add_line_extension(line_id=line.id, extension_id=extension.id)
 
         self.fixes.fix(line.id)
 
@@ -200,7 +206,7 @@ class TestLineFixes(DAOTestCase):
     def test_given_extension_associated_to_line_then_number_and_context_updated(self):
         line = self.add_line(context="mycontext", number="2000")
         extension = self.add_extension(exten="1000", context="default")
-        self.add_user_line(user_id=None, line_id=line.id, extension_id=extension.id)
+        self.add_line_extension(line_id=line.id, extension_id=extension.id)
 
         self.fixes.fix(line.id)
 

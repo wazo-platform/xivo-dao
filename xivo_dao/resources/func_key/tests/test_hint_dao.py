@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014 Avencall
+# Copyright (C) 2014-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -77,9 +77,11 @@ class TestHints(DAOTestCase, FuncKeyHelper):
 
         self.add_user_line(user_id=user_row.id,
                            line_id=line_row.id,
-                           extension_id=extension_row.id,
                            main_user=True,
                            main_line=True)
+        self.add_line_extension(line_id=line_row.id,
+                                extension_id=extension_row.id,
+                                main_extension=True)
         return user_row
 
 

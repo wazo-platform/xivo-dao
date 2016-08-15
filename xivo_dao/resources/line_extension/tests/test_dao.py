@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,71 +15,91 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, has_property, none, is_not, contains, equal_to, has_properties, has_items
+from hamcrest import (assert_that,
+                      any_of,
+                      contains,
+                      equal_to,
+                      has_items,
+                      has_properties,
+                      is_not,
+                      none)
 
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.resources.line_extension import dao
 
-from xivo_dao.alchemy.user_line import UserLine
+from xivo_dao.alchemy.line_extension import LineExtension
+from xivo_dao.helpers.exception import InputError
 
 
 class TestLineExtensionDAO(DAOTestCase):
 
-    def prepare_secondary_user_associated(self, user_line_row):
-        user_row = self.add_user()
-        return self.associate_secondary_user(user_line_row, user_row)
+    def prepare_secondary_user_associated(self, line_extension):
+        user = self.add_user()
+        return self.associate_secondary_user(line_extension, user)
 
-    def associate_secondary_user(self, user_line_row, user_row):
-        user_line_row = self.add_user_line(user_id=user_row.id,
-                                           line_id=user_line_row.line_id,
-                                           extension_id=user_line_row.extension_id,
-                                           main_user=False,
-                                           main_line=True)
-        return user_line_row
+    def associate_secondary_user(self, line_extension, user_row):
+        line_extension = self.add_line_extension(line_id=line_extension.line_id,
+                                                 extension_id=line_extension.extension_id)
+        return line_extension
 
 
 class TestAssociateLineExtension(TestLineExtensionDAO):
 
-    def test_associate_no_user(self):
-        line_row = self.add_line()
-        extension_row = self.add_extension()
+    def test_associate(self):
+        line = self.add_line()
+        extension = self.add_extension()
 
-        result = dao.associate(line_row, extension_row)
+        result = dao.associate(line, extension)
 
-        self.assert_line_extension_has_ids(result, line_row.id, extension_row.id)
-        self.assert_extension_is_associated(line_row.id, extension_row.id)
+        assert_that(result, has_items(has_properties(line_id=line.id,
+                                                     extension_id=extension.id)))
+        self.assert_extension_is_associated(line.id, extension.id)
 
-    def test_associate_main_user(self):
-        ule_row = self.add_user_line_without_exten()
-        extension_row = self.add_extension()
+    def test_associate_line_multiple_extensions(self):
+        line = self.add_line()
+        extension1 = self.add_extension()
+        extension2 = self.add_extension()
 
-        result = dao.associate(ule_row.linefeatures, extension_row)
+        dao.associate(line, extension1)
+        dao.associate(line, extension2)
 
-        self.assert_line_extension_has_ids(result, ule_row.line_id, ule_row.extension_id)
-        self.assert_extension_is_associated(ule_row.line_id, extension_row.id)
+        self.assert_extension_is_associated(line.id, extension1.id, main_extension=True)
+        self.assert_extension_is_associated(line.id, extension2.id, main_extension=False)
 
-    def test_associate_main_and_secondary_user(self):
-        main_ule = self.add_user_line_without_exten()
-        secondary_user = self.add_user()
-        secondary_ule = self.associate_secondary_user(main_ule, secondary_user)
-        extension_row = self.add_extension()
+    def test_associate_multiple_lines_extension(self):
+        line1 = self.add_line()
+        line2 = self.add_line()
+        extension = self.add_extension()
 
-        result = dao.associate(main_ule.linefeatures, extension_row)
+        dao.associate(line1, extension)
+        dao.associate(line2, extension)
 
-        self.assert_line_extension_has_ids(result, main_ule.line_id, extension_row.id)
-        self.assert_extension_is_associated(main_ule.line_id, extension_row.id)
-        self.assert_extension_is_associated(secondary_ule.line_id, extension_row.id)
+        self.assert_extension_is_associated(line1.id, extension.id)
+        self.assert_extension_is_associated(line1.id, extension.id)
 
-    def assert_line_extension_has_ids(self, line_extensions, line_id, extension_id):
-        assert_that(line_extensions, has_items(has_properties(line_id=line_id,
-                                                              extension_id=extension_id)))
+    def assert_extension_is_associated(self, line_id, extension_id, main_extension=True):
+        line_extension = (self.session.query(LineExtension)
+                          .filter(LineExtension.line_id == line_id)
+                          .filter(LineExtension.extension_id == extension_id)
+                          .filter(LineExtension.main_extension == main_extension)
+                          .first())
+        assert_that(line_extension, is_not(none()))
 
-    def assert_extension_is_associated(self, line_id, extension_id):
-        updated_ule = (self.session.query(UserLine)
-                       .filter(UserLine.line_id == line_id)
-                       .filter(UserLine.extension_id == extension_id)
-                       .first())
-        assert_that(updated_ule, is_not(none()))
+
+class TestFindBy(TestLineExtensionDAO):
+
+    def test_given_column_does_not_exist_then_raises_error(self):
+        self.assertRaises(InputError, dao.find_by, column=1)
+
+    def test_find_by(self):
+        line = self.add_line()
+        extension = self.add_extension()
+        expected = self.add_line_extension(line_id=line.id,
+                                           extension_id=extension.id)
+
+        line_extension = dao.find_by(line_id=expected.line_id)
+
+        assert_that(line_extension, equal_to(expected))
 
 
 class TestFindByLineId(TestLineExtensionDAO):
@@ -89,35 +109,15 @@ class TestFindByLineId(TestLineExtensionDAO):
 
         assert_that(result, none())
 
-    def test_find_by_line_id_no_extension(self):
-        user_line_row = self.add_user_line_without_exten()
-
-        result = dao.find_by_line_id(user_line_row.line_id)
-
-        assert_that(result, none())
-
-    def test_find_by_line_id_with_extension(self):
-        expected = self.add_user_line_with_exten()
+    def test_find_by_line_id(self):
+        line = self.add_line()
+        extension = self.add_extension()
+        expected = self.add_line_extension(line_id=line.id,
+                                           extension_id=extension.id)
 
         line_extension = dao.find_by_line_id(expected.line_id)
 
         assert_that(line_extension, equal_to(expected))
-
-    def test_find_by_line_id_with_extension_without_user(self):
-        expected = self.add_user_line_without_user()
-
-        line_extension = dao.find_by_line_id(expected.line_id)
-
-        assert_that(line_extension, equal_to(expected))
-
-    def test_find_by_line_id_with_multiple_users(self):
-        main_ule = self.add_user_line_with_exten()
-        secondary_ule = self.prepare_secondary_user_associated(main_ule)
-
-        line_extension = dao.find_by_line_id(secondary_ule.line_id)
-
-        assert_that(line_extension.line_id, equal_to(main_ule.line_id))
-        assert_that(line_extension.extension_id, equal_to(main_ule.extension_id))
 
 
 class TestFindAllByLineId(TestLineExtensionDAO):
@@ -128,105 +128,117 @@ class TestFindAllByLineId(TestLineExtensionDAO):
         assert_that(result, contains())
 
     def test_given_one_line_extension_then_returns_one_item(self):
-        user_line_row = self.add_user_line_with_exten()
+        line = self.add_line()
+        extension = self.add_extension()
+        line_extension = self.add_line_extension(line_id=line.id,
+                                                 extension_id=extension.id)
 
-        result = dao.find_all_by_line_id(user_line_row.line_id)
+        result = dao.find_all_by_line_id(line_extension.line_id)
 
-        assert_that(result, contains(has_properties(line_id=user_line_row.line_id,
-                                                    extension_id=user_line_row.extension_id)))
+        assert_that(result, contains(has_properties(line_id=line_extension.line_id,
+                                                    extension_id=line_extension.extension_id)))
 
-    def test_given_user_line_without_extension_then_returns_empty_list(self):
-        user_line_row = self.add_user_line_without_exten()
+    def test_line_multiple_extensions(self):
+        line = self.add_line()
+        extension1 = self.add_extension()
+        extension2 = self.add_extension()
+        self.add_line_extension(line_id=line.id,
+                                extension_id=extension1.id)
+        self.add_line_extension(line_id=line.id,
+                                extension_id=extension2.id)
 
-        result = dao.find_all_by_line_id(user_line_row.line_id)
+        result = dao.find_all_by_line_id(line.id)
 
-        assert_that(result, contains())
-
-    def test_given_multiple_users_associated_to_same_line_then_returns_one_item(self):
-        main_ule = self.add_user_line_with_exten()
-        self.prepare_secondary_user_associated(main_ule)
-
-        result = dao.find_all_by_line_id(main_ule.line_id)
-
-        assert_that(result, contains(has_properties(line_id=main_ule.line_id,
-                                                    extension_id=main_ule.extension_id)))
+        assert_that(result, contains(has_properties(line_id=line.id,
+                                                    extension_id=extension1.id),
+                                     has_properties(line_id=line.id,
+                                                    extension_id=extension2.id)))
 
 
-class TestFindAllByExtensionId(TestLineExtensionDAO):
+class TestFindByExtensionId(TestLineExtensionDAO):
 
     def test_find_by_extension_id_no_links(self):
         result = dao.find_by_extension_id(1)
 
         assert_that(result, none())
 
-    def test_find_by_extension_id_not_associated_to_extension(self):
-        self.add_user_line_without_exten()
-
-        result = dao.find_by_extension_id(1)
-
-        assert_that(result, none())
-
     def test_find_by_extension_id_not_associated_to_wrong_extension(self):
-        self.add_user_line_with_exten(exten=2)
+        line = self.add_line()
+        extension = self.add_extension(exten=2)
+        self.add_line_extension(line_id=line.id,
+                                extension_id=extension.id)
 
         result = dao.find_by_extension_id(1)
 
         assert_that(result, none())
 
     def test_find_by_extension_id_associated_to_extension(self):
-        user_line_row = self.add_user_line_with_exten(exten=2)
+        line = self.add_line()
+        extension = self.add_extension()
+        expected = self.add_line_extension(line_id=line.id,
+                                           extension_id=extension.id)
 
-        result = dao.find_by_extension_id(user_line_row.extension_id)
+        result = dao.find_by_extension_id(extension.id)
 
-        assert_that(result, equal_to(user_line_row))
+        assert_that(result, equal_to(expected))
 
-    def test_find_by_extension_id_associated_to_multiple_users(self):
-        main_ule = self.add_user_line_with_exten(exten=2)
-        secondary_ule = self.prepare_secondary_user_associated(main_ule)
+    def test_line_multiple_extensions(self):
+        line1 = self.add_line()
+        line2 = self.add_line()
+        extension = self.add_extension()
+        self.add_line_extension(line_id=line1.id,
+                                extension_id=extension.id)
+        self.add_line_extension(line_id=line2.id,
+                                extension_id=extension.id)
 
-        result = dao.find_by_extension_id(secondary_ule.extension_id)
+        result = dao.find_by_extension_id(extension.id)
 
-        assert_that(result.line_id, equal_to(main_ule.line_id))
-        assert_that(result.extension_id, equal_to(main_ule.extension_id))
+        assert_that(result, any_of(has_properties(line_id=line1.id,
+                                                  extension_id=extension.id),
+                                   has_properties(line_id=line2.id,
+                                                  extension_id=extension.id)))
 
 
 class TestDissociateLineExtension(TestLineExtensionDAO):
 
     def test_dissociate_one_association_with_user(self):
-        user_line_row = self.add_user_line_with_exten()
+        line = self.add_line()
+        extension = self.add_extension()
+        self.add_line_extension(line_id=line.id,
+                                extension_id=extension.id)
 
-        dao.dissociate(user_line_row.linefeatures, user_line_row.extensions)
+        dao.dissociate(line, extension)
 
-        self.assert_no_extensions_associated(user_line_row)
+        self.assert_line_extension_deleted(line.id, extension.id)
 
-    def test_dissociate_one_association_without_user(self):
-        user_line_row = self.add_user_line_without_user()
+    def test_dissociate_line_multiple_extensions_then_main_extension_fallback(self):
+        line = self.add_line()
+        extension1 = self.add_extension()
+        extension2 = self.add_extension()
+        self.add_line_extension(line_id=line.id,
+                                extension_id=extension1.id,
+                                main_extension=True)
+        self.add_line_extension(line_id=line.id,
+                                extension_id=extension2.id,
+                                main_extension=False)
 
-        dao.dissociate(user_line_row.linefeatures, user_line_row.extensions)
+        dao.dissociate(line, extension1)
 
-        self.assert_user_line_deleted(user_line_row)
+        self.assert_line_extension_deleted(line.id, extension1.id)
+        self.assert_extension_is_associated(line.id, extension2.id, main_extension=True)
 
-    def test_dissociate_multiple_users(self):
-        main_ule = self.add_user_line_with_exten()
-        secondary_ule = self.prepare_secondary_user_associated(main_ule)
-
-        dao.dissociate(secondary_ule.linefeatures, secondary_ule.extensions)
-
-        self.assert_no_extensions_associated(main_ule)
-        self.assert_no_extensions_associated(secondary_ule)
-
-    def assert_no_extensions_associated(self, user_line_row):
-        updated_row = (self.session.query(UserLine)
-                       .filter(UserLine.user_id == user_line_row.user_id)
-                       .filter(UserLine.line_id == user_line_row.line_id)
-                       .first())
-
-        assert_that(updated_row, has_property('extension_id', none()))
-
-    def assert_user_line_deleted(self, user_line_row):
-        updated_row = (self.session.query(UserLine)
-                       .filter(UserLine.user_id == user_line_row.user_id)
-                       .filter(UserLine.line_id == user_line_row.line_id)
+    def assert_line_extension_deleted(self, line_id, extension_id):
+        updated_row = (self.session.query(LineExtension)
+                       .filter(LineExtension.line_id == line_id)
+                       .filter(LineExtension.extension_id == extension_id)
                        .first())
 
         assert_that(updated_row, none())
+
+    def assert_extension_is_associated(self, line_id, extension_id, main_extension=True):
+        line_extension = (self.session.query(LineExtension)
+                          .filter(LineExtension.line_id == line_id)
+                          .filter(LineExtension.extension_id == extension_id)
+                          .filter(LineExtension.main_extension == main_extension)
+                          .first())
+        assert_that(line_extension, is_not(none()))

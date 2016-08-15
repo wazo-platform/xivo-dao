@@ -23,6 +23,7 @@ from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.incall import Incall
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.user_line import UserLine
+from xivo_dao.alchemy.line_extension import LineExtension
 from xivo_dao.resources.line.fixes import LineFixes
 
 
@@ -37,7 +38,7 @@ class ExtensionFixes(object):
         self.session.flush()
 
     def fix_extension(self, extension_id):
-        user_lines = self.find_user_lines(extension_id)
+        user_lines = self.find_all_user_line(extension_id)
         if user_lines:
             for user_line in user_lines:
                 self.adjust_for_user(extension_id, user_line.user_id)
@@ -51,17 +52,25 @@ class ExtensionFixes(object):
         self.reset_destination(extension_id)
 
     def fix_lines(self, extension_id):
-        user_lines = self.find_user_lines(extension_id)
-        for user_line in user_lines:
-            self.adjust_line(user_line.line_id)
+        line_extensions = self.find_all_line_extension(extension_id)
+        for line_extension in line_extensions:
+            self.adjust_line(line_extension.line_id)
 
-    def find_user_lines(self, extension_id):
+    def find_all_user_line(self, extension_id):
         return (self.session
-               .query(UserLine.user_id,
-                      UserLine.line_id)
-               .filter(UserLine.main_user == True)  # noqa
-               .filter(UserLine.extension_id == extension_id)
-               .all())
+                .query(UserLine.user_id)
+                .join(LineExtension, LineExtension.line_id == UserLine.line_id)
+                .filter(LineExtension.extension_id == extension_id)
+                .filter(LineExtension.main_extension == True)  # noqa
+                .filter(UserLine.main_user == True)  # noqa
+                .all())
+
+    def find_all_line_extension(self, extension_id):
+        return (self.session
+                .query(LineExtension.line_id)
+                .filter(LineExtension.extension_id == extension_id)
+                .filter(LineExtension.main_extension == True)  # noqa
+                .all())
 
     def adjust_for_user(self, extension_id, user_id):
         (self.session

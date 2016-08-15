@@ -51,6 +51,7 @@ from xivo_dao.alchemy.groupfeatures import GroupFeatures
 from xivo_dao.alchemy.incall import Incall
 from xivo_dao.alchemy.infos import Infos
 from xivo_dao.alchemy.linefeatures import LineFeatures
+from xivo_dao.alchemy.line_extension import LineExtension
 from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
 from xivo_dao.alchemy.musiconhold import MusicOnHold
 from xivo_dao.alchemy.paging import Paging
@@ -194,8 +195,9 @@ class DAOTestCase(unittest.TestCase):
                                        context=kwargs['context'],
                                        typeval=user.id)
         user_line = self.add_user_line(line_id=line.id,
-                                       user_id=user.id,
-                                       extension_id=extension.id)
+                                       user_id=user.id)
+        self.add_line_extension(line_id=line.id,
+                                extension_id=extension.id)
 
         user_line.user = user
         user_line.line = line
@@ -299,12 +301,13 @@ class DAOTestCase(unittest.TestCase):
         extension = self.add_extension(exten=kwargs['exten'],
                                        context=kwargs['context'],
                                        type=kwargs['type'])
-        user_line = self.add_user_line(line_id=line.id, extension_id=extension.id)
+        line_extension = self.add_line_extension(line_id=line.id,
+                                                 extension_id=extension.id)
 
-        user_line.extension = extension
-        user_line.line = line
+        line_extension.extension = extension
+        line_extension.line = line
 
-        return user_line
+        return line_extension
 
     def add_line(self, **kwargs):
         kwargs.setdefault('name', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
@@ -383,13 +386,20 @@ class DAOTestCase(unittest.TestCase):
     def add_user_line(self, **kwargs):
         kwargs.setdefault('main_user', True)
         kwargs.setdefault('main_line', True)
-        kwargs.setdefault('id', self._generate_int())
 
         user_line = UserLine(**kwargs)
         self.add_me(user_line)
         return user_line
 
+    def add_line_extension(self, **kwargs):
+        kwargs.setdefault('main_extension', True)
+
+        line_extension = LineExtension(**kwargs)
+        self.add_me(line_extension)
+        return line_extension
+
     def add_extension(self, **kwargs):
+        kwargs.setdefault('exten', '%s' % random.randint(1000, 1999))
         kwargs.setdefault('type', 'user')
         kwargs.setdefault('context', 'default')
         kwargs.setdefault('id', self._generate_int())

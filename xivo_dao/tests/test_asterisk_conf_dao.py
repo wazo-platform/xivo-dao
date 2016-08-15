@@ -321,8 +321,9 @@ class TestFindSccpSpeeddialSettings(DAOTestCase):
                                  protocolid=sccp_line_row.id)
 
         self.add_user_line(user_id=user_row.id,
-                           line_id=line_row.id,
-                           extension_id=extension_row.id)
+                           line_id=line_row.id)
+        self.add_line_extension(line_id=line_row.id,
+                                extension_id=extension_row.id)
 
         return user_row, sccp_device_row
 
@@ -559,9 +560,8 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         user_row = self.add_user()
         line_row = self.add_line()
         extension_row = self.add_extension(exten='12', context='default')
-        self.add_user_line(user_id=user_row.id,
-                           extension_id=extension_row.id,
-                           line_id=line_row.id)
+        self.add_user_line(user_id=user_row.id, line_id=line_row.id)
+        self.add_line_extension(line_id=line_row.id, extension_id=extension_row.id)
 
         expected_result = [
             {'exten': u'12',
@@ -580,9 +580,8 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         user_row = self.add_user()
         line_row = self.add_line(commented=1)
         extension_row = self.add_extension(exten='13', context='default')
-        self.add_user_line(user_id=user_row.id,
-                           extension_id=extension_row.id,
-                           line_id=line_row.id)
+        self.add_user_line(user_id=user_row.id, line_id=line_row.id)
+        self.add_line_extension(line_id=line_row.id, extension_id=extension_row.id)
 
         result = asterisk_conf_dao.find_exten_settings('default')
 
@@ -1205,7 +1204,8 @@ class TestFindSipUserSettings(DAOTestCase, PickupHelperMixin):
         user = self.add_user(firstname="John", lastname="Smith", voicemailid=voicemail.id, musiconhold='musiconhold')
         sip = self.add_usersip(category='user')
         line = self.add_line(protocol='sip', protocolid=sip.id, context="default")
-        self.add_user_line(user_id=user.id, line_id=line.id, extension_id=extension.id)
+        self.add_user_line(user_id=user.id, line_id=line.id)
+        self.add_line_extension(line_id=line.id, extension_id=extension.id)
 
         mailbox = '{}@{}'.format(voicemail.mailbox, voicemail.context)
 

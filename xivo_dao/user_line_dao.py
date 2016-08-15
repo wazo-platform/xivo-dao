@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2013-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,18 +15,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy import and_
+
 from xivo import caller_id
-from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
+from xivo.asterisk import protocol_interface
+
 from xivo_dao.alchemy.extension import Extension as ExtensionSchema
+from xivo_dao.alchemy.line_extension import LineExtension
 from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
 from xivo_dao.alchemy.sccpline import SCCPLine
+from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.usercustom import UserCustom
+from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.usersip import UserSIP
-from sqlalchemy import and_
+
 from xivo_dao.helpers.db_manager import daosession
-from xivo.asterisk import protocol_interface
-from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.line_dao import get_protocol
 
 
@@ -41,10 +45,9 @@ def find_line_id_by_user_id(session, user_id):
 @daosession
 def get_main_exten_by_line_id(session, line_id):
     res = (session.query(ExtensionSchema.exten)
-           .join(UserLine, and_(UserLine.extension_id == ExtensionSchema.id,
-                                UserLine.line_id == int(line_id),
-                                UserLine.main_line == True,
-                                UserLine.main_line == True))
+           .join(LineExtension, and_(LineExtension.extension_id == ExtensionSchema.id,
+                                     LineExtension.line_id == int(line_id),
+                                     LineExtension.main_extension == True))  # noqa
            .first())
     if res is None:
         raise LookupError('Could not get a extension for line %s', line_id)
@@ -55,10 +58,11 @@ def get_main_exten_by_line_id(session, line_id):
 @daosession
 def get_main_exten_by_user_id(session, user_id):
     res = (session.query(ExtensionSchema.exten)
-           .join(UserLine, and_(UserLine.extension_id == ExtensionSchema.id,
-                                UserLine.user_id == int(user_id),
-                                UserLine.main_line == True,
-                                UserLine.main_line == True))
+           .join(UserLine, and_(UserLine.user_id == int(user_id),
+                                UserLine.main_line == True))  # noqa
+           .join(LineExtension, and_(LineExtension.extension_id == ExtensionSchema.id,
+                                     LineExtension.line_id == UserLine.line_id,
+                                     LineExtension.main_extension == True))
            .first())
     if res is None:
         raise LookupError('Could not get a extension for user %s', user_id)
@@ -72,7 +76,7 @@ def get_line_identity_by_user_id(session, user_id):
                          LineSchema.name)
            .join(UserLine, and_(UserLine.line_id == LineSchema.id,
                                 UserLine.user_id == int(user_id),
-                                UserLine.main_user == True,
+                                UserLine.main_user == True,  # noqa
                                 UserLine.main_line == True))
            .first())
     if not row:
@@ -105,7 +109,7 @@ def all_with_protocol(session, protocol):
             )
             .join(UserLine, UserLine.line_id == LineSchema.id)
             .join(UserSchema, UserLine.user_id == UserSchema.id)
-            .join(ExtensionSchema, UserLine.extension_id == ExtensionSchema.id)
+            .join(LineExtension, UserLine.line_id == LineExtension.line_id)
             .filter(LineSchema.protocolid == UserSIP.id)
             .filter(LineSchema.protocol == 'sip')
             .all()
@@ -119,7 +123,7 @@ def all_with_protocol(session, protocol):
             )
             .join(UserLine, UserLine.line_id == LineSchema.id)
             .join(UserSchema, UserLine.user_id == UserSchema.id)
-            .join(ExtensionSchema, UserLine.extension_id == ExtensionSchema.id)
+            .join(LineExtension, UserLine.line_id == LineExtension.line_id)
             .filter(LineSchema.protocolid == UserIAX.id)
             .filter(LineSchema.protocol == 'iax')
             .all()
@@ -133,7 +137,7 @@ def all_with_protocol(session, protocol):
             )
             .join(UserLine, UserLine.line_id == LineSchema.id)
             .join(UserSchema, UserLine.user_id == UserSchema.id)
-            .join(ExtensionSchema, UserLine.extension_id == ExtensionSchema.id)
+            .join(LineExtension, UserLine.line_id == LineExtension.line_id)
             .filter(LineSchema.protocolid == SCCPLine.id)
             .filter(LineSchema.protocol == 'sccp')
             .all()
@@ -147,7 +151,7 @@ def all_with_protocol(session, protocol):
             )
             .join(UserLine, UserLine.line_id == LineSchema.id)
             .join(UserSchema, UserLine.user_id == UserSchema.id)
-            .join(ExtensionSchema, UserLine.extension_id == ExtensionSchema.id)
+            .join(LineExtension, UserLine.line_id == LineExtension.line_id)
             .filter(LineSchema.protocolid == UserCustom.id)
             .filter(LineSchema.protocol == 'custom')
             .all()
@@ -167,7 +171,7 @@ def get_with_line_id(session, line_id):
             )
             .join(UserLine, UserLine.line_id == LineSchema.id)
             .join(UserSchema, UserLine.user_id == UserSchema.id)
-            .join(ExtensionSchema, UserLine.extension_id == ExtensionSchema.id)
+            .join(LineExtension, UserLine.line_id == LineExtension.line_id)
             .filter(LineSchema.id == int(line_id))
             .filter(LineSchema.protocolid == UserSIP.id)
             .first()
@@ -181,7 +185,7 @@ def get_with_line_id(session, line_id):
             )
             .join(UserLine, UserLine.line_id == LineSchema.id)
             .join(UserSchema, UserLine.user_id == UserSchema.id)
-            .join(ExtensionSchema, UserLine.extension_id == ExtensionSchema.id)
+            .join(LineExtension, UserLine.line_id == LineExtension.line_id)
             .filter(LineSchema.id == int(line_id))
             .filter(LineSchema.protocolid == UserIAX.id)
             .first()
@@ -195,7 +199,7 @@ def get_with_line_id(session, line_id):
             )
             .join(UserLine, UserLine.line_id == LineSchema.id)
             .join(UserSchema, UserLine.user_id == UserSchema.id)
-            .join(ExtensionSchema, UserLine.extension_id == ExtensionSchema.id)
+            .join(LineExtension, UserLine.line_id == LineExtension.line_id)
             .filter(LineSchema.id == int(line_id))
             .filter(LineSchema.protocolid == SCCPLine.id)
             .first()
@@ -209,7 +213,7 @@ def get_with_line_id(session, line_id):
             )
             .join(UserLine, UserLine.line_id == LineSchema.id)
             .join(UserSchema, UserLine.user_id == UserSchema.id)
-            .join(ExtensionSchema, UserLine.extension_id == ExtensionSchema.id)
+            .join(LineExtension, UserLine.line_id == LineExtension.line_id)
             .filter(LineSchema.id == int(line_id))
             .filter(LineSchema.protocolid == UserCustom.id)
             .first()
