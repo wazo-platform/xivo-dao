@@ -65,7 +65,7 @@ class LineExtensionPersistor(CriteriaBuilderMixin):
         line_extension = self.get_by(line_id=line.id, extension_id=extension.id)
 
         if line_extension.main_extension:
-            self._set_random_main_extension(line)
+            self._set_oldest_main_extension(line)
 
         self.session.delete(line_extension)
         self.session.flush()
@@ -74,9 +74,13 @@ class LineExtensionPersistor(CriteriaBuilderMixin):
 
         return line_extension
 
-    def _set_random_main_extension(self, line):
-        random_line_extension = self.find_by(line_id=line.id,
-                                             main_extension=False)
-        if random_line_extension:
-            random_line_extension.main_extension = True
-            self.session.add(random_line_extension)
+    def _set_oldest_main_extension(self, line):
+        oldest_line_extension = (self.session.query(LineExtension)
+                                 .filter(LineExtension.line_id == line.id)
+                                 .filter(LineExtension.main_extension == False)  # noqa
+                                 .order_by(LineExtension.extension_id.asc())
+                                 .first())
+
+        if oldest_line_extension:
+            oldest_line_extension.main_extension = True
+            self.session.add(oldest_line_extension)
