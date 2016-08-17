@@ -108,6 +108,8 @@ def user_hints(session, context):
                             LineFeatures.protocolid == UserCustom.id))
              .join(LineExtension,
                    UserLine.line_id == LineExtension.line_id)
+             .join(Extension,
+                   LineExtension.extension_id == Extension.id)
              .join(FuncKeyDestUser,
                    FuncKeyDestUser.user_id == UserFeatures.id)
              .filter(UserLine.main_user == True)

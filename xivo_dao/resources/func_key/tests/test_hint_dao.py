@@ -132,6 +132,16 @@ class TestUserHints(TestHints):
 
         assert_that(hint_dao.user_hints('othercontext'), contains())
 
+    def test_given_two_users_with_sip_line_then_returns_only_two_hints(self):
+        user1 = self.add_user_and_func_key('sip', self.add_usersip(name='user1').id, '1001')
+        user2 = self.add_user_and_func_key('sip', self.add_usersip(name='user2').id, '1002')
+
+        expected = (Hint(user_id=user1.id, extension='1001', argument='SIP/user1'),
+                    Hint(user_id=user2.id, extension='1002', argument='SIP/user2'))
+
+        assert_that(hint_dao.user_hints(self.context), equal_to(expected))
+
+
 
 class TestConferenceHints(TestHints):
 
