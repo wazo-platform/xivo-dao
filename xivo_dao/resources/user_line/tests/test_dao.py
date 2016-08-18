@@ -24,53 +24,27 @@ from hamcrest import (assert_that,
                       is_not,
                       none)
 
-from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.queuemember import QueueMember
+from xivo_dao.alchemy.user_line import UserLine
+from xivo_dao.helpers.exception import InputError
 from xivo_dao.resources.user_line import dao as user_line_dao
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
-class TestUserLineFindMainByUserId(DAOTestCase):
+class TestUserLineFindBy(DAOTestCase):
 
-    def test_given_user_is_not_main_then_returns_null(self):
+    def test_given_column_does_not_exist_then_raises_error(self):
+        self.assertRaises(InputError, user_line_dao.find_by, column=1)
+
+    def test_find_by(self):
         user = self.add_user()
         line = self.add_line()
-        self.add_user_line(user_id=user.id, line_id=line.id, main_user=False, main_line=True)
+        expected = self.add_user_line(user_id=user.id,
+                                      line_id=line.id)
 
-        result = user_line_dao.find_main_by_user_id(user.id)
-        assert_that(result, none())
+        user_line = user_line_dao.find_by(user_id=expected.user_id)
 
-    def test_given_line_is_not_main_then_returns_null(self):
-        user = self.add_user()
-        line = self.add_line()
-        self.add_user_line(user_id=user.id, line_id=line.id, main_user=True, main_line=False)
-
-        result = user_line_dao.find_main_by_user_id(user.id)
-        assert_that(result, none())
-
-    def test_given_user_and_line_are_main_then_returns_user_line(self):
-        user = self.add_user()
-        line = self.add_line()
-        self.add_user_line(user_id=user.id, line_id=line.id, main_user=True, main_line=True)
-
-        result = user_line_dao.find_main_by_user_id(user.id)
-
-        assert_that(result.user_id, equal_to(user.id))
-        assert_that(result.line_id, equal_to(line.id))
-
-    def test_given_multiple_users_associated_then_returns_main_user(self):
-        main_user = self.add_user()
-        other_user = self.add_user()
-        line = self.add_line()
-        self.add_user_line(user_id=main_user.id, line_id=line.id,
-                           main_user=True, main_line=True)
-        self.add_user_line(user_id=other_user.id, line_id=line.id,
-                           main_user=False, main_line=True)
-
-        result = user_line_dao.find_main_by_user_id(main_user.id)
-
-        assert_that(result.user_id, equal_to(main_user.id))
-        assert_that(result.line_id, equal_to(line.id))
+        assert_that(user_line, equal_to(expected))
 
 
 class TestUserLineFindAllByUserId(DAOTestCase):
