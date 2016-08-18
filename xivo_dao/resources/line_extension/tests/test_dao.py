@@ -19,7 +19,6 @@ from hamcrest import (assert_that,
                       any_of,
                       contains,
                       equal_to,
-                      has_items,
                       has_properties,
                       is_not,
                       none)
@@ -51,8 +50,8 @@ class TestAssociateLineExtension(TestLineExtensionDAO):
 
         result = dao.associate(line, extension)
 
-        assert_that(result, has_items(has_properties(line_id=line.id,
-                                                     extension_id=extension.id)))
+        assert_that(result, has_properties(line_id=line.id,
+                                           extension_id=extension.id))
         self.assert_extension_is_associated(line.id, extension.id)
 
     def test_associate_line_multiple_extensions(self):
