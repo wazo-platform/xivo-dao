@@ -59,7 +59,7 @@ class LineExtensionPersistor(CriteriaBuilderMixin):
         ExtensionFixes(self.session).fix_extension(line_extension.extension_id)
         LineFixes(self.session).fix(line_extension.line_id)
 
-        return [line_extension]
+        return line_extension
 
     def dissociate_line_extension(self, line, extension):
         line_extension = self.get_by(line_id=line.id, extension_id=extension.id)
