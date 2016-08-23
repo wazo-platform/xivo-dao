@@ -216,6 +216,14 @@ class UserFeatures(Base):
         self.entityid = value
 
     @hybrid_property
+    def agent_id(self):
+        return self.agentid
+
+    @agent_id.setter
+    def agent_id(self, value):
+        self.agentid = value
+
+    @hybrid_property
     def caller_id(self):
         if self.callerid == '':
             return None
