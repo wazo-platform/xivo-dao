@@ -25,11 +25,13 @@ class SIPGeneralPersistor(object):
         self.session = session
 
     def find_all(self):
-        query = self.session.query(StaticSIP).order_by(StaticSIP.var_metric.asc())
+        query = (self.session.query(StaticSIP)
+                 .filter(StaticSIP.var_name != 'register')
+                 .order_by(StaticSIP.var_metric.asc()))
         return query.all()
 
     def edit_all(self, sip_general):
-        self.session.query(StaticSIP).delete()
+        self.session.query(StaticSIP).filter(StaticSIP.var_name != 'register').delete()
         self.session.add_all(self._update_order(sip_general))
         self.session.flush()
 

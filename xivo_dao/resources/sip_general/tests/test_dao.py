@@ -51,6 +51,18 @@ class TestFindAll(DAOTestCase):
 
         assert_that(sip_general, equal_to([row3, row2, row1, row4]))
 
+    def test_find_all_do_not_find_register(self):
+        self.add_sip_general_settings(var_metric=1,
+                                      var_name='register',
+                                      var_val='value1')
+        row2 = self.add_sip_general_settings(var_metric=2,
+                                             var_name='setting1',
+                                             var_val='value1')
+
+        sip_general = sip_general_dao.find_all()
+
+        assert_that(sip_general, equal_to([row2]))
+
 
 class TestEditAll(DAOTestCase):
 
@@ -64,3 +76,16 @@ class TestEditAll(DAOTestCase):
 
         sip_general = sip_general_dao.find_all()
         assert_that(sip_general, equal_to([row3, row4, row2, row1]))
+
+    def test_edit_all_do_not_delete_register(self):
+        row1 = self.add_sip_general_settings(var_metric=1,
+                                             var_name='register',
+                                             var_val='value1')
+
+        row2 = StaticSIP(var_name='register', var_val='value1')
+
+        sip_general_dao.edit_all([row2])
+
+        assert_that(self.session.query(StaticSIP)
+                    .filter(StaticSIP.var_name == 'register')
+                    .first(), equal_to(row1))
