@@ -32,12 +32,11 @@ class SIPGeneralPersistor(object):
 
     def edit_all(self, sip_general):
         self.session.query(StaticSIP).filter(StaticSIP.var_name != 'register').delete()
-        self.session.add_all(self._update_order(sip_general))
+        self.session.add_all(self._fill_default_values(sip_general))
         self.session.flush()
 
-    def _update_order(self, sip_general):
+    def _fill_default_values(self, sip_general):
         for var_metric, setting in enumerate(sip_general):
-            setting.var_metric = var_metric
             setting.filename = 'sip.conf'
             setting.category = 'general'
         return sip_general
