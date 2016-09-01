@@ -97,38 +97,3 @@ class TestTrunkFixes(DAOTestCase):
         trunk = self.session.query(Trunk).first()
         assert_that(trunk.protocol, none())
         assert_that(trunk.protocolid, none())
-
-    def test_given_trunk_has_sip_name_then_trunk_name_updated(self):
-        sip = self.add_usersip(name="sipname")
-        trunk = self.add_trunk(name="trunkame", protocol='sip', protocolid=sip.id)
-
-        self.fixes.fix(trunk.id)
-
-        trunk = self.session.query(Trunk).first()
-        assert_that(trunk.name, equal_to('sipname'))
-
-    def test_given_trunk_has_iax_name_then_trunk_name_updated(self):
-        iax = self.add_useriax(name="iaxname")
-        trunk = self.add_trunk(name="trunkame", protocol='iax', protocolid=iax.id)
-
-        self.fixes.fix(trunk.id)
-
-        trunk = self.session.query(Trunk).first()
-        assert_that(trunk.name, equal_to('iaxname'))
-
-    def test_given_trunk_has_custom_interface_then_name_updated(self):
-        custom = self.add_usercustom(interface='custom/abcdef')
-        trunk = self.add_trunk(protocol='custom', protocolid=custom.id)
-
-        self.fixes.fix(trunk.id)
-
-        trunk = self.session.query(Trunk).first()
-        assert_that(trunk.name, equal_to('custom/abcdef'))
-
-    def test_given_trunk_has_no_associated_name_then_name_removed(self):
-        trunk = self.add_trunk(name="trunkname")
-
-        self.fixes.fix(trunk.id)
-
-        trunk = self.session.query(Trunk).first()
-        assert_that(trunk.name, none())

@@ -41,7 +41,6 @@ class TrunkFeatures(Base):
     registerid = Column(Integer, nullable=False, server_default='0')
     registercommented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text)
-    name = Column(String(128))
     context = Column(String(39))
 
     sip_endpoint = relationship(UserSIP,
@@ -64,16 +63,6 @@ class TrunkFeatures(Base):
                                        TrunkFeatures.protocolid == UserCustom.id
                                    )""",
                                    foreign_keys=[protocolid])
-
-    def update_name(self):
-        if self.sip_endpoint and self.sip_endpoint.name not in ("", None):
-            self.name = self.sip_endpoint.name
-        elif self.iax_endpoint and self.iax_endpoint.name not in ("", None):
-            self.name = self.iax_endpoint.name
-        elif self.custom_endpoint and self.custom_endpoint.interface not in ("", None):
-            self.name = self.custom_endpoint.interface
-        else:
-            self.name = None
 
     def is_associated(self, protocol=None):
         if protocol:

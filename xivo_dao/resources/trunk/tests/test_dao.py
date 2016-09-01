@@ -70,16 +70,16 @@ class TestFindBy(DAOTestCase):
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, trunk_dao.find_by, invalid=42)
 
-    def test_find_by_name(self):
-        trunk_row = self.add_trunk(name='MyTrûnk')
+    def test_find_by_context(self):
+        trunk_row = self.add_trunk(context='MyCôntext')
 
-        trunk = trunk_dao.find_by(name='MyTrûnk')
+        trunk = trunk_dao.find_by(context='MyCôntext')
 
         assert_that(trunk, equal_to(trunk_row))
-        assert_that(trunk.name, equal_to('MyTrûnk'))
+        assert_that(trunk.context, equal_to('MyCôntext'))
 
     def test_given_trunk_does_not_exist_then_returns_null(self):
-        trunk = trunk_dao.find_by(name='42')
+        trunk = trunk_dao.find_by(context='42')
 
         assert_that(trunk, none())
 
@@ -89,30 +89,30 @@ class TestGetBy(DAOTestCase):
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, trunk_dao.get_by, invalid=42)
 
-    def test_get_by_name(self):
-        trunk_row = self.add_trunk(name='MyTrûnk')
+    def test_get_by_context(self):
+        trunk_row = self.add_trunk(context='MyCôntext')
 
-        trunk = trunk_dao.get_by(name='MyTrûnk')
+        trunk = trunk_dao.get_by(context='MyCôntext')
 
         assert_that(trunk, equal_to(trunk_row))
-        assert_that(trunk.name, equal_to('MyTrûnk'))
+        assert_that(trunk.context, equal_to('MyCôntext'))
 
     def test_given_trunk_does_not_exist_then_raises_error(self):
-        self.assertRaises(NotFoundError, trunk_dao.get_by, name='42')
+        self.assertRaises(NotFoundError, trunk_dao.get_by, context='42')
 
 
 class TestFindAllBy(DAOTestCase):
 
     def test_find_all_by_no_trunk(self):
-        result = trunk_dao.find_all_by(name='toto')
+        result = trunk_dao.find_all_by(context='toto')
 
         assert_that(result, contains())
 
     def test_find_all_by_native_column(self):
-        trunk1 = self.add_trunk(name='MyTrûnk')
-        trunk2 = self.add_trunk(name='MyTrûnk')
+        trunk1 = self.add_trunk(context='MyCôntext')
+        trunk2 = self.add_trunk(context='MyCôntext')
 
-        trunks = trunk_dao.find_all_by(name='MyTrûnk')
+        trunks = trunk_dao.find_all_by(context='MyCôntext')
 
         assert_that(trunks, has_items(has_property('id', trunk1.id),
                                       has_property('id', trunk2.id)))
@@ -143,10 +143,10 @@ class TestSearchGivenMultipleTrunks(TestSearch):
 
     def setUp(self):
         super(TestSearch, self).setUp()
-        self.trunk1 = self.add_trunk(name='Ashton', description='resto')
-        self.trunk2 = self.add_trunk(name='Beaugarton', description='bar')
-        self.trunk3 = self.add_trunk(name='Casa', description='resto')
-        self.trunk4 = self.add_trunk(name='Dunkin', description='resto')
+        self.trunk1 = self.add_trunk(context='Ashton', description='resto')
+        self.trunk2 = self.add_trunk(context='Beaugarton', description='bar')
+        self.trunk3 = self.add_trunk(context='Casa', description='resto')
+        self.trunk4 = self.add_trunk(context='Dunkin', description='resto')
 
     def test_when_searching_then_returns_one_result(self):
         expected = SearchResult(1, [self.trunk2])
@@ -161,7 +161,7 @@ class TestSearchGivenMultipleTrunks(TestSearch):
         self.assert_search_returns_result(expected_bar, search='ton', description='bar')
 
         expected_all_resto = SearchResult(3, [self.trunk1, self.trunk3, self.trunk4])
-        self.assert_search_returns_result(expected_all_resto, description='resto', order='name')
+        self.assert_search_returns_result(expected_all_resto, description='resto', order='context')
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
         expected = SearchResult(4,
@@ -170,7 +170,7 @@ class TestSearchGivenMultipleTrunks(TestSearch):
                                  self.trunk3,
                                  self.trunk4])
 
-        self.assert_search_returns_result(expected, order='name')
+        self.assert_search_returns_result(expected, order='context')
 
     def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
         expected = SearchResult(4, [self.trunk4,
@@ -178,7 +178,7 @@ class TestSearchGivenMultipleTrunks(TestSearch):
                                     self.trunk2,
                                     self.trunk1])
 
-        self.assert_search_returns_result(expected, order='name', direction='desc')
+        self.assert_search_returns_result(expected, order='context', direction='desc')
 
     def test_when_limiting_then_returns_right_number_of_items(self):
         expected = SearchResult(4, [self.trunk1])
@@ -195,7 +195,7 @@ class TestSearchGivenMultipleTrunks(TestSearch):
 
         self.assert_search_returns_result(expected,
                                           search='a',
-                                          order='name',
+                                          order='context',
                                           direction='desc',
                                           skip=1,
                                           limit=1)
@@ -211,7 +211,6 @@ class TestCreate(DAOTestCase):
 
         assert_that(created_trunk, equal_to(row))
         assert_that(created_trunk, has_properties(id=is_not(none()),
-                                                  name=none(),
                                                   context=none(),
                                                   protocol=none(),
                                                   protocolid=none(),
@@ -220,8 +219,7 @@ class TestCreate(DAOTestCase):
                                                   description=none()))
 
     def test_create_with_all_fields(self):
-        trunk = Trunk(name='MyTrûnk',
-                      context='default',
+        trunk = Trunk(context='default',
                       protocol='sip',
                       protocolid=1,
                       registerid=1,
@@ -246,15 +244,13 @@ class TestEdit(DAOTestCase):
 
     def test_edit_all_fields(self):
         sip = self.add_usersip()
-        trunk = trunk_dao.create(Trunk(name='CantBeModified',
-                                       context='default',
+        trunk = trunk_dao.create(Trunk(context='default',
                                        registerid=1,
                                        registercommented=1,
                                        description='description'))
         trunk.associate_endpoint(sip)
 
         trunk = trunk_dao.get(trunk.id)
-        trunk.name = 'WillBeReplacedByCustomInterface'
         trunk.context = 'other_default'
         trunk.registerid = 0
         trunk.registercommented = 0
@@ -268,8 +264,7 @@ class TestEdit(DAOTestCase):
         row = self.session.query(Trunk).first()
 
         assert_that(trunk, equal_to(row))
-        assert_that(row, has_properties(name=custom.interface,
-                                        context='other_default',
+        assert_that(row, has_properties(context='other_default',
                                         protocol='custom',
                                         protocolid=custom.id,
                                         registerid=0,
@@ -277,15 +272,13 @@ class TestEdit(DAOTestCase):
                                         description='other description'))
 
     def test_edit_set_fields_to_null(self):
-        trunk = trunk_dao.create(Trunk(name='MyTrûnk',
-                                       context='default',
+        trunk = trunk_dao.create(Trunk(context='default',
                                        protocol='sip',
                                        protocolid=1,
                                        registerid=1,
                                        registercommented=1,
                                        description='description'))
         trunk = trunk_dao.get(trunk.id)
-        trunk.name = None
         trunk.context = None
         trunk.description = None
 
@@ -294,39 +287,8 @@ class TestEdit(DAOTestCase):
         row = self.session.query(Trunk).first()
 
         assert_that(trunk, equal_to(row))
-        assert_that(row, has_properties(name=none(),
-                                        context=none(),
+        assert_that(row, has_properties(context=none(),
                                         description=none()))
-
-    def test_name_updated_after_sip_endpoint_association(self):
-        sip = self.add_usersip()
-        trunk = self.add_trunk()
-
-        trunk.associate_endpoint(sip)
-        trunk_dao.edit(trunk)
-
-        row = self.session.query(Trunk).first()
-        assert_that(row.name, equal_to(sip.name))
-
-    def test_name_updated_after_iax_endpoint_association(self):
-        iax = self.add_useriax()
-        trunk = self.add_trunk()
-
-        trunk.associate_endpoint(iax)
-        trunk_dao.edit(trunk)
-
-        row = self.session.query(Trunk).first()
-        assert_that(row.name, equal_to(iax.name))
-
-    def test_name_updated_after_custom_endpoint_association(self):
-        custom = self.add_usercustom()
-        trunk = self.add_trunk()
-
-        trunk.associate_endpoint(custom)
-        trunk_dao.edit(trunk)
-
-        row = self.session.query(Trunk).first()
-        assert_that(row.name, equal_to(custom.interface))
 
 
 class TestDelete(DAOTestCase):

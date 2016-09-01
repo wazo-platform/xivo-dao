@@ -32,7 +32,6 @@ class TrunkFixes(object):
     def fix(self, trunk_id):
         row = self.get_row(trunk_id)
         self.fix_protocol(row)
-        self.fix_name(row)
         self.session.flush()
 
     def get_row(self, trunk_id):
@@ -44,7 +43,7 @@ class TrunkFixes(object):
                  .outerjoin(TrunkFeatures.iax_endpoint)
                  .outerjoin(TrunkFeatures.custom_endpoint)
                  .options(
-                     Load(TrunkFeatures).load_only("id", "name", "context"),
+                     Load(TrunkFeatures).load_only("id", "context"),
                      Load(UserSIP).load_only("id", "context"),
                      Load(UserIAX).load_only("id", "context"),
                      Load(UserCustom).load_only("id", "context"))
@@ -84,6 +83,3 @@ class TrunkFixes(object):
 
     def remove_endpoint(self, row):
         row.TrunkFeatures.remove_endpoint()
-
-    def fix_name(self, row):
-        row.TrunkFeatures.update_name()

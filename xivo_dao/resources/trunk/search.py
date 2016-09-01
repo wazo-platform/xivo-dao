@@ -23,9 +23,8 @@ from xivo_dao.resources.utils.search import SearchConfig
 
 config = SearchConfig(table=Trunk,
                       columns={'id': Trunk.id,
-                               'name': Trunk.name,
                                'context': Trunk.context,
                                'description': Trunk.description},
-                      default_sort='name')
+                      default_sort='id')
 
 trunk_search = SearchSystem(config)
