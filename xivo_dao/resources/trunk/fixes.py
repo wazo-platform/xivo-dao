@@ -44,9 +44,9 @@ class TrunkFixes(object):
                  .outerjoin(TrunkFeatures.custom_endpoint)
                  .options(
                      Load(TrunkFeatures).load_only("id", "context"),
-                     Load(UserSIP).load_only("id", "context"),
-                     Load(UserIAX).load_only("id", "context"),
-                     Load(UserCustom).load_only("id", "context"))
+                     Load(UserSIP).load_only("id", "category", "context"),
+                     Load(UserIAX).load_only("id", "category", "context"),
+                     Load(UserCustom).load_only("id", "category", "context"))
                  .filter(TrunkFeatures.id == trunk_id)
                  )
 
@@ -66,18 +66,21 @@ class TrunkFixes(object):
     def fix_sip(self, row):
         if row.UserSIP:
             row.UserSIP.context = row.TrunkFeatures.context
+            row.UserSIP.category = 'trunk'
         else:
             self.remove_endpoint(row)
 
     def fix_iax(self, row):
         if row.UserIAX:
             row.UserIAX.context = row.TrunkFeatures.context
+            row.UserIAX.category = 'trunk'
         else:
             self.remove_endpoint(row)
 
     def fix_custom(self, row):
         if row.UserCustom:
             row.UserCustom.context = row.TrunkFeatures.context
+            row.UserCustom.category = 'trunk'
         else:
             self.remove_endpoint(row)
 
