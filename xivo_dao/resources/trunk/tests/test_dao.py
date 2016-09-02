@@ -70,6 +70,14 @@ class TestFindBy(DAOTestCase):
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, trunk_dao.find_by, invalid=42)
 
+    def test_find_by_custom_column(self):
+        trunk1 = self.add_trunk(endpoint_id=1)
+        self.add_trunk(endpoint_id=2)
+
+        trunk = trunk_dao.find_by(endpoint_id=1)
+
+        assert_that(trunk, equal_to(trunk1))
+
     def test_find_by_context(self):
         trunk_row = self.add_trunk(context='MyCôntext')
 

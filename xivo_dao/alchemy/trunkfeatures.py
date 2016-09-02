@@ -15,8 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint, Index
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
+from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint, Index
 from sqlalchemy.types import Integer, Text, String
 
 from xivo_dao.helpers.db_manager import Base
@@ -64,6 +65,22 @@ class TrunkFeatures(Base):
                                        TrunkFeatures.protocolid == UserCustom.id
                                    )""",
                                    foreign_keys=[protocolid])
+
+    @hybrid_property
+    def endpoint(self):
+        return self.protocol
+
+    @endpoint.setter
+    def endpoint(self, value):
+        self.protocol = value
+
+    @hybrid_property
+    def endpoint_id(self):
+        return self.protocolid
+
+    @endpoint_id.setter
+    def endpoint_id(self, value):
+        self.protocolid = value
 
     def is_associated(self, protocol=None):
         if protocol:
