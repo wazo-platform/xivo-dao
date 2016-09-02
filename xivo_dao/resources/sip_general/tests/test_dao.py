@@ -63,6 +63,18 @@ class TestFindAll(DAOTestCase):
 
         assert_that(sip_general, equal_to([row2]))
 
+    def test_find_all_do_not_find_var_val_none(self):
+        self.add_sip_general_settings(var_metric=1,
+                                      var_name='setting1',
+                                      var_val=None)
+        row2 = self.add_sip_general_settings(var_metric=2,
+                                             var_name='setting1',
+                                             var_val='value1')
+
+        sip_general = sip_general_dao.find_all()
+
+        assert_that(sip_general, equal_to([row2]))
+
 
 class TestEditAll(DAOTestCase):
 
@@ -82,10 +94,22 @@ class TestEditAll(DAOTestCase):
                                              var_name='register',
                                              var_val='value1')
 
-        row2 = StaticSIP(var_name='register', var_val='value1')
+        row2 = StaticSIP(var_name='nat', var_val='value1')
 
         sip_general_dao.edit_all([row2])
 
         assert_that(self.session.query(StaticSIP)
                     .filter(StaticSIP.var_name == 'register')
                     .first(), equal_to(row1))
+
+
+class TestTable(DAOTestCase):
+
+    def test_values_from_renamed_column(self):
+        row1 = StaticSIP(var_name='setting1', var_val='value1', metric=None)
+        row2 = StaticSIP(var_name='setting2', var_val='value1', metric=0)
+        row3 = StaticSIP(var_name='setting3', var_val='value1', metric=1)
+
+        assert_that(row1.var_metric, equal_to(0))
+        assert_that(row2.var_metric, equal_to(1))
+        assert_that(row3.var_metric, equal_to(2))
