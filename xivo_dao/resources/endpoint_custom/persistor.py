@@ -18,8 +18,10 @@
 
 from xivo_dao.alchemy.usercustom import UserCustom as Custom
 from xivo_dao.alchemy.linefeatures import LineFeatures as Line
+from xivo_dao.alchemy.trunkfeatures import TrunkFeatures as Trunk
 from xivo_dao.helpers import errors
 from xivo_dao.resources.line.fixes import LineFixes
+from xivo_dao.resources.trunk.fixes import TrunkFixes
 from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
 from xivo_dao.resources.endpoint_custom.search import custom_search
 
@@ -66,14 +68,14 @@ class CustomPersistor(CriteriaBuilderMixin):
     def edit(self, custom):
         self.session.add(custom)
         self.session.flush()
-        self._fix_line(custom)
+        self._fix_associated(custom)
 
     def delete(self, custom):
         self.session.query(Custom).filter_by(id=custom.id).delete()
         self.session.flush()
-        self._fix_line(custom)
+        self._fix_associated(custom)
 
-    def _fix_line(self, custom):
+    def _fix_associated(self, custom):
         line_id = (self.session.query(Line.id)
                    .filter(Line.protocol == 'custom')
                    .filter(Line.protocolid == custom.id)
@@ -81,3 +83,10 @@ class CustomPersistor(CriteriaBuilderMixin):
 
         if line_id:
             LineFixes(self.session).fix(line_id)
+
+        trunk_id = (self.session.query(Trunk.id)
+                    .filter(Trunk.protocol == 'custom')
+                    .filter(Trunk.protocolid == custom.id)
+                    .scalar())
+        if trunk_id:
+            TrunkFixes(self.session).fix(trunk_id)
