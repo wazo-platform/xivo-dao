@@ -27,6 +27,7 @@ class SIPGeneralPersistor(object):
     def find_all(self):
         query = (self.session.query(StaticSIP)
                  .filter(StaticSIP.var_name != 'register')
+                 .filter(StaticSIP.var_val != None)  # noqa
                  .order_by(StaticSIP.var_metric.asc()))
         return query.all()
 

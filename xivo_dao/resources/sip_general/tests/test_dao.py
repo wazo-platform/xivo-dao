@@ -63,6 +63,18 @@ class TestFindAll(DAOTestCase):
 
         assert_that(sip_general, equal_to([row2]))
 
+    def test_find_all_do_not_find_var_val_none(self):
+        self.add_sip_general_settings(var_metric=1,
+                                      var_name='setting1',
+                                      var_val=None)
+        row2 = self.add_sip_general_settings(var_metric=2,
+                                             var_name='setting1',
+                                             var_val='value1')
+
+        sip_general = sip_general_dao.find_all()
+
+        assert_that(sip_general, equal_to([row2]))
+
 
 class TestEditAll(DAOTestCase):
 
