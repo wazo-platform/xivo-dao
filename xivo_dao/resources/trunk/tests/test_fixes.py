@@ -34,31 +34,34 @@ class TestTrunkFixes(DAOTestCase):
         super(TestTrunkFixes, self).setUp()
         self.fixes = TrunkFixes(self.session)
 
-    def test_given_trunk_has_sip_endpoint_then_context_updated(self):
-        sip = self.add_usersip(context=None)
+    def test_given_trunk_has_sip_endpoint_then_category_and_context_updated(self):
+        sip = self.add_usersip(context=None, category='user')
         trunk = self.add_trunk(protocol='sip', protocolid=sip.id, context='mycontext')
 
         self.fixes.fix(trunk.id)
 
         sip = self.session.query(UserSIP).first()
+        assert_that(sip.category, equal_to('trunk'))
         assert_that(sip.context, equal_to('mycontext'))
 
-    def test_given_trunk_has_iax_endpoint_then_context_updated(self):
-        iax = self.add_useriax(context=None)
+    def test_given_trunk_has_iax_endpoint_then_category_and_context_updated(self):
+        iax = self.add_useriax(context=None, category='user')
         trunk = self.add_trunk(protocol='iax', protocolid=iax.id, context='mycontext')
 
         self.fixes.fix(trunk.id)
 
         iax = self.session.query(UserIAX).first()
+        assert_that(iax.category, equal_to('trunk'))
         assert_that(iax.context, equal_to('mycontext'))
 
-    def test_given_trunk_has_custom_endpoint_then_context_updated(self):
-        custom = self.add_usercustom(context=None)
+    def test_given_trunk_has_custom_endpoint_then_category_and_context_updated(self):
+        custom = self.add_usercustom(context=None, category='user')
         trunk = self.add_trunk(protocol='custom', protocolid=custom.id, context='mycontext')
 
         self.fixes.fix(trunk.id)
 
         custom = self.session.query(UserCustom).first()
+        assert_that(custom.category, equal_to('trunk'))
         assert_that(custom.context, equal_to('mycontext'))
 
     def test_given_sip_protocol_is_no_longer_associated_then_protocol_removed(self):

@@ -21,9 +21,11 @@ import random
 
 from xivo_dao.alchemy.usersip import UserSIP as SIP
 from xivo_dao.alchemy.linefeatures import LineFeatures as Line
+from xivo_dao.alchemy.trunkfeatures import TrunkFeatures as Trunk
 from xivo_dao.helpers import errors
 from xivo_dao.resources.endpoint_sip.search import sip_search
 from xivo_dao.resources.line.fixes import LineFixes
+from xivo_dao.resources.trunk.fixes import TrunkFixes
 from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
 
 
@@ -66,19 +68,26 @@ class SipPersistor(CriteriaBuilderMixin):
 
     def edit(self, sip):
         self.persist(sip)
-        self._fix_line(sip)
+        self._fix_associated(sip)
 
     def delete(self, sip):
         self.session.query(SIP).filter(SIP.id == sip.id).delete()
-        self._fix_line(sip)
+        self._fix_associated(sip)
 
-    def _fix_line(self, sip):
+    def _fix_associated(self, sip):
         line_id = (self.session.query(Line.id)
                    .filter(Line.protocol == 'sip')
                    .filter(Line.protocolid == sip.id)
                    .scalar())
         if line_id:
             LineFixes(self.session).fix(line_id)
+
+        trunk_id = (self.session.query(Trunk.id)
+                    .filter(Trunk.protocol == 'sip')
+                    .filter(Trunk.protocolid == sip.id)
+                    .scalar())
+        if trunk_id:
+            TrunkFixes(self.session).fix(trunk_id)
 
     def fill_default_values(self, sip):
         if sip.name is None:

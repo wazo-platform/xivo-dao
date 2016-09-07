@@ -36,7 +36,6 @@ EXCLUDE_OPTIONS = {'id',
                    'commented',
                    'options'}
 EXCLUDE_OPTIONS_CONFD = {'name',
-                         'username',
                          'secret',
                          'type',
                          'host',
