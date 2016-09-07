@@ -76,6 +76,7 @@ from xivo_dao.alchemy.staticmeetme import StaticMeetme
 from xivo_dao.alchemy.staticqueue import StaticQueue
 from xivo_dao.alchemy.staticsip import StaticSIP
 from xivo_dao.alchemy.staticvoicemail import StaticVoicemail
+from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
 from xivo_dao.alchemy.user import User
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.usercustom import UserCustom as UserCustomSchema
@@ -596,6 +597,11 @@ class DAOTestCase(unittest.TestCase):
                                        uri=directory_args['uri'],
                                        match_direct='')
         self.add_me(cti_directory)
+
+    def add_trunk(self, **kwargs):
+        trunk = TrunkFeatures(**kwargs)
+        self.add_me(trunk)
+        return trunk
 
     def add_usersip(self, **kwargs):
         kwargs.setdefault('name', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
