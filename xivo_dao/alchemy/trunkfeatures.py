@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
+from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint, Index
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import Integer, Text, String
 
@@ -31,6 +31,7 @@ class TrunkFeatures(Base):
     __tablename__ = 'trunkfeatures'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
+        UniqueConstraint('protocol', 'protocolid'),
         Index('trunkfeatures__idx__registercommented', 'registercommented'),
         Index('trunkfeatures__idx__registerid', 'registerid')
     )
