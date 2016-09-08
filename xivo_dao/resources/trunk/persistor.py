@@ -17,6 +17,8 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures as Trunk
+from xivo_dao.alchemy.staticiax import StaticIAX
+from xivo_dao.alchemy.staticsip import StaticSIP
 from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.usercustom import UserCustom
@@ -70,10 +72,18 @@ class TrunkPersistor(CriteriaBuilderMixin):
              .query(UserSIP)
              .filter(UserSIP.id == trunk.protocolid)
              .delete())
+            (self.session
+             .query(StaticSIP)
+             .filter(StaticSIP.id == trunk.registerid)
+             .delete())
         elif trunk.protocol == 'iax':
             (self.session
              .query(UserIAX)
              .filter(UserIAX.id == trunk.protocolid)
+             .delete())
+            (self.session
+             .query(StaticIAX)
+             .filter(StaticIAX.id == trunk.registerid)
              .delete())
         elif trunk.protocol == 'custom':
             (self.session

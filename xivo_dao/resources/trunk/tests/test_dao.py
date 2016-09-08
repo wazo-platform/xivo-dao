@@ -28,6 +28,8 @@ from hamcrest import (assert_that,
 
 
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures as Trunk
+from xivo_dao.alchemy.staticiax import StaticIAX
+from xivo_dao.alchemy.staticsip import StaticSIP
 from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.usercustom import UserCustom
@@ -338,3 +340,25 @@ class TestDelete(DAOTestCase):
 
         deleted_custom = self.session.query(UserCustom).first()
         assert_that(deleted_custom, none())
+
+    def test_given_trunk_has_sip_register_when_deleting_then_sip_register_deleted(self):
+        sip = self.add_usersip()
+        register = self.add_sip_general_settings(var_name='register')
+        trunk = self.add_trunk(registerid=register.id)
+        trunk.associate_endpoint(sip)
+
+        trunk_dao.delete(trunk)
+
+        deleted_register = self.session.query(StaticSIP).filter(StaticSIP.id == trunk.registerid).first()
+        assert_that(deleted_register, none())
+
+    def test_given_trunk_has_iax_register_when_deleting_then_iax_register_deleted(self):
+        iax = self.add_useriax()
+        register = self.add_iax_general_settings(var_name='register')
+        trunk = self.add_trunk(registerid=register.id)
+        trunk.associate_endpoint(iax)
+
+        trunk_dao.delete(trunk)
+
+        deleted_register = self.session.query(StaticIAX).filter(StaticIAX.id == trunk.registerid).first()
+        assert_that(deleted_register, none())
