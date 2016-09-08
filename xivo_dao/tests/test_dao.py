@@ -772,7 +772,7 @@ class DAOTestCase(unittest.TestCase):
         kwargs.setdefault('cat_metric', 0)
         kwargs.setdefault('var_metric', 0)
         kwargs.setdefault('commented', 0)
-        kwargs.setdefault('filename', 'sip.conf')
+        kwargs.setdefault('filename', 'iax.conf')
         kwargs.setdefault('category', 'general')
         kwargs.setdefault('var_name', self._random_name())
         kwargs.setdefault('var_val', self._random_name())
