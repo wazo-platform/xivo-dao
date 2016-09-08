@@ -72,19 +72,21 @@ class TrunkPersistor(CriteriaBuilderMixin):
              .query(UserSIP)
              .filter(UserSIP.id == trunk.protocolid)
              .delete())
-            (self.session
-             .query(StaticSIP)
-             .filter(StaticSIP.id == trunk.registerid)
-             .delete())
+            if trunk.registerid:
+                (self.session
+                 .query(StaticSIP)
+                 .filter(StaticSIP.id == trunk.registerid)
+                 .delete())
         elif trunk.protocol == 'iax':
             (self.session
              .query(UserIAX)
              .filter(UserIAX.id == trunk.protocolid)
              .delete())
-            (self.session
-             .query(StaticIAX)
-             .filter(StaticIAX.id == trunk.registerid)
-             .delete())
+            if trunk.registerid:
+                (self.session
+                 .query(StaticIAX)
+                 .filter(StaticIAX.id == trunk.registerid)
+                 .delete())
         elif trunk.protocol == 'custom':
             (self.session
              .query(UserCustom)
