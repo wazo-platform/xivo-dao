@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2014 Avencall
+# Copyright (C) 2012-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,10 +16,29 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
-from sqlalchemy.types import Integer, String
+from sqlalchemy.types import Integer, String, TypeDecorator
 
 from xivo_dao.helpers.db_manager import Base
 from xivo_dao.alchemy import enum
+
+
+# Used for Incall table
+# http://docs.sqlalchemy.org/en/rel_0_9/_modules/examples/join_conditions/cast.html
+class IntAsString(TypeDecorator):
+    """Coerce integer->string type.
+
+    This is needed only if the relationship() from
+    string to int is writable, as SQLAlchemy will copy
+    the int parent values into the string attribute
+    on the child during a flush.
+
+    """
+    impl = String
+
+    def process_bind_param(self, value, dialect):
+        if value is not None:
+            value = str(value)
+        return value
 
 
 class Dialaction(Base):
@@ -37,7 +56,7 @@ class Dialaction(Base):
 
     event = Column(enum.dialaction_event)
     category = Column(enum.dialaction_category)
-    categoryval = Column(String(128), server_default='')
+    categoryval = Column(IntAsString(128), server_default='')
     action = Column(enum.dialaction_action, nullable=False)
     actionarg1 = Column(String(255))
     actionarg2 = Column(String(255))

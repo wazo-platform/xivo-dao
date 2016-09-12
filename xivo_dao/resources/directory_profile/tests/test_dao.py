@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2015 Avencall
+# Copyright (C) 2015-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -29,13 +29,7 @@ class TestDirectoryProfileDao(DAOTestCase):
 
     def test_find_by_incall_id(self):
         user_line = self.add_user_line_with_exten(context='default')
-        incall = self.add_incall()
-        self.add_dialaction(event='answer',
-                            category='incall',
-                            categoryval=str(incall.id),
-                            action='user',
-                            actionarg1=str(user_line.user.id))
-
+        incall = self.add_incall(destination={'action': 'user', 'actionarg1': user_line.user_id})
         result = profile_dao.find_by_incall_id(incall_id=incall.id)
 
         assert_that(result.profile, equal_to(user_line.line.context))

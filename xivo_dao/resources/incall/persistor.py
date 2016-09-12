@@ -16,62 +16,51 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from xivo_dao.alchemy.dialaction import Dialaction
-from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.incall import Incall
 
-from xivo_dao.resources.utils.search import CriteriaBuilderMixin
-from xivo_dao.helpers.db_utils import flush_session
-
-from xivo_dao.resources.extension import dao as extension_dao
-from xivo_dao.resources.incall.model import db_converter as incall_db_converter
+from xivo_dao.helpers import errors
+from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
 
 
 class IncallPersistor(CriteriaBuilderMixin):
 
     _search_table = Incall
 
-    def __init__(self, session):
+    def __init__(self, session, incall_search):
         self.session = session
+        self.incall_search = incall_search
 
-    def create(self, incall):
-        extension = extension_dao.get(incall.extension_id)
+    def find_by(self, criteria):
+        query = self._find_query(criteria)
+        return query.first()
 
-        with flush_session(self.session):
-            incall.id = self._create_incall(incall, extension)
-            self._update_extension(incall)
-            self._create_dialaction(incall)
+    def _find_query(self, criteria):
+        query = self.session.query(Incall)
+        return self.build_criteria(query, criteria)
 
+    def get_by(self, criteria):
+        incall = self.find_by(criteria)
+        if not incall:
+            raise errors.not_found('Incall', **criteria)
         return incall
 
-    def _create_incall(self, incall, extension):
-        incall_row = incall_db_converter.to_incall(incall, extension)
-        self.session.add(incall_row)
+    def find_all_by(self, criteria):
+        query = self._find_query(criteria)
+        return query.all()
+
+    def search(self, parameters):
+        rows, total = self.incall_search.search(self.session, parameters)
+        return SearchResult(total, rows)
+
+    def create(self, incall):
+        self.session.add(incall)
         self.session.flush()
-        return incall_row.id
+        return incall
 
-    def _update_extension(self, incall):
-        (self.session.query(Extension)
-         .filter(Extension.id == incall.extension_id)
-         .update({'type': 'incall', 'typeval': str(incall.id)})
-         )
-
-    def _create_dialaction(self, incall):
-        dialaction_row = incall_db_converter.to_dialaction(incall)
-        self.session.add(dialaction_row)
+    def edit(self, incall):
+        self.session.add(incall)
+        self.session.flush()
 
     def delete(self, incall):
-        incall_query = (self.session.query(Incall)
-                        .filter(Incall.id == incall.id))
-
-        dialaction_query = (self.session.query(Dialaction)
-                            .filter(Dialaction.category == 'incall')
-                            .filter(Dialaction.categoryval == str(incall.id)))
-
-        extension_query = (self.session.query(Extension)
-                           .filter(Extension.id == incall.extension_id))
-
-        incall_query.delete()
-        dialaction_query.delete()
-        extension_query.update({'type': 'user', 'typeval': '0'})
+        self.session.delete(incall)
         self.session.flush()

@@ -133,14 +133,10 @@ class TestExtensionFixes(DAOTestCase):
         assert_that(extension.typeval, equal_to('1234'))
 
     def test_given_extension_destination_is_incall_then_incall_updated(self):
-        incall = self.add_incall(exten="1000", context="other-extern")
+        incall = self.add_incall(exten="1000", context="other-extern",
+                                 destination={'action': 'user', 'actionarg1': '1234'})
         extension = self.add_extension(exten="1001", context="from-extern",
                                        type="incall", typeval=str(incall.id))
-        self.add_dialaction(event='answer',
-                            category='incall',
-                            categoryval=str(incall.id),
-                            action='user',
-                            actionarg1='1234')
 
         self.fixes.fix(extension.id)
 
