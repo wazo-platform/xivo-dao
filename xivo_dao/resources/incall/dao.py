@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014 Avencall
+# Copyright (C) 2014-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,11 +22,21 @@ from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.incall import Incall
 from xivo_dao.alchemy.user_line import UserLine
 
-from xivo_dao.resources.extension import dao as extension_dao
 from xivo_dao.resources.incall.model import db_converter as incall_db_converter
 
+from xivo_dao.resources.incall.persistor import IncallPersistor
+
 from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.helpers.db_utils import flush_session
+
+
+@daosession
+def create(session, incall):
+    return IncallPersistor(session).create(incall)
+
+
+@daosession
+def delete(session, incall):
+    IncallPersistor(session).delete(incall)
 
 
 @daosession
@@ -85,52 +95,3 @@ def find_by_extension_id(session, extension_id):
     row = query.first()
 
     return incall_db_converter.to_model(row) if row else None
-
-
-@daosession
-def create(session, incall):
-    extension = extension_dao.get(incall.extension_id)
-
-    with flush_session(session):
-        incall.id = _create_incall(session, incall, extension)
-        _update_extension(session, incall)
-        _create_dialaction(session, incall)
-
-    return incall
-
-
-def _create_incall(session, incall, extension):
-    incall_row = incall_db_converter.to_incall(incall, extension)
-    session.add(incall_row)
-    session.flush()
-    return incall_row.id
-
-
-def _update_extension(session, incall):
-    (session.query(Extension)
-     .filter(Extension.id == incall.extension_id)
-     .update({'type': 'incall', 'typeval': str(incall.id)})
-     )
-
-
-def _create_dialaction(session, incall):
-    dialaction_row = incall_db_converter.to_dialaction(incall)
-    session.add(dialaction_row)
-
-
-@daosession
-def delete(session, incall):
-    incall_query = (session.query(Incall)
-                    .filter(Incall.id == incall.id))
-
-    dialaction_query = (session.query(Dialaction)
-                        .filter(Dialaction.category == 'incall')
-                        .filter(Dialaction.categoryval == str(incall.id)))
-
-    extension_query = (session.query(Extension)
-                       .filter(Extension.id == incall.extension_id))
-
-    with flush_session(session):
-        incall_query.delete()
-        dialaction_query.delete()
-        extension_query.update({'type': 'user', 'typeval': '0'})
