@@ -18,7 +18,6 @@
 from hamcrest import (assert_that,
                       contains,
                       equal_to,
-                      has_entries,
                       has_items,
                       has_properties,
                       has_property,
@@ -85,8 +84,8 @@ class TestFindBy(DAOTestCase):
         assert_that(incall.description, equal_to('mydescription'))
 
     def test_find_by_user_id(self):
-        incall_row = self.add_incall(destination={'action': 'user',
-                                                  'actionarg1': '2'})
+        incall_row = self.add_incall(destination=Dialaction(action='user',
+                                                            actionarg1='2'))
 
         incall = incall_dao.find_by(user_id=2)
 
@@ -121,8 +120,8 @@ class TestGetBy(DAOTestCase):
         assert_that(incall.description, equal_to('mydescription'))
 
     def test_get_by_user_id(self):
-        incall_row = self.add_incall(destination={'action': 'user',
-                                                  'actionarg1': '2'})
+        incall_row = self.add_incall(destination=Dialaction(action='user',
+                                                            actionarg1='2'))
 
         incall = incall_dao.get_by(user_id=2)
 
@@ -141,12 +140,12 @@ class TestFindAllBy(DAOTestCase):
         assert_that(result, contains())
 
     def test_find_all_by_custom_column(self):
-        incall1 = self.add_incall(destination={'action': 'user',
-                                               'actionarg1': '2'})
-        incall2 = self.add_incall(destination={'action': 'user',
-                                               'actionarg1': '2'})
-        self.add_incall(destination={'action': 'user',
-                                     'actionarg1': '3'})
+        incall1 = self.add_incall(destination=Dialaction(action='user',
+                                                         actionarg1='2'))
+        incall2 = self.add_incall(destination=Dialaction(action='user',
+                                                         actionarg1='2'))
+        self.add_incall(destination=Dialaction(action='user',
+                                               actionarg1='3'))
 
         incalls = incall_dao.find_all_by(user_id=2)
 
@@ -249,7 +248,7 @@ class TestSearchGivenMultipleIncall(TestSearch):
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_fields(self):
-        incall = Incall(destination={'action': 'none'})
+        incall = Incall(destination=Dialaction(action='none'))
         created_incall = incall_dao.create(incall)
 
         row = self.session.query(Incall).first()
@@ -260,18 +259,18 @@ class TestCreate(DAOTestCase):
                                                    description=none(),
                                                    caller_id_mode=none(),
                                                    caller_id_name=none(),
-                                                   destination=has_entries(action='none',
-                                                                           actionarg1=None,
-                                                                           actionarg2=None)))
+                                                   destination=has_properties(action='none',
+                                                                              actionarg1=None,
+                                                                              actionarg2=None)))
 
     def test_create_with_all_fields(self):
         incall = Incall(preprocess_subroutine='MySubroutine',
                         description='incall description',
                         caller_id_mode='prepend',
                         caller_id_name='incall_',
-                        destination={'action': 'user',
-                                     'actionarg1': '2',
-                                     'actionarg2': '10'})
+                        destination=Dialaction(action='user',
+                                               actionarg1='2',
+                                               actionarg2='10'))
 
         created_incall = incall_dao.create(incall)
 
@@ -283,9 +282,9 @@ class TestCreate(DAOTestCase):
                                                    description='incall description',
                                                    caller_id_mode='prepend',
                                                    caller_id_name='incall_',
-                                                   destination={'action': 'user',
-                                                                'actionarg1': '2',
-                                                                'actionarg2': '10'}))
+                                                   destination=has_properties(action='user',
+                                                                              actionarg1='2',
+                                                                              actionarg2='10')))
 
 
 class TestEdit(DAOTestCase):
@@ -295,18 +294,18 @@ class TestEdit(DAOTestCase):
                                           description='incall description',
                                           caller_id_mode='prepend',
                                           caller_id_name='incall_',
-                                          destination={'action': 'user',
-                                                       'actionarg1': '2',
-                                                       'actionarg2': '10'}))
+                                          destination=Dialaction(action='user',
+                                                                 actionarg1='2',
+                                                                 actionarg2='10')))
 
         incall = incall_dao.get(incall.id)
         incall.preprocess_subroutine = 'other_subroutine'
         incall.description = 'other description'
         incall.caller_id_mode = 'append'
         incall.caller_id_name = '_incall'
-        incall.destination = {'action': 'queue',
-                              'actionarg1': '1',
-                              'actionarg2': '2'}
+        incall.destination = Dialaction(action='queue',
+                                        actionarg1='1',
+                                        actionarg2='2')
 
         incall_dao.edit(incall)
 
@@ -318,26 +317,26 @@ class TestEdit(DAOTestCase):
                                            description='other description',
                                            caller_id_mode='append',
                                            caller_id_name='_incall',
-                                           destination={'action': 'queue',
-                                                        'actionarg1': '1',
-                                                        'actionarg2': '2'}))
+                                           destination=has_properties(action='queue',
+                                                                      actionarg1='1',
+                                                                      actionarg2='2')))
 
     def test_edit_set_fields_to_null(self):
         incall = incall_dao.create(Incall(preprocess_subroutine='MySubroutine',
                                           description='incall description',
                                           caller_id_mode='prepend',
                                           caller_id_name='incall_',
-                                          destination={'action': 'user',
-                                                       'actionarg1': '2',
-                                                       'actionarg2': '10'}))
+                                          destination=Dialaction(action='user',
+                                                                 actionarg1='2',
+                                                                 actionarg2='10')))
         incall = incall_dao.get(incall.id)
         incall.preprocess_subroutine = None
         incall.description = None
         incall.caller_id_mode = None
         incall.caller_id_name = None
-        incall.destination = {'action': 'none',
-                              'actionarg1': None,
-                              'actionarg2': None}
+        incall.destination = Dialaction(action='none',
+                                        actionarg1=None,
+                                        actionarg2=None)
 
         incall_dao.edit(incall)
 
@@ -347,9 +346,9 @@ class TestEdit(DAOTestCase):
                                         description=none(),
                                         caller_id_mode=none(),
                                         caller_id_name=none(),
-                                        destination={'action': 'none',
-                                                     'actionarg1': None,
-                                                     'actionarg2': None}))
+                                        destination=has_properties(action='none',
+                                                                   actionarg1=None,
+                                                                   actionarg2=None)))
 
 
 class TestDelete(DAOTestCase):
@@ -391,7 +390,7 @@ class TestFindLineExtensionByExtensionId(DAOTestCase):
     def test_given_incall_associated_to_user_with_line_then_returns_item(self):
         user_line = self.add_user_line_with_exten(exten='1000', context='default')
         extension = self.add_extension(exten='1000', context='from-extern')
-        incall = self.add_incall(destination={'action': 'user', 'actionarg1': user_line.user_id})
+        incall = self.add_incall(destination=Dialaction(action='user', actionarg1=user_line.user_id))
         extension_dao.associate_incall(incall, extension)
 
         result = incall_dao.find_line_extension_by_extension_id(extension.id)
@@ -403,9 +402,9 @@ class TestFindLineExtensionByExtensionId(DAOTestCase):
         user_line = self.add_user_line_with_exten(exten='1000', context='default')
         extension1 = self.add_extension(exten='1000', context='from-extern')
         extension2 = self.add_extension(exten='1001', context='from-extern')
-        incall1 = self.add_incall(destination={'action': 'user', 'actionarg1': user_line.user_id})
+        incall1 = self.add_incall(destination=Dialaction(action='user', actionarg1=user_line.user_id))
         extension_dao.associate_incall(incall1, extension1)
-        incall2 = self.add_incall(destination={'action': 'user', 'actionarg1': user_line.user_id})
+        incall2 = self.add_incall(destination=Dialaction(action='user', actionarg1=user_line.user_id))
         extension_dao.associate_incall(incall2, extension2)
 
         result = incall_dao.find_line_extension_by_extension_id(extension1.id)

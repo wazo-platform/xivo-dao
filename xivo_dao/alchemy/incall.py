@@ -92,22 +92,19 @@ class Incall(Base):
 
     @property
     def destination(self):
-        if not self.dialaction:
-            return {}
-        return {'action': self.dialaction.action,
-                'actionarg1': self.dialaction.actionarg1,
-                'actionarg2': self.dialaction.actionarg2}
+        return self.dialaction
 
     @destination.setter
-    def destination(self, value):
+    def destination(self, destination):
         if not self.dialaction:
-            self.dialaction = Dialaction(event='answer',
-                                         category='incall',
-                                         linked=1)
+            destination.event = 'answer'
+            destination.category = 'incall'
+            destination.linked = 1
+            self.dialaction = destination
 
-        self.dialaction.action = value.get('action', self.dialaction.action)
-        self.dialaction.actionarg1 = value.get('actionarg1', self.dialaction.actionarg1)
-        self.dialaction.actionarg2 = value.get('actionarg2', self.dialaction.actionarg2)
+        self.dialaction.action = destination.action
+        self.dialaction.actionarg1 = destination.actionarg1
+        self.dialaction.actionarg2 = destination.actionarg2
 
     @hybrid_property
     def user_id(self):
