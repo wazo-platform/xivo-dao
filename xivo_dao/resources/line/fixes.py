@@ -18,15 +18,16 @@
 
 from sqlalchemy.orm import Load
 
-from xivo_dao.alchemy.userfeatures import UserFeatures
-from xivo_dao.alchemy.linefeatures import LineFeatures
-from xivo_dao.alchemy.user_line import UserLine
-from xivo_dao.alchemy.line_extension import LineExtension
 from xivo_dao.alchemy.extension import Extension
-from xivo_dao.alchemy.usersip import UserSIP
-from xivo_dao.alchemy.sccpline import SCCPLine
+from xivo_dao.alchemy.line_extension import LineExtension
+from xivo_dao.alchemy.linefeatures import LineFeatures
+from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.sccpdevice import SCCPDevice
+from xivo_dao.alchemy.sccpline import SCCPLine
+from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.usercustom import UserCustom
+from xivo_dao.alchemy.userfeatures import UserFeatures
+from xivo_dao.alchemy.usersip import UserSIP
 
 
 class LineFixes(object):
@@ -98,6 +99,9 @@ class LineFixes(object):
 
     def update_usersip(self, row):
         row.UserSIP.context = row.LineFeatures.context
+        if row.UserFeatures:
+            interface = 'SIP/{}'.format(row.UserSIP.name)
+            self.fix_queue_member(row.UserFeatures.id, interface)
 
     def remove_endpoint(self, row):
         row.LineFeatures.remove_endpoint()
@@ -106,6 +110,9 @@ class LineFixes(object):
         if row.SCCPLine:
             self.fix_sccp_device(row)
             self.fix_sccp_line(row)
+            if row.UserFeatures:
+                interface = 'SCCP/{}'.format(row.SCCPLine.name)
+                self.fix_queue_member(row.UserFeatures.id, interface)
         else:
             self.remove_endpoint(row)
 
@@ -131,6 +138,8 @@ class LineFixes(object):
     def fix_custom(self, row):
         if row.UserCustom:
             row.UserCustom.context = row.LineFeatures.context
+            if row.UserFeatures:
+                self.fix_queue_member(row.UserFeatures.id, row.UserCustom.interface)
         else:
             self.remove_endpoint(row)
 
@@ -140,3 +149,9 @@ class LineFixes(object):
                 row.UserSIP.update_caller_id(row.UserFeatures, row.Extension)
             elif row.LineFeatures.protocol == "sccp":
                 row.SCCPLine.update_caller_id(row.UserFeatures, row.Extension)
+
+    def fix_queue_member(self, user_id, interface):
+        (self.session.query(QueueMember)
+         .filter(QueueMember.usertype == 'user')
+         .filter(QueueMember.userid == user_id)
+         .update({'interface': interface}))
