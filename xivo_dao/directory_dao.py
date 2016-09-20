@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2015 Avencall
+# Copyright (C) 2012-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -104,6 +104,8 @@ def _get_nonldap_sources(session):
         Directories.xivo_password,
         Directories.xivo_verify_certificate,
         Directories.xivo_custom_ca_path,
+        Directories.dird_tenant,
+        Directories.dird_phonebook,
         CtiDirectories.delimiter,
         CtiDirectories.match_direct,
         CtiDirectories.match_reverse,
@@ -123,6 +125,8 @@ def _get_nonldap_sources(session):
         Directories.xivo_password,
         Directories.xivo_verify_certificate,
         Directories.xivo_custom_ca_path,
+        Directories.dird_tenant,
+        Directories.dird_phonebook,
         CtiDirectories.delimiter,
         CtiDirectories.match_direct,
         CtiDirectories.match_reverse,
@@ -144,6 +148,9 @@ def _get_nonldap_sources(session):
             source_config['xivo_password'] = source.xivo_password
             source_config['xivo_verify_certificate'] = source.xivo_verify_certificate
             source_config['xivo_custom_ca_path'] = source.xivo_custom_ca_path
+        elif source.dirtype == 'dird_phonebook':
+            source_config['dird_tenant'] = source.dird_tenant
+            source_config['dird_phonebook'] = source.dird_phonebook
         source_configs.append(source_config)
 
     return source_configs
