@@ -66,7 +66,7 @@ from xivo_dao.alchemy.queueskill import QueueSkill
 from xivo_dao.alchemy.queueskillrule import QueueSkillRule
 from xivo_dao.alchemy.outcall import Outcall
 from xivo_dao.alchemy.rightcall import RightCall as CallPermission
-from xivo_dao.alchemy.rightcallmember import RightCallMember as UserCallPermission
+from xivo_dao.alchemy.rightcallmember import RightCallMember as CallPermissionAssociation
 from xivo_dao.alchemy.sccpdevice import SCCPDevice as SCCPDeviceSchema
 from xivo_dao.alchemy.sccpgeneralsettings import SCCPGeneralSettings
 from xivo_dao.alchemy.sccpline import SCCPLine as SCCPLineSchema
@@ -340,13 +340,20 @@ class DAOTestCase(unittest.TestCase):
         return user_call_permission
 
     def add_user_call_permission(self, **kwargs):
-        user_call_permission = UserCallPermission(**kwargs)
+        kwargs.setdefault('type', 'user')
+        user_call_permission = CallPermissionAssociation(**kwargs)
         self.add_me(user_call_permission)
         return user_call_permission
 
     def add_group_call_permission(self, **kwargs):
         kwargs.setdefault('type', 'group')
-        group_call_permission = UserCallPermission(**kwargs)
+        group_call_permission = CallPermissionAssociation(**kwargs)
+        self.add_me(group_call_permission)
+        return group_call_permission
+
+    def add_incall_call_permission(self, **kwargs):
+        kwargs.setdefault('type', 'incall')
+        group_call_permission = CallPermissionAssociation(**kwargs)
         self.add_me(group_call_permission)
         return group_call_permission
 
