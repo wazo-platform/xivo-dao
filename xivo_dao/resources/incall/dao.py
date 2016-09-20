@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014 Avencall
+# Copyright (C) 2014-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,30 +22,55 @@ from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.incall import Incall
 from xivo_dao.alchemy.user_line import UserLine
 
-from xivo_dao.resources.extension import dao as extension_dao
-from xivo_dao.resources.incall.model import db_converter as incall_db_converter
+from xivo_dao.resources.incall.persistor import IncallPersistor
+from xivo_dao.resources.incall.search import incall_search
 
 from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.helpers.db_utils import flush_session
 
 
 @daosession
-def find_all_line_extensions_by_line_id(session, line_id):
-    query = (session.query(UserLine.line_id,
-                           Extension.id.label('extension_id'))
-             .join(Dialaction,
-                   and_(Dialaction.action == 'user',
-                        cast(Dialaction.actionarg1, Integer) == UserLine.user_id,
-                        UserLine.main_line == True))  # noqa
-             .join(Incall,
-                   and_(Dialaction.category == 'incall',
-                        cast(Dialaction.categoryval, Integer) == Incall.id))
-             .join(Extension,
-                   and_(Incall.exten == Extension.exten,
-                        Incall.context == Extension.context))
-             .filter(UserLine.line_id == line_id))
+def search(session, **parameters):
+    return IncallPersistor(session, incall_search).search(parameters)
 
-    return query.all()
+
+@daosession
+def get(session, incall_id):
+    return IncallPersistor(session, incall_search).get_by({'id': incall_id})
+
+
+@daosession
+def get_by(session, **criteria):
+    return IncallPersistor(session, incall_search).get_by(criteria)
+
+
+@daosession
+def find(session, incall_id):
+    return IncallPersistor(session, incall_search).find_by({'id': incall_id})
+
+
+@daosession
+def find_by(session, **criteria):
+    return IncallPersistor(session, incall_search).find_by(criteria)
+
+
+@daosession
+def find_all_by(session, **criteria):
+    return IncallPersistor(session, incall_search).find_all_by(criteria)
+
+
+@daosession
+def create(session, incall):
+    return IncallPersistor(session, incall_search).create(incall)
+
+
+@daosession
+def edit(session, incall):
+    IncallPersistor(session, incall_search).edit(incall)
+
+
+@daosession
+def delete(session, incall):
+    IncallPersistor(session, incall_search).delete(incall)
 
 
 @daosession
@@ -65,72 +90,3 @@ def find_line_extension_by_extension_id(session, extension_id):
              .filter(Extension.id == extension_id))
 
     return query.first()
-
-
-@daosession
-def find_by_extension_id(session, extension_id):
-    query = (session.query(Incall.id,
-                           Incall.description,
-                           Dialaction.action.label('destination'),
-                           cast(Dialaction.actionarg1, Integer).label('destination_id'),
-                           Extension.id.label('extension_id'))
-             .join(Dialaction,
-                   and_(Dialaction.category == 'incall',
-                        cast(Dialaction.categoryval, Integer) == Incall.id))
-             .join(Extension,
-                   and_(Incall.exten == Extension.exten,
-                        Incall.context == Extension.context))
-             .filter(Extension.id == extension_id))
-
-    row = query.first()
-
-    return incall_db_converter.to_model(row) if row else None
-
-
-@daosession
-def create(session, incall):
-    extension = extension_dao.get(incall.extension_id)
-
-    with flush_session(session):
-        incall.id = _create_incall(session, incall, extension)
-        _update_extension(session, incall)
-        _create_dialaction(session, incall)
-
-    return incall
-
-
-def _create_incall(session, incall, extension):
-    incall_row = incall_db_converter.to_incall(incall, extension)
-    session.add(incall_row)
-    session.flush()
-    return incall_row.id
-
-
-def _update_extension(session, incall):
-    (session.query(Extension)
-     .filter(Extension.id == incall.extension_id)
-     .update({'type': 'incall', 'typeval': str(incall.id)})
-     )
-
-
-def _create_dialaction(session, incall):
-    dialaction_row = incall_db_converter.to_dialaction(incall)
-    session.add(dialaction_row)
-
-
-@daosession
-def delete(session, incall):
-    incall_query = (session.query(Incall)
-                    .filter(Incall.id == incall.id))
-
-    dialaction_query = (session.query(Dialaction)
-                        .filter(Dialaction.category == 'incall')
-                        .filter(Dialaction.categoryval == str(incall.id)))
-
-    extension_query = (session.query(Extension)
-                       .filter(Extension.id == incall.extension_id))
-
-    with flush_session(session):
-        incall_query.delete()
-        dialaction_query.delete()
-        extension_query.update({'type': 'user', 'typeval': '0'})

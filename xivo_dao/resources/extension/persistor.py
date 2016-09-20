@@ -70,3 +70,15 @@ class ExtensionPersistor(CriteriaBuilderMixin):
     def delete(self, extension):
         self.session.query(Extension).filter(Extension.id == extension.id).delete()
         self.session.flush()
+
+    def associate_incall(self, incall, extension):
+        extension.type = 'incall'
+        extension.typeval = str(incall.id)
+        self.session.add(extension)
+        self.session.flush()
+
+    def dissociate_incall(self, incall, extension):
+        extension.type = 'user'
+        extension.typeval = '0'
+        self.session.add(extension)
+        self.session.flush()

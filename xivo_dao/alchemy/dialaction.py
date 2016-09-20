@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2014 Avencall
+# Copyright (C) 2012-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,11 +15,32 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
-from sqlalchemy.types import Integer, String
+from sqlalchemy.types import Integer, String, TypeDecorator
+from sqlalchemy.sql import func
 
 from xivo_dao.helpers.db_manager import Base
 from xivo_dao.alchemy import enum
+
+
+# Used for Incall table
+# http://docs.sqlalchemy.org/en/rel_0_9/_modules/examples/join_conditions/cast.html
+class IntAsString(TypeDecorator):
+    """Coerce integer->string type.
+
+    This is needed only if the relationship() from
+    string to int is writable, as SQLAlchemy will copy
+    the int parent values into the string attribute
+    on the child during a flush.
+
+    """
+    impl = String
+
+    def process_bind_param(self, value, dialect):
+        if value is not None:
+            value = str(value)
+        return value
 
 
 class Dialaction(Base):
@@ -37,7 +58,7 @@ class Dialaction(Base):
 
     event = Column(enum.dialaction_event)
     category = Column(enum.dialaction_category)
-    categoryval = Column(String(128), server_default='')
+    categoryval = Column(IntAsString(128), server_default='')
     action = Column(enum.dialaction_action, nullable=False)
     actionarg1 = Column(String(255))
     actionarg2 = Column(String(255))
@@ -53,3 +74,41 @@ class Dialaction(Base):
                       actionarg1=None,
                       actionarg2=None,
                       linked=1)
+
+    @hybrid_property
+    def type(self):
+        if not self.action:
+            return
+        return self.action.split(':', 1)[0]
+
+    @type.expression
+    def type(cls):
+        return func.split_part(cls.action, ':', 1)
+
+    @type.setter
+    def type(self, type_):
+        if not self.action:
+            self.action = type_
+            return
+        type_subtype = self.action.split(':', 1)
+        if len(type_subtype) == 2:
+            self.action = '{}:{}'.format(type_, type_subtype[1])
+        else:
+            self.action = type_
+
+    @hybrid_property
+    def subtype(self):
+        if not self.action:
+            return
+        type_subtype = self.action.split(':', 1)
+        if len(type_subtype) == 2:
+            return type_subtype[1]
+        return None
+
+    @subtype.expression
+    def subtype(cls):
+        return func.split_part(cls.action, ':', 2)
+
+    @subtype.setter
+    def subtype(self, subtype):
+        self.action = '{}:{}'.format(self.type, subtype)

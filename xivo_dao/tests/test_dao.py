@@ -410,11 +410,8 @@ class DAOTestCase(unittest.TestCase):
         return extension
 
     def add_incall(self, **kwargs):
-        kwargs.setdefault('description', '')
-        kwargs.setdefault('exten', '1000')
-        kwargs.setdefault('context', 'from-extern')
-        kwargs.setdefault('commented', 0)
-
+        default_destination = Dialaction(action='none')
+        kwargs.setdefault('destination', default_destination)
         incall = Incall(**kwargs)
         self.add_me(incall)
         return incall

@@ -65,6 +65,16 @@ def delete(extension):
     persistor().delete(extension)
 
 
+def associate_incall(incall, extension):
+    persistor().associate_incall(incall, extension)
+    ExtensionFixes(Session).fix(extension.id)
+
+
+def dissociate_incall(incall, extension):
+    persistor().dissociate_incall(incall, extension)
+    ExtensionFixes(Session).fix(extension.id)
+
+
 def find_all_service_extensions():
     typevals = service_converter.typevals()
     query = (Session.query(Extension.id,
