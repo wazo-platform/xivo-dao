@@ -359,6 +359,7 @@ class TestSimpleSearch(TestSearch):
                                                 uuid=user.uuid,
                                                 firstname='chârles',
                                                 lastname=None,
+                                                email=None,
                                                 entity=entity_name,
                                                 enabled=True,
                                                 extension=None,
@@ -371,13 +372,15 @@ class TestSimpleSearch(TestSearch):
 
     def test_given_user_with_line_when_using_summary_view_then_returns_summary_result(self):
         user_line = self.add_user_line_with_exten(firstname='dânny',
-                                                  lastname='rôgers')
+                                                  lastname='rôgers',
+                                                  email='dany.rogers@example.com')
         entity_name = self.session.query(Entity.name).filter_by(id=user_line.user.entity_id).scalar()
 
         expected = SearchResult(1, [UserSummary(id=user_line.user_id,
                                                 uuid=user_line.user.uuid,
                                                 firstname='dânny',
                                                 lastname='rôgers',
+                                                email='dany.rogers@example.com',
                                                 entity=entity_name,
                                                 enabled=True,
                                                 extension=user_line.extension.exten,
@@ -401,6 +404,7 @@ class TestSimpleSearch(TestSearch):
                                                 uuid=user_line.user.uuid,
                                                 firstname='dânny',
                                                 lastname='rôgers',
+                                                email=None,
                                                 entity=entity_name,
                                                 enabled=True,
                                                 extension=user_line.extension.exten,

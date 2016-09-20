@@ -162,6 +162,7 @@ class DAOTestCase(unittest.TestCase):
     def add_user_line_with_exten(self, **kwargs):
         kwargs.setdefault('firstname', 'unittest')
         kwargs.setdefault('lastname', 'unittest')
+        kwargs.setdefault('email', None)
         kwargs.setdefault('callerid', u'"%s %s"' % (kwargs['firstname'], kwargs['lastname']))
         kwargs.setdefault('exten', '%s' % random.randint(1000, 1999))
         kwargs.setdefault('context', 'foocontext')
@@ -179,6 +180,7 @@ class DAOTestCase(unittest.TestCase):
 
         user = self.add_user(firstname=kwargs['firstname'],
                              lastname=kwargs['lastname'],
+                             email=kwargs['email'],
                              callerid=kwargs['callerid'],
                              voicemailid=kwargs['voicemail_id'],
                              musiconhold=kwargs['musiconhold'],
