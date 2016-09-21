@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy import Integer, cast, and_
-
-from xivo_dao.alchemy.dialaction import Dialaction
-from xivo_dao.alchemy.extension import Extension
-from xivo_dao.alchemy.incall import Incall
-from xivo_dao.alchemy.user_line import UserLine
 
 from xivo_dao.resources.incall.persistor import IncallPersistor
 from xivo_dao.resources.incall.search import incall_search
@@ -71,22 +65,3 @@ def edit(session, incall):
 @daosession
 def delete(session, incall):
     IncallPersistor(session, incall_search).delete(incall)
-
-
-@daosession
-def find_line_extension_by_extension_id(session, extension_id):
-    query = (session.query(UserLine.line_id,
-                           Extension.id.label('extension_id'))
-             .join(Dialaction,
-                   and_(Dialaction.action == 'user',
-                        cast(Dialaction.actionarg1, Integer) == UserLine.user_id,
-                        UserLine.main_line == True))  # noqa
-             .join(Incall,
-                   and_(Dialaction.category == 'incall',
-                        cast(Dialaction.categoryval, Integer) == Incall.id))
-             .join(Extension,
-                   and_(Incall.exten == Extension.exten,
-                        Incall.context == Extension.context))
-             .filter(Extension.id == extension_id))
-
-    return query.first()
