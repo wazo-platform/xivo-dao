@@ -24,9 +24,11 @@ from hamcrest import (assert_that,
                       is_not,
                       none)
 
-from xivo_dao.alchemy.incall import Incall
 from xivo_dao.alchemy.callerid import Callerid
 from xivo_dao.alchemy.dialaction import Dialaction
+from xivo_dao.alchemy.extension import Extension
+from xivo_dao.alchemy.incall import Incall
+from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.resources.incall import dao as incall_dao
 from xivo_dao.resources.extension import dao as extension_dao
@@ -371,6 +373,25 @@ class TestDelete(DAOTestCase):
 
         caller_id = self.session.query(Callerid).first()
         assert_that(caller_id, none())
+
+    def test_when_deleting_then_call_permission_are_dissociated(self):
+        incall = self.add_incall()
+        self.add_call_permission()
+        self.add_incall_call_permission(typeval=str(incall.id))
+
+        incall_dao.delete(incall)
+
+        incall_call_permission = self.session.query(RightCallMember).first()
+        assert_that(incall_call_permission, none())
+
+    def test_when_deleting_then_extension_are_dissociated(self):
+        incall = self.add_incall()
+        extension = self.add_extension(type='incall', typeval=str(incall.id))
+
+        incall_dao.delete(incall)
+
+        extension = self.session.query(Extension).filter(Extension.id == extension.id).first()
+        assert_that(extension, has_properties(type='user', typeval='0'))
 
 
 class TestFindLineExtensionByExtensionId(DAOTestCase):

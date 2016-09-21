@@ -16,7 +16,9 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.incall import Incall
+from xivo_dao.alchemy.rightcallmember import RightCallMember
 
 from xivo_dao.helpers import errors
 from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
@@ -62,5 +64,17 @@ class IncallPersistor(CriteriaBuilderMixin):
         self.session.flush()
 
     def delete(self, incall):
+        self._delete_associations(incall)
         self.session.delete(incall)
         self.session.flush()
+
+    def _delete_associations(self, incall):
+        (self.session.query(RightCallMember)
+         .filter(RightCallMember.type == 'incall')
+         .filter(RightCallMember.typeval == str(incall.id))
+         .delete())
+
+        (self.session.query(Extension)
+         .filter(Extension.type == 'incall')
+         .filter(Extension.typeval == str(incall.id))
+         .update({'type': 'user', 'typeval': '0'}))
