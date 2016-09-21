@@ -21,10 +21,11 @@ from __future__ import unicode_literals
 from hamcrest import assert_that, equal_to, none
 
 from xivo_dao.alchemy.linefeatures import LineFeatures as Line
-from xivo_dao.alchemy.usersip import UserSIP
-from xivo_dao.alchemy.sccpline import SCCPLine
+from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.sccpdevice import SCCPDevice
+from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.usercustom import UserCustom
+from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.resources.line.fixes import LineFixes
 from xivo_dao.tests.test_dao import DAOTestCase
 
@@ -269,6 +270,45 @@ class TestLineFixes(DAOTestCase):
 
         assert_that(custom.context, equal_to('default'))
         assert_that(line.name, equal_to('custom/abcdef'))
+
+    def test_given_line_has_sip_name_then_queue_member_interface_updated(self):
+        sip = self.add_usersip(name='abcdef')
+        line = self.add_line(protocol='sip', protocolid=sip.id)
+        user = self.add_user()
+        self.add_user_line(user_id=user.id, line_id=line.id)
+        self.add_queue_member(usertype='user', userid=user.id, interface='SIP/default')
+
+        self.fixes.fix(line.id)
+
+        queue_member = self.session.query(QueueMember).first()
+
+        assert_that(queue_member.interface, equal_to('SIP/abcdef'))
+
+    def test_given_line_has_sccp_name_then_queue_member_interface_updated(self):
+        sccp = self.add_sccpline(name='abcdef')
+        line = self.add_line(protocol='sccp', protocolid=sccp.id)
+        user = self.add_user()
+        self.add_user_line(user_id=user.id, line_id=line.id)
+        self.add_queue_member(usertype='user', userid=user.id, interface='SCCP/default')
+
+        self.fixes.fix(line.id)
+
+        queue_member = self.session.query(QueueMember).first()
+
+        assert_that(queue_member.interface, equal_to('SCCP/abcdef'))
+
+    def test_given_line_has_custom_interface_then_queue_member_interface_updated(self):
+        custom = self.add_usercustom(interface='custom/abcdef')
+        line = self.add_line(protocol='custom', protocolid=custom.id)
+        user = self.add_user()
+        self.add_user_line(user_id=user.id, line_id=line.id)
+        self.add_queue_member(usertype='user', userid=user.id, interface='custom/invalid')
+
+        self.fixes.fix(line.id)
+
+        queue_member = self.session.query(QueueMember).first()
+
+        assert_that(queue_member.interface, equal_to('custom/abcdef'))
 
     def test_given_custom_protocol_is_no_longer_assocaited_then_protocol_removed(self):
         line = self.add_line(protocol='custom', protocolid=1234)
