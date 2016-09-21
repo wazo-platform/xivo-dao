@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2015 Avencall
+# Copyright (C) 2015-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -57,3 +57,18 @@ class TestAdminUserDAO(DAOTestCase):
         result = admin_dao.get_admin_id('foo')
 
         assert_that(result, equal_to(admin.id))
+
+    def test_get_admin_entity(self):
+        entity = self.add_entity(name='test')
+        admin = self.add_admin(login='foo', passwd='bar', entity_id=entity.id)
+
+        result = admin_dao.get_admin_entity('foo')
+
+        assert_that(result, equal_to('test'))
+
+    def test_get_admin_entity_no_entify(self):
+        admin = self.add_admin(login='alice', passwd='foobar')
+
+        result = admin_dao.get_admin_entity('alice')
+
+        assert_that(result, equal_to(None))

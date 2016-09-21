@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2015 Avencall
+# Copyright (C) 2015-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 from sqlalchemy import and_
 
 from xivo_dao.alchemy.user import User
+from xivo_dao.alchemy.entity import Entity
 from xivo_dao.helpers.db_manager import daosession
 
 
@@ -29,6 +30,14 @@ def check_username_password(session, username, password):
 
     return row is not None
 
+
+@daosession
+def get_admin_entity(session, username):
+    filter_ = and_(
+        User.login == username,
+        User.valid == 1,
+    )
+    return session.query(Entity.name).join(User).filter(filter_).scalar()
 
 @daosession
 def get_admin_id(session, username):
