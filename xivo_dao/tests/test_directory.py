@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2007-2015 Avencall
+# Copyright (C) 2007-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -166,6 +166,7 @@ class TestDirectoryNonLdapSources(DAOTestCase):
             {'uri': 'http://mtl.lan.example.com:9487', 'dirtype': 'xivo', 'name': 'XiVO'},
             {'uri': 'phonebook', 'dirtype': 'phonebook', 'name': 'phonebook'},
             {'uri': 'file:///tmp/test.csv', 'dirtype': 'file', 'name': 'my_csv'},
+            {'uri': 'postgresql://', 'dirtype': 'dird_phonebook', 'name': 'dird', 'dird_tenant': 'tenant', 'dird_phonebook': 'thephonebook'},
         ]
         self.cti_directory_configs = [
             {'id': 1,
@@ -184,6 +185,11 @@ class TestDirectoryNonLdapSources(DAOTestCase):
              'match_direct': '["firstname", "lastname"]',
              'match_reverse': '["exten"]',
              'delimiter': '|'},
+             {'id': 4,
+              'name': 'mydirdphonebook',
+              'uri': 'postgresql://',
+              'match_direct': '',
+              'match_reverse': '[]'},
         ]
         self.cti_directory_fields_configs = [
             {'dir_id': 1,
@@ -202,6 +208,9 @@ class TestDirectoryNonLdapSources(DAOTestCase):
              'fieldname': 'name',
              'value': '{firstname} {lastname}'},
             {'dir_id': 3,
+             'fieldname': 'name',
+             'value': '{firstname} {lastname}'},
+            {'dir_id': 4,
              'fieldname': 'name',
              'value': '{firstname} {lastname}'},
         ]
@@ -256,6 +265,18 @@ class TestDirectoryNonLdapSources(DAOTestCase):
                 'name': '{firstname} {lastname}',
             }}
 
+        self.expected_result_4 = {
+            'type': 'dird_phonebook',
+            'name': 'mydirdphonebook',
+            'uri': 'postgresql://',
+            'dird_tenant': 'tenant',
+            'dird_phonebook': 'thephonebook',
+            'searched_columns': [],
+            'first_matched_columns': [],
+            'format_columns': {'name': '{firstname} {lastname}'},
+            'delimiter': None,
+        }
+
     def test_get_all_sources(self):
         directories = [Directories(**config) for config in self.directory_configs]
         cti_directories = [CtiDirectories(**config) for config in self.cti_directory_configs]
@@ -264,9 +285,10 @@ class TestDirectoryNonLdapSources(DAOTestCase):
 
         result = directory_dao.get_all_sources()
 
-        expected = [self.expected_result_1, self.expected_result_2, self.expected_result_3]
-
-        assert_that(result, contains_inanyorder(*expected))
+        assert_that(result, contains_inanyorder(self.expected_result_1,
+                                                self.expected_result_2,
+                                                self.expected_result_3,
+                                                self.expected_result_4))
 
     def test_get_all_sources_no_fields(self):
         directories = [Directories(**config) for config in self.directory_configs]
@@ -278,7 +300,7 @@ class TestDirectoryNonLdapSources(DAOTestCase):
 
         expected_result_1 = dict(self.expected_result_1)
         expected_result_1['format_columns'] = {}
-        expected = [expected_result_1, self.expected_result_2]
+        expected = [expected_result_1, self.expected_result_2, self.expected_result_3]
 
         assert_that(result, contains_inanyorder(*expected))
 
