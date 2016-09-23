@@ -60,6 +60,12 @@ class Incall(Base):
                               uselist=False,
                               cascade='all, delete-orphan')
 
+    extensions = relationship('Extension',
+                              primaryjoin="""and_(Extension.type == 'incall',
+                                                  Extension.typeval == cast(Incall.id, String))""",
+                              foreign_keys='Extension.typeval',
+                              backref='incall')
+
     @property
     def caller_id_mode(self):
         if not self.caller_id:
