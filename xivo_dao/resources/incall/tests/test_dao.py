@@ -31,7 +31,6 @@ from xivo_dao.alchemy.incall import Incall
 from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.resources.incall import dao as incall_dao
-from xivo_dao.resources.extension import dao as extension_dao
 from xivo_dao.helpers.exception import NotFoundError, InputError
 from xivo_dao.resources.utils.search import SearchResult
 
@@ -392,43 +391,3 @@ class TestDelete(DAOTestCase):
 
         extension = self.session.query(Extension).filter(Extension.id == extension.id).first()
         assert_that(extension, has_properties(type='user', typeval='0'))
-
-
-class TestFindLineExtensionByExtensionId(DAOTestCase):
-
-    def test_given_no_incalls_then_returns_nothing(self):
-        result = incall_dao.find_line_extension_by_extension_id(1)
-
-        assert_that(result, none())
-
-    def test_given_user_with_internal_extension_then_returns_nothing(self):
-        user_line = self.add_user_line_with_exten(exten='1000', context='default')
-
-        result = incall_dao.find_line_extension_by_extension_id(user_line.extension.id)
-
-        assert_that(result, none())
-
-    def test_given_incall_associated_to_user_with_line_then_returns_item(self):
-        user_line = self.add_user_line_with_exten(exten='1000', context='default')
-        extension = self.add_extension(exten='1000', context='from-extern')
-        incall = self.add_incall(destination=Dialaction(action='user', actionarg1=user_line.user_id))
-        extension_dao.associate_incall(incall, extension)
-
-        result = incall_dao.find_line_extension_by_extension_id(extension.id)
-
-        assert_that(result, has_properties(line_id=user_line.line_id,
-                                           extension_id=extension.id))
-
-    def test_given_2_incalls_on_same_user_then_returns_correct_item(self):
-        user_line = self.add_user_line_with_exten(exten='1000', context='default')
-        extension1 = self.add_extension(exten='1000', context='from-extern')
-        extension2 = self.add_extension(exten='1001', context='from-extern')
-        incall1 = self.add_incall(destination=Dialaction(action='user', actionarg1=user_line.user_id))
-        extension_dao.associate_incall(incall1, extension1)
-        incall2 = self.add_incall(destination=Dialaction(action='user', actionarg1=user_line.user_id))
-        extension_dao.associate_incall(incall2, extension2)
-
-        result = incall_dao.find_line_extension_by_extension_id(extension1.id)
-
-        assert_that(result, has_properties(line_id=user_line.line_id,
-                                           extension_id=extension1.id))
