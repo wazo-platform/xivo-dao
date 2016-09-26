@@ -29,6 +29,7 @@ from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.incall import Incall
 from xivo_dao.alchemy.rightcallmember import RightCallMember
+from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.resources.incall import dao as incall_dao
 from xivo_dao.helpers.exception import NotFoundError, InputError
@@ -391,6 +392,16 @@ class TestDelete(DAOTestCase):
 
         incall_call_permission = self.session.query(RightCallMember).first()
         assert_that(incall_call_permission, none())
+
+    def test_when_deleting_then_schedule_are_dissociated(self):
+        incall = self.add_incall()
+        schedule = self.add_schedule()
+        self.add_incall_schedule(schedule_id=schedule.id, pathid=incall.id)
+
+        incall_dao.delete(incall)
+
+        incall_schedule = self.session.query(SchedulePath).first()
+        assert_that(incall_schedule, none())
 
     def test_when_deleting_then_extension_are_dissociated(self):
         incall = self.add_incall()
