@@ -395,7 +395,6 @@ class TestEdit(DAOTestCase):
         outcall.patterns = [DialPattern(external_prefix=None,
                                         prefix=None,
                                         pattern='XX',
-                                        strip_digits=None,
                                         caller_id=None)]
 
         outcall_dao.edit(outcall)
@@ -407,7 +406,6 @@ class TestEdit(DAOTestCase):
                                         ring_time=none(),
                                         patterns=has_items(has_properties(external_prefix=none(),
                                                                           prefix=none(),
-                                                                          strip_digits=none(),
                                                                           caller_id=none()))))
 
 

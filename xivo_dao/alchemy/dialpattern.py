@@ -60,6 +60,8 @@ class DialPattern(Base):
 
     @strip_digits.setter
     def strip_digits(self, value):
+        if value is None:
+            value = 0  # set default value
         self.stripnum = value
 
     @hybrid_property
