@@ -357,9 +357,9 @@ class DAOTestCase(unittest.TestCase):
 
     def add_incall_call_permission(self, **kwargs):
         kwargs.setdefault('type', 'incall')
-        group_call_permission = CallPermissionAssociation(**kwargs)
-        self.add_me(group_call_permission)
-        return group_call_permission
+        incall_call_permission = CallPermissionAssociation(**kwargs)
+        self.add_me(incall_call_permission)
+        return incall_call_permission
 
     def add_incall_schedule(self, **kwargs):
         kwargs.setdefault('path', 'incall')
@@ -435,12 +435,25 @@ class DAOTestCase(unittest.TestCase):
         return incall
 
     def add_outcall(self, **kwargs):
-        kwargs.setdefault('name', 'outcall_name')
+        kwargs.setdefault('name', ''.join(random.choice(string.lowercase) for _ in range(6)))
         kwargs.setdefault('context', 'to-extern')
 
         outcall = Outcall(**kwargs)
         self.add_me(outcall)
         return outcall
+
+    def add_outcall_call_permission(self, **kwargs):
+        kwargs.setdefault('type', 'outcall')
+        outcall_call_permission = CallPermissionAssociation(**kwargs)
+        self.add_me(outcall_call_permission)
+        return outcall_call_permission
+
+    def add_outcall_schedule(self, **kwargs):
+        kwargs.setdefault('path', 'outcall')
+        kwargs.setdefault('order', 0)
+        outcall_schedule = SchedulePath(**kwargs)
+        self.add_me(outcall_schedule)
+        return outcall_schedule
 
     def add_user(self, **kwargs):
         if 'func_key_private_template_id' not in kwargs:

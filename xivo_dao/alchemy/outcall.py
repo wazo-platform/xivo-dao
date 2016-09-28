@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2014 Avencall
+# Copyright (C) 2014-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,9 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
-from sqlalchemy.types import Integer, String, Text
+import itertools
 
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import relationship
+from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
+from sqlalchemy.sql import func, cast, not_
+from sqlalchemy.types import Integer, String, Text, Boolean
+
+from xivo_dao.alchemy.extension import Extension
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -38,3 +44,88 @@ class Outcall(Base):
     hangupringtime = Column(Integer, nullable=False, server_default='0')
     commented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text)
+
+    dialpatterns = relationship('DialPattern',
+                                primaryjoin="""and_(DialPattern.type == 'outcall',
+                                                    DialPattern.typeid == Outcall.id)""",
+                                foreign_keys='DialPattern.typeid',
+                                cascade='all, delete-orphan')
+
+    extensions = relationship('Extension',
+                              primaryjoin="""and_(Extension.type == 'outcall',
+                                                  Extension.typeval == cast(Outcall.id, String),
+                                                  Extension.context == Outcall.context)""",
+                              foreign_keys='[Extension.typeval, Extension.context]',
+                              cascade='all, delete-orphan')
+
+    @hybrid_property
+    def internal_caller_id(self):
+        return self.internal == 1
+
+    @internal_caller_id.expression
+    def internal_caller_id(cls):
+        return cast(cls.internal, Boolean)
+
+    @internal_caller_id.setter
+    def internal_caller_id(self, value):
+        self.internal = int(value == 1)
+
+    @hybrid_property
+    def ring_time(self):
+        if self.hangupringtime == 0:
+            return None
+        return self.hangupringtime
+
+    @ring_time.expression
+    def ring_time(cls):
+        return func.nullif(cls.hangupringtime, 0)
+
+    @ring_time.setter
+    def ring_time(self, value):
+        if value is None:
+            self.hangupringtime = 0
+        else:
+            self.hangupringtime = value
+
+    @hybrid_property
+    def enabled(self):
+        return self.commented == 0
+
+    @enabled.expression
+    def enabled(cls):
+        return not_(cast(cls.commented, Boolean))
+
+    @enabled.setter
+    def enabled(self, value):
+        self.commented = int(value == 0)
+
+    @property
+    def patterns(self):
+        return self.dialpatterns
+
+    @patterns.setter
+    def patterns(self, patterns):
+        old_dialpatterns = self.dialpatterns if self.dialpatterns else []
+        old_extensions = self.extensions if self.extensions else []
+        self.dialpatterns = []
+        self.extensions = []
+        for pattern, dialpattern, extension in itertools.izip_longest(patterns, old_dialpatterns, old_extensions):
+            if not pattern:
+                continue
+
+            if not dialpattern:
+                dialpattern = pattern
+                dialpattern.type = 'outcall'
+
+            if not extension:
+                extension = Extension(type='outcall')
+
+            dialpattern.external_prefix = pattern.external_prefix
+            dialpattern.prefix = pattern.prefix
+            dialpattern.pattern = pattern.pattern
+            dialpattern.strip_digits = pattern.strip_digits
+            dialpattern.caller_id = pattern.caller_id
+            self.dialpatterns.append(dialpattern)
+
+            extension.exten = pattern.pattern
+            self.extensions.append(extension)
