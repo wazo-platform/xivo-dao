@@ -251,6 +251,15 @@ class TestGet(DAOTestCase):
 
         assert_that(extension.exten, equal_to(exten))
 
+    def test_incall_relationship(self):
+        incall_row = self.add_incall()
+        extension_row = self.add_extension(type='incall', typeval=str(incall_row.id))
+
+        extension = extension_dao.get(extension_row.id)
+
+        assert_that(extension, equal_to(extension_row))
+        assert_that(extension.incall, equal_to(incall_row))
+
 
 class TestCreate(DAOTestCase):
 
