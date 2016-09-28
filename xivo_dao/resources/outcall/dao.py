@@ -19,7 +19,6 @@
 from .persistor import OutcallPersistor
 from .search import outcall_search
 
-from xivo_dao.alchemy.outcall import Outcall
 from xivo_dao.helpers.db_manager import daosession
 
 
@@ -66,13 +65,3 @@ def edit(session, outcall):
 @daosession
 def delete(session, outcall):
     OutcallPersistor(session, outcall_search).delete(outcall)
-
-
-# TODO: DELETE
-@daosession
-def exists(session, outcall_id):
-    query = (session.query(Outcall)
-             .filter(Outcall.id == outcall_id)
-             )
-
-    return query.count() > 0

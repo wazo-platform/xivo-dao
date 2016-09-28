@@ -454,18 +454,3 @@ class TestDelete(DAOTestCase):
 
         extension = self.session.query(Extension).first()
         assert_that(extension, none())
-
-
-class TestGroupExist(DAOTestCase):
-
-    def test_given_no_outcall_then_returns_false(self):
-        result = outcall_dao.exists(1)
-
-        assert_that(result, equal_to(False))
-
-    def test_given_outcall_exists_then_return_true(self):
-        outcall_row = self.add_outcall()
-
-        result = outcall_dao.exists(outcall_row.id)
-
-        assert_that(result, equal_to(True))
