@@ -19,6 +19,7 @@
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.incall import Incall
 from xivo_dao.alchemy.rightcallmember import RightCallMember
+from xivo_dao.alchemy.schedulepath import SchedulePath
 
 from xivo_dao.helpers import errors
 from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
@@ -72,6 +73,11 @@ class IncallPersistor(CriteriaBuilderMixin):
         (self.session.query(RightCallMember)
          .filter(RightCallMember.type == 'incall')
          .filter(RightCallMember.typeval == str(incall.id))
+         .delete())
+
+        (self.session.query(SchedulePath)
+         .filter(SchedulePath.path == 'incall')
+         .filter(SchedulePath.pathid == incall.id)
          .delete())
 
         (self.session.query(Extension)

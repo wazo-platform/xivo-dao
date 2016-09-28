@@ -70,6 +70,8 @@ from xivo_dao.alchemy.rightcallmember import RightCallMember as CallPermissionAs
 from xivo_dao.alchemy.sccpdevice import SCCPDevice as SCCPDeviceSchema
 from xivo_dao.alchemy.sccpgeneralsettings import SCCPGeneralSettings
 from xivo_dao.alchemy.sccpline import SCCPLine as SCCPLineSchema
+from xivo_dao.alchemy.schedule import Schedule
+from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.sipauthentication import SIPAuthentication
 from xivo_dao.alchemy.staticiax import StaticIAX
 from xivo_dao.alchemy.staticmeetme import StaticMeetme
@@ -358,6 +360,13 @@ class DAOTestCase(unittest.TestCase):
         group_call_permission = CallPermissionAssociation(**kwargs)
         self.add_me(group_call_permission)
         return group_call_permission
+
+    def add_incall_schedule(self, **kwargs):
+        kwargs.setdefault('path', 'incall')
+        kwargs.setdefault('order', 0)
+        incall_schedule = SchedulePath(**kwargs)
+        self.add_me(incall_schedule)
+        return incall_schedule
 
     def add_context(self, **kwargs):
         kwargs.setdefault('entity', 'entity_id')
@@ -845,6 +854,11 @@ class DAOTestCase(unittest.TestCase):
         self.add_me(entity)
 
         return entity
+
+    def add_schedule(self, **kwargs):
+        schedule = Schedule(**kwargs)
+        self.add_me(schedule)
+        return schedule
 
     def add_bsfilter(self, **kwargs):
         options = {'callfrom': 'internal',
