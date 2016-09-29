@@ -23,7 +23,6 @@ from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
 from sqlalchemy.sql import func, cast, not_
 from sqlalchemy.types import Integer, String, Text, Boolean
 
-from xivo_dao.alchemy.extension import Extension
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -50,13 +49,6 @@ class Outcall(Base):
                                                     DialPattern.typeid == Outcall.id)""",
                                 foreign_keys='DialPattern.typeid',
                                 cascade='all, delete-orphan')
-
-    extensions = relationship('Extension',
-                              primaryjoin="""and_(Extension.type == 'outcall',
-                                                  Extension.typeval == cast(Outcall.id, String),
-                                                  Extension.context == Outcall.context)""",
-                              foreign_keys='[Extension.typeval, Extension.context]',
-                              cascade='all, delete-orphan')
 
     @hybrid_property
     def internal_caller_id(self):
@@ -106,19 +98,14 @@ class Outcall(Base):
     @patterns.setter
     def patterns(self, patterns):
         old_dialpatterns = self.dialpatterns if self.dialpatterns else []
-        old_extensions = self.extensions if self.extensions else []
         self.dialpatterns = []
-        self.extensions = []
-        for pattern, dialpattern, extension in itertools.izip_longest(patterns, old_dialpatterns, old_extensions):
+        for pattern, dialpattern in itertools.izip_longest(patterns, old_dialpatterns):
             if not pattern:
                 continue
 
             if not dialpattern:
                 dialpattern = pattern
                 dialpattern.type = 'outcall'
-
-            if not extension:
-                extension = Extension(type='outcall')
 
             dialpattern.external_prefix = pattern.external_prefix
             dialpattern.prefix = pattern.prefix
@@ -127,5 +114,8 @@ class Outcall(Base):
             dialpattern.caller_id = pattern.caller_id
             self.dialpatterns.append(dialpattern)
 
-            extension.exten = pattern.pattern
-            self.extensions.append(extension)
+    def fix_context(self):
+        for pattern in self.dialpatterns:
+            if pattern.extension is None:
+                continue
+            pattern.extension.context = self.context

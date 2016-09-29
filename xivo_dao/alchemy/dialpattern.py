@@ -16,9 +16,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint
 from sqlalchemy.types import Integer, String
 
+from xivo_dao.alchemy.extension import Extension
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -38,6 +40,13 @@ class DialPattern(Base):
     stripnum = Column(Integer)
     callerid = Column(String(80))
 
+    extension = relationship('Extension',
+                             primaryjoin="""and_(Extension.type == 'outcall',
+                                                 Extension.typeval == cast(DialPattern.id, String))""",
+                             foreign_keys='[Extension.typeval]',
+                             uselist=False,
+                             cascade='all, delete-orphan')
+
     @hybrid_property
     def external_prefix(self):
         return self.externprefix
@@ -52,7 +61,13 @@ class DialPattern(Base):
 
     @pattern.setter
     def pattern(self, value):
+        self._update_exten(value)
         self.exten = value
+
+    def _update_exten(self, exten):
+        if not self.extension:
+            self.extension = Extension(type='outcall')
+        self.extension.exten = exten
 
     @hybrid_property
     def strip_digits(self):
