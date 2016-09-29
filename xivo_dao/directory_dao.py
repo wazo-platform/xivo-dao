@@ -50,29 +50,30 @@ def get_all_sources(session):
 
 def _get_ldap_sources(session):
     ldap_cti_directories = session.query(
+        Directories.ldapfilter_id,
         CtiDirectories.name,
-        CtiDirectories.uri,
         CtiDirectories.match_direct,
         CtiDirectories.match_reverse,
         func.array_agg(CtiDirectoryFields.fieldname).label('fields'),
         func.array_agg(CtiDirectoryFields.value).label('values'),
-    ).outerjoin(
+    ).join(
+        CtiDirectories,
+    ).join(
         CtiDirectoryFields,
         CtiDirectoryFields.dir_id == CtiDirectories.id
     ).filter(
-        CtiDirectories.uri.like('ldapfilter://%%')
+        Directories.dirtype == 'ldapfilter',
     ).group_by(
+        Directories.ldapfilter_id,
         CtiDirectories.name,
-        CtiDirectories.uri,
         CtiDirectories.match_direct,
         CtiDirectories.match_reverse,
     )
 
     source_configs = []
     for dir in ldap_cti_directories.all():
-        _, _, name = dir.uri.partition('ldapfilter://')
         try:
-            ldap_config = ldap_dao.build_ldapinfo_from_ldapfilter(name)
+            ldap_config = ldap_dao.build_ldapinfo_from_ldapfilter(dir.ldapfilter_id)
         except LookupError:
             logger.warning('Skipping LDAP source %s', dir.name)
             continue
@@ -98,7 +99,6 @@ def _get_ldap_sources(session):
 def _get_nonldap_sources(session):
     sources = session.query(
         CtiDirectories.name,
-        CtiDirectories.uri,
         Directories.dirtype,
         Directories.xivo_username,
         Directories.xivo_password,
@@ -106,6 +106,7 @@ def _get_nonldap_sources(session):
         Directories.xivo_custom_ca_path,
         Directories.dird_tenant,
         Directories.dird_phonebook,
+        Directories.uri,
         CtiDirectories.delimiter,
         CtiDirectories.match_direct,
         CtiDirectories.match_reverse,
@@ -113,13 +114,13 @@ def _get_nonldap_sources(session):
         func.array_agg(CtiDirectoryFields.value).label('values'),
     ).join(
         Directories,
-        Directories.uri == CtiDirectories.uri
     ).outerjoin(
         CtiDirectoryFields,
         CtiDirectoryFields.dir_id == CtiDirectories.id
+    ).filter(
+        Directories.dirtype != 'ldapfilter',
     ).group_by(
         CtiDirectories.name,
-        CtiDirectories.uri,
         Directories.dirtype,
         Directories.xivo_username,
         Directories.xivo_password,
@@ -127,6 +128,7 @@ def _get_nonldap_sources(session):
         Directories.xivo_custom_ca_path,
         Directories.dird_tenant,
         Directories.dird_phonebook,
+        Directories.uri,
         CtiDirectories.delimiter,
         CtiDirectories.match_direct,
         CtiDirectories.match_reverse,

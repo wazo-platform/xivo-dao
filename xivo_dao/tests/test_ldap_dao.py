@@ -27,28 +27,28 @@ from xivo_dao.tests.test_dao import DAOTestCase
 class TestLdapDAO(DAOTestCase):
 
     def test_build_ldapinfo_from_ldapfilter_not_found(self):
-        self.assertRaises(LookupError, ldap_dao.build_ldapinfo_from_ldapfilter, 'unknown')
+        self.assertRaises(LookupError, ldap_dao.build_ldapinfo_from_ldapfilter, 42)
 
     def test_build_ldapinfo_from_ldapfilter_disabled_filter(self):
         filter_name = 'filtername'
         ldap_server = self._insert_ldapserver(name='ldapserver_test')
         ldap_filter = self._insert_ldapfilter(ldap_server.id, name=filter_name, commented=1)
 
-        self.assertRaises(LookupError, ldap_dao.build_ldapinfo_from_ldapfilter, ldap_filter.name)
+        self.assertRaises(LookupError, ldap_dao.build_ldapinfo_from_ldapfilter, ldap_filter.id)
 
     def test_build_ldapinfo_from_ldapfilter_disabled_server(self):
         filter_name = 'filtername'
         ldap_server = self._insert_ldapserver(name='ldapserver_test', disable=1)
         ldap_filter = self._insert_ldapfilter(ldap_server.id, name=filter_name)
 
-        self.assertRaises(LookupError, ldap_dao.build_ldapinfo_from_ldapfilter, ldap_filter.name)
+        self.assertRaises(LookupError, ldap_dao.build_ldapinfo_from_ldapfilter, ldap_filter.id)
 
     def test_build_ldapinfo_from_ldapfilter_minimum_fields(self):
         filter_name = 'filtername'
         ldap_server = self._insert_ldapserver(name='ldapserver_test')
         ldap_filter = self._insert_ldapfilter(ldap_server.id, name=filter_name)
 
-        result = ldap_dao.build_ldapinfo_from_ldapfilter(ldap_filter.name)
+        result = ldap_dao.build_ldapinfo_from_ldapfilter(ldap_filter.id)
 
         assert_that(result, has_entries({
             'username': '',
@@ -66,7 +66,7 @@ class TestLdapDAO(DAOTestCase):
         ldap_server = self._insert_ldapserver(name='ldapserver_test', securitylayer='ssl', port=636)
         ldap_filter = self._insert_ldapfilter(ldap_server.id, name=filter_name)
 
-        result = ldap_dao.build_ldapinfo_from_ldapfilter(ldap_filter.name)
+        result = ldap_dao.build_ldapinfo_from_ldapfilter(ldap_filter.id)
 
         assert_that(result, has_entries({
             'username': '',
@@ -90,7 +90,7 @@ class TestLdapDAO(DAOTestCase):
                                               basedn='cn=User,dc=company,dc=com',
                                               filter='sn=*')
 
-        result = ldap_dao.build_ldapinfo_from_ldapfilter(ldap_filter.name)
+        result = ldap_dao.build_ldapinfo_from_ldapfilter(ldap_filter.id)
 
         assert_that(result, has_entries({
             'username': ldap_filter.user,

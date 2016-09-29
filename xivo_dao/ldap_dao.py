@@ -21,7 +21,7 @@ from xivo_dao.alchemy.ldapserver import LdapServer
 
 
 @daosession
-def build_ldapinfo_from_ldapfilter(session, ldap_filter_name):
+def build_ldapinfo_from_ldapfilter(session, ldapfilter_id):
     ldap_config = session.query(
         LdapFilter.name,
         LdapFilter.user,
@@ -34,13 +34,13 @@ def build_ldapinfo_from_ldapfilter(session, ldap_filter_name):
             LdapServer,
             LdapServer.id == LdapFilter.ldapserverid
         ).filter(
-            LdapFilter.name == ldap_filter_name,
+            LdapFilter.id == ldapfilter_id,
             LdapFilter.commented == 0,
             LdapServer.disable == 0,
         ).first()
 
     if not ldap_config:
-        raise LookupError('No ldap config matching filter %s', ldap_filter_name)
+        raise LookupError('No ldap config matching filter %s', ldapfilter_id)
 
     ssl = ldap_config.securitylayer == 'ssl'
     host = ldap_config.host or 'localhost'

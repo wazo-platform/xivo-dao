@@ -56,18 +56,30 @@ class TestDirectoryLdapSources(DAOTestCase):
             filter='l=Québec',
         )
         self.add_me(ldap_filter_2)
+        directory_1 = Directories(
+            name='ldap_1',
+            dirtype='ldapfilter',
+            ldapfilter_id=ldap_filter_1.id,
+        )
+        self.add_me(directory_1)
+        directory_2 = Directories(
+            name='ldap_2',
+            dirtype='ldapfilter',
+            ldapfilter_id=ldap_filter_2.id,
+        )
+        self.add_me(directory_2)
         self.cti_directory_1 = CtiDirectories(
             name='ldapdirectory_1',
-            uri='ldapfilter://{}'.format(ldap_filter_1.name),
             match_direct='["cn"]',
             match_reverse='["telephoneNumber"]',
+            directory_id=directory_1.id,
         )
         self.add_me(self.cti_directory_1)
         self.cti_directory_2 = CtiDirectories(
             name='ldapdirectory_2',
-            uri='ldapfilter://{}'.format(ldap_filter_2.name),
             match_direct='["cn"]',
             match_reverse='["telephoneNumber"]',
+            directory_id=directory_2.id,
         )
         self.add_me(self.cti_directory_2)
         fields = {'firstname': '{givenName}',
@@ -122,9 +134,9 @@ class TestDirectoryLdapSources(DAOTestCase):
     def test_that_a_missing_ldap_config_does_not_break_get_all_sources(self):
         directory_with_no_matching_config = CtiDirectories(
             name='brokenldap',
-            uri='ldapfilter://missingldapconfig',
             match_direct='["cn"]',
             match_reverse='["telephoneNumber"]',
+            directory_id=None,
         )
         self.add_me(directory_with_no_matching_config)
 
@@ -168,26 +180,28 @@ class TestDirectoryNonLdapSources(DAOTestCase):
             {'uri': 'file:///tmp/test.csv', 'dirtype': 'file', 'name': 'my_csv'},
             {'uri': 'postgresql://', 'dirtype': 'dird_phonebook', 'name': 'dird', 'dird_tenant': 'tenant', 'dird_phonebook': 'thephonebook'},
         ]
+        d1, d2, _, d4, d5 = directories = [Directories(**config) for config in self.directory_configs]
+        self.add_me_all(directories)
         self.cti_directory_configs = [
             {'id': 1,
              'name': 'Internal',
-             'uri': 'http://localhost:9487',
+             'directory_id': d1.id,
              'match_direct': '["firstname", "lastname"]',
              'match_reverse': '["exten"]'},
             {'id': 2,
              'name': 'mtl',
-             'uri': 'http://mtl.lan.example.com:9487',
+             'directory_id': d2.id,
              'match_direct': '',
              'match_reverse': '[]'},
             {'id': 3,
              'name': 'acsvfile',
-             'uri': 'file:///tmp/test.csv',
+             'directory_id': d4.id,
              'match_direct': '["firstname", "lastname"]',
              'match_reverse': '["exten"]',
              'delimiter': '|'},
              {'id': 4,
               'name': 'mydirdphonebook',
-              'uri': 'postgresql://',
+              'directory_id': d5.id,
               'match_direct': '',
               'match_reverse': '[]'},
         ]
@@ -278,10 +292,9 @@ class TestDirectoryNonLdapSources(DAOTestCase):
         }
 
     def test_get_all_sources(self):
-        directories = [Directories(**config) for config in self.directory_configs]
         cti_directories = [CtiDirectories(**config) for config in self.cti_directory_configs]
         cti_directory_fields = [CtiDirectoryFields(**config) for config in self.cti_directory_fields_configs]
-        self.add_me_all(chain(directories, cti_directories, cti_directory_fields))
+        self.add_me_all(chain(cti_directories, cti_directory_fields))
 
         result = directory_dao.get_all_sources()
 
@@ -291,10 +304,9 @@ class TestDirectoryNonLdapSources(DAOTestCase):
                                                 self.expected_result_4))
 
     def test_get_all_sources_no_fields(self):
-        directories = [Directories(**config) for config in self.directory_configs]
         cti_directories = [CtiDirectories(**config) for config in self.cti_directory_configs[:-1]]
         cti_directory_fields = [CtiDirectoryFields(**config) for config in self.cti_directory_fields_configs]
-        self.add_me_all(chain(directories, cti_directories, cti_directory_fields[2:]))
+        self.add_me_all(chain(cti_directories, cti_directory_fields[2:]))
 
         result = directory_dao.get_all_sources()
 
@@ -303,6 +315,9 @@ class TestDirectoryNonLdapSources(DAOTestCase):
         expected = [expected_result_1, self.expected_result_2, self.expected_result_3]
 
         assert_that(result, contains_inanyorder(*expected))
+
+
+class TestDirectoryNoSources(DAOTestCase):
 
     def test_get_all_sources_no_directories(self):
         results = directory_dao.get_all_sources()
