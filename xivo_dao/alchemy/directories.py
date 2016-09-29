@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy import ForeignKey
 from sqlalchemy.schema import Column, PrimaryKeyConstraint
 from sqlalchemy.types import Boolean, Integer, String, Text
 
@@ -39,3 +40,4 @@ class Directories(Base):
     xivo_custom_ca_path = Column(Text)
     dird_tenant = Column(Text)
     dird_phonebook = Column(Text)
+    ldapfilter_id = Column(Integer, ForeignKey('ldapfilter.id', ondelete='CASCADE'), nullable=True)
