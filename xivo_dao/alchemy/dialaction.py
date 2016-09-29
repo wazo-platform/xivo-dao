@@ -17,30 +17,11 @@
 
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
-from sqlalchemy.types import Integer, String, TypeDecorator
+from sqlalchemy.types import Integer, String
 from sqlalchemy.sql import func
 
-from xivo_dao.helpers.db_manager import Base
+from xivo_dao.helpers.db_manager import Base, IntAsString
 from xivo_dao.alchemy import enum
-
-
-# Used for Incall table
-# http://docs.sqlalchemy.org/en/rel_0_9/_modules/examples/join_conditions/cast.html
-class IntAsString(TypeDecorator):
-    """Coerce integer->string type.
-
-    This is needed only if the relationship() from
-    string to int is writable, as SQLAlchemy will copy
-    the int parent values into the string attribute
-    on the child during a flush.
-
-    """
-    impl = String
-
-    def process_bind_param(self, value, dialect):
-        if value is not None:
-            value = str(value)
-        return value
 
 
 class Dialaction(Base):
