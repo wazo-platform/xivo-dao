@@ -39,9 +39,9 @@ class TrunkFixes(object):
                                     UserSIP,
                                     UserIAX,
                                     UserCustom)
-                 .outerjoin(TrunkFeatures.sip_endpoint)
-                 .outerjoin(TrunkFeatures.iax_endpoint)
-                 .outerjoin(TrunkFeatures.custom_endpoint)
+                 .outerjoin(TrunkFeatures.endpoint_sip)
+                 .outerjoin(TrunkFeatures.endpoint_iax)
+                 .outerjoin(TrunkFeatures.endpoint_custom)
                  .options(
                      Load(TrunkFeatures).load_only("id", "context"),
                      Load(UserSIP).load_only("id", "category", "context"),

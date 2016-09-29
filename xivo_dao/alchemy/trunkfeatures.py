@@ -45,21 +45,21 @@ class TrunkFeatures(Base):
     description = Column(Text)
     context = Column(String(39))
 
-    sip_endpoint = relationship(UserSIP,
+    endpoint_sip = relationship(UserSIP,
                                 primaryjoin="""and_(
                                     TrunkFeatures.protocol == 'sip',
                                     TrunkFeatures.protocolid == UserSIP.id
                                 )""",
                                 foreign_keys=[protocolid])
 
-    iax_endpoint = relationship(UserIAX,
+    endpoint_iax = relationship(UserIAX,
                                 primaryjoin="""and_(
                                     TrunkFeatures.protocol == 'iax',
                                     TrunkFeatures.protocolid == UserIAX.id
                                 )""",
                                 foreign_keys=[protocolid])
 
-    custom_endpoint = relationship(UserCustom,
+    endpoint_custom = relationship(UserCustom,
                                    primaryjoin="""and_(
                                        TrunkFeatures.protocol == 'custom',
                                        TrunkFeatures.protocolid == UserCustom.id
