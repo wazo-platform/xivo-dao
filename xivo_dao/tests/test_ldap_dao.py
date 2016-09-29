@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2015 Avencall
+# Copyright (C) 2013-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,21 +25,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestLdapDAO(DAOTestCase):
-
-    def test_find_ldapserver_with_id(self):
-        ldapserver = self._insert_ldapserver(name='ldapserver_test')
-
-        ldapserver_result = ldap_dao.find_ldapserver_with_id(ldapserver.id)
-
-        self.assertEqual(ldapserver.id, ldapserver_result.id)
-
-    def test_find_ldapfilter_with_name(self):
-        ldapserver = self._insert_ldapserver(name='ldapserver_test')
-        ldapfilter = self._insert_ldapfilter(ldapserver.id, name='ldapfilter_test')
-
-        ldapfilter_result = ldap_dao.find_ldapfilter_with_name(ldapfilter.name)
-
-        self.assertEqual(ldapfilter.name, ldapfilter_result.name)
 
     def test_build_ldapinfo_from_ldapfilter_not_found(self):
         self.assertRaises(LookupError, ldap_dao.build_ldapinfo_from_ldapfilter, 'unknown')
