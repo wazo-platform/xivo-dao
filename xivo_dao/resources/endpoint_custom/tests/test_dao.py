@@ -49,6 +49,15 @@ class TestCustomEndpointDaoGet(TestCustomDao):
         assert_that(custom.interface, equal_to(row.interface))
         assert_that(custom.enabled, equal_to(True))
 
+    def test_trunk_relationship(self):
+        custom_row = self.add_usercustom()
+        trunk_row = self.add_trunk()
+        trunk_row.associate_endpoint(custom_row)
+
+        custom = dao.get(custom_row.id)
+        assert_that(custom, equal_to(custom_row))
+        assert_that(custom.trunk, equal_to(trunk_row))
+
 
 class TestCustomEndpointDaoFindBy(TestCustomDao):
 

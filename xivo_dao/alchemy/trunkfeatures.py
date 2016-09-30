@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint, Index
 from sqlalchemy.types import Integer, Text, String
 
@@ -45,26 +45,29 @@ class TrunkFeatures(Base):
     description = Column(Text)
     context = Column(String(39))
 
-    sip_endpoint = relationship(UserSIP,
+    endpoint_sip = relationship(UserSIP,
                                 primaryjoin="""and_(
                                     TrunkFeatures.protocol == 'sip',
                                     TrunkFeatures.protocolid == UserSIP.id
                                 )""",
-                                foreign_keys=[protocolid])
+                                foreign_keys=[protocolid],
+                                backref=backref('trunk', uselist=False))
 
-    iax_endpoint = relationship(UserIAX,
+    endpoint_iax = relationship(UserIAX,
                                 primaryjoin="""and_(
                                     TrunkFeatures.protocol == 'iax',
                                     TrunkFeatures.protocolid == UserIAX.id
                                 )""",
-                                foreign_keys=[protocolid])
+                                foreign_keys=[protocolid],
+                                backref=backref('trunk_rel', uselist=False))
 
-    custom_endpoint = relationship(UserCustom,
+    endpoint_custom = relationship(UserCustom,
                                    primaryjoin="""and_(
                                        TrunkFeatures.protocol == 'custom',
                                        TrunkFeatures.protocolid == UserCustom.id
                                    )""",
-                                   foreign_keys=[protocolid])
+                                   foreign_keys=[protocolid],
+                                   backref=backref('trunk', uselist=False))
 
     @hybrid_property
     def endpoint(self):

@@ -29,8 +29,6 @@ from hamcrest import has_items
 from hamcrest import has_property
 from hamcrest import has_properties
 from hamcrest import has_length
-from hamcrest import all_of
-from hamcrest import contains_string
 
 from xivo_dao.alchemy.usersip import UserSIP as SIPEndpoint
 from xivo_dao.alchemy.linefeatures import LineFeatures as Line
@@ -194,6 +192,15 @@ class TestSipEndpointDaoGet(TestSipEndpointDAO):
 
         sip = dao.get(row.id)
         assert_that(sip.options, has_items(["language", "fr_FR"], ["foo", "bar"]))
+
+    def test_trunk_relationship(self):
+        sip_row = self.add_usersip()
+        trunk_row = self.add_trunk()
+        trunk_row.associate_endpoint(sip_row)
+
+        sip = dao.get(sip_row.id)
+        assert_that(sip, equal_to(sip_row))
+        assert_that(sip.trunk, equal_to(trunk_row))
 
 
 class TestSipEndpointDaoSearch(DAOTestCase):
@@ -536,6 +543,7 @@ class TestSipEndpointDaoEdit(DAOTestCase):
             ["foo", "newbaz"],
             ["spam", "neweggs"],
         ))
+
 
 class TestSipEndpointDaoDelete(TestSipEndpointDAO):
 
