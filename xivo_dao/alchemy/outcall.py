@@ -53,6 +53,7 @@ class Outcall(Base):
 
     trunks = relationship('TrunkFeatures',
                           secondary='outcalltrunk',
+                          order_by='OutcallTrunk.priority',
                           back_populates='outcalls')
 
     @hybrid_property

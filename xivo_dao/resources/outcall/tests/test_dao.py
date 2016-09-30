@@ -67,14 +67,14 @@ class TestGet(DAOTestCase):
         trunk1_row = self.add_trunk()
         trunk2_row = self.add_trunk()
         trunk3_row = self.add_trunk()
-        self.add_outcall_trunk(outcall_id=outcall_row.id, trunk_id=trunk1_row.id, priority=0)
-        self.add_outcall_trunk(outcall_id=outcall_row.id, trunk_id=trunk2_row.id, priority=1)
-        self.add_outcall_trunk(outcall_id=outcall_row.id, trunk_id=trunk3_row.id, priority=2)
+        self.add_outcall_trunk(outcall_id=outcall_row.id, trunk_id=trunk1_row.id, priority=2)
+        self.add_outcall_trunk(outcall_id=outcall_row.id, trunk_id=trunk2_row.id, priority=0)
+        self.add_outcall_trunk(outcall_id=outcall_row.id, trunk_id=trunk3_row.id, priority=1)
 
         outcall = outcall_dao.get(outcall_row.id)
 
         assert_that(outcall, equal_to(outcall_row))
-        assert_that(outcall.trunks, contains(trunk1_row, trunk2_row, trunk3_row))
+        assert_that(outcall.trunks, contains(trunk2_row, trunk3_row, trunk1_row))
 
 
 class TestFindBy(DAOTestCase):
