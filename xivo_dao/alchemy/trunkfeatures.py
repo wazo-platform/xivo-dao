@@ -69,6 +69,10 @@ class TrunkFeatures(Base):
                                    foreign_keys=[protocolid],
                                    backref=backref('trunk', uselist=False))
 
+    outcalls = relationship('Outcall',
+                            secondary='outcalltrunk',
+                            back_populates='trunks')
+
     @hybrid_property
     def endpoint(self):
         return self.protocol

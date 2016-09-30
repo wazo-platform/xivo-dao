@@ -19,6 +19,7 @@ from __future__ import unicode_literals
 
 from hamcrest import (assert_that,
                       contains,
+                      contains_inanyorder,
                       equal_to,
                       has_items,
                       has_properties,

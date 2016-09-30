@@ -51,6 +51,10 @@ class Outcall(Base):
                                 foreign_keys='DialPattern.typeid',
                                 cascade='all, delete-orphan')
 
+    trunks = relationship('TrunkFeatures',
+                          secondary='outcalltrunk',
+                          back_populates='outcalls')
+
     @hybrid_property
     def internal_caller_id(self):
         return self.internal == 1
