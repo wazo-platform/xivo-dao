@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
+from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint, Index
 from sqlalchemy.types import Integer
 
 from xivo_dao.helpers.db_manager import Base
@@ -30,8 +30,8 @@ class OutcallTrunk(Base):
         Index('outcalltrunk__idx__priority', 'priority'),
     )
 
-    outcallid = Column(Integer, nullable=False, server_default='0')
-    trunkfeaturesid = Column(Integer, nullable=False, server_default='0')
+    outcallid = Column(Integer, ForeignKey('outcall.id'), nullable=False)
+    trunkfeaturesid = Column(Integer, ForeignKey('trunkfeatures.id'), nullable=False)
     priority = Column(Integer, nullable=False, server_default='0')
 
     @hybrid_property
