@@ -87,11 +87,11 @@ def calluser_extension(session):
 def user_hints(session, context):
     query = (session.query(UserFeatures.id.label('user_id'),
                            Extension.exten.label('extension'),
-                           sql.case([
+                           sql.func.string_agg(sql.case([
                                (LineFeatures.protocol == 'sip', literal_column("'SIP/'") + UserSIP.name),
                                (LineFeatures.protocol == 'sccp', literal_column("'SCCP/'") + SCCPLine.name),
                                (LineFeatures.protocol == 'custom', UserCustom.interface)
-                           ]).label('argument'))
+                           ]), literal_column("'&'")).label('argument'))
              .join(UserLine.userfeatures)
              .join(UserLine.linefeatures)
              .outerjoin(UserSIP,
@@ -113,11 +113,11 @@ def user_hints(session, context):
              .join(FuncKeyDestUser,
                    FuncKeyDestUser.user_id == UserFeatures.id)
              .filter(UserLine.main_user == True)
-             .filter(UserLine.main_line == True)
              .filter(LineExtension.main_extension == True)
              .filter(LineFeatures.commented == 0)
              .filter(Extension.context == context)
-             .filter(UserFeatures.enablehint == 1))
+             .filter(UserFeatures.enablehint == 1)
+             .group_by(UserFeatures.id, Extension.exten))
 
     return tuple(Hint(user_id=row.user_id,
                       extension=row.extension,
