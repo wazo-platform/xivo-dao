@@ -71,39 +71,6 @@ class TestGet(DAOTestCase):
 
         assert_that(trunk, equal_to(trunk_row))
 
-    def test_endpoint_sip_relationship(self):
-        sip_row = self.add_usersip()
-        trunk_row = self.add_trunk()
-        trunk_row.associate_endpoint(sip_row)
-
-        trunk = trunk_dao.get(trunk_row.id)
-        assert_that(trunk, equal_to(trunk_row))
-        assert_that(trunk.endpoint_sip, equal_to(sip_row))
-        assert_that(trunk.endpoint_iax, none())
-        assert_that(trunk.endpoint_custom, none())
-
-    def test_endpoint_iax_relationship(self):
-        iax_row = self.add_useriax()
-        trunk_row = self.add_trunk()
-        trunk_row.associate_endpoint(iax_row)
-
-        trunk = trunk_dao.get(trunk_row.id)
-        assert_that(trunk, equal_to(trunk_row))
-        assert_that(trunk.endpoint_sip, none())
-        assert_that(trunk.endpoint_iax, equal_to(iax_row))
-        assert_that(trunk.endpoint_custom, none())
-
-    def test_endpoint_custom_relationship(self):
-        custom_row = self.add_usercustom()
-        trunk_row = self.add_trunk()
-        trunk_row.associate_endpoint(custom_row)
-
-        trunk = trunk_dao.get(trunk_row.id)
-        assert_that(trunk, equal_to(trunk_row))
-        assert_that(trunk.endpoint_sip, none())
-        assert_that(trunk.endpoint_iax, none())
-        assert_that(trunk.endpoint_custom, equal_to(custom_row))
-
 
 class TestFindBy(DAOTestCase):
 
@@ -448,3 +415,36 @@ class TestRelations(DAOTestCase):
 
         row = self.session.query(OutcallTrunk).first()
         assert_that(row, none())
+
+    def test_endpoint_sip_relationship(self):
+        sip_row = self.add_usersip()
+        trunk_row = self.add_trunk()
+        trunk_row.associate_endpoint(sip_row)
+
+        trunk = trunk_dao.get(trunk_row.id)
+        assert_that(trunk, equal_to(trunk_row))
+        assert_that(trunk.endpoint_sip, equal_to(sip_row))
+        assert_that(trunk.endpoint_iax, none())
+        assert_that(trunk.endpoint_custom, none())
+
+    def test_endpoint_iax_relationship(self):
+        iax_row = self.add_useriax()
+        trunk_row = self.add_trunk()
+        trunk_row.associate_endpoint(iax_row)
+
+        trunk = trunk_dao.get(trunk_row.id)
+        assert_that(trunk, equal_to(trunk_row))
+        assert_that(trunk.endpoint_sip, none())
+        assert_that(trunk.endpoint_iax, equal_to(iax_row))
+        assert_that(trunk.endpoint_custom, none())
+
+    def test_endpoint_custom_relationship(self):
+        custom_row = self.add_usercustom()
+        trunk_row = self.add_trunk()
+        trunk_row.associate_endpoint(custom_row)
+
+        trunk = trunk_dao.get(trunk_row.id)
+        assert_that(trunk, equal_to(trunk_row))
+        assert_that(trunk.endpoint_sip, none())
+        assert_that(trunk.endpoint_iax, none())
+        assert_that(trunk.endpoint_custom, equal_to(custom_row))
