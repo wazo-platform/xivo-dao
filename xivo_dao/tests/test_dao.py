@@ -65,7 +65,6 @@ from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.queueskill import QueueSkill
 from xivo_dao.alchemy.queueskillrule import QueueSkillRule
 from xivo_dao.alchemy.outcall import Outcall
-from xivo_dao.alchemy.outcalltrunk import OutcallTrunk
 from xivo_dao.alchemy.rightcall import RightCall as CallPermission
 from xivo_dao.alchemy.rightcallmember import RightCallMember as CallPermissionAssociation
 from xivo_dao.alchemy.sccpdevice import SCCPDevice as SCCPDeviceSchema
@@ -442,11 +441,6 @@ class DAOTestCase(unittest.TestCase):
         outcall = Outcall(**kwargs)
         self.add_me(outcall)
         return outcall
-
-    def add_outcall_trunk(self, **kwargs):
-        outcall_trunk = OutcallTrunk(**kwargs)
-        self.add_me(outcall_trunk)
-        return outcall_trunk
 
     def add_outcall_call_permission(self, **kwargs):
         kwargs.setdefault('type', 'outcall')

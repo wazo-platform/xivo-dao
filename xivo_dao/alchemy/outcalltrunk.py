@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint, Index
 from sqlalchemy.types import Integer
 
@@ -33,6 +34,12 @@ class OutcallTrunk(Base):
     outcallid = Column(Integer, ForeignKey('outcall.id'), nullable=False)
     trunkfeaturesid = Column(Integer, ForeignKey('trunkfeatures.id'), nullable=False)
     priority = Column(Integer, nullable=False, server_default='0')
+
+    trunk = relationship('TrunkFeatures',
+                         back_populates='outcall_trunks')
+
+    outcall = relationship('Outcall',
+                           back_populates='outcall_trunks')
 
     @hybrid_property
     def outcall_id(self):

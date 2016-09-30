@@ -17,7 +17,9 @@
 
 import itertools
 
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
 from sqlalchemy.sql import func, cast, not_
@@ -25,6 +27,7 @@ from xivo_dao.alchemy.dialpattern import DialPattern
 from sqlalchemy.types import Integer, String, Text, Boolean
 
 from xivo_dao.helpers.db_manager import Base
+from xivo_dao.alchemy.outcalltrunk import OutcallTrunk
 
 
 class Outcall(Base):
@@ -51,10 +54,14 @@ class Outcall(Base):
                                 foreign_keys='DialPattern.typeid',
                                 cascade='all, delete-orphan')
 
-    trunks = relationship('TrunkFeatures',
-                          secondary='outcalltrunk',
-                          order_by='OutcallTrunk.priority',
-                          back_populates='outcalls')
+    outcall_trunks = relationship('OutcallTrunk',
+                                  order_by='OutcallTrunk.priority',
+                                  collection_class=ordering_list('priority'),
+                                  cascade='all, delete-orphan',
+                                  back_populates='outcall')
+
+    trunks = association_proxy('outcall_trunks', 'trunk',
+                               creator=lambda _trunk: OutcallTrunk(trunk=_trunk))
 
     @hybrid_property
     def internal_caller_id(self):

@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint, Index
@@ -25,6 +26,7 @@ from xivo_dao.alchemy import enum
 from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.usercustom import UserCustom
+from xivo_dao.alchemy.outcalltrunk import OutcallTrunk
 
 
 class TrunkFeatures(Base):
@@ -69,9 +71,12 @@ class TrunkFeatures(Base):
                                    foreign_keys=[protocolid],
                                    backref=backref('trunk', uselist=False))
 
-    outcalls = relationship('Outcall',
-                            secondary='outcalltrunk',
-                            back_populates='trunks')
+    outcall_trunks = relationship('OutcallTrunk',
+                                  cascade='all, delete-orphan',
+                                  back_populates='trunk')
+
+    outcalls = association_proxy('outcall_trunks', 'outcall',
+                                 creator=lambda _outcall: OutcallTrunk(outcall=_outcall))
 
     @hybrid_property
     def endpoint(self):
