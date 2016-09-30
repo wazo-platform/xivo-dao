@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2015 Avencall
+# Copyright (C) 2015-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -33,7 +33,6 @@ def get_config(session):
             Directories.dirtype,
         ).join(
             Directories,
-            Directories.uri == CtiDirectories.uri
         ).filter(CtiDirectories.name.in_(sources))
         name_to_type = {row.name: row.dirtype for row in rows.all()}
     else:

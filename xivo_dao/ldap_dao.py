@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2015 Avencall
+# Copyright (C) 2012-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,17 +21,7 @@ from xivo_dao.alchemy.ldapserver import LdapServer
 
 
 @daosession
-def find_ldapfilter_with_name(session, ldap_name):
-    return session.query(LdapFilter).filter(LdapFilter.name == ldap_name).first()
-
-
-@daosession
-def find_ldapserver_with_id(session, ldapserver_id):
-    return session.query(LdapServer).filter(LdapServer.id == ldapserver_id).first()
-
-
-@daosession
-def build_ldapinfo_from_ldapfilter(session, ldap_filter_name):
+def build_ldapinfo_from_ldapfilter(session, ldapfilter_id):
     ldap_config = session.query(
         LdapFilter.name,
         LdapFilter.user,
@@ -44,13 +34,13 @@ def build_ldapinfo_from_ldapfilter(session, ldap_filter_name):
             LdapServer,
             LdapServer.id == LdapFilter.ldapserverid
         ).filter(
-            LdapFilter.name == ldap_filter_name,
+            LdapFilter.id == ldapfilter_id,
             LdapFilter.commented == 0,
             LdapServer.disable == 0,
         ).first()
 
     if not ldap_config:
-        raise LookupError('No ldap config matching filter %s', ldap_filter_name)
+        raise LookupError('No ldap config matching filter %s', ldapfilter_id)
 
     ssl = ldap_config.securitylayer == 'ssl'
     host = ldap_config.host or 'localhost'

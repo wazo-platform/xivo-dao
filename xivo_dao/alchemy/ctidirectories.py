@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2015 Avencall
+# Copyright (C) 2012-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy import ForeignKey
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, Text, String
 
@@ -27,9 +28,9 @@ class CtiDirectories(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(255))
-    uri = Column(String(255))
     delimiter = Column(String(20))
     match_direct = Column(Text, nullable=False)
     match_reverse = Column(Text, nullable=False, default='')
     description = Column(String(255))
     deletable = Column(Integer)
+    directory_id = Column(Integer, ForeignKey('directories.id', ondelete='CASCADE'))

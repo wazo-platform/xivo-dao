@@ -609,8 +609,8 @@ class DAOTestCase(unittest.TestCase):
         self.add_me(directory)
 
         cti_directory = CtiDirectories(name=directory_args['name'],
-                                       uri=directory_args['uri'],
-                                       match_direct='')
+                                       match_direct='',
+                                       directory_id=directory.id)
         self.add_me(cti_directory)
 
     def add_trunk(self, **kwargs):
