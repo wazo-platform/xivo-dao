@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from itertools import permutations
+
 from hamcrest import assert_that, equal_to, contains, contains_inanyorder, any_of
 from hamcrest.core.base_matcher import BaseMatcher
 from hamcrest.core.helpers.wrap_matcher import wrap_matcher
@@ -50,7 +52,11 @@ class HintMatcher(BaseMatcher):
 
 
 def a_hint(user_id, extension, argument):
-    return HintMatcher(user_id, extension, wrap_matcher(argument))
+    if isinstance(argument, basestring) and '&' in argument:
+        argument_matcher = any_of(*map('&'.join, permutations(argument.split('&'))))
+    else:
+        argument_matcher = wrap_matcher(argument)
+    return HintMatcher(user_id, extension, argument_matcher)
 
 
 class TestProgfunckeyExtension(DAOTestCase):
@@ -176,8 +182,7 @@ class TestUserHints(TestHints):
         self.add_sip_line_to_extension_and_user('line1', user.id, extension.id)
         self.add_sip_line_to_extension_and_user('line2', user.id, extension.id, main_line=False)
 
-        expected = a_hint(user_id=user.id, extension='1001',
-                          argument=any_of('SIP/line1&SIP/line2', 'SIP/line2&SIP/line1'))
+        expected = a_hint(user_id=user.id, extension='1001', argument='SIP/line1&SIP/line2')
 
         assert_that(hint_dao.user_hints(self.context), contains(expected))
 
@@ -189,9 +194,8 @@ class TestUserHints(TestHints):
         self.add_sip_line_to_extension_and_user('line1', user.id, extension1.id)
         self.add_sip_line_to_extension_and_user('line2', user.id, extension2.id, main_line=False)
 
-        expected_argument = any_of('SIP/line1&SIP/line2', 'SIP/line2&SIP/line1')
-        expected = [a_hint(user_id=user.id, extension='1001', argument=expected_argument),
-                    a_hint(user_id=user.id, extension='1002', argument=expected_argument)]
+        expected = [a_hint(user_id=user.id, extension='1001', argument='SIP/line1&SIP/line2'),
+                    a_hint(user_id=user.id, extension='1002', argument='SIP/line1&SIP/line2')]
 
         assert_that(hint_dao.user_hints(self.context), contains_inanyorder(*expected))
 
@@ -203,8 +207,7 @@ class TestUserHints(TestHints):
         self.add_sip_line_to_extension_and_user('line1', user.id, extension1.id)
         self.add_sip_line_to_extension_and_user('line2', user.id, extension2.id, main_line=False)
 
-        expected = a_hint(user_id=user.id, extension='1001',
-                          argument=any_of('SIP/line1&SIP/line2', 'SIP/line2&SIP/line1'))
+        expected = a_hint(user_id=user.id, extension='1001', argument='SIP/line1&SIP/line2')
 
         assert_that(hint_dao.user_hints(self.context), contains(expected))
 
@@ -217,14 +220,8 @@ class TestUserHints(TestHints):
         self.add_sip_line_to_extension_and_user('line2', user.id, extension2.id, main_line=False)
         self.add_sip_line_to_extension_and_user('line3', user.id, extension2.id, main_line=False)
 
-        expected_argument = any_of('SIP/line1&SIP/line2&SIP/line3',
-                                   'SIP/line1&SIP/line3&SIP/line2',
-                                   'SIP/line2&SIP/line1&SIP/line3',
-                                   'SIP/line2&SIP/line3&SIP/line1',
-                                   'SIP/line3&SIP/line1&SIP/line2',
-                                   'SIP/line3&SIP/line2&SIP/line1')
-        expected = [a_hint(user_id=user.id, extension='1001', argument=expected_argument),
-                    a_hint(user_id=user.id, extension='1002', argument=expected_argument)]
+        expected = [a_hint(user_id=user.id, extension='1001', argument='SIP/line1&SIP/line2&SIP/line3'),
+                    a_hint(user_id=user.id, extension='1002', argument='SIP/line1&SIP/line2&SIP/line3')]
 
         assert_that(hint_dao.user_hints(self.context), contains_inanyorder(*expected))
 
