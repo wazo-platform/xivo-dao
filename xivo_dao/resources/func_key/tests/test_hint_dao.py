@@ -85,6 +85,7 @@ class TestHints(DAOTestCase, FuncKeyHelper):
         super(TestHints, self).setUp()
         self.setup_funckeys()
         self.context = 'mycontext'
+        self.context2 = 'mycontext2'
 
     def add_user_and_func_key(self, protocol='sip', protocol_id=None, exten='1000', commented=0, enablehint=1):
         if not protocol_id:
@@ -188,12 +189,26 @@ class TestUserHints(TestHints):
         self.add_sip_line_to_extension_and_user('line1', user.id, extension1.id)
         self.add_sip_line_to_extension_and_user('line2', user.id, extension2.id, main_line=False)
 
-        expected = [a_hint(user_id=user.id, extension='1001', argument='SIP/line1'),
-                    a_hint(user_id=user.id, extension='1002', argument='SIP/line2')]
+        expected_argument = any_of('SIP/line1&SIP/line2', 'SIP/line2&SIP/line1')
+        expected = [a_hint(user_id=user.id, extension='1001', argument=expected_argument),
+                    a_hint(user_id=user.id, extension='1002', argument=expected_argument)]
 
         assert_that(hint_dao.user_hints(self.context), contains_inanyorder(*expected))
 
-    def test_given_one_user_three_lines_two_extension_then_returns_user_hint(self):
+    def test_given_one_user_two_lines_two_extensions_two_contexts_then_returns_user_hint(self):
+        user = self.add_user(enablehint=1)
+        extension1 = self.add_extension(exten='1001', context=self.context)
+        extension2 = self.add_extension(exten='1002', context=self.context2)
+        self.add_user_destination(user.id)
+        self.add_sip_line_to_extension_and_user('line1', user.id, extension1.id)
+        self.add_sip_line_to_extension_and_user('line2', user.id, extension2.id, main_line=False)
+
+        expected = a_hint(user_id=user.id, extension='1001',
+                          argument=any_of('SIP/line1&SIP/line2', 'SIP/line2&SIP/line1'))
+
+        assert_that(hint_dao.user_hints(self.context), contains(expected))
+
+    def test_given_one_user_three_lines_two_extensions_then_returns_user_hint(self):
         user = self.add_user(enablehint=1)
         extension1 = self.add_extension(exten='1001', context=self.context)
         extension2 = self.add_extension(exten='1002', context=self.context)
@@ -202,9 +217,14 @@ class TestUserHints(TestHints):
         self.add_sip_line_to_extension_and_user('line2', user.id, extension2.id, main_line=False)
         self.add_sip_line_to_extension_and_user('line3', user.id, extension2.id, main_line=False)
 
-        expected = [a_hint(user_id=user.id, extension='1001', argument='SIP/line1'),
-                    a_hint(user_id=user.id, extension='1002',
-                           argument=any_of('SIP/line2&SIP/line3', 'SIP/line3&SIP/line2'))]
+        expected_argument = any_of('SIP/line1&SIP/line2&SIP/line3',
+                                   'SIP/line1&SIP/line3&SIP/line2',
+                                   'SIP/line2&SIP/line1&SIP/line3',
+                                   'SIP/line2&SIP/line3&SIP/line1',
+                                   'SIP/line3&SIP/line1&SIP/line2',
+                                   'SIP/line3&SIP/line2&SIP/line1')
+        expected = [a_hint(user_id=user.id, extension='1001', argument=expected_argument),
+                    a_hint(user_id=user.id, extension='1002', argument=expected_argument)]
 
         assert_that(hint_dao.user_hints(self.context), contains_inanyorder(*expected))
 
