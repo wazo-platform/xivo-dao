@@ -40,7 +40,10 @@ class TestFindAllBy(DAOTestCase):
         assert_that(result, empty())
 
     def test_find_all_by(self):
-        outcall_trunk = self.add_outcall_trunk()
+        trunk = self.add_trunk()
+        outcall = self.add_outcall()
+        outcall_trunk = self.add_outcall_trunk(outcall_id=outcall.id,
+                                               trunk_id=trunk.id)
 
         result = outcall_trunk_dao.find_all_by(outcall_id=outcall_trunk.outcall_id)
         assert_that(result, contains(outcall_trunk))
@@ -134,7 +137,10 @@ class TestFindBy(DAOTestCase):
         assert_that(result, equal_to(None))
 
     def test_find_by(self):
-        outcall_trunk = self.add_outcall_trunk()
+        trunk = self.add_trunk()
+        outcall = self.add_outcall()
+        outcall_trunk = self.add_outcall_trunk(outcall_id=outcall.id,
+                                               trunk_id=trunk.id)
 
         result = outcall_trunk_dao.find_by(outcall_id=outcall_trunk.outcall_id)
         assert_that(result, equal_to(outcall_trunk))
@@ -156,7 +162,10 @@ class TestGetBy(DAOTestCase):
         self.assertRaises(NotFoundError, outcall_trunk_dao.get_by, outcall_id=1)
 
     def test_get_by_outcall_id(self):
-        outcall_trunk = self.add_outcall_trunk()
+        trunk = self.add_trunk()
+        outcall = self.add_outcall()
+        outcall_trunk = self.add_outcall_trunk(outcall_id=outcall.id,
+                                               trunk_id=trunk.id)
 
         result = outcall_trunk_dao.get_by(outcall_id=outcall_trunk.outcall_id)
         assert_that(result, equal_to(outcall_trunk))
