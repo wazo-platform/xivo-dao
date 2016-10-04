@@ -21,6 +21,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
 from sqlalchemy.sql import func, cast, not_
+from xivo_dao.alchemy.dialpattern import DialPattern
 from sqlalchemy.types import Integer, String, Text, Boolean
 
 from xivo_dao.helpers.db_manager import Base
@@ -36,7 +37,7 @@ class Outcall(Base):
 
     id = Column(Integer, nullable=False)
     name = Column(String(128), nullable=False)
-    context = Column(String(39), nullable=False)
+    context = Column(String(39))
     useenum = Column(Integer, nullable=False, server_default='0')
     internal = Column(Integer, nullable=False, server_default='0')
     preprocess_subroutine = Column(String(39))
