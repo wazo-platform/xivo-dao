@@ -23,7 +23,6 @@ from xivo_dao.resources.utils.search import (SearchSystem,
 
 config = SearchConfig(table=Outcall,
                       columns={'id': Outcall.id,
-                               'context': Outcall.context,
                                'description': Outcall.description,
                                'name': Outcall.name,
                                'preprocess_subroutine': Outcall.preprocess_subroutine},

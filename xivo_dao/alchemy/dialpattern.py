@@ -20,7 +20,6 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint
 from sqlalchemy.types import Integer, String
 
-from xivo_dao.alchemy.extension import Extension
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -43,9 +42,9 @@ class DialPattern(Base):
     extension = relationship('Extension',
                              primaryjoin="""and_(Extension.type == 'outcall',
                                                  Extension.typeval == cast(DialPattern.id, String))""",
-                             foreign_keys='[Extension.typeval]',
+                             foreign_keys='Extension.typeval',
                              uselist=False,
-                             cascade='all, delete-orphan')
+                             passive_deletes='all')
 
     @hybrid_property
     def external_prefix(self):
@@ -54,20 +53,6 @@ class DialPattern(Base):
     @external_prefix.setter
     def external_prefix(self, value):
         self.externprefix = value
-
-    @hybrid_property
-    def pattern(self):
-        return self.exten
-
-    @pattern.setter
-    def pattern(self, value):
-        self._update_exten(value)
-        self.exten = value
-
-    def _update_exten(self, exten):
-        if not self.extension:
-            self.extension = Extension(type='outcall')
-        self.extension.exten = exten
 
     @hybrid_property
     def strip_digits(self):
