@@ -21,7 +21,7 @@ from sqlalchemy.types import Integer, String, Boolean
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql import cast
 
-from xivo_dao.helpers.db_manager import Base
+from xivo_dao.helpers.db_manager import Base, IntAsString
 from xivo_dao.alchemy import enum
 
 
@@ -42,7 +42,7 @@ class Extension(Base):
     context = Column(String(39), nullable=False, server_default='')
     exten = Column(String(40), nullable=False, server_default='')
     type = Column(enum.extenumbers_type, nullable=False)
-    typeval = Column(String(255), nullable=False, server_default='')
+    typeval = Column(IntAsString(255), nullable=False, server_default='')
 
     @property
     def name(self):

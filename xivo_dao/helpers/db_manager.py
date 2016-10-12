@@ -22,6 +22,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.pool import Pool
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.types import String, TypeDecorator
 
 from xivo.config_helper import ConfigParser, ErrorHandler
 
@@ -31,6 +32,24 @@ DEFAULT_DB_URI = 'postgresql://asterisk:proformatique@localhost/asterisk'
 logger = logging.getLogger(__name__)
 Session = scoped_session(sessionmaker())
 Base = declarative_base()
+
+
+# http://docs.sqlalchemy.org/en/rel_0_9/_modules/examples/join_conditions/cast.html
+class IntAsString(TypeDecorator):
+    """Coerce integer->string type.
+
+    This is needed only if the relationship() from
+    string to int is writable, as SQLAlchemy will copy
+    the int parent values into the string attribute
+    on the child during a flush.
+
+    """
+    impl = String
+
+    def process_bind_param(self, value, dialect):
+        if value is not None:
+            value = str(value)
+        return value
 
 
 def todict(self, exclude=None):

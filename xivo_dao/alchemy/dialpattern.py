@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2014 Avencall
+# Copyright (C) 2012-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,9 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint
 from sqlalchemy.types import Integer, String
 
+from xivo_dao.alchemy.extension import Extension
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -36,3 +39,50 @@ class DialPattern(Base):
     exten = Column(String(40), nullable=False)
     stripnum = Column(Integer)
     callerid = Column(String(80))
+
+    extension = relationship('Extension',
+                             primaryjoin="""and_(Extension.type == 'outcall',
+                                                 Extension.typeval == cast(DialPattern.id, String))""",
+                             foreign_keys='[Extension.typeval]',
+                             uselist=False,
+                             cascade='all, delete-orphan')
+
+    @hybrid_property
+    def external_prefix(self):
+        return self.externprefix
+
+    @external_prefix.setter
+    def external_prefix(self, value):
+        self.externprefix = value
+
+    @hybrid_property
+    def pattern(self):
+        return self.exten
+
+    @pattern.setter
+    def pattern(self, value):
+        self._update_exten(value)
+        self.exten = value
+
+    def _update_exten(self, exten):
+        if not self.extension:
+            self.extension = Extension(type='outcall')
+        self.extension.exten = exten
+
+    @hybrid_property
+    def strip_digits(self):
+        return self.stripnum
+
+    @strip_digits.setter
+    def strip_digits(self, value):
+        if value is None:
+            value = 0  # set default value
+        self.stripnum = value
+
+    @hybrid_property
+    def caller_id(self):
+        return self.callerid
+
+    @caller_id.setter
+    def caller_id(self, value):
+        self.callerid = value
