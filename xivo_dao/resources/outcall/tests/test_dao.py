@@ -17,17 +17,22 @@
 
 from hamcrest import (assert_that,
                       contains,
+                      contains_inanyorder,
                       equal_to,
+                      empty,
                       has_items,
                       has_properties,
                       has_property,
                       is_not,
-                      none)
+                      none,
+                      not_)
 
 from xivo_dao.alchemy.dialpattern import DialPattern
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.outcall import Outcall
+from xivo_dao.alchemy.outcalltrunk import OutcallTrunk
 from xivo_dao.alchemy.rightcallmember import RightCallMember
+from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.resources.outcall import dao as outcall_dao
@@ -454,3 +459,51 @@ class TestDelete(DAOTestCase):
 
         extension = self.session.query(Extension).first()
         assert_that(extension, none())
+
+
+class TestRelations(DAOTestCase):
+
+    def test_outcalls_create(self):
+        trunk = TrunkFeatures()
+        outcall_row = self.add_outcall()
+        outcall_row.trunks = [trunk]
+        outcall = outcall_dao.get(outcall_row.id)
+
+        assert_that(outcall, equal_to(outcall_row))
+        assert_that(outcall.trunks, contains_inanyorder(trunk))
+
+    def test_outcalls_association(self):
+        outcall_row = self.add_outcall()
+        trunk1_row = self.add_trunk()
+        trunk2_row = self.add_trunk()
+        trunk3_row = self.add_trunk()
+        outcall_row.trunks = [trunk2_row, trunk3_row, trunk1_row]
+
+        outcall = outcall_dao.get(outcall_row.id)
+
+        assert_that(outcall, equal_to(outcall_row))
+        assert_that(outcall.trunks, contains(trunk2_row, trunk3_row, trunk1_row))
+
+    def test_outcalls_dissociation(self):
+        outcall_row = self.add_outcall()
+        trunk1_row = self.add_trunk()
+        trunk2_row = self.add_trunk()
+        trunk3_row = self.add_trunk()
+        outcall_row.trunks = [trunk2_row, trunk3_row, trunk1_row]
+
+        outcall = outcall_dao.get(outcall_row.id)
+
+        assert_that(outcall, equal_to(outcall_row))
+        assert_that(outcall.trunks, not_(empty()))
+
+        outcall_row.trunks = []
+        outcall = outcall_dao.get(outcall_row.id)
+
+        assert_that(outcall, equal_to(outcall_row))
+        assert_that(outcall.trunks, empty())
+
+        row = self.session.query(TrunkFeatures).first()
+        assert_that(row, not_(none()))
+
+        row = self.session.query(OutcallTrunk).first()
+        assert_that(row, none())

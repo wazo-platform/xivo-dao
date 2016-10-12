@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2014 Avencall
+# Copyright (C) 2014-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,7 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import relationship
+from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint, Index
 from sqlalchemy.types import Integer
 
 from xivo_dao.helpers.db_manager import Base
@@ -29,6 +31,28 @@ class OutcallTrunk(Base):
         Index('outcalltrunk__idx__priority', 'priority'),
     )
 
-    outcallid = Column(Integer, nullable=False, server_default='0')
-    trunkfeaturesid = Column(Integer, nullable=False, server_default='0')
+    outcallid = Column(Integer, ForeignKey('outcall.id'), nullable=False)
+    trunkfeaturesid = Column(Integer, ForeignKey('trunkfeatures.id'), nullable=False)
     priority = Column(Integer, nullable=False, server_default='0')
+
+    trunk = relationship('TrunkFeatures',
+                         back_populates='outcall_trunks')
+
+    outcall = relationship('Outcall',
+                           back_populates='outcall_trunks')
+
+    @hybrid_property
+    def outcall_id(self):
+        return self.outcallid
+
+    @outcall_id.setter
+    def outcall_id(self, value):
+        self.outcallid = value
+
+    @hybrid_property
+    def trunk_id(self):
+        return self.trunkfeaturesid
+
+    @trunk_id.setter
+    def trunk_id(self, value):
+        self.trunkfeaturesid = value

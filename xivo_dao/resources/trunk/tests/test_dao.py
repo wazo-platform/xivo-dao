@@ -19,14 +19,19 @@ from __future__ import unicode_literals
 
 from hamcrest import (assert_that,
                       contains,
+                      contains_inanyorder,
                       equal_to,
+                      empty,
                       has_items,
                       has_properties,
                       has_property,
                       is_not,
-                      none)
+                      none,
+                      not_)
 
 
+from xivo_dao.alchemy.outcall import Outcall
+from xivo_dao.alchemy.outcalltrunk import OutcallTrunk
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures as Trunk
 from xivo_dao.alchemy.staticiax import StaticIAX
 from xivo_dao.alchemy.staticsip import StaticSIP
@@ -65,39 +70,6 @@ class TestGet(DAOTestCase):
         trunk = trunk_dao.get(trunk_row.id)
 
         assert_that(trunk, equal_to(trunk_row))
-
-    def test_endpoint_sip_relationship(self):
-        sip_row = self.add_usersip()
-        trunk_row = self.add_trunk()
-        trunk_row.associate_endpoint(sip_row)
-
-        trunk = trunk_dao.get(trunk_row.id)
-        assert_that(trunk, equal_to(trunk_row))
-        assert_that(trunk.endpoint_sip, equal_to(sip_row))
-        assert_that(trunk.endpoint_iax, none())
-        assert_that(trunk.endpoint_custom, none())
-
-    def test_endpoint_iax_relationship(self):
-        iax_row = self.add_useriax()
-        trunk_row = self.add_trunk()
-        trunk_row.associate_endpoint(iax_row)
-
-        trunk = trunk_dao.get(trunk_row.id)
-        assert_that(trunk, equal_to(trunk_row))
-        assert_that(trunk.endpoint_sip, none())
-        assert_that(trunk.endpoint_iax, equal_to(iax_row))
-        assert_that(trunk.endpoint_custom, none())
-
-    def test_endpoint_custom_relationship(self):
-        custom_row = self.add_usercustom()
-        trunk_row = self.add_trunk()
-        trunk_row.associate_endpoint(custom_row)
-
-        trunk = trunk_dao.get(trunk_row.id)
-        assert_that(trunk, equal_to(trunk_row))
-        assert_that(trunk.endpoint_sip, none())
-        assert_that(trunk.endpoint_iax, none())
-        assert_that(trunk.endpoint_custom, equal_to(custom_row))
 
 
 class TestFindBy(DAOTestCase):
@@ -395,3 +367,84 @@ class TestDelete(DAOTestCase):
 
         deleted_register = self.session.query(StaticIAX).filter(StaticIAX.id == trunk.registerid).first()
         assert_that(deleted_register, none())
+
+
+class TestRelations(DAOTestCase):
+
+    def test_outcalls_create(self):
+        outcall = Outcall(name='test', context='to-extern')
+        trunk_row = self.add_trunk()
+        trunk_row.outcalls = [outcall]
+        trunk = trunk_dao.get(trunk_row.id)
+
+        assert_that(trunk, equal_to(trunk_row))
+        assert_that(trunk.outcalls, contains_inanyorder(outcall))
+
+    def test_outcalls_association(self):
+        outcall1_row = self.add_outcall()
+        outcall2_row = self.add_outcall()
+        outcall3_row = self.add_outcall()
+        trunk_row = self.add_trunk()
+
+        trunk_row.outcalls = [outcall1_row, outcall2_row, outcall3_row]
+        trunk = trunk_dao.get(trunk_row.id)
+
+        assert_that(trunk, equal_to(trunk_row))
+        assert_that(trunk.outcalls, contains_inanyorder(outcall1_row, outcall2_row, outcall3_row))
+
+    def test_outcalls_dissociation(self):
+        outcall1_row = self.add_outcall()
+        outcall2_row = self.add_outcall()
+        outcall3_row = self.add_outcall()
+        trunk_row = self.add_trunk()
+
+        trunk_row.outcalls = [outcall1_row, outcall2_row, outcall3_row]
+        trunk = trunk_dao.get(trunk_row.id)
+
+        assert_that(trunk, equal_to(trunk_row))
+        assert_that(trunk.outcalls, not_(empty()))
+
+        trunk_row.outcalls = []
+        trunk = trunk_dao.get(trunk_row.id)
+
+        assert_that(trunk, equal_to(trunk_row))
+        assert_that(trunk.outcalls, empty())
+
+        row = self.session.query(Outcall).first()
+        assert_that(row, not_(none()))
+
+        row = self.session.query(OutcallTrunk).first()
+        assert_that(row, none())
+
+    def test_endpoint_sip_relationship(self):
+        sip_row = self.add_usersip()
+        trunk_row = self.add_trunk()
+        trunk_row.associate_endpoint(sip_row)
+
+        trunk = trunk_dao.get(trunk_row.id)
+        assert_that(trunk, equal_to(trunk_row))
+        assert_that(trunk.endpoint_sip, equal_to(sip_row))
+        assert_that(trunk.endpoint_iax, none())
+        assert_that(trunk.endpoint_custom, none())
+
+    def test_endpoint_iax_relationship(self):
+        iax_row = self.add_useriax()
+        trunk_row = self.add_trunk()
+        trunk_row.associate_endpoint(iax_row)
+
+        trunk = trunk_dao.get(trunk_row.id)
+        assert_that(trunk, equal_to(trunk_row))
+        assert_that(trunk.endpoint_sip, none())
+        assert_that(trunk.endpoint_iax, equal_to(iax_row))
+        assert_that(trunk.endpoint_custom, none())
+
+    def test_endpoint_custom_relationship(self):
+        custom_row = self.add_usercustom()
+        trunk_row = self.add_trunk()
+        trunk_row.associate_endpoint(custom_row)
+
+        trunk = trunk_dao.get(trunk_row.id)
+        assert_that(trunk, equal_to(trunk_row))
+        assert_that(trunk.endpoint_sip, none())
+        assert_that(trunk.endpoint_iax, none())
+        assert_that(trunk.endpoint_custom, equal_to(custom_row))

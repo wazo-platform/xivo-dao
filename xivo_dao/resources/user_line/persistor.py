@@ -31,14 +31,12 @@ class Persistor(CriteriaBuilderMixin):
 
     _search_table = UserLine
 
-    def __init__(self, session, resource, exclude):
+    def __init__(self, session, resource):
         self.session = session
         self.resource = resource
-        self.exclude = exclude
 
     def find_query(self, criteria):
-        column = getattr(UserLine, self.exclude)
-        query = self.session.query(UserLine).filter(column != None)  # noqa
+        query = self.session.query(UserLine)
         return self.build_criteria(query, criteria)
 
     def find_by(self, **criteria):

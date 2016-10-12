@@ -20,7 +20,7 @@ from xivo_dao.resources.user_line.persistor import Persistor
 
 
 def persistor():
-    return Persistor(Session, 'UserLine', 'user_id')
+    return Persistor(Session, 'UserLine')
 
 
 def get_by(**criteria):
