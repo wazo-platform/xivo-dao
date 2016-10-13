@@ -24,3 +24,6 @@ from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.alchemy.voicemail import Voicemail
+from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
+from xivo_dao.alchemy.outcall import Outcall
+from xivo_dao.alchemy.outcall import OutcallTrunk
