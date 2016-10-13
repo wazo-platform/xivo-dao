@@ -54,10 +54,8 @@ class Outcall(Base):
                                 cascade='all, delete-orphan',
                                 back_populates='outcall')
 
-    extensions = association_proxy('dialpatterns', 'extension',
-                                   creator=lambda _extension: DialPattern(type='outcall',
-                                                                          exten=_extension.exten,
-                                                                          extension=_extension))
+    extensions = association_proxy('dialpatterns', 'extension')
+
     outcall_trunks = relationship('OutcallTrunk',
                                   order_by='OutcallTrunk.priority',
                                   collection_class=ordering_list('priority'),
