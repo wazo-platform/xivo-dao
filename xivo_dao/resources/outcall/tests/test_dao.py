@@ -382,7 +382,7 @@ class TestDelete(DAOTestCase):
         assert_that(row.id, equal_to(schedule.id))
 
 
-class TestRelations(DAOTestCase):
+class TestAssociateTrunk(DAOTestCase):
 
     def test_outcalls_create(self):
         trunk = TrunkFeatures()
