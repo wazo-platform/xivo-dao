@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (C) 2014-2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -50,7 +51,8 @@ class Outcall(Base):
                                 primaryjoin="""and_(DialPattern.type == 'outcall',
                                                     DialPattern.typeid == Outcall.id)""",
                                 foreign_keys='DialPattern.typeid',
-                                cascade='all, delete-orphan')
+                                cascade='all, delete-orphan',
+                                back_populates='outcall')
 
     extensions = association_proxy('dialpatterns', 'extension',
                                    creator=lambda _extension: DialPattern(type='outcall',

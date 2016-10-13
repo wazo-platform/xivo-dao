@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2013-2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,7 +16,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, all_of, equal_to, has_items, has_property, none, contains, has_properties, contains_inanyorder
+from hamcrest import (assert_that,
+                      all_of,
+                      contains,
+                      contains_inanyorder,
+                      equal_to,
+                      has_items,
+                      has_properties,
+                      has_property,
+                      none)
 
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.extension import Extension
@@ -547,3 +556,25 @@ class TestFindAllAgentActionExtensions(DAOTestCase):
         result = extension_dao.find_all_agent_action_extensions()
 
         assert_that(result, contains(expected))
+
+
+class TestRelationship(DAOTestCase):
+
+    def test_incall_relationship(self):
+        incall_row = self.add_incall()
+        extension_row = self.add_extension(type='incall', typeval=str(incall_row.id))
+
+        extension = extension_dao.get(extension_row.id)
+
+        assert_that(extension, equal_to(extension_row))
+        assert_that(extension.incall, equal_to(incall_row))
+
+    def test_outcall_relationship(self):
+        outcall_row = self.add_outcall()
+        extension_row = self.add_extension()
+        outcall_row.associate_extension(extension_row)
+
+        extension = extension_dao.get(extension_row.id)
+
+        assert_that(extension, equal_to(extension_row))
+        assert_that(extension.outcall, equal_to(outcall_row))

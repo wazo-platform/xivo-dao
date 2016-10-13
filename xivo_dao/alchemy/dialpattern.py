@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2012-2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -44,7 +45,15 @@ class DialPattern(Base):
                                                  Extension.typeval == cast(DialPattern.id, String))""",
                              foreign_keys='Extension.typeval',
                              uselist=False,
-                             passive_deletes='all')
+                             passive_deletes='all',
+                             back_populates='dialpattern')
+
+    outcall = relationship('Outcall',
+                           primaryjoin="""and_(DialPattern.type == 'outcall',
+                                               DialPattern.typeid == Outcall.id)""",
+                           foreign_keys='DialPattern.typeid',
+                           uselist=False,
+                           back_populates='dialpatterns')
 
     @hybrid_property
     def external_prefix(self):
