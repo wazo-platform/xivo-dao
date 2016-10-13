@@ -110,9 +110,10 @@ class Outcall(Base):
         extension.type = 'outcall'
         dialpattern = DialPattern(type='outcall',
                                   exten=extension.exten,
-                                  extension=extension,
                                   **kwargs)
         self.dialpatterns.append(dialpattern)
+        index = self.dialpatterns.index(dialpattern)
+        self.dialpatterns[index].extension = extension
         self._fix_context()
 
     def dissociate_extension(self, extension):
