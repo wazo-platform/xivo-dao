@@ -122,6 +122,14 @@ class Outcall(Base):
         extension.typeval = '0'
         self._fix_context()
 
+    def update_extension_association(self, extension, **kwargs):
+        for dialpattern in self.dialpatterns:
+            if extension == dialpattern.extension:
+                dialpattern.strip_digits = kwargs.get('strip_digits', dialpattern.strip_digits)
+                dialpattern.prefix = kwargs.get('prefix', dialpattern.prefix)
+                dialpattern.external_prefix = kwargs.get('external_prefix', dialpattern.external_prefix)
+                dialpattern.caller_id = kwargs.get('caller_id', dialpattern.caller_id)
+
     def _fix_context(self):
         for extension in self.extensions:
             self.context = extension.context

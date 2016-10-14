@@ -498,3 +498,23 @@ class TestAssociateExtension(DAOTestCase):
 
         row = self.session.query(DialPattern).first()
         assert_that(row, none())
+
+    def test_update_extension_association(self):
+        outcall_row = self.add_outcall()
+        extension_row = self.add_extension()
+        outcall_row.associate_extension(extension_row, caller_id='toto', prefix='1')
+
+        outcall_row.update_extension_association(extension_row,
+                                                 caller_id='tata',
+                                                 external_prefix='123')
+
+        rows = self.session.query(Extension).all()
+        assert_that(rows, contains(extension_row))
+
+        rows = self.session.query(DialPattern).all()
+        assert_that(rows, contains(has_properties(
+            caller_id='tata',
+            external_prefix='123',
+            prefix='1',
+            strip_digits=0
+        )))
