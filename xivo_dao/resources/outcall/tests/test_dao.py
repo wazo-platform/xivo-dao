@@ -183,10 +183,10 @@ class TestSearchGivenMultipleOutcall(TestSearch):
 
     def setUp(self):
         super(TestSearch, self).setUp()
-        self.outcall1 = self.add_outcall(preprocess_subroutine='Ashton', description='resto')
-        self.outcall2 = self.add_outcall(preprocess_subroutine='Beaugarton', description='bar')
-        self.outcall3 = self.add_outcall(preprocess_subroutine='Casa', description='resto')
-        self.outcall4 = self.add_outcall(preprocess_subroutine='Dunkin', description='resto')
+        self.outcall1 = self.add_outcall(name='O1', preprocess_subroutine='Ashton', description='resto')
+        self.outcall2 = self.add_outcall(name='O2', preprocess_subroutine='Beaugarton', description='bar')
+        self.outcall3 = self.add_outcall(name='O3', preprocess_subroutine='Casa', description='resto')
+        self.outcall4 = self.add_outcall(name='O4', preprocess_subroutine='Dunkin', description='resto')
 
     def test_when_searching_then_returns_one_result(self):
         expected = SearchResult(1, [self.outcall2])
