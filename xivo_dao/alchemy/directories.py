@@ -21,6 +21,8 @@ from sqlalchemy.types import Boolean, Integer, String, Text
 
 from xivo_dao.helpers.db_manager import Base
 
+from .ldapfilter import LdapFilter
+
 
 class Directories(Base):
 
@@ -40,4 +42,4 @@ class Directories(Base):
     xivo_custom_ca_path = Column(Text)
     dird_tenant = Column(Text)
     dird_phonebook = Column(Text)
-    ldapfilter_id = Column(Integer, ForeignKey('ldapfilter.id', ondelete='CASCADE'), nullable=True)
+    ldapfilter_id = Column(Integer, ForeignKey(LdapFilter.id, ondelete='CASCADE'), nullable=True)

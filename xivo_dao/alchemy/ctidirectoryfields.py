@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2014 Avencall
+# Copyright (C) 2012-2016 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy import ForeignKey
 from sqlalchemy.schema import Column, PrimaryKeyConstraint
 from sqlalchemy.types import Integer, String
 
@@ -28,6 +29,8 @@ class CtiDirectoryFields(Base):
         PrimaryKeyConstraint('dir_id', 'fieldname'),
     )
 
-    dir_id = Column(Integer, autoincrement=False)
+    dir_id = Column(Integer,
+                    ForeignKey('ctidirectories.id', ondelete='CASCADE'),
+                    autoincrement=False)
     fieldname = Column(String(255), autoincrement=False)
     value = Column(String(255))

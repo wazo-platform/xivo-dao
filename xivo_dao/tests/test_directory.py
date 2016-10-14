@@ -183,48 +183,46 @@ class TestDirectoryNonLdapSources(DAOTestCase):
         d1, d2, _, d4, d5 = directories = [Directories(**config) for config in self.directory_configs]
         self.add_me_all(directories)
         self.cti_directory_configs = [
-            {'id': 1,
-             'name': 'Internal',
+            {'name': 'Internal',
              'directory_id': d1.id,
              'match_direct': '["firstname", "lastname"]',
              'match_reverse': '["exten"]'},
-            {'id': 2,
-             'name': 'mtl',
+            {'name': 'mtl',
              'directory_id': d2.id,
              'match_direct': '',
              'match_reverse': '[]'},
-            {'id': 3,
-             'name': 'acsvfile',
+            {'name': 'acsvfile',
              'directory_id': d4.id,
              'match_direct': '["firstname", "lastname"]',
              'match_reverse': '["exten"]',
              'delimiter': '|'},
-             {'id': 4,
-              'name': 'mydirdphonebook',
-              'directory_id': d5.id,
-              'match_direct': '',
-              'match_reverse': '[]'},
+            {'name': 'mydirdphonebook',
+             'directory_id': d5.id,
+             'match_direct': '',
+             'match_reverse': '[]'},
         ]
+        c1, c2, c3, c4 = cti_directories = [CtiDirectories(**config) for config in self.cti_directory_configs]
+        self.add_me_all(cti_directories)
         self.cti_directory_fields_configs = [
-            {'dir_id': 1,
+            {'dir_id': c1.id,
              'fieldname': 'number',
              'value': '{exten}'},
-            {'dir_id': 1,
+            {'dir_id': c1.id,
              'fieldname': 'mobile',
              'value': '{mobile_phone_number}'},
-            {'dir_id': 2,
+            {'dir_id': c2.id,
              'fieldname': 'number',
              'value': '{exten}'},
-            {'dir_id': 2,
+            {'dir_id': c2.id,
              'fieldname': 'mobile',
              'value': '{mobile_phone_number}'},
-            {'dir_id': 2,
+            {'dir_id': c2.id,
              'fieldname': 'name',
              'value': '{firstname} {lastname}'},
-            {'dir_id': 3,
+            {'dir_id': c3.id,
              'fieldname': 'name',
              'value': '{firstname} {lastname}'},
-            {'dir_id': 4,
+            {'dir_id': c4.id,
              'fieldname': 'name',
              'value': '{firstname} {lastname}'},
         ]
@@ -292,9 +290,8 @@ class TestDirectoryNonLdapSources(DAOTestCase):
         }
 
     def test_get_all_sources(self):
-        cti_directories = [CtiDirectories(**config) for config in self.cti_directory_configs]
         cti_directory_fields = [CtiDirectoryFields(**config) for config in self.cti_directory_fields_configs]
-        self.add_me_all(chain(cti_directories, cti_directory_fields))
+        self.add_me_all(cti_directory_fields)
 
         result = directory_dao.get_all_sources()
 
@@ -304,15 +301,14 @@ class TestDirectoryNonLdapSources(DAOTestCase):
                                                 self.expected_result_4))
 
     def test_get_all_sources_no_fields(self):
-        cti_directories = [CtiDirectories(**config) for config in self.cti_directory_configs[:-1]]
         cti_directory_fields = [CtiDirectoryFields(**config) for config in self.cti_directory_fields_configs]
-        self.add_me_all(chain(cti_directories, cti_directory_fields[2:]))
+        self.add_me_all(cti_directory_fields[2:])
 
         result = directory_dao.get_all_sources()
 
         expected_result_1 = dict(self.expected_result_1)
         expected_result_1['format_columns'] = {}
-        expected = [expected_result_1, self.expected_result_2, self.expected_result_3]
+        expected = [expected_result_1, self.expected_result_2, self.expected_result_3, self.expected_result_4]
 
         assert_that(result, contains_inanyorder(*expected))
 
