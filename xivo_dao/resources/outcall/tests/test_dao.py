@@ -473,7 +473,9 @@ class TestAssociateExtension(DAOTestCase):
         extension1_row = self.add_extension()
         extension2_row = self.add_extension()
         extension3_row = self.add_extension()
-        outcall_row.extensions = [extension1_row, extension2_row, extension3_row]
+        outcall_row.associate_extension(extension1_row)
+        outcall_row.associate_extension(extension2_row)
+        outcall_row.associate_extension(extension3_row)
 
         outcall = outcall_dao.get(outcall_row.id)
 
