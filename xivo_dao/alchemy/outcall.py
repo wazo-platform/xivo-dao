@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (C) 2014-2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,19 +16,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-import itertools
-
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
 from sqlalchemy.sql import func, cast, not_
-from xivo_dao.alchemy.dialpattern import DialPattern
 from sqlalchemy.types import Integer, String, Text, Boolean
 
 from xivo_dao.helpers.db_manager import Base
 from xivo_dao.alchemy.outcalltrunk import OutcallTrunk
+from xivo_dao.alchemy.dialpattern import DialPattern
 
 
 class Outcall(Base):
@@ -52,7 +51,10 @@ class Outcall(Base):
                                 primaryjoin="""and_(DialPattern.type == 'outcall',
                                                     DialPattern.typeid == Outcall.id)""",
                                 foreign_keys='DialPattern.typeid',
-                                cascade='all, delete-orphan')
+                                cascade='all, delete-orphan',
+                                back_populates='outcall')
+
+    extensions = association_proxy('dialpatterns', 'extension')
 
     outcall_trunks = relationship('OutcallTrunk',
                                   order_by='OutcallTrunk.priority',
@@ -104,31 +106,24 @@ class Outcall(Base):
     def enabled(self, value):
         self.commented = int(value == 0)
 
-    @property
-    def patterns(self):
-        return self.dialpatterns
+    def associate_extension(self, extension, **kwargs):
+        extension.type = 'outcall'
+        dialpattern = DialPattern(type='outcall',
+                                  exten=extension.exten,
+                                  **kwargs)
+        self.dialpatterns.append(dialpattern)
+        index = self.dialpatterns.index(dialpattern)
+        self.dialpatterns[index].extension = extension
+        self._fix_context()
 
-    @patterns.setter
-    def patterns(self, patterns):
-        old_dialpatterns = self.dialpatterns if self.dialpatterns else []
-        self.dialpatterns = []
-        for pattern, dialpattern in itertools.izip_longest(patterns, old_dialpatterns):
-            if not pattern:
-                continue
+    def dissociate_extension(self, extension):
+        self.extensions.remove(extension)
+        extension.type = 'user'
+        extension.typeval = '0'
+        self._fix_context()
 
-            if not dialpattern:
-                dialpattern = pattern
-                dialpattern.type = 'outcall'
-
-            dialpattern.external_prefix = pattern.external_prefix
-            dialpattern.prefix = pattern.prefix
-            dialpattern.pattern = pattern.pattern
-            dialpattern.strip_digits = pattern.strip_digits
-            dialpattern.caller_id = pattern.caller_id
-            self.dialpatterns.append(dialpattern)
-
-    def fix_context(self):
-        for pattern in self.dialpatterns:
-            if pattern.extension is None:
-                continue
-            pattern.extension.context = self.context
+    def _fix_context(self):
+        for extension in self.extensions:
+            self.context = extension.context
+            return
+        self.context = None

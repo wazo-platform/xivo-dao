@@ -33,6 +33,8 @@ from xivo_dao.alchemy.outcall import Outcall
 from xivo_dao.alchemy.outcalltrunk import OutcallTrunk
 from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
+from xivo_dao.alchemy.rightcall import RightCall
+from xivo_dao.alchemy.schedule import Schedule
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.resources.outcall import dao as outcall_dao
@@ -73,14 +75,6 @@ class TestFindBy(DAOTestCase):
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, outcall_dao.find_by, invalid=42)
 
-    def test_find_by_context(self):
-        outcall_row = self.add_outcall(context='mycontext')
-
-        outcall = outcall_dao.find_by(context='mycontext')
-
-        assert_that(outcall, equal_to(outcall_row))
-        assert_that(outcall.context, equal_to('mycontext'))
-
     def test_find_by_description(self):
         outcall_row = self.add_outcall(description='mydescription')
 
@@ -115,14 +109,6 @@ class TestGetBy(DAOTestCase):
 
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, outcall_dao.get_by, invalid=42)
-
-    def test_get_by_context(self):
-        outcall_row = self.add_outcall(context='mycontext')
-
-        outcall = outcall_dao.get_by(context='mycontext')
-
-        assert_that(outcall, equal_to(outcall_row))
-        assert_that(outcall.context, equal_to('mycontext'))
 
     def test_get_by_description(self):
         outcall_row = self.add_outcall(description='mydescription')
@@ -258,7 +244,7 @@ class TestSearchGivenMultipleOutcall(TestSearch):
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_fields(self):
-        outcall = Outcall(name='myoutcall', context='to-extern')
+        outcall = Outcall(name='myoutcall')
         created_outcall = outcall_dao.create(outcall)
 
         row = self.session.query(Outcall).first()
@@ -266,7 +252,6 @@ class TestCreate(DAOTestCase):
         assert_that(created_outcall, equal_to(row))
         assert_that(created_outcall, has_properties(id=is_not(none()),
                                                     name='myoutcall',
-                                                    context='to-extern',
                                                     hangupringtime=0,
                                                     ring_time=none(),
                                                     internal=0,
@@ -274,27 +259,15 @@ class TestCreate(DAOTestCase):
                                                     preprocess_subroutine=none(),
                                                     description=none(),
                                                     commented=0,
-                                                    enabled=True,
-                                                    patterns=[]))
+                                                    enabled=True))
 
     def test_create_with_all_fields(self):
         outcall = Outcall(name='myOutcall',
                           ring_time=10,
                           internal_caller_id=True,
-                          context='to-extern',
                           preprocess_subroutine='MySubroutine',
                           description='outcall description',
-                          enabled=False,
-                          patterns=[DialPattern(external_prefix='514',
-                                                prefix='1',
-                                                pattern='**.',
-                                                strip_digits=3,
-                                                caller_id='OUTCALL'),
-                                    DialPattern(external_prefix='418',
-                                                prefix='2',
-                                                pattern='99999',
-                                                strip_digits=2,
-                                                caller_id='SECOND')])
+                          enabled=False)
 
         created_outcall = outcall_dao.create(outcall)
 
@@ -306,30 +279,7 @@ class TestCreate(DAOTestCase):
                                                     internal_caller_id=True,
                                                     preprocess_subroutine='MySubroutine',
                                                     description='outcall description',
-                                                    enabled=False,
-                                                    patterns=has_items(has_properties(external_prefix='514',
-                                                                                      prefix='1',
-                                                                                      pattern='**.',
-                                                                                      strip_digits=3,
-                                                                                      caller_id='OUTCALL'),
-                                                                       has_properties(external_prefix='418',
-                                                                                      prefix='2',
-                                                                                      pattern='99999',
-                                                                                      strip_digits=2,
-                                                                                      caller_id='SECOND'))))
-
-    def test_create_then_extension_entries_created(self):
-        outcall = Outcall(name='myoutcall', context='from-extern',
-                          patterns=[DialPattern(pattern='**.'),
-                                    DialPattern(pattern='99999')])
-
-        outcall_dao.create(outcall)
-
-        extensions = self.session.query(Extension).all()
-        assert_that(extensions, has_items(has_properties(exten='**.',
-                                                         context='from-extern'),
-                                          has_properties(exten='99999',
-                                                         context='from-extern')))
+                                                    enabled=False))
 
 
 class TestEdit(DAOTestCase):
@@ -338,34 +288,17 @@ class TestEdit(DAOTestCase):
         outcall = outcall_dao.create(Outcall(name='MyOutcall',
                                              ring_time=10,
                                              internal_caller_id=True,
-                                             context='to-extern',
                                              preprocess_subroutine='MySubroutine',
                                              description='outcall description',
-                                             enabled=False,
-                                             patterns=[DialPattern(external_prefix='514',
-                                                                   prefix='1',
-                                                                   pattern='**.',
-                                                                   strip_digits=3,
-                                                                   caller_id='OUTCALL'),
-                                                       DialPattern(external_prefix='418',
-                                                                   prefix='2',
-                                                                   pattern='99999',
-                                                                   strip_digits=2,
-                                                                   caller_id='SECOND')]))
+                                             enabled=False))
 
         outcall = outcall_dao.get(outcall.id)
         outcall.name = 'other_name'
         outcall.ring_time = 5
         outcall.internal_caller_id = False
-        outcall.context = 'default'
         outcall.preprocess_subroutine = 'other_routine'
         outcall.description = 'other description'
         outcall.enabled = True
-        outcall.patterns = [DialPattern(external_prefix='555',
-                                        prefix='9',
-                                        pattern='XX',
-                                        strip_digits=1,
-                                        caller_id='OTHER')]
         outcall_dao.edit(outcall)
 
         row = self.session.query(Outcall).first()
@@ -375,32 +308,20 @@ class TestEdit(DAOTestCase):
                                             name='other_name',
                                             ring_time=5,
                                             internal_caller_id=False,
-                                            context='default',
                                             preprocess_subroutine='other_routine',
                                             description='other description',
-                                            enabled=True,
-                                            patterns=has_items(has_properties(external_prefix='555',
-                                                                              prefix='9',
-                                                                              pattern='XX',
-                                                                              strip_digits=1,
-                                                                              caller_id='OTHER'))))
+                                            enabled=True))
 
     def test_edit_set_fields_to_null(self):
         outcall = outcall_dao.create(Outcall(name='MyOutcall',
-                                             context='from-extern',
                                              ring_time=10,
                                              preprocess_subroutine='MySubroutine',
-                                             description='outcall description',
-                                             patterns=[]))
+                                             description='outcall description'))
 
         outcall = outcall_dao.get(outcall.id)
         outcall.preprocess_subroutine = None
         outcall.description = None
         outcall.ring_time = None
-        outcall.patterns = [DialPattern(external_prefix=None,
-                                        prefix=None,
-                                        pattern='XX',
-                                        caller_id=None)]
 
         outcall_dao.edit(outcall)
 
@@ -408,10 +329,7 @@ class TestEdit(DAOTestCase):
         assert_that(outcall, equal_to(row))
         assert_that(row, has_properties(preprocess_subroutine=none(),
                                         description=none(),
-                                        ring_time=none(),
-                                        patterns=has_items(has_properties(external_prefix=none(),
-                                                                          prefix=none(),
-                                                                          caller_id=none()))))
+                                        ring_time=none()))
 
 
 class TestDelete(DAOTestCase):
@@ -424,23 +342,31 @@ class TestDelete(DAOTestCase):
         row = self.session.query(Outcall).first()
         assert_that(row, none())
 
-    def test_when_deleting_then_dialpattern_are_deleted(self):
-        outcall = self.add_outcall(patterns=[DialPattern(pattern='XX')])
+    def test_when_deleting_then_extension_are_dissociated(self):
+        outcall = self.add_outcall()
+        extension = self.add_extension()
+        outcall.associate_extension(extension)
 
         outcall_dao.delete(outcall)
 
         dialpattern = self.session.query(DialPattern).first()
         assert_that(dialpattern, none())
 
+        row = self.session.query(Extension).first()
+        assert_that(row.id, equal_to(extension.id))
+
     def test_when_deleting_then_call_permission_are_dissociated(self):
         outcall = self.add_outcall()
-        self.add_call_permission()
+        call_permission = self.add_call_permission()
         self.add_outcall_call_permission(typeval=str(outcall.id))
 
         outcall_dao.delete(outcall)
 
         outcall_call_permission = self.session.query(RightCallMember).first()
         assert_that(outcall_call_permission, none())
+
+        row = self.session.query(RightCall).first()
+        assert_that(row.id, equal_to(call_permission.id))
 
     def test_when_deleting_then_schedule_are_dissociated(self):
         outcall = self.add_outcall()
@@ -452,16 +378,11 @@ class TestDelete(DAOTestCase):
         outcall_schedule = self.session.query(SchedulePath).first()
         assert_that(outcall_schedule, none())
 
-    def test_when_deleting_then_extension_are_deleted(self):
-        outcall = self.add_outcall(patterns=[DialPattern(pattern='XX')])
-
-        outcall_dao.delete(outcall)
-
-        extension = self.session.query(Extension).first()
-        assert_that(extension, none())
+        row = self.session.query(Schedule).first()
+        assert_that(row.id, equal_to(schedule.id))
 
 
-class TestRelations(DAOTestCase):
+class TestAssociateTrunk(DAOTestCase):
 
     def test_outcalls_create(self):
         trunk = TrunkFeatures()
@@ -480,8 +401,6 @@ class TestRelations(DAOTestCase):
         outcall_row.trunks = [trunk2_row, trunk3_row, trunk1_row]
 
         outcall = outcall_dao.get(outcall_row.id)
-
-        assert_that(outcall, equal_to(outcall_row))
         assert_that(outcall.trunks, contains(trunk2_row, trunk3_row, trunk1_row))
 
     def test_outcalls_dissociation(self):
@@ -490,13 +409,10 @@ class TestRelations(DAOTestCase):
         trunk2_row = self.add_trunk()
         trunk3_row = self.add_trunk()
         outcall_row.trunks = [trunk2_row, trunk3_row, trunk1_row]
-
         outcall = outcall_dao.get(outcall_row.id)
-
-        assert_that(outcall, equal_to(outcall_row))
         assert_that(outcall.trunks, not_(empty()))
-
         outcall_row.trunks = []
+
         outcall = outcall_dao.get(outcall_row.id)
 
         assert_that(outcall, equal_to(outcall_row))
@@ -506,4 +422,79 @@ class TestRelations(DAOTestCase):
         assert_that(row, not_(none()))
 
         row = self.session.query(OutcallTrunk).first()
+        assert_that(row, none())
+
+
+class TestAssociateExtension(DAOTestCase):
+
+    def test_associate_extension(self):
+        extension = self.add_extension()
+        outcall_row = self.add_outcall()
+        outcall_row.associate_extension(extension,
+                                        strip_digits=5,
+                                        caller_id='toto',
+                                        external_prefix='123',
+                                        prefix='321')
+
+        outcall = outcall_dao.get(outcall_row.id)
+
+        assert_that(outcall, equal_to(outcall_row))
+        assert_that(outcall.context, equal_to(extension.context))
+        assert_that(outcall.dialpatterns, contains_inanyorder(
+            has_properties(strip_digits=5,
+                           caller_id='toto',
+                           external_prefix='123',
+                           prefix='321',
+                           type='outcall',
+                           typeid=outcall.id,
+                           exten=extension.exten,
+                           extension=has_properties(exten=extension.exten,
+                                                    context=extension.context,
+                                                    type='outcall',
+                                                    typeval=outcall.dialpatterns[0].id))
+        ))
+
+    def test_associate_multiple_extensions(self):
+        outcall_row = self.add_outcall()
+        extension1_row = self.add_extension()
+        extension2_row = self.add_extension()
+        extension3_row = self.add_extension()
+        outcall_row.associate_extension(extension1_row, caller_id='toto')
+        outcall_row.associate_extension(extension2_row, strip_digits=5)
+        outcall_row.associate_extension(extension3_row, external_prefix='123', prefix='321')
+
+        outcall = outcall_dao.get(outcall_row.id)
+
+        assert_that(outcall, equal_to(outcall_row))
+        assert_that(outcall.extensions, contains_inanyorder(extension1_row, extension2_row, extension3_row))
+
+    def test_extensions_dissociation(self):
+        outcall_row = self.add_outcall()
+        extension1_row = self.add_extension()
+        extension2_row = self.add_extension()
+        extension3_row = self.add_extension()
+        outcall_row.associate_extension(extension1_row)
+        outcall_row.associate_extension(extension2_row)
+        outcall_row.associate_extension(extension3_row)
+
+        outcall = outcall_dao.get(outcall_row.id)
+
+        assert_that(outcall, equal_to(outcall_row))
+        assert_that(outcall.extensions, not_(empty()))
+
+        outcall_row.dissociate_extension(extension1_row)
+        outcall_row.dissociate_extension(extension2_row)
+        outcall_row.dissociate_extension(extension3_row)
+        outcall = outcall_dao.get(outcall_row.id)
+
+        assert_that(outcall, equal_to(outcall_row))
+        assert_that(outcall.extensions, empty())
+        assert_that(outcall.context, none())
+
+        rows = self.session.query(Extension).all()
+        assert_that(rows, contains_inanyorder(has_properties(type='user', typeval='0'),
+                                              has_properties(type='user', typeval='0'),
+                                              has_properties(type='user', typeval='0')))
+
+        row = self.session.query(DialPattern).first()
         assert_that(row, none())

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2013-2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,8 +16,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column, UniqueConstraint, Index, \
-    PrimaryKeyConstraint
+from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.schema import Column, UniqueConstraint, Index, PrimaryKeyConstraint
+from sqlalchemy.orm import relationship
 from sqlalchemy.types import Integer, String, Boolean
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql import cast
@@ -43,6 +45,15 @@ class Extension(Base):
     exten = Column(String(40), nullable=False, server_default='')
     type = Column(enum.extenumbers_type, nullable=False)
     typeval = Column(IntAsString(255), nullable=False, server_default='')
+
+    dialpattern = relationship('DialPattern',
+                               primaryjoin="""and_(Extension.type == 'outcall',
+                                                   Extension.typeval == cast(DialPattern.id, String))""",
+                               foreign_keys='Extension.typeval',
+                               uselist=False,
+                               back_populates='extension')
+
+    outcall = association_proxy('dialpattern', 'outcall')
 
     @property
     def name(self):

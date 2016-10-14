@@ -56,13 +56,11 @@ class OutcallPersistor(CriteriaBuilderMixin):
 
     def create(self, outcall):
         self.session.add(outcall)
-        outcall.fix_context()
         self.session.flush()
         return outcall
 
     def edit(self, outcall):
         self.session.add(outcall)
-        outcall.fix_context()
         self.session.flush()
 
     def delete(self, outcall):
