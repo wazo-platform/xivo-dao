@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2013-2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -45,3 +46,9 @@ class UserLine(Base):
                                  primaryjoin="""and_(UserLine.line_id == LineFeatures.id,
                                  UserLine.main_line == True)"""
                                  )
+
+    user = relationship('UserFeatures',
+                        back_populates='user_lines')
+
+    line = relationship('LineFeatures',
+                        back_populates='user_lines')

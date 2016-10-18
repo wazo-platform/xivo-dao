@@ -895,3 +895,21 @@ class TestDelete(TestUser):
         self.session.add(schedule_path)
         self.session.flush()
         return schedule_path
+
+
+class TestRelationship(DAOTestCase):
+
+    def test_lines_relationship(self):
+        line1_row = self.add_line()
+        line2_row = self.add_line()
+        user_row = self.add_user()
+        self.add_user_line(user_id=user_row.id,
+                           line_id=line1_row.id,
+                           main_line=False)
+        self.add_user_line(user_id=user_row.id,
+                           line_id=line2_row.id,
+                           main_line=True)
+
+        user = user_dao.get(user_row.id)
+        assert_that(user, equal_to(user_row))
+        assert_that(user.lines, contains(line2_row, line1_row))

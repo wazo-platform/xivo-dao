@@ -108,7 +108,12 @@ class LineFeatures(Base):
 
     extensions = association_proxy('line_extensions', 'extension')
 
-    user_lines = relationship("UserLine")
+    user_lines = relationship('UserLine',
+                              order_by='desc(UserLine.main_user)',
+                              cascade='all, delete-orphan',
+                              back_populates='line')
+
+    users = association_proxy('user_lines', 'user')
 
     @property
     def caller_id_name(self):

@@ -415,7 +415,7 @@ class TestLineDaoSearch(DAOTestCase):
         assert_that(line.endpoint_sip.id, equal_to(usersip.id))
 
 
-class TestRelations(DAOTestCase):
+class TestRelationship(DAOTestCase):
 
     def test_endpoint_sip_relationship(self):
         sip_row = self.add_usersip()
@@ -464,3 +464,18 @@ class TestRelations(DAOTestCase):
         line = line_dao.get(line_row.id)
         assert_that(line, equal_to(line_row))
         assert_that(line.extensions, contains(extension2_row, extension1_row))
+
+    def test_users_relationship(self):
+        user1_row = self.add_user()
+        user2_row = self.add_user()
+        line_row = self.add_line()
+        self.add_user_line(line_id=line_row.id,
+                           user_id=user1_row.id,
+                           main_user=False)
+        self.add_user_line(line_id=line_row.id,
+                           user_id=user2_row.id,
+                           main_user=True)
+
+        line = line_dao.get(line_row.id)
+        assert_that(line, equal_to(line_row))
+        assert_that(line.users, contains(user2_row, user1_row))
