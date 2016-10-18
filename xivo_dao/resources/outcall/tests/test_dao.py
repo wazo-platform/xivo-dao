@@ -354,6 +354,7 @@ class TestDelete(DAOTestCase):
 
         row = self.session.query(Extension).first()
         assert_that(row.id, equal_to(extension.id))
+        assert_that(row, has_properties(type='user', typeval='0'))
 
     def test_when_deleting_then_call_permission_are_dissociated(self):
         outcall = self.add_outcall()

@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 
 # Copyright (C) 2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -78,3 +79,7 @@ class OutcallPersistor(CriteriaBuilderMixin):
          .filter(SchedulePath.path == 'outcall')
          .filter(SchedulePath.pathid == outcall.id)
          .delete())
+
+        for extension in outcall.extensions:
+            extension.type = 'user'
+            extension.typeval = '0'
