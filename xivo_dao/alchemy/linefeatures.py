@@ -21,10 +21,9 @@ from __future__ import unicode_literals
 import re
 
 from sqlalchemy.sql import cast, func
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from sqlalchemy.types import Integer, String, Text
-from sqlalchemy.schema import Column, UniqueConstraint, PrimaryKeyConstraint, \
-    Index
+from sqlalchemy.schema import Column, UniqueConstraint, PrimaryKeyConstraint, Index
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from xivo_dao.helpers.exception import InputError
@@ -82,21 +81,24 @@ class LineFeatures(Base):
                                     LineFeatures.protocol == 'sip',
                                     LineFeatures.protocolid == UserSIP.id
                                 )""",
-                                foreign_keys=[protocolid])
+                                foreign_keys=[protocolid],
+                                backref=backref('line', uselist=False))
 
     endpoint_sccp = relationship(SCCPLine,
                                  primaryjoin="""and_(
                                  LineFeatures.protocol == 'sccp',
                                  LineFeatures.protocolid == SCCPLine.id
                                  )""",
-                                 foreign_keys=[protocolid])
+                                 foreign_keys=[protocolid],
+                                 backref=backref('line', uselist=False))
 
     endpoint_custom = relationship(UserCustom,
                                    primaryjoin="""and_(
                                    LineFeatures.protocol == 'custom',
                                    LineFeatures.protocolid == UserCustom.id
                                    )""",
-                                   foreign_keys=[protocolid])
+                                   foreign_keys=[protocolid],
+                                   backref=backref('line', uselist=False))
 
     user_lines = relationship("UserLine")
     line_extensions = relationship("LineExtension")

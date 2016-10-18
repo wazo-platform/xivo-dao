@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2013-2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -412,3 +413,39 @@ class TestLineDaoSearch(DAOTestCase):
         assert_that(line.protocol, equal_to('sip'))
         assert_that(line.protocolid, usersip.id)
         assert_that(line.endpoint_sip.id, equal_to(usersip.id))
+
+
+class TestRelations(DAOTestCase):
+
+    def test_endpoint_sip_relationship(self):
+        sip_row = self.add_usersip()
+        line_row = self.add_line()
+        line_row.associate_endpoint(sip_row)
+
+        line = line_dao.get(line_row.id)
+        assert_that(line, equal_to(line_row))
+        assert_that(line.endpoint_sip, equal_to(sip_row))
+        assert_that(line.endpoint_sccp, none())
+        assert_that(line.endpoint_custom, none())
+
+    def test_endpoint_sccp_relationship(self):
+        sccp_row = self.add_sccpline()
+        line_row = self.add_line()
+        line_row.associate_endpoint(sccp_row)
+
+        line = line_dao.get(line_row.id)
+        assert_that(line, equal_to(line_row))
+        assert_that(line.endpoint_sip, none())
+        assert_that(line.endpoint_sccp, equal_to(sccp_row))
+        assert_that(line.endpoint_custom, none())
+
+    def test_endpoint_custom_relationship(self):
+        custom_row = self.add_usercustom()
+        line_row = self.add_line()
+        line_row.associate_endpoint(custom_row)
+
+        line = line_dao.get(line_row.id)
+        assert_that(line, equal_to(line_row))
+        assert_that(line.endpoint_sip, none())
+        assert_that(line.endpoint_sccp, none())
+        assert_that(line.endpoint_custom, equal_to(custom_row))

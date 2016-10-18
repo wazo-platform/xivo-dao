@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 
 # Copyright (C) 2015-2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -48,15 +49,6 @@ class TestCustomEndpointDaoGet(TestCustomDao):
         assert_that(custom.id, equal_to(row.id))
         assert_that(custom.interface, equal_to(row.interface))
         assert_that(custom.enabled, equal_to(True))
-
-    def test_trunk_relationship(self):
-        custom_row = self.add_usercustom()
-        trunk_row = self.add_trunk()
-        trunk_row.associate_endpoint(custom_row)
-
-        custom = dao.get(custom_row.id)
-        assert_that(custom, equal_to(custom_row))
-        assert_that(custom.trunk, equal_to(trunk_row))
 
 
 class TestCustomEndpointDaoFindBy(TestCustomDao):
@@ -173,3 +165,24 @@ class TestCustomEndpointDaoDelete(TestCustomDao):
         line = self.session.query(Line).get(line.id)
         assert_that(line.endpoint, none())
         assert_that(line.endpoint_id, none())
+
+
+class TestRelations(DAOTestCase):
+
+    def test_trunk_relationship(self):
+        custom_row = self.add_usercustom()
+        trunk_row = self.add_trunk()
+        trunk_row.associate_endpoint(custom_row)
+
+        custom = dao.get(custom_row.id)
+        assert_that(custom, equal_to(custom_row))
+        assert_that(custom.trunk, equal_to(trunk_row))
+
+    def test_line_relationship(self):
+        custom_row = self.add_usercustom()
+        line_row = self.add_line()
+        line_row.associate_endpoint(custom_row)
+
+        custom = dao.get(custom_row.id)
+        assert_that(custom, equal_to(custom_row))
+        assert_that(custom.line, equal_to(line_row))
