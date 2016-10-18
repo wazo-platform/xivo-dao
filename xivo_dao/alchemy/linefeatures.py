@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 import re
 
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.sql import cast, func
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.types import Integer, String, Text
@@ -100,8 +101,14 @@ class LineFeatures(Base):
                                    foreign_keys=[protocolid],
                                    backref=backref('line', uselist=False))
 
+    line_extensions = relationship('LineExtension',
+                                   order_by='desc(LineExtension.main_extension)',
+                                   cascade='all, delete-orphan',
+                                   back_populates='line')
+
+    extensions = association_proxy('line_extensions', 'extension')
+
     user_lines = relationship("UserLine")
-    line_extensions = relationship("LineExtension")
 
     @property
     def caller_id_name(self):

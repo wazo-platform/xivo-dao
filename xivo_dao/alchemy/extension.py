@@ -55,6 +55,12 @@ class Extension(Base):
 
     outcall = association_proxy('dialpattern', 'outcall')
 
+    line_extensions = relationship('LineExtension',
+                                   cascade='all, delete-orphan',
+                                   back_populates='extension')
+
+    lines = association_proxy('line_extensions', 'line')
+
     @property
     def name(self):
         return self.typeval

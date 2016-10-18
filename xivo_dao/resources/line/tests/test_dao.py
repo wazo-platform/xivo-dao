@@ -449,3 +449,18 @@ class TestRelations(DAOTestCase):
         assert_that(line.endpoint_sip, none())
         assert_that(line.endpoint_sccp, none())
         assert_that(line.endpoint_custom, equal_to(custom_row))
+
+    def test_extensions_relationship(self):
+        extension1_row = self.add_extension()
+        extension2_row = self.add_extension()
+        line_row = self.add_line()
+        self.add_line_extension(line_id=line_row.id,
+                                extension_id=extension1_row.id,
+                                main_extension=False)
+        self.add_line_extension(line_id=line_row.id,
+                                extension_id=extension2_row.id,
+                                main_extension=True)
+
+        line = line_dao.get(line_row.id)
+        assert_that(line, equal_to(line_row))
+        assert_that(line.extensions, contains(extension2_row, extension1_row))

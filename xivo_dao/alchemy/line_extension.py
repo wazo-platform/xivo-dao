@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -41,3 +42,9 @@ class LineExtension(Base):
                                       primaryjoin="""and_(LineExtension.extension_id == Extension.id,
                                       LineExtension.main_extension == True)"""
                                       )
+
+    line = relationship('LineFeatures',
+                        back_populates='line_extensions')
+
+    extension = relationship('Extension',
+                             back_populates='line_extensions')
