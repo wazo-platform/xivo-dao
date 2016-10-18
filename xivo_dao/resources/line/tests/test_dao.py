@@ -261,7 +261,7 @@ class TestLineDaoEdit(TestLineDao):
         line_row = self.add_line()
 
         line = line_dao.get(line_row.id)
-        _force_relationship_loading = line.sip_endpoint
+        _force_relationship_loading = line.endpoint_sip
         line.associate_endpoint(usersip_row)
         line_dao.edit(line)
 
@@ -273,7 +273,7 @@ class TestLineDaoEdit(TestLineDao):
         line_row = self.add_line()
 
         line = line_dao.get(line_row.id)
-        _force_relationship_loading = line.sccp_endpoint
+        _force_relationship_loading = line.endpoint_sccp
         line.associate_endpoint(sccpline_row)
         line_dao.edit(line)
 
@@ -285,7 +285,7 @@ class TestLineDaoEdit(TestLineDao):
         line_row = self.add_line()
 
         line = line_dao.get(line_row.id)
-        _force_relationship_loading = line.custom_endpoint
+        _force_relationship_loading = line.endpoint_custom
         line.associate_endpoint(usercustom_row)
         line_dao.edit(line)
 
@@ -411,4 +411,4 @@ class TestLineDaoSearch(DAOTestCase):
         line = search_result.items[0]
         assert_that(line.protocol, equal_to('sip'))
         assert_that(line.protocolid, usersip.id)
-        assert_that(line.sip_endpoint.id, equal_to(usersip.id))
+        assert_that(line.endpoint_sip.id, equal_to(usersip.id))

@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 
 # Copyright (C) 2015-2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -52,8 +53,8 @@ class LinePersistor(CriteriaBuilderMixin):
     def query(self):
         return (self.session
                 .query(Line)
-                .options(joinedload(Line.sip_endpoint))
-                .options(joinedload(Line.sccp_endpoint)))
+                .options(joinedload(Line.endpoint_sip))
+                .options(joinedload(Line.endpoint_sccp)))
 
     def find_by(self, criteria):
         query = self.build_criteria(self.query(), criteria)
