@@ -578,3 +578,16 @@ class TestRelationship(DAOTestCase):
 
         assert_that(extension, equal_to(extension_row))
         assert_that(extension.outcall, equal_to(outcall_row))
+
+    def test_lines_relationship(self):
+        extension_row = self.add_extension()
+        line1_row = self.add_line()
+        line2_row = self.add_line()
+        self.add_line_extension(line_id=line1_row.id,
+                                extension_id=extension_row.id)
+        self.add_line_extension(line_id=line2_row.id,
+                                extension_id=extension_row.id)
+
+        extension = extension_dao.get(extension_row.id)
+        assert_that(extension, equal_to(extension_row))
+        assert_that(extension.lines, contains_inanyorder(line1_row, line2_row))

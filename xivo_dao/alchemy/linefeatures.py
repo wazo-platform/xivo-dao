@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2013-2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,11 +20,11 @@ from __future__ import unicode_literals
 
 import re
 
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.sql import cast, func
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from sqlalchemy.types import Integer, String, Text
-from sqlalchemy.schema import Column, UniqueConstraint, PrimaryKeyConstraint, \
-    Index
+from sqlalchemy.schema import Column, UniqueConstraint, PrimaryKeyConstraint, Index
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from xivo_dao.helpers.exception import InputError
@@ -76,29 +77,43 @@ class LineFeatures(Base):
     commented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text)
 
-    sip_endpoint = relationship(UserSIP,
+    endpoint_sip = relationship(UserSIP,
                                 primaryjoin="""and_(
                                     LineFeatures.protocol == 'sip',
                                     LineFeatures.protocolid == UserSIP.id
                                 )""",
-                                foreign_keys=[protocolid])
+                                foreign_keys=[protocolid],
+                                backref=backref('line', uselist=False))
 
-    sccp_endpoint = relationship(SCCPLine,
+    endpoint_sccp = relationship(SCCPLine,
                                  primaryjoin="""and_(
                                  LineFeatures.protocol == 'sccp',
                                  LineFeatures.protocolid == SCCPLine.id
                                  )""",
-                                 foreign_keys=[protocolid])
+                                 foreign_keys=[protocolid],
+                                 backref=backref('line', uselist=False))
 
-    custom_endpoint = relationship(UserCustom,
+    endpoint_custom = relationship(UserCustom,
                                    primaryjoin="""and_(
                                    LineFeatures.protocol == 'custom',
                                    LineFeatures.protocolid == UserCustom.id
                                    )""",
-                                   foreign_keys=[protocolid])
+                                   foreign_keys=[protocolid],
+                                   backref=backref('line', uselist=False))
 
-    user_lines = relationship("UserLine")
-    line_extensions = relationship("LineExtension")
+    line_extensions = relationship('LineExtension',
+                                   order_by='desc(LineExtension.main_extension)',
+                                   cascade='all, delete-orphan',
+                                   back_populates='line')
+
+    extensions = association_proxy('line_extensions', 'extension')
+
+    user_lines = relationship('UserLine',
+                              order_by='desc(UserLine.main_user)',
+                              cascade='all, delete-orphan',
+                              back_populates='line')
+
+    users = association_proxy('user_lines', 'user')
 
     @property
     def caller_id_name(self):
@@ -108,23 +123,23 @@ class LineFeatures(Base):
             return self._sccp_caller_id_name()
 
     def _sip_caller_id_name(self):
-        if self.sip_endpoint is None:
+        if self.endpoint_sip is None:
             return None
 
-        if self.sip_endpoint.callerid is None:
+        if self.endpoint_sip.callerid is None:
             return None
 
-        match = caller_id_regex.match(self.sip_endpoint.callerid)
+        match = caller_id_regex.match(self.endpoint_sip.callerid)
         if not match:
             return None
 
         return match.group('name')
 
     def _sccp_caller_id_name(self):
-        if self.sccp_endpoint is None:
+        if self.endpoint_sccp is None:
             return None
 
-        return self.sccp_endpoint.cid_name
+        return self.endpoint_sccp.cid_name
 
     @caller_id_name.setter
     def caller_id_name(self, value):
@@ -144,10 +159,10 @@ class LineFeatures(Base):
     def _set_sip_caller_id_name(self, value):
         num = self._sip_caller_id_num()
         callerid = self.CALLER_ID.format(name=value, num=num)
-        self.sip_endpoint.callerid = callerid
+        self.endpoint_sip.callerid = callerid
 
     def _set_sccp_caller_id_name(self, value):
-        self.sccp_endpoint.cid_name = value
+        self.endpoint_sccp.cid_name = value
 
     @property
     def caller_id_num(self):
@@ -157,23 +172,23 @@ class LineFeatures(Base):
             return self._sccp_caller_id_num()
 
     def _sip_caller_id_num(self):
-        if self.sip_endpoint is None:
+        if self.endpoint_sip is None:
             return None
 
-        if self.sip_endpoint.callerid is None:
+        if self.endpoint_sip.callerid is None:
             return None
 
-        match = caller_id_regex.match(self.sip_endpoint.callerid)
+        match = caller_id_regex.match(self.endpoint_sip.callerid)
         if not match:
             return None
 
         return match.group('num')
 
     def _sccp_caller_id_num(self):
-        if self.sccp_endpoint is None:
+        if self.endpoint_sccp is None:
             return None
 
-        return self.sccp_endpoint.cid_num
+        return self.endpoint_sccp.cid_num
 
     @caller_id_num.setter
     def caller_id_num(self, value):
@@ -193,7 +208,7 @@ class LineFeatures(Base):
     def _set_sip_caller_id_num(self, value):
         name = self._sip_caller_id_name()
         callerid = self.CALLER_ID.format(name=name, num=value)
-        self.sip_endpoint.callerid = callerid
+        self.endpoint_sip.callerid = callerid
 
     @hybrid_property
     def endpoint(self):
@@ -291,12 +306,12 @@ class LineFeatures(Base):
         self.number = None
 
     def update_name(self):
-        if self.sip_endpoint and self.sip_endpoint.name not in ("", None):
-            self.name = self.sip_endpoint.name
-        elif self.sccp_endpoint and self.sccp_endpoint.name not in ("", None):
-            self.name = self.sccp_endpoint.name
-        elif self.custom_endpoint and self.custom_endpoint.interface not in ("", None):
-            self.name = self.custom_endpoint.interface
+        if self.endpoint_sip and self.endpoint_sip.name not in ("", None):
+            self.name = self.endpoint_sip.name
+        elif self.endpoint_sccp and self.endpoint_sccp.name not in ("", None):
+            self.name = self.endpoint_sccp.name
+        elif self.endpoint_custom and self.endpoint_custom.interface not in ("", None):
+            self.name = self.endpoint_custom.interface
         else:
             self.name = None
 

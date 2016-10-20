@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2013-2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,6 +21,7 @@ from __future__ import unicode_literals
 import uuid
 import re
 
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint, Index, \
     UniqueConstraint, ForeignKeyConstraint
 from sqlalchemy.types import Integer, String, Text, Boolean
@@ -144,6 +146,13 @@ class UserFeatures(Base):
                                                      UserLine.main_line == True)""")
     voicemail = relationship("Voicemail")
     cti_profile = relationship("CtiProfile")
+
+    user_lines = relationship('UserLine',
+                              order_by='desc(UserLine.main_line)',
+                              cascade='all, delete-orphan',
+                              back_populates='user')
+
+    lines = association_proxy('user_lines', 'line')
 
     def extrapolate_caller_id(self, extension=None):
         default_num = extension.exten if extension else None

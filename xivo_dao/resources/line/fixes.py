@@ -58,9 +58,9 @@ class LineFixes(object):
                                     UserFeatures,
                                     UserCustom,
                                     Extension)
-                 .outerjoin(LineFeatures.sip_endpoint)
-                 .outerjoin(LineFeatures.sccp_endpoint)
-                 .outerjoin(LineFeatures.custom_endpoint)
+                 .outerjoin(LineFeatures.endpoint_sip)
+                 .outerjoin(LineFeatures.endpoint_sccp)
+                 .outerjoin(LineFeatures.endpoint_custom)
                  .outerjoin(SCCPDevice,
                             SCCPLine.name == SCCPDevice.line)
                  .outerjoin(LineFeatures.user_lines)

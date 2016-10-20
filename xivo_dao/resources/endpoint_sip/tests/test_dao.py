@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 
 # Copyright (C) 2015-2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -192,15 +193,6 @@ class TestSipEndpointDaoGet(TestSipEndpointDAO):
 
         sip = dao.get(row.id)
         assert_that(sip.options, has_items(["language", "fr_FR"], ["foo", "bar"]))
-
-    def test_trunk_relationship(self):
-        sip_row = self.add_usersip()
-        trunk_row = self.add_trunk()
-        trunk_row.associate_endpoint(sip_row)
-
-        sip = dao.get(sip_row.id)
-        assert_that(sip, equal_to(sip_row))
-        assert_that(sip.trunk, equal_to(trunk_row))
 
 
 class TestSipEndpointDaoSearch(DAOTestCase):
@@ -566,3 +558,24 @@ class TestSipEndpointDaoDelete(TestSipEndpointDAO):
         line_row = self.session.query(Line).get(line_row.id)
         assert_that(line_row.endpoint, none())
         assert_that(line_row.endpoint_id, none())
+
+
+class TestRelations(DAOTestCase):
+
+    def test_trunk_relationship(self):
+        sip_row = self.add_usersip()
+        trunk_row = self.add_trunk()
+        trunk_row.associate_endpoint(sip_row)
+
+        sip = dao.get(sip_row.id)
+        assert_that(sip, equal_to(sip_row))
+        assert_that(sip.trunk, equal_to(trunk_row))
+
+    def test_line_relationship(self):
+        sip_row = self.add_usersip()
+        line_row = self.add_line()
+        line_row.associate_endpoint(sip_row)
+
+        sip = dao.get(sip_row.id)
+        assert_that(sip, equal_to(sip_row))
+        assert_that(sip.line, equal_to(line_row))

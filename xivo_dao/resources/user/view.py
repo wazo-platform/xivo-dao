@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy.orm import joinedload
 from sqlalchemy.sql import func, case
 
 from xivo_dao.resources.utils.view import ViewSelector, View
@@ -31,7 +32,20 @@ from xivo_dao.alchemy.user_line import UserLine
 class UserView(View):
 
     def query(self, session):
-        return session.query(User)
+        return (session.query(User)
+                .options(joinedload('user_lines')
+                         .joinedload('line')
+                         .joinedload('endpoint_sip'))
+                .options(joinedload('user_lines')
+                         .joinedload('line')
+                         .joinedload('endpoint_sccp'))
+                .options(joinedload('user_lines')
+                         .joinedload('line')
+                         .joinedload('endpoint_custom'))
+                .options(joinedload('user_lines')
+                         .joinedload('line')
+                         .joinedload('line_extensions')
+                         .joinedload('extension')))
 
     def convert(self, model):
         return model

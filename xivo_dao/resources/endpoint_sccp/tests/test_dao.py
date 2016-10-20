@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 
 # Copyright (C) 2015-2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -226,3 +227,15 @@ class TestSipEndpointDaoDelete(TestSccpDao):
         line = self.session.query(Line).get(line.id)
         assert_that(line.endpoint, none())
         assert_that(line.endpoint_id, none())
+
+
+class TestRelations(DAOTestCase):
+
+    def test_line_relationship(self):
+        sccp_row = self.add_sccpline()
+        line_row = self.add_line()
+        line_row.associate_endpoint(sccp_row)
+
+        sccp = dao.get(sccp_row.id)
+        assert_that(sccp, equal_to(sccp_row))
+        assert_that(sccp.line, equal_to(line_row))
