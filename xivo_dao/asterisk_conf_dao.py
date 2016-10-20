@@ -315,6 +315,7 @@ def find_exten_settings(session, context_name):
             .outerjoin(LineFeatures, LineFeatures.id == LineExtension.line_id)
             .filter(and_(Extension.context == context_name,
                          Extension.commented == 0,
+                         Extension.typeval != '0',
                          or_(LineExtension.line_id == None,  # noqa
                              LineFeatures.commented == 0)))
             .order_by('exten')
