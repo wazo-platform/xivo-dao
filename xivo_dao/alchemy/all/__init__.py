@@ -1,3 +1,20 @@
+# -*- coding: utf-8 -*-
+
+# Copyright (C) 2016 Proformatique
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>
+
 from xivo_dao.alchemy.accessfeatures import AccessFeatures
 from xivo_dao.alchemy.accesswebservice import AccessWebService
 from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
@@ -80,9 +97,6 @@ from xivo_dao.alchemy.outcall import Outcall
 from xivo_dao.alchemy.outcalltrunk import OutcallTrunk
 from xivo_dao.alchemy.paging import Paging
 from xivo_dao.alchemy.paginguser import PagingUser
-from xivo_dao.alchemy.phonebook import Phonebook
-from xivo_dao.alchemy.phonebookaddress import PhonebookAddress
-from xivo_dao.alchemy.phonebooknumber import PhonebookNumber
 from xivo_dao.alchemy.phonefunckey import PhoneFunckey
 from xivo_dao.alchemy.pickup import Pickup
 from xivo_dao.alchemy.pickupmember import PickupMember
@@ -126,7 +140,6 @@ from xivo_dao.alchemy.stats_conf_queue import StatsConfQueue
 from xivo_dao.alchemy.stats_conf_xivouser import StatsConfXivoUser
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
 from xivo_dao.alchemy.user import User
-from xivo_dao.alchemy.user_contact import UserContact
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.alchemy.userfeatures import UserFeatures
