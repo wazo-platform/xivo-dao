@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (C) 2014-2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,3 +28,7 @@ from xivo_dao.alchemy.voicemail import Voicemail
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
 from xivo_dao.alchemy.outcall import Outcall
 from xivo_dao.alchemy.outcall import OutcallTrunk
+from xivo_dao.alchemy.usersip import UserSIP
+from xivo_dao.alchemy.useriax import UserIAX
+from xivo_dao.alchemy.sccpline import SCCPLine
+from xivo_dao.alchemy.usercustom import UserCustom

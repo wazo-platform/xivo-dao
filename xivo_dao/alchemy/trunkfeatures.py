@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2012-2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,15 +18,12 @@
 
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint, Index
 from sqlalchemy.types import Integer, Text, String
 
 from xivo_dao.helpers.db_manager import Base
 from xivo_dao.alchemy import enum
-from xivo_dao.alchemy.usersip import UserSIP
-from xivo_dao.alchemy.useriax import UserIAX
-from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.alchemy.outcalltrunk import OutcallTrunk
 
 
@@ -47,29 +45,29 @@ class TrunkFeatures(Base):
     description = Column(Text)
     context = Column(String(39))
 
-    endpoint_sip = relationship(UserSIP,
+    endpoint_sip = relationship('UserSIP',
                                 primaryjoin="""and_(
                                     TrunkFeatures.protocol == 'sip',
                                     TrunkFeatures.protocolid == UserSIP.id
                                 )""",
-                                foreign_keys=[protocolid],
-                                backref=backref('trunk', uselist=False))
+                                foreign_keys='TrunkFeatures.protocolid',
+                                back_populates='trunk')
 
-    endpoint_iax = relationship(UserIAX,
+    endpoint_iax = relationship('UserIAX',
                                 primaryjoin="""and_(
                                     TrunkFeatures.protocol == 'iax',
                                     TrunkFeatures.protocolid == UserIAX.id
                                 )""",
-                                foreign_keys=[protocolid],
-                                backref=backref('trunk_rel', uselist=False))
+                                foreign_keys='TrunkFeatures.protocolid',
+                                back_populates='trunk_rel')
 
-    endpoint_custom = relationship(UserCustom,
+    endpoint_custom = relationship('UserCustom',
                                    primaryjoin="""and_(
                                        TrunkFeatures.protocol == 'custom',
                                        TrunkFeatures.protocolid == UserCustom.id
                                    )""",
-                                   foreign_keys=[protocolid],
-                                   backref=backref('trunk', uselist=False))
+                                   foreign_keys='TrunkFeatures.protocolid',
+                                   back_populates='trunk')
 
     outcall_trunks = relationship('OutcallTrunk',
                                   cascade='all, delete-orphan',

@@ -22,7 +22,7 @@ import re
 
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.sql import cast, func
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship
 from sqlalchemy.types import Integer, String, Text
 from sqlalchemy.schema import Column, UniqueConstraint, PrimaryKeyConstraint, Index
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -30,9 +30,6 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from xivo_dao.helpers.exception import InputError
 from xivo_dao.helpers.db_manager import Base
 from xivo_dao.alchemy import enum
-from xivo_dao.alchemy.sccpline import SCCPLine
-from xivo_dao.alchemy.usersip import UserSIP
-from xivo_dao.alchemy.usercustom import UserCustom
 
 
 caller_id_regex = re.compile(r'''
@@ -77,29 +74,29 @@ class LineFeatures(Base):
     commented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text)
 
-    endpoint_sip = relationship(UserSIP,
+    endpoint_sip = relationship('UserSIP',
                                 primaryjoin="""and_(
                                     LineFeatures.protocol == 'sip',
                                     LineFeatures.protocolid == UserSIP.id
                                 )""",
-                                foreign_keys=[protocolid],
-                                backref=backref('line', uselist=False))
+                                foreign_keys='LineFeatures.protocolid',
+                                back_populates='line')
 
-    endpoint_sccp = relationship(SCCPLine,
+    endpoint_sccp = relationship('SCCPLine',
                                  primaryjoin="""and_(
-                                 LineFeatures.protocol == 'sccp',
-                                 LineFeatures.protocolid == SCCPLine.id
+                                     LineFeatures.protocol == 'sccp',
+                                     LineFeatures.protocolid == SCCPLine.id
                                  )""",
-                                 foreign_keys=[protocolid],
-                                 backref=backref('line', uselist=False))
+                                 foreign_keys='LineFeatures.protocolid',
+                                 back_populates='line')
 
-    endpoint_custom = relationship(UserCustom,
+    endpoint_custom = relationship('UserCustom',
                                    primaryjoin="""and_(
-                                   LineFeatures.protocol == 'custom',
-                                   LineFeatures.protocolid == UserCustom.id
+                                       LineFeatures.protocol == 'custom',
+                                       LineFeatures.protocolid == UserCustom.id
                                    )""",
-                                   foreign_keys=[protocolid],
-                                   backref=backref('line', uselist=False))
+                                   foreign_keys='LineFeatures.protocolid',
+                                   back_populates='line')
 
     line_extensions = relationship('LineExtension',
                                    order_by='desc(LineExtension.main_extension)',

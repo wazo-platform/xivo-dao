@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2012-2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,6 +18,7 @@
 
 from __future__ import unicode_literals
 
+from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint
 from sqlalchemy.types import Integer, String, Text
 
@@ -41,6 +43,15 @@ class SCCPLine(Base):
     allow = Column(Text)
     protocol = Column(enum.trunk_protocol, nullable=False, server_default='sccp')
     commented = Column(Integer, nullable=False, server_default='0')
+
+    line = relationship('LineFeatures',
+                        primaryjoin="""and_(
+                            LineFeatures.protocol == 'sccp',
+                            LineFeatures.protocolid == SCCPLine.id
+                        )""",
+                        foreign_keys='LineFeatures.protocolid',
+                        uselist=False,
+                        back_populates='endpoint_sccp')
 
     @property
     def options(self):
