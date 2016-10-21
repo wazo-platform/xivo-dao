@@ -578,3 +578,11 @@ class UserFeatures(Base):
             self.rightcallcode = None
         else:
             self.rightcallcode = value
+
+    @property
+    def forwards(self):
+        return self
+
+    @property
+    def services(self):
+        return self
