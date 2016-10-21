@@ -20,7 +20,7 @@ import uuid
 
 from contextlib import contextmanager
 from hamcrest import assert_that, contains, equal_to, has_entries, \
-    contains_inanyorder, has_length, none, has_properties
+    contains_inanyorder, has_length, none, has_properties, empty
 
 from mock import patch
 from xivo_dao import asterisk_conf_dao
@@ -610,6 +610,11 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         extensions = asterisk_conf_dao.find_exten_settings('default')
 
         assert_that(extensions, contains_inanyorder(*expected_result))
+
+    def test_find_exten_settings_when_not_associated(self):
+        self.add_extension(context='default', typeval='0')
+        extensions = asterisk_conf_dao.find_exten_settings('default')
+        assert_that(extensions, empty())
 
     def test_find_context_settings(self):
         context1 = self.add_context()
