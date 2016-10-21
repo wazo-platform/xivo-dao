@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2013-2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint, \
     Index
 from sqlalchemy.types import Integer, String, Text, Enum
@@ -108,6 +110,15 @@ class UserIAX(Base):
                       nullable=False)
     commented = Column(Integer, nullable=False, server_default='0')
     requirecalltoken = Column(String(4), nullable=False, server_default='no')
+
+    trunk_rel = relationship('TrunkFeatures',
+                             primaryjoin="""and_(
+                                 TrunkFeatures.protocol == 'iax',
+                                 TrunkFeatures.protocolid == UserIAX.id
+                             )""",
+                             uselist=False,
+                             foreign_keys='TrunkFeatures.protocolid',
+                             back_populates='endpoint_iax')
 
     def endpoint_protocol(self):
         return 'iax'

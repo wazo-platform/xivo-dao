@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2012-2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,6 +24,7 @@ from xivo_dao.helpers.db_manager import Base
 from xivo_dao.helpers import errors
 from xivo_dao.helpers.asterisk import convert_ast_true_to_int,\
     convert_int_to_ast_true
+from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column
 from sqlalchemy.schema import PrimaryKeyConstraint
 from sqlalchemy.schema import UniqueConstraint
@@ -192,6 +194,24 @@ class UserSIP(Base):
             directmedia.in_(
                 ['no', 'yes', 'nonat', 'update', 'update,nonat', 'outgoing'])),
     )
+
+    line = relationship('LineFeatures',
+                        primaryjoin="""and_(
+                            LineFeatures.protocol == 'sip',
+                            LineFeatures.protocolid == UserSIP.id
+                        )""",
+                        foreign_keys='LineFeatures.protocolid',
+                        uselist=False,
+                        back_populates='endpoint_sip')
+
+    trunk = relationship('TrunkFeatures',
+                         primaryjoin="""and_(
+                            TrunkFeatures.protocol == 'sip',
+                            TrunkFeatures.protocolid == UserSIP.id
+                         )""",
+                         uselist=False,
+                         foreign_keys='TrunkFeatures.protocolid',
+                         back_populates='endpoint_sip')
 
     @property
     def options(self):

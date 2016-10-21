@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2012-2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from sqlalchemy import sql
+from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint, \
     Index
 from sqlalchemy.types import Integer, String, Enum, Boolean
@@ -47,6 +49,24 @@ class UserCustom(Base):
                            name='usercustom_category',
                            metadata=Base.metadata),
                       nullable=False)
+
+    line = relationship('LineFeatures',
+                        primaryjoin="""and_(
+                            LineFeatures.protocol == 'custom',
+                            LineFeatures.protocolid == UserCustom.id
+                        )""",
+                        foreign_keys='LineFeatures.protocolid',
+                        uselist=False,
+                        back_populates='endpoint_custom')
+
+    trunk = relationship('TrunkFeatures',
+                         primaryjoin="""and_(
+                             TrunkFeatures.protocol == 'custom',
+                             TrunkFeatures.protocolid == UserCustom.id
+                         )""",
+                         uselist=False,
+                         foreign_keys='TrunkFeatures.protocolid',
+                         back_populates='endpoint_custom')
 
     @hybrid_property
     def enabled(self):
