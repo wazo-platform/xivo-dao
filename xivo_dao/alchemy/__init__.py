@@ -30,5 +30,5 @@ from xivo_dao.alchemy.outcall import Outcall
 from xivo_dao.alchemy.outcall import OutcallTrunk
 from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.useriax import UserIAX
-from xivo_dao.alchemy.usersccp import UserSCCP
+from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.usercustom import UserCustom
