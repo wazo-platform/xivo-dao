@@ -59,8 +59,7 @@ config = SearchConfig(table=UserFeatures,
                               'preprocess_subroutine',
                               'outgoing_caller_id',
                               'exten',
-                              'provisioning_code',
-                              'enabled'],
+                              'provisioning_code'],
                       default_sort='lastname')
 
 
