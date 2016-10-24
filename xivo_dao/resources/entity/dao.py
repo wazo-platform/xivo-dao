@@ -27,8 +27,8 @@ def search(session, **parameters):
 
 
 @daosession
-def get(session, call_permission_id):
-    return EntityPersistor(session, entity_search).get_by({'id': call_permission_id})
+def get(session, entity_id):
+    return EntityPersistor(session, entity_search).get_by({'id': entity_id})
 
 
 @daosession
@@ -37,8 +37,8 @@ def get_by(session, **criteria):
 
 
 @daosession
-def find(session, call_permission_id):
-    return EntityPersistor(session, entity_search).find_by({'id': call_permission_id})
+def find(session, entity_id):
+    return EntityPersistor(session, entity_search).find_by({'id': entity_id})
 
 
 @daosession
