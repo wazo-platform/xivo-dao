@@ -37,7 +37,7 @@ class Dialaction(Base):
         Index('dialaction__idx__action_actionarg1', 'action', 'actionarg1'),
     )
 
-    event = Column(enum.dialaction_event)
+    event = Column(String(40))
     category = Column(enum.dialaction_category)
     categoryval = Column(IntAsString(128), server_default='')
     action = Column(enum.dialaction_action, nullable=False)
