@@ -68,6 +68,7 @@ class IVRPersistor(CriteriaBuilderMixin):
         self.session.flush()
 
     def _delete_associations(self, ivr):
+        # "unlink" dialactions that points on this IVR
         (self.session.query(Dialaction)
          .filter(Dialaction.action == 'ivr')
          .filter(Dialaction.actionarg1 == str(ivr.id))
