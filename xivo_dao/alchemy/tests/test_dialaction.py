@@ -27,11 +27,17 @@ class TestDialaction(unittest.TestCase):
     def test_gosub_args(self):
         dialaction = Dialaction(action='extension',
                                 actionarg1='21',
-                                actionarg2='foobar')
+                                actionarg2='foobar',
+                                linked=1)
 
         assert_that(dialaction.gosub_args, equal_to('extension,21,foobar'))
 
     def test_gosub_args_with_none(self):
-        dialaction = Dialaction(action='none')
+        dialaction = Dialaction(action='none', linked=1)
 
         assert_that(dialaction.gosub_args, equal_to('none,,'))
+
+    def test_gosub_args_with_unlinked_dialaction(self):
+        dialaction = Dialaction(action='user', actionarg1='1', linked=0)
+
+        assert_that(dialaction.gosub_args, equal_to('none'))

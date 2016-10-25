@@ -97,4 +97,6 @@ class Dialaction(Base):
 
     @property
     def gosub_args(self):
+        if not self.linked:
+            return 'none'
         return ','.join(item or '' for item in (self.action, self.actionarg1, self.actionarg2))
