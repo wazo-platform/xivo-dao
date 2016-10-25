@@ -50,6 +50,8 @@ from xivo_dao.alchemy.func_key_type import FuncKeyType
 from xivo_dao.alchemy.groupfeatures import GroupFeatures
 from xivo_dao.alchemy.incall import Incall
 from xivo_dao.alchemy.infos import Infos
+from xivo_dao.alchemy.ivr import IVR
+from xivo_dao.alchemy.ivr_choice import IVRChoice
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.line_extension import LineExtension
 from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
@@ -427,6 +429,19 @@ class DAOTestCase(unittest.TestCase):
         self.add_me(extension)
         return extension
 
+    def add_ivr(self, **kwargs):
+        kwargs.setdefault('name', self._random_name())
+        kwargs.setdefault('menu_sound', 'silence')
+        ivr = IVR(**kwargs)
+        self.add_me(ivr)
+        return ivr
+
+    def add_ivr_choice(self, **kwargs):
+        kwargs.setdefault('exten', '42')
+        ivr_choice = IVRChoice(**kwargs)
+        self.add_me(ivr_choice)
+        return ivr_choice
+
     def add_incall(self, **kwargs):
         default_destination = Dialaction(action='none')
         kwargs.setdefault('destination', default_destination)
@@ -606,6 +621,10 @@ class DAOTestCase(unittest.TestCase):
         return dialpattern
 
     def add_dialaction(self, **kwargs):
+        kwargs.setdefault('event', 'never mind')
+        kwargs.setdefault('category', 'incall')
+        kwargs.setdefault('categoryval', '1')
+        kwargs.setdefault('action', 'none')
         dialaction = Dialaction(**kwargs)
         self.add_me(dialaction)
         return dialaction
