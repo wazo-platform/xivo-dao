@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2012-2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -93,3 +94,7 @@ class Dialaction(Base):
     @subtype.setter
     def subtype(self, subtype):
         self.action = '{}:{}'.format(self.type, subtype)
+
+    @property
+    def gosub_args(self):
+        return ','.join(item or '' for item in (self.action, self.actionarg1, self.actionarg2))
