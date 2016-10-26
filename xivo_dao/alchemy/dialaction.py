@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2012-2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -37,7 +38,7 @@ class Dialaction(Base):
         Index('dialaction__idx__action_actionarg1', 'action', 'actionarg1'),
     )
 
-    event = Column(enum.dialaction_event)
+    event = Column(String(40))
     category = Column(enum.dialaction_category)
     categoryval = Column(IntAsString(128), server_default='')
     action = Column(enum.dialaction_action, nullable=False)
@@ -93,3 +94,9 @@ class Dialaction(Base):
     @subtype.setter
     def subtype(self, subtype):
         self.action = '{}:{}'.format(self.type, subtype)
+
+    @property
+    def gosub_args(self):
+        if not self.linked:
+            return 'none'
+        return ','.join(item or '' for item in (self.action, self.actionarg1, self.actionarg2))

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2014-2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -32,7 +33,6 @@ dialaction_action = Enum(
     'voicemail',
     'trunk',
     'schedule',
-    'voicemenu',
     'extension',
     'outcall',
     'application:callbackdisa',
@@ -43,6 +43,7 @@ dialaction_action = Enum(
     'application:password',
     'sound',
     'custom',
+    'ivr',
     name='dialaction_action',
     metadata=Base.metadata
 )
@@ -55,21 +56,9 @@ dialaction_category = Enum(
     'schedule',
     'user',
     'outcall',
+    'ivr',
+    'ivr_choice',
     name='dialaction_category',
-    metadata=Base.metadata
-)
-
-dialaction_event = Enum(
-    'answer',
-    'noanswer',
-    'congestion',
-    'busy',
-    'chanunavail',
-    'inschedule',
-    'outschedule',
-    'qwaittime',
-    'qwaitratio',
-    name='dialaction_event',
     metadata=Base.metadata
 )
 

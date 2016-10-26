@@ -91,6 +91,7 @@ invalid_destination_type = FormattedError(InputError, "FuncKey destination type 
 param_not_found = FormattedError(InputError, "field '{}': {} was not found")
 invalid_query_parameter = FormattedError(InputError, "parameter '{}': '{}' is not valid")
 invalid_view = FormattedError(InputError, "view '{}' does not exist")
+ivr_exten_used = FormattedError(InputError, "exten '{}' used in more than one choice")
 
 not_found = FormattedError(NotFoundError, "{} was not found")
 
