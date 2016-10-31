@@ -17,29 +17,10 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 from sqlalchemy import or_
-from sqlalchemy.orm.attributes import get_history
 
 from xivo_dao.alchemy.context import Context
 from xivo_dao.alchemy.contextinclude import ContextInclude
 from xivo_dao.alchemy.contextmember import ContextMember
-from xivo_dao.alchemy.contextnumbers import ContextNumbers
-
-from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
-from xivo_dao.alchemy.agentfeatures import AgentFeatures
-from xivo_dao.alchemy.extension import Extension
-from xivo_dao.alchemy.groupfeatures import GroupFeatures
-from xivo_dao.alchemy.incall import Incall
-from xivo_dao.alchemy.linefeatures import LineFeatures
-from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
-from xivo_dao.alchemy.outcall import Outcall
-from xivo_dao.alchemy.queue import Queue
-from xivo_dao.alchemy.queuefeatures import QueueFeatures
-from xivo_dao.alchemy.sccpline import SCCPLine
-from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
-from xivo_dao.alchemy.usercustom import UserCustom
-from xivo_dao.alchemy.useriax import UserIAX
-from xivo_dao.alchemy.usersip import UserSIP
-from xivo_dao.alchemy.voicemail import Voicemail
 
 from xivo_dao.helpers import errors
 from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
@@ -81,46 +62,8 @@ class ContextPersistor(CriteriaBuilderMixin):
         return context
 
     def edit(self, context):
-        self._edit_associations(context)
         self.session.add(context)
         self.session.flush()
-
-    def _edit_associations(self, context):
-        name_history = get_history(context, 'name')
-        if name_history.has_changes():
-            old_name = name_history[2][0]
-
-            tables = [ContextMember,
-                      ContextNumbers,
-                      AgentFeatures,
-                      GroupFeatures,
-                      LineFeatures,
-                      MeetmeFeatures,
-                      QueueFeatures,
-                      TrunkFeatures,
-                      Extension,
-                      Incall,
-                      Outcall,
-                      Queue,
-                      SCCPLine,
-                      UserCustom,
-                      UserSIP,
-                      UserIAX,
-                      Voicemail,
-                      AgentLoginStatus]
-
-            for table in tables:
-                (self.session.query(table)
-                 .filter(getattr(table, 'context') == old_name)
-                 .update({'context': context.name}))
-
-            (self.session.query(ContextInclude)
-             .filter(ContextInclude.context == old_name)
-             .update({'context': context.name}))
-
-            (self.session.query(ContextInclude)
-             .filter(ContextInclude.include == old_name)
-             .update({'include': context.name}))
 
     def delete(self, context):
         self._delete_associations(context)

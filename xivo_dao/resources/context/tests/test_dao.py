@@ -29,22 +29,6 @@ from xivo_dao.alchemy.context import Context
 from xivo_dao.alchemy.contextinclude import ContextInclude
 from xivo_dao.alchemy.contextmember import ContextMember
 from xivo_dao.alchemy.contextnumbers import ContextNumbers
-from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
-from xivo_dao.alchemy.agentfeatures import AgentFeatures
-from xivo_dao.alchemy.extension import Extension
-from xivo_dao.alchemy.groupfeatures import GroupFeatures
-from xivo_dao.alchemy.incall import Incall
-from xivo_dao.alchemy.linefeatures import LineFeatures
-from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
-from xivo_dao.alchemy.outcall import Outcall
-from xivo_dao.alchemy.queue import Queue
-from xivo_dao.alchemy.queuefeatures import QueueFeatures
-from xivo_dao.alchemy.sccpline import SCCPLine
-from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
-from xivo_dao.alchemy.usercustom import UserCustom
-from xivo_dao.alchemy.useriax import UserIAX
-from xivo_dao.alchemy.usersip import UserSIP
-from xivo_dao.alchemy.voicemail import Voicemail
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.resources.context import dao as context_dao
 from xivo_dao.helpers.exception import NotFoundError, InputError
@@ -389,62 +373,6 @@ class TestEdit(DAOTestCase):
                                         meetme_ranges=empty(),
                                         incall_ranges=empty(),
                                         description=none()))
-
-    def test_edit_name(self):
-        context = context_dao.create(Context(name='MyContext',
-                                             user_ranges=[ContextNumbers(start='1', end='2')]))
-        context2 = self.add_context()
-        self.add_context_include(context=context.name, include=context2.name)
-        self.add_context_include(context=context2.name, include=context.name)
-        self.add_context_member(context=context.name)
-        self.add_agent(context=context.name)
-        self.add_group(context=context.name)
-        self.add_line(context=context.name)
-        self.add_meetmefeatures(context=context.name)
-        self.add_queuefeatures(context=context.name)
-        self.add_trunk(context=context.name)
-        self.add_extension(context=context.name)
-        self.add_incall(context=context.name)
-        self.add_outcall(context=context.name)
-        self.add_queue(context=context.name)
-        self.add_sccpline(context=context.name)
-        self.add_usercustom(context=context.name)
-        self.add_usersip(context=context.name)
-        self.add_useriax(context=context.name)
-        self.add_voicemail(context=context.name)
-        self.add_agent_login_status(context=context.name)
-
-        context.name = 'OtherContext'
-        context_dao.edit(context)
-
-        tables = [ContextMember,
-                  ContextNumbers,
-                  AgentFeatures,
-                  GroupFeatures,
-                  LineFeatures,
-                  MeetmeFeatures,
-                  QueueFeatures,
-                  TrunkFeatures,
-                  Extension,
-                  Incall,
-                  Outcall,
-                  Queue,
-                  SCCPLine,
-                  UserCustom,
-                  UserSIP,
-                  UserIAX,
-                  Voicemail,
-                  AgentLoginStatus]
-
-        for table in tables:
-            row = self.session.query(table).first()
-            assert_that(row, has_properties(context='OtherContext'))
-
-        row = self.session.query(ContextInclude).filter(ContextInclude.context == context.name).first()
-        assert_that(row, has_properties(context='OtherContext'))
-
-        row = self.session.query(ContextInclude).filter(ContextInclude.context == context2.name).first()
-        assert_that(row, has_properties(include='OtherContext'))
 
 
 class TestDelete(DAOTestCase):
