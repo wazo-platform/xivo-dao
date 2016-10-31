@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2012-2014 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,10 +25,15 @@ from xivo_dao.helpers.db_manager import Base
 class Context(Base):
 
     __tablename__ = 'context'
+    __table_args__ = (
+        PrimaryKeyConstraint('id'),
+        UniqueConstraint('name'),
+    )
 
-    name = Column(String(39), primary_key=True)
-    displayname = Column(String(128), nullable=False, server_default='')
+    id = Column(Integer)
+    name = Column(String(39), nullable=False)
+    displayname = Column(String(128))
     entity = Column(String(64))
     contexttype = Column(String(40), nullable=False, server_default='internal')
     commented = Column(Integer, nullable=False, server_default='0')
-    description = Column(Text, nullable=False)
+    description = Column(Text)
