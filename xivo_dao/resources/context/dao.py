@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2013-2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,88 +16,52 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.alchemy.context import Context as ContextSchema
-from xivo_dao.alchemy.entity import Entity as EntitySchema
-from xivo_dao.alchemy.extension import Extension as ExtensionSchema
-from xivo_dao.alchemy.contextnumbers import ContextNumbers as ContextNumberSchema
-from xivo_dao.resources.context.converters import context_converter
-from xivo_dao.resources.context.converters import range_converter
-from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.helpers import errors
+
+from .persistor import ContextPersistor
+from .search import context_search
 
 
 @daosession
-def find(session, context_name):
-    row = (session.query(ContextSchema)
-           .filter(ContextSchema.name == context_name)
-           .first())
-
-    return context_converter.to_model(row) if row else None
-
-
-def get(context_name):
-    context = find(context_name)
-
-    if not context:
-        raise errors.not_found('Context', name=context_name)
-
-    return context
+def search(session, **parameters):
+    return ContextPersistor(session, context_search).search(parameters)
 
 
 @daosession
-def find_by_extension_id(session, extension_id):
-    context_row = (session.query(ContextSchema)
-                   .join(ExtensionSchema, ExtensionSchema.context == ContextSchema.name)
-                   .filter(ExtensionSchema.id == extension_id)
-                   .first())
-
-    if not context_row:
-        return None
-
-    return context_converter.to_model(context_row)
+def get(session, context_id):
+    return ContextPersistor(session, context_search).get_by({'id': context_id})
 
 
-def get_by_extension_id(extension_id):
-    context = find_by_extension_id(extension_id)
+@daosession
+def get_by(session, **criteria):
+    return ContextPersistor(session, context_search).get_by(criteria)
 
-    if not context:
-        raise errors.not_found('Context', extension_id=extension_id)
 
-    return context
+@daosession
+def find(session, context_id):
+    return ContextPersistor(session, context_search).find_by({'id': context_id})
+
+
+@daosession
+def find_by(session, **criteria):
+    return ContextPersistor(session, context_search).find_by(criteria)
+
+
+@daosession
+def find_all_by(session, **criteria):
+    return ContextPersistor(session, context_search).find_all_by(criteria)
 
 
 @daosession
 def create(session, context):
-    context_row = context_converter.to_source(context)
-    context_row.entity = session.execute(EntitySchema.query_default_name()).scalar()
-
-    with flush_session(session):
-        session.add(context_row)
-
-    return context
+    return ContextPersistor(session, context_search).create(context)
 
 
 @daosession
-def find_all_context_ranges(session, context_name):
-    rows = (session.query(
-        ContextNumberSchema.numberbeg,
-        ContextNumberSchema.numberend,
-        ContextNumberSchema.didlength)
-        .filter(ContextNumberSchema.context == context_name)
-        .all())
-
-    return [range_converter.to_model(row) for row in rows]
+def edit(session, context):
+    ContextPersistor(session, context_search).edit(context)
 
 
 @daosession
-def find_all_specific_context_ranges(session, context_name, context_range):
-    rows = (session.query(
-        ContextNumberSchema.numberbeg,
-        ContextNumberSchema.numberend,
-        ContextNumberSchema.didlength)
-        .filter(ContextNumberSchema.context == context_name)
-        .filter(ContextNumberSchema.type == context_range)
-        .all())
-
-    return [range_converter.to_model(row) for row in rows]
+def delete(session, context):
+    ContextPersistor(session, context_search).delete(context)
