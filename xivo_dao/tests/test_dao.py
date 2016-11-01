@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2013-2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,12 +28,14 @@ import time
 import string
 
 from xivo_dao.alchemy.accessfeatures import AccessFeatures
+from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.callfilter import Callfilter
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from xivo_dao.alchemy.cel import CEL as CELSchema
 from xivo_dao.alchemy.context import Context
 from xivo_dao.alchemy.contextinclude import ContextInclude
+from xivo_dao.alchemy.contextmember import ContextMember
 from xivo_dao.alchemy.contextnumbers import ContextNumbers
 from xivo_dao.alchemy.ctidirectories import CtiDirectories
 from xivo_dao.alchemy.cti_contexts import CtiContexts
@@ -395,6 +398,14 @@ class DAOTestCase(unittest.TestCase):
         self.add_me(context_number)
         return context_number
 
+    def add_context_member(self, **kwargs):
+        kwargs.setdefault('type', 'user')
+        kwargs.setdefault('varname', 'context')
+
+        context_member = ContextMember(**kwargs)
+        self.add_me(context_member)
+        return context_member
+
     def add_cti_context(self, **kwargs):
         kwargs.setdefault('name', '')
         kwargs.setdefault('directories', '')
@@ -498,6 +509,17 @@ class DAOTestCase(unittest.TestCase):
         agent = AgentFeatures(**kwargs)
         self.add_me(agent)
         return agent
+
+    def add_agent_login_status(self, **kwargs):
+        kwargs.setdefault('agent_id', self._generate_int())
+        kwargs.setdefault('agent_number', '1234')
+        kwargs.setdefault('extension', ''.join(random.choice('123456789') for _ in range(6)))
+        kwargs.setdefault('context', self._random_name())
+        kwargs.setdefault('interface', self._random_name())
+        kwargs.setdefault('state_interface', '')
+        agent_login_status = AgentLoginStatus(**kwargs)
+        self.add_me(agent_login_status)
+        return agent_login_status
 
     def add_group(self, **kwargs):
         kwargs.setdefault('id', self._generate_int())

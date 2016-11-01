@@ -621,18 +621,22 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         context2 = self.add_context()
 
         expected_result = [
-            {'displayname': context1.displayname,
-             'description': context1.description,
-             'entity': context1.entity,
-             'contexttype': context1.contexttype,
-             'commented': context1.commented,
-             'name': context1.name},
-            {'displayname': context2.displayname,
-             'description': context2.description,
-             'entity': context2.entity,
-             'contexttype': context2.contexttype,
-             'commented': context2.commented,
-             'name': context2.name},
+            has_entries({
+                'displayname': context1.displayname,
+                'description': context1.description,
+                'entity': context1.entity,
+                'contexttype': context1.contexttype,
+                'commented': context1.commented,
+                'name': context1.name
+            }),
+            has_entries({
+                'displayname': context2.displayname,
+                'description': context2.description,
+                'entity': context2.entity,
+                'contexttype': context2.contexttype,
+                'commented': context2.commented,
+                'name': context2.name
+            }),
         ]
 
         context = asterisk_conf_dao.find_context_settings()

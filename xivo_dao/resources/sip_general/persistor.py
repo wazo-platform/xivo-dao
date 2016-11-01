@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 
 # Copyright (C) 2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,6 +24,10 @@ class SIPGeneralPersistor(object):
 
     def __init__(self, session):
         self.session = session
+
+    def find_by(self, **kwargs):
+        query = self.session.query(StaticSIP).filter_by(**kwargs)
+        return query.first()
 
     def find_all(self):
         query = (self.session.query(StaticSIP)
