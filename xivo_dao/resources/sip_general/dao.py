@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,6 +19,11 @@
 from xivo_dao.helpers.db_manager import daosession
 
 from .persistor import SIPGeneralPersistor
+
+
+@daosession
+def find_by(session, **kwargs):
+    return SIPGeneralPersistor(session).find_by(**kwargs)
 
 
 @daosession

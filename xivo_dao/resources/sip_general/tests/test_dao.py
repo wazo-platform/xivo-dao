@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,11 +20,32 @@ from __future__ import unicode_literals
 
 from hamcrest import (assert_that,
                       empty,
-                      equal_to)
+                      equal_to,
+                      none)
 
 from xivo_dao.alchemy.staticsip import StaticSIP
 from xivo_dao.resources.sip_general import dao as sip_general_dao
 from xivo_dao.tests.test_dao import DAOTestCase
+
+
+class TestFindBy(DAOTestCase):
+
+    def test_find_by_no_sip_general(self):
+        result = sip_general_dao.find_by()
+
+        assert_that(result, none())
+
+    def test_find_by(self):
+        self.add_sip_general_settings(var_metric=3,
+                                      var_name='setting1',
+                                      var_val='value1')
+        row2 = self.add_sip_general_settings(var_metric=2,
+                                             var_name='setting2',
+                                             var_val='value1')
+
+        sip_general_option = sip_general_dao.find_by(var_name='setting2')
+
+        assert_that(sip_general_option, equal_to(row2))
 
 
 class TestFindAll(DAOTestCase):
