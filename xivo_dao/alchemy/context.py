@@ -135,14 +135,14 @@ class Context(Base):
         self.context_numbers_queue = queue_ranges
 
     @hybrid_property
-    def meetme_ranges(self):
+    def conference_room_ranges(self):
         return self.context_numbers_meetme
 
-    @meetme_ranges.setter
-    def meetme_ranges(self, meetme_ranges):
-        for meetme_range in meetme_ranges:
-            meetme_range.type = 'meetme'
-        self.context_numbers_meetme = meetme_ranges
+    @conference_room_ranges.setter
+    def conference_room_ranges(self, conference_room_ranges):
+        for conference_room_range in conference_room_ranges:
+            conference_room_range.type = 'meetme'
+        self.context_numbers_meetme = conference_room_ranges
 
     @hybrid_property
     def incall_ranges(self):

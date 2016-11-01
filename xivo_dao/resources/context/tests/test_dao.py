@@ -256,7 +256,7 @@ class TestCreate(DAOTestCase):
                                                     user_ranges=empty(),
                                                     group_ranges=empty(),
                                                     queue_ranges=empty(),
-                                                    meetme_ranges=empty(),
+                                                    conference_room_ranges=empty(),
                                                     incall_ranges=empty()))
 
     def test_create_with_all_fields(self):
@@ -267,7 +267,7 @@ class TestCreate(DAOTestCase):
                           user_ranges=[ContextNumbers(start='1000', end='1999')],
                           group_ranges=[ContextNumbers(start='2000', end='2999')],
                           queue_ranges=[ContextNumbers(start='3000', end='3999')],
-                          meetme_ranges=[ContextNumbers(start='4000', end='4999')],
+                          conference_room_ranges=[ContextNumbers(start='4000', end='4999')],
                           incall_ranges=[ContextNumbers(start='1000', end='4999', did_length='2')],
                           description='context description',
                           enabled=False)
@@ -286,7 +286,7 @@ class TestCreate(DAOTestCase):
             user_ranges=contains(has_properties(start='1000', end='1999')),
             group_ranges=contains(has_properties(start='2000', end='2999')),
             queue_ranges=contains(has_properties(start='3000', end='3999')),
-            meetme_ranges=contains(has_properties(start='4000', end='4999')),
+            conference_room_ranges=contains(has_properties(start='4000', end='4999')),
             incall_ranges=contains(has_properties(start='1000', end='4999', did_length='2')),
             description='context description',
             enabled=False)
@@ -303,7 +303,7 @@ class TestEdit(DAOTestCase):
                                              user_ranges=[ContextNumbers(start='1000', end='1999')],
                                              group_ranges=[ContextNumbers(start='2000', end='2999')],
                                              queue_ranges=[ContextNumbers(start='3000', end='3999')],
-                                             meetme_ranges=[ContextNumbers(start='4000', end='4999')],
+                                             conference_room_ranges=[ContextNumbers(start='4000', end='4999')],
                                              incall_ranges=[ContextNumbers(start='1000', end='4999', did_length='2')],
                                              description='context description',
                                              enabled=False))
@@ -316,7 +316,7 @@ class TestEdit(DAOTestCase):
         context.user_ranges = [ContextNumbers(start='4000', end='4999')]
         context.group_ranges = [ContextNumbers(start='3000', end='3999')]
         context.queue_ranges = [ContextNumbers(start='2000', end='2999')]
-        context.meetme_ranges = [ContextNumbers(start='1000', end='1999')]
+        context.conference_room_ranges = [ContextNumbers(start='1000', end='1999')]
         context.incall_ranges = [ContextNumbers(start='4000', end='6999', did_length='4')]
         context.description = 'other context description'
         context.enabled = True
@@ -334,7 +334,7 @@ class TestEdit(DAOTestCase):
             user_ranges=contains(has_properties(start='4000', end='4999')),
             group_ranges=contains(has_properties(start='3000', end='3999')),
             queue_ranges=contains(has_properties(start='2000', end='2999')),
-            meetme_ranges=contains(has_properties(start='1000', end='1999')),
+            conference_room_ranges=contains(has_properties(start='1000', end='1999')),
             incall_ranges=contains(has_properties(start='4000', end='6999', did_length='4')),
             description='other context description',
             enabled=True)
@@ -347,7 +347,7 @@ class TestEdit(DAOTestCase):
                                              user_ranges=[ContextNumbers(start='1000', end='1999')],
                                              group_ranges=[ContextNumbers(start='2000', end='2999')],
                                              queue_ranges=[ContextNumbers(start='3000', end='3999')],
-                                             meetme_ranges=[ContextNumbers(start='4000', end='4999')],
+                                             conference_room_ranges=[ContextNumbers(start='4000', end='4999')],
                                              incall_ranges=[ContextNumbers(start='1000', end='4999')],
                                              description='context description'))
 
@@ -357,7 +357,7 @@ class TestEdit(DAOTestCase):
         context.user_ranges = []
         context.group_ranges = []
         context.queue_ranges = []
-        context.meetme_ranges = []
+        context.conference_room_ranges = []
         context.incall_ranges = []
         context.description = None
 
@@ -370,7 +370,7 @@ class TestEdit(DAOTestCase):
                                         user_ranges=empty(),
                                         group_ranges=empty(),
                                         queue_ranges=empty(),
-                                        meetme_ranges=empty(),
+                                        conference_room_ranges=empty(),
                                         incall_ranges=empty(),
                                         description=none()))
 
