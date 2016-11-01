@@ -63,6 +63,19 @@ class TestGet(DAOTestCase):
         assert_that(context, equal_to(context_row))
 
 
+class TestGetByName(DAOTestCase):
+
+    def test_get_by_name_no_context(self):
+        self.assertRaises(NotFoundError, context_dao.get_by_name, '42')
+
+    def test_get_by_name(self):
+        context_row = self.add_context()
+
+        context = context_dao.get_by_name(context_row.name)
+
+        assert_that(context, equal_to(context_row))
+
+
 class TestFindBy(DAOTestCase):
 
     def test_given_column_does_not_exist_then_error_raised(self):

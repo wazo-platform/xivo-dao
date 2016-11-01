@@ -38,6 +38,11 @@ def get_by(session, **criteria):
 
 
 @daosession
+def get_by_name(session, context_name):
+    return ContextPersistor(session, context_search).get_by({'name': context_name})
+
+
+@daosession
 def find(session, context_id):
     return ContextPersistor(session, context_search).find_by({'id': context_id})
 
