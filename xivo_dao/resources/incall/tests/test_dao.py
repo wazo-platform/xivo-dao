@@ -430,3 +430,11 @@ class TestRelationship(DAOTestCase):
         incall = incall_dao.get(incall_row.id)
         assert_that(incall, equal_to(incall_row))
         assert_that(incall.destination.ivr, ivr_row)
+
+    def test_voicemail_relationship(self):
+        voicemail_row = self.add_voicemail()
+        incall_row = self.add_incall(destination=Dialaction(action='voicemail',
+                                                            actionarg1=str(voicemail_row.id)))
+        incall = incall_dao.get(incall_row.id)
+        assert_that(incall, equal_to(incall_row))
+        assert_that(incall.destination.voicemail, voicemail_row)

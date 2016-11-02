@@ -57,6 +57,11 @@ class Dialaction(Base):
                                            Dialaction.actionarg1 == cast(IVR.id, String))""",
                        foreign_keys='Dialaction.actionarg1')
 
+    voicemail = relationship('Voicemail',
+                             primaryjoin="""and_(Dialaction.action == 'voicemail',
+                                                 Dialaction.actionarg1 == cast(Voicemail.id, String))""",
+                             foreign_keys='Dialaction.actionarg1')
+
     incall = relationship('Incall',
                           primaryjoin="""and_(Dialaction.category == 'incall',
                                               Dialaction.categoryval == cast(Incall.id, String))""",
