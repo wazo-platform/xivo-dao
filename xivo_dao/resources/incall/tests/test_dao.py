@@ -63,15 +63,6 @@ class TestGet(DAOTestCase):
 
         assert_that(incall, equal_to(incall_row))
 
-    def test_extensions_relationship(self):
-        incall_row = self.add_incall()
-        extension_row = self.add_extension(type='incall', typeval=str(incall_row.id))
-
-        incall = incall_dao.get(incall_row.id)
-
-        assert_that(incall, equal_to(incall_row))
-        assert_that(incall.extensions, contains(extension_row))
-
 
 class TestFindBy(DAOTestCase):
 
@@ -411,3 +402,23 @@ class TestDelete(DAOTestCase):
 
         extension = self.session.query(Extension).filter(Extension.id == extension.id).first()
         assert_that(extension, has_properties(type='user', typeval='0'))
+
+
+class TestRelationship(DAOTestCase):
+
+    def test_extensions_relationship(self):
+        incall_row = self.add_incall()
+        extension_row = self.add_extension(type='incall', typeval=str(incall_row.id))
+
+        incall = incall_dao.get(incall_row.id)
+
+        assert_that(incall, equal_to(incall_row))
+        assert_that(incall.extensions, contains(extension_row))
+
+    def test_user_relationship(self):
+        user_row = self.add_user()
+        incall_row = self.add_incall(destination=Dialaction(action='user',
+                                                            actionarg1=str(user_row.id)))
+        incall = incall_dao.get(incall_row.id)
+        assert_that(incall, equal_to(incall_row))
+        assert_that(incall.destination.user, user_row)

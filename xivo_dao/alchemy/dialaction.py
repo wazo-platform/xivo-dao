@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
 from sqlalchemy.types import Integer, String
 from sqlalchemy.sql import func
@@ -42,9 +43,14 @@ class Dialaction(Base):
     category = Column(enum.dialaction_category)
     categoryval = Column(IntAsString(128), server_default='')
     action = Column(enum.dialaction_action, nullable=False)
-    actionarg1 = Column(String(255))
+    actionarg1 = Column(IntAsString(255))
     actionarg2 = Column(String(255))
     linked = Column(Integer, nullable=False, server_default='0')
+
+    user = relationship('UserFeatures',
+                        primaryjoin="""and_(Dialaction.action == 'user',
+                                            Dialaction.actionarg1 == cast(UserFeatures.id, String))""",
+                        foreign_keys='Dialaction.actionarg1')
 
     @classmethod
     def new_user_actions(cls, user):
