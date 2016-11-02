@@ -22,6 +22,7 @@ from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
 from sqlalchemy.sql import cast, not_
 from sqlalchemy.types import Boolean, Integer, String, Text
 
+from xivo_dao.alchemy.contextnumbers import ContextNumbers
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -41,35 +42,35 @@ class Context(Base):
     commented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text)
 
-    context_numbers_user = relationship('ContextNumbers',
+    context_numbers_user = relationship(ContextNumbers,
                                         primaryjoin="""and_(
                                             ContextNumbers.type == 'user',
                                             ContextNumbers.context == Context.name)""",
                                         foreign_keys='ContextNumbers.context',
                                         cascade='all, delete-orphan')
 
-    context_numbers_group = relationship('ContextNumbers',
+    context_numbers_group = relationship(ContextNumbers,
                                          primaryjoin="""and_(
                                              ContextNumbers.type == 'group',
                                              ContextNumbers.context == Context.name)""",
                                          foreign_keys='ContextNumbers.context',
                                          cascade='all, delete-orphan')
 
-    context_numbers_queue = relationship('ContextNumbers',
+    context_numbers_queue = relationship(ContextNumbers,
                                          primaryjoin="""and_(
                                              ContextNumbers.type == 'queue',
                                              ContextNumbers.context == Context.name)""",
                                          foreign_keys='ContextNumbers.context',
                                          cascade='all, delete-orphan')
 
-    context_numbers_meetme = relationship('ContextNumbers',
+    context_numbers_meetme = relationship(ContextNumbers,
                                           primaryjoin="""and_(
                                               ContextNumbers.type == 'meetme',
                                               ContextNumbers.context == Context.name)""",
                                           foreign_keys='ContextNumbers.context',
                                           cascade='all, delete-orphan')
 
-    context_numbers_incall = relationship('ContextNumbers',
+    context_numbers_incall = relationship(ContextNumbers,
                                           primaryjoin="""and_(
                                               ContextNumbers.type == 'incall',
                                               ContextNumbers.context == Context.name)""",
