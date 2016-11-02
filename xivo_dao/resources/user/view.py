@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2014-2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -45,7 +46,8 @@ class UserView(View):
                 .options(joinedload('user_lines')
                          .joinedload('line')
                          .joinedload('line_extensions')
-                         .joinedload('extension')))
+                         .joinedload('extension'))
+                .options(joinedload('voicemail')))
 
     def convert(self, model):
         return model
