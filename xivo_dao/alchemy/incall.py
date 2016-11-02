@@ -58,7 +58,8 @@ class Incall(Base):
                                                   Dialaction.categoryval == cast(Incall.id, String))""",
                               foreign_keys='Dialaction.categoryval',
                               uselist=False,
-                              cascade='all, delete-orphan')
+                              cascade='all, delete-orphan',
+                              back_populates='incall')
 
     extensions = relationship('Extension',
                               primaryjoin="""and_(Extension.type == 'incall',

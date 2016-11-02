@@ -154,13 +154,13 @@ class UserFeatures(Base):
 
     lines = association_proxy('user_lines', 'line')
 
-    incalls = relationship('Incall',
-                           secondary="""join(Dialaction, Incall,
-                                             Dialaction.categoryval == cast(Incall.id, String))""",
-                           secondaryjoin="""and_(Dialaction.category == 'incall',
-                                                 Dialaction.categoryval == cast(Incall.id, String))""",
-                           primaryjoin="""and_(Dialaction.action == 'user',
-                                               Dialaction.actionarg1 == cast(UserFeatures.id, String))""")
+    incall_dialactions = relationship('Dialaction',
+                                      primaryjoin="""and_(Dialaction.category == 'incall',
+                                           Dialaction.action == 'user',
+                                           Dialaction.actionarg1 == cast(UserFeatures.id, String))""",
+                                      foreign_keys='Dialaction.actionarg1')
+
+    incalls = association_proxy('incall_dialactions', 'incall')
 
     def extrapolate_caller_id(self, extension=None):
         default_num = extension.exten if extension else None

@@ -52,6 +52,12 @@ class Dialaction(Base):
                                             Dialaction.actionarg1 == cast(UserFeatures.id, String))""",
                         foreign_keys='Dialaction.actionarg1')
 
+    incall = relationship('Incall',
+                          primaryjoin="""and_(Dialaction.category == 'incall',
+                                              Dialaction.categoryval == cast(Incall.id, String))""",
+                          foreign_keys='Dialaction.categoryval',
+                          back_populates='dialaction')
+
     @classmethod
     def new_user_actions(cls, user):
         for event in cls.USER_EVENTS:

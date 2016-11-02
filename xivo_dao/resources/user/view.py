@@ -34,7 +34,8 @@ class UserView(View):
 
     def query(self, session):
         return (session.query(User)
-                .options(joinedload('incalls')
+                .options(joinedload('incall_dialactions')
+                         .joinedload('incall')
                          .joinedload('extensions'))
                 .options(joinedload('user_lines')
                          .joinedload('line')
