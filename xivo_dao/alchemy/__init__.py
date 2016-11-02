@@ -34,3 +34,4 @@ from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.incall import Incall
+from xivo_dao.alchemy.ivr import IVR

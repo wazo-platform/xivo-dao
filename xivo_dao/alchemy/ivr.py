@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.schema import Column, PrimaryKeyConstraint
@@ -43,14 +44,22 @@ class IVR(Base):
     description = Column(Text)
 
     dialactions = relationship(Dialaction,
-                              primaryjoin="""and_(Dialaction.category == 'ivr',
-                                                  Dialaction.categoryval == cast(IVR.id, String))""",
-                              foreign_keys='Dialaction.categoryval',
-                              collection_class=attribute_mapped_collection('event'),
-                              cascade='all, delete-orphan')
+                               primaryjoin="""and_(Dialaction.category == 'ivr',
+                                                   Dialaction.categoryval == cast(IVR.id, String))""",
+                               foreign_keys='Dialaction.categoryval',
+                               collection_class=attribute_mapped_collection('event'),
+                               cascade='all, delete-orphan')
 
     choices = relationship(IVRChoice,
                            cascade='all, delete-orphan')
+
+    incall_dialactions = relationship('Dialaction',
+                                      primaryjoin="""and_(Dialaction.category == 'incall',
+                                                          Dialaction.action == 'ivr',
+                                                          Dialaction.actionarg1 == cast(IVR.id, String))""",
+                                      foreign_keys='Dialaction.actionarg1')
+
+    incalls = association_proxy('incall_dialactions', 'incall')
 
     @property
     def invalid_destination(self):

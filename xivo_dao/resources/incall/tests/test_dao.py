@@ -422,3 +422,11 @@ class TestRelationship(DAOTestCase):
         incall = incall_dao.get(incall_row.id)
         assert_that(incall, equal_to(incall_row))
         assert_that(incall.destination.user, user_row)
+
+    def test_ivr_relationship(self):
+        ivr_row = self.add_ivr()
+        incall_row = self.add_incall(destination=Dialaction(action='ivr',
+                                                            actionarg1=str(ivr_row.id)))
+        incall = incall_dao.get(incall_row.id)
+        assert_that(incall, equal_to(incall_row))
+        assert_that(incall.destination.ivr, ivr_row)

@@ -17,6 +17,7 @@
 
 from hamcrest import (assert_that,
                       contains,
+                      contains_inanyorder,
                       empty,
                       equal_to,
                       has_items,
@@ -61,28 +62,6 @@ class TestGet(DAOTestCase):
 
         assert_that(ivr, equal_to(ivr_row))
         assert_that(ivr.choices, contains())
-
-    def test_get_dialactions_relationship(self):
-        ivr_row = self.add_ivr()
-        dialaction_row = self.add_dialaction(event='timeout', category='ivr',
-                                             categoryval=str(ivr_row.id))
-
-        ivr = ivr_dao.get(ivr_row.id)
-
-        assert_that(ivr, equal_to(ivr_row))
-        assert_that(ivr.dialactions['timeout'], equal_to(dialaction_row))
-
-    def test_get_choices_relationship(self):
-        ivr_row = self.add_ivr()
-        ivr_choice_row = self.add_ivr_choice(ivr_id=ivr_row.id)
-        dialaction_row = self.add_dialaction(category='ivr_choice',
-                                             categoryval=str(ivr_choice_row.id))
-
-        ivr = ivr_dao.get(ivr_row.id)
-
-        assert_that(ivr, equal_to(ivr_row))
-        assert_that(ivr.choices, contains(ivr_choice_row))
-        assert_that(ivr.choices[0].destination, equal_to(dialaction_row))
 
 
 class TestFindBy(DAOTestCase):
@@ -428,3 +407,38 @@ class TestDelete(DAOTestCase):
 
         dialaction = self.session.query(Dialaction).filter(Dialaction.actionarg1 == str(ivr.id)).first()
         assert_that(dialaction, has_properties(linked=0))
+
+
+class TestRelationship(DAOTestCase):
+
+    def test_dialactions_relationship(self):
+        ivr_row = self.add_ivr()
+        dialaction_row = self.add_dialaction(event='timeout', category='ivr',
+                                             categoryval=str(ivr_row.id))
+
+        ivr = ivr_dao.get(ivr_row.id)
+
+        assert_that(ivr, equal_to(ivr_row))
+        assert_that(ivr.dialactions['timeout'], equal_to(dialaction_row))
+
+    def test_choices_relationship(self):
+        ivr_row = self.add_ivr()
+        ivr_choice_row = self.add_ivr_choice(ivr_id=ivr_row.id)
+        dialaction_row = self.add_dialaction(category='ivr_choice',
+                                             categoryval=str(ivr_choice_row.id))
+
+        ivr = ivr_dao.get(ivr_row.id)
+
+        assert_that(ivr, equal_to(ivr_row))
+        assert_that(ivr.choices, contains(ivr_choice_row))
+        assert_that(ivr.choices[0].destination, equal_to(dialaction_row))
+
+    def test_incalls_relationship(self):
+        ivr_row = self.add_ivr()
+        incall1_row = self.add_incall(destination=Dialaction(action='ivr',
+                                                             actionarg1=str(ivr_row.id)))
+        incall2_row = self.add_incall(destination=Dialaction(action='ivr',
+                                                             actionarg1=str(ivr_row.id)))
+        ivr = ivr_dao.get(ivr_row.id)
+        assert_that(ivr, equal_to(ivr_row))
+        assert_that(ivr.incalls, contains_inanyorder(incall1_row, incall2_row))

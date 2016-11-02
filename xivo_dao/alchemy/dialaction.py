@@ -52,6 +52,11 @@ class Dialaction(Base):
                                             Dialaction.actionarg1 == cast(UserFeatures.id, String))""",
                         foreign_keys='Dialaction.actionarg1')
 
+    ivr = relationship('IVR',
+                       primaryjoin="""and_(Dialaction.action == 'ivr',
+                                           Dialaction.actionarg1 == cast(IVR.id, String))""",
+                       foreign_keys='Dialaction.actionarg1')
+
     incall = relationship('Incall',
                           primaryjoin="""and_(Dialaction.category == 'incall',
                                               Dialaction.categoryval == cast(Incall.id, String))""",
