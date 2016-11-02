@@ -32,3 +32,5 @@ from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.usercustom import UserCustom
+from xivo_dao.alchemy.dialaction import Dialaction
+from xivo_dao.alchemy.incall import Incall

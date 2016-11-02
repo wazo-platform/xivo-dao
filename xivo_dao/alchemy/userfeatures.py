@@ -154,6 +154,14 @@ class UserFeatures(Base):
 
     lines = association_proxy('user_lines', 'line')
 
+    incalls = relationship('Incall',
+                           secondary="""join(Dialaction, Incall,
+                                             Dialaction.categoryval == cast(Incall.id, String))""",
+                           secondaryjoin="""and_(Dialaction.category == 'incall',
+                                                 Dialaction.categoryval == cast(Incall.id, String))""",
+                           primaryjoin="""and_(Dialaction.action == 'user',
+                                               Dialaction.actionarg1 == cast(UserFeatures.id, String))""")
+
     def extrapolate_caller_id(self, extension=None):
         default_num = extension.exten if extension else None
         user_match = caller_id_regex.match(self.callerid)

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2007-2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,6 +28,7 @@ from hamcrest import is_not
 from hamcrest import none
 from hamcrest import has_items
 from hamcrest import contains
+from hamcrest import contains_inanyorder
 from hamcrest import not_
 
 from xivo_dao.alchemy.entity import Entity
@@ -913,3 +915,13 @@ class TestRelationship(DAOTestCase):
         user = user_dao.get(user_row.id)
         assert_that(user, equal_to(user_row))
         assert_that(user.lines, contains(line2_row, line1_row))
+
+    def test_incalls_relationship(self):
+        user_row = self.add_user()
+        incall1_row = self.add_incall(destination=Dialaction(action='user',
+                                                             actionarg1=str(user_row.id)))
+        incall2_row = self.add_incall(destination=Dialaction(action='user',
+                                                             actionarg1=str(user_row.id)))
+        user = user_dao.get(user_row.id)
+        assert_that(user, equal_to(user_row))
+        assert_that(user.incalls, contains_inanyorder(incall1_row, incall2_row))
