@@ -57,6 +57,7 @@ class IVR(Base):
                                       primaryjoin="""and_(Dialaction.category == 'incall',
                                                           Dialaction.action == 'ivr',
                                                           Dialaction.actionarg1 == cast(IVR.id, String))""",
+                                      viewonly=True,
                                       foreign_keys='Dialaction.actionarg1')
 
     incalls = association_proxy('incall_dialactions', 'incall')

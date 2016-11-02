@@ -158,6 +158,7 @@ class UserFeatures(Base):
                                       primaryjoin="""and_(Dialaction.category == 'incall',
                                            Dialaction.action == 'user',
                                            Dialaction.actionarg1 == cast(UserFeatures.id, String))""",
+                                      viewonly=True,
                                       foreign_keys='Dialaction.actionarg1')
 
     incalls = association_proxy('incall_dialactions', 'incall')
