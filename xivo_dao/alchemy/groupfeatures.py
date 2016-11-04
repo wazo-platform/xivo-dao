@@ -17,7 +17,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from sqlalchemy.ext.associationproxy import association_proxy
-from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
@@ -85,25 +84,25 @@ class GroupFeatures(Base):
                          cascade='all, delete-orphan',
                          foreign_keys='Queue.name')
 
-    ringinuse = association_proxy('queue', 'ringinuse')
+    ring_in_use = association_proxy('queue', 'ring_in_use')
     ring_strategy = association_proxy('queue', 'strategy')
     user_timeout = association_proxy('queue', 'timeout')
     retry_delay = association_proxy('queue', 'retry')
-    commented = association_proxy('queue', 'commented')
+    enabled = association_proxy('queue', 'enabled')
 
     def __init__(self, **kwargs):
         retry = kwargs.pop('retry_delay', 5)
-        ringinuse = int(kwargs.pop('ring_in_use', 1))
+        ring_in_use = kwargs.pop('ring_in_use', True)
         strategy = kwargs.pop('ring_strategy', 'ringall')
         timeout = kwargs.pop('user_timeout', 15)
-        commented = int(not(kwargs.pop('enabled', True)))
+        enabled = kwargs.pop('enabled', True)
         super(GroupFeatures, self).__init__(**kwargs)
         if not self.queue:
             self.queue = Queue(retry=retry,
-                               ringinuse=ringinuse,
+                               ring_in_use=ring_in_use,
                                strategy=strategy,
                                timeout=timeout,
-                               commented=commented,
+                               enabled=enabled,
                                queue_youarenext='queue-youarenext',
                                queue_thereare='queue-thereare',
                                queue_callswaiting='queue-callswaiting',
@@ -124,24 +123,6 @@ class GroupFeatures(Base):
                                category='group',
                                autofill=1,
                                announce_position='no')
-
-    @hybrid_property
-    def enabled(self):
-        if self.commented is None:
-            return None
-        return self.commented == 0
-
-    @enabled.setter
-    def enabled(self, value):
-        self.commented = int(value == 0) if value is not None else None
-
-    @hybrid_property
-    def ring_in_use(self):
-        return bool(self.ringinuse)
-
-    @ring_in_use.setter
-    def ring_in_use(self, value):
-        self.ringinuse = int(value)
 
     def fix(self):
         if self.queue:

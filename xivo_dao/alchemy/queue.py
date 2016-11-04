@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
 from sqlalchemy.sql.schema import CheckConstraint
 from sqlalchemy.types import Integer, String, Enum, Text
@@ -77,3 +79,21 @@ class Queue(Base):
     announce_position = Column('announce-position', String(1024), nullable=False, server_default='yes')
     announce_position_limit = Column('announce-position-limit', Integer, nullable=False, server_default='5')
     defaultrule = Column(String(1024))
+
+    @hybrid_property
+    def enabled(self):
+        if self.commented is None:
+            return None
+        return self.commented == 0
+
+    @enabled.setter
+    def enabled(self, value):
+        self.commented = int(value == 0) if value is not None else None
+
+    @hybrid_property
+    def ring_in_use(self):
+        return bool(self.ringinuse)
+
+    @ring_in_use.setter
+    def ring_in_use(self, value):
+        self.ringinuse = int(value)
