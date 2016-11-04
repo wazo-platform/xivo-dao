@@ -129,6 +129,9 @@ class GroupFeatures(Base):
         self.ringinuse = int(value)
 
     def fix(self):
+        if self.queue:
+            self.queue.name = self.name
+
         for extension in self.extensions:
             self.number = extension.exten
             self.context = extension.context

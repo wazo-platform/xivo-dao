@@ -323,6 +323,18 @@ class TestEdit(DAOTestCase):
                                         user_timeout=none(),
                                         retry_delay=none()))
 
+    def test_edit_fix_queue_name(self):
+        group = group_dao.create(Group(name='MyGroup'))
+
+        queue = self.session.query(Queue).first()
+        assert_that(queue.name, equal_to('MyGroup'))
+
+        group.name = 'OtherName'
+        group_dao.edit(group)
+
+        queue = self.session.query(Queue).first()
+        assert_that(queue.name, equal_to('OtherName'))
+
 
 class TestDelete(DAOTestCase):
 
