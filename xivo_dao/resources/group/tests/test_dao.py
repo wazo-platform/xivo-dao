@@ -237,6 +237,7 @@ class TestCreate(DAOTestCase):
                                                   caller_id_mode=none(),
                                                   caller_id_name=none(),
                                                   timeout=none(),
+                                                  music_on_hold=none(),
                                                   preprocess_subroutine=none(),
                                                   ring_in_use=True,
                                                   ring_strategy='ringall',
@@ -249,6 +250,7 @@ class TestCreate(DAOTestCase):
                       caller_id_mode='prepend',
                       caller_id_name='toto',
                       timeout=60,
+                      music_on_hold='default',
                       preprocess_subroutine='tata',
                       ring_in_use=False,
                       ring_strategy='random',
@@ -266,6 +268,7 @@ class TestCreate(DAOTestCase):
                                                   caller_id_mode='prepend',
                                                   caller_id_name='toto',
                                                   timeout=60,
+                                                  music_on_hold='default',
                                                   preprocess_subroutine='tata',
                                                   ring_in_use=False,
                                                   ring_strategy='random',
@@ -281,6 +284,7 @@ class TestEdit(DAOTestCase):
                                        caller_id_mode='prepend',
                                        caller_id_name='toto',
                                        timeout=60,
+                                       music_on_hold='default',
                                        preprocess_subroutine='tata',
                                        ring_in_use=True,
                                        ring_strategy='ringall',
@@ -293,6 +297,7 @@ class TestEdit(DAOTestCase):
         group.caller_id_mode = 'overwrite'
         group.caller_id_name = 'bob'
         group.timeout = 5
+        group.music_on_hold = 'not_default'
         group.preprocess_subroutine = 'other_routine'
         group.ring_in_use = False
         group.ring_strategy = 'random'
@@ -309,6 +314,7 @@ class TestEdit(DAOTestCase):
                                           caller_id_mode='overwrite',
                                           caller_id_name='bob',
                                           timeout=5,
+                                          music_on_hold='not_default',
                                           preprocess_subroutine='other_routine',
                                           ring_in_use=False,
                                           ring_strategy='random',
@@ -321,6 +327,7 @@ class TestEdit(DAOTestCase):
                                        caller_id_mode='prepend',
                                        caller_id_name='toto',
                                        timeout=0,
+                                       music_on_hold='default',
                                        preprocess_subroutine='t',
                                        user_timeout=0,
                                        retry_delay=0))
@@ -329,6 +336,7 @@ class TestEdit(DAOTestCase):
         group.caller_id_mode = None
         group.caller_id_name = None
         group.timeout = None
+        group.music_on_hold = None
         group.preprocess_subroutine = None
         group.user_timeout = None
         group.retry_delay = None
@@ -338,6 +346,7 @@ class TestEdit(DAOTestCase):
         row = self.session.query(Group).first()
         assert_that(group, equal_to(row))
         assert_that(row, has_properties(timeout=none(),
+                                        music_on_hold=none(),
                                         caller_id_mode=none(),
                                         caller_id_name=none(),
                                         preprocess_subroutine=none(),

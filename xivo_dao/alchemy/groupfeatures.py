@@ -84,17 +84,19 @@ class GroupFeatures(Base):
                          cascade='all, delete-orphan',
                          foreign_keys='Queue.name')
 
+    enabled = association_proxy('queue', 'enabled')
+    music_on_hold = association_proxy('queue', 'musicclass')
+    retry_delay = association_proxy('queue', 'retry')
     ring_in_use = association_proxy('queue', 'ring_in_use')
     ring_strategy = association_proxy('queue', 'strategy')
     user_timeout = association_proxy('queue', 'timeout')
-    retry_delay = association_proxy('queue', 'retry')
-    enabled = association_proxy('queue', 'enabled')
 
     def __init__(self, **kwargs):
         retry = kwargs.pop('retry_delay', 5)
         ring_in_use = kwargs.pop('ring_in_use', True)
         strategy = kwargs.pop('ring_strategy', 'ringall')
         timeout = kwargs.pop('user_timeout', 15)
+        musicclass = kwargs.pop('music_on_hold', None)
         enabled = kwargs.pop('enabled', True)
         super(GroupFeatures, self).__init__(**kwargs)
         if not self.queue:
@@ -102,6 +104,7 @@ class GroupFeatures(Base):
                                ring_in_use=ring_in_use,
                                strategy=strategy,
                                timeout=timeout,
+                               musicclass=musicclass,
                                enabled=enabled,
                                queue_youarenext='queue-youarenext',
                                queue_thereare='queue-thereare',
