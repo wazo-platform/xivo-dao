@@ -23,6 +23,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
 from sqlalchemy.types import Integer, String
 
+from xivo_dao.alchemy.callerid import Callerid
 from xivo_dao.alchemy.queue import Queue
 from xivo_dao.helpers.db_manager import Base
 
@@ -49,6 +50,20 @@ class GroupFeatures(Base):
     timeout = Column(Integer)
     preprocess_subroutine = Column(String(39))
     deleted = Column(Integer, nullable=False, server_default='0')
+
+    caller_id = relationship('Callerid',
+                             primaryjoin="""and_(Callerid.type == 'group',
+                                                 Callerid.typeval == GroupFeatures.id)""",
+                             foreign_keys='Callerid.typeval',
+                             uselist=False,
+                             cascade='all, delete-orphan')
+
+    caller_id_mode = association_proxy('caller_id', 'mode',
+                                       creator=lambda _mode: Callerid(type='group',
+                                                                      mode=_mode))
+    caller_id_name = association_proxy('caller_id', 'name',
+                                       creator=lambda _name: Callerid(type='group',
+                                                                      name=_name))
 
     extensions = relationship('Extension',
                               primaryjoin="""and_(Extension.type == 'group',

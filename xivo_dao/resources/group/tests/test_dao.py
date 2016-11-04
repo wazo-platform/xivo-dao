@@ -22,8 +22,10 @@ from hamcrest import (assert_that,
                       has_properties,
                       has_property,
                       is_not,
-                      none)
+                      none,
+                      not_)
 
+from xivo_dao.alchemy.callerid import Callerid
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.groupfeatures import GroupFeatures as Group
 from xivo_dao.alchemy.queue import Queue
@@ -232,6 +234,8 @@ class TestCreate(DAOTestCase):
         assert_that(created_group, equal_to(row))
         assert_that(created_group, has_properties(id=is_not(none()),
                                                   name='mygroup',
+                                                  caller_id_mode=none(),
+                                                  caller_id_name=none(),
                                                   timeout=none(),
                                                   preprocess_subroutine=none(),
                                                   ring_in_use=True,
@@ -242,6 +246,8 @@ class TestCreate(DAOTestCase):
 
     def test_create_with_all_fields(self):
         group = Group(name='MyGroup',
+                      caller_id_mode='prepend',
+                      caller_id_name='toto',
                       timeout=60,
                       preprocess_subroutine='tata',
                       ring_in_use=False,
@@ -257,6 +263,8 @@ class TestCreate(DAOTestCase):
         assert_that(created_group, equal_to(row))
         assert_that(created_group, has_properties(id=is_not(none()),
                                                   name='MyGroup',
+                                                  caller_id_mode='prepend',
+                                                  caller_id_name='toto',
                                                   timeout=60,
                                                   preprocess_subroutine='tata',
                                                   ring_in_use=False,
@@ -270,6 +278,8 @@ class TestEdit(DAOTestCase):
 
     def test_edit_all_fields(self):
         group = group_dao.create(Group(name='MyGroup',
+                                       caller_id_mode='prepend',
+                                       caller_id_name='toto',
                                        timeout=60,
                                        preprocess_subroutine='tata',
                                        ring_in_use=True,
@@ -280,6 +290,8 @@ class TestEdit(DAOTestCase):
 
         group = group_dao.get(group.id)
         group.name = 'other_name'
+        group.caller_id_mode = 'overwrite'
+        group.caller_id_name = 'bob'
         group.timeout = 5
         group.preprocess_subroutine = 'other_routine'
         group.ring_in_use = False
@@ -293,6 +305,9 @@ class TestEdit(DAOTestCase):
 
         assert_that(group, equal_to(row))
         assert_that(group, has_properties(id=is_not(none()),
+                                          name='other_name',
+                                          caller_id_mode='overwrite',
+                                          caller_id_name='bob',
                                           timeout=5,
                                           preprocess_subroutine='other_routine',
                                           ring_in_use=False,
@@ -303,12 +318,16 @@ class TestEdit(DAOTestCase):
 
     def test_edit_set_fields_to_null(self):
         group = group_dao.create(Group(name='MyGroup',
+                                       caller_id_mode='prepend',
+                                       caller_id_name='toto',
                                        timeout=0,
                                        preprocess_subroutine='t',
                                        user_timeout=0,
                                        retry_delay=0))
 
         group = group_dao.get(group.id)
+        group.caller_id_mode = None
+        group.caller_id_name = None
         group.timeout = None
         group.preprocess_subroutine = None
         group.user_timeout = None
@@ -319,6 +338,8 @@ class TestEdit(DAOTestCase):
         row = self.session.query(Group).first()
         assert_that(group, equal_to(row))
         assert_that(row, has_properties(timeout=none(),
+                                        caller_id_mode=none(),
+                                        caller_id_name=none(),
                                         preprocess_subroutine=none(),
                                         user_timeout=none(),
                                         retry_delay=none()))
@@ -353,6 +374,16 @@ class TestDelete(DAOTestCase):
 
         queue = self.session.query(Queue).first()
         assert_that(queue, none())
+
+    def test_when_deleting_then_caller_id_is_deleted(self):
+        group = self.add_group(caller_id_mode='prepend', caller_id_name='toto')
+        caller_id = self.session.query(Callerid).first()
+        assert_that(caller_id, not_(none()))
+
+        group_dao.delete(group)
+
+        caller_id = self.session.query(Callerid).first()
+        assert_that(caller_id, none())
 
     def test_when_deleting_then_group_members_are_deleted(self):
         group = self.add_group()

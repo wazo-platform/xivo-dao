@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (C) 2014 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.schema import Column, PrimaryKeyConstraint
 from sqlalchemy.types import Integer, String, Enum
 
@@ -36,3 +38,16 @@ class Callerid(Base):
                        name='callerid_type',
                        metadata=Base.metadata))
     typeval = Column(Integer, nullable=False, autoincrement=False)
+
+    @hybrid_property
+    def name(self):
+        if self.callerdisplay == '':
+            return None
+        return self.callerdisplay
+
+    @name.setter
+    def name(self, value):
+        if value is None:
+            self.callerdisplay = ''
+        else:
+            self.callerdisplay = value
