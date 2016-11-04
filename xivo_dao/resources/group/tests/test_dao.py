@@ -27,6 +27,7 @@ from hamcrest import (assert_that,
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.groupfeatures import GroupFeatures as Group
 from xivo_dao.alchemy.queue import Queue
+from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.rightcall import RightCall
 from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.schedule import Schedule
@@ -340,6 +341,16 @@ class TestDelete(DAOTestCase):
 
         queue = self.session.query(Queue).first()
         assert_that(queue, none())
+
+    def test_when_deleting_then_group_members_are_deleted(self):
+        group = self.add_group()
+        self.add_queue_member(queue_name=group.name, category='group')
+        self.add_queue_member(queue_name=group.name, category='group')
+
+        group_dao.delete(group)
+
+        queue_member = self.session.query(QueueMember).first()
+        assert_that(queue_member, none())
 
     def test_when_deleting_then_extension_are_dissociated(self):
         group = self.add_group()

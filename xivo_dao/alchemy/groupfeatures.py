@@ -18,6 +18,7 @@
 
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
 from sqlalchemy.types import Integer, String
@@ -54,6 +55,13 @@ class GroupFeatures(Base):
                                                   Extension.typeval == cast(GroupFeatures.id, String))""",
                               viewonly=True,
                               foreign_keys='Extension.typeval')
+
+    queue_members = relationship('QueueMember',
+                                 primaryjoin="""and_(QueueMember.category == 'group',
+                                                     QueueMember.queue_name == GroupFeatures.name)""",
+                                 collection_class=ordering_list('position', count_from=1),
+                                 cascade='all, delete-orphan',
+                                 foreign_keys='QueueMember.queue_name')
 
     queue = relationship('Queue',
                          primaryjoin="""and_(Queue.category == 'group',
