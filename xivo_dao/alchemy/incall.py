@@ -74,7 +74,7 @@ class Incall(Base):
                               primaryjoin="""and_(Extension.type == 'incall',
                                                   Extension.typeval == cast(Incall.id, String))""",
                               foreign_keys='Extension.typeval',
-                              backref='incall')
+                              back_populates='incall')
 
     @property
     def destination(self):
