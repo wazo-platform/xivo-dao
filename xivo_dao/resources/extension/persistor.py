@@ -85,3 +85,17 @@ class ExtensionPersistor(CriteriaBuilderMixin):
         self.session.add(extension)
         self.session.flush()
         self.session.refresh(incall)
+
+    def associate_group(self, group, extension):
+        extension.type = 'group'
+        extension.typeval = str(group.id)
+        self.session.add(extension)
+        self.session.flush()
+        self.session.refresh(group)
+
+    def dissociate_group(self, group, extension):
+        extension.type = 'user'
+        extension.typeval = '0'
+        self.session.add(extension)
+        self.session.flush()
+        self.session.refresh(group)
