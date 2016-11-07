@@ -35,3 +35,5 @@ from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.incall import Incall
 from xivo_dao.alchemy.ivr import IVR
+from xivo_dao.alchemy.groupfeatures import GroupFeatures
+from xivo_dao.alchemy.queuemember import QueueMember

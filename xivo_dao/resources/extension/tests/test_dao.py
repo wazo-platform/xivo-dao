@@ -594,6 +594,15 @@ class TestRelationship(DAOTestCase):
         assert_that(extension, equal_to(extension_row))
         assert_that(extension.lines, contains_inanyorder(line1_row, line2_row))
 
+    def test_group_relationship(self):
+        extension_row = self.add_extension()
+        group_row = self.add_group()
+        extension_dao.associate_group(group_row, extension_row)
+
+        extension = extension_dao.get(extension_row.id)
+        assert_that(extension, equal_to(extension_row))
+        assert_that(extension.group, equal_to(group_row))
+
 
 class TestAssociateGroup(DAOTestCase):
 

@@ -61,6 +61,13 @@ class Extension(Base):
 
     lines = association_proxy('line_extensions', 'line')
 
+    group = relationship('GroupFeatures',
+                         primaryjoin="""and_(Extension.type == 'group',
+                                             Extension.typeval == cast(GroupFeatures.id, String))""",
+                         foreign_keys='Extension.typeval',
+                         uselist=False,
+                         back_populates='extensions')
+
     @property
     def name(self):
         return self.typeval

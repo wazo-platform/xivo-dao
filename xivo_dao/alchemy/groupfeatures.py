@@ -68,7 +68,8 @@ class GroupFeatures(Base):
                               primaryjoin="""and_(Extension.type == 'group',
                                                   Extension.typeval == cast(GroupFeatures.id, String))""",
                               viewonly=True,
-                              foreign_keys='Extension.typeval')
+                              foreign_keys='Extension.typeval',
+                              back_populates='group')
 
     queue_members = relationship('QueueMember',
                                  primaryjoin="""and_(QueueMember.category == 'group',
