@@ -131,10 +131,11 @@ class GroupFeatures(Base):
                                autofill=1,
                                announce_position='no')
 
-    def fix(self):
+    def fix_group(self):
         if self.queue:
             self.queue.name = self.name
 
+    def fix_extension(self):
         for extension in self.extensions:
             self.number = extension.exten
             self.context = extension.context
