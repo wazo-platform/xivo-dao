@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2013-2014 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,8 +17,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.helpers.db_manager import Base
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index,\
-    UniqueConstraint
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import relationship
+from sqlalchemy.schema import (Column,
+                               Index,
+                               PrimaryKeyConstraint,
+                               UniqueConstraint)
 from sqlalchemy.types import Integer, String, Enum
 
 
@@ -42,3 +47,57 @@ class QueueMember(Base):
     channel = Column(String(25), nullable=False)
     category = Column(Enum('queue', 'group', name='queue_category', metadata=Base.metadata), nullable=False)
     position = Column(Integer, nullable=False, server_default='0')
+
+    user = relationship('UserFeatures',
+                        primaryjoin="""and_(QueueMember.usertype == 'user',
+                                            QueueMember.userid == UserFeatures.id)""",
+                        foreign_keys='QueueMember.userid')
+
+    group = relationship('GroupFeatures',
+                         primaryjoin="""and_(QueueMember.category == 'group',
+                                             QueueMember.queue_name == GroupFeatures.name)""",
+                         foreign_keys='QueueMember.queue_name')
+
+    @hybrid_property
+    def local(self):
+        return self.channel == 'Local'
+
+    @local.setter
+    def local(self, value):
+        if value and not (self.user and self.user.lines and self.user.lines[0].endpoint_custom):
+            self.channel = 'Local'
+            return
+
+        if self.user and self.user.lines:
+            main_line = self.user.lines[0]
+            if main_line.endpoint_sip:
+                self.channel = 'SIP'
+            elif main_line.endpoint_sccp:
+                self.channel = 'SCCP'
+            elif main_line.endpoint_custom:
+                self.channel = '**Unknown**'
+
+    def fix(self):
+        self.local = self.local
+        if self.user and self.user.lines:
+            main_line = self.user.lines[0]
+            if main_line.endpoint_sip:
+                if not self.local:
+                    sub_interface = main_line.endpoint_sip.name
+                elif main_line.extensions:
+                    sub_interface = main_line.extensions[0].exten
+                else:
+                    sub_interface = ''
+                self.interface = '{}/{}'.format(self.channel, sub_interface)
+
+            elif main_line.endpoint_sccp:
+                if not self.local:
+                    sub_interface = main_line.endpoint_sccp.name
+                elif main_line.extensions:
+                    sub_interface = main_line.extensions[0].exten
+                else:
+                    sub_interface = ''
+                self.interface = '{}/{}'.format(self.channel, sub_interface)
+
+            elif main_line.endpoint_custom:
+                self.interface = main_line.endpoint_custom.interface

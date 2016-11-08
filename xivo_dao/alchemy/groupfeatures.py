@@ -24,6 +24,7 @@ from sqlalchemy.types import Integer, String
 
 from xivo_dao.alchemy.callerid import Callerid
 from xivo_dao.alchemy.queue import Queue
+from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -71,12 +72,14 @@ class GroupFeatures(Base):
                               foreign_keys='Extension.typeval',
                               back_populates='group')
 
-    queue_members = relationship('QueueMember',
+    group_members = relationship('QueueMember',
                                  primaryjoin="""and_(QueueMember.category == 'group',
                                                      QueueMember.queue_name == GroupFeatures.name)""",
                                  collection_class=ordering_list('position', count_from=1),
                                  cascade='all, delete-orphan',
                                  foreign_keys='QueueMember.queue_name')
+
+    users = association_proxy('group_members', 'user')
 
     queue = relationship('Queue',
                          primaryjoin="""and_(Queue.category == 'group',
@@ -130,6 +133,25 @@ class GroupFeatures(Base):
                                category='group',
                                autofill=1,
                                announce_position='no')
+
+    def associate_user(self, user, **kwargs):
+        member = QueueMember(category='group',
+                             usertype='user',
+                             userid=user.id,
+                             **kwargs)
+        member.user = user
+        member.fix()
+        self.group_members.append(member)
+
+    def dissociate_user(self, user):
+        self.users.remove(user)
+
+    def update_user_association(self, user, **kwargs):
+        for group_member in self.group_members:
+            if user == group_member.user:
+                group_member.penalty = kwargs.get('penalty', group_member.penalty)
+                group_member.local = kwargs.get('local', group_member.local)
+                group_member.fix()
 
     def fix_group(self):
         if self.queue:
