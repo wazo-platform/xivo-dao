@@ -75,6 +75,16 @@ def dissociate_incall(incall, extension):
     ExtensionFixes(Session).fix(extension.id)
 
 
+def associate_group(group, extension):
+    persistor().associate_group(group, extension)
+    group.fix()
+
+
+def dissociate_group(group, extension):
+    persistor().dissociate_group(group, extension)
+    group.fix()
+
+
 def find_all_service_extensions():
     typevals = service_converter.typevals()
     query = (Session.query(Extension.id,

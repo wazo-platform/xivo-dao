@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2012-2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import (Column,
@@ -53,6 +55,13 @@ class Incall(Base):
                              uselist=False,
                              cascade='all, delete-orphan')
 
+    caller_id_mode = association_proxy('caller_id', 'mode',
+                                       creator=lambda _mode: Callerid(type='incall',
+                                                                      mode=_mode))
+    caller_id_name = association_proxy('caller_id', 'name',
+                                       creator=lambda _name: Callerid(type='incall',
+                                                                      name=_name))
+
     dialaction = relationship('Dialaction',
                               primaryjoin="""and_(Dialaction.category == 'incall',
                                                   Dialaction.categoryval == cast(Incall.id, String))""",
@@ -65,37 +74,7 @@ class Incall(Base):
                               primaryjoin="""and_(Extension.type == 'incall',
                                                   Extension.typeval == cast(Incall.id, String))""",
                               foreign_keys='Extension.typeval',
-                              backref='incall')
-
-    @property
-    def caller_id_mode(self):
-        if not self.caller_id:
-            return None
-        return self.caller_id.mode
-
-    @caller_id_mode.setter
-    def caller_id_mode(self, value):
-        self._create_caller_id_if_not_exists()
-        self.caller_id.mode = value
-
-    @property
-    def caller_id_name(self):
-        if not self.caller_id or self.caller_id.callerdisplay == '':
-            return None
-        return self.caller_id.callerdisplay
-
-    @caller_id_name.setter
-    def caller_id_name(self, value):
-        self._create_caller_id_if_not_exists()
-        if value is None:
-            self.caller_id.callerdisplay = ''
-        else:
-            self.caller_id.callerdisplay = value
-
-    def _create_caller_id_if_not_exists(self):
-        if not self.caller_id:
-            self.caller_id = Callerid(type='incall',
-                                      typeval=self.id)
+                              back_populates='incall')
 
     @property
     def destination(self):

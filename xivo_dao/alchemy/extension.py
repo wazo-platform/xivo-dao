@@ -50,7 +50,6 @@ class Extension(Base):
                                primaryjoin="""and_(Extension.type == 'outcall',
                                                    Extension.typeval == cast(DialPattern.id, String))""",
                                foreign_keys='Extension.typeval',
-                               uselist=False,
                                back_populates='extension')
 
     outcall = association_proxy('dialpattern', 'outcall')
@@ -60,6 +59,18 @@ class Extension(Base):
                                    back_populates='extension')
 
     lines = association_proxy('line_extensions', 'line')
+
+    group = relationship('GroupFeatures',
+                         primaryjoin="""and_(Extension.type == 'group',
+                                             Extension.typeval == cast(GroupFeatures.id, String))""",
+                         foreign_keys='Extension.typeval',
+                         back_populates='extensions')
+
+    incall = relationship('Incall',
+                          primaryjoin="""and_(Extension.type == 'incall',
+                                              Extension.typeval == cast(Incall.id, String))""",
+                          foreign_keys='Extension.typeval',
+                          back_populates='extensions')
 
     @property
     def name(self):

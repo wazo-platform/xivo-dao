@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 
 # Copyright (C) 2015-2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -76,9 +77,25 @@ class ExtensionPersistor(CriteriaBuilderMixin):
         extension.typeval = str(incall.id)
         self.session.add(extension)
         self.session.flush()
+        self.session.refresh(incall)
 
     def dissociate_incall(self, incall, extension):
         extension.type = 'user'
         extension.typeval = '0'
         self.session.add(extension)
         self.session.flush()
+        self.session.refresh(incall)
+
+    def associate_group(self, group, extension):
+        extension.type = 'group'
+        extension.typeval = str(group.id)
+        self.session.add(extension)
+        self.session.flush()
+        self.session.refresh(group)
+
+    def dissociate_group(self, group, extension):
+        extension.type = 'user'
+        extension.typeval = '0'
+        self.session.add(extension)
+        self.session.flush()
+        self.session.refresh(group)

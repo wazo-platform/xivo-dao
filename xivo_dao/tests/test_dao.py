@@ -529,6 +529,13 @@ class DAOTestCase(unittest.TestCase):
         self.add_me(group)
         return group
 
+    def add_group_schedule(self, **kwargs):
+        kwargs.setdefault('path', 'group')
+        kwargs.setdefault('order', 0)
+        group_schedule = SchedulePath(**kwargs)
+        self.add_me(group_schedule)
+        return group_schedule
+
     def add_queuefeatures(self, **kwargs):
         kwargs.setdefault('id', self._generate_int())
         kwargs.setdefault('name', self._random_name())
