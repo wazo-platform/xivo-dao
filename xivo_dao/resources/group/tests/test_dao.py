@@ -27,6 +27,7 @@ from hamcrest import (assert_that,
 
 from xivo_dao.alchemy.callerid import Callerid
 from xivo_dao.alchemy.extension import Extension
+from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup
 from xivo_dao.alchemy.groupfeatures import GroupFeatures as Group
 from xivo_dao.alchemy.queue import Queue
 from xivo_dao.alchemy.queuemember import QueueMember
@@ -38,6 +39,7 @@ from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.resources.group import dao as group_dao
 from xivo_dao.helpers.exception import NotFoundError, InputError
 from xivo_dao.resources.utils.search import SearchResult
+from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 
 
 class TestFind(DAOTestCase):
@@ -366,7 +368,11 @@ class TestEdit(DAOTestCase):
         assert_that(queue.name, equal_to('OtherName'))
 
 
-class TestDelete(DAOTestCase):
+class TestDelete(DAOTestCase, FuncKeyHelper):
+
+    def setUp(self):
+        super(TestDelete, self).setUp()
+        self.setup_funckeys()
 
     def test_delete(self):
         group = self.add_group()
@@ -439,3 +445,12 @@ class TestDelete(DAOTestCase):
 
         row = self.session.query(Schedule).first()
         assert_that(row.id, equal_to(schedule.id))
+
+    def test_when_deleting_then_funckeys_are_deleted(self):
+        group = self.add_group()
+        self.add_group_destination(group.id)
+
+        group_dao.delete(group)
+
+        funckey = self.session.query(FuncKeyDestGroup).first()
+        assert_that(funckey, none())

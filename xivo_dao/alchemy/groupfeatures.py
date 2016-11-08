@@ -92,6 +92,9 @@ class GroupFeatures(Base):
     ring_strategy = association_proxy('queue', 'strategy')
     user_timeout = association_proxy('queue', 'timeout')
 
+    func_keys = relationship('FuncKeyDestGroup',
+                             cascade='all, delete-orphan')
+
     def __init__(self, **kwargs):
         retry = kwargs.pop('retry_delay', 5)
         ring_in_use = kwargs.pop('ring_in_use', True)
