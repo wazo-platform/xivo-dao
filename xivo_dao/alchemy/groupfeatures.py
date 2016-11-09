@@ -150,7 +150,6 @@ class GroupFeatures(Base):
         for group_member in self.group_members:
             if user == group_member.user:
                 group_member.penalty = kwargs.get('penalty', group_member.penalty)
-                group_member.local = kwargs.get('local', group_member.local)
                 group_member.fix()
 
     def fix_group(self):

@@ -17,7 +17,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.helpers.db_manager import Base
-from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import (Column,
                                Index,
@@ -58,16 +57,7 @@ class QueueMember(Base):
                                              QueueMember.queue_name == GroupFeatures.name)""",
                          foreign_keys='QueueMember.queue_name')
 
-    @hybrid_property
-    def local(self):
-        return self.channel == 'Local'
-
-    @local.setter
-    def local(self, value):
-        if value and not (self.user and self.user.lines and self.user.lines[0].endpoint_custom):
-            self.channel = 'Local'
-            return
-
+    def _set_default_channel(self):
         if self.user and self.user.lines:
             main_line = self.user.lines[0]
             if main_line.endpoint_sip:
@@ -78,26 +68,14 @@ class QueueMember(Base):
                 self.channel = '**Unknown**'
 
     def fix(self):
-        self.local = self.local
+        self._set_default_channel()
         if self.user and self.user.lines:
             main_line = self.user.lines[0]
             if main_line.endpoint_sip:
-                if not self.local:
-                    sub_interface = main_line.endpoint_sip.name
-                elif main_line.extensions:
-                    sub_interface = main_line.extensions[0].exten
-                else:
-                    sub_interface = ''
-                self.interface = '{}/{}'.format(self.channel, sub_interface)
+                self.interface = '{}/{}'.format(self.channel, main_line.endpoint_sip.name)
 
             elif main_line.endpoint_sccp:
-                if not self.local:
-                    sub_interface = main_line.endpoint_sccp.name
-                elif main_line.extensions:
-                    sub_interface = main_line.extensions[0].exten
-                else:
-                    sub_interface = ''
-                self.interface = '{}/{}'.format(self.channel, sub_interface)
+                self.interface = '{}/{}'.format(self.channel, main_line.endpoint_sccp.name)
 
             elif main_line.endpoint_custom:
                 self.interface = main_line.endpoint_custom.interface

@@ -501,8 +501,8 @@ class TestAssociateUser(DAOTestCase):
         line3 = self.add_line(protocol='custom', protocolid=sip3.id)
         self.add_user_line(user_id=user3.id, line_id=line3.id)
 
-        group_row.associate_user(user2, local=True)
-        group_row.associate_user(user3, local=True)
+        group_row.associate_user(user2)
+        group_row.associate_user(user3)
         group_row.associate_user(user1, penalty=5)
 
         group = group_dao.get(group_row.id)
@@ -558,58 +558,6 @@ class TestAssociateUser(DAOTestCase):
                            channel='**Unknown**')
         ))
 
-    def test_associate_local_sip_fix(self):
-        user = self.add_user()
-        sip = self.add_usersip(name='sipname')
-        extension = self.add_extension(exten='1234')
-        line = self.add_line(protocol='sip', protocolid=sip.id)
-        self.add_user_line(user_id=user.id, line_id=line.id)
-        self.add_line_extension(extension_id=extension.id, line_id=line.id)
-        group_row = self.add_group()
-        group_row.associate_user(user, local=True)
-
-        group = group_dao.get(group_row.id)
-
-        assert_that(group.group_members, contains(
-            has_properties(queue_name=group.name,
-                           interface='Local/1234',
-                           channel='Local')
-        ))
-
-    def test_associate_local_sccp_fix(self):
-        user = self.add_user()
-        sccp = self.add_sccpline(name='sccpname')
-        extension = self.add_extension(exten='1234')
-        line = self.add_line(protocol='sccp', protocolid=sccp.id)
-        self.add_user_line(user_id=user.id, line_id=line.id)
-        self.add_line_extension(extension_id=extension.id, line_id=line.id)
-        group_row = self.add_group()
-        group_row.associate_user(user, local=True)
-
-        group = group_dao.get(group_row.id)
-
-        assert_that(group.group_members, contains(
-            has_properties(queue_name=group.name,
-                           interface='Local/1234',
-                           channel='Local')
-        ))
-
-    def test_associate_local_custom_fix(self):
-        user = self.add_user()
-        custom = self.add_usercustom(interface='custom/interface')
-        line = self.add_line(protocol='custom', protocolid=custom.id)
-        self.add_user_line(user_id=user.id, line_id=line.id)
-        group_row = self.add_group()
-        group_row.associate_user(user, local=True)
-
-        group = group_dao.get(group_row.id)
-
-        assert_that(group.group_members, contains(
-            has_properties(queue_name=group.name,
-                           interface='custom/interface',
-                           channel='**Unknown**')
-        ))
-
     def test_users_dissociation(self):
         user = self.add_user()
         sip = self.add_usersip(name='sipname')
@@ -636,16 +584,13 @@ class TestAssociateUser(DAOTestCase):
     def test_update_user_association(self):
         user = self.add_user()
         sip = self.add_usersip(name='sipname')
-        extension = self.add_extension(exten='1234')
         line = self.add_line(protocol='sip', protocolid=sip.id)
         self.add_user_line(user_id=user.id, line_id=line.id)
-        self.add_line_extension(extension_id=extension.id, line_id=line.id)
         group_row = self.add_group()
-        group_row.associate_user(user, penalty=6, local=False)
+        group_row.associate_user(user, penalty=6)
 
         group_row.update_user_association(user,
-                                          penalty=0,
-                                          local=True)
+                                          penalty=0)
 
         rows = self.session.query(UserFeatures).all()
         assert_that(rows, contains(user))
@@ -653,7 +598,6 @@ class TestAssociateUser(DAOTestCase):
         rows = self.session.query(QueueMember).all()
         assert_that(rows, contains(has_properties(
             penalty=0,
-            local=True,
-            interface='Local/1234',
-            channel='Local'
+            interface='SIP/sipname',
+            channel='SIP'
         )))
