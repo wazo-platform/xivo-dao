@@ -146,12 +146,6 @@ class GroupFeatures(Base):
     def dissociate_user(self, user):
         self.users.remove(user)
 
-    def update_user_association(self, user, **kwargs):
-        for group_member in self.group_members:
-            if user == group_member.user:
-                group_member.penalty = kwargs.get('penalty', group_member.penalty)
-                group_member.fix()
-
     def fix_group(self):
         if self.queue:
             self.queue.name = self.name

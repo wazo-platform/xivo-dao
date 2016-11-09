@@ -467,15 +467,13 @@ class TestAssociateUser(DAOTestCase):
         self.add_user_line(user_id=user.id, line_id=line.id)
 
         group_row = self.add_group()
-        group_row.associate_user(user,
-                                 penalty=5)
+        group_row.associate_user(user)
 
         group = group_dao.get(group_row.id)
 
         assert_that(group, equal_to(group_row))
         assert_that(group.group_members, contains(
             has_properties(queue_name=group.name,
-                           penalty=5,
                            interface='SIP/sipname',
                            channel='SIP',
                            user=has_properties(id=user.id,
@@ -503,7 +501,7 @@ class TestAssociateUser(DAOTestCase):
 
         group_row.associate_user(user2)
         group_row.associate_user(user3)
-        group_row.associate_user(user1, penalty=5)
+        group_row.associate_user(user1)
 
         group = group_dao.get(group_row.id)
 
@@ -580,24 +578,3 @@ class TestAssociateUser(DAOTestCase):
 
         row = self.session.query(QueueMember).first()
         assert_that(row, none())
-
-    def test_update_user_association(self):
-        user = self.add_user()
-        sip = self.add_usersip(name='sipname')
-        line = self.add_line(protocol='sip', protocolid=sip.id)
-        self.add_user_line(user_id=user.id, line_id=line.id)
-        group_row = self.add_group()
-        group_row.associate_user(user, penalty=6)
-
-        group_row.update_user_association(user,
-                                          penalty=0)
-
-        rows = self.session.query(UserFeatures).all()
-        assert_that(rows, contains(user))
-
-        rows = self.session.query(QueueMember).all()
-        assert_that(rows, contains(has_properties(
-            penalty=0,
-            interface='SIP/sipname',
-            channel='SIP'
-        )))
