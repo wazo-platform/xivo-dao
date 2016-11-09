@@ -458,19 +458,18 @@ class TestDelete(DAOTestCase, FuncKeyHelper):
         assert_that(funckey, none())
 
 
-class TestAssociateUser(DAOTestCase):
+class TestAssociateMemberUsers(DAOTestCase):
 
     def test_associate_user_sip(self):
         user = self.add_user()
         sip = self.add_usersip(name='sipname')
         line = self.add_line(protocol='sip', protocolid=sip.id)
         self.add_user_line(user_id=user.id, line_id=line.id)
-
         group_row = self.add_group()
-        group_row.associate_user(user)
 
-        group = group_dao.get(group_row.id)
+        group_dao.associate_all_member_users(group_row, [user])
 
+        group = self.session.query(Group).first()
         assert_that(group, equal_to(group_row))
         assert_that(group.group_members, contains(
             has_properties(queue_name=group.name,
@@ -499,12 +498,9 @@ class TestAssociateUser(DAOTestCase):
         line3 = self.add_line(protocol='custom', protocolid=sip3.id)
         self.add_user_line(user_id=user3.id, line_id=line3.id)
 
-        group_row.associate_user(user2)
-        group_row.associate_user(user3)
-        group_row.associate_user(user1)
+        group_dao.associate_all_member_users(group_row, [user2, user3, user1])
 
-        group = group_dao.get(group_row.id)
-
+        group = self.session.query(Group).first()
         assert_that(group, equal_to(group_row))
         assert_that(group.users, contains(user2, user3, user1))
 
@@ -514,10 +510,10 @@ class TestAssociateUser(DAOTestCase):
         line = self.add_line(protocol='sip', protocolid=sip.id)
         self.add_user_line(user_id=user.id, line_id=line.id)
         group_row = self.add_group()
-        group_row.associate_user(user)
 
-        group = group_dao.get(group_row.id)
+        group_dao.associate_all_member_users(group_row, [user])
 
+        group = self.session.query(Group).first()
         assert_that(group.group_members, contains(
             has_properties(queue_name=group.name,
                            interface='SIP/sipname',
@@ -530,10 +526,10 @@ class TestAssociateUser(DAOTestCase):
         line = self.add_line(protocol='sccp', protocolid=sccp.id)
         self.add_user_line(user_id=user.id, line_id=line.id)
         group_row = self.add_group()
-        group_row.associate_user(user)
 
-        group = group_dao.get(group_row.id)
+        group_dao.associate_all_member_users(group_row, [user])
 
+        group = self.session.query(Group).first()
         assert_that(group.group_members, contains(
             has_properties(queue_name=group.name,
                            interface='SCCP/sccpname',
@@ -546,10 +542,10 @@ class TestAssociateUser(DAOTestCase):
         line = self.add_line(protocol='custom', protocolid=custom.id)
         self.add_user_line(user_id=user.id, line_id=line.id)
         group_row = self.add_group()
-        group_row.associate_user(user)
 
-        group = group_dao.get(group_row.id)
+        group_dao.associate_all_member_users(group_row, [user])
 
+        group = self.session.query(Group).first()
         assert_that(group.group_members, contains(
             has_properties(queue_name=group.name,
                            interface='custom/interface',
@@ -562,14 +558,14 @@ class TestAssociateUser(DAOTestCase):
         line = self.add_line(protocol='sip', protocolid=sip.id)
         self.add_user_line(user_id=user.id, line_id=line.id)
         group_row = self.add_group()
-        group_row.associate_user(user)
+        group_dao.associate_all_member_users(group_row, [user])
 
-        group = group_dao.get(group_row.id)
+        group = self.session.query(Group).first()
         assert_that(group.users, contains(user))
 
-        group_row.dissociate_user(user)
-        group = group_dao.get(group_row.id)
+        group_dao.associate_all_member_users(group_row, [])
 
+        group = self.session.query(Group).first()
         assert_that(group, equal_to(group_row))
         assert_that(group.users, empty())
 

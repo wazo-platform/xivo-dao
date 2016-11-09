@@ -65,3 +65,8 @@ def edit(session, group):
 @daosession
 def delete(session, group):
     GroupPersistor(session, group_search).delete(group)
+
+
+@daosession
+def associate_all_member_users(session, group, users):
+    GroupPersistor(session, group_search).associate_all_member_users(group, users)

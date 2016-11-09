@@ -79,7 +79,10 @@ class GroupFeatures(Base):
                                  cascade='all, delete-orphan',
                                  foreign_keys='QueueMember.queue_name')
 
-    users = association_proxy('group_members', 'user')
+    users = association_proxy('group_members', 'user',
+                              creator=lambda _user: QueueMember(category='group',
+                                                                usertype='user',
+                                                                user=_user))
 
     queue = relationship('Queue',
                          primaryjoin="""and_(Queue.category == 'group',
@@ -133,18 +136,6 @@ class GroupFeatures(Base):
                                category='group',
                                autofill=1,
                                announce_position='no')
-
-    def associate_user(self, user, **kwargs):
-        member = QueueMember(category='group',
-                             usertype='user',
-                             userid=user.id,
-                             **kwargs)
-        member.user = user
-        member.fix()
-        self.group_members.append(member)
-
-    def dissociate_user(self, user):
-        self.users.remove(user)
 
     def fix_group(self):
         if self.queue:
