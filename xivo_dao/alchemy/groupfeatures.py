@@ -75,6 +75,7 @@ class GroupFeatures(Base):
     group_members = relationship('QueueMember',
                                  primaryjoin="""and_(QueueMember.category == 'group',
                                                      QueueMember.queue_name == GroupFeatures.name)""",
+                                 order_by='QueueMember.position',
                                  collection_class=ordering_list('position', count_from=1),
                                  cascade='all, delete-orphan',
                                  foreign_keys='QueueMember.queue_name')
