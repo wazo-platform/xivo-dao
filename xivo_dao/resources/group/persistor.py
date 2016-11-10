@@ -21,6 +21,7 @@ from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.schedulepath import SchedulePath
 
 from xivo_dao.helpers import errors
+from xivo_dao.helpers.db_manager import Session
 from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
 
 
@@ -60,7 +61,7 @@ class GroupPersistor(CriteriaBuilderMixin):
         return group
 
     def edit(self, group):
-        group.fix()
+        group.fix_group()
         self.session.add(group)
         self.session.flush()
 
@@ -83,3 +84,10 @@ class GroupPersistor(CriteriaBuilderMixin):
         for extension in group.extensions:
             extension.type = 'user'
             extension.typeval = '0'
+
+    def associate_all_member_users(self, group, users):
+        with Session.no_autoflush:
+            group.users = users
+            for member in group.group_members:
+                member.fix()
+        self.session.flush()

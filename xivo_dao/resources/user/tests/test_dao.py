@@ -925,3 +925,23 @@ class TestRelationship(DAOTestCase):
         user = user_dao.get(user_row.id)
         assert_that(user, equal_to(user_row))
         assert_that(user.incalls, contains_inanyorder(incall1_row, incall2_row))
+
+    def test_groups_relationship(self):
+        user_row = self.add_user()
+        sip = self.add_usersip()
+        line = self.add_line(protocol='sip', protocolid=sip.id)
+        self.add_user_line(user_id=user_row.id, line_id=line.id)
+        group1 = self.add_group()
+        group2 = self.add_group()
+        for group in [group1, group2]:
+            self.add_queue_member(queue_name=group.name,
+                                  usertype='user',
+                                  category='group',
+                                  interface='SIP/{}'.format(sip.name),
+                                  userid=user_row.id,
+                                  channel='SIP')
+
+        user = user_dao.get(user_row.id)
+
+        assert_that(user, equal_to(user_row))
+        assert_that(user.groups, contains_inanyorder(group1, group2))

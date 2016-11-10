@@ -24,6 +24,7 @@ from sqlalchemy.types import Integer, String
 
 from xivo_dao.alchemy.callerid import Callerid
 from xivo_dao.alchemy.queue import Queue
+from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -71,12 +72,18 @@ class GroupFeatures(Base):
                               foreign_keys='Extension.typeval',
                               back_populates='group')
 
-    queue_members = relationship('QueueMember',
+    group_members = relationship('QueueMember',
                                  primaryjoin="""and_(QueueMember.category == 'group',
                                                      QueueMember.queue_name == GroupFeatures.name)""",
+                                 order_by='QueueMember.position',
                                  collection_class=ordering_list('position', count_from=1),
                                  cascade='all, delete-orphan',
                                  foreign_keys='QueueMember.queue_name')
+
+    users = association_proxy('group_members', 'user',
+                              creator=lambda _user: QueueMember(category='group',
+                                                                usertype='user',
+                                                                user=_user))
 
     queue = relationship('Queue',
                          primaryjoin="""and_(Queue.category == 'group',
@@ -131,10 +138,15 @@ class GroupFeatures(Base):
                                autofill=1,
                                announce_position='no')
 
-    def fix(self):
+    @property
+    def members(self):
+        return self
+
+    def fix_group(self):
         if self.queue:
             self.queue.name = self.name
 
+    def fix_extension(self):
         for extension in self.extensions:
             self.number = extension.exten
             self.context = extension.context

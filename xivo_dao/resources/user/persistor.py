@@ -112,9 +112,6 @@ class UserPersistor(CriteriaBuilderMixin):
         self.session.flush()
 
     def delete(self, user):
-        (self.session.query(QueueMember).filter(QueueMember.usertype == 'user')
-         .filter(QueueMember.userid == user.id)
-         .delete())
         (self.session.query(RightCallMember).filter(RightCallMember.type == 'user')
          .filter(RightCallMember.typeval == str(user.id))
          .delete())
