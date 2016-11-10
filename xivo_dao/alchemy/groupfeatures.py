@@ -138,6 +138,10 @@ class GroupFeatures(Base):
                                autofill=1,
                                announce_position='no')
 
+    @property
+    def members(self):
+        return self
+
     def fix_group(self):
         if self.queue:
             self.queue.name = self.name
