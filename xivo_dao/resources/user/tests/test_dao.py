@@ -933,8 +933,13 @@ class TestRelationship(DAOTestCase):
         self.add_user_line(user_id=user_row.id, line_id=line.id)
         group1 = self.add_group()
         group2 = self.add_group()
-        group1.associate_user(user_row)
-        group2.associate_user(user_row)
+        for group in [group1, group2]:
+            self.add_queue_member(queue_name=group.name,
+                                  usertype='user',
+                                  category='group',
+                                  interface='SIP/{}'.format(sip.name),
+                                  userid=user_row.id,
+                                  channel='SIP')
 
         user = user_dao.get(user_row.id)
 
