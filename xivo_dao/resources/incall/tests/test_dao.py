@@ -415,6 +415,14 @@ class TestRelationship(DAOTestCase):
         assert_that(incall, equal_to(incall_row))
         assert_that(incall.extensions, contains(extension_row))
 
+    def test_group_relationship(self):
+        group_row = self.add_group()
+        incall_row = self.add_incall(destination=Dialaction(action='group',
+                                                            actionarg1=str(group_row.id)))
+        incall = incall_dao.get(incall_row.id)
+        assert_that(incall, equal_to(incall_row))
+        assert_that(incall.destination.group, group_row)
+
     def test_user_relationship(self):
         user_row = self.add_user()
         incall_row = self.add_incall(destination=Dialaction(action='user',

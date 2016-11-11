@@ -72,6 +72,15 @@ class GroupFeatures(Base):
                               foreign_keys='Extension.typeval',
                               back_populates='group')
 
+    incall_dialactions = relationship('Dialaction',
+                                      primaryjoin="""and_(Dialaction.category == 'incall',
+                                           Dialaction.action == 'group',
+                                           Dialaction.actionarg1 == cast(GroupFeatures.id, String))""",
+                                      viewonly=True,
+                                      foreign_keys='Dialaction.actionarg1')
+
+    incalls = association_proxy('incall_dialactions', 'incall')
+
     group_members = relationship('QueueMember',
                                  primaryjoin="""and_(QueueMember.category == 'group',
                                                      QueueMember.queue_name == GroupFeatures.name)""",

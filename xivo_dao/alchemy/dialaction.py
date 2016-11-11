@@ -47,6 +47,11 @@ class Dialaction(Base):
     actionarg2 = Column(String(255))
     linked = Column(Integer, nullable=False, server_default='0')
 
+    group = relationship('GroupFeatures',
+                         primaryjoin="""and_(Dialaction.action == 'group',
+                                             Dialaction.actionarg1 == cast(GroupFeatures.id, String))""",
+                         foreign_keys='Dialaction.actionarg1')
+
     user = relationship('UserFeatures',
                         primaryjoin="""and_(Dialaction.action == 'user',
                                             Dialaction.actionarg1 == cast(UserFeatures.id, String))""",
