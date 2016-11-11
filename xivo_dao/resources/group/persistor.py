@@ -61,7 +61,6 @@ class GroupPersistor(CriteriaBuilderMixin):
         return group
 
     def edit(self, group):
-        group.fix_group()
         self.session.add(group)
         self.session.flush()
 

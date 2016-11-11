@@ -78,6 +78,7 @@ class GroupFeatures(Base):
                                  order_by='QueueMember.position',
                                  collection_class=ordering_list('position', count_from=1),
                                  cascade='all, delete-orphan',
+                                 passive_updates=False,
                                  foreign_keys='QueueMember.queue_name')
 
     users = association_proxy('group_members', 'user',
@@ -90,6 +91,7 @@ class GroupFeatures(Base):
                                              Queue.name == GroupFeatures.name)""",
                          uselist=False,
                          cascade='all, delete-orphan',
+                         passive_updates=False,
                          foreign_keys='Queue.name')
 
     enabled = association_proxy('queue', 'enabled')
@@ -141,10 +143,6 @@ class GroupFeatures(Base):
     @property
     def members(self):
         return self
-
-    def fix_group(self):
-        if self.queue:
-            self.queue.name = self.name
 
     def fix_extension(self):
         for extension in self.extensions:
