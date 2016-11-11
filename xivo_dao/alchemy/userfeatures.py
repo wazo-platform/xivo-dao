@@ -164,7 +164,8 @@ class UserFeatures(Base):
     incalls = association_proxy('incall_dialactions', 'incall')
 
     group_members = relationship('QueueMember',
-                                 primaryjoin="""and_(QueueMember.usertype == 'user',
+                                 primaryjoin="""and_(QueueMember.category == 'group',
+                                                     QueueMember.usertype == 'user',
                                                      QueueMember.userid == UserFeatures.id)""",
                                  cascade='all, delete-orphan',
                                  foreign_keys='QueueMember.userid')

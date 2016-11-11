@@ -22,6 +22,7 @@ import uuid
 
 from hamcrest import assert_that
 from hamcrest import equal_to
+from hamcrest import empty
 from hamcrest import has_property
 from hamcrest import has_properties
 from hamcrest import is_not
@@ -945,3 +946,21 @@ class TestRelationship(DAOTestCase):
 
         assert_that(user, equal_to(user_row))
         assert_that(user.groups, contains_inanyorder(group1, group2))
+
+    def test_groups_relationship_when_user_member_of_queue(self):
+        user_row = self.add_user()
+        sip = self.add_usersip()
+        line = self.add_line(protocol='sip', protocolid=sip.id)
+        self.add_user_line(user_id=user_row.id, line_id=line.id)
+        queue = self.add_queuefeatures()
+        self.add_queue_member(queue_name=queue.name,
+                              usertype='user',
+                              category='queue',
+                              interface='SIP/{}'.format(sip.name),
+                              userid=user_row.id,
+                              channel='SIP')
+
+        user = user_dao.get(user_row.id)
+
+        assert_that(user, equal_to(user_row))
+        assert_that(user.groups, empty())
