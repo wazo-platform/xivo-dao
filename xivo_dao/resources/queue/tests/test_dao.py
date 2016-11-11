@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 
 # Copyright (C) 2015 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,3 +36,14 @@ class TestQueueExist(DAOTestCase):
         result = queue_dao.exists(queue_row.id)
 
         assert_that(result, equal_to(True))
+
+
+class TestFindBy(DAOTestCase):
+
+    def test_find_by_name(self):
+        queue_row = self.add_queuefeatures(name='myname')
+
+        queue = queue_dao.find_by(name='myname')
+
+        assert_that(queue, equal_to(queue_row))
+        assert_that(queue.name, equal_to('myname'))

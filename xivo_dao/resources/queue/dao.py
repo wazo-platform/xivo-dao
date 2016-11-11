@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 
 # Copyright (C) 2015 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,3 +28,12 @@ def exists(session, queue_id):
              )
 
     return query.count() > 0
+
+
+@daosession
+def find_by(session, name):
+    query = (session.query(QueueFeatures)
+             .filter_by(name=name)
+             )
+
+    return query.first()
