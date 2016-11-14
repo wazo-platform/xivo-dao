@@ -18,6 +18,7 @@
 
 from sqlalchemy import sql, Boolean
 
+from sqlalchemy.orm.attributes import get_history
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint, \
     Index
 from sqlalchemy.types import Integer, String
@@ -53,6 +54,20 @@ class Voicemail(Base):
     options = Column(ARRAY(String, dimensions=2),
                      nullable=False, server_default='{}')
     commented = Column(Integer, nullable=False, server_default='0')
+
+    def get_old_number_context(self):
+        number_history = get_history(self, 'mailbox')
+        context_history = get_history(self, 'context')
+
+        old_number = self.number
+        if number_history[2]:
+            old_number = number_history[2][0]
+
+        old_context = self.context
+        if context_history[2]:
+            old_context = context_history[2][0]
+
+        return old_number, old_context
 
     @hybrid_property
     def id(self):
