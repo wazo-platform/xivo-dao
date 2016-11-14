@@ -18,13 +18,16 @@
 
 from sqlalchemy import sql, Boolean
 
-from sqlalchemy.orm.attributes import get_history
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint, \
-    Index
-from sqlalchemy.types import Integer, String
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import relationship
+from sqlalchemy.orm.attributes import get_history
+from sqlalchemy.schema import (Column,
+                               Index,
+                               PrimaryKeyConstraint,
+                               UniqueConstraint)
 from sqlalchemy.sql import cast, not_
+from sqlalchemy.types import Integer, String
 
 from xivo_dao.helpers.db_manager import Base
 
@@ -54,6 +57,9 @@ class Voicemail(Base):
     options = Column(ARRAY(String, dimensions=2),
                      nullable=False, server_default='{}')
     commented = Column(Integer, nullable=False, server_default='0')
+
+    users = relationship('UserFeatures',
+                         back_populates='voicemail')
 
     def get_old_number_context(self):
         number_history = get_history(self, 'mailbox')

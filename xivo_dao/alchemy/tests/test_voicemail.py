@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, equal_to
+from hamcrest import assert_that, contains_inanyorder, equal_to
 
 from xivo_dao.tests.test_dao import DAOTestCase
 
@@ -49,3 +49,13 @@ class TestGetOldNumberContext(DAOTestCase):
 
         assert_that(old_number, equal_to('1000'))
         assert_that(old_context, equal_to('default'))
+
+
+class TestUsers(DAOTestCase):
+
+    def test_getter(self):
+        voicemail = self.add_voicemail()
+        user1 = self.add_user(voicemail_id=voicemail.id)
+        user2 = self.add_user(voicemail_id=voicemail.id)
+
+        assert_that(voicemail.users, contains_inanyorder(user1, user2))

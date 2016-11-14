@@ -144,7 +144,8 @@ class UserFeatures(Base):
     main_line_rel = relationship("UserLine",
                                  primaryjoin="""and_(UserFeatures.id == UserLine.user_id,
                                                      UserLine.main_line == True)""")
-    voicemail = relationship("Voicemail")
+    voicemail = relationship("Voicemail",
+                             back_populates="users")
     cti_profile = relationship("CtiProfile")
 
     user_lines = relationship('UserLine',
