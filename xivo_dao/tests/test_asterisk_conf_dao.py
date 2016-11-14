@@ -670,7 +670,7 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
                     'attach': None,
                     'mailbox': vm.mailbox,
                     'uniqueid': vm.uniqueid,
-                    'password': u'',
+                    'password': None,
                     'pager': None,
                     'language': None,
                     'commented': 0,

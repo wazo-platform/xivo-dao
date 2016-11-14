@@ -783,8 +783,9 @@ class DAOTestCase(unittest.TestCase):
         return cel.id
 
     def add_voicemail(self, **kwargs):
+        if not kwargs.get('number'):
+            kwargs.setdefault('mailbox', ''.join(random.choice('0123456789_*X.') for _ in range(6)))
         kwargs.setdefault('fullname', 'Auto Voicemail')
-        kwargs.setdefault('mailbox', ''.join(random.choice('0123456789_*X.') for _ in range(6)))
         kwargs.setdefault('context', 'unittest')
         kwargs.setdefault('uniqueid', self._generate_int())
 
