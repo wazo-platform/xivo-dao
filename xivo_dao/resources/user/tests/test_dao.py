@@ -35,7 +35,6 @@ from xivo_dao.alchemy.userfeatures import UserFeatures as User
 from xivo_dao.alchemy.schedule import Schedule
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.rightcallmember import RightCallMember
-from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from xivo_dao.alchemy.func_key import FuncKey
@@ -866,8 +865,6 @@ class TestDelete(TestUser):
 
     def test_delete_references_to_other_tables(self):
         user = user_dao.create(User(firstname='Delete'))
-        self.add_queue_member(category='group', usertype='user', userid=user.id)
-        self.add_queue_member(category='queue', usertype='user', userid=user.id)
         self.add_right_call_member(type='user', typeval=str(user.id))
         self.add_schedule_path(path='user', pathid=user.id)
         call_filter = self.add_bsfilter()
@@ -875,7 +872,6 @@ class TestDelete(TestUser):
 
         user_dao.delete(user)
 
-        assert_that(self.session.query(QueueMember).first(), none())
         assert_that(self.session.query(RightCallMember).first(), none())
         assert_that(self.session.query(Dialaction).first(), none())
         assert_that(self.session.query(SchedulePath).first(), none())

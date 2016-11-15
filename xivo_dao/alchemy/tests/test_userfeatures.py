@@ -17,12 +17,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from hamcrest import (assert_that,
+                      contains,
+                      contains_inanyorder,
                       empty,
                       equal_to,
-                      contains,
-                      contains_inanyorder)
+                      none)
 
 from xivo_dao.alchemy.dialaction import Dialaction
+from xivo_dao.alchemy.queuemember import QueueMember
+from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.tests.test_dao import DAOTestCase
 
@@ -82,9 +85,50 @@ class TestQueueMembers(DAOTestCase):
 
     def test_getter(self):
         user = self.add_user()
-        queue1 = self.add_queuefeatures()
-        queue2 = self.add_queuefeatures()
-        qm1 = self.add_queue_member(queue_name=queue1.name, category='queue', usertype='user', userid=user.id)
-        qm2 = self.add_queue_member(queue_name=queue2.name, category='queue', usertype='user', userid=user.id)
+        qm1 = self.add_queue_member(category='queue', usertype='user', userid=user.id)
+        qm2 = self.add_queue_member(category='queue', usertype='user', userid=user.id)
 
         assert_that(user.queue_members, contains_inanyorder(qm1, qm2))
+
+
+class TestVoicemail(DAOTestCase):
+
+    def test_getter(self):
+        voicemail = self.add_voicemail()
+        user = self.add_user(voicemail_id=voicemail.id)
+
+        assert_that(user.voicemail, equal_to(voicemail))
+
+
+class TestDelete(DAOTestCase):
+
+    def test_group_members_are_deleted(self):
+        user = self.add_user()
+        self.add_queue_member(category='group', usertype='user', userid=user.id)
+
+        self.session.delete(user)
+        self.session.flush()
+
+        row = self.session.query(QueueMember).first()
+        assert_that(row, none())
+
+    def test_queue_members_are_deleted(self):
+        user = self.add_user()
+        self.add_queue_member(category='queue', usertype='user', userid=user.id)
+
+        self.session.delete(user)
+        self.session.flush()
+
+        row = self.session.query(QueueMember).first()
+        assert_that(row, none())
+
+    def test_user_lines_are_deleted(self):
+        user = self.add_user()
+        line = self.add_line()
+        self.add_user_line(user_id=user.id, line_id=line.id)
+
+        self.session.delete(user)
+        self.session.flush()
+
+        row = self.session.query(UserLine).first()
+        assert_that(row, none())
