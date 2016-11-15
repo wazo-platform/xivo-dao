@@ -27,6 +27,7 @@ from hamcrest import (assert_that,
                       not_)
 
 from xivo_dao.alchemy.callerid import Callerid
+from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup
 from xivo_dao.alchemy.groupfeatures import GroupFeatures as Group
@@ -458,6 +459,15 @@ class TestDelete(DAOTestCase, FuncKeyHelper):
 
         funckey = self.session.query(FuncKeyDestGroup).first()
         assert_that(funckey, none())
+
+    def test_when_deleting_then_dialactions_are_unlinked(self):
+        group = self.add_group()
+        self.add_dialaction(action='group', actionarg1=str(group.id), linked=1)
+
+        group_dao.delete(group)
+
+        dialaction = self.session.query(Dialaction).filter(Dialaction.actionarg1 == str(group.id)).first()
+        assert_that(dialaction, has_properties(linked=0))
 
 
 class TestAssociateMemberUsers(DAOTestCase):
