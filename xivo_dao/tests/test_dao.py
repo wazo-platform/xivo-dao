@@ -431,7 +431,7 @@ class DAOTestCase(unittest.TestCase):
         return line_extension
 
     def add_extension(self, **kwargs):
-        kwargs.setdefault('exten', '%s' % random.randint(1000, 1999))
+        kwargs.setdefault('exten', '%s' % self._generate_random_exten())
         kwargs.setdefault('type', 'user')
         kwargs.setdefault('context', 'default')
         kwargs.setdefault('id', self._generate_int())
@@ -439,6 +439,17 @@ class DAOTestCase(unittest.TestCase):
         extension = Extension(**kwargs)
         self.add_me(extension)
         return extension
+
+    def _generate_random_exten(self):
+        extensions = self.session.query(Extension).all()
+        extens = [extension.exten for extension in extensions]
+        return self._random_exten(extens)
+
+    def _random_exten(self, extens):
+        exten = str(random.randint(1, 3))
+        if exten in extens:
+            return self._random_exten(extens)
+        return exten
 
     def add_ivr(self, **kwargs):
         kwargs.setdefault('name', self._random_name())
