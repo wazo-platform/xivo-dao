@@ -135,6 +135,7 @@ class TestUserVoicemailFindAllByVoicemailId(TestUserVoicemail):
                                                                  exten='1000',
                                                                  context='default')
         expected = UserVoicemail(user_id=user_row.id,
+                                 user_uuid=user_row.uuid,
                                  voicemail_id=voicemail_row.uniqueid,
                                  enabled=True)
 
@@ -150,9 +151,11 @@ class TestUserVoicemailFindAllByVoicemailId(TestUserVoicemail):
         self.link_user_and_voicemail(second_user, voicemail_row.uniqueid)
 
         expected = has_items(UserVoicemail(user_id=first_user.id,
+                                           user_uuid=first_user.uuid,
                                            voicemail_id=voicemail_row.uniqueid,
                                            enabled=True),
                              UserVoicemail(user_id=second_user.id,
+                                           user_uuid=second_user.uuid,
                                            voicemail_id=voicemail_row.uniqueid,
                                            enabled=True))
 

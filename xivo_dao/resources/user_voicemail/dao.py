@@ -31,6 +31,7 @@ COLUMNS = {'user_id': UserSchema.id,
 
 def find_query(session, criteria):
     query = (session.query(UserSchema.id.label('user_id'),
+                           UserSchema.uuid.label('user_uuid'),
                            UserSchema.voicemailid.label('voicemail_id'),
                            UserSchema.enablevoicemail)
              .filter(UserSchema.voicemailid != None)  # noqa
