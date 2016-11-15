@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 
 # Copyright (C) 2015-2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,7 +20,6 @@
 from xivo_dao.alchemy.userfeatures import UserFeatures as User
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.rightcallmember import RightCallMember
-from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate

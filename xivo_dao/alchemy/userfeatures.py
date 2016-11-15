@@ -173,6 +173,13 @@ class UserFeatures(Base):
 
     groups = association_proxy('group_members', 'group')
 
+    queue_members = relationship('QueueMember',
+                                 primaryjoin="""and_(QueueMember.category == 'queue',
+                                                     QueueMember.usertype == 'user',
+                                                     QueueMember.userid == UserFeatures.id)""",
+                                 cascade='all, delete-orphan',
+                                 foreign_keys='QueueMember.userid')
+
     def extrapolate_caller_id(self, extension=None):
         default_num = extension.exten if extension else None
         user_match = caller_id_regex.match(self.callerid)
