@@ -868,7 +868,8 @@ class TestDelete(TestUser):
 
     def test_delete_references_to_other_tables(self):
         user = user_dao.create(User(firstname='Delete'))
-        self.add_queue_member(usertype='user', userid=user.id)
+        self.add_queue_member(category='group', usertype='user', userid=user.id)
+        self.add_queue_member(category='queue', usertype='user', userid=user.id)
         self.add_right_call_member(type='user', typeval=str(user.id))
         self.add_schedule_path(path='user', pathid=user.id)
         call_filter = self.add_bsfilter()
@@ -964,3 +965,12 @@ class TestRelationship(DAOTestCase):
 
         assert_that(user, equal_to(user_row))
         assert_that(user.groups, empty())
+
+    def test_queue_members_relationship(self):
+        user_row = self.add_user()
+        qm1 = self.add_queue_member(category='queue', usertype='user', userid=user_row.id)
+        qm2 = self.add_queue_member(category='queue', usertype='user', userid=user_row.id)
+
+        user = user_dao.get(user_row.id)
+        assert_that(user, equal_to(user_row))
+        assert_that(user.queue_members, contains_inanyorder(qm1, qm2))

@@ -144,7 +144,8 @@ class UserFeatures(Base):
     main_line_rel = relationship("UserLine",
                                  primaryjoin="""and_(UserFeatures.id == UserLine.user_id,
                                                      UserLine.main_line == True)""")
-    voicemail = relationship("Voicemail")
+    voicemail = relationship("Voicemail",
+                             back_populates="users")
     cti_profile = relationship("CtiProfile")
 
     user_lines = relationship('UserLine',
@@ -171,6 +172,13 @@ class UserFeatures(Base):
                                  foreign_keys='QueueMember.userid')
 
     groups = association_proxy('group_members', 'group')
+
+    queue_members = relationship('QueueMember',
+                                 primaryjoin="""and_(QueueMember.category == 'queue',
+                                                     QueueMember.usertype == 'user',
+                                                     QueueMember.userid == UserFeatures.id)""",
+                                 cascade='all, delete-orphan',
+                                 foreign_keys='QueueMember.userid')
 
     def extrapolate_caller_id(self, extension=None):
         default_num = extension.exten if extension else None
