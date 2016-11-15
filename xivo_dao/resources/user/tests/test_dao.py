@@ -22,14 +22,12 @@ import uuid
 
 from hamcrest import assert_that
 from hamcrest import equal_to
-from hamcrest import empty
 from hamcrest import has_property
 from hamcrest import has_properties
 from hamcrest import is_not
 from hamcrest import none
 from hamcrest import has_items
 from hamcrest import contains
-from hamcrest import contains_inanyorder
 from hamcrest import not_
 
 from xivo_dao.alchemy.entity import Entity
@@ -899,78 +897,3 @@ class TestDelete(TestUser):
         self.session.add(schedule_path)
         self.session.flush()
         return schedule_path
-
-
-class TestRelationship(DAOTestCase):
-
-    def test_lines_relationship(self):
-        line1_row = self.add_line()
-        line2_row = self.add_line()
-        user_row = self.add_user()
-        self.add_user_line(user_id=user_row.id,
-                           line_id=line1_row.id,
-                           main_line=False)
-        self.add_user_line(user_id=user_row.id,
-                           line_id=line2_row.id,
-                           main_line=True)
-
-        user = user_dao.get(user_row.id)
-        assert_that(user, equal_to(user_row))
-        assert_that(user.lines, contains(line2_row, line1_row))
-
-    def test_incalls_relationship(self):
-        user_row = self.add_user()
-        incall1_row = self.add_incall(destination=Dialaction(action='user',
-                                                             actionarg1=str(user_row.id)))
-        incall2_row = self.add_incall(destination=Dialaction(action='user',
-                                                             actionarg1=str(user_row.id)))
-        user = user_dao.get(user_row.id)
-        assert_that(user, equal_to(user_row))
-        assert_that(user.incalls, contains_inanyorder(incall1_row, incall2_row))
-
-    def test_groups_relationship(self):
-        user_row = self.add_user()
-        sip = self.add_usersip()
-        line = self.add_line(protocol='sip', protocolid=sip.id)
-        self.add_user_line(user_id=user_row.id, line_id=line.id)
-        group1 = self.add_group()
-        group2 = self.add_group()
-        for group in [group1, group2]:
-            self.add_queue_member(queue_name=group.name,
-                                  usertype='user',
-                                  category='group',
-                                  interface='SIP/{}'.format(sip.name),
-                                  userid=user_row.id,
-                                  channel='SIP')
-
-        user = user_dao.get(user_row.id)
-
-        assert_that(user, equal_to(user_row))
-        assert_that(user.groups, contains_inanyorder(group1, group2))
-
-    def test_groups_relationship_when_user_member_of_queue(self):
-        user_row = self.add_user()
-        sip = self.add_usersip()
-        line = self.add_line(protocol='sip', protocolid=sip.id)
-        self.add_user_line(user_id=user_row.id, line_id=line.id)
-        queue = self.add_queuefeatures()
-        self.add_queue_member(queue_name=queue.name,
-                              usertype='user',
-                              category='queue',
-                              interface='SIP/{}'.format(sip.name),
-                              userid=user_row.id,
-                              channel='SIP')
-
-        user = user_dao.get(user_row.id)
-
-        assert_that(user, equal_to(user_row))
-        assert_that(user.groups, empty())
-
-    def test_queue_members_relationship(self):
-        user_row = self.add_user()
-        qm1 = self.add_queue_member(category='queue', usertype='user', userid=user_row.id)
-        qm2 = self.add_queue_member(category='queue', usertype='user', userid=user_row.id)
-
-        user = user_dao.get(user_row.id)
-        assert_that(user, equal_to(user_row))
-        assert_that(user.queue_members, contains_inanyorder(qm1, qm2))
