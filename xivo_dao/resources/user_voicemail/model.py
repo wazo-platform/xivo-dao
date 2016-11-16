@@ -20,6 +20,7 @@ from xivo_dao.helpers.new_model import NewModel
 
 DB_TO_MODEL_MAPPING = {
     'user_id': 'user_id',
+    'user_uuid': 'user_uuid',
     'voicemail_id': 'voicemail_id',
 }
 
@@ -33,6 +34,7 @@ class UserVoicemail(NewModel):
 
     FIELDS = [
         'user_id',
+        'user_uuid',
         'voicemail_id',
         'enabled'
     ]
