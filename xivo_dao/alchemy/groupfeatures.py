@@ -81,6 +81,12 @@ class GroupFeatures(Base):
 
     incalls = association_proxy('incall_dialactions', 'incall')
 
+    group_dialactions = relationship('Dialaction',
+                                     primaryjoin="""and_(Dialaction.category == 'group',
+                                         Dialaction.categoryval == cast(GroupFeatures.id, String))""",
+                                     cascade='all, delete-orphan',
+                                     foreign_keys='Dialaction.categoryval')
+
     group_members = relationship('QueueMember',
                                  primaryjoin="""and_(QueueMember.category == 'group',
                                                      QueueMember.queue_name == GroupFeatures.name)""",

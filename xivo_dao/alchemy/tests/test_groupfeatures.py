@@ -15,7 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, contains_inanyorder
+from hamcrest import (assert_that,
+                      contains_inanyorder,
+                      none)
 
 from xivo_dao.alchemy.dialaction import Dialaction
 
@@ -32,3 +34,16 @@ class TestIncalls(DAOTestCase):
                                                          actionarg1=str(group.id)))
 
         assert_that(group.incalls, contains_inanyorder(incall1, incall2))
+
+
+class TestDelete(DAOTestCase):
+
+    def test_group_dialactions_are_deleted(self):
+        group = self.add_group()
+        self.add_dialaction(category='group', categoryval=str(group.id))
+
+        self.session.delete(group)
+        self.session.flush()
+
+        row = self.session.query(Dialaction).first()
+        assert_that(row, none())

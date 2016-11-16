@@ -16,6 +16,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.groupfeatures import GroupFeatures as Group
 from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.schedulepath import SchedulePath
@@ -79,6 +80,11 @@ class GroupPersistor(CriteriaBuilderMixin):
          .filter(SchedulePath.path == 'group')
          .filter(SchedulePath.pathid == group.id)
          .delete())
+
+        (self.session.query(Dialaction)
+         .filter(Dialaction.action == 'group')
+         .filter(Dialaction.actionarg1 == str(group.id))
+         .update({'linked': 0}))
 
         for extension in group.extensions:
             extension.type = 'user'
