@@ -51,6 +51,7 @@ class TrunkFeatures(Base):
                                     TrunkFeatures.protocolid == UserSIP.id
                                 )""",
                                 foreign_keys='TrunkFeatures.protocolid',
+                                viewonly=True,
                                 back_populates='trunk')
 
     endpoint_iax = relationship('UserIAX',
@@ -59,6 +60,7 @@ class TrunkFeatures(Base):
                                     TrunkFeatures.protocolid == UserIAX.id
                                 )""",
                                 foreign_keys='TrunkFeatures.protocolid',
+                                viewonly=True,
                                 back_populates='trunk_rel')
 
     endpoint_custom = relationship('UserCustom',
@@ -67,6 +69,7 @@ class TrunkFeatures(Base):
                                        TrunkFeatures.protocolid == UserCustom.id
                                    )""",
                                    foreign_keys='TrunkFeatures.protocolid',
+                                   viewonly=True,
                                    back_populates='trunk')
 
     outcall_trunks = relationship('OutcallTrunk',

@@ -38,8 +38,8 @@ class IVRChoice(Base):
                               primaryjoin="""and_(Dialaction.category == 'ivr_choice',
                                                   Dialaction.categoryval == cast(IVRChoice.id, String))""",
                               foreign_keys='Dialaction.categoryval',
-                              uselist=False,
-                              cascade='all, delete-orphan')
+                              cascade='all, delete-orphan',
+                              uselist=False)
 
     @property
     def destination(self):

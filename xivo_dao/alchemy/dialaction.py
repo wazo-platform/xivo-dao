@@ -50,27 +50,32 @@ class Dialaction(Base):
     group = relationship('GroupFeatures',
                          primaryjoin="""and_(Dialaction.action == 'group',
                                              Dialaction.actionarg1 == cast(GroupFeatures.id, String))""",
-                         foreign_keys='Dialaction.actionarg1')
+                         foreign_keys='Dialaction.actionarg1',
+                         viewonly=True)
 
     user = relationship('UserFeatures',
                         primaryjoin="""and_(Dialaction.action == 'user',
                                             Dialaction.actionarg1 == cast(UserFeatures.id, String))""",
-                        foreign_keys='Dialaction.actionarg1')
+                        foreign_keys='Dialaction.actionarg1',
+                        viewonly=True)
 
     ivr = relationship('IVR',
                        primaryjoin="""and_(Dialaction.action == 'ivr',
                                            Dialaction.actionarg1 == cast(IVR.id, String))""",
-                       foreign_keys='Dialaction.actionarg1')
+                       foreign_keys='Dialaction.actionarg1',
+                       viewonly=True)
 
     voicemail = relationship('Voicemail',
                              primaryjoin="""and_(Dialaction.action == 'voicemail',
                                                  Dialaction.actionarg1 == cast(Voicemail.id, String))""",
-                             foreign_keys='Dialaction.actionarg1')
+                             foreign_keys='Dialaction.actionarg1',
+                             viewonly=True)
 
     incall = relationship('Incall',
                           primaryjoin="""and_(Dialaction.category == 'incall',
                                               Dialaction.categoryval == cast(Incall.id, String))""",
                           foreign_keys='Dialaction.categoryval',
+                          viewonly=True,
                           back_populates='dialaction')
 
     @classmethod

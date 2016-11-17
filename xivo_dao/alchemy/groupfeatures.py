@@ -55,8 +55,8 @@ class GroupFeatures(Base):
                              primaryjoin="""and_(Callerid.type == 'group',
                                                  Callerid.typeval == GroupFeatures.id)""",
                              foreign_keys='Callerid.typeval',
-                             uselist=False,
-                             cascade='all, delete-orphan')
+                             cascade='all, delete-orphan',
+                             uselist=False)
 
     caller_id_mode = association_proxy('caller_id', 'mode',
                                        creator=lambda _mode: Callerid(type='group',
@@ -68,16 +68,16 @@ class GroupFeatures(Base):
     extensions = relationship('Extension',
                               primaryjoin="""and_(Extension.type == 'group',
                                                   Extension.typeval == cast(GroupFeatures.id, String))""",
-                              viewonly=True,
                               foreign_keys='Extension.typeval',
+                              viewonly=True,
                               back_populates='group')
 
     incall_dialactions = relationship('Dialaction',
                                       primaryjoin="""and_(Dialaction.category == 'incall',
                                            Dialaction.action == 'group',
                                            Dialaction.actionarg1 == cast(GroupFeatures.id, String))""",
-                                      viewonly=True,
-                                      foreign_keys='Dialaction.actionarg1')
+                                      foreign_keys='Dialaction.actionarg1',
+                                      viewonly=True)
 
     incalls = association_proxy('incall_dialactions', 'incall')
 
@@ -91,10 +91,10 @@ class GroupFeatures(Base):
                                  primaryjoin="""and_(QueueMember.category == 'group',
                                                      QueueMember.queue_name == GroupFeatures.name)""",
                                  order_by='QueueMember.position',
+                                 foreign_keys='QueueMember.queue_name',
                                  collection_class=ordering_list('position', count_from=1),
                                  cascade='all, delete-orphan',
-                                 passive_updates=False,
-                                 foreign_keys='QueueMember.queue_name')
+                                 passive_updates=False)
 
     users = association_proxy('group_members', 'user',
                               creator=lambda _user: QueueMember(category='group',
@@ -104,10 +104,10 @@ class GroupFeatures(Base):
     queue = relationship('Queue',
                          primaryjoin="""and_(Queue.category == 'group',
                                              Queue.name == GroupFeatures.name)""",
-                         uselist=False,
+                         foreign_keys='Queue.name',
                          cascade='all, delete-orphan',
-                         passive_updates=False,
-                         foreign_keys='Queue.name')
+                         uselist=False,
+                         passive_updates=False)
 
     enabled = association_proxy('queue', 'enabled')
     music_on_hold = association_proxy('queue', 'musicclass')

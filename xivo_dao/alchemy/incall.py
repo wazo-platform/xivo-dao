@@ -52,8 +52,8 @@ class Incall(Base):
                              primaryjoin="""and_(Callerid.type == 'incall',
                                                  Callerid.typeval == Incall.id)""",
                              foreign_keys='Callerid.typeval',
-                             uselist=False,
-                             cascade='all, delete-orphan')
+                             cascade='all, delete-orphan',
+                             uselist=False)
 
     caller_id_mode = association_proxy('caller_id', 'mode',
                                        creator=lambda _mode: Callerid(type='incall',
@@ -66,14 +66,15 @@ class Incall(Base):
                               primaryjoin="""and_(Dialaction.category == 'incall',
                                                   Dialaction.categoryval == cast(Incall.id, String))""",
                               foreign_keys='Dialaction.categoryval',
-                              uselist=False,
                               cascade='all, delete-orphan',
+                              uselist=False,
                               back_populates='incall')
 
     extensions = relationship('Extension',
                               primaryjoin="""and_(Extension.type == 'incall',
                                                   Extension.typeval == cast(Incall.id, String))""",
                               foreign_keys='Extension.typeval',
+                              viewonly=True,
                               back_populates='incall')
 
     @property
