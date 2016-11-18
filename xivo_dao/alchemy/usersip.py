@@ -139,13 +139,8 @@ class UserSIP(Base):
     port = Column(Integer)
     regexten = Column(String(80))
     subscribecontext = Column(String(80))
-    fullcontact = Column(String(255))
     vmexten = Column(String(40))
     callingpres = Column(Integer)
-    ipaddr = Column(String(255), nullable=False, server_default='')
-    regseconds = Column(Integer, nullable=False, server_default='0')
-    regserver = Column(String(20))
-    lastms = Column(String(15), nullable=False, server_default='')
     parkinglot = Column(Integer)
     protocol = Column(enum.trunk_protocol, nullable=False, server_default='sip')
     category = Column(Enum('user', 'trunk',
@@ -228,15 +223,12 @@ class UserSIP(Base):
                 yield [column, value]
 
     def native_option(self, column_name):
-        if column_name == 'regseconds':
-            return unicode(self.regseconds)
-        else:
-            value = getattr(self, self._attribute(column_name), None)
-            if value is not None and value != "":
-                if column_name in AST_TRUE_INTEGER_COLUMNS:
-                    return convert_int_to_ast_true(value)
-                else:
-                    return unicode(value)
+        value = getattr(self, self._attribute(column_name), None)
+        if value is not None and value != "":
+            if column_name in AST_TRUE_INTEGER_COLUMNS:
+                return convert_int_to_ast_true(value)
+            else:
+                return unicode(value)
         return None
 
     @options.setter

@@ -98,8 +98,6 @@ class UserIAX(Base):
     mask = Column(String(15))
     regexten = Column(String(80))
     peercontext = Column(String(80))
-    ipaddr = Column(String(255), nullable=False, server_default='')
-    regseconds = Column(Integer, nullable=False, server_default='0')
     immediate = Column(Integer)
     keyrotate = Column(Integer)
     parkinglot = Column(Integer)
