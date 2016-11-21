@@ -19,6 +19,7 @@
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import relationship
+from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
 from sqlalchemy.types import Integer, String
 
@@ -85,6 +86,7 @@ class GroupFeatures(Base):
                                      primaryjoin="""and_(Dialaction.category == 'group',
                                          Dialaction.categoryval == cast(GroupFeatures.id, String))""",
                                      cascade='all, delete-orphan',
+                                     collection_class=attribute_mapped_collection('event'),
                                      foreign_keys='Dialaction.categoryval')
 
     group_members = relationship('QueueMember',
@@ -154,6 +156,28 @@ class GroupFeatures(Base):
                                category='group',
                                autofill=1,
                                announce_position='no')
+
+    @property
+    def fallbacks(self):
+        return self.group_dialactions
+
+    # Note: fallbacks[key] = Dialaction() doesn't pass in this method
+    @fallbacks.setter
+    def fallbacks(self, dialactions):
+        for event in self.group_dialactions.keys():
+            if event not in dialactions:
+                self.group_dialactions.pop(event, None)
+
+        for event, dialaction in dialactions.iteritems():
+            if event not in self.group_dialactions:
+                dialaction.category = 'group'
+                dialaction.linked = 1
+                dialaction.event = event
+                self.group_dialactions[event] = dialaction
+
+            self.group_dialactions[event].action = dialaction.action
+            self.group_dialactions[event].actionarg1 = dialaction.actionarg1
+            self.group_dialactions[event].actionarg2 = dialaction.actionarg2
 
     @property
     def members(self):

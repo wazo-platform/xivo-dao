@@ -18,7 +18,9 @@
 from hamcrest import (assert_that,
                       contains_inanyorder,
                       equal_to,
+                      has_key,
                       has_properties,
+                      is_not,
                       none)
 
 from xivo_dao.alchemy.callerid import Callerid
@@ -51,6 +53,55 @@ class TestCallerId(DAOTestCase):
         callerid = self.add_callerid(type='group', typeval=group.id)
 
         assert_that(group.caller_id, equal_to(callerid))
+
+
+class TestFallbacks(DAOTestCase):
+
+    def test_getter(self):
+        group = self.add_group()
+        dialaction = self.add_dialaction(event='key',
+                                         category='group',
+                                         categoryval=str(group.id))
+
+        assert_that(group.fallbacks['key'], equal_to(dialaction))
+
+    def test_setter(self):
+        group = self.add_group()
+        dialaction = Dialaction(action='none')
+
+        group.fallbacks = {'key': dialaction}
+        self.session.flush()
+
+        assert_that(group.fallbacks['key'], equal_to(dialaction))
+
+    def test_setter_existing_key(self):
+        group = self.add_group()
+        dialaction1 = Dialaction(action='none')
+
+        group.fallbacks = {'key': dialaction1}
+        self.session.flush()
+        self.session.expire_all()
+
+        dialaction2 = Dialaction(action='user', actionarg1='1')
+        group.fallbacks = {'key': dialaction2}
+        self.session.flush()
+
+        assert_that(group.fallbacks['key'], has_properties(action='user',
+                                                           actionarg1='1'))
+
+    def test_setter_delete_undefined_key(self):
+        group = self.add_group()
+        dialaction1 = Dialaction(action='none')
+
+        group.fallbacks = {'noanswer': dialaction1}
+        self.session.flush()
+        self.session.expire_all()
+
+        dialaction2 = Dialaction(action='user', actionarg1='1')
+        group.fallbacks = {'busy': dialaction2}
+        self.session.flush()
+
+        assert_that(group.fallbacks, is_not(has_key('noanswer')))
 
 
 class TestCallerIdMode(DAOTestCase):
@@ -198,7 +249,7 @@ class TestDelete(DAOTestCase, FuncKeyHelper):
         row = self.session.query(QueueMember).first()
         assert_that(row, none())
 
-    def test_when_deleting_then_funckeys_are_deleted(self):
+    def test_funckeys_are_deleted(self):
         group = self.add_group()
         self.add_group_destination(group.id)
 
