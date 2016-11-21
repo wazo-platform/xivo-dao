@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (C) 2015-2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -38,6 +39,7 @@ def get_admin_entity(session, username):
         User.valid == 1,
     )
     return session.query(Entity.name).join(User).filter(filter_).scalar()
+
 
 @daosession
 def get_admin_id(session, username):

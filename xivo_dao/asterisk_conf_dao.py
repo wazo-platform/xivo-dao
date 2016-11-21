@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2013-2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -130,7 +131,7 @@ def find_sccp_line_settings(session):
             .join(UserFeatures, and_(UserFeatures.id == UserLine.user_id,
                                      UserLine.main_user == True))
             .join(LineExtension, and_(LineFeatures.id == LineExtension.line_id,
-                                      LineExtension.main_extension == True)) # noqa
+                                      LineExtension.main_extension == True))  # noqa
             .join(Extension, LineExtension.extension_id == Extension.id)
             .filter(LineFeatures.commented == 0)
             .all())
@@ -154,8 +155,7 @@ def find_sccp_device_settings(session):
              .outerjoin(UserFeatures,
                         UserFeatures.id == UserLine.user_id)
              .outerjoin(Voicemail,
-                        Voicemail.uniqueid == UserFeatures.voicemailid)
-             )
+                        Voicemail.uniqueid == UserFeatures.voicemailid))
 
     devices = []
     for row in query:
@@ -437,7 +437,11 @@ def find_pickup_members(session, protocol):
                  'pickup': 'callgroup'}
 
     res = defaultdict(lambda: defaultdict(set))
-    add_member = lambda m: res[m.protocolid][group_map[m.category]].add(m.id)
+
+    def _add_member(m):
+        return res[m.protocolid][group_map[m.category]].add(m.id)
+
+    add_member = _add_member
 
     base_query = session.query(
         PickupMember.category,

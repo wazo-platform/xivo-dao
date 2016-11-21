@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (C) 2015-2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -60,14 +61,14 @@ class TestAdminUserDAO(DAOTestCase):
 
     def test_get_admin_entity(self):
         entity = self.add_entity(name='test')
-        admin = self.add_admin(login='foo', passwd='bar', entity_id=entity.id)
+        self.add_admin(login='foo', passwd='bar', entity_id=entity.id)
 
         result = admin_dao.get_admin_entity('foo')
 
         assert_that(result, equal_to('test'))
 
     def test_get_admin_entity_no_entify(self):
-        admin = self.add_admin(login='alice', passwd='foobar')
+        self.add_admin(login='alice', passwd='foobar')
 
         result = admin_dao.get_admin_entity('alice')
 

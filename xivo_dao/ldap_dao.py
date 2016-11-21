@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2012-2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,22 +23,20 @@ from xivo_dao.alchemy.ldapserver import LdapServer
 
 @daosession
 def build_ldapinfo_from_ldapfilter(session, ldapfilter_id):
-    ldap_config = session.query(
-        LdapFilter.name,
-        LdapFilter.user,
-        LdapFilter.passwd,
-        LdapFilter.basedn,
-        LdapFilter.filter,
-        LdapServer.securitylayer,
-        LdapServer.host,
-        LdapServer.port).join(
-            LdapServer,
-            LdapServer.id == LdapFilter.ldapserverid
-        ).filter(
-            LdapFilter.id == ldapfilter_id,
-            LdapFilter.commented == 0,
-            LdapServer.disable == 0,
-        ).first()
+    ldap_config = (session.query(LdapFilter.name,
+                                 LdapFilter.user,
+                                 LdapFilter.passwd,
+                                 LdapFilter.basedn,
+                                 LdapFilter.filter,
+                                 LdapServer.securitylayer,
+                                 LdapServer.host,
+                                 LdapServer.port)
+                   .join(LdapServer,
+                         LdapServer.id == LdapFilter.ldapserverid)
+                   .filter(LdapFilter.id == ldapfilter_id,
+                           LdapFilter.commented == 0,
+                           LdapServer.disable == 0)
+                   .first())
 
     if not ldap_config:
         raise LookupError('No ldap config matching filter %s', ldapfilter_id)

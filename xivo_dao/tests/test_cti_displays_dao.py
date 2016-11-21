@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2015 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -69,7 +70,7 @@ class TestCTIDisplaysDAO(DAOTestCase):
 
         expected = {'__switchboard_directory': {'display': 'switchboard',
                                                 'sources': ['xivodir', 'garbage'],
-                                                'types': ['xivo', 'phonebook'],},
+                                                'types': ['xivo', 'phonebook']},
                     'default': {'display': 'Display',
                                 'sources': ['ldapone', 'csvws'],
                                 'types': ['ldap', 'csv']}}
