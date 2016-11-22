@@ -171,7 +171,7 @@ class GroupFeatures(Base):
         for event, dialaction in dialactions.iteritems():
             if dialaction is None:
                 self.group_dialactions.pop(event, None)
-                return
+                continue
 
             if event not in self.group_dialactions:
                 dialaction.category = 'group'
