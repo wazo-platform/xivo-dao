@@ -19,6 +19,7 @@
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import relationship
+from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
 from sqlalchemy.types import Integer, String
 
@@ -55,8 +56,8 @@ class GroupFeatures(Base):
                              primaryjoin="""and_(Callerid.type == 'group',
                                                  Callerid.typeval == GroupFeatures.id)""",
                              foreign_keys='Callerid.typeval',
-                             uselist=False,
-                             cascade='all, delete-orphan')
+                             cascade='all, delete-orphan',
+                             uselist=False)
 
     caller_id_mode = association_proxy('caller_id', 'mode',
                                        creator=lambda _mode: Callerid(type='group',
@@ -68,16 +69,16 @@ class GroupFeatures(Base):
     extensions = relationship('Extension',
                               primaryjoin="""and_(Extension.type == 'group',
                                                   Extension.typeval == cast(GroupFeatures.id, String))""",
-                              viewonly=True,
                               foreign_keys='Extension.typeval',
+                              viewonly=True,
                               back_populates='group')
 
     incall_dialactions = relationship('Dialaction',
                                       primaryjoin="""and_(Dialaction.category == 'incall',
                                            Dialaction.action == 'group',
                                            Dialaction.actionarg1 == cast(GroupFeatures.id, String))""",
-                                      viewonly=True,
-                                      foreign_keys='Dialaction.actionarg1')
+                                      foreign_keys='Dialaction.actionarg1',
+                                      viewonly=True)
 
     incalls = association_proxy('incall_dialactions', 'incall')
 
@@ -85,16 +86,17 @@ class GroupFeatures(Base):
                                      primaryjoin="""and_(Dialaction.category == 'group',
                                          Dialaction.categoryval == cast(GroupFeatures.id, String))""",
                                      cascade='all, delete-orphan',
+                                     collection_class=attribute_mapped_collection('event'),
                                      foreign_keys='Dialaction.categoryval')
 
     group_members = relationship('QueueMember',
                                  primaryjoin="""and_(QueueMember.category == 'group',
                                                      QueueMember.queue_name == GroupFeatures.name)""",
                                  order_by='QueueMember.position',
+                                 foreign_keys='QueueMember.queue_name',
                                  collection_class=ordering_list('position', count_from=1),
                                  cascade='all, delete-orphan',
-                                 passive_updates=False,
-                                 foreign_keys='QueueMember.queue_name')
+                                 passive_updates=False)
 
     users = association_proxy('group_members', 'user',
                               creator=lambda _user: QueueMember(category='group',
@@ -104,10 +106,10 @@ class GroupFeatures(Base):
     queue = relationship('Queue',
                          primaryjoin="""and_(Queue.category == 'group',
                                              Queue.name == GroupFeatures.name)""",
-                         uselist=False,
+                         foreign_keys='Queue.name',
                          cascade='all, delete-orphan',
-                         passive_updates=False,
-                         foreign_keys='Queue.name')
+                         uselist=False,
+                         passive_updates=False)
 
     enabled = association_proxy('queue', 'enabled')
     music_on_hold = association_proxy('queue', 'musicclass')
@@ -154,6 +156,32 @@ class GroupFeatures(Base):
                                category='group',
                                autofill=1,
                                announce_position='no')
+
+    @property
+    def fallbacks(self):
+        return self.group_dialactions
+
+    # Note: fallbacks[key] = Dialaction() doesn't pass in this method
+    @fallbacks.setter
+    def fallbacks(self, dialactions):
+        for event in self.group_dialactions.keys():
+            if event not in dialactions:
+                self.group_dialactions.pop(event, None)
+
+        for event, dialaction in dialactions.iteritems():
+            if dialaction is None:
+                self.group_dialactions.pop(event, None)
+                return
+
+            if event not in self.group_dialactions:
+                dialaction.category = 'group'
+                dialaction.linked = 1
+                dialaction.event = event
+                self.group_dialactions[event] = dialaction
+
+            self.group_dialactions[event].action = dialaction.action
+            self.group_dialactions[event].actionarg1 = dialaction.actionarg1
+            self.group_dialactions[event].actionarg2 = dialaction.actionarg2
 
     @property
     def members(self):

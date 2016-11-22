@@ -50,12 +50,14 @@ class Extension(Base):
                                primaryjoin="""and_(Extension.type == 'outcall',
                                                    Extension.typeval == cast(DialPattern.id, String))""",
                                foreign_keys='Extension.typeval',
+                               viewonly=True,
                                back_populates='extension')
 
     outcall = association_proxy('dialpattern', 'outcall')
 
     line_extensions = relationship('LineExtension',
                                    cascade='all, delete-orphan',
+                                   viewonly=True,
                                    back_populates='extension')
 
     lines = association_proxy('line_extensions', 'line')
@@ -64,12 +66,14 @@ class Extension(Base):
                          primaryjoin="""and_(Extension.type == 'group',
                                              Extension.typeval == cast(GroupFeatures.id, String))""",
                          foreign_keys='Extension.typeval',
+                         viewonly=True,
                          back_populates='extensions')
 
     incall = relationship('Incall',
                           primaryjoin="""and_(Extension.type == 'incall',
                                               Extension.typeval == cast(Incall.id, String))""",
                           foreign_keys='Extension.typeval',
+                          viewonly=True,
                           back_populates='extensions')
 
     @property

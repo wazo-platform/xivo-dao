@@ -159,8 +159,8 @@ class UserFeatures(Base):
                                       primaryjoin="""and_(Dialaction.category == 'incall',
                                            Dialaction.action == 'user',
                                            Dialaction.actionarg1 == cast(UserFeatures.id, String))""",
-                                      viewonly=True,
-                                      foreign_keys='Dialaction.actionarg1')
+                                      foreign_keys='Dialaction.actionarg1',
+                                      viewonly=True)
 
     incalls = association_proxy('incall_dialactions', 'incall')
 
@@ -168,8 +168,8 @@ class UserFeatures(Base):
                                  primaryjoin="""and_(QueueMember.category == 'group',
                                                      QueueMember.usertype == 'user',
                                                      QueueMember.userid == UserFeatures.id)""",
-                                 cascade='all, delete-orphan',
-                                 foreign_keys='QueueMember.userid')
+                                 foreign_keys='QueueMember.userid',
+                                 cascade='all, delete-orphan')
 
     groups = association_proxy('group_members', 'group')
 
@@ -177,8 +177,8 @@ class UserFeatures(Base):
                                  primaryjoin="""and_(QueueMember.category == 'queue',
                                                      QueueMember.usertype == 'user',
                                                      QueueMember.userid == UserFeatures.id)""",
-                                 cascade='all, delete-orphan',
-                                 foreign_keys='QueueMember.userid')
+                                 foreign_keys='QueueMember.userid',
+                                 cascade='all, delete-orphan')
 
     def extrapolate_caller_id(self, extension=None):
         default_num = extension.exten if extension else None

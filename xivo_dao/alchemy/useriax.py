@@ -114,8 +114,9 @@ class UserIAX(Base):
                                  TrunkFeatures.protocol == 'iax',
                                  TrunkFeatures.protocolid == UserIAX.id
                              )""",
-                             uselist=False,
                              foreign_keys='TrunkFeatures.protocolid',
+                             uselist=False,
+                             viewonly=True,
                              back_populates='endpoint_iax')
 
     def endpoint_protocol(self):

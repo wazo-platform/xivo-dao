@@ -197,6 +197,7 @@ class UserSIP(Base):
                         )""",
                         foreign_keys='LineFeatures.protocolid',
                         uselist=False,
+                        viewonly=True,
                         back_populates='endpoint_sip')
 
     trunk = relationship('TrunkFeatures',
@@ -204,8 +205,9 @@ class UserSIP(Base):
                             TrunkFeatures.protocol == 'sip',
                             TrunkFeatures.protocolid == UserSIP.id
                          )""",
-                         uselist=False,
                          foreign_keys='TrunkFeatures.protocolid',
+                         uselist=False,
+                         viewonly=True,
                          back_populates='endpoint_sip')
 
     @property

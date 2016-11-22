@@ -51,6 +51,7 @@ class SCCPLine(Base):
                         )""",
                         foreign_keys='LineFeatures.protocolid',
                         uselist=False,
+                        viewonly=True,
                         back_populates='endpoint_sccp')
 
     @property

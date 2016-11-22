@@ -30,6 +30,7 @@ import string
 from xivo_dao.alchemy.accessfeatures import AccessFeatures
 from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
+from xivo_dao.alchemy.callerid import Callerid
 from xivo_dao.alchemy.callfilter import Callfilter
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from xivo_dao.alchemy.cel import CEL as CELSchema
@@ -977,6 +978,13 @@ class DAOTestCase(unittest.TestCase):
         accessfeature = AccessFeatures(host=host, **kwargs)
         self.add_me(accessfeature)
         return accessfeature
+
+    def add_callerid(self, **kwargs):
+        kwargs.setdefault('type', 'group')
+        kwargs.setdefault('typeval', self._generate_int())
+        callerid = Callerid(**kwargs)
+        self.add_me(callerid)
+        return callerid
 
     def add_infos(self):
         infos = Infos()
