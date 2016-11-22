@@ -169,6 +169,10 @@ class GroupFeatures(Base):
                 self.group_dialactions.pop(event, None)
 
         for event, dialaction in dialactions.iteritems():
+            if dialaction is None:
+                self.group_dialactions.pop(event, None)
+                return
+
             if event not in self.group_dialactions:
                 dialaction.category = 'group'
                 dialaction.linked = 1

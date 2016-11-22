@@ -18,6 +18,7 @@
 from hamcrest import (assert_that,
                       contains_inanyorder,
                       equal_to,
+                      empty,
                       has_key,
                       has_properties,
                       is_not,
@@ -73,6 +74,14 @@ class TestFallbacks(DAOTestCase):
         self.session.flush()
 
         assert_that(group.fallbacks['key'], equal_to(dialaction))
+
+    def test_setter_to_none(self):
+        group = self.add_group()
+
+        group.fallbacks = {'key': None}
+        self.session.flush()
+
+        assert_that(group.fallbacks, empty())
 
     def test_setter_existing_key(self):
         group = self.add_group()
