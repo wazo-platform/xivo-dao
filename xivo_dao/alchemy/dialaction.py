@@ -70,6 +70,12 @@ class Dialaction(Base):
                        foreign_keys='Dialaction.actionarg1',
                        viewonly=True)
 
+    switchboard = relationship('Switchboard',
+                               primaryjoin="""and_(Dialaction.action == 'switchboard',
+                                             Dialaction.actionarg1 == Switchboard.id)""",
+                               foreign_keys='Dialaction.actionarg1',
+                               viewonly=True)
+
     voicemail = relationship('Voicemail',
                              primaryjoin="""and_(Dialaction.action == 'voicemail',
                                                  Dialaction.actionarg1 == cast(Voicemail.id, String))""",

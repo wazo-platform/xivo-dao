@@ -17,6 +17,7 @@
 
 import uuid
 
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint
 from sqlalchemy.types import String
@@ -37,3 +38,12 @@ class Switchboard(Base):
 
     id = Column(String(38), nullable=False, default=_new_uuid)
     name = Column(String(128), nullable=False)
+
+    incall_dialactions = relationship('Dialaction',
+                                      primaryjoin="""and_(Dialaction.category == 'incall',
+                                           Dialaction.action == 'switchboard',
+                                           Dialaction.actionarg1 == Switchboard.id)""",
+                                      foreign_keys='Dialaction.actionarg1',
+                                      viewonly=True)
+
+    incalls = association_proxy('incall_dialactions', 'incall')

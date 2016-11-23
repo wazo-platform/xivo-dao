@@ -44,6 +44,7 @@ dialaction_action = Enum(
     'custom',
     'ivr',
     'conference',
+    'switchboard',
     name='dialaction_action',
     metadata=Base.metadata
 )
