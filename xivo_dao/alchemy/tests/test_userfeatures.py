@@ -21,6 +21,9 @@ from hamcrest import (assert_that,
                       contains_inanyorder,
                       empty,
                       equal_to,
+                      has_key,
+                      has_properties,
+                      is_not,
                       none)
 
 from xivo_dao.alchemy.dialaction import Dialaction
@@ -98,6 +101,63 @@ class TestVoicemail(DAOTestCase):
         user = self.add_user(voicemail_id=voicemail.id)
 
         assert_that(user.voicemail, equal_to(voicemail))
+
+
+class TestFallbacks(DAOTestCase):
+
+    def test_getter(self):
+        user = self.add_user()
+        dialaction = self.add_dialaction(event='key',
+                                         category='user',
+                                         categoryval=str(user.id))
+
+        assert_that(user.fallbacks['key'], equal_to(dialaction))
+
+    def test_setter(self):
+        user = self.add_user()
+        dialaction = Dialaction(action='none')
+
+        user.fallbacks = {'key': dialaction}
+        self.session.flush()
+
+        assert_that(user.fallbacks['key'], equal_to(dialaction))
+
+    def test_setter_to_none(self):
+        user = self.add_user()
+
+        user.fallbacks = {'key': None}
+        self.session.flush()
+
+        assert_that(user.fallbacks, empty())
+
+    def test_setter_existing_key(self):
+        user = self.add_user()
+        dialaction1 = Dialaction(action='none')
+
+        user.fallbacks = {'key': dialaction1}
+        self.session.flush()
+        self.session.expire_all()
+
+        dialaction2 = Dialaction(action='user', actionarg1='1')
+        user.fallbacks = {'key': dialaction2}
+        self.session.flush()
+
+        assert_that(user.fallbacks['key'], has_properties(action='user',
+                                                          actionarg1='1'))
+
+    def test_setter_delete_undefined_key(self):
+        user = self.add_user()
+        dialaction1 = Dialaction(action='none')
+
+        user.fallbacks = {'noanswer': dialaction1}
+        self.session.flush()
+        self.session.expire_all()
+
+        dialaction2 = Dialaction(action='user', actionarg1='1')
+        user.fallbacks = {'busy': dialaction2}
+        self.session.flush()
+
+        assert_that(user.fallbacks, is_not(has_key('noanswer')))
 
 
 class TestDelete(DAOTestCase):

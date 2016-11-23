@@ -22,13 +22,18 @@ import uuid
 import re
 
 from sqlalchemy.ext.associationproxy import association_proxy
-from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint, Index, \
-    UniqueConstraint, ForeignKeyConstraint
-from sqlalchemy.types import Integer, String, Text, Boolean
-from sqlalchemy.orm import relationship, column_property
-from sqlalchemy.orm.properties import ColumnProperty
-from sqlalchemy.sql import func, cast, not_
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import relationship, column_property
+from sqlalchemy.orm.collections import attribute_mapped_collection
+from sqlalchemy.orm.properties import ColumnProperty
+from sqlalchemy.schema import (Column,
+                               ForeignKey,
+                               ForeignKeyConstraint,
+                               Index,
+                               PrimaryKeyConstraint,
+                               UniqueConstraint)
+from sqlalchemy.sql import func, cast, not_
+from sqlalchemy.types import Integer, String, Text, Boolean
 
 from xivo_dao.alchemy import enum
 from xivo_dao.alchemy.cti_profile import CtiProfile
@@ -164,6 +169,13 @@ class UserFeatures(Base):
 
     incalls = association_proxy('incall_dialactions', 'incall')
 
+    user_dialactions = relationship('Dialaction',
+                                    primaryjoin="""and_(Dialaction.category == 'user',
+                                        Dialaction.categoryval == cast(UserFeatures.id, String))""",
+                                    cascade='all, delete-orphan',
+                                    collection_class=attribute_mapped_collection('event'),
+                                    foreign_keys='Dialaction.categoryval')
+
     group_members = relationship('QueueMember',
                                  primaryjoin="""and_(QueueMember.category == 'group',
                                                      QueueMember.usertype == 'user',
@@ -196,6 +208,31 @@ class UserFeatures(Base):
     def fill_caller_id(self):
         if self.caller_id is None:
             self.caller_id = '"{}"'.format(self.fullname)
+
+    @property
+    def fallbacks(self):
+        return self.user_dialactions
+
+    @fallbacks.setter
+    def fallbacks(self, dialactions):
+        for event in self.user_dialactions.keys():
+            if event not in dialactions:
+                self.user_dialactions.pop(event, None)
+
+        for event, dialaction in dialactions.iteritems():
+            if dialaction is None:
+                self.user_dialactions.pop(event, None)
+                continue
+
+            if event not in self.user_dialactions:
+                dialaction.category = 'user'
+                dialaction.linked = 1
+                dialaction.event = event
+                self.user_dialactions[event] = dialaction
+
+            self.user_dialactions[event].action = dialaction.action
+            self.user_dialactions[event].actionarg1 = dialaction.actionarg1
+            self.user_dialactions[event].actionarg2 = dialaction.actionarg2
 
     @hybrid_property
     def fullname(self):
