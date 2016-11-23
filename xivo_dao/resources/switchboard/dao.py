@@ -29,7 +29,7 @@ def search(session, **parameters):
 
 @daosession
 def get(session, switchboard_id):
-    return SwitchboardPersistor(session, switchboard_search).get_by({'id': switchboard_id})
+    return SwitchboardPersistor(session, switchboard_search).get_by({'id': str(switchboard_id)})
 
 
 @daosession
@@ -39,7 +39,7 @@ def get_by(session, **criteria):
 
 @daosession
 def find(session, switchboard_id):
-    return SwitchboardPersistor(session, switchboard_search).find_by({'id': switchboard_id})
+    return SwitchboardPersistor(session, switchboard_search).find_by({'id': str(switchboard_id)})
 
 
 @daosession
