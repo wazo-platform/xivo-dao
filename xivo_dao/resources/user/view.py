@@ -34,9 +34,12 @@ class UserView(View):
 
     def query(self, session):
         return (session.query(User)
+                .options(joinedload('group_members')
+                         .joinedload('group'))
                 .options(joinedload('incall_dialactions')
                          .joinedload('incall')
                          .joinedload('extensions'))
+                .options(joinedload('user_dialactions'))
                 .options(joinedload('user_lines')
                          .joinedload('line')
                          .joinedload('endpoint_sip'))
