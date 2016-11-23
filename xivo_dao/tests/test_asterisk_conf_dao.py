@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2013-2016 Avencall
+# Copyright (C) 2016 Proformatique Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -1233,5 +1234,40 @@ class TestFindSipUserSettings(DAOTestCase, PickupHelperMixin):
         self.add_line(protocol='sip', protocolid=sip.id)
 
         results = asterisk_conf_dao.find_sip_user_settings()
+
+        assert_that(results, contains(has_properties(UserSIP=sip)))
+
+
+class TestFindSipTrunkSettings(DAOTestCase):
+
+    def test_given_no_sip_accounts_then_returns_empty_list(self):
+        result = asterisk_conf_dao.find_sip_trunk_settings()
+        assert_that(result, contains())
+
+    def test_given_sip_account_is_not_category_user_then_returns_empty_list(self):
+        self.add_usersip(category='user')
+        result = asterisk_conf_dao.find_sip_trunk_settings()
+        assert_that(result, contains())
+
+    def test_given_sip_account_is_deactivated_then_returns_empty_list(self):
+        self.add_usersip(category='trunk', commented=1)
+        result = asterisk_conf_dao.find_sip_trunk_settings()
+        assert_that(result, contains())
+
+    def test_given_sip_has_all_resources_associated_then_all_resources_found_in_result(self):
+        sip = self.add_usersip(category='trunk')
+        self.add_trunk(protocol='sip', protocolid=sip.id, twilio_incoming=True)
+
+        expected = {'twilio_incoming': True}
+
+        results = asterisk_conf_dao.find_sip_trunk_settings()
+
+        assert_that(results, contains(has_properties(expected)))
+
+    def test_given_sip_account_when_querying_then_same_sip_account_row_is_returned(self):
+        sip = self.add_usersip(category='trunk')
+        self.add_trunk(protocol='sip', protocolid=sip.id)
+
+        results = asterisk_conf_dao.find_sip_trunk_settings()
 
         assert_that(results, contains(has_properties(UserSIP=sip)))

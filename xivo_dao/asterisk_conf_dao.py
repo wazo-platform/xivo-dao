@@ -59,6 +59,7 @@ from xivo_dao.alchemy.agentqueueskill import AgentQueueSkill
 from xivo_dao.alchemy.queuepenaltychange import QueuePenaltyChange
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
 from xivo_dao.alchemy.func_key_dest_custom import FuncKeyDestCustom
+from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
 
 
 @daosession
@@ -422,6 +423,18 @@ def find_sip_user_settings(session):
         row.namedpickupgroup = ','.join(str(id) for id in groups.get('pickupgroup', []))
         row.namedcallgroup = ','.join(str(id) for id in groups.get('callgroup', []))
         yield row
+
+
+@daosession
+def find_sip_trunk_settings(session):
+    query = (session.query(UserSIP, TrunkFeatures.twilio_incoming)
+             .join(TrunkFeatures, and_(TrunkFeatures.protocol == 'sip',
+                                       TrunkFeatures.protocolid == UserSIP.id))
+             .filter(UserSIP.category == 'trunk')
+             .filter(UserSIP.commented == 0)
+             .order_by(UserSIP.name))
+
+    return query.all()
 
 
 @daosession

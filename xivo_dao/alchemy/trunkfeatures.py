@@ -20,7 +20,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint, Index
-from sqlalchemy.types import Integer, Text, String
+from sqlalchemy.types import Boolean, Integer, Text, String
 
 from xivo_dao.helpers.db_manager import Base
 from xivo_dao.alchemy import enum
@@ -44,6 +44,7 @@ class TrunkFeatures(Base):
     registercommented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text)
     context = Column(String(39))
+    twilio_incoming = Column(Boolean, nullable=False, server_default='False')
 
     endpoint_sip = relationship('UserSIP',
                                 primaryjoin="""and_(
