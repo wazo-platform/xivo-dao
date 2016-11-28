@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
 from xivo_dao.helpers.db_manager import daosession
 
 from .persistor import ConferencePersistor
@@ -64,3 +65,12 @@ def edit(session, conference):
 @daosession
 def delete(session, conference):
     ConferencePersistor(session, conference_search).delete(conference)
+
+
+@daosession
+def exists(session, meetme_id):
+    query = (session.query(MeetmeFeatures)
+             .filter(MeetmeFeatures.id == meetme_id)
+             )
+
+    return query.count() > 0

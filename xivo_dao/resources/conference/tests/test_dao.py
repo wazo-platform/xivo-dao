@@ -34,6 +34,21 @@ from xivo_dao.resources.conference import dao as conference_dao
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
+class TestMeetmeExist(DAOTestCase):
+
+    def test_given_no_meetme_then_returns_false(self):
+        result = conference_dao.exists(1)
+
+        assert_that(result, equal_to(False))
+
+    def test_given_meetme_exists_then_return_true(self):
+        conference_row = self.add_meetmefeatures()
+
+        result = conference_dao.exists(conference_row.id)
+
+        assert_that(result, equal_to(True))
+
+
 class TestFind(DAOTestCase):
 
     def test_find_no_conference(self):
