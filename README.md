@@ -1,4 +1,4 @@
-xivo-dao [![Build Status](https://travis-ci.org/xivo-pbx/xivo-dao.png?branch=master)](https://travis-ci.org/xivo-pbx/xivo-dao)
+xivo-dao [![Build Status](https://travis-ci.org/wazo-pbx/xivo-dao.png?branch=master)](https://travis-ci.org/wazo-pbx/xivo-dao)
 ========
 
 xivo-dao is a library used internally by XiVO to access and modify
