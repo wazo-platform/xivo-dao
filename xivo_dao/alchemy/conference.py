@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint
 from sqlalchemy.types import Integer, String, Boolean
 
@@ -43,3 +44,10 @@ class Conference(Base):
     music_on_hold = Column(String(128))
 
     admin_pin = Column(String(80))
+
+    extensions = relationship('Extension',
+                              primaryjoin="""and_(Extension.type == 'conference',
+                                                  Extension.typeval == cast(Conference.id, String))""",
+                              foreign_keys='Extension.typeval',
+                              viewonly=True,
+                              back_populates='conference')

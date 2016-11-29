@@ -76,6 +76,13 @@ class Extension(Base):
                           viewonly=True,
                           back_populates='extensions')
 
+    conference = relationship('Conference',
+                              primaryjoin="""and_(Extension.type == 'conference',
+                                                  Extension.typeval == cast(Conference.id, String))""",
+                              foreign_keys='Extension.typeval',
+                              viewonly=True,
+                              back_populates='extensions')
+
     @property
     def name(self):
         return self.typeval

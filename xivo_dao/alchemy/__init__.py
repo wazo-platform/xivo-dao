@@ -2,6 +2,7 @@
 #
 # Copyright (C) 2014-2016 Avencall
 # Copyright (C) 2016 Proformatique Inc.
+# Copyright (C) 2016 Francois Blackburn
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,6 +19,7 @@
 
 # explicitly import modules that are referenced in relationship to prevent
 # "mapper initialization" errors
+from xivo_dao.alchemy.conference import Conference
 from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.extension import Extension

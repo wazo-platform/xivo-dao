@@ -73,6 +73,7 @@ extenumbers_type = Enum(
     'queue',
     'user',
     'voicemenu',
+    'conference',
     name='extenumbers_type',
     metadata=Base.metadata
 )

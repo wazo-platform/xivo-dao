@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2013-2016 Avencall
+# Copyright (C) 2016 Francois Blackburn
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -83,6 +84,14 @@ def associate_group(group, extension):
 def dissociate_group(group, extension):
     persistor().dissociate_group(group, extension)
     group.fix_extension()
+
+
+def associate_conference(conference, extension):
+    persistor().associate_conference(conference, extension)
+
+
+def dissociate_conference(conference, extension):
+    persistor().dissociate_conference(conference, extension)
 
 
 def find_all_service_extensions():

@@ -728,3 +728,53 @@ class TestAssociateIncall(DAOTestCase):
         assert_that(rows, contains_inanyorder(has_properties(type='user', typeval='0'),
                                               has_properties(type='user', typeval='0'),
                                               has_properties(type='user', typeval='0')))
+
+
+class TestAssociateConference(DAOTestCase):
+
+    def test_associate_conference(self):
+        extension = self.add_extension()
+        conference = self.add_conference()
+
+        extension_dao.associate_conference(conference, extension)
+
+        assert_that(conference.extensions, contains_inanyorder(
+            has_properties(exten=extension.exten,
+                           context=extension.context,
+                           type='conference',
+                           typeval=str(conference.id))
+        ))
+
+    def test_associate_multiple_conferences(self):
+        extension1 = self.add_extension()
+        extension2 = self.add_extension()
+        extension3 = self.add_extension()
+        conference = self.add_conference()
+
+        extension_dao.associate_conference(conference, extension1)
+        extension_dao.associate_conference(conference, extension2)
+        extension_dao.associate_conference(conference, extension3)
+
+        assert_that(conference.extensions, contains_inanyorder(extension1, extension2, extension3))
+
+    def test_dissociate_conferences(self):
+        extension1 = self.add_extension()
+        extension2 = self.add_extension()
+        extension3 = self.add_extension()
+        conference = self.add_conference()
+        extension_dao.associate_conference(conference, extension1)
+        extension_dao.associate_conference(conference, extension2)
+        extension_dao.associate_conference(conference, extension3)
+
+        assert_that(conference.extensions, not_(empty()))
+
+        extension_dao.dissociate_conference(conference, extension1)
+        extension_dao.dissociate_conference(conference, extension2)
+        extension_dao.dissociate_conference(conference, extension3)
+
+        assert_that(conference.extensions, empty())
+
+        rows = self.session.query(Extension).all()
+        assert_that(rows, contains_inanyorder(has_properties(type='user', typeval='0'),
+                                              has_properties(type='user', typeval='0'),
+                                              has_properties(type='user', typeval='0')))
