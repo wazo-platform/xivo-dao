@@ -37,7 +37,7 @@ class Conference(Base):
     record = Column(Boolean, nullable=False, server_default='False')
 
     pin = Column(String(80))
-    notify_join_leave = Column(Boolean, nullable=False, server_default='True')
+    quiet_join_leave = Column(Boolean, nullable=False, server_default='False')
     announce_join_leave = Column(Boolean, nullable=False, server_default='False')
     announce_user_count = Column(Boolean, nullable=False, server_default='False')
     announce_only_user = Column(Boolean, nullable=False, server_default='True')

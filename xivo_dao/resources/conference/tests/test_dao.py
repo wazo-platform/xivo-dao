@@ -239,7 +239,7 @@ class TestCreate(DAOTestCase):
                                         record=False,
                                         pin=None,
                                         admin_pin=None,
-                                        notify_join_leave=True,
+                                        quiet_join_leave=False,
                                         announce_join_leave=False,
                                         announce_user_count=False,
                                         announce_only_user=True,
@@ -252,7 +252,7 @@ class TestCreate(DAOTestCase):
                                 record=True,
                                 pin='1234',
                                 admin_pin='5678',
-                                notify_join_leave=False,
+                                quiet_join_leave=True,
                                 announce_join_leave=True,
                                 announce_user_count=True,
                                 announce_only_user=False,
@@ -268,7 +268,7 @@ class TestCreate(DAOTestCase):
                                         record=True,
                                         pin='1234',
                                         admin_pin='5678',
-                                        notify_join_leave=False,
+                                        quiet_join_leave=True,
                                         announce_join_leave=True,
                                         announce_user_count=True,
                                         announce_only_user=False,
@@ -285,7 +285,7 @@ class TestEdit(DAOTestCase):
                        record=True,
                        pin='1234',
                        admin_pin='5678',
-                       notify_join_leave=False,
+                       quiet_join_leave=True,
                        announce_join_leave=True,
                        announce_user_count=True,
                        announce_only_user=False,
@@ -299,7 +299,7 @@ class TestEdit(DAOTestCase):
         conference.record = False
         conference.pin = '0987'
         conference.admin_pin = '1234'
-        conference.notify_join_leave = True
+        conference.quiet_join_leave = False
         conference.announce_join_leave = False
         conference.announce_user_count = False
         conference.announce_only_user = True
@@ -315,7 +315,7 @@ class TestEdit(DAOTestCase):
                                         record=False,
                                         pin='0987',
                                         admin_pin='1234',
-                                        notify_join_leave=True,
+                                        quiet_join_leave=False,
                                         announce_join_leave=False,
                                         announce_user_count=False,
                                         announce_only_user=True,
