@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2016 Avencall
-# Copyright (C) 2016 Proformatique Inc.
-#
+# Copyright 2013-2016 The Wazo Authors  (see the AUTHORS file)
+
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -75,6 +74,13 @@ class Extension(Base):
                           foreign_keys='Extension.typeval',
                           viewonly=True,
                           back_populates='extensions')
+
+    conference = relationship('Conference',
+                              primaryjoin="""and_(Extension.type == 'conference',
+                                                  Extension.typeval == cast(Conference.id, String))""",
+                              foreign_keys='Extension.typeval',
+                              viewonly=True,
+                              back_populates='extensions')
 
     @property
     def name(self):

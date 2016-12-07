@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2016 Avencall
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2013-2016 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,6 +33,7 @@ from xivo_dao.alchemy.callerid import Callerid
 from xivo_dao.alchemy.callfilter import Callfilter
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from xivo_dao.alchemy.cel import CEL as CELSchema
+from xivo_dao.alchemy.conference import Conference
 from xivo_dao.alchemy.context import Context
 from xivo_dao.alchemy.contextinclude import ContextInclude
 from xivo_dao.alchemy.contextmember import ContextMember
@@ -583,6 +583,11 @@ class DAOTestCase(unittest.TestCase):
         meetmefeatures = MeetmeFeatures(**kwargs)
         self.add_me(meetmefeatures)
         return meetmefeatures
+
+    def add_conference(self, **kwargs):
+        conference = Conference(**kwargs)
+        self.add_me(conference)
+        return conference
 
     def add_queue(self, **kwargs):
         kwargs.setdefault('name', self._random_name())
