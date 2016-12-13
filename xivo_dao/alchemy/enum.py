@@ -43,6 +43,7 @@ dialaction_action = Enum(
     'sound',
     'custom',
     'ivr',
+    'conference',
     name='dialaction_action',
     metadata=Base.metadata
 )
