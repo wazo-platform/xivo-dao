@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2016 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -151,3 +151,12 @@ class TestUser(DAOTestCase):
         dialaction = self.add_dialaction(action='user', actionarg1=user.id)
 
         assert_that(dialaction.user, equal_to(user))
+
+
+class TestConference(DAOTestCase):
+
+    def test_getter(self):
+        conference = self.add_conference()
+        dialaction = self.add_dialaction(action='conference', actionarg1=conference.id)
+
+        assert_that(dialaction.conference, equal_to(conference))

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2016 Avencall
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2012-2016 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -46,6 +45,12 @@ class Dialaction(Base):
     actionarg1 = Column(IntAsString(255))
     actionarg2 = Column(String(255))
     linked = Column(Integer, nullable=False, server_default='0')
+
+    conference = relationship('Conference',
+                              primaryjoin="""and_(Dialaction.action == 'conference',
+                                                  Dialaction.actionarg1 == cast(Conference.id, String))""",
+                              foreign_keys='Dialaction.actionarg1',
+                              viewonly=True)
 
     group = relationship('GroupFeatures',
                          primaryjoin="""and_(Dialaction.action == 'group',

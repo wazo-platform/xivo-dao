@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint
 from sqlalchemy.types import Integer, String, Boolean
@@ -51,3 +52,12 @@ class Conference(Base):
                               foreign_keys='Extension.typeval',
                               viewonly=True,
                               back_populates='conference')
+
+    incall_dialactions = relationship('Dialaction',
+                                      primaryjoin="""and_(Dialaction.category == 'incall',
+                                                          Dialaction.action == 'conference',
+                                                          Dialaction.actionarg1 == cast(Conference.id, String))""",
+                                      foreign_keys='Dialaction.actionarg1',
+                                      viewonly=True)
+
+    incalls = association_proxy('incall_dialactions', 'incall')
