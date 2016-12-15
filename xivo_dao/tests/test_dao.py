@@ -61,6 +61,7 @@ from xivo_dao.alchemy.line_extension import LineExtension
 from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
 from xivo_dao.alchemy.musiconhold import MusicOnHold
 from xivo_dao.alchemy.paging import Paging
+from xivo_dao.alchemy.parking_lot import ParkingLot
 from xivo_dao.alchemy.phonefunckey import PhoneFunckey
 from xivo_dao.alchemy.pickup import Pickup
 from xivo_dao.alchemy.pickupmember import PickupMember
@@ -977,6 +978,13 @@ class DAOTestCase(unittest.TestCase):
         paging = Paging(**kwargs)
         self.add_me(paging)
         return paging
+
+    def add_parking_lot(self, **kwargs):
+        kwargs.setdefault('slots_start', '701')
+        kwargs.setdefault('slots_end', '750')
+        parking_lot = ParkingLot(**kwargs)
+        self.add_me(parking_lot)
+        return parking_lot
 
     def add_accessfeatures(self, host, **kwargs):
         kwargs.setdefault('feature', 'phonebook')
