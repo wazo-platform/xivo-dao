@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2016 Avencall
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2013-2016 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -317,6 +316,7 @@ def find_exten_settings(session, context_name):
             .filter(and_(Extension.context == context_name,
                          Extension.commented == 0,
                          Extension.typeval != '0',
+                         Extension.type != 'parking',
                          or_(LineExtension.line_id == None,  # noqa
                              LineFeatures.commented == 0)))
             .order_by('exten')

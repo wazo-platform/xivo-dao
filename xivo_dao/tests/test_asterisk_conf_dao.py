@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2016 Avencall
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2013-2016 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -614,6 +613,11 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
 
     def test_find_exten_settings_when_not_associated(self):
         self.add_extension(context='default', typeval='0')
+        extensions = asterisk_conf_dao.find_exten_settings('default')
+        assert_that(extensions, empty())
+
+    def test_find_exten_settings_when_type_parking(self):
+        self.add_extension(context='default', type='parking')
         extensions = asterisk_conf_dao.find_exten_settings('default')
         assert_that(extensions, empty())
 
