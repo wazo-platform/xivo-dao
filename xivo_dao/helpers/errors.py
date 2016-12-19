@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2015-2016 Avencall
+# Copyright 2015-2016 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -92,6 +92,7 @@ param_not_found = FormattedError(InputError, "field '{}': {} was not found")
 invalid_query_parameter = FormattedError(InputError, "parameter '{}': '{}' is not valid")
 invalid_view = FormattedError(InputError, "view '{}' does not exist")
 ivr_exten_used = FormattedError(InputError, "exten '{}' used in more than one choice")
+invalid_exten_pattern = FormattedError(InputError, "exten '{}' cannot be a pattern")
 
 not_found = FormattedError(NotFoundError, "{} was not found")
 

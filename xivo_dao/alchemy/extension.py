@@ -109,3 +109,6 @@ class Extension(Base):
         if value is not None:
             value = int(value)
         self.commented = value
+
+    def is_pattern(self):
+        return self.exten.startswith('_')
