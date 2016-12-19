@@ -28,6 +28,7 @@ from hamcrest import (assert_that,
 
 
 from xivo_dao.alchemy.conference import Conference
+from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.helpers.exception import NotFoundError, InputError
 from xivo_dao.resources.conference import dao as conference_dao
@@ -354,3 +355,12 @@ class TestDelete(DAOTestCase):
 
         row = self.session.query(Conference).first()
         assert_that(row, none())
+
+    def test_when_deleting_then_dialactions_are_unlinked(self):
+        conference = self.add_conference()
+        self.add_dialaction(action='conference', actionarg1=str(conference.id), linked=1)
+
+        conference_dao.delete(conference)
+
+        dialaction = self.session.query(Dialaction).filter(Dialaction.actionarg1 == str(conference.id)).first()
+        assert_that(dialaction, has_properties(linked=0))

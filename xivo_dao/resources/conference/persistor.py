@@ -17,6 +17,7 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 from xivo_dao.alchemy.conference import Conference
+from xivo_dao.alchemy.dialaction import Dialaction
 
 from xivo_dao.helpers import errors
 from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
@@ -62,5 +63,13 @@ class ConferencePersistor(CriteriaBuilderMixin):
         self.session.flush()
 
     def delete(self, conference):
+        self._delete_associations(conference)
         self.session.delete(conference)
         self.session.flush()
+
+    def _delete_associations(self, conference):
+        # "unlink" dialactions that points on this Conference
+        (self.session.query(Dialaction)
+         .filter(Dialaction.action == 'conference')
+         .filter(Dialaction.actionarg1 == str(conference.id))
+         .update({'linked': 0}))
