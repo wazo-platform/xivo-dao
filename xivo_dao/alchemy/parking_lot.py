@@ -42,3 +42,12 @@ class ParkingLot(Base):
                               foreign_keys='Extension.typeval',
                               viewonly=True,
                               back_populates='parking_lot')
+
+    def in_slots_range(self, exten):
+        exten = int(exten)
+        start = int(self.slots_start)
+        end = int(self.slots_end)
+
+        if start <= exten <= end:
+            return True
+        return False
