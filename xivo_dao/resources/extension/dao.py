@@ -93,6 +93,14 @@ def dissociate_conference(conference, extension):
     persistor().dissociate_conference(conference, extension)
 
 
+def associate_parking_lot(parking_lot, extension):
+    persistor().associate_parking_lot(parking_lot, extension)
+
+
+def dissociate_parking_lot(parking_lot, extension):
+    persistor().dissociate_parking_lot(parking_lot, extension)
+
+
 def find_all_service_extensions():
     typevals = service_converter.typevals()
     query = (Session.query(Extension.id,

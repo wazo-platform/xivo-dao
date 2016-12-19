@@ -106,3 +106,15 @@ class ExtensionPersistor(CriteriaBuilderMixin):
         extension.typeval = '0'
         self.session.flush()
         self.session.expire(conference, ['extensions'])
+
+    def associate_parking_lot(self, parking_lot, extension):
+        extension.type = 'parking'
+        extension.typeval = str(parking_lot.id)
+        self.session.flush()
+        self.session.expire(parking_lot, ['extensions'])
+
+    def dissociate_parking_lot(self, parking_lot, extension):
+        extension.type = 'user'
+        extension.typeval = '0'
+        self.session.flush()
+        self.session.expire(parking_lot, ['extensions'])

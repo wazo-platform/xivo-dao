@@ -82,6 +82,13 @@ class Extension(Base):
                               viewonly=True,
                               back_populates='extensions')
 
+    parking_lot = relationship('ParkingLot',
+                               primaryjoin="""and_(Extension.type == 'parking',
+                                                   Extension.typeval == cast(ParkingLot.id, String))""",
+                               foreign_keys='Extension.typeval',
+                               viewonly=True,
+                               back_populates='extensions')
+
     @property
     def name(self):
         return self.typeval

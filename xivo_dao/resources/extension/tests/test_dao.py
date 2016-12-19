@@ -777,3 +777,53 @@ class TestAssociateConference(DAOTestCase):
         assert_that(rows, contains_inanyorder(has_properties(type='user', typeval='0'),
                                               has_properties(type='user', typeval='0'),
                                               has_properties(type='user', typeval='0')))
+
+
+class TestAssociateParkingLot(DAOTestCase):
+
+    def test_associate_parking_lot(self):
+        extension = self.add_extension()
+        parking_lot = self.add_parking_lot()
+
+        extension_dao.associate_parking_lot(parking_lot, extension)
+
+        assert_that(parking_lot.extensions, contains_inanyorder(
+            has_properties(exten=extension.exten,
+                           context=extension.context,
+                           type='parking',
+                           typeval=str(parking_lot.id))
+        ))
+
+    def test_associate_multiple_parking_lots(self):
+        extension1 = self.add_extension()
+        extension2 = self.add_extension()
+        extension3 = self.add_extension()
+        parking_lot = self.add_parking_lot()
+
+        extension_dao.associate_parking_lot(parking_lot, extension1)
+        extension_dao.associate_parking_lot(parking_lot, extension2)
+        extension_dao.associate_parking_lot(parking_lot, extension3)
+
+        assert_that(parking_lot.extensions, contains_inanyorder(extension1, extension2, extension3))
+
+    def test_dissociate_parking_lots(self):
+        extension1 = self.add_extension()
+        extension2 = self.add_extension()
+        extension3 = self.add_extension()
+        parking_lot = self.add_parking_lot()
+        extension_dao.associate_parking_lot(parking_lot, extension1)
+        extension_dao.associate_parking_lot(parking_lot, extension2)
+        extension_dao.associate_parking_lot(parking_lot, extension3)
+
+        assert_that(parking_lot.extensions, not_(empty()))
+
+        extension_dao.dissociate_parking_lot(parking_lot, extension1)
+        extension_dao.dissociate_parking_lot(parking_lot, extension2)
+        extension_dao.dissociate_parking_lot(parking_lot, extension3)
+
+        assert_that(parking_lot.extensions, empty())
+
+        rows = self.session.query(Extension).all()
+        assert_that(rows, contains_inanyorder(has_properties(type='user', typeval='0'),
+                                              has_properties(type='user', typeval='0'),
+                                              has_properties(type='user', typeval='0')))

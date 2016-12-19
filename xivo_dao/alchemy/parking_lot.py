@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint
 from sqlalchemy.types import Integer, String
 
@@ -34,3 +35,10 @@ class ParkingLot(Base):
     slots_end = Column(String(40), nullable=False)
     timeout = Column(Integer)
     music_on_hold = Column(String(128))
+
+    extensions = relationship('Extension',
+                              primaryjoin="""and_(Extension.type == 'parking',
+                                                  Extension.typeval == cast(ParkingLot.id, String))""",
+                              foreign_keys='Extension.typeval',
+                              viewonly=True,
+                              back_populates='parking_lot')
