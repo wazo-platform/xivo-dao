@@ -234,11 +234,11 @@ class DestinationPersistor(object):
 class UserPersistor(DestinationPersistor):
 
     def get(self, func_key_id):
-        row = (self.session.query(FuncKeyDestUser.user_id)
+        row = (self.session.query(FuncKeyDestUser)
                .filter(FuncKeyDestUser.func_key_id == func_key_id)
                .first())
 
-        return fk_model.UserDestination(user_id=row.user_id)
+        return fk_model.UserDestination(user_id=row.user_id, userfeatures=row.userfeatures)
 
     def find_or_create(self, destination):
         query = (self.session.query(FuncKeyDestUser)

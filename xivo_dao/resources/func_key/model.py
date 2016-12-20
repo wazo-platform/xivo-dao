@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014-2015 Avencall
+# Copyright 2014-2016 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -67,6 +67,8 @@ class UserDestination(Destination):
     FIELDS = ['user_id']
 
     MANDATORY = ['user_id']
+
+    _RELATION = {'userfeatures': 'userfeatures'}
 
 
 class GroupDestination(Destination):
