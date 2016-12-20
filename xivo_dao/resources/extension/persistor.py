@@ -16,6 +16,8 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+from sqlalchemy.orm import joinedload
+
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.helpers import errors
 from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
@@ -48,8 +50,20 @@ class ExtensionPersistor(CriteriaBuilderMixin):
         return self.build_criteria(query, criteria)
 
     def search(self, params):
-        rows, total = extension_search.search(self.session, params)
+        rows, total = extension_search.search_from_query(self._search_query(), params)
         return SearchResult(total, rows)
+
+    def _search_query(self):
+        return (self.session
+                .query(Extension)
+                .options(joinedload('conference'))
+                .options(joinedload('dialpattern')
+                         .joinedload('outcall'))
+                .options(joinedload('group'))
+                .options(joinedload('incall'))
+                .options(joinedload('line_extensions')
+                         .joinedload('line'))
+                .options(joinedload('parking_lot')))
 
     def create(self, extension):
         self.fill_default_values(extension)
