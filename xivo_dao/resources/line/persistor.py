@@ -1,7 +1,6 @@
 # -*- coding: UTF-8 -*-
 
-# Copyright (C) 2015-2016 Avencall
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2015-2016 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -38,8 +37,19 @@ class LinePersistor(CriteriaBuilderMixin):
         self.session = session
 
     def search(self, params):
-        rows, total = line_search.search_from_query(self.query(), params)
+        rows, total = line_search.search_from_query(self._search_query(), params)
         return SearchResult(total, rows)
+
+    def _search_query(self):
+        return (self.session
+                .query(Line)
+                .options(joinedload('endpoint_sccp'))
+                .options(joinedload('endpoint_sip'))
+                .options(joinedload('endpoint_custom'))
+                .options(joinedload('line_extensions')
+                         .joinedload('extension'))
+                .options(joinedload('user_lines')
+                         .joinedload('user')))
 
     def get(self, line_id):
         line = self.find(line_id)
@@ -53,8 +63,8 @@ class LinePersistor(CriteriaBuilderMixin):
     def query(self):
         return (self.session
                 .query(Line)
-                .options(joinedload(Line.endpoint_sip))
-                .options(joinedload(Line.endpoint_sccp)))
+                .options(joinedload('endpoint_sccp'))
+                .options(joinedload('endpoint_sip')))
 
     def find_by(self, criteria):
         query = self.build_criteria(self.query(), criteria)
