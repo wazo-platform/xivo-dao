@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2015 Avencall
+# Copyright 2015-2016 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -273,6 +273,9 @@ class QueuePersistor(DestinationPersistor):
 
 class GroupPersistor(DestinationPersistor):
 
+    TYPE_ID = 1
+    DESTINATION_TYPE_ID = 2
+
     def get(self, func_key_id):
         row = (self.session.query(FuncKeyDestGroup.group_id)
                .filter(FuncKeyDestGroup.func_key_id == func_key_id)
@@ -281,14 +284,31 @@ class GroupPersistor(DestinationPersistor):
         return fk_model.GroupDestination(group_id=row.group_id)
 
     def find_or_create(self, destination):
-        query = (self.session.query(FuncKeyDestGroup)
-                 .filter(FuncKeyDestGroup.group_id == destination.group_id)
-                 )
+        destination_row = (self.session.query(FuncKeyDestGroup)
+                           .filter(FuncKeyDestGroup.group_id == destination.group_id)
+                           .first())
 
-        return query.first()
+        if not destination_row:
+            func_key_row = self.create_func_key(self.TYPE_ID,
+                                                self.DESTINATION_TYPE_ID)
+            destination_row = FuncKeyDestGroup(func_key_id=func_key_row.id,
+                                               group_id=destination.group_id)
+            self.session.add(destination_row)
+            self.session.flush()
+
+        return destination_row
 
     def delete(self, func_key_id):
-        pass
+        if not self._func_key_is_still_mapped(func_key_id):
+            (self.session.query(FuncKeyDestGroup)
+             .filter(FuncKeyDestGroup.func_key_id == func_key_id)
+             .delete())
+            self.delete_func_key(func_key_id)
+
+    def _func_key_is_still_mapped(self, func_key_id):
+        return (self.session.query(FuncKeyMapping)
+                .filter(FuncKeyMapping.func_key_id == func_key_id)
+                .scalar())
 
 
 class ConferencePersistor(DestinationPersistor):
