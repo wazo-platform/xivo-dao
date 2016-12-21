@@ -79,6 +79,8 @@ class GroupDestination(Destination):
 
     MANDATORY = ['group_id']
 
+    _RELATION = {'groupfeatures': 'groupfeatures'}
+
 
 class QueueDestination(Destination):
 
