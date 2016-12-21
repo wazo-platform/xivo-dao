@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014-2015 Avencall
+# Copyright 2014-2016 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate as FuncKeyTemplateSchema
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping as FuncKeyMappingSchema
+from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup as FuncKeyDestGroupSchema
 
 from xivo_dao.resources.func_key_template import dao
 from xivo_dao.resources.func_key_template.model import FuncKeyTemplate
@@ -328,6 +329,25 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
         assert_that(calling(dao.create).with_args(template),
                     raises(InputError))
 
+    def test_given_no_group_func_key_when_created_then_create_new_group_func_key(self):
+        group = self.add_group()
+
+        dest_group_count = (self.session.query(FuncKeyDestGroupSchema)
+                            .filter(FuncKeyDestGroupSchema.group_id == group.id)
+                            .count())
+        assert_that(dest_group_count, equal_to(0))
+
+        template = self.build_template_with_key(GroupDestination(group_id=group.id))
+        dao.create(template)
+
+        template = self.build_template_with_key(GroupDestination(group_id=group.id))
+        dao.create(template)
+
+        dest_group_count = (self.session.query(FuncKeyDestGroupSchema)
+                            .filter(FuncKeyDestGroupSchema.group_id == group.id)
+                            .count())
+        assert_that(dest_group_count, equal_to(1))
+
 
 class TestFuncKeyTemplateGet(TestFuncKeyTemplateDao):
 
@@ -556,6 +576,38 @@ class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
                                 query(UserSchema.func_key_template_id)
                                 .filter(UserSchema.id == user_row.id).scalar())
         assert_that(func_key_template_id, none())
+
+    def test_given_template_is_associated_to_group_when_deleting_template(self):
+        group = self.add_group()
+        template = FuncKeyTemplate(
+            keys={'1': FuncKey(destination=GroupDestination(group_id=group.id))}
+        )
+        dao.create(template)
+
+        dao.delete(template)
+
+        dest_group_count = (self.session.query(FuncKeyDestGroupSchema)
+                            .filter(FuncKeyDestGroupSchema.group_id == group.id)
+                            .count())
+        assert_that(dest_group_count, equal_to(0))
+
+    def test_given_multi_template_is_associated_to_group_when_deleting_template(self):
+        group = self.add_group()
+        template = FuncKeyTemplate(
+            keys={'1': FuncKey(destination=GroupDestination(group_id=group.id))}
+        )
+        dao.create(template)
+        template = FuncKeyTemplate(
+            keys={'1': FuncKey(destination=GroupDestination(group_id=group.id))}
+        )
+        dao.create(template)
+
+        dao.delete(template)
+
+        dest_group_count = (self.session.query(FuncKeyDestGroupSchema)
+                            .filter(FuncKeyDestGroupSchema.group_id == group.id)
+                            .count())
+        assert_that(dest_group_count, equal_to(1))
 
 
 class TestFuncKeyTemplateEdit(TestFuncKeyTemplateDao):
