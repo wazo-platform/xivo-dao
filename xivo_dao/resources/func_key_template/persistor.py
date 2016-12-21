@@ -102,6 +102,7 @@ class FuncKeyPersistor(object):
     def find_or_create_destination(self, destination):
         persistor = self.build_persistor(destination.type)
         destination_row = persistor.find_or_create(destination)
+
         if not destination_row:
             raise errors.param_not_found('destination',
                                          'func key representing destination',
@@ -234,11 +235,12 @@ class DestinationPersistor(object):
 class UserPersistor(DestinationPersistor):
 
     def get(self, func_key_id):
-        row = (self.session.query(FuncKeyDestUser.user_id)
+        row = (self.session.query(FuncKeyDestUser)
                .filter(FuncKeyDestUser.func_key_id == func_key_id)
                .first())
 
-        return fk_model.UserDestination(user_id=row.user_id)
+        return fk_model.UserDestination(user_id=row.user_id,
+                                        userfeatures=row.userfeatures)
 
     def find_or_create(self, destination):
         query = (self.session.query(FuncKeyDestUser)
@@ -277,11 +279,12 @@ class GroupPersistor(DestinationPersistor):
     DESTINATION_TYPE_ID = 2
 
     def get(self, func_key_id):
-        row = (self.session.query(FuncKeyDestGroup.group_id)
+        row = (self.session.query(FuncKeyDestGroup)
                .filter(FuncKeyDestGroup.func_key_id == func_key_id)
                .first())
 
-        return fk_model.GroupDestination(group_id=row.group_id)
+        return fk_model.GroupDestination(group_id=row.group_id,
+                                         groupfeatures=row.groupfeatures)
 
     def find_or_create(self, destination):
         destination_row = (self.session.query(FuncKeyDestGroup)
