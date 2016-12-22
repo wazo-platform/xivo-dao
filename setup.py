@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
-# Copyright (C) 2015 Avencall
+# Copyright 2015-2016 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,9 +24,9 @@ setup(
     name='xivo-dao',
     version='0.1',
     description='XiVO Data Access Object',
-    author='Avencall',
-    author_email='dev@avencall.com',
-    url='http://git.xivo.io/',
+    author='Wazo Authors',
+    author_email='dev.wazo@gmail.com',
+    url='http://wazo.community',
     license='GPLv3',
     packages=find_packages(),
 )
