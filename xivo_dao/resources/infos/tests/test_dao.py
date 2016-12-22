@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2014 Avencall
+# Copyright 2014-2016 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,9 +17,8 @@
 
 import uuid
 
-from xivo_dao.alchemy.infos import Infos as InfosSchema
+from xivo_dao.alchemy.infos import Infos
 from xivo_dao.resources.infos import dao as infos_dao
-from xivo_dao.resources.infos.model import Infos
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -27,15 +26,14 @@ class TestGetInfos(DAOTestCase):
 
     def test_get_with_one_infos(self):
         xivo_uuid = unicode(uuid.uuid5(uuid.NAMESPACE_DNS, __name__))
-        infos_row = InfosSchema(
+        wazo_version = '42.42'
+        infos_row = Infos(
             uuid=xivo_uuid,
+            wazo_version=wazo_version,
         )
         self.add_me(infos_row)
 
-        expected_infos = Infos(
-            uuid=xivo_uuid,
-        )
-
         infos = infos_dao.get()
 
-        self.assertEquals(expected_infos, infos)
+        self.assertEquals(infos.uuid, xivo_uuid)
+        self.assertEquals(infos.wazo_version, wazo_version)
