@@ -26,11 +26,14 @@ class TestGetInfos(DAOTestCase):
 
     def test_get_with_one_infos(self):
         xivo_uuid = unicode(uuid.uuid5(uuid.NAMESPACE_DNS, __name__))
+        wazo_version = '42.42'
         infos_row = Infos(
             uuid=xivo_uuid,
+            wazo_version=wazo_version,
         )
         self.add_me(infos_row)
 
         infos = infos_dao.get()
 
         self.assertEquals(infos.uuid, xivo_uuid)
+        self.assertEquals(infos.wazo_version, wazo_version)

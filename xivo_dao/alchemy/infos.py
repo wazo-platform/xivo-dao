@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2014-2015 Avencall
+# Copyright 2014-2016 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,3 +35,4 @@ class Infos(Base):
     )
 
     uuid = Column(String(38), nullable=False, default=_new_uuid)
+    wazo_version = Column(String(64), nullable=False)
