@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright 2013-2016 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -38,14 +38,18 @@ class NewModel(object):
         if not isinstance(other, self.__class__):
             raise TypeError('Must compare a %s with another %s' % (class_name, class_name))
 
-        return self.__dict__ == other.__dict__
+        current = {key: value for key, value in self.__dict__.iteritems()
+                   if key not in self._RELATION.values()}
+        other = {key: value for key, value in other.__dict__.iteritems()
+                 if key not in self._RELATION.values()}
+        return current == other
 
     def __ne__(self, other):
         return not self == other
 
     def __repr__(self):
         properties = [u'%s: %s' % (field, getattr(self, field))
-                      for field in self.FIELDS]
+                      for field in self.FIELDS + self._RELATION.values()]
         text = u'<%s %s>' % (self.__class__.__name__, ', '.join(properties))
         return text.encode('utf8')
 
