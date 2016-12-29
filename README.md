@@ -1,7 +1,7 @@
 xivo-dao [![Build Status](https://travis-ci.org/wazo-pbx/xivo-dao.png?branch=master)](https://travis-ci.org/wazo-pbx/xivo-dao)
 ========
 
-xivo-dao is a library used internally by XiVO to access and modify
+xivo-dao is a library used internally by Wazo to access and modify
 different data sources (e.g. postgres database, provisoning database).
 
 Creating the test database
@@ -41,7 +41,7 @@ Docker
 To run test with docker:
 
     docker build -t wazopbx/dao-test .
-    docker run -e XIVO_TEST_DB_URL=<postgres_uri> -it xivo/dao bash
+    docker run -e XIVO_TEST_DB_URL=<postgres_uri> -it wazopbx/dao-test bash
 
 To run with docker-compose:
 
