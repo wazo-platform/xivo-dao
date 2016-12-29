@@ -448,7 +448,7 @@ class DAOTestCase(unittest.TestCase):
         return self._random_exten(extens)
 
     def _random_exten(self, extens):
-        exten = str(random.randint(1, 3))
+        exten = str(random.randint(1000, 4000))
         if exten in extens:
             return self._random_exten(extens)
         return exten
@@ -973,11 +973,16 @@ class DAOTestCase(unittest.TestCase):
         return feature
 
     def add_paging(self, **kwargs):
-        kwargs.setdefault('number', '1234')
-        kwargs.setdefault('timeout', 30)
+        kwargs.setdefault('number', self._generate_paging_number())
         paging = Paging(**kwargs)
         self.add_me(paging)
         return paging
+
+    def _generate_paging_number(self):
+        pagings = self.session.query(Paging).all()
+        numbers = [paging.number for paging in pagings]
+        print numbers
+        return self._random_exten(numbers)
 
     def add_parking_lot(self, **kwargs):
         kwargs.setdefault('slots_start', '701')
