@@ -999,8 +999,9 @@ class DAOTestCase(unittest.TestCase):
         self.add_me(callerid)
         return callerid
 
-    def add_infos(self):
-        infos = Infos()
+    def add_infos(self, **kwargs):
+        kwargs.setdefault('wazo_version', 'dev')
+        infos = Infos(**kwargs)
         self.add_me(infos)
         return infos
 
