@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2014 Avencall
+# Copyright 2014-2016 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -29,6 +29,6 @@ class PagingUser(Base):
         Index('paginguser__idx__pagingid', 'pagingid'),
     )
 
-    pagingid = Column(Integer, nullable=False, autoincrement=False)
-    userfeaturesid = Column(Integer, nullable=False, autoincrement=False)
-    caller = Column(Integer, nullable=False, autoincrement=False)
+    pagingid = Column(Integer, nullable=False)
+    userfeaturesid = Column(Integer, nullable=False)
+    caller = Column(Integer, nullable=False)
