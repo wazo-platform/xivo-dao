@@ -231,6 +231,11 @@ class DestinationPersistor(object):
          .filter(FuncKey.id == func_key_id)
          .delete())
 
+    def _func_key_is_still_mapped(self, func_key_id):
+        return (self.session.query(FuncKeyMapping)
+                .filter(FuncKeyMapping.func_key_id == func_key_id)
+                .scalar())
+
 
 class UserPersistor(DestinationPersistor):
 
@@ -308,11 +313,6 @@ class GroupPersistor(DestinationPersistor):
              .delete())
             self.delete_func_key(func_key_id)
 
-    def _func_key_is_still_mapped(self, func_key_id):
-        return (self.session.query(FuncKeyMapping)
-                .filter(FuncKeyMapping.func_key_id == func_key_id)
-                .scalar())
-
 
 class ConferencePersistor(DestinationPersistor):
 
@@ -367,11 +367,6 @@ class PagingPersistor(DestinationPersistor):
              .filter(FuncKeyDestPaging.func_key_id == func_key_id)
              .delete())
             self.delete_func_key(func_key_id)
-
-    def _func_key_is_still_mapped(self, func_key_id):
-        return (self.session.query(FuncKeyMapping)
-                .filter(FuncKeyMapping.func_key_id == func_key_id)
-                .scalar())
 
 
 class BSFilterPersistor(DestinationPersistor):
