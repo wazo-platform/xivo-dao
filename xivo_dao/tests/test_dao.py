@@ -981,7 +981,6 @@ class DAOTestCase(unittest.TestCase):
     def _generate_paging_number(self):
         pagings = self.session.query(Paging).all()
         numbers = [paging.number for paging in pagings]
-        print numbers
         return self._random_exten(numbers)
 
     def add_parking_lot(self, **kwargs):
