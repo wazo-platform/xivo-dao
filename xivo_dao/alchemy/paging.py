@@ -15,11 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
 from sqlalchemy.sql import cast, not_
 from sqlalchemy.types import Integer, String, Text, Boolean
 
+from xivo_dao.alchemy.paginguser import PagingUser
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -44,6 +47,24 @@ class Paging(Base):
     announcement_caller = Column(Integer, nullable=False, server_default='0')
     commented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text)
+
+    paging_members = relationship('PagingUser',
+                                  primaryjoin="""and_(PagingUser.pagingid == Paging.id,
+                                                      PagingUser.caller == 0)""",
+                                  cascade='all, delete-orphan')
+
+    members = association_proxy('paging_members', 'user',
+                                creator=lambda _user: PagingUser(user=_user,
+                                                                 caller=0))
+
+    paging_callers = relationship('PagingUser',
+                                  primaryjoin="""and_(PagingUser.pagingid == Paging.id,
+                                                      PagingUser.caller == 1)""",
+                                  cascade='all, delete-orphan')
+
+    callers = association_proxy('paging_callers', 'user',
+                                creator=lambda _user: PagingUser(user=_user,
+                                                                 caller=1))
 
     @hybrid_property
     def enabled(self):

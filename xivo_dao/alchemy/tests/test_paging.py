@@ -17,9 +17,105 @@
 
 import unittest
 
-from hamcrest import assert_that, equal_to
+from hamcrest import (assert_that,
+                      contains,
+                      contains_inanyorder,
+                      empty,
+                      equal_to,
+                      none,
+                      not_)
 
+
+from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao.alchemy.userfeatures import UserFeatures as User
 from xivo_dao.alchemy.paging import Paging
+from xivo_dao.alchemy.paginguser import PagingUser
+
+
+class TestMembers(DAOTestCase):
+
+    def test_getter(self):
+        paging = self.add_paging()
+        user = self.add_user()
+        self.add_paging_user(user_id=user.id, paging_id=paging.id, caller=0)
+
+        row = self.session.query(Paging).filter_by(id=paging.id).first()
+        assert_that(row, equal_to(paging))
+        assert_that(row.members, contains(user))
+
+    def test_setter(self):
+        paging = self.add_paging()
+        user1 = self.add_user()
+        user2 = self.add_user()
+        paging.members = [user1, user2]
+
+        row = self.session.query(Paging).filter_by(id=paging.id).first()
+        assert_that(row, equal_to(paging))
+
+        self.session.expire_all()
+        assert_that(row.members, contains_inanyorder(user1, user2))
+
+    def test_deleter(self):
+        paging = self.add_paging()
+        user1 = self.add_user()
+        user2 = self.add_user()
+        paging.members = [user1, user2]
+        self.session.flush()
+
+        paging.members = []
+
+        row = self.session.query(Paging).filter_by(id=paging.id).first()
+        assert_that(row, equal_to(paging))
+        assert_that(row.members, empty())
+
+        row = self.session.query(User).first()
+        assert_that(row, not_(none()))
+
+        row = self.session.query(PagingUser).first()
+        assert_that(row, none())
+
+
+class TestCallers(DAOTestCase):
+
+    def test_getter(self):
+        paging = self.add_paging()
+        user = self.add_user()
+        self.add_paging_user(user_id=user.id, paging_id=paging.id, caller=1)
+
+        row = self.session.query(Paging).filter_by(id=paging.id).first()
+        assert_that(row, equal_to(paging))
+        assert_that(row.callers, contains(user))
+
+    def test_setter(self):
+        paging = self.add_paging()
+        user1 = self.add_user()
+        user2 = self.add_user()
+        paging.callers = [user1, user2]
+
+        row = self.session.query(Paging).filter_by(id=paging.id).first()
+        assert_that(row, equal_to(paging))
+
+        self.session.expire_all()
+        assert_that(row.callers, contains_inanyorder(user1, user2))
+
+    def test_deleter(self):
+        paging = self.add_paging()
+        user1 = self.add_user()
+        user2 = self.add_user()
+        paging.callers = [user1, user2]
+        self.session.flush()
+
+        paging.callers = []
+
+        row = self.session.query(Paging).filter_by(id=paging.id).first()
+        assert_that(row, equal_to(paging))
+        assert_that(row.callers, empty())
+
+        row = self.session.query(User).first()
+        assert_that(row, not_(none()))
+
+        row = self.session.query(PagingUser).first()
+        assert_that(row, none())
 
 
 class TestEnabled(unittest.TestCase):

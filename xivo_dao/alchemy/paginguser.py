@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2014-2016 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,7 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import relationship
+from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint, Index
 from sqlalchemy.types import Integer
 
 from xivo_dao.helpers.db_manager import Base
@@ -29,6 +31,25 @@ class PagingUser(Base):
         Index('paginguser__idx__pagingid', 'pagingid'),
     )
 
-    pagingid = Column(Integer, nullable=False)
-    userfeaturesid = Column(Integer, nullable=False)
+    pagingid = Column(Integer, ForeignKey('paging.id'), nullable=False)
+    userfeaturesid = Column(Integer, ForeignKey('userfeatures.id'), nullable=False)
     caller = Column(Integer, nullable=False)
+
+    paging = relationship('Paging')
+    user = relationship('UserFeatures')
+
+    @hybrid_property
+    def paging_id(self):
+        return self.pagingid
+
+    @paging_id.setter
+    def paging_id(self, value):
+        self.pagingid = value
+
+    @hybrid_property
+    def user_id(self):
+        return self.userfeaturesid
+
+    @user_id.setter
+    def user_id(self, value):
+        self.userfeaturesid = value
