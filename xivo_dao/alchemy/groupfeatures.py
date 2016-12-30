@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2016 Avencall
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2012-2016 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -98,10 +97,10 @@ class GroupFeatures(Base):
                                  cascade='all, delete-orphan',
                                  passive_updates=False)
 
-    users = association_proxy('group_members', 'user',
-                              creator=lambda _user: QueueMember(category='group',
-                                                                usertype='user',
-                                                                user=_user))
+    users_member = association_proxy('group_members', 'user',
+                                     creator=lambda _user: QueueMember(category='group',
+                                                                       usertype='user',
+                                                                       user=_user))
 
     queue = relationship('Queue',
                          primaryjoin="""and_(Queue.category == 'group',
@@ -182,10 +181,6 @@ class GroupFeatures(Base):
             self.group_dialactions[event].action = dialaction.action
             self.group_dialactions[event].actionarg1 = dialaction.actionarg1
             self.group_dialactions[event].actionarg2 = dialaction.actionarg2
-
-    @property
-    def members(self):
-        return self
 
     def fix_extension(self):
         for extension in self.extensions:

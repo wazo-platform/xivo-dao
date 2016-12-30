@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2016 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -470,7 +470,7 @@ class TestAssociateMemberUsers(DAOTestCase):
 
         group = self.session.query(Group).first()
         assert_that(group, equal_to(group_row))
-        assert_that(group.users, contains(user2, user3, user1))
+        assert_that(group.users_member, contains(user2, user3, user1))
 
     def test_associate_sip_fix(self):
         user = self.add_user()
@@ -529,13 +529,13 @@ class TestAssociateMemberUsers(DAOTestCase):
         group_dao.associate_all_member_users(group_row, [user])
 
         group = self.session.query(Group).first()
-        assert_that(group.users, contains(user))
+        assert_that(group.users_member, contains(user))
 
         group_dao.associate_all_member_users(group_row, [])
 
         group = self.session.query(Group).first()
         assert_that(group, equal_to(group_row))
-        assert_that(group.users, empty())
+        assert_that(group.users_member, empty())
 
         row = self.session.query(UserFeatures).first()
         assert_that(row, not_(none()))
