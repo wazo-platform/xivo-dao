@@ -53,18 +53,18 @@ class Paging(Base):
                                                       PagingUser.caller == 0)""",
                                   cascade='all, delete-orphan')
 
-    members = association_proxy('paging_members', 'user',
-                                creator=lambda _user: PagingUser(user=_user,
-                                                                 caller=0))
+    users_member = association_proxy('paging_members', 'user',
+                                     creator=lambda _user: PagingUser(user=_user,
+                                                                      caller=0))
 
     paging_callers = relationship('PagingUser',
                                   primaryjoin="""and_(PagingUser.pagingid == Paging.id,
                                                       PagingUser.caller == 1)""",
                                   cascade='all, delete-orphan')
 
-    callers = association_proxy('paging_callers', 'user',
-                                creator=lambda _user: PagingUser(user=_user,
-                                                                 caller=1))
+    users_caller = association_proxy('paging_callers', 'user',
+                                     creator=lambda _user: PagingUser(user=_user,
+                                                                      caller=1))
 
     @hybrid_property
     def enabled(self):

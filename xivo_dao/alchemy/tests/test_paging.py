@@ -32,7 +32,7 @@ from xivo_dao.alchemy.paging import Paging
 from xivo_dao.alchemy.paginguser import PagingUser
 
 
-class TestMembers(DAOTestCase):
+class TestUsersMember(DAOTestCase):
 
     def test_getter(self):
         paging = self.add_paging()
@@ -41,32 +41,32 @@ class TestMembers(DAOTestCase):
 
         row = self.session.query(Paging).filter_by(id=paging.id).first()
         assert_that(row, equal_to(paging))
-        assert_that(row.members, contains(user))
+        assert_that(row.users_member, contains(user))
 
     def test_setter(self):
         paging = self.add_paging()
         user1 = self.add_user()
         user2 = self.add_user()
-        paging.members = [user1, user2]
+        paging.users_member = [user1, user2]
 
         row = self.session.query(Paging).filter_by(id=paging.id).first()
         assert_that(row, equal_to(paging))
 
         self.session.expire_all()
-        assert_that(row.members, contains_inanyorder(user1, user2))
+        assert_that(row.users_member, contains_inanyorder(user1, user2))
 
     def test_deleter(self):
         paging = self.add_paging()
         user1 = self.add_user()
         user2 = self.add_user()
-        paging.members = [user1, user2]
+        paging.users_member = [user1, user2]
         self.session.flush()
 
-        paging.members = []
+        paging.users_member = []
 
         row = self.session.query(Paging).filter_by(id=paging.id).first()
         assert_that(row, equal_to(paging))
-        assert_that(row.members, empty())
+        assert_that(row.users_member, empty())
 
         row = self.session.query(User).first()
         assert_that(row, not_(none()))
@@ -75,7 +75,7 @@ class TestMembers(DAOTestCase):
         assert_that(row, none())
 
 
-class TestCallers(DAOTestCase):
+class TestUsersCaller(DAOTestCase):
 
     def test_getter(self):
         paging = self.add_paging()
@@ -84,32 +84,32 @@ class TestCallers(DAOTestCase):
 
         row = self.session.query(Paging).filter_by(id=paging.id).first()
         assert_that(row, equal_to(paging))
-        assert_that(row.callers, contains(user))
+        assert_that(row.users_caller, contains(user))
 
     def test_setter(self):
         paging = self.add_paging()
         user1 = self.add_user()
         user2 = self.add_user()
-        paging.callers = [user1, user2]
+        paging.users_caller = [user1, user2]
 
         row = self.session.query(Paging).filter_by(id=paging.id).first()
         assert_that(row, equal_to(paging))
 
         self.session.expire_all()
-        assert_that(row.callers, contains_inanyorder(user1, user2))
+        assert_that(row.users_caller, contains_inanyorder(user1, user2))
 
     def test_deleter(self):
         paging = self.add_paging()
         user1 = self.add_user()
         user2 = self.add_user()
-        paging.callers = [user1, user2]
+        paging.users_caller = [user1, user2]
         self.session.flush()
 
-        paging.callers = []
+        paging.users_caller = []
 
         row = self.session.query(Paging).filter_by(id=paging.id).first()
         assert_that(row, equal_to(paging))
-        assert_that(row.callers, empty())
+        assert_that(row.users_caller, empty())
 
         row = self.session.query(User).first()
         assert_that(row, not_(none()))
