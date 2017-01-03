@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright 2013-2016 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,13 +18,12 @@
 from xivo_dao.helpers import errors
 from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.resources.cti_profile.model import db_converter
 
 
 @daosession
 def find_all(session):
-    rows = session.query(CtiProfile).all()
-    return [db_converter.to_model(row) for row in rows]
+    query = session.query(CtiProfile)
+    return query.all()
 
 
 @daosession
@@ -32,7 +31,7 @@ def get(session, profile_id):
     row = session.query(CtiProfile).filter(CtiProfile.id == profile_id).first()
     if row is None:
         raise errors.not_found('CtiProfile', id=profile_id)
-    return db_converter.to_model(row)
+    return row
 
 
 @daosession

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright 2013-2016 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 
 from hamcrest import assert_that, equal_to, has_length
 
-from xivo_dao.alchemy.cti_profile import CtiProfile as CtiProfileSchema
+from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.resources.cti_profile import dao
 from xivo_dao.helpers.exception import NotFoundError
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -26,8 +26,8 @@ from xivo_dao.tests.test_dao import DAOTestCase
 class TestCtiProfile(DAOTestCase):
 
     def test_find_all(self):
-        profile_row1 = CtiProfileSchema(id=1, name='Profil 01')
-        profile_row2 = CtiProfileSchema(id=2, name='Profil 02')
+        profile_row1 = CtiProfile(id=1, name='Profil 01')
+        profile_row2 = CtiProfile(id=2, name='Profil 02')
         self.add_me(profile_row1)
         self.add_me(profile_row2)
 
@@ -40,7 +40,7 @@ class TestCtiProfile(DAOTestCase):
         assert_that(result[1].name, equal_to('Profil 02'))
 
     def test_get(self):
-        profile_row = CtiProfileSchema(id=1, name='Profil 01')
+        profile_row = CtiProfile(id=1, name='Profil 01')
         self.add_me(profile_row)
 
         result = dao.get(1)
@@ -52,8 +52,8 @@ class TestCtiProfile(DAOTestCase):
         self.assertRaises(NotFoundError, dao.get, 1)
 
     def test_get_id_by_name(self):
-        profile_row1 = CtiProfileSchema(id=1, name='Profil 01')
-        profile_row2 = CtiProfileSchema(id=2, name='Profil 02')
+        profile_row1 = CtiProfile(id=1, name='Profil 01')
+        profile_row2 = CtiProfile(id=2, name='Profil 02')
         self.add_me(profile_row1)
         self.add_me(profile_row2)
 

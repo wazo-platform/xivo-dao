@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2015 Avencall
+# Copyright 2013-2016 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,8 +18,6 @@
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 
 from xivo_dao.helpers import errors
-
-from xivo_dao.resources.user_voicemail.model import db_converter
 
 from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.helpers.db_manager import daosession
@@ -47,21 +45,20 @@ def find_query(session, criteria):
 @daosession
 def find_by(session, **criteria):
     query = find_query(session, criteria)
-    row = query.first()
-    return db_converter.to_model(row) if row else None
+    return query.first()
 
 
 def get_by(**criteria):
-    extension = find_by(**criteria)
-    if not extension:
+    user_voicemail = find_by(**criteria)
+    if not user_voicemail:
         raise errors.not_found('UserVoicemail', **criteria)
-    return extension
+    return user_voicemail
 
 
 @daosession
 def find_all_by(session, **criteria):
     query = find_query(session, criteria)
-    return [db_converter.to_model(row) for row in query]
+    return query.all()
 
 
 def get_by_user_id(user_id):
@@ -77,43 +74,16 @@ def find_all_by_voicemail_id(voicemail_id):
 
 
 @daosession
-def associate(session, user_voicemail):
+def associate(session, user, voicemail):
     with flush_session(session):
-        _associate_voicemail_with_user(session, user_voicemail)
-
-
-def _associate_voicemail_with_user(session, user_voicemail):
-    user_row = (session.query(UserSchema)
-                .filter(UserSchema.id == user_voicemail.user_id)
-                .first())
-
-    if user_row:
-        user_row.voicemailid = user_voicemail.voicemail_id
-        user_row.enablevoicemail = int(user_voicemail.enabled)
-        session.add(user_row)
-
-
-def _fetch_by_user_id(session, user_id):
-    row = (session.query(UserSchema.id.label('user_id'),
-                         UserSchema.voicemailid.label('voicemail_id'),
-                         UserSchema.enablevoicemail)
-           .filter(UserSchema.id == user_id)
-           .first())
-
-    return row
+        user.voicemailid = voicemail.id
+        user.enablevoicemail = 1
+        session.add(user)
 
 
 @daosession
-def dissociate(session, user_voicemail):
+def dissociate(session, user, voicemail):
     with flush_session(session):
-        _dissociate_voicemail_from_user(session, user_voicemail.user_id)
-
-
-def _dissociate_voicemail_from_user(session, user_id):
-    user_row = (session.query(UserSchema)
-                .filter(UserSchema.id == user_id)
-                .first())
-    if user_row:
-        user_row.voicemailid = None
-        user_row.enablevoicemail = 0
-        session.add(user_row)
+        user.voicemailid = None
+        user.enablevoicemail = 0
+        session.add(user)

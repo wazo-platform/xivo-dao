@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2016 Avencall
+# Copyright 2013-2016 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,11 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, has_property, instance_of, equal_to, none, contains, has_items
+from hamcrest import assert_that, has_property, equal_to, none, contains, has_properties, contains_inanyorder
 
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.resources.user_voicemail import dao as user_voicemail_dao
-from xivo_dao.resources.user_voicemail.model import UserVoicemail
 from xivo_dao.helpers.exception import NotFoundError
 from xivo_dao.tests.test_dao import DAOTestCase
 
@@ -43,9 +42,7 @@ class TestAssociateUserVoicemail(TestUserVoicemail):
         user_row = self.add_user()
         voicemail_row = self.add_voicemail(mailbox='1000', context='default')
 
-        user_voicemail = UserVoicemail(user_id=user_row.id,
-                                       voicemail_id=voicemail_row.uniqueid)
-        user_voicemail_dao.associate(user_voicemail)
+        user_voicemail_dao.associate(user_row, voicemail_row)
 
         self.assert_user_was_associated_with_voicemail(user_row.id,
                                                        voicemail_row.uniqueid,
@@ -78,7 +75,6 @@ class TestUserVoicemailGetByUserId(TestUserVoicemail):
 
         result = user_voicemail_dao.get_by_user_id(user_row.id)
 
-        assert_that(result, instance_of(UserVoicemail))
         assert_that(result,
                     has_property('user_id', user_row.id),
                     has_property('voicemail_id', voicemail_row.uniqueid))
@@ -110,7 +106,6 @@ class TestUserVoicemailFindByUserId(TestUserVoicemail):
 
         result = user_voicemail_dao.find_by_user_id(user_row.id)
 
-        assert_that(result, instance_of(UserVoicemail))
         assert_that(result,
                     has_property('user_id', user_row.id),
                     has_property('voicemail_id', voicemail_row.uniqueid))
@@ -131,37 +126,28 @@ class TestUserVoicemailFindAllByVoicemailId(TestUserVoicemail):
         assert_that(result, contains())
 
     def test_given_voicemail_is_associated_to_user_then_returns_one_item(self):
-        user_row, voicemail_row = self.create_user_and_voicemail(firstname='Dolly',
-                                                                 exten='1000',
-                                                                 context='default')
-        expected = UserVoicemail(user_id=user_row.id,
-                                 user_uuid=user_row.uuid,
-                                 voicemail_id=voicemail_row.uniqueid,
-                                 enabled=True)
+        user = self.add_user()
+        voicemail = self.add_voicemail()
+        user_voicemail_dao.associate(user, voicemail)
 
-        result = user_voicemail_dao.find_all_by_voicemail_id(voicemail_row.uniqueid)
+        result = user_voicemail_dao.find_all_by_voicemail_id(voicemail.id)
 
-        assert_that(result, contains(expected))
+        assert_that(result, contains(has_properties(user_id=user.id,
+                                                    voicemail_id=voicemail.id)))
 
     def test_given_voicemail_is_associated_to_two_users_then_returns_two_items(self):
-        first_user, voicemail_row = self.create_user_and_voicemail(firstname='Dolly',
-                                                                   exten='1000',
-                                                                   context='default')
-        second_user = self.add_user(enablevoicemail=1)
-        self.link_user_and_voicemail(second_user, voicemail_row.uniqueid)
+        user1 = self.add_user()
+        user2 = self.add_user()
+        voicemail = self.add_voicemail()
+        user_voicemail_dao.associate(user1, voicemail)
+        user_voicemail_dao.associate(user2, voicemail)
 
-        expected = has_items(UserVoicemail(user_id=first_user.id,
-                                           user_uuid=first_user.uuid,
-                                           voicemail_id=voicemail_row.uniqueid,
-                                           enabled=True),
-                             UserVoicemail(user_id=second_user.id,
-                                           user_uuid=second_user.uuid,
-                                           voicemail_id=voicemail_row.uniqueid,
-                                           enabled=True))
+        result = user_voicemail_dao.find_all_by_voicemail_id(voicemail.id)
 
-        result = user_voicemail_dao.find_all_by_voicemail_id(voicemail_row.uniqueid)
-
-        assert_that(result, expected)
+        assert_that(result, contains_inanyorder(has_properties(user_id=user1.id,
+                                                               voicemail_id=voicemail.id),
+                                                has_properties(user_id=user2.id,
+                                                               voicemail_id=voicemail.id)))
 
 
 class TestDissociateUserVoicemail(TestUserVoicemail):
@@ -171,9 +157,7 @@ class TestDissociateUserVoicemail(TestUserVoicemail):
         user_row = self.add_user(voicemailid=voicemail_row.uniqueid,
                                  enablevoicemail=1)
 
-        user_voicemail = UserVoicemail(user_id=user_row.id,
-                                       voicemail_id=voicemail_row.uniqueid)
-        user_voicemail_dao.dissociate(user_voicemail)
+        user_voicemail_dao.dissociate(user_row, voicemail_row)
 
         self.assert_user_was_dissociated_from_voicemail(user_row.id)
 
