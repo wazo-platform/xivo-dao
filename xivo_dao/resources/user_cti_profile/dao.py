@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2013-2014 Avencall
+# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
-from xivo_dao.alchemy.cti_profile import CtiProfile as CtiProfileSchema
-from xivo_dao.resources.cti_profile.model import db_converter as cti_profile_db_converter
+from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.helpers import errors
 
 
@@ -30,8 +29,8 @@ def find_profile_by_userid(session, userid):
         raise errors.not_found('User', id=userid)
     if user.cti_profile_id is None:
         return None
-    row = session.query(CtiProfileSchema).filter(CtiProfileSchema.id == user.cti_profile_id).first()
-    return cti_profile_db_converter.to_model(row)
+    query = session.query(CtiProfile).filter(CtiProfile.id == user.cti_profile_id)
+    return query.first()
 
 
 @daosession

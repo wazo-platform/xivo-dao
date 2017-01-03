@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2013-2014 Avencall
+# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@ from hamcrest import assert_that
 from hamcrest import equal_to
 from hamcrest import none
 
-from xivo_dao.alchemy.cti_profile import CtiProfile as CtiProfileSchema
+from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.helpers.exception import NotFoundError
 from xivo_dao.resources.user_cti_profile import dao as user_cti_profile_dao
 from xivo_dao.resources.user_cti_profile.model import UserCtiProfile
@@ -29,7 +29,7 @@ from xivo_dao.tests.test_dao import DAOTestCase
 class TestUserCtiProfile(DAOTestCase):
 
     def test_find_by_userid(self):
-        cti_profile = CtiProfileSchema(id=2, name='Test')
+        cti_profile = CtiProfile(id=2, name='Test')
         self.add_me(cti_profile)
         user = self.add_user(cti_profile_id=2)
 
@@ -49,7 +49,7 @@ class TestUserCtiProfile(DAOTestCase):
         self.assertRaises(NotFoundError, user_cti_profile_dao.find_profile_by_userid, 123)
 
     def test_edit(self):
-        cti_profile = CtiProfileSchema(id=2, name='Test')
+        cti_profile = CtiProfile(id=2, name='Test')
         self.add_me(cti_profile)
         user = self.add_user(cti_profile_id=None, enableclient=0)
         user_cti_profile = UserCtiProfile(user_id=user.id, cti_profile_id=cti_profile.id, enabled=True)
@@ -60,7 +60,7 @@ class TestUserCtiProfile(DAOTestCase):
         assert_that(user.enableclient, 1)
 
     def test_edit_enabled_not_set(self):
-        cti_profile = CtiProfileSchema(id=2, name='Test')
+        cti_profile = CtiProfile(id=2, name='Test')
         self.add_me(cti_profile)
         user = self.add_user(cti_profile_id=None, enableclient=1)
         user_cti_profile = UserCtiProfile(user_id=user.id, cti_profile_id=cti_profile.id)
