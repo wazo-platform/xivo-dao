@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2016 Avencall
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -191,6 +190,9 @@ class UserFeatures(Base):
                                                      QueueMember.userid == UserFeatures.id)""",
                                  foreign_keys='QueueMember.userid',
                                  cascade='all, delete-orphan')
+
+    paging_users = relationship('PagingUser',
+                                cascade='all, delete-orphan')
 
     def extrapolate_caller_id(self, extension=None):
         default_num = extension.exten if extension else None

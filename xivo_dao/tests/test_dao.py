@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright 2013-2016 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -986,6 +986,7 @@ class DAOTestCase(unittest.TestCase):
 
     def add_paging_user(self, **kwargs):
         paging_user = PagingUser(**kwargs)
+        kwargs.setdefault('caller', 0)
         self.add_me(paging_user)
         return paging_user
 
