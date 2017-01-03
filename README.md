@@ -15,9 +15,8 @@ sudo -u postgres psql
 Then:
 
 ```
-CREATE DATABASE asterisktest;
 CREATE USER asterisk WITH PASSWORD 'asterisk';
-GRANT ALL ON DATABASE asterisktest TO asterisk;
+CREATE DATABASE asterisktest OWNER asterisk;
 ```
 
 Running unit tests

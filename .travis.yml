@@ -4,9 +4,8 @@ python:
 install: pip install -r requirements.txt -r test-requirements.txt
 services: postgresql
 before_script:
-    - psql -U postgres -c "create database asterisktest;"
     - psql -U postgres -c "create user asterisk with password 'asterisk';"
-    - psql -U postgres -c "grant all on database asterisktest to asterisk;"
+    - psql -U postgres -c "create database asterisktest owner asterisk;"
 script: nosetests xivo_dao
 notifications:
   email:
