@@ -33,7 +33,7 @@ class PagingUser(Base):
 
     pagingid = Column(Integer, ForeignKey('paging.id'), nullable=False)
     userfeaturesid = Column(Integer, ForeignKey('userfeatures.id'), nullable=False)
-    caller = Column(Integer, nullable=False)
+    caller = Column(Integer, nullable=False, autoincrement=False)
 
     paging = relationship('Paging')
     user = relationship('UserFeatures')
