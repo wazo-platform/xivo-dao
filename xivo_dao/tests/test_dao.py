@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright 2013-2016 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -61,6 +61,7 @@ from xivo_dao.alchemy.line_extension import LineExtension
 from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
 from xivo_dao.alchemy.musiconhold import MusicOnHold
 from xivo_dao.alchemy.paging import Paging
+from xivo_dao.alchemy.paginguser import PagingUser
 from xivo_dao.alchemy.parking_lot import ParkingLot
 from xivo_dao.alchemy.phonefunckey import PhoneFunckey
 from xivo_dao.alchemy.pickup import Pickup
@@ -448,7 +449,7 @@ class DAOTestCase(unittest.TestCase):
         return self._random_exten(extens)
 
     def _random_exten(self, extens):
-        exten = str(random.randint(1, 3))
+        exten = str(random.randint(1000, 4000))
         if exten in extens:
             return self._random_exten(extens)
         return exten
@@ -973,11 +974,21 @@ class DAOTestCase(unittest.TestCase):
         return feature
 
     def add_paging(self, **kwargs):
-        kwargs.setdefault('number', '1234')
-        kwargs.setdefault('timeout', 30)
+        kwargs.setdefault('number', self._generate_paging_number())
         paging = Paging(**kwargs)
         self.add_me(paging)
         return paging
+
+    def _generate_paging_number(self):
+        pagings = self.session.query(Paging).all()
+        numbers = [paging.number for paging in pagings]
+        return self._random_exten(numbers)
+
+    def add_paging_user(self, **kwargs):
+        paging_user = PagingUser(**kwargs)
+        kwargs.setdefault('caller', 0)
+        self.add_me(paging_user)
+        return paging_user
 
     def add_parking_lot(self, **kwargs):
         kwargs.setdefault('slots_start', '701')

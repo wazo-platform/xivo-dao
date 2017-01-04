@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2016 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -92,7 +92,7 @@ class GroupPersistor(CriteriaBuilderMixin):
 
     def associate_all_member_users(self, group, users):
         with Session.no_autoflush:
-            group.users = users
+            group.users_member = users
             for member in group.group_members:
                 member.fix()
         self.session.flush()

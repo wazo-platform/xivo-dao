@@ -153,14 +153,6 @@ class TestCallerIdName(DAOTestCase):
         ))
 
 
-class TestMember(DAOTestCase):
-
-    def test_getter(self):
-        group = self.add_group()
-
-        assert_that(group.members, equal_to(group))
-
-
 class TestCreate(DAOTestCase):
 
     def test_queue_is_created_with_default_fields(self):

@@ -231,6 +231,11 @@ class DestinationPersistor(object):
          .filter(FuncKey.id == func_key_id)
          .delete())
 
+    def _func_key_is_still_mapped(self, func_key_id):
+        return (self.session.query(FuncKeyMapping)
+                .filter(FuncKeyMapping.func_key_id == func_key_id)
+                .scalar())
+
 
 class UserPersistor(DestinationPersistor):
 
@@ -308,11 +313,6 @@ class GroupPersistor(DestinationPersistor):
              .delete())
             self.delete_func_key(func_key_id)
 
-    def _func_key_is_still_mapped(self, func_key_id):
-        return (self.session.query(FuncKeyMapping)
-                .filter(FuncKeyMapping.func_key_id == func_key_id)
-                .scalar())
-
 
 class ConferencePersistor(DestinationPersistor):
 
@@ -336,6 +336,9 @@ class ConferencePersistor(DestinationPersistor):
 
 class PagingPersistor(DestinationPersistor):
 
+    TYPE_ID = 1
+    DESTINATION_TYPE_ID = 9
+
     def get(self, func_key_id):
         row = (self.session.query(FuncKeyDestPaging.paging_id)
                .filter(FuncKeyDestPaging.func_key_id == func_key_id)
@@ -344,14 +347,26 @@ class PagingPersistor(DestinationPersistor):
         return fk_model.PagingDestination(paging_id=row.paging_id)
 
     def find_or_create(self, destination):
-        query = (self.session.query(FuncKeyDestPaging)
-                 .filter(FuncKeyDestPaging.paging_id == destination.paging_id)
-                 )
+        destination_row = (self.session.query(FuncKeyDestPaging)
+                           .filter(FuncKeyDestPaging.paging_id == destination.paging_id)
+                           .first())
 
-        return query.first()
+        if not destination_row:
+            func_key_row = self.create_func_key(self.TYPE_ID,
+                                                self.DESTINATION_TYPE_ID)
+            destination_row = FuncKeyDestPaging(func_key_id=func_key_row.id,
+                                                paging_id=destination.paging_id)
+            self.session.add(destination_row)
+            self.session.flush()
+
+        return destination_row
 
     def delete(self, func_key_id):
-        pass
+        if not self._func_key_is_still_mapped(func_key_id):
+            (self.session.query(FuncKeyDestPaging)
+             .filter(FuncKeyDestPaging.func_key_id == func_key_id)
+             .delete())
+            self.delete_func_key(func_key_id)
 
 
 class BSFilterPersistor(DestinationPersistor):

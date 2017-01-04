@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,6 +26,7 @@ from hamcrest import (assert_that,
                       none)
 
 from xivo_dao.alchemy.dialaction import Dialaction
+from xivo_dao.alchemy.paginguser import PagingUser
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.userfeatures import UserFeatures
@@ -191,4 +191,15 @@ class TestDelete(DAOTestCase):
         self.session.flush()
 
         row = self.session.query(UserLine).first()
+        assert_that(row, none())
+
+    def test_paging_users_are_deleted(self):
+        user = self.add_user()
+        paging = self.add_paging()
+        self.add_paging_user(user_id=user.id, paging_id=paging.id)
+
+        self.session.delete(user)
+        self.session.flush()
+
+        row = self.session.query(PagingUser).first()
         assert_that(row, none())
