@@ -985,8 +985,8 @@ class DAOTestCase(unittest.TestCase):
         return self._random_exten(numbers)
 
     def add_paging_user(self, **kwargs):
-        paging_user = PagingUser(**kwargs)
         kwargs.setdefault('caller', 0)
+        paging_user = PagingUser(**kwargs)
         self.add_me(paging_user)
         return paging_user
 
