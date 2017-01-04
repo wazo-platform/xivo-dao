@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2016 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,10 +26,12 @@ from hamcrest import (assert_that,
                       not_)
 
 
-from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao.alchemy.func_key_dest_paging import FuncKeyDestPaging
 from xivo_dao.alchemy.userfeatures import UserFeatures as User
 from xivo_dao.alchemy.paging import Paging
 from xivo_dao.alchemy.paginguser import PagingUser
+from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 
 
 class TestUsersMember(DAOTestCase):
@@ -247,3 +249,20 @@ class TestAnnounceSound(unittest.TestCase):
         paging = Paging(announce_sound=None)
         assert_that(paging.announcement_play, equal_to(0))
         assert_that(paging.announcement_file, equal_to(None))
+
+
+class TestDelete(DAOTestCase, FuncKeyHelper):
+
+    def setUp(self):
+        super(TestDelete, self).setUp()
+        self.setup_funckeys()
+
+    def test_funckeys_are_deleted(self):
+        paging = self.add_paging()
+        self.add_paging_destination(paging.id)
+
+        self.session.delete(paging)
+        self.session.flush()
+
+        row = self.session.query(FuncKeyDestPaging).first()
+        assert_that(row, none())

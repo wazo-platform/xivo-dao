@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2014-2016 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -65,6 +65,9 @@ class Paging(Base):
     users_caller = association_proxy('paging_callers', 'user',
                                      creator=lambda _user: PagingUser(user=_user,
                                                                       caller=1))
+
+    func_keys = relationship('FuncKeyDestPaging',
+                             cascade='all, delete-orphan')
 
     @hybrid_property
     def enabled(self):
