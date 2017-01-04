@@ -41,7 +41,7 @@ class Paging(Base):
     ignore = Column(Integer, nullable=False, server_default='0')
     record = Column(Integer, nullable=False, server_default='0')
     quiet = Column(Integer, nullable=False, server_default='0')
-    timeout = Column(Integer, nullable=True, server_default='30')
+    timeout = Column(Integer, nullable=False, server_default='30')
     announcement_file = Column(String(64))
     announcement_play = Column(Integer, nullable=False, server_default='0')
     announcement_caller = Column(Integer, nullable=False, server_default='0')
