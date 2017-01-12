@@ -34,23 +34,23 @@ class Switchboard(Base):
 
     __tablename__ = 'switchboard'
     __table_args__ = (
-        PrimaryKeyConstraint('id'),
+        PrimaryKeyConstraint('uuid'),
     )
 
-    id = Column(String(38), nullable=False, default=_new_uuid)
+    uuid = Column(String(38), nullable=False, default=_new_uuid)
     name = Column(String(128), nullable=False)
 
     incall_dialactions = relationship('Dialaction',
                                       primaryjoin="""and_(Dialaction.category == 'incall',
                                                           Dialaction.action == 'switchboard',
-                                                          Dialaction.actionarg1 == Switchboard.id)""",
+                                                          Dialaction.actionarg1 == Switchboard.uuid)""",
                                       foreign_keys='Dialaction.actionarg1',
                                       viewonly=True)
 
     incalls = association_proxy('incall_dialactions', 'incall')
 
     switchboard_member_users = relationship('SwitchboardMemberUser',
-                                            primaryjoin="""SwitchboardMemberUser.switchboard_id == Switchboard.id""",
+                                            primaryjoin="""SwitchboardMemberUser.switchboard_uuid == Switchboard.uuid""",
                                             cascade='all, delete-orphan')
 
     user_members = association_proxy('switchboard_member_users', 'user',

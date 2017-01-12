@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,8 +28,8 @@ def search(session, **parameters):
 
 
 @daosession
-def get(session, switchboard_id):
-    return SwitchboardPersistor(session, switchboard_search).get_by({'id': str(switchboard_id)})
+def get(session, switchboard_uuid):
+    return SwitchboardPersistor(session, switchboard_search).get_by({'uuid': str(switchboard_uuid)})
 
 
 @daosession
@@ -38,8 +38,8 @@ def get_by(session, **criteria):
 
 
 @daosession
-def find(session, switchboard_id):
-    return SwitchboardPersistor(session, switchboard_search).find_by({'id': str(switchboard_id)})
+def find(session, switchboard_uuid):
+    return SwitchboardPersistor(session, switchboard_search).find_by({'uuid': str(switchboard_uuid)})
 
 
 @daosession

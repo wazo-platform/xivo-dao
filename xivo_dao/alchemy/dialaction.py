@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright 2012-2016 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -72,7 +72,7 @@ class Dialaction(Base):
 
     switchboard = relationship('Switchboard',
                                primaryjoin="""and_(Dialaction.action == 'switchboard',
-                                             Dialaction.actionarg1 == Switchboard.id)""",
+                                             Dialaction.actionarg1 == Switchboard.uuid)""",
                                foreign_keys='Dialaction.actionarg1',
                                viewonly=True)
 

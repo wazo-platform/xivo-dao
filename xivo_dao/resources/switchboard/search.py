@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@ from xivo_dao.resources.utils.search import (SearchSystem,
 
 
 config = SearchConfig(table=Switchboard,
-                      columns={'id': Switchboard.id,
+                      columns={'uuid': Switchboard.uuid,
                                'name': Switchboard.name},
                       default_sort='name')
 

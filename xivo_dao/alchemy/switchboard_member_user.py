@@ -26,11 +26,11 @@ class SwitchboardMemberUser(Base):
 
     __tablename__ = 'switchboard_member_user'
     __table_args__ = (
-        PrimaryKeyConstraint('switchboard_id', 'user_uuid'),
-        Index('switchboard_member_user__idx__switchboard_id', 'switchboard_id'),
+        PrimaryKeyConstraint('switchboard_uuid', 'user_uuid'),
+        Index('switchboard_member_user__idx__switchboard_uuid', 'switchboard_uuid'),
     )
 
-    switchboard_id = Column(Integer, ForeignKey('switchboard.id'), nullable=False)
+    switchboard_uuid = Column(Integer, ForeignKey('switchboard.uuid'), nullable=False)
     user_uuid = Column(String(38), ForeignKey('userfeatures.uuid'), nullable=False)
 
     switchboard = relationship('Switchboard')
