@@ -194,6 +194,9 @@ class UserFeatures(Base):
     paging_users = relationship('PagingUser',
                                 cascade='all, delete-orphan')
 
+    switchboard_member_users = relationship('SwitchboardMemberUser',
+                                            cascade='all, delete-orphan')
+
     def extrapolate_caller_id(self, extension=None):
         default_num = extension.exten if extension else None
         user_match = caller_id_regex.match(self.callerid)

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@ from sqlalchemy.schema import Column, PrimaryKeyConstraint
 from sqlalchemy.types import String
 
 from xivo_dao.helpers.db_manager import Base
+from xivo_dao.alchemy.switchboard_member_user import SwitchboardMemberUser
 
 
 def _new_uuid():
@@ -41,9 +42,16 @@ class Switchboard(Base):
 
     incall_dialactions = relationship('Dialaction',
                                       primaryjoin="""and_(Dialaction.category == 'incall',
-                                           Dialaction.action == 'switchboard',
-                                           Dialaction.actionarg1 == Switchboard.id)""",
+                                                          Dialaction.action == 'switchboard',
+                                                          Dialaction.actionarg1 == Switchboard.id)""",
                                       foreign_keys='Dialaction.actionarg1',
                                       viewonly=True)
 
     incalls = association_proxy('incall_dialactions', 'incall')
+
+    switchboard_member_users = relationship('SwitchboardMemberUser',
+                                            primaryjoin="""SwitchboardMemberUser.switchboard_id == Switchboard.id""",
+                                            cascade='all, delete-orphan')
+
+    user_members = association_proxy('switchboard_member_users', 'user',
+                                     creator=lambda _user: SwitchboardMemberUser(user=_user))
