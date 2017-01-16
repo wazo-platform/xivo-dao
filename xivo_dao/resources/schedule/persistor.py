@@ -20,6 +20,7 @@ from xivo_dao.alchemy.schedule import Schedule
 
 from xivo_dao.helpers import errors
 from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
+from xivo_dao.alchemy.entity import Entity
 
 
 class SchedulePersistor(CriteriaBuilderMixin):
@@ -53,6 +54,7 @@ class SchedulePersistor(CriteriaBuilderMixin):
         return SearchResult(total, rows)
 
     def create(self, schedule):
+        schedule.entity_id = Entity.query_default_id().as_scalar()
         self.session.add(schedule)
         self.session.flush()
         return schedule
