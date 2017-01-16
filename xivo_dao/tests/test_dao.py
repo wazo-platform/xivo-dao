@@ -80,6 +80,7 @@ from xivo_dao.alchemy.sccpgeneralsettings import SCCPGeneralSettings
 from xivo_dao.alchemy.sccpline import SCCPLine as SCCPLineSchema
 from xivo_dao.alchemy.schedule import Schedule
 from xivo_dao.alchemy.schedulepath import SchedulePath
+from xivo_dao.alchemy.schedule_time import ScheduleTime
 from xivo_dao.alchemy.sipauthentication import SIPAuthentication
 from xivo_dao.alchemy.staticiax import StaticIAX
 from xivo_dao.alchemy.staticmeetme import StaticMeetme
@@ -939,6 +940,11 @@ class DAOTestCase(unittest.TestCase):
         schedule = Schedule(**kwargs)
         self.add_me(schedule)
         return schedule
+
+    def add_schedule_time(self, **kwargs):
+        schedule_time = ScheduleTime(**kwargs)
+        self.add_me(schedule_time)
+        return schedule_time
 
     def add_bsfilter(self, **kwargs):
         options = {'callfrom': 'internal',

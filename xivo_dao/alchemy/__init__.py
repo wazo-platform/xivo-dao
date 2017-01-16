@@ -34,6 +34,7 @@ from xivo_dao.alchemy.paging import Paging
 from xivo_dao.alchemy.paginguser import PagingUser
 from xivo_dao.alchemy.parking_lot import ParkingLot
 from xivo_dao.alchemy.queuemember import QueueMember
+from xivo_dao.alchemy.schedule_time import ScheduleTime
 from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.switchboard import Switchboard
 from xivo_dao.alchemy.switchboard_member_user import SwitchboardMemberUser
