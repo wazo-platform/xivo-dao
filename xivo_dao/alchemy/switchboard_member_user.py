@@ -30,7 +30,7 @@ class SwitchboardMemberUser(Base):
         Index('switchboard_member_user__idx__switchboard_uuid', 'switchboard_uuid'),
     )
 
-    switchboard_uuid = Column(Integer, ForeignKey('switchboard.uuid'), nullable=False)
+    switchboard_uuid = Column(String(38), ForeignKey('switchboard.uuid'), nullable=False)
     user_uuid = Column(String(38), ForeignKey('userfeatures.uuid'), nullable=False)
 
     switchboard = relationship('Switchboard')
