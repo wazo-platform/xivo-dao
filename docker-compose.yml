@@ -12,3 +12,5 @@ dao:
     - db
   environment:
     - XIVO_TEST_DB_URL=postgresql://asterisk:proformatique@db/asterisk
+  volumes:
+    - "./xivo_dao:/usr/src/dao/xivo_dao"
