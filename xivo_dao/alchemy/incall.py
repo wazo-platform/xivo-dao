@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2016 Avencall
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2012-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,6 +27,7 @@ from sqlalchemy.types import Integer, String, Text
 
 from xivo_dao.alchemy.callerid import Callerid
 from xivo_dao.alchemy.dialaction import Dialaction
+from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -76,6 +76,18 @@ class Incall(Base):
                               foreign_keys='Extension.typeval',
                               viewonly=True,
                               back_populates='incall')
+
+    schedule_paths = relationship('SchedulePath',
+                                  primaryjoin="""and_(SchedulePath.path == 'incall',
+                                                      SchedulePath.pathid == Incall.id)""",
+                                  foreign_keys='SchedulePath.pathid',
+                                  cascade='all, delete-orphan',
+                                  back_populates='incall')
+
+    schedules = association_proxy('schedule_paths', 'schedule',
+                                  creator=lambda _schedule: SchedulePath(path='incall',
+                                                                         schedule_id=_schedule.id,
+                                                                         schedule=_schedule))
 
     @property
     def destination(self):

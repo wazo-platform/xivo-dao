@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint
@@ -53,6 +54,13 @@ class Schedule(Base):
                            primaryjoin='ScheduleTime.schedule_id == Schedule.id',
                            foreign_keys='ScheduleTime.schedule_id',
                            cascade='all, delete-orphan')
+
+    schedule_paths = relationship('SchedulePath',
+                                  viewonly=True,
+                                  cascade='all, delete-orphan',
+                                  back_populates='schedule')
+
+    incalls = association_proxy('schedule_paths', 'incall')
 
     @property
     def open_periods(self):
