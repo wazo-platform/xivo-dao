@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
+from sqlalchemy.orm import relationship
+from sqlalchemy.schema import Column, ForeignKey, Index, PrimaryKeyConstraint
 from sqlalchemy.types import Integer
 
 from xivo_dao.helpers.db_manager import Base
@@ -30,7 +31,16 @@ class SchedulePath(Base):
         Index('schedule_path_path', 'path', 'pathid'),
     )
 
-    schedule_id = Column(Integer, autoincrement=False)
-    path = Column(enum.schedule_path_type, nullable=False, autoincrement=False)
+    schedule_id = Column(Integer, ForeignKey('schedule.id'))
+    path = Column(enum.schedule_path_type, nullable=False)
     pathid = Column(Integer, autoincrement=False)
-    order = Column(Integer, nullable=False)
+
+    incall = relationship('Incall',
+                          primaryjoin="""and_(SchedulePath.path == 'incall',
+                                              SchedulePath.pathid == Incall.id)""",
+                          foreign_keys='SchedulePath.pathid',
+                          viewonly=True,
+                          back_populates='schedule_paths')
+
+    schedule = relationship('Schedule',
+                            back_populates='schedule_paths')

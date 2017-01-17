@@ -25,7 +25,20 @@ from hamcrest import (assert_that,
 
 from xivo_dao.alchemy.schedule import Schedule
 from xivo_dao.alchemy.schedule_time import ScheduleTime
+from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.tests.test_dao import DAOTestCase
+
+
+class TestIncalls(DAOTestCase):
+
+    def test_getter(self):
+        schedule = self.add_schedule()
+        incall = self.add_incall()
+        self.add_schedule_path(path='incall', pathid=incall.id, schedule_id=schedule.id)
+
+        row = self.session.query(Schedule).filter_by(id=schedule.id).first()
+        assert_that(row, equal_to(schedule))
+        assert_that(row.incalls, contains(incall))
 
 
 class TestOpenPeriods(DAOTestCase):
@@ -174,4 +187,19 @@ class TestDelete(DAOTestCase):
         self.session.flush()
 
         row = self.session.query(ScheduleTime).first()
+        assert_that(row, none())
+
+    def test_schedule_paths_are_deleted(self):
+        schedule = self.add_schedule()
+        self.add_schedule_path(schedule_id=schedule.id, path='incall', pathid=1)
+        self.add_schedule_path(schedule_id=schedule.id, path='outcall', pathid=2)
+        self.add_schedule_path(schedule_id=schedule.id, path='user', pathid=3)
+        self.add_schedule_path(schedule_id=schedule.id, path='group', pathid=4)
+        self.add_schedule_path(schedule_id=schedule.id, path='queue', pathid=5)
+        self.add_schedule_path(schedule_id=schedule.id, path='voicemenu', pathid=6)
+
+        self.session.delete(schedule)
+        self.session.flush()
+
+        row = self.session.query(SchedulePath).first()
         assert_that(row, none())

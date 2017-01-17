@@ -372,7 +372,6 @@ class DAOTestCase(unittest.TestCase):
 
     def add_incall_schedule(self, **kwargs):
         kwargs.setdefault('path', 'incall')
-        kwargs.setdefault('order', 0)
         incall_schedule = SchedulePath(**kwargs)
         self.add_me(incall_schedule)
         return incall_schedule
@@ -491,7 +490,6 @@ class DAOTestCase(unittest.TestCase):
 
     def add_outcall_schedule(self, **kwargs):
         kwargs.setdefault('path', 'outcall')
-        kwargs.setdefault('order', 0)
         outcall_schedule = SchedulePath(**kwargs)
         self.add_me(outcall_schedule)
         return outcall_schedule
@@ -546,7 +544,6 @@ class DAOTestCase(unittest.TestCase):
 
     def add_group_schedule(self, **kwargs):
         kwargs.setdefault('path', 'group')
-        kwargs.setdefault('order', 0)
         group_schedule = SchedulePath(**kwargs)
         self.add_me(group_schedule)
         return group_schedule
@@ -947,7 +944,6 @@ class DAOTestCase(unittest.TestCase):
         return schedule_time
 
     def add_schedule_path(self, **kwargs):
-        kwargs.setdefault('order', 0)
         schedule_path = SchedulePath(**kwargs)
         self.add_me(schedule_path)
         return schedule_path
