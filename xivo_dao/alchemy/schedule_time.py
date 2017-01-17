@@ -19,7 +19,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
 from sqlalchemy.types import Integer, String, Enum
 
-from xivo_dao.helpers.db_manager import Base
+from xivo_dao.helpers.db_manager import Base, IntAsString
 from xivo_dao.alchemy import enum
 
 
@@ -42,7 +42,7 @@ class ScheduleTime(Base):
     monthdays = Column(String(512))
     months = Column(String(512))
     action = Column(enum.dialaction_action)
-    actionid = Column(String(255))
+    actionid = Column(IntAsString(255))
     actionargs = Column(String(255))
     commented = Column(Integer, nullable=False, server_default='0')
 
