@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2007-2014 Avencall
+# Copyright 2007-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,11 +17,9 @@
 
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
 from sqlalchemy.types import Integer
-from sqlalchemy.orm import relationship
 
 from xivo_dao.helpers.db_manager import Base
 from xivo_dao.alchemy import enum
-from xivo_dao.alchemy.schedule import Schedule
 
 
 class SchedulePath(Base):
@@ -36,7 +34,3 @@ class SchedulePath(Base):
     path = Column(enum.schedule_path_type, nullable=False, autoincrement=False)
     pathid = Column(Integer, autoincrement=False)
     order = Column(Integer, nullable=False)
-
-    schedule = relationship(Schedule,
-                            foreign_keys=schedule_id,
-                            primaryjoin=(Schedule.id == schedule_id))

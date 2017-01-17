@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2007-2016 Avencall
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2007-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -32,7 +31,6 @@ from hamcrest import not_
 
 from xivo_dao.alchemy.entity import Entity
 from xivo_dao.alchemy.userfeatures import UserFeatures as User
-from xivo_dao.alchemy.schedule import Schedule
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.dialaction import Dialaction
@@ -846,7 +844,8 @@ class TestDelete(TestUser):
     def test_delete_references_to_other_tables(self):
         user = user_dao.create(User(firstname='Delete'))
         self.add_right_call_member(type='user', typeval=str(user.id))
-        self.add_schedule_path(path='user', pathid=user.id)
+        schedule = self.add_schedule()
+        self.add_schedule_path(schedule_id=schedule.id, path='user', pathid=user.id)
         call_filter = self.add_bsfilter()
         self.add_filter_member(call_filter.id, user.id)
 
@@ -865,11 +864,3 @@ class TestDelete(TestUser):
         self.session.add(member)
         self.session.flush()
         return member
-
-    def add_schedule_path(self, **kwargs):
-        kwargs['schedule'] = Schedule()
-        kwargs.setdefault('order', 1)
-        schedule_path = SchedulePath(**kwargs)
-        self.session.add(schedule_path)
-        self.session.flush()
-        return schedule_path

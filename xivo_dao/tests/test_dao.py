@@ -946,6 +946,12 @@ class DAOTestCase(unittest.TestCase):
         self.add_me(schedule_time)
         return schedule_time
 
+    def add_schedule_path(self, **kwargs):
+        kwargs.setdefault('order', 0)
+        schedule_path = SchedulePath(**kwargs)
+        self.add_me(schedule_path)
+        return schedule_path
+
     def add_bsfilter(self, **kwargs):
         options = {'callfrom': 'internal',
                    'type': 'bosssecretary',
