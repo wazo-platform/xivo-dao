@@ -25,6 +25,7 @@ import random
 import unittest
 import time
 import string
+import uuid
 
 from xivo_dao.alchemy.accessfeatures import AccessFeatures
 from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
@@ -87,6 +88,7 @@ from xivo_dao.alchemy.staticmeetme import StaticMeetme
 from xivo_dao.alchemy.staticqueue import StaticQueue
 from xivo_dao.alchemy.staticsip import StaticSIP
 from xivo_dao.alchemy.staticvoicemail import StaticVoicemail
+from xivo_dao.alchemy.switchboard import Switchboard
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
 from xivo_dao.alchemy.user import User
 from xivo_dao.alchemy.user_line import UserLine
@@ -1021,6 +1023,13 @@ class DAOTestCase(unittest.TestCase):
         infos = Infos(**kwargs)
         self.add_me(infos)
         return infos
+
+    def add_switchboard(self, **kwargs):
+        kwargs.setdefault('uuid', str(uuid.uuid4()))
+        kwargs.setdefault('name', self._random_name())
+        switchboard = Switchboard(**kwargs)
+        self.add_me(switchboard)
+        return switchboard
 
     def add_me(self, obj):
         self.session.add(obj)

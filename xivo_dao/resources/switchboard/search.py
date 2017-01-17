@@ -22,8 +22,7 @@ from xivo_dao.resources.utils.search import (SearchSystem,
 
 
 config = SearchConfig(table=Switchboard,
-                      columns={'uuid': Switchboard.uuid,
-                               'name': Switchboard.name},
+                      columns={'name': Switchboard.name},
                       default_sort='name')
 
 switchboard_search = SearchSystem(config)
