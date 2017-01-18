@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2015-2016 Avencall
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2015-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,9 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, equal_to
+from hamcrest import assert_that, calling, equal_to, raises
 
 from xivo_dao import admin_dao
+from xivo_dao.helpers import exception
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -52,12 +52,17 @@ class TestAdminUserDAO(DAOTestCase):
 
         assert_that(valid, equal_to(False))
 
-    def test_get_admin_id(self):
+    def test_get_admin_uuid(self):
         admin = self.add_admin(login='foo', passwd='bar')
 
-        result = admin_dao.get_admin_id('foo')
+        result = admin_dao.get_admin_uuid('foo')
 
-        assert_that(result, equal_to(admin.id))
+        assert_that(result, equal_to(admin.uuid))
+
+    def test_that_get_admin_uuid_raises_if_not_found(self):
+        assert_that(
+            calling(admin_dao.get_admin_uuid).with_args('foo'),
+            raises(exception.NotFoundError))
 
     def test_get_admin_entity(self):
         entity = self.add_entity(name='test')
