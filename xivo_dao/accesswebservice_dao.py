@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2016 Avencall
+# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -43,9 +43,9 @@ def get_allowed_hosts(session):
 
 
 @daosession
-def get_user_id(session, login):
+def get_user_uuid(session, login):
     result = (session
-              .query(AccessWebService.id)
+              .query(AccessWebService.uuid)
               .filter(and_(AccessWebService.login == login,
                            AccessWebService.disable == 0)).scalar())
     if result is None:
