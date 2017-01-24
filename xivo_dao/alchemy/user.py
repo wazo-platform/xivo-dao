@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2014-2015 Avencall
+# Copyright 2014-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+import uuid
+
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, ForeignKeyConstraint,\
     UniqueConstraint
@@ -22,6 +24,10 @@ from sqlalchemy.types import Integer, String, Enum, Text
 
 from xivo_dao.alchemy.entity import Entity
 from xivo_dao.helpers.db_manager import Base
+
+
+def _new_uuid():
+    return str(uuid.uuid4())
 
 
 class User(Base):
@@ -33,9 +39,11 @@ class User(Base):
                              ('entity.id',),
                              ondelete='RESTRICT'),
         UniqueConstraint('login', 'meta'),
+        UniqueConstraint('uuid'),
     )
 
     id = Column(Integer, nullable=False)
+    uuid = Column(String(38), nullable=False, default=_new_uuid, server_default='uuid_generate_v4()')
     entity_id = Column(Integer)
     login = Column(String(64), nullable=False, server_default='')
     passwd = Column(String(64), nullable=False, server_default='')

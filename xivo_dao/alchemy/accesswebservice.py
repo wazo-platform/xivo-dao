@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2016 Avencall
+# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+import uuid
+
 from sqlalchemy.schema import Column, UniqueConstraint, Index
 from sqlalchemy.types import Integer, String, Text
 from sqlalchemy.dialects.postgresql import ARRAY
@@ -22,11 +24,16 @@ from sqlalchemy.dialects.postgresql import ARRAY
 from xivo_dao.helpers.db_manager import Base
 
 
+def _new_uuid():
+    return str(uuid.uuid4())
+
+
 class AccessWebService(Base):
 
     __tablename__ = 'accesswebservice'
     __table_args__ = (
         UniqueConstraint('name'),
+        UniqueConstraint('uuid'),
         Index('accesswebservice__idx__disable', 'disable'),
         Index('accesswebservice__idx__host', 'host'),
         Index('accesswebservice__idx__login', 'login'),
@@ -34,6 +41,7 @@ class AccessWebService(Base):
     )
 
     id = Column(Integer, primary_key=True)
+    uuid = Column(String(38), nullable=False, default=_new_uuid, server_default='uuid_generate_v4()')
     name = Column(String(64), nullable=False, server_default='')
     login = Column(String(64))
     passwd = Column(String(64))

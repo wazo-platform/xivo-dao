@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2016 Avencall
+# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -41,17 +41,17 @@ class TestAccessWebServiceDao(DAOTestCase):
         hosts = set(accesswebservice_dao.get_allowed_hosts())
         self.assertEqual(hosts, set(['15.15.15.15', '11.11.11.11']))
 
-    def test_get_user_id(self):
+    def test_get_user_uuid(self):
         user = self._insert_access_web_service()
 
-        result = accesswebservice_dao.get_user_id('test_login')
+        result = accesswebservice_dao.get_user_uuid('test_login')
 
-        assert_that(result, equal_to(user.id))
+        assert_that(result, equal_to(user.uuid))
 
-    def test_get_user_id_disabled(self):
+    def test_get_user_uuid_disabled(self):
         self._insert_access_web_service(disable=1)
 
-        self.assertRaises(LookupError, accesswebservice_dao.get_user_id, 'test_login')
+        self.assertRaises(LookupError, accesswebservice_dao.get_user_uuid, 'test_login')
 
     def test_get_services(self):
         user = self._insert_access_web_service()
