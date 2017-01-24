@@ -17,6 +17,7 @@
 
 import uuid
 
+from sqlalchemy import text
 from sqlalchemy.schema import Column, UniqueConstraint, Index
 from sqlalchemy.types import Integer, String, Text
 from sqlalchemy.dialects.postgresql import ARRAY
@@ -41,7 +42,7 @@ class AccessWebService(Base):
     )
 
     id = Column(Integer, primary_key=True)
-    uuid = Column(String(38), nullable=False, default=_new_uuid, server_default='uuid_generate_v4()')
+    uuid = Column(String(38), nullable=False, default=_new_uuid, server_default=text('uuid_generate_v4()'))
     name = Column(String(64), nullable=False, server_default='')
     login = Column(String(64))
     passwd = Column(String(64))

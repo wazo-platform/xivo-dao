@@ -17,6 +17,7 @@
 
 import uuid
 
+from sqlalchemy import text
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, ForeignKeyConstraint,\
     UniqueConstraint
@@ -43,7 +44,7 @@ class User(Base):
     )
 
     id = Column(Integer, nullable=False)
-    uuid = Column(String(38), nullable=False, default=_new_uuid, server_default='uuid_generate_v4()')
+    uuid = Column(String(38), nullable=False, default=_new_uuid, server_default=text('uuid_generate_v4()'))
     entity_id = Column(Integer)
     login = Column(String(64), nullable=False, server_default='')
     passwd = Column(String(64), nullable=False, server_default='')
