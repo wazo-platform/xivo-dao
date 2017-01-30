@@ -8,7 +8,7 @@ Creating the test database
 --------------------------
 
 ```
-apt-get install postgres-9.4
+apt-get install postgres postgresql-contrib
 sudo -u postgres psql
 ```
 
@@ -17,6 +17,8 @@ Then:
 ```
 CREATE USER asterisk WITH PASSWORD 'asterisk';
 CREATE DATABASE asterisktest OWNER asterisk;
+\c asterisktest
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 ```
 
 Running unit tests
