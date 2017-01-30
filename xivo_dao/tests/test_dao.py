@@ -60,6 +60,7 @@ from xivo_dao.alchemy.ivr_choice import IVRChoice
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.line_extension import LineExtension
 from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
+from xivo_dao.alchemy.moh import MOH
 from xivo_dao.alchemy.musiconhold import MusicOnHold
 from xivo_dao.alchemy.paging import Paging
 from xivo_dao.alchemy.paginguser import PagingUser
@@ -819,6 +820,13 @@ class DAOTestCase(unittest.TestCase):
             user_row.language = 'fr_FR'
 
         self.add_me(user_row)
+
+    def add_moh(self, **kwargs):
+        kwargs.setdefault('name', self._random_name())
+        kwargs.setdefault('mode', 'files')
+        moh = MOH(**kwargs)
+        self.add_me(moh)
+        return moh
 
     def add_musiconhold(self, **kwargs):
         kwargs.setdefault('id', self._generate_int())
