@@ -93,6 +93,7 @@ invalid_query_parameter = FormattedError(InputError, "parameter '{}': '{}' is no
 invalid_view = FormattedError(InputError, "view '{}' does not exist")
 ivr_exten_used = FormattedError(InputError, "exten '{}' used in more than one choice")
 invalid_exten_pattern = FormattedError(InputError, "exten '{}' cannot be a pattern")
+moh_custom_no_app = FormattedError(InputError, "custom mode must have an application")
 
 not_found = FormattedError(NotFoundError, "{} was not found")
 
