@@ -61,7 +61,6 @@ from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.line_extension import LineExtension
 from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
 from xivo_dao.alchemy.moh import MOH
-from xivo_dao.alchemy.musiconhold import MusicOnHold
 from xivo_dao.alchemy.paging import Paging
 from xivo_dao.alchemy.paginguser import PagingUser
 from xivo_dao.alchemy.parking_lot import ParkingLot
@@ -827,20 +826,6 @@ class DAOTestCase(unittest.TestCase):
         moh = MOH(**kwargs)
         self.add_me(moh)
         return moh
-
-    def add_musiconhold(self, **kwargs):
-        kwargs.setdefault('id', self._generate_int())
-        kwargs.setdefault('cat_metric', 0)
-        kwargs.setdefault('var_metric', 0)
-        kwargs.setdefault('commented', 0)
-        kwargs.setdefault('filename', 'musiconhold.conf')
-        kwargs.setdefault('category', 'default')
-        kwargs.setdefault('var_name', self._random_name())
-        kwargs.setdefault('var_val', self._random_name())
-
-        musiconhold = MusicOnHold(**kwargs)
-        self.add_me(musiconhold)
-        return musiconhold
 
     def add_meetme_general_settings(self, **kwargs):
         kwargs.setdefault('id', self._generate_int())

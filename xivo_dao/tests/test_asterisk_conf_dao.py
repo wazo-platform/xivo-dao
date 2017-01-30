@@ -901,43 +901,6 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
 
         assert_that(meetme_settings, contains_inanyorder(*expected_result))
 
-    def test_find_musiconhold_settings(self):
-        musiconhold1 = self.add_musiconhold(category='default')
-        musiconhold2 = self.add_musiconhold(category='default')
-        musiconhold3 = self.add_musiconhold(category='toto')
-        self.add_musiconhold(category='default', commented=1)
-
-        expected_result = [
-            {'category': u'default',
-             'cat_metric': 0,
-             'filename': u'musiconhold.conf',
-             'var_metric': 0,
-             'var_name': musiconhold1.var_name,
-             'var_val': musiconhold1.var_val,
-             'id': musiconhold1.id,
-             'commented': 0},
-            {'category': u'default',
-             'cat_metric': 0,
-             'filename': u'musiconhold.conf',
-             'var_metric': 0,
-             'var_name': musiconhold2.var_name,
-             'var_val': musiconhold2.var_val,
-             'id': musiconhold2.id,
-             'commented': 0},
-            {'category': u'toto',
-             'cat_metric': 0,
-             'filename': u'musiconhold.conf',
-             'var_metric': 0,
-             'var_name': musiconhold3.var_name,
-             'var_val': musiconhold3.var_val,
-             'id': musiconhold3.id,
-             'commented': 0}
-        ]
-
-        musiconhold_settings = asterisk_conf_dao.find_musiconhold_settings()
-
-        assert_that(musiconhold_settings, contains_inanyorder(*expected_result))
-
     def test_find_queue_general_settings(self):
         self.add_queue_general_settings(category='toto')
         queue_settings1 = self.add_queue_general_settings(category='general')

@@ -95,7 +95,6 @@ from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
 from xivo_dao.alchemy.meetmeguest import MeetmeGuest
 from xivo_dao.alchemy.moh import MOH
 from xivo_dao.alchemy.monitoring import Monitoring
-from xivo_dao.alchemy.musiconhold import MusicOnHold
 from xivo_dao.alchemy.netiface import Netiface
 from xivo_dao.alchemy.outcall import Outcall
 from xivo_dao.alchemy.outcalltrunk import OutcallTrunk

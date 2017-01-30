@@ -47,7 +47,6 @@ from xivo_dao.alchemy.features import Features
 from xivo_dao.alchemy.staticiax import StaticIAX
 from xivo_dao.alchemy.iaxcallnumberlimits import IAXCallNumberLimits
 from xivo_dao.alchemy.staticmeetme import StaticMeetme
-from xivo_dao.alchemy.musiconhold import MusicOnHold
 from xivo_dao.alchemy.queueskillrule import QueueSkillRule
 from xivo_dao.alchemy.staticqueue import StaticQueue
 from xivo_dao.alchemy.queue import Queue
@@ -559,13 +558,6 @@ def find_meetme_general_settings(session):
 def find_meetme_rooms_settings(session):
     rows = session.query(StaticMeetme).filter(and_(StaticMeetme.commented == 0,
                                                    StaticMeetme.category == 'rooms')).all()
-
-    return [row.todict() for row in rows]
-
-
-@daosession
-def find_musiconhold_settings(session):
-    rows = session.query(MusicOnHold).filter(MusicOnHold.commented == 0).order_by('category').all()
 
     return [row.todict() for row in rows]
 
