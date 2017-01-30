@@ -17,7 +17,6 @@
 
 from __future__ import unicode_literals
 
-import uuid
 import re
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -39,16 +38,13 @@ from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.alchemy.entity import Entity
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
 from xivo_dao.helpers.db_manager import Base
+from xivo_dao.helpers.uuid import new_uuid
 
 
 class EmailComparator(ColumnProperty.Comparator):
 
     def __eq__(self, other):
         return func.lower(self.__clause_element__()) == func.lower(other)
-
-
-def _new_uuid():
-    return str(uuid.uuid4())
 
 
 caller_id_regex = re.compile(r'''
@@ -91,7 +87,7 @@ class UserFeatures(Base):
     )
 
     id = Column(Integer, nullable=False)
-    uuid = Column(String(38), nullable=False, default=_new_uuid)
+    uuid = Column(String(38), nullable=False, default=new_uuid)
     firstname = Column(String(128), nullable=False, server_default='')
     email = column_property(Column(String(254)),
                             comparator_factory=EmailComparator)

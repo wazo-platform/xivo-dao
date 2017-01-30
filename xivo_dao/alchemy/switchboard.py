@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-import uuid
-
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint
@@ -24,10 +22,7 @@ from sqlalchemy.types import String
 
 from xivo_dao.helpers.db_manager import Base
 from xivo_dao.alchemy.switchboard_member_user import SwitchboardMemberUser
-
-
-def _new_uuid():
-    return str(uuid.uuid4())
+from xivo_dao.helpers.uuid import new_uuid
 
 
 class Switchboard(Base):
@@ -37,7 +32,7 @@ class Switchboard(Base):
         PrimaryKeyConstraint('uuid'),
     )
 
-    uuid = Column(String(38), nullable=False, default=_new_uuid)
+    uuid = Column(String(38), nullable=False, default=new_uuid)
     name = Column(String(128), nullable=False)
 
     incall_dialactions = relationship('Dialaction',

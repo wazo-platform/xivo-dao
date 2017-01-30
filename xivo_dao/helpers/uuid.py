@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-#
-# Copyright 2014-2017 The Wazo Authors  (see the AUTHORS file)
+
+# Copyright 2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,19 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from sqlalchemy.sql.schema import PrimaryKeyConstraint, Column
-from sqlalchemy.types import String
+from __future__ import absolute_import
 
-from xivo_dao.helpers.db_manager import Base
-from xivo_dao.helpers.uuid import new_uuid
+from uuid import uuid4
 
 
-class Infos(Base):
-
-    __tablename__ = 'infos'
-    __table_args__ = (
-        PrimaryKeyConstraint('uuid'),
-    )
-
-    uuid = Column(String(38), nullable=False, default=new_uuid)
-    wazo_version = Column(String(64), nullable=False)
+def new_uuid():
+    return str(uuid4())
