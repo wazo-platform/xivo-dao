@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright 2015-2016 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -234,7 +234,7 @@ class DestinationPersistor(object):
     def _func_key_is_still_mapped(self, func_key_id):
         return (self.session.query(FuncKeyMapping)
                 .filter(FuncKeyMapping.func_key_id == func_key_id)
-                .scalar())
+                .first())
 
 
 class UserPersistor(DestinationPersistor):
