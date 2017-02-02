@@ -120,6 +120,4 @@ class LinePersistor(CriteriaBuilderMixin):
         return code
 
     def random_code(self):
-        numrange = range(1, 9)
-        sequence = (str(random.choice(numrange)) for _ in range(6))
-        return ''.join(sequence)
+        return str(100000 + random.randint(0, 899999))
