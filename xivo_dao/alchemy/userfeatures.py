@@ -192,6 +192,7 @@ class UserFeatures(Base):
 
     switchboard_member_users = relationship('SwitchboardMemberUser',
                                             cascade='all, delete-orphan')
+    switchboards = association_proxy('switchboard_member_users', 'switchboard')
 
     def extrapolate_caller_id(self, extension=None):
         default_num = extension.exten if extension else None
