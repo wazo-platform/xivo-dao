@@ -17,6 +17,7 @@
 
 # explicitly import modules that are referenced in relationship to prevent
 # "mapper initialization" errors
+from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.conference import Conference
 from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.alchemy.dialaction import Dialaction
