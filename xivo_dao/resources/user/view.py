@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014-2016 Avencall
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2014-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,6 +33,7 @@ class UserView(View):
 
     def query(self, session):
         return (session.query(User)
+                .options(joinedload('agent'))
                 .options(joinedload('group_members')
                          .joinedload('group'))
                 .options(joinedload('incall_dialactions')

@@ -33,6 +33,15 @@ from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
+class TestAgent(DAOTestCase):
+
+    def test_getter(self):
+        agent = self.add_agent()
+        user = self.add_user(agent_id=agent.id)
+
+        assert_that(user.agent, equal_to(agent))
+
+
 class TestFullname(DAOTestCase):
 
     def test_getter(self):
