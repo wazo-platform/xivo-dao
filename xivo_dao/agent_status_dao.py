@@ -278,4 +278,4 @@ def update_pause_status(session, agent_id, is_paused, reason):
     (session
      .query(AgentLoginStatus)
      .filter(AgentLoginStatus.agent_id == agent_id)
-     .update({'paused': is_paused, 'paused_reason': reason})
+     .update({'paused': is_paused, 'paused_reason': reason}))
