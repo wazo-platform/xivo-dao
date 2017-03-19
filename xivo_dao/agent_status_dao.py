@@ -271,3 +271,11 @@ def update_penalty(session, agent_id, queue_id, penalty):
      .filter(AgentMembershipStatus.queue_id == queue_id)
      .filter(AgentMembershipStatus.agent_id == agent_id)
      .update({'penalty': penalty}))
+
+
+@daosession
+def update_pause_status(session, agent_id, is_paused, reason):
+    (session
+     .query(AgentLoginStatus)
+     .filter(AgentLoginStatus.agent_id == agent_id)
+     .update({'paused': is_paused, 'paused_reason': reason})

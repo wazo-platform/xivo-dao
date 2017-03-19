@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2007-2016 Avencall
+# Copyright (C) 2007-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 
 from sqlalchemy import text
 from sqlalchemy.schema import Column, UniqueConstraint, PrimaryKeyConstraint
-from sqlalchemy.types import Integer, String, DateTime
+from sqlalchemy.types import Integer, String, DateTime, Boolean
 
 from xivo_dao.helpers.db_manager import Base
 
@@ -37,4 +37,6 @@ class AgentLoginStatus(Base):
     context = Column(String(80), nullable=False)
     interface = Column(String(128), nullable=False)
     state_interface = Column(String(128), nullable=False)
+    paused = Column(Boolean, nullable=False)
+    paused_reason = Column(String(256), nullable=False)
     login_at = Column(DateTime, nullable=False, server_default=text("(current_timestamp at time zone 'utc')"))
