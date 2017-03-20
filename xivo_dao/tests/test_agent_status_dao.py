@@ -51,6 +51,8 @@ class TestAgentStatusDao(DAOTestCase):
         extension = '1001'
         context = 'default'
         interface = 'sip/abcdef'
+        paused = False
+        paused_reason = None
         state_interface = interface
 
         agent_status_dao.log_in_agent(agent_id, agent_number, extension, context, interface, state_interface)
@@ -61,6 +63,9 @@ class TestAgentStatusDao(DAOTestCase):
         self.assertEquals(agent_status.agent_number, agent_number)
         self.assertEquals(agent_status.extension, extension)
         self.assertEquals(agent_status.context, context)
+        self.assertEquals(agent_status.interface, interface)
+        self.assertEquals(agent_status.paused, paused)
+        self.assertEquals(agent_status.paused_reason, paused_reason)
         self.assertEquals(agent_status.interface, interface)
         self.assertEquals(agent_status.state_interface, state_interface)
 
@@ -376,6 +381,20 @@ class TestAgentStatusDao(DAOTestCase):
 
         memberships = self.session.query(AgentMembershipStatus).filter(and_(AgentMembershipStatus.queue_id == queue_id, AgentMembershipStatus.agent_id == agent_id))
         self.assertEquals(memberships[0].penalty, queue_penalty_after)
+
+    def test_update_pause_status(self):
+        agent_id = 1
+        agent_number = 1000
+        is_paused = True
+        reason = 'Time for pause'
+        agent = self._insert_agent(agent_id, agent_number)
+        self._update_agent_pause_status(agent.id, is_paused, reason)
+
+        agent_status = agent_status_dao.get_status(agent.id)
+
+        self.assertEquals(agent_status.id, agent_id)
+        self.assertEquals(agent_status.paused, is_paused)
+        self.assertEquals(agent_status.paused_reason, reason)
 
     def _insert_agent(self, agent_id, agent_number):
         agent = AgentFeatures()
