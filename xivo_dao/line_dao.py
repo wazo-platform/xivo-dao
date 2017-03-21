@@ -20,6 +20,7 @@ from sqlalchemy import and_
 from xivo.asterisk.extension import Extension
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.line_extension import LineExtension
+from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.extension import Extension as ExtensionTable
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.enum import valid_trunk_protocols
@@ -31,7 +32,9 @@ def get_interface_from_exten_and_context(session, extension, context):
            .query(LineFeatures.protocol, LineFeatures.name)
            .join(LineExtension, LineExtension.line_id == LineFeatures.id)
            .join(ExtensionTable, LineExtension.extension_id == ExtensionTable.id)
+           .join(UserLine, UserLine.line_id == LineFeatures.id)
            .filter(ExtensionTable.exten == extension)
+           .filter(UserLine.main_line == True)
            .filter(ExtensionTable.context == context)).first()
 
     if res is None:
