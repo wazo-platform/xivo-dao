@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,7 +17,6 @@
 
 from xivo_dao import agent_status_dao
 from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
 from xivo_dao.alchemy.agent_membership_status import AgentMembershipStatus
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
@@ -383,32 +382,29 @@ class TestAgentStatusDao(DAOTestCase):
         self.assertEquals(memberships[0].penalty, queue_penalty_after)
 
     def test_update_pause_status(self):
-        agent_id = 1
-        agent_number = 1000
+        agent_number = '1000'
         is_paused = True
         reason = 'Time for pause'
-        agent = self._insert_agent(agent_id, agent_number)
-        self._update_agent_pause_status(agent.id, is_paused, reason)
+
+        agent = self._insert_agent(agent_number=agent_number)
+        self._insert_agent_login_status(agent.id, agent_number)
+
+        agent_status_dao.update_pause_status(agent.id, is_paused, reason)
 
         agent_status = agent_status_dao.get_status(agent.id)
 
-        self.assertEquals(agent_status.id, agent_id)
+        self.assertEquals(agent_status.agent_id, agent.id)
         self.assertEquals(agent_status.paused, is_paused)
         self.assertEquals(agent_status.paused_reason, reason)
 
-    def _insert_agent(self, agent_id, agent_number):
-        agent = AgentFeatures()
-        agent.id = agent_id
-        agent.number = agent_number
-        agent.numgroup = 6
-        agent.passwd = ''
-        agent.context = 'foobar'
-        agent.language = ''
-        agent.description = ''
+    def _insert_agent(self, agent_id=None, agent_number=None):
+        params = {}
+        if agent_id:
+            params['id'] = agent_id
+        if agent_number:
+            params['number'] = agent_number
 
-        self.add_me(agent)
-
-        return agent
+        return self.add_agent(**params)
 
     def _insert_agent_login_status(self, agent_id, agent_number, extension=None, context='default',
                                    interface=None, state_interface='SIP/abcdef'):
