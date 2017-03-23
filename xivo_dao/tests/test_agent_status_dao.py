@@ -383,19 +383,30 @@ class TestAgentStatusDao(DAOTestCase):
 
     def test_update_pause_status(self):
         agent_number = '1000'
-        is_paused = True
         reason = 'Time for pause'
 
         agent = self.add_agent(number=agent_number)
         self._insert_agent_login_status(agent.id, agent_number)
 
-        agent_status_dao.update_pause_status(agent.id, is_paused, reason)
-
+        agent_status_dao.update_pause_status(agent.id, True, reason)
         agent_status = agent_status_dao.get_status(agent.id)
 
         self.assertEquals(agent_status.agent_id, agent.id)
-        self.assertEquals(agent_status.paused, is_paused)
+        self.assertEquals(agent_status.paused, True)
         self.assertEquals(agent_status.paused_reason, reason)
+
+        agent_status_dao.update_pause_status(agent.id, False)
+        agent_status = agent_status_dao.get_status(agent.id)
+
+        self.assertEquals(agent_status.agent_id, agent.id)
+        self.assertEquals(agent_status.paused, False)
+
+        agent_status_dao.update_pause_status(agent.id, True)
+        agent_status = agent_status_dao.get_status(agent.id)
+
+        self.assertEquals(agent_status.agent_id, agent.id)
+        self.assertEquals(agent_status.paused, True)
+        self.assertEquals(agent_status.paused_reason, None)
 
     def _insert_agent_login_status(self, agent_id, agent_number, extension=None, context='default',
                                    interface=None, state_interface='SIP/abcdef'):
