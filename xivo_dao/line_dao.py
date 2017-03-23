@@ -36,12 +36,18 @@ def get_interface_from_exten_and_context(session, extension, context):
            .join(ExtensionTable, LineExtension.extension_id == ExtensionTable.id)
            .outerjoin(UserLine, UserLine.line_id == LineFeatures.id)
            .filter(ExtensionTable.exten == extension)
-           .filter(ExtensionTable.context == context)).first()
+           .filter(ExtensionTable.context == context))
 
-    if res is None:
+    interface = None
+    for row in res.all():
+        interface = _format_interface(row.protocol, row.name)
+        if row.main_line:
+            return interface
+
+    if not interface:
         raise LookupError('no line with extension %s and context %s' % (extension, context))
 
-    return _format_interface(res.protocol, res.name)
+    return interface
 
 
 @daosession
