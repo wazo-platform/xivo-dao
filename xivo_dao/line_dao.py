@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2016 Avencall
+# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -29,12 +29,13 @@ from xivo_dao.alchemy.enum import valid_trunk_protocols
 @daosession
 def get_interface_from_exten_and_context(session, extension, context):
     res = (session
-           .query(LineFeatures.protocol, LineFeatures.name)
+           .query(LineFeatures.protocol,
+                  LineFeatures.name,
+                  UserLine.main_line)
            .join(LineExtension, LineExtension.line_id == LineFeatures.id)
            .join(ExtensionTable, LineExtension.extension_id == ExtensionTable.id)
-           .join(UserLine, UserLine.line_id == LineFeatures.id)
+           .outerjoin(UserLine, UserLine.line_id == LineFeatures.id)
            .filter(ExtensionTable.exten == extension)
-           .filter(UserLine.main_line == True)
            .filter(ExtensionTable.context == context)).first()
 
     if res is None:
