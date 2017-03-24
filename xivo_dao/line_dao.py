@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2016 Avencall
+# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@ from sqlalchemy import and_
 from xivo.asterisk.extension import Extension
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.line_extension import LineExtension
+from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.extension import Extension as ExtensionTable
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.enum import valid_trunk_protocols
@@ -28,16 +29,25 @@ from xivo_dao.alchemy.enum import valid_trunk_protocols
 @daosession
 def get_interface_from_exten_and_context(session, extension, context):
     res = (session
-           .query(LineFeatures.protocol, LineFeatures.name)
+           .query(LineFeatures.protocol,
+                  LineFeatures.name,
+                  UserLine.main_line)
            .join(LineExtension, LineExtension.line_id == LineFeatures.id)
            .join(ExtensionTable, LineExtension.extension_id == ExtensionTable.id)
+           .outerjoin(UserLine, UserLine.line_id == LineFeatures.id)
            .filter(ExtensionTable.exten == extension)
-           .filter(ExtensionTable.context == context)).first()
+           .filter(ExtensionTable.context == context))
 
-    if res is None:
+    interface = None
+    for row in res.all():
+        interface = _format_interface(row.protocol, row.name)
+        if row.main_line:
+            return interface
+
+    if not interface:
         raise LookupError('no line with extension %s and context %s' % (extension, context))
 
-    return _format_interface(res.protocol, res.name)
+    return interface
 
 
 @daosession

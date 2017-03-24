@@ -516,7 +516,7 @@ class DAOTestCase(unittest.TestCase):
     def add_agent(self, **kwargs):
         kwargs.setdefault('id', self._generate_int())
         kwargs.setdefault('numgroup', self._generate_int())
-        kwargs.setdefault('number', int(''.join(random.choice('123456789') for _ in range(6))))
+        kwargs.setdefault('number', ''.join(random.choice('123456789') for _ in range(6)))
         kwargs.setdefault('passwd', '')
         kwargs.setdefault('context', self._random_name())
         kwargs.setdefault('language', random.choice(['fr_FR', 'en_US']))
