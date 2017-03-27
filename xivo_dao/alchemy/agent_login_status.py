@@ -39,4 +39,5 @@ class AgentLoginStatus(Base):
     state_interface = Column(String(128), nullable=False)
     paused = Column(Boolean, nullable=False, server_default='false')
     paused_reason = Column(String(80))
+    on_call = Column(Boolean, nullable=False, server_default='false')
     login_at = Column(DateTime, nullable=False, server_default=text("(current_timestamp at time zone 'utc')"))

@@ -28,7 +28,8 @@ from xivo_dao.helpers.db_manager import daosession
 
 _AgentStatus = namedtuple('_AgentStatus', ['agent_id', 'agent_number', 'extension',
                                            'context', 'interface', 'state_interface',
-                                           'login_at', 'paused', 'paused_reason', 'queues'])
+                                           'login_at', 'paused', 'paused_reason',
+                                           'on_call', 'queues'])
 _Queue = namedtuple('_Queue', ['id', 'name', 'penalty'])
 
 
@@ -110,6 +111,7 @@ def get_statuses(session):
                    AgentLoginStatus.state_interface.label('state_interface'),
                    AgentLoginStatus.paused.label('paused'),
                    AgentLoginStatus.paused_reason.label('paused_reason'),
+                   AgentLoginStatus.on_call.label('on_call'),
                    case([(AgentLoginStatus.agent_id == None, False)], else_=True).label('logged'))
             .outerjoin((AgentLoginStatus, AgentFeatures.id == AgentLoginStatus.agent_id))
             .all())
@@ -185,6 +187,7 @@ def _to_agent_status(agent_login_status, queues):
                         agent_login_status.login_at,
                         agent_login_status.paused,
                         agent_login_status.paused_reason,
+                        agent_login_status.on_call,
                         queues)
 
 
@@ -217,6 +220,7 @@ def log_in_agent(session, agent_id, agent_number, extension, context, interface,
     agent.interface = interface
     agent.state_interface = state_interface
     agent.paused = False
+    agent.on_call = False
 
     _add_agent(session, agent)
 
@@ -284,3 +288,11 @@ def update_pause_status(session, agent_id, is_paused, reason=None):
      .query(AgentLoginStatus)
      .filter(AgentLoginStatus.agent_id == agent_id)
      .update({'paused': is_paused, 'paused_reason': reason}))
+
+
+@daosession
+def update_agent_call_status(session, agent_id, on_call):
+    (session
+     .query(AgentLoginStatus)
+     .filter(AgentLoginStatus.agent_id == agent_id)
+     .update({'on_call': on_call}))

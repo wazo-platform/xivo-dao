@@ -52,6 +52,7 @@ class TestAgentStatusDao(DAOTestCase):
         interface = 'sip/abcdef'
         paused = False
         paused_reason = None
+        on_call = False
         state_interface = interface
 
         agent_status_dao.log_in_agent(agent_id, agent_number, extension, context, interface, state_interface)
@@ -65,6 +66,7 @@ class TestAgentStatusDao(DAOTestCase):
         self.assertEquals(agent_status.interface, interface)
         self.assertEquals(agent_status.paused, paused)
         self.assertEquals(agent_status.paused_reason, paused_reason)
+        self.assertEquals(agent_status.on_call, on_call)
         self.assertEquals(agent_status.interface, interface)
         self.assertEquals(agent_status.state_interface, state_interface)
 
@@ -407,6 +409,24 @@ class TestAgentStatusDao(DAOTestCase):
         self.assertEquals(agent_status.agent_id, agent.id)
         self.assertEquals(agent_status.paused, True)
         self.assertEquals(agent_status.paused_reason, None)
+
+    def test_update_on_call_status(self):
+        agent_number = '1000'
+
+        agent = self.add_agent(number=agent_number)
+        self._insert_agent_login_status(agent.id, agent_number)
+
+        agent_status_dao.update_agent_call_status(agent.id, True)
+        agent_status = agent_status_dao.get_status(agent.id)
+
+        self.assertEquals(agent_status.agent_id, agent.id)
+        self.assertEquals(agent_status.on_call, True)
+
+        agent_status_dao.update_agent_call_status(agent.id, False)
+        agent_status = agent_status_dao.get_status(agent.id)
+
+        self.assertEquals(agent_status.agent_id, agent.id)
+        self.assertEquals(agent_status.on_call, False)
 
     def _insert_agent_login_status(self, agent_id, agent_number, extension=None, context='default',
                                    interface=None, state_interface='SIP/abcdef'):
