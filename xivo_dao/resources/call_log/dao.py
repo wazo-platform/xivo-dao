@@ -37,13 +37,10 @@ def find_all(session):
 def find_all_in_period(session, start=None, end=None):
     query = session.query(CallLogSchema)
 
-    if start and end:
-        query = query.filter(CallLogSchema.date.between(start, end))
-    else:
-        if start:
-            query = query.filter(CallLogSchema.date >= start)
-        if end:
-            query = query.filter(CallLogSchema.date <= end)
+    if start:
+        query = query.filter(CallLogSchema.date >= start)
+    if end:
+        query = query.filter(CallLogSchema.date < end)
 
     call_log_rows = query.all()
 

@@ -134,8 +134,8 @@ class TestCallLogDAO(DAOTestCase):
         assert_that(result, empty())
 
     def test_find_all_in_period_start_only(self):
-        call_logs = call_log_1, call_log_2 = (self._mock_call_log(date=dt(2013, 1, 1, 13)),
-                                              self._mock_call_log(date=dt(2013, 1, 2, 13)))
+        call_logs = call_log_1, call_log_2 = (self._mock_call_log(date=dt(2013, 1, 1)),
+                                              self._mock_call_log(date=dt(2013, 1, 2)))
         call_log_dao.create_from_list(call_logs)
 
         result = call_log_dao.find_all_in_period(start=dt(2013, 1, 2))
@@ -143,8 +143,8 @@ class TestCallLogDAO(DAOTestCase):
         assert_that(result, contains(has_property('date', call_log_2.date)))
 
     def test_find_all_in_period_end_only(self):
-        call_logs = call_log_1, call_log_2 = (self._mock_call_log(date=dt(2013, 1, 1, 13)),
-                                              self._mock_call_log(date=dt(2013, 1, 2, 13)))
+        call_logs = call_log_1, call_log_2 = (self._mock_call_log(date=dt(2013, 1, 1)),
+                                              self._mock_call_log(date=dt(2013, 1, 2)))
         call_log_dao.create_from_list(call_logs)
 
         result = call_log_dao.find_all_in_period(end=dt(2013, 1, 2))
