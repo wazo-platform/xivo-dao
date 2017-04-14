@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2016 Avencall
+# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,8 +17,16 @@
 
 from datetime import datetime as dt
 from datetime import timedelta
-from hamcrest import (assert_that, empty, equal_to, has_length, contains_inanyorder, has_property,
-                      contains, all_of, is_)
+from hamcrest import all_of
+from hamcrest import assert_that
+from hamcrest import contains
+from hamcrest import contains_inanyorder
+from hamcrest import equal_to
+from hamcrest import empty
+from hamcrest import has_length
+from hamcrest import has_property
+from hamcrest import is_
+
 from mock import patch
 
 from xivo_dao.alchemy.call_log import CallLog as CallLogSchema
@@ -110,13 +118,38 @@ class TestCallLogDAO(DAOTestCase):
 
         assert_that(result, has_length(2))
 
-    def test_find_all_in_period_not_found(self):
-        expected_result = []
+    def test_find_all_in_period_no_result(self):
         start, end = dt(2013, 1, 1), dt(2013, 2, 1)
 
         result = call_log_dao.find_all_in_period(start, end)
 
-        assert_that(result, equal_to(expected_result))
+        assert_that(result, empty())
+
+    def test_find_all_in_period_start_after_end(self):
+        self._mock_call_log(date=dt(2017, 4, 13, 12))
+        start, end = dt(2017, 4, 14), dt(2017, 4, 13)
+
+        result = call_log_dao.find_all_in_period(start, end)
+
+        assert_that(result, empty())
+
+    def test_find_all_in_period_start_only(self):
+        call_logs = call_log_1, call_log_2 = (self._mock_call_log(date=dt(2013, 1, 1)),
+                                              self._mock_call_log(date=dt(2013, 1, 2)))
+        call_log_dao.create_from_list(call_logs)
+
+        result = call_log_dao.find_all_in_period(start=dt(2013, 1, 2))
+
+        assert_that(result, contains(has_property('date', call_log_2.date)))
+
+    def test_find_all_in_period_end_only(self):
+        call_logs = call_log_1, call_log_2 = (self._mock_call_log(date=dt(2013, 1, 1)),
+                                              self._mock_call_log(date=dt(2013, 1, 2)))
+        call_log_dao.create_from_list(call_logs)
+
+        result = call_log_dao.find_all_in_period(end=dt(2013, 1, 2))
+
+        assert_that(result, contains(has_property('date', call_log_1.date)))
 
     def test_find_all_in_period_found(self):
         call_logs = _, call_log_1, call_log_2, _ = (self._mock_call_log(date=dt(2012, 1, 1, 13)),
