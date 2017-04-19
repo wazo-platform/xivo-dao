@@ -23,6 +23,7 @@ from hamcrest import contains
 from hamcrest import contains_inanyorder
 from hamcrest import equal_to
 from hamcrest import empty
+from hamcrest import has_entries
 from hamcrest import has_length
 from hamcrest import has_property
 from hamcrest import is_
@@ -192,6 +193,19 @@ class TestCallLogDAO(DAOTestCase):
         result_paginated = call_log_dao.find_all_in_period(limit=1, offset=1)
 
         assert_that(result_paginated, contains(has_property('date', result_unpaginated[1].date)))
+
+    def test_count(self):
+        call_logs = call_log_1, call_log_2, call_log_3 = (self._mock_call_log(date=dt(2012, 1, 1)),
+                                                          self._mock_call_log(date=dt(2013, 1, 1)),
+                                                          self._mock_call_log(date=dt(2014, 1, 1)))
+        call_log_dao.create_from_list(call_logs)
+        start = dt(2012, 6, 1)
+        end = dt(2013, 6, 1)
+
+        result= call_log_dao.count_in_period(start, end)
+
+        assert_that(result, has_entries(total=3,
+                                        filtered=1))
 
     def test_create_call_log(self):
         expected_id = 13
