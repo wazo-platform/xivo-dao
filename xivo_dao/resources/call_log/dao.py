@@ -34,13 +34,26 @@ def find_all(session):
 
 
 @daosession
-def find_all_in_period(session, start=None, end=None):
+def find_all_in_period(session, start=None, end=None, order=None, direction=None, limit=None, offset=None):
     query = session.query(CallLogSchema)
 
     if start:
         query = query.filter(CallLogSchema.date >= start)
     if end:
         query = query.filter(CallLogSchema.date < end)
+
+    order_field = None
+    if order:
+        order_field = getattr(CallLogSchema, order)
+    if direction == 'desc':
+        order_field = order_field.desc()
+    if order_field is not None:
+        query = query.order_by(order_field)
+
+    if limit:
+        query = query.limit(limit)
+    if offset:
+        query = query.offset(offset)
 
     call_log_rows = query.all()
 

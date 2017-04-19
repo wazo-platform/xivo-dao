@@ -166,6 +166,33 @@ class TestCallLogDAO(DAOTestCase):
         assert_that(result, contains_inanyorder(has_property('date', call_log_1.date),
                                                 has_property('date', call_log_2.date)))
 
+    def test_find_all_in_order(self):
+        call_logs = call_log_1, call_log_2, call_log_3 = (self._mock_call_log(date=dt(2012, 1, 1)),
+                                                          self._mock_call_log(date=dt(2013, 1, 1)),
+                                                          self._mock_call_log(date=dt(2014, 1, 1)))
+        call_log_dao.create_from_list(call_logs)
+
+        result_asc = call_log_dao.find_all_in_period(order='date', direction='asc')
+        result_desc = call_log_dao.find_all_in_period(order='date', direction='desc')
+
+        assert_that(result_asc, contains(has_property('date', call_log_1.date),
+                                         has_property('date', call_log_2.date),
+                                         has_property('date', call_log_3.date)))
+        assert_that(result_desc, contains(has_property('date', call_log_3.date),
+                                          has_property('date', call_log_2.date),
+                                          has_property('date', call_log_1.date)))
+
+    def test_find_all_pagination(self):
+        call_logs = call_log_1, call_log_2, call_log_3 = (self._mock_call_log(date=dt(2012, 1, 1)),
+                                                          self._mock_call_log(date=dt(2013, 1, 1)),
+                                                          self._mock_call_log(date=dt(2014, 1, 1)))
+        call_log_dao.create_from_list(call_logs)
+
+        result_unpaginated = call_log_dao.find_all_in_period()
+        result_paginated = call_log_dao.find_all_in_period(limit=1, offset=1)
+
+        assert_that(result_paginated, contains(has_property('date', result_unpaginated[1].date)))
+
     def test_create_call_log(self):
         expected_id = 13
         call_log = self._mock_call_log(id=expected_id)
