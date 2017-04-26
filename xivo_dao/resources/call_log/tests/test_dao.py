@@ -224,15 +224,6 @@ class TestCallLogDAO(DAOTestCase):
             all_of(has_property('id', cel_id_3), has_property('call_log_id', call_log_id_2)),
             all_of(has_property('id', cel_id_4), has_property('call_log_id', call_log_id_2))))
 
-    def test_delete_all(self):
-        call_logs = (self._mock_call_log(), self._mock_call_log())
-        call_log_dao.create_from_list(call_logs)
-
-        call_log_dao.delete_all()
-
-        call_log_rows = self.session.query(CallLogSchema).all()
-        assert_that(call_log_rows, has_length(0))
-
     def test_delete_from_list(self):
         id_1, id_2, id_3 = [42, 43, 44]
         call_logs = (self._mock_call_log(id=id_1), self._mock_call_log(id=id_2), self._mock_call_log(id=id_3))
