@@ -194,19 +194,6 @@ class TestCallLogDAO(DAOTestCase):
 
         assert_that(result_paginated, contains(has_property('date', result_unpaginated[1].date)))
 
-    def test_count(self):
-        call_logs = call_log_1, call_log_2, call_log_3 = (self._mock_call_log(date=dt(2012, 1, 1)),
-                                                          self._mock_call_log(date=dt(2013, 1, 1)),
-                                                          self._mock_call_log(date=dt(2014, 1, 1)))
-        call_log_dao.create_from_list(call_logs)
-        start = dt(2012, 6, 1)
-        end = dt(2013, 6, 1)
-
-        result= call_log_dao.count_in_period(start, end)
-
-        assert_that(result, has_entries(total=3,
-                                        filtered=1))
-
     def test_create_call_log(self):
         expected_id = 13
         call_log = self._mock_call_log(id=expected_id)
