@@ -98,6 +98,7 @@ def _link_call_log(session, call_log, call_log_id):
         ).update(data_dict, synchronize_session=False)
 
 
+@daosession
 def delete_from_list(session, call_log_ids):
     with flush_session(session):
         for call_log_id in call_log_ids:
