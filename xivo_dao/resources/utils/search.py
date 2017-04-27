@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014-2016 Avencall
+# Copyright 2014-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@ from collections import namedtuple
 
 import sqlalchemy as sa
 from sqlalchemy import sql
+from sqlalchemy.types import Integer
 
 from xivo_dao.helpers import errors
 
@@ -138,9 +139,18 @@ class SearchSystem(object):
         for column_name, value in parameters.iteritems():
             column = self.config.column_for_searching(column_name)
             if column is not None:
+                if isinstance(column.type, Integer) and not self._represents_int(value):
+                    return query.filter(False)
                 query = query.filter(column == value)
 
         return query
+
+    def _represents_int(self, value):
+        try:
+            int(value)
+            return True
+        except ValueError:
+            return False
 
     def _sort(self, query, order=None, direction='asc'):
         column = self.config.column_for_sorting(order)
