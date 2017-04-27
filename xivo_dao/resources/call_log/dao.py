@@ -63,21 +63,6 @@ def find_all_in_period(session, start=None, end=None, order=None, direction=None
 
 
 @daosession
-def count_in_period(session, start=None, end=None):
-    query = session.query(CallLogSchema)
-
-    total = query.count()
-
-    if start:
-        query = query.filter(CallLogSchema.date >= start)
-    if end:
-        query = query.filter(CallLogSchema.date < end)
-    filtered = query.count()
-
-    return {'total': total, 'filtered': filtered}
-
-
-@daosession
 def find_all_history_for_phones(session, identifiers, limit):
     call_log_rows = (session
                      .query(CallLogSchema)
@@ -113,13 +98,6 @@ def _link_call_log(session, call_log, call_log_id):
         ).update(data_dict, synchronize_session=False)
 
 
-@daosession
-def delete_all(session):
-    with flush_session(session):
-        session.query(CallLogSchema).delete()
-
-
-@daosession
 def delete_from_list(session, call_log_ids):
     with flush_session(session):
         for call_log_id in call_log_ids:
