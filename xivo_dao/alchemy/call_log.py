@@ -36,4 +36,3 @@ class CallLog(Base):
     duration = Column(Interval, nullable=False)
     user_field = Column(String(255))
     answered = Column(Boolean)
-    user_uuid = Column(String(38))
