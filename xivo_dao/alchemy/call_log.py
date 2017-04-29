@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -36,3 +36,4 @@ class CallLog(Base):
     duration = Column(Interval, nullable=False)
     user_field = Column(String(255))
     answered = Column(Boolean)
+    user_uuid = Column(String(38))

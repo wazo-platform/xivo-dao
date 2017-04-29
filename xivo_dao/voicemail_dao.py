@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2014 Avencall
+# Copyright 2012-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -48,7 +48,7 @@ def add(session, voicemail):
 def id_from_mailbox(session, mailbox, context):
     result = session.query(Voicemail.uniqueid).filter(and_(Voicemail.mailbox == mailbox,
                                                            Voicemail.context == context)).first()
-    if(result is None):
+    if result is None:
         return None
     return result[0]
 
@@ -63,16 +63,12 @@ def update(session, voicemailid, data):
 def delete(session, uniqueid):
     with flush_session(session):
         impacted_rows = session.query(Voicemail).filter(Voicemail.uniqueid == uniqueid).delete()
-        (session.query(ContextMember)
-                .filter(ContextMember.type == 'voicemail')
-                .filter(ContextMember.typeval == str(uniqueid))
-                .delete())
+        session.query(ContextMember).filter(and_(ContextMember.type == 'voicemail',
+                                                 ContextMember.typeval == str(uniqueid))).delete()
         return impacted_rows
 
 
 @daosession
 def get_contextmember(session, voicemailid):
-    return (session.query(ContextMember)
-                   .filter(ContextMember.type == 'voicemail')
-                   .filter(ContextMember.typeval == str(voicemailid))
-                   .first())
+    return session.query(ContextMember).filter(and_(ContextMember.type == 'voicemail',
+                                                    ContextMember.typeval == str(voicemailid))).first()

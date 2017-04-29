@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2016 Avencall
+# Copyright 2012-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -84,16 +84,16 @@ def daosession(func):
     return wrapped
 
 
-def init_db(db_uri, legacy_mode=False):
+def init_db(db_uri):
     engine = create_engine(db_uri)
     Session.configure(bind=engine)
     Base.metadata.bind = engine
 
 
-def init_db_from_config(config=None, legacy_mode=False):
+def init_db_from_config(config=None):
     config = config or default_config()
     url = config.get('db_uri', DEFAULT_DB_URI)
-    init_db(url, legacy_mode)
+    init_db(url)
 
 
 def default_config():

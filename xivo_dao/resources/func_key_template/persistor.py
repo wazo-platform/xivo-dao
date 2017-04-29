@@ -60,8 +60,7 @@ def build_persistor(session):
                               'transfer': FeaturesPersistor,
                               'parking': FeaturesPersistor,
                               'features': FeaturesPersistor,
-                              'onlinerec': FeaturesPersistor,
-                              }
+                              'onlinerec': FeaturesPersistor}
     return FuncKeyPersistor(session, destination_persistors)
 
 
@@ -151,8 +150,7 @@ class FuncKeyPersistor(object):
                                     sql.not_(FuncKeyTemplate.private).label('inherited'))
                  .join(FuncKeyDestinationType, FuncKeyMapping.destination_type_id == FuncKeyDestinationType.id)
                  .join(FuncKeyTemplate, FuncKeyMapping.template_id == FuncKeyTemplate.id)
-                 .filter(FuncKeyMapping.template_id == template_id)
-                 )
+                 .filter(FuncKeyMapping.template_id == template_id))
 
         return query
 
@@ -249,8 +247,7 @@ class UserPersistor(DestinationPersistor):
 
     def find_or_create(self, destination):
         query = (self.session.query(FuncKeyDestUser)
-                 .filter(FuncKeyDestUser.user_id == destination.user_id)
-                 )
+                 .filter(FuncKeyDestUser.user_id == destination.user_id))
 
         return query.first()
 
@@ -269,8 +266,7 @@ class QueuePersistor(DestinationPersistor):
 
     def find_or_create(self, destination):
         query = (self.session.query(FuncKeyDestQueue)
-                 .filter(FuncKeyDestQueue.queue_id == destination.queue_id)
-                 )
+                 .filter(FuncKeyDestQueue.queue_id == destination.queue_id))
 
         return query.first()
 
@@ -325,8 +321,7 @@ class ConferencePersistor(DestinationPersistor):
 
     def find_or_create(self, destination):
         query = (self.session.query(FuncKeyDestConference)
-                 .filter(FuncKeyDestConference.conference_id == destination.conference_id)
-                 )
+                 .filter(FuncKeyDestConference.conference_id == destination.conference_id))
 
         return query.first()
 
@@ -380,8 +375,7 @@ class BSFilterPersistor(DestinationPersistor):
 
     def find_or_create(self, destination):
         query = (self.session.query(FuncKeyDestBSFilter)
-                 .filter(FuncKeyDestBSFilter.filtermember_id == destination.filter_member_id)
-                 )
+                 .filter(FuncKeyDestBSFilter.filtermember_id == destination.filter_member_id))
 
         return query.first()
 
@@ -405,8 +399,7 @@ class ServicePersistor(DestinationPersistor):
         query = (self.session.query(FuncKeyDestService)
                  .join(Extension, FuncKeyDestService.extension_id == Extension.id)
                  .filter(Extension.type == 'extenfeatures')
-                 .filter(Extension.typeval == destination.service)
-                 )
+                 .filter(Extension.typeval == destination.service))
 
         return query.first()
 
@@ -532,8 +525,7 @@ class AgentPersistor(DestinationPersistor):
                                   Extension.id)
                .join(Extension, FuncKeyDestAgent.extension_id == Extension.id)
                .filter(FuncKeyDestAgent.func_key_id == func_key_id)
-               .first()
-               )
+               .first())
 
         action = AgentActionExtensionConverter().to_action(row.typeval)
 
@@ -548,8 +540,7 @@ class AgentPersistor(DestinationPersistor):
                  .join(Extension, FuncKeyDestAgent.extension_id == Extension.id)
                  .filter(FuncKeyDestAgent.agent_id == destination.agent_id)
                  .filter(Extension.type == 'extenfeatures')
-                 .filter(Extension.typeval == typeval)
-                 )
+                 .filter(Extension.typeval == typeval))
 
         return query.first()
 
@@ -567,8 +558,7 @@ class FeaturesPersistor(DestinationPersistor):
                                   Features.id)
                .join(FuncKeyDestFeatures, FuncKeyDestFeatures.features_id == Features.id)
                .filter(FuncKeyDestFeatures.func_key_id == func_key_id)
-               .first()
-               )
+               .first())
 
         if row.var_name == 'parkext':
             return fk_model.ParkingDestination(feature_id=row.id)
@@ -584,8 +574,7 @@ class FeaturesPersistor(DestinationPersistor):
 
         query = (self.session.query(FuncKeyDestFeatures)
                  .join(Features, FuncKeyDestFeatures.features_id == Features.id)
-                 .filter(Features.var_name == varname)
-                 )
+                 .filter(Features.var_name == varname))
 
         return query.first()
 
