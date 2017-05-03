@@ -31,6 +31,8 @@ from xivo_dao.alchemy.accessfeatures import AccessFeatures
 from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.callerid import Callerid
+from xivo_dao.alchemy.call_log import CallLog
+from xivo_dao.alchemy.call_log_participant import CallLogParticipant
 from xivo_dao.alchemy.callfilter import Callfilter
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from xivo_dao.alchemy.cel import CEL as CELSchema
@@ -1025,6 +1027,18 @@ class DAOTestCase(unittest.TestCase):
         switchboard = Switchboard(**kwargs)
         self.add_me(switchboard)
         return switchboard
+
+    def add_call_log(self, **kwargs):
+        kwargs.setdefault('date', datetime.datetime.now())
+        kwargs.setdefault('duration', datetime.timedelta(seconds=1))
+        call_log = CallLog(**kwargs)
+        self.add_me(call_log)
+        return call_log
+
+    def add_call_log_participant(self, **kwargs):
+        call_log_participant = CallLogParticipant(**kwargs)
+        self.add_me(call_log_participant)
+        return call_log_participant
 
     def add_me(self, obj):
         self.session.add(obj)
