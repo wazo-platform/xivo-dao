@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy import Enum
 from sqlalchemy.schema import Column
 from sqlalchemy.schema import ForeignKey
 from sqlalchemy.schema import PrimaryKeyConstraint
@@ -35,3 +36,4 @@ class CallLogParticipant(Base):
     call_log_id = Column(Integer, ForeignKey('call_log.id'))
     user_uuid = Column(String(38), nullable=False)
     line_id = Column(Integer)
+    role = Column('role', Enum('source', 'destination', name='call_log_participant_role'), nullable=False)

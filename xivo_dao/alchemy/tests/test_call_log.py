@@ -51,7 +51,8 @@ class TestCallLogs(DAOTestCase):
         call_log = self.add_call_log()
         participant = CallLogParticipant(uuid='something',
                                          call_log_id=call_log.id,
-                                         user_uuid='something_else')
+                                         user_uuid='something_else',
+                                         role='source')
 
         call_log.participants.append(participant)
         self.session.expire_all()
@@ -63,7 +64,8 @@ class TestCallLogs(DAOTestCase):
         call_log = self.add_call_log()
         participant = self.add_call_log_participant(uuid='something',
                                                     call_log_id=call_log.id,
-                                                    user_uuid='something_else')
+                                                    user_uuid='something_else',
+                                                    role='source')
         call_log.participants.append(participant)
         self.session.flush()
 
@@ -76,7 +78,8 @@ class TestCallLogs(DAOTestCase):
         call_log = self.add_call_log()
         participant = self.add_call_log_participant(uuid='something',
                                                     call_log_id=call_log.id,
-                                                    user_uuid='something_else')
+                                                    user_uuid='something_else',
+                                                    role='source')
 
         self.session.delete(participant)
 

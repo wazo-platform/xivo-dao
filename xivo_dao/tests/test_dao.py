@@ -1010,6 +1010,7 @@ class ItemInserter(object):
         return call_log
 
     def add_call_log_participant(self, **kwargs):
+        kwargs.setdefault('role', 'source')
         call_log_participant = CallLogParticipant(**kwargs)
         self.add_me(call_log_participant)
         return call_log_participant
