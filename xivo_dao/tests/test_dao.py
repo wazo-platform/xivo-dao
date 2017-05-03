@@ -138,36 +138,10 @@ Session = sessionmaker()
 engine = None
 
 
-class DAOTestCase(unittest.TestCase):
+class ItemInserter(object):
 
-    @classmethod
-    def setUpClass(cls):
-        global engine
-        if not engine:
-            engine = create_engine(TEST_DB_URL, poolclass=StaticPool)
-
-        cls.engine = Base.metadata.bind = engine
-        expensive_setup()
-
-    def setUp(self):
-        self.connection = self.engine.connect()
-        self.trans = self.connection.begin()
-
-        db_manager.Session.configure(bind=self.connection)
-        self.session = db_manager.Session
-
-        self.session.begin_nested()
-
-        @event.listens_for(self.session, 'after_transaction_end')
-        def restart_savepoint(session, transaction):
-            if transaction.nested and not transaction._parent.nested:
-                session.expire_all()
-                session.begin_nested()
-
-    def tearDown(self):
-        self.session.close()
-        self.session.remove()
-        self.trans.rollback()
+    def __init__(self, session):
+        self.session = session
 
     def add_admin(self, **kwargs):
         admin = User(**kwargs)
@@ -1052,3 +1026,36 @@ class DAOTestCase(unittest.TestCase):
 
     def _random_name(self, length=6):
         return ''.join(random.choice(string.lowercase) for _ in range(length))
+
+
+class DAOTestCase(unittest.TestCase, ItemInserter):
+
+    @classmethod
+    def setUpClass(cls):
+        global engine
+        if not engine:
+            # engine = create_engine(TEST_DB_URL, poolclass=StaticPool, echo=True)
+            engine = create_engine(TEST_DB_URL, poolclass=StaticPool)
+
+        cls.engine = Base.metadata.bind = engine
+        expensive_setup()
+
+    def setUp(self):
+        self.connection = self.engine.connect()
+        self.trans = self.connection.begin()
+
+        db_manager.Session.configure(bind=self.connection)
+        self.session = db_manager.Session
+
+        self.session.begin_nested()
+
+        @event.listens_for(self.session, 'after_transaction_end')
+        def restart_savepoint(session, transaction):
+            if transaction.nested and not transaction._parent.nested:
+                session.expire_all()
+                session.begin_nested()
+
+    def tearDown(self):
+        self.session.close()
+        self.session.remove()
+        self.trans.rollback()
