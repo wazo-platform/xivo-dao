@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2015 Avencall
+# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -52,6 +52,12 @@ class CallLog(NewModel):
 
     def add_related_cels(self, cel_ids):
         self._related_cels.extend(cel_ids)
+
+    def get_participants(self):
+        return self._participants
+
+    def set_participants(self, participants):
+        self._participants = participants
 
 
 DB_TO_MODEL_MAPPING = {

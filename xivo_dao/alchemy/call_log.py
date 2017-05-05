@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column
 from sqlalchemy.types import DateTime, Integer, String, Boolean, Interval
 
@@ -36,3 +38,7 @@ class CallLog(Base):
     duration = Column(Interval, nullable=False)
     user_field = Column(String(255))
     answered = Column(Boolean)
+    participants = relationship('CallLogParticipant',
+                                cascade='all,delete,delete-orphan',
+                                primaryjoin='''CallLog.id == CallLogParticipant.call_log_id''')
+    participant_user_uuids = association_proxy('participants', 'user_uuid')

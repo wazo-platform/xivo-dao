@@ -96,6 +96,10 @@ def _link_call_log(session, call_log, call_log_id):
         session.query(CELSchema).filter(
             CELSchema.id.in_(related_cels)
         ).update(data_dict, synchronize_session=False)
+    participants = call_log.get_participants()
+    if participants:
+        call_log_row = session.query(CallLogSchema).filter(CallLogSchema.id == call_log_id).first()
+        call_log_row.participants.extend(participants)
 
 
 @daosession
