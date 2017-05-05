@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 
-# Copyright (C) 2015-2016 Avencall
+# Copyright 2015-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -37,16 +37,16 @@ class LineFixes(object):
 
     def fix(self, line_id):
         row = self.get_row(line_id)
-        self.fix_protocol(row)
         self.fix_number_and_context(row)
+        self.fix_protocol(row)
         self.fix_name(row)
         self.fix_caller_id(row)
         self.session.flush()
 
     def fix_line(self, line_id):
         row = self.get_row(line_id)
-        self.fix_protocol(row)
         self.fix_number_and_context(row)
+        self.fix_protocol(row)
         self.fix_name(row)
         self.session.flush()
 
