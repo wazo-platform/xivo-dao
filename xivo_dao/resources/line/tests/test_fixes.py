@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 
-# Copyright (C) 2015-2016 Avencall
+# Copyright 2015-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,6 +35,21 @@ class TestLineFixes(DAOTestCase):
     def setUp(self):
         super(TestLineFixes, self).setUp()
         self.fixes = LineFixes(self.session)
+
+    def test_when_update_context_extension_then_sip_context_is_updated(self):
+        sip = self.add_usersip()
+        line = self.add_line(protocol='sip', protocolid=sip.id, context='default')
+        extension = self.add_extension(exten="1000", context="default")
+        self.add_line_extension(line_id=line.id, extension_id=extension.id)
+
+        extension.context = 'other_default'
+        self.fixes.fix(line.id)
+
+        sip = self.session.query(UserSIP).first()
+        line = self.session.query(Line).first()
+
+        assert_that(sip.context, equal_to('other_default'))
+        assert_that(line.context, equal_to('other_default'))
 
     def test_given_user_only_has_caller_name_then_sip_caller_id_updated(self):
         user = self.add_user(callerid='"Jôhn Smith"')
