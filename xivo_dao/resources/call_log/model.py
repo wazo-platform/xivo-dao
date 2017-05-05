@@ -46,6 +46,7 @@ class CallLog(NewModel):
     def __init__(self, *args, **kwargs):
         NewModel.__init__(self, *args, **kwargs)
         self._related_cels = []
+        self._participants = []
 
     def get_related_cels(self):
         return self._related_cels
