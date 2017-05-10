@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright 2013-2016 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,7 +16,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import warnings
-import uuid
 
 from contextlib import contextmanager
 from hamcrest import assert_that, contains, equal_to, has_entries, \
@@ -30,25 +29,6 @@ from xivo_dao.alchemy.queuepenalty import QueuePenalty
 from xivo_dao.alchemy.queuepenaltychange import QueuePenaltyChange
 from xivo_dao.alchemy.func_key_dest_custom import FuncKeyDestCustom
 from xivo_dao.tests.test_dao import DAOTestCase
-
-
-class UUIDMatcher(object):
-
-    def __repr__(self):
-        return '{}()'.format(self.__class__.__name__)
-
-    def __eq__(self, other):
-        try:
-            uuid.UUID(other)
-            return True
-        except:
-            return False
-
-    def __ne__(self, other):
-        return not self == other
-
-
-ANYUUID = UUIDMatcher()
 
 
 @contextmanager
@@ -117,7 +97,7 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
              'cid_name': u'Tester One',
              'context': u'foocontext',
              'cid_num': number,
-             'uuid': ANYUUID}
+             'uuid': uuid_()}
         ]
 
         sccp_line = asterisk_conf_dao.find_sccp_line_settings()
@@ -151,7 +131,7 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
             'context': u'foocontext',
             'cid_num': number,
             'allow': 'g729',
-            'uuid': ANYUUID,
+            'uuid': uuid_(),
         }
 
         sccp_lines = asterisk_conf_dao.find_sccp_line_settings()
@@ -174,7 +154,7 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
             'cid_num': number,
             'allow': 'g729',
             'disallow': 'all',
-            'uuid': ANYUUID,
+            'uuid': uuid_(),
         }
 
         sccp_line = asterisk_conf_dao.find_sccp_line_settings()
@@ -204,7 +184,7 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
             'cid_num': sccp_line.cid_num,
             'callgroup': callgroups,
             'pickupgroup': pickupgroups,
-            'uuid': ANYUUID,
+            'uuid': uuid_(),
         }
 
         assert_that(sccp_lines, contains(expected))
