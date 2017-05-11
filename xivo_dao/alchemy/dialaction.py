@@ -102,41 +102,36 @@ class Dialaction(Base):
 
     @hybrid_property
     def type(self):
-        if not self.action:
-            return
-        return self.action.split(':', 1)[0]
+        return self.action.split(':', 1)[0] if self.action else self.action
 
     @type.expression
     def type(cls):
         return func.split_part(cls.action, ':', 1)
 
     @type.setter
-    def type(self, type_):
-        if not self.action:
-            self.action = type_
-            return
-        type_subtype = self.action.split(':', 1)
-        if len(type_subtype) == 2:
-            self.action = '{}:{}'.format(type_, type_subtype[1])
-        else:
-            self.action = type_
+    def type(self, value):
+        type_ = value if value else ''
+        subtype = self.subtype if self.subtype else ''
+        self._set_action(type_, subtype)
 
     @hybrid_property
     def subtype(self):
-        if not self.action:
-            return
-        type_subtype = self.action.split(':', 1)
-        if len(type_subtype) == 2:
-            return type_subtype[1]
-        return None
+        type_subtype = self.action.split(':', 1) if self.action else ''
+        return type_subtype[1] if len(type_subtype) == 2 else None
 
     @subtype.expression
     def subtype(cls):
         return func.split_part(cls.action, ':', 2)
 
     @subtype.setter
-    def subtype(self, subtype):
-        self.action = '{}:{}'.format(self.type, subtype)
+    def subtype(self, value):
+        type_ = self.type if self.type else ''
+        subtype = value if value else ''
+        self._set_action(type_, subtype)
+
+    def _set_action(self, type_, subtype):
+        subtype = ':{}'.format(subtype) if subtype else ''
+        self.action = '{}{}'.format(type_, subtype)
 
     @property
     def gosub_args(self):

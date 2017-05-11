@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright 2016 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -87,25 +87,25 @@ class TestSubtype(unittest.TestCase):
 
     def test_getter(self):
         dialaction = Dialaction(action='application:disa')
-
         assert_that(dialaction.subtype, equal_to('disa'))
 
     def test_getter_when_no_subtype(self):
         dialaction = Dialaction(action='extension')
-
         assert_that(dialaction.subtype, equal_to(None))
 
     def test_getter_when_no_action(self):
         dialaction = Dialaction(action=None)
-
         assert_that(dialaction.subtype, equal_to(None))
 
     def test_setter(self):
         dialaction = Dialaction(action='application:callbackdisa')
-
         dialaction.subtype = 'disa'
-
         assert_that(dialaction.action, equal_to('application:disa'))
+
+    def test_setter_none(self):
+        dialaction = Dialaction(action='application:disa')
+        dialaction.subtype = None
+        assert_that(dialaction.action, equal_to('application'))
 
 
 class TestIncall(DAOTestCase):
