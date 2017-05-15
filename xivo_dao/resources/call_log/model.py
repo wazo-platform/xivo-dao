@@ -29,6 +29,7 @@ class CallLog(NewModel):
     FIELDS = [
         'id',
         'date',
+        'date_answer',
         'source_name',
         'source_exten',
         'destination_name',
@@ -64,6 +65,7 @@ class CallLog(NewModel):
 DB_TO_MODEL_MAPPING = {
     'id': 'id',
     'date': 'date',
+    'date_answer': 'date_answer',
     'source_name': 'source_name',
     'source_exten': 'source_exten',
     'destination_name': 'destination_name',
