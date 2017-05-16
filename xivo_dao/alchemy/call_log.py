@@ -29,6 +29,7 @@ class CallLog(Base):
 
     id = Column(Integer, nullable=False, primary_key=True)
     date = Column(DateTime, nullable=False)
+    date_answer = Column(DateTime)
     source_name = Column(String(255))
     source_exten = Column(String(255))
     source_line_identity = Column(String(255))
