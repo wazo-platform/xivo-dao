@@ -39,6 +39,7 @@ class CallLog(NewModel):
         'duration',
         'source_line_identity',
         'destination_line_identity',
+        'direction',
     ]
 
     _RELATION = {
@@ -75,6 +76,7 @@ DB_TO_MODEL_MAPPING = {
     'duration': 'duration',
     'source_line_identity': 'source_line_identity',
     'destination_line_identity': 'destination_line_identity',
+    'direction': 'direction',
 }
 
 
