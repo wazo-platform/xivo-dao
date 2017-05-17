@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from sqlalchemy import Enum
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.schema import Column
 from sqlalchemy.schema import ForeignKey
 from sqlalchemy.schema import Index
@@ -39,3 +40,4 @@ class CallLogParticipant(Base):
     user_uuid = Column(String(38), nullable=False)
     line_id = Column(Integer)
     role = Column('role', Enum('source', 'destination', name='call_log_participant_role'), nullable=False)
+    tags = Column(ARRAY(String(128)), nullable=False, server_default='{}')
