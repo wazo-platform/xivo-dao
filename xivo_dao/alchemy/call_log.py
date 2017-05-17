@@ -36,6 +36,7 @@ class CallLog(Base):
     destination_name = Column(String(255))
     destination_exten = Column(String(255))
     destination_line_identity = Column(String(255))
+    direction = Column(String(255))
     duration = Column(Interval, nullable=False)
     user_field = Column(String(255))
     answered = Column(Boolean)

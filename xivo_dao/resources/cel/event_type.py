@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -36,6 +36,8 @@ class CELEventType(object):
         transfer,  # removed in asterisk 12
         xivo_user_fwd,
         xivo_from_s,
+        xivo_incall,
+        xivo_outcall,
     ) = (
         'ANSWER',
         'APP_END',
@@ -55,4 +57,6 @@ class CELEventType(object):
         'TRANSFER',
         'XIVO_USER_FWD',
         'XIVO_FROM_S',
+        'XIVO_INCALL',
+        'XIVO_OUTCALL',
     )
