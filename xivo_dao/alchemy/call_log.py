@@ -41,6 +41,5 @@ class CallLog(Base):
     user_field = Column(String(255))
     answered = Column(Boolean)
     participants = relationship('CallLogParticipant',
-                                cascade='all,delete,delete-orphan',
-                                primaryjoin='''CallLog.id == CallLogParticipant.call_log_id''')
+                                cascade='all,delete-orphan')
     participant_user_uuids = association_proxy('participants', 'user_uuid')
