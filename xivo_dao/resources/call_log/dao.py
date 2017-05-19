@@ -79,6 +79,7 @@ def create_from_list(session, call_logs):
     with flush_session(session):
         for call_log in call_logs:
             call_log_id = create_call_log(session, call_log)
+            call_log.id = call_log_id
             _link_call_log(session, call_log, call_log_id)
 
 

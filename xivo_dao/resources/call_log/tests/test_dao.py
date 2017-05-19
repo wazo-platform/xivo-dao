@@ -21,12 +21,12 @@ from hamcrest import all_of
 from hamcrest import assert_that
 from hamcrest import contains
 from hamcrest import contains_inanyorder
-from hamcrest import equal_to
 from hamcrest import empty
-from hamcrest import has_entries
+from hamcrest import equal_to
 from hamcrest import has_length
 from hamcrest import has_property
 from hamcrest import is_
+from hamcrest import not_
 
 from mock import patch
 
@@ -214,6 +214,11 @@ class TestCallLogDAO(DAOTestCase):
 
         call_log_rows = self.session.query(CallLogSchema).all()
         assert_that(call_log_rows, has_length(2))
+
+        assert_that(call_logs, contains_inanyorder(
+            has_property('id', not_(None)),
+            has_property('id', not_(None)),
+        ))
 
         call_log_id_1, call_log_id_2 = [call_log.id for call_log in call_log_rows]
 
