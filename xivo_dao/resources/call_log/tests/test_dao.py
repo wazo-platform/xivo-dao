@@ -26,8 +26,6 @@ from hamcrest import has_length
 from hamcrest import has_property
 from hamcrest import is_
 
-from mock import patch
-
 from xivo_dao.alchemy.call_log import CallLog as CallLogSchema
 from xivo_dao.alchemy.cel import CEL as CELSchema
 from xivo_dao.resources.call_log import dao as call_log_dao
@@ -38,14 +36,7 @@ class TestCallLogDAO(DAOTestCase):
 
     def setUp(self):
         super(TestCallLogDAO, self).setUp()
-        self.db_converter_patcher = patch('xivo_dao.resources.call_log.model.db_converter')
-        self.db_converter = self.db_converter_patcher.start()
         self.call_log_rows = []
-        self.db_converter.to_source.side_effect = lambda: self.call_log_rows.pop(0)
-
-    def tearDown(self):
-        self.db_converter_patcher.stop()
-        super(TestCallLogDAO, self).tearDown()
 
     def test_find_all_history_for_phones_limited(self):
         identities = ["sip/131313", "sip/1234"]

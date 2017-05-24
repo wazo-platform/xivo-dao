@@ -21,16 +21,11 @@ from xivo_dao.alchemy.call_log import CallLog as CallLogSchema
 from xivo_dao.alchemy.cel import CEL
 from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.resources.call_log.model import db_converter
 
 
 @daosession
 def find_all(session):
-    call_log_rows = session.query(CallLogSchema).all()
-
-    if not call_log_rows:
-        return []
-    return map(db_converter.to_model, call_log_rows)
+    return session.query(CallLogSchema).all()
 
 
 @daosession
@@ -55,11 +50,7 @@ def find_all_in_period(session, start=None, end=None, order=None, direction=None
     if offset:
         query = query.offset(offset)
 
-    call_log_rows = query.all()
-
-    if not call_log_rows:
-        return []
-    return map(db_converter.to_model, call_log_rows)
+    return query.all()
 
 
 @daosession

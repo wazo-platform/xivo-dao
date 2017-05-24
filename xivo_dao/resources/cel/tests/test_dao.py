@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@ import datetime
 from hamcrest import assert_that, contains, has_property, contains_inanyorder
 
 from xivo_dao.alchemy.cel import CEL as CELSchema
-from xivo_dao.resources.call_log.model import CallLog, db_converter
+from xivo_dao.alchemy.call_log import CallLog as CallLogSchema
 from xivo_dao.resources.cel import dao as cel_dao
 from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -144,10 +144,9 @@ class TestCELDAO(DAOTestCase):
         return cel_id
 
     def _add_call(self, duration=datetime.timedelta(seconds=5)):
-        call_log = CallLog(date=datetime.datetime.now(), duration=duration)
-        call_log_row = db_converter.to_source(call_log)
-        self.add_me(call_log_row)
-        return call_log_row.id
+        call_log = CallLogSchema(date=datetime.datetime.now(), duration=duration)
+        self.add_me(call_log)
+        return call_log.id
 
     def _link_call_to_cel(self, call_log_id, cel_id):
         with flush_session(self.session):
