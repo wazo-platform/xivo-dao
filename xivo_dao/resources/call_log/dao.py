@@ -18,7 +18,7 @@
 from sqlalchemy import or_
 
 from xivo_dao.alchemy.call_log import CallLog as CallLogSchema
-from xivo_dao.alchemy.cel import CEL as CELSchema
+from xivo_dao.alchemy.cel import CEL
 from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.resources.call_log.model import db_converter
@@ -64,43 +64,31 @@ def find_all_in_period(session, start=None, end=None, order=None, direction=None
 
 @daosession
 def find_all_history_for_phones(session, identifiers, limit):
-    call_log_rows = (session
-                     .query(CallLogSchema)
-                     .filter(or_(CallLogSchema.destination_line_identity.in_(identifiers),
-                                 CallLogSchema.source_line_identity.in_(identifiers)))
-                     .order_by(CallLogSchema.date.desc())
-                     .limit(limit))
+    call_logs = (session
+                 .query(CallLogSchema)
+                 .filter(or_(CallLogSchema.destination_line_identity.in_(identifiers),
+                             CallLogSchema.source_line_identity.in_(identifiers)))
+                 .order_by(CallLogSchema.date.desc())
+                 .limit(limit)
+                 .all())
 
-    return _converted_call_logs(call_log_rows)
+    return call_logs
 
 
 @daosession
 def create_from_list(session, call_logs):
     with flush_session(session):
         for call_log in call_logs:
-            call_log_id = create_call_log(session, call_log)
-            call_log.id = call_log_id
-            _link_call_log(session, call_log, call_log_id)
+            create_call_log(session, call_log)
 
 
 def create_call_log(session, call_log):
-    call_log_row = db_converter.to_source(call_log)
-    session.add(call_log_row)
+    session.add(call_log)
+    if call_log.cel_ids:
+        (session.query(CEL)
+         .filter(CEL.id.in_(call_log.cel_ids))
+         .update({'call_log_id': call_log.id}, synchronize_session=False))
     session.flush()
-    return call_log_row.id
-
-
-def _link_call_log(session, call_log, call_log_id):
-    data_dict = {'call_log_id': int(call_log_id)}
-    related_cels = call_log.get_related_cels()
-    if related_cels:
-        session.query(CELSchema).filter(
-            CELSchema.id.in_(related_cels)
-        ).update(data_dict, synchronize_session=False)
-    participants = call_log.get_participants()
-    if participants:
-        call_log_row = session.query(CallLogSchema).filter(CallLogSchema.id == call_log_id).first()
-        call_log_row.participants.extend(participants)
 
 
 @daosession
@@ -111,9 +99,3 @@ def delete_from_list(session, call_log_ids):
              .query(CallLogSchema)
              .filter(CallLogSchema.id == call_log_id)
              .delete())
-
-
-def _converted_call_logs(rows):
-    if not rows:
-        return []
-    return map(db_converter.to_model, rows)

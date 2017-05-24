@@ -16,12 +16,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from hamcrest import (assert_that,
-                      contains,
                       contains_inanyorder,
-                      empty,
                       equal_to,
-                      none,
-                      not_)
+                      none)
 from xivo_dao.alchemy.call_log import CallLog
 from xivo_dao.alchemy.call_log_participant import CallLogParticipant
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -85,3 +82,11 @@ class TestCallLogs(DAOTestCase):
 
         row = self.session.query(CallLog).first()
         assert_that(row, equal_to(call_log))
+
+    def test_cel_ids(self):
+        cel_id1 = self.add_cel()
+        cel_id2 = self.add_cel()
+        call_log = self.add_call_log()
+        call_log.cel_ids = [cel_id1, cel_id2]
+
+        assert_that(call_log.cel_ids, equal_to([cel_id1, cel_id2]))

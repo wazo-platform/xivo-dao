@@ -20,6 +20,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column
 from sqlalchemy.types import DateTime, Integer, String, Boolean, Interval
 
+from xivo_dao.alchemy.cel import CEL
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -43,3 +44,7 @@ class CallLog(Base):
     participants = relationship('CallLogParticipant',
                                 cascade='all,delete-orphan')
     participant_user_uuids = association_proxy('participants', 'user_uuid')
+
+    cels = relationship(CEL)
+
+    cel_ids = []
