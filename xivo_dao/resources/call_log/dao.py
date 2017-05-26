@@ -75,11 +75,12 @@ def create_from_list(session, call_logs):
 
 def create_call_log(session, call_log):
     session.add(call_log)
+    session.flush()
+
     if call_log.cel_ids:
         (session.query(CEL)
          .filter(CEL.id.in_(call_log.cel_ids))
          .update({'call_log_id': call_log.id}, synchronize_session=False))
-    session.flush()
 
 
 @daosession
