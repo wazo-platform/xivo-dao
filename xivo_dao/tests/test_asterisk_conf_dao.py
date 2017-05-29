@@ -22,6 +22,7 @@ from hamcrest import assert_that, contains, equal_to, has_entries, \
     contains_inanyorder, has_length, none, has_properties, empty
 
 from mock import patch
+from xivo_test_helpers.hamcrest.uuid_ import uuid_
 from xivo_dao import asterisk_conf_dao
 from xivo_dao.alchemy.agentqueueskill import AgentQueueSkill
 from xivo_dao.alchemy.iaxcallnumberlimits import IAXCallNumberLimits
@@ -90,14 +91,16 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
                                             protocolid=sccp_line.id,
                                             exten=number)
         expected_result = [
-            {'user_id': ule.user_id,
-             'name': sccp_line.name,
-             'language': None,
-             'number': number,
-             'cid_name': u'Tester One',
-             'context': u'foocontext',
-             'cid_num': number,
-             'uuid': uuid_()}
+            has_entries({
+                'user_id': ule.user_id,
+                'name': sccp_line.name,
+                'language': None,
+                'number': number,
+                'cid_name': u'Tester One',
+                'context': u'foocontext',
+                'cid_num': number,
+                'uuid': uuid_()
+            })
         ]
 
         sccp_line = asterisk_conf_dao.find_sccp_line_settings()
@@ -122,7 +125,7 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
         ule = self.add_user_line_with_exten(protocol='sccp',
                                             protocolid=sccp_line.id,
                                             exten=number)
-        expected_result = {
+        expected_result = has_entries({
             'user_id': ule.user_id,
             'name': sccp_line.name,
             'language': None,
@@ -132,7 +135,7 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
             'cid_num': number,
             'allow': 'g729',
             'uuid': uuid_(),
-        }
+        })
 
         sccp_lines = asterisk_conf_dao.find_sccp_line_settings()
 
@@ -144,7 +147,7 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
         ule = self.add_user_line_with_exten(protocol='sccp',
                                             protocolid=sccp_line.id,
                                             exten=number)
-        expected_result = {
+        expected_result = has_entries({
             'user_id': ule.user_id,
             'name': sccp_line.name,
             'language': None,
@@ -155,7 +158,7 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
             'allow': 'g729',
             'disallow': 'all',
             'uuid': uuid_(),
-        }
+        })
 
         sccp_line = asterisk_conf_dao.find_sccp_line_settings()
 
@@ -174,7 +177,7 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
 
         sccp_lines = asterisk_conf_dao.find_sccp_line_settings()
 
-        expected = {
+        expected = has_entries({
             'user_id': ule.user_id,
             'name': sccp_line.name,
             'language': None,
@@ -185,7 +188,7 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
             'callgroup': callgroups,
             'pickupgroup': pickupgroups,
             'uuid': uuid_(),
-        }
+        })
 
         assert_that(sccp_lines, contains(expected))
 
