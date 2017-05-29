@@ -143,8 +143,8 @@ class TestCELDAO(DAOTestCase):
 
         return cel_id
 
-    def _add_call(self, duration=datetime.timedelta(seconds=5)):
-        call_log = CallLogSchema(date=datetime.datetime.now(), duration=duration)
+    def _add_call(self):
+        call_log = CallLogSchema(date=datetime.datetime.now())
         self.add_me(call_log)
         return call_log.id
 
