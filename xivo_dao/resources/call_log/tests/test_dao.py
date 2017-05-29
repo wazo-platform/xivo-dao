@@ -26,8 +26,8 @@ from hamcrest import has_length
 from hamcrest import has_property
 from hamcrest import is_
 
-from xivo_dao.alchemy.call_log import CallLog as CallLogSchema
-from xivo_dao.alchemy.cel import CEL as CELSchema
+from xivo_dao.alchemy.call_log import CallLog
+from xivo_dao.alchemy.cel import CEL
 from xivo_dao.resources.call_log import dao as call_log_dao
 from xivo_dao.tests.test_dao import DAOTestCase
 
@@ -179,25 +179,25 @@ class TestCallLogDAO(DAOTestCase):
 
         call_log_dao.create_call_log(self.session, call_log)
 
-        call_log_rows = self.session.query(CallLogSchema).all()
+        call_log_rows = self.session.query(CallLog).all()
         assert_that(call_log_rows, contains(has_property('id', expected_id)))
 
     def test_create_from_list(self):
         cel_id_1, cel_id_2 = self.add_cel(), self.add_cel()
         cel_id_3, cel_id_4 = self.add_cel(), self.add_cel()
-        call_log_1 = CallLogSchema(date=dt.now())
+        call_log_1 = CallLog(date=dt.now())
         call_log_1.cel_ids = [cel_id_1, cel_id_2]
-        call_log_2 = CallLogSchema(date=dt.now())
+        call_log_2 = CallLog(date=dt.now())
         call_log_2.cel_ids = [cel_id_3, cel_id_4]
 
         call_log_dao.create_from_list([call_log_1, call_log_2])
 
-        call_log_rows = self.session.query(CallLogSchema).all()
+        call_log_rows = self.session.query(CallLog).all()
         assert_that(call_log_rows, has_length(2))
 
         call_log_id_1, call_log_id_2 = [call_log.id for call_log in call_log_rows]
 
-        cel_rows = self.session.query(CELSchema).all()
+        cel_rows = self.session.query(CEL).all()
         assert_that(cel_rows, contains_inanyorder(
             all_of(has_property('id', cel_id_1), has_property('call_log_id', call_log_id_1)),
             all_of(has_property('id', cel_id_2), has_property('call_log_id', call_log_id_1)),
@@ -212,5 +212,5 @@ class TestCallLogDAO(DAOTestCase):
 
         call_log_dao.delete_from_list([id_1, id_3])
 
-        call_log_rows = self.session.query(CallLogSchema).all()
+        call_log_rows = self.session.query(CallLog).all()
         assert_that(call_log_rows, contains(has_property('id', id_2)))
