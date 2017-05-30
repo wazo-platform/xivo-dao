@@ -91,3 +91,12 @@ def delete_from_list(session, call_log_ids):
              .query(CallLog)
              .filter(CallLog.id == call_log_id)
              .delete())
+
+
+@daosession
+def delete(session, older=None):
+    with flush_session(session):
+        query = session.query(CallLog)
+        if older:
+            query = query.filter(CallLog.date >= older)
+        query.delete()

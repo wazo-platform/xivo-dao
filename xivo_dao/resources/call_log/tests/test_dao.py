@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from datetime import datetime as dt
+from datetime import timedelta as td
 from hamcrest import all_of
 from hamcrest import assert_that
 from hamcrest import contains
@@ -214,3 +215,26 @@ class TestCallLogDAO(DAOTestCase):
 
         call_log_rows = self.session.query(CallLog).all()
         assert_that(call_log_rows, contains(has_property('id', id_2)))
+
+    def test_delete_all(self):
+        self.add_call_log()
+        self.add_call_log()
+        self.add_call_log()
+
+        call_log_dao.delete()
+
+        result = self.session.query(CallLog).all()
+        assert_that(result, empty())
+
+    def test_delete_older(self):
+        now = dt.now()
+        older = now - td(hours=1)
+        exclude_time = now - td(hours=2)
+        self.add_call_log(date=now)
+        call_log_2 = self.add_call_log(date=exclude_time)
+        self.add_call_log(date=now)
+
+        call_log_dao.delete(older=older)
+
+        result = self.session.query(CallLog).all()
+        assert_that(result, contains(call_log_2))
