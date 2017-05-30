@@ -17,7 +17,7 @@
 
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column
+from sqlalchemy.schema import Column, CheckConstraint
 from sqlalchemy.types import DateTime, Integer, String
 
 from xivo_dao.alchemy.cel import CEL
@@ -47,3 +47,8 @@ class CallLog(Base):
     cels = relationship(CEL)
 
     cel_ids = []
+
+    __table_args__ = (
+        CheckConstraint(direction.in_(['inbound', 'internal', 'outbound']),
+                        name='call_log_direction_check'),
+    )
