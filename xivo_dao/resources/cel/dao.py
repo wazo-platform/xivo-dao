@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,13 +20,18 @@ from xivo_dao.alchemy.cel import CEL as CELSchema
 
 
 @daosession
-def find_last_unprocessed(session, limit):
-    linked_ids = (session
-                  .query(CELSchema.linkedid)
-                  .filter(CELSchema.call_log_id == None)
-                  .order_by(CELSchema.eventtime.desc())
-                  .limit(limit)
-                  .subquery())
+def find_last_unprocessed(session, limit=None, older=None):
+    subquery = (session
+                .query(CELSchema.linkedid)
+                .filter(CELSchema.call_log_id == None)
+                .order_by(CELSchema.eventtime.desc()))
+    if limit:
+        subquery = subquery.limit(limit)
+    elif older:
+        subquery = subquery.filter(CELSchema.eventtime >= older)
+
+    linked_ids = subquery.subquery()
+
     cel_rows = (session
                 .query(CELSchema)
                 .filter(CELSchema.linkedid.in_(linked_ids))

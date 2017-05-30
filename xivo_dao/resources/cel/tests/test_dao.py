@@ -36,7 +36,9 @@ class TestCELDAO(DAOTestCase):
 
     def test_find_last_unprocessed_over_limit(self):
         limit = 2
-        _, cel_id_2, cel_id_3 = self.add_cel(linkedid='1'), self.add_cel(linkedid='2'), self.add_cel(linkedid='3')
+        self.add_cel(linkedid='1')
+        cel_id_2 = self.add_cel(linkedid='2')
+        cel_id_3 = self.add_cel(linkedid='3')
 
         result = cel_dao.find_last_unprocessed(limit)
 
@@ -114,7 +116,9 @@ class TestCELDAO(DAOTestCase):
 
     def test_find_from_linked_id(self):
         linked_id = '666'
-        cel_id_1, cel_id_2, cel_id_3 = self.add_cel(linkedid='666'), self.add_cel(linkedid='3'), self.add_cel(linkedid='666')
+        cel_id_1 = self.add_cel(linkedid='666')
+        self.add_cel(linkedid='3')
+        cel_id_3 = self.add_cel(linkedid='666')
 
         result = cel_dao.find_from_linked_id(linked_id)
 
@@ -136,6 +140,48 @@ class TestCELDAO(DAOTestCase):
                                      has_property('id', cel_id_1),
                                      has_property('id', cel_id_3)))
 
+    def test_find_last_unprocessed_no_cels_with_older(self):
+        older = datetime.datetime.now() - datetime.timedelta(hours=1)
+
+        result = cel_dao.find_last_unprocessed(older=older)
+
+        assert_that(result, contains())
+
+    def test_find_last_unprocessed_over_older(self):
+        now = datetime.datetime.now()
+        older = now - datetime.timedelta(hours=1)
+        exclude_time = now - datetime.timedelta(hours=2)
+
+        self.add_cel(eventtime=exclude_time)
+        cel_id_2 = self.add_cel(linkedid='2')
+        cel_id_3 = self.add_cel(linkedid='3')
+
+        result = cel_dao.find_last_unprocessed(older=older)
+
+        assert_that(result, contains(has_property('id', cel_id_2),
+                                     has_property('id', cel_id_3)))
+
+    def test_find_last_unprocessed_under_older(self):
+        now = datetime.datetime.now()
+        older = now - datetime.timedelta(hours=1)
+        cel_id_1, cel_id_2 = self.add_cel(linkedid='1'), self.add_cel(linkedid='2')
+
+        result = cel_dao.find_last_unprocessed(older=older)
+
+        assert_that(result, contains(has_property('id', cel_id_1),
+                                     has_property('id', cel_id_2)))
+
+    def test_find_last_unprocessed_under_older_exceeding_limit_to_complete_call(self):
+        now = datetime.datetime.now()
+        older = now - datetime.timedelta(hours=1)
+        exclude_time = now - datetime.timedelta(hours=2)
+        cel_id_1, cel_id_2 = self.add_cel(eventtime=exclude_time, linkedid='1'), self.add_cel(linkedid='1')
+
+        result = cel_dao.find_last_unprocessed(older=older)
+
+        assert_that(result, contains(has_property('id', cel_id_1),
+                                     has_property('id', cel_id_2)))
+
     def _add_processed_cel(self, **kwargs):
         call_log_id = self._add_call()
         cel_id = self.add_cel(**kwargs)
@@ -143,8 +189,8 @@ class TestCELDAO(DAOTestCase):
 
         return cel_id
 
-    def _add_call(self, duration=datetime.timedelta(seconds=5)):
-        call_log = CallLogSchema(date=datetime.datetime.now(), duration=duration)
+    def _add_call(self):
+        call_log = CallLogSchema(date=datetime.datetime.now())
         self.add_me(call_log)
         return call_log.id
 

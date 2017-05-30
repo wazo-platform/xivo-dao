@@ -1004,7 +1004,6 @@ class ItemInserter(object):
 
     def add_call_log(self, **kwargs):
         kwargs.setdefault('date', datetime.datetime.now())
-        kwargs.setdefault('duration', datetime.timedelta(seconds=1))
         call_log = CallLog(**kwargs)
         self.add_me(call_log)
         return call_log

@@ -18,7 +18,7 @@
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column
-from sqlalchemy.types import DateTime, Integer, String, Boolean, Interval
+from sqlalchemy.types import DateTime, Integer, String
 
 from xivo_dao.alchemy.cel import CEL
 from xivo_dao.helpers.db_manager import Base
@@ -39,9 +39,7 @@ class CallLog(Base):
     destination_exten = Column(String(255))
     destination_line_identity = Column(String(255))
     direction = Column(String(255))
-    duration = Column(Interval, nullable=False)
     user_field = Column(String(255))
-    answered = Column(Boolean)
     participants = relationship('CallLogParticipant',
                                 cascade='all,delete-orphan')
     participant_user_uuids = association_proxy('participants', 'user_uuid')

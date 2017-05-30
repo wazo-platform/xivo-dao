@@ -17,7 +17,7 @@
 
 from sqlalchemy import or_
 
-from xivo_dao.alchemy.call_log import CallLog as CallLogSchema
+from xivo_dao.alchemy.call_log import CallLog
 from xivo_dao.alchemy.cel import CEL
 from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.helpers.db_manager import daosession
@@ -25,21 +25,21 @@ from xivo_dao.helpers.db_manager import daosession
 
 @daosession
 def find_all(session):
-    return session.query(CallLogSchema).all()
+    return session.query(CallLog).all()
 
 
 @daosession
 def find_all_in_period(session, start=None, end=None, order=None, direction=None, limit=None, offset=None):
-    query = session.query(CallLogSchema)
+    query = session.query(CallLog)
 
     if start:
-        query = query.filter(CallLogSchema.date >= start)
+        query = query.filter(CallLog.date >= start)
     if end:
-        query = query.filter(CallLogSchema.date < end)
+        query = query.filter(CallLog.date < end)
 
     order_field = None
     if order:
-        order_field = getattr(CallLogSchema, order)
+        order_field = getattr(CallLog, order)
     if direction == 'desc':
         order_field = order_field.desc()
     if order_field is not None:
@@ -56,10 +56,10 @@ def find_all_in_period(session, start=None, end=None, order=None, direction=None
 @daosession
 def find_all_history_for_phones(session, identifiers, limit):
     call_logs = (session
-                 .query(CallLogSchema)
-                 .filter(or_(CallLogSchema.destination_line_identity.in_(identifiers),
-                             CallLogSchema.source_line_identity.in_(identifiers)))
-                 .order_by(CallLogSchema.date.desc())
+                 .query(CallLog)
+                 .filter(or_(CallLog.destination_line_identity.in_(identifiers),
+                             CallLog.source_line_identity.in_(identifiers)))
+                 .order_by(CallLog.date.desc())
                  .limit(limit)
                  .all())
 
@@ -88,6 +88,15 @@ def delete_from_list(session, call_log_ids):
     with flush_session(session):
         for call_log_id in call_log_ids:
             (session
-             .query(CallLogSchema)
-             .filter(CallLogSchema.id == call_log_id)
+             .query(CallLog)
+             .filter(CallLog.id == call_log_id)
              .delete())
+
+
+@daosession
+def delete(session, older=None):
+    with flush_session(session):
+        query = session.query(CallLog)
+        if older:
+            query = query.filter(CallLog.date >= older)
+        query.delete()
