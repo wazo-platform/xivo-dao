@@ -16,9 +16,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from hamcrest import (assert_that,
+                      calling,
                       contains_inanyorder,
                       equal_to,
-                      none)
+                      none,
+                      raises)
+from sqlalchemy.exc import IntegrityError
 from xivo_dao.alchemy.call_log import CallLog
 from xivo_dao.alchemy.call_log_participant import CallLogParticipant
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -90,3 +93,15 @@ class TestCallLogs(DAOTestCase):
         call_log.cel_ids = [cel_id1, cel_id2]
 
         assert_that(call_log.cel_ids, equal_to([cel_id1, cel_id2]))
+
+    def test_direction_constraint_invalid(self):
+        assert_that(calling(self.add_call_log).with_args(direction='invalid'),
+                    raises(IntegrityError))
+
+    def test_direction_constraint_none(self):
+        call_log = self.add_call_log(direction=None)
+        assert_that(call_log)
+
+    def test_direction_constraint_valid(self):
+        call_log = self.add_call_log(direction='internal')
+        assert_that(call_log)
