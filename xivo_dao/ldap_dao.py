@@ -53,7 +53,7 @@ def build_ldapinfo_from_ldapfilter(session, ldapfilter_id):
     basefilter = None
 
     if ldap_config.user:
-        username = ldap_config.user.encode('utf8').replace('\\', '\\\\')
+        username = ldap_config.user.replace('\\', '\\\\').encode('utf8')
 
     if ldap_config.passwd:
         password = ldap_config.passwd.encode('utf8')
