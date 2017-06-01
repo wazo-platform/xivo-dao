@@ -153,7 +153,7 @@ class TestQueueLogDAO(DAOTestCase):
             callid = str(12345678.123 + minute)
             self._insert_entry_queue_full(datetimewithmicro, callid, queuename)
 
-        expected = datetime(2012, 01, 01, 0, 0, 59)
+        expected = datetime(2012, 1, 1, 0, 0, 59)
 
         result = queue_log_dao.get_first_time(self.session)
 
@@ -171,7 +171,7 @@ class TestQueueLogDAO(DAOTestCase):
         self.assertEqual(result, queue_names)
 
     def test_get_queue_abandoned_call(self):
-        start = datetime(2012, 01, 01, 01, 00, 00)
+        start = datetime(2012, 1, 1, 1, 0, 0)
         expected = self._insert_abandon(start, [-1, 0, 10, 30, 59, 60, 120])
 
         result = queue_log_dao.get_queue_abandoned_call(self.session, start, start + ONE_HOUR - ONE_MICROSECOND)
@@ -232,7 +232,7 @@ class TestQueueLogDAO(DAOTestCase):
         assert_that(timeout_at_12_oclock, has_length(1))
 
     def test_get_queue_timeout_call(self):
-        start = datetime(2012, 01, 01, 01, 00, 00)
+        start = datetime(2012, 1, 1, 1, 0, 0)
         expected = self._insert_timeout(start, [-1, 0, 10, 30, 59, 60, 120])
 
         result = queue_log_dao.get_queue_timeout_call(self.session, start, start + ONE_HOUR - ONE_MICROSECOND)
@@ -335,10 +335,10 @@ class TestQueueLogDAO(DAOTestCase):
         return expected
 
     def test_delete_event_by_queue_between(self):
-        self._insert_entry_queue_full(datetime(2012, 07, 01, 7, 1, 1), 'delete_between_1', 'q1')
-        self._insert_entry_queue_full(datetime(2012, 07, 01, 8, 1, 1), 'delete_between_2', 'q1')
-        self._insert_entry_queue_full(datetime(2012, 07, 01, 9, 1, 1), 'delete_between_3', 'q1')
-        self._insert_entry_queue_full(datetime(2012, 07, 01, 8, 1, 0), 'delete_between_4', 'q2')
+        self._insert_entry_queue_full(datetime(2012, 7, 1, 7, 1, 1), 'delete_between_1', 'q1')
+        self._insert_entry_queue_full(datetime(2012, 7, 1, 8, 1, 1), 'delete_between_2', 'q1')
+        self._insert_entry_queue_full(datetime(2012, 7, 1, 9, 1, 1), 'delete_between_3', 'q1')
+        self._insert_entry_queue_full(datetime(2012, 7, 1, 8, 1, 0), 'delete_between_4', 'q2')
 
         queue_log_dao.delete_event_by_queue_between(
             'FULL', 'q1', '2012-07-01 08:00:00.000000', '2012-07-01 08:59:59.999999')
@@ -366,7 +366,7 @@ class TestQueueLogDAO(DAOTestCase):
         self.assertEqual(result.data5, '5')
 
     def test_hours_with_calls(self):
-        start = datetime(2012, 01, 01)
+        start = datetime(2012, 1, 1)
         end = datetime(2012, 6, 30, 23, 59, 59, 999999)
         res = [h for h in queue_log_dao.hours_with_calls(self.session, start, end)]
 

@@ -55,7 +55,7 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
 
     def test_insert_periodic_stat(self):
         stats = self._get_stats_for_queue()
-        period_start = datetime.datetime(2012, 01, 01, 00, 00, 00)
+        period_start = datetime.datetime(2012, 1, 1, 00, 00, 00)
 
         with flush_session(self.session):
             stat_queue_periodic_dao.insert_stats(self.session, stats, period_start)
@@ -81,7 +81,7 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
         self.assertRaises(LookupError, stat_queue_periodic_dao.get_most_recent_time, self.session)
 
         stats = self._get_stats_for_queue()
-        start = datetime.datetime(2012, 01, 01, 00, 00, 00)
+        start = datetime.datetime(2012, 1, 1, 00, 00, 00)
 
         with flush_session(self.session):
             for minute_increment in [-5, 5, 15, 22, 35, 65, 120]:
@@ -102,7 +102,7 @@ class TestStatQueuePeriodicDAO(DAOTestCase):
                 'total': 10
             }
         }
-        period_start = datetime.datetime(2012, 01, 01, 00, 00, 00)
+        period_start = datetime.datetime(2012, 1, 1, 00, 00, 00)
 
         stat_queue_periodic_dao.insert_stats(self.session, stats, period_start)
 

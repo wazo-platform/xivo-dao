@@ -176,8 +176,8 @@ class TestStatDAO(DAOTestCase):
 
     def test_get_pause_intervals_in_range(self):
         _, agent_id_1 = self._insert_agent('Agent/1')
-        start = dt(2012, 07, 01)
-        end = dt(2012, 07, 31, 23, 59, 59, 999999)
+        start = dt(2012, 7, 1)
+        end = dt(2012, 7, 31, 23, 59, 59, 999999)
 
         queue_log_data = '''\
 | time                       | callid | queuename | agent   | event      | data1 | data2 | data3 | data4 | data5 |
@@ -204,8 +204,8 @@ class TestStatDAO(DAOTestCase):
 
     def test_get_pause_intervals_in_range_multiple_pauseall(self):
         _, agent_id_1 = self._insert_agent('Agent/1')
-        start = dt(2012, 07, 01)
-        end = dt(2012, 07, 31, 23, 59, 59, 999999)
+        start = dt(2012, 7, 1)
+        end = dt(2012, 7, 31, 23, 59, 59, 999999)
 
         queue_log_data = '''\
 | time                       | callid | queuename | agent   | event      | data1 | data2 | data3 | data4 | data5 |

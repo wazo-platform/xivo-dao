@@ -111,8 +111,8 @@ class TestStatDAO(DAOTestCase):
         DAOTestCase.setUp(self)
         if not self._fn_created:
             self._create_functions()
-        self.start = t(2012, 07, 01)
-        self.end = t(2012, 07, 31, 23, 59, 59, 999999)
+        self.start = t(2012, 7, 1)
+        self.end = t(2012, 7, 31, 23, 59, 59, 999999)
         self.qname1, self.qid1 = self._insert_queue('q1')
         self.qname2, self.qid2 = self._insert_queue('q2')
         self.aname1, self.aid1 = self._insert_agent('a1')

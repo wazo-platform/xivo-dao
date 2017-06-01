@@ -45,7 +45,7 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
         _, agent_id_1 = self._insert_agent_to_stat_agent()
         _, agent_id_2 = self._insert_agent_to_stat_agent()
         stats = {
-            dt(2012, 01, 01, 01, 00, 00): {
+            dt(2012, 1, 1, 1, 0, 0): {
                 agent_id_1: {
                     'login_time': timedelta(minutes=50),
                     'pause_time': timedelta(minutes=13)
@@ -54,7 +54,7 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
                     'login_time': ONE_HOUR,
                     'pause_time': timedelta(minutes=13)},
             },
-            dt(2012, 01, 01, 02, 00, 00): {
+            dt(2012, 1, 1, 2, 0, 0): {
                 agent_id_1: {
                     'login_time': timedelta(minutes=20),
                     'pause_time': timedelta(minutes=33)
@@ -64,13 +64,13 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
                     'pause_time': timedelta(minutes=13)
                 },
             },
-            dt(2012, 01, 01, 03, 00, 00): {
+            dt(2012, 1, 1, 3, 0, 0): {
                 agent_id_2: {
                     'login_time': ONE_HOUR,
                     'pause_time': ONE_HOUR
                 },
             },
-            dt(2012, 01, 01, 04, 00, 00): {
+            dt(2012, 1, 1, 4, 0, 0): {
                 agent_id_2: {
                     'login_time': ONE_HOUR,
                     'pause_time': ONE_HOUR
@@ -82,7 +82,7 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
             for period_start, agents_stats in six.iteritems(stats):
                 stat_agent_periodic_dao.insert_stats(self.session, agents_stats, period_start)
 
-        period_start = dt(2012, 01, 01, 01, 00, 00)
+        period_start = dt(2012, 1, 1, 1, 0, 0)
 
         try:
             result = (self.session.query(StatAgentPeriodic)
