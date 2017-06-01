@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from __future__ import unicode_literals
+
 from xivo_dao.helpers.db_manager import Session
 
 from xivo_dao.resources.utils.search import SearchResult
@@ -34,7 +36,7 @@ def persistor():
 
 def legacy_search(term):
     users = (Session.query(User)
-             .filter(User.fullname.ilike(u'%{}%'.format(term)))
+             .filter(User.fullname.ilike('%{}%'.format(term)))
              .all()
              )
 

@@ -16,6 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from __future__ import unicode_literals
+
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.ldapfilter import LdapFilter
 from xivo_dao.alchemy.ldapserver import LdapServer
@@ -45,8 +47,8 @@ def build_ldapinfo_from_ldapfilter(session, ldapfilter_id):
     host = ldap_config.host or 'localhost'
     port = ldap_config.port or _determine_default_port(ssl)
 
-    username = u''
-    password = u''
+    username = ''
+    password = ''
     basedn = None
     basefilter = None
 

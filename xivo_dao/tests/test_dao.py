@@ -152,7 +152,7 @@ class ItemInserter(object):
         kwargs.setdefault('firstname', 'unittest')
         kwargs.setdefault('lastname', 'unittest')
         kwargs.setdefault('email', None)
-        kwargs.setdefault('callerid', u'"%s %s"' % (kwargs['firstname'], kwargs['lastname']))
+        kwargs.setdefault('callerid', '"%s %s"' % (kwargs['firstname'], kwargs['lastname']))
         kwargs.setdefault('exten', '%s' % random.randint(1000, 1999))
         kwargs.setdefault('context', 'foocontext')
         kwargs.setdefault('protocol', 'sip')
@@ -200,7 +200,7 @@ class ItemInserter(object):
     def add_user_line_with_queue_member(self, **kwargs):
         kwargs.setdefault('firstname', 'unittest')
         kwargs.setdefault('lastname', 'unittest')
-        kwargs.setdefault('callerid', u'"%s %s"' % (kwargs['firstname'], kwargs['lastname']))
+        kwargs.setdefault('callerid', '"%s %s"' % (kwargs['firstname'], kwargs['lastname']))
         kwargs.setdefault('context', 'foocontext')
         kwargs.setdefault('protocol', 'sip')
         kwargs.setdefault('protocolid', self._generate_int())
@@ -242,7 +242,7 @@ class ItemInserter(object):
     def add_user_line_without_exten(self, **kwargs):
         kwargs.setdefault('firstname', 'unittest')
         kwargs.setdefault('lastname', 'unittest')
-        kwargs.setdefault('callerid', u'"%s %s"' % (kwargs['firstname'], kwargs['lastname']))
+        kwargs.setdefault('callerid', '"%s %s"' % (kwargs['firstname'], kwargs['lastname']))
         kwargs.setdefault('context', 'foocontext')
         kwargs.setdefault('protocol', 'sip')
         kwargs.setdefault('protocolid', self._generate_int())

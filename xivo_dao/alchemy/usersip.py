@@ -299,7 +299,7 @@ class UserSIP(Base):
 
     def update_caller_id(self, user, extension=None):
         name, num = user.extrapolate_caller_id(extension)
-        self.callerid = u'"{}"'.format(name)
+        self.callerid = '"{}"'.format(name)
         if num:
             self.callerid += " <{}>".format(num)
 

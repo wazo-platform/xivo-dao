@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from __future__ import unicode_literals
+
 from xivo_dao.alchemy.incall import Incall
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.helpers.db_manager import daosession
@@ -34,5 +36,5 @@ def _new_query(session):
     return (session
             .query(Incall.id, Dialaction.action, Dialaction.actionarg1)
             .join((Dialaction, Incall.id == cast(Dialaction.categoryval, Integer)))
-            .filter(Dialaction.category == u'incall')
-            .filter(Dialaction.event == u'answer'))
+            .filter(Dialaction.category == 'incall')
+            .filter(Dialaction.event == 'answer'))

@@ -16,6 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from __future__ import unicode_literals
+
 from hamcrest import assert_that
 from hamcrest import equal_to
 
@@ -39,8 +41,8 @@ class TestCTIReverseDAO(DAOTestCase):
 
         result = cti_reverse_dao.get_config()
 
-        expected = {'sources': [u'xivodir', u'ldapdev', u'internal'],
-                    'types': [u'xivo', u'ldap', u'phonebook']}
+        expected = {'sources': ['xivodir', 'ldapdev', 'internal'],
+                    'types': ['xivo', 'ldap', 'phonebook']}
 
         assert_that(result, equal_to(expected))
 

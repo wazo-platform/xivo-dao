@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from __future__ import unicode_literals
+
 import unittest
 
 from mock import Mock, sentinel as s
@@ -213,9 +215,9 @@ class TestSearchSystem(DAOTestCase):
         assert_that(total, equal_to(0))
 
     def test_given_no_search_with_params(self):
-        self.add_user(firstname=u'Alïce', userfield='mtl')
-        user_row2 = self.add_user(firstname=u'Bõb', userfield='qc')
-        user_row3 = self.add_user(firstname=u'Çharles', userfield='qc')
+        self.add_user(firstname='Alïce', userfield='mtl')
+        user_row2 = self.add_user(firstname='Bõb', userfield='qc')
+        user_row3 = self.add_user(firstname='Çharles', userfield='qc')
 
         rows, total = self.search.search(self.session, {'userfield': 'qc'})
 

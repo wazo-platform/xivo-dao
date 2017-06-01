@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from __future__ import unicode_literals
+
 import warnings
 
 from contextlib import contextmanager
@@ -96,8 +98,8 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
                 'name': sccp_line.name,
                 'language': None,
                 'number': number,
-                'cid_name': u'Tester One',
-                'context': u'foocontext',
+                'cid_name': 'Tester One',
+                'context': 'foocontext',
                 'cid_num': number,
                 'uuid': uuid_()
             })
@@ -130,8 +132,8 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
             'name': sccp_line.name,
             'language': None,
             'number': number,
-            'cid_name': u'Tester One',
-            'context': u'foocontext',
+            'cid_name': 'Tester One',
+            'context': 'foocontext',
             'cid_num': number,
             'allow': 'g729',
             'uuid': uuid_(),
@@ -152,8 +154,8 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
             'name': sccp_line.name,
             'language': None,
             'number': number,
-            'cid_name': u'Tester One',
-            'context': u'foocontext',
+            'cid_name': 'Tester One',
+            'context': 'foocontext',
             'cid_num': number,
             'allow': 'g729',
             'disallow': 'all',
@@ -182,8 +184,8 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
             'name': sccp_line.name,
             'language': None,
             'number': ule.extension.exten,
-            'cid_name': u'Tester One',
-            'context': u'foocontext',
+            'cid_name': 'Tester One',
+            'context': 'foocontext',
             'cid_num': sccp_line.cid_num,
             'callgroup': callgroups,
             'pickupgroup': pickupgroups,
@@ -452,7 +454,7 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
             ('parkeddynamic', 'no'),
         ]
         expected_parking_lots = [{
-            'name': u'default',
+            'name': 'default',
             'options': [('parkext', '700')],
         }]
 
@@ -482,16 +484,16 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         self.add_extension(exten='3492', context='robert', type='user', typeval='14')
 
         expected_result = [
-            {'exten': u'*25',
+            {'exten': '*25',
              'commented': 0,
-             'context': u'xivo-features',
-             'typeval': u'',
+             'context': 'xivo-features',
+             'typeval': '',
              'type': 'user',
              'id': exten1.id},
-            {'exten': u'*26',
+            {'exten': '*26',
              'commented': 0,
-             'context': u'xivo-features',
-             'typeval': u'',
+             'context': 'xivo-features',
+             'typeval': '',
              'type': 'user',
              'id': exten2.id}
         ]
@@ -503,9 +505,9 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
     def test_find_extenfeatures_settings_when_features_is_none(self):
         exten = self.add_extension(exten='*98', context='xivo-features', type='extenfeatures', typeval='vmusermsg')
         expected_result = [
-            {'exten': u'*98',
+            {'exten': '*98',
              'commented': 0,
-             'context': u'xivo-features',
+             'context': 'xivo-features',
              'typeval': 'vmusermsg',
              'type': 'extenfeatures',
              'id': exten.id}
@@ -521,15 +523,15 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         self.add_extension(exten='3492', context='robert', type='user', typeval='14')
 
         expected_result = [
-            {'exten': u'*98',
+            {'exten': '*98',
              'commented': 0,
-             'context': u'xivo-features',
+             'context': 'xivo-features',
              'typeval': 'vmusermsg',
              'type': 'extenfeatures',
              'id': exten1.id},
-            {'exten': u'*92',
+            {'exten': '*92',
              'commented': 0,
-             'context': u'xivo-features',
+             'context': 'xivo-features',
              'typeval': 'vmuserpurge',
              'type': 'extenfeatures',
              'id': exten2.id}
@@ -547,10 +549,10 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         self.add_line_extension(line_id=line_row.id, extension_id=extension_row.id)
 
         expected_result = [
-            {'exten': u'12',
+            {'exten': '12',
              'commented': 0,
-             'context': u'default',
-             'typeval': u'',
+             'context': 'default',
+             'typeval': '',
              'type': 'user',
              'id': extension_row.id}
         ]
@@ -576,16 +578,16 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         self.add_extension(exten='41', context='toto')
 
         expected_result = [
-            {'exten': u'12',
+            {'exten': '12',
              'commented': 0,
-             'context': u'default',
-             'typeval': u'',
+             'context': 'default',
+             'typeval': '',
              'type': 'user',
              'id': exten1.id},
-            {'exten': u'23',
+            {'exten': '23',
              'commented': 0,
-             'context': u'default',
-             'typeval': u'',
+             'context': 'default',
+             'typeval': '',
              'type': 'user',
              'id': exten2.id}
         ]
@@ -677,10 +679,10 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         self.add_voicemail_general_settings(commented=1)
 
         expected_result = [
-            {'category': u'general',
+            {'category': 'general',
              'var_name': vms1.var_name,
              'var_val': vms1.var_val},
-            {'category': u'general',
+            {'category': 'general',
              'var_name': vms2.var_name,
              'var_val': vms2.var_val},
         ]
@@ -753,15 +755,15 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
             {'accountcode': None,
              'adsi': None,
              'allow': None,
-             'amaflags': u'default',
-             'auth': u'plaintext,md5',
+             'amaflags': 'default',
+             'auth': 'plaintext,md5',
              'callerid': None,
              'category': iax.category,
              'cid_number': None,
              'codecpriority': None,
              'commented': 0,
              'context': iax.context,
-             'dbsecret': u'',
+             'dbsecret': '',
              'defaultip': None,
              'deny': None,
              'disallow': None,
@@ -769,7 +771,7 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
              'forceencryption': None,
              'forcejitterbuffer': None,
              'fullname': None,
-             'host': u'dynamic',
+             'host': 'dynamic',
              'id': iax.id,
              'immediate': None,
              'inkeys': None,
@@ -787,16 +789,16 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
              'peercontext': None,
              'permit': None,
              'port': None,
-             'protocol': u'iax',
-             'qualify': u'no',
+             'protocol': 'iax',
+             'qualify': 'no',
              'qualifyfreqnotok': 10000,
              'qualifyfreqok': 60000,
              'qualifysmoothing': 0,
              'regexten': None,
-             'requirecalltoken': u'no',
-             'secret': u'',
+             'requirecalltoken': 'no',
+             'secret': '',
              'sendani': 0,
-             'setvar': u'',
+             'setvar': '',
              'sourceaddress': None,
              'timezone': None,
              'transfer': None,
@@ -833,17 +835,17 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         self.add_meetme_general_settings(category='general', commented=1)
 
         expected_result = [
-            {'category': u'general',
+            {'category': 'general',
              'cat_metric': 0,
-             'filename': u'meetme.conf',
+             'filename': 'meetme.conf',
              'var_metric': 0,
              'var_name': meetme1.var_name,
              'var_val': meetme1.var_val,
              'id': meetme1.id,
              'commented': 0},
-            {'category': u'general',
+            {'category': 'general',
              'cat_metric': 0,
-             'filename': u'meetme.conf',
+             'filename': 'meetme.conf',
              'var_metric': 0,
              'var_name': meetme2.var_name,
              'var_val': meetme2.var_val,
@@ -862,17 +864,17 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         self.add_meetme_general_settings(category='rooms', commented=1)
 
         expected_result = [
-            {'category': u'rooms',
+            {'category': 'rooms',
              'cat_metric': 0,
-             'filename': u'meetme.conf',
+             'filename': 'meetme.conf',
              'var_metric': 0,
              'var_name': meetme1.var_name,
              'var_val': meetme1.var_val,
              'id': meetme1.id,
              'commented': 0},
-            {'category': u'rooms',
+            {'category': 'rooms',
              'cat_metric': 0,
-             'filename': u'meetme.conf',
+             'filename': 'meetme.conf',
              'var_metric': 0,
              'var_name': meetme2.var_name,
              'var_val': meetme2.var_val,
@@ -891,17 +893,17 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         self.add_queue_general_settings(category='general', commented=1)
 
         expected_result = [
-            {'category': u'general',
+            {'category': 'general',
              'cat_metric': 0,
-             'filename': u'queues.conf',
+             'filename': 'queues.conf',
              'var_metric': 0,
              'var_name': queue_settings1.var_name,
              'var_val': queue_settings1.var_val,
              'id': queue_settings1.id,
              'commented': 0},
-            {'category': u'general',
+            {'category': 'general',
              'cat_metric': 0,
-             'filename': u'queues.conf',
+             'filename': 'queues.conf',
              'var_metric': 0,
              'var_name': queue_settings2.var_name,
              'var_val': queue_settings2.var_val,
@@ -942,14 +944,14 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
                 'queue-reporthold': None,
                 'queue-youarenext': None,
                 'timeout': 0,
-                'announce-position': u'yes',
+                'announce-position': 'yes',
                 'setqueuevar': 0,
                 'periodic-announce': None,
                 'announce-position-limit': 5,
                 'min-announce-frequency': 60,
                 'queue-thereare': None,
                 'membermacro': None,
-                'timeoutpriority': u'app',
+                'timeoutpriority': 'app',
                 'announce-round-seconds': None,
                 'memberdelay': None,
                 'musicclass': None,

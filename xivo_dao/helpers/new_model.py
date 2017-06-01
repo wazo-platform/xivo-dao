@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from __future__ import unicode_literals
+
 from xivo_dao.helpers import errors
 
 
@@ -48,9 +50,9 @@ class NewModel(object):
         return not self == other
 
     def __repr__(self):
-        properties = [u'%s: %s' % (field, getattr(self, field))
+        properties = ['%s: %s' % (field, getattr(self, field))
                       for field in self.FIELDS + self._RELATION.values()]
-        text = u'<%s %s>' % (self.__class__.__name__, ', '.join(properties))
+        text = '<%s %s>' % (self.__class__.__name__, ', '.join(properties))
         return text.encode('utf8')
 
     def update_from_data(self, data):
