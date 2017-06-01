@@ -16,6 +16,8 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+import six
+
 from xivo_dao.resources.features.model import TransferExtension
 
 
@@ -24,7 +26,7 @@ class TransferExtensionConverter(object):
     TRANSFERS = {'blindxfer': 'blind',
                  'atxfer': 'attended'}
 
-    VAR_NAMES = {value: key for key, value in TRANSFERS.iteritems()}
+    VAR_NAMES = {value: key for key, value in six.iteritems(TRANSFERS)}
 
     def var_names(self):
         return self.TRANSFERS.keys()

@@ -16,6 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import datetime
+import six
+
 from datetime import datetime as t
 
 from hamcrest import assert_that, equal_to
@@ -709,11 +711,11 @@ LANGUAGE SQL;
 
         self.assertEqual(len(statistics), len(expected))
 
-        for agent, statistic in statistics.iteritems():
+        for agent, statistic in six.iteritems(statistics):
             for login in statistic:
                 self.assertTrue(login in expected[agent])
 
-        for agent, statistic in expected.iteritems():
+        for agent, statistic in six.iteritems(expected):
             for login in statistic:
                 self.assertTrue(login in statistics[agent])
 

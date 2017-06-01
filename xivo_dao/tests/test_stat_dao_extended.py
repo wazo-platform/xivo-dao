@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+import six
+
 from datetime import datetime as dt
 
 from xivo_dao import stat_dao
@@ -188,7 +190,7 @@ class TestStatDAO(DAOTestCase):
         self._insert_queue_log_data(queue_log_data)
 
         result = stat_dao.get_pause_intervals_in_range(self.session, start, end)
-        for agent, logins in result.iteritems():
+        for agent, logins in six.iteritems(result):
             result[agent] = sorted(logins, key=lambda login: login[0])
 
         expected = {
@@ -217,7 +219,7 @@ class TestStatDAO(DAOTestCase):
         self._insert_queue_log_data(queue_log_data)
 
         result = stat_dao.get_pause_intervals_in_range(self.session, start, end)
-        for agent, logins in result.iteritems():
+        for agent, logins in six.iteritems(result):
             result[agent] = sorted(logins, key=lambda login: login[0])
 
         expected = {

@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import abc
+import six
 from sqlalchemy import sql
 
 from xivo_dao.alchemy.extension import Extension
@@ -83,7 +84,7 @@ class FuncKeyPersistor(object):
         return row.id
 
     def add_funckeys(self, template_id, funckeys):
-        for pos, funckey in funckeys.iteritems():
+        for pos, funckey in six.iteritems(funckeys):
             self.add_mapping(template_id, pos, funckey)
 
     def add_mapping(self, template_id, position, funckey):

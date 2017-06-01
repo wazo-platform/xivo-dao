@@ -16,6 +16,8 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+import six
+
 from xivo_dao.resources.extension.model import ForwardExtension, \
     ServiceExtension, AgentActionExtension
 
@@ -56,7 +58,7 @@ class ForwardExtensionConverter(object):
                 'fwdrna': 'noanswer',
                 'fwdunc': 'unconditional'}
 
-    TYPEVALS = {value: key for key, value in FORWARDS.iteritems()}
+    TYPEVALS = {value: key for key, value in six.iteritems(FORWARDS)}
 
     def typevals(self):
         return self.FORWARDS.keys()
@@ -81,7 +83,7 @@ class AgentActionExtensionConverter(object):
                'agentstaticlogoff': 'logout',
                'agentstaticlogtoggle': 'toggle'}
 
-    TYPEVALS = {value: key for key, value in ACTIONS.iteritems()}
+    TYPEVALS = {value: key for key, value in six.iteritems(ACTIONS)}
 
     def typevals(self):
         return self.ACTIONS.keys()

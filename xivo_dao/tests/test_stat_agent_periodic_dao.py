@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+import six
+
 from datetime import datetime as dt
 from datetime import timedelta
 from sqlalchemy import func
@@ -77,7 +79,7 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
         }
 
         with flush_session(self.session):
-            for period_start, agents_stats in stats.iteritems():
+            for period_start, agents_stats in six.iteritems(stats):
                 stat_agent_periodic_dao.insert_stats(self.session, agents_stats, period_start)
 
         period_start = dt(2012, 01, 01, 01, 00, 00)
@@ -132,7 +134,7 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
         }
 
         with flush_session(self.session):
-            for period_start, agents_stats in stats.iteritems():
+            for period_start, agents_stats in six.iteritems(stats):
                 stat_agent_periodic_dao.insert_stats(self.session, agents_stats, period_start)
 
         stat_agent_periodic_dao.remove_after(self.session, dt(2012, 1, 2))

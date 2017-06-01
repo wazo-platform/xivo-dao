@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+import six
+
 from hamcrest import assert_that, none, equal_to, calling, raises
 
 from xivo_dao.helpers.exception import NotFoundError
@@ -75,7 +77,7 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
         self.setup_types()
         self.setup_destination_types()
         self.destination_type_ids = {value: key
-                                     for key, value in self.destination_types.iteritems()}
+                                     for key, value in six.iteritems(self.destination_types)}
 
     def build_template_with_key(self, destination, position=1):
         return FuncKeyTemplate(keys={position: FuncKey(destination=destination)})

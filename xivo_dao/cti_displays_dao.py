@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import json
+import six
 
 from xivo_dao.alchemy.ctidirectories import CtiDirectories
 from xivo_dao.alchemy.cti_contexts import CtiContexts
@@ -61,7 +62,7 @@ def get_profile_configuration(session):
     else:
         name_to_type = {}
 
-    for context, config in results.iteritems():
+    for context, config in six.iteritems(results):
         types = [name_to_type.get(name, 'ldap') for name in config['sources']]
         config['types'] = types
 

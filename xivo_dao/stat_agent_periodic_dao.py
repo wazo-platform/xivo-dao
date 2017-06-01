@@ -15,11 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+import six
+
 from xivo_dao.alchemy.stat_agent_periodic import StatAgentPeriodic
 
 
 def insert_stats(session, period_stats, period_start):
-    for agent_id, times in period_stats.iteritems():
+    for agent_id, times in six.iteritems(period_stats):
         entry = StatAgentPeriodic(
             time=period_start,
             login_time=times['login_time'] if 'login_time' in times else '00:00:00',

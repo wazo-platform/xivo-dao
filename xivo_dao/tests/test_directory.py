@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+import six
+
 from xivo_dao import directory_dao
 from xivo_dao.alchemy.ctidirectories import CtiDirectories
 from xivo_dao.alchemy.ctidirectoryfields import CtiDirectoryFields
@@ -23,7 +25,6 @@ from xivo_dao.alchemy.ldapserver import LdapServer
 from xivo_dao.alchemy.ldapfilter import LdapFilter
 from xivo_dao.tests.test_dao import DAOTestCase
 
-from itertools import chain
 from hamcrest import assert_that, contains_inanyorder, empty
 
 
@@ -85,7 +86,7 @@ class TestDirectoryLdapSources(DAOTestCase):
         fields = {'firstname': '{givenName}',
                   'lastname': '{sn}',
                   'number': '{telephoneNumber}'}
-        for name, column in fields.iteritems():
+        for name, column in six.iteritems(fields):
             self.add_me(CtiDirectoryFields(dir_id=self.cti_directory_1.id,
                                            fieldname=name,
                                            value=column))

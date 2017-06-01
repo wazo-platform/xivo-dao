@@ -18,6 +18,7 @@
 from __future__ import unicode_literals
 
 import re
+import six
 
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -226,7 +227,7 @@ class UserFeatures(Base):
             if event not in dialactions:
                 self.user_dialactions.pop(event, None)
 
-        for event, dialaction in dialactions.iteritems():
+        for event, dialaction in six.iteritems(dialactions):
             if dialaction is None:
                 self.user_dialactions.pop(event, None)
                 continue

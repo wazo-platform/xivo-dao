@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+import six
+
 from sqlalchemy.sql import text
 
 _STR_TIME_FMT = "%Y-%m-%d %H:%M:%S.%f"
@@ -217,7 +219,7 @@ def get_login_intervals_in_range(session, start, end):
 
     unique_result = {}
 
-    for agent, logins in results.iteritems():
+    for agent, logins in six.iteritems(results):
         logins = _pick_longest_with_same_end(logins)
         unique_result[agent] = sorted(list(set(logins)))
 
@@ -228,13 +230,13 @@ def _merge_agent_statistics(*args):
     result = {}
 
     for stat in args:
-        for agent, logins in stat.iteritems():
+        for agent, logins in six.iteritems(stat):
             if agent not in result:
                 result[agent] = logins
             else:
                 result[agent].extend(logins)
 
-    for agent, logins in result.iteritems():
+    for agent, logins in six.iteritems(result):
         filtered_logins = _filter_overlap(logins)
         result[agent] = filtered_logins
 
@@ -282,7 +284,7 @@ def _pick_longest_with_same_end(logins):
         end_time_map[end].append(start)
 
     res = []
-    for end, starts in end_time_map.iteritems():
+    for end, starts in six.iteritems(end_time_map):
         res.append((min(starts), end))
 
     return res
@@ -341,7 +343,7 @@ def _get_ongoing_logins(session, start, end):
 
     def filter_ended_logins(logins, logouts):
         filtered_logins = {}
-        for agent, login in logins.iteritems():
+        for agent, login in six.iteritems(logins):
             if not login:
                 continue
 
@@ -355,7 +357,7 @@ def _get_ongoing_logins(session, start, end):
 
     results = {}
 
-    for agent, login in filtered_logins.iteritems():
+    for agent, login in six.iteritems(filtered_logins):
         if agent not in results:
             results[agent] = []
         results[agent].append((login, end))

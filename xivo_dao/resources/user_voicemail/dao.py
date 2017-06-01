@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+import six
+
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 
 from xivo_dao.helpers import errors
@@ -34,7 +36,7 @@ def find_query(session, criteria):
                            UserSchema.enablevoicemail)
              .filter(UserSchema.voicemailid != None)  # noqa
              .filter(UserSchema.voicemailid != 0))
-    for name, value in criteria.iteritems():
+    for name, value in six.iteritems(criteria):
         column = COLUMNS.get(name)
         if not column:
             raise errors.unknown(column)

@@ -17,6 +17,8 @@
 
 from __future__ import unicode_literals
 
+import six
+
 from xivo_dao.helpers import errors
 
 
@@ -40,9 +42,9 @@ class NewModel(object):
         if not isinstance(other, self.__class__):
             raise TypeError('Must compare a %s with another %s' % (class_name, class_name))
 
-        current = {key: value for key, value in self.__dict__.iteritems()
+        current = {key: value for key, value in six.iteritems(self.__dict__)
                    if key not in self._RELATION.values()}
-        other = {key: value for key, value in other.__dict__.iteritems()
+        other = {key: value for key, value in six.iteritems(other.__dict__)
                  if key not in self._RELATION.values()}
         return current == other
 
@@ -58,7 +60,7 @@ class NewModel(object):
     def update_from_data(self, data):
         self._check_invalid_parameters(data.keys())
 
-        for parameter, value in data.iteritems():
+        for parameter, value in six.iteritems(data):
             setattr(self, parameter, value)
 
     @classmethod

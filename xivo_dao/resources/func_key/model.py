@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import abc
+import six
 
 from collections import namedtuple
 
@@ -220,7 +221,7 @@ class ForwardTypeConverter(object):
         'busy': 'fwdbusy',
     }
 
-    reversed_types = dict((value, key) for key, value in fwd_types.iteritems())
+    reversed_types = dict((value, key) for key, value in six.iteritems(fwd_types))
 
     def db_to_model(self, db_type):
         return self.reversed_types[db_type]

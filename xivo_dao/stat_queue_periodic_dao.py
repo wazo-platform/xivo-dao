@@ -15,12 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+import six
+
 from xivo_dao.alchemy.stat_queue_periodic import StatQueuePeriodic
 from sqlalchemy.sql.functions import max
 
 
 def insert_stats(session, stats, period_start):
-    for queue_id, queue_stats in stats.iteritems():
+    for queue_id, queue_stats in six.iteritems(stats):
         entry = StatQueuePeriodic()
         entry.time = period_start
         entry.abandoned = queue_stats.get('abandoned', 0)

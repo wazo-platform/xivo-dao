@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+import six
+
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import relationship
@@ -167,7 +169,7 @@ class GroupFeatures(Base):
             if event not in dialactions:
                 self.group_dialactions.pop(event, None)
 
-        for event, dialaction in dialactions.iteritems():
+        for event, dialaction in six.iteritems(dialactions):
             if dialaction is None:
                 self.group_dialactions.pop(event, None)
                 continue
