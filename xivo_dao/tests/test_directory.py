@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from __future__ import unicode_literals
+
 import six
 
 from xivo_dao import directory_dao
@@ -98,10 +100,10 @@ class TestDirectoryLdapSources(DAOTestCase):
             'type': 'ldap',
             'name': 'ldapdirectory_1',
             'ldap_uri': 'ldaps://myldap.example.com:636',
-            'ldap_base_dn': 'dc=example,dc=com',
-            'ldap_username': 'cn=admin,dc=example,dc=com',
-            'ldap_password': '53c8e7',
-            'ldap_custom_filter': '',
+            'ldap_base_dn': 'dc=example,dc=com'.encode('utf8'),
+            'ldap_username': 'cn=admin,dc=example,dc=com'.encode('utf8'),
+            'ldap_password': '53c8e7'.encode('utf8'),
+            'ldap_custom_filter': ''.encode('utf8'),
             'searched_columns': ['cn'],
             'first_matched_columns': ['telephoneNumber'],
             'format_columns': {
@@ -113,10 +115,10 @@ class TestDirectoryLdapSources(DAOTestCase):
             'type': 'ldap',
             'name': 'ldapdirectory_2',
             'ldap_uri': 'ldaps://myldap.example.com:636',
-            'ldap_base_dn': 'dc=example,dc=com',
-            'ldap_username': 'cn=admin,dc=example,dc=com',
-            'ldap_password': '53c8e7',
-            'ldap_custom_filter': '(l=Québec)',
+            'ldap_base_dn': 'dc=example,dc=com'.encode('utf8'),
+            'ldap_username': 'cn=admin,dc=example,dc=com'.encode('utf8'),
+            'ldap_password': '53c8e7'.encode('utf8'),
+            'ldap_custom_filter': '(l=Québec)'.encode('utf8'),
             'searched_columns': ['cn'],
             'first_matched_columns': ['telephoneNumber'],
             'format_columns': {

@@ -78,9 +78,9 @@ def _get_ldap_sources(session):
             logger.warning('Skipping LDAP source %s', dir.name)
             continue
 
-        custom_filter = ldap_config.get('filter') or ''
+        custom_filter = ldap_config.get('filter') or ''.encode('utf8')
         if custom_filter:
-            custom_filter = '({})'.format(custom_filter)
+            custom_filter = '({})'.format(custom_filter.decode('utf8')).encode('utf8')
 
         source_configs.append({'type': 'ldap',
                                'name': dir.name,
