@@ -2,9 +2,15 @@ Source: xivo-dao
 Section: python
 Priority: extra
 Maintainer: Wazo Maintainers <dev.wazo@gmail.com>
-Build-Depends: debhelper (>= 9), dh-python, python-all (>= 2.7), python-setuptools
+Build-Depends: debhelper (>= 9),
+               dh-python,
+               python-all (>= 2.7),
+               python-setuptools,
+               python3-all,
+               python3-setuptools
 Standards-Version: 3.9.6
 X-Python-Version: >= 2.7
+X-Python3-Version: >= 3.4
 
 Package: xivo-libdao
 Architecture: all
@@ -17,3 +23,14 @@ Description: Wazo telephony systems library for directories manager
  Wazo is a system based on a powerful IPBX, to bring an easy to
  install solution for telephony and related services.
  .
+
+Package: xivo-libdao-python3
+Architecture: all
+Depends: ${python3:Depends},
+         ${misc:Depends},
+         xivo-config (>= 13.02~20130128.173355.93cbb26-1),
+         xivo-lib-python-python3,
+         python3-sqlalchemy (>= 0.9)
+Description: Wazo telephony systems library for directories manager
+ Wazo is a system based on a powerful IPBX, to bring an easy to
+ install solution for telephony and related services.
