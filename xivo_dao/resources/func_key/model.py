@@ -48,9 +48,8 @@ class FuncKey(Model):
         return self.destination.to_tuple()
 
 
+@six.add_metaclass(abc.ABCMeta)
 class Destination(Model):
-
-    __metaclass__ = abc.ABCMeta
 
     @abc.abstractproperty
     def type(self):

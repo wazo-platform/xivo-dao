@@ -111,5 +111,5 @@ class SipPersistor(CriteriaBuilderMixin):
         return data
 
     def generate_hash(self, length=8):
-        pool = string.lowercase + string.digits
+        pool = string.ascii_lowercase + string.digits
         return ''.join(random.choice(pool) for _ in range(length))

@@ -17,6 +17,8 @@
 
 from __future__ import unicode_literals
 
+import six
+
 from xivo_dao.helpers.exception import InputError
 from xivo_dao.helpers.exception import ResourceError
 from xivo_dao.helpers.exception import NotFoundError
@@ -34,7 +36,7 @@ def format_error(category, error, metadata=None):
 def _format_metadata(metadata):
     if len(metadata) == 0:
         return ''
-    return "({})".format(unicode(metadata).strip("{}"))
+    return "({})".format(six.text_type(metadata).strip("{}"))
 
 
 def _format_list(elements):

@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import abc
+import six
 
 from xivo_dao.helpers import errors
 
@@ -34,9 +35,8 @@ class ViewSelector(object):
         return self.views[name]
 
 
+@six.add_metaclass(abc.ABCMeta)
 class View(object):
-
-    __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
     def query(self, session):

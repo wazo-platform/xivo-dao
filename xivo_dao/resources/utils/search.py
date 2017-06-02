@@ -55,7 +55,7 @@ class SearchConfig(object):
     def all_search_columns(self):
         if self._search:
             return [self._columns[s] for s in self._search]
-        return self._columns.values()
+        return list(self._columns.values())
 
     def column_for_searching(self, column_name):
         return self._columns.get(column_name)

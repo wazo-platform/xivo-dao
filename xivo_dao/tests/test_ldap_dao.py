@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+import six
+
 from hamcrest import assert_that
 from hamcrest import has_entries
 
@@ -93,10 +95,10 @@ class TestLdapDAO(DAOTestCase):
         result = ldap_dao.build_ldapinfo_from_ldapfilter(ldap_filter.id)
 
         assert_that(result, has_entries({
-            'username': ldap_filter.user,
-            'password': ldap_filter.passwd,
-            'basedn': ldap_filter.basedn,
-            'filter': ldap_filter.filter,
+            'username': six.b(ldap_filter.user),
+            'password': six.b(ldap_filter.passwd),
+            'basedn': six.b(ldap_filter.basedn),
+            'filter': six.b(ldap_filter.filter),
             'host': ldap_server.host,
             'port': ldap_server.port,
             'ssl': True,

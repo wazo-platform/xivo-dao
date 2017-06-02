@@ -29,7 +29,7 @@ class TransferExtensionConverter(object):
     VAR_NAMES = {value: key for key, value in six.iteritems(TRANSFERS)}
 
     def var_names(self):
-        return self.TRANSFERS.keys()
+        return list(self.TRANSFERS.keys())
 
     def to_var_name(self, transfer):
         return self.VAR_NAMES[transfer]

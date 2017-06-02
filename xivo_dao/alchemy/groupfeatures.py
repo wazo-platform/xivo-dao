@@ -165,7 +165,7 @@ class GroupFeatures(Base):
     # Note: fallbacks[key] = Dialaction() doesn't pass in this method
     @fallbacks.setter
     def fallbacks(self, dialactions):
-        for event in self.group_dialactions.keys():
+        for event in list(self.group_dialactions.keys()):
             if event not in dialactions:
                 self.group_dialactions.pop(event, None)
 

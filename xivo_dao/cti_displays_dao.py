@@ -47,7 +47,7 @@ def get_profile_configuration(session):
                           if row.directories else []} for row in rows.all()}
 
     sources = set()
-    for config in results.itervalues():
+    for config in six.itervalues(results):
         for source in config['sources']:
             sources.add(source)
 

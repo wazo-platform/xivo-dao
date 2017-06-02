@@ -223,7 +223,7 @@ class UserFeatures(Base):
 
     @fallbacks.setter
     def fallbacks(self, dialactions):
-        for event in self.user_dialactions.keys():
+        for event in list(self.user_dialactions.keys()):
             if event not in dialactions:
                 self.user_dialactions.pop(event, None)
 

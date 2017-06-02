@@ -19,7 +19,7 @@ import random
 
 from datetime import datetime
 from datetime import timedelta
-from hamcrest import assert_that, has_length, empty
+from hamcrest import assert_that, has_length, empty, contains_inanyorder
 
 from xivo_dao import queue_log_dao
 from xivo_dao.alchemy.stat_agent import StatAgent
@@ -176,7 +176,7 @@ class TestQueueLogDAO(DAOTestCase):
 
         result = queue_log_dao.get_queue_abandoned_call(self.session, start, start + ONE_HOUR - ONE_MICROSECOND)
 
-        self.assertEqual(sorted(result), sorted(expected))
+        assert_that(result, contains_inanyorder(*expected))
 
     def test_get_queue_abandoned_call_following_transfer_at_hour_border(self):
         queue_logs = [
@@ -237,7 +237,7 @@ class TestQueueLogDAO(DAOTestCase):
 
         result = queue_log_dao.get_queue_timeout_call(self.session, start, start + ONE_HOUR - ONE_MICROSECOND)
 
-        self.assertEqual(sorted(result), sorted(expected))
+        assert_that(result, contains_inanyorder(*expected))
 
     def _insert_timeout(self, start, minutes):
         expected = []

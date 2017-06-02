@@ -19,6 +19,7 @@
 from __future__ import unicode_literals
 
 import re
+import six
 
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.sql import cast, func
@@ -231,7 +232,7 @@ class LineFeatures(Base):
     def provisioning_code(self):
         if self.provisioningid is None:
             return None
-        return unicode(self.provisioningid)
+        return six.text_type(self.provisioningid)
 
     @provisioning_code.expression
     def provisioning_code(cls):

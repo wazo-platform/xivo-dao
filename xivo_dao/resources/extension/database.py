@@ -61,7 +61,7 @@ class ForwardExtensionConverter(object):
     TYPEVALS = {value: key for key, value in six.iteritems(FORWARDS)}
 
     def typevals(self):
-        return self.FORWARDS.keys()
+        return list(self.FORWARDS.keys())
 
     def to_typeval(self, forward):
         return self.TYPEVALS[forward]
@@ -86,7 +86,7 @@ class AgentActionExtensionConverter(object):
     TYPEVALS = {value: key for key, value in six.iteritems(ACTIONS)}
 
     def typevals(self):
-        return self.ACTIONS.keys()
+        return list(self.ACTIONS.keys())
 
     def to_typeval(self, action):
         return self.TYPEVALS[action]

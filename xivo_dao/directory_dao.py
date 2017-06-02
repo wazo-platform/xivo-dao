@@ -15,16 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from __future__ import unicode_literals
+
 import json
 import logging
-import ldap_dao
+import six
 
-from itertools import izip
 from sqlalchemy import func
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.ctidirectories import CtiDirectories
 from xivo_dao.alchemy.ctidirectoryfields import CtiDirectoryFields
 from xivo_dao.alchemy.directories import Directories
+from . import ldap_dao
 
 
 logger = logging.getLogger(__name__)
@@ -37,7 +39,7 @@ def _format_columns(fields, value):
     if fields == value == [None]:
         return {}
 
-    return dict(izip(fields, value))
+    return dict(six.moves.zip(fields, value))
 
 
 @daosession

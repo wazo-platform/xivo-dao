@@ -26,6 +26,7 @@ import unittest
 import time
 import string
 import uuid
+import six
 
 from xivo_dao.alchemy.accessfeatures import AccessFeatures
 from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
@@ -453,7 +454,7 @@ class ItemInserter(object):
         return incall
 
     def add_outcall(self, **kwargs):
-        kwargs.setdefault('name', ''.join(random.choice(string.lowercase) for _ in range(6)))
+        kwargs.setdefault('name', ''.join(random.choice(string.ascii_lowercase) for _ in range(6)))
         kwargs.setdefault('context', 'to-extern')
 
         outcall = Outcall(**kwargs)
@@ -1022,10 +1023,13 @@ class ItemInserter(object):
         self.session.add_all(obj_list)
         self.session.flush()
 
-    _generate_int = itertools.count(1).next
+    _generate_int_init = itertools.count(1)
+
+    def _generate_int(self):
+        return six.next(self._generate_int_init)
 
     def _random_name(self, length=6):
-        return ''.join(random.choice(string.lowercase) for _ in range(length))
+        return ''.join(random.choice(string.ascii_lowercase) for _ in range(length))
 
 
 class DAOTestCase(unittest.TestCase, ItemInserter):

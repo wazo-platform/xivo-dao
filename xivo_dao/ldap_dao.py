@@ -84,4 +84,4 @@ def _determine_default_port(ssl):
 
 def _build_uri(ssl, host, port):
     scheme = 'ldaps' if ssl else 'ldap'
-    return u"%s://%s:%s" % (scheme, host, port)
+    return "%s://%s:%s" % (scheme, host, port)

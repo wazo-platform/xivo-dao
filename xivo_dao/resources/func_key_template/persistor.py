@@ -199,9 +199,8 @@ class FuncKeyPersistor(object):
         self.add_funckeys(template.id, template.keys)
 
 
+@six.add_metaclass(abc.ABCMeta)
 class DestinationPersistor(object):
-
-    __metaclass__ = abc.ABCMeta
 
     def __init__(self, session):
         self.session = session

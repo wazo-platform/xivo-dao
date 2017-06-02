@@ -27,7 +27,7 @@ class NewModel(object):
     def __init__(self, **kwargs):
         self._check_invalid_parameters(kwargs.keys())
 
-        for model_field in self.FIELDS + self._RELATION.values():
+        for model_field in self.FIELDS + list(self._RELATION.values()):
             model_field_value = kwargs.get(model_field, None)
             setattr(self, model_field, model_field_value)
 
@@ -53,7 +53,7 @@ class NewModel(object):
 
     def __repr__(self):
         properties = ['%s: %s' % (field, getattr(self, field))
-                      for field in self.FIELDS + self._RELATION.values()]
+                      for field in self.FIELDS + list(self._RELATION.values())]
         text = '<%s %s>' % (self.__class__.__name__, ', '.join(properties))
         return text.encode('utf8')
 
@@ -77,7 +77,7 @@ class NewModel(object):
         return data_dict
 
     def invalid_parameters(self, parameters):
-        allowed = self.FIELDS + self._RELATION.values()
+        allowed = self.FIELDS + list(self._RELATION.values())
         return set(parameters).difference(set(allowed))
 
     def missing_parameters(self):
