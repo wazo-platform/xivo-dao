@@ -99,4 +99,4 @@ class TestCtiServiceDAO(DAOTestCase):
 
         result = cti_service_dao.get_services()
 
-        self.assertEquals(result, expected_result)
+        self.assertEqual(result, expected_result)

@@ -97,4 +97,4 @@ class TestCtiPreferenceDAO(DAOTestCase):
 
         result = cti_preference_dao.get_preferences()
 
-        self.assertEquals(result, expected_result)
+        self.assertEqual(result, expected_result)

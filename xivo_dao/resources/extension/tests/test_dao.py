@@ -352,7 +352,7 @@ class TestDelete(DAOTestCase):
 
         row = self.session.query(Extension).filter(Extension.id == expected_extension.id).first()
 
-        self.assertEquals(row, None)
+        self.assertEqual(row, None)
 
 
 class TestFindAllServiceExtensions(DAOTestCase):

@@ -53,7 +53,7 @@ class TestAgentDAO(DAOTestCase):
 
     def test_agent_interface_not_exist(self):
         interface = agent_dao.find_agent_interface(1)
-        self.assertEquals(interface, None)
+        self.assertEqual(interface, None)
 
     def test_agent_with_id(self):
         agent = self._insert_agent()

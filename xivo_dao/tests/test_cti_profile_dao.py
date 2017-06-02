@@ -152,4 +152,4 @@ class TestCtiProfileDAO(DAOTestCase):
 
         result = cti_profile_dao.get_profiles()
 
-        self.assertEquals(result, expected_result)
+        self.assertEqual(result, expected_result)

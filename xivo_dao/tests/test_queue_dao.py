@@ -35,7 +35,7 @@ class TestQueueDAO(DAOTestCase):
 
         result = queue_dao.queue_name(queue.id)
 
-        self.assertEquals(result, 'my_queue')
+        self.assertEqual(result, 'my_queue')
 
     def test_get_name_number(self):
         self.assertRaises(LookupError, queue_dao.get_display_name_number, 1)

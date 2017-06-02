@@ -36,5 +36,5 @@ class TestGetInfos(DAOTestCase):
 
         infos = infos_dao.get()
 
-        self.assertEquals(infos.uuid, xivo_uuid)
-        self.assertEquals(infos.wazo_version, wazo_version)
+        self.assertEqual(infos.uuid, xivo_uuid)
+        self.assertEqual(infos.wazo_version, wazo_version)
