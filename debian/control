@@ -18,7 +18,8 @@ Depends: ${python:Depends},
          ${misc:Depends},
          xivo-config (>= 13.02~20130128.173355.93cbb26-1),
          xivo-lib-python,
-         python-sqlalchemy (>= 0.9)
+         python-sqlalchemy (>= 0.9),
+         python-six
 Description: Wazo telephony systems library for directories manager
  Wazo is a system based on a powerful IPBX, to bring an easy to
  install solution for telephony and related services.
@@ -30,7 +31,8 @@ Depends: ${python3:Depends},
          ${misc:Depends},
          xivo-config (>= 13.02~20130128.173355.93cbb26-1),
          xivo-lib-python-python3,
-         python3-sqlalchemy (>= 0.9)
+         python3-sqlalchemy (>= 0.9),
+         python-six
 Description: Wazo telephony systems library for directories manager
  Wazo is a system based on a powerful IPBX, to bring an easy to
  install solution for telephony and related services.
