@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2015 Avencall
+# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ class TestQueueDAO(DAOTestCase):
 
         result = queue_dao.queue_name(queue.id)
 
-        self.assertEquals(result, 'my_queue')
+        self.assertEqual(result, 'my_queue')
 
     def test_get_name_number(self):
         self.assertRaises(LookupError, queue_dao.get_display_name_number, 1)

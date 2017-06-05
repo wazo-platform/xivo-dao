@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from __future__ import unicode_literals
+
 import random
 
 from hamcrest import assert_that
@@ -39,7 +41,8 @@ class TestAccessWebServiceDao(DAOTestCase):
         self._insert_access_web_service(host='15.15.15.15')
         self._insert_access_web_service(host='11.11.11.11')
         hosts = set(accesswebservice_dao.get_allowed_hosts())
-        self.assertEqual(hosts, set(['15.15.15.15', '11.11.11.11']))
+        self.assertEqual(hosts, set(['15.15.15.15'.encode('utf-8'),
+                                     '11.11.11.11'.encode('utf-8')]))
 
     def test_get_user_uuid(self):
         user = self._insert_access_web_service()

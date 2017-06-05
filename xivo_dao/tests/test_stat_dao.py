@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2016 Avencall
+# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,6 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import datetime
+import six
+
 from datetime import datetime as t
 
 from hamcrest import assert_that, equal_to
@@ -109,8 +111,8 @@ class TestStatDAO(DAOTestCase):
         DAOTestCase.setUp(self)
         if not self._fn_created:
             self._create_functions()
-        self.start = t(2012, 07, 01)
-        self.end = t(2012, 07, 31, 23, 59, 59, 999999)
+        self.start = t(2012, 7, 1)
+        self.end = t(2012, 7, 31, 23, 59, 59, 999999)
         self.qname1, self.qid1 = self._insert_queue('q1')
         self.qname2, self.qid2 = self._insert_queue('q2')
         self.aname1, self.aid1 = self._insert_agent('a1')
@@ -709,11 +711,11 @@ LANGUAGE SQL;
 
         self.assertEqual(len(statistics), len(expected))
 
-        for agent, statistic in statistics.iteritems():
+        for agent, statistic in six.iteritems(statistics):
             for login in statistic:
                 self.assertTrue(login in expected[agent])
 
-        for agent, statistic in expected.iteritems():
+        for agent, statistic in six.iteritems(expected):
             for login in statistic:
                 self.assertTrue(login in statistics[agent])
 

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright 2013-2016 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -352,7 +352,7 @@ class TestDelete(DAOTestCase):
 
         row = self.session.query(Extension).filter(Extension.id == expected_extension.id).first()
 
-        self.assertEquals(row, None)
+        self.assertEqual(row, None)
 
 
 class TestFindAllServiceExtensions(DAOTestCase):

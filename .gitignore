@@ -1,2 +1,8 @@
 *.pyc
 .tox
+.coverage
+coverage.xml
+nosetests.xml
+pep8.txt
+pylint.txt
+*.egg-info

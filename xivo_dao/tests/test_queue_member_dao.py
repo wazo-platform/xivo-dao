@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2014 Avencall
+# Copyright 2012-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -102,8 +102,8 @@ class TestQueueMemberDAO(DAOTestCase):
         queue_member_dao.delete_by_userid(1)
 
         result = self.session.query(QueueMember).all()
-        self.assertEquals(len(result), 1)
-        self.assertEquals(result[0].usertype, 'agent')
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].usertype, 'agent')
 
     def _insert_queue_member(self, queue_name, member_name, usertype='user', userid=1, is_queue=True):
         queue_member = QueueMember()

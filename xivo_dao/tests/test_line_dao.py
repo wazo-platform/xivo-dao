@@ -164,7 +164,7 @@ class TestLineFeaturesDAO(DAOTestCase):
 
         extension = line_dao.get_extension_from_protocol_interface(protocol, name)
 
-        self.assertEquals(extension, expected_extension)
+        self.assertEqual(extension, expected_extension)
 
     def test_get_extension_from_protocol_interface_local(self):
         protocol = 'local'
@@ -183,9 +183,9 @@ class TestLineFeaturesDAO(DAOTestCase):
 
         extension = line_dao.get_extension_from_protocol_interface(protocol, name)
 
-        self.assertEquals(extension, expected_extension)
+        self.assertEqual(extension, expected_extension)
 
     def test_get(self):
         line = self.add_line()
         result = line_dao.get(line.id)
-        self.assertEquals(line, result)
+        self.assertEqual(line, result)

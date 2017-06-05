@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2015 Avencall
+# Copyright 2012-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,6 +14,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+from __future__ import unicode_literals
 
 from xivo_dao.alchemy.incall import Incall
 from xivo_dao.alchemy.dialaction import Dialaction
@@ -34,5 +36,5 @@ def _new_query(session):
     return (session
             .query(Incall.id, Dialaction.action, Dialaction.actionarg1)
             .join((Dialaction, Incall.id == cast(Dialaction.categoryval, Integer)))
-            .filter(Dialaction.category == u'incall')
-            .filter(Dialaction.event == u'answer'))
+            .filter(Dialaction.category == 'incall')
+            .filter(Dialaction.event == 'answer'))

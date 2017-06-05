@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2016 Avencall
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,6 +18,7 @@
 from __future__ import unicode_literals
 
 import re
+import six
 
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.sql import cast, func
@@ -231,7 +231,7 @@ class LineFeatures(Base):
     def provisioning_code(self):
         if self.provisioningid is None:
             return None
-        return unicode(self.provisioningid)
+        return six.text_type(self.provisioningid)
 
     @provisioning_code.expression
     def provisioning_code(cls):

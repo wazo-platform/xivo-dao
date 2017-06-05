@@ -1,6 +1,6 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 
-# Copyright (C) 2015-2016 Avencall
+# Copyright 2015-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -111,5 +111,5 @@ class SipPersistor(CriteriaBuilderMixin):
         return data
 
     def generate_hash(self, length=8):
-        pool = string.lowercase + string.digits
+        pool = string.ascii_lowercase + string.digits
         return ''.join(random.choice(pool) for _ in range(length))

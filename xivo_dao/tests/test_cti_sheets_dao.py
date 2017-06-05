@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2014 Avencall
+# Copyright 2012-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from __future__ import unicode_literals
+
 from xivo_dao import cti_sheets_dao
 from xivo_dao.alchemy.ctisheetactions import CtiSheetActions
 from xivo_dao.alchemy.ctisheetevents import CtiSheetEvents
@@ -26,59 +28,59 @@ class TestCtiSheetsDAO(DAOTestCase):
     def test_get_config(self):
         expected_result = {
             'conditions': {
-                'XiVO': {'whom': u'dest'},
+                'XiVO': {'whom': 'dest'},
             },
             'displays': {
                 'XiVO': {
                     'action_info': {},
                     'sheet_info': {
-                        u'10': [u'Nom',
-                                u'title',
-                                u'',
-                                u'{xivo-calleridname}',
-                                0],
-                        u'20': [u'Num\xe9ro',
-                                u'text',
-                                u'',
-                                u'{xivo-calleridnum}',
-                                0],
-                        u'30': [u'Origine',
-                                u'text',
-                                u'',
-                                u'{xivo-origin}',
-                                0]
+                        '10': ['Nom',
+                               'title',
+                               '',
+                               '{xivo-calleridname}',
+                               0],
+                        '20': ['Num\xe9ro',
+                               'text',
+                               '',
+                               '{xivo-calleridnum}',
+                               0],
+                        '30': ['Origine',
+                               'text',
+                               '',
+                               '{xivo-origin}',
+                               0]
                     },
-                    'sheet_qtui': u'file:///tmp/test.ui',
+                    'sheet_qtui': 'file:///tmp/test.ui',
                     'systray_info': {
-                        u'10': [u'Nom',
-                                u'title',
-                                u'',
-                                u'{xivo-calledidname}'],
-                        u'20': [u'Num\xe9ro',
-                                u'body',
-                                u'',
-                                u'{xivo-calleridnum}'],
-                        u'30': [u'Origine',
-                                u'body',
-                                u'',
-                                u'{xivo-origin}']
+                        '10': ['Nom',
+                               'title',
+                               '',
+                               '{xivo-calledidname}'],
+                        '20': ['Num\xe9ro',
+                               'body',
+                               '',
+                               '{xivo-calleridnum}'],
+                        '30': ['Origine',
+                               'body',
+                               '',
+                               '{xivo-origin}']
                     }
                 }
             },
             'events': {
                 'dial': [{
-                    'condition': u'XiVO',
-                    'display': u'XiVO',
-                    'option': u'XiVO'
+                    'condition': 'XiVO',
+                    'display': 'XiVO',
+                    'option': 'XiVO'
                 }],
                 'link': [{
-                    'condition': u'XiVO',
-                    'display': u'XiVO',
-                    'option': u'XiVO'
+                    'condition': 'XiVO',
+                    'display': 'XiVO',
+                    'option': 'XiVO'
                 }]
             },
             'options': {
-                u'XiVO': {
+                'XiVO': {
                     'focus': 'no',
                     'zip': 1
                 }

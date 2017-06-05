@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+import six
+
 from collections import namedtuple
 
 import sqlalchemy as sa
@@ -29,7 +31,7 @@ SearchResult = namedtuple('SearchResult', ['total', 'items'])
 class CriteriaBuilderMixin(object):
 
     def build_criteria(self, query, criteria):
-        for name, value in criteria.iteritems():
+        for name, value in six.iteritems(criteria):
             column = self._get_column(name)
             query = query.filter(column == value)
         return query
@@ -53,7 +55,7 @@ class SearchConfig(object):
     def all_search_columns(self):
         if self._search:
             return [self._columns[s] for s in self._search]
-        return self._columns.values()
+        return list(self._columns.values())
 
     def column_for_searching(self, column_name):
         return self._columns.get(column_name)
@@ -136,7 +138,7 @@ class SearchSystem(object):
         return query
 
     def _filter_exact_match(self, query, parameters):
-        for column_name, value in parameters.iteritems():
+        for column_name, value in six.iteritems(parameters):
             column = self.config.column_for_searching(column_name)
             if column is not None:
                 if isinstance(column.type, Integer) and not self._represents_int(value):

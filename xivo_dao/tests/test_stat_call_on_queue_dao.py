@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2015 Avencall
+# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -55,13 +55,13 @@ class TestStatCallOnQueueDAO(DAOTestCase):
     def test_add_two_queues(self):
         q1, _ = self._insert_queue_to_stat_queue('q1')
         q2, _ = self._insert_queue_to_stat_queue('q2')
-        t1 = datetime.datetime(2012, 01, 01, 01, 01, 01)
-        t2 = datetime.datetime(2012, 01, 01, 01, 01, 02)
+        t1 = datetime.datetime(2012, 1, 1, 1, 1, 1)
+        t2 = datetime.datetime(2012, 1, 1, 1, 1, 2)
         stat_call_on_queue_dao.add_full_call(self.session, 'callid', t1, q1)
         stat_call_on_queue_dao.add_full_call(self.session, 'callid', t2, q2)
 
     def test_add_full_call(self):
-        timestamp = datetime.datetime(2012, 01, 02, 00, 00, 00)
+        timestamp = datetime.datetime(2012, 1, 2, 0, 0, 0)
         queue_name, _ = self._insert_queue_to_stat_queue()
 
         stat_call_on_queue_dao.add_full_call(self.session, 'callid', timestamp, queue_name)
@@ -71,7 +71,7 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         self.assertEqual(res[0].callid, 'callid')
 
     def test_add_closed_call(self):
-        timestamp = datetime.datetime(2012, 01, 02, 00, 00, 00)
+        timestamp = datetime.datetime(2012, 1, 2, 0, 0, 0)
         queue_name, _ = self._insert_queue_to_stat_queue()
 
         stat_call_on_queue_dao.add_closed_call(self.session, 'callid', timestamp, queue_name)
@@ -82,7 +82,7 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         self.assertEqual(res[0].time, timestamp)
 
     def test_add_abandoned_call(self):
-        timestamp = datetime.datetime(2012, 01, 02, 00, 00, 00)
+        timestamp = datetime.datetime(2012, 1, 2, 0, 0, 0)
         queue_name, _ = self._insert_queue_to_stat_queue()
 
         stat_call_on_queue_dao.add_abandoned_call(self.session, 'callid', timestamp, queue_name, 42)
@@ -93,7 +93,7 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         self.assertEqual(res[0].time, timestamp)
 
     def test_add_joinempty_call(self):
-        timestamp = datetime.datetime(2012, 01, 02, 00, 00, 00)
+        timestamp = datetime.datetime(2012, 1, 2, 0, 0, 0)
         queue_name, _ = self._insert_queue_to_stat_queue()
 
         stat_call_on_queue_dao.add_joinempty_call(self.session, 'callid', timestamp, queue_name)
@@ -103,7 +103,7 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         self.assertEqual(res[0].time, timestamp)
 
     def test_add_leaveempty_call(self):
-        timestamp = datetime.datetime(2012, 01, 02, 00, 00, 00)
+        timestamp = datetime.datetime(2012, 1, 2, 0, 0, 0)
         queue_name, _ = self._insert_queue_to_stat_queue()
 
         stat_call_on_queue_dao.add_leaveempty_call(self.session, 'callid', timestamp, queue_name, 13)
@@ -113,7 +113,7 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         self.assertEqual(res[0].waittime, 13)
 
     def test_add_timeout_call(self):
-        timestamp = datetime.datetime(2012, 01, 02, 00, 00, 00)
+        timestamp = datetime.datetime(2012, 1, 2, 0, 0, 0)
         queue_name, _ = self._insert_queue_to_stat_queue()
 
         stat_call_on_queue_dao.add_timeout_call(self.session, 'callid', timestamp, queue_name, 27)
@@ -123,8 +123,8 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         self.assertEqual(res[0].waittime, 27)
 
     def test_get_periodic_stats_full(self):
-        start = datetime.datetime(2012, 01, 01, 00, 00, 00)
-        end = datetime.datetime(2012, 01, 01, 3, 0, 0)
+        start = datetime.datetime(2012, 1, 1, 0, 0, 0)
+        end = datetime.datetime(2012, 1, 1, 3, 0, 0)
 
         queue_name, queue_id = self._insert_queue_to_stat_queue()
 
@@ -152,8 +152,8 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         self.assertEqual(stats_hour[start][queue_id]['full'], 4)
 
     def test_get_periodic_stats_closed(self):
-        start = datetime.datetime(2012, 01, 01, 00, 00, 00)
-        end = datetime.datetime(2012, 01, 31, 23, 59, 59, 999999)
+        start = datetime.datetime(2012, 1, 1, 0, 0, 0)
+        end = datetime.datetime(2012, 1, 31, 23, 59, 59, 999999)
 
         queue_name, queue_id = self._insert_queue_to_stat_queue()
 
@@ -181,8 +181,8 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         self.assertEqual(stats_hour[start][queue_id]['closed'], 4)
 
     def test_get_periodic_stats_total(self):
-        start = datetime.datetime(2012, 01, 01, 00, 00, 00)
-        end = datetime.datetime(2012, 01, 31, 23, 59, 59, 999999)
+        start = datetime.datetime(2012, 1, 1, 0, 0, 0)
+        end = datetime.datetime(2012, 1, 31, 23, 59, 59, 999999)
 
         queue_name, queue_id = self._insert_queue_to_stat_queue()
 
@@ -223,7 +223,7 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         self.assertEqual(stats_hour[start][queue_id]['total'], 9)
 
     def test_clean_table(self):
-        start = datetime.datetime(2012, 01, 01, 00, 00, 00)
+        start = datetime.datetime(2012, 1, 1, 0, 0, 0)
 
         queue_name, _ = self._insert_queue_to_stat_queue()
 
@@ -257,7 +257,7 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         callid1 = 'callid1'
         callid2 = 'callid2'
         callid3 = 'callid3'
-        start = datetime.datetime(2012, 1, 1, 10, 00, 00)
+        start = datetime.datetime(2012, 1, 1, 10, 0, 0)
         end = datetime.datetime(2012, 1, 1, 11, 59, 59, 999999)
         queue_name, _ = self._insert_queue_to_stat_queue()
 

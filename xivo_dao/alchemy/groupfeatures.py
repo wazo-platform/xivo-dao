@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright 2012-2016 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,6 +14,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+import six
 
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.orderinglist import ordering_list
@@ -163,11 +165,11 @@ class GroupFeatures(Base):
     # Note: fallbacks[key] = Dialaction() doesn't pass in this method
     @fallbacks.setter
     def fallbacks(self, dialactions):
-        for event in self.group_dialactions.keys():
+        for event in list(self.group_dialactions.keys()):
             if event not in dialactions:
                 self.group_dialactions.pop(event, None)
 
-        for event, dialaction in dialactions.iteritems():
+        for event, dialaction in six.iteritems(dialactions):
             if dialaction is None:
                 self.group_dialactions.pop(event, None)
                 continue

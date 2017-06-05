@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2014-2016 Avencall
+# Copyright 2014-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,6 +14,8 @@
 
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+import six
 
 from itertools import permutations
 
@@ -52,8 +54,8 @@ class HintMatcher(BaseMatcher):
 
 
 def a_hint(user_id, extension, argument):
-    if isinstance(argument, basestring) and '&' in argument:
-        argument_matcher = any_of(*map('&'.join, permutations(argument.split('&'))))
+    if isinstance(argument, six.string_types) and '&' in argument:
+        argument_matcher = any_of(*list(map('&'.join, permutations(argument.split('&')))))
     else:
         argument_matcher = wrap_matcher(argument)
     return HintMatcher(user_id, extension, argument_matcher)

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright 2014-2016 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import abc
+import six
 
 from collections import namedtuple
 
@@ -47,9 +48,8 @@ class FuncKey(Model):
         return self.destination.to_tuple()
 
 
+@six.add_metaclass(abc.ABCMeta)
 class Destination(Model):
-
-    __metaclass__ = abc.ABCMeta
 
     @abc.abstractproperty
     def type(self):
@@ -220,7 +220,7 @@ class ForwardTypeConverter(object):
         'busy': 'fwdbusy',
     }
 
-    reversed_types = dict((value, key) for key, value in fwd_types.iteritems())
+    reversed_types = dict((value, key) for key, value in six.iteritems(fwd_types))
 
     def db_to_model(self, db_type):
         return self.reversed_types[db_type]

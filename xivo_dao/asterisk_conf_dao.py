@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright 2013-2016 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,6 +14,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+from __future__ import unicode_literals
 
 from collections import defaultdict
 
@@ -235,12 +237,12 @@ def find_features_settings(session):
     featuremap_options = []
     for row in rows:
         option = (row.var_name, row.var_val)
-        if row.category == u'general':
+        if row.category == 'general':
             general_options.append(option)
-        elif row.category == u'featuremap':
+        elif row.category == 'featuremap':
             featuremap_options.append(option)
-            if row.var_name == u'disconnect':
-                option = (u'atxferabort', row.var_val)
+            if row.var_name == 'disconnect':
+                option = ('atxferabort', row.var_val)
                 general_options.append(option)
 
     return {
@@ -261,7 +263,7 @@ def find_parking_settings(session):
     default_parking_lot_options = []
     for row in rows:
         option = (row.var_name, row.var_val)
-        if row.var_name == u'parkeddynamic':
+        if row.var_name == 'parkeddynamic':
             general_options.append(option)
         else:
             default_parking_lot_options.append(option)
@@ -269,7 +271,7 @@ def find_parking_settings(session):
     return {
         'general_options': general_options,
         'parking_lots': [{
-            'name': u'default',
+            'name': 'default',
             'options': default_parking_lot_options,
         }],
     }

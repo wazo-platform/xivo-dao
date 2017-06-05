@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright 2013-2016 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,6 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from __future__ import unicode_literals
+
+import six
+
 from xivo_dao.helpers import errors
 
 
@@ -23,7 +27,7 @@ class NewModel(object):
     def __init__(self, **kwargs):
         self._check_invalid_parameters(kwargs.keys())
 
-        for model_field in self.FIELDS + self._RELATION.values():
+        for model_field in self.FIELDS + list(self._RELATION.values()):
             model_field_value = kwargs.get(model_field, None)
             setattr(self, model_field, model_field_value)
 
@@ -38,9 +42,9 @@ class NewModel(object):
         if not isinstance(other, self.__class__):
             raise TypeError('Must compare a %s with another %s' % (class_name, class_name))
 
-        current = {key: value for key, value in self.__dict__.iteritems()
+        current = {key: value for key, value in six.iteritems(self.__dict__)
                    if key not in self._RELATION.values()}
-        other = {key: value for key, value in other.__dict__.iteritems()
+        other = {key: value for key, value in six.iteritems(other.__dict__)
                  if key not in self._RELATION.values()}
         return current == other
 
@@ -48,15 +52,15 @@ class NewModel(object):
         return not self == other
 
     def __repr__(self):
-        properties = [u'%s: %s' % (field, getattr(self, field))
-                      for field in self.FIELDS + self._RELATION.values()]
-        text = u'<%s %s>' % (self.__class__.__name__, ', '.join(properties))
+        properties = ['%s: %s' % (field, getattr(self, field))
+                      for field in self.FIELDS + list(self._RELATION.values())]
+        text = '<%s %s>' % (self.__class__.__name__, ', '.join(properties))
         return text.encode('utf8')
 
     def update_from_data(self, data):
         self._check_invalid_parameters(data.keys())
 
-        for parameter, value in data.iteritems():
+        for parameter, value in six.iteritems(data):
             setattr(self, parameter, value)
 
     @classmethod
@@ -73,7 +77,7 @@ class NewModel(object):
         return data_dict
 
     def invalid_parameters(self, parameters):
-        allowed = self.FIELDS + self._RELATION.values()
+        allowed = self.FIELDS + list(self._RELATION.values())
         return set(parameters).difference(set(allowed))
 
     def missing_parameters(self):

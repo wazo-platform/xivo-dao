@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2016 Avencall
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2012-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,6 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from __future__ import unicode_literals
+
+import six
 
 from collections import Iterable
 
@@ -230,7 +231,7 @@ class UserSIP(Base):
             if column_name in AST_TRUE_INTEGER_COLUMNS:
                 return convert_int_to_ast_true(value)
             else:
-                return unicode(value)
+                return six.text_type(value)
         return None
 
     @options.setter
@@ -272,7 +273,7 @@ class UserSIP(Base):
         if not len(option) == 2:
             raise errors.wrong_type('options', 'list of pair of strings')
         for i in option:
-            if not isinstance(i, (str, unicode)):
+            if not isinstance(i, (str, six.text_type)):
                 raise errors.wrong_type('options', "value '{}' is not a string".format(i))
 
     def set_native_option(self, column, value):
@@ -299,7 +300,7 @@ class UserSIP(Base):
 
     def update_caller_id(self, user, extension=None):
         name, num = user.extrapolate_caller_id(extension)
-        self.callerid = u'"{}"'.format(name)
+        self.callerid = '"{}"'.format(name)
         if num:
             self.callerid += " <{}>".format(num)
 

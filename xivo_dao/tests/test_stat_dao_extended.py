@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,6 +14,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+import six
 
 from datetime import datetime as dt
 
@@ -174,8 +176,8 @@ class TestStatDAO(DAOTestCase):
 
     def test_get_pause_intervals_in_range(self):
         _, agent_id_1 = self._insert_agent('Agent/1')
-        start = dt(2012, 07, 01)
-        end = dt(2012, 07, 31, 23, 59, 59, 999999)
+        start = dt(2012, 7, 1)
+        end = dt(2012, 7, 31, 23, 59, 59, 999999)
 
         queue_log_data = '''\
 | time                       | callid | queuename | agent   | event      | data1 | data2 | data3 | data4 | data5 |
@@ -188,7 +190,7 @@ class TestStatDAO(DAOTestCase):
         self._insert_queue_log_data(queue_log_data)
 
         result = stat_dao.get_pause_intervals_in_range(self.session, start, end)
-        for agent, logins in result.iteritems():
+        for agent, logins in six.iteritems(result):
             result[agent] = sorted(logins, key=lambda login: login[0])
 
         expected = {
@@ -202,8 +204,8 @@ class TestStatDAO(DAOTestCase):
 
     def test_get_pause_intervals_in_range_multiple_pauseall(self):
         _, agent_id_1 = self._insert_agent('Agent/1')
-        start = dt(2012, 07, 01)
-        end = dt(2012, 07, 31, 23, 59, 59, 999999)
+        start = dt(2012, 7, 1)
+        end = dt(2012, 7, 31, 23, 59, 59, 999999)
 
         queue_log_data = '''\
 | time                       | callid | queuename | agent   | event      | data1 | data2 | data3 | data4 | data5 |
@@ -217,7 +219,7 @@ class TestStatDAO(DAOTestCase):
         self._insert_queue_log_data(queue_log_data)
 
         result = stat_dao.get_pause_intervals_in_range(self.session, start, end)
-        for agent, logins in result.iteritems():
+        for agent, logins in six.iteritems(result):
             result[agent] = sorted(logins, key=lambda login: login[0])
 
         expected = {

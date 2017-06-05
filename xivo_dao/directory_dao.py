@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2016 Avencall
+# Copyright 2012-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,16 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from __future__ import unicode_literals
+
 import json
 import logging
-import ldap_dao
+import six
 
-from itertools import izip
 from sqlalchemy import func
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.ctidirectories import CtiDirectories
 from xivo_dao.alchemy.ctidirectoryfields import CtiDirectoryFields
 from xivo_dao.alchemy.directories import Directories
+from . import ldap_dao
 
 
 logger = logging.getLogger(__name__)
@@ -37,7 +39,7 @@ def _format_columns(fields, value):
     if fields == value == [None]:
         return {}
 
-    return dict(izip(fields, value))
+    return dict(six.moves.zip(fields, value))
 
 
 @daosession
@@ -78,9 +80,9 @@ def _get_ldap_sources(session):
             logger.warning('Skipping LDAP source %s', dir.name)
             continue
 
-        custom_filter = ldap_config.get('filter') or ''
+        custom_filter = ldap_config.get('filter') or ''.encode('utf8')
         if custom_filter:
-            custom_filter = '({})'.format(custom_filter)
+            custom_filter = '({})'.format(custom_filter.decode('utf8')).encode('utf8')
 
         source_configs.append({'type': 'ldap',
                                'name': dir.name,

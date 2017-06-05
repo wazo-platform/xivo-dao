@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2015-2016 Avencall
-# Copyright (C) 2016 Proformatique, Inc.
+# Copyright 2015-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,6 +14,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+from __future__ import unicode_literals
 
 import json
 
@@ -45,6 +46,6 @@ def get_config(session):
     else:
         name_to_type = {}
 
-    types = [name_to_type.get(name, u'ldap') for name in sources]
+    types = [name_to_type.get(name, 'ldap') for name in sources]
 
     return {'sources': sources, 'types': types}

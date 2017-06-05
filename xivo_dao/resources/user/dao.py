@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2016 Avencall
+# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,6 +14,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+from __future__ import unicode_literals
 
 from xivo_dao.helpers.db_manager import Session
 
@@ -34,7 +36,7 @@ def persistor():
 
 def legacy_search(term):
     users = (Session.query(User)
-             .filter(User.fullname.ilike(u'%{}%'.format(term)))
+             .filter(User.fullname.ilike('%{}%'.format(term)))
              .all()
              )
 

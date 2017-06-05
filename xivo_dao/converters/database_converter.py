@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2014 Avencall
+# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+import six
+
 
 class DatabaseConverter(object):
 
@@ -22,7 +24,7 @@ class DatabaseConverter(object):
         self.schema = schema
         self.model = model
 
-        model_mapping = dict((value, key) for key, value in mapping.iteritems())
+        model_mapping = dict((value, key) for key, value in six.iteritems(mapping))
 
         self.db_mapping = mapping
         self.model_mapping = model_mapping
@@ -57,11 +59,11 @@ class DatabaseConverter(object):
 
     def _remap_columns(self, columns, mapping):
         mapped_columns = {}
-        for column_name, value in columns.iteritems():
+        for column_name, value in six.iteritems(columns):
             key = mapping[column_name]
             mapped_columns[key] = value
         return mapped_columns
 
     def _update_object(self, values, destination):
-        for key, value in values.iteritems():
+        for key, value in six.iteritems(values):
             setattr(destination, key, value)

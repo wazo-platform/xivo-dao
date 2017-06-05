@@ -116,7 +116,7 @@ class ScheduleTime(Base):
         for item in multi_range.split(','):
             if '-' in item:
                 start, end = map(int, item.split('-', 2))
-                result += range(start, end + 1)
+                result += list(range(start, end + 1))
             else:
                 result.append(int(item))
         return result

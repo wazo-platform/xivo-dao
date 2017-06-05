@@ -1,6 +1,6 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 
-# Copyright (C) 2015 Avencall
+# Copyright 2015-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,6 +16,8 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+import six
+
 from xivo_dao.resources.features.model import TransferExtension
 
 
@@ -24,10 +26,10 @@ class TransferExtensionConverter(object):
     TRANSFERS = {'blindxfer': 'blind',
                  'atxfer': 'attended'}
 
-    VAR_NAMES = {value: key for key, value in TRANSFERS.iteritems()}
+    VAR_NAMES = {value: key for key, value in six.iteritems(TRANSFERS)}
 
     def var_names(self):
-        return self.TRANSFERS.keys()
+        return list(self.TRANSFERS.keys())
 
     def to_var_name(self, transfer):
         return self.VAR_NAMES[transfer]

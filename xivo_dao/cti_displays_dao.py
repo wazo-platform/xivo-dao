@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2016 Avencall
+# Copyright 2012-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import json
+import six
 
 from xivo_dao.alchemy.ctidirectories import CtiDirectories
 from xivo_dao.alchemy.cti_contexts import CtiContexts
@@ -46,7 +47,7 @@ def get_profile_configuration(session):
                           if row.directories else []} for row in rows.all()}
 
     sources = set()
-    for config in results.itervalues():
+    for config in six.itervalues(results):
         for source in config['sources']:
             sources.add(source)
 
@@ -61,7 +62,7 @@ def get_profile_configuration(session):
     else:
         name_to_type = {}
 
-    for context, config in results.iteritems():
+    for context, config in six.iteritems(results):
         types = [name_to_type.get(name, 'ldap') for name in config['sources']]
         config['types'] = types
 

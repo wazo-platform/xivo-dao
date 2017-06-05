@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2014 Avencall
+# Copyright 2012-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -99,4 +99,4 @@ class TestCtiServiceDAO(DAOTestCase):
 
         result = cti_service_dao.get_services()
 
-        self.assertEquals(result, expected_result)
+        self.assertEqual(result, expected_result)

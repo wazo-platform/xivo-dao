@@ -1,6 +1,6 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 
-# Copyright (C) 2015-2016 Avencall
+# Copyright 2015-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+import six
 
 from xivo_dao.resources.extension.model import ForwardExtension, \
     ServiceExtension, AgentActionExtension
@@ -56,10 +58,10 @@ class ForwardExtensionConverter(object):
                 'fwdrna': 'noanswer',
                 'fwdunc': 'unconditional'}
 
-    TYPEVALS = {value: key for key, value in FORWARDS.iteritems()}
+    TYPEVALS = {value: key for key, value in six.iteritems(FORWARDS)}
 
     def typevals(self):
-        return self.FORWARDS.keys()
+        return list(self.FORWARDS.keys())
 
     def to_typeval(self, forward):
         return self.TYPEVALS[forward]
@@ -81,10 +83,10 @@ class AgentActionExtensionConverter(object):
                'agentstaticlogoff': 'logout',
                'agentstaticlogtoggle': 'toggle'}
 
-    TYPEVALS = {value: key for key, value in ACTIONS.iteritems()}
+    TYPEVALS = {value: key for key, value in six.iteritems(ACTIONS)}
 
     def typevals(self):
-        return self.ACTIONS.keys()
+        return list(self.ACTIONS.keys())
 
     def to_typeval(self, action):
         return self.TYPEVALS[action]

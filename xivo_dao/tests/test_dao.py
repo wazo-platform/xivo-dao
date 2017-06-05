@@ -26,6 +26,7 @@ import unittest
 import time
 import string
 import uuid
+import six
 
 from xivo_dao.alchemy.accessfeatures import AccessFeatures
 from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
@@ -152,7 +153,7 @@ class ItemInserter(object):
         kwargs.setdefault('firstname', 'unittest')
         kwargs.setdefault('lastname', 'unittest')
         kwargs.setdefault('email', None)
-        kwargs.setdefault('callerid', u'"%s %s"' % (kwargs['firstname'], kwargs['lastname']))
+        kwargs.setdefault('callerid', '"%s %s"' % (kwargs['firstname'], kwargs['lastname']))
         kwargs.setdefault('exten', '%s' % random.randint(1000, 1999))
         kwargs.setdefault('context', 'foocontext')
         kwargs.setdefault('protocol', 'sip')
@@ -200,7 +201,7 @@ class ItemInserter(object):
     def add_user_line_with_queue_member(self, **kwargs):
         kwargs.setdefault('firstname', 'unittest')
         kwargs.setdefault('lastname', 'unittest')
-        kwargs.setdefault('callerid', u'"%s %s"' % (kwargs['firstname'], kwargs['lastname']))
+        kwargs.setdefault('callerid', '"%s %s"' % (kwargs['firstname'], kwargs['lastname']))
         kwargs.setdefault('context', 'foocontext')
         kwargs.setdefault('protocol', 'sip')
         kwargs.setdefault('protocolid', self._generate_int())
@@ -242,7 +243,7 @@ class ItemInserter(object):
     def add_user_line_without_exten(self, **kwargs):
         kwargs.setdefault('firstname', 'unittest')
         kwargs.setdefault('lastname', 'unittest')
-        kwargs.setdefault('callerid', u'"%s %s"' % (kwargs['firstname'], kwargs['lastname']))
+        kwargs.setdefault('callerid', '"%s %s"' % (kwargs['firstname'], kwargs['lastname']))
         kwargs.setdefault('context', 'foocontext')
         kwargs.setdefault('protocol', 'sip')
         kwargs.setdefault('protocolid', self._generate_int())
@@ -453,7 +454,7 @@ class ItemInserter(object):
         return incall
 
     def add_outcall(self, **kwargs):
-        kwargs.setdefault('name', ''.join(random.choice(string.lowercase) for _ in range(6)))
+        kwargs.setdefault('name', ''.join(random.choice(string.ascii_lowercase) for _ in range(6)))
         kwargs.setdefault('context', 'to-extern')
 
         outcall = Outcall(**kwargs)
@@ -1022,10 +1023,13 @@ class ItemInserter(object):
         self.session.add_all(obj_list)
         self.session.flush()
 
-    _generate_int = itertools.count(1).next
+    _generate_int_init = itertools.count(1)
+
+    def _generate_int(self):
+        return six.next(self._generate_int_init)
 
     def _random_name(self, length=6):
-        return ''.join(random.choice(string.lowercase) for _ in range(length))
+        return ''.join(random.choice(string.ascii_lowercase) for _ in range(length))
 
 
 class DAOTestCase(unittest.TestCase, ItemInserter):

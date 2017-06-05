@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright 2015-2016 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,6 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from __future__ import unicode_literals
+
+import six
 
 from xivo_dao.helpers.exception import InputError
 from xivo_dao.helpers.exception import ResourceError
@@ -34,7 +36,7 @@ def format_error(category, error, metadata=None):
 def _format_metadata(metadata):
     if len(metadata) == 0:
         return ''
-    return "({})".format(unicode(metadata).strip("{}"))
+    return "({})".format(six.text_type(metadata).strip("{}"))
 
 
 def _format_list(elements):

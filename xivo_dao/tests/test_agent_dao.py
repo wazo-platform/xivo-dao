@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2015 Avencall
+# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -53,7 +53,7 @@ class TestAgentDAO(DAOTestCase):
 
     def test_agent_interface_not_exist(self):
         interface = agent_dao.find_agent_interface(1)
-        self.assertEquals(interface, None)
+        self.assertEqual(interface, None)
 
     def test_agent_with_id(self):
         agent = self._insert_agent()

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2007-2016 Avencall
+# Copyright 2007-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,6 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from __future__ import unicode_literals
+
+import six
+
 from xivo_dao import directory_dao
 from xivo_dao.alchemy.ctidirectories import CtiDirectories
 from xivo_dao.alchemy.ctidirectoryfields import CtiDirectoryFields
@@ -23,7 +27,6 @@ from xivo_dao.alchemy.ldapserver import LdapServer
 from xivo_dao.alchemy.ldapfilter import LdapFilter
 from xivo_dao.tests.test_dao import DAOTestCase
 
-from itertools import chain
 from hamcrest import assert_that, contains_inanyorder, empty
 
 
@@ -85,7 +88,7 @@ class TestDirectoryLdapSources(DAOTestCase):
         fields = {'firstname': '{givenName}',
                   'lastname': '{sn}',
                   'number': '{telephoneNumber}'}
-        for name, column in fields.iteritems():
+        for name, column in six.iteritems(fields):
             self.add_me(CtiDirectoryFields(dir_id=self.cti_directory_1.id,
                                            fieldname=name,
                                            value=column))
@@ -97,10 +100,10 @@ class TestDirectoryLdapSources(DAOTestCase):
             'type': 'ldap',
             'name': 'ldapdirectory_1',
             'ldap_uri': 'ldaps://myldap.example.com:636',
-            'ldap_base_dn': 'dc=example,dc=com',
-            'ldap_username': 'cn=admin,dc=example,dc=com',
-            'ldap_password': '53c8e7',
-            'ldap_custom_filter': '',
+            'ldap_base_dn': 'dc=example,dc=com'.encode('utf8'),
+            'ldap_username': 'cn=admin,dc=example,dc=com'.encode('utf8'),
+            'ldap_password': '53c8e7'.encode('utf8'),
+            'ldap_custom_filter': ''.encode('utf8'),
             'searched_columns': ['cn'],
             'first_matched_columns': ['telephoneNumber'],
             'format_columns': {
@@ -112,10 +115,10 @@ class TestDirectoryLdapSources(DAOTestCase):
             'type': 'ldap',
             'name': 'ldapdirectory_2',
             'ldap_uri': 'ldaps://myldap.example.com:636',
-            'ldap_base_dn': 'dc=example,dc=com',
-            'ldap_username': 'cn=admin,dc=example,dc=com',
-            'ldap_password': '53c8e7',
-            'ldap_custom_filter': '(l=Québec)',
+            'ldap_base_dn': 'dc=example,dc=com'.encode('utf8'),
+            'ldap_username': 'cn=admin,dc=example,dc=com'.encode('utf8'),
+            'ldap_password': '53c8e7'.encode('utf8'),
+            'ldap_custom_filter': '(l=Québec)'.encode('utf8'),
             'searched_columns': ['cn'],
             'first_matched_columns': ['telephoneNumber'],
             'format_columns': {
