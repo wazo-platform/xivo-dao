@@ -91,3 +91,7 @@ def delete(user):
     persistor().delete(user)
     template_persistor = build_template_persistor(Session)
     template_persistor.delete(user.func_key_template_private)
+
+
+def associate_all_groups(user, groups):
+    persistor().associate_all_groups(user, groups)
