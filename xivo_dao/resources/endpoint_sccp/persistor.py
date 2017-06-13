@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 
-# Copyright (C) 2015-2016 Avencall
+# Copyright 2015-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+import string
+import random
 
 from xivo_dao.alchemy.sccpline import SCCPLine as SCCP
 from xivo_dao.alchemy.linefeatures import LineFeatures as Line
@@ -53,13 +56,26 @@ class SccpPersistor(object):
 
     def fill_default_values(self, sccp):
         if sccp.name is None:
-            sccp.name = ''
+            sccp.name = self.find_hash(SCCP.name)
         if sccp.context is None:
             sccp.context = ''
         if sccp.cid_name is None:
             sccp.cid_name = ''
         if sccp.cid_num is None:
             sccp.cid_num = ''
+
+    def find_hash(self, column):
+        exists = True
+        while exists:
+            data = self.generate_hash()
+            exists = (self.session.query(SCCP)
+                      .filter(column == data)
+                      .count()) > 0
+        return data
+
+    def generate_hash(self, length=8):
+        pool = string.ascii_lowercase + string.digits
+        return ''.join(random.choice(pool) for _ in range(length))
 
     def edit(self, sccp):
         self.session.add(sccp)
