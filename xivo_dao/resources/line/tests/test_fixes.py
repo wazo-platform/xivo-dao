@@ -325,6 +325,22 @@ class TestLineFixes(DAOTestCase):
 
         assert_that(queue_member.interface, equal_to('custom/abcdef'))
 
+    def test_given_second_line_then_queue_member_interface_updated(self):
+        sip1 = self.add_usersip()
+        line1 = self.add_line(protocol='sip', protocolid=sip1.id)
+        sip2 = self.add_usersip(name='abcdef')
+        line2 = self.add_line(protocol='sip', protocolid=sip2.id)
+        user = self.add_user()
+        self.add_user_line(user_id=user.id, line_id=line1.id, main_line=True)
+        self.add_user_line(user_id=user.id, line_id=line2.id, main_line=False)
+        self.add_queue_member(usertype='user', userid=user.id, interface='SIP/default')
+
+        self.fixes.fix(line2.id)
+
+        queue_member = self.session.query(QueueMember).first()
+
+        assert_that(queue_member.interface, equal_to('SIP/default'))
+
     def test_given_custom_protocol_is_no_longer_assocaited_then_protocol_removed(self):
         line = self.add_line(protocol='custom', protocolid=1234)
 

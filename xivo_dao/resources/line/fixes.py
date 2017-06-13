@@ -99,9 +99,8 @@ class LineFixes(object):
 
     def update_usersip(self, row):
         row.UserSIP.context = row.LineFeatures.context
-        if row.UserFeatures:
-            interface = 'SIP/{}'.format(row.UserSIP.name)
-            self.fix_queue_member(row.UserFeatures.id, interface)
+        interface = 'SIP/{}'.format(row.UserSIP.name)
+        self.fix_queue_member(row, interface)
 
     def remove_endpoint(self, row):
         row.LineFeatures.remove_endpoint()
@@ -110,9 +109,8 @@ class LineFixes(object):
         if row.SCCPLine:
             self.fix_sccp_device(row)
             self.fix_sccp_line(row)
-            if row.UserFeatures:
-                interface = 'SCCP/{}'.format(row.SCCPLine.name)
-                self.fix_queue_member(row.UserFeatures.id, interface)
+            interface = 'SCCP/{}'.format(row.SCCPLine.name)
+            self.fix_queue_member(row, interface)
         else:
             self.remove_endpoint(row)
 
@@ -138,8 +136,7 @@ class LineFixes(object):
     def fix_custom(self, row):
         if row.UserCustom:
             row.UserCustom.context = row.LineFeatures.context
-            if row.UserFeatures:
-                self.fix_queue_member(row.UserFeatures.id, row.UserCustom.interface)
+            self.fix_queue_member(row, row.UserCustom.interface)
         else:
             self.remove_endpoint(row)
 
@@ -150,8 +147,10 @@ class LineFixes(object):
             elif row.LineFeatures.protocol == "sccp":
                 row.SCCPLine.update_caller_id(row.UserFeatures, row.Extension)
 
-    def fix_queue_member(self, user_id, interface):
-        (self.session.query(QueueMember)
-         .filter(QueueMember.usertype == 'user')
-         .filter(QueueMember.userid == user_id)
-         .update({'interface': interface}))
+    def fix_queue_member(self, row, interface):
+        if row.UserFeatures and row.UserFeatures.lines:
+            if row.UserFeatures.lines[0] == row.LineFeatures:
+                (self.session.query(QueueMember)
+                 .filter(QueueMember.usertype == 'user')
+                 .filter(QueueMember.userid == row.UserFeatures.id)
+                 .update({'interface': interface}))
