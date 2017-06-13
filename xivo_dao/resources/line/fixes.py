@@ -108,19 +108,12 @@ class LineFixes(object):
 
     def fix_sccp(self, row):
         if row.SCCPLine:
-            self.fix_sccp_device(row)
             self.fix_sccp_line(row)
             if row.UserFeatures:
                 interface = 'SCCP/{}'.format(row.SCCPLine.name)
                 self.fix_queue_member(row.UserFeatures.id, interface)
         else:
             self.remove_endpoint(row)
-
-    def fix_sccp_device(self, row):
-        if row.Extension:
-            (self.session.query(SCCPDevice)
-             .filter(SCCPDevice.line == row.LineFeatures.name)
-             .update({'line': row.Extension.exten}))
 
     def fix_sccp_line(self, row):
         if row.Extension:

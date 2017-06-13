@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2016 Avencall
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2012-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -95,7 +94,6 @@ class SCCPLine(Base):
         return protocol == 'sccp' and self.id == id
 
     def update_extension(self, extension):
-        self.name = extension.exten
         self.context = extension.context
 
     def update_caller_id(self, user, extension=None):
