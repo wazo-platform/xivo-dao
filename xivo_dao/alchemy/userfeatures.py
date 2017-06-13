@@ -38,6 +38,7 @@ from xivo_dao.alchemy import enum
 from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.alchemy.entity import Entity
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
+from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.helpers.db_manager import Base
 from xivo_dao.helpers.uuid import new_uuid
 
@@ -184,7 +185,10 @@ class UserFeatures(Base):
                                  foreign_keys='QueueMember.userid',
                                  cascade='all, delete-orphan')
 
-    groups = association_proxy('group_members', 'group')
+    groups = association_proxy('group_members', 'group',
+                               creator=lambda _group: QueueMember(category='group',
+                                                                  usertype='user',
+                                                                  group=_group))
 
     queue_members = relationship('QueueMember',
                                  primaryjoin="""and_(QueueMember.category == 'queue',

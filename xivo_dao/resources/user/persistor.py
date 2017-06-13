@@ -1,7 +1,6 @@
 # -*- coding: UTF-8 -*-
 
-# Copyright (C) 2015-2016 Avencall
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2015-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,6 +23,7 @@ from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
 from xivo_dao.alchemy.entity import Entity
+from xivo_dao.helpers.db_manager import Session
 
 from xivo_dao.helpers import errors
 from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
@@ -118,4 +118,12 @@ class UserPersistor(CriteriaBuilderMixin):
          .filter(SchedulePath.pathid == user.id)
          .delete())
         self.session.delete(user)
+        self.session.flush()
+
+    def associate_all_groups(self, user, groups):
+        with Session.no_autoflush:
+            user.groups = groups
+            for member in user.group_members:
+                member.user = user
+                member.fix()
         self.session.flush()

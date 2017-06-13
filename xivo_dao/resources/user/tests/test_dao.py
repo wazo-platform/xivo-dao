@@ -21,12 +21,14 @@ import uuid
 
 from hamcrest import assert_that
 from hamcrest import equal_to
+from hamcrest import empty
 from hamcrest import has_property
 from hamcrest import has_properties
 from hamcrest import is_not
 from hamcrest import none
 from hamcrest import has_items
 from hamcrest import contains
+from hamcrest import contains_inanyorder
 from hamcrest import not_
 
 from xivo_dao.alchemy.entity import Entity
@@ -38,6 +40,8 @@ from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from xivo_dao.alchemy.func_key import FuncKey
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
 from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
+from xivo_dao.alchemy.queuemember import QueueMember
+from xivo_dao.alchemy.groupfeatures import GroupFeatures
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.helpers.exception import NotFoundError, InputError
 from xivo_dao.resources.user import dao as user_dao
@@ -864,3 +868,112 @@ class TestDelete(TestUser):
         self.session.add(member)
         self.session.flush()
         return member
+
+
+class TestAssociateGroups(DAOTestCase):
+
+    def test_associate_user_sip(self):
+        user_row = self.add_user()
+        sip = self.add_usersip(name='sipname')
+        line = self.add_line(protocol='sip', protocolid=sip.id)
+        self.add_user_line(user_id=user_row.id, line_id=line.id)
+        group = self.add_group()
+
+        user_dao.associate_all_groups(user_row, [group])
+
+        user = self.session.query(User).first()
+        assert_that(user, equal_to(user_row))
+        assert_that(user.group_members, contains(
+            has_properties(queue_name=group.name,
+                           interface='SIP/sipname',
+                           channel='SIP',
+                           group=has_properties(id=group.id,
+                                                name=group.name))
+        ))
+
+    def test_associate_multiple_users(self):
+        user_row = self.add_user()
+        sip = self.add_usersip()
+        line = self.add_line(protocol='sip', protocolid=sip.id)
+        self.add_user_line(user_id=user_row.id, line_id=line.id)
+
+        group1 = self.add_group()
+        group2 = self.add_group()
+        group3 = self.add_group()
+
+        user_dao.associate_all_groups(user_row, [group1, group2, group3])
+
+        user = self.session.query(User).first()
+        assert_that(user, equal_to(user_row))
+        assert_that(user.groups, contains_inanyorder(group1, group2, group3))
+
+    def test_associate_sip_fix(self):
+        user_row = self.add_user()
+        sip = self.add_usersip(name='sipname')
+        line = self.add_line(protocol='sip', protocolid=sip.id)
+        self.add_user_line(user_id=user_row.id, line_id=line.id)
+        group = self.add_group()
+
+        user_dao.associate_all_groups(user_row, [group])
+
+        user = self.session.query(User).first()
+        assert_that(user.group_members, contains(
+            has_properties(queue_name=group.name,
+                           interface='SIP/sipname',
+                           channel='SIP')
+        ))
+
+    def test_associate_sccp_fix(self):
+        user_row = self.add_user()
+        sccp = self.add_sccpline(name='sccpname')
+        line = self.add_line(protocol='sccp', protocolid=sccp.id)
+        self.add_user_line(user_id=user_row.id, line_id=line.id)
+        group = self.add_group()
+
+        user_dao.associate_all_groups(user_row, [group])
+
+        user = self.session.query(User).first()
+        assert_that(user.group_members, contains(
+            has_properties(queue_name=group.name,
+                           interface='SCCP/sccpname',
+                           channel='SCCP')
+        ))
+
+    def test_associate_custom_fix(self):
+        user_row = self.add_user()
+        custom = self.add_usercustom(interface='custom/interface')
+        line = self.add_line(protocol='custom', protocolid=custom.id)
+        self.add_user_line(user_id=user_row.id, line_id=line.id)
+        group = self.add_group()
+
+        user_dao.associate_all_groups(user_row, [group])
+
+        user = self.session.query(User).first()
+        assert_that(user.group_members, contains(
+            has_properties(queue_name=group.name,
+                           interface='custom/interface',
+                           channel='**Unknown**')
+        ))
+
+    def test_users_dissociation(self):
+        user_row = self.add_user()
+        sip = self.add_usersip(name='sipname')
+        line = self.add_line(protocol='sip', protocolid=sip.id)
+        self.add_user_line(user_id=user_row.id, line_id=line.id)
+        group = self.add_group()
+        user_dao.associate_all_groups(user_row, [group])
+
+        user = self.session.query(User).first()
+        assert_that(user.groups, contains(group))
+
+        user_dao.associate_all_groups(user_row, [])
+
+        user = self.session.query(User).first()
+        assert_that(user, equal_to(user_row))
+        assert_that(user.groups, empty())
+
+        row = self.session.query(GroupFeatures).first()
+        assert_that(row, not_(none()))
+
+        row = self.session.query(QueueMember).first()
+        assert_that(row, none())
