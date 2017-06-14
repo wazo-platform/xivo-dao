@@ -1,7 +1,6 @@
 # -*- coding: UTF-8 -*-
 
-# Copyright (C) 2015-2016 Avencall
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2015-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,8 +19,10 @@
 from __future__ import unicode_literals
 
 from hamcrest import assert_that
+from hamcrest import empty
 from hamcrest import equal_to
 from hamcrest import none
+from hamcrest import not_
 from hamcrest import contains
 from hamcrest import has_items
 from hamcrest import has_property
@@ -100,7 +101,7 @@ class TestSccpEndpointDaoCreate(TestSccpDao):
         assert_that(created_sccp.id, equal_to(sccp_row.id))
         assert_that(created_sccp.options, contains())
 
-        assert_that(sccp_row.name, equal_to(''))
+        assert_that(sccp_row.name, not_(empty()))
         assert_that(sccp_row.context, equal_to(''))
         assert_that(sccp_row.cid_name, equal_to(''))
         assert_that(sccp_row.cid_num, equal_to(''))

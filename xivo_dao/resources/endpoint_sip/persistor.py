@@ -16,13 +16,12 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-import string
-import random
+from functools import partial
 
 from xivo_dao.alchemy.usersip import UserSIP as SIP
 from xivo_dao.alchemy.linefeatures import LineFeatures as Line
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures as Trunk
-from xivo_dao.helpers import errors
+from xivo_dao.helpers import errors, generators
 from xivo_dao.resources.endpoint_sip.search import sip_search
 from xivo_dao.resources.line.fixes import LineFixes
 from xivo_dao.resources.trunk.fixes import TrunkFixes
@@ -91,9 +90,9 @@ class SipPersistor(CriteriaBuilderMixin):
 
     def fill_default_values(self, sip):
         if sip.name is None:
-            sip.name = self.find_hash(SIP.name)
+            sip.name = generators.find_unused_hash(partial(self._already_exists, SIP.name))
         if sip.secret is None:
-            sip.secret = self.find_hash(SIP.secret)
+            sip.secret = generators.find_unused_hash(partial(self._already_exists, SIP.secret))
         if sip.type is None:
             sip.type = 'friend'
         if sip.host is None:
@@ -101,15 +100,5 @@ class SipPersistor(CriteriaBuilderMixin):
         if sip.category is None:
             sip.category = 'user'
 
-    def find_hash(self, column):
-        exists = True
-        while exists:
-            data = self.generate_hash()
-            exists = (self.session.query(SIP)
-                      .filter(column == data)
-                      .count()) > 0
-        return data
-
-    def generate_hash(self, length=8):
-        pool = string.ascii_lowercase + string.digits
-        return ''.join(random.choice(pool) for _ in range(length))
+    def _already_exists(self, column, data):
+        return self.session.query(SIP).filter(column == data).count() > 0
