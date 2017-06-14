@@ -1,4 +1,4 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 
 # Copyright 2015-2017 The Wazo Authors  (see the AUTHORS file)
 #
@@ -16,12 +16,11 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-import string
-import random
+from functools import partial
 
 from xivo_dao.alchemy.sccpline import SCCPLine as SCCP
 from xivo_dao.alchemy.linefeatures import LineFeatures as Line
-from xivo_dao.helpers import errors
+from xivo_dao.helpers import errors, generators
 from xivo_dao.resources.line.fixes import LineFixes
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.resources.endpoint_sccp.search import sccp_search
@@ -56,26 +55,13 @@ class SccpPersistor(object):
 
     def fill_default_values(self, sccp):
         if sccp.name is None:
-            sccp.name = self.find_hash(SCCP.name)
+            sccp.name = generators.find_unused_hash(partial(self._already_exists, SCCP.name))
         if sccp.context is None:
             sccp.context = ''
         if sccp.cid_name is None:
             sccp.cid_name = ''
         if sccp.cid_num is None:
             sccp.cid_num = ''
-
-    def find_hash(self, column):
-        exists = True
-        while exists:
-            data = self.generate_hash()
-            exists = (self.session.query(SCCP)
-                      .filter(column == data)
-                      .count()) > 0
-        return data
-
-    def generate_hash(self, length=8):
-        pool = string.ascii_lowercase + string.digits
-        return ''.join(random.choice(pool) for _ in range(length))
 
     def edit(self, sccp):
         self.session.add(sccp)
@@ -85,6 +71,9 @@ class SccpPersistor(object):
         self.session.query(SCCP).filter(SCCP.id == sccp.id).delete()
         self.session.flush()
         self._fix_line(sccp)
+
+    def _already_exists(self, column, data):
+        return self.session.query(SCCP).filter(column == data).count() > 0
 
     def _fix_line(self, sccp):
         line_id = (self.session.query(Line.id)
