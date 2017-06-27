@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@ from hamcrest import (assert_that,
                       none,
                       not_)
 
+from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.dialpattern import DialPattern
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.outcall import Outcall
@@ -46,6 +47,17 @@ class TestDelete(DAOTestCase):
 
         dialpattern = self.session.query(DialPattern).first()
         assert_that(dialpattern, none())
+
+    def test_ivr_dialactions_are_deleted(self):
+        outcall = self.add_outcall()
+        self.add_dialaction(category='ivr_choice', action='outcall', actionarg1=outcall.id)
+        self.add_dialaction(category='ivr', action='outcall', actionarg1=outcall.id)
+
+        self.session.delete(outcall)
+        self.session.flush()
+
+        row = self.session.query(Dialaction).first()
+        assert_that(row, none())
 
 
 class TestTrunks(DAOTestCase):
