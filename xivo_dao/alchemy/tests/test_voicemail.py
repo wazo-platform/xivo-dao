@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,9 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from hamcrest import assert_that, contains_inanyorder, equal_to
+from hamcrest import assert_that, contains_inanyorder, equal_to, none
 
 from xivo_dao.tests.test_dao import DAOTestCase
+from ..dialaction import Dialaction
 
 
 class TestGetOldNumberContext(DAOTestCase):
@@ -59,3 +60,17 @@ class TestUsers(DAOTestCase):
         user2 = self.add_user(voicemail_id=voicemail.id)
 
         assert_that(voicemail.users, contains_inanyorder(user1, user2))
+
+
+class TestDelete(DAOTestCase):
+
+    def test_ivr_dialactions_are_deleted(self):
+        voicemail = self.add_voicemail()
+        self.add_dialaction(category='ivr_choice', action='voicemail', actionarg1=voicemail.id)
+        self.add_dialaction(category='ivr', action='voicemail', actionarg1=voicemail.id)
+
+        self.session.delete(voicemail)
+        self.session.flush()
+
+        row = self.session.query(Dialaction).first()
+        assert_that(row, none())
