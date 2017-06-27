@@ -31,17 +31,18 @@ from hamcrest import contains
 from hamcrest import contains_inanyorder
 from hamcrest import not_
 
-from xivo_dao.alchemy.entity import Entity
-from xivo_dao.alchemy.userfeatures import UserFeatures as User
-from xivo_dao.alchemy.schedulepath import SchedulePath
-from xivo_dao.alchemy.rightcallmember import RightCallMember
-from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
+from xivo_dao.alchemy.dialaction import Dialaction
+from xivo_dao.alchemy.entity import Entity
 from xivo_dao.alchemy.func_key import FuncKey
-from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
 from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
-from xivo_dao.alchemy.queuemember import QueueMember
+from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
 from xivo_dao.alchemy.groupfeatures import GroupFeatures
+from xivo_dao.alchemy.ivr_choice import IVRChoice
+from xivo_dao.alchemy.queuemember import QueueMember
+from xivo_dao.alchemy.rightcallmember import RightCallMember
+from xivo_dao.alchemy.schedulepath import SchedulePath
+from xivo_dao.alchemy.userfeatures import UserFeatures as User
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.helpers.exception import NotFoundError, InputError
 from xivo_dao.resources.user import dao as user_dao
@@ -847,11 +848,15 @@ class TestDelete(TestUser):
 
     def test_delete_references_to_other_tables(self):
         user = user_dao.create(User(firstname='Delete'))
-        self.add_right_call_member(type='user', typeval=str(user.id))
+        self.add_user_call_permission(user_id=user.id)
         schedule = self.add_schedule()
         self.add_schedule_path(schedule_id=schedule.id, path='user', pathid=user.id)
         call_filter = self.add_bsfilter()
         self.add_filter_member(call_filter.id, user.id)
+        ivr = self.add_ivr()
+        self.add_dialaction(category='ivr', categoryval=ivr.id, action='user', actionarg1=user.id)
+        ivr_choice = self.add_ivr_choice(ivr_id=ivr.id)
+        self.add_dialaction(category='ivr_choice', categoryval=ivr_choice.id, action='user', actionarg1=user.id)
 
         user_dao.delete(user)
 
@@ -862,12 +867,7 @@ class TestDelete(TestUser):
         assert_that(self.session.query(FuncKeyDestUser).first(), none())
         assert_that(self.session.query(FuncKey).first(), none())
         assert_that(self.session.query(FuncKeyTemplate).first(), none())
-
-    def add_right_call_member(self, **kwargs):
-        member = RightCallMember(**kwargs)
-        self.session.add(member)
-        self.session.flush()
-        return member
+        assert_that(self.session.query(IVRChoice).first(), none())
 
 
 class TestAssociateGroups(DAOTestCase):
