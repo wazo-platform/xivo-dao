@@ -29,6 +29,7 @@ from xivo_dao.alchemy.func_key_dest_paging import FuncKeyDestPaging
 from xivo_dao.alchemy.groupfeatures import GroupFeatures
 from xivo_dao.alchemy.incall import Incall
 from xivo_dao.alchemy.ivr import IVR
+from xivo_dao.alchemy.ivr_choice import IVRChoice
 from xivo_dao.alchemy.line_extension import LineExtension
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.outcall import Outcall
