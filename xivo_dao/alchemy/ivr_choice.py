@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -39,6 +39,7 @@ class IVRChoice(Base):
                                                   Dialaction.categoryval == cast(IVRChoice.id, String))""",
                               foreign_keys='Dialaction.categoryval',
                               cascade='all, delete-orphan',
+                              back_populates='ivr_choice',
                               uselist=False)
 
     @property

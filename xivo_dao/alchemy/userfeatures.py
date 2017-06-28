@@ -204,6 +204,13 @@ class UserFeatures(Base):
                                             cascade='all, delete-orphan')
     switchboards = association_proxy('switchboard_member_users', 'switchboard')
 
+    ivr_dialactions = relationship('Dialaction',
+                                   primaryjoin="""and_(Dialaction.action == 'user',
+                                                       Dialaction.actionarg1 == cast(UserFeatures.id, String),
+                                                       Dialaction.category.in_(['ivr', 'ivr_choice']))""",
+                                   foreign_keys='Dialaction.actionarg1',
+                                   cascade='all, delete-orphan')
+
     def extrapolate_caller_id(self, extension=None):
         default_num = extension.exten if extension else None
         user_match = caller_id_regex.match(self.callerid)

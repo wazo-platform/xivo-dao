@@ -17,9 +17,11 @@
 
 import unittest
 
-from hamcrest import assert_that, equal_to
+from hamcrest import assert_that, equal_to, none
 
 from xivo_dao.alchemy.dialaction import Dialaction
+from xivo_dao.alchemy.ivr import IVR
+from xivo_dao.alchemy.ivr_choice import IVRChoice
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
@@ -160,3 +162,30 @@ class TestConference(DAOTestCase):
         dialaction = self.add_dialaction(action='conference', actionarg1=conference.id)
 
         assert_that(dialaction.conference, equal_to(conference))
+
+
+class TestIVRChoice(DAOTestCase):
+
+    def test_getter(self):
+        ivr = self.add_ivr()
+        ivr_choice = self.add_ivr_choice(ivr_id=ivr.id)
+        dialaction = self.add_dialaction(category='ivr_choice', categoryval=ivr_choice.id)
+
+        assert_that(dialaction.ivr_choice, equal_to(ivr_choice))
+
+
+class TestDelete(DAOTestCase):
+
+    def test_ivr_choice_are_deleted(self):
+        ivr = self.add_ivr()
+        ivr_choice = self.add_ivr_choice(ivr_id=ivr.id)
+        dialaction = self.add_dialaction(category='ivr_choice', categoryval=ivr_choice.id)
+
+        self.session.delete(dialaction)
+        self.session.flush()
+
+        row = self.session.query(IVRChoice).first()
+        assert_that(row, none())
+
+        row = self.session.query(IVR).first()
+        assert_that(row, equal_to(ivr))

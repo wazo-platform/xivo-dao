@@ -38,6 +38,14 @@ class Dialaction(Base):
         Index('dialaction__idx__action_actionarg1', 'action', 'actionarg1'),
     )
 
+    # Remove the following warning:
+    #   SAWarning: DELETE statement on table 'dialaction' expected to delete 2 row(s); 1 were matched.
+    #   Please set confirm_deleted_rows=False within the mapper configuration to prevent this warning.
+    # When child try to delete parent and the parent try delete child,
+    # then the same row expecte to be removed twice.
+    # This is the case of ivr_choice
+    __mapper_args__ = {'confirm_deleted_rows': False}
+
     event = Column(String(40))
     category = Column(enum.dialaction_category)
     categoryval = Column(IntAsString(128), server_default='')
@@ -69,6 +77,13 @@ class Dialaction(Base):
                                            Dialaction.actionarg1 == cast(IVR.id, String))""",
                        foreign_keys='Dialaction.actionarg1',
                        viewonly=True)
+
+    ivr_choice = relationship('IVRChoice',
+                              primaryjoin="""and_(Dialaction.category == 'ivr_choice',
+                                                  Dialaction.categoryval == cast(IVRChoice.id, String))""",
+                              foreign_keys='Dialaction.categoryval',
+                              cascade='delete',
+                              back_populates='dialaction')
 
     switchboard = relationship('Switchboard',
                                primaryjoin="""and_(Dialaction.action == 'switchboard',

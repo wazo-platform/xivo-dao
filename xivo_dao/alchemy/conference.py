@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright 2016 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -61,3 +61,10 @@ class Conference(Base):
                                       viewonly=True)
 
     incalls = association_proxy('incall_dialactions', 'incall')
+
+    ivr_dialactions = relationship('Dialaction',
+                                   primaryjoin="""and_(Dialaction.action == 'conference',
+                                                       Dialaction.actionarg1 == cast(Conference.id, String),
+                                                       Dialaction.category.in_(['ivr', 'ivr_choice']))""",
+                                   foreign_keys='Dialaction.actionarg1',
+                                   cascade='all, delete-orphan')

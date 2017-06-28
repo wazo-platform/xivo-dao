@@ -112,6 +112,13 @@ class GroupFeatures(Base):
                          uselist=False,
                          passive_updates=False)
 
+    ivr_dialactions = relationship('Dialaction',
+                                   primaryjoin="""and_(Dialaction.action == 'group',
+                                                       Dialaction.actionarg1 == cast(GroupFeatures.id, String),
+                                                       Dialaction.category.in_(['ivr', 'ivr_choice']))""",
+                                   foreign_keys='Dialaction.actionarg1',
+                                   cascade='all, delete-orphan')
+
     enabled = association_proxy('queue', 'enabled')
     music_on_hold = association_proxy('queue', 'musicclass')
     retry_delay = association_proxy('queue', 'retry')

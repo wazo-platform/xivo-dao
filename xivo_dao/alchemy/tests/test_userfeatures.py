@@ -212,3 +212,14 @@ class TestDelete(DAOTestCase):
 
         row = self.session.query(PagingUser).first()
         assert_that(row, none())
+
+    def test_ivr_dialactions_are_deleted(self):
+        user = self.add_user()
+        self.add_dialaction(category='ivr_choice', action='user', actionarg1=user.id)
+        self.add_dialaction(category='ivr', action='user', actionarg1=user.id)
+
+        self.session.delete(user)
+        self.session.flush()
+
+        row = self.session.query(Dialaction).first()
+        assert_that(row, none())

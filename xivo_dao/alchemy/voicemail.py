@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012-2015 Avencall
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2012-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -60,6 +59,13 @@ class Voicemail(Base):
 
     users = relationship('UserFeatures',
                          back_populates='voicemail')
+
+    ivr_dialactions = relationship('Dialaction',
+                                   primaryjoin="""and_(Dialaction.action == 'voicemail',
+                                                       Dialaction.actionarg1 == cast(Voicemail.id, String),
+                                                       Dialaction.category.in_(['ivr', 'ivr_choice']))""",
+                                   foreign_keys='Dialaction.actionarg1',
+                                   cascade='all, delete-orphan')
 
     def get_old_number_context(self):
         number_history = get_history(self, 'mailbox')

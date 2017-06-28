@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -266,4 +266,15 @@ class TestDelete(DAOTestCase, FuncKeyHelper):
         self.session.flush()
 
         row = self.session.query(FuncKeyDestGroup).first()
+        assert_that(row, none())
+
+    def test_ivr_dialactions_are_deleted(self):
+        group = self.add_group()
+        self.add_dialaction(category='ivr_choice', action='group', actionarg1=group.id)
+        self.add_dialaction(category='ivr', action='group', actionarg1=group.id)
+
+        self.session.delete(group)
+        self.session.flush()
+
+        row = self.session.query(Dialaction).first()
         assert_that(row, none())
