@@ -179,7 +179,7 @@ class TestDelete(DAOTestCase):
     def test_ivr_choice_are_deleted(self):
         ivr = self.add_ivr()
         ivr_choice = self.add_ivr_choice(ivr_id=ivr.id)
-        dialaction = self.add_dialaction(category='ivr_choice', categoryval=ivr_choice.id)
+        dialaction = self.add_dialaction(category='ivr_choice', categoryval=str(ivr_choice.id))
 
         self.session.delete(dialaction)
         self.session.flush()
