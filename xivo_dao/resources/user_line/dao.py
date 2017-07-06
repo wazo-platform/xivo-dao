@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2016 Avencall
+# Copyright (C) 2013-2017 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -53,3 +53,7 @@ def associate(user, line):
 
 def dissociate(user, line):
     return persistor().dissociate_user_line(user, line)
+
+
+def associate_all_lines(user, lines):
+    return persistor().associate_all_lines(user, lines)

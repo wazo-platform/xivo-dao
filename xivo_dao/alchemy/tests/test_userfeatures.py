@@ -63,6 +63,21 @@ class TestLines(DAOTestCase):
 
         assert_that(user.lines, contains(line2, line1))
 
+    def test_creator(self):
+        user = self.add_user()
+        line1 = self.add_line()
+        line2 = self.add_line()
+        user.lines = [line2, line1]
+        self.session.flush()
+
+        assert_that(user.user_lines, contains(
+            has_properties(line_id=line2.id,
+                           main_line=True),
+            has_properties(line_id=line1.id,
+                           main_line=False)
+        ))
+        assert_that(user.lines, contains(line2, line1))
+
 
 class TestIncalls(DAOTestCase):
 

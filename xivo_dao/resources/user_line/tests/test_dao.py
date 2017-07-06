@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2016 Avencall
+# Copyright (C) 2013-2017 Avencall
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -309,3 +309,75 @@ class TestUserLineFindAllByLineId(DAOTestCase):
         result = user_line_dao.find_all_by_line_id(line.id)
 
         assert_that(result, contains_inanyorder(user_line_1, user_line_2))
+
+
+class TestAssociateAllLines(DAOTestCase):
+
+    def test_associate_user_with_lines(self):
+        user = self.add_user()
+        line_1 = self.add_line()
+        line_2 = self.add_line()
+
+        result = user_line_dao.associate_all_lines(user, [line_1, line_2])
+
+        assert_that(result, contains(
+            has_properties(user_id=user.id,
+                           line_id=line_1.id,
+                           main_user=True,
+                           main_line=True),
+            has_properties(user_id=user.id,
+                           line_id=line_2.id,
+                           main_user=True,
+                           main_line=False),
+        ))
+
+    def test_associate_secondary_user_with_line(self):
+        user1 = self.add_user()
+        user2 = self.add_user()
+        line = self.add_line()
+
+        self.add_user_line(user_id=user1.id,
+                           line_id=line.id,
+                           main_user=True,
+                           main_line=True)
+
+        user_line_dao.associate_all_lines(user2, [line])
+
+        result = (self.session.query(UserLine)
+                  .filter(UserLine.line_id == line.id)
+                  .all())
+
+        assert_that(result, contains_inanyorder(
+            has_properties(user_id=user1.id,
+                           line_id=line.id,
+                           main_user=True,
+                           main_line=True),
+            has_properties(user_id=user2.id,
+                           line_id=line.id,
+                           main_user=False,
+                           main_line=True)
+        ))
+
+    def test_dissociate_then_fixes_are_executed(self):
+        user = self.add_user()
+        line = self.add_line()
+        self.add_queue_member(userid=user.id,
+                              usertype='user')
+        self.add_user_line(line_id=line.id,
+                           user_id=user.id)
+
+        user_line_dao.associate_all_lines(user, [])
+
+        result = (self.session.query(QueueMember)
+                  .filter(QueueMember.usertype == 'user')
+                  .filter(QueueMember.userid == user.id)
+                  .first())
+
+        assert_that(result, none())
+
+        result = (self.session.query(UserLine)
+                  .filter(UserLine.user_id == user.id)
+                  .filter(UserLine.line_id == line.id)
+                  .first())
+
+        assert_that(result, none())

@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 
-# Copyright (C) 2015-2016 Avencall
+# Copyright (C) 2015-2017 Avencall
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -104,3 +104,20 @@ class Persistor(CriteriaBuilderMixin):
             ExtensionFixes(self.session).fix_extension(line_extension.extension_id)
 
         LineFixes(self.session).fix(user_line.line_id)
+
+    def associate_all_lines(self, user, lines):
+        # Do this only to execute dissociation's fixes
+        for existing_line in user.lines:
+            if existing_line not in lines:
+                self.dissociate_user_line(user, existing_line)
+
+        user.lines = lines
+
+        for user_line in user.user_lines:
+            main_user_line = self.find_by(main_user=True, line_id=user_line.line.id)
+            if not main_user_line:
+                user_line.main_user = True
+
+        self.session.flush()
+
+        return user.user_lines
