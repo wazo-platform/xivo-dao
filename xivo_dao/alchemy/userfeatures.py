@@ -22,6 +22,7 @@ import six
 
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import relationship, column_property
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.orm.properties import ColumnProperty
@@ -38,6 +39,7 @@ from xivo_dao.alchemy import enum
 from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.alchemy.entity import Entity
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
+from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.helpers.db_manager import Base
 from xivo_dao.helpers.uuid import new_uuid
@@ -60,6 +62,10 @@ caller_id_regex = re.compile(r'''
                              >                      #number end
                              )?                     #number is optional
                              ''', re.VERBOSE)
+
+
+def ordering_main_line(index, collection):
+    return True if index == 0 else False
 
 
 class UserFeatures(Base):
@@ -157,10 +163,13 @@ class UserFeatures(Base):
 
     user_lines = relationship('UserLine',
                               order_by='desc(UserLine.main_line)',
+                              collection_class=ordering_list('main_line', ordering_func=ordering_main_line),
                               cascade='all, delete-orphan',
                               back_populates='user')
 
-    lines = association_proxy('user_lines', 'line')
+    lines = association_proxy('user_lines', 'line',
+                              creator=lambda _line: UserLine(line=_line,
+                                                             main_user=False))
 
     incall_dialactions = relationship('Dialaction',
                                       primaryjoin="""and_(Dialaction.category == 'incall',
