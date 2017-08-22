@@ -322,7 +322,35 @@ class TestLineFixes(DAOTestCase):
 
         assert_that(queue_member.interface, equal_to('SIP/default'))
 
-    def test_given_custom_protocol_is_no_longer_assocaited_then_protocol_removed(self):
+    def test_given_queuemember_local_without_extension_then_queue_member_interface_not_updated(self):
+        sip = self.add_usersip(name='abcdef')
+        line = self.add_line(protocol='sip', protocolid=sip.id)
+        user = self.add_user()
+        self.add_user_line(user_id=user.id, line_id=line.id)
+        self.add_queue_member(usertype='user', userid=user.id, interface='SIP/default', channel='Local')
+
+        self.fixes.fix(line.id)
+
+        queue_member = self.session.query(QueueMember).first()
+
+        assert_that(queue_member.interface, equal_to('SIP/default'))
+
+    def test_given_queuemember_local_with_extension_then_queue_member_interface_updated(self):
+        sip = self.add_usersip(name='abcdef')
+        line = self.add_line(protocol='sip', protocolid=sip.id)
+        user = self.add_user()
+        extension = self.add_extension(exten='12345', context='wonderland')
+        self.add_user_line(user_id=user.id, line_id=line.id)
+        self.add_line_extension(line_id=line.id, extension_id=extension.id)
+        self.add_queue_member(usertype='user', userid=user.id, interface='SIP/default', channel='Local')
+
+        self.fixes.fix(line.id)
+
+        queue_member = self.session.query(QueueMember).first()
+
+        assert_that(queue_member.interface, equal_to('Local/12345@wonderland'))
+
+    def test_given_custom_protocol_is_no_longer_associated_then_protocol_removed(self):
         line = self.add_line(protocol='custom', protocolid=1234)
 
         self.fixes.fix(line.id)

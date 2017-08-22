@@ -146,4 +146,13 @@ class LineFixes(object):
                 (self.session.query(QueueMember)
                  .filter(QueueMember.usertype == 'user')
                  .filter(QueueMember.userid == row.UserFeatures.id)
+                 .filter(QueueMember.channel != 'Local')
                  .update({'interface': interface}))
+
+                if row.Extension:
+                    local_interface = 'Local/{}@{}'.format(row.Extension.exten, row.Extension.context)
+                    (self.session.query(QueueMember)
+                     .filter(QueueMember.usertype == 'user')
+                     .filter(QueueMember.userid == row.UserFeatures.id)
+                     .filter(QueueMember.channel == 'Local')
+                     .update({'interface': local_interface}))
