@@ -1,4 +1,4 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 
 # Copyright 2015-2017 The Wazo Authors  (see the AUTHORS file)
 #
@@ -55,6 +55,9 @@ class UserPersistor(CriteriaBuilderMixin):
         if not user:
             raise errors.not_found('User', id=id)
         return user
+
+    def find_all_by_agent_id(self, agent_id):
+        return self.session.query(User).filter(User.agent.has(id=agent_id)).all()
 
     def find_by(self, criteria):
         query = self._find_query(criteria)

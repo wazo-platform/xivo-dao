@@ -63,6 +63,10 @@ def get_by_id_uuid(id):
     return persistor().get_by_id_uuid(id)
 
 
+def find_all_by_agent_id(agent_id):
+    return persistor().find_all_by_agent_id(agent_id)
+
+
 def find(user_id):
     return persistor().find_by({'id': user_id})
 
