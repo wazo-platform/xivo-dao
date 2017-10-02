@@ -295,18 +295,14 @@ def find_exten_xivofeatures_setting(session):
 
 
 @daosession
-def find_extenfeatures_settings(session, features=None):
-    features = features or []
-
+def find_extenfeatures_settings(session, features):
     query = (session.query(Extension)
              .filter(and_(Extension.context == 'xivo-features',
-                          Extension.type == 'extenfeatures'))
+                          Extension.type == 'extenfeatures',
+                          Extension.typeval.in_(features)))
              .order_by('exten'))
 
-    if features:
-        query = query.filter(Extension.typeval.in_(features))
-
-    return [row.todict() for row in query.all()]
+    return query.all()
 
 
 @daosession
