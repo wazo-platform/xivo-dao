@@ -502,44 +502,31 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
 
         assert_that(extensions, contains_inanyorder(*expected_result))
 
-    def test_find_extenfeatures_settings_when_features_is_none(self):
-        exten = self.add_extension(exten='*98', context='xivo-features', type='extenfeatures', typeval='vmusermsg')
-        expected_result = [
-            {'exten': '*98',
-             'commented': 0,
-             'context': 'xivo-features',
-             'typeval': 'vmusermsg',
-             'type': 'extenfeatures',
-             'id': exten.id}
-        ]
-
-        extensions = asterisk_conf_dao.find_extenfeatures_settings(None)
-
-        assert_that(extensions, expected_result)
-
     def test_find_extenfeatures_settings(self):
         exten1 = self.add_extension(exten='*98', context='xivo-features', type='extenfeatures', typeval='vmusermsg')
         exten2 = self.add_extension(exten='*92', context='xivo-features', type='extenfeatures', typeval='vmuserpurge')
         self.add_extension(exten='3492', context='robert', type='user', typeval='14')
 
-        expected_result = [
-            {'exten': '*98',
-             'commented': 0,
-             'context': 'xivo-features',
-             'typeval': 'vmusermsg',
-             'type': 'extenfeatures',
-             'id': exten1.id},
-            {'exten': '*92',
-             'commented': 0,
-             'context': 'xivo-features',
-             'typeval': 'vmuserpurge',
-             'type': 'extenfeatures',
-             'id': exten2.id}
-        ]
-
         extensions = asterisk_conf_dao.find_extenfeatures_settings(['vmusermsg', 'vmuserpurge'])
 
-        assert_that(extensions, contains_inanyorder(*expected_result))
+        assert_that(extensions, contains_inanyorder(
+            has_properties({
+                'exten': '*98',
+                'commented': 0,
+                'context': 'xivo-features',
+                'typeval': 'vmusermsg',
+                'type': 'extenfeatures',
+                'id': exten1.id
+            }),
+            has_properties({
+                'exten': '*92',
+                'commented': 0,
+                'context': 'xivo-features',
+                'typeval': 'vmuserpurge',
+                'type': 'extenfeatures',
+                'id': exten2.id
+            }),
+        ))
 
     def test_find_exten_settings_when_line_enabled(self):
         user_row = self.add_user()
