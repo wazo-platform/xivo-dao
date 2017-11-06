@@ -821,6 +821,9 @@ class ItemInserter(object):
         self.add_me(static_voicemail)
         return static_voicemail
 
+    def add_voicemail_zonemessages_settings(self, **kwargs):
+        return self.add_voicemail_general_settings(category='zonemessages', **kwargs)
+
     def add_iax_general_settings(self, **kwargs):
         kwargs.setdefault('id', self._generate_int())
         kwargs.setdefault('cat_metric', 0)
