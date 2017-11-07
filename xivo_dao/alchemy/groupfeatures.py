@@ -7,7 +7,6 @@
 import six
 
 from sqlalchemy.ext.associationproxy import association_proxy
-from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
@@ -84,14 +83,14 @@ class GroupFeatures(Base):
                                                      QueueMember.queue_name == GroupFeatures.name)""",
                                  order_by='QueueMember.position',
                                  foreign_keys='QueueMember.queue_name',
-                                 collection_class=ordering_list('position', count_from=1),
                                  cascade='all, delete-orphan',
                                  passive_updates=False)
 
     users_member = association_proxy('group_members', 'user',
-                                     creator=lambda _user: QueueMember(category='group',
-                                                                       usertype='user',
-                                                                       user=_user))
+                                     creator=lambda _member: QueueMember(category='group',
+                                                                         usertype='user',
+                                                                         user=_member['user'],
+                                                                         position=_member.get('priority')))
 
     queue = relationship('Queue',
                          primaryjoin="""and_(Queue.category == 'group',

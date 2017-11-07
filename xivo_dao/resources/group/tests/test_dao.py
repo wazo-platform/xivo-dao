@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-
-# Copyright 2016 The Wazo Authors  (see the AUTHORS file)
-#
+# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from hamcrest import (assert_that,
@@ -424,7 +422,7 @@ class TestAssociateMemberUsers(DAOTestCase):
         self.add_user_line(user_id=user.id, line_id=line.id)
         group_row = self.add_group()
 
-        group_dao.associate_all_member_users(group_row, [user])
+        group_dao.associate_all_member_users(group_row, [{'user': user}])
 
         group = self.session.query(Group).first()
         assert_that(group, equal_to(group_row))
@@ -454,9 +452,13 @@ class TestAssociateMemberUsers(DAOTestCase):
         sip3 = self.add_usercustom()
         line3 = self.add_line(protocol='custom', protocolid=sip3.id)
         self.add_user_line(user_id=user3.id, line_id=line3.id)
+        members = [{'user': user1, 'priority': 3},
+                   {'user': user2, 'priority': 1},
+                   {'user': user3, 'priority': 2}]
 
-        group_dao.associate_all_member_users(group_row, [user2, user3, user1])
+        group_dao.associate_all_member_users(group_row, members)
 
+        self.session.expire_all()
         group = self.session.query(Group).first()
         assert_that(group, equal_to(group_row))
         assert_that(group.users_member, contains(user2, user3, user1))
@@ -468,7 +470,7 @@ class TestAssociateMemberUsers(DAOTestCase):
         self.add_user_line(user_id=user.id, line_id=line.id)
         group_row = self.add_group()
 
-        group_dao.associate_all_member_users(group_row, [user])
+        group_dao.associate_all_member_users(group_row, [{'user': user}])
 
         group = self.session.query(Group).first()
         assert_that(group.group_members, contains(
@@ -484,7 +486,7 @@ class TestAssociateMemberUsers(DAOTestCase):
         self.add_user_line(user_id=user.id, line_id=line.id)
         group_row = self.add_group()
 
-        group_dao.associate_all_member_users(group_row, [user])
+        group_dao.associate_all_member_users(group_row, [{'user': user}])
 
         group = self.session.query(Group).first()
         assert_that(group.group_members, contains(
@@ -500,7 +502,7 @@ class TestAssociateMemberUsers(DAOTestCase):
         self.add_user_line(user_id=user.id, line_id=line.id)
         group_row = self.add_group()
 
-        group_dao.associate_all_member_users(group_row, [user])
+        group_dao.associate_all_member_users(group_row, [{'user': user}])
 
         group = self.session.query(Group).first()
         assert_that(group.group_members, contains(
@@ -515,7 +517,7 @@ class TestAssociateMemberUsers(DAOTestCase):
         line = self.add_line(protocol='sip', protocolid=sip.id)
         self.add_user_line(user_id=user.id, line_id=line.id)
         group_row = self.add_group()
-        group_dao.associate_all_member_users(group_row, [user])
+        group_dao.associate_all_member_users(group_row, [{'user': user}])
 
         group = self.session.query(Group).first()
         assert_that(group.users_member, contains(user))
