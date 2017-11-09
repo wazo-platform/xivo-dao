@@ -191,3 +191,23 @@ class GroupFeatures(Base):
         self.context = None
         if self.queue:
             self.queue.context = None
+
+    @property
+    def extensions_member(self):
+        return [member for member in self.group_members if 'Local/' in member.interface]
+
+    @extensions_member.setter
+    def extensions_member(self, members):
+        self._remove_all_extensions_member()
+        for member in members:
+            member = QueueMember(category='group',
+                                 interface='Local/{}@{}'.format(member['extension']['exten'],
+                                                                member['extension']['context']),
+                                 channel='Local',
+                                 usertype='user',
+                                 userid=0,
+                                 position=member.get('priority'))
+            self.group_members.append(member)
+
+    def _remove_all_extensions_member(self):
+        self.group_members = [member for member in self.group_members if member not in self.extensions_member]

@@ -533,3 +533,59 @@ class TestAssociateMemberUsers(DAOTestCase):
 
         row = self.session.query(QueueMember).first()
         assert_that(row, none())
+
+
+class TestAssociateMemberExtensions(DAOTestCase):
+
+    def test_associate_extension_sip(self):
+        group_row = self.add_group()
+        extension = {'exten': '123', 'context': 'default'}
+
+        group_dao.associate_all_member_extensions(group_row, [{'extension': extension}])
+
+        group = self.session.query(Group).first()
+        assert_that(group, equal_to(group_row))
+        assert_that(group.group_members, contains(
+            has_properties(queue_name=group.name,
+                           interface='Local/123@default',
+                           channel='Local',
+                           usertype='user',
+                           userid=0)
+        ))
+
+    def test_associate_multiple_extensions(self):
+        group_row = self.add_group()
+
+        extension1 = {'exten': '123', 'context': 'default'}
+        extension2 = {'exten': '456', 'context': 'outcall'}
+        extension3 = {'exten': '789', 'context': 'default'}
+
+        members = [{'extension': extension1, 'priority': 3},
+                   {'extension': extension2, 'priority': 1},
+                   {'extension': extension3, 'priority': 2}]
+
+        group_dao.associate_all_member_extensions(group_row, members)
+
+        self.session.expire_all()
+        group = self.session.query(Group).first()
+        assert_that(group, equal_to(group_row))
+        assert_that(group.extensions_member, contains(has_properties(interface='Local/456@outcall'),
+                                                      has_properties(interface='Local/789@default'),
+                                                      has_properties(interface='Local/123@default')))
+
+    def test_extensions_dissociation(self):
+        group_row = self.add_group()
+        extension = {'exten': '123', 'context': 'default'}
+        group_dao.associate_all_member_extensions(group_row, [{'extension': extension}])
+
+        group = self.session.query(Group).first()
+        assert_that(group.extensions_member, contains(has_properties(interface='Local/123@default')))
+
+        group_dao.associate_all_member_extensions(group_row, [])
+
+        group = self.session.query(Group).first()
+        assert_that(group, equal_to(group_row))
+        assert_that(group.extensions_member, empty())
+
+        row = self.session.query(QueueMember).first()
+        assert_that(row, none())

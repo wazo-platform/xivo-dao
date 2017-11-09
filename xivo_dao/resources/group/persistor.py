@@ -82,3 +82,7 @@ class GroupPersistor(CriteriaBuilderMixin):
             for member in group.group_members:
                 member.fix()
         self.session.flush()
+
+    def associate_all_member_extensions(self, group, members):
+        group.extensions_member = members
+        self.session.flush()
