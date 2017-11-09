@@ -1,7 +1,5 @@
 # -*- coding: UTF-8 -*-
-
-# Copyright (C) 2016 Proformatique Inc.
-#
+# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from .persistor import GroupPersistor
@@ -56,5 +54,10 @@ def delete(session, group):
 
 
 @daosession
-def associate_all_member_users(session, group, users):
-    GroupPersistor(session, group_search).associate_all_member_users(group, users)
+def associate_all_member_users(session, group, members):
+    GroupPersistor(session, group_search).associate_all_member_users(group, members)
+
+
+@daosession
+def associate_all_member_extensions(session, group, members):
+    GroupPersistor(session, group_search).associate_all_member_extensions(group, members)

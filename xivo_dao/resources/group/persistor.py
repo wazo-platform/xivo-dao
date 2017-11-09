@@ -1,7 +1,5 @@
 # -*- coding: UTF-8 -*-
-
-# Copyright 2016 The Wazo Authors  (see the AUTHORS file)
-#
+# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao.alchemy.dialaction import Dialaction
@@ -78,9 +76,13 @@ class GroupPersistor(CriteriaBuilderMixin):
             extension.type = 'user'
             extension.typeval = '0'
 
-    def associate_all_member_users(self, group, users):
+    def associate_all_member_users(self, group, members):
         with Session.no_autoflush:
-            group.users_member = users
+            group.users_member = members
             for member in group.group_members:
                 member.fix()
+        self.session.flush()
+
+    def associate_all_member_extensions(self, group, members):
+        group.extensions_member = members
         self.session.flush()

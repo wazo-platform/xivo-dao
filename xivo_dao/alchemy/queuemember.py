@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
-
-# Copyright (C) 2013-2014 Avencall
-# Copyright (C) 2016 Proformatique Inc.
-#
+# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
+
+import re
 
 from xivo_dao.helpers.db_manager import Base
 from sqlalchemy.orm import relationship
@@ -13,13 +12,15 @@ from sqlalchemy.schema import (Column,
                                UniqueConstraint)
 from sqlalchemy.types import Integer, String, Enum
 
+interface_regex = re.compile(r'Local/(?P<exten>.*)@(?P<context>.*)')
+
 
 class QueueMember(Base):
 
     __tablename__ = 'queuemember'
     __table_args__ = (
         PrimaryKeyConstraint('queue_name', 'interface'),
-        UniqueConstraint('queue_name', 'channel', 'usertype', 'userid', 'category'),
+        UniqueConstraint('queue_name', 'channel', 'interface', 'usertype', 'userid', 'category', 'position'),
         Index('queuemember__idx__category', 'category'),
         Index('queuemember__idx__channel', 'channel'),
         Index('queuemember__idx__userid', 'userid'),
@@ -68,3 +69,15 @@ class QueueMember(Base):
 
             elif main_line.endpoint_custom:
                 self.interface = main_line.endpoint_custom.interface
+
+    @property
+    def exten(self):
+        match = re.search(interface_regex, self.interface)
+        if match:
+            return match.group('exten')
+
+    @property
+    def context(self):
+        match = re.search(interface_regex, self.interface)
+        if match:
+            return match.group('context')
