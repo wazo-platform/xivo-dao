@@ -29,6 +29,15 @@ class TestIncalls(DAOTestCase):
         assert_that(row, equal_to(schedule))
         assert_that(row.incalls, contains(incall))
 
+    def test_getter_empty_when_other_schedulepath(self):
+        schedule = self.add_schedule()
+        user = self.add_user()
+        self.add_schedule_path(path='user', pathid=user.id, schedule_id=schedule.id)
+
+        row = self.session.query(Schedule).filter_by(id=schedule.id).first()
+        assert_that(row, equal_to(schedule))
+        assert_that(row.incalls, empty())
+
 
 class TestOpenPeriods(DAOTestCase):
 

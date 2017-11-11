@@ -49,7 +49,12 @@ class Schedule(Base):
                                   cascade='all, delete-orphan',
                                   back_populates='schedule')
 
-    incalls = association_proxy('schedule_paths', 'incall')
+    schedule_incalls = relationship('SchedulePath',
+                                    primaryjoin="""and_(SchedulePath.schedule_id == Schedule.id,
+                                                        SchedulePath.path == 'incall')""",
+                                    viewonly=True)
+
+    incalls = association_proxy('schedule_incalls', 'incall')
 
     @property
     def open_periods(self):
