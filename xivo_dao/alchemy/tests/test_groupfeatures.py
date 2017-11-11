@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
-
 # Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
-#
 # SPDX-License-Identifier: GPL-3.0+
 
 from hamcrest import (assert_that,
+                      contains,
                       contains_inanyorder,
                       equal_to,
                       empty,
                       has_key,
                       has_properties,
                       is_not,
+                      not_,
                       none)
 
 from xivo_dao.alchemy.callerid import Callerid
@@ -19,6 +19,8 @@ from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup
 from xivo_dao.alchemy.groupfeatures import GroupFeatures as Group
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.queue import Queue
+from xivo_dao.alchemy.schedule import Schedule
+from xivo_dao.alchemy.schedulepath import SchedulePath
 
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
@@ -142,6 +144,49 @@ class TestCallerIdName(DAOTestCase):
         ))
 
 
+class TestSchedules(DAOTestCase):
+
+    def test_getter(self):
+        group = self.add_group()
+        schedule = self.add_schedule()
+        self.add_schedule_path(path='group', pathid=group.id, schedule_id=schedule.id)
+
+        row = self.session.query(Group).filter_by(id=group.id).first()
+        assert_that(row, equal_to(group))
+        assert_that(row.schedules, contains(schedule))
+
+    def test_setter(self):
+        group = self.add_group()
+        schedule1 = Schedule()
+        schedule2 = Schedule()
+        group.schedules = [schedule1, schedule2]
+
+        row = self.session.query(Group).filter_by(id=group.id).first()
+        assert_that(row, equal_to(group))
+
+        self.session.expire_all()
+        assert_that(row.schedules, contains_inanyorder(schedule1, schedule2))
+
+    def test_deleter(self):
+        group = self.add_group()
+        schedule1 = Schedule()
+        schedule2 = Schedule()
+        group.schedules = [schedule1, schedule2]
+        self.session.flush()
+
+        group.schedules = []
+
+        row = self.session.query(Group).filter_by(id=group.id).first()
+        assert_that(row, equal_to(group))
+        assert_that(row.schedules, empty())
+
+        row = self.session.query(Schedule).first()
+        assert_that(row, not_(none()))
+
+        row = self.session.query(SchedulePath).first()
+        assert_that(row, none())
+
+
 class TestCreate(DAOTestCase):
 
     def test_queue_is_created_with_default_fields(self):
@@ -206,6 +251,17 @@ class TestDelete(DAOTestCase, FuncKeyHelper):
     def setUp(self):
         super(TestDelete, self).setUp()
         self.setup_funckeys()
+
+    def test_schedule_paths_are_deleted(self):
+        group = self.add_group()
+        schedule = self.add_schedule()
+        self.add_schedule_path(schedule_id=schedule.id, path='group', pathid=group.id)
+
+        self.session.delete(schedule)
+        self.session.flush()
+
+        row = self.session.query(SchedulePath).first()
+        assert_that(row, none())
 
     def test_group_dialactions_are_deleted(self):
         group = self.add_group()

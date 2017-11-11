@@ -61,6 +61,13 @@ class Schedule(Base):
 
     users = association_proxy('schedule_users', 'user')
 
+    schedule_groups = relationship('SchedulePath',
+                                  primaryjoin="""and_(SchedulePath.schedule_id == Schedule.id,
+                                                      SchedulePath.path == 'group')""",
+                                  viewonly=True)
+
+    groups = association_proxy('schedule_groups', 'group')
+
     @property
     def open_periods(self):
         return self._get_periods('opened')
