@@ -58,6 +58,27 @@ class TestGroups(DAOTestCase):
         assert_that(row.groups, empty())
 
 
+class TestOutcalls(DAOTestCase):
+
+    def test_getter(self):
+        schedule = self.add_schedule()
+        outcall = self.add_outcall()
+        self.add_schedule_path(path='outcall', pathid=outcall.id, schedule_id=schedule.id)
+
+        row = self.session.query(Schedule).filter_by(id=schedule.id).first()
+        assert_that(row, equal_to(schedule))
+        assert_that(row.outcalls, contains(outcall))
+
+    def test_getter_empty_when_other_schedulepath(self):
+        schedule = self.add_schedule()
+        incall = self.add_incall()
+        self.add_schedule_path(path='incall', pathid=incall.id, schedule_id=schedule.id)
+
+        row = self.session.query(Schedule).filter_by(id=schedule.id).first()
+        assert_that(row, equal_to(schedule))
+        assert_that(row.outcalls, empty())
+
+
 class TestUsers(DAOTestCase):
 
     def test_getter(self):
