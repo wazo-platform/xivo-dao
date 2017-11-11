@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-
 # Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
-#
 # SPDX-License-Identifier: GPL-3.0+
 
 from __future__ import unicode_literals
@@ -30,6 +28,7 @@ from xivo_dao.alchemy.entity import Entity
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.queuemember import QueueMember
+from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.helpers.db_manager import Base
 from xivo_dao.helpers.uuid import new_uuid
 
@@ -208,6 +207,18 @@ class UserFeatures(Base):
                                                        Dialaction.category.in_(['ivr', 'ivr_choice']))""",
                                    foreign_keys='Dialaction.actionarg1',
                                    cascade='all, delete-orphan')
+
+    schedule_paths = relationship('SchedulePath',
+                                  primaryjoin="""and_(SchedulePath.path == 'user',
+                                                      SchedulePath.pathid == UserFeatures.id)""",
+                                  foreign_keys='SchedulePath.pathid',
+                                  cascade='all, delete-orphan',
+                                  back_populates='user')
+
+    schedules = association_proxy('schedule_paths', 'schedule',
+                                  creator=lambda _schedule: SchedulePath(path='user',
+                                                                         schedule_id=_schedule.id,
+                                                                         schedule=_schedule))
 
     def extrapolate_caller_id(self, extension=None):
         default_num = extension.exten if extension else None

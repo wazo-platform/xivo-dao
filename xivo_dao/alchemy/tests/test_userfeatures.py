@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-
 # Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
-#
 # SPDX-License-Identifier: GPL-3.0+
 
 from hamcrest import (assert_that,
@@ -12,11 +10,14 @@ from hamcrest import (assert_that,
                       has_key,
                       has_properties,
                       is_not,
+                      not_,
                       none)
 
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.paginguser import PagingUser
 from xivo_dao.alchemy.queuemember import QueueMember
+from xivo_dao.alchemy.schedule import Schedule
+from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -173,7 +174,61 @@ class TestFallbacks(DAOTestCase):
         assert_that(user.fallbacks, is_not(has_key('noanswer')))
 
 
+class TestSchedules(DAOTestCase):
+
+    def test_getter(self):
+        user = self.add_user()
+        schedule = self.add_schedule()
+        self.add_schedule_path(path='user', pathid=user.id, schedule_id=schedule.id)
+
+        row = self.session.query(UserFeatures).filter_by(uuid=user.uuid).first()
+        assert_that(row, equal_to(user))
+        assert_that(row.schedules, contains(schedule))
+
+    def test_setter(self):
+        user = self.add_user()
+        schedule1 = Schedule()
+        schedule2 = Schedule()
+        user.schedules = [schedule1, schedule2]
+
+        row = self.session.query(UserFeatures).filter_by(uuid=user.uuid).first()
+        assert_that(row, equal_to(user))
+
+        self.session.expire_all()
+        assert_that(row.schedules, contains_inanyorder(schedule1, schedule2))
+
+    def test_deleter(self):
+        user = self.add_user()
+        schedule1 = Schedule()
+        schedule2 = Schedule()
+        user.schedules = [schedule1, schedule2]
+        self.session.flush()
+
+        user.schedules = []
+
+        row = self.session.query(UserFeatures).filter_by(uuid=user.uuid).first()
+        assert_that(row, equal_to(user))
+        assert_that(row.schedules, empty())
+
+        row = self.session.query(Schedule).first()
+        assert_that(row, not_(none()))
+
+        row = self.session.query(SchedulePath).first()
+        assert_that(row, none())
+
+
 class TestDelete(DAOTestCase):
+
+    def test_schedule_paths_are_deleted(self):
+        user = self.add_user()
+        schedule = self.add_schedule()
+        self.add_schedule_path(schedule_id=schedule.id, path='user', pathid=user.id)
+
+        self.session.delete(schedule)
+        self.session.flush()
+
+        row = self.session.query(SchedulePath).first()
+        assert_that(row, none())
 
     def test_group_members_are_deleted(self):
         user = self.add_user()

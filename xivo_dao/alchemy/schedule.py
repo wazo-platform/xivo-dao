@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-
 # Copyright 2007-2017 The Wazo Authors  (see the AUTHORS file)
-#
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -55,6 +53,13 @@ class Schedule(Base):
                                     viewonly=True)
 
     incalls = association_proxy('schedule_incalls', 'incall')
+
+    schedule_users = relationship('SchedulePath',
+                                  primaryjoin="""and_(SchedulePath.schedule_id == Schedule.id,
+                                                      SchedulePath.path == 'user')""",
+                                  viewonly=True)
+
+    users = association_proxy('schedule_users', 'user')
 
     @property
     def open_periods(self):

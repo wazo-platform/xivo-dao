@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-#
 # Copyright 2017 The Wazo Authors  (see the AUTHORS file)
-#
 # SPDX-License-Identifier: GPL-3.0+
 
 import unittest
@@ -37,6 +35,27 @@ class TestIncalls(DAOTestCase):
         row = self.session.query(Schedule).filter_by(id=schedule.id).first()
         assert_that(row, equal_to(schedule))
         assert_that(row.incalls, empty())
+
+
+class TestUsers(DAOTestCase):
+
+    def test_getter(self):
+        schedule = self.add_schedule()
+        user = self.add_user()
+        self.add_schedule_path(path='user', pathid=user.id, schedule_id=schedule.id)
+
+        row = self.session.query(Schedule).filter_by(id=schedule.id).first()
+        assert_that(row, equal_to(schedule))
+        assert_that(row.users, contains(user))
+
+    def test_getter_empty_when_other_schedulepath(self):
+        schedule = self.add_schedule()
+        incall = self.add_incall()
+        self.add_schedule_path(path='incall', pathid=incall.id, schedule_id=schedule.id)
+
+        row = self.session.query(Schedule).filter_by(id=schedule.id).first()
+        assert_that(row, equal_to(schedule))
+        assert_that(row.users, empty())
 
 
 class TestOpenPeriods(DAOTestCase):
