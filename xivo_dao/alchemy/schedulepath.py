@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-
 # Copyright 2007-2017 The Wazo Authors  (see the AUTHORS file)
-#
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy.orm import relationship
@@ -30,6 +28,13 @@ class SchedulePath(Base):
                           foreign_keys='SchedulePath.pathid',
                           viewonly=True,
                           back_populates='schedule_paths')
+
+    user = relationship('UserFeatures',
+                        primaryjoin="""and_(SchedulePath.path == 'user',
+                                            SchedulePath.pathid == UserFeatures.id)""",
+                        foreign_keys='SchedulePath.pathid',
+                        viewonly=True,
+                        back_populates='schedule_paths')
 
     schedule = relationship('Schedule',
                             back_populates='schedule_paths')

@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-#
 # Copyright 2017 The Wazo Authors  (see the AUTHORS file)
-#
 # SPDX-License-Identifier: GPL-3.0+
 
 from hamcrest import (assert_that,
@@ -18,7 +16,7 @@ from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
-class TestIncalls(DAOTestCase):
+class TestSchedules(DAOTestCase):
 
     def test_getter(self):
         incall = self.add_incall()
