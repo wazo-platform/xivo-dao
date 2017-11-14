@@ -15,6 +15,7 @@ from sqlalchemy.types import Integer, String
 from xivo_dao.alchemy.callerid import Callerid
 from xivo_dao.alchemy.queue import Queue
 from xivo_dao.alchemy.queuemember import QueueMember
+from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.helpers.db_manager import Base
 
 
@@ -116,6 +117,18 @@ class GroupFeatures(Base):
 
     func_keys = relationship('FuncKeyDestGroup',
                              cascade='all, delete-orphan')
+
+    schedule_paths = relationship('SchedulePath',
+                                  primaryjoin="""and_(SchedulePath.path == 'group',
+                                                      SchedulePath.pathid == GroupFeatures.id)""",
+                                  foreign_keys='SchedulePath.pathid',
+                                  cascade='all, delete-orphan',
+                                  back_populates='group')
+
+    schedules = association_proxy('schedule_paths', 'schedule',
+                                  creator=lambda _schedule: SchedulePath(path='group',
+                                                                         schedule_id=_schedule.id,
+                                                                         schedule=_schedule))
 
     def __init__(self, **kwargs):
         retry = kwargs.pop('retry_delay', 5)

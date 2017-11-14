@@ -29,6 +29,13 @@ class SchedulePath(Base):
                           viewonly=True,
                           back_populates='schedule_paths')
 
+    group = relationship('GroupFeatures',
+                          primaryjoin="""and_(SchedulePath.path == 'group',
+                                              SchedulePath.pathid == GroupFeatures.id)""",
+                          foreign_keys='SchedulePath.pathid',
+                          viewonly=True,
+                          back_populates='schedule_paths')
+
     user = relationship('UserFeatures',
                         primaryjoin="""and_(SchedulePath.path == 'user',
                                             SchedulePath.pathid == UserFeatures.id)""",
