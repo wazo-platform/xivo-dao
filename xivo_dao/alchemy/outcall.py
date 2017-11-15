@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-#
 # Copyright 2014-2017 The Wazo Authors  (see the AUTHORS file)
-#
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -15,6 +13,7 @@ from sqlalchemy.types import Integer, String, Text, Boolean
 from xivo_dao.helpers.db_manager import Base
 from xivo_dao.alchemy.outcalltrunk import OutcallTrunk
 from xivo_dao.alchemy.dialpattern import DialPattern
+from xivo_dao.alchemy.schedulepath import SchedulePath
 
 
 class Outcall(Base):
@@ -58,6 +57,18 @@ class Outcall(Base):
                                                        Dialaction.category.in_(['ivr', 'ivr_choice']))""",
                                    foreign_keys='Dialaction.actionarg1',
                                    cascade='all, delete-orphan')
+
+    schedule_paths = relationship('SchedulePath',
+                                  primaryjoin="""and_(SchedulePath.path == 'outcall',
+                                                      SchedulePath.pathid == Outcall.id)""",
+                                  foreign_keys='SchedulePath.pathid',
+                                  cascade='all, delete-orphan',
+                                  back_populates='outcall')
+    schedules = association_proxy('schedule_paths', 'schedule',
+                                  creator=lambda _schedule: SchedulePath(path='outcall',
+                                                                         schedule_id=_schedule.id,
+                                                                         schedule=_schedule))
+
 
     @hybrid_property
     def internal_caller_id(self):

@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-
 # Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
-#
 # SPDX-License-Identifier: GPL-3.0+
 
 
@@ -19,12 +17,68 @@ from xivo_dao.alchemy.dialpattern import DialPattern
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.outcall import Outcall
 from xivo_dao.alchemy.outcalltrunk import OutcallTrunk
+from xivo_dao.alchemy.schedule import Schedule
+from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
 
 from xivo_dao.tests.test_dao import DAOTestCase
 
 
+class TestSchedules(DAOTestCase):
+
+    def test_getter(self):
+        outcall = self.add_outcall()
+        schedule = self.add_schedule()
+        self.add_schedule_path(path='outcall', pathid=outcall.id, schedule_id=schedule.id)
+
+        row = self.session.query(Outcall).filter_by(id=outcall.id).first()
+        assert_that(row, equal_to(outcall))
+        assert_that(row.schedules, contains(schedule))
+
+    def test_setter(self):
+        outcall = self.add_outcall()
+        schedule1 = Schedule()
+        schedule2 = Schedule()
+        outcall.schedules = [schedule1, schedule2]
+
+        row = self.session.query(Outcall).filter_by(id=outcall.id).first()
+        assert_that(row, equal_to(outcall))
+
+        self.session.expire_all()
+        assert_that(row.schedules, contains_inanyorder(schedule1, schedule2))
+
+    def test_deleter(self):
+        outcall = self.add_outcall()
+        schedule1 = Schedule()
+        schedule2 = Schedule()
+        outcall.schedules = [schedule1, schedule2]
+        self.session.flush()
+
+        outcall.schedules = []
+
+        row = self.session.query(Outcall).filter_by(id=outcall.id).first()
+        assert_that(row, equal_to(outcall))
+        assert_that(row.schedules, empty())
+
+        row = self.session.query(Schedule).first()
+        assert_that(row, not_(none()))
+
+        row = self.session.query(SchedulePath).first()
+        assert_that(row, none())
+
+
 class TestDelete(DAOTestCase):
+
+    def test_schedule_paths_are_deleted(self):
+        outcall = self.add_outcall()
+        schedule = self.add_schedule()
+        self.add_schedule_path(schedule_id=schedule.id, path='outcall', pathid=outcall.id)
+
+        self.session.delete(schedule)
+        self.session.flush()
+
+        row = self.session.query(SchedulePath).first()
+        assert_that(row, none())
 
     def test_when_deleting_then_dialpattern_are_deleted(self):
         outcall = self.add_outcall()

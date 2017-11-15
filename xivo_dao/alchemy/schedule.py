@@ -51,22 +51,25 @@ class Schedule(Base):
                                     primaryjoin="""and_(SchedulePath.schedule_id == Schedule.id,
                                                         SchedulePath.path == 'incall')""",
                                     viewonly=True)
-
     incalls = association_proxy('schedule_incalls', 'incall')
 
     schedule_users = relationship('SchedulePath',
                                   primaryjoin="""and_(SchedulePath.schedule_id == Schedule.id,
                                                       SchedulePath.path == 'user')""",
                                   viewonly=True)
-
     users = association_proxy('schedule_users', 'user')
 
     schedule_groups = relationship('SchedulePath',
                                   primaryjoin="""and_(SchedulePath.schedule_id == Schedule.id,
                                                       SchedulePath.path == 'group')""",
                                   viewonly=True)
-
     groups = association_proxy('schedule_groups', 'group')
+
+    schedule_outcalls = relationship('SchedulePath',
+                                  primaryjoin="""and_(SchedulePath.schedule_id == Schedule.id,
+                                                      SchedulePath.path == 'outcall')""",
+                                  viewonly=True)
+    outcalls = association_proxy('schedule_outcalls', 'outcall')
 
     @property
     def open_periods(self):
