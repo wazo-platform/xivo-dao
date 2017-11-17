@@ -30,11 +30,11 @@ class SchedulePath(Base):
                           back_populates='schedule_paths')
 
     group = relationship('GroupFeatures',
-                          primaryjoin="""and_(SchedulePath.path == 'group',
-                                              SchedulePath.pathid == GroupFeatures.id)""",
-                          foreign_keys='SchedulePath.pathid',
-                          viewonly=True,
-                          back_populates='schedule_paths')
+                         primaryjoin="""and_(SchedulePath.path == 'group',
+                                             SchedulePath.pathid == GroupFeatures.id)""",
+                         foreign_keys='SchedulePath.pathid',
+                         viewonly=True,
+                         back_populates='schedule_paths')
 
     outcall = relationship('Outcall',
                            primaryjoin="""and_(SchedulePath.path == 'outcall',

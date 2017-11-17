@@ -60,15 +60,15 @@ class Schedule(Base):
     users = association_proxy('schedule_users', 'user')
 
     schedule_groups = relationship('SchedulePath',
-                                  primaryjoin="""and_(SchedulePath.schedule_id == Schedule.id,
-                                                      SchedulePath.path == 'group')""",
-                                  viewonly=True)
+                                   primaryjoin="""and_(SchedulePath.schedule_id == Schedule.id,
+                                                       SchedulePath.path == 'group')""",
+                                   viewonly=True)
     groups = association_proxy('schedule_groups', 'group')
 
     schedule_outcalls = relationship('SchedulePath',
-                                  primaryjoin="""and_(SchedulePath.schedule_id == Schedule.id,
-                                                      SchedulePath.path == 'outcall')""",
-                                  viewonly=True)
+                                     primaryjoin="""and_(SchedulePath.schedule_id == Schedule.id,
+                                                         SchedulePath.path == 'outcall')""",
+                                     viewonly=True)
     outcalls = association_proxy('schedule_outcalls', 'outcall')
 
     @property

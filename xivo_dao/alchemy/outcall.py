@@ -69,7 +69,6 @@ class Outcall(Base):
                                                                          schedule_id=_schedule.id,
                                                                          schedule=_schedule))
 
-
     @hybrid_property
     def internal_caller_id(self):
         return self.internal == 1
