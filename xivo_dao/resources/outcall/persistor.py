@@ -4,7 +4,6 @@
 
 from xivo_dao.alchemy.outcall import Outcall
 from xivo_dao.alchemy.rightcallmember import RightCallMember
-from xivo_dao.alchemy.schedulepath import SchedulePath
 
 from xivo_dao.helpers import errors
 from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
@@ -58,11 +57,6 @@ class OutcallPersistor(CriteriaBuilderMixin):
         (self.session.query(RightCallMember)
          .filter(RightCallMember.type == 'outcall')
          .filter(RightCallMember.typeval == str(outcall.id))
-         .delete())
-
-        (self.session.query(SchedulePath)
-         .filter(SchedulePath.path == 'outcall')
-         .filter(SchedulePath.pathid == outcall.id)
          .delete())
 
         for extension in outcall.extensions:

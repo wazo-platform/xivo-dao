@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao.alchemy.userfeatures import UserFeatures as User
-from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
@@ -102,9 +101,6 @@ class UserPersistor(CriteriaBuilderMixin):
          .delete())
         (self.session.query(Dialaction).filter(Dialaction.category == 'user')
          .filter(Dialaction.categoryval == str(user.id))
-         .delete())
-        (self.session.query(SchedulePath).filter(SchedulePath.path == 'user')
-         .filter(SchedulePath.pathid == user.id)
          .delete())
         self.session.delete(user)
         self.session.flush()
