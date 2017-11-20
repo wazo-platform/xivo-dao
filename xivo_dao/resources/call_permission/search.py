@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
-
 # Copyright (C) 2016 Avencall
-#
 # SPDX-License-Identifier: GPL-3.0+
-
 
 from xivo_dao.alchemy.rightcall import RightCall as CallPermission
 from xivo_dao.resources.utils.search import SearchSystem

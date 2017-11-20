@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-
 # Copyright (C) 2013-2015 Avencall
-#
 # SPDX-License-Identifier: GPL-3.0+
 from hamcrest import assert_that, all_of, has_property, equal_to
 from hamcrest.core.base_matcher import BaseMatcher

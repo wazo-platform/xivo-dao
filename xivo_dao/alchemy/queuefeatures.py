@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-
 # Copyright (C) 2007-2016 Avencall
-#
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION

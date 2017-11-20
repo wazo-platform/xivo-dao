@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
-
 # Copyright (C) 2014-2016 Avencall
-#
 # SPDX-License-Identifier: GPL-3.0+
-
 
 from xivo_dao.resources.incall.persistor import IncallPersistor
 from xivo_dao.resources.incall.search import incall_search

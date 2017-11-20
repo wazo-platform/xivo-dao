@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
-
 # Copyright (C) 2014 Avencall
-#
 # SPDX-License-Identifier: GPL-3.0+
-
 
 from sqlalchemy.schema import Column, ForeignKey, CheckConstraint, \
     ForeignKeyConstraint

@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
-
 # Copyright (C) 2016 Avencall
-#
 # SPDX-License-Identifier: GPL-3.0+
-
 
 from xivo_dao.alchemy.incall import Incall
 from xivo_dao.resources.utils.search import (SearchSystem,

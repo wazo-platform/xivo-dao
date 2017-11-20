@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
-
 # Copyright (C) 2013-2016 Avencall
-#
 # SPDX-License-Identifier: GPL-3.0+
-
 
 from xivo_dao.helpers.db_manager import Session
 from xivo_dao.resources.line_extension.persistor import LineExtensionPersistor

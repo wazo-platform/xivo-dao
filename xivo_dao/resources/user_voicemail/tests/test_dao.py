@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-
 # Copyright 2013-2016 The Wazo Authors  (see the AUTHORS file)
-#
 # SPDX-License-Identifier: GPL-3.0+
 
 from hamcrest import assert_that, has_property, equal_to, none, contains, has_properties, contains_inanyorder
