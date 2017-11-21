@@ -89,7 +89,7 @@ class UserSIP(Base):
     insecure = Column(Enum('port', 'invite', 'port,invite',
                            name='usersip_insecure',
                            metadata=Base.metadata))
-    nat = Column(Enum('no', 'force_rport', 'comedia', 'force_rport,comedia',
+    nat = Column(Enum('no', 'force_rport', 'comedia', 'force_rport,comedia', 'auto_force_rport','auto_comedia',
                       name='usersip_nat',
                       metadata=Base.metadata))
     promiscredir = Column(Integer)
