@@ -850,6 +850,10 @@ class ItemInserter(object):
         self.add_me(static_sip)
         return static_sip
 
+    def add_register_sip(self, **kwargs):
+        kwargs.setdefault('var_name', 'register')
+        return self.add_sip_general_settings(**kwargs)
+
     def add_sip_authentication(self, **kwargs):
         kwargs.setdefault('id', self._generate_int())
         kwargs.setdefault('usersip_id', self._generate_int())
