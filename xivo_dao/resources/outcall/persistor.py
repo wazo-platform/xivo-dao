@@ -74,5 +74,6 @@ class OutcallPersistor(CriteriaBuilderMixin):
         self.session.flush()
 
     def dissociate_call_permission(self, outcall, call_permission):
-        outcall.call_permissions.remove(call_permission)
-        self.session.flush()
+        if call_permission in outcall.call_permissions:
+            outcall.call_permissions.remove(call_permission)
+            self.session.flush()

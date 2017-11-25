@@ -391,3 +391,13 @@ class TestDissociateCallPermission(DAOTestCase):
         result = self.session.query(Outcall).first()
         assert_that(result, equal_to(outcall))
         assert_that(result.call_permissions, empty())
+
+    def test_dissociate_outcall_call_permission_not_associated(self):
+        outcall = self.add_outcall()
+        call_permission = self.add_call_permission()
+
+        outcall_dao.dissociate_call_permission(outcall, call_permission)
+
+        result = self.session.query(Outcall).first()
+        assert_that(result, equal_to(outcall))
+        assert_that(result.call_permissions, empty())
