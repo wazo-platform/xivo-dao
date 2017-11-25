@@ -13,6 +13,7 @@ from sqlalchemy.types import Integer, String, Text, Boolean
 from xivo_dao.helpers.db_manager import Base
 from xivo_dao.alchemy.outcalltrunk import OutcallTrunk
 from xivo_dao.alchemy.dialpattern import DialPattern
+from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.schedulepath import SchedulePath
 
 
@@ -68,6 +69,18 @@ class Outcall(Base):
                                   creator=lambda _schedule: SchedulePath(path='outcall',
                                                                          schedule_id=_schedule.id,
                                                                          schedule=_schedule))
+
+    rightcall_members = relationship('RightCallMember',
+                                     primaryjoin="""and_(RightCallMember.type == 'outcall',
+                                                         RightCallMember.typeval == cast(Outcall.id, String))""",
+                                     foreign_keys='RightCallMember.typeval',
+                                     cascade='all, delete-orphan',
+                                     back_populates='outcall')
+    call_permissions = association_proxy('rightcall_members', 'rightcall',
+                                         creator=lambda _call_permission: RightCallMember(
+                                             type='outcall',
+                                             typeval=str(_call_permission.id),
+                                             rightcall=_call_permission))
 
     @hybrid_property
     def internal_caller_id(self):

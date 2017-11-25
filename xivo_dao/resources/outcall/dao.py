@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-# Copyright (C) 2016 Avencall
+# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from .persistor import OutcallPersistor
@@ -51,3 +51,13 @@ def edit(session, outcall):
 @daosession
 def delete(session, outcall):
     OutcallPersistor(session, outcall_search).delete(outcall)
+
+
+@daosession
+def associate_call_permission(session, outcall, call_permission):
+    OutcallPersistor(session, outcall_search).associate_call_permission(outcall, call_permission)
+
+
+@daosession
+def dissociate_call_permission(session, outcall, call_permission):
+    OutcallPersistor(session, outcall_search).dissociate_call_permission(outcall, call_permission)

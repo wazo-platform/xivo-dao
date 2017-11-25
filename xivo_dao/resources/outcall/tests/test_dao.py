@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2014-2016 Avencall
+# Copyright 2014-2017 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from hamcrest import (assert_that,
                       contains,
                       equal_to,
+                      empty,
                       has_items,
                       has_properties,
                       has_property,
@@ -359,3 +360,34 @@ class TestDelete(DAOTestCase):
 
         row = self.session.query(Schedule).first()
         assert_that(row.id, equal_to(schedule.id))
+
+
+class TestAssociateCallPermission(DAOTestCase):
+
+    def test_associate_call_permission(self):
+        outcall = self.add_outcall()
+        call_permission = self.add_call_permission()
+
+        result = outcall_dao.associate_call_permission(outcall, call_permission)
+
+        result = self.session.query(Outcall).first()
+        assert_that(result, equal_to(outcall))
+        assert_that(result.call_permissions, contains(call_permission))
+
+        result = self.session.query(RightCall).first()
+        assert_that(result, equal_to(call_permission))
+        assert_that(result.outcalls, contains(outcall))
+
+
+class TestDissociateCallPermission(DAOTestCase):
+
+    def test_dissociate_outcall_call_permission(self):
+        outcall = self.add_outcall()
+        call_permission = self.add_call_permission()
+        outcall_dao.associate_call_permission(outcall, call_permission)
+
+        outcall_dao.dissociate_call_permission(outcall, call_permission)
+
+        result = self.session.query(Outcall).first()
+        assert_that(result, equal_to(outcall))
+        assert_that(result.call_permissions, empty())

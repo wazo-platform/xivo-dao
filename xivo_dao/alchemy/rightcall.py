@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2013-2016 Avencall
+# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
@@ -28,6 +29,19 @@ class RightCall(Base):
     commented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text)
     rightcallextens = relationship(RightCallExten, cascade="all, delete-orphan")
+
+    rightcall_members = relationship('RightCallMember',
+                                     primaryjoin='RightCallMember.rightcallid == RightCall.id',
+                                     foreign_keys='RightCallMember.rightcallid',
+                                     cascade='all, delete-orphan',
+                                     back_populates='rightcall')
+
+    rightcall_outcalls = relationship('RightCallMember',
+                                      primaryjoin="""and_(RightCallMember.rightcallid == RightCall.id,
+                                                          RightCallMember.type == 'outcall')""",
+                                      foreign_keys='RightCallMember.rightcallid',
+                                      viewonly=True)
+    outcalls = association_proxy('rightcall_outcalls', 'outcall')
 
     @hybrid_property
     def password(self):
