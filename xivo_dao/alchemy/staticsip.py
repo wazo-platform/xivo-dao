@@ -56,4 +56,4 @@ class StaticSIP(Base):
 
     @enabled.setter
     def enabled(self, value):
-        self.commented = int(value == 0) if value is not None else None
+        self.commented = int(value == 0)
