@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2012-2014 Avencall
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2012-2017 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -90,7 +89,7 @@ class Context(Base):
 
     @enabled.setter
     def enabled(self, value):
-        self.commented = int(value == 0)
+        self.commented = int(value is False)
 
     @hybrid_property
     def user_ranges(self):

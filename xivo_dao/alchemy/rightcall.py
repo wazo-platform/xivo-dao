@@ -90,7 +90,7 @@ class RightCall(Base):
 
     @enabled.setter
     def enabled(self, value):
-        self.commented = int(value == 0)
+        self.commented = int(value is False)
 
     @property
     def extensions(self):

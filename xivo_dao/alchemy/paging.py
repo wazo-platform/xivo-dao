@@ -66,7 +66,7 @@ class Paging(Base):
 
     @enabled.setter
     def enabled(self, value):
-        self.commented = int(value == 0)
+        self.commented = int(value is False)
 
     @hybrid_property
     def duplex_bool(self):

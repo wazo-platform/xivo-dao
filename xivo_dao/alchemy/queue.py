@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2013-2014 Avencall
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -75,7 +74,7 @@ class Queue(Base):
 
     @enabled.setter
     def enabled(self, value):
-        self.commented = int(value == 0) if value is not None else None
+        self.commented = int(value is False) if value is not None else None
 
     @hybrid_property
     def ring_in_use(self):
