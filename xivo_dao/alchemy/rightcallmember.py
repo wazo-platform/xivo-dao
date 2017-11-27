@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2013-2016 Avencall
+# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
 from sqlalchemy.sql import case, cast
 from sqlalchemy.types import Integer, String, Enum
@@ -25,6 +26,18 @@ class RightCallMember(Base):
                        metadata=Base.metadata),
                   nullable=False)
     typeval = Column(String(128), nullable=False, server_default='0')
+
+    outcall = relationship('Outcall',
+                           primaryjoin="""and_(RightCallMember.type == 'outcall',
+                                               RightCallMember.typeval == cast(Outcall.id, String))""",
+                           foreign_keys='RightCallMember.typeval',
+                           viewonly=True,
+                           back_populates='rightcall_members')
+
+    rightcall = relationship('RightCall',
+                             primaryjoin='RightCall.id == RightCallMember.rightcallid',
+                             foreign_keys='RightCallMember.rightcallid',
+                             back_populates='rightcall_members')
 
     @hybrid_property
     def call_permission_id(self):

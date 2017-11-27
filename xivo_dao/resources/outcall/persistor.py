@@ -1,11 +1,9 @@
 # -*- coding: UTF-8 -*-
-# Copyright (C) 2016 Avencall
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao.alchemy.outcall import Outcall
 from xivo_dao.alchemy.rightcallmember import RightCallMember
-from xivo_dao.alchemy.schedulepath import SchedulePath
 
 from xivo_dao.helpers import errors
 from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
@@ -61,11 +59,15 @@ class OutcallPersistor(CriteriaBuilderMixin):
          .filter(RightCallMember.typeval == str(outcall.id))
          .delete())
 
-        (self.session.query(SchedulePath)
-         .filter(SchedulePath.path == 'outcall')
-         .filter(SchedulePath.pathid == outcall.id)
-         .delete())
-
         for extension in outcall.extensions:
             extension.type = 'user'
             extension.typeval = '0'
+
+    def associate_call_permission(self, outcall, call_permission):
+        outcall.call_permissions.append(call_permission)
+        self.session.flush()
+
+    def dissociate_call_permission(self, outcall, call_permission):
+        if call_permission in outcall.call_permissions:
+            outcall.call_permissions.remove(call_permission)
+            self.session.flush()
