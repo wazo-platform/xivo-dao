@@ -25,12 +25,14 @@ from xivo_dao.alchemy.paging import Paging
 from xivo_dao.alchemy.paginguser import PagingUser
 from xivo_dao.alchemy.parking_lot import ParkingLot
 from xivo_dao.alchemy.queuemember import QueueMember
-from xivo_dao.alchemy.schedule_time import ScheduleTime
+from xivo_dao.alchemy.rightcall import RightCall
+from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.sccpline import SCCPLine
+from xivo_dao.alchemy.schedule import Schedule
+from xivo_dao.alchemy.schedule_time import ScheduleTime
+from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.switchboard import Switchboard
 from xivo_dao.alchemy.switchboard_member_user import SwitchboardMemberUser
-from xivo_dao.alchemy.schedule import Schedule
-from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.usercustom import UserCustom
