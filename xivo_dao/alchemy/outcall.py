@@ -121,7 +121,7 @@ class Outcall(Base):
 
     @enabled.setter
     def enabled(self, value):
-        self.commented = int(value == 0)
+        self.commented = int(value is False)
 
     def associate_extension(self, extension, **kwargs):
         extension.type = 'outcall'
