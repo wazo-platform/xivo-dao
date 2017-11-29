@@ -589,3 +589,44 @@ class TestAssociateMemberExtensions(DAOTestCase):
 
         row = self.session.query(QueueMember).first()
         assert_that(row, none())
+
+
+class TestAssociateCallPermission(DAOTestCase):
+
+    def test_associate_call_permission(self):
+        group = self.add_group()
+        call_permission = self.add_call_permission()
+
+        result = group_dao.associate_call_permission(group, call_permission)
+
+        result = self.session.query(Group).first()
+        assert_that(result, equal_to(group))
+        assert_that(result.call_permissions, contains(call_permission))
+
+        result = self.session.query(RightCall).first()
+        assert_that(result, equal_to(call_permission))
+        assert_that(result.groups, contains(group))
+
+
+class TestDissociateCallPermission(DAOTestCase):
+
+    def test_dissociate_group_call_permission(self):
+        group = self.add_group()
+        call_permission = self.add_call_permission()
+        group_dao.associate_call_permission(group, call_permission)
+
+        group_dao.dissociate_call_permission(group, call_permission)
+
+        result = self.session.query(Group).first()
+        assert_that(result, equal_to(group))
+        assert_that(result.call_permissions, empty())
+
+    def test_dissociate_group_call_permission_not_associated(self):
+        group = self.add_group()
+        call_permission = self.add_call_permission()
+
+        group_dao.dissociate_call_permission(group, call_permission)
+
+        result = self.session.query(Group).first()
+        assert_that(result, equal_to(group))
+        assert_that(result.call_permissions, empty())

@@ -27,6 +27,13 @@ class RightCallMember(Base):
                   nullable=False)
     typeval = Column(String(128), nullable=False, server_default='0')
 
+    group = relationship('GroupFeatures',
+                         primaryjoin="""and_(RightCallMember.type == 'group',
+                                             RightCallMember.typeval == cast(GroupFeatures.id, String))""",
+                         foreign_keys='RightCallMember.typeval',
+                         viewonly=True,
+                         back_populates='rightcall_members')
+
     outcall = relationship('Outcall',
                            primaryjoin="""and_(RightCallMember.type == 'outcall',
                                                RightCallMember.typeval == cast(Outcall.id, String))""",
