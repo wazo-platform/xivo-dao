@@ -4,7 +4,6 @@
 
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.groupfeatures import GroupFeatures as Group
-from xivo_dao.alchemy.rightcallmember import RightCallMember
 
 from xivo_dao.helpers import errors
 from xivo_dao.helpers.db_manager import Session
@@ -56,11 +55,6 @@ class GroupPersistor(CriteriaBuilderMixin):
         self.session.flush()
 
     def _delete_associations(self, group):
-        (self.session.query(RightCallMember)
-         .filter(RightCallMember.type == 'group')
-         .filter(RightCallMember.typeval == str(group.id))
-         .delete())
-
         (self.session.query(Dialaction)
          .filter(Dialaction.action == 'group')
          .filter(Dialaction.actionarg1 == str(group.id))
