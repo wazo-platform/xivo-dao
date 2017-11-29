@@ -76,8 +76,9 @@ class GroupPersistor(CriteriaBuilderMixin):
         self.session.flush()
 
     def associate_call_permission(self, group, call_permission):
-        group.call_permissions.append(call_permission)
-        self.session.flush()
+        if call_permission not in group.call_permissions:
+            group.call_permissions.append(call_permission)
+            self.session.flush()
 
     def dissociate_call_permission(self, group, call_permission):
         if call_permission in group.call_permissions:

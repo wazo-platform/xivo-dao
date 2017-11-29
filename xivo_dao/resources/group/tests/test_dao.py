@@ -607,6 +607,21 @@ class TestAssociateCallPermission(DAOTestCase):
         assert_that(result, equal_to(call_permission))
         assert_that(result.groups, contains(group))
 
+    def test_associate_group_call_permission_already_associated(self):
+        group = self.add_group()
+        call_permission = self.add_call_permission()
+        group_dao.associate_call_permission(group, call_permission)
+
+        result = group_dao.associate_call_permission(group, call_permission)
+
+        result = self.session.query(Group).first()
+        assert_that(result, equal_to(group))
+        assert_that(result.call_permissions, contains(call_permission))
+
+        result = self.session.query(RightCall).first()
+        assert_that(result, equal_to(call_permission))
+        assert_that(result.groups, contains(group))
+
 
 class TestDissociateCallPermission(DAOTestCase):
 
