@@ -61,3 +61,13 @@ def associate_all_member_users(session, group, members):
 @daosession
 def associate_all_member_extensions(session, group, members):
     GroupPersistor(session, group_search).associate_all_member_extensions(group, members)
+
+
+@daosession
+def associate_call_permission(session, group, call_permission):
+    GroupPersistor(session, group_search).associate_call_permission(group, call_permission)
+
+
+@daosession
+def dissociate_call_permission(session, group, call_permission):
+    GroupPersistor(session, group_search).dissociate_call_permission(group, call_permission)

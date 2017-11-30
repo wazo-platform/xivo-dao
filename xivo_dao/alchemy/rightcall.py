@@ -43,6 +43,20 @@ class RightCall(Base):
                                       viewonly=True)
     outcalls = association_proxy('rightcall_outcalls', 'outcall')
 
+    rightcall_outcalls = relationship('RightCallMember',
+                                      primaryjoin="""and_(RightCallMember.rightcallid == RightCall.id,
+                                                          RightCallMember.type == 'outcall')""",
+                                      foreign_keys='RightCallMember.rightcallid',
+                                      viewonly=True)
+    outcalls = association_proxy('rightcall_outcalls', 'outcall')
+
+    rightcall_groups = relationship('RightCallMember',
+                                    primaryjoin="""and_(RightCallMember.rightcallid == RightCall.id,
+                                                        RightCallMember.type == 'group')""",
+                                    foreign_keys='RightCallMember.rightcallid',
+                                    viewonly=True)
+    groups = association_proxy('rightcall_groups', 'group')
+
     @hybrid_property
     def password(self):
         if self.passwd == '':
