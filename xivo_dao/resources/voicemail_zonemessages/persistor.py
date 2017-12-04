@@ -23,6 +23,7 @@ class VoicemailZoneMessagesPersistor(object):
 
     def _fill_default_values(self, voicemail_zonemessages):
         for setting in voicemail_zonemessages:
+            setting.cat_metric = 1
             setting.filename = 'voicemail.conf'
             setting.category = 'zonemessages'
         return voicemail_zonemessages

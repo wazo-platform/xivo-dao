@@ -9,6 +9,7 @@ from hamcrest import (
     contains_inanyorder,
     empty,
     equal_to,
+    has_properties,
 )
 
 from xivo_dao.alchemy.staticvoicemail import StaticVoicemail
@@ -70,3 +71,15 @@ class TestEditAll(DAOTestCase):
 
         voicemail_zonemessages = voicemail_zonemessages_dao.find_all()
         assert_that(voicemail_zonemessages, contains_inanyorder(row3, row4, row2, row1))
+
+    def test_default_values(self):
+        row = StaticVoicemail(var_name='setting', var_val='value')
+
+        voicemail_zonemessages_dao.edit_all([row])
+
+        voicemail_zonemessages = voicemail_zonemessages_dao.find_all()
+        assert_that(voicemail_zonemessages, contains_inanyorder(
+            has_properties(cat_metric=1,
+                           filename='voicemail.conf',
+                           category='zonemessages')
+        ))
