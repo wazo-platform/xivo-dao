@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2016 Avencall
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from __future__ import unicode_literals
@@ -110,6 +109,16 @@ class TestEditAll(DAOTestCase):
         assert_that(self.session.query(StaticSIP)
                     .filter(StaticSIP.var_name == 'register')
                     .first(), equal_to(row1))
+
+    def test_delete_old_entries(self):
+        self.add_sip_general_settings()
+        self.add_sip_general_settings()
+        row = StaticSIP(var_name='nat', var_val='value1')
+
+        sip_general_dao.edit_all([row])
+
+        sip_general = sip_general_dao.find_all()
+        assert_that(sip_general, equal_to([row]))
 
 
 class TestTable(DAOTestCase):
