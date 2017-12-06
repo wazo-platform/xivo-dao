@@ -1,6 +1,5 @@
 # -*- coding: UTF-8 -*-
-# Copyright (C) 2016 Avencall
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao.alchemy.staticsip import StaticSIP
@@ -28,7 +27,7 @@ class SIPGeneralPersistor(object):
         self.session.flush()
 
     def _fill_default_values(self, sip_general):
-        for var_metric, setting in enumerate(sip_general):
+        for setting in sip_general:
             setting.filename = 'sip.conf'
             setting.category = 'general'
         return sip_general

@@ -6,9 +6,9 @@ from __future__ import unicode_literals
 
 from hamcrest import (
     assert_that,
+    contains,
     contains_inanyorder,
     empty,
-    equal_to,
     has_properties,
 )
 
@@ -46,7 +46,7 @@ class TestFindAll(DAOTestCase):
 
         voicemail_zonemessages = voicemail_zonemessages_dao.find_all()
 
-        assert_that(voicemail_zonemessages, equal_to([row2]))
+        assert_that(voicemail_zonemessages, contains(row2))
 
     def test_find_all_do_not_find_var_val_none(self):
         self.add_voicemail_zonemessages_settings(var_name='setting1',
@@ -56,7 +56,7 @@ class TestFindAll(DAOTestCase):
 
         voicemail_zonemessages = voicemail_zonemessages_dao.find_all()
 
-        assert_that(voicemail_zonemessages, equal_to([row2]))
+        assert_that(voicemail_zonemessages, contains(row2))
 
 
 class TestEditAll(DAOTestCase):
