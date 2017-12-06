@@ -4,10 +4,13 @@
 
 from __future__ import unicode_literals
 
-from hamcrest import (assert_that,
-                      empty,
-                      equal_to,
-                      none)
+from hamcrest import (
+    assert_that,
+    contains,
+    empty,
+    equal_to,
+    none,
+)
 
 from xivo_dao.alchemy.staticsip import StaticSIP
 from xivo_dao.resources.sip_general import dao as sip_general_dao
@@ -57,7 +60,7 @@ class TestFindAll(DAOTestCase):
 
         sip_general = sip_general_dao.find_all()
 
-        assert_that(sip_general, equal_to([row3, row2, row1, row4]))
+        assert_that(sip_general, contains(row3, row2, row1, row4))
 
     def test_find_all_do_not_find_register(self):
         self.add_sip_general_settings(var_metric=1,
@@ -69,7 +72,7 @@ class TestFindAll(DAOTestCase):
 
         sip_general = sip_general_dao.find_all()
 
-        assert_that(sip_general, equal_to([row2]))
+        assert_that(sip_general, contains(row2))
 
     def test_find_all_do_not_find_var_val_none(self):
         self.add_sip_general_settings(var_metric=1,
@@ -81,7 +84,7 @@ class TestFindAll(DAOTestCase):
 
         sip_general = sip_general_dao.find_all()
 
-        assert_that(sip_general, equal_to([row2]))
+        assert_that(sip_general, contains(row2))
 
 
 class TestEditAll(DAOTestCase):
@@ -95,7 +98,7 @@ class TestEditAll(DAOTestCase):
         sip_general_dao.edit_all([row3, row4, row2, row1])
 
         sip_general = sip_general_dao.find_all()
-        assert_that(sip_general, equal_to([row3, row4, row2, row1]))
+        assert_that(sip_general, contains(row3, row4, row2, row1))
 
     def test_edit_all_do_not_delete_register(self):
         row1 = self.add_sip_general_settings(var_metric=1,
@@ -118,7 +121,7 @@ class TestEditAll(DAOTestCase):
         sip_general_dao.edit_all([row])
 
         sip_general = sip_general_dao.find_all()
-        assert_that(sip_general, equal_to([row]))
+        assert_that(sip_general, contains(row))
 
 
 class TestTable(DAOTestCase):

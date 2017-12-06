@@ -2,12 +2,15 @@
 # Copyright 2017 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
-from hamcrest import (assert_that,
-                      calling,
-                      contains_inanyorder,
-                      equal_to,
-                      none,
-                      raises)
+from hamcrest import (
+    assert_that,
+    calling,
+    contains,
+    contains_inanyorder,
+    equal_to,
+    none,
+    raises,
+)
 from sqlalchemy.exc import IntegrityError
 from xivo_dao.alchemy.call_log import CallLog
 from xivo_dao.alchemy.call_log_participant import CallLogParticipant
@@ -79,7 +82,7 @@ class TestCallLogs(DAOTestCase):
         call_log = self.add_call_log()
         call_log.cel_ids = [cel_id1, cel_id2]
 
-        assert_that(call_log.cel_ids, equal_to([cel_id1, cel_id2]))
+        assert_that(call_log.cel_ids, contains(cel_id1, cel_id2))
 
     def test_direction_constraint_invalid(self):
         assert_that(calling(self.add_call_log).with_args(direction='invalid'),

@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 from hamcrest import (
     assert_that,
+    contains,
     contains_inanyorder,
     empty,
     equal_to,
@@ -31,7 +32,7 @@ class TestFindAll(DAOTestCase):
 
         voicemail_general = voicemail_general_dao.find_all()
 
-        assert_that(voicemail_general, equal_to([row3, row2, row1, row4]))
+        assert_that(voicemail_general, contains(row3, row2, row1, row4))
 
     def test_find_all_do_not_find_register(self):
         self.add_voicemail_general_settings(category='zonemessages')
@@ -39,7 +40,7 @@ class TestFindAll(DAOTestCase):
 
         voicemail_general = voicemail_general_dao.find_all()
 
-        assert_that(voicemail_general, equal_to([row2]))
+        assert_that(voicemail_general, contains(row2))
 
     def test_find_all_do_not_find_var_val_none(self):
         self.add_voicemail_general_settings(var_metric=1,
@@ -51,7 +52,7 @@ class TestFindAll(DAOTestCase):
 
         voicemail_general = voicemail_general_dao.find_all()
 
-        assert_that(voicemail_general, equal_to([row2]))
+        assert_that(voicemail_general, contains(row2))
 
 
 class TestEditAll(DAOTestCase):
@@ -85,4 +86,4 @@ class TestEditAll(DAOTestCase):
         voicemail_general_dao.edit_all([row])
 
         voicemail_general = voicemail_general_dao.find_all()
-        assert_that(voicemail_general, equal_to([row]))
+        assert_that(voicemail_general, contains(row))
