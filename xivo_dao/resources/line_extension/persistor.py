@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-# Copyright (C) 2015-2016 Avencall
+# Copyright 2015-2017 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao.resources.utils.search import CriteriaBuilderMixin
@@ -34,6 +34,10 @@ class LineExtensionPersistor(CriteriaBuilderMixin):
         return self.find_query(**criteria).all()
 
     def associate_line_extension(self, line, extension):
+        line_extension = self.find_by(line_id=line.id, extension_id=extension.id)
+        if line_extension:
+            return line_extension
+
         line_main_extension = self.find_by(main_extension=True, line_id=line.id)
 
         line_extension = LineExtension(line_id=line.id,
@@ -48,7 +52,9 @@ class LineExtensionPersistor(CriteriaBuilderMixin):
         return line_extension
 
     def dissociate_line_extension(self, line, extension):
-        line_extension = self.get_by(line_id=line.id, extension_id=extension.id)
+        line_extension = self.find_by(line_id=line.id, extension_id=extension.id)
+        if not line_extension:
+            return
 
         if line_extension.main_extension:
             self._set_oldest_main_extension(line)
