@@ -191,6 +191,17 @@ class TestAssociateExtension(DAOTestCase):
         assert_that(outcall, equal_to(outcall_row))
         assert_that(outcall.extensions, contains_inanyorder(extension1_row, extension2_row, extension3_row))
 
+    def test_associate_already_associated(self):
+        outcall_row = self.add_outcall()
+        extension_row = self.add_extension()
+        outcall_row.associate_extension(extension_row)
+
+        outcall_row.associate_extension(extension_row)
+
+        outcall = self.session.query(Outcall).filter_by(id=outcall_row.id).first()
+        assert_that(outcall, equal_to(outcall_row))
+        assert_that(outcall.extensions, contains_inanyorder(extension_row))
+
 
 class TestDissociateExtension(DAOTestCase):
 
@@ -217,6 +228,19 @@ class TestDissociateExtension(DAOTestCase):
         assert_that(rows, contains_inanyorder(has_properties(type='user', typeval='0'),
                                               has_properties(type='user', typeval='0'),
                                               has_properties(type='user', typeval='0')))
+
+        row = self.session.query(DialPattern).first()
+        assert_that(row, none())
+
+    def test_dissociate_not_associated(self):
+        outcall_row = self.add_outcall()
+        extension_row = self.add_extension()
+
+        outcall_row.dissociate_extension(extension_row)
+
+        outcall = self.session.query(Outcall).filter_by(id=outcall_row.id).first()
+        assert_that(outcall, equal_to(outcall_row))
+        assert_that(outcall.extensions, empty())
 
         row = self.session.query(DialPattern).first()
         assert_that(row, none())
