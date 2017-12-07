@@ -64,8 +64,9 @@ class OutcallPersistor(CriteriaBuilderMixin):
             extension.typeval = '0'
 
     def associate_call_permission(self, outcall, call_permission):
-        outcall.call_permissions.append(call_permission)
-        self.session.flush()
+        if call_permission not in outcall.call_permissions:
+            outcall.call_permissions.append(call_permission)
+            self.session.flush()
 
     def dissociate_call_permission(self, outcall, call_permission):
         if call_permission in outcall.call_permissions:
