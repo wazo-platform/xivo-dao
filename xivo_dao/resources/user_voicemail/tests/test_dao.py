@@ -1,13 +1,22 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2016 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
-from hamcrest import assert_that, has_property, equal_to, none, contains, has_properties, contains_inanyorder
+from hamcrest import (
+    assert_that,
+    contains,
+    contains_inanyorder,
+    equal_to,
+    has_properties,
+    has_property,
+    none,
+)
 
 from xivo_dao.alchemy.userfeatures import UserFeatures
-from xivo_dao.resources.user_voicemail import dao as user_voicemail_dao
 from xivo_dao.helpers.exception import NotFoundError
 from xivo_dao.tests.test_dao import DAOTestCase
+
+from .. import dao as user_voicemail_dao
 
 
 class TestUserVoicemail(DAOTestCase):
@@ -146,10 +155,18 @@ class TestDissociateUserVoicemail(TestUserVoicemail):
 
         user_voicemail_dao.dissociate(user_row, voicemail_row)
 
-        self.assert_user_was_dissociated_from_voicemail(user_row.id)
+        result = self.session.query(UserFeatures).get(user_row.id)
+        assert_that(result.voicemailid, none())
+        assert_that(result.enablevoicemail, equal_to(0))
 
-    def assert_user_was_dissociated_from_voicemail(self, user_id):
-        result_user_row = self.session.query(UserFeatures).get(user_id)
+    def test_dissociate_not_associated(self):
+        voicemail1 = self.add_voicemail(mailbox='1000', context='default')
+        voicemail2 = self.add_voicemail(mailbox='1001', context='default')
+        user = self.add_user(voicemailid=voicemail1.uniqueid,
+                             enablevoicemail=1)
 
-        assert_that(result_user_row.voicemailid, none())
-        assert_that(result_user_row.enablevoicemail, equal_to(0))
+        user_voicemail_dao.dissociate(user, voicemail2)
+
+        result = self.session.query(UserFeatures).get(user.id)
+        assert_that(result.voicemailid, voicemail1.uniqueid)
+        assert_that(result.enablevoicemail, equal_to(1))

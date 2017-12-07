@@ -73,6 +73,7 @@ def associate(session, user, voicemail):
 @daosession
 def dissociate(session, user, voicemail):
     with flush_session(session):
-        user.voicemailid = None
-        user.enablevoicemail = 0
-        session.add(user)
+        if user.voicemail is voicemail:
+            user.voicemailid = None
+            user.enablevoicemail = 0
+            session.add(user)
