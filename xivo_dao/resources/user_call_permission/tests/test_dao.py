@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2016 Avencall
+# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from hamcrest import (assert_that,
@@ -161,6 +161,16 @@ class TestAssociate(DAOTestCase):
         assert_that(result, has_properties({'user_id': user.id,
                                             'call_permission_id': call_permission.id}))
 
+    def test_associate_user_with_call_permission_already_associated(self):
+        user = self.add_user()
+        call_permission = self.add_call_permission()
+        user_call_permission_dao.associate(user, call_permission)
+
+        result = user_call_permission_dao.associate(user, call_permission)
+
+        assert_that(result, has_properties({'user_id': user.id,
+                                            'call_permission_id': call_permission.id}))
+
 
 class TestDissociate(DAOTestCase):
 
@@ -171,6 +181,18 @@ class TestDissociate(DAOTestCase):
 
         result = (self.session.query(UserCallPermission)
                   .filter(UserCallPermission.id == user_call_permission.id)
+                  .first())
+
+        assert_that(result, none())
+
+    def test_dissociate_user_call_permission_not_associated(self):
+        user = self.add_user()
+        call_permission = self.add_call_permission()
+
+        user_call_permission_dao.dissociate(user, call_permission)
+
+        result = (self.session.query(UserCallPermission)
+                  .filter(UserCallPermission.id == user.id)
                   .first())
 
         assert_that(result, none())

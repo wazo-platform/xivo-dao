@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-# Copyright (C) 2016 Avencall
+# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao.helpers import errors
@@ -33,15 +33,18 @@ class Persistor(CriteriaBuilderMixin):
         return query.all()
 
     def associate_user_call_permission(self, user, call_permission):
-        user_call_permission = UserCallPermission(user_id=user.id, call_permission_id=call_permission.id)
-        self.session.add(user_call_permission)
-        self.session.flush()
+        user_call_permission = self.find_by(user_id=user.id, call_permission_id=call_permission.id)
+        if not user_call_permission:
+            user_call_permission = UserCallPermission(user_id=user.id, call_permission_id=call_permission.id)
+            self.session.add(user_call_permission)
+            self.session.flush()
         return user_call_permission
 
     def dissociate_user_call_permission(self, user, call_permission):
-        user_call_permission = self.get_by(user_id=user.id, call_permission_id=call_permission.id)
-        self.session.delete(user_call_permission)
-        self.session.flush()
+        user_call_permission = self.find_by(user_id=user.id, call_permission_id=call_permission.id)
+        if user_call_permission:
+            self.session.delete(user_call_permission)
+            self.session.flush()
         return user_call_permission
 
     def dissociate_all_call_permissions_by_user(self, user):
