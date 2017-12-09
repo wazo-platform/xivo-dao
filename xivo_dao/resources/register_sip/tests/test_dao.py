@@ -179,7 +179,7 @@ class TestDelete(DAOTestCase):
 
     def test_delete_when_associate_with_trunk(self):
         register_sip = self.add_register_sip()
-        self.add_trunk(registerid=register_sip.id, registercommented=1)
+        self.add_trunk(registerid=register_sip.id, registercommented=1, protocol='sip')
 
         register_sip_dao.delete(register_sip)
 
@@ -188,3 +188,16 @@ class TestDelete(DAOTestCase):
 
         row = self.session.query(TrunkFeatures).first()
         assert_that(row, has_properties(registerid=0, registercommented=0))
+
+    def test_delete_when_has_trunk_with_same_register_id_and_not_same_protocol(self):
+        register_sip = self.add_register_sip()
+        register_iax_id = register_sip.id
+        self.add_trunk(registerid=register_iax_id, registercommented=1, protocol='iax')
+
+        register_sip_dao.delete(register_sip)
+
+        row = self.session.query(RegisterSIP).first()
+        assert_that(row, none())
+
+        row = self.session.query(TrunkFeatures).first()
+        assert_that(row, has_properties(registerid=register_iax_id, registercommented=1))

@@ -47,6 +47,7 @@ class RegisterSIPPersistor(CriteriaBuilderMixin):
     def delete(self, register_sip):
         (self.session
          .query(TrunkFeatures)
+         .filter(TrunkFeatures.protocol == 'sip')
          .filter(TrunkFeatures.registerid == register_sip.id)
          .update({'registerid': 0, 'registercommented': 0}))
 
