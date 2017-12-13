@@ -125,6 +125,15 @@ class TestAssociateUserLine(DAOTestCase):
                                            main_user=True,
                                            main_line=True))
 
+    def test_associate_user_with_line_already_associated(self):
+        user = self.add_user()
+        line = self.add_line()
+        user_line_associated = user_line_dao.associate(user, line)
+
+        result = user_line_dao.associate(user, line)
+
+        assert_that(result, equal_to(user_line_associated))
+
     def test_associate_secondary_user_with_line(self):
         user1 = self.add_user()
         user2 = self.add_user()
@@ -194,6 +203,14 @@ class TestDissociateUserLine(DAOTestCase):
         line = self.add_line()
         self.add_user_line(user_id=user.id,
                            line_id=line.id)
+
+        user_line_dao.dissociate(user, line)
+
+        self.assert_user_line_deleted(user.id, line.id)
+
+    def test_dissociate_user_line_not_associated(self):
+        user = self.add_user()
+        line = self.add_line()
 
         user_line_dao.dissociate(user, line)
 
