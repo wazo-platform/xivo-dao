@@ -2,6 +2,7 @@
 # Copyright 2017 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
+from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint
 from sqlalchemy.types import Integer, String
 
@@ -21,3 +22,8 @@ class AsteriskFileSection(Base):
     asterisk_file_id = Column(Integer,
                               ForeignKey('asterisk_file.id', ondelete='CASCADE'),
                               nullable=False)
+
+    variables = relationship('AsteriskFileVariable',
+                             order_by='AsteriskFileVariable.priority',
+                             cascade='all, delete-orphan',
+                             passive_deletes=True)
