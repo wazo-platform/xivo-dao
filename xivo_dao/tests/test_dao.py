@@ -836,6 +836,10 @@ class ItemInserter(object):
         self.add_me(static_iax)
         return static_iax
 
+    def add_register_iax(self, **kwargs):
+        kwargs.setdefault('var_name', 'register')
+        return self.add_iax_general_settings(**kwargs)
+
     def add_sip_general_settings(self, **kwargs):
         kwargs.setdefault('id', self._generate_int())
         kwargs.setdefault('cat_metric', 0)

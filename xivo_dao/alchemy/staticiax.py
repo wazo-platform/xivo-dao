@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
-from sqlalchemy.types import Integer, String
-from sqlalchemy.sql import func
+from sqlalchemy.types import Boolean, Integer, String
+from sqlalchemy.sql import func, cast, not_
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from xivo_dao.helpers.db_manager import Base
@@ -43,3 +43,17 @@ class StaticIAX(Base):
             self.var_metric = 0
         else:
             self.var_metric = value + 1
+
+    @hybrid_property
+    def enabled(self):
+        if self.commented is None:
+            return None
+        return self.commented == 0
+
+    @enabled.expression
+    def enabled(cls):
+        return not_(cast(cls.commented, Boolean))
+
+    @enabled.setter
+    def enabled(self, value):
+        self.commented = int(value is False)
