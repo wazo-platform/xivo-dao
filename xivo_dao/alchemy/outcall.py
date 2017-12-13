@@ -124,20 +124,22 @@ class Outcall(Base):
         self.commented = int(value is False)
 
     def associate_extension(self, extension, **kwargs):
-        extension.type = 'outcall'
-        dialpattern = DialPattern(type='outcall',
-                                  exten=extension.exten,
-                                  **kwargs)
-        self.dialpatterns.append(dialpattern)
-        index = self.dialpatterns.index(dialpattern)
-        self.dialpatterns[index].extension = extension
-        self._fix_context()
+        if extension not in self.extensions:
+            extension.type = 'outcall'
+            dialpattern = DialPattern(type='outcall',
+                                      exten=extension.exten,
+                                      **kwargs)
+            self.dialpatterns.append(dialpattern)
+            index = self.dialpatterns.index(dialpattern)
+            self.dialpatterns[index].extension = extension
+            self._fix_context()
 
     def dissociate_extension(self, extension):
-        self.extensions.remove(extension)
-        extension.type = 'user'
-        extension.typeval = '0'
-        self._fix_context()
+        if extension in self.extensions:
+            self.extensions.remove(extension)
+            extension.type = 'user'
+            extension.typeval = '0'
+            self._fix_context()
 
     def update_extension_association(self, extension, **kwargs):
         for dialpattern in self.dialpatterns:

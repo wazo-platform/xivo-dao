@@ -378,6 +378,17 @@ class TestAssociateCallPermission(DAOTestCase):
         assert_that(result, equal_to(call_permission))
         assert_that(result.outcalls, contains(outcall))
 
+    def test_associate_already_associated(self):
+        outcall = self.add_outcall()
+        call_permission = self.add_call_permission()
+        outcall_dao.associate_call_permission(outcall, call_permission)
+
+        outcall_dao.associate_call_permission(outcall, call_permission)
+
+        result = self.session.query(Outcall).first()
+        assert_that(result, equal_to(outcall))
+        assert_that(result.call_permissions, contains(call_permission))
+
 
 class TestDissociateCallPermission(DAOTestCase):
 

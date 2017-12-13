@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2013-2016 Avencall
+# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from hamcrest import (assert_that,
@@ -40,6 +40,15 @@ class TestAssociateLineExtension(TestLineExtensionDAO):
         assert_that(result, has_properties(line_id=line.id,
                                            extension_id=extension.id))
         self.assert_extension_is_associated(line.id, extension.id)
+
+    def test_associate_already_associated(self):
+        line = self.add_line()
+        extension = self.add_extension()
+        line_extension_associated = dao.associate(line, extension)
+
+        result = dao.associate(line, extension)
+
+        assert_that(result, equal_to(line_extension_associated))
 
     def test_associate_line_multiple_extensions(self):
         line = self.add_line()
@@ -192,6 +201,14 @@ class TestDissociateLineExtension(TestLineExtensionDAO):
         extension = self.add_extension()
         self.add_line_extension(line_id=line.id,
                                 extension_id=extension.id)
+
+        dao.dissociate(line, extension)
+
+        self.assert_line_extension_deleted(line.id, extension.id)
+
+    def test_dissociate_not_associated(self):
+        line = self.add_line()
+        extension = self.add_extension()
 
         dao.dissociate(line, extension)
 

@@ -38,6 +38,10 @@ class Persistor(CriteriaBuilderMixin):
         return self.find_query(criteria).all()
 
     def associate_user_line(self, user, line):
+        user_line = self.find_by(user_id=user.id, line_id=line.id)
+        if user_line:
+            return user_line
+
         main_user_line = self.find_by(main_user=True, line_id=line.id)
         user_main_line = self.find_by(main_line=True, user_id=user.id)
 
@@ -53,7 +57,10 @@ class Persistor(CriteriaBuilderMixin):
         return user_line
 
     def dissociate_user_line(self, user, line):
-        user_line = self.get_by(user_id=user.id, line_id=line.id)
+        user_line = self.find_by(user_id=user.id, line_id=line.id)
+        if not user_line:
+            return
+
         self.delete_queue_member(user_line)
 
         if user_line.main_line:

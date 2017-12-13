@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-# Copyright 2015-2016 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2017 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy.orm import joinedload
@@ -78,10 +78,11 @@ class ExtensionPersistor(CriteriaBuilderMixin):
         self.session.expire(incall, ['extensions'])
 
     def dissociate_incall(self, incall, extension):
-        extension.type = 'user'
-        extension.typeval = '0'
-        self.session.flush()
-        self.session.expire(incall, ['extensions'])
+        if incall is extension.incall:
+            extension.type = 'user'
+            extension.typeval = '0'
+            self.session.flush()
+            self.session.expire(incall, ['extensions'])
 
     def associate_group(self, group, extension):
         extension.type = 'group'
@@ -90,10 +91,11 @@ class ExtensionPersistor(CriteriaBuilderMixin):
         self.session.expire(group, ['extensions'])
 
     def dissociate_group(self, group, extension):
-        extension.type = 'user'
-        extension.typeval = '0'
-        self.session.flush()
-        self.session.expire(group, ['extensions'])
+        if group is extension.group:
+            extension.type = 'user'
+            extension.typeval = '0'
+            self.session.flush()
+            self.session.expire(group, ['extensions'])
 
     def associate_conference(self, conference, extension):
         extension.type = 'conference'
@@ -102,10 +104,11 @@ class ExtensionPersistor(CriteriaBuilderMixin):
         self.session.expire(conference, ['extensions'])
 
     def dissociate_conference(self, conference, extension):
-        extension.type = 'user'
-        extension.typeval = '0'
-        self.session.flush()
-        self.session.expire(conference, ['extensions'])
+        if conference is extension.conference:
+            extension.type = 'user'
+            extension.typeval = '0'
+            self.session.flush()
+            self.session.expire(conference, ['extensions'])
 
     def associate_parking_lot(self, parking_lot, extension):
         extension.type = 'parking'
@@ -114,7 +117,8 @@ class ExtensionPersistor(CriteriaBuilderMixin):
         self.session.expire(parking_lot, ['extensions'])
 
     def dissociate_parking_lot(self, parking_lot, extension):
-        extension.type = 'user'
-        extension.typeval = '0'
-        self.session.flush()
-        self.session.expire(parking_lot, ['extensions'])
+        if parking_lot is extension.parking_lot:
+            extension.type = 'user'
+            extension.typeval = '0'
+            self.session.flush()
+            self.session.expire(parking_lot, ['extensions'])

@@ -665,6 +665,15 @@ class TestAssociateGroup(DAOTestCase):
                                           number=None,
                                           queue=has_properties(context=None)))
 
+    def test_dissociate_group_not_associated(self):
+        extension = self.add_extension(typeval='123')
+        group = self.add_group()
+
+        extension_dao.dissociate_group(group, extension)
+
+        result = self.session.query(Extension).first()
+        assert_that(result, has_properties(typeval='123'))
+
 
 class TestAssociateIncall(DAOTestCase):
 
@@ -714,6 +723,17 @@ class TestAssociateIncall(DAOTestCase):
         assert_that(rows, contains_inanyorder(has_properties(type='user', typeval='0'),
                                               has_properties(type='user', typeval='0'),
                                               has_properties(type='user', typeval='0')))
+
+    def test_dissociate_incall_not_associated(self):
+        extension = self.add_extension()
+        group = self.add_group()
+        extension_dao.associate_group(group, extension)
+        incall = self.add_incall()
+
+        extension_dao.dissociate_incall(incall, extension)
+
+        result = self.session.query(Extension).first()
+        assert_that(result, has_properties(typeval=str(group.id)))
 
 
 class TestAssociateConference(DAOTestCase):
@@ -765,6 +785,15 @@ class TestAssociateConference(DAOTestCase):
                                               has_properties(type='user', typeval='0'),
                                               has_properties(type='user', typeval='0')))
 
+    def test_dissociate_conference_not_associated(self):
+        extension = self.add_extension(typeval='123')
+        conference = self.add_conference()
+
+        extension_dao.dissociate_conference(conference, extension)
+
+        result = self.session.query(Extension).first()
+        assert_that(result, has_properties(typeval='123'))
+
 
 class TestAssociateParkingLot(DAOTestCase):
 
@@ -814,3 +843,12 @@ class TestAssociateParkingLot(DAOTestCase):
         assert_that(rows, contains_inanyorder(has_properties(type='user', typeval='0'),
                                               has_properties(type='user', typeval='0'),
                                               has_properties(type='user', typeval='0')))
+
+    def test_dissociate_parking_lot_not_associated(self):
+        extension = self.add_extension(typeval='123')
+        parking_lot = self.add_parking_lot()
+
+        extension_dao.dissociate_parking_lot(parking_lot, extension)
+
+        result = self.session.query(Extension).first()
+        assert_that(result, has_properties(typeval='123'))
