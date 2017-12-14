@@ -43,6 +43,7 @@ from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
 from xivo_dao.alchemy.func_key_type import FuncKeyType
 from xivo_dao.alchemy.groupfeatures import GroupFeatures
+from xivo_dao.alchemy.iaxcallnumberlimits import IAXCallNumberLimits
 from xivo_dao.alchemy.incall import Incall
 from xivo_dao.alchemy.infos import Infos
 from xivo_dao.alchemy.ivr import IVR
@@ -790,6 +791,14 @@ class ItemInserter(object):
         moh = MOH(**kwargs)
         self.add_me(moh)
         return moh
+
+    def add_iax_callnumberlimits(self, **kwargs):
+        kwargs.setdefault('destination', '127.0.0.1')
+        kwargs.setdefault('netmask', '255.255.255.255')
+
+        iax_callnumberlimits = IAXCallNumberLimits(**kwargs)
+        self.add_me(iax_callnumberlimits)
+        return iax_callnumberlimits
 
     def add_meetme_general_settings(self, **kwargs):
         kwargs.setdefault('id', self._generate_int())
