@@ -6,3 +6,4 @@ nosetests.xml
 pep8.txt
 pylint.txt
 *.egg-info
+pycodestyle.txt
