@@ -10,6 +10,9 @@ from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.agentglobalparams import AgentGlobalParams
 from xivo_dao.alchemy.agentgroup import AgentGroup
 from xivo_dao.alchemy.agentqueueskill import AgentQueueSkill
+from xivo_dao.alchemy.asterisk_file import AsteriskFile
+from xivo_dao.alchemy.asterisk_file_section import AsteriskFileSection
+from xivo_dao.alchemy.asterisk_file_variable import AsteriskFileVariable
 from xivo_dao.alchemy.attachment import Attachment
 from xivo_dao.alchemy.call_log import CallLog
 from xivo_dao.alchemy.callerid import Callerid
