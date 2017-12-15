@@ -216,6 +216,36 @@ class TestSubtype(unittest.TestCase):
         assert_that(schedule.fallback_action, equal_to(''))
 
 
+class TestActionArg1(unittest.TestCase):
+
+    def test_getter(self):
+        schedule = Schedule(fallback_actionid=1)
+        assert_that(schedule.actionarg1, equal_to(1))
+
+    def test_getter_none(self):
+        schedule = Schedule(fallback_actionid=None)
+        assert_that(schedule.actionarg1, equal_to(None))
+
+    def test_getter_empty_string(self):
+        schedule = Schedule(fallback_actionid='')
+        assert_that(schedule.actionarg1, equal_to(None))
+
+
+class TestActionArg2(unittest.TestCase):
+
+    def test_getter(self):
+        schedule = Schedule(fallback_actionargs=2)
+        assert_that(schedule.actionarg2, equal_to(2))
+
+    def test_getter_none(self):
+        schedule = Schedule(fallback_actionargs=None)
+        assert_that(schedule.actionarg2, equal_to(None))
+
+    def test_getter_empty_string(self):
+        schedule = Schedule(fallback_actionargs='')
+        assert_that(schedule.actionarg2, equal_to(None))
+
+
 class TestEnabled(unittest.TestCase):
 
     def test_getter_true(self):
