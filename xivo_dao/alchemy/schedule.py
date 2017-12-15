@@ -127,6 +127,8 @@ class Schedule(Base):
 
     @hybrid_property
     def actionarg1(self):
+        if self.fallback_actionid == '':
+            return None
         return self.fallback_actionid
 
     @actionarg1.setter
@@ -135,6 +137,8 @@ class Schedule(Base):
 
     @hybrid_property
     def actionarg2(self):
+        if self.fallback_actionargs == '':
+            return None
         return self.fallback_actionargs
 
     @actionarg2.setter
