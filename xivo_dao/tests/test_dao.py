@@ -18,6 +18,9 @@ import six
 from xivo_dao.alchemy.accessfeatures import AccessFeatures
 from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
+from xivo_dao.alchemy.asterisk_file import AsteriskFile
+from xivo_dao.alchemy.asterisk_file_section import AsteriskFileSection
+from xivo_dao.alchemy.asterisk_file_variable import AsteriskFileVariable
 from xivo_dao.alchemy.callerid import Callerid
 from xivo_dao.alchemy.call_log import CallLog
 from xivo_dao.alchemy.call_log_participant import CallLogParticipant
@@ -866,6 +869,27 @@ class ItemInserter(object):
     def add_register_sip(self, **kwargs):
         kwargs.setdefault('var_name', 'register')
         return self.add_sip_general_settings(**kwargs)
+
+    def add_asterisk_file(self, **kwargs):
+        kwargs.setdefault('name', self._random_name())
+
+        asterisk_file = AsteriskFile(**kwargs)
+        self.add_me(asterisk_file)
+        return asterisk_file
+
+    def add_asterisk_file_section(self, **kwargs):
+        kwargs.setdefault('name', self._random_name())
+
+        asterisk_file_section = AsteriskFileSection(**kwargs)
+        self.add_me(asterisk_file_section)
+        return asterisk_file_section
+
+    def add_asterisk_file_variable(self, **kwargs):
+        kwargs.setdefault('key', 'nat')
+
+        asterisk_file_variable = AsteriskFileVariable(**kwargs)
+        self.add_me(asterisk_file_variable)
+        return asterisk_file_variable
 
     def add_sip_authentication(self, **kwargs):
         kwargs.setdefault('id', self._generate_int())

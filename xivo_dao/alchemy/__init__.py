@@ -5,6 +5,8 @@
 # explicitly import modules that are referenced in relationship to prevent
 # "mapper initialization" errors
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
+from xivo_dao.alchemy.asterisk_file_section import AsteriskFileSection
+from xivo_dao.alchemy.asterisk_file_variable import AsteriskFileVariable
 from xivo_dao.alchemy.call_log import CallLog
 from xivo_dao.alchemy.call_log_participant import CallLogParticipant
 from xivo_dao.alchemy.conference import Conference
