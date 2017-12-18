@@ -1,60 +1,13 @@
 # -*- coding: UTF-8 -*-
-# Copyright (C) 2015 Avencall
+# Copyright 2015-2017 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
-from hamcrest import assert_that, contains, has_items, none, equal_to
+from hamcrest import assert_that, none, equal_to
 
 from xivo_dao.helpers.exception import NotFoundError
 
 from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao.resources.features.model import TransferExtension
 from xivo_dao.resources.features import dao as feature_dao
-
-
-class TestFindAllTransferExtensions(DAOTestCase):
-
-    def prepare_features(self):
-        transfers = []
-
-        row = self.add_features(category='featuremap',
-                                var_name='blindxfer',
-                                var_val='*1')
-        model = TransferExtension(id=row.id,
-                                  exten='*1',
-                                  transfer='blind')
-        transfers.append(model)
-
-        row = self.add_features(category='featuremap',
-                                var_name='atxfer',
-                                var_val='*2')
-        model = TransferExtension(id=row.id,
-                                  exten='*2',
-                                  transfer='attended')
-        transfers.append(model)
-
-        return transfers
-
-    def test_given_no_features_then_return_empty_list(self):
-        extensions = feature_dao.find_all_transfer_extensions()
-
-        assert_that(extensions, contains())
-
-    def test_given_all_transfer_features_then_returns_models(self):
-        expected = self.prepare_features()
-
-        result = feature_dao.find_all_transfer_extensions()
-
-        assert_that(result, has_items(*expected))
-
-    def test_given_feature_is_commented_then_returns_empty_list(self):
-        self.add_features(category='featuremap',
-                          var_name='blindxfer',
-                          var_val='*1',
-                          commented=1)
-
-        result = feature_dao.find_all_transfer_extensions()
-
-        assert_that(result, contains())
 
 
 class TestFindParkPositionRange(DAOTestCase):

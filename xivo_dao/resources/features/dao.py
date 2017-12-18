@@ -1,25 +1,11 @@
 # -*- coding: UTF-8 -*-
-# Copyright (C) 2015 Avencall
+# Copyright 2015-2017 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao.alchemy.features import Features
 
 from xivo_dao.helpers import errors
 from xivo_dao.helpers.db_manager import daosession
-
-from xivo_dao.resources.features.database import transfer_converter
-
-
-@daosession
-def find_all_transfer_extensions(session):
-    query = (session.query(Features.id,
-                           Features.var_name,
-                           Features.var_val)
-             .filter(Features.commented == 0)
-             .filter(Features.var_name.in_(transfer_converter.var_names()))
-             )
-
-    return [transfer_converter.to_model(row) for row in query]
 
 
 @daosession
