@@ -980,6 +980,8 @@ class ItemInserter(object):
     def add_features(self, **kwargs):
         kwargs.setdefault('filename', 'features.conf')
         kwargs.setdefault('category', 'general')
+        kwargs.setdefault('var_name', self._random_name())
+        kwargs.setdefault('var_val', self._random_name())
         feature = Features(**kwargs)
         self.add_me(feature)
         return feature

@@ -7,6 +7,18 @@ from xivo_dao.alchemy.features import Features
 from xivo_dao.helpers import errors
 from xivo_dao.helpers.db_manager import daosession
 
+from .persistor import FeaturesPersistor
+
+
+@daosession
+def find_all(session, section):
+    return FeaturesPersistor(session).find_all(section)
+
+
+@daosession
+def edit_all(session, section, features):
+    FeaturesPersistor(session).edit_all(features)
+
 
 @daosession
 def find_park_position_range(session):
