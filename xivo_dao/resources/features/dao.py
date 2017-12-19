@@ -17,7 +17,7 @@ def find_all(session, section):
 
 @daosession
 def edit_all(session, section, features):
-    FeaturesPersistor(session).edit_all(features)
+    FeaturesPersistor(session).edit_all(section, features)
 
 
 @daosession

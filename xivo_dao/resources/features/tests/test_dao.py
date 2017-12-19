@@ -10,6 +10,7 @@ from hamcrest import (
     contains_inanyorder,
     empty,
     equal_to,
+    has_properties,
     none,
 )
 
@@ -96,6 +97,27 @@ class TestEditAll(DAOTestCase):
 
         features = features_dao.find_all('general')
         assert_that(features, contains_inanyorder(row))
+
+    def test_does_not_change_foreign_key_id(self):
+        feature1 = self.add_features(category='featuremap', var_name='blindxfer', var_val='value1')
+        feature2 = self.add_features(category='featuremap', var_name='atxfer', var_val='value2')
+        feature3 = self.add_features(category='featuremap', var_name='automixmon', var_val='value3')
+
+        row1 = Features(category='featuremap', var_name='blindxfer', var_val='other_value1')
+        row2 = Features(category='featuremap', var_name='atxfer', var_val='other_value2')
+        row3 = Features(category='featuremap', var_name='automixmon', var_val='other_value3')
+
+        features_dao.edit_all('featuremap', [row1, row2, row3])
+
+        features = features_dao.find_all('featuremap')
+        assert_that(features, contains_inanyorder(
+            has_properties(id=feature1.id,
+                           var_val=row1.var_val),
+            has_properties(id=feature2.id,
+                           var_val=row2.var_val),
+            has_properties(id=feature3.id,
+                           var_val=row3.var_val),
+        ))
 
     def test_does_not_delete_parking_options(self):
         feature1 = self.add_features(category='general', var_name='parkext', var_val='value1')
