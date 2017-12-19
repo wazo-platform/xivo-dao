@@ -64,6 +64,15 @@ class TestFindAll(DAOTestCase):
 
         assert_that(features, contains_inanyorder(row2))
 
+    def test_find_all_do_not_find_parking_options(self):
+        self.add_features(category='general', var_name='parkext', var_val='value1')
+        self.add_features(category='general', var_name='parkeddynamic', var_val='value2')
+        self.add_features(category='general', var_name='context', var_val='value3')
+
+        features = features_dao.find_all('general')
+
+        assert_that(features, empty())
+
 
 class TestEditAll(DAOTestCase):
 

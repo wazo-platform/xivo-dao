@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao.alchemy.features import Features
+from xivo_dao.asterisk_conf_dao import _PARKING_OPTIONS
 
 
 class FeaturesPersistor(object):
@@ -15,6 +16,10 @@ class FeaturesPersistor(object):
                  .filter(Features.category == section)
                  .filter(Features.var_val != None)  # noqa
                  .order_by(Features.var_metric.asc()))
+
+        if section == 'general':
+            query = query.filter(not_(Features.var_name.in_(_PARKING_OPTIONS)))
+
         return query.all()
 
     def edit_all(self, features):
