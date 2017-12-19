@@ -199,15 +199,19 @@ def find_features_settings(session):
             .filter(and_(Features.commented == 0,
                          or_(and_(Features.category == 'general',
                                   ~Features.var_name.in_(PARKING_OPTIONS)),
-                             Features.category == 'featuremap')))
+                             Features.category == 'featuremap',
+                             Features.category == 'applicationmap')))
             .all())
 
     general_options = []
     featuremap_options = []
+    applicationmap_options = []
     for row in rows:
         option = (row.var_name, row.var_val)
         if row.category == 'general':
             general_options.append(option)
+        elif row.category == 'applicationmap':
+            applicationmap_options.append(option)
         elif row.category == 'featuremap':
             featuremap_options.append(option)
             if row.var_name == 'disconnect':
@@ -217,6 +221,7 @@ def find_features_settings(session):
     return {
         'general_options': general_options,
         'featuremap_options': featuremap_options,
+        'applicationmap_options': applicationmap_options,
     }
 
 
