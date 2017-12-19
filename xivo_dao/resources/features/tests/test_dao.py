@@ -78,10 +78,10 @@ class TestFindAll(DAOTestCase):
 class TestEditAll(DAOTestCase):
 
     def test_edit_all(self):
-        row1 = Features(var_name='setting1', var_val='value1', category='general')
-        row2 = Features(var_name='setting2', var_val='value1', category='general')
-        row3 = Features(var_name='setting3', var_val='value1', category='general')
-        row4 = Features(var_name='setting4', var_val='value1', category='general')
+        row1 = Features(var_name='setting1', var_val='value1')
+        row2 = Features(var_name='setting2', var_val='value1')
+        row3 = Features(var_name='setting3', var_val='value1')
+        row4 = Features(var_name='setting4', var_val='value1')
 
         features_dao.edit_all('general', [row1, row2, row3, row4])
 
@@ -103,9 +103,9 @@ class TestEditAll(DAOTestCase):
         feature2 = self.add_features(category='featuremap', var_name='atxfer', var_val='value2')
         feature3 = self.add_features(category='featuremap', var_name='automixmon', var_val='value3')
 
-        row1 = Features(category='featuremap', var_name='blindxfer', var_val='other_value1')
-        row2 = Features(category='featuremap', var_name='atxfer', var_val='other_value2')
-        row3 = Features(category='featuremap', var_name='automixmon', var_val='other_value3')
+        row1 = Features(var_name='blindxfer', var_val='other_value1')
+        row2 = Features(var_name='atxfer', var_val='other_value2')
+        row3 = Features(var_name='automixmon', var_val='other_value3')
 
         features_dao.edit_all('featuremap', [row1, row2, row3])
 
@@ -124,7 +124,7 @@ class TestEditAll(DAOTestCase):
         feature2 = self.add_features(category='general', var_name='parkeddynamic', var_val='value2')
         feature3 = self.add_features(category='general', var_name='context', var_val='value3')
 
-        row = Features(category='general', var_name='setting', var_val='value')
+        row = Features(var_name='setting', var_val='value')
 
         features_dao.edit_all('general', [row])
 

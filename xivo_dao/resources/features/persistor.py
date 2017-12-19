@@ -27,14 +27,16 @@ class FeaturesPersistor(object):
         return query.all()
 
     def edit_all(self, section, features):
+        self._fill_default_values(section, features)
         self._delete_all_section(section)
         features = self._update_existing_foreign_key_features(features)
-        self.session.add_all(self._fill_default_values(features))
+        self.session.add_all(features)
         self.session.flush()
 
-    def _fill_default_values(self, features):
+    def _fill_default_values(self, section, features):
         for setting in features:
             setting.filename = 'features.conf'
+            setting.category = section
         return features
 
     def _delete_all_section(self, section):
