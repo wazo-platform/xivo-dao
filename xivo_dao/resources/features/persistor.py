@@ -5,9 +5,8 @@
 from sqlalchemy.sql.expression import not_
 
 from xivo_dao.alchemy.features import Features
-from xivo_dao.asterisk_conf_dao import _PARKING_OPTIONS
 
-FUNC_KEY_FEATUREMAP_FOREIGN_KEY = ['blindxfer', 'automixmon', 'atxfer']
+from .search import FUNC_KEY_FEATUREMAP_FOREIGN_KEY, PARKING_OPTIONS
 
 
 class FeaturesPersistor(object):
@@ -22,7 +21,7 @@ class FeaturesPersistor(object):
                  .order_by(Features.var_metric.asc()))
 
         if section == 'general':
-            query = query.filter(not_(Features.var_name.in_(_PARKING_OPTIONS)))
+            query = query.filter(not_(Features.var_name.in_(PARKING_OPTIONS)))
 
         return query.all()
 
@@ -43,7 +42,7 @@ class FeaturesPersistor(object):
         query = (self.session.query(Features)
                  .filter(Features.category == section))
         if section == 'general':
-            query = query.filter(not_(Features.var_name.in_(_PARKING_OPTIONS)))
+            query = query.filter(not_(Features.var_name.in_(PARKING_OPTIONS)))
 
         if section == 'featuremap':
             query = query.filter(not_(Features.var_name.in_(FUNC_KEY_FEATUREMAP_FOREIGN_KEY)))
