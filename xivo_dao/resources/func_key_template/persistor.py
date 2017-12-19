@@ -30,7 +30,6 @@ from xivo_dao.resources.func_key import model as fk_model
 from xivo_dao.resources.func_key_template import model as tpl_model
 
 from xivo_dao.resources.extension.database import ForwardExtensionConverter, AgentActionExtensionConverter
-from xivo_dao.resources.features.database import TransferExtensionConverter
 
 
 def build_persistor(session):
@@ -540,6 +539,12 @@ class AgentPersistor(DestinationPersistor):
 
 class FeaturesPersistor(DestinationPersistor):
 
+    TRANSFERS_TO_API = {'blindxfer': 'blind',
+                        'atxfer': 'attended'}
+
+    TRANSFERS_TO_DB = {'blind': 'blindxfer',
+                       'attended': 'atxfer'}
+
     def get(self, func_key_id):
         row = (self.session.query(Features.var_name,
                                   Features.id)
@@ -552,7 +557,7 @@ class FeaturesPersistor(DestinationPersistor):
         elif row.var_name == 'automixmon':
             return fk_model.OnlineRecordingDestination(feature_id=row.id)
 
-        transfer = TransferExtensionConverter().to_transfer(row.var_name)
+        transfer = self.TRANSFERS_TO_API[row.var_name]
         return fk_model.TransferDestination(transfer=transfer,
                                             feature_id=row.id)
 
@@ -567,7 +572,7 @@ class FeaturesPersistor(DestinationPersistor):
 
     def find_var_name(self, destination):
         if destination.type == 'transfer':
-            return TransferExtensionConverter().to_var_name(destination.transfer)
+            return self.TRANSFERS_TO_DB[destination.transfer]
         elif destination.type == 'parking':
             return 'parkext'
         elif destination.type == 'onlinerec':

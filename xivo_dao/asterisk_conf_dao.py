@@ -47,6 +47,7 @@ from xivo_dao.alchemy.queuepenaltychange import QueuePenaltyChange
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
 from xivo_dao.alchemy.func_key_dest_custom import FuncKeyDestCustom
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
+from xivo_dao.resources.features.search import PARKING_OPTIONS
 
 
 @daosession
@@ -192,40 +193,25 @@ def find_sccp_speeddial_settings(session):
     return keys
 
 
-_PARKING_OPTIONS = [
-    'comebacktoorigin',
-    'context',
-    'courtesytone',
-    'findslot',
-    'parkedcallhangup',
-    'parkedcallrecording',
-    'parkedcallreparking',
-    'parkedcalltransfers',
-    'parkeddynamic',
-    'parkedmusicclass',
-    'parkedplay',
-    'parkext',
-    'parkinghints',
-    'parkingtime',
-    'parkpos',
-]
-
-
 @daosession
 def find_features_settings(session):
     rows = (session.query(Features.category, Features.var_name, Features.var_val)
             .filter(and_(Features.commented == 0,
                          or_(and_(Features.category == 'general',
-                                  ~Features.var_name.in_(_PARKING_OPTIONS)),
-                             Features.category == 'featuremap')))
+                                  ~Features.var_name.in_(PARKING_OPTIONS)),
+                             Features.category == 'featuremap',
+                             Features.category == 'applicationmap')))
             .all())
 
     general_options = []
     featuremap_options = []
+    applicationmap_options = []
     for row in rows:
         option = (row.var_name, row.var_val)
         if row.category == 'general':
             general_options.append(option)
+        elif row.category == 'applicationmap':
+            applicationmap_options.append(option)
         elif row.category == 'featuremap':
             featuremap_options.append(option)
             if row.var_name == 'disconnect':
@@ -235,6 +221,7 @@ def find_features_settings(session):
     return {
         'general_options': general_options,
         'featuremap_options': featuremap_options,
+        'applicationmap_options': applicationmap_options,
     }
 
 
@@ -243,7 +230,7 @@ def find_parking_settings(session):
     rows = (session.query(Features.var_name, Features.var_val)
             .filter(and_(Features.commented == 0,
                          Features.category == 'general',
-                         Features.var_name.in_(_PARKING_OPTIONS)))
+                         Features.var_name.in_(PARKING_OPTIONS)))
             .all())
 
     general_options = []
