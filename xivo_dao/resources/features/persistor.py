@@ -23,7 +23,7 @@ class FeaturesPersistor(object):
         return query.all()
 
     def edit_all(self, features):
-        self.session.query(Features).delete()
+        self._delete_all_section(section)
         self.session.add_all(self._fill_default_values(features))
         self.session.flush()
 
@@ -31,3 +31,11 @@ class FeaturesPersistor(object):
         for setting in features:
             setting.filename = 'features.conf'
         return features
+
+    def _delete_all_section(self, section):
+        query = (self.session.query(Features)
+                 .filter(Features.category == section))
+        if section == 'general':
+            query = query.filter(not_(Features.var_name.in_(_PARKING_OPTIONS)))
+
+        query.delete(synchronize_session=False)

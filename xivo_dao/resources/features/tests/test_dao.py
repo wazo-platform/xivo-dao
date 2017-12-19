@@ -97,6 +97,18 @@ class TestEditAll(DAOTestCase):
         features = features_dao.find_all('general')
         assert_that(features, contains_inanyorder(row))
 
+    def test_does_not_delete_parking_options(self):
+        feature1 = self.add_features(category='general', var_name='parkext', var_val='value1')
+        feature2 = self.add_features(category='general', var_name='parkeddynamic', var_val='value2')
+        feature3 = self.add_features(category='general', var_name='context', var_val='value3')
+
+        row = Features(category='general', var_name='setting', var_val='value')
+
+        features_dao.edit_all('general', [row])
+
+        result = self.session.query(Features).filter(Features.category == 'general').all()
+        assert_that(result, contains_inanyorder(feature1, feature2, feature3, row))
+
 
 class TestFindParkPositionRange(DAOTestCase):
 
