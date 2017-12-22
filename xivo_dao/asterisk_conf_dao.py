@@ -390,10 +390,8 @@ def find_sip_user_settings(session):
     )
 
     for row in query.all():
-        groups = pickup_members.get(row.UserSIP.id, {})
-        row.namedpickupgroup = ','.join(str(id) for id in groups.get('pickupgroup', []))
-        row.namedcallgroup = ','.join(str(id) for id in groups.get('callgroup', []))
-        yield row
+        pickup_groups = pickup_members.get(row.UserSIP.id, {})
+        yield row, pickup_groups
 
 
 @daosession

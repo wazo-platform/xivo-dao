@@ -1130,7 +1130,7 @@ class TestFindSipUserSettings(DAOTestCase, PickupHelperMixin):
 
         results = asterisk_conf_dao.find_sip_user_settings()
 
-        assert_that(results, contains(has_properties(expected)))
+        assert_that(results, contains(contains(has_properties(expected), {})))
 
     def test_given_sip_has_all_resources_associated_then_all_resources_found_in_result(self):
         extension = self.add_extension(exten="1000", context="default")
@@ -1153,7 +1153,7 @@ class TestFindSipUserSettings(DAOTestCase, PickupHelperMixin):
 
         results = asterisk_conf_dao.find_sip_user_settings()
 
-        assert_that(results, contains(has_properties(expected)))
+        assert_that(results, contains(contains(has_properties(expected), {})))
 
     def test_given_sip_account_when_querying_then_same_sip_account_row_is_returned(self):
         sip = self.add_usersip(category='user')
@@ -1161,7 +1161,7 @@ class TestFindSipUserSettings(DAOTestCase, PickupHelperMixin):
 
         results = asterisk_conf_dao.find_sip_user_settings()
 
-        assert_that(results, contains(has_properties(UserSIP=sip)))
+        assert_that(results, contains(contains(has_properties(UserSIP=sip), {})))
 
 
 class TestFindSipTrunkSettings(DAOTestCase):
