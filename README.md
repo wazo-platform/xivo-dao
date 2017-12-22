@@ -39,13 +39,14 @@ database by passing ```CREATE_TABLES=0``` on the command line
 Docker
 ------
 
-To run test with docker:
+Start the database (needed only once):
 
-    docker build -t wazopbx/dao-test .
-    docker run -e XIVO_TEST_DB_URL=<postgres_uri> -it wazopbx/dao-test bash
+    docker-compose up -d db
 
-To run with docker-compose:
+Run your tests:
 
-    docker-compose up -d db  # only once
-    # wait a bit
-    docker-compose build dao && docker-compose up dao  # repeat to run against new code
+    XIVO_TEST_DB_URL=postgresql://asterisk:proformatique@$(docker port dao_db_1 5432)/asterisk nosetests -x xivo_dao
+
+OR
+
+    docker-compose build dao && docker-compose up dao

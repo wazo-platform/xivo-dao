@@ -1,6 +1,6 @@
 db:
   image: postgres
-  expose:
+  ports:
    - "5432"
   environment:
    - POSTGRES_USER=asterisk
