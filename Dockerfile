@@ -1,4 +1,4 @@
-from debian:jessie
+from debian:stretch
 
 RUN apt-get -yqq update \
     && apt-get -yqq install python-pip \
