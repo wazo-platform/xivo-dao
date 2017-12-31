@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2016 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -7,7 +7,7 @@ from sqlalchemy.schema import Column, UniqueConstraint, Index, PrimaryKeyConstra
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import Integer, String, Boolean
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.sql import cast
+from sqlalchemy.sql import cast, not_
 
 from xivo_dao.helpers.db_manager import Base, IntAsString
 from xivo_dao.alchemy import enum
@@ -96,6 +96,18 @@ class Extension(Base):
         if value is not None:
             value = int(value)
         self.commented = value
+
+    @hybrid_property
+    def enabled(self):
+        return self.commented == 0
+
+    @enabled.expression
+    def enabled(cls):
+        return not_(cast(cls.commented, Boolean))
+
+    @enabled.setter
+    def enabled(self, value):
+        self.commented = int(value is False)
 
     def is_pattern(self):
         return self.exten.startswith('_')
