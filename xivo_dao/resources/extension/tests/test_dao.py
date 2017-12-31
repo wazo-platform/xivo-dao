@@ -58,6 +58,16 @@ class TestSimpleSearch(TestExtension):
 
         self.assert_search_returns_result(expected)
 
+    def test_given_one_feature_extension_then_returns_one_result(self):
+        extension1 = self.prepare_extension(exten='1000', context='xivo-features')
+        extension2 = self.prepare_extension(exten='1000', context='not-features')
+
+        expected = SearchResult(1, [extension1])
+        self.assert_search_returns_result(expected, is_feature=True)
+
+        expected = SearchResult(1, [extension2])
+        self.assert_search_returns_result(expected, is_feature=False)
+
 
 class TestSearchGivenMultipleExtensions(TestExtension):
 

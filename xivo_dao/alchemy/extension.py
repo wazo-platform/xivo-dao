@@ -109,5 +109,13 @@ class Extension(Base):
     def enabled(self, value):
         self.commented = int(value is False)
 
+    @hybrid_property
+    def is_feature(self):
+        return self.context == 'xivo-features'
+
+    @is_feature.expression
+    def is_feature(cls):
+        return cast(cls.context == 'xivo-features', Boolean)
+
     def is_pattern(self):
         return self.exten.startswith('_')

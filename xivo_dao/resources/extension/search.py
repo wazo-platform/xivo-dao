@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2016 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2017 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao.alchemy.extension import Extension
@@ -10,7 +10,8 @@ from xivo_dao.resources.utils.search import SearchConfig
 
 config = SearchConfig(table=Extension,
                       columns={'exten': Extension.exten,
-                               'context': Extension.context},
+                               'context': Extension.context,
+                               'is_feature': Extension.is_feature},
                       default_sort='exten')
 
 
