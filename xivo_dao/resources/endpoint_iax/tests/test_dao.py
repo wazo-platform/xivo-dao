@@ -171,7 +171,7 @@ class TestCreate(DAOTestCase):
         assert_that(created_iax.name, has_length(8))
         assert_that(created_iax.type, equal_to('friend'))
         assert_that(created_iax.host, equal_to('dynamic'))
-        assert_that(created_iax.category, equal_to('user'))
+        assert_that(created_iax.category, equal_to('trunk'))
 
     def test_create_predefined_parameters(self):
         iax = IAXEndpoint(name='myname',
@@ -185,7 +185,7 @@ class TestCreate(DAOTestCase):
         assert_that(created_iax.name, equal_to('myname'))
         assert_that(created_iax.type, equal_to('peer'))
         assert_that(created_iax.host, equal_to('127.0.0.1'))
-        assert_that(created_iax.category, equal_to('user'))
+        assert_that(created_iax.category, equal_to('trunk'))
 
     def test_create_with_native_options(self):
         expected_options = has_properties({

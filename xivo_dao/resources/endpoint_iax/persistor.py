@@ -74,7 +74,7 @@ class IAXPersistor(CriteriaBuilderMixin):
         if iax.host is None:
             iax.host = 'dynamic'
         if iax.category is None:
-            iax.category = 'user'
+            iax.category = 'trunk'
 
     def _already_exists(self, column, data):
         return self.session.query(IAX).filter(column == data).count() > 0
