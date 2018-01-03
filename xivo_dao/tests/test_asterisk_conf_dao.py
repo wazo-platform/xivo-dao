@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from __future__ import unicode_literals
@@ -7,8 +7,17 @@ from __future__ import unicode_literals
 import warnings
 
 from contextlib import contextmanager
-from hamcrest import assert_that, contains, equal_to, has_entries, \
-    contains_inanyorder, has_length, none, has_properties, empty
+from hamcrest import (
+    assert_that,
+    contains,
+    contains_inanyorder,
+    empty,
+    equal_to,
+    has_entries,
+    has_length,
+    has_properties,
+    none,
+)
 
 from mock import patch
 from xivo_test_helpers.hamcrest.uuid_ import uuid_
@@ -783,7 +792,7 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
 
         iax_settings = asterisk_conf_dao.find_iax_trunk_settings()
 
-        assert_that(iax_settings, contains_inanyorder(*expected_result))
+        assert_that(iax_settings, contains_inanyorder(has_properties(*expected_result)))
 
     def test_find_iax_calllimits_settings(self):
         iax_call_number_limits = IAXCallNumberLimits(destination='toto',
