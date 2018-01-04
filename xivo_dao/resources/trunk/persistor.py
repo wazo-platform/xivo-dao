@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-# Copyright (C) 2016 Avencall
+# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures as Trunk
@@ -80,3 +80,39 @@ class TrunkPersistor(CriteriaBuilderMixin):
              .delete())
         self.session.delete(trunk)
         self.session.flush()
+
+    def associate_register_iax(self, trunk, register):
+        if trunk.protocol not in ('iax', None):
+            # XXX Handle case properly
+            raise Exception
+
+        trunk.protocol = 'iax'
+        trunk.registerid = register.id
+        self.session.flush()
+        self.session.expire(trunk, ['register_iax'])
+
+    def dissociate_register_iax(self, trunk, register):
+        if register is trunk.register_iax:
+            trunk.registerid = 0
+            if not trunk.protocolid:
+                trunk.protocol = None
+            self.session.flush()
+            self.session.expire(trunk, ['register_iax'])
+
+    def associate_register_sip(self, trunk, register):
+        if trunk.protocol not in ('sip', None):
+            # XXX Handle case properly
+            raise Exception
+
+        trunk.protocol = 'sip'
+        trunk.registerid = register.id
+        self.session.flush()
+        self.session.expire(trunk, ['register_sip'])
+
+    def dissociate_register_sip(self, trunk, register):
+        if register is trunk.register_sip:
+            trunk.registerid = 0
+            if not trunk.protocolid:
+                trunk.protocol = None
+            self.session.flush()
+            self.session.expire(trunk, ['register_sip'])

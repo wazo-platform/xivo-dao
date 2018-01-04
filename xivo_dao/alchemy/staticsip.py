@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
-from sqlalchemy.types import Integer, String, Boolean
-from sqlalchemy.sql import func, cast, not_
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import relationship
+from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
+from sqlalchemy.sql import func, cast, not_
+from sqlalchemy.types import Integer, String, Boolean
 
 from xivo_dao.helpers.db_manager import Base
 
@@ -26,6 +27,16 @@ class StaticSIP(Base):
     category = Column(String(128), nullable=False)
     var_name = Column(String(128), nullable=False)
     var_val = Column(String(255))
+
+    trunk = relationship('TrunkFeatures',
+                         primaryjoin="""and_(
+                                       TrunkFeatures.protocol == 'sip',
+                                       TrunkFeatures.registerid == StaticSIP.id
+                         )""",
+                         foreign_keys='TrunkFeatures.registerid',
+                         viewonly=True,
+                         uselist=False,
+                         back_populates='register_sip')
 
     @hybrid_property
     def metric(self):

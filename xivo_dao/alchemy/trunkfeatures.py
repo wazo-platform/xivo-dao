@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2012-2016 Avencall
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2012-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -66,6 +65,24 @@ class TrunkFeatures(Base):
 
     outcalls = association_proxy('outcall_trunks', 'outcall',
                                  creator=lambda _outcall: OutcallTrunk(outcall=_outcall))
+
+    register_iax = relationship('StaticIAX',
+                                primaryjoin="""and_(
+                                       TrunkFeatures.protocol == 'iax',
+                                       TrunkFeatures.registerid == StaticIAX.id
+                                )""",
+                                foreign_keys='TrunkFeatures.registerid',
+                                viewonly=True,
+                                back_populates='trunk')
+
+    register_sip = relationship('StaticSIP',
+                                primaryjoin="""and_(
+                                       TrunkFeatures.protocol == 'sip',
+                                       TrunkFeatures.registerid == StaticSIP.id
+                                )""",
+                                foreign_keys='TrunkFeatures.registerid',
+                                viewonly=True,
+                                back_populates='trunk')
 
     @hybrid_property
     def endpoint(self):

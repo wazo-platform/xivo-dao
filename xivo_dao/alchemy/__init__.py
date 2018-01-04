@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 # explicitly import modules that are referenced in relationship to prevent
@@ -33,6 +33,8 @@ from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.schedule import Schedule
 from xivo_dao.alchemy.schedule_time import ScheduleTime
 from xivo_dao.alchemy.schedulepath import SchedulePath
+from xivo_dao.alchemy.staticiax import StaticIAX
+from xivo_dao.alchemy.staticsip import StaticSIP
 from xivo_dao.alchemy.switchboard import Switchboard
 from xivo_dao.alchemy.switchboard_member_user import SwitchboardMemberUser
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
