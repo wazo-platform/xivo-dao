@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-# Copyright 2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao.alchemy.staticiax import StaticIAX as RegisterIAX
@@ -28,7 +28,7 @@ class RegisterIAXPersistor(CriteriaBuilderMixin):
     def get_by(self, criteria):
         register_iax = self.find_by(criteria)
         if not register_iax:
-            raise errors.not_found('RegisterIAX', **criteria)
+            raise errors.not_found('IAXRegister', **criteria)
         return register_iax
 
     def search(self, parameters):

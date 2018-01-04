@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-# Copyright 2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao.alchemy.staticsip import StaticSIP as RegisterSIP
@@ -28,7 +28,7 @@ class RegisterSIPPersistor(CriteriaBuilderMixin):
     def get_by(self, criteria):
         register_sip = self.find_by(criteria)
         if not register_sip:
-            raise errors.not_found('RegisterSIP', **criteria)
+            raise errors.not_found('SIPRegister', **criteria)
         return register_sip
 
     def search(self, parameters):
