@@ -4,17 +4,19 @@
 
 from __future__ import unicode_literals
 
-from hamcrest import (assert_that,
-                      contains,
-                      contains_inanyorder,
-                      equal_to,
-                      empty,
-                      has_items,
-                      has_properties,
-                      has_property,
-                      is_not,
-                      none,
-                      not_)
+from hamcrest import (
+    assert_that,
+    contains,
+    contains_inanyorder,
+    empty,
+    equal_to,
+    has_items,
+    has_properties,
+    has_property,
+    is_not,
+    none,
+    not_,
+)
 
 
 from xivo_dao.alchemy.outcall import Outcall
@@ -25,10 +27,11 @@ from xivo_dao.alchemy.staticsip import StaticSIP
 from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.usercustom import UserCustom
-from xivo_dao.helpers.exception import NotFoundError, InputError
-from xivo_dao.resources.trunk import dao as trunk_dao
+from xivo_dao.helpers.exception import NotFoundError, InputError, ResourceError
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.tests.test_dao import DAOTestCase
+
+from .. import dao as trunk_dao
 
 
 class TestFind(DAOTestCase):
@@ -385,8 +388,7 @@ class TestAssociateRegisterIAX(DAOTestCase):
         trunk = self.add_trunk(protocol='sip')
         register = self.add_register_iax()
 
-        # TODO better exception
-        self.assertRaises(Exception, trunk_dao.associate_register_iax, trunk, register)
+        self.assertRaises(ResourceError, trunk_dao.associate_register_iax, trunk, register)
 
 
 class TestDissociateRegisterIAX(DAOTestCase):
@@ -456,8 +458,7 @@ class TestAssociateRegisterSIP(DAOTestCase):
         trunk = self.add_trunk(protocol='iax')
         register = self.add_register_sip()
 
-        # TODO better exception
-        self.assertRaises(Exception, trunk_dao.associate_register_sip, trunk, register)
+        self.assertRaises(ResourceError, trunk_dao.associate_register_sip, trunk, register)
 
 
 class TestDissociateRegisterSIP(DAOTestCase):

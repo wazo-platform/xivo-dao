@@ -83,8 +83,7 @@ class TrunkPersistor(CriteriaBuilderMixin):
 
     def associate_register_iax(self, trunk, register):
         if trunk.protocol not in ('iax', None):
-            # XXX Handle case properly
-            raise Exception
+            raise errors.resource_associated('Trunk', 'Endpoint', trunk_id=trunk.id, protocol=trunk.protocol)
 
         trunk.protocol = 'iax'
         trunk.registerid = register.id
@@ -101,8 +100,7 @@ class TrunkPersistor(CriteriaBuilderMixin):
 
     def associate_register_sip(self, trunk, register):
         if trunk.protocol not in ('sip', None):
-            # XXX Handle case properly
-            raise Exception
+            raise errors.resource_associated('Trunk', 'Endpoint', trunk_id=trunk.id, protocol=trunk.protocol)
 
         trunk.protocol = 'sip'
         trunk.registerid = register.id
