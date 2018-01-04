@@ -113,5 +113,6 @@ class TrunkFeatures(Base):
         self.protocolid = endpoint.id
 
     def remove_endpoint(self):
-        self.protocol = None
+        if self.registerid == 0:
+            self.protocol = None
         self.protocolid = None
