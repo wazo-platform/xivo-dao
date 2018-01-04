@@ -234,3 +234,6 @@ class UserIAX(Base):
 
     def endpoint_protocol(self):
         return 'iax'
+
+    def same_protocol(self, protocol, id):
+        return protocol == 'iax' and self.id == id
