@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2013-2014 Avencall
+# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
@@ -32,6 +32,6 @@ class Callfilter(Base):
     callfrom = Column(enum.callfilter_callfrom)
     ringseconds = Column(Integer, nullable=False, server_default='0')
     commented = Column(Integer, nullable=False, server_default='0')
-    description = Column(Text, nullable=False)
+    description = Column(Text)
 
     entity = relationship(Entity)
