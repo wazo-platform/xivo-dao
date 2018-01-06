@@ -2,15 +2,17 @@
 # Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
+from sqlalchemy import text
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
-from sqlalchemy.types import Integer, String, Text
+from sqlalchemy.sql import cast, not_
+from sqlalchemy.sql.schema import ForeignKeyConstraint
+from sqlalchemy.types import Boolean, Integer, String, Text
 
 from xivo_dao.alchemy import enum
 from xivo_dao.alchemy.entity import Entity
 from xivo_dao.helpers.db_manager import Base
-from sqlalchemy.sql.schema import ForeignKeyConstraint
-from sqlalchemy.orm import relationship
-from sqlalchemy import text
 
 
 class Callfilter(Base):
@@ -35,3 +37,38 @@ class Callfilter(Base):
     description = Column(Text)
 
     entity = relationship(Entity)
+
+    @hybrid_property
+    def mode(self):
+        return self.bosssecretary
+
+    @mode.setter
+    def mode(self, value):
+        self.bosssecretary = value
+
+    @hybrid_property
+    def timeout(self):
+        if self.ringseconds == 0:
+            return None
+        return self.ringseconds
+
+    @timeout.setter
+    def timeout(self, value):
+        if value is None:
+            self.ringseconds = 0
+        else:
+            self.ringseconds = value
+
+    @hybrid_property
+    def enabled(self):
+        if self.commented is None:
+            return None
+        return self.commented == 0
+
+    @enabled.expression
+    def enabled(cls):
+        return not_(cast(cls.commented, Boolean))
+
+    @enabled.setter
+    def enabled(self, value):
+        self.commented = int(value is False)
