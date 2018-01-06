@@ -38,6 +38,7 @@ class CallFilterPersistor(CriteriaBuilderMixin):
         return SearchResult(total, rows)
 
     def create(self, call_filter):
+        self._fill_default_values(call_filter)
         self.session.add(call_filter)
         self.session.flush()
         return call_filter
@@ -49,3 +50,6 @@ class CallFilterPersistor(CriteriaBuilderMixin):
     def delete(self, call_filter):
         self.session.delete(call_filter)
         self.session.flush()
+
+    def _fill_default_values(self, call_filter):
+        call_filter.type = 'bosssecretary'

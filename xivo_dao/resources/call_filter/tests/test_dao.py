@@ -201,15 +201,14 @@ class TestSearchGivenMultipleCallFilters(TestSearch):
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_fields(self):
-        call_filter = CallFilter(type='bosssecretary')
+        call_filter = CallFilter(name='name')
 
         result = call_filter_dao.create(call_filter)
 
         row = self.session.query(CallFilter).first()
         assert_that(result, equal_to(row))
         assert_that(result, has_properties(
-            name='',
-            type='bosssecretary',
+            name='name',
             mode=none(),
             callfrom=none(),
             timeout=none(),
@@ -220,7 +219,6 @@ class TestCreate(DAOTestCase):
     def test_create_with_all_fields(self):
         call_filter = CallFilter(
             name='name',
-            type='bosssecretary',
             mode='bossfirst-serial',
             callfrom='all',
             timeout=10,
@@ -234,13 +232,19 @@ class TestCreate(DAOTestCase):
         assert_that(result, equal_to(row))
         assert_that(result, has_properties(
             name='name',
-            type='bosssecretary',
             mode='bossfirst-serial',
             callfrom='all',
             timeout=10,
             enabled=False,
             description='description',
         ))
+
+    def test_create_fill_default_values(self):
+        call_filter = CallFilter(name='name')
+
+        result = call_filter_dao.create(call_filter)
+
+        assert_that(result, has_properties(type='bosssecretary'))
 
 
 class TestEdit(DAOTestCase):
