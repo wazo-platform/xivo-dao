@@ -51,3 +51,13 @@ def edit(session, call_filter):
 @daosession
 def delete(session, call_filter):
     CallFilterPersistor(session, call_filter_search).delete(call_filter)
+
+
+@daosession
+def associate_recipients(session, call_filter, recipients):
+    CallFilterPersistor(session, call_filter_search).associate_recipients(call_filter, recipients)
+
+
+@daosession
+def associate_surrogates(session, call_filter, surrogates):
+    CallFilterPersistor(session, call_filter_search).associate_surrogates(call_filter, surrogates)

@@ -55,3 +55,23 @@ class CallFilterPersistor(CriteriaBuilderMixin):
     def _fill_default_values(self, call_filter):
         call_filter.entity_id = Entity.query_default_id().as_scalar()
         call_filter.type = 'bosssecretary'
+
+    def associate_recipients(self, call_filter, recipients):
+        for recipient in recipients:
+            self._fill_default_recipient_values(recipient)
+        call_filter.recipients = recipients
+        self.session.flush()
+
+    def _fill_default_recipient_values(self, recipient):
+        recipient.type = 'user'
+        recipient.bstype = 'boss'
+
+    def associate_surrogates(self, call_filter, surrogates):
+        for surrogate in surrogates:
+            self._fill_default_surrogate_values(surrogate)
+        call_filter.surrogates = surrogates
+        self.session.flush()
+
+    def _fill_default_surrogate_values(self, surrogate):
+        surrogate.type = 'user'
+        surrogate.bstype = 'secretary'

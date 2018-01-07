@@ -8,6 +8,7 @@ from hamcrest import (
     assert_that,
     contains,
     equal_to,
+    empty,
     has_items,
     has_properties,
     has_property,
@@ -15,6 +16,7 @@ from hamcrest import (
 )
 
 from xivo_dao.alchemy.callfilter import Callfilter as CallFilter
+from xivo_dao.alchemy.callfiltermember import Callfiltermember as CallFilterMember
 from xivo_dao.helpers.exception import NotFoundError, InputError
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -295,4 +297,74 @@ class TestDelete(DAOTestCase):
         call_filter_dao.delete(call_filter)
 
         row = self.session.query(CallFilter).first()
+        assert_that(row, none())
+
+
+class TestAssociateTargets(DAOTestCase):
+
+    def test_associate(self):
+        call_filter = self.add_call_filter()
+        recipient = self.add_call_filter_member(bstype='boss')
+
+        call_filter_dao.associate_recipients(call_filter, [recipient])
+
+        self.session.expire_all()
+        assert_that(call_filter.recipients, contains(recipient))
+
+    def test_associate_multiple(self):
+        call_filter = self.add_call_filter()
+        recipient1 = self.add_call_filter_member(bstype='boss')
+        recipient2 = self.add_call_filter_member(bstype='boss')
+
+        call_filter_dao.associate_recipients(call_filter, [recipient1, recipient2])
+
+        self.session.expire_all()
+        assert_that(call_filter.recipients, contains(recipient1, recipient2))
+
+    def test_dissociate(self):
+        call_filter = self.add_call_filter()
+        recipient = self.add_call_filter_member(bstype='boss')
+        call_filter_dao.associate_recipients(call_filter, [recipient])
+
+        call_filter_dao.associate_recipients(call_filter, [])
+
+        self.session.expire_all()
+        assert_that(call_filter.recipients, empty())
+
+        row = self.session.query(CallFilterMember).first()
+        assert_that(row, none())
+
+
+class TestAssociateInterceptors(DAOTestCase):
+
+    def test_associate(self):
+        call_filter = self.add_call_filter()
+        surrogate = self.add_call_filter_member(bstype='secretary')
+
+        call_filter_dao.associate_surrogates(call_filter, [surrogate])
+
+        self.session.expire_all()
+        assert_that(call_filter.surrogates, contains(surrogate))
+
+    def test_associate_multiple(self):
+        call_filter = self.add_call_filter()
+        surrogate1 = self.add_call_filter_member(bstype='secretary')
+        surrogate2 = self.add_call_filter_member(bstype='secretary')
+
+        call_filter_dao.associate_surrogates(call_filter, [surrogate1, surrogate2])
+
+        self.session.expire_all()
+        assert_that(call_filter.surrogates, contains(surrogate1, surrogate2))
+
+    def test_dissociate(self):
+        call_filter = self.add_call_filter()
+        surrogate = self.add_call_filter_member(bstype='secretary')
+        call_filter_dao.associate_surrogates(call_filter, [surrogate])
+
+        call_filter_dao.associate_surrogates(call_filter, [])
+
+        self.session.expire_all()
+        assert_that(call_filter.surrogates, empty())
+
+        row = self.session.query(CallFilterMember).first()
         assert_that(row, none())
