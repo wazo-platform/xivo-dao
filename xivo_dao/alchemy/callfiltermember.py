@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2013-2014 Avencall
+# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
+from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, UniqueConstraint, CheckConstraint
 from sqlalchemy.types import Integer, String, Enum
 
@@ -28,3 +29,9 @@ class Callfiltermember(Base):
     priority = Column(Integer, nullable=False, server_default='0')
     bstype = Column(enum.generic_bsfilter, nullable=False)
     active = Column(Integer, nullable=False, server_default='0')
+
+    user = relationship('UserFeatures',
+                        primaryjoin="""and_(Callfiltermember.type == 'user',
+                                            Callfiltermember.typeval == cast(UserFeatures.id, String))""",
+                        foreign_keys='Callfiltermember.typeval',
+                        viewonly=True)
