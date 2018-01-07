@@ -4,6 +4,7 @@
 
 from sqlalchemy import text
 from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
@@ -53,6 +54,22 @@ class Callfilter(Base):
     caller_id_name = association_proxy('caller_id', 'name',
                                        creator=lambda _name: Callerid(type='callfilter',
                                                                       name=_name))
+
+    recipients = relationship('Callfiltermember',
+                              primaryjoin="""and_(Callfiltermember.bstype == 'boss',
+                                                  Callfiltermember.callfilterid == Callfilter.id)""",
+                              foreign_keys='Callfiltermember.callfilterid',
+                              order_by='Callfiltermember.priority',
+                              collection_class=ordering_list('priority', reorder_on_append=True),
+                              cascade='all, delete-orphan')
+
+    surrogates = relationship('Callfiltermember',
+                              primaryjoin="""and_(Callfiltermember.bstype == 'secretary',
+                                                  Callfiltermember.callfilterid == Callfilter.id)""",
+                              foreign_keys='Callfiltermember.callfilterid',
+                              order_by='Callfiltermember.priority',
+                              collection_class=ordering_list('priority', reorder_on_append=True),
+                              cascade='all, delete-orphan')
 
     @hybrid_property
     def strategy(self):
