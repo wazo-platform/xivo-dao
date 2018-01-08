@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
-# Copyright 2012-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
-from sqlalchemy import sql
-from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint, \
-    Index
-from sqlalchemy.types import Integer, String, Enum, Boolean
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import relationship
+from sqlalchemy.schema import (
+    Column,
+    Index,
+    PrimaryKeyConstraint,
+    UniqueConstraint,
+)
+from sqlalchemy.sql import func, cast, not_
+from sqlalchemy.types import Integer, String, Enum, Boolean
 
 from xivo_dao.helpers.db_manager import Base
 from xivo_dao.alchemy import enum
@@ -60,7 +64,7 @@ class UserCustom(Base):
 
     @enabled.expression
     def enabled(cls):
-        return sql.not_(sql.cast(cls.commented, Boolean))
+        return not_(cast(cls.commented, Boolean))
 
     @enabled.setter
     def enabled(self, value):
@@ -74,3 +78,20 @@ class UserCustom(Base):
 
     def same_protocol(self, protocol, protocolid):
         return protocol == 'custom' and self.id == int(protocolid)
+
+    @hybrid_property
+    def interface_suffix(self):
+        if self.intfsuffix == '':
+            return None
+        return self.intfsuffix
+
+    @interface_suffix.expression
+    def interface_suffix(cls):
+        return func.nullif(cls.intfsuffix, '')
+
+    @interface_suffix.setter
+    def interface_suffix(self, value):
+        if value is None:
+            self.intfsuffix = ''
+        else:
+            self.intfsuffix = value
