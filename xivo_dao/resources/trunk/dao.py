@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2016 Avencall
+# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.helpers.db_utils import flush_session
 
-from xivo_dao.resources.trunk.fixes import TrunkFixes
-from xivo_dao.resources.trunk.persistor import TrunkPersistor
-from xivo_dao.resources.trunk.search import trunk_search
+from .fixes import TrunkFixes
+from .persistor import TrunkPersistor
+from .search import trunk_search
 
 
 @daosession
@@ -56,3 +56,23 @@ def edit(session, trunk):
 @daosession
 def delete(session, trunk):
     TrunkPersistor(session, trunk_search).delete(trunk)
+
+
+@daosession
+def associate_register_iax(session, trunk, register):
+    TrunkPersistor(session, trunk_search).associate_register_iax(trunk, register)
+
+
+@daosession
+def dissociate_register_iax(session, trunk, register):
+    TrunkPersistor(session, trunk_search).dissociate_register_iax(trunk, register)
+
+
+@daosession
+def associate_register_sip(session, trunk, register):
+    TrunkPersistor(session, trunk_search).associate_register_sip(trunk, register)
+
+
+@daosession
+def dissociate_register_sip(session, trunk, register):
+    TrunkPersistor(session, trunk_search).dissociate_register_sip(trunk, register)

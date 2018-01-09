@@ -1,20 +1,22 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2016 Avencall
+# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from __future__ import unicode_literals
 
-from hamcrest import (assert_that,
-                      contains,
-                      contains_inanyorder,
-                      equal_to,
-                      empty,
-                      has_items,
-                      has_properties,
-                      has_property,
-                      is_not,
-                      none,
-                      not_)
+from hamcrest import (
+    assert_that,
+    contains,
+    contains_inanyorder,
+    empty,
+    equal_to,
+    has_items,
+    has_properties,
+    has_property,
+    is_not,
+    none,
+    not_,
+)
 
 
 from xivo_dao.alchemy.outcall import Outcall
@@ -25,10 +27,11 @@ from xivo_dao.alchemy.staticsip import StaticSIP
 from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.usercustom import UserCustom
-from xivo_dao.helpers.exception import NotFoundError, InputError
-from xivo_dao.resources.trunk import dao as trunk_dao
+from xivo_dao.helpers.exception import NotFoundError, InputError, ResourceError
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.tests.test_dao import DAOTestCase
+
+from .. import dao as trunk_dao
 
 
 class TestFind(DAOTestCase):
@@ -356,6 +359,147 @@ class TestDelete(DAOTestCase):
         assert_that(deleted_register, none())
 
 
+class TestAssociateRegisterIAX(DAOTestCase):
+
+    def test_associate_trunk_register_iax(self):
+        trunk = self.add_trunk()
+        register = self.add_register_iax()
+
+        trunk_dao.associate_register_iax(trunk, register)
+
+        result = self.session.query(Trunk).first()
+        assert_that(result, equal_to(trunk))
+        assert_that(result.protocol, equal_to('iax'))
+        assert_that(result.registerid, equal_to(register.id))
+        assert_that(result.register_iax, equal_to(register))
+
+    def test_associate_already_associated(self):
+        trunk = self.add_trunk()
+        register = self.add_register_iax()
+        trunk_dao.associate_register_iax(trunk, register)
+
+        trunk_dao.associate_register_iax(trunk, register)
+
+        result = self.session.query(Trunk).first()
+        assert_that(result, equal_to(trunk))
+        assert_that(result.register_iax, equal_to(register))
+
+    def test_associate_trunk_sip_register_iax(self):
+        trunk = self.add_trunk(protocol='sip')
+        register = self.add_register_iax()
+
+        self.assertRaises(ResourceError, trunk_dao.associate_register_iax, trunk, register)
+
+
+class TestDissociateRegisterIAX(DAOTestCase):
+
+    def test_dissociate_trunk_register_iax(self):
+        trunk = self.add_trunk()
+        register = self.add_register_iax()
+        trunk_dao.associate_register_iax(trunk, register)
+
+        trunk_dao.dissociate_register_iax(trunk, register)
+
+        result = self.session.query(Trunk).first()
+        assert_that(result, equal_to(trunk))
+        assert_that(result.protocol, none())
+        assert_that(result.registerid, equal_to(0))
+        assert_that(result.register_iax, none())
+
+    def test_dissociate_trunk_register_iax_not_associated(self):
+        trunk = self.add_trunk()
+        register = self.add_register_iax()
+
+        trunk_dao.dissociate_register_iax(trunk, register)
+
+        result = self.session.query(Trunk).first()
+        assert_that(result, equal_to(trunk))
+        assert_that(result.register_iax, none())
+
+    def test_dissociate_trunk_register_iax_with_endpoint(self):
+        iax = self.add_useriax()
+        trunk = self.add_trunk(protocol='iax', protocolid=iax.id)
+        register = self.add_register_iax()
+        trunk_dao.associate_register_iax(trunk, register)
+
+        trunk_dao.dissociate_register_iax(trunk, register)
+
+        result = self.session.query(Trunk).first()
+        assert_that(result.protocol, equal_to('iax'))
+        assert_that(result.registerid, equal_to(0))
+        assert_that(result.register_iax, none())
+
+
+class TestAssociateRegisterSIP(DAOTestCase):
+
+    def test_associate_trunk_register_sip(self):
+        trunk = self.add_trunk()
+        register = self.add_register_sip()
+
+        trunk_dao.associate_register_sip(trunk, register)
+
+        result = self.session.query(Trunk).first()
+        assert_that(result, equal_to(trunk))
+        assert_that(result.protocol, equal_to('sip'))
+        assert_that(result.registerid, equal_to(register.id))
+        assert_that(result.register_sip, equal_to(register))
+
+    def test_associate_already_associated(self):
+        trunk = self.add_trunk()
+        register = self.add_register_sip()
+
+        trunk_dao.associate_register_sip(trunk, register)
+
+        result = self.session.query(Trunk).first()
+        assert_that(result, equal_to(trunk))
+        assert_that(result.register_sip, equal_to(register))
+
+    def test_associate_trunk_iax_register_sip(self):
+        trunk = self.add_trunk(protocol='iax')
+        register = self.add_register_sip()
+
+        self.assertRaises(ResourceError, trunk_dao.associate_register_sip, trunk, register)
+
+
+class TestDissociateRegisterSIP(DAOTestCase):
+
+    def test_dissociate_trunk_register_sip(self):
+        trunk = self.add_trunk()
+        register = self.add_register_sip()
+        trunk_dao.associate_register_sip(trunk, register)
+
+        trunk_dao.dissociate_register_sip(trunk, register)
+
+        result = self.session.query(Trunk).first()
+        assert_that(result, equal_to(trunk))
+        assert_that(result.protocol, none())
+        assert_that(result.registerid, equal_to(0))
+        assert_that(result.register_sip, none())
+
+    def test_dissociate_trunk_register_sip_not_associated(self):
+        trunk = self.add_trunk()
+        register = self.add_register_sip()
+
+        trunk_dao.dissociate_register_sip(trunk, register)
+
+        result = self.session.query(Trunk).first()
+        assert_that(result, equal_to(trunk))
+        assert_that(result.register_sip, none())
+
+    def test_dissociate_trunk_register_sip_with_endpoint(self):
+        sip = self.add_usersip()
+        trunk = self.add_trunk(protocol='sip', protocolid=sip.id)
+        register = self.add_register_sip()
+        trunk_dao.associate_register_sip(trunk, register)
+
+        trunk_dao.dissociate_register_sip(trunk, register)
+
+        result = self.session.query(Trunk).first()
+        assert_that(result.protocol, equal_to('sip'))
+        assert_that(result.registerid, equal_to(0))
+        assert_that(result.register_sip, none())
+
+
 class TestRelations(DAOTestCase):
 
     def test_outcalls_create(self):
@@ -435,3 +579,21 @@ class TestRelations(DAOTestCase):
         assert_that(trunk.endpoint_sip, none())
         assert_that(trunk.endpoint_iax, none())
         assert_that(trunk.endpoint_custom, equal_to(custom_row))
+
+    def test_register_sip_relationship(self):
+        register_row = self.add_register_sip()
+        trunk_row = self.add_trunk(registerid=register_row.id, protocol='sip')
+
+        trunk = trunk_dao.get(trunk_row.id)
+        assert_that(trunk, equal_to(trunk_row))
+        assert_that(trunk.register_sip, equal_to(register_row))
+        assert_that(trunk.register_iax, none())
+
+    def test_register_iax_relationship(self):
+        register_row = self.add_register_iax()
+        trunk_row = self.add_trunk(registerid=register_row.id, protocol='iax')
+
+        trunk = trunk_dao.get(trunk_row.id)
+        assert_that(trunk, equal_to(trunk_row))
+        assert_that(trunk.register_sip, none())
+        assert_that(trunk.register_iax, equal_to(register_row))
