@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 import six
@@ -146,7 +146,7 @@ def _run_sql_function_returning_void(session, start, end, function):
 
     (session
      .query('place_holder')
-     .from_statement(function)
+     .from_statement(text(function))
      .params(start=start, end=end)
      .first())
 
@@ -180,7 +180,7 @@ SELECT stat_agent.id AS agent,
 
     rows = (session
             .query('agent', 'pauseall', 'unpauseall')
-            .from_statement(pause_in_range)
+            .from_statement(text(pause_in_range))
             .params(start=start, end=end))
 
     results = {}
@@ -310,7 +310,7 @@ ORDER BY
     formatted_end = end.strftime(_STR_TIME_FMT)
 
     rows = (session.query('agent', 'login_timestamp', 'logout_timestamp')
-            .from_statement(completed_logins_query)
+            .from_statement(text(completed_logins_query))
             .params(start=formatted_start, end=formatted_end))
 
     results = {}
@@ -377,7 +377,7 @@ HAVING
         'agent',
         'login',
         'logout',
-    ).from_statement(query).params(start=start, end=end)
+    ).from_statement(text(query)).params(start=start, end=end)
 
     agent_last_logins = {}
     agent_last_logouts = {}

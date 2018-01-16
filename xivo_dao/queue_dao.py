@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2012-2015 Avencall
+# Copyright 2012-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
+from sqlalchemy.sql import text
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.helpers.db_manager import daosession
 
@@ -67,7 +68,7 @@ WHERE
 '''
     row = (session
            .query('found')
-           .from_statement(statement)
+           .from_statement(text(statement))
            .params(user_id=user_id, queue_id=queue_id)
            .first())
     return row is not None

@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2013-2014 Avencall
+# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 import time
+
+from sqlalchemy.sql import text
 from xivo_dao.helpers.db_manager import daosession
 
 
@@ -17,10 +19,10 @@ def get_statistics(session, queue_name, window, xqos):
                               'received_and_done',
                               'max_hold_time',
                               'mean_hold_time')
-                       .from_statement('select * from get_queue_statistics('
-                                       'cast (:queue_name as text),'
-                                       'cast (:in_window as int),'
-                                       'cast (:xqos as int))')
+                       .from_statement(text('select * from get_queue_statistics('
+                                            'cast (:queue_name as text),'
+                                            'cast (:in_window as int),'
+                                            'cast (:xqos as int))'))
                        .params(queue_name=queue_name,
                                in_window=in_window,
                                xqos=xqos)

@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2013-2015 Avencall
+# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy import between, distinct
+from sqlalchemy.sql import text
 from sqlalchemy.sql.expression import and_, or_
 from sqlalchemy.sql.functions import min
 from xivo_dao.alchemy.queue_log import QueueLog
@@ -39,8 +40,8 @@ AND
         'start',
         'end',
         'agent_id'
-    ).from_statement(wrapup_times_query).params(start=formatted_start,
-                                                end=formatted_end)
+    ).from_statement(text(wrapup_times_query)).params(start=formatted_start,
+                                                      end=formatted_end)
 
     results = {}
     for row in rows.all():
