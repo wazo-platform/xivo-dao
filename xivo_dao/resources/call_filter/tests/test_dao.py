@@ -137,7 +137,7 @@ class TestSearchGivenMultipleCallFilters(TestSearch):
 
     def setUp(self):
         super(TestSearch, self).setUp()
-        self.call_filter1 = self.add_call_filter(name='Ashton', description='resto', mode='bossfirst-serial')
+        self.call_filter1 = self.add_call_filter(name='Ashton', description='resto', strategy='bossfirst-serial')
         self.call_filter2 = self.add_call_filter(name='Beaugarton', description='bar')
         self.call_filter3 = self.add_call_filter(name='Casa', description='resto')
         self.call_filter4 = self.add_call_filter(name='Dunkin', description='resto')
@@ -159,7 +159,7 @@ class TestSearchGivenMultipleCallFilters(TestSearch):
 
     def test_when_searching_with_a_custom_extra_argument(self):
         expected = SearchResult(1, [self.call_filter1])
-        self.assert_search_returns_result(expected, mode='bossfirst-serial')
+        self.assert_search_returns_result(expected, strategy='bossfirst-serial')
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
         expected = SearchResult(4, [self.call_filter1,
@@ -209,7 +209,7 @@ class TestCreate(DAOTestCase):
         assert_that(result, equal_to(row))
         assert_that(result, has_properties(
             name='name',
-            mode=none(),
+            strategy=none(),
             callfrom=none(),
             timeout=none(),
             enabled=True,
@@ -219,7 +219,7 @@ class TestCreate(DAOTestCase):
     def test_create_with_all_fields(self):
         call_filter = CallFilter(
             name='name',
-            mode='bossfirst-serial',
+            strategy='bossfirst-serial',
             callfrom='all',
             timeout=10,
             enabled=False,
@@ -232,7 +232,7 @@ class TestCreate(DAOTestCase):
         assert_that(result, equal_to(row))
         assert_that(result, has_properties(
             name='name',
-            mode='bossfirst-serial',
+            strategy='bossfirst-serial',
             callfrom='all',
             timeout=10,
             enabled=False,
@@ -252,7 +252,7 @@ class TestEdit(DAOTestCase):
     def test_edit_all_fields(self):
         call_filter = self.add_call_filter(
             name='name',
-            mode='bossfirst-serial',
+            strategy='bossfirst-serial',
             callfrom='all',
             timeout=10,
             enabled=True,
@@ -261,7 +261,7 @@ class TestEdit(DAOTestCase):
 
         call_filter = call_filter_dao.get(call_filter.id)
         call_filter.name = 'other_name'
-        call_filter.mode = 'bossfirst-simult'
+        call_filter.strategy = 'bossfirst-simult'
         call_filter.callfrom = 'internal'
         call_filter.timeout = 20
         call_filter.enabled = False
@@ -272,7 +272,7 @@ class TestEdit(DAOTestCase):
         row = self.session.query(CallFilter).first()
         assert_that(row, has_properties(
             name='other_name',
-            mode='bossfirst-simult',
+            strategy='bossfirst-simult',
             callfrom='internal',
             timeout=20,
             enabled=False,

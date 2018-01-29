@@ -55,11 +55,11 @@ class Callfilter(Base):
                                                                       name=_name))
 
     @hybrid_property
-    def mode(self):
+    def strategy(self):
         return self.bosssecretary
 
-    @mode.setter
-    def mode(self, value):
+    @strategy.setter
+    def strategy(self, value):
         self.bosssecretary = value
 
     @hybrid_property

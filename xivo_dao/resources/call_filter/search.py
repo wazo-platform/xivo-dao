@@ -8,7 +8,7 @@ from xivo_dao.resources.utils.search import SearchConfig, SearchSystem
 config = SearchConfig(table=CallFilter,
                       columns={'id': CallFilter.id,
                                'name': CallFilter.name,
-                               'mode': CallFilter.mode,
+                               'strategy': CallFilter.strategy,
                                'description': CallFilter.description},
                       default_sort='name')
 
