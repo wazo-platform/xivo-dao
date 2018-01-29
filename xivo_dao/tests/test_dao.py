@@ -343,12 +343,6 @@ class ItemInserter(object):
         self.add_me(group_call_permission)
         return group_call_permission
 
-    def add_incall_call_permission(self, **kwargs):
-        kwargs.setdefault('type', 'incall')
-        incall_call_permission = CallPermissionAssociation(**kwargs)
-        self.add_me(incall_call_permission)
-        return incall_call_permission
-
     def add_incall_schedule(self, **kwargs):
         kwargs.setdefault('path', 'incall')
         incall_schedule = SchedulePath(**kwargs)

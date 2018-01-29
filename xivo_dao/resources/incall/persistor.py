@@ -6,7 +6,6 @@ from sqlalchemy import text
 
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.incall import Incall
-from xivo_dao.alchemy.rightcallmember import RightCallMember
 
 from xivo_dao.helpers import errors
 from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
@@ -70,11 +69,6 @@ class IncallPersistor(CriteriaBuilderMixin):
         return query.filter(Incall.tenant_uuid.in_(self.tenant_uuids))
 
     def _delete_associations(self, incall):
-        (self.session.query(RightCallMember)
-         .filter(RightCallMember.type == 'incall')
-         .filter(RightCallMember.typeval == str(incall.id))
-         .delete())
-
         (self.session.query(Extension)
          .filter(Extension.type == 'incall')
          .filter(Extension.typeval == str(incall.id))

@@ -4,9 +4,14 @@
 
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
+from sqlalchemy.schema import (
+    CheckConstraint,
+    Column,
+    PrimaryKeyConstraint,
+    UniqueConstraint,
+)
 from sqlalchemy.sql import case, cast
-from sqlalchemy.types import Integer, String, Enum
+from sqlalchemy.types import Integer, String
 
 from xivo_dao.helpers.db_manager import Base
 
@@ -14,17 +19,10 @@ from xivo_dao.helpers.db_manager import Base
 class RightCallMember(Base):
 
     __tablename__ = 'rightcallmember'
-    __table_args__ = (
-        PrimaryKeyConstraint('id'),
-        UniqueConstraint('rightcallid', 'type', 'typeval'),
-    )
 
     id = Column(Integer, nullable=False)
     rightcallid = Column(Integer, nullable=False, server_default='0')
-    type = Column(Enum('user', 'group', 'incall', 'outcall',
-                       name='rightcallmember_type',
-                       metadata=Base.metadata),
-                  nullable=False)
+    type = Column(String(64), nullable=False)
     typeval = Column(String(128), nullable=False, server_default='0')
 
     group = relationship('GroupFeatures',
@@ -49,6 +47,13 @@ class RightCallMember(Base):
                              primaryjoin='RightCall.id == RightCallMember.rightcallid',
                              foreign_keys='RightCallMember.rightcallid',
                              back_populates='rightcall_members')
+
+    __table_args__ = (
+        PrimaryKeyConstraint('id'),
+        UniqueConstraint('rightcallid', 'type', 'typeval'),
+        CheckConstraint(type.in_(['group', 'outcall', 'user']),
+                        name='rightcallmember_type_check'),
+    )
 
     @hybrid_property
     def call_permission_id(self):
