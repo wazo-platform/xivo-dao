@@ -56,11 +56,29 @@ class Callfilter(Base):
 
     @hybrid_property
     def strategy(self):
-        return self.bosssecretary
+        if self.bosssecretary == 'bossfirst-serial':
+            return 'all-recipients-then-linear-surrogates'
+        elif self.bosssecretary == 'bossfirst-simult':
+            return 'all-recipients-then-all-surrogates'
+        elif self.bosssecretary == 'secretary-serial':
+            return 'linear-surrogates-then-all-recipients'
+        elif self.bosssecretary == 'secretary-simult':
+            return 'all-surrogates-then-all-recipients'
+        else:
+            return self.bosssecretary
 
     @strategy.setter
     def strategy(self, value):
-        self.bosssecretary = value
+        if value == 'all-recipients-then-linear-surrogates':
+            self.bosssecretary = 'bossfirst-serial'
+        elif value == 'all-recipients-then-all-surrogates':
+            self.bosssecretary = 'bossfirst-simult'
+        elif value == 'linear-surrogates-then-all-recipients':
+            self.bosssecretary = 'secretary-serial'
+        elif value == 'all-surrogates-then-all-recipients':
+            self.bosssecretary = 'secretary-simult'
+        else:
+            self.bosssecretary = value
 
     @hybrid_property
     def surrogates_timeout(self):

@@ -17,6 +17,49 @@ from ..callfilter import Callfilter as CallFilter
 from ..callerid import Callerid
 
 
+class TestStrategy(unittest.TestCase):
+
+    def test_getter_all_recipients_then_linear_surrogates(self):
+        call_filter = CallFilter(bosssecretary='bossfirst-serial')
+        assert_that(call_filter.strategy, equal_to('all-recipients-then-linear-surrogates'))
+
+    def test_getter_all_recipients_then_all_surrogates(self):
+        call_filter = CallFilter(bosssecretary='bossfirst-simult')
+        assert_that(call_filter.strategy, equal_to('all-recipients-then-all-surrogates'))
+
+    def test_getter_linear_surrogates_then_all_recipients(self):
+        call_filter = CallFilter(bosssecretary='secretary-serial')
+        assert_that(call_filter.strategy, equal_to('linear-surrogates-then-all-recipients'))
+
+    def test_getter_all_surrogates_then_all_recipients(self):
+        call_filter = CallFilter(bosssecretary='secretary-simult')
+        assert_that(call_filter.strategy, equal_to('all-surrogates-then-all-recipients'))
+
+    def test_getter_all(self):
+        call_filter = CallFilter(bosssecretary='all')
+        assert_that(call_filter.strategy, equal_to('all'))
+
+    def test_setter_all_recipients_then_linear_surrogates(self):
+        call_filter = CallFilter(strategy='all-recipients-then-linear-surrogates')
+        assert_that(call_filter.bosssecretary, equal_to('bossfirst-serial'))
+
+    def test_setter_all_recipients_then_all_surrogates(self):
+        call_filter = CallFilter(strategy='all-recipients-then-all-surrogates')
+        assert_that(call_filter.bosssecretary, equal_to('bossfirst-simult'))
+
+    def test_setter_linear_surrogates_then_all_recipients(self):
+        call_filter = CallFilter(strategy='linear-surrogates-then-all-recipients')
+        assert_that(call_filter.bosssecretary, equal_to('secretary-serial'))
+
+    def test_setter_all_surrogates_then_all_recipients(self):
+        call_filter = CallFilter(strategy='all-surrogates-then-all-recipients')
+        assert_that(call_filter.bosssecretary, equal_to('secretary-simult'))
+
+    def test_setter_all(self):
+        call_filter = CallFilter(strategy='all')
+        assert_that(call_filter.bosssecretary, equal_to('all'))
+
+
 class TestEnabled(unittest.TestCase):
 
     def test_getter_true(self):
