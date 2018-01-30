@@ -40,18 +40,18 @@ class TestTimeout(unittest.TestCase):
 
     def test_getter(self):
         call_filter = CallFilter(ringseconds=10)
-        assert_that(call_filter.timeout, equal_to(10))
+        assert_that(call_filter.surrogates_timeout, equal_to(10))
 
     def test_getter_none(self):
         call_filter = CallFilter(ringseconds=0)
-        assert_that(call_filter.timeout, none())
+        assert_that(call_filter.surrogates_timeout, none())
 
     def test_setter(self):
-        call_filter = CallFilter(timeout=10)
+        call_filter = CallFilter(surrogates_timeout=10)
         assert_that(call_filter.ringseconds, equal_to(10))
 
     def test_setter_none(self):
-        call_filter = CallFilter(timeout=None)
+        call_filter = CallFilter(surrogates_timeout=None)
         assert_that(call_filter.ringseconds, equal_to(0))
 
 

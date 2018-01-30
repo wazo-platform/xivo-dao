@@ -63,13 +63,13 @@ class Callfilter(Base):
         self.bosssecretary = value
 
     @hybrid_property
-    def timeout(self):
+    def surrogates_timeout(self):
         if self.ringseconds == 0:
             return None
         return self.ringseconds
 
-    @timeout.setter
-    def timeout(self, value):
+    @surrogates_timeout.setter
+    def surrogates_timeout(self, value):
         if value is None:
             self.ringseconds = 0
         else:

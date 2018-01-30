@@ -211,7 +211,7 @@ class TestCreate(DAOTestCase):
             name='name',
             strategy=none(),
             callfrom=none(),
-            timeout=none(),
+            surrogates_timeout=none(),
             enabled=True,
             description=none(),
         ))
@@ -221,7 +221,7 @@ class TestCreate(DAOTestCase):
             name='name',
             strategy='bossfirst-serial',
             callfrom='all',
-            timeout=10,
+            surrogates_timeout=10,
             enabled=False,
             description='description',
         )
@@ -234,7 +234,7 @@ class TestCreate(DAOTestCase):
             name='name',
             strategy='bossfirst-serial',
             callfrom='all',
-            timeout=10,
+            surrogates_timeout=10,
             enabled=False,
             description='description',
         ))
@@ -254,7 +254,7 @@ class TestEdit(DAOTestCase):
             name='name',
             strategy='bossfirst-serial',
             callfrom='all',
-            timeout=10,
+            surrogates_timeout=10,
             enabled=True,
             description='description',
         )
@@ -263,7 +263,7 @@ class TestEdit(DAOTestCase):
         call_filter.name = 'other_name'
         call_filter.strategy = 'bossfirst-simult'
         call_filter.callfrom = 'internal'
-        call_filter.timeout = 20
+        call_filter.surrogates_timeout = 20
         call_filter.enabled = False
         call_filter.description = 'other_description'
 
@@ -274,7 +274,7 @@ class TestEdit(DAOTestCase):
             name='other_name',
             strategy='bossfirst-simult',
             callfrom='internal',
-            timeout=20,
+            surrogates_timeout=20,
             enabled=False,
             description='other_description',
         ))
