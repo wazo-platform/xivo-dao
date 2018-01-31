@@ -9,6 +9,8 @@ from xivo_dao.alchemy.asterisk_file_section import AsteriskFileSection
 from xivo_dao.alchemy.asterisk_file_variable import AsteriskFileVariable
 from xivo_dao.alchemy.call_log import CallLog
 from xivo_dao.alchemy.call_log_participant import CallLogParticipant
+from xivo_dao.alchemy.callfilter import Callfilter
+from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from xivo_dao.alchemy.conference import Conference
 from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.alchemy.dialaction import Dialaction
@@ -51,6 +53,8 @@ __all__ = [
     'AsteriskFileVariable',
     'CallLog',
     'CallLogParticipant',
+    'Callfilter',
+    'Callfiltermember',
     'Conference',
     'CtiProfile',
     'Dialaction',
