@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from hamcrest import (
@@ -36,6 +36,16 @@ class TestCallLogs(DAOTestCase):
         row = self.session.query(CallLog).first()
 
         assert_that(row.participant_user_uuids, contains_inanyorder('alice_uuid', 'bob_uuid'))
+
+    def test_source_user_uuids_get(self):
+        call_log = self.add_call_log()
+        self.add_call_log_participant(call_log_id=call_log.id, user_uuid='alice_uuid', role='source')
+        self.add_call_log_participant(call_log_id=call_log.id, user_uuid='bob_uuid', role='destination')
+
+        row = self.session.query(CallLog).first()
+
+        assert_that(row.source_user_uuid, equal_to('alice_uuid'))
+        assert_that(row.destination_user_uuid, equal_to('bob_uuid'))
 
     def test_participants_set(self):
         call_log = self.add_call_log()
