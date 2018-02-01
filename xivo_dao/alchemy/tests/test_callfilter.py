@@ -82,7 +82,7 @@ class TestEnabled(unittest.TestCase):
         assert_that(call_filter.commented, equal_to(1))
 
 
-class TestTimeout(unittest.TestCase):
+class TestSurrogateTimeout(unittest.TestCase):
 
     def test_getter(self):
         call_filter = CallFilter(ringseconds=10)
