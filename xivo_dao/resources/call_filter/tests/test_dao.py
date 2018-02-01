@@ -200,6 +200,10 @@ class TestSearchGivenMultipleCallFilters(TestSearch):
 
 class TestCreate(DAOTestCase):
 
+    def setUp(self):
+        super(TestCreate, self).setUp()
+        self.entity = self.add_entity()
+
     def test_create_minimal_fields(self):
         call_filter = CallFilter(name='name')
 
@@ -244,7 +248,10 @@ class TestCreate(DAOTestCase):
 
         result = call_filter_dao.create(call_filter)
 
-        assert_that(result, has_properties(type='bosssecretary'))
+        assert_that(result, has_properties(
+            entity_id=self.entity.id,
+            type='bosssecretary',
+        ))
 
 
 class TestEdit(DAOTestCase):
