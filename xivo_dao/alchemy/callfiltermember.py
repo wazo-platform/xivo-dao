@@ -34,8 +34,7 @@ class Callfiltermember(Base):
     user = relationship('UserFeatures',
                         primaryjoin="""and_(Callfiltermember.type == 'user',
                                             Callfiltermember.typeval == cast(UserFeatures.id, String))""",
-                        foreign_keys='Callfiltermember.typeval',
-                        viewonly=True)
+                        foreign_keys='Callfiltermember.typeval')
 
     @hybrid_property
     def timeout(self):

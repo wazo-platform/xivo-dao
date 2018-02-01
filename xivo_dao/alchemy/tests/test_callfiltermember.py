@@ -17,6 +17,16 @@ from ..callfiltermember import Callfiltermember as CallFilterMember
 
 class TestUser(DAOTestCase):
 
+    def test_associate(self):
+        user = self.add_user()
+        member = self.add_call_filter_member(type='user')
+
+        member.user = user
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(member.user, equal_to(user))
+
     def test_getter(self):
         user = self.add_user()
         member = self.add_call_filter_member(type='user', typeval=str(user.id))
