@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy.sql.expression import and_, cast, func
@@ -70,11 +70,17 @@ def get_by_callfiltermember_id(session, callfiltermember_id):
 
 
 @daosession
-def get_by_boss_id(session, boss_id):
-    return (session.query(Callfiltermember, Callfilter)
-            .join((Callfilter, Callfilter.id == Callfiltermember.callfilterid))
+def find_boss(session, boss_id):
+    return (session.query(Callfiltermember)
             .filter(and_(Callfiltermember.typeval == str(boss_id),
                          Callfiltermember.bstype == 'boss'))
+            .first())
+
+
+@daosession
+def find(session, call_filter_id):
+    return (session.query(Callfilter)
+            .filter(Callfilter.id == call_filter_id)
             .first())
 
 
