@@ -2,6 +2,7 @@
 # Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, UniqueConstraint, CheckConstraint
 from sqlalchemy.types import Integer, String, Enum
@@ -35,3 +36,16 @@ class Callfiltermember(Base):
                                             Callfiltermember.typeval == cast(UserFeatures.id, String))""",
                         foreign_keys='Callfiltermember.typeval',
                         viewonly=True)
+
+    @hybrid_property
+    def timeout(self):
+        if self.ringseconds == 0:
+            return None
+        return self.ringseconds
+
+    @timeout.setter
+    def timeout(self, value):
+        if value is None:
+            self.ringseconds = 0
+        else:
+            self.ringseconds = value
