@@ -22,6 +22,8 @@ class CallLog(Base):
     source_name = Column(String(255))
     source_exten = Column(String(255))
     source_line_identity = Column(String(255))
+    requested_exten = Column(String(255))
+    requested_context = Column(String(255))
     destination_name = Column(String(255))
     destination_exten = Column(String(255))
     destination_line_identity = Column(String(255))
