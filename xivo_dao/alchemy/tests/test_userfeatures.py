@@ -2,17 +2,20 @@
 # Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
-from hamcrest import (assert_that,
-                      contains,
-                      contains_inanyorder,
-                      empty,
-                      equal_to,
-                      has_key,
-                      has_properties,
-                      is_not,
-                      not_,
-                      none)
+from hamcrest import (
+    assert_that,
+    contains,
+    contains_inanyorder,
+    empty,
+    equal_to,
+    has_key,
+    has_properties,
+    is_not,
+    none,
+    not_,
+)
 
+from xivo_dao.alchemy.callfiltermember import Callfiltermember as CallFilterMember
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.paginguser import PagingUser
 from xivo_dao.alchemy.queuemember import QueueMember
@@ -117,6 +120,50 @@ class TestVoicemail(DAOTestCase):
         assert_that(user.voicemail, equal_to(voicemail))
 
 
+class TestCallFilterRecipients(DAOTestCase):
+
+    def test_getter(self):
+        user = self.add_user()
+        call_filter1 = self.add_call_filter()
+        call_filter2 = self.add_call_filter()
+        recipient1 = self.add_call_filter_member(
+            callfilterid=call_filter1.id,
+            bstype='boss',
+            type='user',
+            typeval=str(user.id)
+        )
+        recipient2 = self.add_call_filter_member(
+            callfilterid=call_filter2.id,
+            bstype='boss',
+            type='user',
+            typeval=str(user.id)
+        )
+
+        assert_that(user.call_filter_recipients, contains_inanyorder(recipient1, recipient2))
+
+
+class TestCallFilterSurrogates(DAOTestCase):
+
+    def test_getter(self):
+        user = self.add_user()
+        call_filter1 = self.add_call_filter()
+        call_filter2 = self.add_call_filter()
+        surrogate1 = self.add_call_filter_member(
+            callfilterid=call_filter1.id,
+            bstype='secretary',
+            type='user',
+            typeval=str(user.id)
+        )
+        surrogate2 = self.add_call_filter_member(
+            callfilterid=call_filter2.id,
+            bstype='secretary',
+            type='user',
+            typeval=str(user.id)
+        )
+
+        assert_that(user.call_filter_surrogates, contains_inanyorder(surrogate1, surrogate2))
+
+
 class TestFallbacks(DAOTestCase):
 
     def test_getter(self):
@@ -218,6 +265,26 @@ class TestSchedules(DAOTestCase):
 
 
 class TestDelete(DAOTestCase):
+
+    def test_call_filter_recipients_are_deleted(self):
+        user = self.add_user()
+        self.add_call_filter_member(bstype='boss', type='user', typeval=str(user.id))
+
+        self.session.delete(user)
+        self.session.flush()
+
+        row = self.session.query(CallFilterMember).first()
+        assert_that(row, none())
+
+    def test_call_filter_surrogates_are_deleted(self):
+        user = self.add_user()
+        self.add_call_filter_member(bstype='secretary', type='user', typeval=str(user.id))
+
+        self.session.delete(user)
+        self.session.flush()
+
+        row = self.session.query(CallFilterMember).first()
+        assert_that(row, none())
 
     def test_schedule_paths_are_deleted(self):
         user = self.add_user()
