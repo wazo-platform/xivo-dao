@@ -10,11 +10,14 @@ from hamcrest import (
     equal_to,
     empty,
     has_items,
+    has_key,
     has_properties,
     has_property,
+    is_not,
     none,
 )
 
+from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.callfilter import Callfilter as CallFilter
 from xivo_dao.alchemy.callfiltermember import Callfiltermember as CallFilterMember
 from xivo_dao.helpers.exception import NotFoundError, InputError
@@ -383,3 +386,51 @@ class TestAssociateInterceptors(DAOTestCase):
 
         row = self.session.query(CallFilterMember).first()
         assert_that(row, none())
+
+
+class TestUpdateFallbacks(DAOTestCase):
+
+    def test_update(self):
+        call_filter = self.add_call_filter()
+        dialaction = Dialaction(action='none')
+
+        call_filter_dao.update_fallbacks(call_filter, {'key': dialaction})
+
+        self.session.expire_all()
+        assert_that(call_filter.fallbacks['key'], has_properties(action='none'))
+
+    def test_update_to_none(self):
+        call_filter = self.add_call_filter()
+
+        call_filter_dao.update_fallbacks(call_filter, {'key': None})
+
+        self.session.expire_all()
+        assert_that(call_filter.fallbacks, empty())
+
+    def test_update_existing_key(self):
+        call_filter = self.add_call_filter()
+
+        dialaction1 = Dialaction(action='none')
+        call_filter_dao.update_fallbacks(call_filter, {'key': dialaction1})
+        self.session.expire_all()
+
+        dialaction2 = Dialaction(action='user', actionarg1='1')
+        call_filter_dao.update_fallbacks(call_filter, {'key': dialaction2})
+        self.session.expire_all()
+
+        self.session.expire_all()
+        assert_that(call_filter.fallbacks['key'], has_properties(action='user', actionarg1='1'))
+
+    def test_update_delete_undefined_key(self):
+        call_filter = self.add_call_filter()
+
+        dialaction1 = Dialaction(action='none')
+        call_filter_dao.update_fallbacks(call_filter, {'old_key': dialaction1})
+        self.session.expire_all()
+
+        dialaction2 = Dialaction(action='user', actionarg1='1')
+        call_filter_dao.update_fallbacks(call_filter, {'key': dialaction2})
+        self.session.expire_all()
+
+        self.session.expire_all()
+        assert_that(call_filter.fallbacks, is_not(has_key('old_key')))

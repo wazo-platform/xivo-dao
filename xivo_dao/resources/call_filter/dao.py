@@ -68,3 +68,8 @@ def associate_surrogates(session, call_filter, surrogates):
 def member_exists(session, member_id):
     query = session.query(CallFilterMember).filter(CallFilterMember.id == member_id)
     return query.count() > 0
+
+
+@daosession
+def update_fallbacks(session, call_filter, fallbacks):
+    CallFilterPersistor(session, call_filter_search).update_fallbacks(call_filter, fallbacks)
