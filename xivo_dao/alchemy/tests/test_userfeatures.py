@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from hamcrest import (assert_that,
@@ -224,7 +224,7 @@ class TestDelete(DAOTestCase):
         schedule = self.add_schedule()
         self.add_schedule_path(schedule_id=schedule.id, path='user', pathid=user.id)
 
-        self.session.delete(schedule)
+        self.session.delete(user)
         self.session.flush()
 
         row = self.session.query(SchedulePath).first()
