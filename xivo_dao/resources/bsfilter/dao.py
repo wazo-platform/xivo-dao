@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-# Copyright (C) 2015 Avencall
+# Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy import sql, Integer
@@ -7,15 +7,6 @@ from sqlalchemy import sql, Integer
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.resources.bsfilter.model import FilterMember
-
-
-@daosession
-def filter_member_exists(session, filter_member_id):
-    query = (session.query(Callfiltermember)
-             .filter(Callfiltermember.id == filter_member_id)
-             )
-
-    return query.count() > 0
 
 
 @daosession

@@ -24,6 +24,21 @@ from xivo_dao.tests.test_dao import DAOTestCase
 from .. import dao as call_filter_dao
 
 
+class TestMemberExist(DAOTestCase):
+
+    def test_not_exists(self):
+        result = call_filter_dao.member_exists(1)
+
+        assert_that(result, equal_to(False))
+
+    def test_exists(self):
+        member = self.add_call_filter_member()
+
+        result = call_filter_dao.member_exists(member.id)
+
+        assert_that(result, equal_to(True))
+
+
 class TestFind(DAOTestCase):
 
     def test_find_no_call_filter(self):

@@ -1,29 +1,13 @@
 # -*- coding: UTF-8 -*-
-# Copyright (C) 2015 Avencall
+# Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
-from hamcrest import assert_that, equal_to, has_items, contains
+from hamcrest import assert_that, has_items, contains
 
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.resources.bsfilter import dao as bsfilter_dao
 
 from xivo_dao.resources.bsfilter.model import FilterMember
-
-
-class TestFilterMemberExist(DAOTestCase):
-
-    def test_given_no_filter_member_then_returns_false(self):
-        result = bsfilter_dao.filter_member_exists(1)
-
-        assert_that(result, equal_to(False))
-
-    def test_given_filter_member_exists_then_return_true(self):
-        bsfilter_row = self.add_bsfilter()
-        filter_member_row = self.add_filter_member(bsfilter_row.id, '1')
-
-        result = bsfilter_dao.filter_member_exists(filter_member_row.id)
-
-        assert_that(result, equal_to(True))
 
 
 class TestFindByMemberId(DAOTestCase):

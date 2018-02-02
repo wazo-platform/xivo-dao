@@ -2,6 +2,7 @@
 # Copyright 2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
+from xivo_dao.alchemy.callfiltermember import Callfiltermember as CallFilterMember
 from xivo_dao.helpers.db_manager import daosession
 
 from .persistor import CallFilterPersistor
@@ -61,3 +62,9 @@ def associate_recipients(session, call_filter, recipients):
 @daosession
 def associate_surrogates(session, call_filter, surrogates):
     CallFilterPersistor(session, call_filter_search).associate_surrogates(call_filter, surrogates)
+
+
+@daosession
+def member_exists(session, member_id):
+    query = session.query(CallFilterMember).filter(CallFilterMember.id == member_id)
+    return query.count() > 0
