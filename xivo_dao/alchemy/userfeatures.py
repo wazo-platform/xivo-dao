@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from __future__ import unicode_literals
@@ -13,12 +13,14 @@ from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import relationship, column_property
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.orm.properties import ColumnProperty
-from sqlalchemy.schema import (Column,
-                               ForeignKey,
-                               ForeignKeyConstraint,
-                               Index,
-                               PrimaryKeyConstraint,
-                               UniqueConstraint)
+from sqlalchemy.schema import (
+    Column,
+    ForeignKey,
+    ForeignKeyConstraint,
+    Index,
+    PrimaryKeyConstraint,
+    UniqueConstraint,
+)
 from sqlalchemy.sql import func, cast, not_
 from sqlalchemy.types import Integer, String, Text, Boolean
 
@@ -219,6 +221,20 @@ class UserFeatures(Base):
                                   creator=lambda _schedule: SchedulePath(path='user',
                                                                          schedule_id=_schedule.id,
                                                                          schedule=_schedule))
+
+    call_filter_recipients = relationship('Callfiltermember',
+                                          primaryjoin="""and_(Callfiltermember.type == 'user',
+                                              Callfiltermember.bstype == 'boss',
+                                              Callfiltermember.typeval == cast(UserFeatures.id, String))""",
+                                          foreign_keys='Callfiltermember.typeval',
+                                          cascade='delete, delete-orphan')
+
+    call_filter_surrogates = relationship('Callfiltermember',
+                                          primaryjoin="""and_(Callfiltermember.type == 'user',
+                                              Callfiltermember.bstype == 'secretary',
+                                              Callfiltermember.typeval == cast(UserFeatures.id, String))""",
+                                          foreign_keys='Callfiltermember.typeval',
+                                          cascade='delete, delete-orphan')
 
     def extrapolate_caller_id(self, extension=None):
         default_num = extension.exten if extension else None

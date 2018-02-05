@@ -6,15 +6,18 @@ import unittest
 
 from hamcrest import (
     assert_that,
+    contains,
     equal_to,
+    empty,
     has_properties,
     none,
 )
 
 from xivo_dao.tests.test_dao import DAOTestCase
 
-from ..callfilter import Callfilter as CallFilter
 from ..callerid import Callerid
+from ..callfilter import Callfilter as CallFilter
+from ..callfiltermember import Callfiltermember as CallFilterMember
 
 
 class TestStrategy(unittest.TestCase):
@@ -79,7 +82,7 @@ class TestEnabled(unittest.TestCase):
         assert_that(call_filter.commented, equal_to(1))
 
 
-class TestTimeout(unittest.TestCase):
+class TestSurrogateTimeout(unittest.TestCase):
 
     def test_getter(self):
         call_filter = CallFilter(ringseconds=10)
@@ -140,6 +143,90 @@ class TestCallerIdName(DAOTestCase):
         ))
 
 
+class TestRecipients(DAOTestCase):
+
+    def test_create(self):
+        recipient = CallFilterMember(bstype='boss', type='user')
+        call_filter = self.add_call_filter()
+
+        call_filter.recipients = [recipient]
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(call_filter.recipients, contains(recipient))
+
+    def test_associate_order_by(self):
+        call_filter = self.add_call_filter()
+        recipient1 = self.add_call_filter_member(bstype='boss')
+        recipient2 = self.add_call_filter_member(bstype='boss')
+        recipient3 = self.add_call_filter_member(bstype='boss')
+
+        call_filter.recipients = [recipient2, recipient3, recipient1]
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(call_filter.recipients, contains(recipient2, recipient3, recipient1))
+
+    def test_dissociate(self):
+        call_filter = self.add_call_filter()
+        recipient1 = self.add_call_filter_member(bstype='boss')
+        recipient2 = self.add_call_filter_member(bstype='boss')
+        recipient3 = self.add_call_filter_member(bstype='boss')
+        call_filter.recipients = [recipient2, recipient3, recipient1]
+        self.session.flush()
+
+        call_filter.recipients = []
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(call_filter.recipients, empty())
+
+        row = self.session.query(CallFilterMember).first()
+        assert_that(row, none())
+
+
+class TestSurrogates(DAOTestCase):
+
+    def test_create(self):
+        surrogate = CallFilterMember(bstype='secretary', type='user')
+        call_filter = self.add_call_filter()
+
+        call_filter.surrogates = [surrogate]
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(call_filter.surrogates, contains(surrogate))
+
+    def test_associate_order_by(self):
+        call_filter = self.add_call_filter()
+        surrogate1 = self.add_call_filter_member(bstype='secretary')
+        surrogate2 = self.add_call_filter_member(bstype='secretary')
+        surrogate3 = self.add_call_filter_member(bstype='secretary')
+
+        call_filter.surrogates = [surrogate2, surrogate3, surrogate1]
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(call_filter.surrogates, contains(surrogate2, surrogate3, surrogate1))
+
+    def test_dissociate(self):
+        call_filter = self.add_call_filter()
+        surrogate1 = self.add_call_filter_member(bstype='secretary')
+        surrogate2 = self.add_call_filter_member(bstype='secretary')
+        surrogate3 = self.add_call_filter_member(bstype='secretary')
+        call_filter.surrogates = [surrogate2, surrogate3, surrogate1]
+        self.session.flush()
+
+        call_filter.surrogates = []
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(call_filter.surrogates, empty())
+
+        row = self.session.query(CallFilterMember).first()
+        assert_that(row, none())
+
+
 class TestDelete(DAOTestCase):
 
     def test_caller_id_is_deleted(self):
@@ -150,4 +237,26 @@ class TestDelete(DAOTestCase):
         self.session.flush()
 
         row = self.session.query(Callerid).first()
+        assert_that(row, none())
+
+    def test_recipients_are_deleted(self):
+        call_filter = self.add_call_filter()
+        self.add_call_filter_member(bstype='boss', callfilterid=call_filter.id)
+        self.add_call_filter_member(bstype='boss', callfilterid=call_filter.id)
+
+        self.session.delete(call_filter)
+        self.session.flush()
+
+        row = self.session.query(CallFilterMember).first()
+        assert_that(row, none())
+
+    def test_surrogates_are_deleted(self):
+        call_filter = self.add_call_filter()
+        self.add_call_filter_member(bstype='secretary', callfilterid=call_filter.id)
+        self.add_call_filter_member(bstype='secretary', callfilterid=call_filter.id)
+
+        self.session.delete(call_filter)
+        self.session.flush()
+
+        row = self.session.query(CallFilterMember).first()
         assert_that(row, none())

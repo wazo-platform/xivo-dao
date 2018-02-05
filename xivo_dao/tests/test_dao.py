@@ -979,6 +979,14 @@ class ItemInserter(object):
         self.add_me(member)
         return member
 
+    def add_call_filter_member(self, **kwargs):
+        kwargs.setdefault('type', 'user')
+        kwargs.setdefault('typeval', str(self._generate_int()))
+        kwargs.setdefault('bstype', 'boss')
+        callfiltermember = Callfiltermember(**kwargs)
+        self.add_me(callfiltermember)
+        return callfiltermember
+
     def add_func_key_mapping(self, **kwargs):
         func_key_mapping = FuncKeyMapping(**kwargs)
         self.add_me(func_key_mapping)
