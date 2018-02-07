@@ -77,7 +77,7 @@ class CallFilterPersistor(CriteriaBuilderMixin):
         surrogate.bstype = 'secretary'
 
     def update_fallbacks(self, call_filter, fallbacks):
-        for event in call_filter.callfilter_dialactions.keys():
+        for event in list(call_filter.callfilter_dialactions.keys()):
             if event not in fallbacks:
                 call_filter.callfilter_dialactions.pop(event, None)
 
