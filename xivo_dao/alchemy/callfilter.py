@@ -7,6 +7,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
+from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
 from sqlalchemy.sql import cast, not_
 from sqlalchemy.sql.schema import ForeignKeyConstraint
@@ -41,6 +42,13 @@ class Callfilter(Base):
 
     entity = relationship(Entity)
 
+    callfilter_dialactions = relationship('Dialaction',
+                                          primaryjoin="""and_(Dialaction.category == 'callfilter',
+                                              Dialaction.categoryval == cast(Callfilter.id, String))""",
+                                          cascade='all, delete-orphan',
+                                          collection_class=attribute_mapped_collection('event'),
+                                          foreign_keys='Dialaction.categoryval')
+
     caller_id = relationship('Callerid',
                              primaryjoin="""and_(Callerid.type == 'callfilter',
                                                  Callerid.typeval == Callfilter.id)""",
@@ -70,6 +78,10 @@ class Callfilter(Base):
                               order_by='Callfiltermember.priority',
                               collection_class=ordering_list('priority', reorder_on_append=True),
                               cascade='all, delete-orphan')
+
+    @property
+    def fallbacks(self):
+        return self.callfilter_dialactions
 
     @hybrid_property
     def strategy(self):

@@ -18,6 +18,7 @@ from xivo_dao.tests.test_dao import DAOTestCase
 from ..callerid import Callerid
 from ..callfilter import Callfilter as CallFilter
 from ..callfiltermember import Callfiltermember as CallFilterMember
+from ..dialaction import Dialaction
 
 
 class TestStrategy(unittest.TestCase):
@@ -225,6 +226,34 @@ class TestSurrogates(DAOTestCase):
 
         row = self.session.query(CallFilterMember).first()
         assert_that(row, none())
+
+
+class TestFallbacks(DAOTestCase):
+
+    def test_getter(self):
+        call_filter = self.add_call_filter()
+        dialaction = self.add_dialaction(event='key', category='callfilter', categoryval=str(call_filter.id))
+
+        assert_that(call_filter.fallbacks['key'], equal_to(dialaction))
+
+
+class TestCallFilterDialactions(DAOTestCase):
+
+    def test_getter(self):
+        call_filter = self.add_call_filter()
+        dialaction = self.add_dialaction(event='key', category='callfilter', categoryval=str(call_filter.id))
+
+        assert_that(call_filter.callfilter_dialactions['key'], equal_to(dialaction))
+
+    def test_setter(self):
+        call_filter = self.add_call_filter()
+        dialaction = Dialaction(event='key', category='callfilter', action='none')
+
+        call_filter.callfilter_dialactions['key'] = dialaction
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(call_filter.callfilter_dialactions['key'], has_properties(action='none'))
 
 
 class TestDelete(DAOTestCase):

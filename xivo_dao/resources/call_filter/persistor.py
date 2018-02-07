@@ -75,3 +75,25 @@ class CallFilterPersistor(CriteriaBuilderMixin):
     def _fill_default_surrogate_values(self, surrogate):
         surrogate.type = 'user'
         surrogate.bstype = 'secretary'
+
+    def update_fallbacks(self, call_filter, fallbacks):
+        for event in call_filter.callfilter_dialactions.keys():
+            if event not in fallbacks:
+                call_filter.callfilter_dialactions.pop(event, None)
+
+        for event, dialaction in fallbacks.items():
+            if dialaction is None:
+                call_filter.callfilter_dialactions.pop(event, None)
+                continue
+
+            if event not in call_filter.callfilter_dialactions:
+                dialaction.category = 'callfilter'
+                dialaction.linked = 1
+                dialaction.event = event
+                call_filter.callfilter_dialactions[event] = dialaction
+
+            call_filter.callfilter_dialactions[event].action = dialaction.action
+            call_filter.callfilter_dialactions[event].actionarg1 = dialaction.actionarg1
+            call_filter.callfilter_dialactions[event].actionarg2 = dialaction.actionarg2
+
+        self.session.flush()
