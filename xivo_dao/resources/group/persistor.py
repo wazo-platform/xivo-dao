@@ -1,7 +1,8 @@
 # -*- coding: UTF-8 -*-
-# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
+from sqlalchemy.orm import joinedload
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.groupfeatures import GroupFeatures as Group
 
@@ -23,7 +24,7 @@ class GroupPersistor(CriteriaBuilderMixin):
         return query.first()
 
     def _find_query(self, criteria):
-        query = self.session.query(Group)
+        query = self._joinedload_query()
         return self.build_criteria(query, criteria)
 
     def get_by(self, criteria):
@@ -37,8 +38,23 @@ class GroupPersistor(CriteriaBuilderMixin):
         return query.all()
 
     def search(self, parameters):
-        rows, total = self.group_search.search(self.session, parameters)
+        rows, total = self.group_search.search_from_query(self._joinedload_query(), parameters)
         return SearchResult(total, rows)
+
+    def _joinedload_query(self):
+        return (self.session.query(Group)
+                .options(joinedload('caller_id'))
+                .options(joinedload('extensions'))
+                .options(joinedload('incall_dialactions')
+                         .joinedload('incall'))
+                .options(joinedload('group_dialactions'))
+                .options(joinedload('group_members')
+                         .joinedload('user'))
+                .options(joinedload('queue'))
+                .options(joinedload('schedule_paths')
+                         .joinedload('schedule'))
+                .options(joinedload('rightcall_members')
+                         .joinedload('rightcall')))
 
     def create(self, group):
         self.session.add(group)
