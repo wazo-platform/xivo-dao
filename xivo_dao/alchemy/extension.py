@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -7,7 +7,7 @@ from sqlalchemy.schema import Column, UniqueConstraint, Index, PrimaryKeyConstra
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import Integer, String, Boolean
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.sql import cast, not_
+from sqlalchemy.sql import case, cast, not_
 
 from xivo_dao.helpers.db_manager import Base, IntAsString
 from xivo_dao.alchemy import enum
@@ -119,3 +119,11 @@ class Extension(Base):
 
     def is_pattern(self):
         return self.exten.startswith('_')
+
+    @hybrid_property
+    def feature(self):
+        return self.typeval
+
+    @feature.expression
+    def feature(cls):
+        return case([(cls.is_feature == True, cls.typeval)], else_=None)
