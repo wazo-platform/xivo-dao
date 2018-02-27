@@ -1,18 +1,20 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
-from hamcrest import (assert_that,
-                      all_of,
-                      contains,
-                      contains_inanyorder,
-                      equal_to,
-                      empty,
-                      has_items,
-                      has_properties,
-                      has_property,
-                      none,
-                      not_)
+from hamcrest import (
+    all_of,
+    assert_that,
+    contains,
+    contains_inanyorder,
+    empty,
+    equal_to,
+    has_items,
+    has_properties,
+    has_property,
+    none,
+    not_,
+)
 
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.extension import Extension
@@ -23,13 +25,6 @@ from xivo_dao.resources.utils.search import SearchResult
 
 
 class TestExtension(DAOTestCase):
-
-    def prepare_extension(self, **kwargs):
-        extension_row = self.add_extension(**kwargs)
-        return Extension(id=extension_row.id,
-                         exten=extension_row.exten,
-                         context=extension_row.context,
-                         commented=bool(extension_row.commented))
 
     def assert_search_returns_result(self, search_result, **parameters):
         result = extension_dao.search(**parameters)
@@ -53,31 +48,37 @@ class TestSimpleSearch(TestExtension):
         self.assert_search_returns_result(expected)
 
     def test_given_one_commented_extension_then_returns_one_result(self):
-        extension = self.prepare_extension(exten='1000', commented=1)
+        extension = self.add_extension(exten='1000', commented=1)
         expected = SearchResult(1, [extension])
 
         self.assert_search_returns_result(expected)
 
     def test_given_one_feature_extension_then_returns_one_result(self):
-        extension1 = self.prepare_extension(exten='1000', context='xivo-features')
-        extension2 = self.prepare_extension(exten='1000', context='not-features')
+        extension1 = self.add_extension(exten='1000', context='xivo-features', typeval='im_feature')
+        extension2 = self.add_extension(exten='1000', context='not-features', typeval='im_not_feature')
 
         expected = SearchResult(1, [extension1])
         self.assert_search_returns_result(expected, is_feature=True)
 
+        expected = SearchResult(1, [extension1])
+        self.assert_search_returns_result(expected, feature='im_feature')
+
         expected = SearchResult(1, [extension2])
         self.assert_search_returns_result(expected, is_feature=False)
+
+        expected = SearchResult(0, [])
+        self.assert_search_returns_result(expected, feature='im_not_feature')
 
 
 class TestSearchGivenMultipleExtensions(TestExtension):
 
     def setUp(self):
         TestExtension.setUp(self)
-        self.extension1 = self.prepare_extension(exten='1000', context='inside')
-        self.extension2 = self.prepare_extension(exten='1001', context='inside')
-        self.extension3 = self.prepare_extension(exten='1002', context='inside')
-        self.extension4 = self.prepare_extension(exten='1103', context='inside')
-        self.extension5 = self.prepare_extension(exten='1103', context='default')
+        self.extension1 = self.add_extension(exten='1000', context='inside')
+        self.extension2 = self.add_extension(exten='1001', context='inside')
+        self.extension3 = self.add_extension(exten='1002', context='inside')
+        self.extension4 = self.add_extension(exten='1103', context='inside')
+        self.extension5 = self.add_extension(exten='1103', context='default')
 
     def test_when_searching_then_returns_one_result(self):
         expected = SearchResult(1, [self.extension2])
@@ -132,8 +133,8 @@ class TestSearchGivenInternalExtensionType(TestExtension):
         TestExtension.setUp(self)
 
         self.add_context(name='internal_context', contexttype='internal')
-        self.extension1 = self.prepare_extension(exten='1000', context='internal_context')
-        self.extension2 = self.prepare_extension(exten='1001', context='internal_context')
+        self.extension1 = self.add_extension(exten='1000', context='internal_context')
+        self.extension2 = self.add_extension(exten='1001', context='internal_context')
 
     def test_when_searching_type_internal_extensions_then_returns_internal_extensions(self):
         expected = SearchResult(2, [self.extension1, self.extension2])
@@ -157,8 +158,8 @@ class TestSearchGivenIncallExtensionType(TestExtension):
         TestExtension.setUp(self)
 
         self.add_context(name='incall_context', contexttype='incall')
-        self.extension1 = self.prepare_extension(exten='1000', context='incall_context')
-        self.extension2 = self.prepare_extension(exten='1001', context='incall_context')
+        self.extension1 = self.add_extension(exten='1000', context='incall_context')
+        self.extension2 = self.add_extension(exten='1001', context='incall_context')
 
     def test_when_searching_type_internal_then_returns_empty_result(self):
         expected = SearchResult(0, [])
@@ -381,7 +382,7 @@ class TestFindAllServiceExtensions(DAOTestCase):
                          ("*25", "enablednd"),
                          ("*20", "fwdundoall")]
 
-    def prepare_extensions(self):
+    def add_extensions(self):
         service_extensions = []
 
         for exten, service in self.SERVICES:
@@ -410,7 +411,7 @@ class TestFindAllServiceExtensions(DAOTestCase):
         assert_that(extensions, contains())
 
     def test_given_all_service_extensions_then_returns_models(self):
-        expected = self.prepare_extensions()
+        expected = self.add_extensions()
 
         result = extension_dao.find_all_service_extensions()
 
@@ -434,7 +435,7 @@ class TestFindAllServiceExtensions(DAOTestCase):
 
 class TestFindAllForwardExtensions(DAOTestCase):
 
-    def prepare_extensions(self):
+    def add_extensions(self):
         extensions = []
 
         row = self.add_extension(type='extenfeatures',
@@ -472,7 +473,7 @@ class TestFindAllForwardExtensions(DAOTestCase):
         assert_that(extensions, contains())
 
     def test_given_all_forward_extensions_then_returns_models(self):
-        expected = self.prepare_extensions()
+        expected = self.add_extensions()
 
         result = extension_dao.find_all_forward_extensions()
 
@@ -496,7 +497,7 @@ class TestFindAllForwardExtensions(DAOTestCase):
 
 class TestFindAllAgentActionExtensions(DAOTestCase):
 
-    def prepare_extensions(self):
+    def add_extensions(self):
         extensions = []
 
         row = self.add_extension(type='extenfeatures',
@@ -534,7 +535,7 @@ class TestFindAllAgentActionExtensions(DAOTestCase):
         assert_that(extensions, contains())
 
     def test_given_all_agent_action_extensions_then_returns_models(self):
-        expected = self.prepare_extensions()
+        expected = self.add_extensions()
 
         result = extension_dao.find_all_agent_action_extensions()
 
