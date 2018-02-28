@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2012-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from __future__ import unicode_literals
@@ -89,7 +89,7 @@ class UserSIP(Base):
     insecure = Column(Enum('port', 'invite', 'port,invite',
                            name='usersip_insecure',
                            metadata=Base.metadata))
-    nat = Column(Enum('no', 'force_rport', 'comedia', 'force_rport,comedia', 'auto_force_rport','auto_comedia',
+    nat = Column(Enum('no', 'force_rport', 'comedia', 'force_rport,comedia', 'auto_force_rport','auto_comedia','auto_force_rport,auto_comedia',
                       name='usersip_nat',
                       metadata=Base.metadata))
     promiscredir = Column(Integer)
