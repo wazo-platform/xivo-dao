@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2013-2014 Avencall
+# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
-from sqlalchemy.types import Integer, String, Text
+from sqlalchemy.sql import cast, not_
+from sqlalchemy.sql.schema import ForeignKeyConstraint
+from sqlalchemy.types import Boolean, Integer, String, Text
 
 from xivo_dao.alchemy.entity import Entity
 from xivo_dao.helpers.db_manager import Base
-from sqlalchemy.sql.schema import ForeignKeyConstraint
-from sqlalchemy.orm import relationship
 
 
 class Pickup(Base):
@@ -29,3 +31,17 @@ class Pickup(Base):
     description = Column(Text)
 
     entity = relationship(Entity)
+
+    @hybrid_property
+    def enabled(self):
+        if self.commented is None:
+            return None
+        return self.commented == 0
+
+    @enabled.expression
+    def enabled(cls):
+        return not_(cast(cls.commented, Boolean))
+
+    @enabled.setter
+    def enabled(self, value):
+        self.commented = int(value is False)
