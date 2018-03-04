@@ -32,6 +32,22 @@ class Pickup(Base):
 
     entity = relationship(Entity)
 
+    targets = relationship(
+        'PickupMember',
+        primaryjoin="""and_(PickupMember.pickupid == Pickup.id,
+            PickupMember.category == 'member')""",
+        foreign_keys='PickupMember.pickupid',
+        cascade='all, delete-orphan'
+    )
+
+    interceptors = relationship(
+        'PickupMember',
+        primaryjoin="""and_(PickupMember.pickupid == Pickup.id,
+            PickupMember.category == 'pickup')""",
+        foreign_keys='PickupMember.pickupid',
+        cascade='all, delete-orphan'
+    )
+
     @hybrid_property
     def enabled(self):
         if self.commented is None:
