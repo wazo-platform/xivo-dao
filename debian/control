@@ -16,7 +16,6 @@ Package: xivo-libdao
 Architecture: all
 Depends: ${python:Depends},
          ${misc:Depends},
-         xivo-config (>= 13.02~20130128.173355.93cbb26-1),
          xivo-lib-python,
          python-sqlalchemy (>= 0.9),
          python-six
@@ -29,7 +28,6 @@ Package: xivo-libdao-python3
 Architecture: all
 Depends: ${python3:Depends},
          ${misc:Depends},
-         xivo-config (>= 13.02~20130128.173355.93cbb26-1),
          xivo-lib-python-python3,
          python3-sqlalchemy (>= 0.9),
          python-six
