@@ -39,6 +39,7 @@ from xivo_dao.alchemy.staticiax import StaticIAX
 from xivo_dao.alchemy.staticsip import StaticSIP
 from xivo_dao.alchemy.switchboard import Switchboard
 from xivo_dao.alchemy.switchboard_member_user import SwitchboardMemberUser
+from xivo_dao.alchemy.tenant import Tenant
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.usercustom import UserCustom
@@ -83,6 +84,7 @@ __all__ = [
     'StaticSIP',
     'Switchboard',
     'SwitchboardMemberUser',
+    'Tenant',
     'TrunkFeatures',
     'UserCustom',
     'UserFeatures',
