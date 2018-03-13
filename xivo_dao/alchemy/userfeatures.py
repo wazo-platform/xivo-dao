@@ -71,6 +71,8 @@ class UserFeatures(Base):
                              ondelete='RESTRICT'),
         ForeignKeyConstraint(('voicemailid',),
                              ('voicemail.uniqueid',)),
+        ForeignKeyConstraint(('tenant_uuid',),
+                             ('tenant.uuid',)),
         UniqueConstraint('func_key_private_template_id'),
         UniqueConstraint('uuid', name='userfeatures_uuid'),
         UniqueConstraint('email', name='userfeatures_email'),
@@ -93,6 +95,7 @@ class UserFeatures(Base):
     agentid = Column(Integer)
     pictureid = Column(Integer)
     entityid = Column(Integer)
+    tenant_uuid = Column(String(38), nullable=False)
     callerid = Column(String(160))
     ringseconds = Column(Integer, nullable=False, server_default='30')
     simultcalls = Column(Integer, nullable=False, server_default='5')

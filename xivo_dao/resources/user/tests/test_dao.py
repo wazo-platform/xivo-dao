@@ -43,10 +43,12 @@ class TestUser(DAOTestCase, FuncKeyHelper):
     def setUp(self):
         super(TestUser, self).setUp()
         self.setup_funckeys()
+        self.tenant = self.add_tenant()
 
     def prepare_user(self, **kwargs):
         template_row = self.add_func_key_template(private=True)
         kwargs.setdefault('func_key_private_template_id', template_row.id)
+        kwargs.setdefault('tenant_uuid', self.tenant.uuid)
         user = User(**kwargs)
         self.session.add(user)
         self.session.flush()
@@ -492,11 +494,12 @@ class TestCreate(TestUser):
 
     def setUp(self):
         super(TestCreate, self).setUp()
-        self.add_tenant()
-        self.entity = self.add_entity()
+        self.tenant_uuid = str(uuid.uuid4())
+        self.add_tenant(uuid=self.tenant_uuid)
+        self.entity = self.add_entity(tenant_uuid=self.tenant_uuid)
 
     def test_create_minimal_fields(self):
-        user = User(firstname='Jôhn')
+        user = User(firstname='Jôhn', tenant_uuid=self.tenant_uuid)
         created_user = user_dao.create(user)
 
         row = self.session.query(User).first()
@@ -530,6 +533,7 @@ class TestCreate(TestUser):
                                                  busy_destination=None,
                                                  noanswer_enabled=False,
                                                  noanswer_destination=None,
+                                                 tenant_uuid=self.tenant_uuid,
                                                  unconditional_enabled=False,
                                                  unconditional_destination=None,
                                                  simultaneous_calls=5,
@@ -560,7 +564,8 @@ class TestCreate(TestUser):
                                         destrna='',
                                         enableunc=0,
                                         destunc='',
-                                        func_key_private_template_id=is_not(none())
+                                        func_key_private_template_id=is_not(none()),
+                                        tenant_uuid=self.tenant_uuid,
                                         ))
 
     def test_create_with_all_fields(self):
@@ -592,6 +597,7 @@ class TestCreate(TestUser):
                     busy_destination='123',
                     noanswer_enabled=True,
                     noanswer_destination='456',
+                    tenant_uuid=self.tenant_uuid,
                     unconditional_enabled=True,
                     unconditional_destination='789',
                     ring_seconds=60,
@@ -630,6 +636,7 @@ class TestCreate(TestUser):
                                                  busy_destination='123',
                                                  noanswer_enabled=True,
                                                  noanswer_destination='456',
+                                                 tenant_uuid=self.tenant_uuid,
                                                  unconditional_enabled=True,
                                                  unconditional_destination='789',
                                                  ring_seconds=60,
@@ -657,7 +664,8 @@ class TestCreate(TestUser):
                                         destrna='456',
                                         enableunc=1,
                                         destunc='789',
-                                        musiconhold='music_on_hold'))
+                                        musiconhold='music_on_hold',
+                                        tenant_uuid=self.tenant_uuid))
 
     def test_that_the_user_uuid_is_unique(self):
         shared_uuid = str(uuid.uuid4())
@@ -682,6 +690,7 @@ class TestEdit(TestUser):
                                     call_permission_password='5678',
                                     enabled=True,
                                     userfield='userfield',
+                                    tenant_uuid=self.tenant.uuid,
                                     timezone='America/Montreal',
                                     language='fr_FR',
                                     voicemail_id=old_voicemail.id,
@@ -769,6 +778,7 @@ class TestEdit(TestUser):
                                     call_permission_password='5678',
                                     userfield='userfield',
                                     timezone='America/Montreal',
+                                    tenant_uuid=self.tenant.uuid,
                                     language='fr_FR',
                                     voicemail_id=voicemail.id,
                                     description='Really cool dude'))
@@ -810,7 +820,7 @@ class TestEdit(TestUser):
 
     def test_edit_caller_id_with_number(self):
         caller_id = '<1000>'
-        user = user_dao.create(User(firstname='Pâul'))
+        user = user_dao.create(User(firstname='Pâul', tenant_uuid=self.tenant.uuid))
 
         user = user_dao.get(user.id)
         user.caller_id = caller_id
@@ -825,8 +835,11 @@ class TestEdit(TestUser):
 
 class TestDelete(TestUser):
 
+    def setUp(self):
+        super(TestDelete, self).setUp()
+
     def test_delete(self):
-        user = user_dao.create(User(firstname='Delete'))
+        user = user_dao.create(User(firstname='Delete', tenant_uuid=self.tenant.uuid))
         user = user_dao.get(user.id)
 
         user_dao.delete(user)
@@ -835,7 +848,7 @@ class TestDelete(TestUser):
         assert_that(row, none())
 
     def test_delete_references_to_other_tables(self):
-        user = user_dao.create(User(firstname='Delete'))
+        user = user_dao.create(User(firstname='Delete', tenant_uuid=self.tenant.uuid))
         self.add_user_call_permission(user_id=user.id)
         schedule = self.add_schedule()
         self.add_schedule_path(schedule_id=schedule.id, path='user', pathid=user.id)

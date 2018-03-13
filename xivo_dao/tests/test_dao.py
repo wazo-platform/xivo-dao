@@ -468,6 +468,11 @@ class ItemInserter(object):
         return outcall_schedule
 
     def add_user(self, **kwargs):
+        if 'tenant_uuid' not in kwargs:
+            kwargs['tenant_uuid'] = DEFAULT_TENANT
+
+        tenant_dao.get_or_create_tenant(kwargs['tenant_uuid'])
+
         if 'func_key_private_template_id' not in kwargs:
             func_key_template = self.add_func_key_template(private=True)
             kwargs['func_key_private_template_id'] = func_key_template.id
@@ -665,7 +670,9 @@ class ItemInserter(object):
         self.add_me(cti_directory)
 
     def add_tenant(self, **kwargs):
-        kwargs.setdefault('uuid', DEFAULT_TENANT)
+        if 'uuid' not in kwargs:
+            kwargs['uuid'] = DEFAULT_TENANT
+
         tenant = Tenant(**kwargs)
         self.add_me(tenant)
         return tenant
