@@ -105,6 +105,7 @@ logger = logging.getLogger(__name__)
 _create_tables = True
 
 TEST_DB_URL = os.getenv('XIVO_TEST_DB_URL', 'postgresql://asterisk:asterisk@localhost/asterisktest')
+DEFAULT_TENANT = '4dc2a55e-e83a-42ca-b3ca-87d3ff04ddaf'
 
 
 def expensive_setup():
@@ -930,6 +931,7 @@ class ItemInserter(object):
     def add_entity(self, **kwargs):
         kwargs.setdefault('name', 'entity')
         kwargs.setdefault('description', '')
+        kwargs.setdefault('tenant_uuid', DEFAULT_TENANT)
         entity = EntitySchema(**kwargs)
 
         self.add_me(entity)

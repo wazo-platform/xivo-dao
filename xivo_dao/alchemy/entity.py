@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2013-2016 Avencall
+# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -20,6 +20,7 @@ class Entity(Base):
     )
 
     id = Column(Integer)
+    tenant_uuid = Column(String(38), nullable=False)
     name = Column(String(64), nullable=False, server_default='')
     displayname = Column(String(128), nullable=False, server_default='')
     phonenumber = Column(String(40), nullable=False, server_default='')

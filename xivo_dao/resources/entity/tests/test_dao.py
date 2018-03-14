@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2016 Avencall
+# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from __future__ import unicode_literals
@@ -18,7 +18,7 @@ from xivo_dao.alchemy.entity import Entity
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.helpers.exception import NotFoundError, InputError
 from xivo_dao.resources.entity import dao as entity_dao
-from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao.tests.test_dao import DAOTestCase, DEFAULT_TENANT
 
 
 class TestFind(DAOTestCase):
@@ -209,23 +209,26 @@ class TestSearchGivenMultipleEntities(TestSearch):
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_fields(self):
-        entity = Entity(name='Proformatique', description='')
+        entity = Entity(name='Proformatique', description='',  tenant_uuid=DEFAULT_TENANT)
         created_entity = entity_dao.create(entity)
 
         row = self.session.query(Entity).first()
 
         assert_that(created_entity, has_properties(id=row.id,
                                                    name="Proformatique",
-                                                   description=''))
+                                                   description='',
+                                                   tenant_uuid=DEFAULT_TENANT))
 
         assert_that(row, has_properties(id=is_not(none()),
                                         name='Proformatique',
-                                        description=''))
+                                        description='',
+                                        tenant_uuid=DEFAULT_TENANT))
 
     def test_create_with_all_fields(self):
         entity = Entity(name="Proformatique",
                         display_name='totoformatiqué',
-                        description='informatique')
+                        description='informatique',
+                        tenant_uuid=DEFAULT_TENANT)
 
         created_entity = entity_dao.create(entity)
 
@@ -234,12 +237,14 @@ class TestCreate(DAOTestCase):
         assert_that(created_entity, has_properties(id=row.id,
                                                    name="Proformatique",
                                                    display_name='totoformatiqué',
-                                                   description='informatique'))
+                                                   description='informatique',
+                                                   tenant_uuid=DEFAULT_TENANT))
 
         assert_that(row, has_properties(id=is_not(none()),
                                         name='Proformatique',
                                         displayname='totoformatiqué',
-                                        description='informatique'))
+                                        description='informatique',
+                                        tenant_uuid=DEFAULT_TENANT))
 
 
 class TestEdit(DAOTestCase):
@@ -247,7 +252,8 @@ class TestEdit(DAOTestCase):
     def test_edit_all_fields(self):
         entity = entity_dao.create(Entity(name="Proformatique",
                                           display_name='totoformatiqué',
-                                          description='informatique'))
+                                          description='informatique',
+                                          tenant_uuid=DEFAULT_TENANT))
 
         entity = entity_dao.get(entity.id)
         entity.name = 'Halala'
@@ -265,7 +271,8 @@ class TestEdit(DAOTestCase):
     def test_edit_set_fields_to_null(self):
         entity = entity_dao.create(Entity(name="Proformatique",
                                           display_name='totoformatiqué',
-                                          description='informatique'))
+                                          description='informatique',
+                                          tenant_uuid=DEFAULT_TENANT))
 
         entity = entity_dao.get(entity.id)
         entity.display_name = None
@@ -280,7 +287,7 @@ class TestEdit(DAOTestCase):
 class TestDelete(DAOTestCase):
 
     def test_delete(self):
-        entity = entity_dao.create(Entity(name='Delete', description=''))
+        entity = entity_dao.create(Entity(name='Delete', description='', tenant_uuid=DEFAULT_TENANT))
         entity = entity_dao.get(entity.id)
 
         entity_dao.delete(entity)
