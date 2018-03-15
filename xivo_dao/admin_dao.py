@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy import and_
@@ -25,7 +25,10 @@ def get_admin_entity(session, username):
         User.login == username,
         User.valid == 1,
     )
-    return session.query(Entity.name).join(User).filter(filter_).scalar()
+    rows = session.query(Entity.name, Entity.tenant_uuid).join(User).filter(filter_).all()
+    for row in rows:
+        return row.name, row.tenant_uuid
+    return None, None
 
 
 @daosession
