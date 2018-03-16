@@ -25,10 +25,11 @@ def get_admin_entity(session, username):
         User.login == username,
         User.valid == 1,
     )
-    rows = session.query(Entity.name, Entity.tenant_uuid).join(User).filter(filter_).all()
-    for row in rows:
-        return row.name, row.tenant_uuid
-    return None, None
+    entity = session.query(Entity.name, Entity.tenant_uuid).join(User).filter(filter_).first()
+    if not entity:
+        return None, None
+
+    return entity.name, entity.tenant_uuid
 
 
 @daosession
