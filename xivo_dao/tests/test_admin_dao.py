@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from hamcrest import assert_that, calling, equal_to, raises
 
 from xivo_dao import admin_dao
 from xivo_dao.helpers import exception
-from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao.tests.test_dao import DAOTestCase, DEFAULT_TENANT
 
 
 class TestAdminUserDAO(DAOTestCase):
@@ -55,13 +55,15 @@ class TestAdminUserDAO(DAOTestCase):
         entity = self.add_entity(name='test')
         self.add_admin(login='foo', passwd='bar', entity_id=entity.id)
 
-        result = admin_dao.get_admin_entity('foo')
+        name, tenant_uuid = admin_dao.get_admin_entity('foo')
 
-        assert_that(result, equal_to('test'))
+        assert_that(name, equal_to('test'))
+        assert_that(tenant_uuid, equal_to(DEFAULT_TENANT))
 
     def test_get_admin_entity_no_entify(self):
         self.add_admin(login='alice', passwd='foobar')
 
-        result = admin_dao.get_admin_entity('alice')
+        name, tenant_uuid = admin_dao.get_admin_entity('alice')
 
-        assert_that(result, equal_to(None))
+        assert_that(name, equal_to(None))
+        assert_that(tenant_uuid, equal_to(None))
