@@ -222,6 +222,7 @@ class TestCreate(DAOTestCase):
 
     def setUp(self):
         super(TestCreate, self).setUp()
+        self.add_tenant()
         self.entity = self.add_entity()
 
     def test_create_minimal_fields(self):

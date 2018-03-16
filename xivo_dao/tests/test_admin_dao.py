@@ -52,7 +52,8 @@ class TestAdminUserDAO(DAOTestCase):
             raises(exception.NotFoundError))
 
     def test_get_admin_entity(self):
-        entity = self.add_entity(name='test')
+        tenant = self.add_tenant()
+        entity = self.add_entity(name='test', tenant_uuid=tenant.uuid)
         self.add_admin(login='foo', passwd='bar', entity_id=entity.id)
 
         name, tenant_uuid = admin_dao.get_admin_entity('foo')

@@ -15,6 +15,7 @@ import string
 import uuid
 import six
 
+from xivo_dao import tenant_dao
 from xivo_dao.alchemy.accessfeatures import AccessFeatures
 from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
@@ -83,6 +84,7 @@ from xivo_dao.alchemy.staticqueue import StaticQueue
 from xivo_dao.alchemy.staticsip import StaticSIP
 from xivo_dao.alchemy.staticvoicemail import StaticVoicemail
 from xivo_dao.alchemy.switchboard import Switchboard
+from xivo_dao.alchemy.tenant import Tenant
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
 from xivo_dao.alchemy.user import User
 from xivo_dao.alchemy.user_line import UserLine
@@ -661,6 +663,12 @@ class ItemInserter(object):
                                        match_direct='',
                                        directory_id=directory.id)
         self.add_me(cti_directory)
+
+    def add_tenant(self, **kwargs):
+        kwargs.setdefault('uuid', DEFAULT_TENANT)
+        tenant = Tenant(**kwargs)
+        self.add_me(tenant)
+        return tenant
 
     def add_trunk(self, **kwargs):
         trunk = TrunkFeatures(**kwargs)
