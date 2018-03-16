@@ -17,4 +17,4 @@ class Tenant(Base):
         PrimaryKeyConstraint('uuid'),
     )
 
-    uuid = Column(String(38), nullable=False, server_default=text('uuid_generate_v4()'))
+    uuid = Column(String(36), nullable=False, server_default=text('uuid_generate_v4()'))
