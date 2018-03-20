@@ -95,7 +95,7 @@ class UserFeatures(Base):
     agentid = Column(Integer)
     pictureid = Column(Integer)
     entityid = Column(Integer)
-    tenant_uuid = Column(String(38), nullable=False)
+    tenant_uuid = Column(String(36), nullable=False)
     callerid = Column(String(160))
     ringseconds = Column(Integer, nullable=False, server_default='30')
     simultcalls = Column(Integer, nullable=False, server_default='5')
