@@ -38,20 +38,20 @@ def search(**parameters):
     return persistor(tenant_uuids).search(parameters)
 
 
-def get(user_id):
-    return persistor().get_by({'id': user_id})
+def get(user_id, tenant_uuids=None):
+    return persistor(tenant_uuids).get_by({'id': user_id})
 
 
 def get_by(**criteria):
     return persistor().get_by(criteria)
 
 
-def find_by_id_uuid(id):
-    return persistor().find_by_id_uuid(id)
+def find_by_id_uuid(id, tenant_uuids=None):
+    return persistor(tenant_uuids).find_by_id_uuid(id)
 
 
-def get_by_id_uuid(id):
-    return persistor().get_by_id_uuid(id)
+def get_by_id_uuid(id, tenant_uuids=None):
+    return persistor(tenant_uuids).get_by_id_uuid(id)
 
 
 def find_all_by_agent_id(agent_id):
