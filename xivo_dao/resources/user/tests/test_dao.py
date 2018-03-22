@@ -34,7 +34,7 @@ from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.helpers.exception import NotFoundError, InputError
 from xivo_dao.resources.user import dao as user_dao
 from xivo_dao.resources.user.model import UserDirectory, UserSummary
-from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao.tests.test_dao import DAOTestCase, DEFAULT_TENANT
 from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 
 
@@ -308,6 +308,7 @@ class TestLegacySearch(TestUser):
 class TestSearch(TestUser):
 
     def assert_search_returns_result(self, search_result, **parameters):
+        parameters.setdefault('tenant_uuids', [DEFAULT_TENANT])
         result = user_dao.search(**parameters)
         assert_that(result, equal_to(search_result))
 

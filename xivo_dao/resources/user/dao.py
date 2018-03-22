@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from __future__ import unicode_literals
@@ -17,8 +17,8 @@ from xivo_dao.resources.user.view import user_view
 from xivo_dao.resources.user.fixes import UserFixes
 
 
-def persistor():
-    return UserPersistor(Session, user_view, user_search)
+def persistor(tenant_uuids=None):
+    return UserPersistor(Session, user_view, user_search, tenant_uuids)
 
 
 def legacy_search(term):
@@ -31,7 +31,8 @@ def legacy_search(term):
 
 
 def search(**parameters):
-    return persistor().search(parameters)
+    tenant_uuids = parameters.pop('tenant_uuids', None)
+    return persistor(tenant_uuids).search(parameters)
 
 
 def get(user_id):
