@@ -4,6 +4,8 @@
 
 from __future__ import unicode_literals
 
+from sqlalchemy import and_
+
 from xivo_dao.helpers.db_manager import Session
 
 from xivo_dao.resources.utils.search import SearchResult
@@ -21,9 +23,10 @@ def persistor(tenant_uuids=None):
     return UserPersistor(Session, user_view, user_search, tenant_uuids)
 
 
-def legacy_search(term):
+def legacy_search(term, tenant_uuids):
     users = (Session.query(User)
-             .filter(User.fullname.ilike('%{}%'.format(term)))
+             .filter(and_(User.fullname.ilike('%{}%'.format(term)),
+                          User.tenant_uuid.in_(tenant_uuids)))
              .all()
              )
 

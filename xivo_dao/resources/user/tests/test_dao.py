@@ -37,6 +37,8 @@ from xivo_dao.resources.user.model import UserDirectory, UserSummary
 from xivo_dao.tests.test_dao import DAOTestCase, DEFAULT_TENANT
 from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 
+UNKNOWN_TENANT = '00000000-0000-0000-0000-000000000000'
+
 
 class TestUser(DAOTestCase, FuncKeyHelper):
 
@@ -299,10 +301,14 @@ class TestLegacySearch(TestUser):
         user1 = self.add_user(firstname="Rîchard", lastname="Làtulippe")
         user2 = self.add_user(firstname="Jôhn", lastname="Smïth")
 
-        total, users = user_dao.legacy_search("rîch")
+        total, users = user_dao.legacy_search("rîch", tenant_uuids=[DEFAULT_TENANT])
         assert_that(total, equal_to(1))
         assert_that(users, contains(has_property('id', user1.id)))
         assert_that(users, is_not(contains(has_property('id', user2.id))))
+
+        total, users = user_dao.legacy_search("rîch", tenant_uuids=[UNKNOWN_TENANT])
+        assert_that(total, equal_to(0))
+        assert_that(users, empty())
 
 
 class TestSearch(TestUser):
