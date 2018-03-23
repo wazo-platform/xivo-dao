@@ -17,10 +17,11 @@ class UserPersistor(CriteriaBuilderMixin):
 
     _search_table = User
 
-    def __init__(self, session, user_view, user_search):
+    def __init__(self, session, user_view, user_search, tenant_uuids=None):
         self.session = session
         self.user_view = user_view
         self.user_search = user_search
+        self.tenant_uuids = tenant_uuids
 
     def find_by_id_uuid(self, id):
         query = self.session.query(User)
@@ -32,6 +33,8 @@ class UserPersistor(CriteriaBuilderMixin):
                 query = query.filter_by(id=int(id))
             else:
                 query = query.filter_by(uuid=id)
+        if self.tenant_uuids is not None:
+            query = query.filter(User.tenant_uuid.in_(self.tenant_uuids))
         return query.first()
 
     def get_by_id_uuid(self, id):
@@ -49,6 +52,8 @@ class UserPersistor(CriteriaBuilderMixin):
 
     def _find_query(self, criteria):
         query = self.session.query(User)
+        if self.tenant_uuids is not None:
+            query = query.filter(User.tenant_uuid.in_(self.tenant_uuids))
         return self.build_criteria(query, criteria)
 
     def get_by(self, criteria):
@@ -64,6 +69,8 @@ class UserPersistor(CriteriaBuilderMixin):
     def search(self, parameters):
         view = self.user_view.select(parameters.get('view'))
         query = view.query(self.session)
+        if self.tenant_uuids is not None:
+            query = query.filter(User.tenant_uuid.in_(self.tenant_uuids))
         rows, total = self.user_search.search_from_query(query, parameters)
         users = view.convert_list(rows)
         return SearchResult(total, users)

@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from __future__ import unicode_literals
+
+from sqlalchemy import and_
 
 from xivo_dao.helpers.db_manager import Session
 
@@ -17,13 +19,14 @@ from xivo_dao.resources.user.view import user_view
 from xivo_dao.resources.user.fixes import UserFixes
 
 
-def persistor():
-    return UserPersistor(Session, user_view, user_search)
+def persistor(tenant_uuids=None):
+    return UserPersistor(Session, user_view, user_search, tenant_uuids)
 
 
-def legacy_search(term):
+def legacy_search(term, tenant_uuids):
     users = (Session.query(User)
-             .filter(User.fullname.ilike('%{}%'.format(term)))
+             .filter(and_(User.fullname.ilike('%{}%'.format(term)),
+                          User.tenant_uuid.in_(tenant_uuids)))
              .all()
              )
 
@@ -31,23 +34,24 @@ def legacy_search(term):
 
 
 def search(**parameters):
-    return persistor().search(parameters)
+    tenant_uuids = parameters.pop('tenant_uuids', None)
+    return persistor(tenant_uuids).search(parameters)
 
 
-def get(user_id):
-    return persistor().get_by({'id': user_id})
+def get(user_id, tenant_uuids=None):
+    return persistor(tenant_uuids).get_by({'id': user_id})
 
 
 def get_by(**criteria):
     return persistor().get_by(criteria)
 
 
-def find_by_id_uuid(id):
-    return persistor().find_by_id_uuid(id)
+def find_by_id_uuid(id, tenant_uuids=None):
+    return persistor(tenant_uuids).find_by_id_uuid(id)
 
 
-def get_by_id_uuid(id):
-    return persistor().get_by_id_uuid(id)
+def get_by_id_uuid(id, tenant_uuids=None):
+    return persistor(tenant_uuids).get_by_id_uuid(id)
 
 
 def find_all_by_agent_id(agent_id):
