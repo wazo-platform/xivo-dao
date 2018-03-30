@@ -4,6 +4,7 @@
 
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import sql
+from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, ForeignKeyConstraint, PrimaryKeyConstraint, UniqueConstraint
 from sqlalchemy.sql import func
 from sqlalchemy.types import Integer, String, Text
@@ -38,6 +39,8 @@ class Entity(Base):
     disable = Column(Integer, nullable=False, server_default='0')
     dcreate = Column(Integer, nullable=False, server_default='0')
     description = Column(Text, nullable=False)
+
+    tenant = relationship('Tenant', viewonly=True)
 
     @classmethod
     def query_default_id(cls):
