@@ -4,9 +4,11 @@
 
 from __future__ import unicode_literals
 
+import datetime
 import re
 import six
 
+from sqlalchemy import text
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.orderinglist import ordering_list
@@ -22,7 +24,13 @@ from sqlalchemy.schema import (
     UniqueConstraint,
 )
 from sqlalchemy.sql import func, cast, not_
-from sqlalchemy.types import Integer, String, Text, Boolean
+from sqlalchemy.types import (
+    Boolean,
+    DateTime,
+    Integer,
+    String,
+    Text,
+)
 
 from xivo_dao.alchemy import enum
 from xivo_dao.alchemy.cti_profile import CtiProfile
@@ -132,6 +140,8 @@ class UserFeatures(Base):
     commented = Column(Integer, nullable=False, server_default='0')
     func_key_template_id = Column(Integer, ForeignKey('func_key_template.id', ondelete="SET NULL"))
     func_key_private_template_id = Column(Integer, ForeignKey('func_key_template.id'), nullable=False)
+    subscription_type = Column(Integer, nullable=False, server_default='0')
+    created_at = Column(DateTime, default=datetime.datetime.utcnow, server_default=text("(now() at time zone 'utc')"))
 
     webi_lastname = Column('lastname', String(128), nullable=False, server_default='')
     webi_userfield = Column('userfield', String(128), nullable=False, server_default='')
