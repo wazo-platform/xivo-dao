@@ -8,6 +8,7 @@ import datetime
 import re
 import six
 
+from sqlalchemy import text
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.orderinglist import ordering_list
@@ -140,7 +141,7 @@ class UserFeatures(Base):
     func_key_template_id = Column(Integer, ForeignKey('func_key_template.id', ondelete="SET NULL"))
     func_key_private_template_id = Column(Integer, ForeignKey('func_key_template.id'), nullable=False)
     subscription_type = Column(Integer, nullable=False, server_default='0')
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow, server_default=text("(now() at time zone 'utc')"))
 
     webi_lastname = Column('lastname', String(128), nullable=False, server_default='')
     webi_userfield = Column('userfield', String(128), nullable=False, server_default='')
