@@ -163,13 +163,36 @@ class TestDirectoryNonLdapSources(DAOTestCase):
 
     def setUp(self):
         super(TestDirectoryNonLdapSources, self).setUp()
-        self.directory_configs = [
-            {'uri': 'https://localhost:9486', 'dirtype': 'xivo', 'name': 'XiVO'},
-            {'uri': 'https://mtl.lan.example.com:9486', 'dirtype': 'xivo', 'name': 'XiVO'},
-            {'uri': 'phonebook', 'dirtype': 'phonebook', 'name': 'phonebook'},
-            {'uri': 'file:///tmp/test.csv', 'dirtype': 'file', 'name': 'my_csv'},
-            {'uri': 'postgresql://', 'dirtype': 'dird_phonebook', 'name': 'dird', 'dird_tenant': 'tenant', 'dird_phonebook': 'thephonebook'},
-        ]
+        dir_1 = {
+            'uri': 'https://localhost:9486',
+            'dirtype': 'xivo',
+            'name': 'XiVO',
+        }
+        dir_2 = {
+            'uri': 'https://mtl.lan.example.com:9486',
+            'dirtype': 'xivo',
+            'name': 'XiVO',
+        }
+        dir_3 = {
+            'uri': 'phonebook',
+            'dirtype': 'phonebook',
+            'name': 'phonebook',
+        }
+        dir_4 = {
+            'uri': 'file:///tmp/test.csv',
+            'dirtype': 'file',
+            'name': 'my_csv',
+        }
+        dir_5 = {
+            'uri': 'postgresql://',
+            'dirtype': 'dird_phonebook',
+            'name': 'dird',
+            'dird_tenant': 'tenant',
+            'dird_phonebook': 'thephonebook',
+        }
+
+        self.directory_configs = [dir_1, dir_2, dir_3, dir_4, dir_5]
+
         d1, d2, _, d4, d5 = directories = [Directories(**config) for config in self.directory_configs]
         self.add_me_all(directories)
         self.cti_directory_configs = [
