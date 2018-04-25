@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2012-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from __future__ import unicode_literals
@@ -96,6 +96,11 @@ def _get_nonldap_sources(session):
         Directories.dird_tenant,
         Directories.dird_phonebook,
         Directories.uri,
+        Directories.auth_backend,
+        Directories.auth_host,
+        Directories.auth_port,
+        Directories.auth_verify_certificate,
+        Directories.auth_custom_ca_path,
         CtiDirectories.delimiter,
         CtiDirectories.match_direct,
         CtiDirectories.match_reverse,
@@ -118,6 +123,11 @@ def _get_nonldap_sources(session):
         Directories.dird_tenant,
         Directories.dird_phonebook,
         Directories.uri,
+        Directories.auth_backend,
+        Directories.auth_host,
+        Directories.auth_port,
+        Directories.auth_verify_certificate,
+        Directories.auth_custom_ca_path,
         CtiDirectories.delimiter,
         CtiDirectories.match_direct,
         CtiDirectories.match_reverse,
@@ -139,6 +149,11 @@ def _get_nonldap_sources(session):
             source_config['xivo_password'] = source.xivo_password
             source_config['xivo_verify_certificate'] = source.xivo_verify_certificate
             source_config['xivo_custom_ca_path'] = source.xivo_custom_ca_path
+            source_config['auth_host'] = source.auth_host
+            source_config['auth_port'] = source.auth_port
+            source_config['auth_backend'] = source.auth_backend
+            source_config['auth_verify_certificate'] = source.auth_verify_certificate
+            source_config['auth_custom_ca_path'] = source.auth_custom_ca_path
         elif source.dirtype == 'dird_phonebook':
             source_config['dird_tenant'] = source.dird_tenant
             source_config['dird_phonebook'] = source.dird_phonebook
