@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2014-2016 Avencall
+# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy import ForeignKey
@@ -29,4 +29,9 @@ class Directories(Base):
     xivo_custom_ca_path = Column(Text)
     dird_tenant = Column(Text)
     dird_phonebook = Column(Text)
+    auth_host = Column(Text)
+    auth_port = Column(Integer)
+    auth_backend = Column(Text)
+    auth_verify_certificate = Column(Boolean, nullable=False, server_default='False')
+    auth_custom_ca_path = Column(Text)
     ldapfilter_id = Column(Integer, ForeignKey(LdapFilter.id, ondelete='CASCADE'), nullable=True)
