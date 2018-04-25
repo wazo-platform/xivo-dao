@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2007-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from __future__ import unicode_literals
@@ -164,8 +164,8 @@ class TestDirectoryNonLdapSources(DAOTestCase):
     def setUp(self):
         super(TestDirectoryNonLdapSources, self).setUp()
         self.directory_configs = [
-            {'uri': 'http://localhost:9487', 'dirtype': 'xivo', 'name': 'XiVO'},
-            {'uri': 'http://mtl.lan.example.com:9487', 'dirtype': 'xivo', 'name': 'XiVO'},
+            {'uri': 'https://localhost:9486', 'dirtype': 'xivo', 'name': 'XiVO'},
+            {'uri': 'https://mtl.lan.example.com:9486', 'dirtype': 'xivo', 'name': 'XiVO'},
             {'uri': 'phonebook', 'dirtype': 'phonebook', 'name': 'phonebook'},
             {'uri': 'file:///tmp/test.csv', 'dirtype': 'file', 'name': 'my_csv'},
             {'uri': 'postgresql://', 'dirtype': 'dird_phonebook', 'name': 'dird', 'dird_tenant': 'tenant', 'dird_phonebook': 'thephonebook'},
@@ -220,7 +220,7 @@ class TestDirectoryNonLdapSources(DAOTestCase):
         self.expected_result_1 = {
             'type': 'xivo',
             'name': 'Internal',
-            'uri': 'http://localhost:9487',
+            'uri': 'https://localhost:9486',
             'xivo_username': None,
             'xivo_password': None,
             'xivo_verify_certificate': False,
@@ -239,7 +239,7 @@ class TestDirectoryNonLdapSources(DAOTestCase):
         self.expected_result_2 = {
             'type': 'xivo',
             'name': 'mtl',
-            'uri': 'http://mtl.lan.example.com:9487',
+            'uri': 'https://mtl.lan.example.com:9486',
             'xivo_username': None,
             'xivo_password': None,
             'xivo_verify_certificate': False,
