@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2007-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from __future__ import unicode_literals
@@ -163,13 +163,54 @@ class TestDirectoryNonLdapSources(DAOTestCase):
 
     def setUp(self):
         super(TestDirectoryNonLdapSources, self).setUp()
-        self.directory_configs = [
-            {'uri': 'http://localhost:9487', 'dirtype': 'xivo', 'name': 'XiVO'},
-            {'uri': 'http://mtl.lan.example.com:9487', 'dirtype': 'xivo', 'name': 'XiVO'},
-            {'uri': 'phonebook', 'dirtype': 'phonebook', 'name': 'phonebook'},
-            {'uri': 'file:///tmp/test.csv', 'dirtype': 'file', 'name': 'my_csv'},
-            {'uri': 'postgresql://', 'dirtype': 'dird_phonebook', 'name': 'dird', 'dird_tenant': 'tenant', 'dird_phonebook': 'thephonebook'},
-        ]
+        dir_1 = {
+            'uri': 'https://localhost:9486',
+            'dirtype': 'xivo',
+            'name': 'XiVO',
+            'xivo_username': 'foo',
+            'xivo_password': 'bar',
+            'auth_backend': 'wazo_user',
+            'auth_host': 'localhost',
+            'auth_port': 9497,
+            'auth_verify_certificate': True,
+            'auth_custom_ca_path': '/custom/ca/path',
+            'xivo_verify_certificate': True,
+            'xivo_custom_ca_path': '/custom/ca/path',
+        }
+        dir_2 = {
+            'uri': 'https://mtl.lan.example.com:9486',
+            'dirtype': 'xivo',
+            'name': 'XiVO',
+            'xivo_username': 'test',
+            'xivo_password': 'test',
+            'auth_backend': 'xivo_service',
+            'auth_host': 'mtl.lan.example.com',
+            'auth_port': 9497,
+            'auth_verify_certificate': True,
+            'auth_custom_ca_path': None,
+            'xivo_verify_certificate': True,
+            'xivo_custom_ca_path': None,
+        }
+        dir_3 = {
+            'uri': 'phonebook',
+            'dirtype': 'phonebook',
+            'name': 'phonebook',
+        }
+        dir_4 = {
+            'uri': 'file:///tmp/test.csv',
+            'dirtype': 'file',
+            'name': 'my_csv',
+        }
+        dir_5 = {
+            'uri': 'postgresql://',
+            'dirtype': 'dird_phonebook',
+            'name': 'dird',
+            'dird_tenant': 'tenant',
+            'dird_phonebook': 'thephonebook',
+        }
+
+        self.directory_configs = [dir_1, dir_2, dir_3, dir_4, dir_5]
+
         d1, d2, _, d4, d5 = directories = [Directories(**config) for config in self.directory_configs]
         self.add_me_all(directories)
         self.cti_directory_configs = [
@@ -220,11 +261,16 @@ class TestDirectoryNonLdapSources(DAOTestCase):
         self.expected_result_1 = {
             'type': 'xivo',
             'name': 'Internal',
-            'uri': 'http://localhost:9487',
-            'xivo_username': None,
-            'xivo_password': None,
-            'xivo_verify_certificate': False,
-            'xivo_custom_ca_path': None,
+            'uri': 'https://localhost:9486',
+            'xivo_username': 'foo',
+            'xivo_password': 'bar',
+            'auth_backend': 'wazo_user',
+            'auth_verify_certificate': True,
+            'auth_custom_ca_path': '/custom/ca/path',
+            'xivo_verify_certificate': True,
+            'xivo_custom_ca_path': '/custom/ca/path',
+            'auth_host': 'localhost',
+            'auth_port': 9497,
             'delimiter': None,
             'searched_columns': [
                 'firstname',
@@ -239,11 +285,16 @@ class TestDirectoryNonLdapSources(DAOTestCase):
         self.expected_result_2 = {
             'type': 'xivo',
             'name': 'mtl',
-            'uri': 'http://mtl.lan.example.com:9487',
-            'xivo_username': None,
-            'xivo_password': None,
-            'xivo_verify_certificate': False,
+            'uri': 'https://mtl.lan.example.com:9486',
+            'xivo_username': 'test',
+            'xivo_password': 'test',
+            'auth_backend': 'xivo_service',
+            'auth_host': 'mtl.lan.example.com',
+            'auth_port': 9497,
+            'xivo_verify_certificate': True,
             'xivo_custom_ca_path': None,
+            'auth_verify_certificate': True,
+            'auth_custom_ca_path': None,
             'delimiter': None,
             'searched_columns': [],
             'first_matched_columns': [],
