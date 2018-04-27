@@ -5,7 +5,7 @@
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, CheckConstraint
-from sqlalchemy.types import DateTime, Integer, String
+from sqlalchemy.types import DateTime, Integer, String, Text
 
 from xivo_dao.alchemy.cel import CEL
 from xivo_dao.helpers.db_manager import Base
@@ -21,11 +21,17 @@ class CallLog(Base):
     date_end = Column(DateTime)
     source_name = Column(String(255))
     source_exten = Column(String(255))
+    source_internal_exten = Column(Text)
+    source_internal_context = Column(Text)
     source_line_identity = Column(String(255))
     requested_exten = Column(String(255))
     requested_context = Column(String(255))
+    requested_internal_exten = Column(Text)
+    requested_internal_context = Column(Text)
     destination_name = Column(String(255))
     destination_exten = Column(String(255))
+    destination_internal_exten = Column(Text)
+    destination_internal_context = Column(Text)
     destination_line_identity = Column(String(255))
     direction = Column(String(255))
     user_field = Column(String(255))
