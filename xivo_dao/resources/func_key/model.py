@@ -217,4 +217,3 @@ class ForwardTypeConverter(object):
 
 
 Hint = namedtuple('Hint', ['user_id', 'extension', 'argument'])
-Forward = namedtuple('Forward', ['user_id', 'type', 'number'])
