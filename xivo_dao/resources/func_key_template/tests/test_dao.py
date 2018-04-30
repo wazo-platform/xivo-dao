@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 import six
@@ -13,13 +13,12 @@ from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
-from xivo_dao.alchemy.func_key_template import FuncKeyTemplate as FuncKeyTemplateSchema
+from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping as FuncKeyMappingSchema
 from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup as FuncKeyDestGroupSchema
 from xivo_dao.alchemy.func_key_dest_paging import FuncKeyDestPaging as FuncKeyDestPagingSchema
 
 from xivo_dao.resources.func_key_template import dao
-from xivo_dao.resources.func_key_template.model import FuncKeyTemplate
 from xivo_dao.resources.utils.search import SearchResult
 
 from xivo_dao.resources.func_key.model import FuncKey, \
@@ -43,14 +42,10 @@ class TestFuncKeyTemplateDao(DAOTestCase, FuncKeyHelper):
         assert_that(count, equal_to(0))
 
     def prepare_template(self, destination_row=None, destination=None, name=None, position=1, private=False):
-        template_row = self.add_func_key_template(name=name, private=private)
-
-        template = FuncKeyTemplate(id=template_row.id,
-                                   name=template_row.name,
-                                   private=private)
+        template = self.add_func_key_template(name=name, private=private)
 
         if destination_row and destination:
-            self.add_destination_to_template(destination_row, template_row)
+            self.add_destination_to_template(destination_row, template)
             template.keys = {position: FuncKey(id=destination_row.func_key_id,
                                                destination=destination)}
 
@@ -85,7 +80,7 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
 
         result = dao.create(template)
 
-        template_row = self.session.query(FuncKeyTemplateSchema).first()
+        template_row = self.session.query(FuncKeyTemplate).first()
 
         assert_that(template_row.name, none())
         assert_that(result.name, none())
@@ -97,7 +92,7 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
 
         result = dao.create(template)
 
-        template_row = self.session.query(FuncKeyTemplateSchema).first()
+        template_row = self.session.query(FuncKeyTemplate).first()
 
         assert_that(template_row.name, equal_to(template.name))
         assert_that(result.name, equal_to(template.name))
@@ -367,11 +362,9 @@ class TestFuncKeyTemplateGet(TestFuncKeyTemplateDao):
     def test_given_empty_template_when_getting_then_returns_empty_template(self):
         template_row = self.add_func_key_template()
 
-        expected = FuncKeyTemplate(id=template_row.id)
-
         result = dao.get(template_row.id)
 
-        assert_that(expected, equal_to(result))
+        assert_that(result, equal_to(template_row))
 
     def test_given_template_is_private_then_func_keys_are_not_inherited(self):
         destination_row = self.create_user_func_key()
@@ -526,7 +519,7 @@ class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
 
         dao.delete(template)
 
-        result = self.session.query(FuncKeyTemplateSchema).get(template.id)
+        result = self.session.query(FuncKeyTemplate).get(template.id)
 
         assert_that(result, none())
 
@@ -575,10 +568,9 @@ class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
         self.assert_func_key_deleted(destination_row.func_key_id)
 
     def test_given_template_is_associated_to_user_when_deleting_then_dissociates_user(self):
-        template_row = self.add_func_key_template()
-        user_row = self.add_user(func_key_template_id=template_row.id)
+        template = self.add_func_key_template()
+        user_row = self.add_user(func_key_template_id=template.id)
 
-        template = FuncKeyTemplate(id=template_row.id)
         dao.delete(template)
 
         func_key_template_id = (self.session.
@@ -605,15 +597,17 @@ class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
         template = FuncKeyTemplate(
             keys={'1': FuncKey(destination=GroupDestination(group_id=group.id))}
         )
+
         dao.create(template)
         template = FuncKeyTemplate(
             keys={'1': FuncKey(destination=GroupDestination(group_id=group.id))}
         )
-        dao.create(template)
+
         dao.create(template)
         template = FuncKeyTemplate(
             keys={'1': FuncKey(destination=GroupDestination(group_id=group.id))}
         )
+
         dao.create(template)
 
         dao.delete(template)
@@ -628,6 +622,7 @@ class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
         template = FuncKeyTemplate(
             keys={'1': FuncKey(destination=PagingDestination(paging_id=paging.id))}
         )
+
         dao.create(template)
 
         dao.delete(template)
@@ -642,10 +637,12 @@ class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
         template = FuncKeyTemplate(
             keys={'1': FuncKey(destination=PagingDestination(paging_id=paging.id))}
         )
+
         dao.create(template)
         template = FuncKeyTemplate(
             keys={'1': FuncKey(destination=PagingDestination(paging_id=paging.id))}
         )
+
         dao.create(template)
 
         dao.delete(template)
@@ -664,7 +661,7 @@ class TestFuncKeyTemplateEdit(TestFuncKeyTemplateDao):
 
         dao.edit(template)
 
-        template_row = self.session.query(FuncKeyTemplateSchema).get(template.id)
+        template_row = self.session.query(FuncKeyTemplate).get(template.id)
         assert_that(template_row.name, equal_to('newfoobar'))
 
     def test_given_func_key_modified_when_editing_then_updates_func_key(self):
@@ -728,7 +725,11 @@ class TestFuncKeyTemplateEdit(TestFuncKeyTemplateDao):
 
         template = dao.get(template_row.id)
 
-        template.keys[2] = FuncKey(destination=ConferenceDestination(conference_id=conference_destination_row.conference_id))
+        template.keys[2] = FuncKey(
+            destination=ConferenceDestination(
+                conference_id=conference_destination_row.conference_id
+            )
+        )
 
         dao.edit(template)
 

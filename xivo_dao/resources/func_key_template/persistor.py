@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 import abc
@@ -27,7 +27,6 @@ from xivo_dao.alchemy.func_key_dest_park_position import FuncKeyDestParkPosition
 
 from xivo_dao.helpers import errors
 from xivo_dao.resources.func_key import model as fk_model
-from xivo_dao.resources.func_key_template import model as tpl_model
 
 from xivo_dao.resources.extension.database import ForwardExtensionConverter, AgentActionExtensionConverter
 
@@ -64,10 +63,9 @@ class FuncKeyPersistor(object):
         return template
 
     def add_template(self, template):
-        row = FuncKeyTemplate(name=template.name, private=False)
-        self.session.add(row)
+        self.session.add(template)
         self.session.flush()
-        return row.id
+        return template.id
 
     def add_funckeys(self, template_id, funckeys):
         for pos, funckey in six.iteritems(funckeys):
@@ -100,15 +98,9 @@ class FuncKeyPersistor(object):
         return persistor_cls(self.session)
 
     def get(self, template_id):
-        template = self.get_template(template_id)
+        template = self.get_template_row(template_id)
         template.keys = self.get_keys_for_template(template_id)
         return template
-
-    def get_template(self, template_id):
-        template_row = self.get_template_row(template_id)
-        return tpl_model.FuncKeyTemplate(id=template_row.id,
-                                         name=template_row.name,
-                                         private=template_row.private)
 
     def get_template_row(self, template_id):
         template_row = self.session.query(FuncKeyTemplate).get(template_id)
