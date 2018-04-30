@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 import abc
@@ -197,23 +197,6 @@ class OnlineRecordingDestination(Destination):
 
     def to_tuple(self):
         return (('feature', 'onlinerec'),)
-
-
-class ForwardTypeConverter(object):
-
-    fwd_types = {
-        'unconditional': 'fwdunc',
-        'noanswer': 'fwdrna',
-        'busy': 'fwdbusy',
-    }
-
-    reversed_types = dict((value, key) for key, value in six.iteritems(fwd_types))
-
-    def db_to_model(self, db_type):
-        return self.reversed_types[db_type]
-
-    def model_to_db(self, model_type):
-        return self.fwd_types[model_type]
 
 
 Hint = namedtuple('Hint', ['user_id', 'extension', 'argument'])
