@@ -15,6 +15,7 @@ from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.alchemy.func_key_dest_conference import FuncKeyDestConference
 from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup
+from xivo_dao.alchemy.func_key_dest_paging import FuncKeyDestPaging
 from xivo_dao.alchemy.func_key_dest_queue import FuncKeyDestQueue
 from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
@@ -25,7 +26,6 @@ from xivo_dao.resources.func_key_template import dao
 from xivo_dao.resources.utils.search import SearchResult
 
 from xivo_dao.resources.func_key.model import \
-    PagingDestination, \
     BSFilterDestination, CustomDestination, ServiceDestination, TransferDestination, ForwardDestination, \
     AgentDestination, ParkPositionDestination, ParkingDestination, OnlineRecordingDestination
 
@@ -150,7 +150,7 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
 
     def test_given_template_has_paging_func_key_when_creating_then_creates_mapping(self):
         destination_row = self.create_paging_func_key()
-        template = self.build_template_with_key(PagingDestination(paging_id=destination_row.paging_id))
+        template = self.build_template_with_key(FuncKeyDestPaging(paging_id=destination_row.paging_id))
 
         result = dao.create(template)
 
@@ -344,10 +344,10 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
                              .count())
         assert_that(dest_paging_count, equal_to(0))
 
-        template = self.build_template_with_key(PagingDestination(paging_id=paging.id))
+        template = self.build_template_with_key(FuncKeyDestPaging(paging_id=paging.id))
         dao.create(template)
 
-        template = self.build_template_with_key(PagingDestination(paging_id=paging.id))
+        template = self.build_template_with_key(FuncKeyDestPaging(paging_id=paging.id))
         dao.create(template)
 
         dest_paging_count = (self.session.query(FuncKeyDestPagingSchema)
@@ -430,7 +430,7 @@ class TestFuncKeyTemplateGet(TestFuncKeyTemplateDao):
     def test_given_template_has_paging_func_key_when_getting_then_returns_paging_func_key(self):
         destination_row = self.create_paging_func_key()
         expected = self.prepare_template(destination_row,
-                                         PagingDestination(paging_id=destination_row.paging_id))
+                                         FuncKeyDestPaging(paging_id=destination_row.paging_id))
 
         result = dao.get(expected.id)
 
@@ -623,7 +623,7 @@ class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
     def test_given_template_is_associated_to_paging_when_deleting_template(self):
         paging = self.add_paging()
         template = FuncKeyTemplate(
-            keys={'1': FuncKeyMapping(destination=PagingDestination(paging_id=paging.id))}
+            keys={'1': FuncKeyMapping(destination=FuncKeyDestPaging(paging_id=paging.id))}
         )
 
         dao.create(template)
@@ -638,12 +638,12 @@ class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
     def test_given_multi_template_is_associated_to_paging_when_deleting_template(self):
         paging = self.add_paging()
         template = FuncKeyTemplate(
-            keys={'1': FuncKeyMapping(destination=PagingDestination(paging_id=paging.id))}
+            keys={'1': FuncKeyMapping(destination=FuncKeyDestPaging(paging_id=paging.id))}
         )
 
         dao.create(template)
         template = FuncKeyTemplate(
-            keys={'1': FuncKeyMapping(destination=PagingDestination(paging_id=paging.id))}
+            keys={'1': FuncKeyMapping(destination=FuncKeyDestPaging(paging_id=paging.id))}
         )
 
         dao.create(template)

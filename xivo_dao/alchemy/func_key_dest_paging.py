@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2014 Avencall
+# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao.alchemy.func_key import FuncKey
@@ -27,5 +27,14 @@ class FuncKeyDestPaging(Base):
     destination_type_id = Column(Integer, server_default="9")
     paging_id = Column(Integer)
 
+    type = 'paging'  # TODO improve with relationship
+
     func_key = relationship(FuncKey)
     paging = relationship(Paging)
+
+    # TODO find another way to calculate hash destination
+    def to_tuple(self):
+        parameters = (
+            ('paging_id', self.paging_id),
+        )
+        return tuple(sorted(parameters))

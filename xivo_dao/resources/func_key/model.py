@@ -27,15 +27,6 @@ class Destination(Model):
         return tuple(sorted(parameters))
 
 
-class PagingDestination(Destination):
-
-    type = 'paging'
-
-    FIELDS = ['paging_id']
-
-    MANDATORY = ['paging_id']
-
-
 class BSFilterDestination(Destination):
 
     type = 'bsfilter'

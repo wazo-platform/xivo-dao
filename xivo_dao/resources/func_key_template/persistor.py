@@ -311,11 +311,10 @@ class PagingPersistor(DestinationPersistor):
     DESTINATION_TYPE_ID = 9
 
     def get(self, func_key_id):
-        row = (self.session.query(FuncKeyDestPaging.paging_id)
-               .filter(FuncKeyDestPaging.func_key_id == func_key_id)
-               .first())
+        query = (self.session.query(FuncKeyDestPaging)
+                 .filter(FuncKeyDestPaging.func_key_id == func_key_id))
 
-        return fk_model.PagingDestination(paging_id=row.paging_id)
+        return query.first()
 
     def find_or_create(self, destination):
         destination_row = (self.session.query(FuncKeyDestPaging)
