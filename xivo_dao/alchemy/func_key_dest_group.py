@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2014 Avencall
+# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy.schema import Column, ForeignKey, CheckConstraint, \
@@ -25,5 +25,14 @@ class FuncKeyDestGroup(Base):
     destination_type_id = Column(Integer, primary_key=True, server_default="2")
     group_id = Column(Integer, ForeignKey('groupfeatures.id'), primary_key=True)
 
+    type = 'group'  # TODO improve with relationship
+
     func_key = relationship(FuncKey)
     groupfeatures = relationship(GroupFeatures)
+
+    # TODO find another way to calculate hash destination
+    def to_tuple(self):
+        parameters = (
+            ('group_id', self.group_id),
+        )
+        return tuple(sorted(parameters))

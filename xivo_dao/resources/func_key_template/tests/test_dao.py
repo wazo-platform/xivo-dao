@@ -16,14 +16,14 @@ from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
 from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
-from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup as FuncKeyDestGroupSchema
+from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup
 from xivo_dao.alchemy.func_key_dest_paging import FuncKeyDestPaging as FuncKeyDestPagingSchema
 
 from xivo_dao.resources.func_key_template import dao
 from xivo_dao.resources.utils.search import SearchResult
 
 from xivo_dao.resources.func_key.model import \
-    QueueDestination, GroupDestination, ConferenceDestination, PagingDestination, \
+    QueueDestination, ConferenceDestination, PagingDestination, \
     BSFilterDestination, CustomDestination, ServiceDestination, TransferDestination, ForwardDestination, \
     AgentDestination, ParkPositionDestination, ParkingDestination, OnlineRecordingDestination
 
@@ -121,7 +121,7 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
 
     def test_given_template_has_group_func_key_when_creating_then_creates_mapping(self):
         destination_row = self.create_group_func_key()
-        template = self.build_template_with_key(GroupDestination(group_id=destination_row.group_id))
+        template = self.build_template_with_key(FuncKeyDestGroup(group_id=destination_row.group_id))
 
         result = dao.create(template)
 
@@ -318,19 +318,19 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
     def test_given_no_group_func_key_when_created_then_create_new_group_func_key(self):
         group = self.add_group()
 
-        dest_group_count = (self.session.query(FuncKeyDestGroupSchema)
-                            .filter(FuncKeyDestGroupSchema.group_id == group.id)
+        dest_group_count = (self.session.query(FuncKeyDestGroup)
+                            .filter(FuncKeyDestGroup.group_id == group.id)
                             .count())
         assert_that(dest_group_count, equal_to(0))
 
-        template = self.build_template_with_key(GroupDestination(group_id=group.id))
+        template = self.build_template_with_key(FuncKeyDestGroup(group_id=group.id))
         dao.create(template)
 
-        template = self.build_template_with_key(GroupDestination(group_id=group.id))
+        template = self.build_template_with_key(FuncKeyDestGroup(group_id=group.id))
         dao.create(template)
 
-        dest_group_count = (self.session.query(FuncKeyDestGroupSchema)
-                            .filter(FuncKeyDestGroupSchema.group_id == group.id)
+        dest_group_count = (self.session.query(FuncKeyDestGroup)
+                            .filter(FuncKeyDestGroup.group_id == group.id)
                             .count())
         assert_that(dest_group_count, equal_to(1))
 
@@ -410,7 +410,7 @@ class TestFuncKeyTemplateGet(TestFuncKeyTemplateDao):
     def test_given_template_has_group_func_key_when_getting_then_returns_group_func_key(self):
         destination_row = self.create_group_func_key()
         expected = self.prepare_template(destination_row,
-                                         GroupDestination(group_id=destination_row.group_id))
+                                         FuncKeyDestGroup(group_id=destination_row.group_id))
 
         result = dao.get(expected.id)
 
@@ -582,39 +582,39 @@ class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
     def test_given_template_is_associated_to_group_when_deleting_template(self):
         group = self.add_group()
         template = FuncKeyTemplate(
-            keys={'1': FuncKeyMapping(destination=GroupDestination(group_id=group.id))}
+            keys={'1': FuncKeyMapping(destination=FuncKeyDestGroup(group_id=group.id))}
         )
         dao.create(template)
 
         dao.delete(template)
 
-        dest_group_count = (self.session.query(FuncKeyDestGroupSchema)
-                            .filter(FuncKeyDestGroupSchema.group_id == group.id)
+        dest_group_count = (self.session.query(FuncKeyDestGroup)
+                            .filter(FuncKeyDestGroup.group_id == group.id)
                             .count())
         assert_that(dest_group_count, equal_to(0))
 
     def test_given_multi_template_is_associated_to_group_when_deleting_template(self):
         group = self.add_group()
         template = FuncKeyTemplate(
-            keys={'1': FuncKeyMapping(destination=GroupDestination(group_id=group.id))}
+            keys={'1': FuncKeyMapping(destination=FuncKeyDestGroup(group_id=group.id))}
         )
 
         dao.create(template)
         template = FuncKeyTemplate(
-            keys={'1': FuncKeyMapping(destination=GroupDestination(group_id=group.id))}
+            keys={'1': FuncKeyMapping(destination=FuncKeyDestGroup(group_id=group.id))}
         )
 
         dao.create(template)
         template = FuncKeyTemplate(
-            keys={'1': FuncKeyMapping(destination=GroupDestination(group_id=group.id))}
+            keys={'1': FuncKeyMapping(destination=FuncKeyDestGroup(group_id=group.id))}
         )
 
         dao.create(template)
 
         dao.delete(template)
 
-        dest_group_count = (self.session.query(FuncKeyDestGroupSchema)
-                            .filter(FuncKeyDestGroupSchema.group_id == group.id)
+        dest_group_count = (self.session.query(FuncKeyDestGroup)
+                            .filter(FuncKeyDestGroup.group_id == group.id)
                             .count())
         assert_that(dest_group_count, equal_to(1))
 

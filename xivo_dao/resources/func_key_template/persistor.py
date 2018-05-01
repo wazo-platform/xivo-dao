@@ -260,12 +260,10 @@ class GroupPersistor(DestinationPersistor):
     DESTINATION_TYPE_ID = 2
 
     def get(self, func_key_id):
-        row = (self.session.query(FuncKeyDestGroup)
-               .filter(FuncKeyDestGroup.func_key_id == func_key_id)
-               .first())
+        query = (self.session.query(FuncKeyDestGroup)
+                 .filter(FuncKeyDestGroup.func_key_id == func_key_id))
 
-        return fk_model.GroupDestination(group_id=row.group_id,
-                                         groupfeatures=row.groupfeatures)
+        return query.first()
 
     def find_or_create(self, destination):
         destination_row = (self.session.query(FuncKeyDestGroup)

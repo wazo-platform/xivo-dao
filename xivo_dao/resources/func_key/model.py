@@ -27,17 +27,6 @@ class Destination(Model):
         return tuple(sorted(parameters))
 
 
-class GroupDestination(Destination):
-
-    type = 'group'
-
-    FIELDS = ['group_id']
-
-    MANDATORY = ['group_id']
-
-    _RELATION = {'groupfeatures': 'groupfeatures'}
-
-
 class QueueDestination(Destination):
 
     type = 'queue'
