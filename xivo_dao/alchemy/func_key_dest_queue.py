@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2014 Avencall
+# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
@@ -24,5 +24,14 @@ class FuncKeyDestQueue(Base):
     destination_type_id = Column(Integer, primary_key=True, server_default="3")
     queue_id = Column(Integer, ForeignKey('queuefeatures.id'), primary_key=True)
 
+    type = 'queue'  # TODO improve with relationship
+
     func_key = relationship(FuncKey)
     queue = relationship(QueueFeatures)
+
+    # TODO find another way to calculate hash destination
+    def to_tuple(self):
+        parameters = (
+            ('queue_id', self.queue_id),
+        )
+        return tuple(sorted(parameters))

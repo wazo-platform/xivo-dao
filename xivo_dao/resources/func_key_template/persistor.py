@@ -238,11 +238,10 @@ class UserPersistor(DestinationPersistor):
 class QueuePersistor(DestinationPersistor):
 
     def get(self, func_key_id):
-        row = (self.session.query(FuncKeyDestQueue.queue_id)
-               .filter(FuncKeyDestQueue.func_key_id == func_key_id)
-               .first())
+        query = (self.session.query(FuncKeyDestQueue)
+                 .filter(FuncKeyDestQueue.func_key_id == func_key_id))
 
-        return fk_model.QueueDestination(queue_id=row.queue_id)
+        return query.first()
 
     def find_or_create(self, destination):
         query = (self.session.query(FuncKeyDestQueue)

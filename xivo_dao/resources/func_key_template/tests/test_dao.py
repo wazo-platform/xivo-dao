@@ -13,17 +13,18 @@ from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
-from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
-from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
-from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
 from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup
+from xivo_dao.alchemy.func_key_dest_queue import FuncKeyDestQueue
+from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
+from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
+from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
 from xivo_dao.alchemy.func_key_dest_paging import FuncKeyDestPaging as FuncKeyDestPagingSchema
 
 from xivo_dao.resources.func_key_template import dao
 from xivo_dao.resources.utils.search import SearchResult
 
 from xivo_dao.resources.func_key.model import \
-    QueueDestination, ConferenceDestination, PagingDestination, \
+    ConferenceDestination, PagingDestination, \
     BSFilterDestination, CustomDestination, ServiceDestination, TransferDestination, ForwardDestination, \
     AgentDestination, ParkPositionDestination, ParkingDestination, OnlineRecordingDestination
 
@@ -130,7 +131,7 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
 
     def test_given_template_has_queue_func_key_when_creating_then_creates_mapping(self):
         destination_row = self.create_queue_func_key()
-        template = self.build_template_with_key(QueueDestination(queue_id=destination_row.queue_id))
+        template = self.build_template_with_key(FuncKeyDestQueue(queue_id=destination_row.queue_id))
 
         result = dao.create(template)
 
@@ -401,7 +402,7 @@ class TestFuncKeyTemplateGet(TestFuncKeyTemplateDao):
     def test_given_template_has_queue_func_key_when_getting_then_returns_queue_func_key(self):
         destination_row = self.create_queue_func_key()
         expected = self.prepare_template(destination_row,
-                                         QueueDestination(queue_id=destination_row.queue_id))
+                                         FuncKeyDestQueue(queue_id=destination_row.queue_id))
 
         result = dao.get(expected.id)
 
@@ -690,7 +691,7 @@ class TestFuncKeyTemplateEdit(TestFuncKeyTemplateDao):
         template = self.prepare_template(first_destination_row,
                                          FuncKeyDestUser(user_id=first_destination_row.user_id))
 
-        updated_destination = QueueDestination(queue_id=updated_destination_row.queue_id)
+        updated_destination = FuncKeyDestQueue(queue_id=updated_destination_row.queue_id)
         template.keys[1].destination = updated_destination
 
         dao.edit(template)

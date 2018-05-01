@@ -27,15 +27,6 @@ class Destination(Model):
         return tuple(sorted(parameters))
 
 
-class QueueDestination(Destination):
-
-    type = 'queue'
-
-    FIELDS = ['queue_id']
-
-    MANDATORY = ['queue_id']
-
-
 class ConferenceDestination(Destination):
 
     type = 'conference'
