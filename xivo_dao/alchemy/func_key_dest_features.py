@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2014 Avencall
+# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
+
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import relationship
+from sqlalchemy.schema import Column, ForeignKeyConstraint, CheckConstraint, PrimaryKeyConstraint
+from sqlalchemy.types import Integer
 
 from xivo_dao.alchemy.features import Features
 from xivo_dao.alchemy.func_key import FuncKey
 from xivo_dao.helpers.db_manager import Base
-
-from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, ForeignKeyConstraint, CheckConstraint, PrimaryKeyConstraint
-from sqlalchemy.types import Integer
 
 
 class FuncKeyDestFeatures(Base):
@@ -27,5 +28,26 @@ class FuncKeyDestFeatures(Base):
     destination_type_id = Column(Integer, server_default="8")
     features_id = Column(Integer)
 
+    type = 'transfer'  # TODO improve with relationship
+
     func_key = relationship(FuncKey)
     features = relationship(Features)
+
+    def __init__(self, **kwargs):
+        self.transfer = kwargs.pop('transfer', None)  # TODO improve with relationship
+        super(FuncKeyDestFeatures, self).__init__(**kwargs)
+
+    # TODO find another way to calculate hash destination
+    def to_tuple(self):
+        parameters = (
+            ('transfer', self.transfer),
+        )
+        return parameters
+
+    @hybrid_property
+    def feature_id(self):
+        return self.features_id
+
+    @feature_id.setter
+    def feature_id(self, value):
+        self.features_id = value

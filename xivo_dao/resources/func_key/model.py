@@ -27,19 +27,6 @@ class Destination(Model):
         return tuple(sorted(parameters))
 
 
-class TransferDestination(Destination):
-
-    type = 'transfer'
-
-    FIELDS = ['transfer',
-              'feature_id']
-
-    MANDATORY = ['transfer']
-
-    def to_tuple(self):
-        return (('transfer', self.transfer),)
-
-
 class AgentDestination(Destination):
 
     type = 'agent'

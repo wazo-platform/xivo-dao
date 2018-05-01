@@ -534,20 +534,23 @@ class FeaturesPersistor(DestinationPersistor):
                        'attended': 'atxfer'}
 
     def get(self, func_key_id):
-        row = (self.session.query(Features.var_name,
-                                  Features.id)
-               .join(FuncKeyDestFeatures, FuncKeyDestFeatures.features_id == Features.id)
-               .filter(FuncKeyDestFeatures.func_key_id == func_key_id)
-               .first())
+        # TODO improve
+        query = (self.session.query(FuncKeyDestFeatures,
+                                    Features.var_name,
+                                    Features.id)
+                 .join(Features, FuncKeyDestFeatures.features_id == Features.id)
+                 .filter(FuncKeyDestFeatures.func_key_id == func_key_id))
 
-        if row.var_name == 'parkext':
-            return fk_model.ParkingDestination(feature_id=row.id)
-        elif row.var_name == 'automixmon':
-            return fk_model.OnlineRecordingDestination(feature_id=row.id)
+        result = query.first()
 
-        transfer = self.TRANSFERS_TO_API[row.var_name]
-        return fk_model.TransferDestination(transfer=transfer,
-                                            feature_id=row.id)
+        if result.var_name == 'parkext':
+            return fk_model.ParkingDestination(feature_id=result.id)
+        elif result.var_name == 'automixmon':
+            return fk_model.OnlineRecordingDestination(feature_id=result.id)
+
+        transfer = self.TRANSFERS_TO_API[result.var_name]
+        result.FuncKeyDestFeatures.transfer = transfer
+        return result.FuncKeyDestFeatures
 
     def find_or_create(self, destination):
         varname = self.find_var_name(destination)
