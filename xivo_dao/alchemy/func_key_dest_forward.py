@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2014 Avencall
+# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
+
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import relationship
+from sqlalchemy.schema import Column, ForeignKeyConstraint, CheckConstraint, PrimaryKeyConstraint
+from sqlalchemy.types import Integer, String
 
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.func_key import FuncKey
 from xivo_dao.helpers.db_manager import Base
-
-from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, ForeignKeyConstraint, CheckConstraint, PrimaryKeyConstraint
-from sqlalchemy.types import Integer, String
 
 
 class FuncKeyDestForward(Base):
@@ -28,5 +29,27 @@ class FuncKeyDestForward(Base):
     extension_id = Column(Integer)
     number = Column(String(40), nullable=True)
 
+    type = 'forward'  # TODO improve with relationship
+
     func_key = relationship(FuncKey)
     extension = relationship(Extension)
+
+    def __init__(self, **kwargs):
+        self.forward = kwargs.pop('forward', None)  # TODO improve with relationship
+        super(FuncKeyDestForward, self).__init__(**kwargs)
+
+    # TODO find another way to calculate hash destination
+    def to_tuple(self):
+        parameters = (
+            ('exten', self.exten),
+            ('forward', self.forward),
+        )
+        return parameters
+
+    @hybrid_property
+    def exten(self):
+        return self.number
+
+    @exten.setter
+    def exten(self, value):
+        self.number = value

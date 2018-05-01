@@ -16,6 +16,7 @@ from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.alchemy.func_key_dest_bsfilter import FuncKeyDestBSFilter
 from xivo_dao.alchemy.func_key_dest_conference import FuncKeyDestConference
 from xivo_dao.alchemy.func_key_dest_custom import FuncKeyDestCustom
+from xivo_dao.alchemy.func_key_dest_forward import FuncKeyDestForward
 from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup
 from xivo_dao.alchemy.func_key_dest_paging import FuncKeyDestPaging
 from xivo_dao.alchemy.func_key_dest_queue import FuncKeyDestQueue
@@ -29,7 +30,7 @@ from xivo_dao.resources.func_key_template import dao
 from xivo_dao.resources.utils.search import SearchResult
 
 from xivo_dao.resources.func_key.model import \
-    TransferDestination, ForwardDestination, \
+    TransferDestination, \
     AgentDestination, ParkPositionDestination, ParkingDestination, OnlineRecordingDestination
 
 
@@ -189,7 +190,7 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
     def test_given_template_has_forward_func_key_when_creating_then_creates_mapping(self):
         extension_row = self.add_extenfeatures('*21', 'fwdbusy')
 
-        template = self.build_template_with_key(ForwardDestination(forward='busy'))
+        template = self.build_template_with_key(FuncKeyDestForward(forward='busy'))
 
         result = dao.create(template)
 
@@ -202,7 +203,7 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
     def test_given_template_has_forward_func_key_with_exten_when_creating_then_creates_destination_with_number(self):
         extension_row = self.add_extenfeatures('*22', 'fwdrna')
 
-        template = self.build_template_with_key(ForwardDestination(forward='noanswer',
+        template = self.build_template_with_key(FuncKeyDestForward(forward='noanswer',
                                                                    exten='1000'))
 
         result = dao.create(template)
@@ -214,7 +215,7 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
     def test_given_template_has_commented_forward_func_key_when_creating_then_creates_destination(self):
         extension_row = self.add_extenfeatures('*22', 'fwdrna', commented=1)
 
-        template = self.build_template_with_key(ForwardDestination(forward='noanswer'))
+        template = self.build_template_with_key(FuncKeyDestForward(forward='noanswer'))
 
         dao.create(template)
 
@@ -461,7 +462,7 @@ class TestFuncKeyTemplateGet(TestFuncKeyTemplateDao):
     def test_given_template_has_forward_func_key_when_getting_then_returns_service_func_key(self):
         destination_row = self.create_forward_func_key('_*23.', 'fwdbusy', '1000')
         expected = self.prepare_template(destination_row,
-                                         ForwardDestination(forward='busy',
+                                         FuncKeyDestForward(forward='busy',
                                                             exten='1000',
                                                             extension_id=destination_row.extension_id))
 
@@ -545,7 +546,7 @@ class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
     def test_given_template_has_forward_func_key_when_deleting_then_deletes_forward(self):
         destination_row = self.create_forward_func_key('_*22.', 'fwdrna', '1000')
         template = self.prepare_template(destination_row,
-                                         ForwardDestination(forward='noanswer',
+                                         FuncKeyDestForward(forward='noanswer',
                                                             exten='1000'))
 
         dao.delete(template)

@@ -27,20 +27,6 @@ class Destination(Model):
         return tuple(sorted(parameters))
 
 
-class ForwardDestination(Destination):
-
-    type = 'forward'
-
-    FIELDS = ['forward',
-              'exten',
-              'extension_id']
-
-    MANDATORY = ['forward']
-
-    def to_tuple(self):
-        return (('exten', self.exten), ('forward', self.forward))
-
-
 class TransferDestination(Destination):
 
     type = 'transfer'

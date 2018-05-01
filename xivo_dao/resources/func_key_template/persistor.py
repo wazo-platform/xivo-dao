@@ -388,18 +388,18 @@ class ForwardPersistor(DestinationPersistor):
     DESTINATION_TYPE_ID = 6
 
     def get(self, func_key_id):
-        row = (self.session.query(Extension.typeval,
-                                  Extension.id,
-                                  FuncKeyDestForward.number)
-               .join(FuncKeyDestForward, FuncKeyDestForward.extension_id == Extension.id)
-               .filter(FuncKeyDestForward.func_key_id == func_key_id)
-               .first())
+        # TODO refactor and improve
+        query = (self.session.query(FuncKeyDestForward,
+                                    Extension.typeval,
+                                    Extension.id)
+                 .join(Extension, FuncKeyDestForward.extension_id == Extension.id)
+                 .filter(FuncKeyDestForward.func_key_id == func_key_id))
 
-        forward = ForwardExtensionConverter().to_forward(row.typeval)
+        result = query.first()
 
-        return fk_model.ForwardDestination(forward=forward,
-                                           exten=row.number,
-                                           extension_id=row.id)
+        forward = ForwardExtensionConverter().to_forward(result.typeval)
+        result.FuncKeyDestForward.forward = forward
+        return result.FuncKeyDestForward
 
     def find_or_create(self, destination):
         func_key_row = self.create_func_key(self.TYPE_ID,
