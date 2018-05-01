@@ -27,17 +27,6 @@ class Destination(Model):
         return tuple(sorted(parameters))
 
 
-class UserDestination(Destination):
-
-    type = 'user'
-
-    FIELDS = ['user_id']
-
-    MANDATORY = ['user_id']
-
-    _RELATION = {'userfeatures': 'userfeatures'}
-
-
 class GroupDestination(Destination):
 
     type = 'group'

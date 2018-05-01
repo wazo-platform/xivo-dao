@@ -15,6 +15,7 @@ from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
+from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
 from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup as FuncKeyDestGroupSchema
 from xivo_dao.alchemy.func_key_dest_paging import FuncKeyDestPaging as FuncKeyDestPagingSchema
 
@@ -22,7 +23,7 @@ from xivo_dao.resources.func_key_template import dao
 from xivo_dao.resources.utils.search import SearchResult
 
 from xivo_dao.resources.func_key.model import \
-    UserDestination, QueueDestination, GroupDestination, ConferenceDestination, PagingDestination, \
+    QueueDestination, GroupDestination, ConferenceDestination, PagingDestination, \
     BSFilterDestination, CustomDestination, ServiceDestination, TransferDestination, ForwardDestination, \
     AgentDestination, ParkPositionDestination, ParkingDestination, OnlineRecordingDestination
 
@@ -99,7 +100,7 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
 
     def test_given_template_has_func_key_when_creating_then_blf_is_activated_by_default(self):
         destination_row = self.create_user_func_key()
-        template = self.build_template_with_key(UserDestination(user_id=destination_row.user_id))
+        template = self.build_template_with_key(FuncKeyDestUser(user_id=destination_row.user_id))
 
         dao.create(template)
 
@@ -111,7 +112,7 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
 
     def test_given_template_has_user_func_key_when_creating_then_creates_mapping(self):
         destination_row = self.create_user_func_key()
-        template = self.build_template_with_key(UserDestination(user_id=destination_row.user_id))
+        template = self.build_template_with_key(FuncKeyDestUser(user_id=destination_row.user_id))
 
         result = dao.create(template)
 
@@ -369,7 +370,7 @@ class TestFuncKeyTemplateGet(TestFuncKeyTemplateDao):
     def test_given_template_is_private_then_func_keys_are_not_inherited(self):
         destination_row = self.create_user_func_key()
         expected = self.prepare_template(destination_row,
-                                         UserDestination(user_id=destination_row.user_id),
+                                         FuncKeyDestUser(user_id=destination_row.user_id),
                                          private=True)
         expected.keys[1].inherited = False
 
@@ -380,7 +381,7 @@ class TestFuncKeyTemplateGet(TestFuncKeyTemplateDao):
     def test_given_template_is_public_then_func_keys_are_inherited(self):
         destination_row = self.create_user_func_key()
         expected = self.prepare_template(destination_row,
-                                         UserDestination(user_id=destination_row.user_id),
+                                         FuncKeyDestUser(user_id=destination_row.user_id),
                                          private=False)
         expected.keys[1].inherited = True
 
@@ -391,7 +392,7 @@ class TestFuncKeyTemplateGet(TestFuncKeyTemplateDao):
     def test_given_template_has_user_func_key_when_getting_then_returns_user_func_key(self):
         destination_row = self.create_user_func_key()
         expected = self.prepare_template(destination_row,
-                                         UserDestination(user_id=destination_row.user_id))
+                                         FuncKeyDestUser(user_id=destination_row.user_id))
 
         result = dao.get(expected.id)
 
@@ -526,7 +527,7 @@ class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
     def test_given_template_has_func_key_when_deleting_then_deletes_mappings(self):
         destination_row = self.create_user_func_key()
         template = self.prepare_template(destination_row,
-                                         UserDestination(user_id=destination_row.user_id))
+                                         FuncKeyDestUser(user_id=destination_row.user_id))
 
         dao.delete(template)
 
@@ -667,7 +668,7 @@ class TestFuncKeyTemplateEdit(TestFuncKeyTemplateDao):
     def test_given_func_key_modified_when_editing_then_updates_func_key(self):
         destination_row = self.create_user_func_key()
         template = self.prepare_template(destination_row,
-                                         UserDestination(user_id=destination_row.user_id))
+                                         FuncKeyDestUser(user_id=destination_row.user_id))
 
         template.keys[1].blf = False
         template.keys[1].label = 'mylabel'
@@ -687,7 +688,7 @@ class TestFuncKeyTemplateEdit(TestFuncKeyTemplateDao):
         updated_destination_row = self.create_queue_func_key()
 
         template = self.prepare_template(first_destination_row,
-                                         UserDestination(user_id=first_destination_row.user_id))
+                                         FuncKeyDestUser(user_id=first_destination_row.user_id))
 
         updated_destination = QueueDestination(queue_id=updated_destination_row.queue_id)
         template.keys[1].destination = updated_destination
@@ -705,7 +706,7 @@ class TestFuncKeyTemplateEdit(TestFuncKeyTemplateDao):
     def test_given_func_key_removed_when_editing_then_removes_func_key(self):
         destination_row = self.create_user_func_key()
         template = self.prepare_template(destination_row,
-                                         UserDestination(user_id=destination_row.user_id))
+                                         FuncKeyDestUser(user_id=destination_row.user_id))
 
         template.keys = {}
 
@@ -761,7 +762,7 @@ class TestFuncKeyTemplateSearch(TestFuncKeyTemplateDao):
     def test_given_one_template_with_func_key_then_returns_one_result(self):
         destination_row = self.create_user_func_key()
         template = self.prepare_template(destination_row,
-                                         UserDestination(user_id=destination_row.user_id))
+                                         FuncKeyDestUser(user_id=destination_row.user_id))
 
         expected = SearchResult(1, [template])
 
