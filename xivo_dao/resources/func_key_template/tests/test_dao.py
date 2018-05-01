@@ -14,14 +14,14 @@ from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
-from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping as FuncKeyMappingSchema
+from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
 from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup as FuncKeyDestGroupSchema
 from xivo_dao.alchemy.func_key_dest_paging import FuncKeyDestPaging as FuncKeyDestPagingSchema
 
 from xivo_dao.resources.func_key_template import dao
 from xivo_dao.resources.utils.search import SearchResult
 
-from xivo_dao.resources.func_key.model import FuncKey, \
+from xivo_dao.resources.func_key.model import \
     UserDestination, QueueDestination, GroupDestination, ConferenceDestination, PagingDestination, \
     BSFilterDestination, CustomDestination, ServiceDestination, TransferDestination, ForwardDestination, \
     AgentDestination, ParkPositionDestination, ParkingDestination, OnlineRecordingDestination
@@ -35,8 +35,8 @@ class TestFuncKeyTemplateDao(DAOTestCase, FuncKeyHelper):
         self.setup_destination_types()
 
     def assert_template_empty(self, template_id):
-        count = (self.session.query(FuncKeyMappingSchema)
-                 .filter(FuncKeyMappingSchema.template_id == template_id)
+        count = (self.session.query(FuncKeyMapping)
+                 .filter(FuncKeyMapping.template_id == template_id)
                  .count())
 
         assert_that(count, equal_to(0))
@@ -46,8 +46,8 @@ class TestFuncKeyTemplateDao(DAOTestCase, FuncKeyHelper):
 
         if destination_row and destination:
             self.add_destination_to_template(destination_row, template)
-            template.keys = {position: FuncKey(id=destination_row.func_key_id,
-                                               destination=destination)}
+            template.keys = {position: FuncKeyMapping(id=destination_row.func_key_id,
+                                                      destination=destination)}
 
         return template
 
@@ -62,11 +62,11 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
                                      for key, value in six.iteritems(self.destination_types)}
 
     def build_template_with_key(self, destination, position=1):
-        return FuncKeyTemplate(keys={position: FuncKey(destination=destination)})
+        return FuncKeyTemplate(keys={position: FuncKeyMapping(destination=destination)})
 
     def assert_mapping_has_destination(self, destination_type, destination_row, position=1):
-        mapping_row = (self.session.query(FuncKeyMappingSchema)
-                       .filter(FuncKeyMappingSchema.func_key_id == destination_row.func_key_id)
+        mapping_row = (self.session.query(FuncKeyMapping)
+                       .filter(FuncKeyMapping.func_key_id == destination_row.func_key_id)
                        .first())
 
         assert_that(mapping_row.position, equal_to(position))
@@ -103,8 +103,8 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
 
         dao.create(template)
 
-        mapping_row = (self.session.query(FuncKeyMappingSchema)
-                       .filter(FuncKeyMappingSchema.func_key_id == destination_row.func_key_id)
+        mapping_row = (self.session.query(FuncKeyMapping)
+                       .filter(FuncKeyMapping.func_key_id == destination_row.func_key_id)
                        .first())
 
         assert_that(mapping_row.blf, equal_to(True))
@@ -530,8 +530,8 @@ class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
 
         dao.delete(template)
 
-        count = (self.session.query(FuncKeyMappingSchema)
-                 .filter(FuncKeyMappingSchema.template_id == template.id)
+        count = (self.session.query(FuncKeyMapping)
+                 .filter(FuncKeyMapping.template_id == template.id)
                  .count())
 
         assert_that(count, equal_to(0))
@@ -581,7 +581,7 @@ class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
     def test_given_template_is_associated_to_group_when_deleting_template(self):
         group = self.add_group()
         template = FuncKeyTemplate(
-            keys={'1': FuncKey(destination=GroupDestination(group_id=group.id))}
+            keys={'1': FuncKeyMapping(destination=GroupDestination(group_id=group.id))}
         )
         dao.create(template)
 
@@ -595,17 +595,17 @@ class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
     def test_given_multi_template_is_associated_to_group_when_deleting_template(self):
         group = self.add_group()
         template = FuncKeyTemplate(
-            keys={'1': FuncKey(destination=GroupDestination(group_id=group.id))}
+            keys={'1': FuncKeyMapping(destination=GroupDestination(group_id=group.id))}
         )
 
         dao.create(template)
         template = FuncKeyTemplate(
-            keys={'1': FuncKey(destination=GroupDestination(group_id=group.id))}
+            keys={'1': FuncKeyMapping(destination=GroupDestination(group_id=group.id))}
         )
 
         dao.create(template)
         template = FuncKeyTemplate(
-            keys={'1': FuncKey(destination=GroupDestination(group_id=group.id))}
+            keys={'1': FuncKeyMapping(destination=GroupDestination(group_id=group.id))}
         )
 
         dao.create(template)
@@ -620,7 +620,7 @@ class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
     def test_given_template_is_associated_to_paging_when_deleting_template(self):
         paging = self.add_paging()
         template = FuncKeyTemplate(
-            keys={'1': FuncKey(destination=PagingDestination(paging_id=paging.id))}
+            keys={'1': FuncKeyMapping(destination=PagingDestination(paging_id=paging.id))}
         )
 
         dao.create(template)
@@ -635,12 +635,12 @@ class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
     def test_given_multi_template_is_associated_to_paging_when_deleting_template(self):
         paging = self.add_paging()
         template = FuncKeyTemplate(
-            keys={'1': FuncKey(destination=PagingDestination(paging_id=paging.id))}
+            keys={'1': FuncKeyMapping(destination=PagingDestination(paging_id=paging.id))}
         )
 
         dao.create(template)
         template = FuncKeyTemplate(
-            keys={'1': FuncKey(destination=PagingDestination(paging_id=paging.id))}
+            keys={'1': FuncKeyMapping(destination=PagingDestination(paging_id=paging.id))}
         )
 
         dao.create(template)
@@ -674,8 +674,8 @@ class TestFuncKeyTemplateEdit(TestFuncKeyTemplateDao):
 
         dao.edit(template)
 
-        mapping = (self.session.query(FuncKeyMappingSchema)
-                   .filter(FuncKeyMappingSchema.template_id == template.id)
+        mapping = (self.session.query(FuncKeyMapping)
+                   .filter(FuncKeyMapping.template_id == template.id)
                    .first())
 
         assert_that(mapping.blf, equal_to(False))
@@ -694,8 +694,8 @@ class TestFuncKeyTemplateEdit(TestFuncKeyTemplateDao):
 
         dao.edit(template)
 
-        mapping = (self.session.query(FuncKeyMappingSchema)
-                   .filter(FuncKeyMappingSchema.template_id == template.id)
+        mapping = (self.session.query(FuncKeyMapping)
+                   .filter(FuncKeyMapping.template_id == template.id)
                    .first())
 
         assert_that(mapping.func_key_id, equal_to(updated_destination_row.func_key_id))
@@ -725,7 +725,7 @@ class TestFuncKeyTemplateEdit(TestFuncKeyTemplateDao):
 
         template = dao.get(template_row.id)
 
-        template.keys[2] = FuncKey(
+        template.keys[2] = FuncKeyMapping(
             destination=ConferenceDestination(
                 conference_id=conference_destination_row.conference_id
             )
@@ -733,14 +733,14 @@ class TestFuncKeyTemplateEdit(TestFuncKeyTemplateDao):
 
         dao.edit(template)
 
-        first_mapping_row = (self.session.query(FuncKeyMappingSchema)
-                             .filter(FuncKeyMappingSchema.template_id == template_row.id)
-                             .filter(FuncKeyMappingSchema.position == 1)
+        first_mapping_row = (self.session.query(FuncKeyMapping)
+                             .filter(FuncKeyMapping.template_id == template_row.id)
+                             .filter(FuncKeyMapping.position == 1)
                              .first())
 
-        second_mapping_row = (self.session.query(FuncKeyMappingSchema)
-                              .filter(FuncKeyMappingSchema.template_id == template_row.id)
-                              .filter(FuncKeyMappingSchema.position == 2)
+        second_mapping_row = (self.session.query(FuncKeyMapping)
+                              .filter(FuncKeyMapping.template_id == template_row.id)
+                              .filter(FuncKeyMapping.position == 2)
                               .first())
 
         assert_that(first_mapping_row.func_key_id, equal_to(user_destination_row.func_key_id))

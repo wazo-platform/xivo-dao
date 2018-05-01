@@ -1,11 +1,17 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2014-2015 Avencall
+# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
-from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint, CheckConstraint, \
-    ForeignKeyConstraint
-from sqlalchemy.types import Integer, Boolean, String
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
+from sqlalchemy.schema import (
+    CheckConstraint,
+    Column,
+    ForeignKey,
+    ForeignKeyConstraint,
+    UniqueConstraint,
+)
+from sqlalchemy.types import Integer, Boolean, String
 
 from xivo_dao.alchemy.func_key import FuncKey
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
@@ -31,3 +37,22 @@ class FuncKeyMapping(Base):
 
     func_key_template = relationship(FuncKeyTemplate)
     func_key = relationship(FuncKey)
+
+    def __init__(self, **kwargs):
+        self.destination = kwargs.pop('destination', None)  # TODO improve with relationship
+        self.inherited = kwargs.pop('inherited', True)  # TODO improve ...
+        kwargs.setdefault('blf', True)  # TODO improve this ugly init
+        super(FuncKeyMapping, self).__init__(**kwargs)
+
+    @hybrid_property
+    def id(self):
+        return self.func_key_id
+
+    @id.setter
+    def id(self, value):
+        self.func_key_id = value
+
+    def hash_destination(self):
+        if self.destination:
+            return self.destination.to_tuple()
+        return None

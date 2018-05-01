@@ -113,11 +113,15 @@ class FuncKeyPersistor(object):
                 for row in self.query_mappings(template_id)}
 
     def build_func_key(self, mapping_row):
-        return fk_model.FuncKey(id=mapping_row.func_key_id,
-                                label=mapping_row.label,
-                                blf=mapping_row.blf,
-                                inherited=mapping_row.inherited,
-                                destination=self.build_destination(mapping_row))
+        return FuncKeyMapping(
+            template_id=mapping_row.template_id,
+            func_key_id=mapping_row.func_key_id,
+            position=mapping_row.position,
+            label=mapping_row.label,
+            blf=mapping_row.blf,
+            inherited=mapping_row.inherited,
+            destination=self.build_destination(mapping_row),
+        )
 
     def query_mappings(self, template_id):
         query = (self.session.query(FuncKeyMapping.template_id,

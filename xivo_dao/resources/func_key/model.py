@@ -15,26 +15,6 @@ class Model(NewModel):
     _RELATION = {}
 
 
-class FuncKey(Model):
-
-    FIELDS = ['id',
-              'destination',
-              'label',
-              'blf',
-              'inherited']
-
-    MANDATORY = ['position',
-                 'destination']
-
-    def __init__(self, **parameters):
-        parameters.setdefault('blf', True)
-        parameters.setdefault('inherited', True)
-        super(FuncKey, self).__init__(**parameters)
-
-    def hash_destination(self):
-        return self.destination.to_tuple()
-
-
 @six.add_metaclass(abc.ABCMeta)
 class Destination(Model):
 
