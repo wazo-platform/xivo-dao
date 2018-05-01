@@ -13,6 +13,7 @@ from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
+from xivo_dao.alchemy.func_key_dest_bsfilter import FuncKeyDestBSFilter
 from xivo_dao.alchemy.func_key_dest_conference import FuncKeyDestConference
 from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup
 from xivo_dao.alchemy.func_key_dest_paging import FuncKeyDestPaging
@@ -26,7 +27,7 @@ from xivo_dao.resources.func_key_template import dao
 from xivo_dao.resources.utils.search import SearchResult
 
 from xivo_dao.resources.func_key.model import \
-    BSFilterDestination, CustomDestination, ServiceDestination, TransferDestination, ForwardDestination, \
+    CustomDestination, ServiceDestination, TransferDestination, ForwardDestination, \
     AgentDestination, ParkPositionDestination, ParkingDestination, OnlineRecordingDestination
 
 
@@ -159,7 +160,7 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
 
     def test_given_template_has_bsfilter_func_key_when_creating_then_creates_mapping(self):
         _, destination_row = self.create_bsfilter_func_key()
-        template = self.build_template_with_key(BSFilterDestination(filter_member_id=destination_row.filtermember_id))
+        template = self.build_template_with_key(FuncKeyDestBSFilter(filter_member_id=destination_row.filtermember_id))
 
         result = dao.create(template)
 
@@ -312,7 +313,7 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
     def test_given_destination_funckey_does_not_exist_then_raises_error(self):
         self.create_bsfilter_func_key()
 
-        template = self.build_template_with_key(BSFilterDestination(filter_member_id=999999999))
+        template = self.build_template_with_key(FuncKeyDestBSFilter(filter_member_id=999999999))
 
         assert_that(calling(dao.create).with_args(template),
                     raises(InputError))
@@ -439,7 +440,7 @@ class TestFuncKeyTemplateGet(TestFuncKeyTemplateDao):
     def test_given_template_has_bsfilter_func_key_when_getting_then_returns_bsfilter_func_key(self):
         _, destination_row = self.create_bsfilter_func_key()
         expected = self.prepare_template(destination_row,
-                                         BSFilterDestination(filter_member_id=destination_row.filtermember_id))
+                                         FuncKeyDestBSFilter(filter_member_id=destination_row.filtermember_id))
 
         result = dao.get(expected.id)
 

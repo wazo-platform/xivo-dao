@@ -27,15 +27,6 @@ class Destination(Model):
         return tuple(sorted(parameters))
 
 
-class BSFilterDestination(Destination):
-
-    type = 'bsfilter'
-
-    FIELDS = ['filter_member_id']
-
-    MANDATORY = ['filter_member_id']
-
-
 class CustomDestination(Destination):
 
     type = 'custom'

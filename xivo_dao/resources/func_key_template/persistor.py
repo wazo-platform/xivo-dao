@@ -342,11 +342,10 @@ class PagingPersistor(DestinationPersistor):
 class BSFilterPersistor(DestinationPersistor):
 
     def get(self, func_key_id):
-        row = (self.session.query(FuncKeyDestBSFilter.filtermember_id)
-               .filter(FuncKeyDestBSFilter.func_key_id == func_key_id)
-               .first())
+        query = (self.session.query(FuncKeyDestBSFilter)
+                 .filter(FuncKeyDestBSFilter.func_key_id == func_key_id))
 
-        return fk_model.BSFilterDestination(filter_member_id=row.filtermember_id)
+        return query.first()
 
     def find_or_create(self, destination):
         query = (self.session.query(FuncKeyDestBSFilter)

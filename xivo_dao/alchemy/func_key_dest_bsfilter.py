@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2014 Avencall
+# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
+from sqlalchemy.ext.hybrid import hybrid_property
 from xivo_dao.alchemy.func_key import FuncKey
 from xivo_dao.helpers.db_manager import Base
 
@@ -27,5 +28,22 @@ class FuncKeyDestBSFilter(Base):
     destination_type_id = Column(Integer, server_default="12")
     filtermember_id = Column(Integer, nullable=False)
 
+    type = 'bsfilter'  # TODO improve with relationship
+
     func_key = relationship(FuncKey)
     filtermember = relationship(Callfiltermember)
+
+    # TODO find another way to calculate hash destination
+    def to_tuple(self):
+        parameters = (
+            ('filter_member_id', self.filtermember_id),
+        )
+        return tuple(sorted(parameters))
+
+    @hybrid_property
+    def filter_member_id(self):
+        return self.filtermember_id
+
+    @filter_member_id.setter
+    def filter_member_id(self, value):
+        self.filtermember_id = value
