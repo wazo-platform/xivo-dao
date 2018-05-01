@@ -290,11 +290,10 @@ class GroupPersistor(DestinationPersistor):
 class ConferencePersistor(DestinationPersistor):
 
     def get(self, func_key_id):
-        row = (self.session.query(FuncKeyDestConference.conference_id)
-               .filter(FuncKeyDestConference.func_key_id == func_key_id)
-               .first())
+        query = (self.session.query(FuncKeyDestConference)
+                 .filter(FuncKeyDestConference.func_key_id == func_key_id))
 
-        return fk_model.ConferenceDestination(conference_id=row.conference_id)
+        return query.first()
 
     def find_or_create(self, destination):
         query = (self.session.query(FuncKeyDestConference)

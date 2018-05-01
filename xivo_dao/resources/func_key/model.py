@@ -27,15 +27,6 @@ class Destination(Model):
         return tuple(sorted(parameters))
 
 
-class ConferenceDestination(Destination):
-
-    type = 'conference'
-
-    FIELDS = ['conference_id']
-
-    MANDATORY = ['conference_id']
-
-
 class PagingDestination(Destination):
 
     type = 'paging'

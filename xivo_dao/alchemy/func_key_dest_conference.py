@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2014 Avencall
+# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao.alchemy.func_key import FuncKey
@@ -24,5 +24,14 @@ class FuncKeyDestConference(Base):
     destination_type_id = Column(Integer, primary_key=True, server_default="4")
     conference_id = Column(Integer, ForeignKey('meetmefeatures.id'), primary_key=True)
 
+    type = 'conference'  # TODO improve with relationship
+
     func_key = relationship(FuncKey)
     conference = relationship(MeetmeFeatures)
+
+    # TODO find another way to calculate hash destination
+    def to_tuple(self):
+        parameters = (
+            ('conference_id', self.conference_id),
+        )
+        return tuple(sorted(parameters))
