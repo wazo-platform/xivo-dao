@@ -27,19 +27,6 @@ class Destination(Model):
         return tuple(sorted(parameters))
 
 
-class ServiceDestination(Destination):
-
-    type = 'service'
-
-    FIELDS = ['service',
-              'extension_id']
-
-    MANDATORY = ['service']
-
-    def to_tuple(self):
-        return (('service', self.service),)
-
-
 class ForwardDestination(Destination):
 
     type = 'forward'

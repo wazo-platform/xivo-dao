@@ -19,6 +19,7 @@ from xivo_dao.alchemy.func_key_dest_custom import FuncKeyDestCustom
 from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup
 from xivo_dao.alchemy.func_key_dest_paging import FuncKeyDestPaging
 from xivo_dao.alchemy.func_key_dest_queue import FuncKeyDestQueue
+from xivo_dao.alchemy.func_key_dest_service import FuncKeyDestService
 from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
@@ -28,7 +29,7 @@ from xivo_dao.resources.func_key_template import dao
 from xivo_dao.resources.utils.search import SearchResult
 
 from xivo_dao.resources.func_key.model import \
-    ServiceDestination, TransferDestination, ForwardDestination, \
+    TransferDestination, ForwardDestination, \
     AgentDestination, ParkPositionDestination, ParkingDestination, OnlineRecordingDestination
 
 
@@ -170,7 +171,7 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
 
     def test_given_template_has_service_func_key_when_creating_then_creates_mapping(self):
         destination_row = self.create_service_func_key('*20', 'enablednd')
-        template = self.build_template_with_key(ServiceDestination(service='enablednd'))
+        template = self.build_template_with_key(FuncKeyDestService(service='enablednd'))
 
         result = dao.create(template)
 
@@ -179,7 +180,7 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
 
     def test_given_template_has_commented_service_func_key_when_creating_then_creates_mapping(self):
         destination_row = self.create_service_func_key('*20', 'enablednd', commented=1)
-        template = self.build_template_with_key(ServiceDestination(service='enablednd'))
+        template = self.build_template_with_key(FuncKeyDestService(service='enablednd'))
 
         dao.create(template)
 
@@ -450,7 +451,7 @@ class TestFuncKeyTemplateGet(TestFuncKeyTemplateDao):
     def test_given_template_has_service_func_key_when_getting_then_returns_service_func_key(self):
         destination_row = self.create_service_func_key('*25', 'enablednd')
         expected = self.prepare_template(destination_row,
-                                         ServiceDestination(service='enablednd',
+                                         FuncKeyDestService(service='enablednd',
                                                             extension_id=destination_row.extension_id))
 
         result = dao.get(expected.id)

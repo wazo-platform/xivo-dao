@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2014 Avencall
+# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao.alchemy.extension import Extension
@@ -27,5 +27,18 @@ class FuncKeyDestService(Base):
     destination_type_id = Column(Integer, server_default="5")
     extension_id = Column(Integer)
 
+    type = 'service'  # TODO improve with relationship
+
     func_key = relationship(FuncKey)
     extension = relationship(Extension)
+
+    def __init__(self, **kwargs):
+        self.service = kwargs.pop('service', None)  # TODO improve with relationship
+        super(FuncKeyDestService, self).__init__(**kwargs)
+
+    # TODO find another way to calculate hash destination
+    def to_tuple(self):
+        parameters = (
+            ('service', self.service),
+        )
+        return tuple(sorted(parameters))
