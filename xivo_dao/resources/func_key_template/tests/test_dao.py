@@ -15,6 +15,7 @@ from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.alchemy.func_key_dest_bsfilter import FuncKeyDestBSFilter
 from xivo_dao.alchemy.func_key_dest_conference import FuncKeyDestConference
+from xivo_dao.alchemy.func_key_dest_custom import FuncKeyDestCustom
 from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup
 from xivo_dao.alchemy.func_key_dest_paging import FuncKeyDestPaging
 from xivo_dao.alchemy.func_key_dest_queue import FuncKeyDestQueue
@@ -27,7 +28,7 @@ from xivo_dao.resources.func_key_template import dao
 from xivo_dao.resources.utils.search import SearchResult
 
 from xivo_dao.resources.func_key.model import \
-    CustomDestination, ServiceDestination, TransferDestination, ForwardDestination, \
+    ServiceDestination, TransferDestination, ForwardDestination, \
     AgentDestination, ParkPositionDestination, ParkingDestination, OnlineRecordingDestination
 
 
@@ -231,7 +232,7 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
         assert_that(result.keys[1].id, equal_to(destination_row.func_key_id))
 
     def test_given_template_has_custom_func_key_when_creating_then_creates_mapping(self):
-        template = self.build_template_with_key(CustomDestination(exten='1234'))
+        template = self.build_template_with_key(FuncKeyDestCustom(exten='1234'))
 
         result = dao.create(template)
 
@@ -479,7 +480,7 @@ class TestFuncKeyTemplateGet(TestFuncKeyTemplateDao):
     def test_given_template_has_custom_func_key_when_getting_then_returns_service_func_key(self):
         destination_row = self.create_custom_func_key('1234')
         expected = self.prepare_template(destination_row,
-                                         CustomDestination(exten='1234'))
+                                         FuncKeyDestCustom(exten='1234'))
 
         result = dao.get(expected.id)
 
@@ -564,7 +565,7 @@ class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
     def test_given_template_has_custom_func_key_when_deleting_then_deletes_custom(self):
         destination_row = self.create_custom_func_key('1234')
         template = self.prepare_template(destination_row,
-                                         CustomDestination(exten='1234'))
+                                         FuncKeyDestCustom(exten='1234'))
 
         dao.delete(template)
 

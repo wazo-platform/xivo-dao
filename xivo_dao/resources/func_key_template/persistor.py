@@ -466,11 +466,10 @@ class CustomPersistor(DestinationPersistor):
     DESTINATION_TYPE_ID = 10
 
     def get(self, func_key_id):
-        row = (self.session.query(FuncKeyDestCustom.exten)
-               .filter(FuncKeyDestCustom.func_key_id == func_key_id)
-               .first())
+        query = (self.session.query(FuncKeyDestCustom)
+                 .filter(FuncKeyDestCustom.func_key_id == func_key_id))
 
-        return fk_model.CustomDestination(exten=row.exten)
+        return query.first()
 
     def find_or_create(self, destination):
         func_key_row = self.create_func_key(self.TYPE_ID,

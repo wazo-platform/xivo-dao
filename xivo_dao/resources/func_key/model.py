@@ -27,15 +27,6 @@ class Destination(Model):
         return tuple(sorted(parameters))
 
 
-class CustomDestination(Destination):
-
-    type = 'custom'
-
-    FIELDS = ['exten']
-
-    MANDATORY = ['exten']
-
-
 class ServiceDestination(Destination):
 
     type = 'service'

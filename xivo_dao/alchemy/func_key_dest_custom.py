@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2014 Avencall
+# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao.alchemy.func_key import FuncKey
@@ -24,4 +24,13 @@ class FuncKeyDestCustom(Base):
     destination_type_id = Column(Integer, server_default="10")
     exten = Column(String(40), nullable=False)
 
+    type = 'custom'  # TODO improve with relationship
+
     func_key = relationship(FuncKey)
+
+    # TODO find another way to calculate hash destination
+    def to_tuple(self):
+        parameters = (
+            ('exten', self.exten),
+        )
+        return tuple(sorted(parameters))
