@@ -21,6 +21,7 @@ from xivo_dao.alchemy.func_key_dest_features import FuncKeyDestFeatures
 from xivo_dao.alchemy.func_key_dest_forward import FuncKeyDestForward
 from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup
 from xivo_dao.alchemy.func_key_dest_paging import FuncKeyDestPaging
+from xivo_dao.alchemy.func_key_dest_park_position import FuncKeyDestParkPosition
 from xivo_dao.alchemy.func_key_dest_queue import FuncKeyDestQueue
 from xivo_dao.alchemy.func_key_dest_service import FuncKeyDestService
 from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
@@ -32,7 +33,7 @@ from xivo_dao.resources.func_key_template import dao
 from xivo_dao.resources.utils.search import SearchResult
 
 from xivo_dao.resources.func_key.model import \
-    ParkPositionDestination, ParkingDestination, OnlineRecordingDestination
+    ParkingDestination, OnlineRecordingDestination
 
 
 class TestFuncKeyTemplateDao(DAOTestCase, FuncKeyHelper):
@@ -224,7 +225,7 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
         self.assert_mapping_has_destination('forward', destination_row)
 
     def test_given_template_has_park_position_func_key_when_creating_then_creates_mapping(self):
-        template = self.build_template_with_key(ParkPositionDestination(position=701))
+        template = self.build_template_with_key(FuncKeyDestParkPosition(position=701))
 
         result = dao.create(template)
 
@@ -474,7 +475,7 @@ class TestFuncKeyTemplateGet(TestFuncKeyTemplateDao):
     def test_given_template_has_park_position_func_key_when_getting_then_returns_service_func_key(self):
         destination_row = self.create_park_position_func_key('701')
         expected = self.prepare_template(destination_row,
-                                         ParkPositionDestination(position=701))
+                                         FuncKeyDestParkPosition(position=701))
 
         result = dao.get(expected.id)
 
@@ -558,7 +559,7 @@ class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
     def test_given_template_has_park_position_func_key_when_deleting_then_deletes_park_position(self):
         destination_row = self.create_park_position_func_key('701')
         template = self.prepare_template(destination_row,
-                                         ParkPositionDestination(position=701))
+                                         FuncKeyDestParkPosition(position=701))
 
         dao.delete(template)
 

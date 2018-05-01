@@ -27,15 +27,6 @@ class Destination(Model):
         return tuple(sorted(parameters))
 
 
-class ParkPositionDestination(Destination):
-
-    type = 'park_position'
-
-    FIELDS = ['position']
-
-    MANDATORY = ['position']
-
-
 class ParkingDestination(Destination):
 
     type = 'parking'

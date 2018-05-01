@@ -436,11 +436,10 @@ class ParkPositionPersistor(DestinationPersistor):
     DESTINATION_TYPE_ID = 7
 
     def get(self, func_key_id):
-        row = (self.session.query(FuncKeyDestParkPosition.park_position)
-               .filter(FuncKeyDestParkPosition.func_key_id == func_key_id)
-               .first())
+        query = (self.session.query(FuncKeyDestParkPosition)
+                 .filter(FuncKeyDestParkPosition.func_key_id == func_key_id))
 
-        return fk_model.ParkPositionDestination(position=int(row.park_position))
+        return query.first()
 
     def find_or_create(self, destination):
         func_key_row = self.create_func_key(self.TYPE_ID,
