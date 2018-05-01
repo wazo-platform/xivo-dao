@@ -27,18 +27,6 @@ class Destination(Model):
         return tuple(sorted(parameters))
 
 
-class AgentDestination(Destination):
-
-    type = 'agent'
-
-    FIELDS = ['action', 'agent_id', 'extension_id']
-
-    MANDATORY = ['action', 'agent_id']
-
-    def to_tuple(self):
-        return (('action', self.action), ('agent_id', self.agent_id))
-
-
 class ParkPositionDestination(Destination):
 
     type = 'park_position'

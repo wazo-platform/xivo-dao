@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2014 Avencall
+# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
@@ -32,6 +32,20 @@ class FuncKeyDestAgent(Base):
     agent_id = Column(Integer, nullable=False)
     extension_id = Column(Integer, nullable=False)
 
+    type = 'agent'  # TODO improve with relationship
+
     func_key = relationship(FuncKey)
     agent = relationship(AgentFeatures)
     extension = relationship(Extension)
+
+    def __init__(self, **kwargs):
+        self.action = kwargs.pop('action', None)  # TODO improve with relationship
+        super(FuncKeyDestAgent, self).__init__(**kwargs)
+
+    # TODO find another way to calculate hash destination
+    def to_tuple(self):
+        parameters = (
+            ('action', self.action),
+            ('agent_id', self.agent_id),
+        )
+        return parameters

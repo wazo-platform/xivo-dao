@@ -13,6 +13,7 @@ from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
+from xivo_dao.alchemy.func_key_dest_agent import FuncKeyDestAgent
 from xivo_dao.alchemy.func_key_dest_bsfilter import FuncKeyDestBSFilter
 from xivo_dao.alchemy.func_key_dest_conference import FuncKeyDestConference
 from xivo_dao.alchemy.func_key_dest_custom import FuncKeyDestCustom
@@ -31,7 +32,7 @@ from xivo_dao.resources.func_key_template import dao
 from xivo_dao.resources.utils.search import SearchResult
 
 from xivo_dao.resources.func_key.model import \
-    AgentDestination, ParkPositionDestination, ParkingDestination, OnlineRecordingDestination
+    ParkPositionDestination, ParkingDestination, OnlineRecordingDestination
 
 
 class TestFuncKeyTemplateDao(DAOTestCase, FuncKeyHelper):
@@ -247,7 +248,7 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
     def test_given_template_has_agent_func_key_when_creating_then_creates_mapping(self):
         destination_row = self.create_agent_func_key('_*31.', 'agentstaticlogin')
 
-        template = self.build_template_with_key(AgentDestination(action='login',
+        template = self.build_template_with_key(FuncKeyDestAgent(action='login',
                                                                  agent_id=destination_row.agent_id))
 
         result = dao.create(template)
@@ -258,7 +259,7 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
     def test_given_template_has_commented_agent_func_key_when_creating_then_creates_mapping(self):
         destination_row = self.create_agent_func_key('_*31.', 'agentstaticlogin', commented=1)
 
-        template = self.build_template_with_key(AgentDestination(action='login',
+        template = self.build_template_with_key(FuncKeyDestAgent(action='login',
                                                                  agent_id=destination_row.agent_id))
 
         dao.create(template)
@@ -491,7 +492,7 @@ class TestFuncKeyTemplateGet(TestFuncKeyTemplateDao):
     def test_given_template_has_agent_func_key_when_getting_then_returns_agent_func_key(self):
         destination_row = self.create_agent_func_key('_*31.', 'agentstaticlogin')
         expected = self.prepare_template(destination_row,
-                                         AgentDestination(action='login',
+                                         FuncKeyDestAgent(action='login',
                                                           agent_id=destination_row.agent_id,
                                                           extension_id=destination_row.extension_id))
 

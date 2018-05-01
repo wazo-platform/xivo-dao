@@ -494,18 +494,17 @@ class CustomPersistor(DestinationPersistor):
 class AgentPersistor(DestinationPersistor):
 
     def get(self, func_key_id):
-        row = (self.session.query(FuncKeyDestAgent.agent_id,
-                                  Extension.typeval,
-                                  Extension.id)
-               .join(Extension, FuncKeyDestAgent.extension_id == Extension.id)
-               .filter(FuncKeyDestAgent.func_key_id == func_key_id)
-               .first())
+        # TODO improve
+        query = (self.session.query(FuncKeyDestAgent,
+                                    Extension.typeval)
+                 .join(Extension, FuncKeyDestAgent.extension_id == Extension.id)
+                 .filter(FuncKeyDestAgent.func_key_id == func_key_id))
 
-        action = AgentActionExtensionConverter().to_action(row.typeval)
+        result = query.first()
 
-        return fk_model.AgentDestination(action=action,
-                                         agent_id=row.agent_id,
-                                         extension_id=row.id)
+        action = AgentActionExtensionConverter().to_action(result.typeval)
+        result.FuncKeyDestAgent.action = action
+        return result.FuncKeyDestAgent
 
     def find_or_create(self, destination):
         typeval = self.find_typeval(destination.action)
