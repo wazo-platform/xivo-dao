@@ -35,12 +35,8 @@ class FuncKeyDestBSFilter(Base):
     func_key = relationship(FuncKey)
     filtermember = relationship(Callfiltermember)
 
-    # TODO find another way to calculate hash destination
     def to_tuple(self):
-        parameters = (
-            ('filter_member_id', self.filtermember_id),
-        )
-        return tuple(sorted(parameters))
+        return (('filter_member_id', self.filtermember_id),)
 
     @hybrid_property
     def filter_member_id(self):

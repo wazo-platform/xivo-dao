@@ -30,9 +30,5 @@ class FuncKeyDestCustom(Base):
 
     func_key = relationship(FuncKey)
 
-    # TODO find another way to calculate hash destination
     def to_tuple(self):
-        parameters = (
-            ('exten', self.exten),
-        )
-        return tuple(sorted(parameters))
+        return (('exten', self.exten),)

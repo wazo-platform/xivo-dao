@@ -31,9 +31,5 @@ class FuncKeyDestConference(Base):
     func_key = relationship(FuncKey)
     conference = relationship(MeetmeFeatures)
 
-    # TODO find another way to calculate hash destination
     def to_tuple(self):
-        parameters = (
-            ('conference_id', self.conference_id),
-        )
-        return tuple(sorted(parameters))
+        return (('conference_id', self.conference_id),)

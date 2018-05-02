@@ -34,9 +34,5 @@ class FuncKeyDestPaging(Base):
     func_key = relationship(FuncKey)
     paging = relationship(Paging)
 
-    # TODO find another way to calculate hash destination
     def to_tuple(self):
-        parameters = (
-            ('paging_id', self.paging_id),
-        )
-        return tuple(sorted(parameters))
+        return (('paging_id', self.paging_id),)

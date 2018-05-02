@@ -39,12 +39,8 @@ class FuncKeyDestFeatures(Base):
         self.transfer = kwargs.pop('transfer', None)  # TODO improve with relationship
         super(FuncKeyDestFeatures, self).__init__(**kwargs)
 
-    # TODO find another way to calculate hash destination
     def to_tuple(self):
-        parameters = (
-            ('transfer', self.transfer),
-        )
-        return parameters
+        return (('transfer', self.transfer),)
 
     @hybrid_property
     def feature_id(self):
@@ -71,10 +67,7 @@ class FuncKeyDestParking(_FuncKeyDestFeaturesWithoutBaseDeclarative):
     type = 'parking'
 
     def to_tuple(self):
-        parameters = (
-            ('feature', 'parking'),
-        )
-        return parameters
+        return (('feature', 'parking'),)
 
 
 class FuncKeyDestOnlineRecording(_FuncKeyDestFeaturesWithoutBaseDeclarative):
@@ -82,7 +75,4 @@ class FuncKeyDestOnlineRecording(_FuncKeyDestFeaturesWithoutBaseDeclarative):
     type = 'onlinerec'
 
     def to_tuple(self):
-        parameters = (
-            ('feature', 'onlinerec'),
-        )
-        return parameters
+        return (('feature', 'onlinerec'),)

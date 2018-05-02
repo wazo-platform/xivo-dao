@@ -44,10 +44,8 @@ class FuncKeyDestAgent(Base):
         self.action = kwargs.pop('action', None)  # TODO improve with relationship
         super(FuncKeyDestAgent, self).__init__(**kwargs)
 
-    # TODO find another way to calculate hash destination
     def to_tuple(self):
-        parameters = (
+        return (
             ('action', self.action),
             ('agent_id', self.agent_id),
         )
-        return parameters

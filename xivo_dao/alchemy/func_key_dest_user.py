@@ -36,9 +36,5 @@ class FuncKeyDestUser(Base):
         destination = cls(func_key=func_key, userfeatures=user)
         return destination
 
-    # TODO find another way to calculate hash destination
     def to_tuple(self):
-        parameters = (
-            ('user_id', self.user_id),
-        )
-        return tuple(sorted(parameters))
+        return (('user_id', self.user_id),)

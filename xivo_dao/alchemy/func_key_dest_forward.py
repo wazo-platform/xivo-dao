@@ -40,13 +40,11 @@ class FuncKeyDestForward(Base):
         self.forward = kwargs.pop('forward', None)  # TODO improve with relationship
         super(FuncKeyDestForward, self).__init__(**kwargs)
 
-    # TODO find another way to calculate hash destination
     def to_tuple(self):
-        parameters = (
+        return (
             ('exten', self.exten),
             ('forward', self.forward),
         )
-        return parameters
 
     @hybrid_property
     def exten(self):

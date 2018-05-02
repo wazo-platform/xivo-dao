@@ -31,9 +31,5 @@ class FuncKeyDestGroup(Base):
     func_key = relationship(FuncKey)
     groupfeatures = relationship(GroupFeatures)
 
-    # TODO find another way to calculate hash destination
     def to_tuple(self):
-        parameters = (
-            ('group_id', self.group_id),
-        )
-        return tuple(sorted(parameters))
+        return (('group_id', self.group_id),)

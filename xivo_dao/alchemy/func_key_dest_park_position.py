@@ -33,12 +33,8 @@ class FuncKeyDestParkPosition(Base):
 
     func_key = relationship(FuncKey)
 
-    # TODO find another way to calculate hash destination
     def to_tuple(self):
-        parameters = (
-            ('position', self.position),
-        )
-        return parameters
+        return (('position', self.position),)
 
     @hybrid_property
     def position(self):

@@ -38,9 +38,5 @@ class FuncKeyDestService(Base):
         self.service = kwargs.pop('service', None)  # TODO improve with relationship
         super(FuncKeyDestService, self).__init__(**kwargs)
 
-    # TODO find another way to calculate hash destination
     def to_tuple(self):
-        parameters = (
-            ('service', self.service),
-        )
-        return tuple(sorted(parameters))
+        return (('service', self.service),)

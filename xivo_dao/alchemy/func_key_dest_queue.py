@@ -31,9 +31,5 @@ class FuncKeyDestQueue(Base):
     func_key = relationship(FuncKey)
     queue = relationship(QueueFeatures)
 
-    # TODO find another way to calculate hash destination
     def to_tuple(self):
-        parameters = (
-            ('queue_id', self.queue_id),
-        )
-        return tuple(sorted(parameters))
+        return (('queue_id', self.queue_id),)
