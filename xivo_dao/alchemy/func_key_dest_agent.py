@@ -2,6 +2,8 @@
 # Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
+from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, ForeignKeyConstraint, CheckConstraint, PrimaryKeyConstraint, UniqueConstraint
 from sqlalchemy.types import Integer
@@ -38,14 +40,31 @@ class FuncKeyDestAgent(Base):
 
     func_key = relationship(FuncKey)
     agent = relationship(AgentFeatures)
-    extension = relationship(Extension)
 
-    def __init__(self, **kwargs):
-        self.action = kwargs.pop('action', None)  # TODO improve with relationship
-        super(FuncKeyDestAgent, self).__init__(**kwargs)
+    extension = relationship(Extension, viewonly=True)
+    extension_typeval = association_proxy(
+        'extension', 'typeval',
+        # Only to keep value persistent in the instance
+        creator=lambda _typeval: Extension(type='extenfeatures',
+                                           typeval=_typeval)
+    )
 
     def to_tuple(self):
         return (
             ('action', self.action),
             ('agent_id', self.agent_id),
         )
+
+    @hybrid_property
+    def action(self):
+        ACTIONS = {'agentstaticlogin': 'login',
+                   'agentstaticlogoff': 'logout',
+                   'agentstaticlogtoggle': 'toggle'}
+        return ACTIONS.get(self.extension_typeval, self.extension_typeval)
+
+    @action.setter
+    def action(self, value):
+        TYPEVALS = {'login': 'agentstaticlogin',
+                    'logout': 'agentstaticlogoff',
+                    'toggle': 'agentstaticlogtoggle'}
+        self.extension_typeval = TYPEVALS.get(value, value)
