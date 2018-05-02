@@ -13,6 +13,8 @@ from sqlalchemy.types import Integer
 
 class FuncKeyDestService(Base):
 
+    DESTINATION_TYPE_ID = 5
+
     __tablename__ = 'func_key_dest_service'
     __table_args__ = (
         PrimaryKeyConstraint('func_key_id', 'destination_type_id', 'extension_id'),
@@ -20,11 +22,11 @@ class FuncKeyDestService(Base):
                              ['func_key.id', 'func_key.destination_type_id']),
         ForeignKeyConstraint(['extension_id'],
                              ['extensions.id']),
-        CheckConstraint('destination_type_id = 5')
+        CheckConstraint('destination_type_id = {}'.format(DESTINATION_TYPE_ID)),
     )
 
     func_key_id = Column(Integer)
-    destination_type_id = Column(Integer, server_default="5")
+    destination_type_id = Column(Integer, server_default="{}".format(DESTINATION_TYPE_ID))
     extension_id = Column(Integer)
 
     type = 'service'  # TODO improve with relationship

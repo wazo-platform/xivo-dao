@@ -13,6 +13,8 @@ from sqlalchemy.types import Integer
 
 class FuncKeyDestPaging(Base):
 
+    DESTINATION_TYPE_ID = 9
+
     __tablename__ = 'func_key_dest_paging'
     __table_args__ = (
         PrimaryKeyConstraint('func_key_id', 'destination_type_id', 'paging_id'),
@@ -20,11 +22,11 @@ class FuncKeyDestPaging(Base):
                              ['func_key.id', 'func_key.destination_type_id']),
         ForeignKeyConstraint(['paging_id'],
                              ['paging.id']),
-        CheckConstraint('destination_type_id = 9')
+        CheckConstraint('destination_type_id = {}'.format(DESTINATION_TYPE_ID)),
     )
 
     func_key_id = Column(Integer)
-    destination_type_id = Column(Integer, server_default="9")
+    destination_type_id = Column(Integer, server_default="{}".format(DESTINATION_TYPE_ID))
     paging_id = Column(Integer)
 
     type = 'paging'  # TODO improve with relationship

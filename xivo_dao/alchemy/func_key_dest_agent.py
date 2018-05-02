@@ -14,6 +14,8 @@ from sqlalchemy.types import Integer
 
 class FuncKeyDestAgent(Base):
 
+    DESTINATION_TYPE_ID = 11
+
     __tablename__ = 'func_key_dest_agent'
     __table_args__ = (
         PrimaryKeyConstraint('func_key_id', 'destination_type_id'),
@@ -24,11 +26,11 @@ class FuncKeyDestAgent(Base):
         ForeignKeyConstraint(['extension_id'],
                              ['extensions.id']),
         UniqueConstraint('agent_id', 'extension_id'),
-        CheckConstraint('destination_type_id = 11'),
+        CheckConstraint('destination_type_id = {}'.format(DESTINATION_TYPE_ID)),
     )
 
     func_key_id = Column(Integer)
-    destination_type_id = Column(Integer, server_default="11")
+    destination_type_id = Column(Integer, server_default="{}".format(DESTINATION_TYPE_ID))
     agent_id = Column(Integer, nullable=False)
     extension_id = Column(Integer, nullable=False)
 

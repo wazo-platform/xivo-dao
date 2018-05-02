@@ -14,16 +14,18 @@ from xivo_dao.helpers.db_manager import Base
 
 class FuncKeyDestUser(Base):
 
+    DESTINATION_TYPE_ID = 1
+
     __tablename__ = 'func_key_dest_user'
     __table_args__ = (
         ForeignKeyConstraint(['func_key_id', 'destination_type_id'],
                              ['func_key.id', 'func_key.destination_type_id']),
-        CheckConstraint('destination_type_id=1'),
+        CheckConstraint('destination_type_id = {}'.format(DESTINATION_TYPE_ID)),
     )
 
     func_key_id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('userfeatures.id'), primary_key=True)
-    destination_type_id = Column(Integer, primary_key=True, server_default="1")
+    destination_type_id = Column(Integer, primary_key=True, server_default="{}".format(DESTINATION_TYPE_ID))
 
     type = 'user'  # TODO improve with relationship
 

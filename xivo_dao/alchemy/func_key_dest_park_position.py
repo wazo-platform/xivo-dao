@@ -14,17 +14,19 @@ from xivo_dao.helpers.db_manager import Base
 
 class FuncKeyDestParkPosition(Base):
 
+    DESTINATION_TYPE_ID = 7
+
     __tablename__ = 'func_key_dest_park_position'
     __table_args__ = (
         PrimaryKeyConstraint('func_key_id', 'destination_type_id'),
         ForeignKeyConstraint(['func_key_id', 'destination_type_id'],
                              ['func_key.id', 'func_key.destination_type_id']),
-        CheckConstraint('destination_type_id = 7'),
+        CheckConstraint('destination_type_id = {}'.format(DESTINATION_TYPE_ID)),
         CheckConstraint("park_position ~ '^[0-9]+$'")
     )
 
     func_key_id = Column(Integer)
-    destination_type_id = Column(Integer, server_default="7")
+    destination_type_id = Column(Integer, server_default="{}".format(DESTINATION_TYPE_ID))
     park_position = Column(String(40), nullable=False)
 
     type = 'park_position'  # TODO improve with relationship

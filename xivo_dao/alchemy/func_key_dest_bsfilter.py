@@ -14,6 +14,8 @@ from sqlalchemy.types import Integer
 
 class FuncKeyDestBSFilter(Base):
 
+    DESTINATION_TYPE_ID = 12
+
     __tablename__ = 'func_key_dest_bsfilter'
     __table_args__ = (
         PrimaryKeyConstraint('func_key_id', 'destination_type_id', 'filtermember_id'),
@@ -21,11 +23,11 @@ class FuncKeyDestBSFilter(Base):
                              ['func_key.id', 'func_key.destination_type_id']),
         ForeignKeyConstraint(['filtermember_id'],
                              ['callfiltermember.id']),
-        CheckConstraint('destination_type_id = 12')
+        CheckConstraint('destination_type_id = {}'.format(DESTINATION_TYPE_ID)),
     )
 
     func_key_id = Column(Integer)
-    destination_type_id = Column(Integer, server_default="12")
+    destination_type_id = Column(Integer, server_default="{}".format(DESTINATION_TYPE_ID))
     filtermember_id = Column(Integer, nullable=False)
 
     type = 'bsfilter'  # TODO improve with relationship
