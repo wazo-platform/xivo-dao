@@ -2,8 +2,7 @@
 # Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
-from sqlalchemy.schema import Column, ForeignKey, CheckConstraint, \
-    ForeignKeyConstraint
+from sqlalchemy.schema import CheckConstraint, Column, ForeignKey, ForeignKeyConstraint
 from sqlalchemy.types import Integer
 from sqlalchemy.orm import relationship
 

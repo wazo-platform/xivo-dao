@@ -2,14 +2,14 @@
 # Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
+from sqlalchemy.orm import relationship
+from sqlalchemy.schema import Column, ForeignKeyConstraint, CheckConstraint, PrimaryKeyConstraint, UniqueConstraint
+from sqlalchemy.types import Integer
+
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.func_key import FuncKey
 from xivo_dao.helpers.db_manager import Base
-
-from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, ForeignKeyConstraint, CheckConstraint, PrimaryKeyConstraint, UniqueConstraint
-from sqlalchemy.types import Integer
 
 
 class FuncKeyDestAgent(Base):
