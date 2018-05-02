@@ -2,6 +2,8 @@
 # Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
+from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, ForeignKeyConstraint, CheckConstraint, PrimaryKeyConstraint
 from sqlalchemy.types import Integer
@@ -32,11 +34,22 @@ class FuncKeyDestService(Base):
     type = 'service'  # TODO improve with relationship
 
     func_key = relationship(FuncKey)
-    extension = relationship(Extension)
 
-    def __init__(self, **kwargs):
-        self.service = kwargs.pop('service', None)  # TODO improve with relationship
-        super(FuncKeyDestService, self).__init__(**kwargs)
+    extension = relationship(Extension)
+    extension_typeval = association_proxy(
+        'extension', 'typeval',
+        # Only to keep value persistent in the instance
+        creator=lambda _typeval: Extension(type='extenfeatures',
+                                           typeval=_typeval)
+    )
 
     def to_tuple(self):
         return (('service', self.service),)
+
+    @hybrid_property
+    def service(self):
+        return self.extension_typeval
+
+    @service.setter
+    def service(self, value):
+        self.extension_typeval = value

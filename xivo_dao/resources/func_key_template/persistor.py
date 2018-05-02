@@ -363,15 +363,10 @@ class BSFilterPersistor(DestinationPersistor):
 class ServicePersistor(DestinationPersistor):
 
     def get(self, func_key_id):
-        # TODO refactor and improve
-        query = (self.session.query(FuncKeyDestService,
-                                    Extension.typeval.label('service'))
-                 .join(Extension, Extension.id == FuncKeyDestService.extension_id)
+        query = (self.session.query(FuncKeyDestService)
                  .filter(FuncKeyDestService.func_key_id == func_key_id))
 
-        result = query.first()
-        result.FuncKeyDestService.service = result.service
-        return result.FuncKeyDestService
+        return query.first()
 
     def find_or_create(self, destination):
         query = (self.session.query(FuncKeyDestService)
