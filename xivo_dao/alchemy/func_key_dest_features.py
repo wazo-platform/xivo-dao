@@ -51,3 +51,36 @@ class FuncKeyDestFeatures(Base):
     @feature_id.setter
     def feature_id(self, value):
         self.features_id = value
+
+
+# These tables don't exist in database
+class _FuncKeyDestFeaturesWithoutBaseDeclarative(object):
+
+    def __init__(self, **kwargs):
+        self._func_key_dest_features = FuncKeyDestFeatures(**kwargs)
+        self._func_key_dest_features.type = self.type
+
+    def __getattr__(self, attr):
+        return getattr(self._func_key_dest_features, attr)
+
+
+class FuncKeyDestParking(_FuncKeyDestFeaturesWithoutBaseDeclarative):
+
+    type = 'parking'
+
+    def to_tuple(self):
+        parameters = (
+            ('feature', 'parking'),
+        )
+        return parameters
+
+
+class FuncKeyDestOnlineRecording(_FuncKeyDestFeaturesWithoutBaseDeclarative):
+
+    type = 'onlinerec'
+
+    def to_tuple(self):
+        parameters = (
+            ('feature', 'onlinerec'),
+        )
+        return parameters

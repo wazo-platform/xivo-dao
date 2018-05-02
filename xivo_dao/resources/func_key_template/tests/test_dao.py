@@ -17,7 +17,7 @@ from xivo_dao.alchemy.func_key_dest_agent import FuncKeyDestAgent
 from xivo_dao.alchemy.func_key_dest_bsfilter import FuncKeyDestBSFilter
 from xivo_dao.alchemy.func_key_dest_conference import FuncKeyDestConference
 from xivo_dao.alchemy.func_key_dest_custom import FuncKeyDestCustom
-from xivo_dao.alchemy.func_key_dest_features import FuncKeyDestFeatures
+from xivo_dao.alchemy.func_key_dest_features import FuncKeyDestFeatures, FuncKeyDestParking, FuncKeyDestOnlineRecording
 from xivo_dao.alchemy.func_key_dest_forward import FuncKeyDestForward
 from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup
 from xivo_dao.alchemy.func_key_dest_paging import FuncKeyDestPaging
@@ -31,9 +31,6 @@ from xivo_dao.alchemy.func_key_dest_paging import FuncKeyDestPaging as FuncKeyDe
 
 from xivo_dao.resources.func_key_template import dao
 from xivo_dao.resources.utils.search import SearchResult
-
-from xivo_dao.resources.func_key.model import \
-    ParkingDestination, OnlineRecordingDestination
 
 
 class TestFuncKeyTemplateDao(DAOTestCase, FuncKeyHelper):
@@ -289,7 +286,7 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
     def test_given_template_has_parking_destination_when_creating_then_creates_mapping(self):
         destination_row = self.create_features_func_key('general', 'parkext', '700')
 
-        template = self.build_template_with_key(ParkingDestination())
+        template = self.build_template_with_key(FuncKeyDestParking())
 
         result = dao.create(template)
 
@@ -299,7 +296,7 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
     def test_given_template_has_commented_parking_destination_when_creating_then_creates_mapping(self):
         destination_row = self.create_features_func_key('general', 'parkext', '700', commented=1)
 
-        template = self.build_template_with_key(ParkingDestination())
+        template = self.build_template_with_key(FuncKeyDestParking())
 
         dao.create(template)
 
@@ -308,7 +305,7 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
     def test_given_template_has_onlinerec_destination_when_creating_then_creates_mapping(self):
         destination_row = self.create_features_func_key('features.conf', 'automixmon', '*3')
 
-        template = self.build_template_with_key(OnlineRecordingDestination())
+        template = self.build_template_with_key(FuncKeyDestOnlineRecording())
 
         result = dao.create(template)
 
@@ -514,7 +511,7 @@ class TestFuncKeyTemplateGet(TestFuncKeyTemplateDao):
     def test_given_template_has_parking_func_key_when_getting_then_returns_parking_func_key(self):
         destination_row = self.create_features_func_key('general', 'parkext', '701')
         expected = self.prepare_template(destination_row,
-                                         ParkingDestination(feature_id=destination_row.features_id))
+                                         FuncKeyDestParking(feature_id=destination_row.features_id))
 
         result = dao.get(expected.id)
 

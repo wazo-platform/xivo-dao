@@ -20,13 +20,16 @@ from xivo_dao.alchemy.func_key_dest_paging import FuncKeyDestPaging
 from xivo_dao.alchemy.func_key_dest_bsfilter import FuncKeyDestBSFilter
 from xivo_dao.alchemy.func_key_dest_custom import FuncKeyDestCustom
 from xivo_dao.alchemy.func_key_dest_service import FuncKeyDestService
-from xivo_dao.alchemy.func_key_dest_features import FuncKeyDestFeatures
+from xivo_dao.alchemy.func_key_dest_features import (
+    FuncKeyDestFeatures,
+    FuncKeyDestOnlineRecording,
+    FuncKeyDestParking,
+)
 from xivo_dao.alchemy.func_key_dest_forward import FuncKeyDestForward
 from xivo_dao.alchemy.func_key_dest_agent import FuncKeyDestAgent
 from xivo_dao.alchemy.func_key_dest_park_position import FuncKeyDestParkPosition
 
 from xivo_dao.helpers import errors
-from xivo_dao.resources.func_key import model as fk_model
 
 from xivo_dao.resources.extension.database import ForwardExtensionConverter, AgentActionExtensionConverter
 
@@ -542,9 +545,9 @@ class FeaturesPersistor(DestinationPersistor):
         result = query.first()
 
         if result.var_name == 'parkext':
-            return fk_model.ParkingDestination(feature_id=result.id)
+            return FuncKeyDestParking(feature_id=result.id)
         elif result.var_name == 'automixmon':
-            return fk_model.OnlineRecordingDestination(feature_id=result.id)
+            return FuncKeyDestOnlineRecording(feature_id=result.id)
 
         transfer = self.TRANSFERS_TO_API[result.var_name]
         result.FuncKeyDestFeatures.transfer = transfer
