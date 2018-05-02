@@ -29,7 +29,7 @@ class FuncKeyDestPaging(Base):
     destination_type_id = Column(Integer, server_default="{}".format(DESTINATION_TYPE_ID))
     paging_id = Column(Integer)
 
-    type = 'paging'  # TODO improve with relationship
+    type = 'paging'
 
     func_key = relationship(FuncKey)
     paging = relationship(Paging)

@@ -32,7 +32,7 @@ class FuncKeyDestForward(Base):
     extension_id = Column(Integer)
     number = Column(String(40), nullable=True)
 
-    type = 'forward'  # TODO improve with relationship
+    type = 'forward'
 
     func_key = relationship(FuncKey)
 

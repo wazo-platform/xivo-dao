@@ -29,7 +29,7 @@ class FuncKeyDestParkPosition(Base):
     destination_type_id = Column(Integer, server_default="{}".format(DESTINATION_TYPE_ID))
     park_position = Column(String(40), nullable=False)
 
-    type = 'park_position'  # TODO improve with relationship
+    type = 'park_position'
 
     func_key = relationship(FuncKey)
 

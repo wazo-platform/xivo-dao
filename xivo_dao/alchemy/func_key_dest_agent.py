@@ -36,7 +36,7 @@ class FuncKeyDestAgent(Base):
     agent_id = Column(Integer, nullable=False)
     extension_id = Column(Integer, nullable=False)
 
-    type = 'agent'  # TODO improve with relationship
+    type = 'agent'
 
     func_key = relationship(FuncKey)
     agent = relationship(AgentFeatures)

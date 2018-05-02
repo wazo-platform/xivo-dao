@@ -26,7 +26,7 @@ class FuncKeyDestGroup(Base):
     destination_type_id = Column(Integer, primary_key=True, server_default="{}".format(DESTINATION_TYPE_ID))
     group_id = Column(Integer, ForeignKey('groupfeatures.id'), primary_key=True)
 
-    type = 'group'  # TODO improve with relationship
+    type = 'group'
 
     func_key = relationship(FuncKey)
     groupfeatures = relationship(GroupFeatures)

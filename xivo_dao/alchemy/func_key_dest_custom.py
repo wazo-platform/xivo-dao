@@ -26,7 +26,7 @@ class FuncKeyDestCustom(Base):
     destination_type_id = Column(Integer, server_default="{}".format(DESTINATION_TYPE_ID))
     exten = Column(String(40), nullable=False)
 
-    type = 'custom'  # TODO improve with relationship
+    type = 'custom'
 
     func_key = relationship(FuncKey)
 

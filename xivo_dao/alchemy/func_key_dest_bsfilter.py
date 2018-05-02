@@ -30,7 +30,7 @@ class FuncKeyDestBSFilter(Base):
     destination_type_id = Column(Integer, server_default="{}".format(DESTINATION_TYPE_ID))
     filtermember_id = Column(Integer, nullable=False)
 
-    type = 'bsfilter'  # TODO improve with relationship
+    type = 'bsfilter'
 
     func_key = relationship(FuncKey)
     filtermember = relationship(Callfiltermember)

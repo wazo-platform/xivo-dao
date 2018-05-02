@@ -26,7 +26,7 @@ class FuncKeyDestUser(Base):
     user_id = Column(Integer, ForeignKey('userfeatures.id'), primary_key=True)
     destination_type_id = Column(Integer, primary_key=True, server_default="{}".format(DESTINATION_TYPE_ID))
 
-    type = 'user'  # TODO improve with relationship
+    type = 'user'
 
     func_key = relationship(FuncKey)
     userfeatures = relationship(UserFeatures)

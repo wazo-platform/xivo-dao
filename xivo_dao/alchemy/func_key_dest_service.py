@@ -31,7 +31,7 @@ class FuncKeyDestService(Base):
     destination_type_id = Column(Integer, server_default="{}".format(DESTINATION_TYPE_ID))
     extension_id = Column(Integer)
 
-    type = 'service'  # TODO improve with relationship
+    type = 'service'
 
     func_key = relationship(FuncKey)
 

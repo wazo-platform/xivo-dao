@@ -26,7 +26,7 @@ class FuncKeyDestConference(Base):
     destination_type_id = Column(Integer, primary_key=True, server_default="{}".format(DESTINATION_TYPE_ID))
     conference_id = Column(Integer, ForeignKey('meetmefeatures.id'), primary_key=True)
 
-    type = 'conference'  # TODO improve with relationship
+    type = 'conference'
 
     func_key = relationship(FuncKey)
     conference = relationship(MeetmeFeatures)
