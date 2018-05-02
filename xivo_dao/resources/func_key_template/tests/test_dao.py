@@ -17,7 +17,11 @@ from xivo_dao.alchemy.func_key_dest_agent import FuncKeyDestAgent
 from xivo_dao.alchemy.func_key_dest_bsfilter import FuncKeyDestBSFilter
 from xivo_dao.alchemy.func_key_dest_conference import FuncKeyDestConference
 from xivo_dao.alchemy.func_key_dest_custom import FuncKeyDestCustom
-from xivo_dao.alchemy.func_key_dest_features import FuncKeyDestFeatures, FuncKeyDestParking, FuncKeyDestOnlineRecording
+from xivo_dao.alchemy.func_key_dest_features import (
+    FuncKeyDestParking,
+    FuncKeyDestOnlineRecording,
+    FuncKeyDestTransfer,
+)
 from xivo_dao.alchemy.func_key_dest_forward import FuncKeyDestForward
 from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup
 from xivo_dao.alchemy.func_key_dest_paging import FuncKeyDestPaging
@@ -267,7 +271,7 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
     def test_given_template_has_transfer_func_key_when_creating_then_creates_mapping(self):
         destination_row = self.create_features_func_key('featuremap', 'blindxfer', '*1')
 
-        template = self.build_template_with_key(FuncKeyDestFeatures(transfer='blind'))
+        template = self.build_template_with_key(FuncKeyDestTransfer(transfer='blind'))
 
         result = dao.create(template)
 
@@ -277,7 +281,7 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
     def test_given_template_has_commented_transfer_func_key_when_creating_then_creates_mapping(self):
         destination_row = self.create_features_func_key('featuremap', 'blindxfer', '*1', commented=1)
 
-        template = self.build_template_with_key(FuncKeyDestFeatures(transfer='blind'))
+        template = self.build_template_with_key(FuncKeyDestTransfer(transfer='blind'))
 
         dao.create(template)
 
@@ -501,7 +505,7 @@ class TestFuncKeyTemplateGet(TestFuncKeyTemplateDao):
     def test_given_template_has_transfer_func_key_when_getting_then_returns_transfer_func_key(self):
         destination_row = self.create_features_func_key('featuremap', 'atxfer', '*2')
         expected = self.prepare_template(destination_row,
-                                         FuncKeyDestFeatures(transfer='attended',
+                                         FuncKeyDestTransfer(transfer='attended',
                                                              feature_id=destination_row.features_id))
 
         result = dao.get(expected.id)

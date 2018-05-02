@@ -24,6 +24,7 @@ from xivo_dao.alchemy.func_key_dest_features import (
     FuncKeyDestFeatures,
     FuncKeyDestOnlineRecording,
     FuncKeyDestParking,
+    FuncKeyDestTransfer,
 )
 from xivo_dao.alchemy.func_key_dest_forward import FuncKeyDestForward
 from xivo_dao.alchemy.func_key_dest_agent import FuncKeyDestAgent
@@ -515,7 +516,6 @@ class FeaturesPersistor(DestinationPersistor):
                        'attended': 'atxfer'}
 
     def get(self, func_key_id):
-        # TODO improve
         query = (self.session.query(FuncKeyDestFeatures,
                                     Features.var_name,
                                     Features.id)
@@ -530,8 +530,7 @@ class FeaturesPersistor(DestinationPersistor):
             return FuncKeyDestOnlineRecording(feature_id=result.id)
 
         transfer = self.TRANSFERS_TO_API[result.var_name]
-        result.FuncKeyDestFeatures.transfer = transfer
-        return result.FuncKeyDestFeatures
+        return FuncKeyDestTransfer(feature_id=result.id, transfer=transfer)
 
     def find_or_create(self, destination):
         varname = self.find_var_name(destination)

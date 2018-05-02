@@ -30,17 +30,8 @@ class FuncKeyDestFeatures(Base):
     destination_type_id = Column(Integer, server_default="{}".format(DESTINATION_TYPE_ID))
     features_id = Column(Integer)
 
-    type = 'transfer'  # TODO improve with relationship
-
     func_key = relationship(FuncKey)
     features = relationship(Features)
-
-    def __init__(self, **kwargs):
-        self.transfer = kwargs.pop('transfer', None)  # TODO improve with relationship
-        super(FuncKeyDestFeatures, self).__init__(**kwargs)
-
-    def to_tuple(self):
-        return (('transfer', self.transfer),)
 
     @hybrid_property
     def feature_id(self):
@@ -76,3 +67,17 @@ class FuncKeyDestOnlineRecording(_FuncKeyDestFeaturesWithoutBaseDeclarative):
 
     def to_tuple(self):
         return (('feature', 'onlinerec'),)
+
+
+class FuncKeyDestTransfer(_FuncKeyDestFeaturesWithoutBaseDeclarative):
+
+    type = 'transfer'
+
+    def __init__(self, **kwargs):
+        transfer = kwargs.pop('transfer', None)
+        super(FuncKeyDestTransfer, self).__init__(**kwargs)
+        if transfer:
+            self._func_key_dest_features.transfer = transfer
+
+    def to_tuple(self):
+        return (('transfer', self.transfer),)
