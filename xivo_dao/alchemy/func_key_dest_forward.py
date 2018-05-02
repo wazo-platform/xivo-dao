@@ -2,6 +2,7 @@
 # Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, ForeignKeyConstraint, CheckConstraint, PrimaryKeyConstraint
@@ -34,11 +35,14 @@ class FuncKeyDestForward(Base):
     type = 'forward'  # TODO improve with relationship
 
     func_key = relationship(FuncKey)
-    extension = relationship(Extension)
 
-    def __init__(self, **kwargs):
-        self.forward = kwargs.pop('forward', None)  # TODO improve with relationship
-        super(FuncKeyDestForward, self).__init__(**kwargs)
+    extension = relationship(Extension)
+    extension_typeval = association_proxy(
+        'extension', 'typeval',
+        # Only to keep value persistent in the instance
+        creator=lambda _typeval: Extension(type='extenfeatures',
+                                           typeval=_typeval)
+    )
 
     def to_tuple(self):
         return (
@@ -53,3 +57,17 @@ class FuncKeyDestForward(Base):
     @exten.setter
     def exten(self, value):
         self.number = value
+
+    @hybrid_property
+    def forward(self):
+        FORWARDS = {'fwdbusy': 'busy',
+                    'fwdrna': 'noanswer',
+                    'fwdunc': 'unconditional'}
+        return FORWARDS.get(self.extension_typeval, self.extension_typeval)
+
+    @forward.setter
+    def forward(self, value):
+        TYPEVALS = {'busy': 'fwdbusy',
+                    'noanswer': 'fwdrna',
+                    'unconditional': 'fwdunc'}
+        self.extension_typeval = TYPEVALS.get(value, value)
