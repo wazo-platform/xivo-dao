@@ -62,7 +62,8 @@ class FuncKeyPersistor(object):
 
     def create(self, template):
         template = self.add_template(template)
-        self.add_funckeys(template.id, template.keys)
+        funckeys = self.add_funckeys(template.id, template.keys)
+        template.keys = funckeys
         return template
 
     def add_template(self, template):
@@ -71,8 +72,10 @@ class FuncKeyPersistor(object):
         return template
 
     def add_funckeys(self, template_id, funckeys):
+        created_funckeys = {}
         for pos, funckey in six.iteritems(funckeys):
-            self.add_mapping(template_id, pos, funckey)
+            created_funckeys[pos] = self.add_mapping(template_id, pos, funckey)
+        return created_funckeys
 
     def add_mapping(self, template_id, position, funckey):
         destination_row = self.find_or_create_destination(funckey.destination)
@@ -84,7 +87,10 @@ class FuncKeyPersistor(object):
                                  blf=funckey.blf)
 
         self.session.add(mapping)
-        funckey.id = destination_row.func_key_id
+        self.session.flush()
+        mapping.inherited = funckey.inherited
+        mapping.destination = funckey.destination
+        return mapping
 
     def find_or_create_destination(self, destination):
         persistor = self.build_persistor(destination.type)

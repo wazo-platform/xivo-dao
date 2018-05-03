@@ -41,7 +41,6 @@ class FuncKeyMapping(Base):
     def __init__(self, **kwargs):
         self.destination = kwargs.pop('destination', None)  # TODO improve with relationship
         self.inherited = kwargs.pop('inherited', True)  # TODO improve ...
-        kwargs.setdefault('blf', True)  # TODO improve this ugly init
         super(FuncKeyMapping, self).__init__(**kwargs)
 
     @hybrid_property
