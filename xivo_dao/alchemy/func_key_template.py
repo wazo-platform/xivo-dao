@@ -18,7 +18,9 @@ class FuncKeyTemplate(Base):
     private = Column(Boolean, nullable=False, server_default='False')
 
     def __init__(self, **kwargs):
-        self.keys = kwargs.pop('keys', {})  # TODO populate this property with relationship
+        # keys should probably be retrieved by relationship
+        # but that implies to convert FuncKeyMapping.destination as relationship
+        self.keys = kwargs.pop('keys', {})
         super(FuncKeyTemplate, self).__init__(**kwargs)
 
     def get(self, position):

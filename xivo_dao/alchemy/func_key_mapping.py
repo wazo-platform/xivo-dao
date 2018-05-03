@@ -47,7 +47,9 @@ class FuncKeyMapping(Base):
     )
 
     def __init__(self, **kwargs):
-        self.destination = kwargs.pop('destination', None)  # TODO improve with relationship
+        # destination should probably be retrieved by relationship
+        # but that implies to transfer all persistor logic in this class
+        self.destination = kwargs.pop('destination', None)
         super(FuncKeyMapping, self).__init__(**kwargs)
 
     @hybrid_property
