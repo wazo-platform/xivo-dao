@@ -61,15 +61,14 @@ class FuncKeyPersistor(object):
         self.session = session
 
     def create(self, template):
-        template_id = self.add_template(template)
-        self.add_funckeys(template_id, template.keys)
-        template.id = template_id
+        template = self.add_template(template)
+        self.add_funckeys(template.id, template.keys)
         return template
 
     def add_template(self, template):
         self.session.add(template)
         self.session.flush()
-        return template.id
+        return template
 
     def add_funckeys(self, template_id, funckeys):
         for pos, funckey in six.iteritems(funckeys):
