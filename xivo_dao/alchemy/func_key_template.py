@@ -30,9 +30,7 @@ class FuncKeyTemplate(Base):
 
     def merge(self, other):
         keys = dict(self.keys)
-        other_keys = other.keys
-        keys.update(other_keys)
-        # TODO Check if we can improve logic to merge/return unified template
-        unified_template = FuncKeyTemplate(name=self.name)
-        unified_template.keys = keys
-        return unified_template
+        keys.update(other.keys)
+        merged_template = FuncKeyTemplate(name=self.name)
+        merged_template.keys = keys
+        return merged_template
