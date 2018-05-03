@@ -4,12 +4,10 @@
 
 import abc
 import six
-from sqlalchemy import sql
 
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.features import Features
 from xivo_dao.alchemy.func_key import FuncKey
-from xivo_dao.alchemy.func_key_destination_type import FuncKeyDestinationType
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
 from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
@@ -88,7 +86,6 @@ class FuncKeyPersistor(object):
 
         self.session.add(mapping)
         self.session.flush()
-        mapping.inherited = funckey.inherited
         mapping.destination = funckey.destination
         return mapping
 
@@ -118,37 +115,21 @@ class FuncKeyPersistor(object):
         return template_row
 
     def get_keys_for_template(self, template_id):
-        return {row.position: self.build_func_key(row)
-                for row in self.query_mappings(template_id)}
-
-    def build_func_key(self, mapping_row):
-        return FuncKeyMapping(
-            template_id=mapping_row.template_id,
-            func_key_id=mapping_row.func_key_id,
-            position=mapping_row.position,
-            label=mapping_row.label,
-            blf=mapping_row.blf,
-            inherited=mapping_row.inherited,
-            destination=self.build_destination(mapping_row),
-        )
+        keys = {}
+        for row in self.query_mappings(template_id):
+            row.destination = self.build_destination(row.func_key_id, row.destination_type_name)
+            keys[row.position] = row
+        return keys
 
     def query_mappings(self, template_id):
-        query = (self.session.query(FuncKeyMapping.template_id,
-                                    FuncKeyMapping.func_key_id,
-                                    FuncKeyMapping.position,
-                                    FuncKeyMapping.label,
-                                    FuncKeyMapping.blf,
-                                    FuncKeyDestinationType.name.label('dest_type'),
-                                    sql.not_(FuncKeyTemplate.private).label('inherited'))
-                 .join(FuncKeyDestinationType, FuncKeyMapping.destination_type_id == FuncKeyDestinationType.id)
-                 .join(FuncKeyTemplate, FuncKeyMapping.template_id == FuncKeyTemplate.id)
+        query = (self.session.query(FuncKeyMapping)
                  .filter(FuncKeyMapping.template_id == template_id))
 
-        return query
+        return query.all()
 
-    def build_destination(self, mapping_row):
-        persistor = self.build_persistor(mapping_row.dest_type)
-        return persistor.get(mapping_row.func_key_id)
+    def build_destination(self, func_key_id, dest_type):
+        persistor = self.build_persistor(dest_type)
+        return persistor.get(func_key_id)
 
     def delete(self, template):
         self.remove_funckeys(template)
@@ -168,7 +149,7 @@ class FuncKeyPersistor(object):
          .delete())
 
     def delete_destination(self, row):
-        persistor = self.build_persistor(row.dest_type)
+        persistor = self.build_persistor(row.destination_type_name)
         persistor.delete(row.func_key_id)
 
     def delete_template(self, template):
