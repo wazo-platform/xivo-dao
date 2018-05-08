@@ -317,9 +317,9 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
         assert_that(result.keys[1].id, equal_to(destination_row.func_key_id))
 
     def test_given_destination_funckey_does_not_exist_then_raises_error(self):
-        self.create_bsfilter_func_key()
+        self.create_service_func_key('', '')
 
-        template = self.build_template_with_key(FuncKeyDestBSFilter(filter_member_id=999999999))
+        template = self.build_template_with_key(FuncKeyDestService(extension_id=999999999))
 
         assert_that(calling(dao.create).with_args(template),
                     raises(InputError))
@@ -361,6 +361,26 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
                              .filter(FuncKeyDestPagingSchema.paging_id == paging.id)
                              .count())
         assert_that(dest_paging_count, equal_to(1))
+
+    def test_given_no_bsfilter_func_key_when_created_then_create_new_bsfilter_func_key(self):
+        call_filter = self.add_call_filter()
+        filter_member = self.add_call_filter_member(callfilterid=call_filter.id)
+
+        dest_bsfilter_count = (self.session.query(FuncKeyDestBSFilter)
+                               .filter(FuncKeyDestBSFilter.filter_member_id == filter_member.id)
+                               .count())
+        assert_that(dest_bsfilter_count, equal_to(0))
+
+        template = self.build_template_with_key(FuncKeyDestBSFilter(filter_member_id=filter_member.id))
+        dao.create(template)
+
+        template = self.build_template_with_key(FuncKeyDestBSFilter(filter_member_id=filter_member.id))
+        dao.create(template)
+
+        dest_bsfilter_count = (self.session.query(FuncKeyDestBSFilter)
+                               .filter(FuncKeyDestBSFilter.filter_member_id == filter_member.id)
+                               .count())
+        assert_that(dest_bsfilter_count, equal_to(1))
 
 
 class TestFuncKeyTemplateGet(TestFuncKeyTemplateDao):
@@ -661,6 +681,43 @@ class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
                              .filter(FuncKeyDestPagingSchema.paging_id == paging.id)
                              .count())
         assert_that(dest_paging_count, equal_to(1))
+
+    def test_given_template_is_associated_to_bsfilter_when_deleting_template(self):
+        call_filter = self.add_call_filter()
+        filter_member = self.add_call_filter_member(callfilterid=call_filter.id)
+        template = FuncKeyTemplate(
+            keys={'1': FuncKeyMapping(destination=FuncKeyDestBSFilter(filter_member_id=filter_member.id))}
+        )
+
+        dao.create(template)
+
+        dao.delete(template)
+
+        dest_bsfilter_count = (self.session.query(FuncKeyDestBSFilter)
+                               .filter(FuncKeyDestBSFilter.filter_member_id == filter_member.id)
+                               .count())
+        assert_that(dest_bsfilter_count, equal_to(0))
+
+    def test_given_multi_template_is_associated_to_bsfilter_when_deleting_template(self):
+        call_filter = self.add_call_filter()
+        filter_member = self.add_call_filter_member(callfilterid=call_filter.id)
+        template = FuncKeyTemplate(
+            keys={'1': FuncKeyMapping(destination=FuncKeyDestBSFilter(filter_member_id=filter_member.id))}
+        )
+
+        dao.create(template)
+        template = FuncKeyTemplate(
+            keys={'1': FuncKeyMapping(destination=FuncKeyDestBSFilter(filter_member_id=filter_member.id))}
+        )
+
+        dao.create(template)
+
+        dao.delete(template)
+
+        dest_bsfilter_count = (self.session.query(FuncKeyDestBSFilter)
+                               .filter(FuncKeyDestBSFilter.filter_member_id == filter_member.id)
+                               .count())
+        assert_that(dest_bsfilter_count, equal_to(1))
 
 
 class TestFuncKeyTemplateEdit(TestFuncKeyTemplateDao):

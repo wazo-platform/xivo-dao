@@ -31,6 +31,9 @@ class Callfiltermember(Base):
     bstype = Column(enum.generic_bsfilter, nullable=False)
     active = Column(Integer, nullable=False, server_default='0')
 
+    func_keys = relationship('FuncKeyDestBSFilter',
+                             cascade='all, delete-orphan')
+
     user = relationship('UserFeatures',
                         primaryjoin="""and_(Callfiltermember.type == 'user',
                                             Callfiltermember.typeval == cast(UserFeatures.id, String))""",

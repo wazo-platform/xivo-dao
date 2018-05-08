@@ -15,6 +15,7 @@ from xivo_dao.alchemy.conference import Conference
 from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.extension import Extension
+from xivo_dao.alchemy.func_key_dest_bsfilter import FuncKeyDestBSFilter
 from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup
 from xivo_dao.alchemy.func_key_dest_paging import FuncKeyDestPaging
 from xivo_dao.alchemy.groupfeatures import GroupFeatures
@@ -61,6 +62,7 @@ __all__ = [
     'CtiProfile',
     'Dialaction',
     'Extension',
+    'FuncKeyDestBSFilter',
     'FuncKeyDestGroup',
     'FuncKeyDestPaging',
     'GroupFeatures',
