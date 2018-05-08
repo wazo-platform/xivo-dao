@@ -1,17 +1,20 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2014 Avencall
+# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
+
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import relationship
+from sqlalchemy.schema import Column, ForeignKeyConstraint, CheckConstraint, PrimaryKeyConstraint
+from sqlalchemy.types import Integer
 
 from xivo_dao.alchemy.features import Features
 from xivo_dao.alchemy.func_key import FuncKey
 from xivo_dao.helpers.db_manager import Base
 
-from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, ForeignKeyConstraint, CheckConstraint, PrimaryKeyConstraint
-from sqlalchemy.types import Integer
-
 
 class FuncKeyDestFeatures(Base):
+
+    DESTINATION_TYPE_ID = 8
 
     __tablename__ = 'func_key_dest_features'
     __table_args__ = (
@@ -20,12 +23,61 @@ class FuncKeyDestFeatures(Base):
                              ['func_key.id', 'func_key.destination_type_id']),
         ForeignKeyConstraint(['features_id'],
                              ['features.id']),
-        CheckConstraint('destination_type_id = 8')
+        CheckConstraint('destination_type_id = {}'.format(DESTINATION_TYPE_ID)),
     )
 
     func_key_id = Column(Integer)
-    destination_type_id = Column(Integer, server_default="8")
+    destination_type_id = Column(Integer, server_default="{}".format(DESTINATION_TYPE_ID))
     features_id = Column(Integer)
 
     func_key = relationship(FuncKey)
     features = relationship(Features)
+
+    @hybrid_property
+    def feature_id(self):
+        return self.features_id
+
+    @feature_id.setter
+    def feature_id(self, value):
+        self.features_id = value
+
+
+# These tables don't exist in database
+class _FuncKeyDestFeaturesWithoutBaseDeclarative(object):
+
+    def __init__(self, **kwargs):
+        self._func_key_dest_features = FuncKeyDestFeatures(**kwargs)
+        self._func_key_dest_features.type = self.type
+
+    def __getattr__(self, attr):
+        return getattr(self._func_key_dest_features, attr)
+
+
+class FuncKeyDestParking(_FuncKeyDestFeaturesWithoutBaseDeclarative):
+
+    type = 'parking'
+
+    def to_tuple(self):
+        return (('feature', 'parking'),)
+
+
+class FuncKeyDestOnlineRecording(_FuncKeyDestFeaturesWithoutBaseDeclarative):
+
+    type = 'onlinerec'
+
+    def to_tuple(self):
+        return (('feature', 'onlinerec'),)
+
+
+class FuncKeyDestTransfer(_FuncKeyDestFeaturesWithoutBaseDeclarative):
+
+    type = 'transfer'
+
+    def __init__(self, **kwargs):
+        transfer = kwargs.pop('transfer', None)
+        super(FuncKeyDestTransfer, self).__init__(**kwargs)
+        if transfer:
+            self._func_key_dest_features.transfer = transfer
+
+    def to_tuple(self):
+        return (('transfer', self.transfer),)

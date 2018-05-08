@@ -1,11 +1,18 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2014-2015 Avencall
+# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
-from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint, CheckConstraint, \
-    ForeignKeyConstraint
-from sqlalchemy.types import Integer, Boolean, String
+from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
+from sqlalchemy.schema import (
+    CheckConstraint,
+    Column,
+    ForeignKey,
+    ForeignKeyConstraint,
+    UniqueConstraint,
+)
+from sqlalchemy.types import Integer, Boolean, String
 
 from xivo_dao.alchemy.func_key import FuncKey
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
@@ -29,5 +36,41 @@ class FuncKeyMapping(Base):
     position = Column(Integer, nullable=False)
     blf = Column(Boolean, nullable=False, server_default='True')
 
-    func_key_template = relationship(FuncKeyTemplate)
-    func_key = relationship(FuncKey)
+    func_key = relationship(FuncKey, viewonly=True)
+    destination_type_name = association_proxy('func_key', 'destination_type_name')
+
+    func_key_template = relationship(FuncKeyTemplate, viewonly=True)
+    func_key_template_private = association_proxy(
+        'func_key_template', 'private',
+        # Only to keep value persistent in the instance
+        creator=lambda _private: FuncKeyTemplate(private=_private)
+    )
+
+    def __init__(self, **kwargs):
+        # destination should probably be retrieved by relationship
+        # but that implies to transfer all persistor logic in this class
+        self.destination = kwargs.pop('destination', None)
+        super(FuncKeyMapping, self).__init__(**kwargs)
+
+    @hybrid_property
+    def id(self):
+        return self.func_key_id
+
+    @id.setter
+    def id(self, value):
+        self.func_key_id = value
+
+    @hybrid_property
+    def inherited(self):
+        if not self.func_key_template:
+            return False
+        return not self.func_key_template.private
+
+    @inherited.setter
+    def inherited(self, value):
+        self.func_key_template_private = not(value)
+
+    def hash_destination(self):
+        if self.destination:
+            return self.destination.to_tuple()
+        return None

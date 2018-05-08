@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2014 Avencall
+# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.schema import Column, ForeignKey
 from sqlalchemy.types import Integer
 from sqlalchemy.orm import relationship
@@ -22,7 +23,8 @@ class FuncKey(Base):
                                  primary_key=True)
 
     func_key_type = relationship(FuncKeyType, foreign_keys=type_id)
-    destination_type = relationship(FuncKeyDestinationType, foreign_keys=destination_type_id)
+    destination_type = relationship(FuncKeyDestinationType, foreign_keys=destination_type_id, viewonly=True)
+    destination_type_name = association_proxy('destination_type', 'name')
 
     @classmethod
     def new_for_user(cls):

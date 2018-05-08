@@ -1,13 +1,19 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2014 Avencall
+# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
-from hamcrest import assert_that, none, contains, is_not, equal_to
+from hamcrest import (
+    assert_that,
+    contains,
+    equal_to,
+    has_properties,
+    is_not,
+    none,
+)
 
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 
-from xivo_dao.resources.func_key.model import Forward
 from xivo_dao.resources.func_key import dao
 from xivo_dao.resources.func_key.persistor import DestinationPersistor
 from xivo_dao.alchemy.func_key import FuncKey as FuncKeySchema
@@ -126,9 +132,11 @@ class TestFindAllForwards(TestFuncKeyDao):
 
         result = dao.find_all_forwards(user_row.id, 'unconditional')
 
-        assert_that(result, contains(Forward(user_id=user_row.id,
-                                             type='unconditional',
-                                             number=number)))
+        assert_that(result, contains(
+            has_properties(
+                number=number,
+            )
+        ))
 
     def test_given_noanswer_forward_then_list_contains_noanswer_forward(self):
         number = '1234'
@@ -136,9 +144,11 @@ class TestFindAllForwards(TestFuncKeyDao):
 
         result = dao.find_all_forwards(user_row.id, 'noanswer')
 
-        assert_that(result, contains(Forward(user_id=user_row.id,
-                                             type='noanswer',
-                                             number=number)))
+        assert_that(result, contains(
+            has_properties(
+                number=number,
+            )
+        ))
 
     def test_given_busy_forward_then_list_contains_busy_forward(self):
         number = '1234'
@@ -146,6 +156,8 @@ class TestFindAllForwards(TestFuncKeyDao):
 
         result = dao.find_all_forwards(user_row.id, 'busy')
 
-        assert_that(result, contains(Forward(user_id=user_row.id,
-                                             type='busy',
-                                             number=number)))
+        assert_that(result, contains(
+            has_properties(
+                number=number,
+            )
+        ))
