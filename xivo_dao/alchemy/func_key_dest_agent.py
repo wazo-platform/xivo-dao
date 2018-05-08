@@ -62,6 +62,10 @@ class FuncKeyDestAgent(Base):
                    'agentstaticlogtoggle': 'toggle'}
         return ACTIONS.get(self.extension_typeval, self.extension_typeval)
 
+    @action.expression
+    def action(cls):
+        return cls.extension_typeval  # only used to pass test
+
     @action.setter
     def action(self, value):
         TYPEVALS = {'login': 'agentstaticlogin',
