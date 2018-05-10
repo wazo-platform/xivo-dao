@@ -2,6 +2,7 @@
 # Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
@@ -11,6 +12,8 @@ from sqlalchemy.types import Boolean, Integer, String, Text
 
 from xivo_dao.alchemy.entity import Entity
 from xivo_dao.helpers.db_manager import Base
+
+from .pickupmember import PickupMember
 
 
 class Pickup(Base):
@@ -39,6 +42,10 @@ class Pickup(Base):
         foreign_keys='PickupMember.pickupid',
         cascade='all, delete-orphan'
     )
+    user_targets = association_proxy('targets', 'user',
+                                     creator=lambda _user: PickupMember(user=_user,
+                                                                        category='member',
+                                                                        membertype='user'))
 
     interceptors = relationship(
         'PickupMember',
@@ -47,6 +54,10 @@ class Pickup(Base):
         foreign_keys='PickupMember.pickupid',
         cascade='all, delete-orphan'
     )
+    user_interceptors = association_proxy('interceptors', 'user',
+                                          creator=lambda _user: PickupMember(user=_user,
+                                                                             category='pickup',
+                                                                             membertype='user'))
 
     @hybrid_property
     def enabled(self):
