@@ -51,3 +51,13 @@ def edit(session, call_pickup):
 @daosession
 def delete(session, call_pickup):
     CallPickupPersistor(session, call_pickup_search).delete(call_pickup)
+
+
+@daosession
+def associate_interceptor_users(session, call_pickup, users):
+    CallPickupPersistor(session, call_pickup_search).associate_interceptor_users(call_pickup, users)
+
+
+@daosession
+def associate_interceptor_groups(session, call_pickup, groups):
+    CallPickupPersistor(session, call_pickup_search).associate_interceptor_groups(call_pickup, groups)
