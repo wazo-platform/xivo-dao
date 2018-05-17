@@ -61,3 +61,13 @@ def associate_interceptor_users(session, call_pickup, users):
 @daosession
 def associate_interceptor_groups(session, call_pickup, groups):
     CallPickupPersistor(session, call_pickup_search).associate_interceptor_groups(call_pickup, groups)
+
+
+@daosession
+def associate_target_users(session, call_pickup, users):
+    CallPickupPersistor(session, call_pickup_search).associate_target_users(call_pickup, users)
+
+
+@daosession
+def associate_target_groups(session, call_pickup, groups):
+    CallPickupPersistor(session, call_pickup_search).associate_target_groups(call_pickup, groups)

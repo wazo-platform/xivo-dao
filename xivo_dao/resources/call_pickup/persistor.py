@@ -64,3 +64,11 @@ class CallPickupPersistor(CriteriaBuilderMixin):
     def associate_target_users(self, call_pickup, users):
         call_pickup.user_targets = users
         self.session.flush()
+
+    def associate_interceptor_groups(self, call_pickup, groups):
+        call_pickup.group_interceptors = groups
+        self.session.flush()
+
+    def associate_target_groups(self, call_pickup, groups):
+        call_pickup.group_targets = groups
+        self.session.flush()
