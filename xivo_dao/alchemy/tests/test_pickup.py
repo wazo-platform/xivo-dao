@@ -122,6 +122,31 @@ class TestUserInterceptors(DAOTestCase):
         assert_that(pickup.user_interceptors, empty())
 
 
+class TestGroupInterceptors(DAOTestCase):
+
+    def test_create(self):
+        pickup = self.add_pickup()
+        group = self.add_group()
+
+        pickup.group_interceptors = [group]
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(pickup.group_interceptors, contains(group))
+
+    def test_delete(self):
+        pickup = self.add_pickup()
+        group = self.add_group()
+        pickup.group_interceptors = [group]
+        self.session.flush()
+
+        pickup.group_interceptors = []
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(pickup.group_interceptors, empty())
+
+
 class TestUserTargets(DAOTestCase):
 
     def test_create(self):
@@ -145,6 +170,31 @@ class TestUserTargets(DAOTestCase):
 
         self.session.expire_all()
         assert_that(pickup.user_targets, empty())
+
+
+class TestGroupTargets(DAOTestCase):
+
+    def test_create(self):
+        pickup = self.add_pickup()
+        group = self.add_group()
+
+        pickup.group_targets = [group]
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(pickup.group_targets, contains(group))
+
+    def test_delete(self):
+        pickup = self.add_pickup()
+        group = self.add_group()
+        pickup.group_targets = [group]
+        self.session.flush()
+
+        pickup.group_targets = []
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(pickup.group_targets, empty())
 
 
 class TestDelete(DAOTestCase):

@@ -33,3 +33,10 @@ class PickupMember(Base):
             PickupMember.memberid == UserFeatures.id)""",
         foreign_keys='PickupMember.memberid',
     )
+
+    group = relationship(
+        'GroupFeatures',
+        primaryjoin="""and_(PickupMember.membertype == 'group',
+            PickupMember.memberid == GroupFeatures.id)""",
+        foreign_keys='PickupMember.memberid',
+    )

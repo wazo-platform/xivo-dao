@@ -46,6 +46,10 @@ class Pickup(Base):
                                      creator=lambda _user: PickupMember(user=_user,
                                                                         category='member',
                                                                         membertype='user'))
+    group_targets = association_proxy('targets', 'group',
+                                      creator=lambda _group: PickupMember(group=_group,
+                                                                          category='member',
+                                                                          membertype='group'))
 
     interceptors = relationship(
         'PickupMember',
@@ -58,6 +62,10 @@ class Pickup(Base):
                                           creator=lambda _user: PickupMember(user=_user,
                                                                              category='pickup',
                                                                              membertype='user'))
+    group_interceptors = association_proxy('interceptors', 'group',
+                                           creator=lambda _group: PickupMember(group=_group,
+                                                                               category='pickup',
+                                                                               membertype='group'))
 
     @hybrid_property
     def enabled(self):
