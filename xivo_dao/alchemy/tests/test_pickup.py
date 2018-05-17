@@ -37,67 +37,136 @@ class TestEnabled(unittest.TestCase):
         assert_that(pickup.commented, equal_to(1))
 
 
-class TestTargets(DAOTestCase):
+class TestPickupmemberUserTargets(DAOTestCase):
 
     def test_create(self):
         target = PickupMember(category='member', membertype='user', memberid=0)
         pickup = self.add_pickup()
 
-        pickup.targets = [target]
+        pickup.pickupmember_user_targets = [target]
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(pickup.targets, contains(target))
+        assert_that(pickup.pickupmember_user_targets, contains(target))
 
     def test_dissociate(self):
         pickup = self.add_pickup()
         target1 = self.add_pickup_member(category='member')
         target2 = self.add_pickup_member(category='member')
         target3 = self.add_pickup_member(category='member')
-        pickup.targets = [target2, target3, target1]
+        pickup.pickupmember_user_targets = [target2, target3, target1]
         self.session.flush()
 
-        pickup.targets = []
+        pickup.pickupmember_user_targets = []
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(pickup.targets, empty())
+        assert_that(pickup.pickupmember_user_targets, empty())
 
         row = self.session.query(PickupMember).first()
         assert_that(row, none())
 
 
-class TestInterceptors(DAOTestCase):
+class TestPickupmemberUserInterceptors(DAOTestCase):
 
     def test_create(self):
         interceptor = PickupMember(category='pickup', membertype='user', memberid=0)
         pickup = self.add_pickup()
 
-        pickup.interceptors = [interceptor]
+        pickup.pickupmember_user_interceptors = [interceptor]
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(pickup.interceptors, contains(interceptor))
+        assert_that(pickup.pickupmember_user_interceptors, contains(interceptor))
 
     def test_dissociate(self):
         pickup = self.add_pickup()
         interceptor1 = self.add_pickup_member(category='pickup')
         interceptor2 = self.add_pickup_member(category='pickup')
         interceptor3 = self.add_pickup_member(category='pickup')
-        pickup.interceptors = [interceptor2, interceptor3, interceptor1]
+        pickup.pickupmember_user_interceptors = [interceptor2, interceptor3, interceptor1]
         self.session.flush()
 
-        pickup.interceptors = []
+        pickup.pickupmember_user_interceptors = []
         self.session.flush()
 
         self.session.expire_all()
-        assert_that(pickup.interceptors, empty())
+        assert_that(pickup.pickupmember_user_interceptors, empty())
+
+        row = self.session.query(PickupMember).first()
+        assert_that(row, none())
+
+
+class TestPickupmemberGroupTargets(DAOTestCase):
+
+    def test_create(self):
+        target = PickupMember(category='member', membertype='group', memberid=0)
+        pickup = self.add_pickup()
+
+        pickup.pickupmember_group_targets = [target]
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(pickup.pickupmember_group_targets, contains(target))
+
+    def test_dissociate(self):
+        pickup = self.add_pickup()
+        target1 = self.add_pickup_member(category='member')
+        target2 = self.add_pickup_member(category='member')
+        target3 = self.add_pickup_member(category='member')
+        pickup.pickupmember_group_targets = [target2, target3, target1]
+        self.session.flush()
+
+        pickup.pickupmember_group_targets = []
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(pickup.pickupmember_group_targets, empty())
+
+        row = self.session.query(PickupMember).first()
+        assert_that(row, none())
+
+
+class TestPickupmemberGroupInterceptors(DAOTestCase):
+
+    def test_create(self):
+        interceptor = PickupMember(category='pickup', membertype='group', memberid=0)
+        pickup = self.add_pickup()
+
+        pickup.pickupmember_group_interceptors = [interceptor]
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(pickup.pickupmember_group_interceptors, contains(interceptor))
+
+    def test_dissociate(self):
+        pickup = self.add_pickup()
+        interceptor1 = self.add_pickup_member(category='pickup')
+        interceptor2 = self.add_pickup_member(category='pickup')
+        interceptor3 = self.add_pickup_member(category='pickup')
+        pickup.pickupmember_group_interceptors = [interceptor2, interceptor3, interceptor1]
+        self.session.flush()
+
+        pickup.pickupmember_group_interceptors = []
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(pickup.pickupmember_group_interceptors, empty())
 
         row = self.session.query(PickupMember).first()
         assert_that(row, none())
 
 
 class TestUserInterceptors(DAOTestCase):
+
+    def test_get_when_group(self):
+        pickup = self.add_pickup()
+        group = self.add_group()
+        pickup.group_interceptors = [group]
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(pickup.user_interceptors, empty())
 
     def test_create(self):
         pickup = self.add_pickup()
@@ -124,6 +193,15 @@ class TestUserInterceptors(DAOTestCase):
 
 class TestGroupInterceptors(DAOTestCase):
 
+    def test_get_when_user(self):
+        pickup = self.add_pickup()
+        user = self.add_user()
+        pickup.user_interceptors = [user]
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(pickup.group_interceptors, empty())
+
     def test_create(self):
         pickup = self.add_pickup()
         group = self.add_group()
@@ -148,6 +226,15 @@ class TestGroupInterceptors(DAOTestCase):
 
 
 class TestUserTargets(DAOTestCase):
+
+    def test_get_when_group(self):
+        pickup = self.add_pickup()
+        group = self.add_group()
+        pickup.group_targets = [group]
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(pickup.user_targets, empty())
 
     def test_create(self):
         pickup = self.add_pickup()
@@ -174,6 +261,15 @@ class TestUserTargets(DAOTestCase):
 
 class TestGroupTargets(DAOTestCase):
 
+    def test_get_when_user(self):
+        pickup = self.add_pickup()
+        user = self.add_user()
+        pickup.user_targets = [user]
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(pickup.group_targets, empty())
+
     def test_create(self):
         pickup = self.add_pickup()
         group = self.add_group()
@@ -199,10 +295,10 @@ class TestGroupTargets(DAOTestCase):
 
 class TestDelete(DAOTestCase):
 
-    def test_targets_are_deleted(self):
+    def test_pickupmember_group_targets_are_deleted(self):
         pickup = self.add_pickup()
-        self.add_pickup_member(category='member', pickupid=pickup.id)
-        self.add_pickup_member(category='member', pickupid=pickup.id)
+        self.add_pickup_member(category='member', membertype='group', pickupid=pickup.id)
+        self.add_pickup_member(category='member', membertype='group', pickupid=pickup.id)
 
         self.session.delete(pickup)
         self.session.flush()
@@ -210,10 +306,32 @@ class TestDelete(DAOTestCase):
         row = self.session.query(PickupMember).first()
         assert_that(row, none())
 
-    def test_interceptors_are_deleted(self):
+    def test_pickupmember_group_interceptors_are_deleted(self):
         pickup = self.add_pickup()
-        self.add_pickup_member(category='pickup', pickupid=pickup.id)
-        self.add_pickup_member(category='pickup', pickupid=pickup.id)
+        self.add_pickup_member(category='pickup', membertype='group', pickupid=pickup.id)
+        self.add_pickup_member(category='pickup', membertype='group', pickupid=pickup.id)
+
+        self.session.delete(pickup)
+        self.session.flush()
+
+        row = self.session.query(PickupMember).first()
+        assert_that(row, none())
+
+    def test_pickupmember_user_targets_are_deleted(self):
+        pickup = self.add_pickup()
+        self.add_pickup_member(category='member', membertype='user', pickupid=pickup.id)
+        self.add_pickup_member(category='member', membertype='user', pickupid=pickup.id)
+
+        self.session.delete(pickup)
+        self.session.flush()
+
+        row = self.session.query(PickupMember).first()
+        assert_that(row, none())
+
+    def test_pickupmember_user_interceptors_are_deleted(self):
+        pickup = self.add_pickup()
+        self.add_pickup_member(category='pickup', membertype='user', pickupid=pickup.id)
+        self.add_pickup_member(category='pickup', membertype='user', pickupid=pickup.id)
 
         self.session.delete(pickup)
         self.session.flush()
