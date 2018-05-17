@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2012-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 import six
@@ -139,6 +139,20 @@ class GroupFeatures(Base):
                                              type='group',
                                              typeval=str(_call_permission.id),
                                              rightcall=_call_permission))
+
+    call_pickup_interceptors = relationship('PickupMember',
+                                            primaryjoin="""and_(PickupMember.category == 'member',
+                                                PickupMember.membertype == 'group',
+                                                PickupMember.memberid == GroupFeatures.id)""",
+                                            foreign_keys='PickupMember.memberid',
+                                            cascade='delete, delete-orphan')
+
+    call_pickup_targets = relationship('PickupMember',
+                                       primaryjoin="""and_(PickupMember.category == 'pickup',
+                                           PickupMember.membertype == 'group',
+                                           PickupMember.memberid == GroupFeatures.id)""",
+                                       foreign_keys='PickupMember.memberid',
+                                       cascade='delete, delete-orphan')
 
     def __init__(self, **kwargs):
         retry = kwargs.pop('retry_delay', 5)
