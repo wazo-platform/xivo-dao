@@ -249,6 +249,20 @@ class UserFeatures(Base):
                                           foreign_keys='Callfiltermember.typeval',
                                           cascade='delete, delete-orphan')
 
+    call_pickup_interceptors = relationship('PickupMember',
+                                            primaryjoin="""and_(PickupMember.category == 'member',
+                                                PickupMember.membertype == 'user',
+                                                PickupMember.memberid == UserFeatures.id)""",
+                                            foreign_keys='PickupMember.memberid',
+                                            cascade='delete, delete-orphan')
+
+    call_pickup_targets = relationship('PickupMember',
+                                       primaryjoin="""and_(PickupMember.category == 'pickup',
+                                           PickupMember.membertype == 'user',
+                                           PickupMember.memberid == UserFeatures.id)""",
+                                       foreign_keys='PickupMember.memberid',
+                                       cascade='delete, delete-orphan')
+
     def extrapolate_caller_id(self, extension=None):
         default_num = extension.exten if extension else None
         user_match = caller_id_regex.match(self.callerid)

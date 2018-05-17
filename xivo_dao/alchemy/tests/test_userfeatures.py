@@ -18,6 +18,7 @@ from hamcrest import (
 from xivo_dao.alchemy.callfiltermember import Callfiltermember as CallFilterMember
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.paginguser import PagingUser
+from xivo_dao.alchemy.pickupmember import PickupMember as CallPickupMember
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.schedule import Schedule
 from xivo_dao.alchemy.schedulepath import SchedulePath
@@ -284,6 +285,26 @@ class TestDelete(DAOTestCase):
         self.session.flush()
 
         row = self.session.query(CallFilterMember).first()
+        assert_that(row, none())
+
+    def test_call_pickup_interceptors_are_deleted(self):
+        user = self.add_user()
+        self.add_pickup_member(category='member', membertype='user', memberid=user.id)
+
+        self.session.delete(user)
+        self.session.flush()
+
+        row = self.session.query(CallPickupMember).first()
+        assert_that(row, none())
+
+    def test_call_pickup_targets_are_deleted(self):
+        user = self.add_user()
+        self.add_pickup_member(category='pickup', membertype='user', memberid=user.id)
+
+        self.session.delete(user)
+        self.session.flush()
+
+        row = self.session.query(CallPickupMember).first()
         assert_that(row, none())
 
     def test_schedule_paths_are_deleted(self):
