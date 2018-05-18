@@ -350,7 +350,7 @@ class TestAssociateUserTargets(DAOTestCase):
         call_pickup_dao.associate_target_users(call_pickup, [])
 
         self.session.expire_all()
-        assert_that(call_pickup.targets, empty())
+        assert_that(call_pickup.user_targets, empty())
 
         row = self.session.query(CallPickupMember).first()
         assert_that(row, none())
@@ -385,7 +385,7 @@ class TestAssociateUserInterceptors(DAOTestCase):
         call_pickup_dao.associate_interceptor_users(call_pickup, [])
 
         self.session.expire_all()
-        assert_that(call_pickup.interceptors, empty())
+        assert_that(call_pickup.user_interceptors, empty())
 
         row = self.session.query(CallPickupMember).first()
         assert_that(row, none())
@@ -420,7 +420,7 @@ class TestAssociateGroupTargets(DAOTestCase):
         call_pickup_dao.associate_target_groups(call_pickup, [])
 
         self.session.expire_all()
-        assert_that(call_pickup.targets, empty())
+        assert_that(call_pickup.group_targets, empty())
 
         row = self.session.query(CallPickupMember).first()
         assert_that(row, none())
@@ -455,7 +455,7 @@ class TestAssociateGroupInterceptors(DAOTestCase):
         call_pickup_dao.associate_interceptor_groups(call_pickup, [])
 
         self.session.expire_all()
-        assert_that(call_pickup.interceptors, empty())
+        assert_that(call_pickup.group_interceptors, empty())
 
         row = self.session.query(CallPickupMember).first()
         assert_that(row, none())
