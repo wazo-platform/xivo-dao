@@ -2,6 +2,7 @@
 # Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
@@ -11,6 +12,8 @@ from sqlalchemy.types import Boolean, Integer, String, Text
 
 from xivo_dao.alchemy.entity import Entity
 from xivo_dao.helpers.db_manager import Base
+
+from .pickupmember import PickupMember
 
 
 class Pickup(Base):
@@ -32,21 +35,55 @@ class Pickup(Base):
 
     entity = relationship(Entity)
 
-    targets = relationship(
+    pickupmember_user_targets = relationship(
         'PickupMember',
         primaryjoin="""and_(PickupMember.pickupid == Pickup.id,
-            PickupMember.category == 'member')""",
+            PickupMember.category == 'member',
+            PickupMember.membertype == 'user')""",
         foreign_keys='PickupMember.pickupid',
         cascade='all, delete-orphan'
     )
+    user_targets = association_proxy('pickupmember_user_targets', 'user',
+                                     creator=lambda _user: PickupMember(user=_user,
+                                                                        category='member',
+                                                                        membertype='user'))
+    pickupmember_group_targets = relationship(
+        'PickupMember',
+        primaryjoin="""and_(PickupMember.pickupid == Pickup.id,
+            PickupMember.category == 'member',
+            PickupMember.membertype == 'group')""",
+        foreign_keys='PickupMember.pickupid',
+        cascade='all, delete-orphan'
+    )
+    group_targets = association_proxy('pickupmember_group_targets', 'group',
+                                      creator=lambda _group: PickupMember(group=_group,
+                                                                          category='member',
+                                                                          membertype='group'))
 
-    interceptors = relationship(
+    pickupmember_user_interceptors = relationship(
         'PickupMember',
         primaryjoin="""and_(PickupMember.pickupid == Pickup.id,
-            PickupMember.category == 'pickup')""",
+            PickupMember.category == 'pickup',
+            PickupMember.membertype == 'user')""",
         foreign_keys='PickupMember.pickupid',
         cascade='all, delete-orphan'
     )
+    user_interceptors = association_proxy('pickupmember_user_interceptors', 'user',
+                                          creator=lambda _user: PickupMember(user=_user,
+                                                                             category='pickup',
+                                                                             membertype='user'))
+    pickupmember_group_interceptors = relationship(
+        'PickupMember',
+        primaryjoin="""and_(PickupMember.pickupid == Pickup.id,
+            PickupMember.category == 'pickup',
+            PickupMember.membertype == 'group')""",
+        foreign_keys='PickupMember.pickupid',
+        cascade='all, delete-orphan'
+    )
+    group_interceptors = association_proxy('pickupmember_group_interceptors', 'group',
+                                           creator=lambda _group: PickupMember(group=_group,
+                                                                               category='pickup',
+                                                                               membertype='group'))
 
     @hybrid_property
     def enabled(self):

@@ -1,29 +1,32 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
-from hamcrest import (assert_that,
-                      contains,
-                      contains_inanyorder,
-                      equal_to,
-                      empty,
-                      has_key,
-                      has_properties,
-                      is_not,
-                      not_,
-                      none)
-
-from xivo_dao.alchemy.callerid import Callerid
-from xivo_dao.alchemy.dialaction import Dialaction
-from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup
-from xivo_dao.alchemy.groupfeatures import GroupFeatures as Group
-from xivo_dao.alchemy.queuemember import QueueMember
-from xivo_dao.alchemy.queue import Queue
-from xivo_dao.alchemy.schedule import Schedule
-from xivo_dao.alchemy.schedulepath import SchedulePath
+from hamcrest import (
+    assert_that,
+    contains,
+    contains_inanyorder,
+    empty,
+    equal_to,
+    has_key,
+    has_properties,
+    is_not,
+    none,
+    not_,
+)
 
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
+
+from ..callerid import Callerid
+from ..dialaction import Dialaction
+from ..func_key_dest_group import FuncKeyDestGroup
+from ..groupfeatures import GroupFeatures as Group
+from ..pickupmember import PickupMember as CallPickupMember
+from ..queue import Queue
+from ..queuemember import QueueMember
+from ..schedule import Schedule
+from ..schedulepath import SchedulePath
 
 
 class TestIncalls(DAOTestCase):
@@ -251,6 +254,26 @@ class TestDelete(DAOTestCase, FuncKeyHelper):
     def setUp(self):
         super(TestDelete, self).setUp()
         self.setup_funckeys()
+
+    def test_call_pickup_interceptors_are_deleted(self):
+        group = self.add_group()
+        self.add_pickup_member(category='member', membertype='group', memberid=group.id)
+
+        self.session.delete(group)
+        self.session.flush()
+
+        row = self.session.query(CallPickupMember).first()
+        assert_that(row, none())
+
+    def test_call_pickup_targets_are_deleted(self):
+        group = self.add_group()
+        self.add_pickup_member(category='pickup', membertype='group', memberid=group.id)
+
+        self.session.delete(group)
+        self.session.flush()
+
+        row = self.session.query(CallPickupMember).first()
+        assert_that(row, none())
 
     def test_schedule_paths_are_deleted(self):
         group = self.add_group()

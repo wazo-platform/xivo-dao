@@ -56,3 +56,19 @@ class CallPickupPersistor(CriteriaBuilderMixin):
         last_id = self.session.query(CallPickup.id).order_by(CallPickup.id.desc()).limit(1).scalar()
         call_pickup.id = 1 if last_id is None else last_id + 1
         call_pickup.entity_id = Entity.query_default_id().as_scalar()
+
+    def associate_interceptor_users(self, call_pickup, users):
+        call_pickup.user_interceptors = users
+        self.session.flush()
+
+    def associate_target_users(self, call_pickup, users):
+        call_pickup.user_targets = users
+        self.session.flush()
+
+    def associate_interceptor_groups(self, call_pickup, groups):
+        call_pickup.group_interceptors = groups
+        self.session.flush()
+
+    def associate_target_groups(self, call_pickup, groups):
+        call_pickup.group_targets = groups
+        self.session.flush()

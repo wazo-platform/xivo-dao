@@ -7,7 +7,9 @@ from __future__ import unicode_literals
 from hamcrest import (
     assert_that,
     contains,
+    contains_inanyorder,
     equal_to,
+    empty,
     has_items,
     has_properties,
     has_property,
@@ -15,6 +17,7 @@ from hamcrest import (
 )
 
 from xivo_dao.alchemy.pickup import Pickup as CallPickup
+from xivo_dao.alchemy.pickupmember import PickupMember as CallPickupMember
 from xivo_dao.helpers.exception import NotFoundError, InputError
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -315,4 +318,144 @@ class TestDelete(DAOTestCase):
         call_pickup_dao.delete(call_pickup)
 
         row = self.session.query(CallPickup).first()
+        assert_that(row, none())
+
+
+class TestAssociateUserTargets(DAOTestCase):
+
+    def test_associate(self):
+        call_pickup = self.add_pickup()
+        user = self.add_user()
+
+        call_pickup_dao.associate_target_users(call_pickup, [user])
+
+        self.session.expire_all()
+        assert_that(call_pickup.user_targets, contains_inanyorder(user))
+
+    def test_associate_multiple(self):
+        call_pickup = self.add_pickup()
+        user1 = self.add_user()
+        user2 = self.add_user()
+
+        call_pickup_dao.associate_target_users(call_pickup, [user1, user2])
+
+        self.session.expire_all()
+        assert_that(call_pickup.user_targets, contains_inanyorder(user1, user2))
+
+    def test_dissociate(self):
+        call_pickup = self.add_pickup()
+        user = self.add_user()
+        call_pickup_dao.associate_target_users(call_pickup, [user])
+
+        call_pickup_dao.associate_target_users(call_pickup, [])
+
+        self.session.expire_all()
+        assert_that(call_pickup.targets, empty())
+
+        row = self.session.query(CallPickupMember).first()
+        assert_that(row, none())
+
+
+class TestAssociateUserInterceptors(DAOTestCase):
+
+    def test_associate(self):
+        call_pickup = self.add_pickup()
+        user = self.add_user()
+
+        call_pickup_dao.associate_interceptor_users(call_pickup, [user])
+
+        self.session.expire_all()
+        assert_that(call_pickup.user_interceptors, contains_inanyorder(user))
+
+    def test_associate_multiple(self):
+        call_pickup = self.add_pickup()
+        user1 = self.add_user()
+        user2 = self.add_user()
+
+        call_pickup_dao.associate_interceptor_users(call_pickup, [user1, user2])
+
+        self.session.expire_all()
+        assert_that(call_pickup.user_interceptors, contains_inanyorder(user1, user2))
+
+    def test_dissociate(self):
+        call_pickup = self.add_pickup()
+        user = self.add_user()
+        call_pickup_dao.associate_interceptor_users(call_pickup, [user])
+
+        call_pickup_dao.associate_interceptor_users(call_pickup, [])
+
+        self.session.expire_all()
+        assert_that(call_pickup.interceptors, empty())
+
+        row = self.session.query(CallPickupMember).first()
+        assert_that(row, none())
+
+
+class TestAssociateGroupTargets(DAOTestCase):
+
+    def test_associate(self):
+        call_pickup = self.add_pickup()
+        group = self.add_group()
+
+        call_pickup_dao.associate_target_groups(call_pickup, [group])
+
+        self.session.expire_all()
+        assert_that(call_pickup.group_targets, contains_inanyorder(group))
+
+    def test_associate_multiple(self):
+        call_pickup = self.add_pickup()
+        group1 = self.add_group()
+        group2 = self.add_group()
+
+        call_pickup_dao.associate_target_groups(call_pickup, [group1, group2])
+
+        self.session.expire_all()
+        assert_that(call_pickup.group_targets, contains_inanyorder(group1, group2))
+
+    def test_dissociate(self):
+        call_pickup = self.add_pickup()
+        group = self.add_group()
+        call_pickup_dao.associate_target_groups(call_pickup, [group])
+
+        call_pickup_dao.associate_target_groups(call_pickup, [])
+
+        self.session.expire_all()
+        assert_that(call_pickup.targets, empty())
+
+        row = self.session.query(CallPickupMember).first()
+        assert_that(row, none())
+
+
+class TestAssociateGroupInterceptors(DAOTestCase):
+
+    def test_associate(self):
+        call_pickup = self.add_pickup()
+        group = self.add_group()
+
+        call_pickup_dao.associate_interceptor_groups(call_pickup, [group])
+
+        self.session.expire_all()
+        assert_that(call_pickup.group_interceptors, contains_inanyorder(group))
+
+    def test_associate_multiple(self):
+        call_pickup = self.add_pickup()
+        group1 = self.add_group()
+        group2 = self.add_group()
+
+        call_pickup_dao.associate_interceptor_groups(call_pickup, [group1, group2])
+
+        self.session.expire_all()
+        assert_that(call_pickup.group_interceptors, contains_inanyorder(group1, group2))
+
+    def test_dissociate(self):
+        call_pickup = self.add_pickup()
+        group = self.add_group()
+        call_pickup_dao.associate_interceptor_groups(call_pickup, [group])
+
+        call_pickup_dao.associate_interceptor_groups(call_pickup, [])
+
+        self.session.expire_all()
+        assert_that(call_pickup.interceptors, empty())
+
+        row = self.session.query(CallPickupMember).first()
         assert_that(row, none())
