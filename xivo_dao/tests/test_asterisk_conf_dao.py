@@ -332,6 +332,14 @@ class TestFindSccpSpeeddialSettings(DAOTestCase):
 
 class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
 
+    def setUp(self):
+        super(TestAsteriskConfDAO, self).setUp()
+        self.tenant = self.add_tenant()
+
+    def add_context(self, *args, **kwargs):
+        kwargs.setdefault('tenant_uuid', self.tenant.uuid)
+        return super(TestAsteriskConfDAO, self).add_context(*args, **kwargs)
+
     def test_find_pickup_members_empty(self):
         self.add_pickup()
 

@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-# Copyright 2012-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
+from sqlalchemy.schema import Column, ForeignKeyConstraint, PrimaryKeyConstraint, UniqueConstraint
 from sqlalchemy.sql import cast, not_
 from sqlalchemy.types import Boolean, Integer, String, Text
 
@@ -18,9 +18,12 @@ class Context(Base):
     __table_args__ = (
         PrimaryKeyConstraint('id'),
         UniqueConstraint('name'),
+        ForeignKeyConstraint(('tenant_uuid',),
+                             ('tenant.uuid',)),
     )
 
     id = Column(Integer)
+    tenant_uuid = Column(String(36), nullable=False)
     name = Column(String(39), nullable=False)
     displayname = Column(String(128))
     entity = Column(String(64))
@@ -62,6 +65,8 @@ class Context(Base):
                                               ContextNumbers.context == Context.name)""",
                                           foreign_keys='ContextNumbers.context',
                                           cascade='all, delete-orphan')
+
+    tenant = relationship('Tenant', viewonly=True)
 
     @hybrid_property
     def label(self):

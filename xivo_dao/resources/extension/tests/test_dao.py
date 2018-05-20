@@ -26,6 +26,14 @@ from xivo_dao.resources.utils.search import SearchResult
 
 class TestExtension(DAOTestCase):
 
+    def setUp(self):
+        super(TestExtension, self).setUp()
+        self.tenant = self.add_tenant()
+
+    def add_context(self, *args, **kwargs):
+        kwargs.setdefault('tenant_uuid', self.tenant.uuid)
+        return super(TestExtension, self).add_context(*args, **kwargs)
+
     def assert_search_returns_result(self, search_result, **parameters):
         result = extension_dao.search(**parameters)
         expected_extensions = [
