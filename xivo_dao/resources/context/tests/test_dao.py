@@ -115,7 +115,7 @@ class TestGetBy(ContextDAOTestCase):
         self.assertRaises(InputError, context_dao.get_by, invalid=42)
 
     def test_get_by_tenant_uuid(self):
-        tenant = self.add_tenant()
+        tenant = self.add_tenant(uuid='a92c8cdb-8146-4415-91d7-fb9a941b6fd8')
 
         context_row = self.add_context(tenant_uuid=tenant.uuid)
 
