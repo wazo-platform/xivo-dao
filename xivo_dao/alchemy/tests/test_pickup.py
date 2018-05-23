@@ -317,6 +317,28 @@ class TestDelete(DAOTestCase):
         row = self.session.query(PickupMember).first()
         assert_that(row, none())
 
+    def test_pickupmember_queue_targets_are_deleted(self):
+        pickup = self.add_pickup()
+        self.add_pickup_member(category='member', membertype='queue', pickupid=pickup.id)
+        self.add_pickup_member(category='member', membertype='queue', pickupid=pickup.id)
+
+        self.session.delete(pickup)
+        self.session.flush()
+
+        row = self.session.query(PickupMember).first()
+        assert_that(row, none())
+
+    def test_pickupmember_queue_interceptors_are_deleted(self):
+        pickup = self.add_pickup()
+        self.add_pickup_member(category='pickup', membertype='queue', pickupid=pickup.id)
+        self.add_pickup_member(category='pickup', membertype='queue', pickupid=pickup.id)
+
+        self.session.delete(pickup)
+        self.session.flush()
+
+        row = self.session.query(PickupMember).first()
+        assert_that(row, none())
+
     def test_pickupmember_user_targets_are_deleted(self):
         pickup = self.add_pickup()
         self.add_pickup_member(category='member', membertype='user', pickupid=pickup.id)

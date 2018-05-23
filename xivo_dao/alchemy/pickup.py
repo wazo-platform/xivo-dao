@@ -84,6 +84,23 @@ class Pickup(Base):
                                            creator=lambda _group: PickupMember(group=_group,
                                                                                category='pickup',
                                                                                membertype='group'))
+    pickupmember_queue_targets = relationship(
+        'PickupMember',
+        primaryjoin="""and_(PickupMember.pickupid == Pickup.id,
+            PickupMember.category == 'member',
+            PickupMember.membertype == 'queue')""",
+        foreign_keys='PickupMember.pickupid',
+        cascade='all, delete-orphan'
+    )
+
+    pickupmember_queue_interceptors = relationship(
+        'PickupMember',
+        primaryjoin="""and_(PickupMember.pickupid == Pickup.id,
+            PickupMember.category == 'pickup',
+            PickupMember.membertype == 'queue')""",
+        foreign_keys='PickupMember.pickupid',
+        cascade='all, delete-orphan'
+    )
 
     @hybrid_property
     def enabled(self):
