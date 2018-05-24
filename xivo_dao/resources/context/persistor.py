@@ -1,5 +1,5 @@
-# -*- coding: UTF-8 -*-
-# Copyright (C) 2016 Proformatique Inc.
+# -*- coding: utf-8 -*-
+# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy import or_
@@ -16,9 +16,10 @@ class ContextPersistor(CriteriaBuilderMixin):
 
     _search_table = Context
 
-    def __init__(self, session, context_search):
+    def __init__(self, session, context_search, tenant_uuids=None):
         self.session = session
         self.context_search = context_search
+        self.tenant_uuids = tenant_uuids
 
     def find_by(self, criteria):
         query = self._find_query(criteria)
@@ -26,6 +27,8 @@ class ContextPersistor(CriteriaBuilderMixin):
 
     def _find_query(self, criteria):
         query = self.session.query(Context)
+        if self.tenant_uuids is not None:
+            query = query.filter(Context.tenant_uuid.in_(self.tenant_uuids))
         return self.build_criteria(query, criteria)
 
     def get_by(self, criteria):
@@ -39,7 +42,11 @@ class ContextPersistor(CriteriaBuilderMixin):
         return query.all()
 
     def search(self, parameters):
-        rows, total = self.context_search.search(self.session, parameters)
+        query = self.session.query(Context)
+        if self.tenant_uuids is not None:
+            query = query.filter(Context.tenant_uuid.in_(self.tenant_uuids))
+
+        rows, total = self.context_search.search_from_query(query, parameters)
         return SearchResult(total, rows)
 
     def create(self, context):
