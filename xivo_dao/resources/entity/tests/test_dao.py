@@ -29,10 +29,11 @@ class TestFind(DAOTestCase):
         assert_that(result, none())
 
     def test_find(self):
-        self.add_tenant()
+        tenant = self.add_tenant()
         entity_row = self.add_entity(name='entity',
                                      display_name='Entity_Namé',
-                                     description='description')
+                                     description='description',
+                                     tenant_uuid=tenant.uuid)
 
         entity = entity_dao.find(entity_row.id)
 
@@ -44,15 +45,12 @@ class TestFind(DAOTestCase):
 
 class TestGet(DAOTestCase):
 
-    def setUp(self):
-        super(TestGet, self).setUp()
-        self.add_tenant()
-
     def test_get_no_entity(self):
         self.assertRaises(NotFoundError, entity_dao.get, 42)
 
     def test_get(self):
-        entity_row = self.add_entity()
+        tenant = self.add_tenant()
+        entity_row = self.add_entity(tenant_uuid=tenant.uuid)
 
         entity = entity_dao.get(entity_row.id)
 
@@ -61,15 +59,12 @@ class TestGet(DAOTestCase):
 
 class TestFindBy(DAOTestCase):
 
-    def setUp(self):
-        super(TestFindBy, self).setUp()
-        self.add_tenant()
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, entity_dao.find_by, invalid=42)
 
     def test_find_by_display_name(self):
-        entity_row = self.add_entity(name='Entité')
+        tenant = self.add_tenant()
+        entity_row = self.add_entity(name='Entité', tenant_uuid=tenant.uuid)
 
         entity = entity_dao.find_by(name='Entité')
 
@@ -84,15 +79,13 @@ class TestFindBy(DAOTestCase):
 
 class TestGetBy(DAOTestCase):
 
-    def setUp(self):
-        super(TestGetBy, self).setUp()
-        self.add_tenant()
-
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, entity_dao.get_by, invalid=42)
 
     def test_get_by_name(self):
-        entity_row = self.add_entity(name='Entité')
+        tenant = self.add_tenant()
+
+        entity_row = self.add_entity(name='Entité', tenant_uuid=tenant.uuid)
 
         entity = entity_dao.get_by(name='Entité')
 
@@ -111,9 +104,10 @@ class TestFindAllBy(DAOTestCase):
         assert_that(result, contains())
 
     def test_find_all_by_renamed_column(self):
-        self.add_tenant()
-        entity1 = self.add_entity(name='entity1', display_name='renamed')
-        entity2 = self.add_entity(name='entity2', display_name='renamed')
+        tenant = self.add_tenant()
+
+        entity1 = self.add_entity(name='entity1', display_name='renamed', tenant_uuid=tenant.uuid)
+        entity2 = self.add_entity(name='entity2', display_name='renamed', tenant_uuid=tenant.uuid)
 
         entities = entity_dao.find_all_by(display_name='renamed')
 
@@ -121,9 +115,9 @@ class TestFindAllBy(DAOTestCase):
                                         has_property('id', entity2.id)))
 
     def test_find_all_by_native_column(self):
-        self.add_tenant()
-        entity1 = self.add_entity(name='bob', description='description')
-        entity2 = self.add_entity(name='alice', description='description')
+        tenant = self.add_tenant()
+        entity1 = self.add_entity(name='bob', description='description', tenant_uuid=tenant.uuid)
+        entity2 = self.add_entity(name='alice', description='description', tenant_uuid=tenant.uuid)
 
         entities = entity_dao.find_all_by(description='description')
 
@@ -150,7 +144,9 @@ class TestSimpleSearch(TestSearch):
         self.assert_search_returns_result(expected)
 
     def test_given_one_commented_entity_then_returns_one_result(self):
-        entity = self.add_entity(name='bob')
+        tenant = self.add_tenant()
+
+        entity = self.add_entity(name='bob', tenant_uuid=tenant.uuid)
         expected = SearchResult(1, [entity])
 
         self.assert_search_returns_result(expected)
@@ -160,11 +156,11 @@ class TestSearchGivenMultipleEntities(TestSearch):
 
     def setUp(self):
         super(TestSearch, self).setUp()
-        self.add_tenant()
-        self.entity1 = self.add_entity(name='Ashton', description='resto', display_name='Poutine')
-        self.entity2 = self.add_entity(name='Beaugarton', description='bar')
-        self.entity3 = self.add_entity(name='Casa', description='resto')
-        self.entity4 = self.add_entity(name='Dunkin', description='resto')
+        tenant = self.add_tenant()
+        self.entity1 = self.add_entity(name='Ashton', description='resto', display_name='Poutine', tenant_uuid=tenant.uuid)
+        self.entity2 = self.add_entity(name='Beaugarton', description='bar', tenant_uuid=tenant.uuid)
+        self.entity3 = self.add_entity(name='Casa', description='resto', tenant_uuid=tenant.uuid)
+        self.entity4 = self.add_entity(name='Dunkin', description='resto', tenant_uuid=tenant.uuid)
 
     def test_when_searching_then_returns_one_result(self):
         expected = SearchResult(1, [self.entity2])

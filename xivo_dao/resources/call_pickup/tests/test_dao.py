@@ -237,7 +237,7 @@ class TestCreate(DAOTestCase):
     def setUp(self):
         super(TestCreate, self).setUp()
         self.tenant = self.add_tenant()
-        self.entity = self.add_entity()
+        self.entity = self.add_entity(tenant_uuid=self.tenant.uuid)
 
     def test_create_minimal_fields(self):
         call_pickup = CallPickup(name='name')

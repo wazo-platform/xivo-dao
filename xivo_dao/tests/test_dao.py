@@ -161,6 +161,7 @@ class ItemInserter(object):
         kwargs.setdefault('mobilephonenumber', '')
         kwargs.setdefault('description', '')
         kwargs.setdefault('userfield', '')
+        kwargs.setdefault('tenant_uuid', DEFAULT_TENANT)
 
         user = self.add_user(firstname=kwargs['firstname'],
                              lastname=kwargs['lastname'],
@@ -171,7 +172,8 @@ class ItemInserter(object):
                              agentid=kwargs['agentid'],
                              mobilephonenumber=kwargs['mobilephonenumber'],
                              userfield=kwargs['userfield'],
-                             description=kwargs['description'])
+                             description=kwargs['description'],
+                             tenant_uuid=kwargs['tenant_uuid'])
         line = self.add_line(context=kwargs['context'],
                              protocol=kwargs['protocol'],
                              protocolid=kwargs['protocolid'],
@@ -354,6 +356,9 @@ class ItemInserter(object):
         kwargs.setdefault('name', self._random_name())
         kwargs.setdefault('displayname', kwargs['name'].capitalize())
         kwargs.setdefault('description', 'Auto create context')
+        if 'tenant_uuid' not in kwargs:
+            tenant = self.add_tenant()
+            kwargs['tenant_uuid'] = tenant.uuid
 
         context = Context(**kwargs)
         self.add_me(context)
@@ -670,9 +675,6 @@ class ItemInserter(object):
         self.add_me(cti_directory)
 
     def add_tenant(self, **kwargs):
-        if 'uuid' not in kwargs:
-            kwargs['uuid'] = DEFAULT_TENANT
-
         tenant = Tenant(**kwargs)
         self.add_me(tenant)
         return tenant

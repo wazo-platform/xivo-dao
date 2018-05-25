@@ -22,18 +22,7 @@ from xivo_dao.helpers.exception import NotFoundError, InputError
 from xivo_dao.resources.utils.search import SearchResult
 
 
-class ContextDAOTestCase(DAOTestCase):
-
-    def setUp(self):
-        super(ContextDAOTestCase, self).setUp()
-        self.tenant = self.add_tenant()
-
-    def add_context(self, *args, **kwargs):
-        kwargs.setdefault('tenant_uuid', self.tenant.uuid)
-        return super(DAOTestCase, self).add_context(*args, **kwargs)
-
-
-class TestFind(ContextDAOTestCase):
+class TestFind(DAOTestCase):
 
     def test_find_no_context(self):
         result = context_dao.find(42)
@@ -48,7 +37,7 @@ class TestFind(ContextDAOTestCase):
         assert_that(context, equal_to(context_row))
 
 
-class TestGet(ContextDAOTestCase):
+class TestGet(DAOTestCase):
 
     def test_get_no_context(self):
         self.assertRaises(NotFoundError, context_dao.get, 42)
@@ -61,7 +50,7 @@ class TestGet(ContextDAOTestCase):
         assert_that(context, equal_to(context_row))
 
 
-class TestGetByName(ContextDAOTestCase):
+class TestGetByName(DAOTestCase):
 
     def test_get_by_name_no_context(self):
         self.assertRaises(NotFoundError, context_dao.get_by_name, '42')
@@ -74,7 +63,7 @@ class TestGetByName(ContextDAOTestCase):
         assert_that(context, equal_to(context_row))
 
 
-class TestFindBy(ContextDAOTestCase):
+class TestFindBy(DAOTestCase):
 
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, context_dao.find_by, invalid=42)
@@ -109,7 +98,7 @@ class TestFindBy(ContextDAOTestCase):
         assert_that(context, none())
 
 
-class TestGetBy(ContextDAOTestCase):
+class TestGetBy(DAOTestCase):
 
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, context_dao.get_by, invalid=42)
@@ -152,7 +141,7 @@ class TestGetBy(ContextDAOTestCase):
         self.assertRaises(NotFoundError, context_dao.get_by, id='42')
 
 
-class TestFindAllBy(ContextDAOTestCase):
+class TestFindAllBy(DAOTestCase):
 
     def test_find_all_by_no_context(self):
         result = context_dao.find_all_by(description='toto')
@@ -172,7 +161,7 @@ class TestFindAllBy(ContextDAOTestCase):
                                         has_property('id', context2.id)))
 
 
-class TestSearch(ContextDAOTestCase):
+class TestSearch(DAOTestCase):
 
     def assert_search_returns_result(self, search_result, **parameters):
         result = context_dao.search(**parameters)
@@ -255,10 +244,11 @@ class TestSearchGivenMultipleContext(TestSearch):
                                           limit=1)
 
 
-class TestCreate(ContextDAOTestCase):
+class TestCreate(DAOTestCase):
 
     def test_create_minimal_fields(self):
-        context = Context(name='mycontext', tenant_uuid=self.tenant.uuid)
+        tenant = self.add_tenant()
+        context = Context(name='mycontext', tenant_uuid=tenant.uuid)
         created_context = context_dao.create(context)
 
         row = self.session.query(Context).first()
@@ -266,7 +256,7 @@ class TestCreate(ContextDAOTestCase):
         assert_that(created_context, equal_to(row))
         assert_that(created_context, has_properties(id=is_not(none()),
                                                     name='mycontext',
-                                                    tenant_uuid=self.tenant.uuid,
+                                                    tenant_uuid=tenant.uuid,
                                                     displayname=none(),
                                                     label=none(),
                                                     entity=none(),
@@ -282,8 +272,9 @@ class TestCreate(ContextDAOTestCase):
                                                     incall_ranges=empty()))
 
     def test_create_with_all_fields(self):
+        tenant = self.add_tenant()
         context = Context(name='myContext',
-                          tenant_uuid=self.tenant.uuid,
+                          tenant_uuid=tenant.uuid,
                           label='My Context Label',
                           entity='default',
                           type='outcall',
@@ -302,7 +293,7 @@ class TestCreate(ContextDAOTestCase):
         assert_that(created_context, equal_to(row))
         assert_that(created_context, has_properties(
             id=is_not(none()),
-            tenant_uuid=self.tenant.uuid,
+            tenant_uuid=tenant.uuid,
             name='myContext',
             label='My Context Label',
             entity='default',
@@ -317,11 +308,12 @@ class TestCreate(ContextDAOTestCase):
         )
 
 
-class TestEdit(ContextDAOTestCase):
+class TestEdit(DAOTestCase):
 
     def test_edit_all_fields(self):
+        tenant = self.add_tenant()
         context = context_dao.create(Context(name='MyContext',
-                                             tenant_uuid=self.tenant.uuid,
+                                             tenant_uuid=tenant.uuid,
                                              label='My Context Label',
                                              entity='default',
                                              type='outcall',
@@ -352,7 +344,7 @@ class TestEdit(ContextDAOTestCase):
         assert_that(context, equal_to(row))
         assert_that(context, has_properties(
             id=is_not(none()),
-            tenant_uuid=self.tenant.uuid,
+            tenant_uuid=tenant.uuid,
             name='OtherContext',
             label='Other Context Label',
             entity='toto',
@@ -367,8 +359,9 @@ class TestEdit(ContextDAOTestCase):
         )
 
     def test_edit_set_fields_to_null(self):
+        tenant = self.add_tenant()
         context = context_dao.create(Context(name='MyContext',
-                                             tenant_uuid=self.tenant.uuid,
+                                             tenant_uuid=tenant.uuid,
                                              label='My Context Label',
                                              entity='default',
                                              user_ranges=[ContextNumbers(start='1000', end='1999')],
@@ -402,7 +395,7 @@ class TestEdit(ContextDAOTestCase):
                                         description=none()))
 
 
-class TestDelete(ContextDAOTestCase):
+class TestDelete(DAOTestCase):
 
     def test_delete(self):
         context = self.add_context()
