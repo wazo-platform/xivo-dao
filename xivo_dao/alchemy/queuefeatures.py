@@ -123,6 +123,15 @@ class QueueFeatures(Base):
         cascade='all, delete-orphan'
     )
 
+    ivr_dialactions = relationship(
+        'Dialaction',
+        primaryjoin="""and_(Dialaction.action == 'queue',
+                            Dialaction.actionarg1 == cast(QueueFeatures.id, String),
+                            Dialaction.category.in_(['ivr', 'ivr_choice']))""",
+        foreign_keys='Dialaction.actionarg1',
+        cascade='all, delete-orphan',
+    )
+
     def __init__(self, **kwargs):
         options = kwargs.pop('options', [])
         options = self.merge_options_with_default_values(options)

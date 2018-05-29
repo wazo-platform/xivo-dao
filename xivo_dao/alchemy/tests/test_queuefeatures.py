@@ -13,6 +13,7 @@ from hamcrest import (
 from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 from xivo_dao.tests.test_dao import DAOTestCase
 
+from ..dialaction import Dialaction
 from ..func_key_dest_queue import FuncKeyDestQueue
 from ..queue import Queue
 from ..queuefeatures import QueueFeatures
@@ -152,4 +153,15 @@ class TestDelete(DAOTestCase, FuncKeyHelper):
         self.session.flush()
 
         row = self.session.query(FuncKeyDestQueue).first()
+        assert_that(row, none())
+
+    def test_ivr_dialactions_are_deleted(self):
+        queue = self.add_queuefeatures()
+        self.add_dialaction(category='ivr_choice', action='queue', actionarg1=queue.id)
+        self.add_dialaction(category='ivr', action='queue', actionarg1=queue.id)
+
+        self.session.delete(queue)
+        self.session.flush()
+
+        row = self.session.query(Dialaction).first()
         assert_that(row, none())
