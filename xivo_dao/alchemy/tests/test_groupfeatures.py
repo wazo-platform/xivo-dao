@@ -280,7 +280,7 @@ class TestDelete(DAOTestCase, FuncKeyHelper):
         schedule = self.add_schedule()
         self.add_schedule_path(schedule_id=schedule.id, path='group', pathid=group.id)
 
-        self.session.delete(schedule)
+        self.session.delete(group)
         self.session.flush()
 
         row = self.session.query(SchedulePath).first()
