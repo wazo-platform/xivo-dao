@@ -140,6 +140,14 @@ class QueueFeatures(Base):
         cascade='all, delete-orphan',
     )
 
+    queue_members = relationship(
+        'QueueMember',
+        primaryjoin="""and_(QueueMember.category == 'queue',
+                            QueueMember.queue_name == QueueFeatures.name)""",
+        foreign_keys='QueueMember.queue_name',
+        cascade='all, delete-orphan',
+    )
+
     def __init__(self, **kwargs):
         options = kwargs.pop('options', [])
         options = self.merge_options_with_default_values(options)

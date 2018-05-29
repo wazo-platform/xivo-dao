@@ -17,6 +17,7 @@ from ..dialaction import Dialaction
 from ..func_key_dest_queue import FuncKeyDestQueue
 from ..queue import Queue
 from ..queuefeatures import QueueFeatures
+from ..queuemember import QueueMember
 
 
 class TestCallerId(DAOTestCase):
@@ -174,4 +175,15 @@ class TestDelete(DAOTestCase, FuncKeyHelper):
         self.session.flush()
 
         row = self.session.query(Dialaction).first()
+        assert_that(row, none())
+
+    def test_queue_members_are_deleted(self):
+        queue = self.add_queuefeatures()
+        self.add_queue_member(queue_name=queue.name, category='queue')
+        self.add_queue_member(queue_name=queue.name, category='queue')
+
+        self.session.delete(queue)
+        self.session.flush()
+
+        row = self.session.query(QueueMember).first()
         assert_that(row, none())
