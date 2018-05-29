@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -7,10 +7,28 @@ from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
 from sqlalchemy.sql.schema import CheckConstraint
 from sqlalchemy.types import Integer, String, Enum, Text
 
+from xivo_dao.helpers.asterisk import AsteriskOptionsMixin
 from xivo_dao.helpers.db_manager import Base
 
 
-class Queue(Base):
+class Queue(Base, AsteriskOptionsMixin):
+
+    EXCLUDE_OPTIONS = {
+        'name',
+        'category',
+        'commented',
+    }
+    AST_TRUE_INTEGER_COLUMNS = {
+        'timeoutrestart',
+        'autofill',
+        'setinterfacevar',
+        'setqueueentryvar',
+        'setqueuevar',
+        'reportholdtime',
+        'random-periodic-announce',
+    }
+
+    _options = []  # This should eventually be a column to set arbitrary asterisk options
 
     __tablename__ = 'queue'
     __table_args__ = (
