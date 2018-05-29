@@ -123,6 +123,14 @@ class QueueFeatures(Base):
         cascade='all, delete-orphan'
     )
 
+    queue_dialactions = relationship(
+        'Dialaction',
+        primaryjoin="""and_(Dialaction.category == 'queue',
+                            Dialaction.categoryval == cast(QueueFeatures.id, String))""",
+        foreign_keys='Dialaction.categoryval',
+        cascade='all, delete-orphan',
+    )
+
     ivr_dialactions = relationship(
         'Dialaction',
         primaryjoin="""and_(Dialaction.action == 'queue',

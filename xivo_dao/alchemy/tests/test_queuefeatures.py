@@ -155,6 +155,16 @@ class TestDelete(DAOTestCase, FuncKeyHelper):
         row = self.session.query(FuncKeyDestQueue).first()
         assert_that(row, none())
 
+    def test_queue_dialactions_are_deleted(self):
+        queue = self.add_queuefeatures()
+        self.add_dialaction(category='queue', categoryval=str(queue.id))
+
+        self.session.delete(queue)
+        self.session.flush()
+
+        row = self.session.query(Dialaction).first()
+        assert_that(row, none())
+
     def test_ivr_dialactions_are_deleted(self):
         queue = self.add_queuefeatures()
         self.add_dialaction(category='ivr_choice', action='queue', actionarg1=queue.id)
