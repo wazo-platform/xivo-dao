@@ -15,6 +15,7 @@ from sqlalchemy.types import Integer, String
 
 from xivo_dao.helpers.db_manager import Base
 
+from .callerid import Callerid
 from .queue import Queue
 
 DEFAULT_QUEUE_OPTIONS = {
@@ -90,6 +91,24 @@ class QueueFeatures(Base):
     )
     enabled = association_proxy('_queue', 'enabled')
     options = association_proxy('_queue', 'options')
+
+    caller_id = relationship(
+        'Callerid',
+        primaryjoin="""and_(Callerid.type == 'queue',
+                            Callerid.typeval == QueueFeatures.id)""",
+        foreign_keys='Callerid.typeval',
+        cascade='all, delete-orphan',
+        uselist=False
+    )
+
+    caller_id_mode = association_proxy(
+        'caller_id', 'mode',
+        creator=lambda _mode: Callerid(type='queue', mode=_mode)
+    )
+    caller_id_name = association_proxy(
+        'caller_id', 'name',
+        creator=lambda _name: Callerid(type='queue', name=_name)
+    )
 
     extensions = relationship(
         'Extension',

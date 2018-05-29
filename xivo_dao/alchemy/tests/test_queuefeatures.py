@@ -5,6 +5,7 @@
 from hamcrest import (
     assert_that,
     contains,
+    equal_to,
     has_properties,
     none,
 )
@@ -15,6 +16,59 @@ from xivo_dao.tests.test_dao import DAOTestCase
 from ..func_key_dest_queue import FuncKeyDestQueue
 from ..queue import Queue
 from ..queuefeatures import QueueFeatures
+
+
+class TestCallerId(DAOTestCase):
+
+    def test_getter(self):
+        queue = self.add_queuefeatures()
+        callerid = self.add_callerid(type='queue', typeval=queue.id)
+
+        self.session.expire_all()
+        assert_that(queue.caller_id, equal_to(callerid))
+
+
+class TestCallerIdMode(DAOTestCase):
+
+    def test_getter(self):
+        queue = self.add_queuefeatures(caller_id_mode='prepend')
+
+        self.session.expire_all()
+        assert_that(queue.caller_id_mode, equal_to('prepend'))
+
+    def test_creator(self):
+        queue = self.add_queuefeatures()
+
+        queue.caller_id_mode = 'prepend'
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(queue.caller_id, has_properties(
+            type='queue',
+            typeval=queue.id,
+            mode='prepend',
+            name=None,
+        ))
+
+
+class TestCallerIdName(DAOTestCase):
+
+    def test_getter(self):
+        queue = self.add_queuefeatures(caller_id_name='toto')
+        assert_that(queue.caller_id_name, equal_to('toto'))
+
+    def test_creator(self):
+        queue = self.add_queuefeatures()
+
+        queue.caller_id_name = 'toto'
+        self.session.flush()
+
+        assert_that(queue.caller_id, has_properties(
+            type='queue',
+            typeval=queue.id,
+            mode=None,
+            name='toto',
+        ))
 
 
 class TestCreate(DAOTestCase):

@@ -235,6 +235,8 @@ class TestCreate(DAOTestCase):
         assert_that(created_queue, has_properties(
             id=is_not(none()),
             name='myqueue',
+            caller_id_mode=None,
+            caller_id_name=None,
             # TODO add other fields
             enabled=True,
         ))
@@ -243,6 +245,8 @@ class TestCreate(DAOTestCase):
         queue = QueueFeatures(
             name='MyQueue',
             displayname='',  # TODO rename displayname with sed
+            caller_id_mode='prepend',
+            caller_id_name='toto',
             # TODO add other fields
             enabled=False,
         )
@@ -255,6 +259,8 @@ class TestCreate(DAOTestCase):
         assert_that(created_queue, has_properties(
             id=is_not(none()),
             name='MyQueue',
+            caller_id_mode='prepend',
+            caller_id_name='toto',
             # TODO add other fields
             enabled=False,
         ))
@@ -266,6 +272,8 @@ class TestEdit(DAOTestCase):
         queue = queue_dao.create(QueueFeatures(
             name='MyQueue',
             displayname='',
+            caller_id_mode='prepend',
+            caller_id_name='toto',
             # TODO add other fields
             enabled=True,
         ))
@@ -273,6 +281,8 @@ class TestEdit(DAOTestCase):
         queue = queue_dao.get(queue.id)
         queue.name = 'other_name'
         queue.displayname = 'other_displayname'
+        queue.caller_id_mode = 'overwrite'
+        queue.caller_id_name = 'bob'
         queue.enabled = False
         # TODO add other fields
         queue_dao.edit(queue)
@@ -284,6 +294,8 @@ class TestEdit(DAOTestCase):
             id=is_not(none()),
             name='other_name',
             displayname='other_displayname',
+            caller_id_mode='overtwrite',
+            caller_id_name='bob',
             # TODO add other fields
             enabled=False,
         ))
@@ -292,12 +304,16 @@ class TestEdit(DAOTestCase):
         queue = queue_dao.create(QueueFeatures(
             name='MyQueue',
             displayname='',
+            caller_id_mode='prepend',
+            caller_id_name='toto',
             # TODO add other fields
             preprocess_subroutine='t',
         ))
 
         queue = queue_dao.get(queue.id)
         # TODO add other fields
+        queue.caller_id_mode = None
+        queue.caller_id_name = None
         queue.preprocess_subroutine = None
         queue_dao.edit(queue)
 
@@ -305,6 +321,8 @@ class TestEdit(DAOTestCase):
         assert_that(queue, equal_to(row))
         assert_that(row, has_properties(
             preprocess_subroutine=none(),
+            caller_id_mode=none(),
+            caller_id_name=none(),
             # TODO add other fields
         ))
 
