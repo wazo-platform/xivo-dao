@@ -18,6 +18,7 @@ from ..func_key_dest_queue import FuncKeyDestQueue
 from ..queue import Queue
 from ..queuefeatures import QueueFeatures
 from ..queuemember import QueueMember
+from ..schedulepath import SchedulePath
 
 
 class TestCallerId(DAOTestCase):
@@ -186,4 +187,15 @@ class TestDelete(DAOTestCase, FuncKeyHelper):
         self.session.flush()
 
         row = self.session.query(QueueMember).first()
+        assert_that(row, none())
+
+    def test_schedule_paths_are_deleted(self):
+        queue = self.add_queuefeatures()
+        schedule = self.add_schedule()
+        self.add_schedule_path(schedule_id=schedule.id, path='queue', pathid=queue.id)
+
+        self.session.delete(queue)
+        self.session.flush()
+
+        row = self.session.query(SchedulePath).first()
         assert_that(row, none())

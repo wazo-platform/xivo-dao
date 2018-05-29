@@ -148,6 +148,14 @@ class QueueFeatures(Base):
         cascade='all, delete-orphan',
     )
 
+    schedule_paths = relationship(
+        'SchedulePath',
+        primaryjoin="""and_(SchedulePath.path == 'queue',
+                            SchedulePath.pathid == QueueFeatures.id)""",
+        foreign_keys='SchedulePath.pathid',
+        cascade='all, delete-orphan',
+    )
+
     def __init__(self, **kwargs):
         options = kwargs.pop('options', [])
         options = self.merge_options_with_default_values(options)
