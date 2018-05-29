@@ -1,13 +1,49 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2007-2016 Avencall
+# Copyright 2007-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index,\
-    UniqueConstraint
+from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.orm import relationship
+from sqlalchemy.schema import (
+    Column,
+    Index,
+    PrimaryKeyConstraint,
+    UniqueConstraint,
+)
 from sqlalchemy.types import Integer, String
 
 from xivo_dao.helpers.db_manager import Base
+
+from .queue import Queue
+
+DEFAULT_QUEUE_OPTIONS = {
+    'timeout': '15',
+    'queue-youarenext': 'queue-youarenext',
+    'queue-youarenext': 'queue-youarenext',
+    'queue-thereare': 'queue-thereare',
+    'queue-callswaiting': 'queue-callswaiting',
+    'queue-holdtime': 'queue-holdtime',
+    'queue-minutes': 'queue-minutes',
+    'queue-seconds': 'queue-seconds',
+    'queue-thankyou': 'queue-thankyou',
+    'queue-reporthold': 'queue-reporthold',
+    'periodic-announce': 'queue-periodic-announce',
+    'announce-frequency': '0',
+    'periodic-announce-frequency': '0',
+    'announce-round-seconds': '0',
+    'announce-holdtime': 'no',
+    'retry': '5',
+    'wrapuptime': '0',
+    'maxlen': '0',
+    'servicelevel': '0',
+    'strategy': 'ringall',
+    'memberdelay': '0',
+    'weight': '0',
+    'timeoutpriority': 'conf',
+    'setqueueentryvar': '1',
+    'setqueuevar': '1',
+}
 
 
 class QueueFeatures(Base):
@@ -42,3 +78,34 @@ class QueueFeatures(Base):
     announce_holdtime = Column(Integer, nullable=False, server_default='0')
     waittime = Column(Integer)
     waitratio = Column(DOUBLE_PRECISION)
+
+    _queue = relationship(
+        'Queue',
+        primaryjoin="""and_(Queue.category == 'queue',
+                            Queue.name == QueueFeatures.name)""",
+        foreign_keys='Queue.name',
+        cascade='all, delete-orphan',
+        uselist=False,
+        passive_updates=False,
+    )
+    enabled = association_proxy('_queue', 'enabled')
+    options = association_proxy('_queue', 'options')
+
+    def __init__(self, **kwargs):
+        options = kwargs.pop('options', [])
+        options = self.merge_options_with_default_values(options)
+        enabled = kwargs.pop('enabled', True)
+        super(QueueFeatures, self).__init__(**kwargs)
+        if not self._queue:
+            self._queue = Queue(
+                # 'name' is set by the relationship foreign_key
+                category='queue',
+                enabled=enabled,
+                options=options,
+            )
+
+    def merge_options_with_default_values(self, options):
+        result = dict(DEFAULT_QUEUE_OPTIONS)
+        for option in options:
+            result[option[0]] = option[1]
+        return [[key, value] for key, value in result.items()]
