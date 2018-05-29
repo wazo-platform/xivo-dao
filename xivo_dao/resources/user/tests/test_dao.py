@@ -36,7 +36,7 @@ from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.helpers.exception import NotFoundError, InputError
 from xivo_dao.resources.user import dao as user_dao
 from xivo_dao.resources.user.model import UserDirectory, UserSummary
-from xivo_dao.tests.test_dao import DAOTestCase, DEFAULT_TENANT
+from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 
 UNKNOWN_TENANT = '00000000-0000-0000-0000-000000000000'
@@ -300,10 +300,10 @@ class TestFindAllBy(TestUser):
 class TestLegacySearch(TestUser):
 
     def test_given_users_when_using_legacy_search_then_searches_on_fullname(self):
-        user1 = self.add_user(firstname="Rîchard", lastname="Làtulippe")
-        user2 = self.add_user(firstname="Jôhn", lastname="Smïth")
+        user1 = self.add_user(firstname="Rîchard", lastname="Làtulippe", tenant_uuid=self.tenant.uuid)
+        user2 = self.add_user(firstname="Jôhn", lastname="Smïth", tenant_uuid=self.tenant.uuid)
 
-        total, users = user_dao.legacy_search("rîch", tenant_uuids=[DEFAULT_TENANT])
+        total, users = user_dao.legacy_search("rîch", tenant_uuids=[self.tenant.uuid])
         assert_that(total, equal_to(1))
         assert_that(users, contains(has_property('id', user1.id)))
         assert_that(users, is_not(contains(has_property('id', user2.id))))
@@ -316,7 +316,7 @@ class TestLegacySearch(TestUser):
 class TestSearch(TestUser):
 
     def assert_search_returns_result(self, search_result, **parameters):
-        parameters.setdefault('tenant_uuids', [DEFAULT_TENANT])
+        parameters.setdefault('tenant_uuids', [self.tenant.uuid])
         result = user_dao.search(**parameters)
         assert_that(result, equal_to(search_result))
 
@@ -374,7 +374,8 @@ class TestSimpleSearch(TestSearch):
     def test_given_user_with_line_when_using_summary_view_then_returns_summary_result(self):
         user_line = self.add_user_line_with_exten(firstname='dânny',
                                                   lastname='rôgers',
-                                                  email='dany.rogers@example.com')
+                                                  email='dany.rogers@example.com',
+                                                  tenant_uuid=self.tenant.uuid)
         entity_name = self.session.query(Entity.name).filter_by(id=user_line.user.entity_id).scalar()
 
         expected = SearchResult(1, [UserSummary(id=user_line.user_id,
@@ -394,7 +395,8 @@ class TestSimpleSearch(TestSearch):
 
     def test_given_user_with_multi_lines_when_using_summary_view_then_returns_summary_one_result(self):
         user_line = self.add_user_line_with_exten(firstname='dânny',
-                                                  lastname='rôgers')
+                                                  lastname='rôgers',
+                                                  tenant_uuid=self.tenant.uuid)
         line = self.add_line()
         self.add_user_line(user_id=user_line.user.id,
                            line_id=line.id,
@@ -425,7 +427,8 @@ class TestSimpleSearch(TestSearch):
                                                       mobilephonenumber='4185551234',
                                                       voicemail_id=voicemail_row.uniqueid,
                                                       userfield='userfield',
-                                                      description='desc')
+                                                      description='desc',
+                                                      tenant_uuid=self.tenant.uuid)
 
         expected = SearchResult(1, [UserDirectory(id=user_line_row.user_id,
                                                   uuid=user_line_row.user.uuid,
@@ -503,12 +506,11 @@ class TestCreate(TestUser):
 
     def setUp(self):
         super(TestCreate, self).setUp()
-        self.tenant_uuid = str(uuid.uuid4())
-        self.add_tenant(uuid=self.tenant_uuid)
-        self.entity = self.add_entity(tenant_uuid=self.tenant_uuid)
+        self.tenant = self.add_tenant()
+        self.entity = self.add_entity(tenant_uuid=self.tenant.uuid)
 
     def test_create_minimal_fields(self):
-        user = User(firstname='Jôhn', tenant_uuid=self.tenant_uuid)
+        user = User(firstname='Jôhn', tenant_uuid=self.tenant.uuid)
         created_user = user_dao.create(user)
 
         row = self.session.query(User).first()
@@ -543,7 +545,7 @@ class TestCreate(TestUser):
             busy_destination=None,
             noanswer_enabled=False,
             noanswer_destination=None,
-            tenant_uuid=self.tenant_uuid,
+            tenant_uuid=self.tenant.uuid,
             unconditional_enabled=False,
             unconditional_destination=None,
             simultaneous_calls=5,
@@ -578,7 +580,7 @@ class TestCreate(TestUser):
             enableunc=0,
             destunc='',
             func_key_private_template_id=is_not(none()),
-            tenant_uuid=self.tenant_uuid,
+            tenant_uuid=self.tenant.uuid,
         ))
 
     def test_create_with_all_fields(self):
@@ -611,7 +613,7 @@ class TestCreate(TestUser):
             busy_destination='123',
             noanswer_enabled=True,
             noanswer_destination='456',
-            tenant_uuid=self.tenant_uuid,
+            tenant_uuid=self.tenant.uuid,
             unconditional_enabled=True,
             unconditional_destination='789',
             ring_seconds=60,
@@ -653,7 +655,7 @@ class TestCreate(TestUser):
             busy_destination='123',
             noanswer_enabled=True,
             noanswer_destination='456',
-            tenant_uuid=self.tenant_uuid,
+            tenant_uuid=self.tenant.uuid,
             unconditional_enabled=True,
             unconditional_destination='789',
             ring_seconds=60,
@@ -686,7 +688,7 @@ class TestCreate(TestUser):
             enableunc=1,
             destunc='789',
             musiconhold='music_on_hold',
-            tenant_uuid=self.tenant_uuid,
+            tenant_uuid=self.tenant.uuid,
         ))
 
     def test_that_the_user_uuid_is_unique(self):

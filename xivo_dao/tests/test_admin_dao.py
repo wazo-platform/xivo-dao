@@ -59,7 +59,7 @@ class TestAdminUserDAO(DAOTestCase):
         name, tenant_uuid = admin_dao.get_admin_entity('foo')
 
         assert_that(name, equal_to('test'))
-        assert_that(tenant_uuid, equal_to(DEFAULT_TENANT))
+        assert_that(tenant_uuid, equal_to(tenant.uuid))
 
     def test_get_admin_entity_no_entify(self):
         self.add_admin(login='alice', passwd='foobar')

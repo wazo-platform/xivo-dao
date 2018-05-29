@@ -222,8 +222,8 @@ class TestCreate(DAOTestCase):
 
     def setUp(self):
         super(TestCreate, self).setUp()
-        self.add_tenant()
-        self.entity = self.add_entity()
+        tenant = self.add_tenant()
+        self.entity = self.add_entity(tenant_uuid=tenant.uuid)
 
     def test_create_minimal_fields(self):
         call_filter = CallFilter(name='name')

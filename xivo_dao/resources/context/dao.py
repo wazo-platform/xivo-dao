@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2013-2016 Avencall
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao.helpers.db_manager import daosession
@@ -10,13 +9,13 @@ from .search import context_search
 
 
 @daosession
-def search(session, **parameters):
-    return ContextPersistor(session, context_search).search(parameters)
+def search(session, tenant_uuids=None, **parameters):
+    return ContextPersistor(session, context_search, tenant_uuids).search(parameters)
 
 
 @daosession
-def get(session, context_id):
-    return ContextPersistor(session, context_search).get_by({'id': context_id})
+def get(session, context_id, tenant_uuids=None):
+    return ContextPersistor(session, context_search, tenant_uuids).get_by({'id': context_id})
 
 
 @daosession

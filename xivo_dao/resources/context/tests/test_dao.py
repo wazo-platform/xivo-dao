@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from hamcrest import (assert_that,
@@ -102,6 +102,16 @@ class TestGetBy(DAOTestCase):
 
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, context_dao.get_by, invalid=42)
+
+    def test_get_by_tenant_uuid(self):
+        tenant = self.add_tenant(uuid='a92c8cdb-8146-4415-91d7-fb9a941b6fd8')
+
+        context_row = self.add_context(tenant_uuid=tenant.uuid)
+
+        context = context_dao.get_by(tenant_uuid=tenant.uuid)
+
+        assert_that(context, equal_to(context_row))
+        assert_that(context.tenant_uuid, equal_to(tenant.uuid))
 
     def test_get_by_description(self):
         context_row = self.add_context(description='mydescription')
@@ -237,7 +247,8 @@ class TestSearchGivenMultipleContext(TestSearch):
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_fields(self):
-        context = Context(name='mycontext')
+        tenant = self.add_tenant()
+        context = Context(name='mycontext', tenant_uuid=tenant.uuid)
         created_context = context_dao.create(context)
 
         row = self.session.query(Context).first()
@@ -245,6 +256,7 @@ class TestCreate(DAOTestCase):
         assert_that(created_context, equal_to(row))
         assert_that(created_context, has_properties(id=is_not(none()),
                                                     name='mycontext',
+                                                    tenant_uuid=tenant.uuid,
                                                     displayname=none(),
                                                     label=none(),
                                                     entity=none(),
@@ -260,7 +272,9 @@ class TestCreate(DAOTestCase):
                                                     incall_ranges=empty()))
 
     def test_create_with_all_fields(self):
+        tenant = self.add_tenant()
         context = Context(name='myContext',
+                          tenant_uuid=tenant.uuid,
                           label='My Context Label',
                           entity='default',
                           type='outcall',
@@ -279,6 +293,7 @@ class TestCreate(DAOTestCase):
         assert_that(created_context, equal_to(row))
         assert_that(created_context, has_properties(
             id=is_not(none()),
+            tenant_uuid=tenant.uuid,
             name='myContext',
             label='My Context Label',
             entity='default',
@@ -296,7 +311,9 @@ class TestCreate(DAOTestCase):
 class TestEdit(DAOTestCase):
 
     def test_edit_all_fields(self):
+        tenant = self.add_tenant()
         context = context_dao.create(Context(name='MyContext',
+                                             tenant_uuid=tenant.uuid,
                                              label='My Context Label',
                                              entity='default',
                                              type='outcall',
@@ -327,6 +344,7 @@ class TestEdit(DAOTestCase):
         assert_that(context, equal_to(row))
         assert_that(context, has_properties(
             id=is_not(none()),
+            tenant_uuid=tenant.uuid,
             name='OtherContext',
             label='Other Context Label',
             entity='toto',
@@ -341,7 +359,9 @@ class TestEdit(DAOTestCase):
         )
 
     def test_edit_set_fields_to_null(self):
+        tenant = self.add_tenant()
         context = context_dao.create(Context(name='MyContext',
+                                             tenant_uuid=tenant.uuid,
                                              label='My Context Label',
                                              entity='default',
                                              user_ranges=[ContextNumbers(start='1000', end='1999')],
