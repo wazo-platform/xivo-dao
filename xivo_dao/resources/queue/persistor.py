@@ -44,6 +44,7 @@ class QueuePersistor(CriteriaBuilderMixin):
         return (
             self.session.query(Queue)
             .options(joinedload('_queue'))
+            .options(joinedload('extensions'))
         )
 
     def create(self, queue):

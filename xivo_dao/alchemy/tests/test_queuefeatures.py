@@ -4,6 +4,7 @@
 
 from hamcrest import (
     assert_that,
+    contains,
     has_properties,
     none,
 )
@@ -60,6 +61,16 @@ class TestCreate(DAOTestCase):
             name='queuename',
             enabled=False,
         ))
+
+
+class TestExtensions(DAOTestCase):
+
+    def test_getter(self):
+        queue = self.add_queuefeatures()
+        extension = self.add_extension(type='queue', typeval=str(queue.id))
+
+        self.session.expire_all()
+        assert_that(queue.extensions, contains(extension))
 
 
 class TestDelete(DAOTestCase):

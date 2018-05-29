@@ -91,6 +91,14 @@ class QueueFeatures(Base):
     enabled = association_proxy('_queue', 'enabled')
     options = association_proxy('_queue', 'options')
 
+    extensions = relationship(
+        'Extension',
+        primaryjoin="""and_(Extension.type == 'queue',
+                            Extension.typeval == cast(QueueFeatures.id, String))""",
+        foreign_keys='Extension.typeval',
+        viewonly=True,
+    )
+
     def __init__(self, **kwargs):
         options = kwargs.pop('options', [])
         options = self.merge_options_with_default_values(options)
