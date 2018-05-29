@@ -99,6 +99,11 @@ class QueueFeatures(Base):
         viewonly=True,
     )
 
+    func_keys = relationship(
+        'FuncKeyDestQueue',
+        cascade='all, delete-orphan'
+    )
+
     def __init__(self, **kwargs):
         options = kwargs.pop('options', [])
         options = self.merge_options_with_default_values(options)

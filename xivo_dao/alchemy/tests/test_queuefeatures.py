@@ -9,8 +9,10 @@ from hamcrest import (
     none,
 )
 
+from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 from xivo_dao.tests.test_dao import DAOTestCase
 
+from ..func_key_dest_queue import FuncKeyDestQueue
 from ..queue import Queue
 from ..queuefeatures import QueueFeatures
 
@@ -73,7 +75,11 @@ class TestExtensions(DAOTestCase):
         assert_that(queue.extensions, contains(extension))
 
 
-class TestDelete(DAOTestCase):
+class TestDelete(DAOTestCase, FuncKeyHelper):
+
+    def setUp(self):
+        super(TestDelete, self).setUp()
+        self.setup_funckeys()
 
     def test_queue_is_deleted(self):
         queue = self.add_queuefeatures()
@@ -82,4 +88,14 @@ class TestDelete(DAOTestCase):
         self.session.flush()
 
         row = self.session.query(Queue).first()
+        assert_that(row, none())
+
+    def test_funckeys_are_deleted(self):
+        queue = self.add_queuefeatures()
+        self.add_queue_destination(queue.id)
+
+        self.session.delete(queue)
+        self.session.flush()
+
+        row = self.session.query(FuncKeyDestQueue).first()
         assert_that(row, none())
