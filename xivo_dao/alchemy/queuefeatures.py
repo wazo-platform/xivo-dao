@@ -4,7 +4,9 @@
 
 from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION
 from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 from sqlalchemy.schema import (
     Column,
     Index,
@@ -174,3 +176,108 @@ class QueueFeatures(Base):
         for option in options:
             result[option[0]] = option[1]
         return [[key, value] for key, value in result.items()]
+
+    @hybrid_property
+    def label(self):
+        if self.displayname == '':
+            return None
+        return self.displayname
+
+    @label.expression
+    def label(cls):
+        return func.nullif(cls.displayname, '')
+
+    @label.setter
+    def label(self, value):
+        if value is None:
+            self.displayname = ''
+        else:
+            self.displayname = value
+
+    @hybrid_property
+    def dtmf_hangup_callee_enabled(self):
+        return self.hitting_callee == 1
+
+    @dtmf_hangup_callee_enabled.setter
+    def dtmf_hangup_callee_enabled(self, value):
+        self.hitting_callee = int(value is True)
+
+    @hybrid_property
+    def dtmf_hangup_caller_enabled(self):
+        return self.hitting_caller == 1
+
+    @dtmf_hangup_caller_enabled.setter
+    def dtmf_hangup_caller_enabled(self, value):
+        self.hitting_caller = int(value is True)
+
+    @hybrid_property
+    def dtmf_transfer_callee_enabled(self):
+        return self.transfer_user == 1
+
+    @dtmf_transfer_callee_enabled.setter
+    def dtmf_transfer_callee_enabled(self, value):
+        self.transfer_user = int(value is True)
+
+    @hybrid_property
+    def dtmf_transfer_caller_enabled(self):
+        return self.transfer_call == 1
+
+    @dtmf_transfer_caller_enabled.setter
+    def dtmf_transfer_caller_enabled(self, value):
+        self.transfer_call = int(value is True)
+
+    @hybrid_property
+    def dtmf_record_callee_enabled(self):
+        return self.write_caller == 1
+
+    @dtmf_record_callee_enabled.setter
+    def dtmf_record_callee_enabled(self, value):
+        self.write_caller = int(value is True)
+
+    @hybrid_property
+    def dtmf_record_caller_enabled(self):
+        return self.write_calling == 1
+
+    @dtmf_record_caller_enabled.setter
+    def dtmf_record_caller_enabled(self, value):
+        self.write_calling = int(value is True)
+
+    @hybrid_property
+    def retry_on_timeout(self):
+        return not self.retries == 1
+
+    @retry_on_timeout.setter
+    def retry_on_timeout(self, value):
+        self.retries = int(value is False)
+
+    @hybrid_property
+    def ring_on_hold(self):
+        return self.ring == 1
+
+    @ring_on_hold.setter
+    def ring_on_hold(self, value):
+        self.ring = int(value is True)
+
+    @hybrid_property
+    def announce_hold_time_on_entry(self):
+        return self.announce_holdtime == 1
+
+    @announce_hold_time_on_entry.setter
+    def announce_hold_time_on_entry(self, value):
+        self.announce_holdtime = int(value is True)
+
+    @hybrid_property
+    def wait_time_threshold(self):
+        return self.waittime
+
+    @wait_time_threshold.setter
+    def wait_time_threshold(self, value):
+        self.waittime = value
+
+    @hybrid_property
+    def wait_ratio_threshold(self):
+        return self.waitratio
+
+    @wait_ratio_threshold.setter
+    def wait_ratio_threshold(self, value):
+        self.waitratio = value

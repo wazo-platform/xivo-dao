@@ -74,6 +74,146 @@ class TestCallerIdName(DAOTestCase):
         ))
 
 
+class TestLabel(DAOTestCase):
+
+    def test_getter(self):
+        queue = QueueFeatures(displayname='toto')
+        assert_that(queue.label, equal_to('toto'))
+
+    def test_getter_none(self):
+        queue = QueueFeatures(displayname='')
+        assert_that(queue.label, equal_to(None))
+
+    def test_setter(self):
+        queue = QueueFeatures(label='toto')
+        assert_that(queue.displayname, equal_to('toto'))
+
+    def test_setter_none(self):
+        queue = QueueFeatures(label=None)
+        assert_that(queue.displayname, equal_to(''))
+
+
+class TestDTMFHangupCalleeEnabled(DAOTestCase):
+
+    def test_getter(self):
+        queue = QueueFeatures(hitting_callee=1)
+        assert_that(queue.dtmf_hangup_callee_enabled, equal_to(True))
+
+    def test_setter(self):
+        queue = QueueFeatures(dtmf_hangup_callee_enabled=True)
+        assert_that(queue.hitting_callee, equal_to(1))
+
+
+class TestDTMFHangupCallerEnabled(DAOTestCase):
+
+    def test_getter(self):
+        queue = QueueFeatures(hitting_caller=1)
+        assert_that(queue.dtmf_hangup_caller_enabled, equal_to(True))
+
+    def test_setter(self):
+        queue = QueueFeatures(dtmf_hangup_caller_enabled=True)
+        assert_that(queue.hitting_caller, equal_to(1))
+
+
+class TestDTMFTransferCalleeEnabled(DAOTestCase):
+
+    def test_getter(self):
+        queue = QueueFeatures(transfer_user=1)
+        assert_that(queue.dtmf_transfer_callee_enabled, equal_to(True))
+
+    def test_setter(self):
+        queue = QueueFeatures(dtmf_transfer_callee_enabled=True)
+        assert_that(queue.transfer_user, equal_to(1))
+
+
+class TestDTMFTransferCallerEnabled(DAOTestCase):
+
+    def test_getter(self):
+        queue = QueueFeatures(transfer_call=1)
+        assert_that(queue.dtmf_transfer_caller_enabled, equal_to(True))
+
+    def test_setter(self):
+        queue = QueueFeatures(dtmf_transfer_caller_enabled=True)
+        assert_that(queue.transfer_call, equal_to(1))
+
+
+class TestDTMFRecordCalleeEnabled(DAOTestCase):
+
+    def test_getter(self):
+        queue = QueueFeatures(write_caller=1)
+        assert_that(queue.dtmf_record_callee_enabled, equal_to(True))
+
+    def test_setter(self):
+        queue = QueueFeatures(dtmf_record_callee_enabled=True)
+        assert_that(queue.write_caller, equal_to(1))
+
+
+class TestDTMFRecordCallerEnabled(DAOTestCase):
+
+    def test_getter(self):
+        queue = QueueFeatures(write_calling=1)
+        assert_that(queue.dtmf_record_caller_enabled, equal_to(True))
+
+    def test_setter(self):
+        queue = QueueFeatures(dtmf_record_caller_enabled=True)
+        assert_that(queue.write_calling, equal_to(1))
+
+
+class TestRetryOnTimeout(DAOTestCase):
+
+    def test_getter(self):
+        queue = QueueFeatures(retries=1)
+        assert_that(queue.retry_on_timeout, equal_to(False))
+
+    def test_setter(self):
+        queue = QueueFeatures(retry_on_timeout=False)
+        assert_that(queue.retries, equal_to(1))
+
+
+class TestRingOnHold(DAOTestCase):
+
+    def test_getter(self):
+        queue = QueueFeatures(ring=1)
+        assert_that(queue.ring_on_hold, equal_to(True))
+
+    def test_setter(self):
+        queue = QueueFeatures(ring_on_hold=True)
+        assert_that(queue.ring, equal_to(1))
+
+
+class TestAnnounceHoldTimeOnEntry(DAOTestCase):
+
+    def test_getter(self):
+        queue = QueueFeatures(announce_holdtime=1)
+        assert_that(queue.announce_hold_time_on_entry, equal_to(True))
+
+    def test_setter(self):
+        queue = QueueFeatures(announce_hold_time_on_entry=True)
+        assert_that(queue.announce_holdtime, equal_to(1))
+
+
+class TestWaitTimeThreshold(DAOTestCase):
+
+    def test_getter(self):
+        queue = QueueFeatures(waittime=1234)
+        assert_that(queue.wait_time_threshold, equal_to(1234))
+
+    def test_setter(self):
+        queue = QueueFeatures(wait_time_threshold=1234)
+        assert_that(queue.waittime, equal_to(1234))
+
+
+class TestWaitRatioThreshold(DAOTestCase):
+
+    def test_getter(self):
+        queue = QueueFeatures(waitratio=12.34)
+        assert_that(queue.wait_ratio_threshold, equal_to(12.34))
+
+    def test_setter(self):
+        queue = QueueFeatures(wait_ratio_threshold=12.34)
+        assert_that(queue.waitratio, equal_to(12.34))
+
+
 class TestCreate(DAOTestCase):
 
     def test_metaqueue_is_created_with_default_fields(self):
