@@ -2,10 +2,13 @@
 # Copyright 2007-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
+import six
+
 from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
+from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.sql import func
 from sqlalchemy.schema import (
     Column,
@@ -128,9 +131,11 @@ class QueueFeatures(Base):
     queue_dialactions = relationship(
         'Dialaction',
         primaryjoin="""and_(Dialaction.category == 'queue',
-                            Dialaction.categoryval == cast(QueueFeatures.id, String))""",
+                            Dialaction.categoryval == cast(QueueFeatures.id, String),
+                            Dialaction.event.in_(['noanswer', 'busy', 'congestion', 'chanunavail']))""",
         foreign_keys='Dialaction.categoryval',
         cascade='all, delete-orphan',
+        collection_class=attribute_mapped_collection('event'),
     )
 
     ivr_dialactions = relationship(
@@ -176,6 +181,32 @@ class QueueFeatures(Base):
         for option in options:
             result[option[0]] = option[1]
         return [[key, value] for key, value in result.items()]
+
+    @property
+    def fallbacks(self):
+        return self.queue_dialactions
+
+    # Note: fallbacks[key] = Dialaction() doesn't pass in this method
+    @fallbacks.setter
+    def fallbacks(self, dialactions):
+        for event in list(self.queue_dialactions.keys()):
+            if event not in dialactions:
+                self.queue_dialactions.pop(event, None)
+
+        for event, dialaction in six.iteritems(dialactions):
+            if dialaction is None:
+                self.queue_dialactions.pop(event, None)
+                continue
+
+            if event not in self.queue_dialactions:
+                dialaction.category = 'queue'
+                dialaction.linked = 1
+                dialaction.event = event
+                self.queue_dialactions[event] = dialaction
+
+            self.queue_dialactions[event].action = dialaction.action
+            self.queue_dialactions[event].actionarg1 = dialaction.actionarg1
+            self.queue_dialactions[event].actionarg2 = dialaction.actionarg2
 
     @hybrid_property
     def label(self):

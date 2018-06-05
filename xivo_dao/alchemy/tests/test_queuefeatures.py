@@ -5,7 +5,10 @@
 from hamcrest import (
     assert_that,
     contains,
+    empty,
     equal_to,
+    is_not,
+    has_key,
     has_properties,
     none,
 )
@@ -72,6 +75,64 @@ class TestCallerIdName(DAOTestCase):
             mode=None,
             name='toto',
         ))
+
+
+class TestFallbacks(DAOTestCase):
+
+    def test_getter(self):
+        queue = self.add_queuefeatures()
+        dialaction = self.add_dialaction(
+            event='busy',
+            category='queue',
+            categoryval=str(queue.id)
+        )
+
+        assert_that(queue.fallbacks['busy'], equal_to(dialaction))
+
+    def test_setter(self):
+        queue = self.add_queuefeatures()
+        dialaction = Dialaction(action='none')
+
+        queue.fallbacks = {'busy': dialaction}
+        self.session.flush()
+
+        assert_that(queue.fallbacks['busy'], equal_to(dialaction))
+
+    def test_setter_to_none(self):
+        queue = self.add_queuefeatures()
+
+        queue.fallbacks = {'busy': None}
+        self.session.flush()
+
+        assert_that(queue.fallbacks, empty())
+
+    def test_setter_existing_key(self):
+        queue = self.add_queuefeatures()
+        dialaction1 = Dialaction(action='none')
+
+        queue.fallbacks = {'busy': dialaction1}
+        self.session.flush()
+        self.session.expire_all()
+
+        dialaction2 = Dialaction(action='user', actionarg1='1')
+        queue.fallbacks = {'busy': dialaction2}
+        self.session.flush()
+
+        assert_that(queue.fallbacks['busy'], has_properties(action='user', actionarg1='1'))
+
+    def test_setter_delete_undefined_key(self):
+        queue = self.add_queuefeatures()
+        dialaction1 = Dialaction(action='none')
+
+        queue.fallbacks = {'noanswer': dialaction1}
+        self.session.flush()
+        self.session.expire_all()
+
+        dialaction2 = Dialaction(action='user', actionarg1='1')
+        queue.fallbacks = {'busy': dialaction2}
+        self.session.flush()
+
+        assert_that(queue.fallbacks, is_not(has_key('noanswer')))
 
 
 class TestLabel(DAOTestCase):
