@@ -131,8 +131,7 @@ class QueueFeatures(Base):
     queue_dialactions = relationship(
         'Dialaction',
         primaryjoin="""and_(Dialaction.category == 'queue',
-                            Dialaction.categoryval == cast(QueueFeatures.id, String),
-                            Dialaction.event.in_(['noanswer', 'busy', 'congestion', 'chanunavail']))""",
+                            Dialaction.categoryval == cast(QueueFeatures.id, String))""",
         foreign_keys='Dialaction.categoryval',
         cascade='all, delete-orphan',
         collection_class=attribute_mapped_collection('event'),
@@ -183,30 +182,49 @@ class QueueFeatures(Base):
         return [[key, value] for key, value in result.items()]
 
     @property
+    def wait_time_destination(self):
+        return self.queue_dialactions.get('qwaittime')
+
+    @wait_time_destination.setter
+    def wait_time_destination(self, destination):
+        self._set_dialaction('qwaittime', destination)
+
+    @property
+    def wait_ratio_destination(self):
+        return self.queue_dialactions.get('qwaitratio')
+
+    @wait_ratio_destination.setter
+    def wait_ratio_destination(self, destination):
+        self._set_dialaction('qwaitratio', destination)
+
+    @property
     def fallbacks(self):
         return self.queue_dialactions
 
     # Note: fallbacks[key] = Dialaction() doesn't pass in this method
     @fallbacks.setter
     def fallbacks(self, dialactions):
-        for event in list(self.queue_dialactions.keys()):
+        for event in ('noanswer', 'busy', 'congestion', 'chanunavail'):
             if event not in dialactions:
                 self.queue_dialactions.pop(event, None)
 
         for event, dialaction in six.iteritems(dialactions):
-            if dialaction is None:
-                self.queue_dialactions.pop(event, None)
-                continue
+            self._set_dialaction(event, dialaction)
 
-            if event not in self.queue_dialactions:
-                dialaction.category = 'queue'
-                dialaction.linked = 1
-                dialaction.event = event
-                self.queue_dialactions[event] = dialaction
+    def _set_dialaction(self, event, dialaction):
+        if dialaction is None:
+            self.queue_dialactions.pop(event, None)
+            return
 
-            self.queue_dialactions[event].action = dialaction.action
-            self.queue_dialactions[event].actionarg1 = dialaction.actionarg1
-            self.queue_dialactions[event].actionarg2 = dialaction.actionarg2
+        if event not in self.queue_dialactions:
+            dialaction.event = event
+            dialaction.category = 'queue'
+            dialaction.linked = 1
+            self.queue_dialactions[event] = dialaction
+
+        self.queue_dialactions[event].action = dialaction.action
+        self.queue_dialactions[event].actionarg1 = dialaction.actionarg1
+        self.queue_dialactions[event].actionarg2 = dialaction.actionarg2
 
     @hybrid_property
     def label(self):

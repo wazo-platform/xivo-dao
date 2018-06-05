@@ -135,6 +135,86 @@ class TestFallbacks(DAOTestCase):
         assert_that(queue.fallbacks, is_not(has_key('noanswer')))
 
 
+class TestWaitTimeDestination(DAOTestCase):
+
+    def test_getter(self):
+        queue = self.add_queuefeatures()
+        dialaction = self.add_dialaction(
+            event='qwaittime',
+            category='queue',
+            categoryval=str(queue.id)
+        )
+
+        assert_that(queue.wait_time_destination, equal_to(dialaction))
+
+    def test_setter(self):
+        queue = self.add_queuefeatures()
+        dialaction = Dialaction(action='none')
+
+        queue.wait_time_destination = dialaction
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(queue.wait_time_destination, has_properties(
+            action='none',
+            category='queue',
+            linked=1,
+            event='qwaittime'
+        ))
+
+    def test_setter_to_none(self):
+        queue = self.add_queuefeatures()
+
+        queue.wait_time_destination = None
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(queue.wait_time_destination, equal_to(None))
+
+        result = self.session.query(Dialaction).get(('qwaittime', 'queue', queue.id))
+        assert_that(result, equal_to(None))
+
+
+class TestWaitRatioDestination(DAOTestCase):
+
+    def test_getter(self):
+        queue = self.add_queuefeatures()
+        dialaction = self.add_dialaction(
+            event='qwaitratio',
+            category='queue',
+            categoryval=str(queue.id)
+        )
+
+        assert_that(queue.wait_ratio_destination, equal_to(dialaction))
+
+    def test_setter(self):
+        queue = self.add_queuefeatures()
+        dialaction = Dialaction(action='none')
+
+        queue.wait_ratio_destination = dialaction
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(queue.wait_ratio_destination, has_properties(
+            action='none',
+            category='queue',
+            linked=1,
+            event='qwaitratio'
+        ))
+
+    def test_setter_to_none(self):
+        queue = self.add_queuefeatures()
+
+        queue.wait_ratio_destination = None
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(queue.wait_ratio_destination, equal_to(None))
+
+        result = self.session.query(Dialaction).get(('qwaitratio', 'queue', queue.id))
+        assert_that(result, equal_to(None))
+
+
 class TestLabel(DAOTestCase):
 
     def test_getter(self):
