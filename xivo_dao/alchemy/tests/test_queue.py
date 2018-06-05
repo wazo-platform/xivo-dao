@@ -27,7 +27,7 @@ class TestOptions(DAOTestCase):
 
         assert_that(queue.options, contains_inanyorder(
             has_items('timeout', '0'),
-            has_items('ringinuse', '0'),
+            has_items('ringinuse', 'no'),
             has_items('reportholdtime', 'no'),
             has_items('timeoutrestart', 'no'),
             has_items('timeoutpriority', 'app'),
@@ -70,6 +70,7 @@ class TestOptions(DAOTestCase):
     def test_getter_integer_values(self):
         queue = self.add_queue()
         assert_that(queue.options, has_items(
+            has_items('ringinuse', 'no'),
             has_items('reportholdtime', 'no'),
             has_items('timeoutrestart', 'no'),
             has_items('autofill', 'yes'),
@@ -170,6 +171,7 @@ class TestOptions(DAOTestCase):
     def test_setter_integer_values(self):
         queue = self.add_queue()
         queue.options = [
+            ['ringinuse', 'yes'],
             ['reportholdtime', 'yes'],
             ['timeoutrestart', 'yes'],
             ['autofill', 'no'],
@@ -182,6 +184,7 @@ class TestOptions(DAOTestCase):
 
         self.session.expire_all()
         assert_that(queue, has_properties(
+            ringinuse=1,
             reportholdtime=1,
             timeoutrestart=1,
             autofill=0,

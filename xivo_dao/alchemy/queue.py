@@ -23,6 +23,7 @@ class Queue(Base, AsteriskOptionsMixin):
         'context',
     }
     AST_TRUE_INTEGER_COLUMNS = {
+        'ringinuse',
         'timeoutrestart',
         'autofill',
         'setinterfacevar',
