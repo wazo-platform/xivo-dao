@@ -18,6 +18,9 @@ class Queue(Base, AsteriskOptionsMixin):
         'category',
         'commented',
     }
+    EXCLUDE_OPTIONS_CONFD = {
+        'musicclass',
+    }
     AST_TRUE_INTEGER_COLUMNS = {
         'timeoutrestart',
         'autofill',

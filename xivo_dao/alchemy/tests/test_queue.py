@@ -43,12 +43,13 @@ class TestOptions(DAOTestCase):
         ))
 
     def test_getter_exclude_columns(self):
-        queue = self.add_queue()
+        queue = self.add_queue(name='name', category='queue', commented='1', musicclass='musicclass')
 
         assert_that(queue.options, all_of(
             not_(has_items(has_item('name'))),
             not_(has_items(has_item('category'))),
             not_(has_items(has_item('commented'))),
+            not_(has_items(has_item('musicclass'))),
         ))
 
     def test_getter_custom_columns(self):
@@ -120,11 +121,12 @@ class TestOptions(DAOTestCase):
         ))
 
     def test_setter_exclude_columns(self):
-        queue = self.add_queue(name='name', category='queue', commented=0)
+        queue = self.add_queue(name='name', category='queue', commented=0, musicclass='musicclass')
         queue.options = [
             ['name', 'other_name'],
             ['category', 'other_category'],
             ['commented', '1'],
+            ['musicclass', 'other_musicclass'],
         ]
         self.session.flush()
 
@@ -133,6 +135,7 @@ class TestOptions(DAOTestCase):
             name='name',
             category='queue',
             commented=0,
+            musicclass='musicclass',
         ))
 
     def test_setter_custom_columns(self):
