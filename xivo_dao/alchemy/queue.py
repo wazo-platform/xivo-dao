@@ -20,6 +20,7 @@ class Queue(Base, AsteriskOptionsMixin):
     }
     EXCLUDE_OPTIONS_CONFD = {
         'musicclass',
+        'context',
     }
     AST_TRUE_INTEGER_COLUMNS = {
         'timeoutrestart',
