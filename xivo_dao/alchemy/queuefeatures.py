@@ -96,6 +96,7 @@ class QueueFeatures(Base):
     )
     enabled = association_proxy('_queue', 'enabled')
     options = association_proxy('_queue', 'options')
+    music_on_hold = association_proxy('_queue', 'musicclass')
 
     caller_id = relationship(
         'Callerid',
@@ -166,12 +167,14 @@ class QueueFeatures(Base):
         options = kwargs.pop('options', [])
         options = self.merge_options_with_default_values(options)
         enabled = kwargs.pop('enabled', True)
+        music_on_hold = kwargs.pop('music_on_hold', None)
         super(QueueFeatures, self).__init__(**kwargs)
         if not self._queue:
             self._queue = Queue(
                 # 'name' is set by the relationship foreign_key
                 category='queue',
                 enabled=enabled,
+                musicclass=music_on_hold,
                 options=options,
             )
 

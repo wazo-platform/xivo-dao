@@ -402,13 +402,14 @@ class TestCreate(DAOTestCase):
         ))
 
     def test_metaqueue_is_created_with_all_fields(self):
-        queue = QueueFeatures(name='queuename', enabled=False, displayname='')
+        queue = QueueFeatures(name='queuename', enabled=False, displayname='', music_on_hold='music_on_hold')
         self.session.add(queue)
         self.session.flush()
 
         assert_that(queue._queue, has_properties(
             name='queuename',
             enabled=False,
+            musicclass='music_on_hold',
         ))
 
 
