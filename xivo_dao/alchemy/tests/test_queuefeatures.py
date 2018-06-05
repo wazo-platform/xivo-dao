@@ -96,7 +96,13 @@ class TestFallbacks(DAOTestCase):
         queue.fallbacks = {'busy': dialaction}
         self.session.flush()
 
-        assert_that(queue.fallbacks['busy'], equal_to(dialaction))
+        self.session.expire_all()
+        assert_that(queue.fallbacks['busy'], has_properties(
+            action='none',
+            category='queue',
+            linked=1,
+            event='busy'
+        ))
 
     def test_setter_to_none(self):
         queue = self.add_queuefeatures()
@@ -104,6 +110,7 @@ class TestFallbacks(DAOTestCase):
         queue.fallbacks = {'busy': None}
         self.session.flush()
 
+        self.session.expire_all()
         assert_that(queue.fallbacks, empty())
 
     def test_setter_existing_key(self):
@@ -118,6 +125,7 @@ class TestFallbacks(DAOTestCase):
         queue.fallbacks = {'busy': dialaction2}
         self.session.flush()
 
+        self.session.expire_all()
         assert_that(queue.fallbacks['busy'], has_properties(action='user', actionarg1='1'))
 
     def test_setter_delete_undefined_key(self):
@@ -132,6 +140,7 @@ class TestFallbacks(DAOTestCase):
         queue.fallbacks = {'busy': dialaction2}
         self.session.flush()
 
+        self.session.expire_all()
         assert_that(queue.fallbacks, is_not(has_key('noanswer')))
 
 
