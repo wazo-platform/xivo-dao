@@ -243,6 +243,28 @@ class TestLabel(DAOTestCase):
         assert_that(queue.displayname, equal_to(''))
 
 
+class TestDataQualityBool(DAOTestCase):
+
+    def test_getter(self):
+        queue = QueueFeatures(data_quality=1)
+        assert_that(queue.data_quality_bool, equal_to(True))
+
+    def test_setter(self):
+        queue = QueueFeatures(data_quality_bool=True)
+        assert_that(queue.data_quality, equal_to(1))
+
+
+class TestIgnoreForwardBool(DAOTestCase):
+
+    def test_getter(self):
+        queue = QueueFeatures(ignore_forward=1)
+        assert_that(queue.ignore_forward_bool, equal_to(True))
+
+    def test_setter(self):
+        queue = QueueFeatures(ignore_forward_bool=True)
+        assert_that(queue.ignore_forward, equal_to(1))
+
+
 class TestDTMFHangupCalleeEnabled(DAOTestCase):
 
     def test_getter(self):

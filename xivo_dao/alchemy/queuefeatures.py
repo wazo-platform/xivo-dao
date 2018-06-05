@@ -247,6 +247,22 @@ class QueueFeatures(Base):
             self.displayname = value
 
     @hybrid_property
+    def data_quality_bool(self):
+        return self.data_quality == 1
+
+    @data_quality_bool.setter
+    def data_quality_bool(self, value):
+        self.data_quality = int(value is True)
+
+    @hybrid_property
+    def ignore_forward_bool(self):
+        return self.ignore_forward == 1
+
+    @ignore_forward_bool.setter
+    def ignore_forward_bool(self, value):
+        self.ignore_forward = int(value is True)
+
+    @hybrid_property
     def dtmf_hangup_callee_enabled(self):
         return self.hitting_callee == 1
 
