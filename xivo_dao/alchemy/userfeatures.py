@@ -269,6 +269,8 @@ class UserFeatures(Base):
                                      foreign_keys='RightCallMember.typeval',
                                      cascade='all, delete-orphan')
 
+    call_permissions = association_proxy('rightcall_members', 'rightcall')
+
     def extrapolate_caller_id(self, extension=None):
         default_num = extension.exten if extension else None
         user_match = caller_id_regex.match(self.callerid)
