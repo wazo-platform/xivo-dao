@@ -9,6 +9,7 @@ from xivo_dao.resources.utils.search import SearchSystem, SearchConfig
 config = SearchConfig(table=QueueFeatures,
                       columns={'id': QueueFeatures.id,
                                'name': QueueFeatures.name,
+                               'label': QueueFeatures.label,
                                'preprocess_subroutine': QueueFeatures.preprocess_subroutine},
                       default_sort='id')
 
