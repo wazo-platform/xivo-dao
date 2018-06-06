@@ -343,6 +343,25 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
                             .count())
         assert_that(dest_group_count, equal_to(1))
 
+    def test_given_no_queue_func_key_when_created_then_create_new_queue_func_key(self):
+        queue = self.add_queuefeatures()
+
+        dest_queue_count = (self.session.query(FuncKeyDestQueue)
+                            .filter(FuncKeyDestQueue.queue_id == queue.id)
+                            .count())
+        assert_that(dest_queue_count, equal_to(0))
+
+        template = self.build_template_with_key(FuncKeyDestQueue(queue_id=queue.id))
+        dao.create(template)
+
+        template = self.build_template_with_key(FuncKeyDestQueue(queue_id=queue.id))
+        dao.create(template)
+
+        dest_queue_count = (self.session.query(FuncKeyDestQueue)
+                            .filter(FuncKeyDestQueue.queue_id == queue.id)
+                            .count())
+        assert_that(dest_queue_count, equal_to(1))
+
     def test_given_no_paging_func_key_when_created_then_create_new_paging_func_key(self):
         paging = self.add_paging()
 
@@ -646,6 +665,45 @@ class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
                             .filter(FuncKeyDestGroup.group_id == group.id)
                             .count())
         assert_that(dest_group_count, equal_to(1))
+
+    def test_given_template_is_associated_to_queue_when_deleting_template(self):
+        queue = self.add_queuefeatures()
+        template = FuncKeyTemplate(
+            keys={'1': FuncKeyMapping(destination=FuncKeyDestQueue(queue_id=queue.id))}
+        )
+        dao.create(template)
+
+        dao.delete(template)
+
+        dest_queue_count = (self.session.query(FuncKeyDestQueue)
+                            .filter(FuncKeyDestQueue.queue_id == queue.id)
+                            .count())
+        assert_that(dest_queue_count, equal_to(0))
+
+    def test_given_multi_template_is_associated_to_queue_when_deleting_template(self):
+        queue = self.add_queuefeatures()
+        template = FuncKeyTemplate(
+            keys={'1': FuncKeyMapping(destination=FuncKeyDestQueue(queue_id=queue.id))}
+        )
+
+        dao.create(template)
+        template = FuncKeyTemplate(
+            keys={'1': FuncKeyMapping(destination=FuncKeyDestQueue(queue_id=queue.id))}
+        )
+
+        dao.create(template)
+        template = FuncKeyTemplate(
+            keys={'1': FuncKeyMapping(destination=FuncKeyDestQueue(queue_id=queue.id))}
+        )
+
+        dao.create(template)
+
+        dao.delete(template)
+
+        dest_queue_count = (self.session.query(FuncKeyDestQueue)
+                            .filter(FuncKeyDestQueue.queue_id == queue.id)
+                            .count())
+        assert_that(dest_queue_count, equal_to(1))
 
     def test_given_template_is_associated_to_paging_when_deleting_template(self):
         paging = self.add_paging()
