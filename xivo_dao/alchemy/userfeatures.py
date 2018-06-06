@@ -263,6 +263,12 @@ class UserFeatures(Base):
                                        foreign_keys='PickupMember.memberid',
                                        cascade='delete, delete-orphan')
 
+    rightcall_members = relationship('RightCallMember',
+                                     primaryjoin="""and_(RightCallMember.type == 'user',
+                                                         RightCallMember.typeval == cast(UserFeatures.id, String))""",
+                                     foreign_keys='RightCallMember.typeval',
+                                     cascade='all, delete-orphan')
+
     def extrapolate_caller_id(self, extension=None):
         default_num = extension.exten if extension else None
         user_match = caller_id_regex.match(self.callerid)

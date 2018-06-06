@@ -20,6 +20,7 @@ from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.paginguser import PagingUser
 from xivo_dao.alchemy.pickupmember import PickupMember as CallPickupMember
 from xivo_dao.alchemy.queuemember import QueueMember
+from xivo_dao.alchemy.rightcallmember import RightCallMember as CallPermissionAssociation
 from xivo_dao.alchemy.schedule import Schedule
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.user_line import UserLine
@@ -266,6 +267,16 @@ class TestSchedules(DAOTestCase):
 
 
 class TestDelete(DAOTestCase):
+
+    def test_call_permission_recipients_are_deleted(self):
+        user = self.add_user()
+        self.add_user_call_permission(user_id=user.id)
+
+        self.session.delete(user)
+        self.session.flush()
+
+        row = self.session.query(CallPermissionAssociation).first()
+        assert_that(row, none())
 
     def test_call_filter_recipients_are_deleted(self):
         user = self.add_user()
