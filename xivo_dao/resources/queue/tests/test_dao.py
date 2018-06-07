@@ -294,7 +294,7 @@ class TestEdit(DAOTestCase):
             id=is_not(none()),
             name='other_name',
             label='other_label',
-            caller_id_mode='overtwrite',
+            caller_id_mode='overwrite',
             caller_id_name='bob',
             # TODO add other fields
             enabled=False,
