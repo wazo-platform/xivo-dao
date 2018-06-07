@@ -227,6 +227,9 @@ class UserPersistor(DestinationPersistor):
 
 class QueuePersistor(DestinationPersistor):
 
+    TYPE_ID = 1
+    DESTINATION_TYPE_ID = 3
+
     def get(self, func_key_id):
         query = (self.session.query(FuncKeyDestQueue)
                  .filter(FuncKeyDestQueue.func_key_id == func_key_id))
@@ -234,13 +237,24 @@ class QueuePersistor(DestinationPersistor):
         return query.first()
 
     def find_or_create(self, destination):
-        query = (self.session.query(FuncKeyDestQueue)
-                 .filter(FuncKeyDestQueue.queue_id == destination.queue_id))
+        destination_row = (self.session.query(FuncKeyDestQueue)
+                           .filter(FuncKeyDestQueue.queue_id == destination.queue_id)
+                           .first())
 
-        return query.first()
+        if not destination_row:
+            func_key_row = self.create_func_key(self.TYPE_ID, self.DESTINATION_TYPE_ID)
+            destination_row = FuncKeyDestQueue(func_key_id=func_key_row.id, queue_id=destination.queue_id)
+            self.session.add(destination_row)
+            self.session.flush()
+
+        return destination_row
 
     def delete(self, func_key_id):
-        pass
+        if not self._func_key_is_still_mapped(func_key_id):
+            (self.session.query(FuncKeyDestQueue)
+             .filter(FuncKeyDestQueue.func_key_id == func_key_id)
+             .delete())
+            self.delete_func_key(func_key_id)
 
 
 class GroupPersistor(DestinationPersistor):
