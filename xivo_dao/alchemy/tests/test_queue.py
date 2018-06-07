@@ -48,7 +48,6 @@ class TestOptions(DAOTestCase):
             category='queue',
             commented='1',
             musicclass='musicclass',
-            context='default',
         )
 
         assert_that(queue.options, all_of(
@@ -56,7 +55,6 @@ class TestOptions(DAOTestCase):
             not_(has_items(has_item('category'))),
             not_(has_items(has_item('commented'))),
             not_(has_items(has_item('musicclass'))),
-            not_(has_items(has_item('context'))),
         ))
 
     def test_getter_custom_columns(self):
@@ -134,7 +132,6 @@ class TestOptions(DAOTestCase):
             category='queue',
             commented=0,
             musicclass='musicclass',
-            context='default',
         )
         queue.options = [
             ['name', 'other_name'],
@@ -151,7 +148,6 @@ class TestOptions(DAOTestCase):
             category='queue',
             commented=0,
             musicclass='musicclass',
-            context='default',
         ))
 
     def test_setter_custom_columns(self):
