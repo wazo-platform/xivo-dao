@@ -237,7 +237,21 @@ class TestCreate(DAOTestCase):
             name='myqueue',
             caller_id_mode=None,
             caller_id_name=None,
-            # TODO add other fields
+            data_quality_bool=False,
+            dtmf_hangup_callee_enabled=False,
+            dtmf_hangup_caller_enabled=False,
+            dtmf_transfer_callee_enabled=False,
+            dtmf_transfer_caller_enabled=False,
+            dtmf_record_callee_enabled=False,
+            dtmf_record_caller_enabled=False,
+            retry_on_timeout=True,
+            ring_on_hold=False,
+            announce_hold_time_on_entry=False,
+            ignore_forward_bool=True,
+            wait_time_threshold=None,
+            wait_ratio_threshold=None,
+            timeout=None,
+            preprocess_subroutine=None,
             enabled=True,
         ))
 
@@ -247,7 +261,21 @@ class TestCreate(DAOTestCase):
             label=None,
             caller_id_mode='prepend',
             caller_id_name='toto',
-            # TODO add other fields
+            data_quality_bool=True,
+            dtmf_hangup_callee_enabled=True,
+            dtmf_hangup_caller_enabled=True,
+            dtmf_transfer_callee_enabled=True,
+            dtmf_transfer_caller_enabled=True,
+            dtmf_record_callee_enabled=True,
+            dtmf_record_caller_enabled=True,
+            retry_on_timeout=False,
+            ring_on_hold=True,
+            announce_hold_time_on_entry=True,
+            ignore_forward_bool=False,
+            wait_time_threshold=1,
+            wait_ratio_threshold=1.4,
+            timeout=42,
+            preprocess_subroutine='routine',
             enabled=False,
         )
 
@@ -261,7 +289,21 @@ class TestCreate(DAOTestCase):
             name='MyQueue',
             caller_id_mode='prepend',
             caller_id_name='toto',
-            # TODO add other fields
+            data_quality_bool=True,
+            dtmf_hangup_callee_enabled=True,
+            dtmf_hangup_caller_enabled=True,
+            dtmf_transfer_callee_enabled=True,
+            dtmf_transfer_caller_enabled=True,
+            dtmf_record_callee_enabled=True,
+            dtmf_record_caller_enabled=True,
+            retry_on_timeout=False,
+            ring_on_hold=True,
+            announce_hold_time_on_entry=True,
+            ignore_forward_bool=False,
+            wait_time_threshold=1,
+            wait_ratio_threshold=1.4,
+            timeout=42,
+            preprocess_subroutine='routine',
             enabled=False,
         ))
 
@@ -274,7 +316,21 @@ class TestEdit(DAOTestCase):
             label=None,
             caller_id_mode='prepend',
             caller_id_name='toto',
-            # TODO add other fields
+            data_quality_bool=False,
+            dtmf_hangup_callee_enabled=False,
+            dtmf_hangup_caller_enabled=False,
+            dtmf_transfer_callee_enabled=False,
+            dtmf_transfer_caller_enabled=False,
+            dtmf_record_callee_enabled=False,
+            dtmf_record_caller_enabled=False,
+            retry_on_timeout=True,
+            ring_on_hold=False,
+            announce_hold_time_on_entry=False,
+            ignore_forward_bool=True,
+            wait_time_threshold=None,
+            wait_ratio_threshold=None,
+            timeout=None,
+            preprocess_subroutine=None,
             enabled=True,
         ))
 
@@ -284,7 +340,21 @@ class TestEdit(DAOTestCase):
         queue.caller_id_mode = 'overwrite'
         queue.caller_id_name = 'bob'
         queue.enabled = False
-        # TODO add other fields
+        queue.data_quality_bool = True
+        queue.dtmf_hangup_callee_enabled = True
+        queue.dtmf_hangup_caller_enabled = True
+        queue.dtmf_transfer_callee_enabled = True
+        queue.dtmf_transfer_caller_enabled = True
+        queue.dtmf_record_callee_enabled = True
+        queue.dtmf_record_caller_enabled = True
+        queue.retry_on_timeout = False
+        queue.ring_on_hold = True
+        queue.announce_hold_time_on_entry = True
+        queue.ignore_forward_bool = False
+        queue.wait_time_threshold = 1
+        queue.wait_ratio_threshold = 1.4
+        queue.timeout = 42
+        queue.preprocess_subroutine = 'routine'
         queue_dao.edit(queue)
 
         row = self.session.query(QueueFeatures).first()
@@ -296,7 +366,21 @@ class TestEdit(DAOTestCase):
             label='other_label',
             caller_id_mode='overwrite',
             caller_id_name='bob',
-            # TODO add other fields
+            data_quality_bool=True,
+            dtmf_hangup_callee_enabled=True,
+            dtmf_hangup_caller_enabled=True,
+            dtmf_transfer_callee_enabled=True,
+            dtmf_transfer_caller_enabled=True,
+            dtmf_record_callee_enabled=True,
+            dtmf_record_caller_enabled=True,
+            retry_on_timeout=False,
+            ring_on_hold=True,
+            announce_hold_time_on_entry=True,
+            ignore_forward_bool=False,
+            wait_time_threshold=1,
+            wait_ratio_threshold=1.4,
+            timeout=42,
+            preprocess_subroutine='routine',
             enabled=False,
         ))
 
@@ -306,14 +390,18 @@ class TestEdit(DAOTestCase):
             label=None,
             caller_id_mode='prepend',
             caller_id_name='toto',
-            # TODO add other fields
+            wait_time_threshold=2,
+            wait_ratio_threshold=42,
+            timeout=3,
             preprocess_subroutine='t',
         ))
 
         queue = queue_dao.get(queue.id)
-        # TODO add other fields
         queue.caller_id_mode = None
         queue.caller_id_name = None
+        queue.wait_time_threshold = None
+        queue.wait_ratio_threshold = None
+        queue.timeout = None
         queue.preprocess_subroutine = None
         queue_dao.edit(queue)
 
@@ -323,7 +411,9 @@ class TestEdit(DAOTestCase):
             preprocess_subroutine=none(),
             caller_id_mode=none(),
             caller_id_name=none(),
-            # TODO add other fields
+            wait_time_threshold=none(),
+            wait_ratio_threshold=none(),
+            timeout=none(),
         ))
 
     def test_edit_queue_name(self):
