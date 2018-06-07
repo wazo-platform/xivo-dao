@@ -226,7 +226,7 @@ class TestSearchGivenMultipleQueue(TestSearch):
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_fields(self):
-        queue = QueueFeatures(name='myqueue', displayname='')
+        queue = QueueFeatures(name='myqueue', label=None)
         created_queue = queue_dao.create(queue)
 
         row = self.session.query(QueueFeatures).first()
@@ -244,7 +244,7 @@ class TestCreate(DAOTestCase):
     def test_create_with_all_fields(self):
         queue = QueueFeatures(
             name='MyQueue',
-            displayname='',  # TODO rename displayname with sed
+            label=None,
             caller_id_mode='prepend',
             caller_id_name='toto',
             # TODO add other fields
@@ -271,7 +271,7 @@ class TestEdit(DAOTestCase):
     def test_edit_all_fields(self):
         queue = queue_dao.create(QueueFeatures(
             name='MyQueue',
-            displayname='',
+            label=None,
             caller_id_mode='prepend',
             caller_id_name='toto',
             # TODO add other fields
@@ -280,7 +280,7 @@ class TestEdit(DAOTestCase):
 
         queue = queue_dao.get(queue.id)
         queue.name = 'other_name'
-        queue.displayname = 'other_displayname'
+        queue.label = 'other_label'
         queue.caller_id_mode = 'overwrite'
         queue.caller_id_name = 'bob'
         queue.enabled = False
@@ -293,7 +293,7 @@ class TestEdit(DAOTestCase):
         assert_that(queue, has_properties(
             id=is_not(none()),
             name='other_name',
-            displayname='other_displayname',
+            label='other_label',
             caller_id_mode='overtwrite',
             caller_id_name='bob',
             # TODO add other fields
@@ -303,7 +303,7 @@ class TestEdit(DAOTestCase):
     def test_edit_set_fields_to_null(self):
         queue = queue_dao.create(QueueFeatures(
             name='MyQueue',
-            displayname='',
+            label=None,
             caller_id_mode='prepend',
             caller_id_name='toto',
             # TODO add other fields
@@ -327,7 +327,7 @@ class TestEdit(DAOTestCase):
         ))
 
     def test_edit_queue_name(self):
-        queue_dao.create(QueueFeatures(name='MyQueue', displayname=''))
+        queue_dao.create(QueueFeatures(name='MyQueue', label=None))
         self.session.expunge_all()
 
         meta_queue = self.session.query(Queue).first()
