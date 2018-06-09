@@ -65,7 +65,7 @@ class QueueFeatures(Base):
     id = Column(Integer)
     name = Column(String(128), nullable=False)
     displayname = Column(String(128), nullable=False)
-    number = Column(String(40), nullable=False, server_default='')
+    number = Column(String(40))
     context = Column(String(39))
     data_quality = Column(Integer, nullable=False, server_default='0')
     hitting_callee = Column(Integer, nullable=False, server_default='0')
