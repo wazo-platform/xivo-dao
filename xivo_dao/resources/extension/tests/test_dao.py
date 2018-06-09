@@ -19,9 +19,14 @@ from hamcrest import (
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.helpers.exception import NotFoundError, InputError
-from xivo_dao.resources.extension import dao as extension_dao
-from xivo_dao.resources.extension.model import ServiceExtension, ForwardExtension, AgentActionExtension
 from xivo_dao.resources.utils.search import SearchResult
+
+from .. import dao as extension_dao
+from ..model import (
+    AgentActionExtension,
+    ForwardExtension,
+    ServiceExtension,
+)
 
 
 class TestExtension(DAOTestCase):

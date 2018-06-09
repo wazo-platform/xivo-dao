@@ -1,14 +1,17 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2016 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.helpers.db_manager import Session
 
-from xivo_dao.resources.extension.persistor import ExtensionPersistor
-from xivo_dao.resources.extension.database import \
-    fwd_converter, service_converter, agent_action_converter
-from xivo_dao.resources.extension.fixes import ExtensionFixes
+from .database import (
+    agent_action_converter,
+    fwd_converter,
+    service_converter,
+)
+from .fixes import ExtensionFixes
+from .persistor import ExtensionPersistor
 
 
 def persistor():
