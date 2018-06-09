@@ -98,6 +98,19 @@ class ExtensionPersistor(CriteriaBuilderMixin):
             self.session.flush()
             self.session.expire(group, ['extensions'])
 
+    def associate_queue(self, queue, extension):
+        extension.type = 'queue'
+        extension.typeval = str(queue.id)
+        self.session.flush()
+        self.session.expire(queue, ['extensions'])
+
+    def dissociate_queue(self, queue, extension):
+        if queue is extension.queue:
+            extension.type = 'user'
+            extension.typeval = '0'
+            self.session.flush()
+            self.session.expire(queue, ['extensions'])
+
     def associate_conference(self, conference, extension):
         extension.type = 'conference'
         extension.typeval = str(conference.id)

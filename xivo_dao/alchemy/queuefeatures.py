@@ -230,6 +230,14 @@ class QueueFeatures(Base):
         self.queue_dialactions[event].actionarg1 = dialaction.actionarg1
         self.queue_dialactions[event].actionarg2 = dialaction.actionarg2
 
+    def fix_extension(self):
+        self.number = None
+        self.context = None
+        for extension in self.extensions:
+            self.number = extension.exten
+            self.context = extension.context
+            return
+
     @hybrid_property
     def label(self):
         if self.displayname == '':

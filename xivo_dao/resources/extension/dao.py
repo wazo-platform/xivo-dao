@@ -75,6 +75,16 @@ def dissociate_group(group, extension):
     group.fix_extension()
 
 
+def associate_queue(queue, extension):
+    persistor().associate_queue(queue, extension)
+    queue.fix_extension()
+
+
+def dissociate_queue(queue, extension):
+    persistor().dissociate_queue(queue, extension)
+    queue.fix_extension()
+
+
 def associate_conference(conference, extension):
     persistor().associate_conference(conference, extension)
 
