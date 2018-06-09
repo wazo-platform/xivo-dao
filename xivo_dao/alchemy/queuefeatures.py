@@ -122,6 +122,7 @@ class QueueFeatures(Base):
                             Extension.typeval == cast(QueueFeatures.id, String))""",
         foreign_keys='Extension.typeval',
         viewonly=True,
+        back_populates='queue',
     )
 
     func_keys = relationship(
