@@ -73,13 +73,23 @@ class TestContexts(DAOTestCase):
 
 class TestDelete(DAOTestCase):
 
-    def test_context_includes(self):
+    def test_context_include_parents(self):
         context = self.add_context()
         included_context = self.add_context()
-        self.add_context_include(context=context.name, include=context.name)
         self.add_context_include(context=context.name, include=included_context.name)
 
         self.session.delete(context)
+        self.session.flush()
+
+        row = self.session.query(ContextInclude).first()
+        assert_that(row, none())
+
+    def test_context_include_children(self):
+        context = self.add_context()
+        included_context = self.add_context()
+        self.add_context_include(context=context.name, include=included_context.name)
+
+        self.session.delete(included_context)
         self.session.flush()
 
         row = self.session.query(ContextInclude).first()

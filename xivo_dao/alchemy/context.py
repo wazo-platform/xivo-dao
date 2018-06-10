@@ -70,14 +70,19 @@ class Context(Base):
                                           foreign_keys='ContextNumbers.context',
                                           cascade='all, delete-orphan')
 
-    context_includes = relationship('ContextInclude',
-                                    primaryjoin='ContextInclude.context == Context.name',
-                                    foreign_keys='ContextInclude.context',
-                                    order_by='ContextInclude.priority',
-                                    collection_class=ordering_list('priority', reorder_on_append=True),
-                                    cascade='all, delete-orphan')
+    context_includes_children = relationship('ContextInclude',
+                                             primaryjoin='ContextInclude.include == Context.name',
+                                             foreign_keys='ContextInclude.include',
+                                             cascade='all, delete-orphan')
 
-    contexts = association_proxy('context_includes', 'included_context',
+    context_include_parents = relationship('ContextInclude',
+                                           primaryjoin='ContextInclude.context == Context.name',
+                                           foreign_keys='ContextInclude.context',
+                                           order_by='ContextInclude.priority',
+                                           collection_class=ordering_list('priority', reorder_on_append=True),
+                                           cascade='all, delete-orphan')
+
+    contexts = association_proxy('context_include_parents', 'included_context',
                                  creator=lambda _context: ContextInclude(included_context=_context))
 
     tenant = relationship('Tenant', viewonly=True)
