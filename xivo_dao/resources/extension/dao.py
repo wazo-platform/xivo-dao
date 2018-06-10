@@ -2,6 +2,7 @@
 # Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
+from xivo_dao.alchemy.entity import Entity
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.helpers.db_manager import Session
 
@@ -12,34 +13,36 @@ from .database import (
 )
 from .fixes import ExtensionFixes
 from .persistor import ExtensionPersistor
+from xivo_dao.resources.utils.search import SearchResult
 
 
-def persistor():
-    return ExtensionPersistor(Session)
+def persistor(tenant_uuids=None):
+    return ExtensionPersistor(Session, tenant_uuids)
 
 
-def get_by(**criteria):
-    return persistor().get_by(criteria)
+def get_by(tenant_uuids=None, **criteria):
+    return _add_tenant_uuid(persistor(tenant_uuids).get_by(criteria))
 
 
-def find_by(**criteria):
-    return persistor().find_by(criteria)
+def find_by(tenant_uuids=None, **criteria):
+    return _add_tenant_uuid(persistor(tenant_uuids).find_by(criteria))
 
 
-def find_all_by(**criteria):
-    return persistor().find_all_by(criteria)
+def find_all_by(tenant_uuids=None, **criteria):
+    return _add_tenant_uuid(persistor(tenant_uuids).find_all_by(criteria))
 
 
-def get(id):
-    return persistor().get_by({'id': id})
+def get(id, tenant_uuids=None):
+    return _add_tenant_uuid(persistor(tenant_uuids).get_by({'id': id}))
 
 
-def find(id):
-    return persistor().find_by({'id': id})
+def find(id, tenant_uuids=None):
+    return _add_tenant_uuid(persistor(tenant_uuids).find_by({'id': id}))
 
 
-def search(**parameters):
-    return persistor().search(parameters)
+def search(tenant_uuids=None, **parameters):
+    total, items = persistor(tenant_uuids).search(parameters)
+    return SearchResult(total, _add_tenant_uuid(items))
 
 
 def create(extension):
@@ -135,3 +138,27 @@ def find_all_agent_action_extensions():
              )
 
     return [agent_action_converter.to_model(row) for row in query]
+
+
+def _add_tenant_uuid(result):
+    if not result:
+        return result
+
+    if not isinstance(result, list):
+        result.tenant_uuid = result._tenant_uuid or _get_default_tenant_uuid()
+        return result
+
+    default_tenant_uuid = _get_default_tenant_uuid()
+
+    for extension in result:
+        extension.tenant_uuid = extension._tenant_uuid or default_tenant_uuid
+
+    return result
+
+
+def _get_default_tenant_uuid():
+    query = Session.query(Entity.tenant_uuid).order_by(Entity.id).limit(1)
+    for row in query:
+        return row.tenant_uuid
+
+    raise Exception('No entity found')
