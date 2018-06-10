@@ -64,3 +64,7 @@ class ContextPersistor(CriteriaBuilderMixin):
         (self.session.query(ContextMember)
          .filter(ContextMember.context == context.name)
          .delete())
+
+    def associate_contexts(self, context, contexts):
+        context.contexts = contexts
+        self.session.flush()

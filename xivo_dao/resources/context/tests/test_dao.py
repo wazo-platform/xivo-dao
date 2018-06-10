@@ -430,3 +430,35 @@ class TestDelete(DAOTestCase):
 
         context_member = self.session.query(ContextMember).first()
         assert_that(context_member, none())
+
+
+class TestAssociateContexts(DAOTestCase):
+
+    def test_associate(self):
+        context = self.add_context()
+        included_context = self.add_context()
+
+        context_dao.associate_contexts(context, [included_context])
+
+        self.session.expire_all()
+        assert_that(context.contexts, contains(included_context))
+
+    def test_associate_multiple(self):
+        context = self.add_context()
+        included_context1 = self.add_context()
+        included_context2 = self.add_context()
+
+        context_dao.associate_contexts(context, [included_context1, included_context2])
+
+        self.session.expire_all()
+        assert_that(context.contexts, contains(included_context1, included_context2))
+
+    def test_dissociate(self):
+        context = self.add_context()
+        included_context = self.add_context()
+        context_dao.associate_contexts(context, [included_context])
+
+        context_dao.associate_contexts(context, [])
+
+        self.session.expire_all()
+        assert_that(context.contexts, empty())
