@@ -2,24 +2,26 @@
 # Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
-from hamcrest import (assert_that,
-                      contains,
-                      equal_to,
-                      empty,
-                      has_items,
-                      has_properties,
-                      has_property,
-                      is_not,
-                      none)
+from hamcrest import (
+    assert_that,
+    contains,
+    empty,
+    equal_to,
+    has_items,
+    has_properties,
+    has_property,
+    is_not,
+    none,
+)
 
 from xivo_dao.alchemy.context import Context
-from xivo_dao.alchemy.contextinclude import ContextInclude
 from xivo_dao.alchemy.contextmember import ContextMember
 from xivo_dao.alchemy.contextnumbers import ContextNumbers
 from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao.resources.context import dao as context_dao
 from xivo_dao.helpers.exception import NotFoundError, InputError
 from xivo_dao.resources.utils.search import SearchResult
+
+from .. import dao as context_dao
 
 
 class TestFind(DAOTestCase):
@@ -416,23 +418,6 @@ class TestDelete(DAOTestCase):
 
         context_numbers = self.session.query(ContextNumbers).first()
         assert_that(context_numbers, none())
-
-    def test_when_deleting_then_context_include_are_deleted(self):
-        context1_row = self.add_context()
-        context2_row = self.add_context()
-        self.add_context_include(context=context1_row.name, include=context2_row.name)
-        self.add_context_include(context=context2_row.name, include=context1_row.name)
-
-        context_dao.delete(context1_row)
-
-        context1 = self.session.query(Context).filter(Context.id == context1_row.id).first()
-        assert_that(context1, none())
-
-        context2 = self.session.query(Context).filter(Context.id == context2_row.id).first()
-        assert_that(context2, equal_to(context2_row))
-
-        context_include = self.session.query(ContextInclude).first()
-        assert_that(context_include, none())
 
     def test_when_deleting_then_context_member_are_deleted(self):
         context = self.add_context()
