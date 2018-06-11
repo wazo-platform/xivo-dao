@@ -46,7 +46,7 @@ def search(tenant_uuids=None, **parameters):
 
 
 def create(extension):
-    return persistor().create(extension)
+    return _add_tenant_uuid(persistor().create(extension))
 
 
 def edit(extension):
