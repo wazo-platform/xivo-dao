@@ -239,7 +239,7 @@ class TestSearchGivenMultipleAgent(TestSearch):
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_fields(self):
-        agent = Agent(number='1234', numgroup=0)
+        agent = Agent(number='1234')
         created_agent = agent_dao.create(agent)
 
         row = self.session.query(Agent).first()
@@ -258,7 +258,6 @@ class TestCreate(DAOTestCase):
 
     def test_create_with_all_fields(self):
         agent = Agent(
-            numgroup=0,
             number='1234',
             firstname='first',
             lastname='last',
@@ -284,12 +283,23 @@ class TestCreate(DAOTestCase):
             preprocess_subroutine='Subroutine',
         ))
 
+    def test_create_fill_default_values(self):
+        agent = Agent(number='1234')
+
+        created_agent = agent_dao.create(agent)
+
+        row = self.session.query(Agent).first()
+
+        assert_that(created_agent, equal_to(row))
+        assert_that(created_agent, has_properties(
+            numgroup=1,
+        ))
+
 
 class TestEdit(DAOTestCase):
 
     def test_edit_all_fields(self):
         agent = agent_dao.create(Agent(
-            numgroup=0,
             number='1234',
             firstname=None,
             lastname=None,

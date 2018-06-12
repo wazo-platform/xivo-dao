@@ -40,6 +40,7 @@ class AgentPersistor(CriteriaBuilderMixin):
         return SearchResult(total, rows)
 
     def create(self, agent):
+        self._fill_default_values(agent)
         self.session.add(agent)
         self.session.flush()
         return agent
@@ -51,3 +52,7 @@ class AgentPersistor(CriteriaBuilderMixin):
     def delete(self, agent):
         self.session.delete(agent)
         self.session.flush()
+
+    def _fill_default_values(self, agent):
+        # matches to default AgentGroup in populate.sql
+        agent.numgroup = 1
