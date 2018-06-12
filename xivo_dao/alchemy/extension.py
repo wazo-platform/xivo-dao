@@ -52,6 +52,18 @@ class Extension(Base):
             select([Entity.tenant_uuid]).order_by(Entity.id).limit(1).label('tenant_uuid'),
         )
 
+    @hybrid_property
+    def context_type(self):
+        if self.context_ref:
+            return self.context_rel.type
+
+    @context_type.expression
+    def context_type(cls):
+        return func.coalesce(
+            select([Context.contexttype]).where(Context.name == cls.context).label('type'),
+            'internal',
+        )
+
     dialpattern = relationship('DialPattern',
                                primaryjoin="""and_(Extension.type == 'outcall',
                                                    Extension.typeval == cast(DialPattern.id, String))""",
