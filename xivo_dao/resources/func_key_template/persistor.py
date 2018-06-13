@@ -499,6 +499,9 @@ class CustomPersistor(DestinationPersistor):
 
 class AgentPersistor(DestinationPersistor):
 
+    TYPE_ID = 1
+    DESTINATION_TYPE_ID = 11
+
     def get(self, func_key_id):
         query = (self.session.query(FuncKeyDestAgent)
                  .filter(FuncKeyDestAgent.func_key_id == func_key_id))
@@ -508,19 +511,36 @@ class AgentPersistor(DestinationPersistor):
     def find_or_create(self, destination):
         typeval = self.find_typeval(destination.action)
 
-        query = (self.session.query(FuncKeyDestAgent)
-                 .join(Extension, FuncKeyDestAgent.extension_id == Extension.id)
-                 .filter(FuncKeyDestAgent.agent_id == destination.agent_id)
-                 .filter(Extension.type == 'extenfeatures')
-                 .filter(Extension.typeval == typeval))
+        destination_row = (self.session.query(FuncKeyDestAgent)
+                           .join(Extension, FuncKeyDestAgent.extension_id == Extension.id)
+                           .filter(FuncKeyDestAgent.agent_id == destination.agent_id)
+                           .filter(Extension.type == 'extenfeatures')
+                           .filter(Extension.typeval == typeval)
+                           .first())
+        if not destination_row:
+            extension = (self.session.query(Extension)
+                         .filter(Extension.type == 'extenfeatures')
+                         .filter(Extension.typeval == typeval)
+                         .first())
 
-        return query.first()
+            func_key_row = self.create_func_key(self.TYPE_ID, self.DESTINATION_TYPE_ID)
+            destination_row = FuncKeyDestAgent(func_key_id=func_key_row.id,
+                                               agent_id=destination.agent_id,
+                                               extension_id=extension.id)
+            self.session.add(destination_row)
+            self.session.flush()
+
+        return destination_row
 
     def find_typeval(self, action):
         return AgentActionExtensionConverter().to_typeval(action)
 
     def delete(self, func_key_id):
-        pass
+        if not self._func_key_is_still_mapped(func_key_id):
+            (self.session.query(FuncKeyDestAgent)
+             .filter(FuncKeyDestAgent.func_key_id == func_key_id)
+             .delete())
+            self.delete_func_key(func_key_id)
 
 
 class FeaturesPersistor(DestinationPersistor):
