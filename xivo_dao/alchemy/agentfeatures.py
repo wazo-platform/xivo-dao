@@ -2,6 +2,7 @@
 # Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
+from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, UniqueConstraint
 from sqlalchemy.types import Integer, String, Text
 
@@ -27,3 +28,8 @@ class AgentFeatures(Base):
     group = Column(String(255))
     description = Column(Text)
     preprocess_subroutine = Column(String(40))
+
+    func_keys = relationship(
+        'FuncKeyDestAgent',
+        cascade='all, delete-orphan'
+    )
