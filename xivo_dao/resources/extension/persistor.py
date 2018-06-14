@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy.orm import joinedload
@@ -46,6 +46,7 @@ class ExtensionPersistor(CriteriaBuilderMixin):
                 .options(joinedload('dialpattern')
                          .joinedload('outcall'))
                 .options(joinedload('group'))
+                .options(joinedload('queue'))
                 .options(joinedload('incall'))
                 .options(joinedload('line_extensions')
                          .joinedload('line'))
@@ -96,6 +97,19 @@ class ExtensionPersistor(CriteriaBuilderMixin):
             extension.typeval = '0'
             self.session.flush()
             self.session.expire(group, ['extensions'])
+
+    def associate_queue(self, queue, extension):
+        extension.type = 'queue'
+        extension.typeval = str(queue.id)
+        self.session.flush()
+        self.session.expire(queue, ['extensions'])
+
+    def dissociate_queue(self, queue, extension):
+        if queue is extension.queue:
+            extension.type = 'user'
+            extension.typeval = '0'
+            self.session.flush()
+            self.session.expire(queue, ['extensions'])
 
     def associate_conference(self, conference, extension):
         extension.type = 'conference'

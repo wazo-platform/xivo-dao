@@ -19,9 +19,14 @@ from hamcrest import (
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.helpers.exception import NotFoundError, InputError
-from xivo_dao.resources.extension import dao as extension_dao
-from xivo_dao.resources.extension.model import ServiceExtension, ForwardExtension, AgentActionExtension
 from xivo_dao.resources.utils.search import SearchResult
+
+from .. import dao as extension_dao
+from ..model import (
+    AgentActionExtension,
+    ForwardExtension,
+    ServiceExtension,
+)
 
 
 class TestExtension(DAOTestCase):
@@ -600,6 +605,15 @@ class TestRelationship(DAOTestCase):
         assert_that(extension, equal_to(extension_row))
         assert_that(extension.group, equal_to(group_row))
 
+    def test_queue_relationship(self):
+        extension_row = self.add_extension()
+        queue_row = self.add_queuefeatures()
+        extension_dao.associate_queue(queue_row, extension_row)
+
+        extension = extension_dao.get(extension_row.id)
+        assert_that(extension, equal_to(extension_row))
+        assert_that(extension.queue, equal_to(queue_row))
+
 
 class TestAssociateGroup(DAOTestCase):
 
@@ -681,6 +695,99 @@ class TestAssociateGroup(DAOTestCase):
         group = self.add_group()
 
         extension_dao.dissociate_group(group, extension)
+
+        result = self.session.query(Extension).first()
+        assert_that(result, has_properties(typeval='123'))
+
+
+class TestAssociateQueue(DAOTestCase):
+
+    def test_associate_queue(self):
+        extension = self.add_extension()
+        queue = self.add_queuefeatures()
+
+        extension_dao.associate_queue(queue, extension)
+
+        assert_that(queue.extensions, contains_inanyorder(
+            has_properties(
+                exten=extension.exten,
+                context=extension.context,
+                type='queue',
+                typeval=str(queue.id),
+            )
+        ))
+
+    def test_associate_fix_queue(self):
+        extension = self.add_extension(exten='1234', context='patate')
+        queue = self.add_queuefeatures()
+        assert_that(queue, has_properties(
+            context=not_('patate'),
+            number=not_('1234'),
+        ))
+
+        extension_dao.associate_queue(queue, extension)
+        assert_that(queue, has_properties(
+            context='patate',
+            number='1234',
+        ))
+
+    def test_associate_multiple_queues(self):
+        extension1 = self.add_extension()
+        extension2 = self.add_extension()
+        extension3 = self.add_extension()
+        queue = self.add_queuefeatures()
+
+        extension_dao.associate_queue(queue, extension1)
+        extension_dao.associate_queue(queue, extension2)
+        extension_dao.associate_queue(queue, extension3)
+
+        assert_that(queue.extensions, contains_inanyorder(extension1, extension2, extension3))
+
+    def test_dissociate_queues(self):
+        extension1 = self.add_extension()
+        extension2 = self.add_extension()
+        extension3 = self.add_extension()
+        queue = self.add_queuefeatures()
+        extension_dao.associate_queue(queue, extension1)
+        extension_dao.associate_queue(queue, extension2)
+        extension_dao.associate_queue(queue, extension3)
+
+        assert_that(queue.extensions, not_(empty()))
+
+        extension_dao.dissociate_queue(queue, extension1)
+        extension_dao.dissociate_queue(queue, extension2)
+        extension_dao.dissociate_queue(queue, extension3)
+
+        assert_that(queue.extensions, empty())
+
+        rows = self.session.query(Extension).all()
+        assert_that(rows, contains_inanyorder(
+            has_properties(type='user', typeval='0'),
+            has_properties(type='user', typeval='0'),
+            has_properties(type='user', typeval='0')
+        ))
+
+    def test_dissociate_fix_queue(self):
+        extension = self.add_extension(exten='1234', context='patate')
+        queue = self.add_queuefeatures()
+        extension_dao.associate_queue(queue, extension)
+        assert_that(queue, has_properties(
+            context='patate',
+            number='1234',
+        ))
+
+        extension_dao.dissociate_queue(queue, extension)
+
+        assert_that(queue, has_properties(
+            context=None,
+            number=None
+        ))
+
+    def test_dissociate_queue_not_associated(self):
+        extension = self.add_extension(typeval='123')
+        queue = self.add_queuefeatures()
+
+        extension_dao.dissociate_queue(queue, extension)
 
         result = self.session.query(Extension).first()
         assert_that(result, has_properties(typeval='123'))

@@ -65,7 +65,7 @@ class QueueFeatures(Base):
     id = Column(Integer)
     name = Column(String(128), nullable=False)
     displayname = Column(String(128), nullable=False)
-    number = Column(String(40), nullable=False, server_default='')
+    number = Column(String(40))
     context = Column(String(39))
     data_quality = Column(Integer, nullable=False, server_default='0')
     hitting_callee = Column(Integer, nullable=False, server_default='0')
@@ -122,6 +122,7 @@ class QueueFeatures(Base):
                             Extension.typeval == cast(QueueFeatures.id, String))""",
         foreign_keys='Extension.typeval',
         viewonly=True,
+        back_populates='queue',
     )
 
     func_keys = relationship(
@@ -228,6 +229,14 @@ class QueueFeatures(Base):
         self.queue_dialactions[event].action = dialaction.action
         self.queue_dialactions[event].actionarg1 = dialaction.actionarg1
         self.queue_dialactions[event].actionarg2 = dialaction.actionarg2
+
+    def fix_extension(self):
+        self.number = None
+        self.context = None
+        for extension in self.extensions:
+            self.number = extension.exten
+            self.context = extension.context
+            return
 
     @hybrid_property
     def label(self):

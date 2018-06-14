@@ -55,6 +55,13 @@ class Extension(Base):
                          viewonly=True,
                          back_populates='extensions')
 
+    queue = relationship('QueueFeatures',
+                         primaryjoin="""and_(Extension.type == 'queue',
+                                             Extension.typeval == cast(QueueFeatures.id, String))""",
+                         foreign_keys='Extension.typeval',
+                         viewonly=True,
+                         back_populates='extensions')
+
     incall = relationship('Incall',
                           primaryjoin="""and_(Extension.type == 'incall',
                                               Extension.typeval == cast(Incall.id, String))""",
