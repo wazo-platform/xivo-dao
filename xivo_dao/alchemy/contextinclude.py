@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2012-2014 Avencall
+# Copyright 2012-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
+from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String
 
@@ -15,3 +16,10 @@ class ContextInclude(Base):
     context = Column(String(39), primary_key=True)
     include = Column(String(39), primary_key=True)
     priority = Column(Integer, nullable=False, server_default='0')
+
+    included_context = relationship(
+        'Context',
+        primaryjoin='Context.name == ContextInclude.include',
+        foreign_keys='ContextInclude.include',
+        uselist=False,
+    )

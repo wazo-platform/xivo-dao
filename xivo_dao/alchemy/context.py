@@ -2,7 +2,9 @@
 # Copyright 2012-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, ForeignKeyConstraint, PrimaryKeyConstraint, UniqueConstraint
 from sqlalchemy.sql import cast, not_
@@ -10,6 +12,8 @@ from sqlalchemy.types import Boolean, Integer, String, Text
 
 from xivo_dao.alchemy.contextnumbers import ContextNumbers
 from xivo_dao.helpers.db_manager import Base
+
+from .contextinclude import ContextInclude
 
 
 class Context(Base):
@@ -65,6 +69,21 @@ class Context(Base):
                                               ContextNumbers.context == Context.name)""",
                                           foreign_keys='ContextNumbers.context',
                                           cascade='all, delete-orphan')
+
+    context_includes_children = relationship('ContextInclude',
+                                             primaryjoin='ContextInclude.include == Context.name',
+                                             foreign_keys='ContextInclude.include',
+                                             cascade='all, delete-orphan')
+
+    context_include_parents = relationship('ContextInclude',
+                                           primaryjoin='ContextInclude.context == Context.name',
+                                           foreign_keys='ContextInclude.context',
+                                           order_by='ContextInclude.priority',
+                                           collection_class=ordering_list('priority', reorder_on_append=True),
+                                           cascade='all, delete-orphan')
+
+    contexts = association_proxy('context_include_parents', 'included_context',
+                                 creator=lambda _context: ContextInclude(included_context=_context))
 
     tenant = relationship('Tenant', viewonly=True)
 

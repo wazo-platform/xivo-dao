@@ -2,10 +2,7 @@
 # Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
-from sqlalchemy import or_
-
 from xivo_dao.alchemy.context import Context
-from xivo_dao.alchemy.contextinclude import ContextInclude
 from xivo_dao.alchemy.contextmember import ContextMember
 
 from xivo_dao.helpers import errors
@@ -64,12 +61,10 @@ class ContextPersistor(CriteriaBuilderMixin):
         self.session.flush()
 
     def _delete_associations(self, context):
-        # Should be deleted when Context will have relationship with ContextInclude
-        (self.session.query(ContextInclude)
-         .filter(or_(ContextInclude.context == context.name,
-                     ContextInclude.include == context.name))
-         .delete())
-
         (self.session.query(ContextMember)
          .filter(ContextMember.context == context.name)
          .delete())
+
+    def associate_contexts(self, context, contexts):
+        context.contexts = contexts
+        self.session.flush()

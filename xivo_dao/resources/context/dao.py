@@ -56,3 +56,8 @@ def edit(session, context):
 @daosession
 def delete(session, context):
     ContextPersistor(session, context_search).delete(context)
+
+
+@daosession
+def associate_contexts(session, context, contexts):
+    ContextPersistor(session, context_search).associate_contexts(context, contexts)
