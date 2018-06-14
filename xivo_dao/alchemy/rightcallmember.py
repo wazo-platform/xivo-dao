@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -31,15 +31,19 @@ class RightCallMember(Base):
                          primaryjoin="""and_(RightCallMember.type == 'group',
                                              RightCallMember.typeval == cast(GroupFeatures.id, String))""",
                          foreign_keys='RightCallMember.typeval',
-                         viewonly=True,
-                         back_populates='rightcall_members')
+                         viewonly=True)
 
     outcall = relationship('Outcall',
                            primaryjoin="""and_(RightCallMember.type == 'outcall',
                                                RightCallMember.typeval == cast(Outcall.id, String))""",
                            foreign_keys='RightCallMember.typeval',
-                           viewonly=True,
-                           back_populates='rightcall_members')
+                           viewonly=True)
+
+    user = relationship('UserFeatures',
+                        primaryjoin="""and_(RightCallMember.type == 'user',
+                                            RightCallMember.typeval == cast(UserFeatures.id, String))""",
+                        foreign_keys='RightCallMember.typeval',
+                        viewonly=True)
 
     rightcall = relationship('RightCall',
                              primaryjoin='RightCall.id == RightCallMember.rightcallid',
