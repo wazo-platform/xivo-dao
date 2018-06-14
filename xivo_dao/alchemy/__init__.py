@@ -12,6 +12,8 @@ from xivo_dao.alchemy.call_log_participant import CallLogParticipant
 from xivo_dao.alchemy.callfilter import Callfilter
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from xivo_dao.alchemy.conference import Conference
+from xivo_dao.alchemy.context import Context
+from xivo_dao.alchemy.contextinclude import ContextInclude
 from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.extension import Extension
@@ -60,6 +62,8 @@ __all__ = [
     'Callfilter',
     'Callfiltermember',
     'Conference',
+    'Context',
+    'ContextInclude',
     'CtiProfile',
     'Dialaction',
     'Extension',
