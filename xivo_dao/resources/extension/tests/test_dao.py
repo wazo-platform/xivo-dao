@@ -402,7 +402,7 @@ class TestGet(TestExtension):
         )
 
 
-class TestCreate(DAOTestCase):
+class TestCreate(TestExtension):
 
     def test_create(self):
         exten = 'extension'
