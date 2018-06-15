@@ -946,7 +946,7 @@ class ItemInserter(object):
         return destination_type_row
 
     def add_entity(self, **kwargs):
-        kwargs.setdefault('name', 'entity')
+        kwargs.setdefault('name', self._random_name())
         kwargs.setdefault('description', '')
         kwargs.setdefault('tenant_uuid', DEFAULT_TENANT)
         entity = EntitySchema(**kwargs)

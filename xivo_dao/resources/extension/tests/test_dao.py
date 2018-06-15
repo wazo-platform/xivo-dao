@@ -31,6 +31,11 @@ from ..model import (
 
 class TestExtension(DAOTestCase):
 
+    def setUp(self):
+        super(TestExtension, self).setUp()
+        self.default_tenant = self.add_tenant()
+        self.default_entity = self.add_entity(tenant_uuid=self.default_tenant.uuid)
+
     def assert_search_returns_result(self, search_result, **parameters):
         result = extension_dao.search(**parameters)
         expected_extensions = [
@@ -43,9 +48,6 @@ class TestExtension(DAOTestCase):
 
 
 class TestSimpleSearch(TestExtension):
-
-    def setUp(self):
-        TestExtension.setUp(self)
 
     def test_given_no_extensions_then_returns_no_empty_result(self):
         expected = SearchResult(0, [])
@@ -73,6 +75,31 @@ class TestSimpleSearch(TestExtension):
 
         expected = SearchResult(0, [])
         self.assert_search_returns_result(expected, feature='im_not_feature')
+
+
+class TestSearchGivenMultipleTenants(TestExtension):
+
+    def test_given_extensions_in_multiple_tenants(self):
+        tenant_1 = self.add_tenant()
+        tenant_2 = self.add_tenant()
+        tenant_3 = self.add_tenant()
+
+        context_1 = self.add_context(tenant_uuid=tenant_1.uuid)
+        context_2 = self.add_context(tenant_uuid=tenant_2.uuid)
+        context_3 = self.add_context(tenant_uuid=tenant_3.uuid)
+
+        extension_1 = self.add_extension(exten='1001', context=context_1.name)
+        extension_2 = self.add_extension(exten='1002', context=context_2.name)
+        extension_3 = self.add_extension(exten='1003', context=context_3.name)
+
+        expected = SearchResult(2, [extension_1, extension_2])
+        self.assert_search_returns_result(expected, tenant_uuids=[tenant_1.uuid, tenant_2.uuid])
+
+        expected = SearchResult(0, [])
+        self.assert_search_returns_result(expected, tenant_uuids=[])
+
+        expected = SearchResult(3, [extension_1, extension_2, extension_3])
+        self.assert_search_returns_result(expected)
 
 
 class TestSearchGivenMultipleExtensions(TestExtension):
@@ -182,7 +209,7 @@ class TestSearchGivenIncallExtensionType(TestExtension):
         self.assert_search_returns_result(expected, type='incall', limit=1)
 
 
-class TestFind(DAOTestCase):
+class TestFind(TestExtension):
 
     def test_find_no_extension(self):
         result = extension_dao.find(1)
@@ -197,6 +224,25 @@ class TestFind(DAOTestCase):
         assert_that(result, all_of(
             has_property('exten', extension_row.exten),
             has_property('context', extension_row.context)))
+
+    def test_find_multi_tenant(self):
+        tenant = self.add_tenant()
+        context = self.add_context(tenant_uuid=tenant.uuid)
+
+        extension = self.add_extension(exten='1234', context=context.name)
+
+        result = extension_dao.find(extension.id, tenant_uuids=[tenant.uuid])
+        assert_that(
+            result,
+            has_properties(
+                exten=extension.exten,
+                context=extension.context,
+                tenant_uuid=tenant.uuid,
+            )
+        )
+
+        result = extension_dao.find(extension.id, tenant_uuids=[self.default_tenant.uuid])
+        assert_that(result, none())
 
 
 class TestFindBy(TestExtension):
@@ -216,6 +262,30 @@ class TestFindBy(TestExtension):
 
         assert_that(result.id, equal_to(row.id))
 
+    def test_given_extension_exists_then_returns_extension_with_a_tenant(self):
+        tenant = self.add_tenant()
+        context = self.add_context(tenant_uuid=tenant.uuid)
+
+        self.add_extension(exten='1000', context=context.name)
+        result = extension_dao.find_by(exten='1000')
+        assert_that(result, has_properties(tenant_uuid=tenant.uuid))
+
+        self.add_extension(exten='1001')
+        result = extension_dao.find_by(exten='1001')
+        assert_that(result, has_properties(tenant_uuid=self.default_tenant.uuid))
+
+    def test_given_entension_exists_with_tenant_filtering(self):
+        tenant = self.add_tenant()
+        context = self.add_context(tenant_uuid=tenant.uuid)
+
+        extension = self.add_extension(exten='1000', context=context.name)
+
+        result = extension_dao.find_by(exten='1000', tenant_uuids=[self.default_tenant.uuid])
+        assert_that(result, none())
+
+        result = extension_dao.find_by(exten='1000', tenant_uuids=[tenant.uuid])
+        assert_that(result, has_properties(id=extension.id, tenant_uuid=tenant.uuid))
+
 
 class TestGetBy(TestExtension):
 
@@ -228,9 +298,33 @@ class TestGetBy(TestExtension):
     def test_given_extension_exists_then_returns_extension(self):
         row = self.add_extension(exten='1000')
 
-        result = extension_dao.find_by(exten='1000')
+        result = extension_dao.get_by(exten='1000')
 
         assert_that(result.id, equal_to(row.id))
+
+    def test_given_extension_exists_then_returns_extension_with_a_tenant(self):
+        tenant = self.add_tenant()
+        context = self.add_context(tenant_uuid=tenant.uuid)
+
+        self.add_extension(exten='1000', context=context.name)
+        result = extension_dao.get_by(exten='1000')
+        assert_that(result, has_properties(tenant_uuid=tenant.uuid))
+
+        self.add_extension(exten='1001')
+        result = extension_dao.get_by(exten='1001')
+        assert_that(result, has_properties(tenant_uuid=self.default_tenant.uuid))
+
+    def test_given_entension_exists_with_tenant_filtering(self):
+        tenant = self.add_tenant()
+        context = self.add_context(tenant_uuid=tenant.uuid)
+
+        extension = self.add_extension(exten='1000', context=context.name)
+
+        self.assertRaises(NotFoundError, extension_dao.get_by,
+                          exten='1000', tenant_uuids=[self.default_tenant.uuid])
+
+        result = extension_dao.get_by(exten='1000', tenant_uuids=[tenant.uuid])
+        assert_that(result, has_properties(id=extension.id))
 
 
 class TestFindAllBy(TestExtension):
@@ -249,8 +343,23 @@ class TestFindAllBy(TestExtension):
         assert_that(extensions, has_items(has_property('id', extension1.id),
                                           has_property('id', extension2.id)))
 
+    def test_find_all_by_with_multi_tenant(self):
+        tenant = self.add_tenant()
+        context = self.add_context(tenant_uuid=tenant.uuid)
 
-class TestGet(DAOTestCase):
+        extension = self.add_extension(exten='1000', context=context.name)
+
+        result = extension_dao.find_all_by(exten='1000', tenant_uuids=[self.default_tenant.uuid])
+        assert_that(result, empty())
+
+        result = extension_dao.find_all_by(exten='1000', tenant_uuids=[tenant.uuid])
+        assert_that(
+            result,
+            has_items(has_properties(id=extension.id, tenant_uuid=tenant.uuid)),
+        )
+
+
+class TestGet(TestExtension):
 
     def test_get_no_exist(self):
         self.assertRaises(NotFoundError, extension_dao.get, 666)
@@ -273,8 +382,22 @@ class TestGet(DAOTestCase):
         assert_that(extension, equal_to(extension_row))
         assert_that(extension.incall, equal_to(incall_row))
 
+    def test_get_with_multi_tenant(self):
+        tenant = self.add_tenant()
+        context = self.add_context(tenant_uuid=tenant.uuid)
 
-class TestCreate(DAOTestCase):
+        extension = self.add_extension(exten='1000', context=context.name)
+
+        self.assertRaises(NotFoundError, extension_dao.get, extension.id, tenant_uuids=[self.default_tenant.uuid])
+
+        result = extension_dao.get(extension.id, tenant_uuids=[tenant.uuid])
+        assert_that(
+            result,
+            has_properties(id=extension.id, tenant_uuid=tenant.uuid),
+        )
+
+
+class TestCreate(TestExtension):
 
     def test_create(self):
         exten = 'extension'
@@ -311,10 +434,10 @@ class TestCreate(DAOTestCase):
         assert_that(row.typeval, equal_to('0'))
 
 
-class TestEdit(DAOTestCase):
+class TestEdit(TestExtension):
 
     def setUp(self):
-        DAOTestCase.setUp(self)
+        super(TestEdit, self).setUp()
         self.existing_extension = self.add_extension(exten='1635', context='my_context', type='user', typeval='0')
 
     def test_edit(self):
@@ -340,7 +463,7 @@ class TestEdit(DAOTestCase):
         assert_that(row.typeval, equal_to('0'))
 
 
-class TestDelete(DAOTestCase):
+class TestDelete(TestExtension):
 
     def test_delete(self):
         exten = 'sdklfj'
@@ -562,7 +685,7 @@ class TestFindAllAgentActionExtensions(DAOTestCase):
         assert_that(result, contains(expected))
 
 
-class TestRelationship(DAOTestCase):
+class TestRelationship(TestExtension):
 
     def test_incall_relationship(self):
         incall_row = self.add_incall()

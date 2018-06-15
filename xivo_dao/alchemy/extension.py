@@ -7,10 +7,12 @@ from sqlalchemy.schema import Column, UniqueConstraint, Index, PrimaryKeyConstra
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import Integer, String, Boolean
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.sql import case, cast, not_
+from sqlalchemy.sql import case, cast, not_, select, func
 
 from xivo_dao.helpers.db_manager import Base, IntAsString
 from xivo_dao.alchemy import enum
+from xivo_dao.alchemy.context import Context
+from xivo_dao.alchemy.entity import Entity
 
 
 class Extension(Base):
@@ -31,6 +33,36 @@ class Extension(Base):
     exten = Column(String(40), nullable=False, server_default='')
     type = Column(enum.extenumbers_type, nullable=False)
     typeval = Column(IntAsString(255), nullable=False, server_default='')
+
+    context_rel = relationship('Context',
+                               primaryjoin='''Extension.context == Context.name''',
+                               foreign_keys='Extension.context')
+
+    @hybrid_property
+    def _tenant_uuid(self):
+        if self.context_rel:
+            return self.context_rel.tenant_uuid
+
+        return None
+
+    @_tenant_uuid.expression
+    def _tenant_uuid(cls):
+        return func.coalesce(
+            select([Context.tenant_uuid]).where(Context.name == cls.context).label('tenant_uuid'),
+            select([Entity.tenant_uuid]).order_by(Entity.id).limit(1).label('tenant_uuid'),
+        )
+
+    @hybrid_property
+    def context_type(self):
+        if self.context_ref:
+            return self.context_rel.type
+
+    @context_type.expression
+    def context_type(cls):
+        return func.coalesce(
+            select([Context.contexttype]).where(Context.name == cls.context).label('type'),
+            'internal',
+        )
 
     dialpattern = relationship('DialPattern',
                                primaryjoin="""and_(Extension.type == 'outcall',

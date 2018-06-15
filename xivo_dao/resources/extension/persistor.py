@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy.orm import joinedload
+from sqlalchemy import text
 
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.helpers import errors
@@ -14,8 +15,9 @@ class ExtensionPersistor(CriteriaBuilderMixin):
 
     _search_table = Extension
 
-    def __init__(self, session):
+    def __init__(self, session, tenant_uuids=None):
         self.session = session
+        self.tenant_uuids = tenant_uuids
 
     def find_by(self, criteria):
         query = self._find_query(criteria)
@@ -33,10 +35,14 @@ class ExtensionPersistor(CriteriaBuilderMixin):
 
     def _find_query(self, criteria):
         query = self.session.query(Extension)
-        return self.build_criteria(query, criteria)
+        query = self.build_criteria(query, criteria)
+        query = self._add_tenant_filter(query)
+        return query
 
     def search(self, params):
-        rows, total = extension_search.search_from_query(self._search_query(), params)
+        query = self._search_query()
+        query = self._add_tenant_filter(query)
+        rows, total = extension_search.search_from_query(query, params)
         return SearchResult(total, rows)
 
     def _search_query(self):
@@ -136,3 +142,12 @@ class ExtensionPersistor(CriteriaBuilderMixin):
             extension.typeval = '0'
             self.session.flush()
             self.session.expire(parking_lot, ['extensions'])
+
+    def _add_tenant_filter(self, query):
+        if self.tenant_uuids is None:
+            return query
+
+        if not self.tenant_uuids:
+            return query.filter(text('false'))
+
+        return query.filter(Extension._tenant_uuid.in_(self.tenant_uuids))
