@@ -17,6 +17,7 @@ from xivo_dao.alchemy.contextinclude import ContextInclude
 from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.extension import Extension
+from xivo_dao.alchemy.func_key_dest_agent import FuncKeyDestAgent
 from xivo_dao.alchemy.func_key_dest_bsfilter import FuncKeyDestBSFilter
 from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup
 from xivo_dao.alchemy.func_key_dest_paging import FuncKeyDestPaging
@@ -67,6 +68,7 @@ __all__ = [
     'CtiProfile',
     'Dialaction',
     'Extension',
+    'FuncKeyDestAgent',
     'FuncKeyDestBSFilter',
     'FuncKeyDestGroup',
     'FuncKeyDestPaging',
