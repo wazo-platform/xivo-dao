@@ -17,7 +17,6 @@ from hamcrest import (
 )
 
 from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao.alchemy.entity import Entity
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.helpers.exception import NotFoundError, InputError
 from xivo_dao.resources.utils.search import SearchResult
@@ -36,10 +35,6 @@ class TestExtension(DAOTestCase):
         super(TestExtension, self).setUp()
         self.default_tenant = self.add_tenant()
         self.default_entity = self.add_entity(tenant_uuid=self.default_tenant.uuid)
-
-    def tearDown(self):
-        self.session.query(Entity).filter(Entity.id == self.default_entity.id).delete()
-        super(TestExtension, self).tearDown()
 
     def assert_search_returns_result(self, search_result, **parameters):
         result = extension_dao.search(**parameters)
