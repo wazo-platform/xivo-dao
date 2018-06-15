@@ -401,6 +401,26 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
                                .count())
         assert_that(dest_bsfilter_count, equal_to(1))
 
+    def test_given_no_agent_func_key_when_created_then_create_new_agent_func_key(self):
+        agent = self.add_agent()
+        self.add_extension(type='extenfeatures', typeval='agentstaticlogin')
+
+        dest_agent_count = (self.session.query(FuncKeyDestAgent)
+                            .filter(FuncKeyDestAgent.agent_id == agent.id)
+                            .count())
+        assert_that(dest_agent_count, equal_to(0))
+
+        template = self.build_template_with_key(FuncKeyDestAgent(agent_id=agent.id, action='agentstaticlogin'))
+        dao.create(template)
+
+        template = self.build_template_with_key(FuncKeyDestAgent(agent_id=agent.id, action='agentstaticlogin'))
+        dao.create(template)
+
+        dest_agent_count = (self.session.query(FuncKeyDestAgent)
+                            .filter(FuncKeyDestAgent.agent_id == agent.id)
+                            .count())
+        assert_that(dest_agent_count, equal_to(1))
+
 
 class TestFuncKeyTemplateGet(TestFuncKeyTemplateDao):
 
@@ -776,6 +796,47 @@ class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
                                .filter(FuncKeyDestBSFilter.filter_member_id == filter_member.id)
                                .count())
         assert_that(dest_bsfilter_count, equal_to(1))
+
+    def test_given_template_is_associated_to_agent_when_deleting_template(self):
+        agent = self.add_agent()
+        self.add_extension(type='extenfeatures', typeval='agentstaticlogin')
+        template = FuncKeyTemplate(
+            keys={'1': FuncKeyMapping(destination=FuncKeyDestAgent(agent_id=agent.id, action='agentstaticlogin'))}
+        )
+        dao.create(template)
+
+        dao.delete(template)
+
+        dest_agent_count = (self.session.query(FuncKeyDestAgent)
+                            .filter(FuncKeyDestAgent.agent_id == agent.id)
+                            .count())
+        assert_that(dest_agent_count, equal_to(0))
+
+    def test_given_multi_template_is_associated_to_agent_when_deleting_template(self):
+        agent = self.add_agent()
+        self.add_extension(type='extenfeatures', typeval='agentstaticlogin')
+        template = FuncKeyTemplate(
+            keys={'1': FuncKeyMapping(destination=FuncKeyDestAgent(agent_id=agent.id, action='agentstaticlogin'))}
+        )
+
+        dao.create(template)
+        template = FuncKeyTemplate(
+            keys={'1': FuncKeyMapping(destination=FuncKeyDestAgent(agent_id=agent.id, action='agentstaticlogin'))}
+        )
+
+        dao.create(template)
+        template = FuncKeyTemplate(
+            keys={'1': FuncKeyMapping(destination=FuncKeyDestAgent(agent_id=agent.id, action='agentstaticlogin'))}
+        )
+
+        dao.create(template)
+
+        dao.delete(template)
+
+        dest_agent_count = (self.session.query(FuncKeyDestAgent)
+                            .filter(FuncKeyDestAgent.agent_id == agent.id)
+                            .count())
+        assert_that(dest_agent_count, equal_to(1))
 
 
 class TestFuncKeyTemplateEdit(TestFuncKeyTemplateDao):
