@@ -45,7 +45,7 @@ Start the database (needed only once):
 
 Run your tests:
 
-    XIVO_TEST_DB_URL=postgresql://asterisk:proformatique@$(docker port dao_db_1 5432)/asterisk nosetests -x xivo_dao
+    XIVO_TEST_DB_URL=postgresql://asterisk:proformatique@$(docker-compose port db 5432)/asterisk nosetests -x xivo_dao
 
 OR
 
