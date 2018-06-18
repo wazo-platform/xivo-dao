@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from hamcrest import (assert_that,
@@ -215,13 +215,14 @@ class TestSearchGivenMultipleGroup(TestSearch):
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_fields(self):
-        group = Group(name='mygroup')
+        group = Group(name='mygroup', tenant_uuid=self.default_tenant.uuid)
         created_group = group_dao.create(group)
 
         row = self.session.query(Group).first()
 
         assert_that(created_group, equal_to(row))
         assert_that(created_group, has_properties(id=is_not(none()),
+                                                  tenant_uuid=self.default_tenant.uuid,
                                                   name='mygroup',
                                                   caller_id_mode=none(),
                                                   caller_id_name=none(),
@@ -235,7 +236,8 @@ class TestCreate(DAOTestCase):
                                                   enabled=True))
 
     def test_create_with_all_fields(self):
-        group = Group(name='MyGroup',
+        group = Group(tenant_uuid=self.default_tenant.uuid,
+                      name='MyGroup',
                       caller_id_mode='prepend',
                       caller_id_name='toto',
                       timeout=60,
@@ -253,6 +255,7 @@ class TestCreate(DAOTestCase):
 
         assert_that(created_group, equal_to(row))
         assert_that(created_group, has_properties(id=is_not(none()),
+                                                  tenant_uuid=self.default_tenant.uuid,
                                                   name='MyGroup',
                                                   caller_id_mode='prepend',
                                                   caller_id_name='toto',
@@ -269,7 +272,8 @@ class TestCreate(DAOTestCase):
 class TestEdit(DAOTestCase):
 
     def test_edit_all_fields(self):
-        group = group_dao.create(Group(name='MyGroup',
+        group = group_dao.create(Group(tenant_uuid=self.default_tenant.uuid,
+                                       name='MyGroup',
                                        caller_id_mode='prepend',
                                        caller_id_name='toto',
                                        timeout=60,
@@ -312,7 +316,8 @@ class TestEdit(DAOTestCase):
                                           enabled=False))
 
     def test_edit_set_fields_to_null(self):
-        group = group_dao.create(Group(name='MyGroup',
+        group = group_dao.create(Group(tenant_uuid=self.default_tenant.uuid,
+                                       name='MyGroup',
                                        caller_id_mode='prepend',
                                        caller_id_name='toto',
                                        timeout=0,
@@ -343,7 +348,7 @@ class TestEdit(DAOTestCase):
                                         retry_delay=none()))
 
     def test_edit_queue_name(self):
-        group_dao.create(Group(name='MyGroup'))
+        group_dao.create(Group(name='MyGroup', tenant_uuid=self.default_tenant.uuid))
         self.session.expunge_all()
 
         queue = self.session.query(Queue).first()

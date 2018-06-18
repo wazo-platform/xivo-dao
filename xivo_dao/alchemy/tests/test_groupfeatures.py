@@ -193,7 +193,7 @@ class TestSchedules(DAOTestCase):
 class TestCreate(DAOTestCase):
 
     def test_queue_is_created_with_default_fields(self):
-        group = Group(name='groupname')
+        group = Group(name='groupname', tenant_uuid=self.default_tenant.uuid)
         self.session.add(group)
         self.session.flush()
 
@@ -228,7 +228,8 @@ class TestCreate(DAOTestCase):
         ))
 
     def test_queue_is_created_with_all_fields(self):
-        group = Group(name='groupname',
+        group = Group(tenant_uuid=self.default_tenant.uuid,
+                      name='groupname',
                       retry_delay=6,
                       ring_in_use=False,
                       ring_strategy='random',
