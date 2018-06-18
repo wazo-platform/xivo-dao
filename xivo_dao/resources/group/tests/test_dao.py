@@ -2,7 +2,8 @@
 # Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
-from hamcrest import (assert_that,
+from hamcrest import (all_of,
+                      assert_that,
                       contains,
                       empty,
                       equal_to,
@@ -169,6 +170,20 @@ class TestFindAllBy(DAOTestCase):
 
         assert_that(groups, has_items(has_property('id', group1.id),
                                       has_property('id', group2.id)))
+
+    def test_find_all_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        group1 = self.add_group(preprocess_subroutine='subroutine', tenant_uuid=tenant.uuid)
+        group2 = self.add_group(preprocess_subroutine='subroutine')
+
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        groups = group_dao.find_all_by(preprocess_subroutine='subroutine', tenant_uuids=tenants)
+        assert_that(groups, has_items(group1, group2))
+
+        tenants = [tenant.uuid]
+        groups = group_dao.find_all_by(preprocess_subroutine='subroutine', tenant_uuids=tenants)
+        assert_that(groups, all_of(has_items(group1), not_(has_items(group2))))
 
 
 class TestSearch(DAOTestCase):
