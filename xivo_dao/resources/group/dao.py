@@ -14,8 +14,8 @@ def search(session, **parameters):
 
 
 @daosession
-def get(session, group_id):
-    return GroupPersistor(session, group_search).get_by({'id': group_id})
+def get(session, group_id, tenant_uuids=None):
+    return GroupPersistor(session, group_search, tenant_uuids).get_by({'id': group_id})
 
 
 @daosession
