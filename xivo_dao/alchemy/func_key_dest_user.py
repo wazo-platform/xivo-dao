@@ -28,7 +28,7 @@ class FuncKeyDestUser(Base):
 
     type = 'user'
 
-    func_key = relationship(FuncKey)
+    func_key = relationship(FuncKey, cascade='all,delete-orphan', single_parent=True)
     userfeatures = relationship(UserFeatures)
 
     @classmethod

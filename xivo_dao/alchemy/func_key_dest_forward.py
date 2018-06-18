@@ -34,7 +34,7 @@ class FuncKeyDestForward(Base):
 
     type = 'forward'
 
-    func_key = relationship(FuncKey)
+    func_key = relationship(FuncKey, cascade='all,delete-orphan', single_parent=True)
 
     extension = relationship(Extension)
     extension_typeval = association_proxy(

@@ -28,7 +28,7 @@ class FuncKeyDestQueue(Base):
 
     type = 'queue'
 
-    func_key = relationship(FuncKey)
+    func_key = relationship(FuncKey, cascade='all,delete-orphan', single_parent=True)
     queue = relationship(QueueFeatures)
 
     def to_tuple(self):
