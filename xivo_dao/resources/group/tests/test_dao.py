@@ -43,6 +43,17 @@ class TestFind(DAOTestCase):
 
         assert_that(group, equal_to(group_row))
 
+    def test_find_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        group = self.add_group(tenant_uuid=tenant.uuid)
+
+        result = group_dao.find(group.id, tenant_uuids=[tenant.uuid])
+        assert_that(result, equal_to(group))
+
+        result = group_dao.find(group.id, tenant_uuids=[self.default_tenant.uuid])
+        assert_that(result, none())
+
 
 class TestGet(DAOTestCase):
 
