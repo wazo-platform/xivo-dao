@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2012-2015 Avencall
+# Copyright 2012-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao import group_dao
-from xivo_dao.alchemy.groupfeatures import GroupFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.tests.test_dao import DAOTestCase
 
@@ -36,14 +35,7 @@ class TestGroupDAO(DAOTestCase):
         self.assertFalse(result)
 
     def _insert_group(self, name, number, context):
-        group = GroupFeatures()
-        group.name = name
-        group.number = number
-        group.context = context
-
-        self.add_me(group)
-
-        return group
+        return self.add_group(name=name, number=number, context=context)
 
     def _insert_group_member(self, group_name, user_type, user_id):
         queue_member = QueueMember()
