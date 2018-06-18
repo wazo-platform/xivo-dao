@@ -196,11 +196,6 @@ class DestinationPersistor(object):
         self.session.flush()
         return func_key_row
 
-    def delete_func_key(self, func_key_id):
-        (self.session.query(FuncKey)
-         .filter(FuncKey.id == func_key_id)
-         .delete())
-
     def _func_key_is_still_mapped(self, func_key_id):
         return (self.session.query(FuncKeyMapping)
                 .filter(FuncKeyMapping.func_key_id == func_key_id)
@@ -254,7 +249,6 @@ class QueuePersistor(DestinationPersistor):
             (self.session.query(FuncKeyDestQueue)
              .filter(FuncKeyDestQueue.func_key_id == func_key_id)
              .delete())
-            self.delete_func_key(func_key_id)
 
 
 class GroupPersistor(DestinationPersistor):
@@ -288,7 +282,6 @@ class GroupPersistor(DestinationPersistor):
             (self.session.query(FuncKeyDestGroup)
              .filter(FuncKeyDestGroup.func_key_id == func_key_id)
              .delete())
-            self.delete_func_key(func_key_id)
 
 
 class ConferencePersistor(DestinationPersistor):
@@ -340,7 +333,6 @@ class PagingPersistor(DestinationPersistor):
             (self.session.query(FuncKeyDestPaging)
              .filter(FuncKeyDestPaging.func_key_id == func_key_id)
              .delete())
-            self.delete_func_key(func_key_id)
 
 
 class BSFilterPersistor(DestinationPersistor):
@@ -374,7 +366,6 @@ class BSFilterPersistor(DestinationPersistor):
             (self.session.query(FuncKeyDestBSFilter)
              .filter(FuncKeyDestBSFilter.func_key_id == func_key_id)
              .delete())
-            self.delete_func_key(func_key_id)
 
 
 class ServicePersistor(DestinationPersistor):
@@ -434,7 +425,6 @@ class ForwardPersistor(DestinationPersistor):
         (self.session.query(FuncKeyDestForward)
          .filter(FuncKeyDestForward.func_key_id == func_key_id)
          .delete())
-        self.delete_func_key(func_key_id)
 
 
 class ParkPositionPersistor(DestinationPersistor):
@@ -464,7 +454,6 @@ class ParkPositionPersistor(DestinationPersistor):
         (self.session.query(FuncKeyDestParkPosition)
          .filter(FuncKeyDestParkPosition.func_key_id == func_key_id)
          .delete())
-        self.delete_func_key(func_key_id)
 
 
 class CustomPersistor(DestinationPersistor):
@@ -494,7 +483,6 @@ class CustomPersistor(DestinationPersistor):
         (self.session.query(FuncKeyDestCustom)
          .filter(FuncKeyDestCustom.func_key_id == func_key_id)
          .delete())
-        self.delete_func_key(func_key_id)
 
 
 class AgentPersistor(DestinationPersistor):
@@ -540,7 +528,6 @@ class AgentPersistor(DestinationPersistor):
             (self.session.query(FuncKeyDestAgent)
              .filter(FuncKeyDestAgent.func_key_id == func_key_id)
              .delete())
-            self.delete_func_key(func_key_id)
 
 
 class FeaturesPersistor(DestinationPersistor):
