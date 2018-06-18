@@ -33,7 +33,6 @@ class TestExtension(DAOTestCase):
 
     def setUp(self):
         super(TestExtension, self).setUp()
-        self.default_tenant = self.add_tenant()
         self.default_entity = self.add_entity(tenant_uuid=self.default_tenant.uuid)
 
     def assert_search_returns_result(self, search_result, **parameters):
