@@ -29,8 +29,8 @@ def find(session, group_id, tenant_uuids=None):
 
 
 @daosession
-def find_by(session, **criteria):
-    return GroupPersistor(session, group_search).find_by(criteria)
+def find_by(session, tenant_uuids=None, **criteria):
+    return GroupPersistor(session, group_search, tenant_uuids).find_by(criteria)
 
 
 @daosession
