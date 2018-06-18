@@ -7,9 +7,10 @@ from sqlalchemy.schema import Column, ForeignKey
 from sqlalchemy.types import Integer
 from sqlalchemy.orm import relationship
 
-from xivo_dao.alchemy.func_key_type import FuncKeyType
-from xivo_dao.alchemy.func_key_destination_type import FuncKeyDestinationType
 from xivo_dao.helpers.db_manager import Base
+
+from .func_key_destination_type import FuncKeyDestinationType
+from .func_key_type import FuncKeyType
 
 
 class FuncKey(Base):
@@ -25,6 +26,8 @@ class FuncKey(Base):
     func_key_type = relationship(FuncKeyType, foreign_keys=type_id)
     destination_type = relationship(FuncKeyDestinationType, foreign_keys=destination_type_id, viewonly=True)
     destination_type_name = association_proxy('destination_type', 'name')
+
+    func_key_mapping = relationship('FuncKeyMapping', cascade='all,delete-orphan')
 
     @classmethod
     def new_for_user(cls):

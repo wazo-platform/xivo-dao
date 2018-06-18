@@ -1007,6 +1007,7 @@ class ItemInserter(object):
         return callfiltermember
 
     def add_func_key_mapping(self, **kwargs):
+        kwargs.setdefault('position', 1)
         func_key_mapping = FuncKeyMapping(**kwargs)
         self.add_me(func_key_mapping)
         return func_key_mapping
