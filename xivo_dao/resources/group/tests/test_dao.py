@@ -2,17 +2,19 @@
 # Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
-from hamcrest import (all_of,
-                      assert_that,
-                      contains,
-                      empty,
-                      equal_to,
-                      has_items,
-                      has_properties,
-                      has_property,
-                      is_not,
-                      none,
-                      not_)
+from hamcrest import (
+    all_of,
+    assert_that,
+    contains,
+    empty,
+    equal_to,
+    has_items,
+    has_properties,
+    has_property,
+    is_not,
+    none,
+    not_,
+)
 
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.extension import Extension
