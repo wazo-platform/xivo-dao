@@ -42,7 +42,11 @@ class GroupPersistor(CriteriaBuilderMixin):
         return query.all()
 
     def search(self, parameters):
-        rows, total = self.group_search.search_from_query(self._joinedload_query(), parameters)
+        query = self._joinedload_query()
+        if self.tenant_uuids is not None:
+            query = query.filter(Group.tenant_uuid.in_(self.tenant_uuids))
+
+        rows, total = self.group_search.search_from_query(query, parameters)
         return SearchResult(total, rows)
 
     def _joinedload_query(self):
