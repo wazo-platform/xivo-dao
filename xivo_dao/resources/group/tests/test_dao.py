@@ -147,7 +147,10 @@ class TestGetBy(DAOTestCase):
         tenant = self.add_tenant()
 
         group_row = self.add_group()
-        self.assertRaises(NotFoundError, group_dao.get_by, id=group_row.id, tenant_uuids=[tenant.uuid])
+        self.assertRaises(
+            NotFoundError,
+            group_dao.get_by, id=group_row.id, tenant_uuids=[tenant.uuid],
+        )
 
         group_row = self.add_group(tenant_uuid=tenant.uuid)
         group = group_dao.get_by(id=group_row.id, tenant_uuids=[tenant.uuid])
