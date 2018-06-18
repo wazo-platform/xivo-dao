@@ -25,21 +25,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 from .. import dao as queue_dao
 
 
-class TestQueueExist(DAOTestCase):
-
-    def test_given_no_queue_then_returns_false(self):
-        result = queue_dao.exists(1)
-
-        assert_that(result, equal_to(False))
-
-    def test_given_queue_exists_then_return_true(self):
-        queue_row = self.add_queuefeatures()
-
-        result = queue_dao.exists(queue_row.id)
-
-        assert_that(result, equal_to(True))
-
-
 class TestFind(DAOTestCase):
 
     def test_find_no_queue(self):

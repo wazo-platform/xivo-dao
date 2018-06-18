@@ -2,7 +2,6 @@
 # Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
-from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.helpers.db_manager import daosession
 
 from .persistor import QueuePersistor
@@ -52,12 +51,3 @@ def edit(session, queue):
 @daosession
 def delete(session, queue):
     QueuePersistor(session, queue_search).delete(queue)
-
-
-@daosession
-def exists(session, queue_id):
-    query = (session.query(QueueFeatures)
-             .filter(QueueFeatures.id == queue_id)
-             )
-
-    return query.count() > 0

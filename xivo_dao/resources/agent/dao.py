@@ -2,7 +2,6 @@
 # Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
-from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.helpers.db_manager import daosession
 
 from .persistor import AgentPersistor
@@ -52,12 +51,3 @@ def edit(session, agent):
 @daosession
 def delete(session, agent):
     AgentPersistor(session, agent_search).delete(agent)
-
-
-@daosession
-def exists(session, agent_id):
-    query = (session.query(AgentFeatures)
-             .filter(AgentFeatures.id == agent_id)
-             )
-
-    return query.count() > 0
