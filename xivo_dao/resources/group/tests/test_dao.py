@@ -140,6 +140,16 @@ class TestGetBy(DAOTestCase):
     def test_given_group_does_not_exist_then_raises_error(self):
         self.assertRaises(NotFoundError, group_dao.get_by, id='42')
 
+    def test_get_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        group_row = self.add_group()
+        self.assertRaises(NotFoundError, group_dao.get_by, id=group_row.id, tenant_uuids=[tenant.uuid])
+
+        group_row = self.add_group(tenant_uuid=tenant.uuid)
+        group = group_dao.get_by(id=group_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(group, equal_to(group_row))
+
 
 class TestFindAllBy(DAOTestCase):
 
