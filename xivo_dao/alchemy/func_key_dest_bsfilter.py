@@ -32,7 +32,7 @@ class FuncKeyDestBSFilter(Base):
 
     type = 'bsfilter'
 
-    func_key = relationship(FuncKey)
+    func_key = relationship(FuncKey, cascade='all,delete-orphan', single_parent=True)
     filtermember = relationship(Callfiltermember)
 
     def to_tuple(self):

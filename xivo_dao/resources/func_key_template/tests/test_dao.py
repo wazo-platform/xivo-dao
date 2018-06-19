@@ -33,8 +33,9 @@ from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
 from xivo_dao.alchemy.func_key_dest_paging import FuncKeyDestPaging as FuncKeyDestPagingSchema
 
-from xivo_dao.resources.func_key_template import dao
 from xivo_dao.resources.utils.search import SearchResult
+
+from .. import dao
 
 
 class TestFuncKeyTemplateDao(DAOTestCase, FuncKeyHelper):
@@ -614,7 +615,6 @@ class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
         dao.delete(template)
 
         self.assert_destination_deleted('forward', destination_row.extension_id)
-        self.assert_func_key_deleted(destination_row.func_key_id)
 
     def test_given_template_has_park_position_func_key_when_deleting_then_deletes_park_position(self):
         destination_row = self.create_park_position_func_key('701')
@@ -624,7 +624,6 @@ class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
         dao.delete(template)
 
         self.assert_destination_deleted('park_position', destination_row.park_position)
-        self.assert_func_key_deleted(destination_row.func_key_id)
 
     def test_given_template_has_custom_func_key_when_deleting_then_deletes_custom(self):
         destination_row = self.create_custom_func_key('1234')
@@ -634,7 +633,6 @@ class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
         dao.delete(template)
 
         self.assert_destination_deleted('custom', destination_row.exten)
-        self.assert_func_key_deleted(destination_row.func_key_id)
 
     def test_given_template_is_associated_to_user_when_deleting_then_dissociates_user(self):
         template = self.add_func_key_template()

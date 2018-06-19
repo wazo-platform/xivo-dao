@@ -14,10 +14,11 @@ from hamcrest import (
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 
-from xivo_dao.resources.func_key import dao
-from xivo_dao.resources.func_key.persistor import DestinationPersistor
 from xivo_dao.alchemy.func_key import FuncKey as FuncKeySchema
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
+
+from .. import dao
+from ..persistor import DestinationPersistor
 
 
 class TestFuncKeyDao(DAOTestCase, FuncKeyHelper):
@@ -55,7 +56,6 @@ class TestDeleteUserDestination(TestFuncKeyDao):
 
         self.persistor.delete_user_destination(user_row)
 
-        self.assert_func_key_deleted(destination_row.func_key_id)
         self.assert_destination_deleted('user', destination_row.user_id)
 
     def test_given_func_keys_in_template_when_deleting_then_func_keys_removed_from_template(self):
@@ -89,14 +89,7 @@ class TestDeleteUserDestination(TestFuncKeyDao):
 
         self.persistor.delete_user_destination(user_row)
 
-        self.assert_func_key_deleted(destination_row.func_key_id)
         self.assert_destination_deleted('bsfilter', destination_row.filtermember_id)
-
-    def assert_func_key_deleted(self, func_key_id):
-        row = (self.session.query(FuncKeySchema)
-               .filter(FuncKeySchema.id == func_key_id)
-               .first())
-        assert_that(row, none())
 
     def assert_template_empty(self, template_row):
         count = (self.session.query(FuncKeyMapping)

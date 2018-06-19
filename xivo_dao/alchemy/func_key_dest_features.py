@@ -30,7 +30,7 @@ class FuncKeyDestFeatures(Base):
     destination_type_id = Column(Integer, server_default="{}".format(DESTINATION_TYPE_ID))
     features_id = Column(Integer)
 
-    func_key = relationship(FuncKey)
+    func_key = relationship(FuncKey, cascade='all,delete-orphan', single_parent=True)
     features = relationship(Features)
 
     @hybrid_property

@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2015 Avencall
+# Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy import and_
 
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from xivo_dao.alchemy.func_key import FuncKey
-from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
 from xivo_dao.alchemy.func_key_dest_bsfilter import FuncKeyDestBSFilter
 from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
 
@@ -30,26 +29,11 @@ class DestinationPersistor(object):
 
     def delete_user_func_key(self, user):
         destination = self.session.query(FuncKeyDestUser).filter_by(user_id=user.id).first()
-        self.delete_mappings(destination)
         self.session.delete(destination)
-        self.delete_func_key(destination.func_key_id)
-
-    def delete_mappings(self, destination):
-        (self.session.query(FuncKeyMapping)
-         .filter_by(func_key_id=destination.func_key_id)
-         .delete())
-
-    def delete_func_key(self, func_key_id):
-        (self.session
-         .query(FuncKey)
-         .filter(FuncKey.id == func_key_id)
-         .delete())
 
     def delete_bsfilter_func_key(self, user):
         for destination in self.find_secretary_destinations(user):
-            self.delete_mappings(destination)
             self.session.delete(destination)
-            self.delete_func_key(destination.func_key_id)
 
     def find_secretary_destinations(self, user):
         return (self.session.query(FuncKeyDestBSFilter)

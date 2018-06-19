@@ -38,7 +38,7 @@ class FuncKeyDestAgent(Base):
 
     type = 'agent'
 
-    func_key = relationship(FuncKey)
+    func_key = relationship(FuncKey, cascade='all,delete-orphan', single_parent=True)
     agent = relationship(AgentFeatures)
 
     extension = relationship(Extension, viewonly=True)
