@@ -45,6 +45,10 @@ class QueuePersistor(CriteriaBuilderMixin):
             self.session.query(Queue)
             .options(joinedload('_queue'))
             .options(joinedload('extensions'))
+            .options(joinedload('caller_id'))
+            .options(joinedload('queue_dialactions'))
+            .options(joinedload('schedule_paths')
+                     .joinedload('schedule'))
         )
 
     def create(self, queue):
