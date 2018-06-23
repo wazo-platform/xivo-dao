@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2007-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy.orm import relationship
@@ -7,7 +7,7 @@ from sqlalchemy.schema import Column, ForeignKey, Index, PrimaryKeyConstraint
 from sqlalchemy.types import Integer
 
 from xivo_dao.helpers.db_manager import Base
-from xivo_dao.alchemy import enum
+from . import enum
 
 
 class SchedulePath(Base):
@@ -42,6 +42,13 @@ class SchedulePath(Base):
                            foreign_keys='SchedulePath.pathid',
                            viewonly=True,
                            back_populates='schedule_paths')
+
+    queue = relationship('QueueFeatures',
+                         primaryjoin="""and_(SchedulePath.path == 'queue',
+                                             SchedulePath.pathid == QueueFeatures.id)""",
+                         foreign_keys='SchedulePath.pathid',
+                         viewonly=True,
+                         back_populates='schedule_paths')
 
     user = relationship('UserFeatures',
                         primaryjoin="""and_(SchedulePath.path == 'user',
