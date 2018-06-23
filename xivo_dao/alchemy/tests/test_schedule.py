@@ -1,19 +1,22 @@
 # -*- coding: utf-8 -*-
-# Copyright 2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 import unittest
 
-from hamcrest import (assert_that,
-                      contains,
-                      empty,
-                      equal_to,
-                      none)
+from hamcrest import (
+    assert_that,
+    contains,
+    empty,
+    equal_to,
+    none,
+)
 
-from xivo_dao.alchemy.schedule import Schedule
-from xivo_dao.alchemy.schedule_time import ScheduleTime
-from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.tests.test_dao import DAOTestCase
+
+from ..schedule import Schedule
+from ..schedule_time import ScheduleTime
+from ..schedulepath import SchedulePath
 
 
 class TestIncalls(DAOTestCase):
@@ -77,6 +80,25 @@ class TestOutcalls(DAOTestCase):
         row = self.session.query(Schedule).filter_by(id=schedule.id).first()
         assert_that(row, equal_to(schedule))
         assert_that(row.outcalls, empty())
+
+
+class TestQueues(DAOTestCase):
+
+    def test_getter(self):
+        schedule = self.add_schedule()
+        queue = self.add_queuefeatures()
+        self.add_schedule_path(path='queue', pathid=queue.id, schedule_id=schedule.id)
+
+        self.session.expire_all()
+        assert_that(schedule.queues, contains(queue))
+
+    def test_getter_empty_when_other_schedulepath(self):
+        schedule = self.add_schedule()
+        incall = self.add_incall()
+        self.add_schedule_path(path='incall', pathid=incall.id, schedule_id=schedule.id)
+
+        self.session.expire_all()
+        assert_that(schedule.queues, empty())
 
 
 class TestUsers(DAOTestCase):
