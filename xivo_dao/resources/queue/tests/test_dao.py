@@ -6,6 +6,7 @@ from hamcrest import (
     assert_that,
     contains,
     equal_to,
+    empty,
     has_items,
     has_properties,
     has_property,
@@ -444,3 +445,48 @@ class TestDelete(DAOTestCase):
 
         dialaction = self.session.query(Dialaction).filter(Dialaction.actionarg1 == str(queue.id)).first()
         assert_that(dialaction, has_properties(linked=0))
+
+
+class TestAssociateCallPermission(DAOTestCase):
+
+    def test_associate_schedule(self):
+        queue = self.add_queuefeatures()
+        schedule = self.add_schedule()
+
+        queue_dao.associate_schedule(queue, schedule)
+
+        self.session.expire_all()
+        assert_that(queue.schedules, contains(schedule))
+        assert_that(schedule.queues, contains(queue))
+
+    def test_associate_already_associated(self):
+        queue = self.add_queuefeatures()
+        schedule = self.add_schedule()
+        queue_dao.associate_schedule(queue, schedule)
+
+        queue_dao.associate_schedule(queue, schedule)
+
+        self.session.expire_all()
+        assert_that(queue.schedules, contains(schedule))
+
+
+class TestDissociateSchedule(DAOTestCase):
+
+    def test_dissociate_queue_schedule(self):
+        queue = self.add_queuefeatures()
+        schedule = self.add_schedule()
+        queue_dao.associate_schedule(queue, schedule)
+
+        queue_dao.dissociate_schedule(queue, schedule)
+
+        self.session.expire_all()
+        assert_that(queue.schedules, empty())
+
+    def test_dissociate_queue_schedule_not_associated(self):
+        queue = self.add_queuefeatures()
+        schedule = self.add_schedule()
+
+        queue_dao.dissociate_schedule(queue, schedule)
+
+        self.session.expire_all()
+        assert_that(queue.schedules, empty())

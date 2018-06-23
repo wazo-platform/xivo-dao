@@ -70,3 +70,11 @@ class QueuePersistor(CriteriaBuilderMixin):
         for extension in queue.extensions:
             extension.type = 'user'
             extension.typeval = '0'
+
+    def associate_schedule(self, queue, schedule):
+        queue.schedules = [schedule]
+        self.session.flush()
+
+    def dissociate_schedule(self, queue, schedule):
+        queue.schedules = []
+        self.session.flush()
