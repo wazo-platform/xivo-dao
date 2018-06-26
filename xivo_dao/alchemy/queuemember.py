@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 import re
 
 from xivo_dao.helpers.db_manager import Base
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import (Column,
-                               Index,
-                               PrimaryKeyConstraint,
-                               UniqueConstraint)
+from sqlalchemy.schema import (
+    Column,
+    Index,
+    PrimaryKeyConstraint,
+    UniqueConstraint,
+)
 from sqlalchemy.types import Integer, String, Enum
 
 interface_regex = re.compile(r'Local/(?P<exten>.*)@(?P<context>.*)')
@@ -36,6 +38,11 @@ class QueueMember(Base):
     channel = Column(String(25), nullable=False)
     category = Column(Enum('queue', 'group', name='queue_category', metadata=Base.metadata), nullable=False)
     position = Column(Integer, nullable=False, server_default='0')
+
+    agent = relationship('AgentFeatures',
+                         primaryjoin="""and_(QueueMember.usertype == 'agent',
+                                             QueueMember.userid == AgentFeatures.id)""",
+                         foreign_keys='QueueMember.userid')
 
     user = relationship('UserFeatures',
                         primaryjoin="""and_(QueueMember.usertype == 'user',

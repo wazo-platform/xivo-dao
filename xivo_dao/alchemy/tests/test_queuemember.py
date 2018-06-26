@@ -1,16 +1,40 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
-from hamcrest import (assert_that,
-                      equal_to,
-                      is_,
-                      none)
+from hamcrest import (
+    assert_that,
+    equal_to,
+    is_,
+    none,
+)
 
-from xivo_dao.alchemy.groupfeatures import GroupFeatures
-from xivo_dao.alchemy.userfeatures import UserFeatures
-from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.tests.test_dao import DAOTestCase
+
+from ..agentfeatures import AgentFeatures
+from ..groupfeatures import GroupFeatures
+from ..queuemember import QueueMember
+from ..userfeatures import UserFeatures
+
+
+class TestAgent(DAOTestCase):
+
+    def test_getter(self):
+        agent = self.add_agent()
+        queue_member = self.add_queue_member(usertype='agent', userid=agent.id)
+
+        self.session.expire_all()
+        assert_that(queue_member.agent, equal_to(agent))
+
+    def test_setter(self):
+        agent = self.add_agent()
+        queue_member = self.add_queue_member(usertype='agent')
+
+        queue_member.agent = agent
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(queue_member.agent, equal_to(agent))
 
 
 class TestDelete(DAOTestCase):
@@ -34,6 +58,16 @@ class TestDelete(DAOTestCase):
 
         row = self.session.query(UserFeatures).first()
         assert_that(row, equal_to(user))
+
+    def test_agent_is_not_deleted(self):
+        agent = self.add_agent()
+        queue_member = self.add_queue_member(usertype='agent', userid=agent.id)
+
+        self.session.delete(queue_member)
+        self.session.flush()
+
+        row = self.session.query(AgentFeatures).first()
+        assert_that(row, equal_to(agent))
 
 
 class TestPropriety(DAOTestCase):
