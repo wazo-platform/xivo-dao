@@ -27,9 +27,10 @@ from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.schedule import Schedule
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao.resources.group import dao as group_dao
 from xivo_dao.helpers.exception import NotFoundError, InputError
 from xivo_dao.resources.utils.search import SearchResult
+
+from .. import dao as group_dao
 
 
 class TestFind(DAOTestCase):
