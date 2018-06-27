@@ -5,6 +5,7 @@
 from hamcrest import (
     assert_that,
     equal_to,
+    has_properties,
     is_,
     none,
 )
@@ -57,6 +58,57 @@ class TestContext(DAOTestCase):
     def test_context_with_no_local(self):
         member = QueueMember(interface='SIP/123')
         assert_that(member.context, is_(none()))
+
+
+class TestFix(DAOTestCase):
+
+    def test_user_sip(self):
+        user = self.add_user()
+        sip = self.add_usersip(name='sipname')
+        line = self.add_line(protocol='sip', protocolid=sip.id)
+        self.add_user_line(user_id=user.id, line_id=line.id)
+        member = self.add_queue_member(usertype='user', userid=user.id, interface='wrong', channel='wrong')
+
+        member.fix()
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(member, has_properties(
+            interface='SIP/sipname',
+            channel='SIP',
+        ))
+
+    def test_user_sccp(self):
+        user = self.add_user()
+        sccp = self.add_sccpline(name='sccpname')
+        line = self.add_line(protocol='sccp', protocolid=sccp.id)
+        self.add_user_line(user_id=user.id, line_id=line.id)
+        member = self.add_queue_member(usertype='user', userid=user.id, interface='wrong', channel='wrong')
+
+        member.fix()
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(member, has_properties(
+            interface='SCCP/sccpname',
+            channel='SCCP',
+        ))
+
+    def test_user_custom(self):
+        user = self.add_user()
+        custom = self.add_usercustom(interface='custom/interface')
+        line = self.add_line(protocol='custom', protocolid=custom.id)
+        self.add_user_line(user_id=user.id, line_id=line.id)
+        member = self.add_queue_member(usertype='user', userid=user.id, interface='wrong', channel='wrong')
+
+        member.fix()
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(member, has_properties(
+            interface='custom/interface',
+            channel='**Unknown**',
+        ))
 
 
 class TestDelete(DAOTestCase):
