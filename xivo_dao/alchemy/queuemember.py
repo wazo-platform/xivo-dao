@@ -54,27 +54,19 @@ class QueueMember(Base):
                                              QueueMember.queue_name == GroupFeatures.name)""",
                          foreign_keys='QueueMember.queue_name')
 
-    def _set_default_channel(self):
+    def fix(self):
         if self.user and self.user.lines:
             main_line = self.user.lines[0]
             if main_line.endpoint_sip:
                 self.channel = 'SIP'
-            elif main_line.endpoint_sccp:
-                self.channel = 'SCCP'
-            elif main_line.endpoint_custom:
-                self.channel = '**Unknown**'
-
-    def fix(self):
-        self._set_default_channel()
-        if self.user and self.user.lines:
-            main_line = self.user.lines[0]
-            if main_line.endpoint_sip:
                 self.interface = '{}/{}'.format(self.channel, main_line.endpoint_sip.name)
 
             elif main_line.endpoint_sccp:
+                self.channel = 'SCCP'
                 self.interface = '{}/{}'.format(self.channel, main_line.endpoint_sccp.name)
 
             elif main_line.endpoint_custom:
+                self.channel = '**Unknown**'
                 self.interface = main_line.endpoint_custom.interface
 
     @property
