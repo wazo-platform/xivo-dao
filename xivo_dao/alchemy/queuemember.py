@@ -55,19 +55,31 @@ class QueueMember(Base):
                          foreign_keys='QueueMember.queue_name')
 
     def fix(self):
-        if self.user and self.user.lines:
-            main_line = self.user.lines[0]
-            if main_line.endpoint_sip:
-                self.channel = 'SIP'
-                self.interface = '{}/{}'.format(self.channel, main_line.endpoint_sip.name)
+        if self.user:
+            self._fix_user(self.user)
+        elif self.agent:
+            self._fix_agent(self.agent)
 
-            elif main_line.endpoint_sccp:
-                self.channel = 'SCCP'
-                self.interface = '{}/{}'.format(self.channel, main_line.endpoint_sccp.name)
+    def _fix_user(self, user):
+        if not user.lines:
+            return
 
-            elif main_line.endpoint_custom:
-                self.channel = '**Unknown**'
-                self.interface = main_line.endpoint_custom.interface
+        main_line = user.lines[0]
+        if main_line.endpoint_sip:
+            self.channel = 'SIP'
+            self.interface = '{}/{}'.format(self.channel, main_line.endpoint_sip.name)
+
+        elif main_line.endpoint_sccp:
+            self.channel = 'SCCP'
+            self.interface = '{}/{}'.format(self.channel, main_line.endpoint_sccp.name)
+
+        elif main_line.endpoint_custom:
+            self.channel = '**Unknown**'
+            self.interface = main_line.endpoint_custom.interface
+
+    def _fix_agent(self, agent):
+        self.channel = 'Agent'
+        self.interface = '{}/{}'.format(self.channel, agent.number)
 
     @property
     def exten(self):

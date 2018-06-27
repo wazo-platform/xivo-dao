@@ -110,6 +110,19 @@ class TestFix(DAOTestCase):
             channel='**Unknown**',
         ))
 
+    def test_agent(self):
+        agent = self.add_agent(number='1234')
+        member = self.add_queue_member(usertype='agent', userid=agent.id, interface='wrong', channel='wrong')
+
+        member.fix()
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(member, has_properties(
+            interface='Agent/1234',
+            channel='Agent',
+        ))
+
 
 class TestDelete(DAOTestCase):
 
