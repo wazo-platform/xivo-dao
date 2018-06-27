@@ -5,12 +5,14 @@
 from hamcrest import (
     assert_that,
     contains,
+    contains_inanyorder,
     empty,
     equal_to,
     is_not,
     has_key,
     has_properties,
     none,
+    not_none,
 )
 
 from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
@@ -21,6 +23,7 @@ from ..func_key_dest_queue import FuncKeyDestQueue
 from ..queue import Queue
 from ..queuefeatures import QueueFeatures
 from ..queuemember import QueueMember
+from ..schedule import Schedule
 from ..schedulepath import SchedulePath
 
 
@@ -222,6 +225,46 @@ class TestWaitRatioDestination(DAOTestCase):
 
         result = self.session.query(Dialaction).get(('qwaitratio', 'queue', queue.id))
         assert_that(result, equal_to(None))
+
+
+class TestSchedules(DAOTestCase):
+
+    def test_getter(self):
+        queue = self.add_queuefeatures()
+        schedule = self.add_schedule()
+        self.add_schedule_path(path='queue', pathid=queue.id, schedule_id=schedule.id)
+
+        self.session.expire_all()
+        assert_that(queue.schedules, contains(schedule))
+
+    def test_setter(self):
+        queue = self.add_queuefeatures()
+        schedule1 = Schedule()
+        schedule2 = Schedule()
+        queue.schedules = [schedule1, schedule2]
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(queue.schedules, contains_inanyorder(schedule1, schedule2))
+
+    def test_deleter(self):
+        queue = self.add_queuefeatures()
+        schedule1 = Schedule()
+        schedule2 = Schedule()
+        queue.schedules = [schedule1, schedule2]
+        self.session.flush()
+
+        queue.schedules = []
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(queue.schedules, empty())
+
+        row = self.session.query(Schedule).first()
+        assert_that(row, not_none())
+
+        row = self.session.query(SchedulePath).first()
+        assert_that(row, none())
 
 
 class TestLabel(DAOTestCase):

@@ -51,3 +51,13 @@ def edit(session, queue):
 @daosession
 def delete(session, queue):
     QueuePersistor(session, queue_search).delete(queue)
+
+
+@daosession
+def associate_schedule(session, queue, schedule):
+    QueuePersistor(session, queue_search).associate_schedule(queue, schedule)
+
+
+@daosession
+def dissociate_schedule(session, queue, schedule):
+    QueuePersistor(session, queue_search).dissociate_schedule(queue, schedule)

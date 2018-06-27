@@ -22,6 +22,7 @@ from xivo_dao.helpers.db_manager import Base
 
 from .callerid import Callerid
 from .queue import Queue
+from .schedulepath import SchedulePath
 
 DEFAULT_QUEUE_OPTIONS = {
     'timeout': '15',
@@ -162,6 +163,11 @@ class QueueFeatures(Base):
                             SchedulePath.pathid == QueueFeatures.id)""",
         foreign_keys='SchedulePath.pathid',
         cascade='all, delete-orphan',
+        back_populates='queue',
+    )
+    schedules = association_proxy(
+        'schedule_paths', 'schedule',
+        creator=lambda _schedule: SchedulePath(path='queue', schedule=_schedule)
     )
 
     def __init__(self, **kwargs):

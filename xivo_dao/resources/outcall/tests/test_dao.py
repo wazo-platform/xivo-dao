@@ -1,16 +1,18 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
-from hamcrest import (assert_that,
-                      contains,
-                      equal_to,
-                      empty,
-                      has_items,
-                      has_properties,
-                      has_property,
-                      is_not,
-                      none)
+from hamcrest import (
+    assert_that,
+    contains,
+    empty,
+    equal_to,
+    has_items,
+    has_properties,
+    has_property,
+    is_not,
+    none
+)
 
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.outcall import Outcall
@@ -19,9 +21,10 @@ from xivo_dao.alchemy.rightcall import RightCall
 from xivo_dao.alchemy.schedule import Schedule
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao.resources.outcall import dao as outcall_dao
 from xivo_dao.helpers.exception import NotFoundError, InputError
 from xivo_dao.resources.utils.search import SearchResult
+
+from .. import dao as outcall_dao
 
 
 class TestFind(DAOTestCase):
@@ -368,7 +371,7 @@ class TestAssociateCallPermission(DAOTestCase):
         outcall = self.add_outcall()
         call_permission = self.add_call_permission()
 
-        result = outcall_dao.associate_call_permission(outcall, call_permission)
+        outcall_dao.associate_call_permission(outcall, call_permission)
 
         result = self.session.query(Outcall).first()
         assert_that(result, equal_to(outcall))

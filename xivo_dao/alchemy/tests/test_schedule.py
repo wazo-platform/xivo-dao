@@ -1,19 +1,22 @@
 # -*- coding: utf-8 -*-
-# Copyright 2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 import unittest
 
-from hamcrest import (assert_that,
-                      contains,
-                      empty,
-                      equal_to,
-                      none)
+from hamcrest import (
+    assert_that,
+    contains,
+    empty,
+    equal_to,
+    none,
+)
 
-from xivo_dao.alchemy.schedule import Schedule
-from xivo_dao.alchemy.schedule_time import ScheduleTime
-from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.tests.test_dao import DAOTestCase
+
+from ..schedule import Schedule
+from ..schedule_time import ScheduleTime
+from ..schedulepath import SchedulePath
 
 
 class TestIncalls(DAOTestCase):
@@ -23,18 +26,16 @@ class TestIncalls(DAOTestCase):
         incall = self.add_incall()
         self.add_schedule_path(path='incall', pathid=incall.id, schedule_id=schedule.id)
 
-        row = self.session.query(Schedule).filter_by(id=schedule.id).first()
-        assert_that(row, equal_to(schedule))
-        assert_that(row.incalls, contains(incall))
+        self.session.expire_all()
+        assert_that(schedule.incalls, contains(incall))
 
     def test_getter_empty_when_other_schedulepath(self):
         schedule = self.add_schedule()
         user = self.add_user()
         self.add_schedule_path(path='user', pathid=user.id, schedule_id=schedule.id)
 
-        row = self.session.query(Schedule).filter_by(id=schedule.id).first()
-        assert_that(row, equal_to(schedule))
-        assert_that(row.incalls, empty())
+        self.session.expire_all()
+        assert_that(schedule.incalls, empty())
 
 
 class TestGroups(DAOTestCase):
@@ -44,18 +45,16 @@ class TestGroups(DAOTestCase):
         group = self.add_group()
         self.add_schedule_path(path='group', pathid=group.id, schedule_id=schedule.id)
 
-        row = self.session.query(Schedule).filter_by(id=schedule.id).first()
-        assert_that(row, equal_to(schedule))
-        assert_that(row.groups, contains(group))
+        self.session.expire_all()
+        assert_that(schedule.groups, contains(group))
 
     def test_getter_empty_when_other_schedulepath(self):
         schedule = self.add_schedule()
         incall = self.add_incall()
         self.add_schedule_path(path='incall', pathid=incall.id, schedule_id=schedule.id)
 
-        row = self.session.query(Schedule).filter_by(id=schedule.id).first()
-        assert_that(row, equal_to(schedule))
-        assert_that(row.groups, empty())
+        self.session.expire_all()
+        assert_that(schedule.groups, empty())
 
 
 class TestOutcalls(DAOTestCase):
@@ -65,18 +64,35 @@ class TestOutcalls(DAOTestCase):
         outcall = self.add_outcall()
         self.add_schedule_path(path='outcall', pathid=outcall.id, schedule_id=schedule.id)
 
-        row = self.session.query(Schedule).filter_by(id=schedule.id).first()
-        assert_that(row, equal_to(schedule))
-        assert_that(row.outcalls, contains(outcall))
+        self.session.expire_all()
+        assert_that(schedule.outcalls, contains(outcall))
 
     def test_getter_empty_when_other_schedulepath(self):
         schedule = self.add_schedule()
         incall = self.add_incall()
         self.add_schedule_path(path='incall', pathid=incall.id, schedule_id=schedule.id)
 
-        row = self.session.query(Schedule).filter_by(id=schedule.id).first()
-        assert_that(row, equal_to(schedule))
-        assert_that(row.outcalls, empty())
+        self.session.expire_all()
+        assert_that(schedule.outcalls, empty())
+
+
+class TestQueues(DAOTestCase):
+
+    def test_getter(self):
+        schedule = self.add_schedule()
+        queue = self.add_queuefeatures()
+        self.add_schedule_path(path='queue', pathid=queue.id, schedule_id=schedule.id)
+
+        self.session.expire_all()
+        assert_that(schedule.queues, contains(queue))
+
+    def test_getter_empty_when_other_schedulepath(self):
+        schedule = self.add_schedule()
+        incall = self.add_incall()
+        self.add_schedule_path(path='incall', pathid=incall.id, schedule_id=schedule.id)
+
+        self.session.expire_all()
+        assert_that(schedule.queues, empty())
 
 
 class TestUsers(DAOTestCase):
@@ -86,18 +102,16 @@ class TestUsers(DAOTestCase):
         user = self.add_user()
         self.add_schedule_path(path='user', pathid=user.id, schedule_id=schedule.id)
 
-        row = self.session.query(Schedule).filter_by(id=schedule.id).first()
-        assert_that(row, equal_to(schedule))
-        assert_that(row.users, contains(user))
+        self.session.expire_all()
+        assert_that(schedule.users, contains(user))
 
     def test_getter_empty_when_other_schedulepath(self):
         schedule = self.add_schedule()
         incall = self.add_incall()
         self.add_schedule_path(path='incall', pathid=incall.id, schedule_id=schedule.id)
 
-        row = self.session.query(Schedule).filter_by(id=schedule.id).first()
-        assert_that(row, equal_to(schedule))
-        assert_that(row.users, empty())
+        self.session.expire_all()
+        assert_that(schedule.users, empty())
 
 
 class TestOpenPeriods(DAOTestCase):
@@ -107,6 +121,7 @@ class TestOpenPeriods(DAOTestCase):
         open_period = self.add_schedule_time(mode='opened', schedule_id=schedule.id)
         self.add_schedule_time(mode='closed', schedule_id=schedule.id)
 
+        self.session.expire_all()
         assert_that(schedule.open_periods, contains(open_period))
 
     def test_setter(self):
@@ -116,6 +131,7 @@ class TestOpenPeriods(DAOTestCase):
         schedule.open_periods = [open_period]
         self.session.flush()
 
+        self.session.expire_all()
         assert_that(schedule.open_periods, contains(open_period))
         assert_that(schedule.exceptional_periods, empty())
 
@@ -127,6 +143,7 @@ class TestOpenPeriods(DAOTestCase):
         schedule.open_periods = []
         self.session.flush()
 
+        self.session.expire_all()
         assert_that(schedule.open_periods, empty())
         assert_that(schedule.exceptional_periods, contains(exceptional_period))
 
@@ -138,6 +155,7 @@ class TestExceptionalPeriods(DAOTestCase):
         exceptional_period = self.add_schedule_time(mode='closed', schedule_id=schedule.id)
         self.add_schedule_time(mode='opened', schedule_id=schedule.id)
 
+        self.session.expire_all()
         assert_that(schedule.exceptional_periods, contains(exceptional_period))
 
     def test_setter(self):
@@ -147,6 +165,7 @@ class TestExceptionalPeriods(DAOTestCase):
         schedule.exceptional_periods = [exceptional_period]
         self.session.flush()
 
+        self.session.expire_all()
         assert_that(schedule.exceptional_periods, contains(exceptional_period))
         assert_that(schedule.open_periods, empty())
 
@@ -158,6 +177,7 @@ class TestExceptionalPeriods(DAOTestCase):
         schedule.exceptional_periods = []
         self.session.flush()
 
+        self.session.expire_all()
         assert_that(schedule.exceptional_periods, empty())
         assert_that(schedule.open_periods, contains(open_period))
 

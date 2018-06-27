@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
+
+from xivo_dao.helpers.db_manager import daosession
 
 from .persistor import OutcallPersistor
 from .search import outcall_search
-
-from xivo_dao.helpers.db_manager import daosession
 
 
 @daosession

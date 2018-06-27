@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2007-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -10,9 +10,10 @@ from sqlalchemy.sql import cast, not_
 from sqlalchemy.sql.schema import ForeignKeyConstraint
 from sqlalchemy.types import Integer, String, Text, Boolean
 
-from xivo_dao.alchemy import enum
-from xivo_dao.alchemy.entity import Entity
 from xivo_dao.helpers.db_manager import Base, IntAsString
+
+from . import enum
+from .entity import Entity
 
 
 class Schedule(Base):
@@ -70,6 +71,12 @@ class Schedule(Base):
                                                          SchedulePath.path == 'outcall')""",
                                      viewonly=True)
     outcalls = association_proxy('schedule_outcalls', 'outcall')
+
+    schedule_queues = relationship('SchedulePath',
+                                   primaryjoin="""and_(SchedulePath.schedule_id == Schedule.id,
+                                                       SchedulePath.path == 'queue')""",
+                                   viewonly=True)
+    queues = association_proxy('schedule_queues', 'queue')
 
     @property
     def open_periods(self):
