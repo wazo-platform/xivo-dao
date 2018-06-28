@@ -117,6 +117,20 @@ class TestFindBy(DAOTestCase):
 
         assert_that(incall, none())
 
+    def test_find_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        incall = self.add_incall(tenant_uuid=tenant.uuid)
+
+        result = incall_dao.find_by(exten=incall.exten, tenant_uuids=[self.default_tenant.uuid])
+        assert_that(result, none())
+
+        result = incall_dao.find_by(exten=incall.exten, tenant_uuids=[])
+        assert_that(result, none())
+
+        result = incall_dao.find_by(exten=incall.exten, tenant_uuids=[tenant.uuid])
+        assert_that(result, equal_to(incall))
+
 
 class TestGetBy(DAOTestCase):
 
