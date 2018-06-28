@@ -165,6 +165,17 @@ class TestGetBy(DAOTestCase):
     def test_given_incall_does_not_exist_then_raises_error(self):
         self.assertRaises(NotFoundError, incall_dao.get_by, id='42')
 
+    def test_get_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        incall = self.add_incall(tenant_uuid=tenant.uuid)
+
+        self.assertRaises(NotFoundError, incall_dao.get_by, exten=incall.exten, tenant_uuids=[])
+        self.assertRaises(NotFoundError, incall_dao.get_by, exten=incall.exten, tenant_uuids=[self.default_tenant.uuid])
+
+        result = incall_dao.get_by(exten=incall.exten, tenant_uuids=[tenant.uuid])
+        assert_that(result, equal_to(incall))
+
 
 class TestFindAllBy(DAOTestCase):
 

@@ -19,8 +19,8 @@ def get(session, incall_id, tenant_uuids=None):
 
 
 @daosession
-def get_by(session, **criteria):
-    return IncallPersistor(session, incall_search).get_by(criteria)
+def get_by(session, tenant_uuids=None, **criteria):
+    return IncallPersistor(session, incall_search, tenant_uuids).get_by(criteria)
 
 
 @daosession
