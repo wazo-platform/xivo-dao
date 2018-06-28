@@ -5,6 +5,7 @@
 from hamcrest import (all_of,
                       assert_that,
                       contains,
+                      empty,
                       equal_to,
                       has_items,
                       has_properties,
@@ -205,6 +206,20 @@ class TestFindAllBy(DAOTestCase):
 
         assert_that(incalls, has_items(has_property('id', incall1.id),
                                        has_property('id', incall2.id)))
+
+    def test_find_all_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        incall = self.add_incall(tenant_uuid=tenant.uuid)
+
+        result = incall_dao.find_all_by(id=incall.id, tenant_uuids=[self.default_tenant.uuid])
+        assert_that(result, empty())
+
+        result = incall_dao.find_all_by(id=incall.id, tenant_uuids=[])
+        assert_that(result, empty())
+
+        result = incall_dao.find_all_by(id=incall.id, tenant_uuids=[tenant.uuid])
+        assert_that(result, contains(incall))
 
 
 class TestSearch(DAOTestCase):
