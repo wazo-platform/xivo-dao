@@ -60,6 +60,13 @@ class QueueMember(Base):
         foreign_keys='QueueMember.queue_name',
     )
 
+    queue = relationship(
+        'QueueFeatures',
+        primaryjoin='QueueMember.queue_name == QueueFeatures.name',
+        foreign_keys='QueueMember.queue_name',
+        viewonly=True,
+    )
+
     def fix(self):
         if self.user:
             self._fix_user(self.user)

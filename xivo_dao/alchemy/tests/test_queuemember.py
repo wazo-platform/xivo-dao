@@ -38,6 +38,16 @@ class TestAgent(DAOTestCase):
         assert_that(queue_member.agent, equal_to(agent))
 
 
+class TestQueue(DAOTestCase):
+
+    def test_getter(self):
+        queue = self.add_queuefeatures()
+        queue_member = self.add_queue_member(queue_name=queue.name)
+
+        self.session.expire_all()
+        assert_that(queue_member.queue, equal_to(queue))
+
+
 class TestExten(DAOTestCase):
 
     def test_exten_with_local(self):
