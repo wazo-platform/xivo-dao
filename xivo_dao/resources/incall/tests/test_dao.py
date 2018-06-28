@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from hamcrest import (assert_that,
@@ -236,7 +236,7 @@ class TestSearchGivenMultipleIncall(TestSearch):
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_fields(self):
-        incall = Incall(destination=Dialaction(action='none'))
+        incall = Incall(destination=Dialaction(action='none'), tenant_uuid=self.default_tenant.uuid)
         created_incall = incall_dao.create(incall)
 
         row = self.session.query(Incall).first()
@@ -258,7 +258,8 @@ class TestCreate(DAOTestCase):
                         caller_id_name='incall_',
                         destination=Dialaction(action='user',
                                                actionarg1='2',
-                                               actionarg2='10'))
+                                               actionarg2='10'),
+                        tenant_uuid=self.default_tenant.uuid)
 
         created_incall = incall_dao.create(incall)
 
@@ -284,7 +285,8 @@ class TestEdit(DAOTestCase):
                                           caller_id_name='incall_',
                                           destination=Dialaction(action='user',
                                                                  actionarg1='2',
-                                                                 actionarg2='10')))
+                                                                 actionarg2='10'),
+                                          tenant_uuid=self.default_tenant.uuid))
 
         incall = incall_dao.get(incall.id)
         incall.preprocess_subroutine = 'other_subroutine'
@@ -316,7 +318,8 @@ class TestEdit(DAOTestCase):
                                           caller_id_name='incall_',
                                           destination=Dialaction(action='user',
                                                                  actionarg1='2',
-                                                                 actionarg2='10')))
+                                                                 actionarg2='10'),
+                                          tenant_uuid=self.default_tenant.uuid))
         incall = incall_dao.get(incall.id)
         incall.preprocess_subroutine = None
         incall.description = None

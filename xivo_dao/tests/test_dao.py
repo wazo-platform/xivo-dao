@@ -447,6 +447,7 @@ class ItemInserter(object):
     def add_incall(self, **kwargs):
         default_destination = Dialaction(action='none')
         kwargs.setdefault('destination', default_destination)
+        kwargs.setdefault('tenant_uuid', DEFAULT_TENANT)
         incall = Incall(**kwargs)
         self.add_me(incall)
         return incall

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2007-2015 Avencall
+# Copyright 2007-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao import incall_dao
@@ -15,6 +15,7 @@ class TestIncallDAO(DAOTestCase):
         incall.exten = exten
         incall.context = context
         incall.description = 'description'
+        incall.tenant_uuid = self.default_tenant.uuid
 
         self.add_me(incall)
 
