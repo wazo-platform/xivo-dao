@@ -33,3 +33,12 @@ class AgentFeatures(Base):
         'FuncKeyDestAgent',
         cascade='all, delete-orphan'
     )
+
+    queue_queue_members = relationship(
+        'QueueMember',
+        primaryjoin="""and_(QueueMember.category == 'queue',
+                            QueueMember.usertype == 'agent',
+                            QueueMember.userid == AgentFeatures.id)""",
+        foreign_keys='QueueMember.userid',
+        cascade='all, delete-orphan',
+    )
