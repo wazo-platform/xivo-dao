@@ -305,6 +305,27 @@ class TestSearchGivenMultipleIncall(TestSearch):
                                           limit=1)
 
 
+class TestSearchGivenMultipleTenants(TestSearch):
+
+    def test_multiple_tenants(self):
+        tenant_1 = self.add_tenant()
+        tenant_2 = self.add_tenant()
+        tenant_3 = self.add_tenant()
+
+        incall_1 = self.add_incall(tenant_uuid=tenant_1.uuid)
+        incall_2 = self.add_incall(tenant_uuid=tenant_2.uuid)
+        incall_3 = self.add_incall(tenant_uuid=tenant_3.uuid)
+
+        expected = SearchResult(2, [incall_1, incall_2])
+        self.assert_search_returns_result(expected, tenant_uuids=[tenant_1.uuid, tenant_2.uuid])
+
+        expected = SearchResult(0, [])
+        self.assert_search_returns_result(expected, tenant_uuids=[])
+
+        expected = SearchResult(3, [incall_1, incall_2, incall_3])
+        self.assert_search_returns_result(expected)
+
+
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_fields(self):

@@ -9,8 +9,8 @@ from xivo_dao.helpers.db_manager import daosession
 
 
 @daosession
-def search(session, **parameters):
-    return IncallPersistor(session, incall_search).search(parameters)
+def search(session, tenant_uuids=None, **parameters):
+    return IncallPersistor(session, incall_search, tenant_uuids).search(parameters)
 
 
 @daosession

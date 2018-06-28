@@ -27,11 +27,7 @@ class IncallPersistor(CriteriaBuilderMixin):
 
     def _find_query(self, criteria):
         query = self.session.query(Incall)
-        if self.tenant_uuids is not None:
-            if not self.tenant_uuids:
-                return query.filter(text('false'))
-
-            query = query.filter(Incall.tenant_uuid.in_(self.tenant_uuids))
+        query = self._filter_tenant_uuid(query)
         return self.build_criteria(query, criteria)
 
     def get_by(self, criteria):
@@ -45,7 +41,9 @@ class IncallPersistor(CriteriaBuilderMixin):
         return query.all()
 
     def search(self, parameters):
-        rows, total = self.incall_search.search(self.session, parameters)
+        query = self.session.query(self.incall_search.config.table)
+        query = self._filter_tenant_uuid(query)
+        rows, total = self.incall_search.search_from_query(query, parameters)
         return SearchResult(total, rows)
 
     def create(self, incall):
@@ -61,6 +59,15 @@ class IncallPersistor(CriteriaBuilderMixin):
         self._delete_associations(incall)
         self.session.delete(incall)
         self.session.flush()
+
+    def _filter_tenant_uuid(self, query):
+        if self.tenant_uuids is None:
+            return query
+
+        if not self.tenant_uuids:
+            return query.filter(text('false'))
+
+        return query.filter(Incall.tenant_uuid.in_(self.tenant_uuids))
 
     def _delete_associations(self, incall):
         (self.session.query(RightCallMember)
