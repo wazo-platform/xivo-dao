@@ -48,6 +48,17 @@ class TestQueue(DAOTestCase):
         assert_that(queue_member.queue, equal_to(queue))
 
 
+class TestPriority(DAOTestCase):
+
+    def test_getter(self):
+        member = QueueMember(position=42)
+        assert_that(member.priority, equal_to(42))
+
+    def test_setter(self):
+        member = QueueMember(priority=42)
+        assert_that(member.position, equal_to(42))
+
+
 class TestExten(DAOTestCase):
 
     def test_exten_with_local(self):

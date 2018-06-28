@@ -5,6 +5,7 @@
 import re
 
 from xivo_dao.helpers.db_manager import Base
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import (
     Column,
@@ -93,6 +94,14 @@ class QueueMember(Base):
     def _fix_agent(self, agent):
         self.channel = 'Agent'
         self.interface = '{}/{}'.format(self.channel, agent.number)
+
+    @hybrid_property
+    def priority(self):
+        return self.position
+
+    @priority.setter
+    def priority(self, value):
+        self.position = value
 
     @property
     def exten(self):
