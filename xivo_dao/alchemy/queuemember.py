@@ -39,20 +39,26 @@ class QueueMember(Base):
     category = Column(Enum('queue', 'group', name='queue_category', metadata=Base.metadata), nullable=False)
     position = Column(Integer, nullable=False, server_default='0')
 
-    agent = relationship('AgentFeatures',
-                         primaryjoin="""and_(QueueMember.usertype == 'agent',
-                                             QueueMember.userid == AgentFeatures.id)""",
-                         foreign_keys='QueueMember.userid')
+    agent = relationship(
+        'AgentFeatures',
+        primaryjoin="""and_(QueueMember.usertype == 'agent',
+                            QueueMember.userid == AgentFeatures.id)""",
+        foreign_keys='QueueMember.userid',
+    )
 
-    user = relationship('UserFeatures',
-                        primaryjoin="""and_(QueueMember.usertype == 'user',
-                                            QueueMember.userid == UserFeatures.id)""",
-                        foreign_keys='QueueMember.userid')
+    user = relationship(
+        'UserFeatures',
+        primaryjoin="""and_(QueueMember.usertype == 'user',
+                            QueueMember.userid == UserFeatures.id)""",
+        foreign_keys='QueueMember.userid',
+    )
 
-    group = relationship('GroupFeatures',
-                         primaryjoin="""and_(QueueMember.category == 'group',
-                                             QueueMember.queue_name == GroupFeatures.name)""",
-                         foreign_keys='QueueMember.queue_name')
+    group = relationship(
+        'GroupFeatures',
+        primaryjoin="""and_(QueueMember.category == 'group',
+                            QueueMember.queue_name == GroupFeatures.name)""",
+        foreign_keys='QueueMember.queue_name',
+    )
 
     def fix(self):
         if self.user:
