@@ -14,10 +14,13 @@ from hamcrest import (
     not_none,
 )
 
+from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.queue import Queue
+from xivo_dao.alchemy.queuemember import QueueMember
+from xivo_dao.alchemy.userfeatures import UserFeatures
 
 from xivo_dao.helpers.exception import NotFoundError, InputError
 from xivo_dao.resources.utils.search import SearchResult
@@ -490,3 +493,149 @@ class TestDissociateSchedule(DAOTestCase):
 
         self.session.expire_all()
         assert_that(queue.schedules, empty())
+
+
+class TestAssociateMemberUser(DAOTestCase):
+
+    def test_associate(self):
+        user = self.add_user()
+        sip = self.add_usersip()
+        line = self.add_line(protocol='sip', protocolid=sip.id)
+        self.add_user_line(user_id=user.id, line_id=line.id)
+        queue = self.add_queuefeatures()
+
+        queue_dao.associate_member_user(queue, QueueMember(user=user))
+
+        self.session.expire_all()
+        assert_that(queue.user_queue_members, contains(
+            has_properties(
+                queue_name=queue.name,
+                category='queue',
+                usertype='user',
+                userid=user.id,
+            )
+        ))
+
+    def test_associate_fix(self):
+        user = self.add_user()
+        sip = self.add_usersip(name='sipname')
+        line = self.add_line(protocol='sip', protocolid=sip.id)
+        self.add_user_line(user_id=user.id, line_id=line.id)
+        queue = self.add_queuefeatures()
+
+        queue_dao.associate_member_user(queue, QueueMember(user=user))
+
+        self.session.expire_all()
+        assert_that(queue.user_queue_members, contains(
+            has_properties(
+                interface='SIP/sipname',
+                channel='SIP',
+            )
+        ))
+
+    def test_association_already_associated(self):
+        user = self.add_user()
+        sip = self.add_usersip()
+        line = self.add_line(protocol='sip', protocolid=sip.id)
+        self.add_user_line(user_id=user.id, line_id=line.id)
+        queue = self.add_queuefeatures()
+        queue_member = QueueMember(user=user)
+
+        queue_dao.associate_member_user(queue, queue_member)
+
+        self.session.expire_all()
+        queue_dao.associate_member_user(queue, queue_member)
+
+        self.session.expire_all()
+        assert_that(queue.user_queue_members, contains(queue_member))
+
+
+class TestDissociateMemberUser(DAOTestCase):
+
+    def test_dissociation(self):
+        user = self.add_user()
+        sip = self.add_usersip(name='sipname')
+        line = self.add_line(protocol='sip', protocolid=sip.id)
+        self.add_user_line(user_id=user.id, line_id=line.id)
+        queue = self.add_queuefeatures()
+        queue_member = QueueMember(user=user)
+        queue_dao.associate_member_user(queue, queue_member)
+
+        self.session.expire_all()
+        queue_dao.dissociate_member_user(queue, queue_member)
+
+        self.session.expire_all()
+        assert_that(queue.user_queue_members, empty())
+
+        row = self.session.query(UserFeatures).first()
+        assert_that(row, not_none())
+
+        row = self.session.query(QueueMember).first()
+        assert_that(row, none())
+
+
+class TestAssociateMemberAgent(DAOTestCase):
+
+    def test_associate(self):
+        agent = self.add_agent()
+        queue = self.add_queuefeatures()
+
+        queue_dao.associate_member_agent(queue, QueueMember(agent=agent))
+
+        self.session.expire_all()
+        assert_that(queue.agent_queue_members, contains(
+            has_properties(
+                queue_name=queue.name,
+                category='queue',
+                usertype='agent',
+                userid=agent.id,
+            )
+        ))
+
+    def test_associate_fix(self):
+        agent = self.add_agent(number='1234')
+        queue = self.add_queuefeatures()
+
+        queue_dao.associate_member_agent(queue, QueueMember(agent=agent))
+
+        self.session.expire_all()
+        assert_that(queue.agent_queue_members, contains(
+            has_properties(
+                interface='Agent/1234',
+                channel='Agent',
+            )
+        ))
+
+    def test_association_already_associated(self):
+        agent = self.add_agent()
+        queue = self.add_queuefeatures()
+        queue_member = QueueMember(agent=agent)
+
+        queue_dao.associate_member_agent(queue, queue_member)
+
+        self.session.expire_all()
+        queue_dao.associate_member_agent(queue, queue_member)
+
+        self.session.expire_all()
+        assert_that(queue.agent_queue_members, contains(queue_member))
+
+
+class TestDissociateMemberAgent(DAOTestCase):
+
+    def test_dissociation(self):
+        agent = self.add_agent()
+        queue = self.add_queuefeatures()
+        queue_member = QueueMember(agent=agent)
+        queue_dao.associate_member_agent(queue, queue_member)
+
+        self.session.expire_all()
+        queue_dao.dissociate_member_agent(queue, queue_member)
+
+        self.session.expire_all()
+        assert_that(queue.agent_queue_members, empty())
+
+        row = self.session.query(AgentFeatures).first()
+        assert_that(row, not_none())
+
+        row = self.session.query(QueueMember).first()
+        assert_that(row, none())
