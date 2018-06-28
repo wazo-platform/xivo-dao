@@ -10,8 +10,8 @@ from hamcrest import (
     has_items,
     has_properties,
     has_property,
-    is_not,
     none,
+    not_none,
 )
 
 from xivo_dao.alchemy.dialaction import Dialaction
@@ -219,7 +219,7 @@ class TestCreate(DAOTestCase):
 
         assert_that(created_queue, equal_to(row))
         assert_that(created_queue, has_properties(
-            id=is_not(none()),
+            id=not_none(),
             name='myqueue',
             caller_id_mode=None,
             caller_id_name=None,
@@ -271,7 +271,7 @@ class TestCreate(DAOTestCase):
 
         assert_that(created_queue, equal_to(row))
         assert_that(created_queue, has_properties(
-            id=is_not(none()),
+            id=not_none(),
             name='MyQueue',
             caller_id_mode='prepend',
             caller_id_name='toto',
@@ -347,7 +347,7 @@ class TestEdit(DAOTestCase):
 
         assert_that(queue, equal_to(row))
         assert_that(queue, has_properties(
-            id=is_not(none()),
+            id=not_none(),
             name='other_name',
             label='other_label',
             caller_id_mode='overwrite',
