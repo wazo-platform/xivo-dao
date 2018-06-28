@@ -2,7 +2,8 @@
 # Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
-from hamcrest import (assert_that,
+from hamcrest import (all_of,
+                      assert_that,
                       contains,
                       equal_to,
                       has_items,
@@ -35,6 +36,26 @@ class TestFind(DAOTestCase):
         incall = incall_dao.find(incall_row.id)
 
         assert_that(incall, equal_to(incall_row))
+
+    def test_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        incall = self.add_incall(tenant_uuid=tenant.uuid)
+
+        result = incall_dao.find(incall.id, tenant_uuids=[tenant.uuid])
+        assert_that(
+            result,
+            all_of(
+                has_properties(tenant_uuid=tenant.uuid),
+                equal_to(incall),
+            )
+        )
+
+        result = incall_dao.find(incall.id, tenant_uuids=[self.default_tenant.uuid])
+        assert_that(result, none())
+
+        result = incall_dao.find(incall.id, tenant_uuids=[])
+        assert_that(result, none())
 
 
 class TestGet(DAOTestCase):

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2014-2016 Avencall
+# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao.resources.incall.persistor import IncallPersistor
@@ -24,8 +24,8 @@ def get_by(session, **criteria):
 
 
 @daosession
-def find(session, incall_id):
-    return IncallPersistor(session, incall_search).find_by({'id': incall_id})
+def find(session, incall_id, tenant_uuids=None):
+    return IncallPersistor(session, incall_search, tenant_uuids).find_by({'id': incall_id})
 
 
 @daosession

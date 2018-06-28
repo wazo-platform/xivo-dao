@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
+
+from sqlalchemy import text
 
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.incall import Incall
@@ -14,9 +16,10 @@ class IncallPersistor(CriteriaBuilderMixin):
 
     _search_table = Incall
 
-    def __init__(self, session, incall_search):
+    def __init__(self, session, incall_search, tenant_uuids=None):
         self.session = session
         self.incall_search = incall_search
+        self.tenant_uuids = tenant_uuids
 
     def find_by(self, criteria):
         query = self._find_query(criteria)
@@ -24,6 +27,11 @@ class IncallPersistor(CriteriaBuilderMixin):
 
     def _find_query(self, criteria):
         query = self.session.query(Incall)
+        if self.tenant_uuids is not None:
+            if not self.tenant_uuids:
+                return query.filter(text('false'))
+
+            query = query.filter(Incall.tenant_uuid.in_(self.tenant_uuids))
         return self.build_criteria(query, criteria)
 
     def get_by(self, criteria):
