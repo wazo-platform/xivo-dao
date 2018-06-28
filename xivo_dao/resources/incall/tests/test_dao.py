@@ -70,6 +70,17 @@ class TestGet(DAOTestCase):
 
         assert_that(incall, equal_to(incall_row))
 
+    def test_get_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        incall = self.add_incall(tenant_uuid=tenant.uuid)
+
+        self.assertRaises(NotFoundError, incall_dao.get, incall.id, tenant_uuids=[self.default_tenant.uuid])
+        self.assertRaises(NotFoundError, incall_dao.get, incall.id, tenant_uuids=[])
+
+        result = incall_dao.get(incall.id, tenant_uuids=[tenant.uuid])
+        assert_that(result, equal_to(incall))
+
 
 class TestFindBy(DAOTestCase):
 
