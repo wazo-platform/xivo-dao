@@ -208,6 +208,7 @@ class UserFeatures(Base):
                                                      QueueMember.userid == UserFeatures.id)""",
                                  foreign_keys='QueueMember.userid',
                                  cascade='all, delete-orphan')
+    queues = association_proxy('queue_members', 'queue')
 
     paging_users = relationship('PagingUser',
                                 cascade='all, delete-orphan')
