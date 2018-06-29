@@ -342,7 +342,8 @@ class TestCreate(DAOTestCase):
                                                    caller_id_name=none(),
                                                    destination=has_properties(action='none',
                                                                               actionarg1=None,
-                                                                              actionarg2=None)))
+                                                                              actionarg2=None),
+                                                   tenant_uuid=self.default_tenant.uuid))
 
     def test_create_with_all_fields(self):
         incall = Incall(preprocess_subroutine='MySubroutine',
@@ -366,7 +367,8 @@ class TestCreate(DAOTestCase):
                                                    caller_id_name='incall_',
                                                    destination=has_properties(action='user',
                                                                               actionarg1='2',
-                                                                              actionarg2='10')))
+                                                                              actionarg2='10'),
+                                                   tenant_uuid=self.default_tenant.uuid))
 
 
 class TestEdit(DAOTestCase):
