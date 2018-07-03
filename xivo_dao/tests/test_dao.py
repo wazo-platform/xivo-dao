@@ -15,7 +15,6 @@ import string
 import uuid
 import six
 
-from xivo_dao import tenant_dao
 from xivo_dao.alchemy.accessfeatures import AccessFeatures
 from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
@@ -473,16 +472,12 @@ class ItemInserter(object):
         return outcall_schedule
 
     def add_user(self, **kwargs):
-        if 'tenant_uuid' not in kwargs:
-            kwargs['tenant_uuid'] = DEFAULT_TENANT
-
-        tenant_dao.get_or_create_tenant(kwargs['tenant_uuid'])
-
         if 'func_key_private_template_id' not in kwargs:
             func_key_template = self.add_func_key_template(private=True)
             kwargs['func_key_private_template_id'] = func_key_template.id
 
         kwargs.setdefault('id', self._generate_int())
+        kwargs.setdefault('tenant_uuid', DEFAULT_TENANT)
         kwargs.setdefault('firstname', 'John')
 
         fullname = kwargs['firstname']
@@ -521,6 +516,8 @@ class ItemInserter(object):
         kwargs.setdefault('id', self._generate_int())
         kwargs.setdefault('name', self._random_name())
         kwargs.setdefault('context', '')
+        kwargs.setdefault('tenant_uuid', DEFAULT_TENANT)
+
         group = GroupFeatures(**kwargs)
         self.add_me(group)
         return group
@@ -1120,6 +1117,8 @@ class DAOTestCase(unittest.TestCase, ItemInserter):
         self.session = db_manager.Session
 
         self.session.begin_nested()
+
+        self.default_tenant = self.add_tenant(uuid=DEFAULT_TENANT)
 
         @event.listens_for(self.session, 'after_transaction_end')
         def restart_savepoint(session, transaction):

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from .persistor import GroupPersistor
@@ -9,33 +9,33 @@ from xivo_dao.helpers.db_manager import daosession
 
 
 @daosession
-def search(session, **parameters):
-    return GroupPersistor(session, group_search).search(parameters)
+def search(session, tenant_uuids=None, **parameters):
+    return GroupPersistor(session, group_search, tenant_uuids).search(parameters)
 
 
 @daosession
-def get(session, group_id):
-    return GroupPersistor(session, group_search).get_by({'id': group_id})
+def get(session, group_id, tenant_uuids=None):
+    return GroupPersistor(session, group_search, tenant_uuids).get_by({'id': group_id})
 
 
 @daosession
-def get_by(session, **criteria):
-    return GroupPersistor(session, group_search).get_by(criteria)
+def get_by(session, tenant_uuids=None, **criteria):
+    return GroupPersistor(session, group_search, tenant_uuids).get_by(criteria)
 
 
 @daosession
-def find(session, group_id):
-    return GroupPersistor(session, group_search).find_by({'id': group_id})
+def find(session, group_id, tenant_uuids=None):
+    return GroupPersistor(session, group_search, tenant_uuids).find_by({'id': group_id})
 
 
 @daosession
-def find_by(session, **criteria):
-    return GroupPersistor(session, group_search).find_by(criteria)
+def find_by(session, tenant_uuids=None, **criteria):
+    return GroupPersistor(session, group_search, tenant_uuids).find_by(criteria)
 
 
 @daosession
-def find_all_by(session, **criteria):
-    return GroupPersistor(session, group_search).find_all_by(criteria)
+def find_all_by(session, tenant_uuids=None, **criteria):
+    return GroupPersistor(session, group_search, tenant_uuids).find_all_by(criteria)
 
 
 @daosession

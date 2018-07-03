@@ -1,17 +1,20 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
-from hamcrest import (assert_that,
-                      contains,
-                      empty,
-                      equal_to,
-                      has_items,
-                      has_properties,
-                      has_property,
-                      is_not,
-                      none,
-                      not_)
+from hamcrest import (
+    all_of,
+    assert_that,
+    contains,
+    empty,
+    equal_to,
+    has_items,
+    has_properties,
+    has_property,
+    is_not,
+    none,
+    not_,
+)
 
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.extension import Extension
@@ -43,6 +46,17 @@ class TestFind(DAOTestCase):
 
         assert_that(group, equal_to(group_row))
 
+    def test_find_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        group = self.add_group(tenant_uuid=tenant.uuid)
+
+        result = group_dao.find(group.id, tenant_uuids=[tenant.uuid])
+        assert_that(result, equal_to(group))
+
+        result = group_dao.find(group.id, tenant_uuids=[self.default_tenant.uuid])
+        assert_that(result, none())
+
 
 class TestGet(DAOTestCase):
 
@@ -55,6 +69,16 @@ class TestGet(DAOTestCase):
         group = group_dao.get(group_row.id)
 
         assert_that(group, equal_to(group_row))
+
+    def test_get_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        group_row = self.add_group(tenant_uuid=tenant.uuid)
+        group = group_dao.get(group_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(group, equal_to(group_row))
+
+        group_row = self.add_group()
+        self.assertRaises(NotFoundError, group_dao.get, group_row.id, tenant_uuids=[tenant.uuid])
 
 
 class TestFindBy(DAOTestCase):
@@ -83,6 +107,17 @@ class TestFindBy(DAOTestCase):
 
         assert_that(group, none())
 
+    def test_find_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        group_row = self.add_group()
+        group = group_dao.find_by(name=group_row.name, tenant_uuids=[tenant.uuid])
+        assert_that(group, none())
+
+        group_row = self.add_group(tenant_uuid=tenant.uuid)
+        group = group_dao.find_by(name=group_row.name, tenant_uuids=[tenant.uuid])
+        assert_that(group, equal_to(group_row))
+
 
 class TestGetBy(DAOTestCase):
 
@@ -108,6 +143,19 @@ class TestGetBy(DAOTestCase):
     def test_given_group_does_not_exist_then_raises_error(self):
         self.assertRaises(NotFoundError, group_dao.get_by, id='42')
 
+    def test_get_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        group_row = self.add_group()
+        self.assertRaises(
+            NotFoundError,
+            group_dao.get_by, id=group_row.id, tenant_uuids=[tenant.uuid],
+        )
+
+        group_row = self.add_group(tenant_uuid=tenant.uuid)
+        group = group_dao.get_by(id=group_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(group, equal_to(group_row))
+
 
 class TestFindAllBy(DAOTestCase):
 
@@ -127,6 +175,20 @@ class TestFindAllBy(DAOTestCase):
 
         assert_that(groups, has_items(has_property('id', group1.id),
                                       has_property('id', group2.id)))
+
+    def test_find_all_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        group1 = self.add_group(preprocess_subroutine='subroutine', tenant_uuid=tenant.uuid)
+        group2 = self.add_group(preprocess_subroutine='subroutine')
+
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        groups = group_dao.find_all_by(preprocess_subroutine='subroutine', tenant_uuids=tenants)
+        assert_that(groups, has_items(group1, group2))
+
+        tenants = [tenant.uuid]
+        groups = group_dao.find_all_by(preprocess_subroutine='subroutine', tenant_uuids=tenants)
+        assert_that(groups, all_of(has_items(group1), not_(has_items(group2))))
 
 
 class TestSearch(DAOTestCase):
@@ -148,6 +210,20 @@ class TestSimpleSearch(TestSearch):
         expected = SearchResult(1, [group])
 
         self.assert_search_returns_result(expected)
+
+    def test_search_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        group1 = self.add_group()
+        group2 = self.add_group(tenant_uuid=tenant.uuid)
+
+        expected = SearchResult(2, [group1, group2])
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
+        expected = SearchResult(1, [group2])
+        tenants = [tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
 
 
 class TestSearchGivenMultipleGroup(TestSearch):
@@ -215,13 +291,14 @@ class TestSearchGivenMultipleGroup(TestSearch):
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_fields(self):
-        group = Group(name='mygroup')
+        group = Group(name='mygroup', tenant_uuid=self.default_tenant.uuid)
         created_group = group_dao.create(group)
 
         row = self.session.query(Group).first()
 
         assert_that(created_group, equal_to(row))
         assert_that(created_group, has_properties(id=is_not(none()),
+                                                  tenant_uuid=self.default_tenant.uuid,
                                                   name='mygroup',
                                                   caller_id_mode=none(),
                                                   caller_id_name=none(),
@@ -235,7 +312,8 @@ class TestCreate(DAOTestCase):
                                                   enabled=True))
 
     def test_create_with_all_fields(self):
-        group = Group(name='MyGroup',
+        group = Group(tenant_uuid=self.default_tenant.uuid,
+                      name='MyGroup',
                       caller_id_mode='prepend',
                       caller_id_name='toto',
                       timeout=60,
@@ -253,6 +331,7 @@ class TestCreate(DAOTestCase):
 
         assert_that(created_group, equal_to(row))
         assert_that(created_group, has_properties(id=is_not(none()),
+                                                  tenant_uuid=self.default_tenant.uuid,
                                                   name='MyGroup',
                                                   caller_id_mode='prepend',
                                                   caller_id_name='toto',
@@ -269,7 +348,8 @@ class TestCreate(DAOTestCase):
 class TestEdit(DAOTestCase):
 
     def test_edit_all_fields(self):
-        group = group_dao.create(Group(name='MyGroup',
+        group = group_dao.create(Group(tenant_uuid=self.default_tenant.uuid,
+                                       name='MyGroup',
                                        caller_id_mode='prepend',
                                        caller_id_name='toto',
                                        timeout=60,
@@ -312,7 +392,8 @@ class TestEdit(DAOTestCase):
                                           enabled=False))
 
     def test_edit_set_fields_to_null(self):
-        group = group_dao.create(Group(name='MyGroup',
+        group = group_dao.create(Group(tenant_uuid=self.default_tenant.uuid,
+                                       name='MyGroup',
                                        caller_id_mode='prepend',
                                        caller_id_name='toto',
                                        timeout=0,
@@ -343,7 +424,7 @@ class TestEdit(DAOTestCase):
                                         retry_delay=none()))
 
     def test_edit_queue_name(self):
-        group_dao.create(Group(name='MyGroup'))
+        group_dao.create(Group(name='MyGroup', tenant_uuid=self.default_tenant.uuid))
         self.session.expunge_all()
 
         queue = self.session.query(Queue).first()

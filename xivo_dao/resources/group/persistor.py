@@ -15,9 +15,10 @@ class GroupPersistor(CriteriaBuilderMixin):
 
     _search_table = Group
 
-    def __init__(self, session, group_search):
+    def __init__(self, session, group_search, tenant_uuids=None):
         self.session = session
         self.group_search = group_search
+        self.tenant_uuids = tenant_uuids
 
     def find_by(self, criteria):
         query = self._find_query(criteria)
@@ -25,7 +26,10 @@ class GroupPersistor(CriteriaBuilderMixin):
 
     def _find_query(self, criteria):
         query = self._joinedload_query()
-        return self.build_criteria(query, criteria)
+        query = self.build_criteria(query, criteria)
+        if self.tenant_uuids is not None:
+            query = query.filter(Group.tenant_uuid.in_(self.tenant_uuids))
+        return query
 
     def get_by(self, criteria):
         group = self.find_by(criteria)
@@ -38,7 +42,11 @@ class GroupPersistor(CriteriaBuilderMixin):
         return query.all()
 
     def search(self, parameters):
-        rows, total = self.group_search.search_from_query(self._joinedload_query(), parameters)
+        query = self._joinedload_query()
+        if self.tenant_uuids is not None:
+            query = query.filter(Group.tenant_uuid.in_(self.tenant_uuids))
+
+        rows, total = self.group_search.search_from_query(query, parameters)
         return SearchResult(total, rows)
 
     def _joinedload_query(self):

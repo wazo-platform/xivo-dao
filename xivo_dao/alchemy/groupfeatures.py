@@ -7,7 +7,7 @@ import six
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
+from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint, Index
 from sqlalchemy.types import Integer, String
 
 from xivo_dao.alchemy.callerid import Callerid
@@ -29,6 +29,7 @@ class GroupFeatures(Base):
     )
 
     id = Column(Integer)
+    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
     name = Column(String(128), nullable=False)
     number = Column(String(40))
     context = Column(String(39))
