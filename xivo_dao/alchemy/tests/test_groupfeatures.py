@@ -12,7 +12,7 @@ from hamcrest import (
     has_properties,
     is_not,
     none,
-    not_,
+    not_none,
 )
 
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -184,7 +184,7 @@ class TestSchedules(DAOTestCase):
         assert_that(row.schedules, empty())
 
         row = self.session.query(Schedule).first()
-        assert_that(row, not_(none()))
+        assert_that(row, not_none())
 
         row = self.session.query(SchedulePath).first()
         assert_that(row, none())
