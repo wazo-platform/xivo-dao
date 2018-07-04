@@ -229,7 +229,7 @@ class TestSearchGivenMultipleOutcall(TestSearch):
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_fields(self):
-        outcall = Outcall(name='myoutcall')
+        outcall = Outcall(name='myoutcall', tenant_uuid=self.default_tenant.uuid)
         created_outcall = outcall_dao.create(outcall)
 
         row = self.session.query(Outcall).first()
@@ -252,7 +252,8 @@ class TestCreate(DAOTestCase):
                           internal_caller_id=True,
                           preprocess_subroutine='MySubroutine',
                           description='outcall description',
-                          enabled=False)
+                          enabled=False,
+                          tenant_uuid=self.default_tenant.uuid)
 
         created_outcall = outcall_dao.create(outcall)
 
@@ -275,7 +276,8 @@ class TestEdit(DAOTestCase):
                                              internal_caller_id=True,
                                              preprocess_subroutine='MySubroutine',
                                              description='outcall description',
-                                             enabled=False))
+                                             enabled=False,
+                                             tenant_uuid=self.default_tenant.uuid))
 
         outcall = outcall_dao.get(outcall.id)
         outcall.name = 'other_name'
@@ -301,7 +303,8 @@ class TestEdit(DAOTestCase):
         outcall = outcall_dao.create(Outcall(name='MyOutcall',
                                              ring_time=10,
                                              preprocess_subroutine='MySubroutine',
-                                             description='outcall description'))
+                                             description='outcall description',
+                                             tenant_uuid=self.default_tenant.uuid))
 
         outcall = outcall_dao.get(outcall.id)
         outcall.preprocess_subroutine = None

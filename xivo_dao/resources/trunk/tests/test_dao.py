@@ -503,7 +503,7 @@ class TestDissociateRegisterSIP(DAOTestCase):
 class TestRelations(DAOTestCase):
 
     def test_outcalls_create(self):
-        outcall = Outcall(name='test', context='to-extern')
+        outcall = Outcall(name='test', context='to-extern', tenant_uuid=self.default_tenant.uuid)
         trunk_row = self.add_trunk()
         trunk_row.outcalls = [outcall]
         trunk = trunk_dao.get(trunk_row.id)
