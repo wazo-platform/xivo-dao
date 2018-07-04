@@ -14,6 +14,7 @@ from hamcrest import (
     is_not,
     none,
     not_,
+    not_none,
 )
 
 from xivo_dao.alchemy.dialaction import Dialaction
@@ -502,23 +503,26 @@ class TestAssociateMemberUsers(DAOTestCase):
         sip = self.add_usersip(name='sipname')
         line = self.add_line(protocol='sip', protocolid=sip.id)
         self.add_user_line(user_id=user.id, line_id=line.id)
-        group_row = self.add_group()
+        group = self.add_group()
 
-        group_dao.associate_all_member_users(group_row, [{'user': user}])
+        group_dao.associate_all_member_users(group, [QueueMember(user=user)])
 
-        group = self.session.query(Group).first()
-        assert_that(group, equal_to(group_row))
+        self.session.expire_all()
         assert_that(group.user_queue_members, contains(
-            has_properties(queue_name=group.name,
-                           interface='SIP/sipname',
-                           channel='SIP',
-                           user=has_properties(id=user.id,
-                                               firstname=user.firstname,
-                                               lastname=user.lastname))
+            has_properties(
+                queue_name=group.name,
+                interface='SIP/sipname',
+                channel='SIP',
+                user=has_properties(
+                    id=user.id,
+                    firstname=user.firstname,
+                    lastname=user.lastname
+                )
+            )
         ))
 
     def test_associate_multiple_users(self):
-        group_row = self.add_group()
+        group = self.add_group()
 
         user1 = self.add_user()
         sip1 = self.add_usersip()
@@ -534,27 +538,31 @@ class TestAssociateMemberUsers(DAOTestCase):
         sip3 = self.add_usercustom()
         line3 = self.add_line(protocol='custom', protocolid=sip3.id)
         self.add_user_line(user_id=user3.id, line_id=line3.id)
-        members = [{'user': user1, 'priority': 3},
-                   {'user': user2, 'priority': 1},
-                   {'user': user3, 'priority': 2}]
+        members = [
+            QueueMember(user=user1, priority=3),
+            QueueMember(user=user2, priority=1),
+            QueueMember(user=user3, priority=2),
+        ]
 
-        group_dao.associate_all_member_users(group_row, members)
+        group_dao.associate_all_member_users(group, members)
 
         self.session.expire_all()
-        group = self.session.query(Group).first()
-        assert_that(group, equal_to(group_row))
-        assert_that(group.users_member, contains(user2, user3, user1))
+        assert_that(group.user_queue_members, contains(
+            has_properties(user=user2),
+            has_properties(user=user3),
+            has_properties(user=user1),
+        ))
 
     def test_associate_fix(self):
         user = self.add_user()
         sip = self.add_usersip(name='sipname')
         line = self.add_line(protocol='sip', protocolid=sip.id)
         self.add_user_line(user_id=user.id, line_id=line.id)
-        group_row = self.add_group()
+        group = self.add_group()
 
-        group_dao.associate_all_member_users(group_row, [{'user': user}])
+        group_dao.associate_all_member_users(group, [QueueMember(user=user)])
 
-        group = self.session.query(Group).first()
+        self.session.expire_all()
         assert_that(group.user_queue_members, contains(
             has_properties(
                 queue_name=group.name,
@@ -568,20 +576,19 @@ class TestAssociateMemberUsers(DAOTestCase):
         sip = self.add_usersip(name='sipname')
         line = self.add_line(protocol='sip', protocolid=sip.id)
         self.add_user_line(user_id=user.id, line_id=line.id)
-        group_row = self.add_group()
-        group_dao.associate_all_member_users(group_row, [{'user': user}])
+        group = self.add_group()
+        group_dao.associate_all_member_users(group, [QueueMember(user=user)])
 
-        group = self.session.query(Group).first()
-        assert_that(group.users_member, contains(user))
+        self.session.expire_all()
+        assert_that(group.user_queue_members, contains(has_properties(user=user)))
 
-        group_dao.associate_all_member_users(group_row, [])
+        group_dao.associate_all_member_users(group, [])
 
-        group = self.session.query(Group).first()
-        assert_that(group, equal_to(group_row))
-        assert_that(group.users_member, empty())
+        self.session.expire_all()
+        assert_that(group.user_queue_members, empty())
 
         row = self.session.query(UserFeatures).first()
-        assert_that(row, not_(none()))
+        assert_that(row, not_none())
 
         row = self.session.query(QueueMember).first()
         assert_that(row, none())

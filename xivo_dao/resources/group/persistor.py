@@ -90,10 +90,16 @@ class GroupPersistor(CriteriaBuilderMixin):
 
     def associate_all_member_users(self, group, members):
         with Session.no_autoflush:
-            group.users_member = members
-            for member in group.user_queue_members:
+            group.user_queue_members = []
+            for member in members:
+                self._fill_user_queue_member_default_values(member)
+                group.user_queue_members.append(member)
                 member.fix()
         self.session.flush()
+
+    def _fill_user_queue_member_default_values(self, member):
+        member.category = 'group'
+        member.usertype = 'user'
 
     def associate_all_member_extensions(self, group, members):
         group.extensions_member = members

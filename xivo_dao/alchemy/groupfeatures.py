@@ -111,16 +111,6 @@ class GroupFeatures(Base):
         passive_updates=False,
     )
 
-    users_member = association_proxy(
-        'user_queue_members', 'user',
-        creator=lambda _member: QueueMember(
-            category='group',
-            usertype='user',
-            user=_member['user'],
-            position=_member.get('priority')
-        )
-    )
-
     queue = relationship(
         'Queue',
         primaryjoin="""and_(Queue.category == 'group',
