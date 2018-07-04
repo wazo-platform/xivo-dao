@@ -14,8 +14,8 @@ def search(session, **parameters):
 
 
 @daosession
-def get(session, outcall_id):
-    return OutcallPersistor(session, outcall_search).get_by({'id': outcall_id})
+def get(session, outcall_id, tenant_uuids=None):
+    return OutcallPersistor(session, outcall_search, tenant_uuids).get_by({'id': outcall_id})
 
 
 @daosession
