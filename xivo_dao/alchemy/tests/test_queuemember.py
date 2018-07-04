@@ -59,9 +59,22 @@ class TestPriority(DAOTestCase):
         assert_that(member.position, equal_to(42))
 
 
+
+
+
+
 class TestExten(DAOTestCase):
 
-    def test_exten_with_local(self):
+    def test_setter(self):
+        member = QueueMember()
+        member.exten = '123'
+        assert_that(member.exten, equal_to('123'))
+
+    def test_exten_with_custom_exten(self):
+        member = QueueMember(exten='456', interface='Local/123@default')
+        assert_that(member.exten, equal_to('456'))
+
+    def test_exten_without_custom_exten(self):
         member = QueueMember(interface='Local/123@default')
         assert_that(member.exten, equal_to('123'))
 
@@ -72,7 +85,16 @@ class TestExten(DAOTestCase):
 
 class TestContext(DAOTestCase):
 
-    def test_context_with_local(self):
+    def test_setter(self):
+        member = QueueMember()
+        member.context = 'default'
+        assert_that(member.context, equal_to('default'))
+
+    def test_context_with_custom_context(self):
+        member = QueueMember(context='toto', interface='Local/123@default')
+        assert_that(member.context, equal_to('toto'))
+
+    def test_context_without_custom_context(self):
         member = QueueMember(interface='Local/123@default')
         assert_that(member.context, equal_to('default'))
 

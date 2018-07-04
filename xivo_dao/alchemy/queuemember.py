@@ -105,15 +105,29 @@ class QueueMember(Base):
 
     @property
     def exten(self):
-        match = re.search(interface_regex, self.interface)
+        if getattr(self, '_exten', None):
+            return self._exten
+
+        match = re.search(interface_regex, self.interface or '')
         if match:
             return match.group('exten')
 
+    @exten.setter
+    def exten(self, value):
+        self._exten = value
+
     @property
     def context(self):
-        match = re.search(interface_regex, self.interface)
+        if getattr(self, '_context', None):
+            return self._context
+
+        match = re.search(interface_regex, self.interface or '')
         if match:
             return match.group('context')
+
+    @context.setter
+    def context(self, value):
+        self._context = value
 
     @property
     def extension(self):
