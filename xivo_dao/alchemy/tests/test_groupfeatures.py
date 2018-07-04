@@ -27,6 +27,7 @@ from ..queue import Queue
 from ..queuemember import QueueMember
 from ..schedule import Schedule
 from ..schedulepath import SchedulePath
+from ..userfeatures import UserFeatures
 
 
 class TestIncalls(DAOTestCase):
@@ -187,6 +188,49 @@ class TestSchedules(DAOTestCase):
         assert_that(row, not_none())
 
         row = self.session.query(SchedulePath).first()
+        assert_that(row, none())
+
+
+class TestUserQueueMembers(DAOTestCase):
+
+    def test_getter(self):
+        group = self.add_group()
+        queue_member1 = self.add_queue_member(category='group', usertype='user', queue_name=group.name, position=1)
+        queue_member2 = self.add_queue_member(category='group', usertype='user', queue_name=group.name, position=2)
+
+        self.session.expire_all()
+        assert_that(group.user_queue_members, contains(queue_member1, queue_member2))
+
+    def test_setter(self):
+        group = self.add_group()
+        queue_member = self.add_queue_member(category='group', usertype='user')
+        group.user_queue_members = [queue_member]
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(group.user_queue_members, contains(queue_member))
+        assert_that(queue_member.queue_name, equal_to(group.name))
+
+    def test_deleter(self):
+        group = self.add_group()
+        user = self.add_user()
+        self.add_queue_member(
+            category='group',
+            usertype='user',
+            userid=user.id,
+            queue_name=group.name,
+        )
+
+        group.user_queue_members = []
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(group.user_queue_members, empty())
+
+        row = self.session.query(UserFeatures).first()
+        assert_that(row, not_none())
+
+        row = self.session.query(QueueMember).first()
         assert_that(row, none())
 
 
