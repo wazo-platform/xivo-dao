@@ -29,8 +29,8 @@ def find(session, outcall_id, tenant_uuids=None):
 
 
 @daosession
-def find_by(session, **criteria):
-    return OutcallPersistor(session, outcall_search).find_by(criteria)
+def find_by(session, tenant_uuids=None, **criteria):
+    return OutcallPersistor(session, outcall_search, tenant_uuids).find_by(criteria)
 
 
 @daosession

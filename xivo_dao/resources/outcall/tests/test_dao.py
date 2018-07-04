@@ -114,6 +114,17 @@ class TestFindBy(DAOTestCase):
 
         assert_that(outcall, none())
 
+    def test_find_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        outcall_row = self.add_outcall()
+        outcall = outcall_dao.find_by(name=outcall_row.name, tenant_uuids=[tenant.uuid])
+        assert_that(outcall, none())
+
+        outcall_row = self.add_outcall(tenant_uuid=tenant.uuid)
+        outcall = outcall_dao.find_by(name=outcall_row.name, tenant_uuids=[tenant.uuid])
+        assert_that(outcall, equal_to(outcall_row))
+
 
 class TestGetBy(DAOTestCase):
 
