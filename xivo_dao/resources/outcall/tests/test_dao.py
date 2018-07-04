@@ -12,7 +12,8 @@ from hamcrest import (
     has_properties,
     has_property,
     is_not,
-    none
+    none,
+    not_,
 )
 
 from xivo_dao.alchemy.extension import Extension
@@ -190,6 +191,20 @@ class TestFindAllBy(DAOTestCase):
 
         assert_that(outcalls, has_items(has_property('id', outcall1.id),
                                         has_property('id', outcall2.id)))
+
+    def test_find_all_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        outcall1 = self.add_outcall(preprocess_subroutine='subroutine', tenant_uuid=tenant.uuid)
+        outcall2 = self.add_outcall(preprocess_subroutine='subroutine')
+
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        outcalls = outcall_dao.find_all_by(preprocess_subroutine='subroutine', tenant_uuids=tenants)
+        assert_that(outcalls, has_items(outcall1, outcall2))
+
+        tenants = [tenant.uuid]
+        outcalls = outcall_dao.find_all_by(preprocess_subroutine='subroutine', tenant_uuids=tenants)
+        assert_that(outcalls, all_of(has_items(outcall1), not_(has_items(outcall2))))
 
 
 class TestSearch(DAOTestCase):
