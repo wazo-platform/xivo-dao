@@ -114,3 +114,7 @@ class QueueMember(Base):
         match = re.search(interface_regex, self.interface)
         if match:
             return match.group('context')
+
+    @property
+    def extension(self):
+        return self

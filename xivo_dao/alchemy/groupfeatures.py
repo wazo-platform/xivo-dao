@@ -92,6 +92,18 @@ class GroupFeatures(Base):
     user_queue_members = relationship(
         'QueueMember',
         primaryjoin="""and_(QueueMember.category == 'group',
+                            not_(QueueMember.interface.startswith('Local/')),
+                            QueueMember.queue_name == GroupFeatures.name)""",
+        order_by='QueueMember.position',
+        foreign_keys='QueueMember.queue_name',
+        cascade='all, delete-orphan',
+        passive_updates=False,
+    )
+
+    extension_queue_members = relationship(
+        'QueueMember',
+        primaryjoin="""and_(QueueMember.category == 'group',
+                            QueueMember.interface.startswith('Local/'),
                             QueueMember.queue_name == GroupFeatures.name)""",
         order_by='QueueMember.position',
         foreign_keys='QueueMember.queue_name',
@@ -267,7 +279,7 @@ class GroupFeatures(Base):
 
     @property
     def extensions_member(self):
-        return [member for member in self.user_queue_members if 'Local/' in member.interface]
+        return [member.extension for member in self.extension_queue_members]
 
     @extensions_member.setter
     def extensions_member(self, members):
@@ -281,7 +293,7 @@ class GroupFeatures(Base):
                 userid=0,
                 position=member.get('priority')
             )
-            self.user_queue_members.append(member)
+            self.extension_queue_members.append(member)
 
     def _remove_all_extensions_member(self):
-        self.user_queue_members = [member for member in self.user_queue_members if member not in self.extensions_member]
+        self.extension_queue_members = [member for member in self.extension_queue_members if member not in self.extensions_member]
