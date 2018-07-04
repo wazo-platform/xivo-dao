@@ -61,3 +61,23 @@ def associate_schedule(session, queue, schedule):
 @daosession
 def dissociate_schedule(session, queue, schedule):
     QueuePersistor(session, queue_search).dissociate_schedule(queue, schedule)
+
+
+@daosession
+def associate_member_user(session, queue, member):
+    QueuePersistor(session, queue_search).associate_member_user(queue, member)
+
+
+@daosession
+def dissociate_member_user(session, queue, member):
+    QueuePersistor(session, queue_search).dissociate_member_user(queue, member)
+
+
+@daosession
+def associate_member_agent(session, queue, member):
+    QueuePersistor(session, queue_search).associate_member_agent(queue, member)
+
+
+@daosession
+def dissociate_member_agent(session, queue, member):
+    QueuePersistor(session, queue_search).dissociate_member_agent(queue, member)

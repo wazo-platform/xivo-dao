@@ -10,6 +10,7 @@ from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 
 from ..func_key_dest_agent import FuncKeyDestAgent
+from ..queuemember import QueueMember
 
 
 class TestDelete(DAOTestCase, FuncKeyHelper):
@@ -27,4 +28,14 @@ class TestDelete(DAOTestCase, FuncKeyHelper):
         self.session.flush()
 
         row = self.session.query(FuncKeyDestAgent).first()
+        assert_that(row, none())
+
+    def test_queue_queue_members_are_deleted(self):
+        agent = self.add_agent()
+        self.add_queue_member(category='queue', usertype='agent', userid=agent.id)
+
+        self.session.delete(agent)
+        self.session.flush()
+
+        row = self.session.query(QueueMember).first()
         assert_that(row, none())

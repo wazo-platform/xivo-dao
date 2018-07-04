@@ -27,9 +27,10 @@ from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.schedule import Schedule
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao.resources.group import dao as group_dao
 from xivo_dao.helpers.exception import NotFoundError, InputError
 from xivo_dao.resources.utils.search import SearchResult
+
+from .. import dao as group_dao
 
 
 class TestFind(DAOTestCase):
@@ -544,7 +545,7 @@ class TestAssociateMemberUsers(DAOTestCase):
         assert_that(group, equal_to(group_row))
         assert_that(group.users_member, contains(user2, user3, user1))
 
-    def test_associate_sip_fix(self):
+    def test_associate_fix(self):
         user = self.add_user()
         sip = self.add_usersip(name='sipname')
         line = self.add_line(protocol='sip', protocolid=sip.id)
@@ -555,41 +556,11 @@ class TestAssociateMemberUsers(DAOTestCase):
 
         group = self.session.query(Group).first()
         assert_that(group.group_members, contains(
-            has_properties(queue_name=group.name,
-                           interface='SIP/sipname',
-                           channel='SIP')
-        ))
-
-    def test_associate_sccp_fix(self):
-        user = self.add_user()
-        sccp = self.add_sccpline(name='sccpname')
-        line = self.add_line(protocol='sccp', protocolid=sccp.id)
-        self.add_user_line(user_id=user.id, line_id=line.id)
-        group_row = self.add_group()
-
-        group_dao.associate_all_member_users(group_row, [{'user': user}])
-
-        group = self.session.query(Group).first()
-        assert_that(group.group_members, contains(
-            has_properties(queue_name=group.name,
-                           interface='SCCP/sccpname',
-                           channel='SCCP')
-        ))
-
-    def test_associate_custom_fix(self):
-        user = self.add_user()
-        custom = self.add_usercustom(interface='custom/interface')
-        line = self.add_line(protocol='custom', protocolid=custom.id)
-        self.add_user_line(user_id=user.id, line_id=line.id)
-        group_row = self.add_group()
-
-        group_dao.associate_all_member_users(group_row, [{'user': user}])
-
-        group = self.session.query(Group).first()
-        assert_that(group.group_members, contains(
-            has_properties(queue_name=group.name,
-                           interface='custom/interface',
-                           channel='**Unknown**')
+            has_properties(
+                queue_name=group.name,
+                interface='SIP/sipname',
+                channel='SIP',
+            )
         ))
 
     def test_users_dissociation(self):

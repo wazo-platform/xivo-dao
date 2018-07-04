@@ -149,11 +149,23 @@ class QueueFeatures(Base):
         cascade='all, delete-orphan',
     )
 
-    queue_members = relationship(
+    user_queue_members = relationship(
         'QueueMember',
         primaryjoin="""and_(QueueMember.category == 'queue',
+                            QueueMember.usertype == 'user',
                             QueueMember.queue_name == QueueFeatures.name)""",
         foreign_keys='QueueMember.queue_name',
+        order_by='QueueMember.position',
+        cascade='all, delete-orphan',
+    )
+
+    agent_queue_members = relationship(
+        'QueueMember',
+        primaryjoin="""and_(QueueMember.category == 'queue',
+                            QueueMember.usertype == 'agent',
+                            QueueMember.queue_name == QueueFeatures.name)""",
+        foreign_keys='QueueMember.queue_name',
+        order_by='QueueMember.position',
         cascade='all, delete-orphan',
     )
 

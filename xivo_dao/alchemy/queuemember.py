@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 import re
 
 from xivo_dao.helpers.db_manager import Base
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import (Column,
-                               Index,
-                               PrimaryKeyConstraint,
-                               UniqueConstraint)
+from sqlalchemy.schema import (
+    Column,
+    Index,
+    PrimaryKeyConstraint,
+    UniqueConstraint,
+)
 from sqlalchemy.types import Integer, String, Enum
 
 interface_regex = re.compile(r'Local/(?P<exten>.*)@(?P<context>.*)')
@@ -37,38 +40,68 @@ class QueueMember(Base):
     category = Column(Enum('queue', 'group', name='queue_category', metadata=Base.metadata), nullable=False)
     position = Column(Integer, nullable=False, server_default='0')
 
-    user = relationship('UserFeatures',
-                        primaryjoin="""and_(QueueMember.usertype == 'user',
-                                            QueueMember.userid == UserFeatures.id)""",
-                        foreign_keys='QueueMember.userid')
+    agent = relationship(
+        'AgentFeatures',
+        primaryjoin="""and_(QueueMember.usertype == 'agent',
+                            QueueMember.userid == AgentFeatures.id)""",
+        foreign_keys='QueueMember.userid',
+    )
 
-    group = relationship('GroupFeatures',
-                         primaryjoin="""and_(QueueMember.category == 'group',
-                                             QueueMember.queue_name == GroupFeatures.name)""",
-                         foreign_keys='QueueMember.queue_name')
+    user = relationship(
+        'UserFeatures',
+        primaryjoin="""and_(QueueMember.usertype == 'user',
+                            QueueMember.userid == UserFeatures.id)""",
+        foreign_keys='QueueMember.userid',
+    )
 
-    def _set_default_channel(self):
-        if self.user and self.user.lines:
-            main_line = self.user.lines[0]
-            if main_line.endpoint_sip:
-                self.channel = 'SIP'
-            elif main_line.endpoint_sccp:
-                self.channel = 'SCCP'
-            elif main_line.endpoint_custom:
-                self.channel = '**Unknown**'
+    group = relationship(
+        'GroupFeatures',
+        primaryjoin="""and_(QueueMember.category == 'group',
+                            QueueMember.queue_name == GroupFeatures.name)""",
+        foreign_keys='QueueMember.queue_name',
+    )
+
+    queue = relationship(
+        'QueueFeatures',
+        primaryjoin='QueueMember.queue_name == QueueFeatures.name',
+        foreign_keys='QueueMember.queue_name',
+        viewonly=True,
+    )
 
     def fix(self):
-        self._set_default_channel()
-        if self.user and self.user.lines:
-            main_line = self.user.lines[0]
-            if main_line.endpoint_sip:
-                self.interface = '{}/{}'.format(self.channel, main_line.endpoint_sip.name)
+        if self.user:
+            self._fix_user(self.user)
+        elif self.agent:
+            self._fix_agent(self.agent)
 
-            elif main_line.endpoint_sccp:
-                self.interface = '{}/{}'.format(self.channel, main_line.endpoint_sccp.name)
+    def _fix_user(self, user):
+        if not user.lines:
+            return
 
-            elif main_line.endpoint_custom:
-                self.interface = main_line.endpoint_custom.interface
+        main_line = user.lines[0]
+        if main_line.endpoint_sip:
+            self.channel = 'SIP'
+            self.interface = '{}/{}'.format(self.channel, main_line.endpoint_sip.name)
+
+        elif main_line.endpoint_sccp:
+            self.channel = 'SCCP'
+            self.interface = '{}/{}'.format(self.channel, main_line.endpoint_sccp.name)
+
+        elif main_line.endpoint_custom:
+            self.channel = '**Unknown**'
+            self.interface = main_line.endpoint_custom.interface
+
+    def _fix_agent(self, agent):
+        self.channel = 'Agent'
+        self.interface = '{}/{}'.format(self.channel, agent.number)
+
+    @hybrid_property
+    def priority(self):
+        return self.position
+
+    @priority.setter
+    def priority(self, value):
+        self.position = value
 
     @property
     def exten(self):
