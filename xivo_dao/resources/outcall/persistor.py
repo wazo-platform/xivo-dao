@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
+
+from sqlalchemy import text
 
 from xivo_dao.alchemy.outcall import Outcall
 from xivo_dao.alchemy.rightcallmember import RightCallMember
@@ -13,9 +15,10 @@ class OutcallPersistor(CriteriaBuilderMixin):
 
     _search_table = Outcall
 
-    def __init__(self, session, outcall_search):
+    def __init__(self, session, outcall_search, tenant_uuids=None):
         self.session = session
         self.outcall_search = outcall_search
+        self.tenant_uuids = tenant_uuids
 
     def find_by(self, criteria):
         query = self._find_query(criteria)
@@ -23,6 +26,7 @@ class OutcallPersistor(CriteriaBuilderMixin):
 
     def _find_query(self, criteria):
         query = self.session.query(Outcall)
+        query = self._filter_tenant_uuid(query)
         return self.build_criteria(query, criteria)
 
     def get_by(self, criteria):
@@ -72,3 +76,12 @@ class OutcallPersistor(CriteriaBuilderMixin):
         if call_permission in outcall.call_permissions:
             outcall.call_permissions.remove(call_permission)
             self.session.flush()
+
+    def _filter_tenant_uuid(self, query):
+        if self.tenant_uuids is None:
+            return query
+
+        if not self.tenant_uuids:
+            return query.filter(text('false'))
+
+        return query.filter(Outcall.tenant_uuid.in_(self.tenant_uuids))

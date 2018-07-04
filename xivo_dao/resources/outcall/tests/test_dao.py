@@ -42,6 +42,17 @@ class TestFind(DAOTestCase):
 
         assert_that(outcall, equal_to(outcall_row))
 
+    def test_find_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        outcall = self.add_outcall(tenant_uuid=tenant.uuid)
+
+        result = outcall_dao.find(outcall.id, tenant_uuids=[tenant.uuid])
+        assert_that(result, equal_to(outcall))
+
+        result = outcall_dao.find(outcall.id, tenant_uuids=[self.default_tenant.uuid])
+        assert_that(result, none())
+
 
 class TestGet(DAOTestCase):
 
