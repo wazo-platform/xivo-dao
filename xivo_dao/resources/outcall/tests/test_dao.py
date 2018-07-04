@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0+
 
 from hamcrest import (
+    all_of,
     assert_that,
     contains,
     empty,
@@ -234,17 +235,23 @@ class TestCreate(DAOTestCase):
 
         row = self.session.query(Outcall).first()
 
-        assert_that(created_outcall, equal_to(row))
-        assert_that(created_outcall, has_properties(id=is_not(none()),
-                                                    name='myoutcall',
-                                                    hangupringtime=0,
-                                                    ring_time=none(),
-                                                    internal=0,
-                                                    internal_caller_id=False,
-                                                    preprocess_subroutine=none(),
-                                                    description=none(),
-                                                    commented=0,
-                                                    enabled=True))
+        assert_that(
+            created_outcall,
+            all_of(
+                equal_to(row),
+                has_properties(
+                    id=is_not(none()),
+                    tenant_uuid=self.default_tenant.uuid,
+                    name='myoutcall',
+                    hangupringtime=0,
+                    ring_time=none(),
+                    internal=0,
+                    internal_caller_id=False,
+                    preprocess_subroutine=none(),
+                    description=none(),
+                    commented=0,
+                    enabled=True,
+                )))
 
     def test_create_with_all_fields(self):
         outcall = Outcall(name='myOutcall',
@@ -259,13 +266,19 @@ class TestCreate(DAOTestCase):
 
         row = self.session.query(Outcall).first()
 
-        assert_that(created_outcall, equal_to(row))
-        assert_that(created_outcall, has_properties(id=is_not(none()),
-                                                    ring_time=10,
-                                                    internal_caller_id=True,
-                                                    preprocess_subroutine='MySubroutine',
-                                                    description='outcall description',
-                                                    enabled=False))
+        assert_that(
+            created_outcall,
+            all_of(
+                equal_to(row),
+                has_properties(
+                    id=is_not(none()),
+                    tenant_uuid=self.default_tenant.uuid,
+                    ring_time=10,
+                    internal_caller_id=True,
+                    preprocess_subroutine='MySubroutine',
+                    description='outcall description',
+                    enabled=False,
+                )))
 
 
 class TestEdit(DAOTestCase):
