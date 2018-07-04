@@ -56,7 +56,7 @@ class GroupPersistor(CriteriaBuilderMixin):
                 .options(joinedload('incall_dialactions')
                          .joinedload('incall'))
                 .options(joinedload('group_dialactions'))
-                .options(joinedload('group_members')
+                .options(joinedload('user_queue_members')
                          .joinedload('user'))
                 .options(joinedload('queue'))
                 .options(joinedload('schedule_paths')
@@ -91,7 +91,7 @@ class GroupPersistor(CriteriaBuilderMixin):
     def associate_all_member_users(self, group, members):
         with Session.no_autoflush:
             group.users_member = members
-            for member in group.group_members:
+            for member in group.user_queue_members:
                 member.fix()
         self.session.flush()
 

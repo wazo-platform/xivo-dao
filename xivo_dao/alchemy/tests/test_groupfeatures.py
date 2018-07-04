@@ -316,7 +316,7 @@ class TestDelete(DAOTestCase, FuncKeyHelper):
         row = self.session.query(Callerid).first()
         assert_that(row, none())
 
-    def test_group_members_are_deleted(self):
+    def test_user_queue_members_are_deleted(self):
         group = self.add_group()
         self.add_queue_member(queue_name=group.name, category='group')
         self.add_queue_member(queue_name=group.name, category='group')

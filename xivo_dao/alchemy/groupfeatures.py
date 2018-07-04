@@ -89,7 +89,7 @@ class GroupFeatures(Base):
         foreign_keys='Dialaction.categoryval',
     )
 
-    group_members = relationship(
+    user_queue_members = relationship(
         'QueueMember',
         primaryjoin="""and_(QueueMember.category == 'group',
                             QueueMember.queue_name == GroupFeatures.name)""",
@@ -100,7 +100,7 @@ class GroupFeatures(Base):
     )
 
     users_member = association_proxy(
-        'group_members', 'user',
+        'user_queue_members', 'user',
         creator=lambda _member: QueueMember(
             category='group',
             usertype='user',
@@ -267,7 +267,7 @@ class GroupFeatures(Base):
 
     @property
     def extensions_member(self):
-        return [member for member in self.group_members if 'Local/' in member.interface]
+        return [member for member in self.user_queue_members if 'Local/' in member.interface]
 
     @extensions_member.setter
     def extensions_member(self, members):
@@ -281,7 +281,7 @@ class GroupFeatures(Base):
                 userid=0,
                 position=member.get('priority')
             )
-            self.group_members.append(member)
+            self.user_queue_members.append(member)
 
     def _remove_all_extensions_member(self):
-        self.group_members = [member for member in self.group_members if member not in self.extensions_member]
+        self.user_queue_members = [member for member in self.user_queue_members if member not in self.extensions_member]

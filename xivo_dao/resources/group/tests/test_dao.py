@@ -508,7 +508,7 @@ class TestAssociateMemberUsers(DAOTestCase):
 
         group = self.session.query(Group).first()
         assert_that(group, equal_to(group_row))
-        assert_that(group.group_members, contains(
+        assert_that(group.user_queue_members, contains(
             has_properties(queue_name=group.name,
                            interface='SIP/sipname',
                            channel='SIP',
@@ -555,7 +555,7 @@ class TestAssociateMemberUsers(DAOTestCase):
         group_dao.associate_all_member_users(group_row, [{'user': user}])
 
         group = self.session.query(Group).first()
-        assert_that(group.group_members, contains(
+        assert_that(group.user_queue_members, contains(
             has_properties(
                 queue_name=group.name,
                 interface='SIP/sipname',
@@ -597,7 +597,7 @@ class TestAssociateMemberExtensions(DAOTestCase):
 
         group = self.session.query(Group).first()
         assert_that(group, equal_to(group_row))
-        assert_that(group.group_members, contains(
+        assert_that(group.user_queue_members, contains(
             has_properties(queue_name=group.name,
                            interface='Local/123@default',
                            channel='Local',
