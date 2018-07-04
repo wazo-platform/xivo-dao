@@ -227,6 +227,20 @@ class TestSimpleSearch(TestSearch):
 
         self.assert_search_returns_result(expected)
 
+    def test_search_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        outcall1 = self.add_outcall()
+        outcall2 = self.add_outcall(tenant_uuid=tenant.uuid)
+
+        expected = SearchResult(2, [outcall1, outcall2])
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
+        expected = SearchResult(1, [outcall2])
+        tenants = [tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
 
 class TestSearchGivenMultipleOutcall(TestSearch):
 

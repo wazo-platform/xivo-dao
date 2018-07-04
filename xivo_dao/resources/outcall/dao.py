@@ -9,8 +9,8 @@ from .search import outcall_search
 
 
 @daosession
-def search(session, **parameters):
-    return OutcallPersistor(session, outcall_search).search(parameters)
+def search(session, tenant_uuids=None, **parameters):
+    return OutcallPersistor(session, outcall_search, tenant_uuids).search(parameters)
 
 
 @daosession
