@@ -16,6 +16,7 @@ from hamcrest import (
     not_,
     not_none,
 )
+from mock import Mock
 
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.extension import Extension
@@ -597,54 +598,56 @@ class TestAssociateMemberUsers(DAOTestCase):
 class TestAssociateMemberExtensions(DAOTestCase):
 
     def test_associate_extension_sip(self):
-        group_row = self.add_group()
-        extension = {'exten': '123', 'context': 'default'}
+        group = self.add_group()
+        extension = Mock(exten='123', context='default')
 
-        group_dao.associate_all_member_extensions(group_row, [{'extension': extension}])
+        group_dao.associate_all_member_extensions(group, [QueueMember(extension=extension)])
 
-        group = self.session.query(Group).first()
-        assert_that(group, equal_to(group_row))
+        self.session.expire_all()
         assert_that(group.extension_queue_members, contains(
-            has_properties(queue_name=group.name,
-                           interface='Local/123@default',
-                           channel='Local',
-                           usertype='user',
-                           userid=0)
+            has_properties(
+                queue_name=group.name,
+                interface='Local/123@default',
+                channel='Local',
+                usertype='user',
+                userid=0,
+            )
         ))
 
     def test_associate_multiple_extensions(self):
-        group_row = self.add_group()
+        group = self.add_group()
 
-        extension1 = {'exten': '123', 'context': 'default'}
-        extension2 = {'exten': '456', 'context': 'outcall'}
-        extension3 = {'exten': '789', 'context': 'default'}
+        extension1 = Mock(exten='123', context='default')
+        extension2 = Mock(exten='456', context='default')
+        extension3 = Mock(exten='789', context='default')
 
-        members = [{'extension': extension1, 'priority': 3},
-                   {'extension': extension2, 'priority': 1},
-                   {'extension': extension3, 'priority': 2}]
+        members = [
+            QueueMember(extension=extension1, priority=3),
+            QueueMember(extension=extension2, priority=1),
+            QueueMember(extension=extension3, priority=2),
+        ]
 
-        group_dao.associate_all_member_extensions(group_row, members)
+        group_dao.associate_all_member_extensions(group, members)
 
         self.session.expire_all()
-        group = self.session.query(Group).first()
-        assert_that(group, equal_to(group_row))
-        assert_that(group.extensions_member, contains(has_properties(interface='Local/456@outcall'),
-                                                      has_properties(interface='Local/789@default'),
-                                                      has_properties(interface='Local/123@default')))
+        assert_that(group.extension_queue_members, contains(
+            has_properties(interface='Local/456@default'),
+            has_properties(interface='Local/789@default'),
+            has_properties(interface='Local/123@default'),
+        ))
 
     def test_extensions_dissociation(self):
-        group_row = self.add_group()
-        extension = {'exten': '123', 'context': 'default'}
-        group_dao.associate_all_member_extensions(group_row, [{'extension': extension}])
+        group = self.add_group()
+        extension = Mock(exten='123', context='default')
+        group_dao.associate_all_member_extensions(group, [QueueMember(extension=extension)])
 
-        group = self.session.query(Group).first()
-        assert_that(group.extensions_member, contains(has_properties(interface='Local/123@default')))
+        self.session.expire_all()
+        assert_that(group.extension_queue_members, contains(has_properties(interface='Local/123@default')))
 
-        group_dao.associate_all_member_extensions(group_row, [])
+        group_dao.associate_all_member_extensions(group, [])
 
-        group = self.session.query(Group).first()
-        assert_that(group, equal_to(group_row))
-        assert_that(group.extensions_member, empty())
+        self.session.expire_all()
+        assert_that(group.extension_queue_members, empty())
 
         row = self.session.query(QueueMember).first()
         assert_that(row, none())

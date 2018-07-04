@@ -102,8 +102,18 @@ class GroupPersistor(CriteriaBuilderMixin):
         member.usertype = 'user'
 
     def associate_all_member_extensions(self, group, members):
-        group.extensions_member = members
+        with Session.no_autoflush:
+            group.extension_queue_members = []
+            for member in members:
+                self._fill_extension_queue_member_default_values(member)
+                group.extension_queue_members.append(member)
+                member.fix()
         self.session.flush()
+
+    def _fill_extension_queue_member_default_values(self, member):
+        member.category = 'group'
+        member.usertype = 'user'
+        member.userid = 0
 
     def associate_call_permission(self, group, call_permission):
         if call_permission not in group.call_permissions:

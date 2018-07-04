@@ -73,6 +73,8 @@ class QueueMember(Base):
             self._fix_user(self.user)
         elif self.agent:
             self._fix_agent(self.agent)
+        else:
+            self._fix_local()
 
     def _fix_user(self, user):
         if not user.lines:
@@ -94,6 +96,10 @@ class QueueMember(Base):
     def _fix_agent(self, agent):
         self.channel = 'Agent'
         self.interface = '{}/{}'.format(self.channel, agent.number)
+
+    def _fix_local(self):
+        self.channel = 'Local'
+        self.interface = '{}/{}@{}'.format(self.channel, self.exten, self.context)
 
     @hybrid_property
     def priority(self):
@@ -132,3 +138,8 @@ class QueueMember(Base):
     @property
     def extension(self):
         return self
+
+    @extension.setter
+    def extension(self, extension):
+        self.exten = extension.exten
+        self.context = extension.context

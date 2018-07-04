@@ -12,7 +12,6 @@ from sqlalchemy.types import Integer, String
 
 from xivo_dao.alchemy.callerid import Callerid
 from xivo_dao.alchemy.queue import Queue
-from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.helpers.db_manager import Base
@@ -266,24 +265,3 @@ class GroupFeatures(Base):
         self.context = None
         if self.queue:
             self.queue.context = None
-
-    @property
-    def extensions_member(self):
-        return [member.extension for member in self.extension_queue_members]
-
-    @extensions_member.setter
-    def extensions_member(self, members):
-        self._remove_all_extensions_member()
-        for member in members:
-            member = QueueMember(
-                category='group',
-                interface='Local/{}@{}'.format(member['extension']['exten'], member['extension']['context']),
-                channel='Local',
-                usertype='user',
-                userid=0,
-                position=member.get('priority')
-            )
-            self.extension_queue_members.append(member)
-
-    def _remove_all_extensions_member(self):
-        self.extension_queue_members = [member for member in self.extension_queue_members if member not in self.extensions_member]
