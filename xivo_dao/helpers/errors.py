@@ -95,4 +95,4 @@ forward_destination_null = FormattedError(ResourceError, "Forward must be disabl
 unhandled_context_type = FormattedError(ResourceError, "ContextType '{}' cannot be associated")
 secondary_users = FormattedError(ResourceError, "There are secondary users associated to the line")
 not_permitted = FormattedError(ResourceError, "Operation not permitted. {}")
-different_tenants = FormattedError(ResourceError, "different tenants: {} {}")
+different_tenants = FormattedError(ResourceError, "different tenants")
