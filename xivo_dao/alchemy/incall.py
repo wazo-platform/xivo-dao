@@ -1,16 +1,25 @@
 # -*- coding: utf-8 -*-
-# Copyright 2012-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import (Column,
-                               PrimaryKeyConstraint,
-                               Index,
-                               UniqueConstraint)
-from sqlalchemy.sql import cast, select
-from sqlalchemy.types import Integer, String, Text
+from sqlalchemy.schema import (
+    Column,
+    PrimaryKeyConstraint,
+    Index,
+    UniqueConstraint,
+)
+from sqlalchemy.sql import (
+    cast,
+    select,
+)
+from sqlalchemy.types import (
+    Integer,
+    String,
+    Text,
+)
 
 from xivo_dao.alchemy.callerid import Callerid
 from xivo_dao.alchemy.dialaction import Dialaction
@@ -29,52 +38,70 @@ class Incall(Base):
     )
 
     id = Column(Integer)
+    tenant_uuid = Column(String(36), nullable=False)
     exten = Column(String(40))
     context = Column(String(39))
     preprocess_subroutine = Column(String(39))
     commented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text)
 
-    caller_id = relationship('Callerid',
-                             primaryjoin="""and_(Callerid.type == 'incall',
-                                                 Callerid.typeval == Incall.id)""",
-                             foreign_keys='Callerid.typeval',
-                             cascade='all, delete-orphan',
-                             uselist=False)
+    caller_id = relationship(
+        'Callerid',
+        primaryjoin="""and_(Callerid.type == 'incall',
+                            Callerid.typeval == Incall.id)""",
+        foreign_keys='Callerid.typeval',
+        cascade='all, delete-orphan',
+        uselist=False,
+    )
 
-    caller_id_mode = association_proxy('caller_id', 'mode',
-                                       creator=lambda _mode: Callerid(type='incall',
-                                                                      mode=_mode))
-    caller_id_name = association_proxy('caller_id', 'name',
-                                       creator=lambda _name: Callerid(type='incall',
-                                                                      name=_name))
+    caller_id_mode = association_proxy(
+        'caller_id',
+        'mode',
+        creator=lambda _mode: Callerid(type='incall', mode=_mode),
+    )
+    caller_id_name = association_proxy(
+        'caller_id',
+        'name',
+        creator=lambda _name: Callerid(type='incall', name=_name),
+    )
 
-    dialaction = relationship('Dialaction',
-                              primaryjoin="""and_(Dialaction.category == 'incall',
-                                                  Dialaction.categoryval == cast(Incall.id, String))""",
-                              foreign_keys='Dialaction.categoryval',
-                              cascade='all, delete-orphan',
-                              uselist=False,
-                              back_populates='incall')
+    dialaction = relationship(
+        'Dialaction',
+        primaryjoin="""and_(Dialaction.category == 'incall',
+                            Dialaction.categoryval == cast(Incall.id, String))""",
+        foreign_keys='Dialaction.categoryval',
+        cascade='all, delete-orphan',
+        uselist=False,
+        back_populates='incall',
+    )
 
-    extensions = relationship('Extension',
-                              primaryjoin="""and_(Extension.type == 'incall',
-                                                  Extension.typeval == cast(Incall.id, String))""",
-                              foreign_keys='Extension.typeval',
-                              viewonly=True,
-                              back_populates='incall')
+    extensions = relationship(
+        'Extension',
+        primaryjoin="""and_(Extension.type == 'incall',
+                            Extension.typeval == cast(Incall.id, String))""",
+        foreign_keys='Extension.typeval',
+        viewonly=True,
+        back_populates='incall',
+    )
 
-    schedule_paths = relationship('SchedulePath',
-                                  primaryjoin="""and_(SchedulePath.path == 'incall',
-                                                      SchedulePath.pathid == Incall.id)""",
-                                  foreign_keys='SchedulePath.pathid',
-                                  cascade='all, delete-orphan',
-                                  back_populates='incall')
+    schedule_paths = relationship(
+        'SchedulePath',
+        primaryjoin="""and_(SchedulePath.path == 'incall',
+                            SchedulePath.pathid == Incall.id)""",
+        foreign_keys='SchedulePath.pathid',
+        cascade='all, delete-orphan',
+        back_populates='incall',
+    )
 
-    schedules = association_proxy('schedule_paths', 'schedule',
-                                  creator=lambda _schedule: SchedulePath(path='incall',
-                                                                         schedule_id=_schedule.id,
-                                                                         schedule=_schedule))
+    schedules = association_proxy(
+        'schedule_paths',
+        'schedule',
+        creator=lambda _schedule: SchedulePath(
+            path='incall',
+            schedule_id=_schedule.id,
+            schedule=_schedule,
+        ),
+    )
 
     @property
     def destination(self):

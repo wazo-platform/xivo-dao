@@ -1,15 +1,19 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
-from hamcrest import (assert_that,
-                      contains,
-                      equal_to,
-                      has_items,
-                      has_properties,
-                      has_property,
-                      is_not,
-                      none)
+from hamcrest import (
+    all_of,
+    assert_that,
+    contains,
+    empty,
+    equal_to,
+    has_items,
+    has_properties,
+    has_property,
+    is_not,
+    none,
+)
 
 from xivo_dao.alchemy.callerid import Callerid
 from xivo_dao.alchemy.dialaction import Dialaction
@@ -36,6 +40,26 @@ class TestFind(DAOTestCase):
 
         assert_that(incall, equal_to(incall_row))
 
+    def test_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        incall = self.add_incall(tenant_uuid=tenant.uuid)
+
+        result = incall_dao.find(incall.id, tenant_uuids=[tenant.uuid])
+        assert_that(
+            result,
+            all_of(
+                has_properties(tenant_uuid=tenant.uuid),
+                equal_to(incall),
+            )
+        )
+
+        result = incall_dao.find(incall.id, tenant_uuids=[self.default_tenant.uuid])
+        assert_that(result, none())
+
+        result = incall_dao.find(incall.id, tenant_uuids=[])
+        assert_that(result, none())
+
 
 class TestGet(DAOTestCase):
 
@@ -48,6 +72,17 @@ class TestGet(DAOTestCase):
         incall = incall_dao.get(incall_row.id)
 
         assert_that(incall, equal_to(incall_row))
+
+    def test_get_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        incall = self.add_incall(tenant_uuid=tenant.uuid)
+
+        self.assertRaises(NotFoundError, incall_dao.get, incall.id, tenant_uuids=[self.default_tenant.uuid])
+        self.assertRaises(NotFoundError, incall_dao.get, incall.id, tenant_uuids=[])
+
+        result = incall_dao.get(incall.id, tenant_uuids=[tenant.uuid])
+        assert_that(result, equal_to(incall))
 
 
 class TestFindBy(DAOTestCase):
@@ -85,6 +120,20 @@ class TestFindBy(DAOTestCase):
 
         assert_that(incall, none())
 
+    def test_find_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        incall = self.add_incall(tenant_uuid=tenant.uuid)
+
+        result = incall_dao.find_by(exten=incall.exten, tenant_uuids=[self.default_tenant.uuid])
+        assert_that(result, none())
+
+        result = incall_dao.find_by(exten=incall.exten, tenant_uuids=[])
+        assert_that(result, none())
+
+        result = incall_dao.find_by(exten=incall.exten, tenant_uuids=[tenant.uuid])
+        assert_that(result, equal_to(incall))
+
 
 class TestGetBy(DAOTestCase):
 
@@ -119,6 +168,17 @@ class TestGetBy(DAOTestCase):
     def test_given_incall_does_not_exist_then_raises_error(self):
         self.assertRaises(NotFoundError, incall_dao.get_by, id='42')
 
+    def test_get_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        incall = self.add_incall(tenant_uuid=tenant.uuid)
+
+        self.assertRaises(NotFoundError, incall_dao.get_by, exten=incall.exten, tenant_uuids=[])
+        self.assertRaises(NotFoundError, incall_dao.get_by, exten=incall.exten, tenant_uuids=[self.default_tenant.uuid])
+
+        result = incall_dao.get_by(exten=incall.exten, tenant_uuids=[tenant.uuid])
+        assert_that(result, equal_to(incall))
+
 
 class TestFindAllBy(DAOTestCase):
 
@@ -148,6 +208,20 @@ class TestFindAllBy(DAOTestCase):
 
         assert_that(incalls, has_items(has_property('id', incall1.id),
                                        has_property('id', incall2.id)))
+
+    def test_find_all_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        incall = self.add_incall(tenant_uuid=tenant.uuid)
+
+        result = incall_dao.find_all_by(id=incall.id, tenant_uuids=[self.default_tenant.uuid])
+        assert_that(result, empty())
+
+        result = incall_dao.find_all_by(id=incall.id, tenant_uuids=[])
+        assert_that(result, empty())
+
+        result = incall_dao.find_all_by(id=incall.id, tenant_uuids=[tenant.uuid])
+        assert_that(result, contains(incall))
 
 
 class TestSearch(DAOTestCase):
@@ -233,10 +307,31 @@ class TestSearchGivenMultipleIncall(TestSearch):
                                           limit=1)
 
 
+class TestSearchGivenMultipleTenants(TestSearch):
+
+    def test_multiple_tenants(self):
+        tenant_1 = self.add_tenant()
+        tenant_2 = self.add_tenant()
+        tenant_3 = self.add_tenant()
+
+        incall_1 = self.add_incall(tenant_uuid=tenant_1.uuid)
+        incall_2 = self.add_incall(tenant_uuid=tenant_2.uuid)
+        incall_3 = self.add_incall(tenant_uuid=tenant_3.uuid)
+
+        expected = SearchResult(2, [incall_1, incall_2])
+        self.assert_search_returns_result(expected, tenant_uuids=[tenant_1.uuid, tenant_2.uuid])
+
+        expected = SearchResult(0, [])
+        self.assert_search_returns_result(expected, tenant_uuids=[])
+
+        expected = SearchResult(3, [incall_1, incall_2, incall_3])
+        self.assert_search_returns_result(expected)
+
+
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_fields(self):
-        incall = Incall(destination=Dialaction(action='none'))
+        incall = Incall(destination=Dialaction(action='none'), tenant_uuid=self.default_tenant.uuid)
         created_incall = incall_dao.create(incall)
 
         row = self.session.query(Incall).first()
@@ -249,7 +344,8 @@ class TestCreate(DAOTestCase):
                                                    caller_id_name=none(),
                                                    destination=has_properties(action='none',
                                                                               actionarg1=None,
-                                                                              actionarg2=None)))
+                                                                              actionarg2=None),
+                                                   tenant_uuid=self.default_tenant.uuid))
 
     def test_create_with_all_fields(self):
         incall = Incall(preprocess_subroutine='MySubroutine',
@@ -258,7 +354,8 @@ class TestCreate(DAOTestCase):
                         caller_id_name='incall_',
                         destination=Dialaction(action='user',
                                                actionarg1='2',
-                                               actionarg2='10'))
+                                               actionarg2='10'),
+                        tenant_uuid=self.default_tenant.uuid)
 
         created_incall = incall_dao.create(incall)
 
@@ -272,7 +369,8 @@ class TestCreate(DAOTestCase):
                                                    caller_id_name='incall_',
                                                    destination=has_properties(action='user',
                                                                               actionarg1='2',
-                                                                              actionarg2='10')))
+                                                                              actionarg2='10'),
+                                                   tenant_uuid=self.default_tenant.uuid))
 
 
 class TestEdit(DAOTestCase):
@@ -284,7 +382,8 @@ class TestEdit(DAOTestCase):
                                           caller_id_name='incall_',
                                           destination=Dialaction(action='user',
                                                                  actionarg1='2',
-                                                                 actionarg2='10')))
+                                                                 actionarg2='10'),
+                                          tenant_uuid=self.default_tenant.uuid))
 
         incall = incall_dao.get(incall.id)
         incall.preprocess_subroutine = 'other_subroutine'
@@ -316,7 +415,8 @@ class TestEdit(DAOTestCase):
                                           caller_id_name='incall_',
                                           destination=Dialaction(action='user',
                                                                  actionarg1='2',
-                                                                 actionarg2='10')))
+                                                                 actionarg2='10'),
+                                          tenant_uuid=self.default_tenant.uuid))
         incall = incall_dao.get(incall.id)
         incall.preprocess_subroutine = None
         incall.description = None
