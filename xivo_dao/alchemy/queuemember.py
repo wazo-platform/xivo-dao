@@ -111,7 +111,7 @@ class QueueMember(Base):
 
     @property
     def exten(self):
-        if getattr(self, '_exten', None):
+        if hasattr(self, '_exten'):
             return self._exten
 
         match = re.search(interface_regex, self.interface or '')
@@ -124,7 +124,7 @@ class QueueMember(Base):
 
     @property
     def context(self):
-        if getattr(self, '_context', None):
+        if hasattr(self, '_context'):
             return self._context
 
         match = re.search(interface_regex, self.interface or '')
