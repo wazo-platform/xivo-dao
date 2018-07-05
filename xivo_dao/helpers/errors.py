@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from __future__ import unicode_literals
@@ -95,3 +95,4 @@ forward_destination_null = FormattedError(ResourceError, "Forward must be disabl
 unhandled_context_type = FormattedError(ResourceError, "ContextType '{}' cannot be associated")
 secondary_users = FormattedError(ResourceError, "There are secondary users associated to the line")
 not_permitted = FormattedError(ResourceError, "Operation not permitted. {}")
+different_tenants = FormattedError(ResourceError, "different tenants: {} {}")
