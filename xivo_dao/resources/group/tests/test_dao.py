@@ -300,69 +300,77 @@ class TestCreate(DAOTestCase):
         row = self.session.query(Group).first()
 
         assert_that(created_group, equal_to(row))
-        assert_that(created_group, has_properties(id=is_not(none()),
-                                                  tenant_uuid=self.default_tenant.uuid,
-                                                  name='mygroup',
-                                                  caller_id_mode=none(),
-                                                  caller_id_name=none(),
-                                                  timeout=none(),
-                                                  music_on_hold=none(),
-                                                  preprocess_subroutine=none(),
-                                                  ring_in_use=True,
-                                                  ring_strategy='ringall',
-                                                  user_timeout=15,
-                                                  retry_delay=5,
-                                                  enabled=True))
+        assert_that(created_group, has_properties(
+            id=is_not(none()),
+            tenant_uuid=self.default_tenant.uuid,
+            name='mygroup',
+            caller_id_mode=none(),
+            caller_id_name=none(),
+            timeout=none(),
+            music_on_hold=none(),
+            preprocess_subroutine=none(),
+            ring_in_use=True,
+            ring_strategy='ringall',
+            user_timeout=15,
+            retry_delay=5,
+            enabled=True
+        ))
 
     def test_create_with_all_fields(self):
-        group = Group(tenant_uuid=self.default_tenant.uuid,
-                      name='MyGroup',
-                      caller_id_mode='prepend',
-                      caller_id_name='toto',
-                      timeout=60,
-                      music_on_hold='default',
-                      preprocess_subroutine='tata',
-                      ring_in_use=False,
-                      ring_strategy='random',
-                      user_timeout=0,
-                      retry_delay=0,
-                      enabled=False)
+        group = Group(
+            tenant_uuid=self.default_tenant.uuid,
+            name='MyGroup',
+            caller_id_mode='prepend',
+            caller_id_name='toto',
+            timeout=60,
+            music_on_hold='default',
+            preprocess_subroutine='tata',
+            ring_in_use=False,
+            ring_strategy='random',
+            user_timeout=0,
+            retry_delay=0,
+            enabled=False,
+        )
 
         created_group = group_dao.create(group)
 
         row = self.session.query(Group).first()
 
         assert_that(created_group, equal_to(row))
-        assert_that(created_group, has_properties(id=is_not(none()),
-                                                  tenant_uuid=self.default_tenant.uuid,
-                                                  name='MyGroup',
-                                                  caller_id_mode='prepend',
-                                                  caller_id_name='toto',
-                                                  timeout=60,
-                                                  music_on_hold='default',
-                                                  preprocess_subroutine='tata',
-                                                  ring_in_use=False,
-                                                  ring_strategy='random',
-                                                  user_timeout=0,
-                                                  retry_delay=0,
-                                                  enabled=False))
+        assert_that(created_group, has_properties(
+            id=is_not(none()),
+            tenant_uuid=self.default_tenant.uuid,
+            name='MyGroup',
+            caller_id_mode='prepend',
+            caller_id_name='toto',
+            timeout=60,
+            music_on_hold='default',
+            preprocess_subroutine='tata',
+            ring_in_use=False,
+            ring_strategy='random',
+            user_timeout=0,
+            retry_delay=0,
+            enabled=False,
+        ))
 
 
 class TestEdit(DAOTestCase):
 
     def test_edit_all_fields(self):
-        group = group_dao.create(Group(tenant_uuid=self.default_tenant.uuid,
-                                       name='MyGroup',
-                                       caller_id_mode='prepend',
-                                       caller_id_name='toto',
-                                       timeout=60,
-                                       music_on_hold='default',
-                                       preprocess_subroutine='tata',
-                                       ring_in_use=True,
-                                       ring_strategy='ringall',
-                                       user_timeout=0,
-                                       retry_delay=0,
-                                       enabled=True))
+        group = group_dao.create(Group(
+            tenant_uuid=self.default_tenant.uuid,
+            name='MyGroup',
+            caller_id_mode='prepend',
+            caller_id_name='toto',
+            timeout=60,
+            music_on_hold='default',
+            preprocess_subroutine='tata',
+            ring_in_use=True,
+            ring_strategy='ringall',
+            user_timeout=0,
+            retry_delay=0,
+            enabled=True,
+        ))
 
         group = group_dao.get(group.id)
         group.name = 'other_name'
@@ -381,29 +389,33 @@ class TestEdit(DAOTestCase):
         row = self.session.query(Group).first()
 
         assert_that(group, equal_to(row))
-        assert_that(group, has_properties(id=is_not(none()),
-                                          name='other_name',
-                                          caller_id_mode='overwrite',
-                                          caller_id_name='bob',
-                                          timeout=5,
-                                          music_on_hold='not_default',
-                                          preprocess_subroutine='other_routine',
-                                          ring_in_use=False,
-                                          ring_strategy='random',
-                                          user_timeout=180,
-                                          retry_delay=1,
-                                          enabled=False))
+        assert_that(group, has_properties(
+            id=is_not(none()),
+            name='other_name',
+            caller_id_mode='overwrite',
+            caller_id_name='bob',
+            timeout=5,
+            music_on_hold='not_default',
+            preprocess_subroutine='other_routine',
+            ring_in_use=False,
+            ring_strategy='random',
+            user_timeout=180,
+            retry_delay=1,
+            enabled=False,
+        ))
 
     def test_edit_set_fields_to_null(self):
-        group = group_dao.create(Group(tenant_uuid=self.default_tenant.uuid,
-                                       name='MyGroup',
-                                       caller_id_mode='prepend',
-                                       caller_id_name='toto',
-                                       timeout=0,
-                                       music_on_hold='default',
-                                       preprocess_subroutine='t',
-                                       user_timeout=0,
-                                       retry_delay=0))
+        group = group_dao.create(Group(
+            tenant_uuid=self.default_tenant.uuid,
+            name='MyGroup',
+            caller_id_mode='prepend',
+            caller_id_name='toto',
+            timeout=0,
+            music_on_hold='default',
+            preprocess_subroutine='t',
+            user_timeout=0,
+            retry_delay=0,
+        ))
 
         group = group_dao.get(group.id)
         group.caller_id_mode = None
@@ -418,13 +430,15 @@ class TestEdit(DAOTestCase):
 
         row = self.session.query(Group).first()
         assert_that(group, equal_to(row))
-        assert_that(row, has_properties(timeout=none(),
-                                        music_on_hold=none(),
-                                        caller_id_mode=none(),
-                                        caller_id_name=none(),
-                                        preprocess_subroutine=none(),
-                                        user_timeout=none(),
-                                        retry_delay=none()))
+        assert_that(row, has_properties(
+            timeout=none(),
+            music_on_hold=none(),
+            caller_id_mode=none(),
+            caller_id_name=none(),
+            preprocess_subroutine=none(),
+            user_timeout=none(),
+            retry_delay=none(),
+        ))
 
     def test_edit_queue_name(self):
         group_dao.create(Group(name='MyGroup', tenant_uuid=self.default_tenant.uuid))
