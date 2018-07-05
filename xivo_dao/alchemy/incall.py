@@ -8,6 +8,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.schema import (
     Column,
     PrimaryKeyConstraint,
+    ForeignKey,
     Index,
     UniqueConstraint,
 )
@@ -38,7 +39,7 @@ class Incall(Base):
     )
 
     id = Column(Integer)
-    tenant_uuid = Column(String(36), nullable=False)
+    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
     exten = Column(String(40))
     context = Column(String(39))
     preprocess_subroutine = Column(String(39))
