@@ -8,11 +8,12 @@ from xivo_dao.helpers.db_manager import daosession
 
 @daosession
 def get_or_create_tenant(session, tenant_uuid):
-    result = session.query(Tenant).filter(Tenant.uuid == tenant_uuid).first()
+    result = session.query(Tenant).get(tenant_uuid)
     if result:
         return result
 
     tenant = Tenant(uuid=tenant_uuid)
     session.add(tenant)
+    session.flush()
 
     return tenant
