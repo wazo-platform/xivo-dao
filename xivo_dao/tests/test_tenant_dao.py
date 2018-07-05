@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0+
 
 from hamcrest import assert_that, equal_to, has_properties
+from sqlalchemy.inspection import inspect
 from xivo_dao.tests.test_dao import DAOTestCase
 
 from .. import tenant_dao
@@ -19,4 +20,5 @@ class TestTenantDAO(DAOTestCase):
         assert_that(result, equal_to(tenant))
 
         result = tenant_dao.get_or_create_tenant(new_uuid)
+        assert_that(inspect(result).persistent, equal_to(True))
         assert_that(result, has_properties(uuid=new_uuid))
