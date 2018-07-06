@@ -9,33 +9,33 @@ from .search import outcall_search
 
 
 @daosession
-def search(session, **parameters):
-    return OutcallPersistor(session, outcall_search).search(parameters)
+def search(session, tenant_uuids=None, **parameters):
+    return OutcallPersistor(session, outcall_search, tenant_uuids).search(parameters)
 
 
 @daosession
-def get(session, outcall_id):
-    return OutcallPersistor(session, outcall_search).get_by({'id': outcall_id})
+def get(session, outcall_id, tenant_uuids=None):
+    return OutcallPersistor(session, outcall_search, tenant_uuids).get_by({'id': outcall_id})
 
 
 @daosession
-def get_by(session, **criteria):
-    return OutcallPersistor(session, outcall_search).get_by(criteria)
+def get_by(session, tenant_uuids=None, **criteria):
+    return OutcallPersistor(session, outcall_search, tenant_uuids).get_by(criteria)
 
 
 @daosession
-def find(session, outcall_id):
-    return OutcallPersistor(session, outcall_search).find_by({'id': outcall_id})
+def find(session, outcall_id, tenant_uuids=None):
+    return OutcallPersistor(session, outcall_search, tenant_uuids).find_by({'id': outcall_id})
 
 
 @daosession
-def find_by(session, **criteria):
-    return OutcallPersistor(session, outcall_search).find_by(criteria)
+def find_by(session, tenant_uuids=None, **criteria):
+    return OutcallPersistor(session, outcall_search, tenant_uuids).find_by(criteria)
 
 
 @daosession
-def find_all_by(session, **criteria):
-    return OutcallPersistor(session, outcall_search).find_all_by(criteria)
+def find_all_by(session, tenant_uuids=None, **criteria):
+    return OutcallPersistor(session, outcall_search, tenant_uuids).find_all_by(criteria)
 
 
 @daosession

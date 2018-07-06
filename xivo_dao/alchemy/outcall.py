@@ -1,14 +1,28 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
-from sqlalchemy.sql import func, cast, not_
-from sqlalchemy.types import Integer, String, Text, Boolean
+from sqlalchemy.schema import (
+    Column,
+    ForeignKey,
+    PrimaryKeyConstraint,
+    UniqueConstraint,
+)
+from sqlalchemy.sql import (
+    cast,
+    func,
+    not_,
+)
+from sqlalchemy.types import (
+    Boolean,
+    Integer,
+    String,
+    Text,
+)
 
 from xivo_dao.helpers.db_manager import Base
 from xivo_dao.alchemy.outcalltrunk import OutcallTrunk
@@ -26,6 +40,7 @@ class Outcall(Base):
     )
 
     id = Column(Integer, nullable=False)
+    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
     name = Column(String(128), nullable=False)
     context = Column(String(39))
     internal = Column(Integer, nullable=False, server_default='0')
@@ -34,53 +49,75 @@ class Outcall(Base):
     commented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text)
 
-    dialpatterns = relationship('DialPattern',
-                                primaryjoin="""and_(DialPattern.type == 'outcall',
-                                                    DialPattern.typeid == Outcall.id)""",
-                                foreign_keys='DialPattern.typeid',
-                                cascade='all, delete-orphan',
-                                back_populates='outcall')
+    dialpatterns = relationship(
+        'DialPattern',
+        primaryjoin="""and_(DialPattern.type == 'outcall',
+                            DialPattern.typeid == Outcall.id)""",
+        foreign_keys='DialPattern.typeid',
+        cascade='all, delete-orphan',
+        back_populates='outcall',
+    )
 
     extensions = association_proxy('dialpatterns', 'extension')
 
-    outcall_trunks = relationship('OutcallTrunk',
-                                  order_by='OutcallTrunk.priority',
-                                  collection_class=ordering_list('priority'),
-                                  cascade='all, delete-orphan',
-                                  back_populates='outcall')
+    outcall_trunks = relationship(
+        'OutcallTrunk',
+        order_by='OutcallTrunk.priority',
+        collection_class=ordering_list('priority'),
+        cascade='all, delete-orphan',
+        back_populates='outcall',
+    )
 
-    trunks = association_proxy('outcall_trunks', 'trunk',
-                               creator=lambda _trunk: OutcallTrunk(trunk=_trunk))
+    trunks = association_proxy(
+        'outcall_trunks',
+        'trunk',
+        creator=lambda _trunk: OutcallTrunk(trunk=_trunk),
+    )
 
-    ivr_dialactions = relationship('Dialaction',
-                                   primaryjoin="""and_(Dialaction.action == 'outcall',
-                                                       Dialaction.actionarg1 == cast(Outcall.id, String),
-                                                       Dialaction.category.in_(['ivr', 'ivr_choice']))""",
-                                   foreign_keys='Dialaction.actionarg1',
-                                   cascade='all, delete-orphan')
+    ivr_dialactions = relationship(
+        'Dialaction',
+        primaryjoin="""and_(Dialaction.action == 'outcall',
+                            Dialaction.actionarg1 == cast(Outcall.id, String),
+                            Dialaction.category.in_(['ivr', 'ivr_choice']))""",
+        foreign_keys='Dialaction.actionarg1',
+        cascade='all, delete-orphan',
+    )
 
-    schedule_paths = relationship('SchedulePath',
-                                  primaryjoin="""and_(SchedulePath.path == 'outcall',
-                                                      SchedulePath.pathid == Outcall.id)""",
-                                  foreign_keys='SchedulePath.pathid',
-                                  cascade='all, delete-orphan',
-                                  back_populates='outcall')
-    schedules = association_proxy('schedule_paths', 'schedule',
-                                  creator=lambda _schedule: SchedulePath(path='outcall',
-                                                                         schedule_id=_schedule.id,
-                                                                         schedule=_schedule))
+    schedule_paths = relationship(
+        'SchedulePath',
+        primaryjoin="""and_(SchedulePath.path == 'outcall',
+                            SchedulePath.pathid == Outcall.id)""",
+        foreign_keys='SchedulePath.pathid',
+        cascade='all, delete-orphan',
+        back_populates='outcall',
+    )
+    schedules = association_proxy(
+        'schedule_paths',
+        'schedule',
+        creator=lambda _schedule: SchedulePath(
+            path='outcall',
+            schedule_id=_schedule.id,
+            schedule=_schedule,
+        )
+    )
 
-    rightcall_members = relationship('RightCallMember',
-                                     primaryjoin="""and_(RightCallMember.type == 'outcall',
-                                                         RightCallMember.typeval == cast(Outcall.id, String))""",
-                                     foreign_keys='RightCallMember.typeval',
-                                     cascade='all, delete-orphan',
-                                     back_populates='outcall')
-    call_permissions = association_proxy('rightcall_members', 'rightcall',
-                                         creator=lambda _call_permission: RightCallMember(
-                                             type='outcall',
-                                             typeval=str(_call_permission.id),
-                                             rightcall=_call_permission))
+    rightcall_members = relationship(
+        'RightCallMember',
+        primaryjoin="""and_(RightCallMember.type == 'outcall',
+                            RightCallMember.typeval == cast(Outcall.id, String))""",
+        foreign_keys='RightCallMember.typeval',
+        cascade='all, delete-orphan',
+        back_populates='outcall',
+    )
+    call_permissions = association_proxy(
+        'rightcall_members',
+        'rightcall',
+        creator=lambda _call_permission: RightCallMember(
+            type='outcall',
+            typeval=str(_call_permission.id),
+            rightcall=_call_permission,
+        )
+    )
 
     @hybrid_property
     def internal_caller_id(self):

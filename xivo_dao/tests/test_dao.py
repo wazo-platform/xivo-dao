@@ -455,6 +455,7 @@ class ItemInserter(object):
     def add_outcall(self, **kwargs):
         kwargs.setdefault('name', ''.join(random.choice(string.ascii_lowercase) for _ in range(6)))
         kwargs.setdefault('context', 'to-extern')
+        kwargs.setdefault('tenant_uuid', DEFAULT_TENANT)
 
         outcall = Outcall(**kwargs)
         self.add_me(outcall)

@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0+
 
 from hamcrest import (
+    all_of,
     assert_that,
     contains,
     empty,
@@ -11,7 +12,8 @@ from hamcrest import (
     has_properties,
     has_property,
     is_not,
-    none
+    none,
+    not_,
 )
 
 from xivo_dao.alchemy.extension import Extension
@@ -41,6 +43,16 @@ class TestFind(DAOTestCase):
 
         assert_that(outcall, equal_to(outcall_row))
 
+    def test_find_multi_tenant(self):
+        tenant = self.add_tenant()
+        outcall = self.add_outcall(tenant_uuid=tenant.uuid)
+
+        result = outcall_dao.find(outcall.id, tenant_uuids=[tenant.uuid])
+        assert_that(result, equal_to(outcall))
+
+        result = outcall_dao.find(outcall.id, tenant_uuids=[self.default_tenant.uuid])
+        assert_that(result, none())
+
 
 class TestGet(DAOTestCase):
 
@@ -53,6 +65,19 @@ class TestGet(DAOTestCase):
         outcall = outcall_dao.get(outcall_row.id)
 
         assert_that(outcall, equal_to(outcall_row))
+
+    def test_get_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        outcall_row = self.add_outcall(tenant_uuid=tenant.uuid)
+        outcall = outcall_dao.get(outcall_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(outcall, equal_to(outcall_row))
+
+        outcall_row = self.add_outcall()
+        self.assertRaises(
+            NotFoundError,
+            outcall_dao.get, outcall_row.id, tenant_uuids=[tenant.uuid],
+        )
 
 
 class TestFindBy(DAOTestCase):
@@ -89,6 +114,17 @@ class TestFindBy(DAOTestCase):
 
         assert_that(outcall, none())
 
+    def test_find_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        outcall_row = self.add_outcall()
+        outcall = outcall_dao.find_by(name=outcall_row.name, tenant_uuids=[tenant.uuid])
+        assert_that(outcall, none())
+
+        outcall_row = self.add_outcall(tenant_uuid=tenant.uuid)
+        outcall = outcall_dao.find_by(name=outcall_row.name, tenant_uuids=[tenant.uuid])
+        assert_that(outcall, equal_to(outcall_row))
+
 
 class TestGetBy(DAOTestCase):
 
@@ -122,6 +158,19 @@ class TestGetBy(DAOTestCase):
     def test_given_outcall_does_not_exist_then_raises_error(self):
         self.assertRaises(NotFoundError, outcall_dao.get_by, id='42')
 
+    def test_get_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        outcall_row = self.add_outcall()
+        self.assertRaises(
+            NotFoundError,
+            outcall_dao.get_by, id=outcall_row.id, tenant_uuids=[tenant.uuid],
+        )
+
+        outcall_row = self.add_outcall(tenant_uuid=tenant.uuid)
+        outcall = outcall_dao.get_by(id=outcall_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(outcall, equal_to(outcall_row))
+
 
 class TestFindAllBy(DAOTestCase):
 
@@ -139,8 +188,24 @@ class TestFindAllBy(DAOTestCase):
 
         outcalls = outcall_dao.find_all_by(description='MyOutcall')
 
-        assert_that(outcalls, has_items(has_property('id', outcall1.id),
-                                        has_property('id', outcall2.id)))
+        assert_that(outcalls, has_items(
+            has_property('id', outcall1.id),
+            has_property('id', outcall2.id)
+        ))
+
+    def test_find_all_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        outcall1 = self.add_outcall(preprocess_subroutine='subroutine', tenant_uuid=tenant.uuid)
+        outcall2 = self.add_outcall(preprocess_subroutine='subroutine')
+
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        outcalls = outcall_dao.find_all_by(preprocess_subroutine='subroutine', tenant_uuids=tenants)
+        assert_that(outcalls, has_items(outcall1, outcall2))
+
+        tenants = [tenant.uuid]
+        outcalls = outcall_dao.find_all_by(preprocess_subroutine='subroutine', tenant_uuids=tenants)
+        assert_that(outcalls, all_of(has_items(outcall1), not_(has_items(outcall2))))
 
 
 class TestSearch(DAOTestCase):
@@ -162,6 +227,20 @@ class TestSimpleSearch(TestSearch):
         expected = SearchResult(1, [outcall])
 
         self.assert_search_returns_result(expected)
+
+    def test_search_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        outcall1 = self.add_outcall()
+        outcall2 = self.add_outcall(tenant_uuid=tenant.uuid)
+
+        expected = SearchResult(2, [outcall1, outcall2])
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
+        expected = SearchResult(1, [outcall2])
+        tenants = [tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
 
 
 class TestSearchGivenMultipleOutcall(TestSearch):
@@ -189,19 +268,16 @@ class TestSearchGivenMultipleOutcall(TestSearch):
         self.assert_search_returns_result(expected_all_resto, description='resto', order='preprocess_subroutine')
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
-        expected = SearchResult(4,
-                                [self.outcall1,
-                                 self.outcall2,
-                                 self.outcall3,
-                                 self.outcall4])
+        expected = SearchResult(
+            4, [self.outcall1, self.outcall2, self.outcall3, self.outcall4]
+        )
 
         self.assert_search_returns_result(expected, order='preprocess_subroutine')
 
     def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
-        expected = SearchResult(4, [self.outcall4,
-                                    self.outcall3,
-                                    self.outcall2,
-                                    self.outcall1])
+        expected = SearchResult(
+            4, [self.outcall4, self.outcall3, self.outcall2, self.outcall1]
+        )
 
         self.assert_search_returns_result(expected, order='preprocess_subroutine', direction='desc')
 
@@ -218,64 +294,88 @@ class TestSearchGivenMultipleOutcall(TestSearch):
     def test_when_doing_a_paginated_search_then_returns_a_paginated_result(self):
         expected = SearchResult(3, [self.outcall2])
 
-        self.assert_search_returns_result(expected,
-                                          search='a',
-                                          order='preprocess_subroutine',
-                                          direction='desc',
-                                          skip=1,
-                                          limit=1)
+        self.assert_search_returns_result(
+            expected,
+            search='a',
+            order='preprocess_subroutine',
+            direction='desc',
+            skip=1,
+            limit=1,
+        )
 
 
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_fields(self):
-        outcall = Outcall(name='myoutcall')
+        outcall = Outcall(name='myoutcall', tenant_uuid=self.default_tenant.uuid)
         created_outcall = outcall_dao.create(outcall)
 
         row = self.session.query(Outcall).first()
 
-        assert_that(created_outcall, equal_to(row))
-        assert_that(created_outcall, has_properties(id=is_not(none()),
-                                                    name='myoutcall',
-                                                    hangupringtime=0,
-                                                    ring_time=none(),
-                                                    internal=0,
-                                                    internal_caller_id=False,
-                                                    preprocess_subroutine=none(),
-                                                    description=none(),
-                                                    commented=0,
-                                                    enabled=True))
+        assert_that(
+            created_outcall,
+            all_of(
+                equal_to(row),
+                has_properties(
+                    id=is_not(none()),
+                    tenant_uuid=self.default_tenant.uuid,
+                    name='myoutcall',
+                    hangupringtime=0,
+                    ring_time=none(),
+                    internal=0,
+                    internal_caller_id=False,
+                    preprocess_subroutine=none(),
+                    description=none(),
+                    commented=0,
+                    enabled=True,
+                )
+            )
+        )
 
     def test_create_with_all_fields(self):
-        outcall = Outcall(name='myOutcall',
-                          ring_time=10,
-                          internal_caller_id=True,
-                          preprocess_subroutine='MySubroutine',
-                          description='outcall description',
-                          enabled=False)
+        outcall = Outcall(
+            name='myOutcall',
+            ring_time=10,
+            internal_caller_id=True,
+            preprocess_subroutine='MySubroutine',
+            description='outcall description',
+            enabled=False,
+            tenant_uuid=self.default_tenant.uuid,
+        )
 
         created_outcall = outcall_dao.create(outcall)
 
         row = self.session.query(Outcall).first()
 
-        assert_that(created_outcall, equal_to(row))
-        assert_that(created_outcall, has_properties(id=is_not(none()),
-                                                    ring_time=10,
-                                                    internal_caller_id=True,
-                                                    preprocess_subroutine='MySubroutine',
-                                                    description='outcall description',
-                                                    enabled=False))
+        assert_that(
+            created_outcall,
+            all_of(
+                equal_to(row),
+                has_properties(
+                    id=is_not(none()),
+                    tenant_uuid=self.default_tenant.uuid,
+                    ring_time=10,
+                    internal_caller_id=True,
+                    preprocess_subroutine='MySubroutine',
+                    description='outcall description',
+                    enabled=False,
+                )
+            )
+        )
 
 
 class TestEdit(DAOTestCase):
 
     def test_edit_all_fields(self):
-        outcall = outcall_dao.create(Outcall(name='MyOutcall',
-                                             ring_time=10,
-                                             internal_caller_id=True,
-                                             preprocess_subroutine='MySubroutine',
-                                             description='outcall description',
-                                             enabled=False))
+        outcall = outcall_dao.create(Outcall(
+            name='MyOutcall',
+            ring_time=10,
+            internal_caller_id=True,
+            preprocess_subroutine='MySubroutine',
+            description='outcall description',
+            enabled=False,
+            tenant_uuid=self.default_tenant.uuid,
+        ))
 
         outcall = outcall_dao.get(outcall.id)
         outcall.name = 'other_name'
@@ -289,19 +389,24 @@ class TestEdit(DAOTestCase):
         row = self.session.query(Outcall).first()
 
         assert_that(outcall, equal_to(row))
-        assert_that(outcall, has_properties(id=is_not(none()),
-                                            name='other_name',
-                                            ring_time=5,
-                                            internal_caller_id=False,
-                                            preprocess_subroutine='other_routine',
-                                            description='other description',
-                                            enabled=True))
+        assert_that(outcall, has_properties(
+            id=is_not(none()),
+            name='other_name',
+            ring_time=5,
+            internal_caller_id=False,
+            preprocess_subroutine='other_routine',
+            description='other description',
+            enabled=True,
+        ))
 
     def test_edit_set_fields_to_null(self):
-        outcall = outcall_dao.create(Outcall(name='MyOutcall',
-                                             ring_time=10,
-                                             preprocess_subroutine='MySubroutine',
-                                             description='outcall description'))
+        outcall = outcall_dao.create(Outcall(
+            name='MyOutcall',
+            ring_time=10,
+            preprocess_subroutine='MySubroutine',
+            description='outcall description',
+            tenant_uuid=self.default_tenant.uuid,
+        ))
 
         outcall = outcall_dao.get(outcall.id)
         outcall.preprocess_subroutine = None
@@ -312,9 +417,11 @@ class TestEdit(DAOTestCase):
 
         row = self.session.query(Outcall).first()
         assert_that(outcall, equal_to(row))
-        assert_that(row, has_properties(preprocess_subroutine=none(),
-                                        description=none(),
-                                        ring_time=none()))
+        assert_that(row, has_properties(
+            preprocess_subroutine=none(),
+            description=none(),
+            ring_time=none(),
+        ))
 
 
 class TestDelete(DAOTestCase):
