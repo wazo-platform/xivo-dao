@@ -56,7 +56,7 @@ class GroupPersistor(CriteriaBuilderMixin):
                 .options(joinedload('incall_dialactions')
                          .joinedload('incall'))
                 .options(joinedload('group_dialactions'))
-                .options(joinedload('group_members')
+                .options(joinedload('user_queue_members')
                          .joinedload('user'))
                 .options(joinedload('queue'))
                 .options(joinedload('schedule_paths')
@@ -90,14 +90,30 @@ class GroupPersistor(CriteriaBuilderMixin):
 
     def associate_all_member_users(self, group, members):
         with Session.no_autoflush:
-            group.users_member = members
-            for member in group.group_members:
+            group.user_queue_members = []
+            for member in members:
+                self._fill_user_queue_member_default_values(member)
+                group.user_queue_members.append(member)
                 member.fix()
         self.session.flush()
 
+    def _fill_user_queue_member_default_values(self, member):
+        member.category = 'group'
+        member.usertype = 'user'
+
     def associate_all_member_extensions(self, group, members):
-        group.extensions_member = members
+        with Session.no_autoflush:
+            group.extension_queue_members = []
+            for member in members:
+                self._fill_extension_queue_member_default_values(member)
+                group.extension_queue_members.append(member)
+                member.fix()
         self.session.flush()
+
+    def _fill_extension_queue_member_default_values(self, member):
+        member.category = 'group'
+        member.usertype = 'user'
+        member.userid = 0
 
     def associate_call_permission(self, group, call_permission):
         if call_permission not in group.call_permissions:

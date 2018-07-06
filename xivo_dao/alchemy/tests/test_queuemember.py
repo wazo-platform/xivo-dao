@@ -9,6 +9,7 @@ from hamcrest import (
     is_,
     none,
 )
+from mock import Mock
 
 from xivo_dao.tests.test_dao import DAOTestCase
 
@@ -59,9 +60,32 @@ class TestPriority(DAOTestCase):
         assert_that(member.position, equal_to(42))
 
 
+class TestExtension(DAOTestCase):
+
+    def test_getter(self):
+        member = QueueMember()
+        assert_that(member.extension, equal_to(member))
+
+    def test_setter(self):
+        member = QueueMember(extension=Mock(exten='1234', context='default'))
+        assert_that(member, has_properties(
+            exten='1234',
+            context='default'
+        ))
+
+
 class TestExten(DAOTestCase):
 
-    def test_exten_with_local(self):
+    def test_setter(self):
+        member = QueueMember()
+        member.exten = '123'
+        assert_that(member.exten, equal_to('123'))
+
+    def test_exten_with_custom_exten(self):
+        member = QueueMember(exten='456', interface='Local/123@default')
+        assert_that(member.exten, equal_to('456'))
+
+    def test_exten_without_custom_exten(self):
         member = QueueMember(interface='Local/123@default')
         assert_that(member.exten, equal_to('123'))
 
@@ -72,7 +96,16 @@ class TestExten(DAOTestCase):
 
 class TestContext(DAOTestCase):
 
-    def test_context_with_local(self):
+    def test_setter(self):
+        member = QueueMember()
+        member.context = 'default'
+        assert_that(member.context, equal_to('default'))
+
+    def test_context_with_custom_context(self):
+        member = QueueMember(context='toto', interface='Local/123@default')
+        assert_that(member.context, equal_to('toto'))
+
+    def test_context_without_custom_context(self):
         member = QueueMember(interface='Local/123@default')
         assert_that(member.context, equal_to('default'))
 
@@ -142,6 +175,18 @@ class TestFix(DAOTestCase):
         assert_that(member, has_properties(
             interface='Agent/1234',
             channel='Agent',
+        ))
+
+    def test_local(self):
+        member = self.add_queue_member(exten='1234', context='default', interface='wrong', channel='wrong')
+
+        member.fix()
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(member, has_properties(
+            interface='Local/1234@default',
+            channel='Local',
         ))
 
 
