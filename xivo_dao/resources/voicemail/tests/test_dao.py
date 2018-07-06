@@ -58,6 +58,20 @@ class TestGet(DAOTestCase):
 
         assert_that(voicemail, equal_to(voicemail_row))
 
+    def test_get_multi_tenant(self):
+        tenant = self.add_tenant()
+        context = self.add_context(tenant_uuid=tenant.uuid)
+
+        voicemail_row = self.add_voicemail(context=context.name)
+        voicemail = voicemail_dao.get(voicemail_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(voicemail, equal_to(voicemail_row))
+
+        voicemail_row = self.add_voicemail()
+        self.assertRaises(
+            NotFoundError,
+            voicemail_dao.get, voicemail_row.id, tenant_uuids=[tenant.uuid],
+        )
+
 
 class TestFindBy(DAOTestCase):
 

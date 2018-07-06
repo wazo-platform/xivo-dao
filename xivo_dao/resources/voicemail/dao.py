@@ -14,8 +14,8 @@ def search(session, **parameters):
 
 
 @daosession
-def get(session, voicemail_id):
-    return VoicemailPersistor(session, voicemail_search).get_by({'id': voicemail_id})
+def get(session, voicemail_id, tenant_uuids=None):
+    return VoicemailPersistor(session, voicemail_search, tenant_uuids).get_by({'id': voicemail_id})
 
 
 @daosession
