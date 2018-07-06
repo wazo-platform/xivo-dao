@@ -98,7 +98,8 @@ class Outcall(Base):
             path='outcall',
             schedule_id=_schedule.id,
             schedule=_schedule,
-        ))
+        )
+    )
 
     rightcall_members = relationship(
         'RightCallMember',
@@ -115,7 +116,8 @@ class Outcall(Base):
             type='outcall',
             typeval=str(_call_permission.id),
             rightcall=_call_permission,
-        ))
+        )
+    )
 
     @hybrid_property
     def internal_caller_id(self):
