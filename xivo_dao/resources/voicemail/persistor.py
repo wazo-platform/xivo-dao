@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
+
+from sqlalchemy import text
 
 from xivo_dao.alchemy.voicemail import Voicemail
 from xivo_dao.alchemy.dialaction import Dialaction
@@ -13,9 +15,10 @@ class VoicemailPersistor(CriteriaBuilderMixin):
 
     _search_table = Voicemail
 
-    def __init__(self, session, voicemail_search):
+    def __init__(self, session, voicemail_search, tenant_uuids=None):
         self.session = session
         self.voicemail_search = voicemail_search
+        self.tenant_uuids = tenant_uuids
 
     def find_by(self, criteria):
         query = self._find_query(criteria)
@@ -23,6 +26,7 @@ class VoicemailPersistor(CriteriaBuilderMixin):
 
     def _find_query(self, criteria):
         query = self.session.query(Voicemail)
+        query = self._filter_tenant_uuid(query)
         return self.build_criteria(query, criteria)
 
     def get_by(self, criteria):
@@ -58,3 +62,12 @@ class VoicemailPersistor(CriteriaBuilderMixin):
          .filter(Dialaction.action == 'voicemail')
          .filter(Dialaction.actionarg1 == str(voicemail.id))
          .update({'linked': 0}))
+
+    def _filter_tenant_uuid(self, query):
+        if self.tenant_uuids is None:
+            return query
+
+        if not self.tenant_uuids:
+            return query.filter(text('false'))
+
+        return query.filter(Voicemail.tenant_uuid.in_(self.tenant_uuids))

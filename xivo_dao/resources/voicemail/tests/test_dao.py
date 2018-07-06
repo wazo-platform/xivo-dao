@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from hamcrest import (assert_that,
@@ -33,6 +33,17 @@ class TestFind(DAOTestCase):
         voicemail = voicemail_dao.find(voicemail_row.id)
 
         assert_that(voicemail, equal_to(voicemail_row))
+
+    def test_find_multi_tenant(self):
+        tenant = self.add_tenant()
+        context = self.add_context(tenant_uuid=tenant.uuid)
+        voicemail = self.add_voicemail(context=context.name)
+
+        result = voicemail_dao.find(voicemail.id, tenant_uuids=[tenant.uuid])
+        assert_that(result, equal_to(voicemail))
+
+        result = voicemail_dao.find(voicemail.id, tenant_uuids=[self.default_tenant.uuid])
+        assert_that(result, none())
 
 
 class TestGet(DAOTestCase):

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from .persistor import VoicemailPersistor
@@ -24,8 +24,8 @@ def get_by(session, **criteria):
 
 
 @daosession
-def find(session, voicemail_id):
-    return VoicemailPersistor(session, voicemail_search).find_by({'id': voicemail_id})
+def find(session, voicemail_id, tenant_uuids=None):
+    return VoicemailPersistor(session, voicemail_search, tenant_uuids).find_by({'id': voicemail_id})
 
 
 @daosession
