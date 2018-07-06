@@ -24,6 +24,7 @@ from sqlalchemy.types import (
 )
 
 from xivo_dao.helpers.db_manager import Base
+from .context import Context
 
 
 class Voicemail(Base):
@@ -60,6 +61,12 @@ class Voicemail(Base):
                             Dialaction.category.in_(['ivr', 'ivr_choice']))""",
         foreign_keys='Dialaction.actionarg1',
         cascade='all, delete-orphan',
+    )
+
+    context_rel = relationship(
+        'Context',
+        primaryjoin='''Voicemail.context == Context.name''',
+        foreign_keys='Voicemail.context',
     )
 
     def get_old_number_context(self):
@@ -159,3 +166,13 @@ class Voicemail(Base):
     @enabled.setter
     def enabled(self, value):
         self.commented = int(value is False) if value is not None else None
+
+    @hybrid_property
+    def tenant_uuid(self):
+        return self.context_rel.tenant_uuid
+
+    @tenant_uuid.expression
+    def tenant_uuid(cls):
+        return sql.select([Context.tenant_uuid]).where(
+            Context.name == cls.context,
+        ).label('tenant_uuid')
