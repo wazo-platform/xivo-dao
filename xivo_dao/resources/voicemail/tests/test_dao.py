@@ -2,15 +2,18 @@
 # Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
-from hamcrest import (assert_that,
+from hamcrest import (all_of,
+                      assert_that,
                       contains,
                       contains_inanyorder,
                       equal_to,
                       empty,
+                      has_items,
                       has_properties,
                       has_property,
                       is_not,
-                      none)
+                      none,
+                      not_)
 
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.voicemail import Voicemail
@@ -175,6 +178,22 @@ class TestFindAllBy(DAOTestCase):
 
         assert_that(voicemails, contains_inanyorder(has_property('id', voicemail1.id),
                                                     has_property('id', voicemail2.id)))
+
+    def test_find_all_by_multi_tenant(self):
+        tenant = self.add_tenant()
+        context_1 = self.add_context(tenant_uuid=tenant.uuid)
+        context_2 = self.add_context()
+
+        voicemail1 = self.add_voicemail(timezone='timezone', context=context_1.name)
+        voicemail2 = self.add_voicemail(timezone='timezone', context=context_2.name)
+
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        voicemails = voicemail_dao.find_all_by(timezone='timezone', tenant_uuids=tenants)
+        assert_that(voicemails, has_items(voicemail1, voicemail2))
+
+        tenants = [tenant.uuid]
+        voicemails = voicemail_dao.find_all_by(timezone='timezone', tenant_uuids=tenants)
+        assert_that(voicemails, all_of(has_items(voicemail1), not_(has_items(voicemail2))))
 
 
 class TestSearch(DAOTestCase):
