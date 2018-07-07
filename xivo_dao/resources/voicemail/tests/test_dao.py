@@ -99,6 +99,18 @@ class TestFindBy(DAOTestCase):
 
         assert_that(voicemail, none())
 
+    def test_find_by_multi_tenant(self):
+        tenant = self.add_tenant()
+        context = self.add_context(tenant_uuid=tenant.uuid)
+
+        voicemail_row = self.add_voicemail()
+        voicemail = voicemail_dao.find_by(name=voicemail_row.name, tenant_uuids=[tenant.uuid])
+        assert_that(voicemail, none())
+
+        voicemail_row = self.add_voicemail(context=context.name)
+        voicemail = voicemail_dao.find_by(name=voicemail_row.name, tenant_uuids=[tenant.uuid])
+        assert_that(voicemail, equal_to(voicemail_row))
+
 
 class TestGetBy(DAOTestCase):
 
