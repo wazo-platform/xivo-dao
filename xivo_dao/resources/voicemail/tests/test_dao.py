@@ -216,6 +216,22 @@ class TestSimpleSearch(TestSearch):
 
         self.assert_search_returns_result(expected)
 
+    def test_search_multi_tenant(self):
+        tenant = self.add_tenant()
+        context1 = self.add_context(tenant_uuid=self.default_tenant.uuid)
+        context2 = self.add_context(tenant_uuid=tenant.uuid)
+
+        voicemail1 = self.add_voicemail(mailbox='1001', context=context1.name)
+        voicemail2 = self.add_voicemail(mailbox='1002', context=context2.name)
+
+        expected = SearchResult(2, [voicemail1, voicemail2])
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants, order='number')
+
+        expected = SearchResult(1, [voicemail2])
+        tenants = [tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
 
 class TestSearchGivenMultipleVoicemail(TestSearch):
 

@@ -9,8 +9,8 @@ from xivo_dao.helpers.db_manager import daosession
 
 
 @daosession
-def search(session, **parameters):
-    return VoicemailPersistor(session, voicemail_search).search(parameters)
+def search(session, tenant_uuids=None, **parameters):
+    return VoicemailPersistor(session, voicemail_search, tenant_uuids).search(parameters)
 
 
 @daosession
