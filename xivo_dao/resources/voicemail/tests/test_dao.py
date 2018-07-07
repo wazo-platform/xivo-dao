@@ -136,6 +136,20 @@ class TestGetBy(DAOTestCase):
     def test_given_voicemail_does_not_exist_then_raises_error(self):
         self.assertRaises(NotFoundError, voicemail_dao.get_by, id='42')
 
+    def test_get_by_multi_tenant(self):
+        tenant = self.add_tenant()
+        context = self.add_context(tenant_uuid=tenant.uuid)
+
+        voicemail_row = self.add_voicemail()
+        self.assertRaises(
+            NotFoundError,
+            voicemail_dao.get_by, id=voicemail_row.id, tenant_uuids=[tenant.uuid],
+        )
+
+        voicemail_row = self.add_voicemail(context=context.name)
+        voicemail = voicemail_dao.get_by(id=voicemail_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(voicemail, equal_to(voicemail_row))
+
 
 class TestFindAllBy(DAOTestCase):
 
