@@ -2,24 +2,28 @@
 # Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
-from hamcrest import (all_of,
-                      assert_that,
-                      contains,
-                      contains_inanyorder,
-                      equal_to,
-                      empty,
-                      has_items,
-                      has_properties,
-                      has_property,
-                      is_not,
-                      none,
-                      not_)
+from hamcrest import (
+    all_of,
+    assert_that,
+    contains,
+    contains_inanyorder,
+    equal_to,
+    empty,
+    has_items,
+    has_properties,
+    is_not,
+    none,
+    not_,
+)
 
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.voicemail import Voicemail
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.resources.voicemail import dao as voicemail_dao
-from xivo_dao.helpers.exception import NotFoundError, InputError
+from xivo_dao.helpers.exception import (
+    NotFoundError,
+    InputError,
+)
 from xivo_dao.resources.utils.search import SearchResult
 
 
@@ -167,8 +171,7 @@ class TestFindAllBy(DAOTestCase):
 
         voicemails = voicemail_dao.find_all_by(timezone='MyTimezone')
 
-        assert_that(voicemails, contains_inanyorder(has_property('id', voicemail1.id),
-                                                    has_property('id', voicemail2.id)))
+        assert_that(voicemails, contains_inanyorder(voicemail1, voicemail2))
 
     def test_find_all_by_native_column(self):
         voicemail1 = self.add_voicemail(context='MyContext')
@@ -176,8 +179,7 @@ class TestFindAllBy(DAOTestCase):
 
         voicemails = voicemail_dao.find_all_by(context='MyContext')
 
-        assert_that(voicemails, contains_inanyorder(has_property('id', voicemail1.id),
-                                                    has_property('id', voicemail2.id)))
+        assert_that(voicemails, contains_inanyorder(voicemail1, voicemail2))
 
     def test_find_all_by_multi_tenant(self):
         tenant = self.add_tenant()
@@ -258,19 +260,16 @@ class TestSearchGivenMultipleVoicemail(TestSearch):
         self.assert_search_returns_result(expected_all_resto, context='resto', order='name')
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
-        expected = SearchResult(4,
-                                [self.voicemail1,
-                                 self.voicemail2,
-                                 self.voicemail3,
-                                 self.voicemail4])
+        expected = SearchResult(
+            4, [self.voicemail1, self.voicemail2, self.voicemail3, self.voicemail4],
+        )
 
         self.assert_search_returns_result(expected, order='name')
 
     def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
-        expected = SearchResult(4, [self.voicemail4,
-                                    self.voicemail3,
-                                    self.voicemail2,
-                                    self.voicemail1])
+        expected = SearchResult(
+            4, [self.voicemail4, self.voicemail3, self.voicemail2, self.voicemail1],
+        )
 
         self.assert_search_returns_result(expected, order='name', direction='desc')
 
@@ -287,12 +286,10 @@ class TestSearchGivenMultipleVoicemail(TestSearch):
     def test_when_doing_a_paginated_search_then_returns_a_paginated_result(self):
         expected = SearchResult(3, [self.voicemail2])
 
-        self.assert_search_returns_result(expected,
-                                          search='a',
-                                          order='name',
-                                          direction='desc',
-                                          skip=1,
-                                          limit=1)
+        self.assert_search_returns_result(
+            expected,
+            search='a', order='name', direction='desc', skip=1, limit=1,
+        )
 
 
 class TestCreate(DAOTestCase):
@@ -303,95 +300,114 @@ class TestCreate(DAOTestCase):
 
         row = self.session.query(Voicemail).first()
 
-        assert_that(created_voicemail, equal_to(row))
-        assert_that(created_voicemail, has_properties(id=is_not(none()),
-                                                      uniqueid=is_not(none()),
-                                                      name='',
-                                                      fullname='',
-                                                      number='1000',
-                                                      mailbox='1000',
-                                                      context='default',
-                                                      password=none(),
-                                                      email=none(),
-                                                      pager=none(),
-                                                      timezone=none(),
-                                                      tz=none(),
-                                                      language=none(),
-                                                      options=empty(),
-                                                      max_messages=none(),
-                                                      maxmsg=none(),
-                                                      attach_audio=none(),
-                                                      attach=none(),
-                                                      delete_messages=False,
-                                                      deletevoicemail=False,
-                                                      ask_password=True,
-                                                      skipcheckpass=False,
-                                                      enabled=True,
-                                                      commented=False))
+        assert_that(
+            created_voicemail,
+            all_of(
+                equal_to(row),
+                has_properties(
+                    id=is_not(none()),
+                    uniqueid=is_not(none()),
+                    name='',
+                    fullname='',
+                    number='1000',
+                    mailbox='1000',
+                    context='default',
+                    password=none(),
+                    email=none(),
+                    pager=none(),
+                    timezone=none(),
+                    tz=none(),
+                    language=none(),
+                    options=empty(),
+                    max_messages=none(),
+                    maxmsg=none(),
+                    attach_audio=none(),
+                    attach=none(),
+                    delete_messages=False,
+                    deletevoicemail=False,
+                    ask_password=True,
+                    skipcheckpass=False,
+                    enabled=True,
+                    commented=False),
+            )
+        )
 
     def test_create_with_all_fields(self):
-        voicemail = Voicemail(name='myVoicemail',
-                              number='1000',
-                              context='from-extern',
-                              password='12345',
-                              email='me@example.com',
-                              pager='12345',
-                              timezone='timezone',
-                              language='english',
-                              options=[['toto', 'tata']],
-                              max_messages=999,
-                              attach_audio=False,
-                              delete_messages=True,
-                              ask_password=False,
-                              enabled=False)
+        voicemail = Voicemail(
+            name='myVoicemail',
+            number='1000',
+            context='from-extern',
+            password='12345',
+            email='me@example.com',
+            pager='12345',
+            timezone='timezone',
+            language='english',
+            options=[['toto', 'tata']],
+            max_messages=999,
+            attach_audio=False,
+            delete_messages=True,
+            ask_password=False,
+            enabled=False,
+        )
 
         created_voicemail = voicemail_dao.create(voicemail)
 
         row = self.session.query(Voicemail).first()
 
-        assert_that(created_voicemail, equal_to(row))
-        assert_that(created_voicemail, has_properties(id=is_not(none()),
-                                                      name='myVoicemail',
-                                                      fullname='myVoicemail',
-                                                      number='1000',
-                                                      mailbox='1000',
-                                                      context='from-extern',
-                                                      password='12345',
-                                                      email='me@example.com',
-                                                      pager='12345',
-                                                      timezone='timezone',
-                                                      tz='timezone',
-                                                      language='english',
-                                                      options=[['toto', 'tata']],
-                                                      max_messages=999,
-                                                      maxmsg=999,
-                                                      attach_audio=False,
-                                                      attach=False,
-                                                      delete_messages=True,
-                                                      deletevoicemail=True,
-                                                      ask_password=False,
-                                                      skipcheckpass=True,
-                                                      enabled=False,
-                                                      commented=True))
+        assert_that(
+            created_voicemail,
+            all_of(
+                equal_to(row),
+                has_properties(
+                    id=is_not(none()),
+                    name='myVoicemail',
+                    fullname='myVoicemail',
+                    number='1000',
+                    mailbox='1000',
+                    context='from-extern',
+                    password='12345',
+                    email='me@example.com',
+                    pager='12345',
+                    timezone='timezone',
+                    tz='timezone',
+                    language='english',
+                    options=[['toto', 'tata']],
+                    max_messages=999,
+                    maxmsg=999,
+                    attach_audio=False,
+                    attach=False,
+                    delete_messages=True,
+                    deletevoicemail=True,
+                    ask_password=False,
+                    skipcheckpass=True,
+                    enabled=False,
+                    commented=True,
+                )
+            )
+        )
 
 
 class TestEdit(DAOTestCase):
 
     def test_edit_all_fields(self):
-        voicemail = voicemail_dao.create(Voicemail(name='MyVoicemail',
-                                                   number='1000',
-                                                   context='from-extern',
-                                                   password='12345',
-                                                   email='me@example.com',
-                                                   pager='12345',
-                                                   timezone='timezone',
-                                                   language='english',
-                                                   options=[],
-                                                   max_messages=999,
-                                                   attach_audio=False,
-                                                   delete_messages=True,
-                                                   ask_password=False,
-                                                   enabled=False))
+        voicemail = voicemail_dao.create(
+            Voicemail(
+                name='MyVoicemail',
+                number='1000',
+                context='from-extern',
+                password='12345',
+                email='me@example.com',
+                pager='12345',
+                timezone='timezone',
+                language='english',
+                options=[],
+                max_messages=999,
+                attach_audio=False,
+                delete_messages=True,
+                ask_password=False,
+                enabled=False,
+            )
+        )
 
         voicemail = voicemail_dao.get(voicemail.id)
         voicemail.name = 'other_name'
@@ -412,41 +428,50 @@ class TestEdit(DAOTestCase):
         row = self.session.query(Voicemail).first()
 
         assert_that(voicemail, equal_to(row))
-        assert_that(row, has_properties(id=is_not(none()),
-                                        name='other_name',
-                                        fullname='other_name',
-                                        number='1001',
-                                        mailbox='1001',
-                                        context='default',
-                                        password='6789',
-                                        email='not_me@example.com',
-                                        pager='6789',
-                                        timezone='other_timezone',
-                                        tz='other_timezone',
-                                        language='french',
-                                        options=[['option1', 'toto']],
-                                        max_messages=8888,
-                                        maxmsg=8888,
-                                        attach_audio=True,
-                                        attach=True,
-                                        delete_messages=False,
-                                        deletevoicemail=False,
-                                        ask_password=True,
-                                        skipcheckpass=False,
-                                        enabled=True,
-                                        commented=False))
+        assert_that(
+            row,
+            has_properties(
+                id=is_not(none()),
+                name='other_name',
+                fullname='other_name',
+                number='1001',
+                mailbox='1001',
+                context='default',
+                password='6789',
+                email='not_me@example.com',
+                pager='6789',
+                timezone='other_timezone',
+                tz='other_timezone',
+                language='french',
+                options=[['option1', 'toto']],
+                max_messages=8888,
+                maxmsg=8888,
+                attach_audio=True,
+                attach=True,
+                delete_messages=False,
+                deletevoicemail=False,
+                ask_password=True,
+                skipcheckpass=False,
+                enabled=True,
+                commented=False,
+            )
+        )
 
     def test_edit_set_fields_to_null(self):
-        voicemail = voicemail_dao.create(Voicemail(name='MyVoicemail',
-                                                   number='1000',
-                                                   context='default',
-                                                   password='12345',
-                                                   email='me@example.com',
-                                                   pager='12345',
-                                                   timezone='timezone',
-                                                   language='english',
-                                                   max_messages=999,
-                                                   attach_audio=False))
+        voicemail = voicemail_dao.create(
+            Voicemail(
+                name='MyVoicemail',
+                number='1000',
+                context='default',
+                password='12345',
+                email='me@example.com',
+                pager='12345',
+                timezone='timezone',
+                language='english',
+                max_messages=999,
+                attach_audio=False,
+            )
+        )
 
         voicemail = voicemail_dao.get(voicemail.id)
         voicemail.password = None
@@ -461,13 +486,18 @@ class TestEdit(DAOTestCase):
 
         row = self.session.query(Voicemail).first()
         assert_that(voicemail, equal_to(row))
-        assert_that(row, has_properties(password=none(),
-                                        email=none(),
-                                        pager=none(),
-                                        timezone=none(),
-                                        language=none(),
-                                        max_messages=none(),
-                                        attach_audio=none()))
+        assert_that(
+            row,
+            has_properties(
+                password=none(),
+                email=none(),
+                pager=none(),
+                timezone=none(),
+                language=none(),
+                max_messages=none(),
+                attach_audio=none(),
+            )
+        )
 
 
 class TestDelete(DAOTestCase):
