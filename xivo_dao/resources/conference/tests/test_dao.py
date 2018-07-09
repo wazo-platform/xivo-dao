@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from __future__ import unicode_literals
@@ -214,13 +214,14 @@ class TestSearchGivenMultipleConferences(TestSearch):
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_fields(self):
-        conference = Conference()
+        conference = Conference(tenant_uuid=self.default_tenant.uuid)
         created_conference = conference_dao.create(conference)
 
         row = self.session.query(Conference).first()
 
         assert_that(created_conference, equal_to(row))
         assert_that(row, has_properties(id=is_not(none()),
+                                        tenant_uuid=self.default_tenant.uuid,
                                         name=None,
                                         preprocess_subroutine=None,
                                         max_users=50,
@@ -244,7 +245,8 @@ class TestCreate(DAOTestCase):
                                 announce_join_leave=True,
                                 announce_user_count=True,
                                 announce_only_user=False,
-                                music_on_hold='music')
+                                music_on_hold='music',
+                                tenant_uuid=self.default_tenant.uuid)
         created_conference = conference_dao.create(conference)
 
         row = self.session.query(Conference).first()
@@ -260,7 +262,8 @@ class TestCreate(DAOTestCase):
                                         announce_join_leave=True,
                                         announce_user_count=True,
                                         announce_only_user=False,
-                                        music_on_hold='music'))
+                                        music_on_hold='music',
+                                        tenant_uuid=self.default_tenant.uuid))
 
 
 class TestEdit(DAOTestCase):
@@ -277,7 +280,8 @@ class TestEdit(DAOTestCase):
                        announce_join_leave=True,
                        announce_user_count=True,
                        announce_only_user=False,
-                       music_on_hold='music')
+                       music_on_hold='music',
+                       tenant_uuid=self.default_tenant.uuid)
         )
 
         conference = conference_dao.get(conference.id)
@@ -314,7 +318,8 @@ class TestEdit(DAOTestCase):
                                                       preprocess_subroutine='subroutine',
                                                       pin='1234',
                                                       admin_pin='5678',
-                                                      music_on_hold='music'))
+                                                      music_on_hold='music',
+                                                      tenant_uuid=self.default_tenant.uuid))
 
         conference = conference_dao.get(conference.id)
         conference.name = None

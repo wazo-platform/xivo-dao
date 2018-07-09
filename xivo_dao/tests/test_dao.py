@@ -565,6 +565,7 @@ class ItemInserter(object):
         return meetmefeatures
 
     def add_conference(self, **kwargs):
+        kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
         conference = Conference(**kwargs)
         self.add_me(conference)
         return conference

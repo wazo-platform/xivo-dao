@@ -6,6 +6,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import (
     Column,
+    ForeignKey,
     PrimaryKeyConstraint,
 )
 from sqlalchemy.types import (
@@ -25,6 +26,7 @@ class Conference(Base):
     )
 
     id = Column(Integer)
+    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
     name = Column(String(128))
     preprocess_subroutine = Column(String(39))
 
