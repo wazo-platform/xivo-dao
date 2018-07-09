@@ -5,6 +5,7 @@
 from __future__ import unicode_literals
 
 from hamcrest import (
+    all_of,
     assert_that,
     contains,
     equal_to,
@@ -13,6 +14,7 @@ from hamcrest import (
     has_property,
     is_not,
     none,
+    not_,
 )
 
 
@@ -176,6 +178,21 @@ class TestFindAllBy(DAOTestCase):
                 has_property('id', conference2.id),
             )
         )
+
+    def test_find_all_multi_tenant(self):
+        tenant = self.add_tenant()
+        kwargs = {'preprocess_subroutine': 'subroutine'}
+
+        conference1 = self.add_conference(tenant_uuid=tenant.uuid, **kwargs)
+        conference2 = self.add_conference(**kwargs)
+
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        conferences = conference_dao.find_all_by(tenant_uuids=tenants, **kwargs)
+        assert_that(conferences, has_items(conference1, conference2))
+
+        tenants = [tenant.uuid]
+        conferences = conference_dao.find_all_by(tenant_uuids=tenants, **kwargs)
+        assert_that(conferences, all_of(has_items(conference1), not_(has_items(conference2))))
 
 
 class TestSearch(DAOTestCase):
