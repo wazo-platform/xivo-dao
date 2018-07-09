@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
@@ -7,6 +7,11 @@ from xivo_dao.helpers.db_manager import daosession
 
 from .persistor import ConferencePersistor
 from .search import conference_search
+
+
+@daosession
+def _persistor(session, tenant_uuids=None):
+    return ConferencePersistor(session, conference_search, tenant_uuids)
 
 
 @daosession
@@ -24,9 +29,8 @@ def get_by(session, **criteria):
     return ConferencePersistor(session, conference_search).get_by(criteria)
 
 
-@daosession
-def find(session, conference_id):
-    return ConferencePersistor(session, conference_search).find_by({'id': conference_id})
+def find(conference_id, tenant_uuids=None):
+    return _persistor(tenant_uuids).find_by({'id': conference_id})
 
 
 @daosession
