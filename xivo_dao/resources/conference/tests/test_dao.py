@@ -79,6 +79,19 @@ class TestGet(DAOTestCase):
 
         assert_that(conference.id, equal_to(conference.id))
 
+    def test_get_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        conference_row = self.add_conference(tenant_uuid=tenant.uuid)
+        conference = conference_dao.get(conference_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(conference, equal_to(conference_row))
+
+        conference_row = self.add_conference()
+        self.assertRaises(
+            NotFoundError,
+            conference_dao.get, conference_row.id, tenant_uuids=[tenant.uuid],
+        )
+
 
 class TestFindBy(DAOTestCase):
 

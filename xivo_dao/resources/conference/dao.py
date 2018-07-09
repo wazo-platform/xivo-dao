@@ -18,8 +18,8 @@ def search(**parameters):
     return _persistor().search(parameters)
 
 
-def get(conference_id):
-    return _persistor().get_by({'id': conference_id})
+def get(conference_id, tenant_uuids=None):
+    return _persistor(tenant_uuids).get_by({'id': conference_id})
 
 
 def get_by(**criteria):
