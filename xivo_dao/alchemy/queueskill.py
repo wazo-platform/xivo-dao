@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2013-2014 Avencall
+# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
@@ -17,6 +17,6 @@ class QueueSkill(Base):
     )
 
     id = Column(Integer, nullable=False)
-    catid = Column(Integer, server_default='1', nullable=False)
+    catid = Column(Integer)
     name = Column(String(64), server_default='', nullable=False)
     description = Column(Text)
