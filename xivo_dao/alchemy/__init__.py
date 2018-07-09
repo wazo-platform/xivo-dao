@@ -36,6 +36,7 @@ from xivo_dao.alchemy.paginguser import PagingUser
 from xivo_dao.alchemy.parking_lot import ParkingLot
 from xivo_dao.alchemy.pickupmember import PickupMember
 from xivo_dao.alchemy.queuemember import QueueMember
+from xivo_dao.alchemy.queueskillcat import QueueSkillCat
 from xivo_dao.alchemy.rightcall import RightCall
 from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.sccpline import SCCPLine
@@ -88,6 +89,7 @@ __all__ = [
     'ParkingLot',
     'PickupMember',
     'QueueMember',
+    'QueueSkillCat',
     'RightCall',
     'RightCallMember',
     'SCCPLine',
