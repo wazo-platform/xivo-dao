@@ -139,6 +139,19 @@ class TestGetBy(DAOTestCase):
     def test_given_conference_does_not_exist_then_raises_error(self):
         self.assertRaises(NotFoundError, conference_dao.get_by, name='42')
 
+    def test_get_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        conference_row = self.add_conference()
+        self.assertRaises(
+            NotFoundError,
+            conference_dao.get_by, id=conference_row.id, tenant_uuids=[tenant.uuid],
+        )
+
+        conference_row = self.add_conference(tenant_uuid=tenant.uuid)
+        conference = conference_dao.get_by(id=conference_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(conference, equal_to(conference_row))
+
 
 class TestFindAllBy(DAOTestCase):
 

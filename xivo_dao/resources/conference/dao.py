@@ -22,8 +22,8 @@ def get(conference_id, tenant_uuids=None):
     return _persistor(tenant_uuids).get_by({'id': conference_id})
 
 
-def get_by(**criteria):
-    return _persistor().get_by(criteria)
+def get_by(tenant_uuids=None, **criteria):
+    return _persistor(tenant_uuids).get_by(criteria)
 
 
 def find(conference_id, tenant_uuids=None):
