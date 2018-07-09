@@ -4,20 +4,25 @@
 
 from __future__ import unicode_literals
 
-from hamcrest import (assert_that,
-                      contains,
-                      equal_to,
-                      has_items,
-                      has_properties,
-                      has_property,
-                      is_not,
-                      none)
+from hamcrest import (
+    assert_that,
+    contains,
+    equal_to,
+    has_items,
+    has_properties,
+    has_property,
+    is_not,
+    none,
+)
 
 
 from xivo_dao.alchemy.conference import Conference
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.resources.utils.search import SearchResult
-from xivo_dao.helpers.exception import NotFoundError, InputError
+from xivo_dao.helpers.exception import (
+    NotFoundError,
+    InputError,
+)
 from xivo_dao.resources.conference import dao as conference_dao
 from xivo_dao.tests.test_dao import DAOTestCase
 
@@ -117,8 +122,13 @@ class TestFindAllBy(DAOTestCase):
 
         conferences = conference_dao.find_all_by(preprocess_subroutine='subroutine')
 
-        assert_that(conferences, has_items(has_property('id', conference1.id),
-                                           has_property('id', conference2.id)))
+        assert_that(
+            conferences,
+            has_items(
+                has_property('id', conference1.id),
+                has_property('id', conference2.id),
+            )
+        )
 
 
 class TestSearch(DAOTestCase):
@@ -220,68 +230,82 @@ class TestCreate(DAOTestCase):
         row = self.session.query(Conference).first()
 
         assert_that(created_conference, equal_to(row))
-        assert_that(row, has_properties(id=is_not(none()),
-                                        tenant_uuid=self.default_tenant.uuid,
-                                        name=None,
-                                        preprocess_subroutine=None,
-                                        max_users=50,
-                                        record=False,
-                                        pin=None,
-                                        admin_pin=None,
-                                        quiet_join_leave=False,
-                                        announce_join_leave=False,
-                                        announce_user_count=False,
-                                        announce_only_user=True,
-                                        music_on_hold=None))
+        assert_that(
+            row,
+            has_properties(
+                id=is_not(none()),
+                tenant_uuid=self.default_tenant.uuid,
+                name=None,
+                preprocess_subroutine=None,
+                max_users=50,
+                record=False,
+                pin=None,
+                admin_pin=None,
+                quiet_join_leave=False,
+                announce_join_leave=False,
+                announce_user_count=False,
+                announce_only_user=True,
+                music_on_hold=None,
+            )
+        )
 
     def test_create_with_all_fields(self):
-        conference = Conference(name='conference',
-                                preprocess_subroutine='subroutine',
-                                max_users=100,
-                                record=True,
-                                pin='1234',
-                                admin_pin='5678',
-                                quiet_join_leave=True,
-                                announce_join_leave=True,
-                                announce_user_count=True,
-                                announce_only_user=False,
-                                music_on_hold='music',
-                                tenant_uuid=self.default_tenant.uuid)
+        conference = Conference(
+            name='conference',
+            preprocess_subroutine='subroutine',
+            max_users=100,
+            record=True,
+            pin='1234',
+            admin_pin='5678',
+            quiet_join_leave=True,
+            announce_join_leave=True,
+            announce_user_count=True,
+            announce_only_user=False,
+            music_on_hold='music',
+            tenant_uuid=self.default_tenant.uuid,
+        )
         created_conference = conference_dao.create(conference)
 
         row = self.session.query(Conference).first()
 
         assert_that(created_conference, equal_to(row))
-        assert_that(row, has_properties(name='conference',
-                                        preprocess_subroutine='subroutine',
-                                        max_users=100,
-                                        record=True,
-                                        pin='1234',
-                                        admin_pin='5678',
-                                        quiet_join_leave=True,
-                                        announce_join_leave=True,
-                                        announce_user_count=True,
-                                        announce_only_user=False,
-                                        music_on_hold='music',
-                                        tenant_uuid=self.default_tenant.uuid))
+        assert_that(
+            row,
+            has_properties(
+                name='conference',
+                preprocess_subroutine='subroutine',
+                max_users=100,
+                record=True,
+                pin='1234',
+                admin_pin='5678',
+                quiet_join_leave=True,
+                announce_join_leave=True,
+                announce_user_count=True,
+                announce_only_user=False,
+                music_on_hold='music',
+                tenant_uuid=self.default_tenant.uuid,
+            )
+        )
 
 
 class TestEdit(DAOTestCase):
 
     def test_edit_all_fields(self):
         conference = conference_dao.create(
-            Conference(name='conference',
-                       preprocess_subroutine='subroutine',
-                       max_users=100,
-                       record=True,
-                       pin='1234',
-                       admin_pin='5678',
-                       quiet_join_leave=True,
-                       announce_join_leave=True,
-                       announce_user_count=True,
-                       announce_only_user=False,
-                       music_on_hold='music',
-                       tenant_uuid=self.default_tenant.uuid)
+            Conference(
+                name='conference',
+                preprocess_subroutine='subroutine',
+                max_users=100,
+                record=True,
+                pin='1234',
+                admin_pin='5678',
+                quiet_join_leave=True,
+                announce_join_leave=True,
+                announce_user_count=True,
+                announce_only_user=False,
+                music_on_hold='music',
+                tenant_uuid=self.default_tenant.uuid,
+            )
         )
 
         conference = conference_dao.get(conference.id)
@@ -301,25 +325,34 @@ class TestEdit(DAOTestCase):
 
         row = self.session.query(Conference).first()
 
-        assert_that(row, has_properties(name='other_conference',
-                                        preprocess_subroutine='other_subroutine',
-                                        max_users=0,
-                                        record=False,
-                                        pin='0987',
-                                        admin_pin='1234',
-                                        quiet_join_leave=False,
-                                        announce_join_leave=False,
-                                        announce_user_count=False,
-                                        announce_only_user=True,
-                                        music_on_hold='other_music',))
+        assert_that(
+            row,
+            has_properties(
+                name='other_conference',
+                preprocess_subroutine='other_subroutine',
+                max_users=0,
+                record=False,
+                pin='0987',
+                admin_pin='1234',
+                quiet_join_leave=False,
+                announce_join_leave=False,
+                announce_user_count=False,
+                announce_only_user=True,
+                music_on_hold='other_music',
+            )
+        )
 
     def test_edit_set_fields_to_null(self):
-        conference = conference_dao.create(Conference(name='conference',
-                                                      preprocess_subroutine='subroutine',
-                                                      pin='1234',
-                                                      admin_pin='5678',
-                                                      music_on_hold='music',
-                                                      tenant_uuid=self.default_tenant.uuid))
+        conference = conference_dao.create(
+            Conference(
+                name='conference',
+                preprocess_subroutine='subroutine',
+                pin='1234',
+                admin_pin='5678',
+                music_on_hold='music',
+                tenant_uuid=self.default_tenant.uuid,
+            )
+        )
 
         conference = conference_dao.get(conference.id)
         conference.name = None
@@ -331,11 +364,16 @@ class TestEdit(DAOTestCase):
         conference_dao.edit(conference)
 
         row = self.session.query(Conference).first()
-        assert_that(row, has_properties(name=none(),
-                                        preprocess_subroutine=none(),
-                                        pin=none(),
-                                        admin_pin=none(),
-                                        music_on_hold=none()))
+        assert_that(
+            row,
+            has_properties(
+                name=none(),
+                preprocess_subroutine=none(),
+                pin=none(),
+                admin_pin=none(),
+                music_on_hold=none(),
+            )
+        )
 
 
 class TestDelete(DAOTestCase):
