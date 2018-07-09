@@ -14,48 +14,40 @@ def _persistor(session, tenant_uuids=None):
     return ConferencePersistor(session, conference_search, tenant_uuids)
 
 
-@daosession
-def search(session, **parameters):
-    return ConferencePersistor(session, conference_search).search(parameters)
+def search(**parameters):
+    return _persistor().search(parameters)
 
 
-@daosession
-def get(session, conference_id):
-    return ConferencePersistor(session, conference_search).get_by({'id': conference_id})
+def get(conference_id):
+    return _persistor().get_by({'id': conference_id})
 
 
-@daosession
-def get_by(session, **criteria):
-    return ConferencePersistor(session, conference_search).get_by(criteria)
+def get_by(**criteria):
+    return _persistor().get_by(criteria)
 
 
 def find(conference_id, tenant_uuids=None):
     return _persistor(tenant_uuids).find_by({'id': conference_id})
 
 
-@daosession
-def find_by(session, **criteria):
-    return ConferencePersistor(session, conference_search).find_by(criteria)
+def find_by(**criteria):
+    return _persistor().find_by(criteria)
 
 
-@daosession
-def find_all_by(session, **criteria):
-    return ConferencePersistor(session, conference_search).find_all_by(criteria)
+def find_all_by(**criteria):
+    return _persistor().find_all_by(criteria)
 
 
-@daosession
-def create(session, conference):
-    return ConferencePersistor(session, conference_search).create(conference)
+def create(conference):
+    return _persistor().create(conference)
 
 
-@daosession
-def edit(session, conference):
-    ConferencePersistor(session, conference_search).edit(conference)
+def edit(conference):
+    _persistor().edit(conference)
 
 
-@daosession
-def delete(session, conference):
-    ConferencePersistor(session, conference_search).delete(conference)
+def delete(conference):
+    _persistor().delete(conference)
 
 
 @daosession
