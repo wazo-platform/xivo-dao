@@ -1,11 +1,18 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, PrimaryKeyConstraint
-from sqlalchemy.types import Integer, String, Boolean
+from sqlalchemy.schema import (
+    Column,
+    PrimaryKeyConstraint,
+)
+from sqlalchemy.types import (
+    Integer,
+    String,
+    Boolean,
+)
 
 from xivo_dao.helpers.db_manager import Base
 
@@ -33,25 +40,31 @@ class Conference(Base):
 
     admin_pin = Column(String(80))
 
-    extensions = relationship('Extension',
-                              primaryjoin="""and_(Extension.type == 'conference',
-                                                  Extension.typeval == cast(Conference.id, String))""",
-                              foreign_keys='Extension.typeval',
-                              viewonly=True,
-                              back_populates='conference')
+    extensions = relationship(
+        'Extension',
+        primaryjoin="""and_(Extension.type == 'conference',
+                            Extension.typeval == cast(Conference.id, String))""",
+        foreign_keys='Extension.typeval',
+        viewonly=True,
+        back_populates='conference',
+    )
 
-    incall_dialactions = relationship('Dialaction',
-                                      primaryjoin="""and_(Dialaction.category == 'incall',
-                                                          Dialaction.action == 'conference',
-                                                          Dialaction.actionarg1 == cast(Conference.id, String))""",
-                                      foreign_keys='Dialaction.actionarg1',
-                                      viewonly=True)
+    incall_dialactions = relationship(
+        'Dialaction',
+        primaryjoin="""and_(Dialaction.category == 'incall',
+                            Dialaction.action == 'conference',
+                            Dialaction.actionarg1 == cast(Conference.id, String))""",
+        foreign_keys='Dialaction.actionarg1',
+        viewonly=True,
+    )
 
     incalls = association_proxy('incall_dialactions', 'incall')
 
-    ivr_dialactions = relationship('Dialaction',
-                                   primaryjoin="""and_(Dialaction.action == 'conference',
-                                                       Dialaction.actionarg1 == cast(Conference.id, String),
-                                                       Dialaction.category.in_(['ivr', 'ivr_choice']))""",
-                                   foreign_keys='Dialaction.actionarg1',
-                                   cascade='all, delete-orphan')
+    ivr_dialactions = relationship(
+        'Dialaction',
+        primaryjoin="""and_(Dialaction.action == 'conference',
+                            Dialaction.actionarg1 == cast(Conference.id, String),
+                            Dialaction.category.in_(['ivr', 'ivr_choice']))""",
+        foreign_keys='Dialaction.actionarg1',
+        cascade='all, delete-orphan',
+    )
