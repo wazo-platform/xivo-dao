@@ -578,7 +578,6 @@ class ItemInserter(object):
         return queue
 
     def add_queue_skill(self, **kwargs):
-        kwargs.setdefault('id', self._generate_int())
         kwargs.setdefault('catid', self._generate_int())
         kwargs.setdefault('name', self._random_name())
         kwargs.setdefault('description', '')
@@ -587,7 +586,6 @@ class ItemInserter(object):
         return queue_skill
 
     def add_queue_skill_rule(self, **kwargs):
-        kwargs.setdefault('id', self._generate_int())
         kwargs.setdefault('name', self._random_name())
         kwargs.setdefault('rule', self._random_name())
         queue_skill_rule = QueueSkillRule(**kwargs)
