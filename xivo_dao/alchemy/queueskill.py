@@ -5,6 +5,7 @@
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship, object_session
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
+from sqlalchemy.sql import select
 from sqlalchemy.types import Integer, String, Text
 
 from xivo_dao.helpers.db_manager import Base
@@ -35,6 +36,10 @@ class QueueSkill(Base):
     @hybrid_property
     def category(self):
         return getattr(self.queue_skill_cat, 'name', None)
+
+    @category.expression
+    def category(cls):
+        return select([QueueSkillCat.name]).where(QueueSkillCat.id == cls.catid).as_scalar()
 
     @category.setter
     def category(self, value):

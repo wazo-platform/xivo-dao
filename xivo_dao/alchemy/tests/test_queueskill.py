@@ -103,6 +103,14 @@ class TestCategory(DAOTestCase):
         assert_that(skill.category, equal_to(None))
         assert_that(skill.queue_skill_cat, equal_to(None))
 
+    def test_expression(self):
+        skill_category = self.add_queue_skill_category(name='category')
+        skill = self.add_queue_skill(catid=skill_category.id)
+
+        result = self.session.query(QueueSkill).filter(QueueSkill.category == 'category').first()
+        assert_that(result, equal_to(skill))
+
+
 class TestCreator(DAOTestCase):
 
     def test_category(self):
