@@ -14,8 +14,8 @@ def _persistor(session, tenant_uuids=None):
     return ConferencePersistor(session, conference_search, tenant_uuids)
 
 
-def search(**parameters):
-    return _persistor().search(parameters)
+def search(tenant_uuids=None, **parameters):
+    return _persistor(tenant_uuids).search(parameters)
 
 
 def get(conference_id, tenant_uuids=None):
