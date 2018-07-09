@@ -30,8 +30,8 @@ def find(conference_id, tenant_uuids=None):
     return _persistor(tenant_uuids).find_by({'id': conference_id})
 
 
-def find_by(**criteria):
-    return _persistor().find_by(criteria)
+def find_by(tenant_uuids=None, **criteria):
+    return _persistor(tenant_uuids).find_by(criteria)
 
 
 def find_all_by(**criteria):
