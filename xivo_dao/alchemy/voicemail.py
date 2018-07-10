@@ -65,7 +65,7 @@ class Voicemail(Base):
 
     context_rel = relationship(
         'Context',
-        primaryjoin='''Voicemail.context == Context.name''',
+        primaryjoin='Voicemail.context == Context.name',
         foreign_keys='Voicemail.context',
     )
 
