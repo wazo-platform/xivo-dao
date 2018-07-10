@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
@@ -10,48 +10,44 @@ from .search import conference_search
 
 
 @daosession
-def search(session, **parameters):
-    return ConferencePersistor(session, conference_search).search(parameters)
+def _persistor(session, tenant_uuids=None):
+    return ConferencePersistor(session, conference_search, tenant_uuids)
 
 
-@daosession
-def get(session, conference_id):
-    return ConferencePersistor(session, conference_search).get_by({'id': conference_id})
+def search(tenant_uuids=None, **parameters):
+    return _persistor(tenant_uuids).search(parameters)
 
 
-@daosession
-def get_by(session, **criteria):
-    return ConferencePersistor(session, conference_search).get_by(criteria)
+def get(conference_id, tenant_uuids=None):
+    return _persistor(tenant_uuids).get_by({'id': conference_id})
 
 
-@daosession
-def find(session, conference_id):
-    return ConferencePersistor(session, conference_search).find_by({'id': conference_id})
+def get_by(tenant_uuids=None, **criteria):
+    return _persistor(tenant_uuids).get_by(criteria)
 
 
-@daosession
-def find_by(session, **criteria):
-    return ConferencePersistor(session, conference_search).find_by(criteria)
+def find(conference_id, tenant_uuids=None):
+    return _persistor(tenant_uuids).find_by({'id': conference_id})
 
 
-@daosession
-def find_all_by(session, **criteria):
-    return ConferencePersistor(session, conference_search).find_all_by(criteria)
+def find_by(tenant_uuids=None, **criteria):
+    return _persistor(tenant_uuids).find_by(criteria)
 
 
-@daosession
-def create(session, conference):
-    return ConferencePersistor(session, conference_search).create(conference)
+def find_all_by(tenant_uuids=None, **criteria):
+    return _persistor(tenant_uuids).find_all_by(criteria)
 
 
-@daosession
-def edit(session, conference):
-    ConferencePersistor(session, conference_search).edit(conference)
+def create(conference):
+    return _persistor().create(conference)
 
 
-@daosession
-def delete(session, conference):
-    ConferencePersistor(session, conference_search).delete(conference)
+def edit(conference):
+    _persistor().edit(conference)
+
+
+def delete(conference):
+    _persistor().delete(conference)
 
 
 @daosession
