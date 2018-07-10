@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from .persistor import VoicemailPersistor
@@ -9,33 +9,33 @@ from xivo_dao.helpers.db_manager import daosession
 
 
 @daosession
-def search(session, **parameters):
-    return VoicemailPersistor(session, voicemail_search).search(parameters)
+def search(session, tenant_uuids=None, **parameters):
+    return VoicemailPersistor(session, voicemail_search, tenant_uuids).search(parameters)
 
 
 @daosession
-def get(session, voicemail_id):
-    return VoicemailPersistor(session, voicemail_search).get_by({'id': voicemail_id})
+def get(session, voicemail_id, tenant_uuids=None):
+    return VoicemailPersistor(session, voicemail_search, tenant_uuids).get_by({'id': voicemail_id})
 
 
 @daosession
-def get_by(session, **criteria):
-    return VoicemailPersistor(session, voicemail_search).get_by(criteria)
+def get_by(session, tenant_uuids=None, **criteria):
+    return VoicemailPersistor(session, voicemail_search, tenant_uuids).get_by(criteria)
 
 
 @daosession
-def find(session, voicemail_id):
-    return VoicemailPersistor(session, voicemail_search).find_by({'id': voicemail_id})
+def find(session, voicemail_id, tenant_uuids=None):
+    return VoicemailPersistor(session, voicemail_search, tenant_uuids).find_by({'id': voicemail_id})
 
 
 @daosession
-def find_by(session, **criteria):
-    return VoicemailPersistor(session, voicemail_search).find_by(criteria)
+def find_by(session, tenant_uuids=None, **criteria):
+    return VoicemailPersistor(session, voicemail_search, tenant_uuids).find_by(criteria)
 
 
 @daosession
-def find_all_by(session, **criteria):
-    return VoicemailPersistor(session, voicemail_search).find_all_by(criteria)
+def find_all_by(session, tenant_uuids=None, **criteria):
+    return VoicemailPersistor(session, voicemail_search, tenant_uuids).find_all_by(criteria)
 
 
 @daosession

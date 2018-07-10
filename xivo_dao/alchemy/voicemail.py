@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2012-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy import sql, Boolean
@@ -8,14 +8,23 @@ from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.attributes import get_history
-from sqlalchemy.schema import (Column,
-                               Index,
-                               PrimaryKeyConstraint,
-                               UniqueConstraint)
-from sqlalchemy.sql import cast, not_
-from sqlalchemy.types import Integer, String
+from sqlalchemy.schema import (
+    Column,
+    Index,
+    PrimaryKeyConstraint,
+    UniqueConstraint,
+)
+from sqlalchemy.sql import (
+    cast,
+    not_,
+)
+from sqlalchemy.types import (
+    Integer,
+    String,
+)
 
 from xivo_dao.helpers.db_manager import Base
+from .context import Context
 
 
 class Voicemail(Base):
@@ -40,19 +49,26 @@ class Voicemail(Base):
     deletevoicemail = Column(Integer, nullable=False, server_default='0')
     maxmsg = Column(Integer)
     skipcheckpass = Column(Integer, nullable=False, server_default='0')
-    options = Column(ARRAY(String, dimensions=2),
-                     nullable=False, server_default='{}')
+    options = Column(ARRAY(String, dimensions=2), nullable=False, server_default='{}')
     commented = Column(Integer, nullable=False, server_default='0')
 
-    users = relationship('UserFeatures',
-                         back_populates='voicemail')
+    users = relationship('UserFeatures', back_populates='voicemail')
 
-    ivr_dialactions = relationship('Dialaction',
-                                   primaryjoin="""and_(Dialaction.action == 'voicemail',
-                                                       Dialaction.actionarg1 == cast(Voicemail.id, String),
-                                                       Dialaction.category.in_(['ivr', 'ivr_choice']))""",
-                                   foreign_keys='Dialaction.actionarg1',
-                                   cascade='all, delete-orphan')
+    ivr_dialactions = relationship(
+        'Dialaction',
+        primaryjoin="""and_(Dialaction.action == 'voicemail',
+                            Dialaction.actionarg1 == cast(Voicemail.id, String),
+                            Dialaction.category.in_(['ivr', 'ivr_choice']))""",
+        foreign_keys='Dialaction.actionarg1',
+        cascade='all, delete-orphan',
+    )
+
+    context_rel = relationship(
+        'Context',
+        primaryjoin='Voicemail.context == Context.name',
+        foreign_keys='Voicemail.context',
+        viewonly=True,
+    )
 
     def get_old_number_context(self):
         number_history = get_history(self, 'mailbox')
@@ -151,3 +167,13 @@ class Voicemail(Base):
     @enabled.setter
     def enabled(self, value):
         self.commented = int(value is False) if value is not None else None
+
+    @hybrid_property
+    def tenant_uuid(self):
+        return self.context_rel.tenant_uuid
+
+    @tenant_uuid.expression
+    def tenant_uuid(cls):
+        return sql.select([Context.tenant_uuid]).where(
+            Context.name == cls.context,
+        ).label('tenant_uuid')

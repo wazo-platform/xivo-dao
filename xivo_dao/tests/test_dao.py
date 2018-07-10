@@ -355,9 +355,7 @@ class ItemInserter(object):
         kwargs.setdefault('name', self._random_name())
         kwargs.setdefault('displayname', kwargs['name'].capitalize())
         kwargs.setdefault('description', 'Auto create context')
-        if 'tenant_uuid' not in kwargs:
-            tenant = self.add_tenant()
-            kwargs['tenant_uuid'] = tenant.uuid
+        kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
 
         context = Context(**kwargs)
         self.add_me(context)
