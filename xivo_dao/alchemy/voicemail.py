@@ -67,6 +67,7 @@ class Voicemail(Base):
         'Context',
         primaryjoin='Voicemail.context == Context.name',
         foreign_keys='Voicemail.context',
+        viewonly=True,
     )
 
     def get_old_number_context(self):
