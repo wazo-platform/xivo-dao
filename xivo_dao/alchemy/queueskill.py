@@ -33,6 +33,13 @@ class QueueSkill(Base):
         cascade='save-update,merge',
     )
 
+    agent_queue_skills = relationship(
+        'AgentQueueSkill',
+        primaryjoin='AgentQueueSkill.skillid == QueueSkill.id',
+        foreign_keys='AgentQueueSkill.skillid',
+        cascade='all, delete-orphan',
+    )
+
     @hybrid_property
     def category(self):
         return getattr(self.queue_skill_cat, 'name', None)
