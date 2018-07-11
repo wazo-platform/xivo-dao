@@ -7,7 +7,6 @@ from hamcrest import (
     assert_that,
     contains_inanyorder,
     equal_to,
-    not_,
 )
 
 from sqlalchemy.inspection import inspect
@@ -82,4 +81,4 @@ class TestDeleter(DAOTestCase):
         self.session.flush()
 
         assert_that(inspect(skill).deleted)
-        assert_that(not_(inspect(skill_category).deleted))
+        assert_that(not inspect(skill_category).deleted)
