@@ -51,3 +51,13 @@ def edit(session, agent):
 @daosession
 def delete(session, agent):
     AgentPersistor(session, agent_search).delete(agent)
+
+
+@daosession
+def associate_agent_skill(session, agent, agent_skill):
+    AgentPersistor(session, agent_search).associate_agent_skill(agent, agent_skill)
+
+
+@daosession
+def dissociate_agent_skill(session, agent, agent_skill):
+    AgentPersistor(session, agent_search).dissociate_agent_skill(agent, agent_skill)
