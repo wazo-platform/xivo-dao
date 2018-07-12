@@ -5,6 +5,7 @@
 from __future__ import unicode_literals
 
 from hamcrest import (
+    all_of,
     assert_that,
     equal_to,
     is_not,
@@ -14,6 +15,7 @@ from hamcrest import (
     has_properties,
     has_property,
     has_items,
+    not_,
 )
 
 
@@ -77,6 +79,22 @@ class TestFindAllBy(TestLineDao):
                 has_property('id', line1.id),
                 has_property('id', line2.id)),
         )
+
+    def test_find_all_by_multi_tenant(self):
+        tenant = self.add_tenant()
+        context_1 = self.add_context(tenant_uuid=tenant.uuid)
+        context_2 = self.add_context()
+
+        line1 = self.add_line(device='device', context=context_1.name)
+        line2 = self.add_line(device='device', context=context_2.name)
+
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        lines = line_dao.find_all_by(device='device', tenant_uuids=tenants)
+        assert_that(lines, has_items(line1, line2))
+
+        tenants = [tenant.uuid]
+        lines = line_dao.find_all_by(device='device', tenant_uuids=tenants)
+        assert_that(lines, all_of(has_items(line1), not_(has_items(line2))))
 
 
 class TestGet(TestLineDao):
