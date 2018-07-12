@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 from hamcrest import (
     assert_that,
     contains,
+    empty,
     equal_to,
     has_items,
     has_properties,
@@ -17,6 +18,7 @@ from hamcrest import (
 
 from sqlalchemy.inspection import inspect
 from xivo_dao.alchemy.queueskill import QueueSkill
+from xivo_dao.alchemy.queueskillcat import QueueSkillCat
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.helpers.exception import NotFoundError, InputError
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -248,6 +250,51 @@ class TestCreate(DAOTestCase):
             category='MyCategory',
         ))
 
+    def test_create_with_create_category(self):
+        skill = QueueSkill(
+            name='MyName',
+            category='MyCategory',
+        )
+
+        skill = skill_dao.create(skill)
+
+        self.session.expire_all()
+        assert_that(skill.queue_skill_cat, has_properties(
+            name='MyCategory',
+        ))
+        result = self.session.query(QueueSkillCat).all()
+        assert_that(result, contains(skill.queue_skill_cat))
+
+    def test_create_without_create_category(self):
+        category = self.add_queue_skill_category(name='default')
+        skill = QueueSkill(
+            name='MyName',
+            category='default',
+        )
+
+        skill = skill_dao.create(skill)
+
+        self.session.expire_all()
+        assert_that(skill.queue_skill_cat, has_properties(
+            name='default',
+        ))
+        result = self.session.query(QueueSkillCat).all()
+        assert_that(result, contains(category))
+
+    def test_create_category_to_none(self):
+        skill = QueueSkill(
+            name='MyName',
+            category=None,
+        )
+
+        skill = skill_dao.create(skill)
+
+        self.session.expire_all()
+        assert_that(skill.queue_skill_cat, equal_to(None))
+
+        result = self.session.query(QueueSkillCat).all()
+        assert_that(result, empty())
+
 
 class TestEdit(DAOTestCase):
 
@@ -290,6 +337,47 @@ class TestEdit(DAOTestCase):
             description=none(),
             category=none(),
         ))
+
+    def test_edit_with_create_category(self):
+        skill = self.add_queue_skill()
+
+        skill.category = 'MyCategory'
+        skill_dao.edit(skill)
+
+        self.session.expire_all()
+        assert_that(skill.queue_skill_cat, has_properties(
+            name='MyCategory',
+        ))
+        result = self.session.query(QueueSkillCat).all()
+        assert_that(result, contains(skill.queue_skill_cat))
+
+    def test_edit_without_create_category(self):
+        category = self.add_queue_skill_category(name='default')
+        skill = self.add_queue_skill()
+
+        skill.category = 'default'
+        skill_dao.edit(skill)
+
+        self.session.expire_all()
+        assert_that(skill.queue_skill_cat, has_properties(
+            name='default',
+        ))
+        result = self.session.query(QueueSkillCat).all()
+        assert_that(result, contains(category))
+
+    def test_edit_category_to_none(self):
+        category = self.add_queue_skill_category(name='default')
+        skill = self.add_queue_skill(category='default')
+
+        skill.category = None
+        skill_dao.edit(skill)
+
+        self.session.expire_all()
+        assert_that(skill.queue_skill_cat, equal_to(None))
+
+        # TODO Maybe we should delete category if not skill associated
+        result = self.session.query(QueueSkillCat).all()
+        assert_that(result, contains(category))
 
 
 class TestDelete(DAOTestCase):

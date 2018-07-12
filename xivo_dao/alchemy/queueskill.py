@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import relationship, object_session
+from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
 from sqlalchemy.sql import select
 from sqlalchemy.types import Integer, String, Text
@@ -43,17 +43,4 @@ class QueueSkill(Base):
 
     @category.setter
     def category(self, value):
-        if value is None:
-            self.queue_skill_cat = None
-            return
-
-        # Allow QueueSkill(category=value)
-        session = object_session(self)
-        if not session:
-            self.queue_skill_cat = QueueSkillCat(name=value)
-            return
-
-        category = session.query(QueueSkillCat).filter_by(name=value).first()
-        if not category:
-            category = QueueSkillCat(name=value)
-        self.queue_skill_cat = category
+        self._category = value
