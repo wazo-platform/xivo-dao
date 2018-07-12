@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from __future__ import unicode_literals
@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 import re
 import six
 
+from sqlalchemy import sql
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.sql import cast, func
 from sqlalchemy.orm import relationship
@@ -17,6 +18,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from xivo_dao.helpers.exception import InputError
 from xivo_dao.helpers.db_manager import Base
 from xivo_dao.alchemy import enum
+from .context import Context
 
 
 caller_id_regex = re.compile(r'''
@@ -60,6 +62,13 @@ class LineFeatures(Base):
     ipfrom = Column(String(15))
     commented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text)
+
+    context_rel = relationship(
+        'Context',
+        primaryjoin='LineFeatures.context == Context.name',
+        foreign_keys='LineFeatures.context',
+        viewonly=True,
+    )
 
     endpoint_sip = relationship('UserSIP',
                                 primaryjoin="""and_(
@@ -257,6 +266,16 @@ class LineFeatures(Base):
     def device_id(self, value):
         value = value or ''
         self.device = value
+
+    @hybrid_property
+    def tenant_uuid(self):
+        return self.context_rel.tenant_uuid
+
+    @tenant_uuid.expression
+    def tenant_uuid(cls):
+        return sql.select([Context.tenant_uuid]).where(
+            Context.name == cls.context,
+        ).label('tenant_uuid')
 
     @hybrid_property
     def registrar(self):
