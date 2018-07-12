@@ -9,10 +9,18 @@ import six
 
 from sqlalchemy import sql
 from sqlalchemy.ext.associationproxy import association_proxy
-from sqlalchemy.sql import cast, func
 from sqlalchemy.orm import relationship
-from sqlalchemy.types import Integer, String, Text
-from sqlalchemy.schema import Column, UniqueConstraint, PrimaryKeyConstraint, Index
+from sqlalchemy.types import (
+    Integer,
+    String,
+    Text,
+)
+from sqlalchemy.schema import (
+    Column,
+    Index,
+    PrimaryKeyConstraint,
+    UniqueConstraint,
+)
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from xivo_dao.helpers.exception import InputError
@@ -21,17 +29,20 @@ from xivo_dao.alchemy import enum
 from .context import Context
 
 
-caller_id_regex = re.compile(r'''
-                             "                      #name start
-                             (?P<name>[^"]+)        #inside ""
-                             "                      #name end
-                             \s+                    #space between name and number
-                             (
-                             <                      #number start
-                             (?P<num>\+?[\dA-Z]+)   #inside <>
-                             >                      #number end
-                             )?                     #number is optional
-                             ''', re.VERBOSE)
+caller_id_regex = re.compile(
+    r'''
+    "                      #name start
+    (?P<name>[^"]+)        #inside ""
+    "                      #name end
+    \s+                    #space between name and number
+    (
+    <                      #number start
+    (?P<num>\+?[\dA-Z]+)   #inside <>
+    >                      #number end
+    )?                     #number is optional
+    ''',
+    re.VERBOSE,
+)
 
 
 class LineFeatures(Base):
@@ -70,41 +81,51 @@ class LineFeatures(Base):
         viewonly=True,
     )
 
-    endpoint_sip = relationship('UserSIP',
-                                primaryjoin="""and_(
-                                    LineFeatures.protocol == 'sip',
-                                    LineFeatures.protocolid == UserSIP.id
-                                )""",
-                                foreign_keys='LineFeatures.protocolid',
-                                back_populates='line')
+    endpoint_sip = relationship(
+        'UserSIP',
+        primaryjoin="""and_(
+            LineFeatures.protocol == 'sip',
+            LineFeatures.protocolid == UserSIP.id
+        )""",
+        foreign_keys='LineFeatures.protocolid',
+        back_populates='line',
+    )
 
-    endpoint_sccp = relationship('SCCPLine',
-                                 primaryjoin="""and_(
-                                     LineFeatures.protocol == 'sccp',
-                                     LineFeatures.protocolid == SCCPLine.id
-                                 )""",
-                                 foreign_keys='LineFeatures.protocolid',
-                                 back_populates='line')
+    endpoint_sccp = relationship(
+        'SCCPLine',
+        primaryjoin="""and_(
+            LineFeatures.protocol == 'sccp',
+            LineFeatures.protocolid == SCCPLine.id
+        )""",
+        foreign_keys='LineFeatures.protocolid',
+        back_populates='line',
+    )
 
-    endpoint_custom = relationship('UserCustom',
-                                   primaryjoin="""and_(
-                                       LineFeatures.protocol == 'custom',
-                                       LineFeatures.protocolid == UserCustom.id
-                                   )""",
-                                   foreign_keys='LineFeatures.protocolid',
-                                   back_populates='line')
+    endpoint_custom = relationship(
+        'UserCustom',
+        primaryjoin="""and_(
+            LineFeatures.protocol == 'custom',
+            LineFeatures.protocolid == UserCustom.id
+        )""",
+        foreign_keys='LineFeatures.protocolid',
+        back_populates='line',
+    )
 
-    line_extensions = relationship('LineExtension',
-                                   order_by='desc(LineExtension.main_extension)',
-                                   cascade='all, delete-orphan',
-                                   back_populates='line')
+    line_extensions = relationship(
+        'LineExtension',
+        order_by='desc(LineExtension.main_extension)',
+        cascade='all, delete-orphan',
+        back_populates='line',
+    )
 
     extensions = association_proxy('line_extensions', 'extension')
 
-    user_lines = relationship('UserLine',
-                              order_by='desc(UserLine.main_user)',
-                              cascade='all, delete-orphan',
-                              back_populates='line')
+    user_lines = relationship(
+        'UserLine',
+        order_by='desc(UserLine.main_user)',
+        cascade='all, delete-orphan',
+        back_populates='line',
+    )
 
     users = association_proxy('user_lines', 'user')
 
@@ -231,7 +252,7 @@ class LineFeatures(Base):
 
     @provisioning_code.expression
     def provisioning_code(cls):
-        return cast(func.nullif(cls.provisioningid, 0), String)
+        return sql.cast(sql.func.nullif(cls.provisioningid, 0), String)
 
     @provisioning_code.setter
     def provisioning_code(self, value):
@@ -260,7 +281,7 @@ class LineFeatures(Base):
 
     @device_id.expression
     def device_id(cls):
-        return func.nullif(cls.device, '')
+        return sql.func.nullif(cls.device, '')
 
     @device_id.setter
     def device_id(self, value):
