@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2013-2016 Avencall
+# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao.helpers.db_utils import flush_session
@@ -10,8 +10,8 @@ from xivo_dao.resources.line.fixes import LineFixes
 
 
 @daosession
-def find_by(session, **criteria):
-    return LinePersistor(session).find_by(criteria)
+def find_by(session, tenant_uuids=None, **criteria):
+    return LinePersistor(session, tenant_uuids).find_by(criteria)
 
 
 @daosession

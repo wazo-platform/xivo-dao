@@ -48,6 +48,18 @@ class TestFindBy(TestLineDao):
 
         assert_that(result.id, equal_to(line.id))
 
+    def test_find_by_multi_tenant(self):
+        tenant = self.add_tenant()
+        context = self.add_context(tenant_uuid=tenant.uuid)
+
+        line_row = self.add_line()
+        line = line_dao.find_by(name=line_row.name, tenant_uuids=[tenant.uuid])
+        assert_that(line, none())
+
+        line_row = self.add_line(context=context.name)
+        line = line_dao.find_by(name=line_row.name, tenant_uuids=[tenant.uuid])
+        assert_that(line, equal_to(line_row))
+
 
 class TestFindAllBy(TestLineDao):
 
