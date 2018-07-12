@@ -177,6 +177,20 @@ class TestGet(TestLineDao):
 
         assert_that(line, has_properties(caller_id_name=none(), caller_id_num=none()))
 
+    def test_get_multi_tenant(self):
+        tenant = self.add_tenant()
+        context = self.add_context(tenant_uuid=tenant.uuid)
+
+        line_row = self.add_line(context=context.name)
+        line = line_dao.get(line_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(line, equal_to(line_row))
+
+        line_row = self.add_line()
+        self.assertRaises(
+            NotFoundError,
+            line_dao.get, line_row.id, tenant_uuids=[tenant.uuid],
+        )
+
 
 class TestEdit(TestLineDao):
 

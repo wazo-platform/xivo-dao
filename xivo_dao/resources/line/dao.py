@@ -25,8 +25,8 @@ def search(session, **parameters):
 
 
 @daosession
-def get(session, line_id):
-    return LinePersistor(session).get(line_id)
+def get(session, line_id, tenant_uuids=None):
+    return LinePersistor(session, tenant_uuids).get(line_id)
 
 
 @daosession
