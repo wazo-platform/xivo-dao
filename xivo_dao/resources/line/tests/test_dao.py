@@ -1,18 +1,20 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2013-2016 Avencall
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from __future__ import unicode_literals
 
-from hamcrest import assert_that
-from hamcrest import equal_to
-from hamcrest import is_not
-from hamcrest import none
-from hamcrest import has_length
-from hamcrest import contains
-from hamcrest import has_property
-from hamcrest import has_items
+from hamcrest import (
+    assert_that,
+    equal_to,
+    is_not,
+    none,
+    has_length,
+    contains,
+    has_properties,
+    has_property,
+    has_items,
+)
 
 
 from xivo_dao.alchemy.linefeatures import LineFeatures as Line
@@ -35,7 +37,7 @@ class TestLineDao(DAOTestCase):
         return line
 
 
-class TestLineDaoFindBy(TestLineDao):
+class TestFindBy(TestLineDao):
 
     def test_given_column_does_not_exist_then_raises_error(self):
         self.assertRaises(InputError, line_dao.find_by, column=1)
@@ -47,7 +49,7 @@ class TestLineDaoFindBy(TestLineDao):
         assert_that(result.id, equal_to(line.id))
 
 
-class TestLineDaoFindAllBy(TestLineDao):
+class TestFindAllBy(TestLineDao):
 
     def test_given_column_does_not_exist_then_raises_error(self):
         self.assertRaises(InputError, line_dao.find_by, column=1)
@@ -57,83 +59,96 @@ class TestLineDaoFindAllBy(TestLineDao):
         line2 = self.add_line(device='deviceid', provisioningid=234567)
         result = line_dao.find_all_by(device='deviceid')
 
-        assert_that(result, has_items(has_property('id', line1.id),
-                                      has_property('id', line2.id)))
+        assert_that(
+            result,
+            has_items(
+                has_property('id', line1.id),
+                has_property('id', line2.id)),
+        )
 
 
-class TestLineDaoGet(TestLineDao):
+class TestGet(TestLineDao):
 
     def test_get_no_line(self):
         self.assertRaises(NotFoundError, line_dao.get, 666)
 
     def test_get_minimal_parameters(self):
-        line_row = self.add_line(context='default',
-                                 registrar='default',
-                                 provisioningid=123456)
+        line_row = self.add_line(context='default', registrar='default', provisioningid=123456)
 
         line = line_dao.get(line_row.id)
 
-        assert_that(line.id, equal_to(line_row.id))
-        assert_that(line.context, equal_to(line_row.context))
-        assert_that(line.provisioning_code, equal_to('123456'))
-        assert_that(line.position, equal_to(1))
-        assert_that(line.endpoint, none())
-        assert_that(line.endpoint_id, none())
-        assert_that(line.caller_id_name, none())
-        assert_that(line.caller_id_num, none())
-        assert_that(line.registrar, equal_to('default'))
+        assert_that(
+            line,
+            has_properties(
+                id=line_row.id,
+                context=line_row.context,
+                provisioning_code='123456',
+                position=1,
+                endpoint=none(),
+                endpoint_id=none(),
+                caller_id_name=none(),
+                caller_id_num=none(),
+                registrar='default',
+            )
+        )
 
     def test_get_all_parameters(self):
-        line_row = self.add_line(context='default',
-                                 registrar='default',
-                                 protocol='sip',
-                                 protocolid=1234,
-                                 provisioningid=123456,
-                                 num=2)
+        line_row = self.add_line(
+            context='default',
+            registrar='default',
+            protocol='sip',
+            protocolid=1234,
+            provisioningid=123456,
+            num=2,
+        )
 
         line = line_dao.get(line_row.id)
 
-        assert_that(line.id, equal_to(line_row.id))
-        assert_that(line.context, equal_to('default'))
-        assert_that(line.position, equal_to(2))
-        assert_that(line.provisioning_code, '123456')
-        assert_that(line.endpoint, equal_to('sip'))
-        assert_that(line.endpoint_id, equal_to(1234))
-        assert_that(line.registrar, equal_to('default'))
+        assert_that(
+            line,
+            has_properties(
+                id=line_row.id,
+                context='default',
+                position=2,
+                provisioning_code='123456',
+                endpoint='sip',
+                endpoint_id=1234,
+                registrar='default',
+            )
+        )
 
     def test_given_line_has_sip_endpoint_when_getting_then_line_has_caller_id(self):
         usersip_row = self.add_usersip(callerid='"Jôhn Smith" <1000>')
-        line_row = self.add_line(protocol='sip',
-                                 protocolid=usersip_row.id)
+        line_row = self.add_line(protocol='sip', protocolid=usersip_row.id)
 
         line = line_dao.get(line_row.id)
 
-        assert_that(line.caller_id_name, equal_to("Jôhn Smith"))
-        assert_that(line.caller_id_num, equal_to("1000"))
+        assert_that(
+            line,
+            has_properties(caller_id_name="Jôhn Smith", caller_id_num="1000")
+        )
 
     def test_given_line_has_sccp_endpoint_when_getting_then_line_has_caller_id(self):
-        sccpline_row = self.add_sccpline(cid_name="Jôhn Smith",
-                                         cid_num="1000")
-        line_row = self.add_line(protocol='sccp',
-                                 protocolid=sccpline_row.id)
+        sccpline_row = self.add_sccpline(cid_name="Jôhn Smith", cid_num="1000")
+        line_row = self.add_line(protocol='sccp', protocolid=sccpline_row.id)
 
         line = line_dao.get(line_row.id)
 
-        assert_that(line.caller_id_name, equal_to("Jôhn Smith"))
-        assert_that(line.caller_id_num, equal_to("1000"))
+        assert_that(
+            line,
+            has_properties(caller_id_name="Jôhn Smith", caller_id_num="1000")
+        )
 
     def test_given_line_has_custom_endpoint_when_getting_then_line_has_no_caller_id(self):
         custom_row = self.add_usercustom()
-        line_row = self.add_line(protocol='custom',
-                                 protocolid=custom_row.id)
+        line_row = self.add_line(protocol='custom', protocolid=custom_row.id)
 
         line = line_dao.get(line_row.id)
 
-        assert_that(line.caller_id_name, none())
-        assert_that(line.caller_id_num, none())
+        assert_that(line, has_properties(caller_id_name=none(), caller_id_num=none()))
 
 
-class TestLineDaoEdit(TestLineDao):
+class TestEdit(TestLineDao):
 
     def test_edit_all_parameters(self):
         line_row = self.add_line()
@@ -147,16 +162,20 @@ class TestLineDaoEdit(TestLineDao):
         line_dao.edit(line)
 
         edited_line = self.session.query(Line).get(line_row.id)
-        assert_that(edited_line.id, equal_to(line.id))
-        assert_that(edited_line.context, equal_to('mycontext'))
-        assert_that(edited_line.provisioning_code, equal_to('234567'))
-        assert_that(edited_line.provisioningid, equal_to(234567))
-        assert_that(edited_line.position, equal_to(3))
-        assert_that(edited_line.registrar, equal_to('otherregistrar'))
+        assert_that(
+            edited_line,
+            has_properties(
+                id=line.id,
+                context='mycontext',
+                provisioning_code='234567',
+                provisioningid=234567,
+                position=3,
+                registrar='otherregistrar',
+            )
+        )
 
     def test_edit_null_parameters(self):
-        line_row = self.add_line(endpoint='sccp',
-                                 endpoint_id=1234)
+        line_row = self.add_line(endpoint='sccp', endpoint_id=1234)
 
         line = line_dao.get(line_row.id)
         line.endpoint = None
@@ -165,11 +184,16 @@ class TestLineDaoEdit(TestLineDao):
         line_dao.edit(line)
 
         edited_line = self.session.query(Line).get(line_row.id)
-        assert_that(edited_line.id, equal_to(line.id))
-        assert_that(edited_line.endpoint, none())
-        assert_that(edited_line.protocol, none())
-        assert_that(edited_line.endpoint_id, none())
-        assert_that(edited_line.protocolid, none())
+        assert_that(
+            edited_line,
+            has_properties(
+                id=line.id,
+                endpoint=none(),
+                protocol=none(),
+                endpoint_id=none(),
+                protocolid=none(),
+            )
+        )
 
     def test_given_line_has_no_endpoint_when_setting_caller_id_then_raises_error(self):
         line_row = self.add_line()
@@ -188,8 +212,7 @@ class TestLineDaoEdit(TestLineDao):
 
     def test_given_line_has_sip_endpoint_when_editing_then_usersip_updated(self):
         usersip_row = self.add_usersip(callerid='"Jôhn Smith" <1000>')
-        line_row = self.add_line(protocol='sip',
-                                 protocolid=usersip_row.id)
+        line_row = self.add_line(protocol='sip', protocolid=usersip_row.id)
         line_id = line_row.id
         self.session.expire(line_row)
 
@@ -204,18 +227,15 @@ class TestLineDaoEdit(TestLineDao):
 
     def test_given_line_has_sip_endpoint_when_setting_caller_id_to_null_then_raises_error(self):
         usersip_row = self.add_usersip(callerid='"Jôhn Smith" <1000>')
-        line_row = self.add_line(protocol='sip',
-                                 protocolid=usersip_row.id)
+        line_row = self.add_line(protocol='sip', protocolid=usersip_row.id)
 
         line = line_dao.get(line_row.id)
         self.assertRaises(InputError, setattr, line, 'caller_id_name', None)
         self.assertRaises(InputError, setattr, line, 'caller_id_num', None)
 
     def test_given_line_has_sccp_endpoint_when_editing_then_sccpline_updated(self):
-        sccpline_row = self.add_sccpline(cid_name="Jôhn Smith",
-                                         cid_num="1000")
-        line_row = self.add_line(protocol='sccp',
-                                 protocolid=sccpline_row.id)
+        sccpline_row = self.add_sccpline(cid_name="Jôhn Smith", cid_num="1000")
+        line_row = self.add_line(protocol='sccp', protocolid=sccpline_row.id)
 
         line = line_dao.get(line_row.id)
         line.caller_id_name = "Rôger Rabbit"
@@ -226,20 +246,16 @@ class TestLineDaoEdit(TestLineDao):
         assert_that(edited_sccpline.cid_name, equal_to("Rôger Rabbit"))
 
     def test_given_line_has_sccp_endpoint_when_setting_caller_id_to_null_then_raises_error(self):
-        sccpline_row = self.add_sccpline(cid_name="Jôhn Smith",
-                                         cid_num="1000")
-        line_row = self.add_line(protocol='sccp',
-                                 protocolid=sccpline_row.id)
+        sccpline_row = self.add_sccpline(cid_name="Jôhn Smith", cid_num="1000")
+        line_row = self.add_line(protocol='sccp', protocolid=sccpline_row.id)
 
         line = line_dao.get(line_row.id)
         self.assertRaises(InputError, setattr, line, 'caller_id_name', None)
         self.assertRaises(InputError, setattr, line, 'caller_id_num', None)
 
     def test_given_line_has_sccp_endpoint_when_setting_caller_id_num_then_raises_error(self):
-        sccpline_row = self.add_sccpline(cid_name="Jôhn Smith",
-                                         cid_num="1000")
-        line_row = self.add_line(protocol='sccp',
-                                 protocolid=sccpline_row.id)
+        sccpline_row = self.add_sccpline(cid_name="Jôhn Smith", cid_num="1000")
+        line_row = self.add_line(protocol='sccp', protocolid=sccpline_row.id)
 
         line = line_dao.get(line_row.id)
         self.assertRaises(InputError, setattr, line, 'caller_id_num', '2000')
@@ -288,45 +304,55 @@ class TestLineCreate(DAOTestCase):
 
         created_line = line_dao.create(line)
 
-        assert_that(created_line.id, is_not(none()))
-        assert_that(created_line.context, equal_to('default'))
-        assert_that(created_line.position, equal_to(1))
-        assert_that(created_line.endpoint, none())
-        assert_that(created_line.endpoint_id, none())
-        assert_that(created_line.provisioning_code, has_length(6))
-        assert_that(created_line.caller_id_name, none())
-        assert_that(created_line.caller_id_num, none())
-        assert_that(created_line.configregistrar, equal_to('default'))
-        assert_that(created_line.registrar, equal_to('default'))
-        assert_that(created_line.ipfrom, equal_to(''))
+        assert_that(
+            created_line,
+            has_properties(
+                id=is_not(none()),
+                context='default',
+                position=1,
+                endpoint=none(),
+                endpoint_id=none(),
+                provisioning_code=has_length(6),
+                caller_id_name=none(),
+                caller_id_num=none(),
+                configregistrar='default',
+                registrar='default',
+                ipfrom='',
+            )
+        )
 
     def test_create_all_parameters(self):
-        line = Line(context='default',
-                    endpoint='sip',
-                    endpoint_id=1234,
-                    provisioning_code='123456',
-                    position=2,
-                    registrar='otherregistrar')
+        line = Line(
+            context='default',
+            endpoint='sip',
+            endpoint_id=1234,
+            provisioning_code='123456',
+            position=2,
+            registrar='otherregistrar',
+        )
 
         created_line = line_dao.create(line)
 
-        assert_that(created_line.id, is_not(none()))
-        assert_that(created_line.context, equal_to('default'))
-        assert_that(created_line.position, equal_to(2))
-        assert_that(created_line.endpoint, equal_to('sip'))
-        assert_that(created_line.protocol, equal_to('sip'))
-        assert_that(created_line.endpoint_id, equal_to(1234))
-        assert_that(created_line.protocolid, equal_to(1234))
-        assert_that(created_line.provisioning_code, equal_to('123456'))
-        assert_that(created_line.provisioningid, equal_to(123456))
-        assert_that(created_line.caller_id_name, none())
-        assert_that(created_line.caller_id_num, none())
-        assert_that(created_line.registrar, equal_to('otherregistrar'))
+        assert_that(
+            created_line,
+            has_properties(
+                id=is_not(none()),
+                context='default',
+                position=2,
+                endpoint='sip',
+                protocol='sip',
+                endpoint_id=1234,
+                protocolid=1234,
+                provisioning_code='123456',
+                provisioningid=123456,
+                caller_id_name=none(),
+                caller_id_num=none(),
+                registrar='otherregistrar',
+            )
+        )
 
     def test_when_setting_caller_id_to_null_then_nothing_happens(self):
-        line = Line(context='default',
-                    position=1,
-                    registrar='default')
+        line = Line(context='default', position=1, registrar='default')
         line.caller_id_name = None
         line.caller_id_num = None
 
@@ -335,7 +361,7 @@ class TestLineCreate(DAOTestCase):
         self.assertRaises(InputError, Line, caller_id_num="1000")
 
 
-class TestLineDaoDelete(DAOTestCase):
+class TestDelete(DAOTestCase):
 
     def test_delete(self):
         line_row = self.add_line()
@@ -347,8 +373,7 @@ class TestLineDaoDelete(DAOTestCase):
 
     def test_given_line_has_sip_endpoint_when_deleting_then_sip_endpoint_deleted(self):
         usersip_row = self.add_usersip()
-        line_row = self.add_line(protocol='sip',
-                                 protocolid=usersip_row.id)
+        line_row = self.add_line(protocol='sip', protocolid=usersip_row.id)
 
         line_dao.delete(line_row)
 
@@ -357,8 +382,7 @@ class TestLineDaoDelete(DAOTestCase):
 
     def test_given_line_has_sccp_endpoint_when_deleting_then_sccp_endpoint_deleted(self):
         sccpline_row = self.add_sccpline()
-        line_row = self.add_line(protocol='sccp',
-                                 protocolid=sccpline_row.id)
+        line_row = self.add_line(protocol='sccp', protocolid=sccpline_row.id)
 
         line_dao.delete(line_row)
 
@@ -367,8 +391,7 @@ class TestLineDaoDelete(DAOTestCase):
 
     def test_given_line_has_custom_endpoint_when_deleting_then_custom_endpoint_deleted(self):
         custom_row = self.add_usercustom()
-        line_row = self.add_line(protocol='custom',
-                                 protocolid=custom_row.id)
+        line_row = self.add_line(protocol='custom', protocolid=custom_row.id)
 
         line_dao.delete(line_row)
 
@@ -376,18 +399,21 @@ class TestLineDaoDelete(DAOTestCase):
         assert_that(deleted_custom, none())
 
 
-class TestLineDaoSearch(DAOTestCase):
+class TestSearch(DAOTestCase):
 
     def test_search(self):
-        line1 = self.add_line(context='default',
-                              provisioningid=123456)
-        self.add_line(context='default',
-                      provisioningid=234567)
+        line1 = self.add_line(context='default', provisioningid=123456)
+        self.add_line(context='default', provisioningid=234567)
 
         search_result = line_dao.search(search='123456')
 
-        assert_that(search_result.total, equal_to(1))
-        assert_that(search_result.items, contains(has_property('id', line1.id)))
+        assert_that(
+            search_result,
+            has_properties(
+                total=1,
+                items=contains(has_properties(id=line1.id)),
+            )
+        )
 
     def test_search_returns_sip_line_associated(self):
         usersip = self.add_usersip()
@@ -441,12 +467,16 @@ class TestRelationship(DAOTestCase):
         extension1_row = self.add_extension()
         extension2_row = self.add_extension()
         line_row = self.add_line()
-        self.add_line_extension(line_id=line_row.id,
-                                extension_id=extension1_row.id,
-                                main_extension=False)
-        self.add_line_extension(line_id=line_row.id,
-                                extension_id=extension2_row.id,
-                                main_extension=True)
+        self.add_line_extension(
+            line_id=line_row.id,
+            extension_id=extension1_row.id,
+            main_extension=False,
+        )
+        self.add_line_extension(
+            line_id=line_row.id,
+            extension_id=extension2_row.id,
+            main_extension=True,
+        )
 
         line = line_dao.get(line_row.id)
         assert_that(line, equal_to(line_row))
@@ -456,12 +486,8 @@ class TestRelationship(DAOTestCase):
         user1_row = self.add_user()
         user2_row = self.add_user()
         line_row = self.add_line()
-        self.add_user_line(line_id=line_row.id,
-                           user_id=user1_row.id,
-                           main_user=False)
-        self.add_user_line(line_id=line_row.id,
-                           user_id=user2_row.id,
-                           main_user=True)
+        self.add_user_line(line_id=line_row.id, user_id=user1_row.id, main_user=False)
+        self.add_user_line(line_id=line_row.id, user_id=user2_row.id, main_user=True)
 
         line = line_dao.get(line_row.id)
         assert_that(line, equal_to(line_row))
