@@ -103,7 +103,8 @@ class TestGet(TestLineDao):
         self.assertRaises(NotFoundError, line_dao.get, 666)
 
     def test_get_minimal_parameters(self):
-        line_row = self.add_line(context='default', registrar='default', provisioningid=123456)
+        context = self.add_context()
+        line_row = self.add_line(context=context.name, registrar='default', provisioningid=123456)
 
         line = line_dao.get(line_row.id)
 
@@ -111,7 +112,7 @@ class TestGet(TestLineDao):
             line,
             has_properties(
                 id=line_row.id,
-                context=line_row.context,
+                context=context.name,
                 provisioning_code='123456',
                 position=1,
                 endpoint=none(),
@@ -119,12 +120,14 @@ class TestGet(TestLineDao):
                 caller_id_name=none(),
                 caller_id_num=none(),
                 registrar='default',
+                tenant_uuid=self.default_tenant.uuid,
             )
         )
 
     def test_get_all_parameters(self):
+        context = self.add_context()
         line_row = self.add_line(
-            context='default',
+            context=context.name,
             registrar='default',
             protocol='sip',
             protocolid=1234,
@@ -138,12 +141,13 @@ class TestGet(TestLineDao):
             line,
             has_properties(
                 id=line_row.id,
-                context='default',
+                context=context.name,
                 position=2,
                 provisioning_code='123456',
                 endpoint='sip',
                 endpoint_id=1234,
                 registrar='default',
+                tenant_uuid=self.default_tenant.uuid,
             )
         )
 
@@ -341,10 +345,11 @@ class TestEdit(TestLineDao):
         assert_that(edited_linefeatures.name, equal_to(usercustom_row.interface))
 
 
-class TestLineCreate(DAOTestCase):
+class TestCreate(DAOTestCase):
 
     def test_create_minimal_parameters(self):
-        line = Line(context='default', provisioningid=123456)
+        context = self.add_context()
+        line = Line(context=context.name, provisioningid=123456)
 
         created_line = line_dao.create(line)
 
@@ -352,7 +357,7 @@ class TestLineCreate(DAOTestCase):
             created_line,
             has_properties(
                 id=is_not(none()),
-                context='default',
+                context=context.name,
                 position=1,
                 endpoint=none(),
                 endpoint_id=none(),
@@ -362,12 +367,14 @@ class TestLineCreate(DAOTestCase):
                 configregistrar='default',
                 registrar='default',
                 ipfrom='',
+                tenant_uuid=self.default_tenant.uuid,
             )
         )
 
     def test_create_all_parameters(self):
+        context = self.add_context()
         line = Line(
-            context='default',
+            context=context.name,
             endpoint='sip',
             endpoint_id=1234,
             provisioning_code='123456',
@@ -381,7 +388,7 @@ class TestLineCreate(DAOTestCase):
             created_line,
             has_properties(
                 id=is_not(none()),
-                context='default',
+                context=context.name,
                 position=2,
                 endpoint='sip',
                 protocol='sip',
@@ -392,6 +399,7 @@ class TestLineCreate(DAOTestCase):
                 caller_id_name=none(),
                 caller_id_num=none(),
                 registrar='otherregistrar',
+                tenant_uuid=self.default_tenant.uuid,
             )
         )
 
