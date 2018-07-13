@@ -25,7 +25,9 @@ class LinePersistor(CriteriaBuilderMixin):
         self.tenant_uuids = tenant_uuids
 
     def search(self, params):
-        rows, total = line_search.search_from_query(self._search_query(), params)
+        query = self._search_query()
+        query = self._filter_tenant_uuid(query)
+        rows, total = line_search.search_from_query(query, params)
         return SearchResult(total, rows)
 
     def _search_query(self):

@@ -20,8 +20,8 @@ def find_all_by(session, tenant_uuids=None, **criteria):
 
 
 @daosession
-def search(session, **parameters):
-    return LinePersistor(session).search(parameters)
+def search(session, tenant_uuids=None, **parameters):
+    return LinePersistor(session, tenant_uuids).search(parameters)
 
 
 @daosession

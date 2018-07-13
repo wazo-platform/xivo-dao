@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 from hamcrest import (
     all_of,
     assert_that,
+    contains_inanyorder,
     equal_to,
     is_not,
     none,
@@ -478,6 +479,32 @@ class TestSearch(DAOTestCase):
         assert_that(line.protocol, equal_to('sip'))
         assert_that(line.protocolid, usersip.id)
         assert_that(line.endpoint_sip.id, equal_to(usersip.id))
+
+    def test_search_multi_tenant(self):
+        tenant = self.add_tenant()
+        context1 = self.add_context(tenant_uuid=self.default_tenant.uuid)
+        context2 = self.add_context(tenant_uuid=tenant.uuid)
+
+        line1 = self.add_line(context=context1.name)
+        line2 = self.add_line(context=context2.name)
+
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        result = line_dao.search(tenant_uuids=tenants)
+        assert_that(
+            result,
+            has_properties(
+                items=contains_inanyorder(line1, line2),
+            )
+        )
+
+        tenants = [tenant.uuid]
+        result = line_dao.search(tenant_uuids=tenants)
+        assert_that(
+            result,
+            has_properties(
+                items=contains_inanyorder(line2),
+            )
+        )
 
 
 class TestRelationship(DAOTestCase):
