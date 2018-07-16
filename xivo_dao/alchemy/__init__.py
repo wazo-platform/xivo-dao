@@ -5,6 +5,7 @@
 # explicitly import modules that are referenced in relationship to prevent
 # "mapper initialization" errors
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
+from xivo_dao.alchemy.agentqueueskill import AgentQueueSkill
 from xivo_dao.alchemy.asterisk_file_section import AsteriskFileSection
 from xivo_dao.alchemy.asterisk_file_variable import AsteriskFileVariable
 from xivo_dao.alchemy.call_log import CallLog
@@ -36,6 +37,7 @@ from xivo_dao.alchemy.paginguser import PagingUser
 from xivo_dao.alchemy.parking_lot import ParkingLot
 from xivo_dao.alchemy.pickupmember import PickupMember
 from xivo_dao.alchemy.queuemember import QueueMember
+from xivo_dao.alchemy.queueskill import QueueSkill
 from xivo_dao.alchemy.queueskillcat import QueueSkillCat
 from xivo_dao.alchemy.rightcall import RightCall
 from xivo_dao.alchemy.rightcallmember import RightCallMember
@@ -58,6 +60,7 @@ from xivo_dao.alchemy.voicemail import Voicemail
 
 __all__ = [
     'AgentFeatures',
+    'AgentQueueSkill',
     'AsteriskFileSection',
     'AsteriskFileVariable',
     'CallLog',
@@ -89,6 +92,7 @@ __all__ = [
     'ParkingLot',
     'PickupMember',
     'QueueMember',
+    'QueueSkill',
     'QueueSkillCat',
     'RightCall',
     'RightCallMember',

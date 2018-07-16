@@ -18,6 +18,7 @@ import six
 from xivo_dao.alchemy.accessfeatures import AccessFeatures
 from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
+from xivo_dao.alchemy.agentqueueskill import AgentQueueSkill
 from xivo_dao.alchemy.asterisk_file import AsteriskFile
 from xivo_dao.alchemy.asterisk_file_section import AsteriskFileSection
 from xivo_dao.alchemy.asterisk_file_variable import AsteriskFileVariable
@@ -577,6 +578,13 @@ class ItemInserter(object):
         queue = Queue(**kwargs)
         self.add_me(queue)
         return queue
+
+    def add_agent_queue_skill(self, **kwargs):
+        kwargs.setdefault('skillid', self._generate_int())
+        kwargs.setdefault('agentid', self._generate_int())
+        agent_skill = AgentQueueSkill(**kwargs)
+        self.add_me(agent_skill)
+        return agent_skill
 
     def add_queue_skill(self, **kwargs):
         kwargs.setdefault('name', self._random_name())

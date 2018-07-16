@@ -5,6 +5,7 @@
 from hamcrest import (
     assert_that,
     contains,
+    empty,
     equal_to,
     has_items,
     has_properties,
@@ -12,9 +13,10 @@ from hamcrest import (
     instance_of,
     none,
 )
+from sqlalchemy.inspection import inspect
 
 from xivo_dao.alchemy.agentfeatures import AgentFeatures as Agent
-
+from xivo_dao.alchemy.agentqueueskill import AgentQueueSkill
 from xivo_dao.helpers.exception import NotFoundError, InputError
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -328,3 +330,67 @@ class TestDelete(DAOTestCase):
 
         row = self.session.query(Agent).first()
         assert_that(row, none())
+
+
+class TestAssociateAgentSkill(DAOTestCase):
+
+    def test_associate(self):
+        skill = self.add_queue_skill()
+        agent = self.add_agent()
+
+        agent_dao.associate_agent_skill(agent, AgentQueueSkill(skill=skill))
+
+        self.session.expire_all()
+        assert_that(agent.agent_queue_skills, contains(
+            has_properties(
+                agentid=agent.id,
+                skillid=skill.id,
+            )
+        ))
+
+    def test_association_already_associated(self):
+        skill = self.add_queue_skill()
+        agent = self.add_agent()
+        agent_skill = AgentQueueSkill(skill=skill)
+
+        agent_dao.associate_agent_skill(agent, agent_skill)
+
+        self.session.expire_all()
+        agent_dao.associate_agent_skill(agent, agent_skill)
+
+        self.session.expire_all()
+        assert_that(agent.agent_queue_skills, contains(agent_skill))
+
+
+class TestDissociateAgentSkill(DAOTestCase):
+
+    def test_dissociation(self):
+        skill = self.add_queue_skill()
+        agent = self.add_agent()
+        agent_skill = AgentQueueSkill(skill=skill)
+        agent_dao.associate_agent_skill(agent, agent_skill)
+
+        self.session.expire_all()
+        agent_dao.dissociate_agent_skill(agent, agent_skill)
+
+        self.session.expire_all()
+        assert_that(agent.agent_queue_skills, empty())
+
+        assert_that(inspect(agent_skill).deleted)
+        assert_that(not inspect(skill).deleted)
+        assert_that(not inspect(agent).deleted)
+
+    def test_dissociation_already_dissociated(self):
+        skill = self.add_queue_skill()
+        agent = self.add_agent()
+        agent_skill = AgentQueueSkill(skill=skill)
+        agent_dao.associate_agent_skill(agent, agent_skill)
+
+        self.session.expire_all()
+        agent_dao.dissociate_agent_skill(agent, agent_skill)
+
+        self.session.expire_all()
+        agent_dao.dissociate_agent_skill(agent, agent_skill)
+
+        self.session.expire_all()
+        assert_that(agent.agent_queue_skills, empty())

@@ -56,3 +56,15 @@ class AgentPersistor(CriteriaBuilderMixin):
     def _fill_default_values(self, agent):
         # matches to default AgentGroup in populate.sql
         agent.numgroup = 1
+
+    def associate_agent_skill(self, agent, agent_skill):
+        if agent_skill not in agent.agent_queue_skills:
+            agent.agent_queue_skills.append(agent_skill)
+        self.session.flush()
+
+    def dissociate_agent_skill(self, agent, agent_skill):
+        try:
+            agent.agent_queue_skills.remove(agent_skill)
+            self.session.flush()
+        except ValueError:
+            pass

@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2013-2014 Avencall
+# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
+from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint
 from sqlalchemy.types import Integer
 
@@ -18,3 +19,15 @@ class AgentQueueSkill(Base):
     agentid = Column(Integer, nullable=False, autoincrement=False)
     skillid = Column(Integer, nullable=False, autoincrement=False)
     weight = Column(Integer, nullable=False, server_default='0')
+
+    agent = relationship(
+        'AgentFeatures',
+        primaryjoin='AgentQueueSkill.agentid == AgentFeatures.id',
+        foreign_keys='AgentQueueSkill.agentid',
+    )
+
+    skill = relationship(
+        'QueueSkill',
+        primaryjoin='AgentQueueSkill.skillid == QueueSkill.id',
+        foreign_keys='AgentQueueSkill.skillid',
+    )
