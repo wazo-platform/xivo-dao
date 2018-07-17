@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2016 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 import random
 
+from sqlalchemy import text
 from sqlalchemy.orm import joinedload
 
 from xivo_dao.alchemy.linefeatures import LineFeatures as Line
@@ -19,11 +20,14 @@ class LinePersistor(CriteriaBuilderMixin):
 
     _search_table = Line
 
-    def __init__(self, session):
+    def __init__(self, session, tenant_uuids=None):
         self.session = session
+        self.tenant_uuids = tenant_uuids
 
     def search(self, params):
-        rows, total = line_search.search_from_query(self._search_query(), params)
+        query = self._search_query()
+        query = self._filter_tenant_uuid(query)
+        rows, total = line_search.search_from_query(query, params)
         return SearchResult(total, rows)
 
     def _search_query(self):
@@ -47,10 +51,13 @@ class LinePersistor(CriteriaBuilderMixin):
         return self.query().filter(Line.id == line_id).first()
 
     def query(self):
-        return (self.session
-                .query(Line)
-                .options(joinedload('endpoint_sccp'))
-                .options(joinedload('endpoint_sip')))
+        query = (
+            self.session.query(Line)
+            .options(joinedload('endpoint_sccp'))
+            .options(joinedload('endpoint_sip'))
+        )
+        query = self._filter_tenant_uuid(query)
+        return query
 
     def find_by(self, criteria):
         query = self.build_criteria(self.query(), criteria)
@@ -107,3 +114,12 @@ class LinePersistor(CriteriaBuilderMixin):
 
     def random_code(self):
         return str(100000 + random.randint(0, 899999))
+
+    def _filter_tenant_uuid(self, query):
+        if self.tenant_uuids is None:
+            return query
+
+        if not self.tenant_uuids:
+            return query.filter(text('false'))
+
+        return query.filter(Line.tenant_uuid.in_(self.tenant_uuids))
