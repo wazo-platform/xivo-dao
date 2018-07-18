@@ -600,8 +600,6 @@ class ItemInserter(object):
         return skill_category
 
     def add_queue_skill_rule(self, **kwargs):
-        kwargs.setdefault('name', self._random_name())
-        kwargs.setdefault('rule', self._random_name())
         queue_skill_rule = QueueSkillRule(**kwargs)
         self.add_me(queue_skill_rule)
         return queue_skill_rule

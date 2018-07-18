@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2013-2014 Avencall
+# Copyright 2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.schema import Column
+from sqlalchemy.sql import func, case
 from sqlalchemy.types import Integer, String, Text
 
 from xivo_dao.helpers.db_manager import Base
@@ -13,5 +15,19 @@ class QueueSkillRule(Base):
     __tablename__ = 'queueskillrule'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(64), nullable=False, server_default='')
+    name = Column(String(64))
     rule = Column(Text)
+
+    @hybrid_property
+    def rules(self):
+        if not self.rule:
+            return []
+        return self.rule.split(';')
+
+    @rules.expression
+    def rules(cls):
+        return case([(cls.rule == None, [])], else_=func.string_to_array(cls.rule, ';'))
+
+    @rules.setter
+    def rules(self, value):
+        self.rule = ';'.join(value) if value else None
