@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy.orm import joinedload
+from xivo_dao.alchemy.contextmember import ContextMember
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.queuefeatures import QueueFeatures as Queue
 
@@ -67,6 +68,11 @@ class QueuePersistor(CriteriaBuilderMixin):
         self.session.flush()
 
     def _delete_associations(self, queue):
+        (self.session.query(ContextMember)
+         .filter(ContextMember.type == 'queue')
+         .filter(ContextMember.typeval == str(queue.id))
+         .delete())
+
         (self.session.query(Dialaction)
          .filter(Dialaction.action == 'queue')
          .filter(Dialaction.actionarg1 == str(queue.id))

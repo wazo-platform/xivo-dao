@@ -379,6 +379,7 @@ class ItemInserter(object):
         return context_number
 
     def add_context_member(self, **kwargs):
+        kwargs.setdefault('context', 'default')
         kwargs.setdefault('type', 'user')
         kwargs.setdefault('varname', 'context')
 
