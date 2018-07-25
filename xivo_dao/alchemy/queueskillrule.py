@@ -15,7 +15,7 @@ class QueueSkillRule(Base):
     __tablename__ = 'queueskillrule'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(64))
+    name = Column(String(64), unique=True, nullable=False)
     rule = Column(Text)
 
     @hybrid_property

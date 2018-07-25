@@ -97,14 +97,12 @@ class TestFindAllBy(DAOTestCase):
         assert_that(result, contains())
 
     def test_find_all_by(self):
-        skill_rule1 = self.add_queue_skill_rule(name='description')
-        skill_rule2 = self.add_queue_skill_rule(name='description')
+        skill_rule = self.add_queue_skill_rule(name='description')
 
         skill_rules = skill_rule_dao.find_all_by(name='description')
 
         assert_that(skill_rules, has_items(
-            has_property('id', skill_rule1.id),
-            has_property('id', skill_rule2.id),
+            has_property('id', skill_rule.id),
         ))
 
 
@@ -193,14 +191,14 @@ class TestSearchGivenMultipleSkillRules(TestSearch):
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_fields(self):
-        skill_rule = QueueSkillRule()
+        skill_rule = QueueSkillRule(name='SkillRule')
         skill_rule = skill_rule_dao.create(skill_rule)
 
         self.session.expire_all()
         assert_that(inspect(skill_rule).persistent)
         assert_that(skill_rule, has_properties(
             id=not_none(),
-            name=None,
+            name='SkillRule',
             rules=[],
         ))
 
@@ -246,14 +244,14 @@ class TestEdit(DAOTestCase):
         )
 
         self.session.expire_all()
-        skill_rule.name = None
+        skill_rule.name = 'OtherName'
         skill_rule.rules = []
 
         skill_rule_dao.edit(skill_rule)
 
         self.session.expire_all()
         assert_that(skill_rule, has_properties(
-            name=none(),
+            name='OtherName',
             rules=empty(),
         ))
 
