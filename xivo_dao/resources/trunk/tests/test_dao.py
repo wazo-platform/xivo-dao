@@ -210,7 +210,7 @@ class TestSearchGivenMultipleTrunks(TestSearch):
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_fields(self):
-        trunk = Trunk()
+        trunk = Trunk(tenant_uuid=self.default_tenant.uuid)
         created_trunk = trunk_dao.create(trunk)
 
         row = self.session.query(Trunk).first()
@@ -228,6 +228,7 @@ class TestCreate(DAOTestCase):
 
     def test_create_with_all_fields(self):
         trunk = Trunk(
+            tenant_uuid=self.default_tenant.uuid,
             context='default',
             protocol='sip',
             protocolid=1,
@@ -243,6 +244,7 @@ class TestCreate(DAOTestCase):
         assert_that(created_trunk, equal_to(row))
         assert_that(created_trunk, has_properties(
             id=not_none(),
+            tenant_uuid=self.default_tenant.uuid,
             context='default',
             protocol='sip',
             protocolid=1,
@@ -257,6 +259,7 @@ class TestEdit(DAOTestCase):
     def test_edit_all_fields(self):
         sip = self.add_usersip()
         trunk = trunk_dao.create(Trunk(
+            tenant_uuid=self.default_tenant.uuid,
             context='default',
             registerid=1,
             registercommented=1,
@@ -289,6 +292,7 @@ class TestEdit(DAOTestCase):
 
     def test_edit_set_fields_to_null(self):
         trunk = trunk_dao.create(Trunk(
+            tenant_uuid=self.default_tenant.uuid,
             context='default',
             protocol='sip',
             protocolid=1,

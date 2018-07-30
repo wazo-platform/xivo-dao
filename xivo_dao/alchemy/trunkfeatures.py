@@ -8,6 +8,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.schema import (
     Column,
     Index,
+    ForeignKey,
     PrimaryKeyConstraint,
     UniqueConstraint,
 )
@@ -34,6 +35,7 @@ class TrunkFeatures(Base):
     )
 
     id = Column(Integer, nullable=False)
+    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
     protocol = Column(enum.trunk_protocol)
     protocolid = Column(Integer)
     registerid = Column(Integer, nullable=False, server_default='0')
