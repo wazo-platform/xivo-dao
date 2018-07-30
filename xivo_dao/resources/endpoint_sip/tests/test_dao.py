@@ -17,6 +17,7 @@ from hamcrest import (
     has_property,
     is_not,
     none,
+    not_,
 )
 
 from xivo_dao.alchemy.usersip import UserSIP as SIPEndpoint
@@ -130,6 +131,23 @@ class TestFindBy(TestSipEndpointDAO):
         sip_row = self.add_usersip(tenant_uuid=tenant.uuid)
         sip = sip_dao.find_by(name=sip_row.name, tenant_uuids=[tenant.uuid])
         assert_that(sip, equal_to(sip_row))
+
+
+class TestFindAllBy(TestSipEndpointDAO):
+
+    def test_find_all_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        sip1 = self.add_usersip(language='en_US', tenant_uuid=tenant.uuid)
+        sip2 = self.add_usersip(language='en_US')
+
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        sips = sip_dao.find_all_by(language='en_US', tenant_uuids=tenants)
+        assert_that(sips, has_items(sip1, sip2))
+
+        tenants = [tenant.uuid]
+        sips = sip_dao.find_all_by(language='en_US', tenant_uuids=tenants)
+        assert_that(sips, all_of(has_items(sip1), not_(has_items(sip2))))
 
 
 class TestGet(TestSipEndpointDAO):
