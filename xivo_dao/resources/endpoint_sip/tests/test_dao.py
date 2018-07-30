@@ -120,6 +120,17 @@ class TestFindBy(TestSipEndpointDAO):
 
         assert_that(result.id, equal_to(sip.id))
 
+    def test_find_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        sip_row = self.add_usersip()
+        sip = sip_dao.find_by(name=sip_row.name, tenant_uuids=[tenant.uuid])
+        assert_that(sip, none())
+
+        sip_row = self.add_usersip(tenant_uuid=tenant.uuid)
+        sip = sip_dao.find_by(name=sip_row.name, tenant_uuids=[tenant.uuid])
+        assert_that(sip, equal_to(sip_row))
+
 
 class TestGet(TestSipEndpointDAO):
 

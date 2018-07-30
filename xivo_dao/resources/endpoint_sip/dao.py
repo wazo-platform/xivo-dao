@@ -9,8 +9,8 @@ from xivo_dao.resources.endpoint_sip.persistor import SipPersistor
 
 
 @daosession
-def find_by(session, **criteria):
-    return SipPersistor(session).find_by(criteria)
+def find_by(session, tenant_uuids=None, **criteria):
+    return SipPersistor(session, tenant_uuids).find_by(criteria)
 
 
 @daosession
