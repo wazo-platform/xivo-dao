@@ -13,9 +13,9 @@ from hamcrest import (
     has_items,
     has_properties,
     has_property,
-    is_not,
     none,
     not_,
+    not_none,
 )
 
 
@@ -217,7 +217,7 @@ class TestCreate(DAOTestCase):
 
         assert_that(created_trunk, equal_to(row))
         assert_that(created_trunk, has_properties(
-            id=is_not(none()),
+            id=not_none(),
             context=none(),
             protocol=none(),
             protocolid=none(),
@@ -242,7 +242,7 @@ class TestCreate(DAOTestCase):
 
         assert_that(created_trunk, equal_to(row))
         assert_that(created_trunk, has_properties(
-            id=is_not(none()),
+            id=not_none(),
             context='default',
             protocol='sip',
             protocolid=1,
@@ -311,7 +311,7 @@ class TestEdit(DAOTestCase):
 class TestDelete(DAOTestCase):
 
     def test_delete(self):
-        trunk = trunk_dao.create(Trunk())
+        trunk = self.add_trunk()
 
         trunk_dao.delete(trunk)
 
