@@ -4,17 +4,20 @@
 
 from __future__ import unicode_literals
 
+from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.orm import relationship
+from sqlalchemy.schema import (
+    Column,
+    Index,
+    PrimaryKeyConstraint,
+    UniqueConstraint,
+)
+from sqlalchemy.sql.schema import CheckConstraint
+from sqlalchemy.types import Integer, String, Text, Enum
+
+from xivo_dao.alchemy import enum
 from xivo_dao.helpers.db_manager import Base
 from xivo_dao.helpers.asterisk import AsteriskOptionsMixin
-from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column
-from sqlalchemy.schema import PrimaryKeyConstraint
-from sqlalchemy.schema import UniqueConstraint
-from sqlalchemy.schema import Index
-from sqlalchemy.sql.schema import CheckConstraint
-from sqlalchemy.dialects.postgresql import ARRAY
-from sqlalchemy.types import Integer, String, Text, Enum
-from xivo_dao.alchemy import enum
 
 
 class UserSIP(Base, AsteriskOptionsMixin):

@@ -15,6 +15,13 @@ import string
 import uuid
 import six
 
+from sqlalchemy.engine import create_engine
+from sqlalchemy.pool import StaticPool
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import event
+
+from xivo.debug import trace_duration
+
 from xivo_dao.alchemy.accessfeatures import AccessFeatures
 from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
@@ -96,12 +103,6 @@ from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.voicemail import Voicemail as VoicemailSchema
 from xivo_dao.helpers import db_manager
 from xivo_dao.helpers.db_manager import Base
-from xivo.debug import trace_duration
-
-from sqlalchemy.engine import create_engine
-from sqlalchemy.pool import StaticPool
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import event
 
 logger = logging.getLogger(__name__)
 

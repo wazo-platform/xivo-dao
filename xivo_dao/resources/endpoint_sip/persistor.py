@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from functools import partial
@@ -8,10 +8,11 @@ from xivo_dao.alchemy.usersip import UserSIP as SIP
 from xivo_dao.alchemy.linefeatures import LineFeatures as Line
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures as Trunk
 from xivo_dao.helpers import errors, generators
-from xivo_dao.resources.endpoint_sip.search import sip_search
 from xivo_dao.resources.line.fixes import LineFixes
 from xivo_dao.resources.trunk.fixes import TrunkFixes
 from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
+
+from .search import sip_search
 
 
 class SipPersistor(CriteriaBuilderMixin):
