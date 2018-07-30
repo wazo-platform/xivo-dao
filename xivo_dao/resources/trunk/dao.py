@@ -36,8 +36,8 @@ def find_by(session, tenant_uuids=None, **criteria):
 
 
 @daosession
-def find_all_by(session, **criteria):
-    return TrunkPersistor(session, trunk_search).find_all_by(criteria)
+def find_all_by(session, tenant_uuids=None, **criteria):
+    return TrunkPersistor(session, trunk_search, tenant_uuids).find_all_by(criteria)
 
 
 @daosession

@@ -5,6 +5,7 @@
 from __future__ import unicode_literals
 
 from hamcrest import (
+    all_of,
     assert_that,
     contains,
     contains_inanyorder,
@@ -170,6 +171,20 @@ class TestFindAllBy(DAOTestCase):
             has_property('id', trunk1.id),
             has_property('id', trunk2.id),
         ))
+
+    def test_find_all_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        trunk1 = self.add_trunk(description='description', tenant_uuid=tenant.uuid)
+        trunk2 = self.add_trunk(description='description')
+
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        trunks = trunk_dao.find_all_by(description='description', tenant_uuids=tenants)
+        assert_that(trunks, has_items(trunk1, trunk2))
+
+        tenants = [tenant.uuid]
+        trunks = trunk_dao.find_all_by(description='description', tenant_uuids=tenants)
+        assert_that(trunks, all_of(has_items(trunk1), not_(has_items(trunk2))))
 
 
 class TestSearch(DAOTestCase):
