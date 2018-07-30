@@ -207,6 +207,20 @@ class TestSimpleSearch(TestSearch):
 
         self.assert_search_returns_result(expected)
 
+    def test_search_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        trunk1 = self.add_trunk()
+        trunk2 = self.add_trunk(tenant_uuid=tenant.uuid)
+
+        expected = SearchResult(2, [trunk1, trunk2])
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
+        expected = SearchResult(1, [trunk2])
+        tenants = [tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
 
 class TestSearchGivenMultipleTrunks(TestSearch):
 

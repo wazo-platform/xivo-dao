@@ -11,8 +11,8 @@ from .search import trunk_search
 
 
 @daosession
-def search(session, **parameters):
-    return TrunkPersistor(session, trunk_search).search(parameters)
+def search(session, tenant_uuids=None, **parameters):
+    return TrunkPersistor(session, trunk_search, tenant_uuids).search(parameters)
 
 
 @daosession
