@@ -25,7 +25,7 @@ def search(session, **parameters):
 
 @daosession
 def get(session, sip_id):
-    return SipPersistor(session).get(sip_id)
+    return SipPersistor(session).get_by({'id': sip_id})
 
 
 @daosession

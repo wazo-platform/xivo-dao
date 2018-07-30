@@ -23,20 +23,20 @@ class SipPersistor(CriteriaBuilderMixin):
         self.session = session
 
     def find_by(self, criteria):
-        return self.find_query(criteria).first()
+        return self._find_query(criteria).first()
 
     def find_all_by(self, criteria):
-        return self.find_query(criteria).all()
+        return self._find_query(criteria).all()
 
-    def find_query(self, criteria):
+    def _find_query(self, criteria):
         query = self.session.query(SIP)
         return self.build_criteria(query, criteria)
 
-    def get(self, id):
-        row = self.session.query(SIP).filter(SIP.id == id).first()
-        if not row:
-            raise errors.not_found('SIPEndpoint', id=id)
-        return row
+    def get_by(self, criteria):
+        trunk = self.find_by(criteria)
+        if not trunk:
+            raise errors.not_found('SIPEndpoint', **criteria)
+        return trunk
 
     def search(self, params):
         rows, total = sip_search.search(self.session, params)
@@ -45,7 +45,7 @@ class SipPersistor(CriteriaBuilderMixin):
     def create(self, sip):
         self.fill_default_values(sip)
         self.persist(sip)
-        return self.get(sip.id)
+        return sip
 
     def persist(self, sip):
         self.session.add(sip)
