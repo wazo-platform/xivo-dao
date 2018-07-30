@@ -42,8 +42,10 @@ class SipPersistor(CriteriaBuilderMixin):
             raise errors.not_found('SIPEndpoint', **criteria)
         return trunk
 
-    def search(self, params):
-        rows, total = sip_search.search(self.session, params)
+    def search(self, parameters):
+        query = self.session.query(sip_search.config.table)
+        query = self._filter_tenant_uuid(query)
+        rows, total = sip_search.search_from_query(query, parameters)
         return SearchResult(total, rows)
 
     def create(self, sip):

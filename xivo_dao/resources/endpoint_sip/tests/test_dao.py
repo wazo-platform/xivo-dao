@@ -24,6 +24,7 @@ from xivo_dao.alchemy.usersip import UserSIP as SIPEndpoint
 from xivo_dao.alchemy.linefeatures import LineFeatures as Line
 from xivo_dao.helpers.exception import InputError
 from xivo_dao.helpers.exception import NotFoundError
+from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.tests.test_dao import DAOTestCase
 
 from .. import dao as sip_dao
@@ -228,7 +229,14 @@ class TestGet(TestSipEndpointDAO):
         )
 
 
-class TestSimpleSearch(DAOTestCase):
+class TestSearch(DAOTestCase):
+
+    def assert_search_returns_result(self, search_result, **parameters):
+        result = sip_dao.search(**parameters)
+        assert_that(result, equal_to(search_result))
+
+
+class TestSimpleSearch(TestSearch):
 
     def test_search(self):
         sip1 = self.add_usersip(name="alice", secret="abygale")
@@ -238,6 +246,20 @@ class TestSimpleSearch(DAOTestCase):
 
         assert_that(search_result.total, equal_to(1))
         assert_that(search_result.items, contains(has_property('id', sip1.id)))
+
+    def test_search_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        sip1 = self.add_usersip(name='sort1')
+        sip2 = self.add_usersip(name='sort2', tenant_uuid=tenant.uuid)
+
+        expected = SearchResult(2, [sip1, sip2])
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
+        expected = SearchResult(1, [sip2])
+        tenants = [tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
 
 
 class TestCreate(DAOTestCase):
