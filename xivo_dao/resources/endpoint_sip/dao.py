@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2015-2016 Avencall
+# Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao.helpers.db_utils import flush_session
@@ -24,23 +24,23 @@ def search(session, **parameters):
 
 
 @daosession
-def get(session, line_id):
-    return SipPersistor(session).get(line_id)
+def get(session, sip_id):
+    return SipPersistor(session).get(sip_id)
 
 
 @daosession
-def create(session, line):
+def create(session, sip):
     with flush_session(session):
-        return SipPersistor(session).create(line)
+        return SipPersistor(session).create(sip)
 
 
 @daosession
-def edit(session, line):
+def edit(session, sip):
     with flush_session(session):
-        SipPersistor(session).edit(line)
+        SipPersistor(session).edit(sip)
 
 
 @daosession
-def delete(session, line):
+def delete(session, sip):
     with flush_session(session):
-        return SipPersistor(session).delete(line)
+        return SipPersistor(session).delete(sip)
