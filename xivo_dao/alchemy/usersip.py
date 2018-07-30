@@ -9,6 +9,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.schema import (
     Column,
     Index,
+    ForeignKey,
     PrimaryKeyConstraint,
     UniqueConstraint,
 )
@@ -25,7 +26,8 @@ class UserSIP(Base, AsteriskOptionsMixin):
     EXCLUDE_OPTIONS = {
         'id',
         'commented',
-        'options'
+        'options',
+        'tenant_uuid',
     }
     EXCLUDE_OPTIONS_CONFD = {
         'name',
@@ -62,6 +64,7 @@ class UserSIP(Base, AsteriskOptionsMixin):
     __tablename__ = 'usersip'
 
     id = Column(Integer, nullable=False)
+    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
     name = Column(String(40), nullable=False)
     type = Column(Enum('friend', 'peer', 'user',
                        name='useriax_type',

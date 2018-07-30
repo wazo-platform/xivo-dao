@@ -201,7 +201,7 @@ class TestSipEndpointDaoSearch(DAOTestCase):
 class TestSipEndpointDaoCreate(DAOTestCase):
 
     def test_create_minimal_parameters(self):
-        sip = SIPEndpoint()
+        sip = SIPEndpoint(tenant_uuid=self.default_tenant.uuid)
 
         created_sip = sip_dao.create(sip)
         row = self.session.query(SIPEndpoint).first()
@@ -218,6 +218,7 @@ class TestSipEndpointDaoCreate(DAOTestCase):
 
     def test_create_predefined_parameters(self):
         sip = SIPEndpoint(
+            tenant_uuid=self.default_tenant.uuid,
             name='myusername',
             secret='mysecret',
             host="127.0.0.1",
@@ -229,6 +230,7 @@ class TestSipEndpointDaoCreate(DAOTestCase):
 
         assert_that(created_sip, has_properties(
             id=row.id,
+            tenant_uuid=self.default_tenant.uuid,
             name='myusername',
             username=none(),
             secret='mysecret',
@@ -238,7 +240,7 @@ class TestSipEndpointDaoCreate(DAOTestCase):
         ))
 
     def test_create_with_native_options(self):
-        sip = SIPEndpoint(options=ALL_OPTIONS)
+        sip = SIPEndpoint(tenant_uuid=self.default_tenant.uuid, options=ALL_OPTIONS)
         created_sip = sip_dao.create(sip)
 
         row = self.session.query(SIPEndpoint).first()
@@ -327,7 +329,7 @@ class TestSipEndpointDaoCreate(DAOTestCase):
             ["spam", "eggs"]
         ]
 
-        sip = SIPEndpoint(options=options)
+        sip = SIPEndpoint(tenant_uuid=self.default_tenant.uuid, options=options)
         created_sip = sip_dao.create(sip)
 
         row = self.session.query(SIPEndpoint).first()
@@ -360,7 +362,8 @@ class TestSipEndpointDaoEdit(DAOTestCase):
         ))
 
     def test_edit_remove_options(self):
-        sip = sip_dao.create(SIPEndpoint(options=ALL_OPTIONS))
+        sip = self.add_usersip(options=ALL_OPTIONS)
+
         sip = sip_dao.get(sip.id)
         sip.options = []
 

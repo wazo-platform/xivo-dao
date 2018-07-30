@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2013-2014 Avencall
+# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from mock import patch
@@ -132,7 +132,7 @@ class TestUserLineDAO(DAOTestCase):
 
         self.assertRaises(LookupError, user_line_dao._get_cid_for_sip_channel, channel)
 
-        line = UserSIP()
+        line = UserSIP(tenant_uuid=self.default_tenant.uuid)
         line.name = 'abcd'
         line.type = 'friend'
         line.callerid = '"Tester One" <1234>'
