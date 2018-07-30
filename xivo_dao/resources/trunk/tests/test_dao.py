@@ -111,6 +111,17 @@ class TestFindBy(DAOTestCase):
 
         assert_that(trunk, none())
 
+    def test_find_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        trunk_row = self.add_trunk()
+        trunk = trunk_dao.find_by(id=trunk_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(trunk, none())
+
+        trunk_row = self.add_trunk(tenant_uuid=tenant.uuid)
+        trunk = trunk_dao.find_by(id=trunk_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(trunk, equal_to(trunk_row))
+
 
 class TestGetBy(DAOTestCase):
 
