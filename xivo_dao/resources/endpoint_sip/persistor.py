@@ -4,6 +4,8 @@
 
 from functools import partial
 
+from sqlalchemy import text
+
 from xivo_dao.alchemy.usersip import UserSIP as SIP
 from xivo_dao.alchemy.linefeatures import LineFeatures as Line
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures as Trunk
@@ -19,8 +21,9 @@ class SipPersistor(CriteriaBuilderMixin):
 
     _search_table = SIP
 
-    def __init__(self, session):
+    def __init__(self, session, tenant_uuids=None):
         self.session = session
+        self.tenant_uuids = tenant_uuids
 
     def find_by(self, criteria):
         return self._find_query(criteria).first()
@@ -30,6 +33,7 @@ class SipPersistor(CriteriaBuilderMixin):
 
     def _find_query(self, criteria):
         query = self.session.query(SIP)
+        query = self._filter_tenant_uuid(query)
         return self.build_criteria(query, criteria)
 
     def get_by(self, criteria):
@@ -59,6 +63,15 @@ class SipPersistor(CriteriaBuilderMixin):
     def delete(self, sip):
         self.session.query(SIP).filter(SIP.id == sip.id).delete()
         self._fix_associated(sip)
+
+    def _filter_tenant_uuid(self, query):
+        if self.tenant_uuids is None:
+            return query
+
+        if not self.tenant_uuids:
+            return query.filter(text('false'))
+
+        return query.filter(SIP.tenant_uuid.in_(self.tenant_uuids))
 
     def _fix_associated(self, sip):
         line_id = (self.session.query(Line.id)

@@ -185,6 +185,19 @@ class TestGet(TestSipEndpointDAO):
         sip = sip_dao.get(row.id)
         assert_that(sip.options, has_items(["language", "fr_FR"], ["foo", "bar"]))
 
+    def test_get_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        sip_row = self.add_usersip(tenant_uuid=tenant.uuid)
+        sip = sip_dao.get(sip_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(sip, equal_to(sip_row))
+
+        sip_row = self.add_usersip()
+        self.assertRaises(
+            NotFoundError,
+            sip_dao.get, sip_row.id, tenant_uuids=[tenant.uuid],
+        )
+
 
 class TestSimpleSearch(DAOTestCase):
 
