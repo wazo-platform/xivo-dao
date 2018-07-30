@@ -48,6 +48,16 @@ class TestFind(DAOTestCase):
 
         assert_that(trunk, equal_to(trunk_row))
 
+    def test_find_multi_tenant(self):
+        tenant = self.add_tenant()
+        trunk = self.add_trunk(tenant_uuid=tenant.uuid)
+
+        result = trunk_dao.find(trunk.id, tenant_uuids=[tenant.uuid])
+        assert_that(result, equal_to(trunk))
+
+        result = trunk_dao.find(trunk.id, tenant_uuids=[self.default_tenant.uuid])
+        assert_that(result, none())
+
 
 class TestGet(DAOTestCase):
 
