@@ -7,14 +7,12 @@ from __future__ import unicode_literals
 from hamcrest import (
     all_of,
     assert_that,
-    contains,
     empty,
     equal_to,
     has_item,
     has_items,
     has_length,
     has_properties,
-    has_property,
     is_not,
     none,
     not_,
@@ -103,11 +101,7 @@ ALL_OPTIONS = [
 ]
 
 
-class TestSipEndpointDAO(DAOTestCase):
-    pass
-
-
-class TestFindBy(TestSipEndpointDAO):
+class TestFindBy(DAOTestCase):
 
     def test_given_column_does_not_exist_then_raises_error(self):
         self.assertRaises(InputError, sip_dao.find_by, column=1)
@@ -134,7 +128,7 @@ class TestFindBy(TestSipEndpointDAO):
         assert_that(sip, equal_to(sip_row))
 
 
-class TestFindAllBy(TestSipEndpointDAO):
+class TestFindAllBy(DAOTestCase):
 
     def test_find_all_multi_tenant(self):
         tenant = self.add_tenant()
@@ -151,7 +145,7 @@ class TestFindAllBy(TestSipEndpointDAO):
         assert_that(sips, all_of(has_items(sip1), not_(has_items(sip2))))
 
 
-class TestGet(TestSipEndpointDAO):
+class TestGet(DAOTestCase):
 
     def test_given_no_rows_then_raises_error(self):
         self.assertRaises(NotFoundError, sip_dao.get, 1)
@@ -238,14 +232,16 @@ class TestSearch(DAOTestCase):
 
 class TestSimpleSearch(TestSearch):
 
-    def test_search(self):
-        sip1 = self.add_usersip(name="alice", secret="abygale")
-        self.add_usersip(name="henry", secret="ford")
+    def test_given_no_sip_then_returns_no_empty_result(self):
+        expected = SearchResult(0, [])
 
-        search_result = sip_dao.search(search='alice')
+        self.assert_search_returns_result(expected)
 
-        assert_that(search_result.total, equal_to(1))
-        assert_that(search_result.items, contains(has_property('id', sip1.id)))
+    def test_given_on_sip_then_returns_one_result(self):
+        sip = self.add_usersip()
+        expected = SearchResult(1, [sip])
+
+        self.assert_search_returns_result(expected)
 
     def test_search_multi_tenant(self):
         tenant = self.add_tenant()
@@ -260,6 +256,67 @@ class TestSimpleSearch(TestSearch):
         expected = SearchResult(1, [sip2])
         tenants = [tenant.uuid]
         self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
+
+class TestSearchMultiple(TestSearch):
+
+    def setUp(self):
+        super(TestSearch, self).setUp()
+        self.sip1 = self.add_usersip(name='Ashton', host='resto')
+        self.sip2 = self.add_usersip(name='Beaugarton', host='bar')
+        self.sip3 = self.add_usersip(name='Casa', host='resto')
+        self.sip4 = self.add_usersip(name='Dunkin', host='resto')
+
+    def test_when_searching_then_returns_one_result(self):
+        expected = SearchResult(1, [self.sip2])
+
+        self.assert_search_returns_result(expected, search='eau')
+
+    def test_when_searching_with_an_extra_argument(self):
+        expected_resto = SearchResult(1, [self.sip1])
+        self.assert_search_returns_result(expected_resto, search='ton', host='resto')
+
+        expected_bar = SearchResult(1, [self.sip2])
+        self.assert_search_returns_result(expected_bar, search='ton', host='bar')
+
+        expected_all_resto = SearchResult(3, [self.sip1, self.sip3, self.sip4])
+        self.assert_search_returns_result(expected_all_resto, host='resto', order='username')
+
+    def test_when_sorting_then_returns_result_in_ascending_order(self):
+        expected = SearchResult(
+            4, [self.sip1, self.sip2, self.sip3, self.sip4]
+        )
+
+        self.assert_search_returns_result(expected, order='username')
+
+    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
+        expected = SearchResult(
+            4, [self.sip4, self.sip3, self.sip2, self.sip1]
+        )
+
+        self.assert_search_returns_result(expected, order='username', direction='desc')
+
+    def test_when_limiting_then_returns_right_number_of_items(self):
+        expected = SearchResult(4, [self.sip1])
+
+        self.assert_search_returns_result(expected, limit=1)
+
+    def test_when_skipping_then_returns_right_number_of_items(self):
+        expected = SearchResult(4, [self.sip2, self.sip3, self.sip4])
+
+        self.assert_search_returns_result(expected, skip=1)
+
+    def test_when_doing_a_paginated_search_then_returns_a_paginated_result(self):
+        expected = SearchResult(3, [self.sip2])
+
+        self.assert_search_returns_result(
+            expected,
+            search='a',
+            order='username',
+            direction='desc',
+            skip=1,
+            limit=1,
+        )
 
 
 class TestCreate(DAOTestCase):
@@ -600,7 +657,7 @@ class TestEdit(DAOTestCase):
         ))
 
 
-class TestDelete(TestSipEndpointDAO):
+class TestDelete(DAOTestCase):
 
     def test_delete(self):
         row = self.add_usersip()
