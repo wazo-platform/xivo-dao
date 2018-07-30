@@ -16,8 +16,8 @@ def search(session, **parameters):
 
 
 @daosession
-def get(session, trunk_id):
-    return TrunkPersistor(session, trunk_search).get_by({'id': trunk_id})
+def get(session, trunk_id, tenant_uuids=None):
+    return TrunkPersistor(session, trunk_search, tenant_uuids).get_by({'id': trunk_id})
 
 
 @daosession
