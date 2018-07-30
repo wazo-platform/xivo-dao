@@ -139,6 +139,19 @@ class TestGetBy(DAOTestCase):
     def test_given_trunk_does_not_exist_then_raises_error(self):
         self.assertRaises(NotFoundError, trunk_dao.get_by, context='42')
 
+    def test_get_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        trunk_row = self.add_trunk()
+        self.assertRaises(
+            NotFoundError,
+            trunk_dao.get_by, id=trunk_row.id, tenant_uuids=[tenant.uuid],
+        )
+
+        trunk_row = self.add_trunk(tenant_uuid=tenant.uuid)
+        trunk = trunk_dao.get_by(id=trunk_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(trunk, equal_to(trunk_row))
+
 
 class TestFindAllBy(DAOTestCase):
 
