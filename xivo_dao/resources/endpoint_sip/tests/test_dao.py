@@ -105,7 +105,7 @@ class TestSipEndpointDAO(DAOTestCase):
     pass
 
 
-class TestSipEndpointDaoFindBy(TestSipEndpointDAO):
+class TestFindBy(TestSipEndpointDAO):
 
     def test_given_column_does_not_exist_then_raises_error(self):
         self.assertRaises(InputError, sip_dao.find_by, column=1)
@@ -121,7 +121,7 @@ class TestSipEndpointDaoFindBy(TestSipEndpointDAO):
         assert_that(result.id, equal_to(sip.id))
 
 
-class TestSipEndpointDaoGet(TestSipEndpointDAO):
+class TestGet(TestSipEndpointDAO):
 
     def test_given_no_rows_then_raises_error(self):
         self.assertRaises(NotFoundError, sip_dao.get, 1)
@@ -186,7 +186,7 @@ class TestSipEndpointDaoGet(TestSipEndpointDAO):
         assert_that(sip.options, has_items(["language", "fr_FR"], ["foo", "bar"]))
 
 
-class TestSipEndpointDaoSearch(DAOTestCase):
+class TestSimpleSearch(DAOTestCase):
 
     def test_search(self):
         sip1 = self.add_usersip(name="alice", secret="abygale")
@@ -198,7 +198,7 @@ class TestSipEndpointDaoSearch(DAOTestCase):
         assert_that(search_result.items, contains(has_property('id', sip1.id)))
 
 
-class TestSipEndpointDaoCreate(DAOTestCase):
+class TestCreate(DAOTestCase):
 
     def test_create_minimal_parameters(self):
         sip = SIPEndpoint(tenant_uuid=self.default_tenant.uuid)
@@ -340,7 +340,7 @@ class TestSipEndpointDaoCreate(DAOTestCase):
         ))
 
 
-class TestSipEndpointDaoEdit(DAOTestCase):
+class TestEdit(DAOTestCase):
 
     def test_edit_basic_parameters(self):
         row = self.add_usersip()
@@ -536,7 +536,7 @@ class TestSipEndpointDaoEdit(DAOTestCase):
         ))
 
 
-class TestSipEndpointDaoDelete(TestSipEndpointDAO):
+class TestDelete(TestSipEndpointDAO):
 
     def test_delete(self):
         row = self.add_usersip()
