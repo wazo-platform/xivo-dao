@@ -35,6 +35,19 @@ class TestGet(DAOTestCase):
 
         assert_that(custom, equal_to(custom_row))
 
+    def test_get_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        custom_row = self.add_usercustom(tenant_uuid=tenant.uuid)
+        custom = custom_dao.get(custom_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(custom, equal_to(custom_row))
+
+        custom_row = self.add_usercustom()
+        self.assertRaises(
+            NotFoundError,
+            custom_dao.get, custom_row.id, tenant_uuids=[tenant.uuid],
+        )
+
 
 class TestFindBy(DAOTestCase):
 

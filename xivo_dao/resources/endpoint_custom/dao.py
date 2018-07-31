@@ -8,12 +8,12 @@ from xivo_dao.helpers.db_utils import flush_session
 from .persistor import CustomPersistor
 
 
-def persistor():
-    return CustomPersistor(Session)
+def persistor(tenant_uuids=None):
+    return CustomPersistor(Session, tenant_uuids)
 
 
-def get(custom_id):
-    return persistor().get(custom_id)
+def get(custom_id, tenant_uuids=None):
+    return persistor(tenant_uuids).get(custom_id)
 
 
 def find_by(**criteria):
