@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2015-2016 Avencall
+# Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao.alchemy.usercustom import UserCustom as Custom
@@ -9,7 +9,8 @@ from xivo_dao.helpers import errors
 from xivo_dao.resources.line.fixes import LineFixes
 from xivo_dao.resources.trunk.fixes import TrunkFixes
 from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
-from xivo_dao.resources.endpoint_custom.search import custom_search
+
+from .search import custom_search
 
 
 class CustomPersistor(CriteriaBuilderMixin):
@@ -19,8 +20,8 @@ class CustomPersistor(CriteriaBuilderMixin):
     def __init__(self, session):
         self.session = session
 
-    def get(self, id):
-        custom = self.session.query(Custom).filter_by(id=id).first()
+    def get(self, custom_id):
+        custom = self.find_query({'id': custom_id}).first()
         if not custom:
             raise errors.not_found('CustomEndpoint', id=id)
         return custom

@@ -1,174 +1,189 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2015-2016 Avencall
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from __future__ import unicode_literals
 
-from hamcrest import assert_that
-from hamcrest import equal_to
-from hamcrest import none
-from hamcrest import contains
-from hamcrest import has_property
+from hamcrest import (
+    assert_that,
+    contains,
+    empty,
+    equal_to,
+    has_properties,
+    none,
+    not_none,
+)
+from sqlalchemy.inspection import inspect
 
 from xivo_dao.alchemy.usercustom import UserCustom as Custom
-from xivo_dao.alchemy.linefeatures import LineFeatures as Line
 from xivo_dao.helpers.exception import NotFoundError, InputError
-from xivo_dao.resources.endpoint_custom import dao
+from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.tests.test_dao import DAOTestCase
 
-
-class TestCustomDao(DAOTestCase):
-    pass
+from .. import dao as custom_dao
 
 
-class TestCustomEndpointDaoGet(TestCustomDao):
+class TestGet(DAOTestCase):
 
-    def test_given_no_rows_then_raises_error(self):
-        self.assertRaises(NotFoundError, dao.get, 1)
+    def test_get_no_sccp(self):
+        self.assertRaises(NotFoundError, custom_dao.get, 42)
 
-    def test_given_row_with_minimal_parameters_then_returns_model(self):
-        row = self.add_usercustom(interface='custom/get')
+    def test_get(self):
+        custom_row = self.add_usercustom(interface='custom/get')
 
-        custom = dao.get(row.id)
+        custom = custom_dao.get(custom_row.id)
 
-        assert_that(custom.id, equal_to(row.id))
-        assert_that(custom.interface, equal_to(row.interface))
-        assert_that(custom.enabled, equal_to(True))
+        assert_that(custom, equal_to(custom_row))
 
 
-class TestCustomEndpointDaoFindBy(TestCustomDao):
+class TestFindBy(DAOTestCase):
 
     def test_given_column_does_not_exist_then_raises_error(self):
-        self.assertRaises(InputError, dao.find_by, column=1)
+        self.assertRaises(InputError, custom_dao.find_by, invalid=42)
 
     def test_given_row_with_value_does_not_exist_then_returns_null(self):
-        result = dao.find_by(interface='abcd')
+        result = custom_dao.find_by(interface='abcd')
         assert_that(result, none())
 
     def test_find_by(self):
-        sip = self.add_usercustom(interface='custom/custom')
-        result = dao.find_by(interface='custom/custom')
+        custom_row = self.add_usercustom(interface='custom/custom')
 
-        assert_that(result.id, equal_to(sip.id))
+        custom = custom_dao.find_by(interface='custom/custom')
+
+        assert_that(custom, equal_to(custom_row))
 
 
-class TestCustomEndpointDaoFindAllBy(TestCustomDao):
+class TestFindAllBy(DAOTestCase):
 
     def test_given_column_does_not_exist_then_raises_error(self):
-        self.assertRaises(InputError, dao.find_all_by, column=1)
+        self.assertRaises(InputError, custom_dao.find_all_by, invalid=42)
 
     def test_given_row_with_value_does_not_exist_then_returns_empty_list(self):
-        result = dao.find_all_by(interface='abcd')
-        assert_that(result, contains())
+        result = custom_dao.find_all_by(interface='abcd')
+        assert_that(result, empty())
 
     def test_find_all_by(self):
-        custom1 = self.add_usercustom(interface='sip/interface')
-        self.add_usercustom(interface='sccp/interface')
+        custom_row = self.add_usercustom(interface='custom/interface')
+        self.add_usercustom(interface='sip/interface')
 
-        result = dao.find_all_by(interface='sip/interface')
+        custom = custom_dao.find_all_by(interface='custom/interface')
 
-        assert_that(result, contains(custom1))
+        assert_that(custom, contains(custom_row))
 
 
-class TestCustomEndpointDaoSearch(TestCustomDao):
+class TestSearch(DAOTestCase):
+
+    def assert_search_returns_result(self, search_result, **parameters):
+        result = custom_dao.search(**parameters)
+        assert_that(result, equal_to(search_result))
+
+
+class TestSimpleSearch(TestSearch):
 
     def test_search(self):
-        row = self.add_usercustom()
+        custom = self.add_usercustom()
+        expected = SearchResult(1, [custom])
 
-        search_result = dao.search()
-
-        assert_that(search_result.total, equal_to(1))
-        assert_that(search_result.items, contains(has_property('id', row.id)))
+        self.assert_search_returns_result(expected)
 
 
-class TestCustomEndpointDaoCreate(TestCustomDao):
+class TestCreate(DAOTestCase):
 
     def test_create_minimal_parameters(self):
-        created_custom = dao.create(Custom(interface='custom/create'))
-        custom_row = self.session.query(Custom).first()
+        custom = custom_dao.create(Custom(interface='custom/create'))
 
-        assert_that(created_custom.id, equal_to(custom_row.id))
-        assert_that(created_custom.interface, equal_to('custom/create'))
-        assert_that(created_custom.enabled, equal_to(True))
-
-        assert_that(custom_row.name, none())
-        assert_that(custom_row.commented, equal_to(0))
-        assert_that(custom_row.protocol, equal_to('custom'))
-        assert_that(custom_row.category, equal_to('user'))
+        assert_that(inspect(custom).persistent)
+        assert_that(custom, has_properties(
+            id=not_none(),
+            interface='custom/create',
+            enabled=True,
+            name=none(),
+            commented=0,
+            protocol='custom',
+            category='user',
+        ))
 
     def test_create_all_parameters(self):
-        created_custom = dao.create(Custom(interface='custom/create',
-                                           enabled=False))
+        custom = custom_dao.create(Custom(interface='custom/create', enabled=False))
 
-        custom_row = self.session.query(Custom).first()
+        assert_that(inspect(custom).persistent)
+        assert_that(custom, has_properties(
+            id=not_none(),
+            interface='custom/create',
+            enabled=False,
+            name=none(),
+            commented=1,
+            protocol='custom',
+            category='user',
+        ))
 
-        assert_that(created_custom.id, equal_to(custom_row.id))
-        assert_that(created_custom.enabled, equal_to(False))
 
-        assert_that(custom_row.commented, equal_to(1))
-
-
-class TestCustomEndpointDaoEdit(TestCustomDao):
+class TestEdit(DAOTestCase):
 
     def test_edit_all_parameters(self):
-        custom_row = self.add_usercustom(interface='custom/beforeedit',
-                                         commented=1)
+        custom = self.add_usercustom(interface='custom/beforeedit', enabled=True)
 
-        custom = dao.get(custom_row.id)
+        self.session.expire_all()
         custom.interface = 'custom/afteredit'
         custom.enabled = True
 
-        dao.edit(custom)
+        custom_dao.edit(custom)
 
-        custom_row = self.session.query(Custom).first()
+        self.session.expire_all()
+        assert_that(custom, has_properties(
+            interface='custom/afteredit',
+            enabled=True,
+        ))
 
-        assert_that(custom_row.id, equal_to(custom_row.id))
-        assert_that(custom_row.interface, equal_to('custom/afteredit'))
-        assert_that(custom_row.enabled, equal_to(True))
-        assert_that(custom_row.commented, equal_to(0))
 
-
-class TestCustomEndpointDaoDelete(TestCustomDao):
+class TestDelete(DAOTestCase):
 
     def test_delete(self):
-        row = self.add_usercustom()
+        custom = self.add_usercustom()
 
-        custom = dao.get(row.id)
-        dao.delete(custom)
+        custom_dao.delete(custom)
 
-        row = self.session.query(Custom).get(row.id)
-        assert_that(row, none())
+        assert_that(inspect(custom).deleted)
 
     def test_given_line_associated_to_custom_when_deleted_then_line_dissociated(self):
         custom = self.add_usercustom(context='default')
-        line = self.add_line(context='default', name='1000', number='1000',
-                             protocol='custom', protocolid=custom.id)
+        line = self.add_line(
+            context='default',
+            name='1000',
+            number='1000',
+            protocol='custom',
+            protocolid=custom.id,
+        )
 
-        custom = dao.get(custom.id)
-        dao.delete(custom)
+        custom_dao.delete(custom)
 
-        line = self.session.query(Line).get(line.id)
-        assert_that(line.endpoint, none())
-        assert_that(line.endpoint_id, none())
+        self.session.expire_all()
+        assert_that(line, has_properties(
+            endpoint=none(),
+            endpoint_id=none(),
+        ))
 
 
 class TestRelations(DAOTestCase):
 
+    # TODO should be in test_trunkfeatures
     def test_trunk_relationship(self):
-        custom_row = self.add_usercustom()
-        trunk_row = self.add_trunk()
-        trunk_row.associate_endpoint(custom_row)
+        custom = self.add_usercustom()
+        trunk = self.add_trunk()
 
-        custom = dao.get(custom_row.id)
-        assert_that(custom, equal_to(custom_row))
-        assert_that(custom.trunk, equal_to(trunk_row))
+        trunk.associate_endpoint(custom)
+        self.session.flush()
 
+        self.session.expire_all()
+        assert_that(custom.trunk, equal_to(trunk))
+
+    # TODO should be in test_linefeatures
     def test_line_relationship(self):
-        custom_row = self.add_usercustom()
-        line_row = self.add_line()
-        line_row.associate_endpoint(custom_row)
+        custom = self.add_usercustom()
+        line = self.add_line()
 
-        custom = dao.get(custom_row.id)
-        assert_that(custom, equal_to(custom_row))
-        assert_that(custom.line, equal_to(line_row))
+        line.associate_endpoint(custom)
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(custom.line, equal_to(line))
