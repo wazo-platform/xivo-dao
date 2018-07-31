@@ -20,8 +20,8 @@ def find_by(tenant_uuids=None, **criteria):
     return persistor(tenant_uuids).find_by(criteria)
 
 
-def find_all_by(**criteria):
-    return persistor().find_all_by(criteria)
+def find_all_by(tenant_uuids=None, **criteria):
+    return persistor(tenant_uuids).find_all_by(criteria)
 
 
 def search(**parameters):

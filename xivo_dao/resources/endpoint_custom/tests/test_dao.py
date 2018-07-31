@@ -5,12 +5,15 @@
 from __future__ import unicode_literals
 
 from hamcrest import (
+    all_of,
     assert_that,
     contains,
     empty,
     equal_to,
+    has_items,
     has_properties,
     none,
+    not_,
     not_none,
 )
 from sqlalchemy.inspection import inspect
@@ -93,6 +96,20 @@ class TestFindAllBy(DAOTestCase):
         custom = custom_dao.find_all_by(interface='custom/interface')
 
         assert_that(custom, contains(custom_row))
+
+    def test_find_all_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        custom1 = self.add_usercustom(context='default', tenant_uuid=tenant.uuid)
+        custom2 = self.add_usercustom(context='default')
+
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        customs = custom_dao.find_all_by(context='default', tenant_uuids=tenants)
+        assert_that(customs, has_items(custom1, custom2))
+
+        tenants = [tenant.uuid]
+        customs = custom_dao.find_all_by(context='default', tenant_uuids=tenants)
+        assert_that(customs, all_of(has_items(custom1), not_(has_items(custom2))))
 
 
 class TestSearch(DAOTestCase):
