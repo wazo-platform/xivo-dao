@@ -65,6 +65,17 @@ class TestFindBy(DAOTestCase):
 
         assert_that(custom, equal_to(custom_row))
 
+    def test_find_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        custom_row = self.add_usercustom()
+        custom = custom_dao.find_by(name=custom_row.name, tenant_uuids=[tenant.uuid])
+        assert_that(custom, none())
+
+        custom_row = self.add_usercustom(tenant_uuid=tenant.uuid)
+        custom = custom_dao.find_by(name=custom_row.name, tenant_uuids=[tenant.uuid])
+        assert_that(custom, equal_to(custom_row))
+
 
 class TestFindAllBy(DAOTestCase):
 

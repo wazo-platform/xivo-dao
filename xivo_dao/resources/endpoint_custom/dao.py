@@ -16,8 +16,8 @@ def get(custom_id, tenant_uuids=None):
     return persistor(tenant_uuids).get(custom_id)
 
 
-def find_by(**criteria):
-    return persistor().find_by(criteria)
+def find_by(tenant_uuids=None, **criteria):
+    return persistor(tenant_uuids).find_by(criteria)
 
 
 def find_all_by(**criteria):
