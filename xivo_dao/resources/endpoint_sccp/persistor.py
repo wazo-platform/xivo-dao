@@ -31,8 +31,10 @@ class SccpPersistor(object):
         query = self._filter_tenant_uuid(query)
         return query.first()
 
-    def search(self, params):
-        rows, total = sccp_search.search(self.session, params)
+    def search(self, parameters):
+        query = self.session.query(sccp_search.config.table)
+        query = self._filter_tenant_uuid(query)
+        rows, total = sccp_search.search_from_query(query, parameters)
         return SearchResult(total, rows)
 
     def create(self, sccp):

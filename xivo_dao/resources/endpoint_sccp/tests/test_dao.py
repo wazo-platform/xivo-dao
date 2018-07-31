@@ -98,6 +98,20 @@ class TestSimpleSearch(TestSearch):
 
         self.assert_search_returns_result(expected)
 
+    def test_search_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        sccp1 = self.add_sccpline()
+        sccp2 = self.add_sccpline(tenant_uuid=tenant.uuid)
+
+        expected = SearchResult(2, [sccp1, sccp2])
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
+        expected = SearchResult(1, [sccp2])
+        tenants = [tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
 
 class TestCreate(DAOTestCase):
 

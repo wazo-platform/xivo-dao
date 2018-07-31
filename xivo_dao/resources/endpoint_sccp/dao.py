@@ -18,8 +18,8 @@ def find(session, sccp_id, tenant_uuids=None):
 
 
 @daosession
-def search(session, **parameters):
-    return SccpPersistor(session).search(parameters)
+def search(session, tenant_uuids=None, **parameters):
+    return SccpPersistor(session, tenant_uuids).search(parameters)
 
 
 @daosession
