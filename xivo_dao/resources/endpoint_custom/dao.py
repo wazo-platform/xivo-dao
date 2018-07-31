@@ -24,8 +24,8 @@ def find_all_by(tenant_uuids=None, **criteria):
     return persistor(tenant_uuids).find_all_by(criteria)
 
 
-def search(**parameters):
-    return persistor().search(parameters)
+def search(tenant_uuids=None, **parameters):
+    return persistor(tenant_uuids).search(parameters)
 
 
 def create(custom):

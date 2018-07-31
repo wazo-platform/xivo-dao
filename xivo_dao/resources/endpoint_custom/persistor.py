@@ -40,8 +40,10 @@ class CustomPersistor(CriteriaBuilderMixin):
     def find_all_by(self, criteria):
         return self._find_query(criteria).all()
 
-    def search(self, params):
-        rows, total = custom_search.search(self.session, params)
+    def search(self, parameters):
+        query = self.session.query(custom_search.config.table)
+        query = self._filter_tenant_uuid(query)
+        rows, total = custom_search.search_from_query(query, parameters)
         return SearchResult(total, rows)
 
     def create(self, custom):

@@ -127,6 +127,20 @@ class TestSimpleSearch(TestSearch):
 
         self.assert_search_returns_result(expected)
 
+    def test_search_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        custom1 = self.add_usercustom(interface='custom/sort1')
+        custom2 = self.add_usercustom(interface='custom/sort2', tenant_uuid=tenant.uuid)
+
+        expected = SearchResult(2, [custom1, custom2])
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
+        expected = SearchResult(1, [custom2])
+        tenants = [tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
 
 class TestCreate(DAOTestCase):
 
