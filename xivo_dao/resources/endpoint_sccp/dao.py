@@ -13,8 +13,8 @@ def get(session, sccp_id):
 
 
 @daosession
-def find(session, sccp_id):
-    return SccpPersistor(session).find(sccp_id)
+def find(session, sccp_id, tenant_uuids=None):
+    return SccpPersistor(session, tenant_uuids).find(sccp_id)
 
 
 @daosession

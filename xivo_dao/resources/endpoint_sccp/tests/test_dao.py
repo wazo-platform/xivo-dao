@@ -46,6 +46,16 @@ class TestFind(DAOTestCase):
 
         assert_that(sccp, equal_to(sccp_row))
 
+    def test_find_multi_tenant(self):
+        tenant = self.add_tenant()
+        sccp = self.add_sccpline(tenant_uuid=tenant.uuid)
+
+        result = sccp_dao.find(sccp.id, tenant_uuids=[tenant.uuid])
+        assert_that(result, equal_to(sccp))
+
+        result = sccp_dao.find(sccp.id, tenant_uuids=[self.default_tenant.uuid])
+        assert_that(result, none())
+
 
 class TestGet(DAOTestCase):
 
