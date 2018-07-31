@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from functools import partial
@@ -9,7 +9,8 @@ from xivo_dao.alchemy.linefeatures import LineFeatures as Line
 from xivo_dao.helpers import errors, generators
 from xivo_dao.resources.line.fixes import LineFixes
 from xivo_dao.resources.utils.search import SearchResult
-from xivo_dao.resources.endpoint_sccp.search import sccp_search
+
+from .search import sccp_search
 
 
 class SccpPersistor(object):
@@ -17,15 +18,15 @@ class SccpPersistor(object):
     def __init__(self, session):
         self.session = session
 
-    def get(self, id):
-        sccp = self.find(id)
+    def get(self, sccp_id):
+        sccp = self.find(sccp_id)
         if not sccp:
-            raise errors.not_found('SCCPEndpoint', id=id)
+            raise errors.not_found('SCCPEndpoint', id=sccp_id)
         return sccp
 
-    def find(self, id):
+    def find(self, sccp_id):
         row = (self.session.query(SCCP)
-               .filter(SCCP.id == id)
+               .filter(SCCP.id == sccp_id)
                .first())
         return row
 
@@ -54,7 +55,7 @@ class SccpPersistor(object):
         self.session.flush()
 
     def delete(self, sccp):
-        self.session.query(SCCP).filter(SCCP.id == sccp.id).delete()
+        self.session.delete(sccp)
         self.session.flush()
         self._fix_line(sccp)
 

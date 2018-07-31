@@ -1,24 +1,28 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from __future__ import unicode_literals
 
-from hamcrest import assert_that
-from hamcrest import empty
-from hamcrest import equal_to
-from hamcrest import none
-from hamcrest import not_
-from hamcrest import contains
-from hamcrest import has_items
-from hamcrest import has_property
+from hamcrest import (
+    assert_that,
+    empty,
+    equal_to,
+    has_items,
+    has_properties,
+    none,
+    not_,
+    not_none,
+)
+from sqlalchemy.inspection import inspect
 
 from xivo_dao.alchemy.sccpline import SCCPLine as SCCP
-from xivo_dao.alchemy.linefeatures import LineFeatures as Line
 from xivo_dao.helpers.exception import InputError
 from xivo_dao.helpers.exception import NotFoundError
-from xivo_dao.resources.endpoint_sccp import dao
+from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.tests.test_dao import DAOTestCase
+
+from .. import dao as sccp_dao
 
 ALL_OPTIONS = [
     ["cid_name", "Jôhn Smith"],
@@ -28,71 +32,66 @@ ALL_OPTIONS = [
 ]
 
 
-class TestSccpDao(DAOTestCase):
-    pass
+class TestFind(DAOTestCase):
 
+    def test_find_no_sccp(self):
+        result = sccp_dao.find(42)
 
-class TestSccpEndpointDaoGet(TestSccpDao):
-
-    def test_given_no_rows_then_raises_error(self):
-        self.assertRaises(NotFoundError, dao.get, 1)
-
-    def test_given_row_with_minimal_parameters_then_returns_model(self):
-        row = self.add_sccpline(name='',
-                                context='',
-                                cid_name='',
-                                cid_num='')
-
-        sccp = dao.get(row.id)
-
-        assert_that(sccp.id, equal_to(row.id))
-        assert_that(sccp.options, contains())
-
-
-class TestSccpEndpointDaoFind(TestSccpDao):
-
-    def test_given_no_rows_then_returns_none(self):
-        result = dao.find(1)
         assert_that(result, none())
 
-    def test_given_row_with_minimal_parameters_then_returns_model(self):
-        row = self.add_sccpline(name='',
-                                context='',
-                                cid_name='',
-                                cid_num='')
+    def test_find(self):
+        sccp_row = self.add_sccpline()
 
-        sccp = dao.find(row.id)
+        sccp = sccp_dao.find(sccp_row.id)
 
-        assert_that(sccp.id, equal_to(row.id))
-        assert_that(sccp.options, contains())
+        assert_that(sccp, equal_to(sccp_row))
 
 
-class TestSccpEndpointDaoSearch(TestSccpDao):
+class TestGet(DAOTestCase):
+
+    def test_get_no_sccp(self):
+        self.assertRaises(NotFoundError, sccp_dao.get, 42)
+
+    def test_get(self):
+        sccp_row = self.add_sccpline()
+
+        sccp = sccp_dao.get(sccp_row.id)
+
+        assert_that(sccp, equal_to(sccp_row))
+
+
+class TestSearch(DAOTestCase):
+
+    def assert_search_returns_result(self, search_result, **parameters):
+        result = sccp_dao.search(**parameters)
+        assert_that(result, equal_to(search_result))
+
+
+class TestSimpleSearch(TestSearch):
 
     def test_search(self):
-        row = self.add_sccpline()
+        sccp = self.add_sccpline()
+        expected = SearchResult(1, [sccp])
 
-        search_result = dao.search()
-
-        assert_that(search_result.total, equal_to(1))
-        assert_that(search_result.items, contains(has_property('id', row.id)))
+        self.assert_search_returns_result(expected)
 
 
-class TestSccpEndpointDaoCreate(TestSccpDao):
+class TestCreate(DAOTestCase):
 
     def test_create_minimal_parameters(self):
-        created_sccp = dao.create(SCCP())
-        sccp_row = self.session.query(SCCP).first()
+        sccp = sccp_dao.create(SCCP())
 
-        assert_that(created_sccp.id, equal_to(sccp_row.id))
-        assert_that(created_sccp.options, contains())
-
-        assert_that(sccp_row.name, not_(empty()))
-        assert_that(sccp_row.context, equal_to(''))
-        assert_that(sccp_row.cid_name, equal_to(''))
-        assert_that(sccp_row.cid_num, equal_to(''))
-        assert_that(sccp_row.allow, none())
-        assert_that(sccp_row.disallow, none())
+        assert_that(inspect(sccp).persistent)
+        assert_that(sccp, has_properties(
+            id=not_none(),
+            options=empty(),
+            name=not_(empty()),
+            context='',
+            cid_name='',
+            cid_num='',
+            allow=none(),
+            disallow=none(),
+        ))
 
     def test_create_all_parameters(self):
         options = [
@@ -104,125 +103,144 @@ class TestSccpEndpointDaoCreate(TestSccpDao):
 
         sccp = SCCP(options=options)
 
-        created_sccp = dao.create(sccp)
-        sccp_row = self.session.query(SCCP).first()
+        sccp = sccp_dao.create(sccp)
 
-        assert_that(created_sccp.id, equal_to(sccp_row.id))
-        assert_that(created_sccp.options, has_items(*options))
-
-        assert_that(sccp_row.cid_name, equal_to('Jôhn Smith'))
-        assert_that(sccp_row.cid_num, equal_to('5551234567'))
-        assert_that(sccp_row.allow, equal_to("gsm,ulaw"))
-        assert_that(sccp_row.disallow, equal_to("all"))
+        assert_that(inspect(sccp).persistent)
+        assert_that(sccp, has_properties(
+            id=not_none(),
+            options=has_items(*options),
+            cid_name='Jôhn Smith',
+            cid_num='5551234567',
+            allow='gsm,ulaw',
+            disallow='all',
+        ))
 
     def test_given_option_does_not_exist_then_raises_error(self):
         self.assertRaises(InputError, SCCP, options=[["invalid", "invalid"]])
 
 
-class TestSccpEndpointDaoEdit(TestSccpDao):
+class TestEdit(DAOTestCase):
 
     def test_given_allow_and_disallow_are_set_when_removed_then_database_updated(self):
-        row = self.add_sccpline(context='',
-                                name='',
-                                cid_name='',
-                                cid_num='',
-                                allow="gsm,g729",
-                                disallow="alaw,ulaw")
+        sccp = self.add_sccpline(
+            context='',
+            name='',
+            cid_name='',
+            cid_num='',
+            allow="gsm,g729",
+            disallow="alaw,ulaw",
+        )
 
-        sccp = dao.get(row.id)
+        self.session.expire_all()
         sccp.options = []
-        dao.edit(sccp)
+        sccp_dao.edit(sccp)
 
-        row = self.session.query(SCCP).first()
-
-        assert_that(row.allow, none())
-        assert_that(row.disallow, none())
+        self.session.expire_all()
+        assert_that(sccp, has_properties(
+            allow=none(),
+            disallow=none(),
+        ))
 
     def test_given_allow_and_disallow_are_when_altered_then_database_updated(self):
-        row = self.add_sccpline(context='',
-                                name='',
-                                cid_name='',
-                                cid_num='',
-                                allow="gsm,g729",
-                                disallow="alaw,ulaw")
+        sccp = self.add_sccpline(
+            context='',
+            name='',
+            cid_name='',
+            cid_num='',
+            allow="gsm,g729",
+            disallow="alaw,ulaw",
+        )
 
-        sccp = dao.get(row.id)
+        self.session.expire_all()
         sccp.options = [
             ["allow", "speex"],
             ["disallow", "opus"]
         ]
-        dao.edit(sccp)
+        sccp_dao.edit(sccp)
 
-        row = self.session.query(SCCP).first()
-
-        assert_that(row.allow, "speex")
-        assert_that(row.disallow, "opus")
+        self.session.expire_all()
+        assert_that(sccp, has_properties(
+            allow='speex',
+            disallow='opus',
+        ))
 
     def test_given_cid_name_and_num_set_when_removed_then_cid_name_and_num_not_deleted(self):
-        row = self.add_sccpline(context='',
-                                name='',
-                                cid_name='Jôhn Smith',
-                                cid_num='5551234567')
+        sccp = self.add_sccpline(
+            context='',
+            name='',
+            cid_name='Jôhn Smith',
+            cid_num='5551234567',
+        )
 
-        sccp = dao.get(row.id)
+        self.session.expire_all()
         sccp.options = []
-        dao.edit(sccp)
+        sccp_dao.edit(sccp)
 
-        row = self.session.query(SCCP).first()
-
-        assert_that(row.cid_name, "Jôhn Smith")
-        assert_that(row.cid_num, "5551234567")
+        self.session.expire_all()
+        assert_that(sccp, has_properties(
+            cid_name="Jôhn Smith",
+            cid_num="5551234567",
+        ))
 
     def test_given_cid_name_and_num_set_when_altered_then_cid_name_and_num_updated(self):
-        row = self.add_sccpline(context='',
-                                name='',
-                                cid_name='Jôhn Smith',
-                                cid_num='5551234567')
+        sccp = self.add_sccpline(
+            context='',
+            name='',
+            cid_name='Jôhn Smith',
+            cid_num='5551234567',
+        )
 
-        sccp = dao.get(row.id)
+        self.session.expire_all()
         sccp.options = [
             ["cid_name", "Roger Wilkins"],
             ["cid_num", "4181234567"]
         ]
-        dao.edit(sccp)
+        sccp_dao.edit(sccp)
 
-        row = self.session.query(SCCP).first()
+        self.session.expire_all()
+        assert_that(sccp, has_properties(
+            cid_name="Roger Wilkins",
+            cid_num="4181234567",
+        ))
 
-        assert_that(row.cid_name, "Roger Wilkins")
-        assert_that(row.cid_num, "4181234567")
 
-
-class TestSipEndpointDaoDelete(TestSccpDao):
+class TestDelete(DAOTestCase):
 
     def test_delete(self):
-        row = self.add_sccpline(context='', name='')
+        sccp = self.add_sccpline(context='', name='')
 
-        sccp = dao.get(row.id)
-        dao.delete(sccp)
+        sccp_dao.delete(sccp)
 
-        row = self.session.query(SCCP).get(row.id)
-        assert_that(row, none())
+        assert_that(inspect(sccp).deleted)
 
     def test_given_line_associated_to_sccp_when_deleted_then_line_dissociated(self):
         sccp = self.add_sccpline(context='default', name='1000')
-        line = self.add_line(context='default', name='1000', number='1000',
-                             protocol='sccp', protocolid=sccp.id)
+        line = self.add_line(
+            context='default',
+            name='1000',
+            number='1000',
+            protocol='sccp',
+            protocolid=sccp.id,
+        )
 
-        sccp = dao.get(sccp.id)
-        dao.delete(sccp)
+        sccp_dao.delete(sccp)
 
-        line = self.session.query(Line).get(line.id)
-        assert_that(line.endpoint, none())
-        assert_that(line.endpoint_id, none())
+        self.session.expire_all()
+        assert_that(line, has_properties(
+            endpoint=none(),
+            endpoint_id=none(),
+        ))
 
 
 class TestRelations(DAOTestCase):
 
+    # TODO this test should be in linefeatures
     def test_line_relationship(self):
-        sccp_row = self.add_sccpline()
-        line_row = self.add_line()
-        line_row.associate_endpoint(sccp_row)
+        sccp = self.add_sccpline()
+        line = self.add_line()
 
-        sccp = dao.get(sccp_row.id)
-        assert_that(sccp, equal_to(sccp_row))
-        assert_that(sccp.line, equal_to(line_row))
+        line.associate_endpoint(sccp)
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(sccp.line, equal_to(line))

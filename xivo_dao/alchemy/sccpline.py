@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2012-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from __future__ import unicode_literals
@@ -10,7 +10,8 @@ from sqlalchemy.types import Integer, String, Text
 
 from xivo_dao.helpers.exception import InputError
 from xivo_dao.helpers.db_manager import Base
-from xivo_dao.alchemy import enum
+
+from . import enum
 
 
 class SCCPLine(Base):
@@ -30,15 +31,17 @@ class SCCPLine(Base):
     protocol = Column(enum.trunk_protocol, nullable=False, server_default='sccp')
     commented = Column(Integer, nullable=False, server_default='0')
 
-    line = relationship('LineFeatures',
-                        primaryjoin="""and_(
-                            LineFeatures.protocol == 'sccp',
-                            LineFeatures.protocolid == SCCPLine.id
-                        )""",
-                        foreign_keys='LineFeatures.protocolid',
-                        uselist=False,
-                        viewonly=True,
-                        back_populates='endpoint_sccp')
+    line = relationship(
+        'LineFeatures',
+        primaryjoin="""and_(
+            LineFeatures.protocol == 'sccp',
+            LineFeatures.protocolid == SCCPLine.id
+        )""",
+        foreign_keys='LineFeatures.protocolid',
+        uselist=False,
+        viewonly=True,
+        back_populates='endpoint_sccp',
+    )
 
     @property
     def options(self):
