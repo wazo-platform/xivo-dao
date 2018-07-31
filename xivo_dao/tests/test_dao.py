@@ -741,7 +741,7 @@ class ItemInserter(object):
         kwargs.setdefault('context', 'default')
         kwargs.setdefault('cid_name', 'Tester One')
         kwargs.setdefault('cid_num', '1234')
-        kwargs.setdefault('id', self._generate_int())
+        kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
 
         sccpline = SCCPLineSchema(**kwargs)
         self.add_me(sccpline)

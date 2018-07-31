@@ -5,7 +5,7 @@
 from __future__ import unicode_literals
 
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, PrimaryKeyConstraint
+from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint
 from sqlalchemy.types import Integer, String, Text
 
 from xivo_dao.helpers.exception import InputError
@@ -22,6 +22,7 @@ class SCCPLine(Base):
     )
 
     id = Column(Integer)
+    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
     name = Column(String(80), nullable=False)
     context = Column(String(80), nullable=False)
     cid_name = Column(String(80), nullable=False)

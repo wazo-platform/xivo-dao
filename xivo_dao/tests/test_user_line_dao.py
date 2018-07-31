@@ -112,7 +112,7 @@ class TestUserLineDAO(DAOTestCase):
 
         self.assertRaises(LookupError, user_line_dao._get_cid_for_sccp_channel, channel)
 
-        line = SCCPLine()
+        line = SCCPLine(tenant_uuid=self.default_tenant.uuid)
         line.name = '1234'
         line.context = 'test'
         line.cid_name = 'Tester One'

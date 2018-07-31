@@ -79,7 +79,7 @@ class TestSimpleSearch(TestSearch):
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_parameters(self):
-        sccp = sccp_dao.create(SCCP())
+        sccp = sccp_dao.create(SCCP(tenant_uuid=self.default_tenant.uuid))
 
         assert_that(inspect(sccp).persistent)
         assert_that(sccp, has_properties(
@@ -101,13 +101,14 @@ class TestCreate(DAOTestCase):
             ["allow", "gsm,ulaw"],
         ]
 
-        sccp = SCCP(options=options)
+        sccp = SCCP(options=options, tenant_uuid=self.default_tenant.uuid)
 
         sccp = sccp_dao.create(sccp)
 
         assert_that(inspect(sccp).persistent)
         assert_that(sccp, has_properties(
             id=not_none(),
+            tenant_uuid=self.default_tenant.uuid,
             options=has_items(*options),
             cid_name='Jôhn Smith',
             cid_num='5551234567',
