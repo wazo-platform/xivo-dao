@@ -90,7 +90,12 @@ class TestSimpleSearch(TestSearch):
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_parameters(self):
-        custom = custom_dao.create(Custom(interface='custom/create'))
+        custom = custom_dao.create(
+            Custom(
+                interface='custom/create',
+                tenant_uuid=self.default_tenant.uuid
+            )
+        )
 
         assert_that(inspect(custom).persistent)
         assert_that(custom, has_properties(
@@ -104,11 +109,18 @@ class TestCreate(DAOTestCase):
         ))
 
     def test_create_all_parameters(self):
-        custom = custom_dao.create(Custom(interface='custom/create', enabled=False))
+        custom = custom_dao.create(
+            Custom(
+                interface='custom/create',
+                enabled=False,
+                tenant_uuid=self.default_tenant.uuid
+            )
+        )
 
         assert_that(inspect(custom).persistent)
         assert_that(custom, has_properties(
             id=not_none(),
+            tenant_uuid=self.default_tenant.uuid,
             interface='custom/create',
             enabled=False,
             name=none(),
