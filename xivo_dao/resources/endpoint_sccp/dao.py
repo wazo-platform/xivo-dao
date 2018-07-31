@@ -8,8 +8,8 @@ from xivo_dao.resources.endpoint_sccp.persistor import SccpPersistor
 
 
 @daosession
-def get(session, sccp_id):
-    return SccpPersistor(session).get(sccp_id)
+def get(session, sccp_id, tenant_uuids=None):
+    return SccpPersistor(session, tenant_uuids).get(sccp_id)
 
 
 @daosession
