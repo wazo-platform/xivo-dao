@@ -169,7 +169,7 @@ class TestSimpleSearch(TestSearch):
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_parameters(self):
-        iax_model = IAXEndpoint()
+        iax_model = IAXEndpoint(tenant_uuid=self.default_tenant.uuid)
         iax = iax_dao.create(iax_model)
 
         assert_that(inspect(iax).persistent)
@@ -182,13 +182,19 @@ class TestCreate(DAOTestCase):
         ))
 
     def test_create_predefined_parameters(self):
-        iax_model = IAXEndpoint(name='myname', host="127.0.0.1", type="peer")
+        iax_model = IAXEndpoint(
+            tenant_uuid=self.default_tenant.uuid,
+            name='myname',
+            host="127.0.0.1",
+            type="peer",
+        )
 
         iax = iax_dao.create(iax_model)
 
         assert_that(inspect(iax).persistent)
         assert_that(iax, has_properties(
             id=not_none(),
+            tenant_uuid=self.default_tenant.uuid,
             name='myname',
             type='peer',
             host='127.0.0.1',
@@ -196,7 +202,7 @@ class TestCreate(DAOTestCase):
         ))
 
     def test_create_with_native_options(self):
-        iax_model = IAXEndpoint(options=ALL_OPTIONS)
+        iax_model = IAXEndpoint(tenant_uuid=self.default_tenant.uuid, options=ALL_OPTIONS)
         iax = iax_dao.create(iax_model)
 
         self.session.expire_all()
@@ -257,7 +263,7 @@ class TestCreate(DAOTestCase):
             ["foo", "baz"],
             ["spam", "eggs"]
         ]
-        iax_model = IAXEndpoint(options=options)
+        iax_model = IAXEndpoint(tenant_uuid=self.default_tenant.uuid, options=options)
 
         iax = iax_dao.create(iax_model)
 
@@ -285,7 +291,7 @@ class TestEdit(DAOTestCase):
         ))
 
     def test_edit_remove_options(self):
-        iax = iax_dao.create(IAXEndpoint(options=ALL_OPTIONS))
+        iax = self.add_useriax(options=ALL_OPTIONS)
 
         self.session.expire_all()
         iax.options = []

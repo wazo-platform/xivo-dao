@@ -707,11 +707,10 @@ class ItemInserter(object):
         return usersip
 
     def add_useriax(self, **kwargs):
-        kwargs.setdefault('id', self._generate_int())
         kwargs.setdefault('name', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
-        kwargs.setdefault('context', 'default')
         kwargs.setdefault('type', 'friend')
         kwargs.setdefault('category', 'user')
+        kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
 
         useriax = UserIAX(**kwargs)
         self.add_me(useriax)

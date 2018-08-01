@@ -9,6 +9,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.schema import (
     Column,
     Index,
+    ForeignKey,
     PrimaryKeyConstraint,
     UniqueConstraint,
 )
@@ -26,6 +27,7 @@ class UserIAX(Base, AsteriskOptionsMixin):
         'id',
         'commented',
         'options',
+        'tenant_uuid',
     }
     EXCLUDE_OPTIONS_CONFD = {
         'name',
@@ -55,6 +57,7 @@ class UserIAX(Base, AsteriskOptionsMixin):
     )
 
     id = Column(Integer, nullable=False)
+    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
     name = Column(String(40), nullable=False)
     type = Column(Enum('friend', 'peer', 'user', name='useriax_type', metadata=Base.metadata), nullable=False)
     username = Column(String(80))
