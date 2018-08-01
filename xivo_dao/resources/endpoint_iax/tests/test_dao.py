@@ -5,22 +5,23 @@
 from __future__ import unicode_literals
 
 from hamcrest import (
+    all_of,
     assert_that,
-    contains,
     empty,
     equal_to,
     has_item,
     has_items,
     has_length,
     has_properties,
-    has_property,
-    is_not,
     none,
+    not_,
+    not_none,
 )
+from sqlalchemy.inspection import inspect
 
 from xivo_dao.alchemy.useriax import UserIAX as IAXEndpoint
-from xivo_dao.alchemy.trunkfeatures import TrunkFeatures as Trunk
 from xivo_dao.helpers.exception import InputError, NotFoundError
+from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.tests.test_dao import DAOTestCase
 
 from .. import dao as iax_dao
@@ -77,17 +78,17 @@ ALL_OPTIONS = [
 class TestFindBy(DAOTestCase):
 
     def test_given_column_does_not_exist_then_raises_error(self):
-        self.assertRaises(InputError, iax_dao.find_by, column=1)
+        self.assertRaises(InputError, iax_dao.find_by, invalid=42)
 
     def test_given_row_with_value_does_not_exist_then_returns_null(self):
         result = iax_dao.find_by(name='abcd')
         assert_that(result, none())
 
     def test_find_by(self):
-        iax = self.add_useriax(name='myname')
-        result = iax_dao.find_by(name='myname')
+        iax_row = self.add_useriax(name='myname')
+        iax = iax_dao.find_by(name='myname')
 
-        assert_that(result.id, equal_to(iax.id))
+        assert_that(iax, equal_to(iax_row))
 
 
 class TestGet(DAOTestCase):
@@ -95,100 +96,113 @@ class TestGet(DAOTestCase):
     def test_given_no_rows_then_raises_error(self):
         self.assertRaises(NotFoundError, iax_dao.get, 1)
 
-    def test_given_row_with_minimal_parameters_then_returns_model(self):
-        row = self.add_useriax(name='name',
-                               type='friend',
-                               host='dynamic')
+    def test_get(self):
+        iax_row = self.add_useriax(name='name', type='friend', host='dynamic')
 
-        iax = iax_dao.get(row.id)
-        assert_that(iax.id, equal_to(row.id))
-        assert_that(iax.name, equal_to('name'))
-        assert_that(iax.type, equal_to('friend'))
-        assert_that(iax.host, equal_to('dynamic'))
+        iax = iax_dao.get(iax_row.id)
 
-    def test_given_row_with_optional_parameters_then_returns_model(self):
-        row = self.add_useriax(
-            language="fr_FR",
-            amaflags="omit",
-        )
+        assert_that(iax, equal_to(iax_row))
 
-        iax = iax_dao.get(row.id)
+    def test_get_with_optional_parameters(self):
+        iax_row = self.add_useriax(language="fr_FR", amaflags="omit")
+
+        iax = iax_dao.get(iax_row.id)
+
         assert_that(iax.options, has_items(
             ["language", "fr_FR"],
             ["amaflags", "omit"],
         ))
 
-    def test_given_row_with_option_set_to_null_then_option_not_returned(self):
-        row = self.add_useriax(language=None,
-                               allow=None,
-                               callerid='')
+    def test_get_with_option_set_to_null_then_option_not_returned(self):
+        iax_row = self.add_useriax(language=None, allow=None, callerid='')
 
-        iax = iax_dao.get(row.id)
-        assert_that(iax.options, is_not(has_item(has_item("language"))))
-        assert_that(iax.options, is_not(has_item(has_item("allow"))))
-        assert_that(iax.options, is_not(has_item(has_item("callerid"))))
+        iax = iax_dao.get(iax_row.id)
+        assert_that(iax.options, all_of(
+            not_(has_item(has_item("language"))),
+            not_(has_item(has_item("allow"))),
+            not_(has_item(has_item("callerid"))),
+        ))
 
-    def test_given_row_with_additional_options_then_returns_model(self):
+    def test_get_with_additional_options(self):
         options = [
             ["foo", "bar"],
             ["foo", "baz"],
             ["spam", "eggs"]
         ]
+        iax_row = self.add_useriax(options=options)
 
-        row = self.add_useriax(options=options)
+        iax = iax_dao.get(iax_row.id)
 
-        iax = iax_dao.get(row.id)
         assert_that(iax.options, has_items(*options))
 
     def test_given_row_has_native_and_additional_options_then_all_options_returned(self):
-        row = self.add_useriax(language="fr_FR", _options=[["foo", "bar"]])
+        iax_row = self.add_useriax(language="fr_FR", _options=[["foo", "bar"]])
 
-        iax = iax_dao.get(row.id)
+        iax = iax_dao.get(iax_row.id)
+
         assert_that(iax.options, has_items(["language", "fr_FR"], ["foo", "bar"]))
 
 
 class TestSearch(DAOTestCase):
 
+    def assert_search_returns_result(self, search_result, **parameters):
+        result = iax_dao.search(**parameters)
+        assert_that(result, equal_to(search_result))
+
+
+class TestSimpleSearch(TestSearch):
+
+    def test_given_no_iax_then_returns_no_empty_result(self):
+        expected = SearchResult(0, [])
+
+        self.assert_search_returns_result(expected)
+
     def test_search(self):
-        iax1 = self.add_useriax(name="alice")
+        iax = self.add_useriax(name="alice")
         self.add_useriax(name="henry")
 
-        search_result = iax_dao.search(search='alice')
+        expected = SearchResult(1, [iax])
 
-        assert_that(search_result.total, equal_to(1))
-        assert_that(search_result.items, contains(has_property('id', iax1.id)))
+        self.assert_search_returns_result(expected, search='alice')
 
 
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_parameters(self):
-        iax = IAXEndpoint()
+        iax_model = IAXEndpoint()
+        iax = iax_dao.create(iax_model)
 
-        created_iax = iax_dao.create(iax)
-        row = self.session.query(IAXEndpoint).first()
-
-        assert_that(created_iax.id, equal_to(row.id))
-        assert_that(created_iax.name, has_length(8))
-        assert_that(created_iax.type, equal_to('friend'))
-        assert_that(created_iax.host, equal_to('dynamic'))
-        assert_that(created_iax.category, equal_to('trunk'))
+        assert_that(inspect(iax).persistent)
+        assert_that(iax, has_properties(
+            id=not_none(),
+            name=has_length(8),
+            type='friend',
+            host='dynamic',
+            category='trunk',
+        ))
 
     def test_create_predefined_parameters(self):
-        iax = IAXEndpoint(name='myname',
-                          host="127.0.0.1",
-                          type="peer")
+        iax_model = IAXEndpoint(name='myname', host="127.0.0.1", type="peer")
 
-        created_iax = iax_dao.create(iax)
-        row = self.session.query(IAXEndpoint).first()
+        iax = iax_dao.create(iax_model)
 
-        assert_that(created_iax.id, equal_to(row.id))
-        assert_that(created_iax.name, equal_to('myname'))
-        assert_that(created_iax.type, equal_to('peer'))
-        assert_that(created_iax.host, equal_to('127.0.0.1'))
-        assert_that(created_iax.category, equal_to('trunk'))
+        assert_that(inspect(iax).persistent)
+        assert_that(iax, has_properties(
+            id=not_none(),
+            name='myname',
+            type='peer',
+            host='127.0.0.1',
+            category='trunk',
+        ))
 
     def test_create_with_native_options(self):
-        expected_options = has_properties({
+        iax_model = IAXEndpoint(options=ALL_OPTIONS)
+        iax = iax_dao.create(iax_model)
+
+        self.session.expire_all()
+        assert_that(inspect(iax).persistent)
+        assert_that(iax.options, has_items(*ALL_OPTIONS))
+        assert_that(iax, has_properties({
             'amaflags': 'default',
             'language': 'fr_FR',
             'qualify': '500',
@@ -234,16 +248,7 @@ class TestCreate(DAOTestCase):
             'mask': 'mask',
             'peercontext': 'peercontext',
             'requirecalltoken': 'yes',
-        })
-
-        iax = IAXEndpoint(options=ALL_OPTIONS)
-        created_iax = iax_dao.create(iax)
-
-        row = self.session.query(IAXEndpoint).first()
-
-        assert_that(created_iax.id, equal_to(row.id))
-        assert_that(created_iax, expected_options)
-        assert_that(created_iax.options, has_items(*ALL_OPTIONS))
+        }))
 
     def test_create_with_additional_options(self):
         options = [
@@ -252,35 +257,42 @@ class TestCreate(DAOTestCase):
             ["foo", "baz"],
             ["spam", "eggs"]
         ]
+        iax_model = IAXEndpoint(options=options)
 
-        iax = IAXEndpoint(options=options)
-        created_iax = iax_dao.create(iax)
+        iax = iax_dao.create(iax_model)
 
-        row = self.session.query(IAXEndpoint).first()
-
-        assert_that(created_iax.id, equal_to(row.id))
-        assert_that(created_iax.options, has_items(*options))
+        self.session.expire_all()
+        assert_that(inspect(iax).persistent)
+        assert_that(iax.options, has_items(*options))
 
 
 class TestEdit(DAOTestCase):
 
     def test_edit_basic_parameters(self):
-        row = self.add_useriax()
-        iax = iax_dao.get(row.id)
+        iax = self.add_useriax()
 
+        self.session.expire_all()
         iax.name = 'name'
         iax.type = 'peer'
         iax.host = '127.0.0.1'
-
         iax_dao.edit(iax)
 
-        row = self.session.query(IAXEndpoint).first()
-        assert_that(row.name, equal_to('name'))
-        assert_that(row.type, equal_to('peer'))
-        assert_that(row.host, equal_to('127.0.0.1'))
+        self.session.expire_all()
+        assert_that(iax, has_properties(
+            name='name',
+            type='peer',
+            host='127.0.0.1',
+        ))
 
     def test_edit_remove_options(self):
-        expected_options = has_properties({
+        iax = iax_dao.create(IAXEndpoint(options=ALL_OPTIONS))
+
+        self.session.expire_all()
+        iax.options = []
+        iax_dao.edit(iax)
+
+        self.session.expire_all()
+        assert_that(iax, has_properties({
             'amaflags': 'default',
             'language': none(),
             'qualify': 'no',
@@ -327,66 +339,61 @@ class TestEdit(DAOTestCase):
             'peercontext': none(),
             'requirecalltoken': 'no',
             '_options': empty(),
-        })
-
-        iax = iax_dao.create(IAXEndpoint(options=ALL_OPTIONS))
-        iax = iax_dao.get(iax.id)
-        iax.options = []
-
-        iax_dao.edit(iax)
-
-        row = self.session.query(IAXEndpoint).first()
-        assert_that(row, expected_options)
+        }))
 
     def test_edit_options(self):
-        row = self.add_useriax(language="fr_FR", amaflags="default", allow="g729,gsm")
+        iax = self.add_useriax(language="fr_FR", amaflags="default", allow="g729,gsm")
 
-        iax = iax_dao.get(row.id)
+        self.session.expire_all()
         iax.options = [
             ["language", "en_US"],
             ["amaflags", "omit"],
             ["allow", "ulaw,alaw"],
         ]
-
         iax_dao.edit(iax)
 
-        row = self.session.query(IAXEndpoint).first()
-        assert_that(row.language, equal_to("en_US"))
-        assert_that(row.amaflags, equal_to("omit"))
-        assert_that(row.allow, equal_to("ulaw,alaw"))
+        self.session.expire_all()
+        assert_that(iax, has_properties(
+            language='en_US',
+            amaflags='omit',
+            allow='ulaw,alaw'
+        ))
 
     def test_edit_additional_options(self):
-        row = self.add_useriax(_options=[
+        iax = self.add_useriax(_options=[
             ["foo", "bar"],
             ["foo", "baz"],
             ["spam", "eggs"],
         ])
 
-        iax = iax_dao.get(row.id)
+        self.session.expire_all()
         iax.options = [
             ["foo", "newbar"],
             ["foo", "newbaz"],
             ["spam", "neweggs"],
         ]
-
         iax_dao.edit(iax)
 
-        row = self.session.query(IAXEndpoint).first()
-        assert_that(row._options, has_items(
-            ["foo", "newbar"],
-            ["foo", "newbaz"],
-            ["spam", "neweggs"],
+        self.session.expire_all()
+        assert_that(iax, has_properties(
+            _options=has_items(
+                ["foo", "newbar"],
+                ["foo", "newbaz"],
+                ["spam", "neweggs"],
+            )
         ))
 
     def test_edit_both_native_and_additional_options(self):
-        row = self.add_useriax(language="fr_FR",
-                               amaflags="default",
-                               allow="g729,gsm",
-                               _options=[
-                                   ["foo", "bar"],
-                                   ["foo", "baz"],
-                                   ["spam", "eggs"],
-                               ])
+        iax = self.add_useriax(
+            language="fr_FR",
+            amaflags="default",
+            allow="g729,gsm",
+            _options=[
+                ["foo", "bar"],
+                ["foo", "baz"],
+                ["spam", "eggs"],
+            ]
+        )
 
         new_options = [
             ["language", "en_US"],
@@ -397,40 +404,41 @@ class TestEdit(DAOTestCase):
             ["spam", "neweggs"],
         ]
 
-        iax = iax_dao.get(row.id)
+        self.session.expire_all()
         iax.options = new_options
         iax_dao.edit(iax)
 
-        row = self.session.query(IAXEndpoint).first()
-        assert_that(row.options, has_items(*new_options))
-        assert_that(row.language, equal_to("en_US"))
-        assert_that(row.amaflags, equal_to("omit"))
-        assert_that(row.allow, equal_to("ulaw,alaw"))
-        assert_that(row._options, has_items(
-            ["foo", "newbar"],
-            ["foo", "newbaz"],
-            ["spam", "neweggs"],
+        self.session.expire_all()
+        assert_that(iax, has_properties(
+            options=has_items(*new_options),
+            language='en_US',
+            amaflags='omit',
+            allow='ulaw,alaw',
+            _options=has_items(
+                ["foo", "newbar"],
+                ["foo", "newbaz"],
+                ["spam", "neweggs"],
+            ),
         ))
 
 
 class TestDelete(DAOTestCase):
 
     def test_delete(self):
-        row = self.add_useriax()
+        iax = self.add_useriax()
 
-        iax = iax_dao.get(row.id)
         iax_dao.delete(iax)
 
-        row = self.session.query(IAXEndpoint).first()
-        assert_that(row, none())
+        assert_that(inspect(iax).deleted)
 
     def test_given_endpoint_is_associated_to_trunk_then_trunk_is_dissociated(self):
-        iax_row = self.add_useriax()
-        trunk_row = self.add_trunk(endpoint='iax', endpoint_id=iax_row.id)
+        iax = self.add_useriax()
+        trunk = self.add_trunk(endpoint='iax', endpoint_id=iax.id)
 
-        iax = iax_dao.get(iax_row.id)
         iax_dao.delete(iax)
 
-        trunk_row = self.session.query(Trunk).get(trunk_row.id)
-        assert_that(trunk_row.endpoint, none())
-        assert_that(trunk_row.endpoint_id, none())
+        self.session.expire_all()
+        assert_that(trunk, has_properties(
+            endpoint=none(),
+            endpoint_id=none(),
+        ))

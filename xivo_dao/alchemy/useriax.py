@@ -16,7 +16,8 @@ from sqlalchemy.types import Integer, String, Text, Enum
 
 from xivo_dao.helpers.asterisk import AsteriskOptionsMixin
 from xivo_dao.helpers.db_manager import Base
-from xivo_dao.alchemy import enum
+
+from . import enum
 
 
 class UserIAX(Base, AsteriskOptionsMixin):
@@ -55,45 +56,41 @@ class UserIAX(Base, AsteriskOptionsMixin):
 
     id = Column(Integer, nullable=False)
     name = Column(String(40), nullable=False)
-    type = Column(Enum('friend', 'peer', 'user',
-                       name='useriax_type',
-                       metadata=Base.metadata),
-                  nullable=False)
+    type = Column(Enum('friend', 'peer', 'user', name='useriax_type', metadata=Base.metadata), nullable=False)
     username = Column(String(80))
     secret = Column(String(80), nullable=False, server_default='')
     dbsecret = Column(String(255), nullable=False, server_default='')
     context = Column(String(39))
     language = Column(String(20))
     accountcode = Column(String(20))
-    amaflags = Column(Enum('default', 'omit', 'billing', 'documentation',
-                           name='useriax_amaflags',
-                           metadata=Base.metadata),
-                      server_default='default')
+    amaflags = Column(
+        Enum('default', 'omit', 'billing', 'documentation', name='useriax_amaflags', metadata=Base.metadata),
+        server_default='default',
+    )
     mailbox = Column(String(80))
     callerid = Column(String(160))
     fullname = Column(String(80))
     cid_number = Column(String(80))
     trunk = Column(Integer, nullable=False, server_default='0')
-    auth = Column(Enum('plaintext', 'md5', 'rsa', 'plaintext,md5', 'plaintext,rsa', 'md5,rsa', 'plaintext,md5,rsa',
-                       name='useriax_auth',
-                       metadata=Base.metadata),
-                  nullable=False, server_default='plaintext,md5')
-    encryption = Column(Enum('no', 'yes', 'aes128',
-                             name='useriax_encryption',
-                             metadata=Base.metadata))
-    forceencryption = Column(Enum('no', 'yes', 'aes128',
-                                  name='useriax_encryption',
-                                  metadata=Base.metadata))
+    auth = Column(
+        Enum(
+            'plaintext', 'md5', 'rsa', 'plaintext,md5', 'plaintext,rsa', 'md5,rsa', 'plaintext,md5,rsa',
+            name='useriax_auth',
+            metadata=Base.metadata
+        ),
+        nullable=False,
+        server_default='plaintext,md5'
+    )
+    encryption = Column(Enum('no', 'yes', 'aes128', name='useriax_encryption', metadata=Base.metadata))
+    forceencryption = Column(Enum('no', 'yes', 'aes128', name='useriax_encryption', metadata=Base.metadata))
     maxauthreq = Column(Integer)
     inkeys = Column(String(80))
     outkey = Column(String(80))
     adsi = Column(Integer)
-    transfer = Column(Enum('no', 'yes', 'mediaonly',
-                           name='useriax_transfer',
-                           metadata=Base.metadata))
-    codecpriority = Column(Enum('disabled', 'host', 'caller', 'reqonly',
-                                name='useriax_codecpriority',
-                                metadata=Base.metadata))
+    transfer = Column(Enum('no', 'yes', 'mediaonly', name='useriax_transfer', metadata=Base.metadata))
+    codecpriority = Column(
+        Enum('disabled', 'host', 'caller', 'reqonly', name='useriax_codecpriority', metadata=Base.metadata)
+    )
     jitterbuffer = Column(Integer)
     forcejitterbuffer = Column(Integer)
     sendani = Column(Integer, nullable=False, server_default='0')
@@ -120,24 +117,22 @@ class UserIAX(Base, AsteriskOptionsMixin):
     keyrotate = Column(Integer)
     parkinglot = Column(Integer)
     protocol = Column(enum.trunk_protocol, nullable=False, server_default='iax')
-    category = Column(Enum('user', 'trunk',
-                           name='useriax_category',
-                           metadata=Base.metadata),
-                      nullable=False)
+    category = Column(Enum('user', 'trunk', name='useriax_category', metadata=Base.metadata), nullable=False)
     commented = Column(Integer, nullable=False, server_default='0')
     requirecalltoken = Column(String(4), nullable=False, server_default='no')
-    _options = Column("options", ARRAY(String, dimensions=2),
-                      nullable=False, default=list, server_default='{}')
+    _options = Column("options", ARRAY(String, dimensions=2), nullable=False, default=list, server_default='{}')
 
-    trunk_rel = relationship('TrunkFeatures',
-                             primaryjoin="""and_(
-                                 TrunkFeatures.protocol == 'iax',
-                                 TrunkFeatures.protocolid == UserIAX.id
-                             )""",
-                             foreign_keys='TrunkFeatures.protocolid',
-                             uselist=False,
-                             viewonly=True,
-                             back_populates='endpoint_iax')
+    trunk_rel = relationship(
+        'TrunkFeatures',
+        primaryjoin="""and_(
+            TrunkFeatures.protocol == 'iax',
+            TrunkFeatures.protocolid == UserIAX.id
+        )""",
+        foreign_keys='TrunkFeatures.protocolid',
+        uselist=False,
+        viewonly=True,
+        back_populates='endpoint_iax',
+    )
 
     def endpoint_protocol(self):
         return 'iax'
