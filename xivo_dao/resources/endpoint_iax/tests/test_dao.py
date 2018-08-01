@@ -142,6 +142,19 @@ class TestGet(DAOTestCase):
 
         assert_that(iax.options, has_items(["language", "fr_FR"], ["foo", "bar"]))
 
+    def test_get_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        iax_row = self.add_useriax(tenant_uuid=tenant.uuid)
+        iax = iax_dao.get(iax_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(iax, equal_to(iax_row))
+
+        iax_row = self.add_useriax()
+        self.assertRaises(
+            NotFoundError,
+            iax_dao.get, iax_row.id, tenant_uuids=[tenant.uuid],
+        )
+
 
 class TestSearch(DAOTestCase):
 

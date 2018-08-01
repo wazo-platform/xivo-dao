@@ -24,8 +24,8 @@ def search(session, **parameters):
 
 
 @daosession
-def get(session, iax_id):
-    return IAXPersistor(session).get(iax_id)
+def get(session, iax_id, tenant_uuids=None):
+    return IAXPersistor(session, tenant_uuids).get(iax_id)
 
 
 @daosession

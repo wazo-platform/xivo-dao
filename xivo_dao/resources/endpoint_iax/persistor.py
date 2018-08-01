@@ -4,6 +4,8 @@
 
 from functools import partial
 
+from sqlalchemy import text
+
 from xivo_dao.alchemy.useriax import UserIAX as IAX
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures as Trunk
 from xivo_dao.helpers import errors, generators
@@ -17,24 +19,26 @@ class IAXPersistor(CriteriaBuilderMixin):
 
     _search_table = IAX
 
-    def __init__(self, session):
+    def __init__(self, session, tenant_uuids=None):
         self.session = session
+        self.tenant_uuids = tenant_uuids
 
     def find_by(self, criteria):
-        return self.find_query(criteria).first()
+        return self._find_query(criteria).first()
 
     def find_all_by(self, criteria):
-        return self.find_query(criteria).all()
+        return self._find_query(criteria).all()
 
-    def find_query(self, criteria):
+    def _find_query(self, criteria):
         query = self.session.query(IAX)
+        query = self._filter_tenant_uuid(query)
         return self.build_criteria(query, criteria)
 
-    def get(self, id):
-        row = self.session.query(IAX).filter(IAX.id == id).first()
-        if not row:
-            raise errors.not_found('IAXEndpoint', id=id)
-        return row
+    def get(self, iax_id):
+        iax = self.find_by({'id': iax_id})
+        if not iax:
+            raise errors.not_found('IAXEndpoint', id=iax_id)
+        return iax
 
     def search(self, params):
         rows, total = iax_search.search(self.session, params)
@@ -57,6 +61,15 @@ class IAXPersistor(CriteriaBuilderMixin):
     def delete(self, iax):
         self.session.query(IAX).filter(IAX.id == iax.id).delete()
         self._fix_associated(iax)
+
+    def _filter_tenant_uuid(self, query):
+        if self.tenant_uuids is None:
+            return query
+
+        if not self.tenant_uuids:
+            return query.filter(text('false'))
+
+        return query.filter(IAX.tenant_uuid.in_(self.tenant_uuids))
 
     def _fix_associated(self, iax):
         trunk_id = (self.session.query(Trunk.id)
