@@ -102,6 +102,23 @@ class TestFindBy(DAOTestCase):
         assert_that(iax, equal_to(iax_row))
 
 
+class TestFindAllBy(DAOTestCase):
+
+    def test_find_all_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        iax1 = self.add_useriax(language='en_US', tenant_uuid=tenant.uuid)
+        iax2 = self.add_useriax(language='en_US')
+
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        iaxs = iax_dao.find_all_by(language='en_US', tenant_uuids=tenants)
+        assert_that(iaxs, has_items(iax1, iax2))
+
+        tenants = [tenant.uuid]
+        iaxs = iax_dao.find_all_by(language='en_US', tenant_uuids=tenants)
+        assert_that(iaxs, all_of(has_items(iax1), not_(has_items(iax2))))
+
+
 class TestGet(DAOTestCase):
 
     def test_given_no_rows_then_raises_error(self):
