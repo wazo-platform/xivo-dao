@@ -9,8 +9,8 @@ from .persistor import IAXPersistor
 
 
 @daosession
-def find_by(session, **criteria):
-    return IAXPersistor(session).find_by(criteria)
+def find_by(session, tenant_uuids=None, **criteria):
+    return IAXPersistor(session, tenant_uuids).find_by(criteria)
 
 
 @daosession

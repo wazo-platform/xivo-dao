@@ -90,6 +90,17 @@ class TestFindBy(DAOTestCase):
 
         assert_that(iax, equal_to(iax_row))
 
+    def test_find_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        iax_row = self.add_useriax()
+        iax = iax_dao.find_by(name=iax_row.name, tenant_uuids=[tenant.uuid])
+        assert_that(iax, none())
+
+        iax_row = self.add_useriax(tenant_uuid=tenant.uuid)
+        iax = iax_dao.find_by(name=iax_row.name, tenant_uuids=[tenant.uuid])
+        assert_that(iax, equal_to(iax_row))
+
 
 class TestGet(DAOTestCase):
 
