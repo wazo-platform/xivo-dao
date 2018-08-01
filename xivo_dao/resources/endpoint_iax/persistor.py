@@ -40,8 +40,10 @@ class IAXPersistor(CriteriaBuilderMixin):
             raise errors.not_found('IAXEndpoint', id=iax_id)
         return iax
 
-    def search(self, params):
-        rows, total = iax_search.search(self.session, params)
+    def search(self, parameters):
+        query = self.session.query(iax_search.config.table)
+        query = self._filter_tenant_uuid(query)
+        rows, total = iax_search.search_from_query(query, parameters)
         return SearchResult(total, rows)
 
     def create(self, iax):

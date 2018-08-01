@@ -206,6 +206,20 @@ class TestSimpleSearch(TestSearch):
 
         self.assert_search_returns_result(expected, search='alice')
 
+    def test_search_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        iax1 = self.add_useriax(name='sort1')
+        iax2 = self.add_useriax(name='sort2', tenant_uuid=tenant.uuid)
+
+        expected = SearchResult(2, [iax1, iax2])
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
+        expected = SearchResult(1, [iax2])
+        tenants = [tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
 
 class TestCreate(DAOTestCase):
 

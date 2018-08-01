@@ -19,8 +19,8 @@ def find_all_by(session, tenant_uuids=None, **criteria):
 
 
 @daosession
-def search(session, **parameters):
-    return IAXPersistor(session).search(parameters)
+def search(session, tenant_uuids=None, **parameters):
+    return IAXPersistor(session, tenant_uuids).search(parameters)
 
 
 @daosession
