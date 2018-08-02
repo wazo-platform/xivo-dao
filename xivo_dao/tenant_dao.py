@@ -17,3 +17,8 @@ def get_or_create_tenant(session, tenant_uuid):
     session.flush()
 
     return tenant
+
+
+@daosession
+def find(session):
+    return session.query(Tenant).first()
