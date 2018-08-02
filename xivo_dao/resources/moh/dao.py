@@ -29,8 +29,8 @@ def find(session, moh_uuid, tenant_uuids=None):
 
 
 @daosession
-def find_by(session, **criteria):
-    return MOHPersistor(session, moh_search).find_by(criteria)
+def find_by(session, tenant_uuids=None, **criteria):
+    return MOHPersistor(session, moh_search, tenant_uuids).find_by(criteria)
 
 
 @daosession
