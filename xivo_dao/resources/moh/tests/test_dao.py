@@ -206,6 +206,20 @@ class TestSimpleSearch(TestSearch):
 
         self.assert_search_returns_result(expected)
 
+    def test_search_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        moh1 = self.add_moh()
+        moh2 = self.add_moh(tenant_uuid=tenant.uuid)
+
+        expected = SearchResult(2, [moh1, moh2])
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
+        expected = SearchResult(1, [moh2])
+        tenants = [tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
 
 class TestSearchGivenMultipleMOH(TestSearch):
 

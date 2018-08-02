@@ -9,8 +9,8 @@ from xivo_dao.helpers.db_manager import daosession
 
 
 @daosession
-def search(session, **parameters):
-    return MOHPersistor(session, moh_search).search(parameters)
+def search(session, tenant_uuids=None, **parameters):
+    return MOHPersistor(session, moh_search, tenant_uuids).search(parameters)
 
 
 @daosession
