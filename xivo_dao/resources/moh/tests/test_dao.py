@@ -211,7 +211,7 @@ class TestSearchGivenMultipleMOH(TestSearch):
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_fields(self):
-        moh_model = MOH(name='mymoh', mode='files')
+        moh_model = MOH(tenant_uuid=self.default_tenant.uuid, name='mymoh', mode='files')
         moh = moh_dao.create(moh_model)
 
         self.session.expire_all()
@@ -227,6 +227,7 @@ class TestCreate(DAOTestCase):
 
     def test_create_with_all_fields(self):
         moh_model = MOH(
+            tenant_uuid=self.default_tenant.uuid,
             name='mymoh',
             label='moh, you\'re mine',
             mode='files',
@@ -240,6 +241,7 @@ class TestCreate(DAOTestCase):
         assert_that(inspect(moh).persistent)
         assert_that(moh, has_properties(
             uuid=not_none(),
+            tenant_uuid=self.default_tenant.uuid,
             name='mymoh',
             label='moh, you\'re mine',
             mode='files',
