@@ -19,8 +19,8 @@ def get(session, moh_uuid, tenant_uuids=None):
 
 
 @daosession
-def get_by(session, **criteria):
-    return MOHPersistor(session, moh_search).get_by(criteria)
+def get_by(session, tenant_uuids=None, **criteria):
+    return MOHPersistor(session, moh_search, tenant_uuids).get_by(criteria)
 
 
 @daosession

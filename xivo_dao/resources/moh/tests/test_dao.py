@@ -137,6 +137,19 @@ class TestGetBy(DAOTestCase):
     def test_given_moh_does_not_exist_then_raises_error(self):
         self.assertRaises(NotFoundError, moh_dao.get_by, uuid=UUID)
 
+    def test_get_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        moh_row = self.add_moh()
+        self.assertRaises(
+            NotFoundError,
+            moh_dao.get_by, uuid=moh_row.uuid, tenant_uuids=[tenant.uuid],
+        )
+
+        moh_row = self.add_moh(tenant_uuid=tenant.uuid)
+        moh = moh_dao.get_by(uuid=moh_row.uuid, tenant_uuids=[tenant.uuid])
+        assert_that(moh, equal_to(moh_row))
+
 
 class TestFindAllBy(DAOTestCase):
 
