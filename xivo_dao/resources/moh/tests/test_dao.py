@@ -38,6 +38,16 @@ class TestFind(DAOTestCase):
 
         assert_that(moh, equal_to(moh_row))
 
+    def test_find_multi_tenant(self):
+        tenant = self.add_tenant()
+        moh = self.add_moh(tenant_uuid=tenant.uuid)
+
+        result = moh_dao.find(moh.uuid, tenant_uuids=[tenant.uuid])
+        assert_that(result, equal_to(moh))
+
+        result = moh_dao.find(moh.uuid, tenant_uuids=[self.default_tenant.uuid])
+        assert_that(result, none())
+
 
 class TestGet(DAOTestCase):
 
