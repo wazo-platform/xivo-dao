@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0+
 
 from hamcrest import (
+    all_of,
     assert_that,
     contains,
     equal_to,
@@ -10,6 +11,7 @@ from hamcrest import (
     has_properties,
     has_property,
     none,
+    not_,
     not_none,
 )
 from sqlalchemy.inspection import inspect
@@ -168,6 +170,20 @@ class TestFindAllBy(DAOTestCase):
             has_property('uuid', moh1.uuid),
             has_property('uuid', moh2.uuid),
         ))
+
+    def test_find_all_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        moh1 = self.add_moh(label='label', tenant_uuid=tenant.uuid)
+        moh2 = self.add_moh(label='label')
+
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        mohs = moh_dao.find_all_by(label='label', tenant_uuids=tenants)
+        assert_that(mohs, has_items(moh1, moh2))
+
+        tenants = [tenant.uuid]
+        mohs = moh_dao.find_all_by(label='label', tenant_uuids=tenants)
+        assert_that(mohs, all_of(has_items(moh1), not_(has_items(moh2))))
 
 
 class TestSearch(DAOTestCase):
