@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
+
+from sqlalchemy import text
 
 from xivo_dao.alchemy.paging import Paging
 
@@ -12,9 +14,10 @@ class PagingPersistor(CriteriaBuilderMixin):
 
     _search_table = Paging
 
-    def __init__(self, session, paging_search):
+    def __init__(self, session, paging_search, tenant_uuids=None):
         self.session = session
         self.paging_search = paging_search
+        self.tenant_uuids = tenant_uuids
 
     def find_by(self, criteria):
         query = self._find_query(criteria)
@@ -22,6 +25,7 @@ class PagingPersistor(CriteriaBuilderMixin):
 
     def _find_query(self, criteria):
         query = self.session.query(Paging)
+        query = self._filter_tenant_uuid(query)
         return self.build_criteria(query, criteria)
 
     def get_by(self, criteria):
@@ -37,6 +41,15 @@ class PagingPersistor(CriteriaBuilderMixin):
     def search(self, parameters):
         rows, total = self.paging_search.search(self.session, parameters)
         return SearchResult(total, rows)
+
+    def _filter_tenant_uuid(self, query):
+        if self.tenant_uuids is None:
+            return query
+
+        if not self.tenant_uuids:
+            return query.filter(text('false'))
+
+        return query.filter(Paging.tenant_uuid.in_(self.tenant_uuids))
 
     def create(self, paging):
         self.session.add(paging)

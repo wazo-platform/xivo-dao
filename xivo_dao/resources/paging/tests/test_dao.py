@@ -38,6 +38,16 @@ class TestFind(DAOTestCase):
 
         assert_that(paging, equal_to(paging_row))
 
+    def test_find_multi_tenant(self):
+        tenant = self.add_tenant()
+        paging = self.add_paging(tenant_uuid=tenant.uuid)
+
+        result = paging_dao.find(paging.id, tenant_uuids=[tenant.uuid])
+        assert_that(result, equal_to(paging))
+
+        result = paging_dao.find(paging.id, tenant_uuids=[self.default_tenant.uuid])
+        assert_that(result, none())
+
 
 class TestGet(DAOTestCase):
 
