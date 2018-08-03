@@ -14,8 +14,8 @@ def search(session, **parameters):
 
 
 @daosession
-def get(session, paging_id):
-    return PagingPersistor(session, paging_search).get_by({'id': paging_id})
+def get(session, paging_id, tenant_uuids=None):
+    return PagingPersistor(session, paging_search, tenant_uuids).get_by({'id': paging_id})
 
 
 @daosession
