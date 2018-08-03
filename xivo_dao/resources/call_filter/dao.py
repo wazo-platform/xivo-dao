@@ -30,8 +30,8 @@ def find(session, call_filter_id, tenant_uuids=None):
 
 
 @daosession
-def find_by(session, **criteria):
-    return CallFilterPersistor(session, call_filter_search).find_by(criteria)
+def find_by(session, tenant_uuids=None, **criteria):
+    return CallFilterPersistor(session, call_filter_search, tenant_uuids).find_by(criteria)
 
 
 @daosession

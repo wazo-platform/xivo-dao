@@ -112,6 +112,17 @@ class TestFindBy(DAOTestCase):
 
         assert_that(call_filter, none())
 
+    def test_find_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        call_filter_row = self.add_call_filter()
+        call_filter = call_filter_dao.find_by(id=call_filter_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(call_filter, none())
+
+        call_filter_row = self.add_call_filter(tenant_uuid=tenant.uuid)
+        call_filter = call_filter_dao.find_by(id=call_filter_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(call_filter, equal_to(call_filter_row))
+
 
 class TestGetBy(DAOTestCase):
 
