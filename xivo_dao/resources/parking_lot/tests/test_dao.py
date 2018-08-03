@@ -61,6 +61,19 @@ class TestGet(DAOTestCase):
 
         assert_that(parking_lot.id, equal_to(parking_lot.id))
 
+    def test_get_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        parking_lot_row = self.add_parking_lot(tenant_uuid=tenant.uuid)
+        parking_lot = parking_lot_dao.get(parking_lot_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(parking_lot, equal_to(parking_lot_row))
+
+        parking_lot_row = self.add_parking_lot()
+        self.assertRaises(
+            NotFoundError,
+            parking_lot_dao.get, parking_lot_row.id, tenant_uuids=[tenant.uuid],
+        )
+
 
 class TestFindBy(DAOTestCase):
 
