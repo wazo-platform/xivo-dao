@@ -121,6 +121,19 @@ class TestGetBy(DAOTestCase):
     def test_given_parking_lot_does_not_exist_then_raises_error(self):
         self.assertRaises(NotFoundError, parking_lot_dao.get_by, name='42')
 
+    def test_get_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        parking_lot_row = self.add_parking_lot()
+        self.assertRaises(
+            NotFoundError,
+            parking_lot_dao.get_by, id=parking_lot_row.id, tenant_uuids=[tenant.uuid],
+        )
+
+        parking_lot_row = self.add_parking_lot(tenant_uuid=tenant.uuid)
+        parking_lot = parking_lot_dao.get_by(id=parking_lot_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(parking_lot, equal_to(parking_lot_row))
+
 
 class TestFindAllBy(DAOTestCase):
 
