@@ -216,13 +216,14 @@ class TestSearchGivenMultiplePagings(TestSearch):
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_fields(self):
-        paging_model = Paging()
+        paging_model = Paging(tenant_uuid=self.default_tenant.uuid)
         paging = paging_dao.create(paging_model)
 
         self.session.expire_all()
         assert_that(inspect(paging).persistent)
         assert_that(paging, has_properties(
             id=is_not(none()),
+            tenant_uuid=self.default_tenant.uuid,
             name=None,
             number=None,
             duplex_bool=False,
@@ -237,6 +238,7 @@ class TestCreate(DAOTestCase):
 
     def test_create_with_all_fields(self):
         paging_model = Paging(
+            tenant_uuid=self.default_tenant.uuid,
             name='paging',
             number='123',
             duplex_bool=True,
@@ -253,6 +255,7 @@ class TestCreate(DAOTestCase):
         self.session.expire_all()
         assert_that(inspect(paging).persistent)
         assert_that(paging, has_properties(
+            tenant_uuid=self.default_tenant.uuid,
             name='paging',
             number='123',
             duplex_bool=True,
