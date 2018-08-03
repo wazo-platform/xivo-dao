@@ -201,6 +201,20 @@ class TestSimpleSearch(TestSearch):
 
         self.assert_search_returns_result(expected)
 
+    def test_search_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        paging1 = self.add_paging()
+        paging2 = self.add_paging(tenant_uuid=tenant.uuid)
+
+        expected = SearchResult(2, [paging1, paging2])
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
+        expected = SearchResult(1, [paging2])
+        tenants = [tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
 
 class TestSearchGivenMultiplePagings(TestSearch):
 

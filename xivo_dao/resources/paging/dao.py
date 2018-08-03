@@ -9,8 +9,8 @@ from .search import paging_search
 
 
 @daosession
-def search(session, **parameters):
-    return PagingPersistor(session, paging_search).search(parameters)
+def search(session, tenant_uuids=None, **parameters):
+    return PagingPersistor(session, paging_search, tenant_uuids).search(parameters)
 
 
 @daosession
