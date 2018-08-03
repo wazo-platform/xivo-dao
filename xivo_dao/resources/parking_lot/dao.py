@@ -34,8 +34,8 @@ def find_by(session, tenant_uuids=None, **criteria):
 
 
 @daosession
-def find_all_by(session, **criteria):
-    return ParkingLotPersistor(session, parking_lot_search).find_all_by(criteria)
+def find_all_by(session, tenant_uuids=None, **criteria):
+    return ParkingLotPersistor(session, parking_lot_search, tenant_uuids).find_all_by(criteria)
 
 
 @daosession
