@@ -121,6 +121,19 @@ class TestGetBy(DAOTestCase):
     def test_given_paging_does_not_exist_then_raises_error(self):
         self.assertRaises(NotFoundError, paging_dao.get_by, number='42')
 
+    def test_get_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        paging_row = self.add_paging()
+        self.assertRaises(
+            NotFoundError,
+            paging_dao.get_by, id=paging_row.id, tenant_uuids=[tenant.uuid],
+        )
+
+        paging_row = self.add_paging(tenant_uuid=tenant.uuid)
+        paging = paging_dao.get_by(id=paging_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(paging, equal_to(paging_row))
+
 
 class TestFindAllBy(DAOTestCase):
 
