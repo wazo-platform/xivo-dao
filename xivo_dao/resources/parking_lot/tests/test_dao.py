@@ -38,6 +38,16 @@ class TestFind(DAOTestCase):
 
         assert_that(parking_lot, equal_to(parking_lot_row))
 
+    def test_find_multi_tenant(self):
+        tenant = self.add_tenant()
+        parking_lot = self.add_parking_lot(tenant_uuid=tenant.uuid)
+
+        result = parking_lot_dao.find(parking_lot.id, tenant_uuids=[tenant.uuid])
+        assert_that(result, equal_to(parking_lot))
+
+        result = parking_lot_dao.find(parking_lot.id, tenant_uuids=[self.default_tenant.uuid])
+        assert_that(result, none())
+
 
 class TestGet(DAOTestCase):
 

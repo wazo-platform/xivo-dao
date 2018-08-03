@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao.helpers.db_manager import daosession
@@ -24,8 +24,8 @@ def get_by(session, **criteria):
 
 
 @daosession
-def find(session, parking_lot_id):
-    return ParkingLotPersistor(session, parking_lot_search).find_by({'id': parking_lot_id})
+def find(session, parking_lot_id, tenant_uuids=None):
+    return ParkingLotPersistor(session, parking_lot_search, tenant_uuids).find_by({'id': parking_lot_id})
 
 
 @daosession
