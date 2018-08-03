@@ -9,8 +9,8 @@ from .search import parking_lot_search
 
 
 @daosession
-def search(session, **parameters):
-    return ParkingLotPersistor(session, parking_lot_search).search(parameters)
+def search(session, tenant_uuids=None, **parameters):
+    return ParkingLotPersistor(session, parking_lot_search, tenant_uuids).search(parameters)
 
 
 @daosession
