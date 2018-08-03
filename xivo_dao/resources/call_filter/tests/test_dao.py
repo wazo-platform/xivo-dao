@@ -16,6 +16,7 @@ from hamcrest import (
     is_not,
     none,
 )
+from sqlalchemy.inspection import inspect
 
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.callfilter import Callfilter as CallFilter
@@ -182,18 +183,22 @@ class TestSearchGivenMultipleCallFilters(TestSearch):
         self.assert_search_returns_result(expected_all_resto, description='resto', order='name')
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
-        expected = SearchResult(4, [self.call_filter1,
-                                    self.call_filter2,
-                                    self.call_filter3,
-                                    self.call_filter4])
+        expected = SearchResult(4, [
+            self.call_filter1,
+            self.call_filter2,
+            self.call_filter3,
+            self.call_filter4,
+        ])
 
         self.assert_search_returns_result(expected, order='name')
 
     def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
-        expected = SearchResult(4, [self.call_filter4,
-                                    self.call_filter3,
-                                    self.call_filter2,
-                                    self.call_filter1])
+        expected = SearchResult(4, [
+            self.call_filter4,
+            self.call_filter3,
+            self.call_filter2,
+            self.call_filter1,
+        ])
 
         self.assert_search_returns_result(expected, order='name', direction='desc')
 
@@ -210,12 +215,14 @@ class TestSearchGivenMultipleCallFilters(TestSearch):
     def test_when_doing_a_paginated_search_then_returns_a_paginated_result(self):
         expected = SearchResult(3, [self.call_filter2])
 
-        self.assert_search_returns_result(expected,
-                                          search='a',
-                                          order='name',
-                                          direction='desc',
-                                          skip=1,
-                                          limit=1)
+        self.assert_search_returns_result(
+            expected,
+            search='a',
+            order='name',
+            direction='desc',
+            skip=1,
+            limit=1,
+        )
 
 
 class TestCreate(DAOTestCase):
@@ -226,13 +233,13 @@ class TestCreate(DAOTestCase):
         self.entity = self.add_entity(tenant_uuid=tenant.uuid)
 
     def test_create_minimal_fields(self):
-        call_filter = CallFilter(name='name')
+        call_filter_model = CallFilter(name='name')
 
-        result = call_filter_dao.create(call_filter)
+        call_filter = call_filter_dao.create(call_filter_model)
 
-        row = self.session.query(CallFilter).first()
-        assert_that(result, equal_to(row))
-        assert_that(result, has_properties(
+        self.session.expire_all()
+        assert_that(inspect(call_filter).persistent)
+        assert_that(call_filter, has_properties(
             name='name',
             strategy=none(),
             callfrom=none(),
@@ -242,7 +249,7 @@ class TestCreate(DAOTestCase):
         ))
 
     def test_create_with_all_fields(self):
-        call_filter = CallFilter(
+        call_filter_model = CallFilter(
             name='name',
             strategy='all-recipients-then-linear-surrogates',
             callfrom='all',
@@ -251,11 +258,11 @@ class TestCreate(DAOTestCase):
             description='description',
         )
 
-        result = call_filter_dao.create(call_filter)
+        call_filter = call_filter_dao.create(call_filter_model)
 
-        row = self.session.query(CallFilter).first()
-        assert_that(result, equal_to(row))
-        assert_that(result, has_properties(
+        self.session.expire_all()
+        assert_that(inspect(call_filter).persistent)
+        assert_that(call_filter, has_properties(
             name='name',
             strategy='all-recipients-then-linear-surrogates',
             callfrom='all',
@@ -265,11 +272,11 @@ class TestCreate(DAOTestCase):
         ))
 
     def test_create_fill_default_values(self):
-        call_filter = CallFilter(name='name')
+        call_filter_model = CallFilter(name='name')
 
-        result = call_filter_dao.create(call_filter)
+        call_filter = call_filter_dao.create(call_filter_model)
 
-        assert_that(result, has_properties(
+        assert_that(call_filter, has_properties(
             entity_id=self.entity.id,
             type='bosssecretary',
         ))
@@ -287,7 +294,7 @@ class TestEdit(DAOTestCase):
             description='description',
         )
 
-        call_filter = call_filter_dao.get(call_filter.id)
+        self.session.expire_all()
         call_filter.name = 'other_name'
         call_filter.strategy = 'all-recipients-then-all-surrogates'
         call_filter.callfrom = 'internal'
@@ -297,8 +304,8 @@ class TestEdit(DAOTestCase):
 
         call_filter_dao.edit(call_filter)
 
-        row = self.session.query(CallFilter).first()
-        assert_that(row, has_properties(
+        self.session.expire_all()
+        assert_that(call_filter, has_properties(
             name='other_name',
             strategy='all-recipients-then-all-surrogates',
             callfrom='internal',
@@ -315,8 +322,7 @@ class TestDelete(DAOTestCase):
 
         call_filter_dao.delete(call_filter)
 
-        row = self.session.query(CallFilter).first()
-        assert_that(row, none())
+        assert_that(inspect(call_filter).deleted)
 
 
 class TestAssociateTargets(DAOTestCase):

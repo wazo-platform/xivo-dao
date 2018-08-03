@@ -13,10 +13,11 @@ from sqlalchemy.sql import cast, not_
 from sqlalchemy.sql.schema import ForeignKeyConstraint
 from sqlalchemy.types import Boolean, Integer, String, Text
 
-from xivo_dao.alchemy import enum
-from xivo_dao.alchemy.callerid import Callerid
-from xivo_dao.alchemy.entity import Entity
 from xivo_dao.helpers.db_manager import Base
+
+from . import enum
+from .callerid import Callerid
+from .entity import Entity
 
 
 class Callfilter(Base):
@@ -42,42 +43,60 @@ class Callfilter(Base):
 
     entity = relationship(Entity)
 
-    callfilter_dialactions = relationship('Dialaction',
-                                          primaryjoin="""and_(Dialaction.category == 'callfilter',
-                                              Dialaction.categoryval == cast(Callfilter.id, String))""",
-                                          cascade='all, delete-orphan',
-                                          collection_class=attribute_mapped_collection('event'),
-                                          foreign_keys='Dialaction.categoryval')
+    callfilter_dialactions = relationship(
+        'Dialaction',
+        primaryjoin="""and_(
+            Dialaction.category == 'callfilter',
+            Dialaction.categoryval == cast(Callfilter.id, String
+        ))""",
+        cascade='all, delete-orphan',
+        collection_class=attribute_mapped_collection('event'),
+        foreign_keys='Dialaction.categoryval',
+    )
 
-    caller_id = relationship('Callerid',
-                             primaryjoin="""and_(Callerid.type == 'callfilter',
-                                                 Callerid.typeval == Callfilter.id)""",
-                             foreign_keys='Callerid.typeval',
-                             cascade='all, delete-orphan',
-                             uselist=False)
+    caller_id = relationship(
+        'Callerid',
+        primaryjoin="""and_(
+            Callerid.type == 'callfilter',
+            Callerid.typeval == Callfilter.id
+        )""",
+        foreign_keys='Callerid.typeval',
+        cascade='all, delete-orphan',
+        uselist=False,
+    )
 
-    caller_id_mode = association_proxy('caller_id', 'mode',
-                                       creator=lambda _mode: Callerid(type='callfilter',
-                                                                      mode=_mode))
-    caller_id_name = association_proxy('caller_id', 'name',
-                                       creator=lambda _name: Callerid(type='callfilter',
-                                                                      name=_name))
+    caller_id_mode = association_proxy(
+        'caller_id', 'mode',
+        creator=lambda _mode: Callerid(type='callfilter', mode=_mode),
+    )
+    caller_id_name = association_proxy(
+        'caller_id', 'name',
+        creator=lambda _name: Callerid(type='callfilter', name=_name),
+    )
 
-    recipients = relationship('Callfiltermember',
-                              primaryjoin="""and_(Callfiltermember.bstype == 'boss',
-                                                  Callfiltermember.callfilterid == Callfilter.id)""",
-                              foreign_keys='Callfiltermember.callfilterid',
-                              order_by='Callfiltermember.priority',
-                              collection_class=ordering_list('priority', reorder_on_append=True),
-                              cascade='all, delete-orphan')
+    recipients = relationship(
+        'Callfiltermember',
+        primaryjoin="""and_(
+            Callfiltermember.bstype == 'boss',
+            Callfiltermember.callfilterid == Callfilter.id
+        )""",
+        foreign_keys='Callfiltermember.callfilterid',
+        order_by='Callfiltermember.priority',
+        collection_class=ordering_list('priority', reorder_on_append=True),
+        cascade='all, delete-orphan',
+    )
 
-    surrogates = relationship('Callfiltermember',
-                              primaryjoin="""and_(Callfiltermember.bstype == 'secretary',
-                                                  Callfiltermember.callfilterid == Callfilter.id)""",
-                              foreign_keys='Callfiltermember.callfilterid',
-                              order_by='Callfiltermember.priority',
-                              collection_class=ordering_list('priority', reorder_on_append=True),
-                              cascade='all, delete-orphan')
+    surrogates = relationship(
+        'Callfiltermember',
+        primaryjoin="""and_(
+            Callfiltermember.bstype == 'secretary',
+            Callfiltermember.callfilterid == Callfilter.id
+        )""",
+        foreign_keys='Callfiltermember.callfilterid',
+        order_by='Callfiltermember.priority',
+        collection_class=ordering_list('priority', reorder_on_append=True),
+        cascade='all, delete-orphan',
+    )
 
     @property
     def fallbacks(self):
