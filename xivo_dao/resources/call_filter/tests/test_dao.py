@@ -218,6 +218,20 @@ class TestSimpleSearch(TestSearch):
 
         self.assert_search_returns_result(expected)
 
+    def test_search_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        call_filter1 = self.add_call_filter(name='sort1')
+        call_filter2 = self.add_call_filter(name='sort2', tenant_uuid=tenant.uuid)
+
+        expected = SearchResult(2, [call_filter1, call_filter2])
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
+        expected = SearchResult(1, [call_filter2])
+        tenants = [tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
 
 class TestSearchGivenMultipleCallFilters(TestSearch):
 

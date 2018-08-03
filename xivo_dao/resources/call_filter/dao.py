@@ -10,8 +10,8 @@ from .search import call_filter_search
 
 
 @daosession
-def search(session, **parameters):
-    return CallFilterPersistor(session, call_filter_search).search(parameters)
+def search(session, tenant_uuids=None, **parameters):
+    return CallFilterPersistor(session, call_filter_search, tenant_uuids).search(parameters)
 
 
 @daosession
