@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, PrimaryKeyConstraint
+from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint
 from sqlalchemy.types import Integer, String
 
 from xivo_dao.helpers.db_manager import Base
@@ -17,6 +17,7 @@ class ParkingLot(Base):
     )
 
     id = Column(Integer)
+    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
     name = Column(String(128))
     slots_start = Column(String(40), nullable=False)
     slots_end = Column(String(40), nullable=False)

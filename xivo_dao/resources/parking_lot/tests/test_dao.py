@@ -208,13 +208,18 @@ class TestSearchGivenMultipleParkingLots(TestSearch):
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_fields(self):
-        parking_lot_model = ParkingLot(slots_start='701', slots_end='750')
+        parking_lot_model = ParkingLot(
+            tenant_uuid=self.default_tenant.uuid,
+            slots_start='701',
+            slots_end='750',
+        )
         parking_lot = parking_lot_dao.create(parking_lot_model)
 
         self.session.expire_all()
         assert_that(inspect(parking_lot).persistent)
         assert_that(parking_lot, has_properties(
             id=is_not(none()),
+            tenant_uuid=self.default_tenant.uuid,
             name=None,
             slots_start='701',
             slots_end='750',
@@ -224,6 +229,7 @@ class TestCreate(DAOTestCase):
 
     def test_create_with_all_fields(self):
         parking_lot_model = ParkingLot(
+            tenant_uuid=self.default_tenant.uuid,
             name='parking lot',
             slots_start='701',
             slots_end='750',
@@ -235,6 +241,7 @@ class TestCreate(DAOTestCase):
         self.session.expire_all()
         assert_that(inspect(parking_lot).persistent)
         assert_that(parking_lot, has_properties(
+            tenant_uuid=self.default_tenant.uuid,
             name='parking lot',
             slots_start='701',
             slots_end='750',
