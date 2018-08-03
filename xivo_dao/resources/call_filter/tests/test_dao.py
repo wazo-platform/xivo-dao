@@ -233,13 +233,14 @@ class TestCreate(DAOTestCase):
         self.entity = self.add_entity(tenant_uuid=tenant.uuid)
 
     def test_create_minimal_fields(self):
-        call_filter_model = CallFilter(name='name')
+        call_filter_model = CallFilter(tenant_uuid=self.default_tenant.uuid, name='name')
 
         call_filter = call_filter_dao.create(call_filter_model)
 
         self.session.expire_all()
         assert_that(inspect(call_filter).persistent)
         assert_that(call_filter, has_properties(
+            tenant_uuid=self.default_tenant.uuid,
             name='name',
             strategy=none(),
             callfrom=none(),
@@ -250,6 +251,7 @@ class TestCreate(DAOTestCase):
 
     def test_create_with_all_fields(self):
         call_filter_model = CallFilter(
+            tenant_uuid=self.default_tenant.uuid,
             name='name',
             strategy='all-recipients-then-linear-surrogates',
             callfrom='all',
@@ -263,6 +265,7 @@ class TestCreate(DAOTestCase):
         self.session.expire_all()
         assert_that(inspect(call_filter).persistent)
         assert_that(call_filter, has_properties(
+            tenant_uuid=self.default_tenant.uuid,
             name='name',
             strategy='all-recipients-then-linear-surrogates',
             callfrom='all',
@@ -272,7 +275,7 @@ class TestCreate(DAOTestCase):
         ))
 
     def test_create_fill_default_values(self):
-        call_filter_model = CallFilter(name='name')
+        call_filter_model = CallFilter(tenant_uuid=self.default_tenant.uuid, name='name')
 
         call_filter = call_filter_dao.create(call_filter_model)
 

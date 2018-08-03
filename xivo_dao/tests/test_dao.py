@@ -982,21 +982,20 @@ class ItemInserter(object):
         return schedule_path
 
     def add_bsfilter(self, **kwargs):
-        options = {'callfrom': 'internal',
-                   'type': 'bosssecretary',
-                   'bosssecretary': 'bossfirst-serial',
-                   'name': 'bsfilter',
-                   'description': '',
-                   'commented': 0}
-        options.update(kwargs)
-
-        callfilter = Callfilter(**options)
+        kwargs.setdefault('callfrom', 'internal')
+        kwargs.setdefault('type', 'bosssecretary')
+        kwargs.setdefault('name', 'bsfilter')
+        kwargs.setdefault('description', '')
+        kwargs.setdefault('commented', 0)
+        kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
+        callfilter = Callfilter(**kwargs)
         self.add_me(callfilter)
         return callfilter
 
     def add_call_filter(self, **kwargs):
         kwargs.setdefault('name', self._random_name())
         kwargs.setdefault('type', 'bosssecretary')
+        kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
         callfilter = Callfilter(**kwargs)
         self.add_me(callfilter)
         return callfilter

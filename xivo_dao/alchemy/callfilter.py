@@ -8,7 +8,7 @@ from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
+from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint, UniqueConstraint
 from sqlalchemy.sql import cast, not_
 from sqlalchemy.sql.schema import ForeignKeyConstraint
 from sqlalchemy.types import Boolean, Integer, String, Text
@@ -32,6 +32,7 @@ class Callfilter(Base):
     )
 
     id = Column(Integer, nullable=False)
+    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
     entity_id = Column(Integer, server_default=text('NULL'))
     name = Column(String(128), nullable=False, server_default='')
     type = Column(enum.callfilter_type, nullable=False)
