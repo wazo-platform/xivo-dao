@@ -57,6 +57,16 @@ class TestFind(DAOTestCase):
 
         assert_that(result, equal_to(call_filter))
 
+    def test_find_multi_tenant(self):
+        tenant = self.add_tenant()
+        call_filter = self.add_call_filter(tenant_uuid=tenant.uuid)
+
+        result = call_filter_dao.find(call_filter.id, tenant_uuids=[tenant.uuid])
+        assert_that(result, equal_to(call_filter))
+
+        result = call_filter_dao.find(call_filter.id, tenant_uuids=[self.default_tenant.uuid])
+        assert_that(result, none())
+
 
 class TestGet(DAOTestCase):
 

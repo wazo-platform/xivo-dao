@@ -25,8 +25,8 @@ def get_by(session, **criteria):
 
 
 @daosession
-def find(session, call_filter_id):
-    return CallFilterPersistor(session, call_filter_search).find_by({'id': call_filter_id})
+def find(session, call_filter_id, tenant_uuids=None):
+    return CallFilterPersistor(session, call_filter_search, tenant_uuids).find_by({'id': call_filter_id})
 
 
 @daosession
