@@ -269,6 +269,19 @@ class TestGetBy(TestUser):
     def test_given_user_does_not_exist_then_raises_error(self):
         self.assertRaises(NotFoundError, user_dao.get_by, firstname='42')
 
+    def test_get_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        user_row = self.add_user()
+        self.assertRaises(
+            NotFoundError,
+            user_dao.get_by, id=user_row.id, tenant_uuids=[tenant.uuid],
+        )
+
+        user_row = self.add_user(tenant_uuid=tenant.uuid)
+        user = user_dao.get_by(id=user_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(user, equal_to(user_row))
+
 
 class TestFindAllBy(TestUser):
 
