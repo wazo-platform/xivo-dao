@@ -93,6 +93,17 @@ class TestFindBy(DAOTestCase):
 
         assert_that(paging, none())
 
+    def test_find_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        paging_row = self.add_paging()
+        paging = paging_dao.find_by(id=paging_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(paging, none())
+
+        paging_row = self.add_paging(tenant_uuid=tenant.uuid)
+        paging = paging_dao.find_by(id=paging_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(paging, equal_to(paging_row))
+
 
 class TestGetBy(DAOTestCase):
 
