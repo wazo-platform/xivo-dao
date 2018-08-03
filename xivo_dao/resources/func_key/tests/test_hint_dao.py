@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 import six
@@ -11,8 +11,6 @@ from hamcrest.core.base_matcher import BaseMatcher
 from hamcrest.core.helpers.wrap_matcher import wrap_matcher
 from xivo_dao.tests.test_dao import DAOTestCase
 
-from xivo_dao.alchemy.callfilter import Callfilter
-from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 
 from xivo_dao.resources.func_key import hint_dao
@@ -437,29 +435,11 @@ class TestBSFilterHints(TestHints):
         boss_row = self.add_user_and_func_key(exten='1000')
         secretary_row = self.add_user_and_func_key(exten='1001')
 
-        callfilter_row = self.add_call_filter('bsfilter', commented=commented)
+        callfilter_row = self.add_call_filter(commented=commented)
         boss_member_row = self.add_filter_member(callfilter_row.id, boss_row.id)
         secretary_member_row = self.add_filter_member(callfilter_row.id, secretary_row.id, 'secretary')
         self.add_bsfilter_destination(secretary_member_row.id)
         return boss_member_row, secretary_member_row
-
-    def add_call_filter(self, name, commented=0):
-        callfilter = Callfilter(callfrom='internal',
-                                type='bosssecretary',
-                                bosssecretary='bossfirst-serial',
-                                name=name,
-                                description='',
-                                commented=commented)
-        self.add_me(callfilter)
-        return callfilter
-
-    def add_filter_member(self, filterid, userid, role='boss'):
-        member = Callfiltermember(type='user',
-                                  typeval=str(userid),
-                                  callfilterid=filterid,
-                                  bstype=role)
-        self.add_me(member)
-        return member
 
     def test_given_bs_filter_func_key_then_returns_bs_filter_hint(self):
         _, filtermember_row = self.create_boss_and_secretary()
