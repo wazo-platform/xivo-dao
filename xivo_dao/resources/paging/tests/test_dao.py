@@ -5,6 +5,7 @@
 from __future__ import unicode_literals
 
 from hamcrest import (
+    all_of,
     assert_that,
     contains,
     equal_to,
@@ -13,6 +14,7 @@ from hamcrest import (
     has_property,
     is_not,
     none,
+    not_,
 )
 from sqlalchemy.inspection import inspect
 
@@ -163,6 +165,20 @@ class TestFindAllBy(DAOTestCase):
             has_property('id', paging1.id),
             has_property('id', paging2.id),
         ))
+
+    def test_find_all_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        paging1 = self.add_paging(description='description', tenant_uuid=tenant.uuid)
+        paging2 = self.add_paging(description='description')
+
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        pagings = paging_dao.find_all_by(description='description', tenant_uuids=tenants)
+        assert_that(pagings, has_items(paging1, paging2))
+
+        tenants = [tenant.uuid]
+        pagings = paging_dao.find_all_by(description='description', tenant_uuids=tenants)
+        assert_that(pagings, all_of(has_items(paging1), not_(has_items(paging2))))
 
 
 class TestSearch(DAOTestCase):
