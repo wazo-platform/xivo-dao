@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy.orm import relationship
@@ -23,12 +23,15 @@ class ParkingLot(Base):
     timeout = Column(Integer)
     music_on_hold = Column(String(128))
 
-    extensions = relationship('Extension',
-                              primaryjoin="""and_(Extension.type == 'parking',
-                                                  Extension.typeval == cast(ParkingLot.id, String))""",
-                              foreign_keys='Extension.typeval',
-                              viewonly=True,
-                              back_populates='parking_lot')
+    extensions = relationship(
+        'Extension',
+        primaryjoin="""and_(
+            Extension.type == 'parking',
+            Extension.typeval == cast(ParkingLot.id, String)
+        )""",
+        foreign_keys='Extension.typeval',
+        viewonly=True,
+        back_populates='parking_lot')
 
     def in_slots_range(self, exten):
         exten = int(exten)
