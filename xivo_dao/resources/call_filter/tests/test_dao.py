@@ -140,6 +140,19 @@ class TestGetBy(DAOTestCase):
     def test_given_call_filter_does_not_exist_then_raises_error(self):
         self.assertRaises(NotFoundError, call_filter_dao.get_by, name='42')
 
+    def test_get_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        call_filter_row = self.add_call_filter()
+        self.assertRaises(
+            NotFoundError,
+            call_filter_dao.get_by, id=call_filter_row.id, tenant_uuids=[tenant.uuid],
+        )
+
+        call_filter_row = self.add_call_filter(tenant_uuid=tenant.uuid)
+        call_filter = call_filter_dao.get_by(id=call_filter_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(call_filter, equal_to(call_filter_row))
+
 
 class TestFindAllBy(DAOTestCase):
 
