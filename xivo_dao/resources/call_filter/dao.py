@@ -15,8 +15,8 @@ def search(session, **parameters):
 
 
 @daosession
-def get(session, call_filter_id):
-    return CallFilterPersistor(session, call_filter_search).get_by({'id': call_filter_id})
+def get(session, call_filter_id, tenant_uuids=None):
+    return CallFilterPersistor(session, call_filter_search, tenant_uuids).get_by({'id': call_filter_id})
 
 
 @daosession

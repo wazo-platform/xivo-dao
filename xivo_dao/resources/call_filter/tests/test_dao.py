@@ -80,6 +80,19 @@ class TestGet(DAOTestCase):
 
         assert_that(result, equal_to(call_filter))
 
+    def test_get_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        call_filter_row = self.add_call_filter(tenant_uuid=tenant.uuid)
+        call_filter = call_filter_dao.get(call_filter_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(call_filter, equal_to(call_filter_row))
+
+        call_filter_row = self.add_call_filter()
+        self.assertRaises(
+            NotFoundError,
+            call_filter_dao.get, call_filter_row.id, tenant_uuids=[tenant.uuid],
+        )
+
 
 class TestFindBy(DAOTestCase):
 
