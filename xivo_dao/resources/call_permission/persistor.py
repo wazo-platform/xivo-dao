@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2016 Avencall
+# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao.alchemy.rightcall import RightCall as CallPermission
-from xivo_dao.alchemy.rightcallmember import RightCallMember
 
 from xivo_dao.helpers import errors
 from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
@@ -49,8 +48,5 @@ class CallPermissionPersistor(CriteriaBuilderMixin):
         self.session.flush()
 
     def delete(self, call_permission):
-        (self.session.query(RightCallMember)
-         .filter(RightCallMember.rightcallid == call_permission.id)
-         .delete())
         self.session.delete(call_permission)
         self.session.flush()
