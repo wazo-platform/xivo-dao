@@ -102,6 +102,17 @@ class TestFindBy(DAOTestCase):
 
         assert_that(call_permission, none())
 
+    def test_find_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        call_permission_row = self.add_call_permission()
+        call_permission = call_permission_dao.find_by(id=call_permission_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(call_permission, none())
+
+        call_permission_row = self.add_call_permission(tenant_uuid=tenant.uuid)
+        call_permission = call_permission_dao.find_by(id=call_permission_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(call_permission, equal_to(call_permission_row))
+
 
 class TestGetBy(DAOTestCase):
 

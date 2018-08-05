@@ -29,8 +29,8 @@ def find(session, call_permission_id, tenant_uuids=None):
 
 
 @daosession
-def find_by(session, **criteria):
-    return CallPermissionPersistor(session, call_permission_search).find_by(criteria)
+def find_by(session, tenant_uuids=None, **criteria):
+    return CallPermissionPersistor(session, call_permission_search, tenant_uuids).find_by(criteria)
 
 
 @daosession
