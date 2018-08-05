@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2016 Avencall
+# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao.helpers.db_manager import daosession
@@ -24,8 +24,8 @@ def get_by(session, **criteria):
 
 
 @daosession
-def find(session, call_permission_id):
-    return CallPermissionPersistor(session, call_permission_search).find_by({'id': call_permission_id})
+def find(session, call_permission_id, tenant_uuids=None):
+    return CallPermissionPersistor(session, call_permission_search, tenant_uuids).find_by({'id': call_permission_id})
 
 
 @daosession
