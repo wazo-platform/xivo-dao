@@ -1,27 +1,29 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2016 Avencall
+# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from __future__ import unicode_literals
 
-from hamcrest import (assert_that,
-                      contains,
-                      contains_inanyorder,
-                      equal_to,
-                      has_items,
-                      has_length,
-                      has_properties,
-                      has_property,
-                      is_not,
-                      none)
-
+from hamcrest import (
+    assert_that,
+    contains,
+    contains_inanyorder,
+    equal_to,
+    has_items,
+    has_properties,
+    has_property,
+    none,
+    not_none,
+)
+from sqlalchemy.inspection import inspect
 
 from xivo_dao.alchemy.rightcall import RightCall as CallPermission
 from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.helpers.exception import NotFoundError, InputError
-from xivo_dao.resources.call_permission import dao as call_permission_dao
 from xivo_dao.tests.test_dao import DAOTestCase
+
+from .. import dao as call_permission_dao
 
 
 class TestFind(DAOTestCase):
@@ -32,22 +34,18 @@ class TestFind(DAOTestCase):
         assert_that(result, none())
 
     def test_find(self):
-        call_permission_row = self.add_call_permission(name='Bôb',
-                                                       password='âS$%?^ééé',
-                                                       mode='allow',
-                                                       extensions=['123', '456'],
-                                                       enabled=True,
-                                                       description='description')
+        call_permission_row = self.add_call_permission(
+            name='Bôb',
+            password='âS$%?^ééé',
+            mode='allow',
+            extensions=['123', '456'],
+            enabled=True,
+            description='description',
+        )
 
         call_permission = call_permission_dao.find(call_permission_row.id)
 
-        assert_that(call_permission.id, equal_to(call_permission_row.id))
-        assert_that(call_permission.name, equal_to(call_permission_row.name))
-        assert_that(call_permission.password, equal_to(call_permission_row.password))
-        assert_that(call_permission.mode, equal_to(call_permission_row.mode))
-        assert_that(call_permission.enabled, equal_to(call_permission_row.enabled))
-        assert_that(call_permission.description, equal_to(call_permission_row.description))
-        assert_that(call_permission.extensions, contains_inanyorder(*call_permission_row.extensions))
+        assert_that(call_permission, equal_to(call_permission_row))
 
 
 class TestGet(DAOTestCase):
@@ -112,8 +110,10 @@ class TestFindAllBy(DAOTestCase):
 
         call_permissions = call_permission_dao.find_all_by(enabled=True)
 
-        assert_that(call_permissions, has_items(has_property('id', call_permission1.id),
-                                                has_property('id', call_permission2.id)))
+        assert_that(call_permissions, has_items(
+            has_property('id', call_permission1.id),
+            has_property('id', call_permission2.id),
+        ))
 
     def test_find_all_by_native_column(self):
         call_permission1 = self.add_call_permission(name='bob', description='description')
@@ -121,8 +121,10 @@ class TestFindAllBy(DAOTestCase):
 
         call_permissions = call_permission_dao.find_all_by(description='description')
 
-        assert_that(call_permissions, has_items(has_property('id', call_permission1.id),
-                                                has_property('id', call_permission2.id)))
+        assert_that(call_permissions, has_items(
+            has_property('id', call_permission1.id),
+            has_property('id', call_permission2.id),
+        ))
 
 
 class TestSearch(DAOTestCase):
@@ -178,19 +180,22 @@ class TestSearchGivenMultipleCallPermissions(TestSearch):
         self.assert_search_returns_result(expected_all_deny, mode='deny')
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
-        expected = SearchResult(4,
-                                [self.call_permission1,
-                                 self.call_permission2,
-                                 self.call_permission3,
-                                 self.call_permission4])
+        expected = SearchResult(4, [
+            self.call_permission1,
+            self.call_permission2,
+            self.call_permission3,
+            self.call_permission4,
+        ])
 
         self.assert_search_returns_result(expected, order='name')
 
     def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
-        expected = SearchResult(4, [self.call_permission4,
-                                    self.call_permission3,
-                                    self.call_permission2,
-                                    self.call_permission1])
+        expected = SearchResult(4, [
+            self.call_permission4,
+            self.call_permission3,
+            self.call_permission2,
+            self.call_permission1,
+        ])
 
         self.assert_search_returns_result(expected, order='name', direction='desc')
 
@@ -207,12 +212,14 @@ class TestSearchGivenMultipleCallPermissions(TestSearch):
     def test_when_doing_a_paginated_search_then_returns_a_paginated_result(self):
         expected = SearchResult(3, [self.call_permission2])
 
-        self.assert_search_returns_result(expected,
-                                          search='a',
-                                          order='name',
-                                          direction='desc',
-                                          skip=1,
-                                          limit=1)
+        self.assert_search_returns_result(
+            expected,
+            search='a',
+            order='name',
+            direction='desc',
+            skip=1,
+            limit=1,
+        )
 
 
 class TestCreate(DAOTestCase):
@@ -221,96 +228,95 @@ class TestCreate(DAOTestCase):
         self.assertRaises(InputError, CallPermission, mode='invalid_mode')
 
     def test_create_minimal_fields(self):
-        call_permission = CallPermission(name='Jôhn')
-        created_call_permission = call_permission_dao.create(call_permission)
+        call_permission_model = CallPermission(name='Jôhn')
+        call_permission = call_permission_dao.create(call_permission_model)
 
-        row = self.session.query(CallPermission).first()
+        self.session.expire_all()
+        assert_that(inspect(call_permission).persistent)
+        assert_that(call_permission, has_properties(
+            id=not_none(),
+            name="Jôhn",
+            password=none(),
+            mode='deny',
+            enabled=True,
+            description=none(),
+            extensions=[],
 
-        assert_that(created_call_permission, has_properties(id=row.id,
-                                                            name="Jôhn",
-                                                            password=none(),
-                                                            mode='deny',
-                                                            enabled=True,
-                                                            description=none(),
-                                                            extensions=[]))
-
-        assert_that(row, has_properties(id=is_not(none()),
-                                        name='Jôhn',
-                                        passwd='',
-                                        authorization=0,
-                                        commented=0,
-                                        description=none(),
-                                        rightcallextens=[]))
+            passwd='',
+            authorization=0,
+            commented=0,
+            rightcallextens=[],
+        ))
 
     def test_create_with_all_fields(self):
-        call_permission = CallPermission(name='rîghtcall1',
-                                         password='P$WDéẁ',
-                                         mode='allow',
-                                         enabled=False,
-                                         description='description',
-                                         extensions=['123', '456'])
+        call_permission_model = CallPermission(
+            name='rîghtcall1',
+            password='P$WDéẁ',
+            mode='allow',
+            enabled=False,
+            description='description',
+            extensions=['123', '456'],
+        )
 
-        created_call_permission = call_permission_dao.create(call_permission)
+        call_permission = call_permission_dao.create(call_permission_model)
 
-        row = self.session.query(CallPermission).first()
+        self.session.expire_all()
+        assert_that(inspect(call_permission).persistent)
+        assert_that(call_permission, has_properties(
+            id=not_none(),
+            name='rîghtcall1',
+            password='P$WDéẁ',
+            mode='allow',
+            enabled=False,
+            description='description',
+            extensions=contains_inanyorder('123', '456'),
 
-        assert_that(created_call_permission, has_properties(id=row.id,
-                                                            name='rîghtcall1',
-                                                            password='P$WDéẁ',
-                                                            mode='allow',
-                                                            enabled=False,
-                                                            description='description',
-                                                            extensions=contains_inanyorder('123', '456')))
-
-        assert_that(row, has_properties(name='rîghtcall1',
-                                        passwd='P$WDéẁ',
-                                        authorization=1,
-                                        commented=1,
-                                        description='description',
-                                        rightcallextens=has_length(2)))
-
-        assert_that(row.rightcallextens, contains_inanyorder(has_properties(rightcallid=row.id,
-                                                                            exten='123'),
-                                                             has_properties(rightcallid=row.id,
-                                                                            exten='456')))
+            passwd='P$WDéẁ',
+            authorization=1,
+            commented=1,
+            rightcallextens=contains_inanyorder(
+                has_properties(rightcallid=call_permission.id, exten='123'),
+                has_properties(rightcallid=call_permission.id, exten='456'),
+            )
+        ))
 
     def test_create_duplicate_extension(self):
-        call_permission = CallPermission(name='Jôhn', extensions=['123', '123'])
-        created_call_permission = call_permission_dao.create(call_permission)
+        call_permission_model = CallPermission(name='Jôhn', extensions=['123', '123'])
+        call_permission = call_permission_dao.create(call_permission_model)
 
-        row = self.session.query(CallPermission).first()
+        self.session.expire_all()
+        assert_that(inspect(call_permission).persistent)
+        assert_that(call_permission, has_properties(
+            id=not_none(),
+            name="Jôhn",
+            password=none(),
+            mode='deny',
+            enabled=True,
+            description=none(),
+            extensions=['123'],
 
-        assert_that(created_call_permission, has_properties(id=row.id,
-                                                            name="Jôhn",
-                                                            password=none(),
-                                                            mode='deny',
-                                                            enabled=True,
-                                                            description=none(),
-                                                            extensions=['123']))
-
-        assert_that(row, has_properties(id=is_not(none()),
-                                        name='Jôhn',
-                                        passwd='',
-                                        authorization=0,
-                                        commented=0,
-                                        description=none(),
-                                        rightcallextens=has_length(1)))
-
-        assert_that(row.rightcallextens, contains(has_properties(rightcallid=row.id,
-                                                                 exten='123')))
+            passwd='',
+            authorization=0,
+            commented=0,
+            rightcallextens=contains_inanyorder(
+                has_properties(rightcallid=call_permission.id, exten='123'),
+            )
+        ))
 
 
 class TestEdit(DAOTestCase):
 
     def test_edit_all_fields(self):
-        call_permission = call_permission_dao.create(CallPermission(name='rîghtcall1',
-                                                                    password='P$WDéẁ',
-                                                                    mode='deny',
-                                                                    enabled=True,
-                                                                    description='tototo',
-                                                                    extensions=['123', '456']))
+        call_permission = self.add_call_permission(
+            name='rîghtcall1',
+            password='P$WDéẁ',
+            mode='deny',
+            enabled=True,
+            description='tototo',
+            extensions=['123', '456'],
+        )
 
-        call_permission = call_permission_dao.get(call_permission.id)
+        self.session.expire_all()
         call_permission.name = 'denỳallfriends'
         call_permission.password = 'Alhahlalahl'
         call_permission.mode = 'allow'
@@ -320,89 +326,83 @@ class TestEdit(DAOTestCase):
 
         call_permission_dao.edit(call_permission)
 
-        row = self.session.query(CallPermission).first()
-
-        assert_that(row, has_properties(name='denỳallfriends',
-                                        passwd='Alhahlalahl',
-                                        authorization=1,
-                                        commented=1,
-                                        description='description',
-                                        rightcallextens=has_length(3)))
-
-        assert_that(row.rightcallextens, contains_inanyorder(has_properties(rightcallid=row.id,
-                                                                            exten='789'),
-                                                             has_properties(rightcallid=row.id,
-                                                                            exten='321'),
-                                                             has_properties(rightcallid=row.id,
-                                                                            exten='654')))
+        self.session.expire_all()
+        assert_that(call_permission, has_properties(
+            name='denỳallfriends',
+            passwd='Alhahlalahl',
+            authorization=1,
+            commented=1,
+            description='description',
+            rightcallextens=contains_inanyorder(
+                has_properties(rightcallid=call_permission.id, exten='789'),
+                has_properties(rightcallid=call_permission.id, exten='321'),
+                has_properties(rightcallid=call_permission.id, exten='654'),
+            )
+        ))
 
     def test_edit_set_fields_to_null(self):
-        call_permission = call_permission_dao.create(CallPermission(name='rîghtcall1',
-                                                                    password='P$WDéẁ',
-                                                                    mode='deny',
-                                                                    enabled=True,
-                                                                    description='tototo',
-                                                                    extensions=['123', '456']))
+        call_permission = self.add_call_permission(
+            name='rîghtcall1',
+            password='P$WDéẁ',
+            mode='deny',
+            enabled=True,
+            description='tototo',
+            extensions=['123', '456'],
+        )
 
-        call_permission = call_permission_dao.get(call_permission.id)
+        self.session.expire_all()
         call_permission.password = None
         call_permission.description = None
 
         call_permission_dao.edit(call_permission)
 
-        row = self.session.query(CallPermission).first()
-
-        assert_that(row, has_properties(passwd='',
-                                        description=none()))
+        self.session.expire_all()
+        assert_that(call_permission, has_properties(
+            passwd='',
+            description=none(),
+        ))
 
     def test_edit_extensions_with_same_value(self):
-        call_permission = call_permission_dao.create(CallPermission(name='rîghtcall1',
-                                                                    extensions=['123', '456']))
+        call_permission = self.add_call_permission(
+            name='rîghtcall1',
+            extensions=['123', '456'],
+        )
 
-        call_permission = call_permission_dao.get(call_permission.id)
+        self.session.expire_all()
         call_permission.extensions = ['789', '123']
 
         call_permission_dao.edit(call_permission)
 
-        row = self.session.query(CallPermission).first()
-
-        assert_that(row, has_properties(name='rîghtcall1',
-                                        rightcallextens=has_length(2)))
-
-        assert_that(row.rightcallextens, contains_inanyorder(has_properties(rightcallid=row.id,
-                                                                            exten='789'),
-                                                             has_properties(rightcallid=row.id,
-                                                                            exten='123')))
+        self.session.expire_all()
+        assert_that(call_permission, has_properties(
+            name='rîghtcall1',
+            rightcallextens=contains_inanyorder(
+                has_properties(rightcallid=call_permission.id, exten='789'),
+                has_properties(rightcallid=call_permission.id, exten='123'),
+            )
+        ))
 
 
 class TestDelete(DAOTestCase):
 
     def test_delete(self):
-        call_permission = call_permission_dao.create(CallPermission(name='Delete'))
-        call_permission = call_permission_dao.get(call_permission.id)
+        call_permission = self.add_call_permission(name='Delete')
 
         call_permission_dao.delete(call_permission)
 
-        row = self.session.query(CallPermission).first()
-        assert_that(row, none())
+        assert_that(inspect(call_permission).deleted)
 
     def test_delete_references_to_other_tables(self):
         user = self.add_user()
         group = self.add_group()
         incall = self.add_incall()
         outcall = self.add_outcall()
-        call_permission = call_permission_dao.create(CallPermission(name='Delete'))
-        self.add_right_call_member(rightcallid=call_permission.id, type='user', typeval=str(user.id))
-        self.add_right_call_member(rightcallid=call_permission.id, type='group', typeval=str(group.id))
-        self.add_right_call_member(rightcallid=call_permission.id, type='incall', typeval=str(incall.id))
-        self.add_right_call_member(rightcallid=call_permission.id, type='outcall', typeval=str(outcall.id))
+        call_permission = self.add_call_permission(name='Delete')
+        self.add_user_call_permission(rightcallid=call_permission.id, typeval=str(user.id))
+        self.add_group_call_permission(rightcallid=call_permission.id, typeval=str(group.id))
+        self.add_incall_call_permission(rightcallid=call_permission.id, typeval=str(incall.id))
+        self.add_outcall_call_permission(rightcallid=call_permission.id, typeval=str(outcall.id))
 
         call_permission_dao.delete(call_permission)
 
         assert_that(self.session.query(RightCallMember).first(), none())
-
-    def add_right_call_member(self, **kwargs):
-        member = RightCallMember(**kwargs)
-        self.session.add(member)
-        self.session.flush()
-        return member
