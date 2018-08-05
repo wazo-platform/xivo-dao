@@ -38,7 +38,9 @@ class CallPermissionPersistor(CriteriaBuilderMixin):
         return query.all()
 
     def search(self, parameters):
-        rows, total = self.call_permission_search.search(self.session, parameters)
+        query = self.session.query(self.call_permission_search.config.table)
+        query = self._filter_tenant_uuid(query)
+        rows, total = self.call_permission_search.search_from_query(query, parameters)
         return SearchResult(total, rows)
 
     def _filter_tenant_uuid(self, query):

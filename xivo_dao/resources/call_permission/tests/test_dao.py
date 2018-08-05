@@ -210,6 +210,20 @@ class TestSimpleSearch(TestSearch):
 
         self.assert_search_returns_result(expected)
 
+    def test_search_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        call_permission1 = self.add_call_permission()
+        call_permission2 = self.add_call_permission(tenant_uuid=tenant.uuid)
+
+        expected = SearchResult(2, [call_permission1, call_permission2])
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
+        expected = SearchResult(1, [call_permission2])
+        tenants = [tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
 
 class TestSearchGivenMultipleCallPermissions(TestSearch):
 

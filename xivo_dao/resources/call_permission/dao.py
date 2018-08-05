@@ -9,8 +9,8 @@ from xivo_dao.resources.call_permission.search import call_permission_search
 
 
 @daosession
-def search(session, **parameters):
-    return CallPermissionPersistor(session, call_permission_search).search(parameters)
+def search(session, tenant_uuids=None, **parameters):
+    return CallPermissionPersistor(session, call_permission_search, tenant_uuids).search(parameters)
 
 
 @daosession
