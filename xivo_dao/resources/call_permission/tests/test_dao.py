@@ -70,6 +70,19 @@ class TestGet(DAOTestCase):
 
         assert_that(call_permission.id, equal_to(call_permission.id))
 
+    def test_get_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        call_permission_row = self.add_call_permission(tenant_uuid=tenant.uuid)
+        call_permission = call_permission_dao.get(call_permission_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(call_permission, equal_to(call_permission_row))
+
+        call_permission_row = self.add_call_permission()
+        self.assertRaises(
+            NotFoundError,
+            call_permission_dao.get, call_permission_row.id, tenant_uuids=[tenant.uuid],
+        )
+
 
 class TestFindBy(DAOTestCase):
 

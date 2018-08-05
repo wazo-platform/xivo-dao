@@ -14,8 +14,8 @@ def search(session, **parameters):
 
 
 @daosession
-def get(session, call_permission_id):
-    return CallPermissionPersistor(session, call_permission_search).get_by({'id': call_permission_id})
+def get(session, call_permission_id, tenant_uuids=None):
+    return CallPermissionPersistor(session, call_permission_search, tenant_uuids).get_by({'id': call_permission_id})
 
 
 @daosession
