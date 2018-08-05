@@ -314,7 +314,7 @@ class ItemInserter(object):
 
     def add_call_permission(self, **kwargs):
         kwargs.setdefault('name', self._random_name())
-        kwargs.setdefault('enabled', True)
+        kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
 
         call_permission = CallPermission(**kwargs)
         self.session.add(call_permission)

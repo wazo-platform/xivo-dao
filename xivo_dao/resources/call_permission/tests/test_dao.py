@@ -228,13 +228,14 @@ class TestCreate(DAOTestCase):
         self.assertRaises(InputError, CallPermission, mode='invalid_mode')
 
     def test_create_minimal_fields(self):
-        call_permission_model = CallPermission(name='Jôhn')
+        call_permission_model = CallPermission(tenant_uuid=self.default_tenant.uuid, name='Jôhn')
         call_permission = call_permission_dao.create(call_permission_model)
 
         self.session.expire_all()
         assert_that(inspect(call_permission).persistent)
         assert_that(call_permission, has_properties(
             id=not_none(),
+            tenant_uuid=self.default_tenant.uuid,
             name="Jôhn",
             password=none(),
             mode='deny',
@@ -250,6 +251,7 @@ class TestCreate(DAOTestCase):
 
     def test_create_with_all_fields(self):
         call_permission_model = CallPermission(
+            tenant_uuid=self.default_tenant.uuid,
             name='rîghtcall1',
             password='P$WDéẁ',
             mode='allow',
@@ -264,6 +266,7 @@ class TestCreate(DAOTestCase):
         assert_that(inspect(call_permission).persistent)
         assert_that(call_permission, has_properties(
             id=not_none(),
+            tenant_uuid=self.default_tenant.uuid,
             name='rîghtcall1',
             password='P$WDéẁ',
             mode='allow',
@@ -281,13 +284,18 @@ class TestCreate(DAOTestCase):
         ))
 
     def test_create_duplicate_extension(self):
-        call_permission_model = CallPermission(name='Jôhn', extensions=['123', '123'])
+        call_permission_model = CallPermission(
+            tenant_uuid=self.default_tenant.uuid,
+            name='Jôhn',
+            extensions=['123', '123'],
+        )
         call_permission = call_permission_dao.create(call_permission_model)
 
         self.session.expire_all()
         assert_that(inspect(call_permission).persistent)
         assert_that(call_permission, has_properties(
             id=not_none(),
+            tenant_uuid=self.default_tenant.uuid,
             name="Jôhn",
             password=none(),
             mode='deny',
