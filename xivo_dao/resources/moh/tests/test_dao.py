@@ -1,21 +1,27 @@
 # -*- coding: utf-8 -*-
-# Copyright 2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
-from hamcrest import (assert_that,
-                      contains,
-                      equal_to,
-                      has_items,
-                      has_properties,
-                      has_property,
-                      is_not,
-                      none)
+from hamcrest import (
+    all_of,
+    assert_that,
+    contains,
+    equal_to,
+    has_items,
+    has_properties,
+    has_property,
+    none,
+    not_,
+    not_none,
+)
+from sqlalchemy.inspection import inspect
 
 from xivo_dao.alchemy.moh import MOH
 from xivo_dao.helpers.exception import NotFoundError, InputError
-from xivo_dao.resources.moh import dao as moh_dao
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.tests.test_dao import DAOTestCase
+
+from .. import dao as moh_dao
 
 UUID = 'abc-123-4567'
 
@@ -34,6 +40,16 @@ class TestFind(DAOTestCase):
 
         assert_that(moh, equal_to(moh_row))
 
+    def test_find_multi_tenant(self):
+        tenant = self.add_tenant()
+        moh = self.add_moh(tenant_uuid=tenant.uuid)
+
+        result = moh_dao.find(moh.uuid, tenant_uuids=[tenant.uuid])
+        assert_that(result, equal_to(moh))
+
+        result = moh_dao.find(moh.uuid, tenant_uuids=[self.default_tenant.uuid])
+        assert_that(result, none())
+
 
 class TestGet(DAOTestCase):
 
@@ -46,6 +62,19 @@ class TestGet(DAOTestCase):
         moh = moh_dao.get(moh_row.uuid)
 
         assert_that(moh, equal_to(moh_row))
+
+    def test_get_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        moh_row = self.add_moh(tenant_uuid=tenant.uuid)
+        moh = moh_dao.get(moh_row.uuid, tenant_uuids=[tenant.uuid])
+        assert_that(moh, equal_to(moh_row))
+
+        moh_row = self.add_moh()
+        self.assertRaises(
+            NotFoundError,
+            moh_dao.get, moh_row.uuid, tenant_uuids=[tenant.uuid],
+        )
 
 
 class TestFindBy(DAOTestCase):
@@ -74,6 +103,17 @@ class TestFindBy(DAOTestCase):
 
         assert_that(moh, none())
 
+    def test_find_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        moh_row = self.add_moh()
+        moh = moh_dao.find_by(uuid=moh_row.uuid, tenant_uuids=[tenant.uuid])
+        assert_that(moh, none())
+
+        moh_row = self.add_moh(tenant_uuid=tenant.uuid)
+        moh = moh_dao.find_by(uuid=moh_row.uuid, tenant_uuids=[tenant.uuid])
+        assert_that(moh, equal_to(moh_row))
+
 
 class TestGetBy(DAOTestCase):
 
@@ -99,6 +139,19 @@ class TestGetBy(DAOTestCase):
     def test_given_moh_does_not_exist_then_raises_error(self):
         self.assertRaises(NotFoundError, moh_dao.get_by, uuid=UUID)
 
+    def test_get_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        moh_row = self.add_moh()
+        self.assertRaises(
+            NotFoundError,
+            moh_dao.get_by, uuid=moh_row.uuid, tenant_uuids=[tenant.uuid],
+        )
+
+        moh_row = self.add_moh(tenant_uuid=tenant.uuid)
+        moh = moh_dao.get_by(uuid=moh_row.uuid, tenant_uuids=[tenant.uuid])
+        assert_that(moh, equal_to(moh_row))
+
 
 class TestFindAllBy(DAOTestCase):
 
@@ -113,8 +166,24 @@ class TestFindAllBy(DAOTestCase):
 
         mohs = moh_dao.find_all_by(label='mymoh')
 
-        assert_that(mohs, has_items(has_property('uuid', moh1.uuid),
-                                    has_property('uuid', moh2.uuid)))
+        assert_that(mohs, has_items(
+            has_property('uuid', moh1.uuid),
+            has_property('uuid', moh2.uuid),
+        ))
+
+    def test_find_all_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        moh1 = self.add_moh(label='label', tenant_uuid=tenant.uuid)
+        moh2 = self.add_moh(label='label')
+
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        mohs = moh_dao.find_all_by(label='label', tenant_uuids=tenants)
+        assert_that(mohs, has_items(moh1, moh2))
+
+        tenants = [tenant.uuid]
+        mohs = moh_dao.find_all_by(label='label', tenant_uuids=tenants)
+        assert_that(mohs, all_of(has_items(moh1), not_(has_items(moh2))))
 
 
 class TestSearch(DAOTestCase):
@@ -136,6 +205,20 @@ class TestSimpleSearch(TestSearch):
         expected = SearchResult(1, [moh])
 
         self.assert_search_returns_result(expected)
+
+    def test_search_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        moh1 = self.add_moh()
+        moh2 = self.add_moh(tenant_uuid=tenant.uuid)
+
+        expected = SearchResult(2, [moh1, moh2])
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
+        expected = SearchResult(1, [moh2])
+        tenants = [tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
 
 
 class TestSearchGivenMultipleMOH(TestSearch):
@@ -160,19 +243,22 @@ class TestSearchGivenMultipleMOH(TestSearch):
         self.assert_search_returns_result(expected_bar, search='ton', name='bar2')
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
-        expected = SearchResult(4,
-                                [self.moh1,
-                                 self.moh2,
-                                 self.moh3,
-                                 self.moh4])
+        expected = SearchResult(4, [
+            self.moh1,
+            self.moh2,
+            self.moh3,
+            self.moh4,
+        ])
 
         self.assert_search_returns_result(expected, order='label')
 
     def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
-        expected = SearchResult(4, [self.moh4,
-                                    self.moh3,
-                                    self.moh2,
-                                    self.moh1])
+        expected = SearchResult(4, [
+            self.moh4,
+            self.moh3,
+            self.moh2,
+            self.moh1,
+        ])
 
         self.assert_search_returns_result(expected, order='label', direction='desc')
 
@@ -189,61 +275,70 @@ class TestSearchGivenMultipleMOH(TestSearch):
     def test_when_doing_a_paginated_search_then_returns_a_paginated_result(self):
         expected = SearchResult(3, [self.moh3])
 
-        self.assert_search_returns_result(expected,
-                                          search='resto',
-                                          order='label',
-                                          direction='desc',
-                                          skip=1,
-                                          limit=1)
+        self.assert_search_returns_result(
+            expected,
+            search='resto',
+            order='label',
+            direction='desc',
+            skip=1,
+            limit=1,
+        )
 
 
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_fields(self):
-        moh = MOH(name='mymoh',
-                  mode='files')
-        created_moh = moh_dao.create(moh)
+        moh_model = MOH(tenant_uuid=self.default_tenant.uuid, name='mymoh', mode='files')
+        moh = moh_dao.create(moh_model)
 
-        row = self.session.query(MOH).first()
-
-        assert_that(created_moh, equal_to(row))
-        assert_that(created_moh, has_properties(uuid=is_not(none()),
-                                                name='mymoh',
-                                                label=none(),
-                                                mode='files',
-                                                application=none(),
-                                                sort=none()))
+        self.session.expire_all()
+        assert_that(inspect(moh).persistent)
+        assert_that(moh, has_properties(
+            uuid=not_none(),
+            name='mymoh',
+            label=none(),
+            mode='files',
+            application=none(),
+            sort=none(),
+        ))
 
     def test_create_with_all_fields(self):
-        moh = MOH(name='mymoh',
-                  label='moh, you\'re mine',
-                  mode='files',
-                  application='/bin/false unused',
-                  sort='random')
+        moh_model = MOH(
+            tenant_uuid=self.default_tenant.uuid,
+            name='mymoh',
+            label='moh, you\'re mine',
+            mode='files',
+            application='/bin/false unused',
+            sort='random',
+        )
 
-        created_moh = moh_dao.create(moh)
+        moh = moh_dao.create(moh_model)
 
-        row = self.session.query(MOH).first()
-
-        assert_that(created_moh, equal_to(row))
-        assert_that(created_moh, has_properties(uuid=is_not(none()),
-                                                name='mymoh',
-                                                label='moh, you\'re mine',
-                                                mode='files',
-                                                application='/bin/false unused',
-                                                sort='random'))
+        self.session.expire_all()
+        assert_that(inspect(moh).persistent)
+        assert_that(moh, has_properties(
+            uuid=not_none(),
+            tenant_uuid=self.default_tenant.uuid,
+            name='mymoh',
+            label='moh, you\'re mine',
+            mode='files',
+            application='/bin/false unused',
+            sort='random',
+        ))
 
 
 class TestEdit(DAOTestCase):
 
     def test_edit_all_fields(self):
-        moh = moh_dao.create(MOH(name='mymoh',
-                                 label='moh, you\'re mine',
-                                 mode='files',
-                                 application='/bin/false unused',
-                                 sort='random'))
+        moh = self.add_moh(
+            name='mymoh',
+            label='moh, you\'re mine',
+            mode='files',
+            application='/bin/false unused',
+            sort='random',
+        )
 
-        moh = moh_dao.get(moh.uuid)
+        self.session.expire_all()
         moh.name = 'zmymoh'
         moh.label = 'lol'
         moh.mode = 'custom'
@@ -252,39 +347,41 @@ class TestEdit(DAOTestCase):
 
         moh_dao.edit(moh)
 
-        row = self.session.query(MOH).first()
-
-        assert_that(moh, equal_to(row))
-        assert_that(moh, has_properties(uuid=is_not(none()),
-                                        name='zmymoh',
-                                        label='lol',
-                                        mode='custom',
-                                        application='/bin/true',
-                                        sort='alpha'))
+        self.session.expire_all()
+        assert_that(moh, has_properties(
+            uuid=not_none(),
+            name='zmymoh',
+            label='lol',
+            mode='custom',
+            application='/bin/true',
+            sort='alpha',
+        ))
 
     def test_edit_set_fields_to_null(self):
-        moh = moh_dao.create(MOH(name='mymoh',
-                                 label='moh, you\'re mine',
-                                 mode='files',
-                                 application='/bin/false unused',
-                                 sort='random'))
+        moh = self.add_moh(
+            name='mymoh',
+            label='moh, you\'re mine',
+            mode='files',
+            application='/bin/false unused',
+            sort='random',
+        )
 
-        moh = moh_dao.get(moh.uuid)
+        self.session.expire_all()
         moh.label = None
         moh.application = None
         moh.sort = None
 
         moh_dao.edit(moh)
 
-        row = self.session.query(MOH).first()
-
-        assert_that(moh, equal_to(row))
-        assert_that(moh, has_properties(uuid=is_not(none()),
-                                        name='mymoh',
-                                        label=none(),
-                                        mode='files',
-                                        application=none(),
-                                        sort=none()))
+        self.session.expire_all()
+        assert_that(moh, has_properties(
+            uuid=not_none(),
+            name='mymoh',
+            label=none(),
+            mode='files',
+            application=none(),
+            sort=none(),
+        ))
 
 
 class TestDelete(DAOTestCase):
@@ -294,5 +391,4 @@ class TestDelete(DAOTestCase):
 
         moh_dao.delete(moh)
 
-        row = self.session.query(MOH).first()
-        assert_that(row, none())
+        assert_that(inspect(moh).deleted)

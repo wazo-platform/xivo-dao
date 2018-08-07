@@ -820,6 +820,7 @@ class ItemInserter(object):
     def add_moh(self, **kwargs):
         kwargs.setdefault('name', self._random_name())
         kwargs.setdefault('mode', 'files')
+        kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
         moh = MOH(**kwargs)
         self.add_me(moh)
         return moh
