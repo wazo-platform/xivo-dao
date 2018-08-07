@@ -13,6 +13,7 @@ from hamcrest import (
     none,
     not_none,
 )
+from sqlalchemy.inspection import inspect
 
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.dialaction import Dialaction
@@ -448,6 +449,14 @@ class TestDelete(DAOTestCase):
 
         dialaction = self.session.query(Dialaction).filter(Dialaction.actionarg1 == str(queue.id)).first()
         assert_that(dialaction, has_properties(linked=0))
+
+    def test_when_deleting_then_contextmember_are_dissociated(self):
+        queue = self.add_queuefeatures()
+        context_member = self.add_context_member(type='queue', typeval=str(queue.id))
+
+        queue_dao.delete(queue)
+
+        assert_that(inspect(context_member).deleted)
 
 
 class TestAssociateCallPermission(DAOTestCase):
