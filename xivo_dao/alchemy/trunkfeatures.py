@@ -5,8 +5,19 @@
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint, Index
-from sqlalchemy.types import Boolean, Integer, Text, String
+from sqlalchemy.schema import (
+    Column,
+    Index,
+    ForeignKey,
+    PrimaryKeyConstraint,
+    UniqueConstraint,
+)
+from sqlalchemy.types import (
+    Boolean,
+    Integer,
+    String,
+    Text,
+)
 
 from xivo_dao.helpers.db_manager import Base
 from xivo_dao.alchemy import enum
@@ -24,6 +35,7 @@ class TrunkFeatures(Base):
     )
 
     id = Column(Integer, nullable=False)
+    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
     protocol = Column(enum.trunk_protocol)
     protocolid = Column(Integer)
     registerid = Column(Integer, nullable=False, server_default='0')
@@ -32,57 +44,71 @@ class TrunkFeatures(Base):
     context = Column(String(39))
     twilio_incoming = Column(Boolean, nullable=False, server_default='False')
 
-    endpoint_sip = relationship('UserSIP',
-                                primaryjoin="""and_(
-                                    TrunkFeatures.protocol == 'sip',
-                                    TrunkFeatures.protocolid == UserSIP.id
-                                )""",
-                                foreign_keys='TrunkFeatures.protocolid',
-                                viewonly=True,
-                                back_populates='trunk')
+    endpoint_sip = relationship(
+        'UserSIP',
+        primaryjoin="""and_(
+            TrunkFeatures.protocol == 'sip',
+            TrunkFeatures.protocolid == UserSIP.id
+        )""",
+        foreign_keys='TrunkFeatures.protocolid',
+        viewonly=True,
+        back_populates='trunk',
+    )
 
-    endpoint_iax = relationship('UserIAX',
-                                primaryjoin="""and_(
-                                    TrunkFeatures.protocol == 'iax',
-                                    TrunkFeatures.protocolid == UserIAX.id
-                                )""",
-                                foreign_keys='TrunkFeatures.protocolid',
-                                viewonly=True,
-                                back_populates='trunk_rel')
+    endpoint_iax = relationship(
+        'UserIAX',
+        primaryjoin="""and_(
+            TrunkFeatures.protocol == 'iax',
+            TrunkFeatures.protocolid == UserIAX.id
+        )""",
+        foreign_keys='TrunkFeatures.protocolid',
+        viewonly=True,
+        back_populates='trunk_rel',
+    )
 
-    endpoint_custom = relationship('UserCustom',
-                                   primaryjoin="""and_(
-                                       TrunkFeatures.protocol == 'custom',
-                                       TrunkFeatures.protocolid == UserCustom.id
-                                   )""",
-                                   foreign_keys='TrunkFeatures.protocolid',
-                                   viewonly=True,
-                                   back_populates='trunk')
+    endpoint_custom = relationship(
+        'UserCustom',
+        primaryjoin="""and_(
+            TrunkFeatures.protocol == 'custom',
+            TrunkFeatures.protocolid == UserCustom.id
+        )""",
+        foreign_keys='TrunkFeatures.protocolid',
+        viewonly=True,
+        back_populates='trunk',
+    )
 
-    outcall_trunks = relationship('OutcallTrunk',
-                                  cascade='all, delete-orphan',
-                                  back_populates='trunk')
+    outcall_trunks = relationship(
+        'OutcallTrunk',
+        cascade='all, delete-orphan',
+        back_populates='trunk',
+    )
 
-    outcalls = association_proxy('outcall_trunks', 'outcall',
-                                 creator=lambda _outcall: OutcallTrunk(outcall=_outcall))
+    outcalls = association_proxy(
+        'outcall_trunks', 'outcall',
+        creator=lambda _outcall: OutcallTrunk(outcall=_outcall),
+    )
 
-    register_iax = relationship('StaticIAX',
-                                primaryjoin="""and_(
-                                       TrunkFeatures.protocol == 'iax',
-                                       TrunkFeatures.registerid == StaticIAX.id
-                                )""",
-                                foreign_keys='TrunkFeatures.registerid',
-                                viewonly=True,
-                                back_populates='trunk')
+    register_iax = relationship(
+        'StaticIAX',
+        primaryjoin="""and_(
+               TrunkFeatures.protocol == 'iax',
+               TrunkFeatures.registerid == StaticIAX.id
+        )""",
+        foreign_keys='TrunkFeatures.registerid',
+        viewonly=True,
+        back_populates='trunk',
+    )
 
-    register_sip = relationship('StaticSIP',
-                                primaryjoin="""and_(
-                                       TrunkFeatures.protocol == 'sip',
-                                       TrunkFeatures.registerid == StaticSIP.id
-                                )""",
-                                foreign_keys='TrunkFeatures.registerid',
-                                viewonly=True,
-                                back_populates='trunk')
+    register_sip = relationship(
+        'StaticSIP',
+        primaryjoin="""and_(
+               TrunkFeatures.protocol == 'sip',
+               TrunkFeatures.registerid == StaticSIP.id
+        )""",
+        foreign_keys='TrunkFeatures.registerid',
+        viewonly=True,
+        back_populates='trunk',
+    )
 
     @hybrid_property
     def endpoint(self):

@@ -2,6 +2,8 @@
 # Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
+from sqlalchemy import text
+
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures as Trunk
 from xivo_dao.alchemy.staticiax import StaticIAX
 from xivo_dao.alchemy.staticsip import StaticSIP
@@ -17,9 +19,10 @@ class TrunkPersistor(CriteriaBuilderMixin):
 
     _search_table = Trunk
 
-    def __init__(self, session, trunk_search):
+    def __init__(self, session, trunk_search, tenant_uuids=None):
         self.session = session
         self.trunk_search = trunk_search
+        self.tenant_uuids = tenant_uuids
 
     def find_by(self, criteria):
         query = self._find_query(criteria)
@@ -27,6 +30,7 @@ class TrunkPersistor(CriteriaBuilderMixin):
 
     def _find_query(self, criteria):
         query = self.session.query(Trunk)
+        query = self._filter_tenant_uuid(query)
         return self.build_criteria(query, criteria)
 
     def get_by(self, criteria):
@@ -40,7 +44,9 @@ class TrunkPersistor(CriteriaBuilderMixin):
         return query.all()
 
     def search(self, parameters):
-        rows, total = self.trunk_search.search(self.session, parameters)
+        query = self.session.query(self.trunk_search.config.table)
+        query = self._filter_tenant_uuid(query)
+        rows, total = self.trunk_search.search_from_query(query, parameters)
         return SearchResult(total, rows)
 
     def create(self, trunk):
@@ -80,6 +86,15 @@ class TrunkPersistor(CriteriaBuilderMixin):
              .delete())
         self.session.delete(trunk)
         self.session.flush()
+
+    def _filter_tenant_uuid(self, query):
+        if self.tenant_uuids is None:
+            return query
+
+        if not self.tenant_uuids:
+            return query.filter(text('false'))
+
+        return query.filter(Trunk.tenant_uuid.in_(self.tenant_uuids))
 
     def associate_register_iax(self, trunk, register):
         if trunk.protocol not in ('iax', None):

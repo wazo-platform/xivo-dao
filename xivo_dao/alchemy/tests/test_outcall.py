@@ -1,27 +1,29 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 
-from hamcrest import (assert_that,
-                      contains,
-                      contains_inanyorder,
-                      equal_to,
-                      empty,
-                      has_properties,
-                      none,
-                      not_)
-
-from xivo_dao.alchemy.dialaction import Dialaction
-from xivo_dao.alchemy.dialpattern import DialPattern
-from xivo_dao.alchemy.extension import Extension
-from xivo_dao.alchemy.outcall import Outcall
-from xivo_dao.alchemy.outcalltrunk import OutcallTrunk
-from xivo_dao.alchemy.schedule import Schedule
-from xivo_dao.alchemy.schedulepath import SchedulePath
-from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
+from hamcrest import (
+    assert_that,
+    contains,
+    contains_inanyorder,
+    empty,
+    equal_to,
+    has_properties,
+    none,
+    not_,
+)
 
 from xivo_dao.tests.test_dao import DAOTestCase
+
+from ..dialaction import Dialaction
+from ..dialpattern import DialPattern
+from ..extension import Extension
+from ..outcall import Outcall
+from ..outcalltrunk import OutcallTrunk
+from ..schedule import Schedule
+from ..schedulepath import SchedulePath
+from ..trunkfeatures import TrunkFeatures
 
 
 class TestSchedules(DAOTestCase):
@@ -106,7 +108,7 @@ class TestDelete(DAOTestCase):
 class TestTrunks(DAOTestCase):
 
     def test_trunks_create(self):
-        trunk = TrunkFeatures()
+        trunk = self.add_trunk()
         outcall_row = self.add_outcall()
 
         outcall_row.trunks = [trunk]

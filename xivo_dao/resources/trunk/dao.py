@@ -11,33 +11,33 @@ from .search import trunk_search
 
 
 @daosession
-def search(session, **parameters):
-    return TrunkPersistor(session, trunk_search).search(parameters)
+def search(session, tenant_uuids=None, **parameters):
+    return TrunkPersistor(session, trunk_search, tenant_uuids).search(parameters)
 
 
 @daosession
-def get(session, trunk_id):
-    return TrunkPersistor(session, trunk_search).get_by({'id': trunk_id})
+def get(session, trunk_id, tenant_uuids=None):
+    return TrunkPersistor(session, trunk_search, tenant_uuids).get_by({'id': trunk_id})
 
 
 @daosession
-def get_by(session, **criteria):
-    return TrunkPersistor(session, trunk_search).get_by(criteria)
+def get_by(session, tenant_uuids=None, **criteria):
+    return TrunkPersistor(session, trunk_search, tenant_uuids).get_by(criteria)
 
 
 @daosession
-def find(session, trunk_id):
-    return TrunkPersistor(session, trunk_search).find_by({'id': trunk_id})
+def find(session, trunk_id, tenant_uuids=None):
+    return TrunkPersistor(session, trunk_search, tenant_uuids).find_by({'id': trunk_id})
 
 
 @daosession
-def find_by(session, **criteria):
-    return TrunkPersistor(session, trunk_search).find_by(criteria)
+def find_by(session, tenant_uuids=None, **criteria):
+    return TrunkPersistor(session, trunk_search, tenant_uuids).find_by(criteria)
 
 
 @daosession
-def find_all_by(session, **criteria):
-    return TrunkPersistor(session, trunk_search).find_all_by(criteria)
+def find_all_by(session, tenant_uuids=None, **criteria):
+    return TrunkPersistor(session, trunk_search, tenant_uuids).find_all_by(criteria)
 
 
 @daosession

@@ -5,6 +5,7 @@
 from __future__ import unicode_literals
 
 from hamcrest import (
+    all_of,
     assert_that,
     contains,
     contains_inanyorder,
@@ -13,9 +14,9 @@ from hamcrest import (
     has_items,
     has_properties,
     has_property,
-    is_not,
     none,
     not_,
+    not_none,
 )
 
 
@@ -48,6 +49,16 @@ class TestFind(DAOTestCase):
 
         assert_that(trunk, equal_to(trunk_row))
 
+    def test_find_multi_tenant(self):
+        tenant = self.add_tenant()
+        trunk = self.add_trunk(tenant_uuid=tenant.uuid)
+
+        result = trunk_dao.find(trunk.id, tenant_uuids=[tenant.uuid])
+        assert_that(result, equal_to(trunk))
+
+        result = trunk_dao.find(trunk.id, tenant_uuids=[self.default_tenant.uuid])
+        assert_that(result, none())
+
 
 class TestGet(DAOTestCase):
 
@@ -60,6 +71,19 @@ class TestGet(DAOTestCase):
         trunk = trunk_dao.get(trunk_row.id)
 
         assert_that(trunk, equal_to(trunk_row))
+
+    def test_get_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        trunk_row = self.add_trunk(tenant_uuid=tenant.uuid)
+        trunk = trunk_dao.get(trunk_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(trunk, equal_to(trunk_row))
+
+        trunk_row = self.add_trunk()
+        self.assertRaises(
+            NotFoundError,
+            trunk_dao.get, trunk_row.id, tenant_uuids=[tenant.uuid],
+        )
 
 
 class TestFindBy(DAOTestCase):
@@ -88,6 +112,17 @@ class TestFindBy(DAOTestCase):
 
         assert_that(trunk, none())
 
+    def test_find_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        trunk_row = self.add_trunk()
+        trunk = trunk_dao.find_by(id=trunk_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(trunk, none())
+
+        trunk_row = self.add_trunk(tenant_uuid=tenant.uuid)
+        trunk = trunk_dao.find_by(id=trunk_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(trunk, equal_to(trunk_row))
+
 
 class TestGetBy(DAOTestCase):
 
@@ -104,6 +139,19 @@ class TestGetBy(DAOTestCase):
 
     def test_given_trunk_does_not_exist_then_raises_error(self):
         self.assertRaises(NotFoundError, trunk_dao.get_by, context='42')
+
+    def test_get_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        trunk_row = self.add_trunk()
+        self.assertRaises(
+            NotFoundError,
+            trunk_dao.get_by, id=trunk_row.id, tenant_uuids=[tenant.uuid],
+        )
+
+        trunk_row = self.add_trunk(tenant_uuid=tenant.uuid)
+        trunk = trunk_dao.get_by(id=trunk_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(trunk, equal_to(trunk_row))
 
 
 class TestFindAllBy(DAOTestCase):
@@ -123,6 +171,20 @@ class TestFindAllBy(DAOTestCase):
             has_property('id', trunk1.id),
             has_property('id', trunk2.id),
         ))
+
+    def test_find_all_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        trunk1 = self.add_trunk(description='description', tenant_uuid=tenant.uuid)
+        trunk2 = self.add_trunk(description='description')
+
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        trunks = trunk_dao.find_all_by(description='description', tenant_uuids=tenants)
+        assert_that(trunks, has_items(trunk1, trunk2))
+
+        tenants = [tenant.uuid]
+        trunks = trunk_dao.find_all_by(description='description', tenant_uuids=tenants)
+        assert_that(trunks, all_of(has_items(trunk1), not_(has_items(trunk2))))
 
 
 class TestSearch(DAOTestCase):
@@ -144,6 +206,20 @@ class TestSimpleSearch(TestSearch):
         expected = SearchResult(1, [trunk])
 
         self.assert_search_returns_result(expected)
+
+    def test_search_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        trunk1 = self.add_trunk()
+        trunk2 = self.add_trunk(tenant_uuid=tenant.uuid)
+
+        expected = SearchResult(2, [trunk1, trunk2])
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
+        expected = SearchResult(1, [trunk2])
+        tenants = [tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
 
 
 class TestSearchGivenMultipleTrunks(TestSearch):
@@ -210,14 +286,14 @@ class TestSearchGivenMultipleTrunks(TestSearch):
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_fields(self):
-        trunk = Trunk()
+        trunk = Trunk(tenant_uuid=self.default_tenant.uuid)
         created_trunk = trunk_dao.create(trunk)
 
         row = self.session.query(Trunk).first()
 
         assert_that(created_trunk, equal_to(row))
         assert_that(created_trunk, has_properties(
-            id=is_not(none()),
+            id=not_none(),
             context=none(),
             protocol=none(),
             protocolid=none(),
@@ -228,6 +304,7 @@ class TestCreate(DAOTestCase):
 
     def test_create_with_all_fields(self):
         trunk = Trunk(
+            tenant_uuid=self.default_tenant.uuid,
             context='default',
             protocol='sip',
             protocolid=1,
@@ -242,7 +319,8 @@ class TestCreate(DAOTestCase):
 
         assert_that(created_trunk, equal_to(row))
         assert_that(created_trunk, has_properties(
-            id=is_not(none()),
+            id=not_none(),
+            tenant_uuid=self.default_tenant.uuid,
             context='default',
             protocol='sip',
             protocolid=1,
@@ -257,6 +335,7 @@ class TestEdit(DAOTestCase):
     def test_edit_all_fields(self):
         sip = self.add_usersip()
         trunk = trunk_dao.create(Trunk(
+            tenant_uuid=self.default_tenant.uuid,
             context='default',
             registerid=1,
             registercommented=1,
@@ -289,6 +368,7 @@ class TestEdit(DAOTestCase):
 
     def test_edit_set_fields_to_null(self):
         trunk = trunk_dao.create(Trunk(
+            tenant_uuid=self.default_tenant.uuid,
             context='default',
             protocol='sip',
             protocolid=1,
@@ -311,7 +391,7 @@ class TestEdit(DAOTestCase):
 class TestDelete(DAOTestCase):
 
     def test_delete(self):
-        trunk = trunk_dao.create(Trunk())
+        trunk = self.add_trunk()
 
         trunk_dao.delete(trunk)
 

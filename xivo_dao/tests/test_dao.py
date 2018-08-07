@@ -690,6 +690,7 @@ class ItemInserter(object):
         return tenant
 
     def add_trunk(self, **kwargs):
+        kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
         trunk = TrunkFeatures(**kwargs)
         self.add_me(trunk)
         return trunk
