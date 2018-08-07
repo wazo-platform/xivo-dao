@@ -78,7 +78,7 @@ class UserFeatures(Base):
         ForeignKeyConstraint(('cti_profile_id',), ('cti_profile.id',), ondelete='RESTRICT'),
         ForeignKeyConstraint(('entityid',), ('entity.id',), ondelete='RESTRICT'),
         ForeignKeyConstraint(('voicemailid',), ('voicemail.uniqueid',)),
-        ForeignKeyConstraint(('tenant_uuid',), ('tenant.uuid',)),
+        ForeignKeyConstraint(('tenant_uuid',), ('tenant.uuid',), ondelete='CASCADE'),
         UniqueConstraint('func_key_private_template_id'),
         UniqueConstraint('uuid', name='userfeatures_uuid'),
         UniqueConstraint('email', name='userfeatures_email'),
