@@ -12,15 +12,14 @@ from xivo_dao.helpers import errors, generators
 from xivo_dao.resources.trunk.fixes import TrunkFixes
 from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
 
-from .search import iax_search
-
 
 class IAXPersistor(CriteriaBuilderMixin):
 
     _search_table = IAX
 
-    def __init__(self, session, tenant_uuids=None):
+    def __init__(self, session, iax_search, tenant_uuids=None):
         self.session = session
+        self.iax_search = iax_search
         self.tenant_uuids = tenant_uuids
 
     def find_by(self, criteria):
@@ -41,9 +40,9 @@ class IAXPersistor(CriteriaBuilderMixin):
         return iax
 
     def search(self, parameters):
-        query = self.session.query(iax_search.config.table)
+        query = self.session.query(self.iax_search.config.table)
         query = self._filter_tenant_uuid(query)
-        rows, total = iax_search.search_from_query(query, parameters)
+        rows, total = self.iax_search.search_from_query(query, parameters)
         return SearchResult(total, rows)
 
     def create(self, iax):
