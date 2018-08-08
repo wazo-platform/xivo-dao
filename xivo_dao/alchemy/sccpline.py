@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
-# Copyright 2012-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from __future__ import unicode_literals
 
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, PrimaryKeyConstraint
+from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint
 from sqlalchemy.types import Integer, String, Text
 
 from xivo_dao.helpers.exception import InputError
 from xivo_dao.helpers.db_manager import Base
-from xivo_dao.alchemy import enum
+
+from . import enum
 
 
 class SCCPLine(Base):
@@ -21,6 +22,7 @@ class SCCPLine(Base):
     )
 
     id = Column(Integer)
+    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
     name = Column(String(80), nullable=False)
     context = Column(String(80), nullable=False)
     cid_name = Column(String(80), nullable=False)
@@ -30,15 +32,17 @@ class SCCPLine(Base):
     protocol = Column(enum.trunk_protocol, nullable=False, server_default='sccp')
     commented = Column(Integer, nullable=False, server_default='0')
 
-    line = relationship('LineFeatures',
-                        primaryjoin="""and_(
-                            LineFeatures.protocol == 'sccp',
-                            LineFeatures.protocolid == SCCPLine.id
-                        )""",
-                        foreign_keys='LineFeatures.protocolid',
-                        uselist=False,
-                        viewonly=True,
-                        back_populates='endpoint_sccp')
+    line = relationship(
+        'LineFeatures',
+        primaryjoin="""and_(
+            LineFeatures.protocol == 'sccp',
+            LineFeatures.protocolid == SCCPLine.id
+        )""",
+        foreign_keys='LineFeatures.protocolid',
+        uselist=False,
+        viewonly=True,
+        back_populates='endpoint_sccp',
+    )
 
     @property
     def options(self):

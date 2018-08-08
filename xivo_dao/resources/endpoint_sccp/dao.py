@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2015 Avencall
+# Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao.helpers.db_manager import daosession
@@ -8,18 +8,18 @@ from xivo_dao.resources.endpoint_sccp.persistor import SccpPersistor
 
 
 @daosession
-def get(session, id):
-    return SccpPersistor(session).get(id)
+def get(session, sccp_id, tenant_uuids=None):
+    return SccpPersistor(session, tenant_uuids).get(sccp_id)
 
 
 @daosession
-def find(session, id):
-    return SccpPersistor(session).find(id)
+def find(session, sccp_id, tenant_uuids=None):
+    return SccpPersistor(session, tenant_uuids).find(sccp_id)
 
 
 @daosession
-def search(session, **parameters):
-    return SccpPersistor(session).search(parameters)
+def search(session, tenant_uuids=None, **parameters):
+    return SccpPersistor(session, tenant_uuids).search(parameters)
 
 
 @daosession

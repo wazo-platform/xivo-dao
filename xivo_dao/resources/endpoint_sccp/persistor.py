@@ -1,36 +1,40 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from functools import partial
+from sqlalchemy import text
 
 from xivo_dao.alchemy.sccpline import SCCPLine as SCCP
 from xivo_dao.alchemy.linefeatures import LineFeatures as Line
 from xivo_dao.helpers import errors, generators
 from xivo_dao.resources.line.fixes import LineFixes
 from xivo_dao.resources.utils.search import SearchResult
-from xivo_dao.resources.endpoint_sccp.search import sccp_search
+
+from .search import sccp_search
 
 
 class SccpPersistor(object):
 
-    def __init__(self, session):
+    def __init__(self, session, tenant_uuids=None):
         self.session = session
+        self.tenant_uuids = tenant_uuids
 
-    def get(self, id):
-        sccp = self.find(id)
+    def get(self, sccp_id):
+        sccp = self.find(sccp_id)
         if not sccp:
-            raise errors.not_found('SCCPEndpoint', id=id)
+            raise errors.not_found('SCCPEndpoint', id=sccp_id)
         return sccp
 
-    def find(self, id):
-        row = (self.session.query(SCCP)
-               .filter(SCCP.id == id)
-               .first())
-        return row
+    def find(self, sccp_id):
+        query = self.session.query(SCCP).filter(SCCP.id == sccp_id)
+        query = self._filter_tenant_uuid(query)
+        return query.first()
 
-    def search(self, params):
-        rows, total = sccp_search.search(self.session, params)
+    def search(self, parameters):
+        query = self.session.query(sccp_search.config.table)
+        query = self._filter_tenant_uuid(query)
+        rows, total = sccp_search.search_from_query(query, parameters)
         return SearchResult(total, rows)
 
     def create(self, sccp):
@@ -54,9 +58,18 @@ class SccpPersistor(object):
         self.session.flush()
 
     def delete(self, sccp):
-        self.session.query(SCCP).filter(SCCP.id == sccp.id).delete()
+        self.session.delete(sccp)
         self.session.flush()
         self._fix_line(sccp)
+
+    def _filter_tenant_uuid(self, query):
+        if self.tenant_uuids is None:
+            return query
+
+        if not self.tenant_uuids:
+            return query.filter(text('false'))
+
+        return query.filter(SCCP.tenant_uuid.in_(self.tenant_uuids))
 
     def _already_exists(self, column, data):
         return self.session.query(SCCP).filter(column == data).count() > 0
