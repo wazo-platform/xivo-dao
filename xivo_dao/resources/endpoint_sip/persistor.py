@@ -14,15 +14,14 @@ from xivo_dao.resources.line.fixes import LineFixes
 from xivo_dao.resources.trunk.fixes import TrunkFixes
 from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
 
-from .search import sip_search
-
 
 class SipPersistor(CriteriaBuilderMixin):
 
     _search_table = SIP
 
-    def __init__(self, session, tenant_uuids=None):
+    def __init__(self, session, sip_search, tenant_uuids=None):
         self.session = session
+        self.sip_search = sip_search
         self.tenant_uuids = tenant_uuids
 
     def find_by(self, criteria):
@@ -43,9 +42,9 @@ class SipPersistor(CriteriaBuilderMixin):
         return trunk
 
     def search(self, parameters):
-        query = self.session.query(sip_search.config.table)
+        query = self.session.query(self.sip_search.config.table)
         query = self._filter_tenant_uuid(query)
-        rows, total = sip_search.search_from_query(query, parameters)
+        rows, total = self.sip_search.search_from_query(query, parameters)
         return SearchResult(total, rows)
 
     def create(self, sip):
