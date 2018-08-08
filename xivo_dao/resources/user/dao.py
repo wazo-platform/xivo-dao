@@ -42,8 +42,8 @@ def get(user_id, tenant_uuids=None):
     return persistor(tenant_uuids).get_by({'id': user_id})
 
 
-def get_by(**criteria):
-    return persistor().get_by(criteria)
+def get_by(tenant_uuids=None, **criteria):
+    return persistor(tenant_uuids).get_by(criteria)
 
 
 def find_by_id_uuid(id, tenant_uuids=None):
