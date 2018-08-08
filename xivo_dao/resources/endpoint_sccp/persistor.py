@@ -11,13 +11,12 @@ from xivo_dao.helpers import errors, generators
 from xivo_dao.resources.line.fixes import LineFixes
 from xivo_dao.resources.utils.search import SearchResult
 
-from .search import sccp_search
-
 
 class SccpPersistor(object):
 
-    def __init__(self, session, tenant_uuids=None):
+    def __init__(self, session, sccp_search, tenant_uuids=None):
         self.session = session
+        self.sccp_search = sccp_search
         self.tenant_uuids = tenant_uuids
 
     def get(self, sccp_id):
@@ -32,9 +31,9 @@ class SccpPersistor(object):
         return query.first()
 
     def search(self, parameters):
-        query = self.session.query(sccp_search.config.table)
+        query = self.session.query(self.sccp_search.config.table)
         query = self._filter_tenant_uuid(query)
-        rows, total = sccp_search.search_from_query(query, parameters)
+        rows, total = self.sccp_search.search_from_query(query, parameters)
         return SearchResult(total, rows)
 
     def create(self, sccp):
