@@ -1052,6 +1052,7 @@ class ItemInserter(object):
     def add_parking_lot(self, **kwargs):
         kwargs.setdefault('slots_start', '701')
         kwargs.setdefault('slots_end', '750')
+        kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
         parking_lot = ParkingLot(**kwargs)
         self.add_me(parking_lot)
         return parking_lot

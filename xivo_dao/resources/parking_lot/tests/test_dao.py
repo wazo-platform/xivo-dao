@@ -1,24 +1,29 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from __future__ import unicode_literals
 
-from hamcrest import (assert_that,
-                      contains,
-                      equal_to,
-                      has_items,
-                      has_properties,
-                      has_property,
-                      is_not,
-                      none)
-
+from hamcrest import (
+    all_of,
+    assert_that,
+    contains,
+    equal_to,
+    has_items,
+    has_properties,
+    has_property,
+    is_not,
+    none,
+    not_,
+)
+from sqlalchemy.inspection import inspect
 
 from xivo_dao.alchemy.parking_lot import ParkingLot
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.helpers.exception import NotFoundError, InputError
-from xivo_dao.resources.parking_lot import dao as parking_lot_dao
 from xivo_dao.tests.test_dao import DAOTestCase
+
+from .. import dao as parking_lot_dao
 
 
 class TestFind(DAOTestCase):
@@ -35,6 +40,16 @@ class TestFind(DAOTestCase):
 
         assert_that(parking_lot, equal_to(parking_lot_row))
 
+    def test_find_multi_tenant(self):
+        tenant = self.add_tenant()
+        parking_lot = self.add_parking_lot(tenant_uuid=tenant.uuid)
+
+        result = parking_lot_dao.find(parking_lot.id, tenant_uuids=[tenant.uuid])
+        assert_that(result, equal_to(parking_lot))
+
+        result = parking_lot_dao.find(parking_lot.id, tenant_uuids=[self.default_tenant.uuid])
+        assert_that(result, none())
+
 
 class TestGet(DAOTestCase):
 
@@ -47,6 +62,19 @@ class TestGet(DAOTestCase):
         parking_lot = parking_lot_dao.get(parking_lot_row.id)
 
         assert_that(parking_lot.id, equal_to(parking_lot.id))
+
+    def test_get_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        parking_lot_row = self.add_parking_lot(tenant_uuid=tenant.uuid)
+        parking_lot = parking_lot_dao.get(parking_lot_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(parking_lot, equal_to(parking_lot_row))
+
+        parking_lot_row = self.add_parking_lot()
+        self.assertRaises(
+            NotFoundError,
+            parking_lot_dao.get, parking_lot_row.id, tenant_uuids=[tenant.uuid],
+        )
 
 
 class TestFindBy(DAOTestCase):
@@ -67,6 +95,17 @@ class TestFindBy(DAOTestCase):
 
         assert_that(parking_lot, none())
 
+    def test_find_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        parking_lot_row = self.add_parking_lot()
+        parking_lot = parking_lot_dao.find_by(id=parking_lot_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(parking_lot, none())
+
+        parking_lot_row = self.add_parking_lot(tenant_uuid=tenant.uuid)
+        parking_lot = parking_lot_dao.find_by(id=parking_lot_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(parking_lot, equal_to(parking_lot_row))
+
 
 class TestGetBy(DAOTestCase):
 
@@ -83,6 +122,19 @@ class TestGetBy(DAOTestCase):
 
     def test_given_parking_lot_does_not_exist_then_raises_error(self):
         self.assertRaises(NotFoundError, parking_lot_dao.get_by, name='42')
+
+    def test_get_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        parking_lot_row = self.add_parking_lot()
+        self.assertRaises(
+            NotFoundError,
+            parking_lot_dao.get_by, id=parking_lot_row.id, tenant_uuids=[tenant.uuid],
+        )
+
+        parking_lot_row = self.add_parking_lot(tenant_uuid=tenant.uuid)
+        parking_lot = parking_lot_dao.get_by(id=parking_lot_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(parking_lot, equal_to(parking_lot_row))
 
 
 class TestFindAllBy(DAOTestCase):
@@ -101,8 +153,24 @@ class TestFindAllBy(DAOTestCase):
 
         parking_lots = parking_lot_dao.find_all_by(music_on_hold='music_on_hold')
 
-        assert_that(parking_lots, has_items(has_property('id', parking_lot1.id),
-                                            has_property('id', parking_lot2.id)))
+        assert_that(parking_lots, has_items(
+            has_property('id', parking_lot1.id),
+            has_property('id', parking_lot2.id),
+        ))
+
+    def test_find_all_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        parking_lot1 = self.add_parking_lot(name='name', tenant_uuid=tenant.uuid)
+        parking_lot2 = self.add_parking_lot(name='name')
+
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        parking_lots = parking_lot_dao.find_all_by(name='name', tenant_uuids=tenants)
+        assert_that(parking_lots, has_items(parking_lot1, parking_lot2))
+
+        tenants = [tenant.uuid]
+        parking_lots = parking_lot_dao.find_all_by(name='name', tenant_uuids=tenants)
+        assert_that(parking_lots, all_of(has_items(parking_lot1), not_(has_items(parking_lot2))))
 
 
 class TestSearch(DAOTestCase):
@@ -124,6 +192,20 @@ class TestSimpleSearch(TestSearch):
         expected = SearchResult(1, [parking_lot])
 
         self.assert_search_returns_result(expected)
+
+    def test_search_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        parking_lot1 = self.add_parking_lot()
+        parking_lot2 = self.add_parking_lot(tenant_uuid=tenant.uuid)
+
+        expected = SearchResult(2, [parking_lot1, parking_lot2])
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
+        expected = SearchResult(1, [parking_lot2])
+        tenants = [tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
 
 
 class TestSearchGivenMultipleParkingLots(TestSearch):
@@ -158,19 +240,22 @@ class TestSearchGivenMultipleParkingLots(TestSearch):
         self.assert_search_returns_result(expected_all_deny, music_on_hold='resto')
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
-        expected = SearchResult(4,
-                                [self.parking_lot1,
-                                 self.parking_lot2,
-                                 self.parking_lot3,
-                                 self.parking_lot4])
+        expected = SearchResult(4, [
+            self.parking_lot1,
+            self.parking_lot2,
+            self.parking_lot3,
+            self.parking_lot4,
+        ])
 
         self.assert_search_returns_result(expected, order='name')
 
     def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
-        expected = SearchResult(4, [self.parking_lot4,
-                                    self.parking_lot3,
-                                    self.parking_lot2,
-                                    self.parking_lot1])
+        expected = SearchResult(4, [
+            self.parking_lot4,
+            self.parking_lot3,
+            self.parking_lot2,
+            self.parking_lot1,
+        ])
 
         self.assert_search_returns_result(expected, order='name', direction='desc')
 
@@ -187,61 +272,73 @@ class TestSearchGivenMultipleParkingLots(TestSearch):
     def test_when_doing_a_paginated_search_then_returns_a_paginated_result(self):
         expected = SearchResult(3, [self.parking_lot2])
 
-        self.assert_search_returns_result(expected,
-                                          search='a',
-                                          order='name',
-                                          direction='desc',
-                                          skip=1,
-                                          limit=1)
+        self.assert_search_returns_result(
+            expected,
+            search='a',
+            order='name',
+            direction='desc',
+            skip=1,
+            limit=1,
+        )
 
 
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_fields(self):
-        parking_lot = ParkingLot(slots_start='701',
-                                 slots_end='750')
-        created_parking_lot = parking_lot_dao.create(parking_lot)
+        parking_lot_model = ParkingLot(
+            tenant_uuid=self.default_tenant.uuid,
+            slots_start='701',
+            slots_end='750',
+        )
+        parking_lot = parking_lot_dao.create(parking_lot_model)
 
-        row = self.session.query(ParkingLot).first()
-
-        assert_that(created_parking_lot, equal_to(row))
-        assert_that(row, has_properties(id=is_not(none()),
-                                        name=None,
-                                        slots_start='701',
-                                        slots_end='750',
-                                        timeout=None,
-                                        music_on_hold=None))
+        self.session.expire_all()
+        assert_that(inspect(parking_lot).persistent)
+        assert_that(parking_lot, has_properties(
+            id=is_not(none()),
+            tenant_uuid=self.default_tenant.uuid,
+            name=None,
+            slots_start='701',
+            slots_end='750',
+            timeout=None,
+            music_on_hold=None,
+        ))
 
     def test_create_with_all_fields(self):
-        parking_lot = ParkingLot(name='parking lot',
-                                 slots_start='701',
-                                 slots_end='750',
-                                 timeout=None,
-                                 music_on_hold='music')
-        created_parking_lot = parking_lot_dao.create(parking_lot)
+        parking_lot_model = ParkingLot(
+            tenant_uuid=self.default_tenant.uuid,
+            name='parking lot',
+            slots_start='701',
+            slots_end='750',
+            timeout=None,
+            music_on_hold='music',
+        )
+        parking_lot = parking_lot_dao.create(parking_lot_model)
 
-        row = self.session.query(ParkingLot).first()
-
-        assert_that(created_parking_lot, equal_to(row))
-        assert_that(row, has_properties(name='parking lot',
-                                        slots_start='701',
-                                        slots_end='750',
-                                        timeout=None,
-                                        music_on_hold='music'))
+        self.session.expire_all()
+        assert_that(inspect(parking_lot).persistent)
+        assert_that(parking_lot, has_properties(
+            tenant_uuid=self.default_tenant.uuid,
+            name='parking lot',
+            slots_start='701',
+            slots_end='750',
+            timeout=None,
+            music_on_hold='music',
+        ))
 
 
 class TestEdit(DAOTestCase):
 
     def test_edit_all_fields(self):
-        parking_lot = parking_lot_dao.create(
-            ParkingLot(name='parking lot',
-                       slots_start='701',
-                       slots_end='750',
-                       timeout=None,
-                       music_on_hold='music')
+        parking_lot = self.add_parking_lot(
+            name='parking lot',
+            slots_start='701',
+            slots_end='750',
+            timeout=None,
+            music_on_hold='music',
         )
 
-        parking_lot = parking_lot_dao.get(parking_lot.id)
+        self.session.expire_all()
         parking_lot.name = 'other name'
         parking_lot.slots_start = '801'
         parking_lot.slots_end = '850'
@@ -250,32 +347,37 @@ class TestEdit(DAOTestCase):
 
         parking_lot_dao.edit(parking_lot)
 
-        row = self.session.query(ParkingLot).first()
-
-        assert_that(row, has_properties(name='other name',
-                                        slots_start='801',
-                                        slots_end='850',
-                                        timeout=10000,
-                                        music_on_hold='other_music'))
+        self.session.expire_all()
+        assert_that(parking_lot, has_properties(
+            name='other name',
+            slots_start='801',
+            slots_end='850',
+            timeout=10000,
+            music_on_hold='other_music',
+        ))
 
     def test_edit_set_fields_to_null(self):
-        parking_lot = parking_lot_dao.create(ParkingLot(name='parking_lot',
-                                                        slots_start='701',
-                                                        slots_end='750',
-                                                        timeout=5555,
-                                                        music_on_hold='music'))
+        parking_lot = self.add_parking_lot(
+            name='parking_lot',
+            slots_start='701',
+            slots_end='750',
+            timeout=5555,
+            music_on_hold='music',
+        )
 
-        parking_lot = parking_lot_dao.get(parking_lot.id)
+        self.session.expire_all()
         parking_lot.name = None
         parking_lot.timeout = None
         parking_lot.music_on_hold = None
 
         parking_lot_dao.edit(parking_lot)
 
-        row = self.session.query(ParkingLot).first()
-        assert_that(row, has_properties(name=none(),
-                                        timeout=none(),
-                                        music_on_hold=none()))
+        self.session.expire_all()
+        assert_that(parking_lot, has_properties(
+            name=none(),
+            timeout=none(),
+            music_on_hold=none(),
+        ))
 
 
 class TestDelete(DAOTestCase):
@@ -285,5 +387,4 @@ class TestDelete(DAOTestCase):
 
         parking_lot_dao.delete(parking_lot)
 
-        row = self.session.query(ParkingLot).first()
-        assert_that(row, none())
+        assert_that(inspect(parking_lot).deleted)
