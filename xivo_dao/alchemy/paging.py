@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
+from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint, UniqueConstraint
 from sqlalchemy.sql import cast, not_
 from sqlalchemy.types import Integer, String, Text, Boolean
 
-from xivo_dao.alchemy.paginguser import PagingUser
 from xivo_dao.helpers.db_manager import Base
+
+from .paginguser import PagingUser
 
 
 class Paging(Base):
@@ -22,6 +23,7 @@ class Paging(Base):
     )
 
     id = Column(Integer, nullable=False)
+    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
     number = Column(String(32))
     name = Column(String(128))
     duplex = Column(Integer, nullable=False, server_default='0')
@@ -35,26 +37,34 @@ class Paging(Base):
     commented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text)
 
-    paging_members = relationship('PagingUser',
-                                  primaryjoin="""and_(PagingUser.pagingid == Paging.id,
-                                                      PagingUser.caller == 0)""",
-                                  cascade='all, delete-orphan')
+    paging_members = relationship(
+        'PagingUser',
+        primaryjoin="""and_(
+            PagingUser.pagingid == Paging.id,
+            PagingUser.caller == 0
+        )""",
+        cascade='all, delete-orphan',
+    )
 
-    users_member = association_proxy('paging_members', 'user',
-                                     creator=lambda _user: PagingUser(user=_user,
-                                                                      caller=0))
+    users_member = association_proxy(
+        'paging_members', 'user',
+        creator=lambda _user: PagingUser(user=_user, caller=0),
+    )
 
-    paging_callers = relationship('PagingUser',
-                                  primaryjoin="""and_(PagingUser.pagingid == Paging.id,
-                                                      PagingUser.caller == 1)""",
-                                  cascade='all, delete-orphan')
+    paging_callers = relationship(
+        'PagingUser',
+        primaryjoin="""and_(
+            PagingUser.pagingid == Paging.id,
+            PagingUser.caller == 1
+        )""",
+        cascade='all, delete-orphan')
 
-    users_caller = association_proxy('paging_callers', 'user',
-                                     creator=lambda _user: PagingUser(user=_user,
-                                                                      caller=1))
+    users_caller = association_proxy(
+        'paging_callers', 'user',
+        creator=lambda _user: PagingUser(user=_user, caller=1),
+    )
 
-    func_keys = relationship('FuncKeyDestPaging',
-                             cascade='all, delete-orphan')
+    func_keys = relationship('FuncKeyDestPaging', cascade='all, delete-orphan')
 
     @hybrid_property
     def enabled(self):

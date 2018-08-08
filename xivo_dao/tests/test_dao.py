@@ -1033,7 +1033,7 @@ class ItemInserter(object):
         return feature
 
     def add_paging(self, **kwargs):
-        kwargs.setdefault('number', self._generate_paging_number())
+        kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
         paging = Paging(**kwargs)
         self.add_me(paging)
         return paging
