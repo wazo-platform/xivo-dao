@@ -213,8 +213,8 @@ class TestSimpleSearch(TestSearch):
     def test_search_multi_tenant(self):
         tenant = self.add_tenant()
 
-        call_permission1 = self.add_call_permission()
-        call_permission2 = self.add_call_permission(tenant_uuid=tenant.uuid)
+        call_permission1 = self.add_call_permission(name='sort1')
+        call_permission2 = self.add_call_permission(name='sort2', tenant_uuid=tenant.uuid)
 
         expected = SearchResult(2, [call_permission1, call_permission2])
         tenants = [tenant.uuid, self.default_tenant.uuid]
