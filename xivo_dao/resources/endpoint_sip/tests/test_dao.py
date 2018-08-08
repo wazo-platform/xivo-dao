@@ -16,7 +16,9 @@ from hamcrest import (
     is_not,
     none,
     not_,
+    not_none,
 )
+from sqlalchemy.inspection import inspect
 
 from xivo_dao.alchemy.usersip import UserSIP as SIPEndpoint
 from xivo_dao.alchemy.linefeatures import LineFeatures as Line
@@ -168,9 +170,7 @@ class TestGet(DAOTestCase):
         ))
 
     def test_given_row_with_optional_parameters_then_returns_model(self):
-        row = self.add_usersip(language="fr_FR",
-                               amaflags="omit",
-                               buggymwi=1)
+        row = self.add_usersip(language="fr_FR", amaflags="omit", buggymwi=1)
 
         sip = sip_dao.get(row.id)
         assert_that(sip.options, has_items(
@@ -180,9 +180,7 @@ class TestGet(DAOTestCase):
         ))
 
     def test_given_row_with_option_set_to_null_then_option_not_returned(self):
-        row = self.add_usersip(language=None,
-                               allow=None,
-                               callerid='')
+        row = self.add_usersip(language=None, allow=None, callerid='')
 
         sip = sip_dao.get(row.id)
         assert_that(sip.options, all_of(
@@ -322,13 +320,14 @@ class TestSearchMultiple(TestSearch):
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_parameters(self):
-        sip = SIPEndpoint(tenant_uuid=self.default_tenant.uuid)
+        sip_model = SIPEndpoint(tenant_uuid=self.default_tenant.uuid)
 
-        created_sip = sip_dao.create(sip)
-        row = self.session.query(SIPEndpoint).first()
+        sip = sip_dao.create(sip_model)
 
-        assert_that(created_sip, has_properties(
-            id=row.id,
+        self.session.expire_all()
+        assert_that(inspect(sip).persistent)
+        assert_that(sip, has_properties(
+            id=not_none(),
             name=has_length(8),
             username=none(),
             secret=has_length(8),
@@ -338,7 +337,7 @@ class TestCreate(DAOTestCase):
         ))
 
     def test_create_predefined_parameters(self):
-        sip = SIPEndpoint(
+        sip_model = SIPEndpoint(
             tenant_uuid=self.default_tenant.uuid,
             name='myusername',
             secret='mysecret',
@@ -346,11 +345,12 @@ class TestCreate(DAOTestCase):
             type="peer",
         )
 
-        created_sip = sip_dao.create(sip)
-        row = self.session.query(SIPEndpoint).first()
+        sip = sip_dao.create(sip_model)
 
-        assert_that(created_sip, has_properties(
-            id=row.id,
+        self.session.expire_all()
+        assert_that(inspect(sip).persistent)
+        assert_that(sip, has_properties(
+            id=not_none(),
             tenant_uuid=self.default_tenant.uuid,
             name='myusername',
             username=none(),
@@ -361,13 +361,14 @@ class TestCreate(DAOTestCase):
         ))
 
     def test_create_with_native_options(self):
-        sip = SIPEndpoint(tenant_uuid=self.default_tenant.uuid, options=ALL_OPTIONS)
-        created_sip = sip_dao.create(sip)
+        sip_model = SIPEndpoint(tenant_uuid=self.default_tenant.uuid, options=ALL_OPTIONS)
 
-        row = self.session.query(SIPEndpoint).first()
+        sip = sip_dao.create(sip_model)
 
-        assert_that(created_sip, has_properties({
-            'id': row.id,
+        self.session.expire_all()
+        assert_that(inspect(sip).persistent)
+        assert_that(sip, has_properties({
+            'id': not_none(),
             'options': has_items(*ALL_OPTIONS),
 
             'buggymwi': 1,
@@ -450,13 +451,12 @@ class TestCreate(DAOTestCase):
             ["spam", "eggs"]
         ]
 
-        sip = SIPEndpoint(tenant_uuid=self.default_tenant.uuid, options=options)
-        created_sip = sip_dao.create(sip)
+        sip_model = SIPEndpoint(tenant_uuid=self.default_tenant.uuid, options=options)
+        sip = sip_dao.create(sip_model)
 
-        row = self.session.query(SIPEndpoint).first()
-
-        assert_that(created_sip, has_properties(
-            id=row.id,
+        self.session.expire_all()
+        assert_that(inspect(sip).persistent)
+        assert_that(sip, has_properties(
             options=has_items(*options)
         ))
 
@@ -464,9 +464,9 @@ class TestCreate(DAOTestCase):
 class TestEdit(DAOTestCase):
 
     def test_edit_basic_parameters(self):
-        row = self.add_usersip()
-        sip = sip_dao.get(row.id)
+        sip = self.add_usersip()
 
+        self.session.expire_all()
         sip.name = 'username'
         sip.secret = 'secret'
         sip.type = 'peer'
@@ -474,8 +474,8 @@ class TestEdit(DAOTestCase):
 
         sip_dao.edit(sip)
 
-        row = self.session.query(SIPEndpoint).first()
-        assert_that(row, has_properties(
+        self.session.expire_all()
+        assert_that(sip, has_properties(
             name='username',
             secret='secret',
             type='peer',
@@ -485,13 +485,13 @@ class TestEdit(DAOTestCase):
     def test_edit_remove_options(self):
         sip = self.add_usersip(options=ALL_OPTIONS)
 
-        sip = sip_dao.get(sip.id)
+        self.session.expire_all()
         sip.options = []
 
         sip_dao.edit(sip)
 
-        row = self.session.query(SIPEndpoint).first()
-        assert_that(row, has_properties({
+        self.session.expire_all()
+        assert_that(sip, has_properties({
             'buggymwi': none(),
             'md5secret': '',
             'amaflags': 'default',
@@ -567,14 +567,14 @@ class TestEdit(DAOTestCase):
         }))
 
     def test_edit_options(self):
-        row = self.add_usersip(
+        sip = self.add_usersip(
             language="fr_FR",
             amaflags="default",
             subscribemwi=1,
             allow="g729,gsm"
         )
 
-        sip = sip_dao.get(row.id)
+        self.session.expire_all()
         sip.options = [
             ["language", "en_US"],
             ["amaflags", "omit"],
@@ -584,8 +584,8 @@ class TestEdit(DAOTestCase):
 
         sip_dao.edit(sip)
 
-        row = self.session.query(SIPEndpoint).first()
-        assert_that(row, has_properties(
+        self.session.expire_all()
+        assert_that(sip, has_properties(
             language='en_US',
             amaflags='omit',
             subscribemwi=0,
@@ -593,13 +593,13 @@ class TestEdit(DAOTestCase):
         ))
 
     def test_edit_additional_options(self):
-        row = self.add_usersip(_options=[
+        sip = self.add_usersip(_options=[
             ["foo", "bar"],
             ["foo", "baz"],
             ["spam", "eggs"],
         ])
 
-        sip = sip_dao.get(row.id)
+        self.session.expire_all()
         sip.options = [
             ["foo", "newbar"],
             ["foo", "newbaz"],
@@ -608,15 +608,15 @@ class TestEdit(DAOTestCase):
 
         sip_dao.edit(sip)
 
-        row = self.session.query(SIPEndpoint).first()
-        assert_that(row._options, has_items(
+        self.session.expire_all()
+        assert_that(sip._options, has_items(
             ["foo", "newbar"],
             ["foo", "newbaz"],
             ["spam", "neweggs"],
         ))
 
     def test_edit_both_native_and_additional_options(self):
-        row = self.add_usersip(
+        sip = self.add_usersip(
             language="fr_FR",
             amaflags="default",
             subscribemwi=1,
@@ -638,12 +638,12 @@ class TestEdit(DAOTestCase):
             ["spam", "neweggs"],
         ]
 
-        sip = sip_dao.get(row.id)
+        self.session.expire_all()
         sip.options = new_options
         sip_dao.edit(sip)
 
-        row = self.session.query(SIPEndpoint).first()
-        assert_that(row, has_properties(
+        self.session.expire_all()
+        assert_that(sip, has_properties(
             options=has_items(*new_options),
             language='en_US',
             amaflags='omit',
@@ -660,42 +660,41 @@ class TestEdit(DAOTestCase):
 class TestDelete(DAOTestCase):
 
     def test_delete(self):
-        row = self.add_usersip()
+        sip = self.add_usersip()
 
-        sip = sip_dao.get(row.id)
         sip_dao.delete(sip)
 
-        row = self.session.query(SIPEndpoint).first()
-        assert_that(row, none())
+        assert_that(inspect(sip).deleted)
 
     def test_given_endpoint_is_associated_to_line_then_line_is_dissociated(self):
-        sip_row = self.add_usersip()
-        line_row = self.add_line(endpoint='sip', endpoint_id=sip_row.id)
+        sip = self.add_usersip()
+        line = self.add_line(endpoint='sip', endpoint_id=sip.id)
 
-        sip = sip_dao.get(sip_row.id)
         sip_dao.delete(sip)
 
-        line_row = self.session.query(Line).get(line_row.id)
-        assert_that(line_row.endpoint, none())
-        assert_that(line_row.endpoint_id, none())
+        line = self.session.query(Line).get(line.id)
+        assert_that(line.endpoint, none())
+        assert_that(line.endpoint_id, none())
 
 
 class TestRelations(DAOTestCase):
 
     def test_trunk_relationship(self):
-        sip_row = self.add_usersip()
-        trunk_row = self.add_trunk()
-        trunk_row.associate_endpoint(sip_row)
+        sip = self.add_usersip()
+        trunk = self.add_trunk()
 
-        sip = sip_dao.get(sip_row.id)
-        assert_that(sip, equal_to(sip_row))
-        assert_that(sip.trunk, equal_to(trunk_row))
+        trunk.associate_endpoint(sip)
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(sip.trunk, equal_to(trunk))
 
     def test_line_relationship(self):
-        sip_row = self.add_usersip()
-        line_row = self.add_line()
-        line_row.associate_endpoint(sip_row)
+        sip = self.add_usersip()
+        line = self.add_line()
 
-        sip = sip_dao.get(sip_row.id)
-        assert_that(sip, equal_to(sip_row))
-        assert_that(sip.line, equal_to(line_row))
+        line.associate_endpoint(sip)
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(sip.line, equal_to(line))
