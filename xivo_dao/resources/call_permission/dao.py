@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2016 Avencall
+# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao.helpers.db_manager import daosession
@@ -9,33 +9,33 @@ from xivo_dao.resources.call_permission.search import call_permission_search
 
 
 @daosession
-def search(session, **parameters):
-    return CallPermissionPersistor(session, call_permission_search).search(parameters)
+def search(session, tenant_uuids=None, **parameters):
+    return CallPermissionPersistor(session, call_permission_search, tenant_uuids).search(parameters)
 
 
 @daosession
-def get(session, call_permission_id):
-    return CallPermissionPersistor(session, call_permission_search).get_by({'id': call_permission_id})
+def get(session, call_permission_id, tenant_uuids=None):
+    return CallPermissionPersistor(session, call_permission_search, tenant_uuids).get_by({'id': call_permission_id})
 
 
 @daosession
-def get_by(session, **criteria):
-    return CallPermissionPersistor(session, call_permission_search).get_by(criteria)
+def get_by(session, tenant_uuids=None, **criteria):
+    return CallPermissionPersistor(session, call_permission_search, tenant_uuids).get_by(criteria)
 
 
 @daosession
-def find(session, call_permission_id):
-    return CallPermissionPersistor(session, call_permission_search).find_by({'id': call_permission_id})
+def find(session, call_permission_id, tenant_uuids=None):
+    return CallPermissionPersistor(session, call_permission_search, tenant_uuids).find_by({'id': call_permission_id})
 
 
 @daosession
-def find_by(session, **criteria):
-    return CallPermissionPersistor(session, call_permission_search).find_by(criteria)
+def find_by(session, tenant_uuids=None, **criteria):
+    return CallPermissionPersistor(session, call_permission_search, tenant_uuids).find_by(criteria)
 
 
 @daosession
-def find_all_by(session, **criteria):
-    return CallPermissionPersistor(session, call_permission_search).find_all_by(criteria)
+def find_all_by(session, tenant_uuids=None, **criteria):
+    return CallPermissionPersistor(session, call_permission_search, tenant_uuids).find_all_by(criteria)
 
 
 @daosession

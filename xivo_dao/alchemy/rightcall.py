@@ -5,13 +5,14 @@
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
+from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint, UniqueConstraint
 from sqlalchemy.sql import case, cast, func, not_
 from sqlalchemy.types import Boolean, Integer, String, Text
 
-from xivo_dao.alchemy.rightcallexten import RightCallExten
 from xivo_dao.helpers.db_manager import Base
 from xivo_dao.helpers.exception import InputError
+
+from .rightcallexten import RightCallExten
 
 
 class RightCall(Base):
@@ -23,6 +24,7 @@ class RightCall(Base):
     )
 
     id = Column(Integer, nullable=False)
+    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
     name = Column(String(128), nullable=False, server_default='')
     passwd = Column(String(40), nullable=False, server_default='')
     authorization = Column(Integer, nullable=False, server_default='0')
@@ -30,38 +32,56 @@ class RightCall(Base):
     description = Column(Text)
     rightcallextens = relationship(RightCallExten, cascade="all, delete-orphan")
 
-    rightcall_members = relationship('RightCallMember',
-                                     primaryjoin='RightCallMember.rightcallid == RightCall.id',
-                                     foreign_keys='RightCallMember.rightcallid',
-                                     cascade='all, delete-orphan',
-                                     back_populates='rightcall')
+    rightcall_members = relationship(
+        'RightCallMember',
+        primaryjoin='RightCallMember.rightcallid == RightCall.id',
+        foreign_keys='RightCallMember.rightcallid',
+        cascade='all, delete-orphan',
+        back_populates='rightcall',
+    )
 
-    rightcall_outcalls = relationship('RightCallMember',
-                                      primaryjoin="""and_(RightCallMember.rightcallid == RightCall.id,
-                                                          RightCallMember.type == 'outcall')""",
-                                      foreign_keys='RightCallMember.rightcallid',
-                                      viewonly=True)
+    rightcall_outcalls = relationship(
+        'RightCallMember',
+        primaryjoin="""and_(
+            RightCallMember.rightcallid == RightCall.id,
+            RightCallMember.type == 'outcall'
+        )""",
+        foreign_keys='RightCallMember.rightcallid',
+        viewonly=True,
+    )
     outcalls = association_proxy('rightcall_outcalls', 'outcall')
 
-    rightcall_outcalls = relationship('RightCallMember',
-                                      primaryjoin="""and_(RightCallMember.rightcallid == RightCall.id,
-                                                          RightCallMember.type == 'outcall')""",
-                                      foreign_keys='RightCallMember.rightcallid',
-                                      viewonly=True)
+    rightcall_outcalls = relationship(
+        'RightCallMember',
+        primaryjoin="""and_(
+            RightCallMember.rightcallid == RightCall.id,
+            RightCallMember.type == 'outcall'
+        )""",
+        foreign_keys='RightCallMember.rightcallid',
+        viewonly=True,
+    )
     outcalls = association_proxy('rightcall_outcalls', 'outcall')
 
-    rightcall_groups = relationship('RightCallMember',
-                                    primaryjoin="""and_(RightCallMember.rightcallid == RightCall.id,
-                                                        RightCallMember.type == 'group')""",
-                                    foreign_keys='RightCallMember.rightcallid',
-                                    viewonly=True)
+    rightcall_groups = relationship(
+        'RightCallMember',
+        primaryjoin="""and_(
+            RightCallMember.rightcallid == RightCall.id,
+            RightCallMember.type == 'group'
+        )""",
+        foreign_keys='RightCallMember.rightcallid',
+        viewonly=True,
+    )
     groups = association_proxy('rightcall_groups', 'group')
 
-    rightcall_users = relationship('RightCallMember',
-                                   primaryjoin="""and_(RightCallMember.rightcallid == RightCall.id,
-                                                       RightCallMember.type == 'user')""",
-                                   foreign_keys='RightCallMember.rightcallid',
-                                   viewonly=True)
+    rightcall_users = relationship(
+        'RightCallMember',
+        primaryjoin="""and_(
+            RightCallMember.rightcallid == RightCall.id,
+            RightCallMember.type == 'user'
+        )""",
+        foreign_keys='RightCallMember.rightcallid',
+        viewonly=True,
+    )
     users = association_proxy('rightcall_users', 'user')
 
     @hybrid_property
