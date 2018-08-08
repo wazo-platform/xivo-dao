@@ -12,15 +12,14 @@ from xivo_dao.resources.line.fixes import LineFixes
 from xivo_dao.resources.trunk.fixes import TrunkFixes
 from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
 
-from .search import custom_search
-
 
 class CustomPersistor(CriteriaBuilderMixin):
 
     _search_table = Custom
 
-    def __init__(self, session, tenant_uuids=None):
+    def __init__(self, session, custom_search, tenant_uuids=None):
         self.session = session
+        self.custom_search = custom_search
         self.tenant_uuids = tenant_uuids
 
     def get(self, custom_id):
@@ -41,9 +40,9 @@ class CustomPersistor(CriteriaBuilderMixin):
         return self._find_query(criteria).all()
 
     def search(self, parameters):
-        query = self.session.query(custom_search.config.table)
+        query = self.session.query(self.custom_search.config.table)
         query = self._filter_tenant_uuid(query)
-        rows, total = custom_search.search_from_query(query, parameters)
+        rows, total = self.custom_search.search_from_query(query, parameters)
         return SearchResult(total, rows)
 
     def create(self, custom):

@@ -6,10 +6,11 @@ from xivo_dao.helpers.db_manager import Session
 from xivo_dao.helpers.db_utils import flush_session
 
 from .persistor import CustomPersistor
+from .search import custom_search
 
 
 def persistor(tenant_uuids=None):
-    return CustomPersistor(Session, tenant_uuids)
+    return CustomPersistor(Session, custom_search, tenant_uuids)
 
 
 def get(custom_id, tenant_uuids=None):
