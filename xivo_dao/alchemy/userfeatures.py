@@ -32,15 +32,16 @@ from sqlalchemy.types import (
     Text,
 )
 
-from xivo_dao.alchemy import enum
-from xivo_dao.alchemy.cti_profile import CtiProfile
-from xivo_dao.alchemy.entity import Entity
-from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
-from xivo_dao.alchemy.user_line import UserLine
-from xivo_dao.alchemy.queuemember import QueueMember
-from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.helpers.db_manager import Base
 from xivo_dao.helpers.uuid import new_uuid
+
+from . import enum
+from .cti_profile import CtiProfile
+from .entity import Entity
+from .func_key_template import FuncKeyTemplate
+from .queuemember import QueueMember
+from .schedulepath import SchedulePath
+from .user_line import UserLine
 
 
 class EmailComparator(ColumnProperty.Comparator):
@@ -49,17 +50,20 @@ class EmailComparator(ColumnProperty.Comparator):
         return func.lower(self.__clause_element__()) == func.lower(other)
 
 
-caller_id_regex = re.compile(r'''
-                             "                      #name start
-                             (?P<name>[^"]+)        #inside ""
-                             "                      #name end
-                             \s*                    #space between name and number
-                             (
-                             <                      #number start
-                             (?P<num>\+?[\dA-Z]+)   #inside <>
-                             >                      #number end
-                             )?                     #number is optional
-                             ''', re.VERBOSE)
+caller_id_regex = re.compile(
+    r'''
+    "                      #name start
+    (?P<name>[^"]+)        #inside ""
+    "                      #name end
+    \s*                    #space between name and number
+    (
+    <                      #number start
+    (?P<num>\+?[\dA-Z]+)   #inside <>
+    >                      #number end
+    )?                     #number is optional
+    ''',
+    re.VERBOSE
+)
 
 
 def ordering_main_line(index, collection):
@@ -71,16 +75,10 @@ class UserFeatures(Base):
     __tablename__ = 'userfeatures'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
-        ForeignKeyConstraint(('cti_profile_id',),
-                             ('cti_profile.id',),
-                             ondelete='RESTRICT'),
-        ForeignKeyConstraint(('entityid',),
-                             ('entity.id',),
-                             ondelete='RESTRICT'),
-        ForeignKeyConstraint(('voicemailid',),
-                             ('voicemail.uniqueid',)),
-        ForeignKeyConstraint(('tenant_uuid',),
-                             ('tenant.uuid',)),
+        ForeignKeyConstraint(('cti_profile_id',), ('cti_profile.id',), ondelete='RESTRICT'),
+        ForeignKeyConstraint(('entityid',), ('entity.id',), ondelete='RESTRICT'),
+        ForeignKeyConstraint(('voicemailid',), ('voicemail.uniqueid',)),
+        ForeignKeyConstraint(('tenant_uuid',), ('tenant.uuid',), ondelete='CASCADE'),
         UniqueConstraint('func_key_private_template_id'),
         UniqueConstraint('uuid', name='userfeatures_uuid'),
         UniqueConstraint('email', name='userfeatures_email'),
@@ -97,8 +95,7 @@ class UserFeatures(Base):
     id = Column(Integer, nullable=False)
     uuid = Column(String(38), nullable=False, default=new_uuid)
     firstname = Column(String(128), nullable=False, server_default='')
-    email = column_property(Column(String(254)),
-                            comparator_factory=EmailComparator)
+    email = column_property(Column(String(254)), comparator_factory=EmailComparator)
     voicemailid = Column(Integer)
     agentid = Column(Integer)
     pictureid = Column(Integer)
@@ -152,123 +149,167 @@ class UserFeatures(Base):
     cti_profile = relationship(CtiProfile, foreign_keys=cti_profile_id)
     entity = relationship(Entity, foreign_keys=entityid)
 
-    main_line_rel = relationship("UserLine",
-                                 primaryjoin="""and_(UserFeatures.id == UserLine.user_id,
-                                                     UserLine.main_line == True)""")
-    agent = relationship("AgentFeatures",
-                         primaryjoin="AgentFeatures.id == UserFeatures.agentid",
-                         foreign_keys='UserFeatures.agentid',
-                         viewonly=True)
+    main_line_rel = relationship(
+        "UserLine",
+        primaryjoin="""and_(
+            UserFeatures.id == UserLine.user_id,
+            UserLine.main_line == True
+        )""",
+    )
+    agent = relationship(
+        "AgentFeatures",
+        primaryjoin="AgentFeatures.id == UserFeatures.agentid",
+        foreign_keys='UserFeatures.agentid',
+        viewonly=True,
+    )
 
-    voicemail = relationship("Voicemail",
-                             back_populates="users")
+    voicemail = relationship("Voicemail", back_populates="users")
     cti_profile = relationship("CtiProfile")
 
-    user_lines = relationship('UserLine',
-                              order_by='desc(UserLine.main_line)',
-                              collection_class=ordering_list('main_line', ordering_func=ordering_main_line),
-                              cascade='all, delete-orphan',
-                              back_populates='user')
+    user_lines = relationship(
+        'UserLine',
+        order_by='desc(UserLine.main_line)',
+        collection_class=ordering_list('main_line', ordering_func=ordering_main_line),
+        cascade='all, delete-orphan',
+        back_populates='user',
+    )
+    lines = association_proxy(
+        'user_lines', 'line',
+        creator=lambda _line: UserLine(line=_line, main_user=False),
+    )
 
-    lines = association_proxy('user_lines', 'line',
-                              creator=lambda _line: UserLine(line=_line,
-                                                             main_user=False))
-
-    incall_dialactions = relationship('Dialaction',
-                                      primaryjoin="""and_(Dialaction.category == 'incall',
-                                           Dialaction.action == 'user',
-                                           Dialaction.actionarg1 == cast(UserFeatures.id, String))""",
-                                      foreign_keys='Dialaction.actionarg1',
-                                      viewonly=True)
-
+    incall_dialactions = relationship(
+        'Dialaction',
+        primaryjoin="""and_(
+            Dialaction.category == 'incall',
+            Dialaction.action == 'user',
+            Dialaction.actionarg1 == cast(UserFeatures.id, String)
+        )""",
+        foreign_keys='Dialaction.actionarg1',
+        viewonly=True,
+    )
     incalls = association_proxy('incall_dialactions', 'incall')
 
-    user_dialactions = relationship('Dialaction',
-                                    primaryjoin="""and_(Dialaction.category == 'user',
-                                        Dialaction.categoryval == cast(UserFeatures.id, String))""",
-                                    cascade='all, delete-orphan',
-                                    collection_class=attribute_mapped_collection('event'),
-                                    foreign_keys='Dialaction.categoryval')
+    user_dialactions = relationship(
+        'Dialaction',
+        primaryjoin="""and_(
+            Dialaction.category == 'user',
+            Dialaction.categoryval == cast(UserFeatures.id, String)
+        )""",
+        cascade='all, delete-orphan',
+        collection_class=attribute_mapped_collection('event'),
+        foreign_keys='Dialaction.categoryval',
+    )
 
-    group_members = relationship('QueueMember',
-                                 primaryjoin="""and_(QueueMember.category == 'group',
-                                                     QueueMember.usertype == 'user',
-                                                     QueueMember.userid == UserFeatures.id)""",
-                                 foreign_keys='QueueMember.userid',
-                                 cascade='all, delete-orphan')
+    group_members = relationship(
+        'QueueMember',
+        primaryjoin="""and_(
+            QueueMember.category == 'group',
+            QueueMember.usertype == 'user',
+            QueueMember.userid == UserFeatures.id
+        )""",
+        foreign_keys='QueueMember.userid',
+        cascade='all, delete-orphan',
+    )
+    groups = association_proxy(
+        'group_members', 'group',
+        creator=lambda _group: QueueMember(category='group', usertype='user', group=_group),
+    )
 
-    groups = association_proxy('group_members', 'group',
-                               creator=lambda _group: QueueMember(category='group',
-                                                                  usertype='user',
-                                                                  group=_group))
-
-    queue_members = relationship('QueueMember',
-                                 primaryjoin="""and_(QueueMember.category == 'queue',
-                                                     QueueMember.usertype == 'user',
-                                                     QueueMember.userid == UserFeatures.id)""",
-                                 foreign_keys='QueueMember.userid',
-                                 cascade='all, delete-orphan')
+    queue_members = relationship(
+        'QueueMember',
+        primaryjoin="""and_(
+            QueueMember.category == 'queue',
+            QueueMember.usertype == 'user',
+            QueueMember.userid == UserFeatures.id
+        )""",
+        foreign_keys='QueueMember.userid',
+        cascade='all, delete-orphan',
+    )
     queues = association_proxy('queue_members', 'queue')
 
-    paging_users = relationship('PagingUser',
-                                cascade='all, delete-orphan')
+    paging_users = relationship('PagingUser', cascade='all, delete-orphan')
 
-    switchboard_member_users = relationship('SwitchboardMemberUser',
-                                            cascade='all, delete-orphan')
+    switchboard_member_users = relationship('SwitchboardMemberUser', cascade='all, delete-orphan')
     switchboards = association_proxy('switchboard_member_users', 'switchboard')
 
-    ivr_dialactions = relationship('Dialaction',
-                                   primaryjoin="""and_(Dialaction.action == 'user',
-                                                       Dialaction.actionarg1 == cast(UserFeatures.id, String),
-                                                       Dialaction.category.in_(['ivr', 'ivr_choice']))""",
-                                   foreign_keys='Dialaction.actionarg1',
-                                   cascade='all, delete-orphan')
+    ivr_dialactions = relationship(
+        'Dialaction',
+        primaryjoin="""and_(
+            Dialaction.action == 'user',
+            Dialaction.actionarg1 == cast(UserFeatures.id, String),
+            Dialaction.category.in_(['ivr', 'ivr_choice'])
+        )""",
+        foreign_keys='Dialaction.actionarg1',
+        cascade='all, delete-orphan',
+    )
 
-    schedule_paths = relationship('SchedulePath',
-                                  primaryjoin="""and_(SchedulePath.path == 'user',
-                                                      SchedulePath.pathid == UserFeatures.id)""",
-                                  foreign_keys='SchedulePath.pathid',
-                                  cascade='all, delete-orphan',
-                                  back_populates='user')
+    schedule_paths = relationship(
+        'SchedulePath',
+        primaryjoin="""and_(
+            SchedulePath.path == 'user',
+            SchedulePath.pathid == UserFeatures.id
+        )""",
+        foreign_keys='SchedulePath.pathid',
+        cascade='all, delete-orphan',
+        back_populates='user',
+    )
+    schedules = association_proxy(
+        'schedule_paths', 'schedule',
+        creator=lambda _schedule: SchedulePath(path='user', schedule_id=_schedule.id, schedule=_schedule),
+    )
 
-    schedules = association_proxy('schedule_paths', 'schedule',
-                                  creator=lambda _schedule: SchedulePath(path='user',
-                                                                         schedule_id=_schedule.id,
-                                                                         schedule=_schedule))
+    call_filter_recipients = relationship(
+        'Callfiltermember',
+        primaryjoin="""and_(
+            Callfiltermember.type == 'user',
+            Callfiltermember.bstype == 'boss',
+            Callfiltermember.typeval == cast(UserFeatures.id, String)
+        )""",
+        foreign_keys='Callfiltermember.typeval',
+        cascade='delete, delete-orphan',
+    )
+    call_filter_surrogates = relationship(
+        'Callfiltermember',
+        primaryjoin="""and_(
+            Callfiltermember.type == 'user',
+            Callfiltermember.bstype == 'secretary',
+            Callfiltermember.typeval == cast(UserFeatures.id, String)
+        )""",
+        foreign_keys='Callfiltermember.typeval',
+        cascade='delete, delete-orphan',
+    )
 
-    call_filter_recipients = relationship('Callfiltermember',
-                                          primaryjoin="""and_(Callfiltermember.type == 'user',
-                                              Callfiltermember.bstype == 'boss',
-                                              Callfiltermember.typeval == cast(UserFeatures.id, String))""",
-                                          foreign_keys='Callfiltermember.typeval',
-                                          cascade='delete, delete-orphan')
+    call_pickup_interceptors = relationship(
+        'PickupMember',
+        primaryjoin="""and_(
+            PickupMember.category == 'member',
+            PickupMember.membertype == 'user',
+            PickupMember.memberid == UserFeatures.id
+        )""",
+        foreign_keys='PickupMember.memberid',
+        cascade='delete, delete-orphan',
+    )
+    call_pickup_targets = relationship(
+        'PickupMember',
+        primaryjoin="""and_(
+            PickupMember.category == 'pickup',
+            PickupMember.membertype == 'user',
+            PickupMember.memberid == UserFeatures.id
+        )""",
+        foreign_keys='PickupMember.memberid',
+        cascade='delete, delete-orphan',
+    )
 
-    call_filter_surrogates = relationship('Callfiltermember',
-                                          primaryjoin="""and_(Callfiltermember.type == 'user',
-                                              Callfiltermember.bstype == 'secretary',
-                                              Callfiltermember.typeval == cast(UserFeatures.id, String))""",
-                                          foreign_keys='Callfiltermember.typeval',
-                                          cascade='delete, delete-orphan')
-
-    call_pickup_interceptors = relationship('PickupMember',
-                                            primaryjoin="""and_(PickupMember.category == 'member',
-                                                PickupMember.membertype == 'user',
-                                                PickupMember.memberid == UserFeatures.id)""",
-                                            foreign_keys='PickupMember.memberid',
-                                            cascade='delete, delete-orphan')
-
-    call_pickup_targets = relationship('PickupMember',
-                                       primaryjoin="""and_(PickupMember.category == 'pickup',
-                                           PickupMember.membertype == 'user',
-                                           PickupMember.memberid == UserFeatures.id)""",
-                                       foreign_keys='PickupMember.memberid',
-                                       cascade='delete, delete-orphan')
-
-    rightcall_members = relationship('RightCallMember',
-                                     primaryjoin="""and_(RightCallMember.type == 'user',
-                                                         RightCallMember.typeval == cast(UserFeatures.id, String))""",
-                                     foreign_keys='RightCallMember.typeval',
-                                     cascade='all, delete-orphan')
+    rightcall_members = relationship(
+        'RightCallMember',
+        primaryjoin="""and_(
+            RightCallMember.type == 'user',
+            RightCallMember.typeval == cast(UserFeatures.id, String)
+        )""",
+        foreign_keys='RightCallMember.typeval',
+        cascade='all, delete-orphan',
+    )
 
     call_permissions = association_proxy('rightcall_members', 'rightcall')
 
