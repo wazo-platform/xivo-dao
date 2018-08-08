@@ -1,28 +1,31 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2015-2016 Avencall
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from __future__ import unicode_literals
 
-from hamcrest import assert_that
-from hamcrest import equal_to
-from hamcrest import none
-from hamcrest import contains
-from hamcrest import empty
-from hamcrest import is_not
-from hamcrest import has_item
-from hamcrest import has_items
-from hamcrest import has_property
-from hamcrest import has_properties
-from hamcrest import has_length
+from hamcrest import (
+    all_of,
+    assert_that,
+    empty,
+    equal_to,
+    has_item,
+    has_items,
+    has_length,
+    has_properties,
+    is_not,
+    none,
+    not_,
+)
 
 from xivo_dao.alchemy.usersip import UserSIP as SIPEndpoint
 from xivo_dao.alchemy.linefeatures import LineFeatures as Line
 from xivo_dao.helpers.exception import InputError
 from xivo_dao.helpers.exception import NotFoundError
-from xivo_dao.resources.endpoint_sip import dao
+from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.tests.test_dao import DAOTestCase
+
+from .. import dao as sip_dao
 
 ALL_OPTIONS = [
     ['buggymwi', 'yes'],
@@ -98,64 +101,95 @@ ALL_OPTIONS = [
 ]
 
 
-class TestSipEndpointDAO(DAOTestCase):
-    pass
-
-
-class TestSipEndpointDaoFindBy(TestSipEndpointDAO):
+class TestFindBy(DAOTestCase):
 
     def test_given_column_does_not_exist_then_raises_error(self):
-        self.assertRaises(InputError, dao.find_by, column=1)
+        self.assertRaises(InputError, sip_dao.find_by, column=1)
 
     def test_given_row_with_value_does_not_exist_then_returns_null(self):
-        result = dao.find_by(name='abcd')
+        result = sip_dao.find_by(name='abcd')
         assert_that(result, none())
 
     def test_find_by(self):
         sip = self.add_usersip(name='myname')
-        result = dao.find_by(name='myname')
+        result = sip_dao.find_by(name='myname')
 
         assert_that(result.id, equal_to(sip.id))
 
+    def test_find_by_multi_tenant(self):
+        tenant = self.add_tenant()
 
-class TestSipEndpointDaoGet(TestSipEndpointDAO):
+        sip_row = self.add_usersip()
+        sip = sip_dao.find_by(name=sip_row.name, tenant_uuids=[tenant.uuid])
+        assert_that(sip, none())
+
+        sip_row = self.add_usersip(tenant_uuid=tenant.uuid)
+        sip = sip_dao.find_by(name=sip_row.name, tenant_uuids=[tenant.uuid])
+        assert_that(sip, equal_to(sip_row))
+
+
+class TestFindAllBy(DAOTestCase):
+
+    def test_find_all_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        sip1 = self.add_usersip(language='en_US', tenant_uuid=tenant.uuid)
+        sip2 = self.add_usersip(language='en_US')
+
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        sips = sip_dao.find_all_by(language='en_US', tenant_uuids=tenants)
+        assert_that(sips, has_items(sip1, sip2))
+
+        tenants = [tenant.uuid]
+        sips = sip_dao.find_all_by(language='en_US', tenant_uuids=tenants)
+        assert_that(sips, all_of(has_items(sip1), not_(has_items(sip2))))
+
+
+class TestGet(DAOTestCase):
 
     def test_given_no_rows_then_raises_error(self):
-        self.assertRaises(NotFoundError, dao.get, 1)
+        self.assertRaises(NotFoundError, sip_dao.get, 1)
 
     def test_given_row_with_minimal_parameters_then_returns_model(self):
-        row = self.add_usersip(name='username',
-                               secret='secret',
-                               type='friend',
-                               host='dynamic')
+        row = self.add_usersip(
+            name='username',
+            secret='secret',
+            type='friend',
+            host='dynamic',
+        )
 
-        sip = dao.get(row.id)
-        assert_that(sip.id, equal_to(row.id))
-        assert_that(sip.name, equal_to('username'))
-        assert_that(sip.username, none())
-        assert_that(sip.secret, equal_to('secret'))
-        assert_that(sip.type, equal_to('friend'))
-        assert_that(sip.host, equal_to('dynamic'))
+        sip = sip_dao.get(row.id)
+        assert_that(sip, has_properties(
+            id=row.id,
+            name='username',
+            secret='secret',
+            type='friend',
+            host='dynamic',
+        ))
 
     def test_given_row_with_optional_parameters_then_returns_model(self):
         row = self.add_usersip(language="fr_FR",
                                amaflags="omit",
                                buggymwi=1)
 
-        sip = dao.get(row.id)
-        assert_that(sip.options, has_items(["language", "fr_FR"],
-                                           ["amaflags", "omit"],
-                                           ["buggymwi", "yes"]))
+        sip = sip_dao.get(row.id)
+        assert_that(sip.options, has_items(
+            ["language", "fr_FR"],
+            ["amaflags", "omit"],
+            ["buggymwi", "yes"]
+        ))
 
     def test_given_row_with_option_set_to_null_then_option_not_returned(self):
         row = self.add_usersip(language=None,
                                allow=None,
                                callerid='')
 
-        sip = dao.get(row.id)
-        assert_that(sip.options, is_not(has_item(has_item("language"))))
-        assert_that(sip.options, is_not(has_item(has_item("allow"))))
-        assert_that(sip.options, is_not(has_item(has_item("callerid"))))
+        sip = sip_dao.get(row.id)
+        assert_that(sip.options, all_of(
+            is_not(has_item(has_item("language"))),
+            is_not(has_item(has_item("allow"))),
+            is_not(has_item(has_item("callerid"))),
+        ))
 
     def test_given_row_with_additional_options_then_returns_model(self):
         options = [
@@ -166,65 +200,176 @@ class TestSipEndpointDaoGet(TestSipEndpointDAO):
 
         row = self.add_usersip(options=options)
 
-        sip = dao.get(row.id)
+        sip = sip_dao.get(row.id)
         assert_that(sip.options, has_items(*options))
 
     def test_given_row_has_native_and_additional_options_then_all_options_returned(self):
         row = self.add_usersip(language="fr_FR", _options=[["foo", "bar"]])
 
-        sip = dao.get(row.id)
+        sip = sip_dao.get(row.id)
         assert_that(sip.options, has_items(["language", "fr_FR"], ["foo", "bar"]))
 
+    def test_get_multi_tenant(self):
+        tenant = self.add_tenant()
 
-class TestSipEndpointDaoSearch(DAOTestCase):
+        sip_row = self.add_usersip(tenant_uuid=tenant.uuid)
+        sip = sip_dao.get(sip_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(sip, equal_to(sip_row))
 
-    def test_search(self):
-        sip1 = self.add_usersip(name="alice",
-                                secret="abygale")
-        self.add_usersip(name="henry",
-                         secret="ford")
-
-        search_result = dao.search(search='alice')
-
-        assert_that(search_result.total, equal_to(1))
-        assert_that(search_result.items, contains(has_property('id', sip1.id)))
+        sip_row = self.add_usersip()
+        self.assertRaises(
+            NotFoundError,
+            sip_dao.get, sip_row.id, tenant_uuids=[tenant.uuid],
+        )
 
 
-class TestSipEndpointDaoCreate(DAOTestCase):
+class TestSearch(DAOTestCase):
+
+    def assert_search_returns_result(self, search_result, **parameters):
+        result = sip_dao.search(**parameters)
+        assert_that(result, equal_to(search_result))
+
+
+class TestSimpleSearch(TestSearch):
+
+    def test_given_no_sip_then_returns_no_empty_result(self):
+        expected = SearchResult(0, [])
+
+        self.assert_search_returns_result(expected)
+
+    def test_given_on_sip_then_returns_one_result(self):
+        sip = self.add_usersip()
+        expected = SearchResult(1, [sip])
+
+        self.assert_search_returns_result(expected)
+
+    def test_search_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        sip1 = self.add_usersip(name='sort1')
+        sip2 = self.add_usersip(name='sort2', tenant_uuid=tenant.uuid)
+
+        expected = SearchResult(2, [sip1, sip2])
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
+        expected = SearchResult(1, [sip2])
+        tenants = [tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
+
+class TestSearchMultiple(TestSearch):
+
+    def setUp(self):
+        super(TestSearch, self).setUp()
+        self.sip1 = self.add_usersip(name='Ashton', host='resto')
+        self.sip2 = self.add_usersip(name='Beaugarton', host='bar')
+        self.sip3 = self.add_usersip(name='Casa', host='resto')
+        self.sip4 = self.add_usersip(name='Dunkin', host='resto')
+
+    def test_when_searching_then_returns_one_result(self):
+        expected = SearchResult(1, [self.sip2])
+
+        self.assert_search_returns_result(expected, search='eau')
+
+    def test_when_searching_with_an_extra_argument(self):
+        expected_resto = SearchResult(1, [self.sip1])
+        self.assert_search_returns_result(expected_resto, search='ton', host='resto')
+
+        expected_bar = SearchResult(1, [self.sip2])
+        self.assert_search_returns_result(expected_bar, search='ton', host='bar')
+
+        expected_all_resto = SearchResult(3, [self.sip1, self.sip3, self.sip4])
+        self.assert_search_returns_result(expected_all_resto, host='resto', order='username')
+
+    def test_when_sorting_then_returns_result_in_ascending_order(self):
+        expected = SearchResult(
+            4, [self.sip1, self.sip2, self.sip3, self.sip4]
+        )
+
+        self.assert_search_returns_result(expected, order='username')
+
+    def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
+        expected = SearchResult(
+            4, [self.sip4, self.sip3, self.sip2, self.sip1]
+        )
+
+        self.assert_search_returns_result(expected, order='username', direction='desc')
+
+    def test_when_limiting_then_returns_right_number_of_items(self):
+        expected = SearchResult(4, [self.sip1])
+
+        self.assert_search_returns_result(expected, limit=1)
+
+    def test_when_skipping_then_returns_right_number_of_items(self):
+        expected = SearchResult(4, [self.sip2, self.sip3, self.sip4])
+
+        self.assert_search_returns_result(expected, skip=1)
+
+    def test_when_doing_a_paginated_search_then_returns_a_paginated_result(self):
+        expected = SearchResult(3, [self.sip2])
+
+        self.assert_search_returns_result(
+            expected,
+            search='a',
+            order='username',
+            direction='desc',
+            skip=1,
+            limit=1,
+        )
+
+
+class TestCreate(DAOTestCase):
 
     def test_create_minimal_parameters(self):
-        sip = SIPEndpoint()
+        sip = SIPEndpoint(tenant_uuid=self.default_tenant.uuid)
 
-        created_sip = dao.create(sip)
+        created_sip = sip_dao.create(sip)
         row = self.session.query(SIPEndpoint).first()
 
-        assert_that(created_sip.id, equal_to(row.id))
-        assert_that(created_sip.name, has_length(8))
-        assert_that(created_sip.username, none())
-        assert_that(created_sip.secret, has_length(8))
-        assert_that(created_sip.type, equal_to('friend'))
-        assert_that(created_sip.host, equal_to('dynamic'))
-        assert_that(created_sip.category, equal_to('user'))
+        assert_that(created_sip, has_properties(
+            id=row.id,
+            name=has_length(8),
+            username=none(),
+            secret=has_length(8),
+            type='friend',
+            host='dynamic',
+            category='user',
+        ))
 
     def test_create_predefined_parameters(self):
-        sip = SIPEndpoint(name='myusername',
-                          secret='mysecret',
-                          host="127.0.0.1",
-                          type="peer")
+        sip = SIPEndpoint(
+            tenant_uuid=self.default_tenant.uuid,
+            name='myusername',
+            secret='mysecret',
+            host="127.0.0.1",
+            type="peer",
+        )
 
-        created_sip = dao.create(sip)
+        created_sip = sip_dao.create(sip)
         row = self.session.query(SIPEndpoint).first()
 
-        assert_that(created_sip.id, equal_to(row.id))
-        assert_that(created_sip.name, equal_to('myusername'))
-        assert_that(created_sip.username, none())
-        assert_that(created_sip.secret, equal_to('mysecret'))
-        assert_that(created_sip.type, equal_to('peer'))
-        assert_that(created_sip.host, equal_to('127.0.0.1'))
-        assert_that(created_sip.category, equal_to('user'))
+        assert_that(created_sip, has_properties(
+            id=row.id,
+            tenant_uuid=self.default_tenant.uuid,
+            name='myusername',
+            username=none(),
+            secret='mysecret',
+            type='peer',
+            host='127.0.0.1',
+            category='user',
+        ))
 
     def test_create_with_native_options(self):
-        expected_options = has_properties({
+        sip = SIPEndpoint(tenant_uuid=self.default_tenant.uuid, options=ALL_OPTIONS)
+        created_sip = sip_dao.create(sip)
+
+        row = self.session.query(SIPEndpoint).first()
+
+        assert_that(created_sip, has_properties({
+            'id': row.id,
+            'options': has_items(*ALL_OPTIONS),
+
             'buggymwi': 1,
             'amaflags': 'default',
             'sendrpid': 'yes',
@@ -295,16 +440,7 @@ class TestSipEndpointDaoCreate(DAOTestCase):
             'port': 10000,
             'outboundproxy': '127.0.0.1',
             'remotesecret': 'remotesecret',
-        })
-
-        sip = SIPEndpoint(options=ALL_OPTIONS)
-        created_sip = dao.create(sip)
-
-        row = self.session.query(SIPEndpoint).first()
-
-        assert_that(created_sip.id, equal_to(row.id))
-        assert_that(created_sip, expected_options)
-        assert_that(created_sip.options, has_items(*ALL_OPTIONS))
+        }))
 
     def test_create_with_additional_options(self):
         options = [
@@ -314,36 +450,48 @@ class TestSipEndpointDaoCreate(DAOTestCase):
             ["spam", "eggs"]
         ]
 
-        sip = SIPEndpoint(options=options)
-        created_sip = dao.create(sip)
+        sip = SIPEndpoint(tenant_uuid=self.default_tenant.uuid, options=options)
+        created_sip = sip_dao.create(sip)
 
         row = self.session.query(SIPEndpoint).first()
 
-        assert_that(created_sip.id, equal_to(row.id))
-        assert_that(created_sip.options, has_items(*options))
+        assert_that(created_sip, has_properties(
+            id=row.id,
+            options=has_items(*options)
+        ))
 
 
-class TestSipEndpointDaoEdit(DAOTestCase):
+class TestEdit(DAOTestCase):
 
     def test_edit_basic_parameters(self):
         row = self.add_usersip()
-        sip = dao.get(row.id)
+        sip = sip_dao.get(row.id)
 
         sip.name = 'username'
         sip.secret = 'secret'
         sip.type = 'peer'
         sip.host = '127.0.0.1'
 
-        dao.edit(sip)
+        sip_dao.edit(sip)
 
         row = self.session.query(SIPEndpoint).first()
-        assert_that(row.name, equal_to('username'))
-        assert_that(row.secret, equal_to('secret'))
-        assert_that(row.type, equal_to('peer'))
-        assert_that(row.host, equal_to('127.0.0.1'))
+        assert_that(row, has_properties(
+            name='username',
+            secret='secret',
+            type='peer',
+            host='127.0.0.1',
+        ))
 
     def test_edit_remove_options(self):
-        expected_options = has_properties({
+        sip = self.add_usersip(options=ALL_OPTIONS)
+
+        sip = sip_dao.get(sip.id)
+        sip.options = []
+
+        sip_dao.edit(sip)
+
+        row = self.session.query(SIPEndpoint).first()
+        assert_that(row, has_properties({
             'buggymwi': none(),
             'md5secret': '',
             'amaflags': 'default',
@@ -416,22 +564,17 @@ class TestSipEndpointDaoEdit(DAOTestCase):
             'outboundproxy': none(),
             'remotesecret': none(),
             '_options': empty(),
-        })
-
-        sip = dao.create(SIPEndpoint(options=ALL_OPTIONS))
-        sip = dao.get(sip.id)
-        sip.options = []
-
-        dao.edit(sip)
-
-        row = self.session.query(SIPEndpoint).first()
-        assert_that(row, expected_options)
+        }))
 
     def test_edit_options(self):
-        row = self.add_usersip(language="fr_FR", amaflags="default", subscribemwi=1,
-                               allow="g729,gsm")
+        row = self.add_usersip(
+            language="fr_FR",
+            amaflags="default",
+            subscribemwi=1,
+            allow="g729,gsm"
+        )
 
-        sip = dao.get(row.id)
+        sip = sip_dao.get(row.id)
         sip.options = [
             ["language", "en_US"],
             ["amaflags", "omit"],
@@ -439,13 +582,15 @@ class TestSipEndpointDaoEdit(DAOTestCase):
             ["allow", "ulaw,alaw"],
         ]
 
-        dao.edit(sip)
+        sip_dao.edit(sip)
 
         row = self.session.query(SIPEndpoint).first()
-        assert_that(row.language, equal_to("en_US"))
-        assert_that(row.amaflags, equal_to("omit"))
-        assert_that(row.subscribemwi, equal_to(0))
-        assert_that(row.allow, equal_to("ulaw,alaw"))
+        assert_that(row, has_properties(
+            language='en_US',
+            amaflags='omit',
+            subscribemwi=0,
+            allow='ulaw,alaw',
+        ))
 
     def test_edit_additional_options(self):
         row = self.add_usersip(_options=[
@@ -454,14 +599,14 @@ class TestSipEndpointDaoEdit(DAOTestCase):
             ["spam", "eggs"],
         ])
 
-        sip = dao.get(row.id)
+        sip = sip_dao.get(row.id)
         sip.options = [
             ["foo", "newbar"],
             ["foo", "newbaz"],
             ["spam", "neweggs"],
         ]
 
-        dao.edit(sip)
+        sip_dao.edit(sip)
 
         row = self.session.query(SIPEndpoint).first()
         assert_that(row._options, has_items(
@@ -471,15 +616,17 @@ class TestSipEndpointDaoEdit(DAOTestCase):
         ))
 
     def test_edit_both_native_and_additional_options(self):
-        row = self.add_usersip(language="fr_FR",
-                               amaflags="default",
-                               subscribemwi=1,
-                               allow="g729,gsm",
-                               _options=[
-                                   ["foo", "bar"],
-                                   ["foo", "baz"],
-                                   ["spam", "eggs"],
-                               ])
+        row = self.add_usersip(
+            language="fr_FR",
+            amaflags="default",
+            subscribemwi=1,
+            allow="g729,gsm",
+            _options=[
+                ["foo", "bar"],
+                ["foo", "baz"],
+                ["spam", "eggs"],
+            ]
+        )
 
         new_options = [
             ["language", "en_US"],
@@ -491,30 +638,32 @@ class TestSipEndpointDaoEdit(DAOTestCase):
             ["spam", "neweggs"],
         ]
 
-        sip = dao.get(row.id)
+        sip = sip_dao.get(row.id)
         sip.options = new_options
-        dao.edit(sip)
+        sip_dao.edit(sip)
 
         row = self.session.query(SIPEndpoint).first()
-        assert_that(row.options, has_items(*new_options))
-        assert_that(row.language, equal_to("en_US"))
-        assert_that(row.amaflags, equal_to("omit"))
-        assert_that(row.subscribemwi, equal_to(0))
-        assert_that(row.allow, equal_to("ulaw,alaw"))
-        assert_that(row._options, has_items(
-            ["foo", "newbar"],
-            ["foo", "newbaz"],
-            ["spam", "neweggs"],
+        assert_that(row, has_properties(
+            options=has_items(*new_options),
+            language='en_US',
+            amaflags='omit',
+            subscribemwi=0,
+            allow='ulaw,alaw',
+            _options=has_items(
+                ["foo", "newbar"],
+                ["foo", "newbaz"],
+                ["spam", "neweggs"],
+            )
         ))
 
 
-class TestSipEndpointDaoDelete(TestSipEndpointDAO):
+class TestDelete(DAOTestCase):
 
     def test_delete(self):
         row = self.add_usersip()
 
-        sip = dao.get(row.id)
-        dao.delete(sip)
+        sip = sip_dao.get(row.id)
+        sip_dao.delete(sip)
 
         row = self.session.query(SIPEndpoint).first()
         assert_that(row, none())
@@ -523,8 +672,8 @@ class TestSipEndpointDaoDelete(TestSipEndpointDAO):
         sip_row = self.add_usersip()
         line_row = self.add_line(endpoint='sip', endpoint_id=sip_row.id)
 
-        sip = dao.get(sip_row.id)
-        dao.delete(sip)
+        sip = sip_dao.get(sip_row.id)
+        sip_dao.delete(sip)
 
         line_row = self.session.query(Line).get(line_row.id)
         assert_that(line_row.endpoint, none())
@@ -538,7 +687,7 @@ class TestRelations(DAOTestCase):
         trunk_row = self.add_trunk()
         trunk_row.associate_endpoint(sip_row)
 
-        sip = dao.get(sip_row.id)
+        sip = sip_dao.get(sip_row.id)
         assert_that(sip, equal_to(sip_row))
         assert_that(sip.trunk, equal_to(trunk_row))
 
@@ -547,6 +696,6 @@ class TestRelations(DAOTestCase):
         line_row = self.add_line()
         line_row.associate_endpoint(sip_row)
 
-        sip = dao.get(sip_row.id)
+        sip = sip_dao.get(sip_row.id)
         assert_that(sip, equal_to(sip_row))
         assert_that(sip.line, equal_to(line_row))

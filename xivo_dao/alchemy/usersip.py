@@ -4,17 +4,21 @@
 
 from __future__ import unicode_literals
 
+from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.orm import relationship
+from sqlalchemy.schema import (
+    Column,
+    Index,
+    ForeignKey,
+    PrimaryKeyConstraint,
+    UniqueConstraint,
+)
+from sqlalchemy.sql.schema import CheckConstraint
+from sqlalchemy.types import Integer, String, Text, Enum
+
+from xivo_dao.alchemy import enum
 from xivo_dao.helpers.db_manager import Base
 from xivo_dao.helpers.asterisk import AsteriskOptionsMixin
-from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column
-from sqlalchemy.schema import PrimaryKeyConstraint
-from sqlalchemy.schema import UniqueConstraint
-from sqlalchemy.schema import Index
-from sqlalchemy.sql.schema import CheckConstraint
-from sqlalchemy.dialects.postgresql import ARRAY
-from sqlalchemy.types import Integer, String, Text, Enum
-from xivo_dao.alchemy import enum
 
 
 class UserSIP(Base, AsteriskOptionsMixin):
@@ -22,7 +26,8 @@ class UserSIP(Base, AsteriskOptionsMixin):
     EXCLUDE_OPTIONS = {
         'id',
         'commented',
-        'options'
+        'options',
+        'tenant_uuid',
     }
     EXCLUDE_OPTIONS_CONFD = {
         'name',
@@ -59,6 +64,7 @@ class UserSIP(Base, AsteriskOptionsMixin):
     __tablename__ = 'usersip'
 
     id = Column(Integer, nullable=False)
+    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
     name = Column(String(40), nullable=False)
     type = Column(Enum('friend', 'peer', 'user',
                        name='useriax_type',

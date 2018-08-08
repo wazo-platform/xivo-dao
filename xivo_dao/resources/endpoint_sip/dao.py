@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2015-2016 Avencall
+# Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao.helpers.db_utils import flush_session
@@ -9,38 +9,38 @@ from xivo_dao.resources.endpoint_sip.persistor import SipPersistor
 
 
 @daosession
-def find_by(session, **criteria):
-    return SipPersistor(session).find_by(criteria)
+def find_by(session, tenant_uuids=None, **criteria):
+    return SipPersistor(session, tenant_uuids).find_by(criteria)
 
 
 @daosession
-def find_all_by(session, **criteria):
-    return SipPersistor(session).find_all_by(criteria)
+def find_all_by(session, tenant_uuids=None, **criteria):
+    return SipPersistor(session, tenant_uuids).find_all_by(criteria)
 
 
 @daosession
-def search(session, **parameters):
-    return SipPersistor(session).search(parameters)
+def search(session, tenant_uuids=None, **parameters):
+    return SipPersistor(session, tenant_uuids).search(parameters)
 
 
 @daosession
-def get(session, line_id):
-    return SipPersistor(session).get(line_id)
+def get(session, sip_id, tenant_uuids=None):
+    return SipPersistor(session, tenant_uuids).get_by({'id': sip_id})
 
 
 @daosession
-def create(session, line):
+def create(session, sip):
     with flush_session(session):
-        return SipPersistor(session).create(line)
+        return SipPersistor(session).create(sip)
 
 
 @daosession
-def edit(session, line):
+def edit(session, sip):
     with flush_session(session):
-        SipPersistor(session).edit(line)
+        SipPersistor(session).edit(sip)
 
 
 @daosession
-def delete(session, line):
+def delete(session, sip):
     with flush_session(session):
-        return SipPersistor(session).delete(line)
+        return SipPersistor(session).delete(sip)
