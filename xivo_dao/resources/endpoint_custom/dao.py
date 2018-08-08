@@ -1,30 +1,31 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2015-2016 Avencall
+# Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao.helpers.db_manager import Session
 from xivo_dao.helpers.db_utils import flush_session
-from xivo_dao.resources.endpoint_custom.persistor import CustomPersistor
+
+from .persistor import CustomPersistor
 
 
-def persistor():
-    return CustomPersistor(Session)
+def persistor(tenant_uuids=None):
+    return CustomPersistor(Session, tenant_uuids)
 
 
-def get(id):
-    return persistor().get(id)
+def get(custom_id, tenant_uuids=None):
+    return persistor(tenant_uuids).get(custom_id)
 
 
-def find_by(**criteria):
-    return persistor().find_by(criteria)
+def find_by(tenant_uuids=None, **criteria):
+    return persistor(tenant_uuids).find_by(criteria)
 
 
-def find_all_by(**criteria):
-    return persistor().find_all_by(criteria)
+def find_all_by(tenant_uuids=None, **criteria):
+    return persistor(tenant_uuids).find_all_by(criteria)
 
 
-def search(**parameters):
-    return persistor().search(parameters)
+def search(tenant_uuids=None, **parameters):
+    return persistor(tenant_uuids).search(parameters)
 
 
 def create(custom):

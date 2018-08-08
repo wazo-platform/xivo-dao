@@ -718,9 +718,9 @@ class ItemInserter(object):
         return useriax
 
     def add_usercustom(self, **kwargs):
-        kwargs.setdefault('id', self._generate_int())
         kwargs.setdefault('interface', self._random_name())
         kwargs.setdefault('category', 'user')
+        kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
 
         usercustom = UserCustomSchema(**kwargs)
         self.add_me(usercustom)

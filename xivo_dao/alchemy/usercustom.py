@@ -7,6 +7,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.schema import (
     Column,
     Index,
+    ForeignKey,
     PrimaryKeyConstraint,
     UniqueConstraint,
 )
@@ -14,7 +15,8 @@ from sqlalchemy.sql import func, cast, not_
 from sqlalchemy.types import Integer, String, Enum, Boolean
 
 from xivo_dao.helpers.db_manager import Base
-from xivo_dao.alchemy import enum
+
+from . import enum
 
 
 class UserCustom(Base):
@@ -29,34 +31,39 @@ class UserCustom(Base):
     )
 
     id = Column(Integer, nullable=False)
+    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
     name = Column(String(40))
     context = Column(String(39))
     interface = Column(String(128), nullable=False)
     intfsuffix = Column(String(32), nullable=False, server_default='')
     commented = Column(Integer, nullable=False, server_default='0')
     protocol = Column(enum.trunk_protocol, nullable=False, server_default='custom')
-    category = Column(Enum('user', 'trunk',
-                           name='usercustom_category',
-                           metadata=Base.metadata),
-                      nullable=False)
+    category = Column(
+        Enum('user', 'trunk', name='usercustom_category', metadata=Base.metadata),
+        nullable=False
+    )
 
-    line = relationship('LineFeatures',
-                        primaryjoin="""and_(
-                            LineFeatures.protocol == 'custom',
-                            LineFeatures.protocolid == UserCustom.id
-                        )""",
-                        foreign_keys='LineFeatures.protocolid',
-                        uselist=False,
-                        back_populates='endpoint_custom')
+    line = relationship(
+        'LineFeatures',
+        primaryjoin="""and_(
+            LineFeatures.protocol == 'custom',
+            LineFeatures.protocolid == UserCustom.id
+        )""",
+        foreign_keys='LineFeatures.protocolid',
+        uselist=False,
+        back_populates='endpoint_custom',
+    )
 
-    trunk = relationship('TrunkFeatures',
-                         primaryjoin="""and_(
-                             TrunkFeatures.protocol == 'custom',
-                             TrunkFeatures.protocolid == UserCustom.id
-                         )""",
-                         uselist=False,
-                         foreign_keys='TrunkFeatures.protocolid',
-                         back_populates='endpoint_custom')
+    trunk = relationship(
+        'TrunkFeatures',
+        primaryjoin="""and_(
+            TrunkFeatures.protocol == 'custom',
+            TrunkFeatures.protocolid == UserCustom.id
+        )""",
+        uselist=False,
+        foreign_keys='TrunkFeatures.protocolid',
+        back_populates='endpoint_custom',
+    )
 
     @hybrid_property
     def enabled(self):

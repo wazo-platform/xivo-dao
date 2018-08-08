@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2015-2016 Avencall
+# Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
+
+from sqlalchemy import text
 
 from xivo_dao.alchemy.usercustom import UserCustom as Custom
 from xivo_dao.alchemy.linefeatures import LineFeatures as Line
@@ -9,34 +11,39 @@ from xivo_dao.helpers import errors
 from xivo_dao.resources.line.fixes import LineFixes
 from xivo_dao.resources.trunk.fixes import TrunkFixes
 from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
-from xivo_dao.resources.endpoint_custom.search import custom_search
+
+from .search import custom_search
 
 
 class CustomPersistor(CriteriaBuilderMixin):
 
     _search_table = Custom
 
-    def __init__(self, session):
+    def __init__(self, session, tenant_uuids=None):
         self.session = session
+        self.tenant_uuids = tenant_uuids
 
-    def get(self, id):
-        custom = self.session.query(Custom).filter_by(id=id).first()
+    def get(self, custom_id):
+        custom = self._find_query({'id': custom_id}).first()
         if not custom:
             raise errors.not_found('CustomEndpoint', id=id)
         return custom
 
-    def find_query(self, criteria):
+    def _find_query(self, criteria):
         query = self.session.query(Custom)
+        query = self._filter_tenant_uuid(query)
         return self.build_criteria(query, criteria)
 
     def find_by(self, criteria):
-        return self.find_query(criteria).first()
+        return self._find_query(criteria).first()
 
     def find_all_by(self, criteria):
-        return self.find_query(criteria).all()
+        return self._find_query(criteria).all()
 
-    def search(self, params):
-        rows, total = custom_search.search(self.session, params)
+    def search(self, parameters):
+        query = self.session.query(custom_search.config.table)
+        query = self._filter_tenant_uuid(query)
+        rows, total = custom_search.search_from_query(query, parameters)
         return SearchResult(total, rows)
 
     def create(self, custom):
@@ -60,6 +67,15 @@ class CustomPersistor(CriteriaBuilderMixin):
         self.session.query(Custom).filter_by(id=custom.id).delete()
         self.session.flush()
         self._fix_associated(custom)
+
+    def _filter_tenant_uuid(self, query):
+        if self.tenant_uuids is None:
+            return query
+
+        if not self.tenant_uuids:
+            return query.filter(text('false'))
+
+        return query.filter(Custom.tenant_uuid.in_(self.tenant_uuids))
 
     def _fix_associated(self, custom):
         line_id = (self.session.query(Line.id)
