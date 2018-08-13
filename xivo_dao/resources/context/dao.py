@@ -24,8 +24,8 @@ def get_by(session, tenant_uuids=None, **criteria):
 
 
 @daosession
-def get_by_name(session, context_name):
-    return ContextPersistor(session, context_search).get_by({'name': context_name})
+def get_by_name(session, context_name, tenant_uuids=None):
+    return ContextPersistor(session, context_search, tenant_uuids).get_by({'name': context_name})
 
 
 @daosession
