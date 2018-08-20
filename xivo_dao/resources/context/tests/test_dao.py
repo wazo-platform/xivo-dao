@@ -64,6 +64,19 @@ class TestGetByName(DAOTestCase):
 
         assert_that(context, equal_to(context_row))
 
+    def test_get_by_name_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        context_row = self.add_context(name='MyName1')
+        self.assertRaises(
+            NotFoundError,
+            context_dao.get_by_name, 'MyName1', tenant_uuids=[tenant.uuid],
+        )
+
+        context_row = self.add_context(name='MyName2', tenant_uuid=tenant.uuid)
+        context = context_dao.get_by_name('MyName2', tenant_uuids=[tenant.uuid])
+        assert_that(context, equal_to(context_row))
+
 
 class TestFindBy(DAOTestCase):
 
