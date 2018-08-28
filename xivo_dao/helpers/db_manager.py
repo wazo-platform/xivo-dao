@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2012-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 import logging
@@ -14,7 +14,6 @@ from sqlalchemy.types import String, TypeDecorator
 from xivo.config_helper import ConfigParser, ErrorHandler
 
 DEFAULT_DB_URI = 'postgresql://asterisk:proformatique@localhost/asterisk'
-
 
 logger = logging.getLogger(__name__)
 Session = scoped_session(sessionmaker())
@@ -39,6 +38,15 @@ class IntAsString(TypeDecorator):
         return value
 
 
+class UUIDAsString(TypeDecorator):
+    impl = String
+
+    def process_bind_param(self, value, dialect):
+        if value is not None:
+            value = str(value)
+        return value
+
+
 def todict(self, exclude=None):
     exclude = exclude or []
     d = {}
@@ -49,6 +57,7 @@ def todict(self, exclude=None):
             d[c.name] = value
 
     return d
+
 
 Base.todict = todict
 

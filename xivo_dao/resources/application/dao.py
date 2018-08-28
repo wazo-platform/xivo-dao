@@ -18,7 +18,7 @@ def search(tenant_uuids=None, **parameters):
 
 
 def get(application_uuid, tenant_uuids=None):
-    return _persistor(tenant_uuids).get_by({'uuid': str(application_uuid)})
+    return _persistor(tenant_uuids).get_by({'uuid': application_uuid})
 
 
 def get_by(tenant_uuids=None, **criteria):
@@ -26,7 +26,7 @@ def get_by(tenant_uuids=None, **criteria):
 
 
 def find(application_uuid, tenant_uuids=None):
-    return _persistor(tenant_uuids).find_by({'uuid': str(application_uuid)})
+    return _persistor(tenant_uuids).find_by({'uuid': application_uuid})
 
 
 def find_by(tenant_uuids=None, **criteria):

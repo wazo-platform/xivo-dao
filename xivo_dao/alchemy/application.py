@@ -11,13 +11,14 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.types import String
 
 from xivo_dao.helpers.db_manager import Base
+from xivo_dao.helpers.db_manager import UUIDAsString
 
 
 class Application(Base):
 
     __tablename__ = 'application'
 
-    uuid = Column(String(36), primary_key=True, server_default=text('uuid_generate_v4()'))
+    uuid = Column(UUIDAsString(36), primary_key=True, server_default=text('uuid_generate_v4()'))
     tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
     name = Column(String(128))
 
