@@ -26,6 +26,7 @@ from xivo_dao.alchemy.accessfeatures import AccessFeatures
 from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.agentqueueskill import AgentQueueSkill
+from xivo_dao.alchemy.application import Application
 from xivo_dao.alchemy.asterisk_file import AsteriskFile
 from xivo_dao.alchemy.asterisk_file_section import AsteriskFileSection
 from xivo_dao.alchemy.asterisk_file_variable import AsteriskFileVariable
@@ -1093,6 +1094,12 @@ class ItemInserter(object):
         call_log_participant = CallLogParticipant(**kwargs)
         self.add_me(call_log_participant)
         return call_log_participant
+
+    def add_application(self, **kwargs):
+        kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
+        application = Application(**kwargs)
+        self.add_me(application)
+        return application
 
     def add_me(self, obj):
         self.session.add(obj)
