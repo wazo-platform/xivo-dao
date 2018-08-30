@@ -24,6 +24,7 @@ class Application(Base):
 
     dest_node = relationship(
         'ApplicationDestNode',
+        cascade='all, delete-orphan',
         passive_deletes=True,
         uselist=False,
     )

@@ -26,3 +26,14 @@ class TestDestNode(DAOTestCase):
         self.session.expire_all()
         assert_that(inspect(dest_node).persistent)
         assert_that(application.dest_node, equal_to(dest_node))
+
+    def test_dest_node_dissociate(self):
+        application = self.add_application()
+        dest_node = self.add_application_dest_node(application_uuid=application.uuid)
+
+        application.dest_node = None
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(inspect(dest_node).deleted)
+        assert_that(application.dest_node, equal_to(None))
