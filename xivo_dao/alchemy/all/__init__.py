@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao.alchemy.accessfeatures import AccessFeatures
@@ -10,6 +10,8 @@ from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.agentglobalparams import AgentGlobalParams
 from xivo_dao.alchemy.agentgroup import AgentGroup
 from xivo_dao.alchemy.agentqueueskill import AgentQueueSkill
+from xivo_dao.alchemy.application import Application
+from xivo_dao.alchemy.application_dest_node import ApplicationDestNode
 from xivo_dao.alchemy.asterisk_file import AsteriskFile
 from xivo_dao.alchemy.asterisk_file_section import AsteriskFileSection
 from xivo_dao.alchemy.asterisk_file_variable import AsteriskFileVariable
@@ -150,6 +152,8 @@ __all__ = [
     "AgentGlobalParams",
     "AgentGroup",
     "AgentQueueSkill",
+    "Application",
+    "ApplicationDestNode",
     "AsteriskFile",
     "AsteriskFileSection",
     "AsteriskFileVariable",
