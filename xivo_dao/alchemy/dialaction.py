@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2012-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -41,66 +41,100 @@ class Dialaction(Base):
     actionarg2 = Column(String(255))
     linked = Column(Integer, nullable=False, server_default='0')
 
-    conference = relationship('Conference',
-                              primaryjoin="""and_(Dialaction.action == 'conference',
-                                                  Dialaction.actionarg1 == cast(Conference.id, String))""",
-                              foreign_keys='Dialaction.actionarg1',
-                              viewonly=True)
+    conference = relationship(
+        'Conference',
+        primaryjoin="""and_(
+            Dialaction.action == 'conference',
+            Dialaction.actionarg1 == cast(Conference.id, String)
+        )""",
+        foreign_keys='Dialaction.actionarg1',
+        viewonly=True,
+    )
 
-    group = relationship('GroupFeatures',
-                         primaryjoin="""and_(Dialaction.action == 'group',
-                                             Dialaction.actionarg1 == cast(GroupFeatures.id, String))""",
-                         foreign_keys='Dialaction.actionarg1',
-                         viewonly=True)
+    group = relationship(
+        'GroupFeatures',
+        primaryjoin="""and_(
+            Dialaction.action == 'group',
+            Dialaction.actionarg1 == cast(GroupFeatures.id, String)
+        )""",
+        foreign_keys='Dialaction.actionarg1',
+        viewonly=True,
+    )
 
-    user = relationship('UserFeatures',
-                        primaryjoin="""and_(Dialaction.action == 'user',
-                                            Dialaction.actionarg1 == cast(UserFeatures.id, String))""",
-                        foreign_keys='Dialaction.actionarg1',
-                        viewonly=True)
+    user = relationship(
+        'UserFeatures',
+        primaryjoin="""and_(
+            Dialaction.action == 'user',
+            Dialaction.actionarg1 == cast(UserFeatures.id, String)
+        )""",
+        foreign_keys='Dialaction.actionarg1',
+        viewonly=True,
+    )
 
-    ivr = relationship('IVR',
-                       primaryjoin="""and_(Dialaction.action == 'ivr',
-                                           Dialaction.actionarg1 == cast(IVR.id, String))""",
-                       foreign_keys='Dialaction.actionarg1',
-                       viewonly=True)
+    ivr = relationship(
+        'IVR',
+        primaryjoin="""and_(
+            Dialaction.action == 'ivr',
+            Dialaction.actionarg1 == cast(IVR.id, String)
+        )""",
+        foreign_keys='Dialaction.actionarg1',
+        viewonly=True,
+    )
 
-    ivr_choice = relationship('IVRChoice',
-                              primaryjoin="""and_(Dialaction.category == 'ivr_choice',
-                                                  Dialaction.categoryval == cast(IVRChoice.id, String))""",
-                              foreign_keys='Dialaction.categoryval',
-                              cascade='delete',
-                              back_populates='dialaction')
+    ivr_choice = relationship(
+        'IVRChoice',
+        primaryjoin="""and_(
+            Dialaction.category == 'ivr_choice',
+            Dialaction.categoryval == cast(IVRChoice.id, String)
+        )""",
+        foreign_keys='Dialaction.categoryval',
+        cascade='delete',
+        back_populates='dialaction',
+    )
 
-    switchboard = relationship('Switchboard',
-                               primaryjoin="""and_(Dialaction.action == 'switchboard',
-                                             Dialaction.actionarg1 == Switchboard.uuid)""",
-                               foreign_keys='Dialaction.actionarg1',
-                               viewonly=True)
+    switchboard = relationship(
+        'Switchboard',
+        primaryjoin="""and_(
+            Dialaction.action == 'switchboard',
+            Dialaction.actionarg1 == Switchboard.uuid
+        )""",
+        foreign_keys='Dialaction.actionarg1',
+        viewonly=True,
+    )
 
-    voicemail = relationship('Voicemail',
-                             primaryjoin="""and_(Dialaction.action == 'voicemail',
-                                                 Dialaction.actionarg1 == cast(Voicemail.id, String))""",
-                             foreign_keys='Dialaction.actionarg1',
-                             viewonly=True)
+    voicemail = relationship(
+        'Voicemail',
+        primaryjoin="""and_(
+            Dialaction.action == 'voicemail',
+            Dialaction.actionarg1 == cast(Voicemail.id, String)
+        )""",
+        foreign_keys='Dialaction.actionarg1',
+        viewonly=True,
+    )
 
-    incall = relationship('Incall',
-                          primaryjoin="""and_(Dialaction.category == 'incall',
-                                              Dialaction.categoryval == cast(Incall.id, String))""",
-                          foreign_keys='Dialaction.categoryval',
-                          viewonly=True,
-                          back_populates='dialaction')
+    incall = relationship(
+        'Incall',
+        primaryjoin="""and_(
+            Dialaction.category == 'incall',
+            Dialaction.categoryval == cast(Incall.id, String)
+        )""",
+        foreign_keys='Dialaction.categoryval',
+        viewonly=True,
+        back_populates='dialaction',
+    )
 
     @classmethod
     def new_user_actions(cls, user):
         for event in cls.USER_EVENTS:
-            yield cls(event=event,
-                      category='user',
-                      categoryval=str(user.id),
-                      action='none',
-                      actionarg1=None,
-                      actionarg2=None,
-                      linked=1)
+            yield cls(
+                event=event,
+                category='user',
+                categoryval=str(user.id),
+                action='none',
+                actionarg1=None,
+                actionarg2=None,
+                linked=1
+            )
 
     @hybrid_property
     def type(self):
