@@ -123,6 +123,16 @@ class Dialaction(Base):
         back_populates='dialaction',
     )
 
+    application = relationship(
+        'Application',
+        primaryjoin="""and_(
+            Dialaction.action == 'application:custom',
+            Dialaction.actionarg1 == Application.uuid
+        )""",
+        foreign_keys='Dialaction.actionarg1',
+        viewonly=True,
+    )
+
     @classmethod
     def new_user_actions(cls, user):
         for event in cls.USER_EVENTS:
