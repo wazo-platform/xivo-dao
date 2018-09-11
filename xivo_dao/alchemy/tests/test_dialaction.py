@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 import unittest
@@ -159,6 +159,15 @@ class TestIVRChoice(DAOTestCase):
         dialaction = self.add_dialaction(category='ivr_choice', categoryval=ivr_choice.id)
 
         assert_that(dialaction.ivr_choice, equal_to(ivr_choice))
+
+
+class TestApplication(DAOTestCase):
+
+    def test_getter(self):
+        application = self.add_application()
+        dialaction = self.add_dialaction(action='application:custom', actionarg1=application.uuid)
+
+        assert_that(dialaction.application, equal_to(application))
 
 
 class TestDelete(DAOTestCase):
