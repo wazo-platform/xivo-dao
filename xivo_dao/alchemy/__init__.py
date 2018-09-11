@@ -6,6 +6,7 @@
 # "mapper initialization" errors
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.agentqueueskill import AgentQueueSkill
+from xivo_dao.alchemy.application import Application
 from xivo_dao.alchemy.application_dest_node import ApplicationDestNode
 from xivo_dao.alchemy.asterisk_file_section import AsteriskFileSection
 from xivo_dao.alchemy.asterisk_file_variable import AsteriskFileVariable
@@ -62,6 +63,7 @@ from xivo_dao.alchemy.voicemail import Voicemail
 __all__ = [
     'AgentFeatures',
     'AgentQueueSkill',
+    'Application',
     'ApplicationDestNode',
     'AsteriskFileSection',
     'AsteriskFileVariable',
