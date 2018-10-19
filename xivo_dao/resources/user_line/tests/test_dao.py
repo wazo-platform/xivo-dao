@@ -1,24 +1,27 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
-from hamcrest import (assert_that,
-                      contains,
-                      contains_inanyorder,
-                      equal_to,
-                      has_length,
-                      has_properties,
-                      is_not,
-                      none)
+from hamcrest import (
+    assert_that,
+    contains,
+    contains_inanyorder,
+    equal_to,
+    has_length,
+    has_properties,
+    is_not,
+    none,
+)
 
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.helpers.exception import InputError
-from xivo_dao.resources.user_line import dao as user_line_dao
 from xivo_dao.tests.test_dao import DAOTestCase
 
+from .. import dao as user_line_dao
 
-class TestUserLineFindBy(DAOTestCase):
+
+class TestFindBy(DAOTestCase):
 
     def test_given_column_does_not_exist_then_raises_error(self):
         self.assertRaises(InputError, user_line_dao.find_by, column=1)
@@ -26,15 +29,14 @@ class TestUserLineFindBy(DAOTestCase):
     def test_find_by(self):
         user = self.add_user()
         line = self.add_line()
-        expected = self.add_user_line(user_id=user.id,
-                                      line_id=line.id)
+        expected = self.add_user_line(user_id=user.id, line_id=line.id)
 
         user_line = user_line_dao.find_by(user_id=expected.user_id)
 
         assert_that(user_line, equal_to(expected))
 
 
-class TestUserLineFindAllByUserId(DAOTestCase):
+class TestFindAllByUserId(DAOTestCase):
 
     def test_find_all_by_user_id_no_user_line(self):
         expected_result = []
@@ -45,8 +47,7 @@ class TestUserLineFindAllByUserId(DAOTestCase):
     def test_find_all_by_user_id(self):
         user = self.add_user()
         line = self.add_line()
-        user_line = self.add_user_line(user_id=user.id,
-                                       line_id=line.id)
+        user_line = self.add_user_line(user_id=user.id, line_id=line.id)
 
         result = user_line_dao.find_all_by_user_id(user.id)
 
@@ -56,21 +57,25 @@ class TestUserLineFindAllByUserId(DAOTestCase):
         user = self.add_user()
         line1 = self.add_line()
         line2 = self.add_line()
-        user_line_1 = self.add_user_line(user_id=user.id,
-                                         line_id=line1.id,
-                                         main_user=True,
-                                         main_line=True)
-        user_line_2 = self.add_user_line(user_id=user.id,
-                                         line_id=line2.id,
-                                         main_user=True,
-                                         main_line=False)
+        user_line_1 = self.add_user_line(
+            user_id=user.id,
+            line_id=line1.id,
+            main_user=True,
+            main_line=True,
+        )
+        user_line_2 = self.add_user_line(
+            user_id=user.id,
+            line_id=line2.id,
+            main_user=True,
+            main_line=False,
+        )
 
         result = user_line_dao.find_all_by_user_id(user.id)
 
         assert_that(result, contains_inanyorder(user_line_1, user_line_2))
 
 
-class TestUserLineFindMainUserLine(DAOTestCase):
+class TestFindMainUserLine(DAOTestCase):
 
     def test_find_main_user_line_no_user(self):
         line_id = 33
@@ -98,14 +103,18 @@ class TestUserLineFindMainUserLine(DAOTestCase):
         user1 = self.add_user()
         user2 = self.add_user()
         line = self.add_line()
-        main_user_line = self.add_user_line(user_id=user1.id,
-                                            line_id=line.id,
-                                            main_user=True,
-                                            main_line=True)
-        self.add_user_line(user_id=user2.id,
-                           line_id=line.id,
-                           main_user=False,
-                           main_line=True)
+        main_user_line = self.add_user_line(
+            user_id=user1.id,
+            line_id=line.id,
+            main_user=True,
+            main_line=True,
+        )
+        self.add_user_line(
+            user_id=user2.id,
+            line_id=line.id,
+            main_user=False,
+            main_line=True,
+        )
 
         result = user_line_dao.find_main_user_line(line.id)
 
@@ -120,10 +129,12 @@ class TestAssociateUserLine(DAOTestCase):
 
         result = user_line_dao.associate(user, line)
 
-        assert_that(result, has_properties(user_id=user.id,
-                                           line_id=line.id,
-                                           main_user=True,
-                                           main_line=True))
+        assert_that(result, has_properties(
+            user_id=user.id,
+            line_id=line.id,
+            main_user=True,
+            main_line=True,
+        ))
 
     def test_associate_user_with_line_already_associated(self):
         user = self.add_user()
@@ -139,10 +150,12 @@ class TestAssociateUserLine(DAOTestCase):
         user2 = self.add_user()
         line = self.add_line()
 
-        self.add_user_line(user_id=user1.id,
-                           line_id=line.id,
-                           main_user=True,
-                           main_line=True)
+        self.add_user_line(
+            user_id=user1.id,
+            line_id=line.id,
+            main_user=True,
+            main_line=True,
+        )
 
         user_line_dao.associate(user2, line)
 
@@ -150,14 +163,20 @@ class TestAssociateUserLine(DAOTestCase):
                   .filter(UserLine.line_id == line.id)
                   .all())
 
-        assert_that(result, contains_inanyorder(has_properties(user_id=user1.id,
-                                                               line_id=line.id,
-                                                               main_user=True,
-                                                               main_line=True),
-                                                has_properties(user_id=user2.id,
-                                                               line_id=line.id,
-                                                               main_user=False,
-                                                               main_line=True)))
+        assert_that(result, contains_inanyorder(
+            has_properties(
+                user_id=user1.id,
+                line_id=line.id,
+                main_user=True,
+                main_line=True,
+            ),
+            has_properties(
+                user_id=user2.id,
+                line_id=line.id,
+                main_user=False,
+                main_line=True,
+            ),
+        ))
 
     def test_associate_user_with_secondary_line(self):
         user = self.add_user()
@@ -174,14 +193,20 @@ class TestAssociateUserLine(DAOTestCase):
                   .filter(UserLine.user_id == user.id)
                   .all())
 
-        assert_that(result, contains_inanyorder(has_properties(user_id=user.id,
-                                                               line_id=line1.id,
-                                                               main_user=True,
-                                                               main_line=True),
-                                                has_properties(user_id=user.id,
-                                                               line_id=line2.id,
-                                                               main_user=True,
-                                                               main_line=False)))
+        assert_that(result, contains_inanyorder(
+            has_properties(
+                user_id=user.id,
+                line_id=line1.id,
+                main_user=True,
+                main_line=True,
+            ),
+            has_properties(
+                user_id=user.id,
+                line_id=line2.id,
+                main_user=True,
+                main_line=False,
+            ),
+        ))
 
 
 class TestDissociateUserLine(DAOTestCase):
@@ -201,8 +226,7 @@ class TestDissociateUserLine(DAOTestCase):
     def test_dissociate_user_line(self):
         user = self.add_user()
         line = self.add_line()
-        self.add_user_line(user_id=user.id,
-                           line_id=line.id)
+        self.add_user_line(user_id=user.id, line_id=line.id)
 
         user_line_dao.dissociate(user, line)
 
@@ -220,12 +244,16 @@ class TestDissociateUserLine(DAOTestCase):
         user1 = self.add_user()
         user2 = self.add_user()
         line = self.add_line()
-        self.add_user_line(user_id=user1.id,
-                           line_id=line.id,
-                           main_user=True)
-        self.add_user_line(user_id=user2.id,
-                           line_id=line.id,
-                           main_user=False)
+        self.add_user_line(
+            user_id=user1.id,
+            line_id=line.id,
+            main_user=True,
+        )
+        self.add_user_line(
+            user_id=user2.id,
+            line_id=line.id,
+            main_user=False,
+        )
 
         user_line_dao.dissociate(user2, line)
 
@@ -236,12 +264,16 @@ class TestDissociateUserLine(DAOTestCase):
         user = self.add_user()
         line1 = self.add_line()
         line2 = self.add_line()
-        self.add_user_line(user_id=user.id,
-                           line_id=line1.id,
-                           main_line=True)
-        self.add_user_line(user_id=user.id,
-                           line_id=line2.id,
-                           main_line=False)
+        self.add_user_line(
+            user_id=user.id,
+            line_id=line1.id,
+            main_line=True,
+        )
+        self.add_user_line(
+            user_id=user.id,
+            line_id=line2.id,
+            main_line=False,
+        )
 
         user_line_dao.dissociate(user, line2)
 
@@ -252,12 +284,16 @@ class TestDissociateUserLine(DAOTestCase):
         user = self.add_user()
         line1 = self.add_line()
         line2 = self.add_line()
-        self.add_user_line(user_id=user.id,
-                           line_id=line1.id,
-                           main_line=True)
-        self.add_user_line(user_id=user.id,
-                           line_id=line2.id,
-                           main_line=False)
+        self.add_user_line(
+            user_id=user.id,
+            line_id=line1.id,
+            main_line=True,
+        )
+        self.add_user_line(
+            user_id=user.id,
+            line_id=line2.id,
+            main_line=False,
+        )
 
         user_line_dao.dissociate(user, line1)
 
@@ -282,7 +318,7 @@ class TestDissociateUserLine(DAOTestCase):
         assert_that(row, none())
 
 
-class TestUserLineFindAllByLineId(DAOTestCase):
+class TestFindAllByLineId(DAOTestCase):
 
     def test_find_all_by_line_id_no_user_line(self):
         result = user_line_dao.find_all_by_line_id(1)
@@ -292,8 +328,7 @@ class TestUserLineFindAllByLineId(DAOTestCase):
     def test_find_all_by_line_id_one_user_line(self):
         user = self.add_user()
         line = self.add_line()
-        user_line = self.add_user_line(user_id=user.id,
-                                       line_id=line.id)
+        user_line = self.add_user_line(user_id=user.id, line_id=line.id)
 
         result = user_line_dao.find_all_by_line_id(line.id)
 
@@ -303,12 +338,16 @@ class TestUserLineFindAllByLineId(DAOTestCase):
         user1 = self.add_user()
         user2 = self.add_user()
         line = self.add_line()
-        user_line_1 = self.add_user_line(user_id=user1.id,
-                                         line_id=line.id,
-                                         main_user=True)
-        user_line_2 = self.add_user_line(user_id=user2.id,
-                                         line_id=line.id,
-                                         main_user=False)
+        user_line_1 = self.add_user_line(
+            user_id=user1.id,
+            line_id=line.id,
+            main_user=True,
+        )
+        user_line_2 = self.add_user_line(
+            user_id=user2.id,
+            line_id=line.id,
+            main_user=False,
+        )
 
         result = user_line_dao.find_all_by_line_id(line.id)
 
@@ -325,14 +364,18 @@ class TestAssociateAllLines(DAOTestCase):
         result = user_line_dao.associate_all_lines(user, [line_1, line_2])
 
         assert_that(result, contains(
-            has_properties(user_id=user.id,
-                           line_id=line_1.id,
-                           main_user=True,
-                           main_line=True),
-            has_properties(user_id=user.id,
-                           line_id=line_2.id,
-                           main_user=True,
-                           main_line=False),
+            has_properties(
+                user_id=user.id,
+                line_id=line_1.id,
+                main_user=True,
+                main_line=True,
+            ),
+            has_properties(
+                user_id=user.id,
+                line_id=line_2.id,
+                main_user=True,
+                main_line=False,
+            ),
         ))
 
     def test_associate_secondary_user_with_line(self):
@@ -340,10 +383,12 @@ class TestAssociateAllLines(DAOTestCase):
         user2 = self.add_user()
         line = self.add_line()
 
-        self.add_user_line(user_id=user1.id,
-                           line_id=line.id,
-                           main_user=True,
-                           main_line=True)
+        self.add_user_line(
+            user_id=user1.id,
+            line_id=line.id,
+            main_user=True,
+            main_line=True,
+        )
 
         user_line_dao.associate_all_lines(user2, [line])
 
@@ -352,23 +397,25 @@ class TestAssociateAllLines(DAOTestCase):
                   .all())
 
         assert_that(result, contains_inanyorder(
-            has_properties(user_id=user1.id,
-                           line_id=line.id,
-                           main_user=True,
-                           main_line=True),
-            has_properties(user_id=user2.id,
-                           line_id=line.id,
-                           main_user=False,
-                           main_line=True)
+            has_properties(
+                user_id=user1.id,
+                line_id=line.id,
+                main_user=True,
+                main_line=True,
+            ),
+            has_properties(
+                user_id=user2.id,
+                line_id=line.id,
+                main_user=False,
+                main_line=True,
+            ),
         ))
 
     def test_dissociate_then_fixes_are_executed(self):
         user = self.add_user()
         line = self.add_line()
-        self.add_queue_member(userid=user.id,
-                              usertype='user')
-        self.add_user_line(line_id=line.id,
-                           user_id=user.id)
+        self.add_queue_member(userid=user.id, usertype='user')
+        self.add_user_line(line_id=line.id, user_id=user.id)
 
         user_line_dao.associate_all_lines(user, [])
 
