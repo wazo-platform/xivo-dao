@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2013-2016 Avencall
+# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao.helpers.db_manager import Session
-from xivo_dao.resources.line_extension.persistor import LineExtensionPersistor
+
+from .persistor import LineExtensionPersistor
 
 
 def get_by(**criteria):

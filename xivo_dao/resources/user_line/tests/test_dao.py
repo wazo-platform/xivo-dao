@@ -13,6 +13,7 @@ from hamcrest import (
     none,
 )
 
+from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.helpers.exception import InputError
@@ -432,3 +433,14 @@ class TestAssociateAllLines(DAOTestCase):
                   .first())
 
         assert_that(result, none())
+
+    def test_associate_then_fixes_are_executed(self):
+        user = self.add_user()
+        line = self.add_line()
+        extension = self.add_extension()
+        self.add_line_extension(line_id=line.id, extension_id=extension.id)
+
+        user_line_dao.associate_all_lines(user, [line])
+
+        result = self.session.query(Extension).first()
+        assert_that(result, has_properties({'type': 'user', 'typeval': str(user.id)}))
