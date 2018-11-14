@@ -133,6 +133,16 @@ class Dialaction(Base):
         viewonly=True,
     )
 
+    queue = relationship(
+        'QueueFeatures',
+        primaryjoin="""and_(
+            Dialaction.action == 'queue',
+            Dialaction.actionarg1 == QueueFeatures.id
+        )""",
+        foreign_keys='Dialaction.actionarg1',
+        viewonly=True,
+    )
+
     @classmethod
     def new_user_actions(cls, user):
         for event in cls.USER_EVENTS:
