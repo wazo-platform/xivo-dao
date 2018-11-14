@@ -170,6 +170,15 @@ class TestApplication(DAOTestCase):
         assert_that(dialaction.application, equal_to(application))
 
 
+class TestQueue(DAOTestCase):
+
+    def test_getter(self):
+        queue = self.add_queuefeatures()
+        dialaction = self.add_dialaction(action='queue', actionarg1=queue.id)
+
+        assert_that(dialaction.queue, equal_to(queue))
+
+
 class TestDelete(DAOTestCase):
 
     def test_ivr_choice_are_deleted(self):
