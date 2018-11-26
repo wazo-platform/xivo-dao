@@ -91,6 +91,7 @@ def _get_nonldap_sources(session):
         Directories.dirtype,
         Directories.xivo_username,
         Directories.xivo_password,
+        Directories.auth_key_file,
         Directories.xivo_verify_certificate,
         Directories.xivo_custom_ca_path,
         Directories.dird_tenant,
@@ -118,6 +119,7 @@ def _get_nonldap_sources(session):
         Directories.dirtype,
         Directories.xivo_username,
         Directories.xivo_password,
+        Directories.auth_key_file,
         Directories.xivo_verify_certificate,
         Directories.xivo_custom_ca_path,
         Directories.dird_tenant,
@@ -147,6 +149,7 @@ def _get_nonldap_sources(session):
         if source.dirtype == 'xivo':
             source_config['xivo_username'] = source.xivo_username
             source_config['xivo_password'] = source.xivo_password
+            source_config['auth_key_file'] = source.auth_key_file
             source_config['xivo_verify_certificate'] = source.xivo_verify_certificate
             source_config['xivo_custom_ca_path'] = source.xivo_custom_ca_path
             source_config['auth_host'] = source.auth_host
