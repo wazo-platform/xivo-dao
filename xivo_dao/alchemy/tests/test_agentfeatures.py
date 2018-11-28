@@ -54,6 +54,17 @@ class TestAgentQueueSkills(DAOTestCase):
         assert_that(not inspect(agent).deleted)
 
 
+class TestUsers(DAOTestCase):
+
+    def test_getter(self):
+        agent = self.add_agent()
+        user_1 = self.add_user(agent_id=agent.id)
+        user_2 = self.add_user(agent_id=agent.id)
+
+        self.session.expire_all()
+        assert_that(agent.users, contains_inanyorder(user_1, user_2))
+
+
 class TestDelete(DAOTestCase, FuncKeyHelper):
 
     def setUp(self):
