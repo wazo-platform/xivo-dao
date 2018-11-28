@@ -73,6 +73,14 @@ class TestFindBy(DAOTestCase):
         assert_that(agent, equal_to(agent_row))
         assert_that(agent.lastname, equal_to('mylastname'))
 
+    def test_find_by_number(self):
+        agent_row = self.add_agent(number='2')
+
+        agent = agent_dao.find_by(number='2')
+
+        assert_that(agent, equal_to(agent_row))
+        assert_that(agent.number, equal_to('2'))
+
     def test_find_by_preprocess_subroutine(self):
         agent_row = self.add_agent(preprocess_subroutine='mysubroutine')
 
@@ -107,6 +115,14 @@ class TestGetBy(DAOTestCase):
 
         assert_that(agent, equal_to(agent_row))
         assert_that(agent.lastname, equal_to('mylastname'))
+
+    def test_get_by_number(self):
+        agent_row = self.add_agent(number='2')
+
+        agent = agent_dao.get_by(number='2')
+
+        assert_that(agent, equal_to(agent_row))
+        assert_that(agent.number, equal_to('2'))
 
     def test_get_by_preprocess_subroutine(self):
         agent_row = self.add_agent(preprocess_subroutine='MySubroutine')

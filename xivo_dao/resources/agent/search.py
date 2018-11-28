@@ -10,6 +10,7 @@ config = SearchConfig(table=Agent,
                       columns={'id': Agent.id,
                                'firstname': Agent.firstname,
                                'lastname': Agent.lastname,
+                               'number': Agent.number,
                                'preprocess_subroutine': Agent.preprocess_subroutine},
                       default_sort='id')
 
