@@ -49,3 +49,10 @@ class AgentFeatures(Base):
         foreign_keys='AgentQueueSkill.agentid',
         cascade='all, delete-orphan',
     )
+
+    users = relationship(
+        "UserFeatures",
+        primaryjoin="AgentFeatures.id == UserFeatures.agentid",
+        foreign_keys='UserFeatures.agentid',
+        viewonly=True,
+    )
