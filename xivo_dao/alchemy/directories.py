@@ -25,6 +25,7 @@ class Directories(Base):
     description = Column(Text, nullable=False, default='')
     xivo_username = Column(Text)
     xivo_password = Column(Text)
+    auth_key_file = Column(Text)
     xivo_verify_certificate = Column(Boolean, nullable=False, server_default='False')
     xivo_custom_ca_path = Column(Text)
     dird_tenant = Column(Text)
