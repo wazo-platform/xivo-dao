@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: GPL-3.0+
 
 from xivo_dao.alchemy.accessfeatures import AccessFeatures
-from xivo_dao.alchemy.accesswebservice import AccessWebService
 from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
 from xivo_dao.alchemy.agent_membership_status import AgentMembershipStatus
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
