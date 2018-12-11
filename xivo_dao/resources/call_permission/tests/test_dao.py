@@ -480,12 +480,11 @@ class TestDelete(DAOTestCase):
     def test_delete_references_to_other_tables(self):
         user = self.add_user()
         group = self.add_group()
-        incall = self.add_incall()
         outcall = self.add_outcall()
+
         call_permission = self.add_call_permission(name='Delete')
         self.add_user_call_permission(rightcallid=call_permission.id, typeval=str(user.id))
         self.add_group_call_permission(rightcallid=call_permission.id, typeval=str(group.id))
-        self.add_incall_call_permission(rightcallid=call_permission.id, typeval=str(incall.id))
         self.add_outcall_call_permission(rightcallid=call_permission.id, typeval=str(outcall.id))
 
         call_permission_dao.delete(call_permission)
