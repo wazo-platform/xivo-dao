@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2007-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from __future__ import unicode_literals
@@ -14,11 +14,6 @@ from xivo_dao.helpers.db_manager import daosession
 
 _Agent = namedtuple('_Agent', ['id', 'number', 'queues'])
 _Queue = namedtuple('_Queue', ['id', 'name', 'penalty'])
-
-
-@daosession
-def agent_context(session, agentid):
-    return _get_one(session, agentid).context
 
 
 @daosession

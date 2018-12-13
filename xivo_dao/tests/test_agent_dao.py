@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from hamcrest import assert_that, equal_to
@@ -17,16 +17,6 @@ class TestAgentDAO(DAOTestCase):
     agent1_number = '1001'
     agent2_number = '1002'
     agent_context = 'test'
-
-    def test_agent_context(self):
-        agent = self._insert_agent()
-
-        context = agent_dao.agent_context(agent.id)
-
-        self.assertEqual(context, self.agent_context)
-
-    def test_agent_context_bad_args(self):
-        self.assertRaises(ValueError, agent_dao.agent_context, None)
 
     def test_agent_interface(self):
         agent = self._insert_agent()
