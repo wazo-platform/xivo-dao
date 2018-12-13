@@ -494,7 +494,6 @@ class ItemInserter(object):
         kwargs.setdefault('numgroup', self._generate_int())
         kwargs.setdefault('number', ''.join(random.choice('123456789') for _ in range(6)))
         kwargs.setdefault('passwd', '')
-        kwargs.setdefault('context', self._random_name())
         kwargs.setdefault('language', random.choice(['fr_FR', 'en_US']))
         kwargs.setdefault('description', 'description')
         agent = AgentFeatures(**kwargs)
