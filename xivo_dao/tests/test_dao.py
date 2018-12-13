@@ -96,7 +96,6 @@ from xivo_dao.alchemy.staticvoicemail import StaticVoicemail
 from xivo_dao.alchemy.switchboard import Switchboard
 from xivo_dao.alchemy.tenant import Tenant
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
-from xivo_dao.alchemy.user import User
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.usercustom import UserCustom as UserCustomSchema
 from xivo_dao.alchemy.userfeatures import UserFeatures
@@ -141,11 +140,6 @@ class ItemInserter(object):
 
     def __init__(self, session):
         self.session = session
-
-    def add_admin(self, **kwargs):
-        admin = User(**kwargs)
-        self.add_me(admin)
-        return admin
 
     def add_user_line_with_exten(self, **kwargs):
         kwargs.setdefault('firstname', 'unittest')
