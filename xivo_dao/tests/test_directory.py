@@ -165,7 +165,7 @@ class TestDirectoryNonLdapSources(DAOTestCase):
         super(TestDirectoryNonLdapSources, self).setUp()
         dir_1 = {
             'uri': 'https://localhost:9486',
-            'dirtype': 'xivo',
+            'dirtype': 'wazo',
             'name': 'XiVO',
             'xivo_username': 'foo',
             'xivo_password': 'bar',
@@ -180,7 +180,7 @@ class TestDirectoryNonLdapSources(DAOTestCase):
         }
         dir_2 = {
             'uri': 'https://mtl.lan.example.com:9486',
-            'dirtype': 'xivo',
+            'dirtype': 'wazo',
             'name': 'XiVO',
             'xivo_username': 'test',
             'xivo_password': 'test',
@@ -261,7 +261,7 @@ class TestDirectoryNonLdapSources(DAOTestCase):
         ]
 
         self.expected_result_1 = {
-            'type': 'xivo',
+            'type': 'wazo',
             'name': 'Internal',
             'uri': 'https://localhost:9486',
             'xivo_username': 'foo',
@@ -286,7 +286,7 @@ class TestDirectoryNonLdapSources(DAOTestCase):
             }}
 
         self.expected_result_2 = {
-            'type': 'xivo',
+            'type': 'wazo',
             'name': 'mtl',
             'uri': 'https://mtl.lan.example.com:9486',
             'xivo_username': 'test',
