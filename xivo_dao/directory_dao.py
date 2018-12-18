@@ -146,7 +146,7 @@ def _get_nonldap_sources(session):
             'first_matched_columns': json.loads(source.match_reverse or '[]'),
             'format_columns': _format_columns(source.fields, source.values),
         }
-        if source.dirtype == 'xivo':
+        if source.dirtype == 'wazo':
             source_config['xivo_username'] = source.xivo_username
             source_config['xivo_password'] = source.xivo_password
             source_config['auth_key_file'] = source.auth_key_file
