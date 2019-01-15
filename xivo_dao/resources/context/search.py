@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) 2016 Proformatique Inc.
-# SPDX-License-Identifier: GPL-3.0+
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.context import Context
 from xivo_dao.resources.utils.search import (SearchSystem,

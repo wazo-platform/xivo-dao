@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) 2015-2016 Avencall
-# SPDX-License-Identifier: GPL-3.0+
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.userfeatures import UserFeatures as User
 from xivo_dao.alchemy.user_line import UserLine

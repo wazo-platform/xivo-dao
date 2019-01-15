@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) 2012-2016 Avencall
-# SPDX-License-Identifier: GPL-3.0+
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import ForeignKey
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint

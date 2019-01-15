@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) 2016 Proformatique Inc.
-# SPDX-License-Identifier: GPL-3.0+
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.resources.ivr.persistor import IVRPersistor
 from xivo_dao.resources.ivr.search import ivr_search

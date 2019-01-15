@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright 2012-2017 The Wazo Authors  (see the AUTHORS file)
-# SPDX-License-Identifier: GPL-3.0+
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao import cti_profile_dao, cti_service_dao

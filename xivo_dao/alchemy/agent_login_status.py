@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) 2007-2017 The Wazo Authors  (see the AUTHORS file)
-# SPDX-License-Identifier: GPL-3.0+
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import text
 from sqlalchemy.schema import Column, UniqueConstraint, PrimaryKeyConstraint

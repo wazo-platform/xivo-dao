@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright 2016 The Wazo Authors  (see the AUTHORS file)
-# SPDX-License-Identifier: GPL-3.0+
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.parking_lot import ParkingLot
 from xivo_dao.resources.utils.search import SearchSystem

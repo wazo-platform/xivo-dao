@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) 2007-2015 Avencall
-# SPDX-License-Identifier: GPL-3.0+
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index, UniqueConstraint
 from sqlalchemy.types import Integer, String, Text, Enum

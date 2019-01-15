@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright 2007-2018 The Wazo Authors  (see the AUTHORS file)
-# SPDX-License-Identifier: GPL-3.0+
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao import context_dao
 from xivo_dao.tests.test_dao import DAOTestCase

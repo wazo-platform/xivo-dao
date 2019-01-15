@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
-# SPDX-License-Identifier: GPL-3.0+
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.userfeatures import UserFeatures as User
 from xivo_dao.alchemy.dialaction import Dialaction

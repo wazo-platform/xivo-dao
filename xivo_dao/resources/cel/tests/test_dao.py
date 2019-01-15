@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
-# SPDX-License-Identifier: GPL-3.0+
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 import datetime
 from hamcrest import assert_that, contains, has_property, contains_inanyorder

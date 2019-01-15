@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright 2017-2018 The Wazo Authors  (see the AUTHORS file)
-# SPDX-License-Identifier: GPL-3.0+
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.staticsip import StaticSIP as RegisterSIP
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures

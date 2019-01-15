@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
-# SPDX-License-Identifier: GPL-3.0+
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 # explicitly import modules that are referenced in relationship to prevent
 # "mapper initialization" errors

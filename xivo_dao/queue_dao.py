@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright 2012-2018 The Wazo Authors  (see the AUTHORS file)
-# SPDX-License-Identifier: GPL-3.0+
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.sql import text
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
