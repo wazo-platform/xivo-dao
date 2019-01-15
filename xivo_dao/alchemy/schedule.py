@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2007-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -21,9 +21,11 @@ class Schedule(Base):
     __tablename__ = 'schedule'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
-        ForeignKeyConstraint(('entity_id',),
-                             ('entity.id',),
-                             ondelete='RESTRICT'),
+        ForeignKeyConstraint(
+            ('entity_id',),
+            ('entity.id',),
+            ondelete='RESTRICT'
+        ),
     )
 
     id = Column(Integer, nullable=False)
@@ -38,44 +40,68 @@ class Schedule(Base):
 
     entity = relationship(Entity)
 
-    periods = relationship('ScheduleTime',
-                           primaryjoin='ScheduleTime.schedule_id == Schedule.id',
-                           foreign_keys='ScheduleTime.schedule_id',
-                           cascade='all, delete-orphan')
+    periods = relationship(
+        'ScheduleTime',
+        primaryjoin='ScheduleTime.schedule_id == Schedule.id',
+        foreign_keys='ScheduleTime.schedule_id',
+        cascade='all, delete-orphan',
+    )
 
-    schedule_paths = relationship('SchedulePath',
-                                  viewonly=True,
-                                  cascade='all, delete-orphan',
-                                  back_populates='schedule')
+    schedule_paths = relationship(
+        'SchedulePath',
+        viewonly=True,
+        cascade='all, delete-orphan',
+        back_populates='schedule',
+    )
 
-    schedule_incalls = relationship('SchedulePath',
-                                    primaryjoin="""and_(SchedulePath.schedule_id == Schedule.id,
-                                                        SchedulePath.path == 'incall')""",
-                                    viewonly=True)
+    schedule_incalls = relationship(
+        'SchedulePath',
+        primaryjoin="""and_(
+            SchedulePath.schedule_id == Schedule.id,
+            SchedulePath.path == 'incall'
+        )""",
+        viewonly=True,
+    )
     incalls = association_proxy('schedule_incalls', 'incall')
 
-    schedule_users = relationship('SchedulePath',
-                                  primaryjoin="""and_(SchedulePath.schedule_id == Schedule.id,
-                                                      SchedulePath.path == 'user')""",
-                                  viewonly=True)
+    schedule_users = relationship(
+        'SchedulePath',
+        primaryjoin="""and_(
+            SchedulePath.schedule_id == Schedule.id,
+            SchedulePath.path == 'user'
+        )""",
+        viewonly=True,
+    )
     users = association_proxy('schedule_users', 'user')
 
-    schedule_groups = relationship('SchedulePath',
-                                   primaryjoin="""and_(SchedulePath.schedule_id == Schedule.id,
-                                                       SchedulePath.path == 'group')""",
-                                   viewonly=True)
+    schedule_groups = relationship(
+        'SchedulePath',
+        primaryjoin="""and_(
+            SchedulePath.schedule_id == Schedule.id,
+            SchedulePath.path == 'group'
+        )""",
+        viewonly=True,
+    )
     groups = association_proxy('schedule_groups', 'group')
 
-    schedule_outcalls = relationship('SchedulePath',
-                                     primaryjoin="""and_(SchedulePath.schedule_id == Schedule.id,
-                                                         SchedulePath.path == 'outcall')""",
-                                     viewonly=True)
+    schedule_outcalls = relationship(
+        'SchedulePath',
+        primaryjoin="""and_(
+            SchedulePath.schedule_id == Schedule.id,
+            SchedulePath.path == 'outcall'
+        )""",
+        viewonly=True,
+    )
     outcalls = association_proxy('schedule_outcalls', 'outcall')
 
-    schedule_queues = relationship('SchedulePath',
-                                   primaryjoin="""and_(SchedulePath.schedule_id == Schedule.id,
-                                                       SchedulePath.path == 'queue')""",
-                                   viewonly=True)
+    schedule_queues = relationship(
+        'SchedulePath',
+        primaryjoin="""and_(
+            SchedulePath.schedule_id == Schedule.id,
+            SchedulePath.path == 'queue'
+        )""",
+        viewonly=True,
+    )
     queues = association_proxy('schedule_queues', 'queue')
 
     @property
