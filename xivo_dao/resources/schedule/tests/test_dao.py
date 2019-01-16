@@ -192,6 +192,20 @@ class TestSimpleSearch(TestSearch):
 
         self.assert_search_returns_result(expected)
 
+    def test_search_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        schedule1 = self.add_schedule()
+        schedule2 = self.add_schedule(tenant_uuid=tenant.uuid)
+
+        expected = SearchResult(2, [schedule1, schedule2])
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
+        expected = SearchResult(1, [schedule2])
+        tenants = [tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
 
 class TestSearchGivenMultipleSchedules(TestSearch):
 
