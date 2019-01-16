@@ -212,13 +212,14 @@ class TestCreate(DAOTestCase):
         self.entity = self.add_entity(tenant_uuid=tenant.uuid)
 
     def test_create_minimal_fields(self):
-        schedule_model = Schedule()
+        schedule_model = Schedule(tenant_uuid=self.default_tenant.uuid)
         schedule = schedule_dao.create(schedule_model)
 
         self.session.expire_all()
         assert_that(inspect(schedule).persistent)
         assert_that(schedule, has_properties(
             id=is_not(none()),
+            tenant_uuid=self.default_tenant.uuid,
             entity_id=self.entity.id,
             name=None,
             timezone=None,
@@ -234,6 +235,7 @@ class TestCreate(DAOTestCase):
     def test_create_with_all_fields(self):
         schedule_model = Schedule(
             name='schedule',
+            tenant_uuid=self.default_tenant.uuid,
             timezone='time/zone',
             fallback_action='user',
             fallback_actionid='2',
@@ -246,6 +248,7 @@ class TestCreate(DAOTestCase):
         assert_that(inspect(schedule).persistent)
         assert_that(schedule, has_properties(
             name='schedule',
+            tenant_uuid=self.default_tenant.uuid,
             entity_id=self.entity.id,
             timezone='time/zone',
             fallback_action='user',

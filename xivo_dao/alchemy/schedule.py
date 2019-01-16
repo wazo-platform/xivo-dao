@@ -7,7 +7,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint
 from sqlalchemy.sql import cast, not_
-from sqlalchemy.sql.schema import ForeignKeyConstraint
+from sqlalchemy.sql.schema import ForeignKey, ForeignKeyConstraint
 from sqlalchemy.types import Integer, String, Text, Boolean
 
 from xivo_dao.helpers.db_manager import Base, IntAsString
@@ -29,6 +29,7 @@ class Schedule(Base):
     )
 
     id = Column(Integer, nullable=False)
+    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
     entity_id = Column(Integer)
     name = Column(String(255))
     timezone = Column(String(128))
