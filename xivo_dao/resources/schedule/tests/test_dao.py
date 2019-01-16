@@ -37,6 +37,16 @@ class TestFind(DAOTestCase):
 
         assert_that(schedule, equal_to(schedule_row))
 
+    def test_find_multi_tenant(self):
+        tenant = self.add_tenant()
+        schedule = self.add_schedule(tenant_uuid=tenant.uuid)
+
+        result = schedule_dao.find(schedule.id, tenant_uuids=[tenant.uuid])
+        assert_that(result, equal_to(schedule))
+
+        result = schedule_dao.find(schedule.id, tenant_uuids=[self.default_tenant.uuid])
+        assert_that(result, none())
+
 
 class TestGet(DAOTestCase):
 
