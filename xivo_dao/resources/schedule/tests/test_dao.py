@@ -120,6 +120,19 @@ class TestGetBy(DAOTestCase):
     def test_given_schedule_does_not_exist_then_raises_error(self):
         self.assertRaises(NotFoundError, schedule_dao.get_by, name='42')
 
+    def test_get_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        schedule_row = self.add_schedule()
+        self.assertRaises(
+            NotFoundError,
+            schedule_dao.get_by, id=schedule_row.id, tenant_uuids=[tenant.uuid],
+        )
+
+        schedule_row = self.add_schedule(tenant_uuid=tenant.uuid)
+        schedule = schedule_dao.get_by(id=schedule_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(schedule, equal_to(schedule_row))
+
 
 class TestFindAllBy(DAOTestCase):
 

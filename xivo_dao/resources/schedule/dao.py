@@ -19,8 +19,8 @@ def get(session, schedule_id, tenant_uuids=None):
 
 
 @daosession
-def get_by(session, **criteria):
-    return SchedulePersistor(session, schedule_search).get_by(criteria)
+def get_by(session, tenant_uuids=None, **criteria):
+    return SchedulePersistor(session, schedule_search, tenant_uuids).get_by(criteria)
 
 
 @daosession
