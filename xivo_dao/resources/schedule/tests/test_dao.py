@@ -92,6 +92,17 @@ class TestFindBy(DAOTestCase):
 
         assert_that(schedule, none())
 
+    def test_find_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        schedule_row = self.add_schedule()
+        schedule = schedule_dao.find_by(id=schedule_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(schedule, none())
+
+        schedule_row = self.add_schedule(tenant_uuid=tenant.uuid)
+        schedule = schedule_dao.find_by(id=schedule_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(schedule, equal_to(schedule_row))
+
 
 class TestGetBy(DAOTestCase):
 
