@@ -967,6 +967,8 @@ class ItemInserter(object):
         return schedule_time
 
     def add_schedule_path(self, **kwargs):
+        kwargs.setdefault('path', 'user')
+        kwargs.setdefault('pathid', 0)
         schedule_path = SchedulePath(**kwargs)
         self.add_me(schedule_path)
         return schedule_path
