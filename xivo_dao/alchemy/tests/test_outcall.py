@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -39,8 +39,8 @@ class TestSchedules(DAOTestCase):
 
     def test_setter(self):
         outcall = self.add_outcall()
-        schedule1 = Schedule()
-        schedule2 = Schedule()
+        schedule1 = self.add_schedule()
+        schedule2 = self.add_schedule()
         outcall.schedules = [schedule1, schedule2]
 
         row = self.session.query(Outcall).filter_by(id=outcall.id).first()
@@ -51,8 +51,8 @@ class TestSchedules(DAOTestCase):
 
     def test_deleter(self):
         outcall = self.add_outcall()
-        schedule1 = Schedule()
-        schedule2 = Schedule()
+        schedule1 = self.add_schedule()
+        schedule2 = self.add_schedule()
         outcall.schedules = [schedule1, schedule2]
         self.session.flush()
 

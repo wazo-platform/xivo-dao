@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
-# Copyright 2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from hamcrest import (assert_that,
-                      contains,
-                      contains_inanyorder,
-                      empty,
-                      equal_to,
-                      none,
-                      not_)
+from hamcrest import (
+    assert_that,
+    contains,
+    contains_inanyorder,
+    empty,
+    equal_to,
+    none,
+    not_,
+)
 
 from xivo_dao.alchemy.incall import Incall
 from xivo_dao.alchemy.schedule import Schedule
@@ -29,8 +31,8 @@ class TestSchedules(DAOTestCase):
 
     def test_setter(self):
         incall = self.add_incall()
-        schedule1 = Schedule()
-        schedule2 = Schedule()
+        schedule1 = self.add_schedule()
+        schedule2 = self.add_schedule()
         incall.schedules = [schedule1, schedule2]
 
         row = self.session.query(Incall).filter_by(id=incall.id).first()
@@ -41,8 +43,8 @@ class TestSchedules(DAOTestCase):
 
     def test_deleter(self):
         incall = self.add_incall()
-        schedule1 = Schedule()
-        schedule2 = Schedule()
+        schedule1 = self.add_schedule()
+        schedule2 = self.add_schedule()
         incall.schedules = [schedule1, schedule2]
         self.session.flush()
 

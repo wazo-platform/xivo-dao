@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -161,8 +161,8 @@ class TestSchedules(DAOTestCase):
 
     def test_setter(self):
         group = self.add_group()
-        schedule1 = Schedule()
-        schedule2 = Schedule()
+        schedule1 = self.add_schedule()
+        schedule2 = self.add_schedule()
         group.schedules = [schedule1, schedule2]
 
         row = self.session.query(Group).filter_by(id=group.id).first()
@@ -173,8 +173,8 @@ class TestSchedules(DAOTestCase):
 
     def test_deleter(self):
         group = self.add_group()
-        schedule1 = Schedule()
-        schedule2 = Schedule()
+        schedule1 = self.add_schedule()
+        schedule2 = self.add_schedule()
         group.schedules = [schedule1, schedule2]
         self.session.flush()
 
