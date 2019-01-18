@@ -29,8 +29,8 @@ def find(session, ivr_id, tenant_uuids=None):
 
 
 @daosession
-def find_by(session, **criteria):
-    return IVRPersistor(session, ivr_search).find_by(criteria)
+def find_by(session, tenant_uuids=None, **criteria):
+    return IVRPersistor(session, ivr_search, tenant_uuids).find_by(criteria)
 
 
 @daosession
