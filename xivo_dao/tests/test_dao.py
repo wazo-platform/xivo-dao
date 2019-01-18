@@ -425,6 +425,7 @@ class ItemInserter(object):
 
     def add_ivr(self, **kwargs):
         kwargs.setdefault('name', self._random_name())
+        kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
         kwargs.setdefault('menu_sound', 'silence')
         ivr = IVR(**kwargs)
         self.add_me(ivr)

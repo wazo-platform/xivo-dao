@@ -5,7 +5,7 @@
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
-from sqlalchemy.schema import Column, PrimaryKeyConstraint
+from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint
 from sqlalchemy.types import Integer, String, Text
 
 from xivo_dao.alchemy.dialaction import Dialaction
@@ -21,6 +21,7 @@ class IVR(Base):
     )
 
     id = Column(Integer)
+    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
     name = Column(String(128), nullable=False)
     greeting_sound = Column(Text)
     menu_sound = Column(Text, nullable=False)

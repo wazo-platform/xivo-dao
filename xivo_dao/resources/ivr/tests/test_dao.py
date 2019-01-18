@@ -218,7 +218,7 @@ class TestSearchGivenMultipleIncall(TestSearch):
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_fields(self):
-        ivr_model = IVR(name='myivr', menu_sound='menu')
+        ivr_model = IVR(name='myivr', menu_sound='menu', tenant_uuid=self.default_tenant.uuid)
 
         ivr = ivr_dao.create(ivr_model)
 
@@ -226,6 +226,7 @@ class TestCreate(DAOTestCase):
         assert_that(inspect(ivr).persistent)
         assert_that(ivr, has_properties(
             id=is_not(none()),
+            tenant_uuid=self.default_tenant.uuid,
             name='myivr',
             greeting_sound=none(),
             menu_sound='menu',
@@ -240,6 +241,7 @@ class TestCreate(DAOTestCase):
     def test_create_with_all_fields(self):
         ivr_model = IVR(
             name='myivr',
+            tenant_uuid=self.default_tenant.uuid,
             greeting_sound='greeting',
             menu_sound='menu',
             invalid_sound='invalid',
@@ -259,6 +261,7 @@ class TestCreate(DAOTestCase):
         assert_that(inspect(ivr).persistent)
         assert_that(ivr, has_properties(
             id=is_not(none()),
+            tenant_uuid=self.default_tenant.uuid,
             name='myivr',
             greeting_sound='greeting',
             menu_sound='menu',
