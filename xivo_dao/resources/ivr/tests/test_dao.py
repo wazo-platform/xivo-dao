@@ -41,6 +41,16 @@ class TestFind(DAOTestCase):
 
         assert_that(ivr, equal_to(ivr_row))
 
+    def test_find_multi_tenant(self):
+        tenant = self.add_tenant()
+        ivr = self.add_ivr(tenant_uuid=tenant.uuid)
+
+        result = ivr_dao.find(ivr.id, tenant_uuids=[tenant.uuid])
+        assert_that(result, equal_to(ivr))
+
+        result = ivr_dao.find(ivr.id, tenant_uuids=[self.default_tenant.uuid])
+        assert_that(result, none())
+
 
 class TestGet(DAOTestCase):
 
