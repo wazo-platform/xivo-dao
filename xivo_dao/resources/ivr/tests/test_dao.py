@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
+    all_of,
     assert_that,
     contains,
     contains_inanyorder,
@@ -13,6 +14,7 @@ from hamcrest import (
     has_property,
     is_not,
     none,
+    not_,
 )
 
 from sqlalchemy.inspection import inspect
@@ -172,6 +174,20 @@ class TestFindAllBy(DAOTestCase):
             has_property('id', ivr1.id),
             has_property('id', ivr2.id),
         ))
+
+    def test_find_all_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        ivr1 = self.add_ivr(description='description', tenant_uuid=tenant.uuid)
+        ivr2 = self.add_ivr(description='description')
+
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        ivrs = ivr_dao.find_all_by(description='description', tenant_uuids=tenants)
+        assert_that(ivrs, has_items(ivr1, ivr2))
+
+        tenants = [tenant.uuid]
+        ivrs = ivr_dao.find_all_by(description='description', tenant_uuids=tenants)
+        assert_that(ivrs, all_of(has_items(ivr1), not_(has_items(ivr2))))
 
 
 class TestSearch(DAOTestCase):
