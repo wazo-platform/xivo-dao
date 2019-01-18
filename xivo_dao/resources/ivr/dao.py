@@ -14,8 +14,8 @@ def search(session, **parameters):
 
 
 @daosession
-def get(session, ivr_id):
-    return IVRPersistor(session, ivr_search).get_by({'id': ivr_id})
+def get(session, ivr_id, tenant_uuids=None):
+    return IVRPersistor(session, ivr_search, tenant_uuids).get_by({'id': ivr_id})
 
 
 @daosession

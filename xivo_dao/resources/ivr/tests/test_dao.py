@@ -65,6 +65,19 @@ class TestGet(DAOTestCase):
         assert_that(ivr, equal_to(ivr_row))
         assert_that(ivr.choices, contains())
 
+    def test_get_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        ivr_row = self.add_ivr(tenant_uuid=tenant.uuid)
+        ivr = ivr_dao.get(ivr_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(ivr, equal_to(ivr_row))
+
+        ivr_row = self.add_ivr()
+        self.assertRaises(
+            NotFoundError,
+            ivr_dao.get, ivr_row.id, tenant_uuids=[tenant.uuid],
+        )
+
 
 class TestFindBy(DAOTestCase):
 
