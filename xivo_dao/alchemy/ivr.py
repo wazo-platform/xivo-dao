@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -30,31 +30,45 @@ class IVR(Base):
     max_tries = Column(Integer, nullable=False, server_default='3')
     description = Column(Text)
 
-    dialactions = relationship(Dialaction,
-                               primaryjoin="""and_(Dialaction.category == 'ivr',
-                                                   Dialaction.categoryval == cast(IVR.id, String))""",
-                               foreign_keys='Dialaction.categoryval',
-                               collection_class=attribute_mapped_collection('event'),
-                               cascade='all, delete-orphan')
+    dialactions = relationship(
+        Dialaction,
+        primaryjoin="""and_(
+            Dialaction.category == 'ivr',
+            Dialaction.categoryval == cast(IVR.id, String)
+        )""",
+        foreign_keys='Dialaction.categoryval',
+        collection_class=attribute_mapped_collection('event'),
+        cascade='all, delete-orphan',
+    )
 
-    choices = relationship(IVRChoice,
-                           cascade='all, delete-orphan')
+    choices = relationship(
+        IVRChoice,
+        cascade='all, delete-orphan',
+    )
 
-    incall_dialactions = relationship('Dialaction',
-                                      primaryjoin="""and_(Dialaction.category == 'incall',
-                                                          Dialaction.action == 'ivr',
-                                                          Dialaction.actionarg1 == cast(IVR.id, String))""",
-                                      foreign_keys='Dialaction.actionarg1',
-                                      viewonly=True)
+    incall_dialactions = relationship(
+        'Dialaction',
+        primaryjoin="""and_(
+            Dialaction.category == 'incall',
+            Dialaction.action == 'ivr',
+            Dialaction.actionarg1 == cast(IVR.id, String)
+        )""",
+        foreign_keys='Dialaction.actionarg1',
+        viewonly=True,
+    )
 
     incalls = association_proxy('incall_dialactions', 'incall')
 
-    ivr_dialactions = relationship('Dialaction',
-                                   primaryjoin="""and_(Dialaction.action == 'ivr',
-                                                       Dialaction.actionarg1 == cast(IVR.id, String),
-                                                       Dialaction.category.in_(['ivr', 'ivr_choice']))""",
-                                   foreign_keys='Dialaction.actionarg1',
-                                   cascade='all, delete-orphan')
+    ivr_dialactions = relationship(
+        'Dialaction',
+        primaryjoin="""and_(
+            Dialaction.action == 'ivr',
+            Dialaction.actionarg1 == cast(IVR.id, String),
+            Dialaction.category.in_(['ivr', 'ivr_choice'])
+        )""",
+        foreign_keys='Dialaction.actionarg1',
+        cascade='all, delete-orphan',
+    )
 
     @property
     def invalid_destination(self):

@@ -1,25 +1,30 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2016-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from hamcrest import (assert_that,
-                      contains,
-                      contains_inanyorder,
-                      empty,
-                      equal_to,
-                      has_items,
-                      has_properties,
-                      has_property,
-                      is_not,
-                      none)
+from hamcrest import (
+    assert_that,
+    contains,
+    contains_inanyorder,
+    empty,
+    equal_to,
+    has_items,
+    has_properties,
+    has_property,
+    is_not,
+    none,
+)
+
+from sqlalchemy.inspection import inspect
 
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.ivr import IVR
 from xivo_dao.alchemy.ivr_choice import IVRChoice
-from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao.resources.ivr import dao as ivr_dao
-from xivo_dao.helpers.exception import NotFoundError, InputError
+from xivo_dao.helpers.exception import InputError, NotFoundError
 from xivo_dao.resources.utils.search import SearchResult
+from xivo_dao.tests.test_dao import DAOTestCase
+
+from .. import dao as ivr_dao
 
 
 class TestFind(DAOTestCase):
@@ -116,8 +121,10 @@ class TestFindAllBy(DAOTestCase):
 
         ivrs = ivr_dao.find_all_by(description='MyIVR')
 
-        assert_that(ivrs, has_items(has_property('id', ivr1.id),
-                                    has_property('id', ivr2.id)))
+        assert_that(ivrs, has_items(
+            has_property('id', ivr1.id),
+            has_property('id', ivr2.id),
+        ))
 
 
 class TestSearch(DAOTestCase):
@@ -166,19 +173,22 @@ class TestSearchGivenMultipleIncall(TestSearch):
         self.assert_search_returns_result(expected_all_resto, description='resto', order='name')
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
-        expected = SearchResult(4,
-                                [self.ivr1,
-                                 self.ivr2,
-                                 self.ivr3,
-                                 self.ivr4])
+        expected = SearchResult(4, [
+            self.ivr1,
+            self.ivr2,
+            self.ivr3,
+            self.ivr4,
+        ])
 
         self.assert_search_returns_result(expected, order='name')
 
     def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
-        expected = SearchResult(4, [self.ivr4,
-                                    self.ivr3,
-                                    self.ivr2,
-                                    self.ivr1])
+        expected = SearchResult(4, [
+            self.ivr4,
+            self.ivr3,
+            self.ivr2,
+            self.ivr1,
+        ])
 
         self.assert_search_returns_result(expected, order='name', direction='desc')
 
@@ -195,66 +205,73 @@ class TestSearchGivenMultipleIncall(TestSearch):
     def test_when_doing_a_paginated_search_then_returns_a_paginated_result(self):
         expected = SearchResult(3, [self.ivr3])
 
-        self.assert_search_returns_result(expected,
-                                          search='resto',
-                                          order='name',
-                                          direction='desc',
-                                          skip=1,
-                                          limit=1)
+        self.assert_search_returns_result(
+            expected,
+            search='resto',
+            order='name',
+            direction='desc',
+            skip=1,
+            limit=1,
+        )
 
 
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_fields(self):
-        ivr = IVR(name='myivr', menu_sound='menu')
-        created_ivr = ivr_dao.create(ivr)
+        ivr_model = IVR(name='myivr', menu_sound='menu')
 
-        row = self.session.query(IVR).first()
+        ivr = ivr_dao.create(ivr_model)
 
-        assert_that(created_ivr, equal_to(row))
-        assert_that(created_ivr, has_properties(id=is_not(none()),
-                                                name='myivr',
-                                                greeting_sound=none(),
-                                                menu_sound='menu',
-                                                invalid_sound=none(),
-                                                abort_sound=none(),
-                                                description=none(),
-                                                invalid_destination=none(),
-                                                timeout_destination=none(),
-                                                abort_destination=none()))
+        self.session.expire_all()
+        assert_that(inspect(ivr).persistent)
+        assert_that(ivr, has_properties(
+            id=is_not(none()),
+            name='myivr',
+            greeting_sound=none(),
+            menu_sound='menu',
+            invalid_sound=none(),
+            abort_sound=none(),
+            description=none(),
+            invalid_destination=none(),
+            timeout_destination=none(),
+            abort_destination=none(),
+        ))
 
     def test_create_with_all_fields(self):
-        ivr = IVR(name='myivr',
-                  greeting_sound='greeting',
-                  menu_sound='menu',
-                  invalid_sound='invalid',
-                  abort_sound='abort',
-                  timeout=10,
-                  max_tries=2,
-                  description='description',
-                  invalid_destination=Dialaction(action='user', actionarg1='1'),
-                  timeout_destination=Dialaction(action='user', actionarg1='2'),
-                  abort_destination=Dialaction(action='user', actionarg1='3'),
-                  choices=[IVRChoice(exten='1', destination=Dialaction(action='user', actionarg1='4'))])
+        ivr_model = IVR(
+            name='myivr',
+            greeting_sound='greeting',
+            menu_sound='menu',
+            invalid_sound='invalid',
+            abort_sound='abort',
+            timeout=10,
+            max_tries=2,
+            description='description',
+            invalid_destination=Dialaction(action='user', actionarg1='1'),
+            timeout_destination=Dialaction(action='user', actionarg1='2'),
+            abort_destination=Dialaction(action='user', actionarg1='3'),
+            choices=[IVRChoice(exten='1', destination=Dialaction(action='user', actionarg1='4'))],
+        )
 
-        created_ivr = ivr_dao.create(ivr)
+        ivr = ivr_dao.create(ivr_model)
 
-        row = self.session.query(IVR).first()
-
-        assert_that(created_ivr, equal_to(row))
-        assert_that(created_ivr, has_properties(id=is_not(none()),
-                                                name='myivr',
-                                                greeting_sound='greeting',
-                                                menu_sound='menu',
-                                                invalid_sound='invalid',
-                                                abort_sound='abort',
-                                                timeout=10,
-                                                max_tries=2,
-                                                description='description',
-                                                invalid_destination=has_properties(action='user', actionarg1='1'),
-                                                timeout_destination=has_properties(action='user', actionarg1='2'),
-                                                abort_destination=has_properties(action='user', actionarg1='3')))
-        assert_that(created_ivr.choices, contains(
+        self.session.expire_all()
+        assert_that(inspect(ivr).persistent)
+        assert_that(ivr, has_properties(
+            id=is_not(none()),
+            name='myivr',
+            greeting_sound='greeting',
+            menu_sound='menu',
+            invalid_sound='invalid',
+            abort_sound='abort',
+            timeout=10,
+            max_tries=2,
+            description='description',
+            invalid_destination=has_properties(action='user', actionarg1='1'),
+            timeout_destination=has_properties(action='user', actionarg1='2'),
+            abort_destination=has_properties(action='user', actionarg1='3'),
+        ))
+        assert_that(ivr.choices, contains(
             has_properties(exten='1', destination=has_properties(action='user', actionarg1='4')),
         ))
 
@@ -262,19 +279,23 @@ class TestCreate(DAOTestCase):
 class TestEdit(DAOTestCase):
 
     def test_edit_all_fields(self):
-        ivr = ivr_dao.create(IVR(name='myivr',
-                                 greeting_sound='greeting',
-                                 menu_sound='menu',
-                                 invalid_sound='invalid',
-                                 abort_sound='abort',
-                                 timeout=10,
-                                 max_tries=2,
-                                 description='description',
-                                 invalid_destination=Dialaction(action='user', actionarg1='1'),
-                                 timeout_destination=Dialaction(action='user', actionarg1='2'),
-                                 choices=[IVRChoice(exten='1', destination=Dialaction(action='user', actionarg1='4'))]))
+        ivr = self.add_ivr(
+            name='myivr',
+            greeting_sound='greeting',
+            menu_sound='menu',
+            invalid_sound='invalid',
+            abort_sound='abort',
+            timeout=10,
+            max_tries=2,
+            description='description',
+            invalid_destination=Dialaction(action='user', actionarg1='1'),
+            timeout_destination=Dialaction(action='user', actionarg1='2'),
+            choices=[
+                IVRChoice(exten='1', destination=Dialaction(action='user', actionarg1='4'))
+            ],
+        )
 
-        ivr = ivr_dao.get(ivr.id)
+        self.session.expire_all()
         ivr.name = 'zmyivr'
         ivr.greeting_sound = 'zgreeting'
         ivr.menu_sound = 'zmenu'
@@ -289,37 +310,41 @@ class TestEdit(DAOTestCase):
 
         ivr_dao.edit(ivr)
 
-        row = self.session.query(IVR).first()
-
-        assert_that(ivr, equal_to(row))
-        assert_that(ivr, has_properties(name='zmyivr',
-                                        greeting_sound='zgreeting',
-                                        menu_sound='zmenu',
-                                        invalid_sound='zinvalid',
-                                        abort_sound='zabort',
-                                        timeout=42,
-                                        max_tries=1337,
-                                        description='lol',
-                                        invalid_destination=has_properties(action='user', actionarg1='3'),
-                                        timeout_destination=has_properties(action='user', actionarg1='4')))
+        self.session.expire_all()
+        assert_that(ivr, has_properties(
+            name='zmyivr',
+            greeting_sound='zgreeting',
+            menu_sound='zmenu',
+            invalid_sound='zinvalid',
+            abort_sound='zabort',
+            timeout=42,
+            max_tries=1337,
+            description='lol',
+            invalid_destination=has_properties(action='user', actionarg1='3'),
+            timeout_destination=has_properties(action='user', actionarg1='4'),
+        ))
         assert_that(ivr.choices, contains(
             has_properties(exten='2', destination=has_properties(action='none')),
         ))
 
     def test_edit_set_fields_to_null(self):
-        ivr = ivr_dao.create(IVR(name='myivr',
-                                 greeting_sound='greeting',
-                                 menu_sound='menu',
-                                 invalid_sound='invalid',
-                                 abort_sound='abort',
-                                 timeout=10,
-                                 max_tries=2,
-                                 description='description',
-                                 invalid_destination=Dialaction(action='user', actionarg1='1'),
-                                 timeout_destination=Dialaction(action='user', actionarg1='2'),
-                                 choices=[IVRChoice(exten='1', destination=Dialaction(action='user', actionarg1='3'))]))
+        ivr = self.add_ivr(
+            name='myivr',
+            greeting_sound='greeting',
+            menu_sound='menu',
+            invalid_sound='invalid',
+            abort_sound='abort',
+            timeout=10,
+            max_tries=2,
+            description='description',
+            invalid_destination=Dialaction(action='user', actionarg1='1'),
+            timeout_destination=Dialaction(action='user', actionarg1='2'),
+            choices=[
+                IVRChoice(exten='1', destination=Dialaction(action='user', actionarg1='3'))
+            ],
+        )
 
-        ivr = ivr_dao.get(ivr.id)
+        self.session.expire_all()
         ivr.greeting_sound = None
         ivr.invalid_sound = None
         ivr.abort_sound = None
@@ -330,25 +355,28 @@ class TestEdit(DAOTestCase):
 
         ivr_dao.edit(ivr)
 
-        row = self.session.query(IVR).first()
-        assert_that(ivr, equal_to(row))
-        assert_that(ivr, has_properties(id=is_not(none()),
-                                        name='myivr',
-                                        greeting_sound=none(),
-                                        menu_sound='menu',
-                                        invalid_sound=none(),
-                                        abort_sound=none(),
-                                        description=none(),
-                                        invalid_destination=none(),
-                                        timeout_destination=none()))
+        self.session.expire_all()
+        assert_that(ivr, has_properties(
+            id=is_not(none()),
+            name='myivr',
+            greeting_sound=none(),
+            menu_sound='menu',
+            invalid_sound=none(),
+            abort_sound=none(),
+            description=none(),
+            invalid_destination=none(),
+            timeout_destination=none(),
+        ))
         assert_that(ivr.choices, empty())
 
     def test_when_removing_choices_then_choices_are_deleted(self):
-        ivr = ivr_dao.create(IVR(name='myivr',
-                                 menu_sound='menu',
-                                 choices=[IVRChoice(exten='1', destination=Dialaction(action='none'))]))
+        ivr = self.add_ivr(
+            name='myivr',
+            menu_sound='menu',
+            choices=[IVRChoice(exten='1', destination=Dialaction(action='none'))],
+        )
 
-        ivr = ivr_dao.get(ivr.id)
+        self.session.expire_all()
         ivr.choices = []
 
         ivr_dao.edit(ivr)
@@ -364,8 +392,7 @@ class TestDelete(DAOTestCase):
 
         ivr_dao.delete(ivr)
 
-        row = self.session.query(IVR).first()
-        assert_that(row, none())
+        assert_that(inspect(ivr).deleted)
 
     def test_when_deleting_then_dialactions_are_deleted(self):
         ivr = self.add_ivr()
@@ -399,33 +426,32 @@ class TestDelete(DAOTestCase):
 class TestRelationship(DAOTestCase):
 
     def test_dialactions_relationship(self):
-        ivr_row = self.add_ivr()
-        dialaction_row = self.add_dialaction(event='timeout', category='ivr',
-                                             categoryval=str(ivr_row.id))
+        ivr = self.add_ivr()
+        dialaction = self.add_dialaction(
+            event='timeout',
+            category='ivr',
+            categoryval=str(ivr.id),
+        )
 
-        ivr = ivr_dao.get(ivr_row.id)
-
-        assert_that(ivr, equal_to(ivr_row))
-        assert_that(ivr.dialactions['timeout'], equal_to(dialaction_row))
+        self.session.expire_all()
+        assert_that(ivr.dialactions['timeout'], equal_to(dialaction))
 
     def test_choices_relationship(self):
-        ivr_row = self.add_ivr()
-        ivr_choice_row = self.add_ivr_choice(ivr_id=ivr_row.id)
-        dialaction_row = self.add_dialaction(category='ivr_choice',
-                                             categoryval=str(ivr_choice_row.id))
+        ivr = self.add_ivr()
+        ivr_choice = self.add_ivr_choice(ivr_id=ivr.id)
+        dialaction = self.add_dialaction(
+            category='ivr_choice',
+            categoryval=str(ivr_choice.id),
+        )
 
-        ivr = ivr_dao.get(ivr_row.id)
-
-        assert_that(ivr, equal_to(ivr_row))
-        assert_that(ivr.choices, contains(ivr_choice_row))
-        assert_that(ivr.choices[0].destination, equal_to(dialaction_row))
+        self.session.expire_all()
+        assert_that(ivr.choices, contains(ivr_choice))
+        assert_that(ivr.choices[0].destination, equal_to(dialaction))
 
     def test_incalls_relationship(self):
-        ivr_row = self.add_ivr()
-        incall1_row = self.add_incall(destination=Dialaction(action='ivr',
-                                                             actionarg1=str(ivr_row.id)))
-        incall2_row = self.add_incall(destination=Dialaction(action='ivr',
-                                                             actionarg1=str(ivr_row.id)))
-        ivr = ivr_dao.get(ivr_row.id)
-        assert_that(ivr, equal_to(ivr_row))
-        assert_that(ivr.incalls, contains_inanyorder(incall1_row, incall2_row))
+        ivr = self.add_ivr()
+        incall1 = self.add_incall(destination=Dialaction(action='ivr', actionarg1=str(ivr.id)))
+        incall2 = self.add_incall(destination=Dialaction(action='ivr', actionarg1=str(ivr.id)))
+
+        self.session.expire_all()
+        assert_that(ivr.incalls, contains_inanyorder(incall1, incall2))
