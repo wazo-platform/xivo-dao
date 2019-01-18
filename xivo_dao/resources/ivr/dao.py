@@ -9,8 +9,8 @@ from .search import ivr_search
 
 
 @daosession
-def search(session, **parameters):
-    return IVRPersistor(session, ivr_search).search(parameters)
+def search(session, tenant_uuids=None, **parameters):
+    return IVRPersistor(session, ivr_search, tenant_uuids).search(parameters)
 
 
 @daosession

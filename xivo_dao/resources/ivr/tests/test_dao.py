@@ -210,6 +210,20 @@ class TestSimpleSearch(TestSearch):
 
         self.assert_search_returns_result(expected)
 
+    def test_search_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        ivr1 = self.add_ivr()
+        ivr2 = self.add_ivr(tenant_uuid=tenant.uuid)
+
+        expected = SearchResult(2, [ivr1, ivr2])
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
+        expected = SearchResult(1, [ivr2])
+        tenants = [tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
 
 class TestSearchGivenMultipleIncall(TestSearch):
 
