@@ -141,6 +141,19 @@ class TestGetBy(DAOTestCase):
     def test_given_ivr_does_not_exist_then_raises_error(self):
         self.assertRaises(NotFoundError, ivr_dao.get_by, id='42')
 
+    def test_get_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        ivr_row = self.add_ivr()
+        self.assertRaises(
+            NotFoundError,
+            ivr_dao.get_by, id=ivr_row.id, tenant_uuids=[tenant.uuid],
+        )
+
+        ivr_row = self.add_ivr(tenant_uuid=tenant.uuid)
+        ivr = ivr_dao.get_by(id=ivr_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(ivr, equal_to(ivr_row))
+
 
 class TestFindAllBy(DAOTestCase):
 
