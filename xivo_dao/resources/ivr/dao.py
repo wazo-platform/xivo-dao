@@ -1,41 +1,41 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2016-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
-
-from xivo_dao.resources.ivr.persistor import IVRPersistor
-from xivo_dao.resources.ivr.search import ivr_search
 
 from xivo_dao.helpers.db_manager import daosession
 
-
-@daosession
-def search(session, **parameters):
-    return IVRPersistor(session, ivr_search).search(parameters)
+from .persistor import IVRPersistor
+from .search import ivr_search
 
 
 @daosession
-def get(session, ivr_id):
-    return IVRPersistor(session, ivr_search).get_by({'id': ivr_id})
+def search(session, tenant_uuids=None, **parameters):
+    return IVRPersistor(session, ivr_search, tenant_uuids).search(parameters)
 
 
 @daosession
-def get_by(session, **criteria):
-    return IVRPersistor(session, ivr_search).get_by(criteria)
+def get(session, ivr_id, tenant_uuids=None):
+    return IVRPersistor(session, ivr_search, tenant_uuids).get_by({'id': ivr_id})
 
 
 @daosession
-def find(session, ivr_id):
-    return IVRPersistor(session, ivr_search).find_by({'id': ivr_id})
+def get_by(session, tenant_uuids=None, **criteria):
+    return IVRPersistor(session, ivr_search, tenant_uuids).get_by(criteria)
 
 
 @daosession
-def find_by(session, **criteria):
-    return IVRPersistor(session, ivr_search).find_by(criteria)
+def find(session, ivr_id, tenant_uuids=None):
+    return IVRPersistor(session, ivr_search, tenant_uuids).find_by({'id': ivr_id})
 
 
 @daosession
-def find_all_by(session, **criteria):
-    return IVRPersistor(session, ivr_search).find_all_by(criteria)
+def find_by(session, tenant_uuids=None, **criteria):
+    return IVRPersistor(session, ivr_search, tenant_uuids).find_by(criteria)
+
+
+@daosession
+def find_all_by(session, tenant_uuids=None, **criteria):
+    return IVRPersistor(session, ivr_search, tenant_uuids).find_all_by(criteria)
 
 
 @daosession
