@@ -51,6 +51,7 @@ class DirectoryView(View):
     def query(self, session):
         query = (session.query(User.id.label('id'),
                                User.uuid.label('uuid'),
+                               User.tenant_uuid.label('tenant_uuid'),
                                UserLine.line_id.label('line_id'),
                                User.agentid.label('agent_id'),
                                User.firstname.label('firstname'),
@@ -67,6 +68,7 @@ class DirectoryView(View):
     def convert(self, row):
         return UserDirectory(id=row.id,
                              uuid=row.uuid,
+                             tenant_uuid=row_tenant_uuid,
                              line_id=row.line_id,
                              agent_id=row.agent_id,
                              firstname=row.firstname,
@@ -85,6 +87,7 @@ class SummaryView(View):
     def query(self, session):
         query = (session.query(User.id.label('id'),
                                User.uuid.label('uuid'),
+                               User.tenant_uuid.label('tenant_uuid'),
                                User.firstname.label('firstname'),
                                func.nullif(User.lastname, '').label('lastname'),
                                func.nullif(User.email, '').label('email'),
@@ -102,6 +105,7 @@ class SummaryView(View):
     def convert(self, row):
         return UserSummary(id=row.id,
                            uuid=row.uuid,
+                           tenant_uuid=row_tenant_uuid,
                            firstname=row.firstname,
                            lastname=row.lastname,
                            email=row.email,

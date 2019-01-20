@@ -5,10 +5,11 @@
 
 class UserDirectory(object):
 
-    def __init__(self, id, uuid, line_id, agent_id, firstname, lastname, exten, email,
+    def __init__(self, id, uuid, tenant_uuid, line_id, agent_id, firstname, lastname, exten, email,
                  mobile_phone_number, voicemail_number, userfield, description, context):
         self.id = id
         self.uuid = uuid
+        self.tenant_uuid = tenant_uuid
         self.line_id = line_id
         self.agent_id = agent_id
         self.firstname = firstname
@@ -27,10 +28,11 @@ class UserDirectory(object):
 
 class UserSummary(object):
 
-    def __init__(self, id, uuid, firstname, lastname, email, enabled, provisioning_code, protocol,
+    def __init__(self, id, uuid, tenant_uuid, firstname, lastname, email, enabled, provisioning_code, protocol,
                  extension, context, entity):
         self.id = id
         self.uuid = uuid
+        self.tenant_uuid = tenant_uuid
         self.firstname = firstname
         self.lastname = lastname
         self.email = email
