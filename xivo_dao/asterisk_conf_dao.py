@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -81,7 +81,7 @@ def find_sccp_general_settings(session):
 def find_sccp_line_settings(session):
     sccp_pickup_members = find_pickup_members('sccp')
 
-    def line_config(protocolid, name, cid_name, cid_num, allow, disallow,
+    def line_config(protocolid, tenant_uuid, name, cid_name, cid_num, allow, disallow,
                     language, user_id, context, number, uuid):
         line = {
             'name': name,
@@ -92,6 +92,7 @@ def find_sccp_line_settings(session):
             'context': context,
             'language': language,
             'uuid': uuid,
+            'tenant_uuid': tenant_uuid,
         }
 
         if allow:
@@ -104,6 +105,7 @@ def find_sccp_line_settings(session):
         return line
 
     rows = (session.query(SCCPLine.id,
+                          SCCPLine.tenant_uuid,
                           SCCPLine.name,
                           SCCPLine.cid_name,
                           SCCPLine.cid_num,
