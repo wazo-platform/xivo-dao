@@ -247,7 +247,7 @@ class TestSearchGivenMultipleCallPickups(TestSearch):
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_fields(self):
-        call_pickup_model = CallPickup(name='name')
+        call_pickup_model = CallPickup(name='name', tenant_uuid=self.default_tenant.uuid)
 
         call_pickup = call_pickup_dao.create(call_pickup_model)
 
@@ -255,6 +255,7 @@ class TestCreate(DAOTestCase):
         assert_that(inspect(call_pickup).persistent)
         assert_that(call_pickup, has_properties(
             name='name',
+            tenant_uuid=self.default_tenant.uuid,
             description=none(),
             enabled=True,
         ))
@@ -262,6 +263,7 @@ class TestCreate(DAOTestCase):
     def test_create_with_all_fields(self):
         call_pickup_model = CallPickup(
             name='name',
+            tenant_uuid=self.default_tenant.uuid,
             description='description',
             enabled=False,
         )
@@ -272,14 +274,15 @@ class TestCreate(DAOTestCase):
         assert_that(inspect(call_pickup).persistent)
         assert_that(call_pickup, has_properties(
             name='name',
+            tenant_uuid=self.default_tenant.uuid,
             description='description',
             enabled=False,
         ))
 
     def test_create_fill_default_values(self):
         self.entity = self.add_entity(tenant_uuid=self.default_tenant.uuid)
-        call_pickup_model_1 = CallPickup(name='name1')
-        call_pickup_model_2 = CallPickup(name='name2')
+        call_pickup_model_1 = CallPickup(name='name1', tenant_uuid=self.default_tenant.uuid)
+        call_pickup_model_2 = CallPickup(name='name2', tenant_uuid=self.default_tenant.uuid)
 
         call_pickup_1 = call_pickup_dao.create(call_pickup_model_1)
         call_pickup_2 = call_pickup_dao.create(call_pickup_model_2)
