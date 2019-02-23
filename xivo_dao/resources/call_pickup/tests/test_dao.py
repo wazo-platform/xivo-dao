@@ -41,6 +41,16 @@ class TestFind(DAOTestCase):
 
         assert_that(result, equal_to(call_pickup))
 
+    def test_find_multi_tenant(self):
+        tenant = self.add_tenant()
+        call_pickup = self.add_pickup(tenant_uuid=tenant.uuid)
+
+        result = call_pickup_dao.find(call_pickup.id, tenant_uuids=[tenant.uuid])
+        assert_that(result, equal_to(call_pickup))
+
+        result = call_pickup_dao.find(call_pickup.id, tenant_uuids=[self.default_tenant.uuid])
+        assert_that(result, none())
+
 
 class TestGet(DAOTestCase):
 

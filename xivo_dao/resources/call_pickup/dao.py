@@ -9,8 +9,8 @@ from .search import call_pickup_search
 
 
 @daosession
-def _persistor(session):
-    return CallPickupPersistor(session, call_pickup_search)
+def _persistor(session, tenant_uuids=None):
+    return CallPickupPersistor(session, call_pickup_search, tenant_uuids)
 
 
 @daosession
@@ -29,8 +29,8 @@ def get_by(session, **criteria):
 
 
 @daosession
-def find(session, call_pickup_id):
-    return _persistor().find_by({'id': call_pickup_id})
+def find(session, call_pickup_id, tenant_uuids=None):
+    return _persistor(tenant_uuids).find_by({'id': call_pickup_id})
 
 
 @daosession
