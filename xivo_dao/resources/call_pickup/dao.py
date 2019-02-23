@@ -24,8 +24,8 @@ def get(session, call_pickup_id, tenant_uuids=None):
 
 
 @daosession
-def get_by(session, **criteria):
-    return _persistor().get_by(criteria)
+def get_by(session, tenant_uuids=None, **criteria):
+    return _persistor(tenant_uuids).get_by(criteria)
 
 
 @daosession

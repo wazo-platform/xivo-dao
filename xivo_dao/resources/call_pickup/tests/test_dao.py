@@ -156,6 +156,19 @@ class TestGetBy(DAOTestCase):
     def test_given_call_pickup_does_not_exist_then_raises_error(self):
         self.assertRaises(NotFoundError, call_pickup_dao.get_by, name='42')
 
+    def test_get_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        call_pickup_row = self.add_pickup()
+        self.assertRaises(
+            NotFoundError,
+            call_pickup_dao.get_by, id=call_pickup_row.id, tenant_uuids=[tenant.uuid],
+        )
+
+        call_pickup_row = self.add_pickup(tenant_uuid=tenant.uuid)
+        call_pickup = call_pickup_dao.get_by(id=call_pickup_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(call_pickup, equal_to(call_pickup_row))
+
 
 class TestFindAllBy(DAOTestCase):
 
