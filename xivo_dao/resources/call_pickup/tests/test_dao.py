@@ -236,6 +236,20 @@ class TestSimpleSearch(TestSearch):
 
         self.assert_search_returns_result(expected)
 
+    def test_search_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        call_pickup1 = self.add_pickup(name='a')
+        call_pickup2 = self.add_pickup(name='b', tenant_uuid=tenant.uuid)
+
+        expected = SearchResult(2, [call_pickup1, call_pickup2])
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
+        expected = SearchResult(1, [call_pickup2])
+        tenants = [tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
 
 class TestSearchGivenMultipleCallPickups(TestSearch):
 
