@@ -19,8 +19,8 @@ def search(session, **parameters):
 
 
 @daosession
-def get(session, call_pickup_id):
-    return _persistor().get_by({'id': call_pickup_id})
+def get(session, call_pickup_id, tenant_uuids=None):
+    return _persistor(tenant_uuids).get_by({'id': call_pickup_id})
 
 
 @daosession
