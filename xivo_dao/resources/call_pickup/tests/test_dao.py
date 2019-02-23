@@ -112,6 +112,17 @@ class TestFindBy(DAOTestCase):
 
         assert_that(call_pickup, none())
 
+    def test_find_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        call_pickup_row = self.add_pickup()
+        call_pickup = call_pickup_dao.find_by(id=call_pickup_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(call_pickup, none())
+
+        call_pickup_row = self.add_pickup(tenant_uuid=tenant.uuid)
+        call_pickup = call_pickup_dao.find_by(id=call_pickup_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(call_pickup, equal_to(call_pickup_row))
+
 
 class TestGetBy(DAOTestCase):
 
