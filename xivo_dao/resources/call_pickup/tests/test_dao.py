@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -15,6 +15,8 @@ from hamcrest import (
     has_property,
     none,
 )
+
+from sqlalchemy.inspection import inspect
 
 from xivo_dao.alchemy.pickup import Pickup as CallPickup
 from xivo_dao.alchemy.pickupmember import PickupMember as CallPickupMember
@@ -134,8 +136,10 @@ class TestFindAllBy(DAOTestCase):
 
         call_pickups = call_pickup_dao.find_all_by(enabled=True)
 
-        assert_that(call_pickups, has_items(has_property('id', call_pickup1.id),
-                                            has_property('id', call_pickup2.id)))
+        assert_that(call_pickups, has_items(
+            has_property('id', call_pickup1.id),
+            has_property('id', call_pickup2.id),
+        ))
 
     def test_find_all_by_native_column(self):
         call_pickup1 = self.add_pickup(name='bob', description='description')
@@ -143,8 +147,10 @@ class TestFindAllBy(DAOTestCase):
 
         call_pickups = call_pickup_dao.find_all_by(description='description')
 
-        assert_that(call_pickups, has_items(has_property('id', call_pickup1.id),
-                                            has_property('id', call_pickup2.id)))
+        assert_that(call_pickups, has_items(
+            has_property('id', call_pickup1.id),
+            has_property('id', call_pickup2.id),
+        ))
 
 
 class TestSearch(DAOTestCase):
@@ -196,18 +202,22 @@ class TestSearchGivenMultipleCallPickups(TestSearch):
         self.assert_search_returns_result(expected_all_resto, description='resto', order='name')
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
-        expected = SearchResult(4, [self.call_pickup1,
-                                    self.call_pickup2,
-                                    self.call_pickup3,
-                                    self.call_pickup4])
+        expected = SearchResult(4, [
+            self.call_pickup1,
+            self.call_pickup2,
+            self.call_pickup3,
+            self.call_pickup4,
+        ])
 
         self.assert_search_returns_result(expected, order='name')
 
     def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
-        expected = SearchResult(4, [self.call_pickup4,
-                                    self.call_pickup3,
-                                    self.call_pickup2,
-                                    self.call_pickup1])
+        expected = SearchResult(4, [
+            self.call_pickup4,
+            self.call_pickup3,
+            self.call_pickup2,
+            self.call_pickup1,
+        ])
 
         self.assert_search_returns_result(expected, order='name', direction='desc')
 
@@ -224,63 +234,61 @@ class TestSearchGivenMultipleCallPickups(TestSearch):
     def test_when_doing_a_paginated_search_then_returns_a_paginated_result(self):
         expected = SearchResult(3, [self.call_pickup2])
 
-        self.assert_search_returns_result(expected,
-                                          search='a',
-                                          order='name',
-                                          direction='desc',
-                                          skip=1,
-                                          limit=1)
+        self.assert_search_returns_result(
+            expected,
+            search='a',
+            order='name',
+            direction='desc',
+            skip=1,
+            limit=1,
+        )
 
 
 class TestCreate(DAOTestCase):
 
-    def setUp(self):
-        super(TestCreate, self).setUp()
-        self.tenant = self.add_tenant()
-        self.entity = self.add_entity(tenant_uuid=self.tenant.uuid)
-
     def test_create_minimal_fields(self):
-        call_pickup = CallPickup(name='name')
+        call_pickup_model = CallPickup(name='name')
 
-        result = call_pickup_dao.create(call_pickup)
+        call_pickup = call_pickup_dao.create(call_pickup_model)
 
-        row = self.session.query(CallPickup).first()
-        assert_that(result, equal_to(row))
-        assert_that(result, has_properties(
+        self.session.expire_all()
+        assert_that(inspect(call_pickup).persistent)
+        assert_that(call_pickup, has_properties(
             name='name',
             description=none(),
             enabled=True,
         ))
 
     def test_create_with_all_fields(self):
-        call_pickup = CallPickup(
+        call_pickup_model = CallPickup(
             name='name',
             description='description',
             enabled=False,
         )
 
-        result = call_pickup_dao.create(call_pickup)
+        call_pickup = call_pickup_dao.create(call_pickup_model)
 
-        row = self.session.query(CallPickup).first()
-        assert_that(result, equal_to(row))
-        assert_that(result, has_properties(
+        self.session.expire_all()
+        assert_that(inspect(call_pickup).persistent)
+        assert_that(call_pickup, has_properties(
             name='name',
             description='description',
             enabled=False,
         ))
 
     def test_create_fill_default_values(self):
-        call_pickup1 = CallPickup(name='name1')
-        call_pickup2 = CallPickup(name='name2')
+        self.entity = self.add_entity(tenant_uuid=self.default_tenant.uuid)
+        call_pickup_model_1 = CallPickup(name='name1')
+        call_pickup_model_2 = CallPickup(name='name2')
 
-        result1 = call_pickup_dao.create(call_pickup1)
-        result2 = call_pickup_dao.create(call_pickup2)
+        call_pickup_1 = call_pickup_dao.create(call_pickup_model_1)
+        call_pickup_2 = call_pickup_dao.create(call_pickup_model_2)
 
-        assert_that(result1, has_properties(
+        assert_that(call_pickup_1, has_properties(
             entity_id=self.entity.id,
             id=1,
         ))
-        assert_that(result2, has_properties(
+        assert_that(call_pickup_2, has_properties(
             entity_id=self.entity.id,
             id=2,
         ))
@@ -302,8 +310,8 @@ class TestEdit(DAOTestCase):
 
         call_pickup_dao.edit(call_pickup)
 
-        row = self.session.query(CallPickup).first()
-        assert_that(row, has_properties(
+        self.session.expire_all()
+        assert_that(call_pickup, has_properties(
             name='other_name',
             description='other_description',
             enabled=False,
@@ -317,8 +325,7 @@ class TestDelete(DAOTestCase):
 
         call_pickup_dao.delete(call_pickup)
 
-        row = self.session.query(CallPickup).first()
-        assert_that(row, none())
+        assert_that(inspect(call_pickup).deleted)
 
 
 class TestAssociateUserTargets(DAOTestCase):
