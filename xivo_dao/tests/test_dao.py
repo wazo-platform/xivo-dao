@@ -625,6 +625,7 @@ class ItemInserter(object):
 
     def add_pickup(self, **kwargs):
         kwargs.setdefault('id', self._generate_int())
+        kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
         kwargs.setdefault('name', ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(6)))
 
         pickup = Pickup(**kwargs)

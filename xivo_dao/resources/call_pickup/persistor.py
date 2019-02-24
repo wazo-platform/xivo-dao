@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
-# Copyright 2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
+
+from sqlalchemy import text
 
 from xivo_dao.alchemy.entity import Entity
 from xivo_dao.alchemy.pickup import Pickup as CallPickup
@@ -12,9 +14,10 @@ class CallPickupPersistor(CriteriaBuilderMixin):
 
     _search_table = CallPickup
 
-    def __init__(self, session, call_pickup_search):
+    def __init__(self, session, call_pickup_search, tenant_uuids=None):
         self.session = session
         self.call_pickup_search = call_pickup_search
+        self.tenant_uuids = tenant_uuids
 
     def find_by(self, criteria):
         query = self._find_query(criteria)
@@ -22,6 +25,7 @@ class CallPickupPersistor(CriteriaBuilderMixin):
 
     def _find_query(self, criteria):
         query = self.session.query(CallPickup)
+        query = self._filter_tenant_uuid(query)
         return self.build_criteria(query, criteria)
 
     def get_by(self, criteria):
@@ -30,12 +34,23 @@ class CallPickupPersistor(CriteriaBuilderMixin):
             raise errors.not_found('CallPickup', **criteria)
         return call_pickup
 
+    def _filter_tenant_uuid(self, query):
+        if self.tenant_uuids is None:
+            return query
+
+        if not self.tenant_uuids:
+            return query.filter(text('false'))
+
+        return query.filter(CallPickup.tenant_uuid.in_(self.tenant_uuids))
+
     def find_all_by(self, criteria):
         query = self._find_query(criteria)
         return query.all()
 
     def search(self, parameters):
-        rows, total = self.call_pickup_search.search(self.session, parameters)
+        query = self.session.query(self.call_pickup_search.config.table)
+        query = self._filter_tenant_uuid(query)
+        rows, total = self.call_pickup_search.search_from_query(query, parameters)
         return SearchResult(total, rows)
 
     def create(self, call_pickup):
