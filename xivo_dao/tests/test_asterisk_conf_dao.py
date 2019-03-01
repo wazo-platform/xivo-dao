@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -525,6 +525,7 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         ))
 
     def test_find_exten_settings_when_line_enabled(self):
+        default = self.add_context(name='default')
         user_row = self.add_user()
         line_row = self.add_line()
         extension_row = self.add_extension(exten='12', context='default')
@@ -532,12 +533,15 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         self.add_line_extension(line_id=line_row.id, extension_id=extension_row.id)
 
         expected_result = [
-            {'exten': '12',
-             'commented': 0,
-             'context': 'default',
-             'typeval': '',
-             'type': 'user',
-             'id': extension_row.id}
+            {
+                'exten': '12',
+                'commented': 0,
+                'context': 'default',
+                'typeval': '',
+                'type': 'user',
+                'id': extension_row.id,
+                'tenant_uuid': default.tenant_uuid,
+            },
         ]
 
         result = asterisk_conf_dao.find_exten_settings('default')
@@ -556,25 +560,32 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         assert_that(result, contains())
 
     def test_find_exten_settings_multiple_extensions(self):
-        exten1 = self.add_extension(exten='12', context='default')
-        exten2 = self.add_extension(exten='23', context='default')
+        default = self.add_context(name='default')
+        self.add_context(name='toto')
+        exten1 = self.add_extension(exten='12', context=default.name)
+        exten2 = self.add_extension(exten='23', context=default.name)
         self.add_extension(exten='41', context='toto')
 
         expected_result = [
-            {'exten': '12',
-             'commented': 0,
-             'context': 'default',
-             'typeval': '',
-             'type': 'user',
-             'id': exten1.id},
-            {'exten': '23',
-             'commented': 0,
-             'context': 'default',
-             'typeval': '',
-             'type': 'user',
-             'id': exten2.id}
+            {
+                'exten': '12',
+                'commented': 0,
+                'context': 'default',
+                'typeval': '',
+                'type': 'user',
+                'id': exten1.id,
+                'tenant_uuid': default.tenant_uuid,
+            },
+            {
+                'exten': '23',
+                'commented': 0,
+                'context': 'default',
+                'typeval': '',
+                'type': 'user',
+                'id': exten2.id,
+                'tenant_uuid': default.tenant_uuid,
+            },
         ]
-
         extensions = asterisk_conf_dao.find_exten_settings('default')
 
         assert_that(extensions, contains_inanyorder(*expected_result))
