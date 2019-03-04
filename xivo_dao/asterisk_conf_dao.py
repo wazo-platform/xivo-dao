@@ -295,7 +295,7 @@ def find_exten_settings(session, context_name):
             .order_by('exten')
             .all())
 
-    return [row.todict() for row in rows]
+    return [dict(tenant_uuid=row.context_rel.tenant_uuid, **row.todict()) for row in rows]
 
 
 @daosession
