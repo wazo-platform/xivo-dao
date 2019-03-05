@@ -42,7 +42,7 @@ class Pickup(Base):
         'PickupMember',
         primaryjoin="""and_(
             PickupMember.pickupid == Pickup.id,
-            PickupMember.category == 'member',
+            PickupMember.category == 'pickup',
             PickupMember.membertype == 'user'
         )""",
         foreign_keys='PickupMember.pickupid',
@@ -51,14 +51,14 @@ class Pickup(Base):
     user_targets = association_proxy(
         'pickupmember_user_targets',
         'user',
-        creator=lambda _user: PickupMember(user=_user, category='member', membertype='user'),
+        creator=lambda _user: PickupMember(user=_user, category='pickup', membertype='user'),
     )
 
     pickupmember_group_targets = relationship(
         'PickupMember',
         primaryjoin="""and_(
             PickupMember.pickupid == Pickup.id,
-            PickupMember.category == 'member',
+            PickupMember.category == 'pickup',
             PickupMember.membertype == 'group'
         )""",
         foreign_keys='PickupMember.pickupid',
@@ -67,14 +67,14 @@ class Pickup(Base):
     group_targets = association_proxy(
         'pickupmember_group_targets',
         'group',
-        creator=lambda _group: PickupMember(group=_group, category='member', membertype='group'),
+        creator=lambda _group: PickupMember(group=_group, category='pickup', membertype='group'),
     )
 
     pickupmember_user_interceptors = relationship(
         'PickupMember',
         primaryjoin="""and_(
             PickupMember.pickupid == Pickup.id,
-            PickupMember.category == 'pickup',
+            PickupMember.category == 'member',
             PickupMember.membertype == 'user'
         )""",
         foreign_keys='PickupMember.pickupid',
@@ -83,14 +83,14 @@ class Pickup(Base):
     user_interceptors = association_proxy(
         'pickupmember_user_interceptors',
         'user',
-        creator=lambda _user: PickupMember(user=_user, category='pickup', membertype='user'),
+        creator=lambda _user: PickupMember(user=_user, category='member', membertype='user'),
     )
 
     pickupmember_group_interceptors = relationship(
         'PickupMember',
         primaryjoin="""and_(
             PickupMember.pickupid == Pickup.id,
-            PickupMember.category == 'pickup',
+            PickupMember.category == 'member',
             PickupMember.membertype == 'group'
         )""",
         foreign_keys='PickupMember.pickupid',
@@ -99,14 +99,14 @@ class Pickup(Base):
     group_interceptors = association_proxy(
         'pickupmember_group_interceptors',
         'group',
-        creator=lambda _group: PickupMember(group=_group, category='pickup', membertype='group'),
+        creator=lambda _group: PickupMember(group=_group, category='member', membertype='group'),
     )
 
     pickupmember_queue_targets = relationship(
         'PickupMember',
         primaryjoin="""and_(
             PickupMember.pickupid == Pickup.id,
-            PickupMember.category == 'member',
+            PickupMember.category == 'pickup',
             PickupMember.membertype == 'queue'
         )""",
         foreign_keys='PickupMember.pickupid',
@@ -117,7 +117,7 @@ class Pickup(Base):
         'PickupMember',
         primaryjoin="""and_(
             PickupMember.pickupid == Pickup.id,
-            PickupMember.category == 'pickup',
+            PickupMember.category == 'member',
             PickupMember.membertype == 'queue'
         )""",
         foreign_keys='PickupMember.pickupid',
