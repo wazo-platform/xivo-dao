@@ -4,16 +4,17 @@
 
 from __future__ import unicode_literals
 
-from hamcrest import (all_of,
-                      assert_that,
-                      contains,
-                      equal_to,
-                      has_items,
-                      has_properties,
-                      has_property,
-                      is_not,
-                      none,
-                      not_)
+from hamcrest import (
+    all_of,
+    assert_that,
+    contains,
+    equal_to,
+    has_items,
+    has_properties,
+    is_not,
+    none,
+    not_,
+)
 
 
 from xivo_dao.alchemy.entity import Entity
@@ -32,17 +33,21 @@ class TestFind(DAOTestCase):
 
     def test_find(self):
         tenant = self.add_tenant()
-        entity_row = self.add_entity(name='entity',
-                                     display_name='Entity_Namé',
-                                     description='description',
-                                     tenant_uuid=tenant.uuid)
+        entity_row = self.add_entity(
+            name='entity',
+            display_name='Entity_Namé',
+            description='description',
+            tenant_uuid=tenant.uuid,
+        )
 
         entity = entity_dao.find(entity_row.id)
 
-        assert_that(entity.id, equal_to(entity_row.id))
-        assert_that(entity.name, equal_to(entity_row.name))
-        assert_that(entity.display_name, equal_to(entity_row.display_name))
-        assert_that(entity.description, equal_to(entity_row.description))
+        assert_that(entity, has_properties(
+            id=entity_row.id,
+            name=entity_row.name,
+            display_name=entity_row.display_name,
+            description=entity_row.description,
+        ))
 
     def test_find_multi_tenant(self):
         tenant = self.add_tenant()
@@ -93,8 +98,10 @@ class TestFindBy(DAOTestCase):
 
         entity = entity_dao.find_by(name='Entité')
 
-        assert_that(entity.id, equal_to(entity_row.id))
-        assert_that(entity.name, equal_to('Entité'))
+        assert_that(entity, has_properties(
+            id=entity_row.id,
+            name='Entité',
+        ))
 
     def test_given_entity_does_not_exist_then_returns_null(self):
         entity = entity_dao.find_by(name='42')
@@ -125,8 +132,10 @@ class TestGetBy(DAOTestCase):
 
         entity = entity_dao.get_by(name='Entité')
 
-        assert_that(entity.id, equal_to(entity_row.id))
-        assert_that(entity.name, equal_to('Entité'))
+        assert_that(entity, has_properties(
+            id=entity_row.id,
+            name='Entité',
+        ))
 
     def test_given_entity_does_not_exist_then_raises_error(self):
         self.assertRaises(NotFoundError, entity_dao.get_by, name='42')
@@ -160,8 +169,10 @@ class TestFindAllBy(DAOTestCase):
 
         entities = entity_dao.find_all_by(display_name='renamed')
 
-        assert_that(entities, has_items(has_property('id', entity1.id),
-                                        has_property('id', entity2.id)))
+        assert_that(entities, has_items(
+            has_properties(id=entity1.id),
+            has_properties(id=entity2.id),
+        ))
 
     def test_find_all_by_native_column(self):
         tenant = self.add_tenant()
@@ -170,8 +181,10 @@ class TestFindAllBy(DAOTestCase):
 
         entities = entity_dao.find_all_by(description='description')
 
-        assert_that(entities, has_items(has_property('id', entity1.id),
-                                        has_property('id', entity2.id)))
+        assert_that(entities, has_items(
+            has_properties(id=entity1.id),
+            has_properties(id=entity2.id),
+        ))
 
     def test_find_all_multi_tenant(self):
         tenant = self.add_tenant()
@@ -311,47 +324,59 @@ class TestCreate(DAOTestCase):
 
         row = self.session.query(Entity).first()
 
-        assert_that(created_entity, has_properties(id=row.id,
-                                                   name="Proformatique",
-                                                   description='',
-                                                   tenant_uuid=self.tenant.uuid))
+        assert_that(created_entity, has_properties(
+            id=row.id,
+            name="Proformatique",
+            description='',
+            tenant_uuid=self.tenant.uuid,
+        ))
 
-        assert_that(row, has_properties(id=is_not(none()),
-                                        name='Proformatique',
-                                        description='',
-                                        tenant_uuid=self.tenant.uuid))
+        assert_that(row, has_properties(
+            id=is_not(none()),
+            name='Proformatique',
+            description='',
+            tenant_uuid=self.tenant.uuid,
+        ))
 
     def test_create_with_all_fields(self):
-        entity = Entity(name="Proformatique",
-                        display_name='totoformatiqué',
-                        description='informatique',
-                        tenant_uuid=self.tenant.uuid)
+        entity = Entity(
+            name="Proformatique",
+            display_name='totoformatiqué',
+            description='informatique',
+            tenant_uuid=self.tenant.uuid,
+        )
 
         created_entity = entity_dao.create(entity)
 
         row = self.session.query(Entity).first()
 
-        assert_that(created_entity, has_properties(id=row.id,
-                                                   name="Proformatique",
-                                                   display_name='totoformatiqué',
-                                                   description='informatique',
-                                                   tenant_uuid=self.tenant.uuid))
+        assert_that(created_entity, has_properties(
+            id=row.id,
+            name="Proformatique",
+            display_name='totoformatiqué',
+            description='informatique',
+            tenant_uuid=self.tenant.uuid,
+        ))
 
-        assert_that(row, has_properties(id=is_not(none()),
-                                        name='Proformatique',
-                                        displayname='totoformatiqué',
-                                        description='informatique',
-                                        tenant_uuid=self.tenant.uuid))
+        assert_that(row, has_properties(
+            id=is_not(none()),
+            name='Proformatique',
+            displayname='totoformatiqué',
+            description='informatique',
+            tenant_uuid=self.tenant.uuid,
+        ))
 
 
 class TestEdit(DAOTestCase):
 
     def test_edit_all_fields(self):
         tenant = self.add_tenant()
-        entity = entity_dao.create(Entity(name="Proformatique",
-                                          display_name='totoformatiqué',
-                                          description='informatique',
-                                          tenant_uuid=tenant.uuid))
+        entity = entity_dao.create(Entity(
+            name="Proformatique",
+            display_name='totoformatiqué',
+            description='informatique',
+            tenant_uuid=tenant.uuid,
+        ))
 
         entity = entity_dao.get(entity.id)
         entity.name = 'Halala'
@@ -362,16 +387,20 @@ class TestEdit(DAOTestCase):
 
         row = self.session.query(Entity).first()
 
-        assert_that(row, has_properties(name='Halala',
-                                        displayname='tata',
-                                        description='description'))
+        assert_that(row, has_properties(
+            name='Halala',
+            displayname='tata',
+            description='description',
+        ))
 
     def test_edit_set_fields_to_null(self):
         tenant = self.add_tenant()
-        entity = entity_dao.create(Entity(name="Proformatique",
-                                          display_name='totoformatiqué',
-                                          description='informatique',
-                                          tenant_uuid=tenant.uuid))
+        entity = entity_dao.create(Entity(
+            name="Proformatique",
+            display_name='totoformatiqué',
+            description='informatique',
+            tenant_uuid=tenant.uuid,
+        ))
 
         entity = entity_dao.get(entity.id)
         entity.display_name = None
