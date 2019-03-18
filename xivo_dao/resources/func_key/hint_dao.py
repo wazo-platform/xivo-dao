@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import sql, literal_column, Unicode, Integer
-from sqlalchemy.orm import aliased
+from sqlalchemy.orm import aliased, joinedload
 from xivo.xivo_helpers import clean_extension
 
 from xivo_dao.alchemy.callfilter import Callfilter
@@ -81,6 +81,29 @@ def user_hints(session, context):
         if argument:
             hints.append(Hint(user_id=user_id, extension=extension, argument=argument))
     return tuple(hints)
+
+
+@daosession
+def user_shared_hints(session):
+    query = session.query(UserFeatures).options(joinedload('user_lines').joinedload('line'))
+    hints = []
+    for user in query.all():
+        ifaces = []
+        for line in user.lines:
+            if line.protocol == 'custom':
+                ifaces.append(line.name)
+            elif line.protocol == 'sip':
+                # TODO PJSIP migration
+                ifaces.append('pjsip/{}'.format(line.name))
+            else:
+                ifaces.append('{}/{}'.format(line.protocol, line.name))
+
+        if not ifaces:
+            continue
+        argument = '&'.join(ifaces)
+        hint = Hint(user_id=user.id, extension=user.uuid, argument=argument)
+        hints.append(hint)
+    return hints
 
 
 def _list_user_extensions(session, context):

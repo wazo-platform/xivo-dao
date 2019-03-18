@@ -6,7 +6,9 @@ import six
 
 from itertools import permutations
 
-from hamcrest import assert_that, equal_to, contains, contains_inanyorder, any_of
+from mock import ANY
+
+from hamcrest import assert_that, empty, equal_to, contains, contains_inanyorder, any_of
 from hamcrest.core.base_matcher import BaseMatcher
 from hamcrest.core.helpers.wrap_matcher import wrap_matcher
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -510,3 +512,40 @@ class TestGroupHints(TestHints):
                         argument=str(destination_row.group_id))
 
         assert_that(hint_dao.groupmember_hints(self.context), contains(expected))
+
+
+class TestUserSharedHints(TestHints):
+
+    def test_multi_line_user(self):
+        user = self.add_user()
+        sip_1 = self.add_usersip()
+        sip_2 = self.add_usersip()
+        sccp_1 = self.add_sccpline(name='1001')
+        line_1 = self.add_line(protocol='sip', protocolid=sip_1.id)
+        line_2 = self.add_line(protocol='sip', protocolid=sip_2.id)
+        line_3 = self.add_line(protocol='sccp', protocolid=sccp_1.id)
+        extension_1 = self.add_extension(typeval=user.id)
+        extension_2 = self.add_extension(typeval=user.id)
+        self.add_user_line(user_id=user.id, line_id=line_1.id, main_line=True)
+        self.add_user_line(user_id=user.id, line_id=line_2.id, main_line=False)
+        self.add_user_line(user_id=user.id, line_id=line_3.id, main_line=False)
+        self.add_line_extension(line_id=line_1.id, extension_id=extension_1.id)
+        self.add_line_extension(line_id=line_2.id, extension_id=extension_1.id)
+        self.add_line_extension(line_id=line_3.id, extension_id=extension_2.id)
+
+        results = hint_dao.user_shared_hints()
+
+        assert_that(results, contains_inanyorder(
+            Hint(ANY, user.uuid, '&'.join([
+                'pjsip/{}'.format(line_1.name),
+                'pjsip/{}'.format(line_2.name),
+                'sccp/{}'.format(line_3.name),
+            ])),
+        ))
+
+    def test_no_line(self):
+        self.add_user()
+
+        results = hint_dao.user_shared_hints()
+
+        assert_that(results, empty())
