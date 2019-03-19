@@ -4,7 +4,7 @@
 
 from __future__ import unicode_literals
 
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 
 from sqlalchemy.sql.expression import and_, or_, literal, cast, func
 from sqlalchemy.types import Integer
@@ -565,22 +565,45 @@ def find_queue_penalty_settings(session):
 
 @daosession
 def find_queue_members_settings(session, queue_name):
-    rows = (session.query(QueueMember.penalty,
-                          QueueMember.interface)
-            .filter(and_(QueueMember.commented == 0,
-                         QueueMember.queue_name == queue_name,
-                         QueueMember.usertype == 'user'))
-            .order_by(QueueMember.position)
-            .all())
+    user_members = (session.query(QueueMember.category,
+                                  QueueMember.penalty,
+                                  QueueMember.position,
+                                  QueueMember.interface,
+                                  UserFeatures.uuid)
+                    .outerjoin(UserFeatures, QueueMember.userid == UserFeatures.id)
+                    .filter(and_(QueueMember.commented == 0,
+                                 QueueMember.queue_name == queue_name,
+                                 QueueMember.usertype == 'user'))
+                    .order_by(QueueMember.position)
+                    .all())
+
+    def is_user_in_group(row):
+        return row.category == 'group' and row.uuid is not None
 
     res = []
-    for row in rows:
-        penalty, interface = row
-        tmp = {}
-        tmp['penalty'] = penalty
-        tmp['interface'] = interface
-        res.append(tmp)
+    Member = namedtuple('Member', ['interface', 'penalty', 'name', 'state_interface'])
+    for row in user_members:
+        if is_user_in_group(row):
+            member = Member(
+                interface='Local/{}@usersharedlines'.format(row.uuid),
+                penalty=str(row.penalty),
+                name='',
+                state_interface='hint:{}@usersharedlines'.format(row.uuid),
+            )
+        else:
+            # TODO clean after pjsip migration
+            if row.interface.startswith('SIP/'):
+                interface = row.interface.replace('SIP', 'PJSIP')
+            else:
+                interface = row.interface
 
+            member = Member(
+                interface=interface,
+                penalty=str(row.penalty),
+                name='',
+                state_interface='',
+            )
+        res.append(member)
     return res
 
 

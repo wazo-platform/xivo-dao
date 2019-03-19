@@ -1009,51 +1009,70 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
     def test_find_queue_members_settings(self):
         queue_name = 'toto'
 
-        self.add_queue_member(queue_name=queue_name,
-                              interface='Local/100@default',
-                              usertype='user',
-                              userid=2131,
-                              penalty=1,
-                              commented=0)
+        self.add_queue_member(
+            queue_name=queue_name,
+            interface='Local/100@default',
+            usertype='user',
+            userid=2131,
+            penalty=1,
+            commented=0,
+        )
 
-        self.add_queue_member(queue_name=queue_name,
-                              interface='SIP/3m6dsc',
-                              usertype='user',
-                              userid=54,
-                              penalty=5,
-                              commented=0)
+        self.add_queue_member(
+            queue_name=queue_name,
+            interface='SIP/3m6dsc',
+            usertype='user',
+            userid=54,
+            penalty=5,
+            commented=0,
+        )
 
-        self.add_queue_member(queue_name=queue_name,
-                              interface='SCCP/1003',
-                              usertype='user',
-                              userid=1,
-                              penalty=15,
-                              commented=0)
+        self.add_queue_member(
+            queue_name=queue_name,
+            interface='SCCP/1003',
+            usertype='user',
+            userid=1,
+            penalty=15,
+            commented=0,
+        )
 
-        self.add_queue_member(queue_name=queue_name,
-                              interface='SIP/dsf4rs',
-                              usertype='user',
-                              userid=3,
-                              penalty=42,
-                              commented=1)
+        self.add_queue_member(
+            queue_name=queue_name,
+            interface='SIP/dsf4rs',
+            usertype='user',
+            userid=3,
+            penalty=42,
+            commented=1,
+        )
 
-        expected_result = [
-            {
-                'penalty': 1,
-                'interface': 'Local/100@default'
-            },
-            {
-                'penalty': 5,
-                'interface': 'SIP/3m6dsc'
-            },
-            {
-                'penalty': 15,
-                'interface': 'SCCP/1003'
-            }
-        ]
         result = asterisk_conf_dao.find_queue_members_settings(queue_name)
+        assert_that(result, contains_inanyorder(
+            contains('Local/100@default', '1', '', ''),
+            contains('PJSIP/3m6dsc', '5', '', ''),
+            contains('SCCP/1003', '15', '', ''),
+        ))
 
-        assert_that(result, contains_inanyorder(*expected_result))
+        group_name = 'group'
+        user = self.add_user()
+        self.add_queue_member(
+            queue_name=group_name,
+            interface='ignored',
+            usertype='user',
+            userid=user.id,
+            category='group',
+            penalty=0,
+            commented=0,
+        )
+
+        result = asterisk_conf_dao.find_queue_members_settings(group_name)
+        assert_that(result, contains_inanyorder(
+            contains(
+                'Local/{}@usersharedlines'.format(user.uuid),
+                '0',
+                '',
+                'hint:{}@usersharedlines'.format(user.uuid),
+            ),
+        ))
 
     def test_find_agent_queue_skills_settings(self):
         agent1 = self.add_agent()
