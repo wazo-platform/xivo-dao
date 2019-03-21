@@ -1,34 +1,31 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2014-2016 Avencall
+# Copyright 2014-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import sql, literal_column, Unicode, Integer
 from sqlalchemy.orm import aliased
-
 from xivo.xivo_helpers import clean_extension
 
-from xivo_dao.helpers.db_manager import daosession
-
-from xivo_dao.alchemy.extension import Extension
-from xivo_dao.alchemy.userfeatures import UserFeatures
-from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
-from xivo_dao.alchemy.linefeatures import LineFeatures
-from xivo_dao.alchemy.user_line import UserLine
-from xivo_dao.alchemy.line_extension import LineExtension
-from xivo_dao.alchemy.usersip import UserSIP
-from xivo_dao.alchemy.sccpline import SCCPLine
-from xivo_dao.alchemy.usercustom import UserCustom
-from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
-from xivo_dao.alchemy.func_key_dest_conference import FuncKeyDestConference
-from xivo_dao.alchemy.func_key_dest_service import FuncKeyDestService
-from xivo_dao.alchemy.func_key_dest_forward import FuncKeyDestForward
-from xivo_dao.alchemy.func_key_dest_agent import FuncKeyDestAgent
-from xivo_dao.alchemy.func_key_dest_custom import FuncKeyDestCustom
-from xivo_dao.alchemy.func_key_dest_bsfilter import FuncKeyDestBSFilter
-from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
-from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from xivo_dao.alchemy.callfilter import Callfilter
-
+from xivo_dao.alchemy.callfiltermember import Callfiltermember
+from xivo_dao.alchemy.extension import Extension
+from xivo_dao.alchemy.func_key_dest_agent import FuncKeyDestAgent
+from xivo_dao.alchemy.func_key_dest_bsfilter import FuncKeyDestBSFilter
+from xivo_dao.alchemy.func_key_dest_conference import FuncKeyDestConference
+from xivo_dao.alchemy.func_key_dest_custom import FuncKeyDestCustom
+from xivo_dao.alchemy.func_key_dest_forward import FuncKeyDestForward
+from xivo_dao.alchemy.func_key_dest_service import FuncKeyDestService
+from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
+from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
+from xivo_dao.alchemy.line_extension import LineExtension
+from xivo_dao.alchemy.linefeatures import LineFeatures
+from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
+from xivo_dao.alchemy.sccpline import SCCPLine
+from xivo_dao.alchemy.user_line import UserLine
+from xivo_dao.alchemy.usercustom import UserCustom
+from xivo_dao.alchemy.userfeatures import UserFeatures
+from xivo_dao.alchemy.usersip import UserSIP
+from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.resources.func_key.model import Hint
 
 

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import six
@@ -88,6 +88,6 @@ class AgentActionExtensionConverter(object):
                                     action=action)
 
 
-service_converter = ServiceExtensionConverter()
-fwd_converter = ForwardExtensionConverter()
 agent_action_converter = AgentActionExtensionConverter()
+fwd_converter = ForwardExtensionConverter()
+service_converter = ServiceExtensionConverter()

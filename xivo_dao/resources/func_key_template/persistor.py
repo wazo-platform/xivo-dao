@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import abc
@@ -10,14 +10,10 @@ from xivo_dao.alchemy.features import Features
 from xivo_dao.alchemy.func_key import FuncKey
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
-from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
-from xivo_dao.alchemy.func_key_dest_queue import FuncKeyDestQueue
-from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup
-from xivo_dao.alchemy.func_key_dest_conference import FuncKeyDestConference
-from xivo_dao.alchemy.func_key_dest_paging import FuncKeyDestPaging
+from xivo_dao.alchemy.func_key_dest_agent import FuncKeyDestAgent
 from xivo_dao.alchemy.func_key_dest_bsfilter import FuncKeyDestBSFilter
+from xivo_dao.alchemy.func_key_dest_conference import FuncKeyDestConference
 from xivo_dao.alchemy.func_key_dest_custom import FuncKeyDestCustom
-from xivo_dao.alchemy.func_key_dest_service import FuncKeyDestService
 from xivo_dao.alchemy.func_key_dest_features import (
     FuncKeyDestFeatures,
     FuncKeyDestOnlineRecording,
@@ -25,8 +21,12 @@ from xivo_dao.alchemy.func_key_dest_features import (
     FuncKeyDestTransfer,
 )
 from xivo_dao.alchemy.func_key_dest_forward import FuncKeyDestForward
-from xivo_dao.alchemy.func_key_dest_agent import FuncKeyDestAgent
+from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup
+from xivo_dao.alchemy.func_key_dest_paging import FuncKeyDestPaging
 from xivo_dao.alchemy.func_key_dest_park_position import FuncKeyDestParkPosition
+from xivo_dao.alchemy.func_key_dest_queue import FuncKeyDestQueue
+from xivo_dao.alchemy.func_key_dest_service import FuncKeyDestService
+from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
 
 from xivo_dao.helpers import errors
 
@@ -34,21 +34,23 @@ from xivo_dao.resources.extension.database import ForwardExtensionConverter, Age
 
 
 def build_persistor(session):
-    destination_persistors = {'user': UserPersistor,
-                              'queue': QueuePersistor,
-                              'group': GroupPersistor,
-                              'conference': ConferencePersistor,
-                              'paging': PagingPersistor,
-                              'bsfilter': BSFilterPersistor,
-                              'service': ServicePersistor,
-                              'forward': ForwardPersistor,
-                              'park_position': ParkPositionPersistor,
-                              'custom': CustomPersistor,
-                              'agent': AgentPersistor,
-                              'transfer': FeaturesPersistor,
-                              'parking': FeaturesPersistor,
-                              'features': FeaturesPersistor,
-                              'onlinerec': FeaturesPersistor}
+    destination_persistors = {
+        'agent': AgentPersistor,
+        'bsfilter': BSFilterPersistor,
+        'conference': ConferencePersistor,
+        'custom': CustomPersistor,
+        'features': FeaturesPersistor,
+        'forward': ForwardPersistor,
+        'group': GroupPersistor,
+        'onlinerec': FeaturesPersistor,
+        'paging': PagingPersistor,
+        'park_position': ParkPositionPersistor,
+        'parking': FeaturesPersistor,
+        'queue': QueuePersistor,
+        'service': ServicePersistor,
+        'transfer': FeaturesPersistor,
+        'user': UserPersistor,
+    }
     return FuncKeyPersistor(session, destination_persistors)
 
 

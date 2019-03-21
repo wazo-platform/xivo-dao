@@ -1,22 +1,22 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2015 Avencall
+# Copyright 2015-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import assert_that, none
 
 from xivo_dao.alchemy.func_key import FuncKey as FuncKeySchema
-from xivo_dao.alchemy.func_key_dest_service import FuncKeyDestService as FuncKeyDestServiceSchema
+from xivo_dao.alchemy.func_key_dest_agent import FuncKeyDestAgent as FuncKeyDestAgentSchema
+from xivo_dao.alchemy.func_key_dest_bsfilter import FuncKeyDestBSFilter as FuncKeyDestBSFilterSchema
 from xivo_dao.alchemy.func_key_dest_conference import FuncKeyDestConference as FuncKeyDestConferenceSchema
+from xivo_dao.alchemy.func_key_dest_custom import FuncKeyDestCustom as FuncKeyDestCustomSchema
+from xivo_dao.alchemy.func_key_dest_features import FuncKeyDestFeatures as FuncKeyDestFeaturesSchema
 from xivo_dao.alchemy.func_key_dest_forward import FuncKeyDestForward as FuncKeyDestForwardSchema
 from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup as FuncKeyDestGroupSchema
-from xivo_dao.alchemy.func_key_dest_queue import FuncKeyDestQueue as FuncKeyDestQueueSchema
-from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser as FuncKeyDestUserSchema
-from xivo_dao.alchemy.func_key_dest_agent import FuncKeyDestAgent as FuncKeyDestAgentSchema
-from xivo_dao.alchemy.func_key_dest_custom import FuncKeyDestCustom as FuncKeyDestCustomSchema
-from xivo_dao.alchemy.func_key_dest_bsfilter import FuncKeyDestBSFilter as FuncKeyDestBSFilterSchema
 from xivo_dao.alchemy.func_key_dest_paging import FuncKeyDestPaging as FuncKeyDestPagingSchema
 from xivo_dao.alchemy.func_key_dest_park_position import FuncKeyDestParkPosition as FuncKeyDestParkPositionSchema
-from xivo_dao.alchemy.func_key_dest_features import FuncKeyDestFeatures as FuncKeyDestFeaturesSchema
+from xivo_dao.alchemy.func_key_dest_queue import FuncKeyDestQueue as FuncKeyDestQueueSchema
+from xivo_dao.alchemy.func_key_dest_service import FuncKeyDestService as FuncKeyDestServiceSchema
+from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser as FuncKeyDestUserSchema
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping as FuncKeyMappingSchema
 
 
@@ -38,17 +38,17 @@ class FuncKeyHelper(object):
     }
 
     destinations = {
-        'user': (FuncKeyDestUserSchema, 'user_id', 1),
-        'group': (FuncKeyDestGroupSchema, 'group_id', 2),
-        'queue': (FuncKeyDestQueueSchema, 'queue_id', 3),
-        'conference': (FuncKeyDestConferenceSchema, 'conference_id', 4),
-        'service': (FuncKeyDestServiceSchema, 'extension_id', 5),
-        'forward': (FuncKeyDestForwardSchema, 'extension_id', 6),
-        'park_position': (FuncKeyDestParkPositionSchema, 'park_position', 7),
-        'features': (FuncKeyDestFeaturesSchema, 'features_id', 8),
-        'paging': (FuncKeyDestPagingSchema, 'paging_id', 9),
-        'custom': (FuncKeyDestCustomSchema, 'exten', 10),
         'bsfilter': (FuncKeyDestBSFilterSchema, 'filtermember_id', 12),
+        'conference': (FuncKeyDestConferenceSchema, 'conference_id', 4),
+        'custom': (FuncKeyDestCustomSchema, 'exten', 10),
+        'features': (FuncKeyDestFeaturesSchema, 'features_id', 8),
+        'forward': (FuncKeyDestForwardSchema, 'extension_id', 6),
+        'group': (FuncKeyDestGroupSchema, 'group_id', 2),
+        'paging': (FuncKeyDestPagingSchema, 'paging_id', 9),
+        'park_position': (FuncKeyDestParkPositionSchema, 'park_position', 7),
+        'queue': (FuncKeyDestQueueSchema, 'queue_id', 3),
+        'service': (FuncKeyDestServiceSchema, 'extension_id', 5),
+        'user': (FuncKeyDestUserSchema, 'user_id', 1),
     }
 
     def setup_funckeys(self):
