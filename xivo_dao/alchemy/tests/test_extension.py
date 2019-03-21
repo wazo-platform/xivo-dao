@@ -1,11 +1,16 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import unittest
 
-from hamcrest import assert_that, equal_to
+from hamcrest import (
+    assert_that,
+    equal_to,
+    has_properties,
+)
 from xivo_dao.alchemy.extension import Extension
+from xivo_dao.tests.test_dao import DAOTestCase
 
 
 class TestIsPattern(unittest.TestCase):
@@ -28,3 +33,21 @@ class TestIsFeature(unittest.TestCase):
     def test_is_feature(self):
         extension = Extension(context='xivo-features')
         assert_that(extension.is_feature, equal_to(True))
+
+
+class TestTenantUUID(DAOTestCase):
+
+    def test_that_the_tenant_uuid_matches_the_context(self):
+        context = self.add_context()
+        extension = self.add_extension(context=context.name)
+
+        assert_that(extension, has_properties(
+            tenant_uuid=context.tenant_uuid,
+        ))
+
+    def test_that_if_no_context_then_uuid_is_none(self):
+        extension = self.add_extension()
+
+        assert_that(extension, has_properties(
+            tenant_uuid=None,
+        ))
