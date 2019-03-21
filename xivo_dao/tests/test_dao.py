@@ -47,7 +47,6 @@ from xivo_dao.alchemy.cti_contexts import CtiContexts
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.dialpattern import DialPattern
 from xivo_dao.alchemy.directories import Directories
-from xivo_dao.alchemy.entity import Entity as EntitySchema
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.features import Features
 from xivo_dao.alchemy.func_key import FuncKey
@@ -344,7 +343,6 @@ class ItemInserter(object):
         return incall_schedule
 
     def add_context(self, **kwargs):
-        kwargs.setdefault('entity', 'entity_id')
         kwargs.setdefault('name', self._random_name())
         kwargs.setdefault('displayname', kwargs['name'].capitalize())
         kwargs.setdefault('description', 'Auto create context')
@@ -946,16 +944,6 @@ class ItemInserter(object):
         destination_type_row = FuncKeyDestinationType(**kwargs)
         self.add_me(destination_type_row)
         return destination_type_row
-
-    def add_entity(self, **kwargs):
-        kwargs.setdefault('name', self._random_name())
-        kwargs.setdefault('description', '')
-        kwargs.setdefault('tenant_uuid', DEFAULT_TENANT)
-        entity = EntitySchema(**kwargs)
-
-        self.add_me(entity)
-
-        return entity
 
     def add_schedule(self, **kwargs):
         kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
