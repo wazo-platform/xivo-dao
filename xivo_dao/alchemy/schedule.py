@@ -7,13 +7,12 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint
 from sqlalchemy.sql import cast, not_
-from sqlalchemy.sql.schema import ForeignKey, ForeignKeyConstraint
+from sqlalchemy.sql.schema import ForeignKey
 from sqlalchemy.types import Integer, String, Text, Boolean
 
 from xivo_dao.helpers.db_manager import Base, IntAsString
 
 from . import enum
-from .entity import Entity
 
 
 class Schedule(Base):
@@ -21,16 +20,10 @@ class Schedule(Base):
     __tablename__ = 'schedule'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
-        ForeignKeyConstraint(
-            ('entity_id',),
-            ('entity.id',),
-            ondelete='RESTRICT'
-        ),
     )
 
     id = Column(Integer, nullable=False)
     tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
-    entity_id = Column(Integer)
     name = Column(String(255))
     timezone = Column(String(128))
     fallback_action = Column(enum.dialaction_action, nullable=False, server_default='none')
@@ -38,8 +31,6 @@ class Schedule(Base):
     fallback_actionargs = Column(String(255))
     description = Column(Text)
     commented = Column(Integer, nullable=False, server_default='0')
-
-    entity = relationship(Entity)
 
     periods = relationship(
         'ScheduleTime',

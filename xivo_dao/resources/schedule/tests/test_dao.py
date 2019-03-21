@@ -283,11 +283,6 @@ class TestSearchGivenMultipleSchedules(TestSearch):
 
 class TestCreate(DAOTestCase):
 
-    def setUp(self):
-        super(TestCreate, self).setUp()
-        tenant = self.add_tenant()
-        self.entity = self.add_entity(tenant_uuid=tenant.uuid)
-
     def test_create_minimal_fields(self):
         schedule_model = Schedule(tenant_uuid=self.default_tenant.uuid)
         schedule = schedule_dao.create(schedule_model)
@@ -297,7 +292,6 @@ class TestCreate(DAOTestCase):
         assert_that(schedule, has_properties(
             id=is_not(none()),
             tenant_uuid=self.default_tenant.uuid,
-            entity_id=self.entity.id,
             name=None,
             timezone=None,
             fallback_action='none',
@@ -326,7 +320,6 @@ class TestCreate(DAOTestCase):
         assert_that(schedule, has_properties(
             name='schedule',
             tenant_uuid=self.default_tenant.uuid,
-            entity_id=self.entity.id,
             timezone='time/zone',
             fallback_action='user',
             fallback_actionid='2',
