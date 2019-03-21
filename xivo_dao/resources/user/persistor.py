@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.userfeatures import UserFeatures as User
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
-from xivo_dao.alchemy.entity import Entity
 from xivo_dao.helpers.db_manager import Session
 
 from xivo_dao.helpers import errors
@@ -76,7 +75,6 @@ class UserPersistor(CriteriaBuilderMixin):
 
     def create(self, user):
         self.prepare_template(user)
-        self.prepare_entity(user)
         user.fill_caller_id()
 
         self.session.add(user)
@@ -88,10 +86,6 @@ class UserPersistor(CriteriaBuilderMixin):
         if not user.has_private_template():
             template = FuncKeyTemplate(private=True)
             user.func_key_template_private = template
-
-    def prepare_entity(self, user):
-        if not user.has_entity():
-            user.entity_id = Entity.query_default_id().as_scalar()
 
     def edit(self, user):
         self.session.add(user)

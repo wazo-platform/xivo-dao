@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.sql import and_
 
-from xivo_dao.alchemy.entity import Entity
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.voicemail import Voicemail
@@ -29,7 +28,6 @@ config = SearchConfig(table=UserFeatures,
                                'music_on_hold': UserFeatures.musiconhold,
                                'outgoing_caller_id': UserFeatures.outcallerid,
                                'preprocess_subroutine': UserFeatures.preprocess_subroutine,
-                               'entity': Entity.name,
                                'voicemail_number': Voicemail.mailbox,
                                'provisioning_code': LineFeatures.provisioning_code,
                                'exten': Extension.exten,
@@ -60,8 +58,6 @@ class UserSearchSystem(SearchSystem):
 
     def _search_on_extension(self, query):
         return (query
-                .outerjoin(Entity,
-                           UserFeatures.entity_id == Entity.id)
                 .outerjoin(UserLine,
                            and_(UserLine.user_id == UserFeatures.id,
                                 UserLine.main_line == True))  # noqa
