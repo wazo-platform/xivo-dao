@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import six
@@ -459,3 +459,54 @@ class TestBSFilterHints(TestHints):
         self.create_boss_and_secretary()
 
         assert_that(hint_dao.bsfilter_hints('othercontext'), contains())
+
+
+class TestGroupHints(TestHints):
+
+    def test_given_group_member_func_key_then_returns_group_member_hint(self):
+        destination_row = self.create_group_member_func_key('_*51.', 'groupmemberjoin')
+
+        user_row = self.add_user_and_func_key()
+        self.add_func_key_to_user(destination_row, user_row)
+
+        expected = Hint(user_id=user_row.id,
+                        extension='*51',
+                        argument=str(destination_row.group_id))
+
+        assert_that(hint_dao.groupmember_hints(self.context), contains(expected))
+
+    def test_given_commented_extension_then_returns_no_hints(self):
+        destination_row = self.create_group_member_func_key('_*51.', 'groupmemberjoin')
+
+        user_row = self.add_user_and_func_key()
+        self.add_func_key_to_user(destination_row, user_row, blf=False)
+
+        assert_that(hint_dao.groupmember_hints(self.context), contains())
+
+    def test_given_no_blf_then_returns_no_hints(self):
+        destination_row = self.create_group_member_func_key('_*51.', 'groupmemberjoin')
+
+        user_row = self.add_user_and_func_key()
+        self.add_func_key_to_user(destination_row, user_row, blf=False)
+
+        assert_that(hint_dao.groupmember_hints(self.context), contains())
+
+    def test_given_user_when_querying_other_context_then_returns_no_hints(self):
+        destination_row = self.create_group_member_func_key('_*51.', 'groupmemberjoin')
+
+        user_row = self.add_user_and_func_key()
+        self.add_func_key_to_user(destination_row, user_row)
+
+        assert_that(hint_dao.groupmember_hints('othercontext'), contains())
+
+    def test_group_extension_with_xxx_pattern_is_cleaned(self):
+        destination_row = self.create_group_member_func_key('_*51XXXX', 'groupmemberjoin')
+
+        user_row = self.add_user_and_func_key()
+        self.add_func_key_to_user(destination_row, user_row)
+
+        expected = Hint(user_id=user_row.id,
+                        extension='*51',
+                        argument=str(destination_row.group_id))
+
+        assert_that(hint_dao.groupmember_hints(self.context), contains(expected))

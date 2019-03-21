@@ -88,6 +88,32 @@ class AgentActionExtensionConverter(object):
                                     action=action)
 
 
+class GroupMemberActionExtensionConverter(object):
+
+    ACTIONS = {'groupmemberjoin': 'join',
+               'groupmemberleave': 'leave',
+               'groupmembertoggle': 'toggle'}
+
+    TYPEVALS = {value: key for key, value in six.iteritems(ACTIONS)}
+
+    def typevals(self):
+        return list(self.ACTIONS.keys())
+
+    def to_typeval(self, action):
+        return self.TYPEVALS[action]
+
+    def to_action(self, typeval):
+        return self.ACTIONS[typeval]
+
+    def to_model(self, row):
+        action = self.ACTIONS[row.typeval]
+        exten = clean_exten(row.exten)
+        return AgentActionExtension(id=row.id,
+                                    exten=exten,
+                                    action=action)
+
+
 agent_action_converter = AgentActionExtensionConverter()
 fwd_converter = ForwardExtensionConverter()
+group_member_action_converter = GroupMemberActionExtensionConverter()
 service_converter = ServiceExtensionConverter()

@@ -12,6 +12,7 @@ from xivo_dao.alchemy.func_key_dest_custom import FuncKeyDestCustom as FuncKeyDe
 from xivo_dao.alchemy.func_key_dest_features import FuncKeyDestFeatures as FuncKeyDestFeaturesSchema
 from xivo_dao.alchemy.func_key_dest_forward import FuncKeyDestForward as FuncKeyDestForwardSchema
 from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup as FuncKeyDestGroupSchema
+from xivo_dao.alchemy.func_key_dest_group_member import FuncKeyDestGroupMember as FuncKeyDestGroupMemberSchema
 from xivo_dao.alchemy.func_key_dest_paging import FuncKeyDestPaging as FuncKeyDestPagingSchema
 from xivo_dao.alchemy.func_key_dest_park_position import FuncKeyDestParkPosition as FuncKeyDestParkPositionSchema
 from xivo_dao.alchemy.func_key_dest_queue import FuncKeyDestQueue as FuncKeyDestQueueSchema
@@ -35,6 +36,7 @@ class FuncKeyHelper(object):
         10: 'custom',
         11: 'agent',
         12: 'bsfilter',
+        13: 'groupmember',
     }
 
     destinations = {
@@ -44,6 +46,7 @@ class FuncKeyHelper(object):
         'features': (FuncKeyDestFeaturesSchema, 'features_id', 8),
         'forward': (FuncKeyDestForwardSchema, 'extension_id', 6),
         'group': (FuncKeyDestGroupSchema, 'group_id', 2),
+        'groupmember': (FuncKeyDestGroupMemberSchema, 'group_id', 13),
         'paging': (FuncKeyDestPagingSchema, 'paging_id', 9),
         'park_position': (FuncKeyDestParkPositionSchema, 'park_position', 7),
         'queue': (FuncKeyDestQueueSchema, 'queue_id', 3),
@@ -77,6 +80,16 @@ class FuncKeyHelper(object):
 
     def add_group_destination(self, dest_id):
         return self._add_destination('group', dest_id)
+
+    def add_groupmember_destination(self, group_id, extension_id):
+        destination_type_id = 13
+        func_key_row = self.create_func_key(destination_type_id)
+        destination_row = FuncKeyDestGroupMemberSchema(func_key_id=func_key_row.id,
+                                                       destination_type_id=destination_type_id,
+                                                       group_id=group_id,
+                                                       extension_id=extension_id)
+        self.add_me(destination_row)
+        return destination_row
 
     def add_queue_destination(self, dest_id):
         return self._add_destination('queue', dest_id)
@@ -163,6 +176,11 @@ class FuncKeyHelper(object):
     def create_group_func_key(self):
         group_row = self.add_group()
         return self.add_group_destination(group_row.id)
+
+    def create_group_member_func_key(self, exten, exten_action, commented=0):
+        group_row = self.add_group()
+        extension_row = self.add_extenfeatures(exten, exten_action, commented=commented)
+        return self.add_groupmember_destination(group_row.id, extension_row.id)
 
     def create_queue_func_key(self):
         queue_row = self.add_queuefeatures()

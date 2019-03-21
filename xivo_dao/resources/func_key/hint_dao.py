@@ -14,6 +14,7 @@ from xivo_dao.alchemy.func_key_dest_bsfilter import FuncKeyDestBSFilter
 from xivo_dao.alchemy.func_key_dest_conference import FuncKeyDestConference
 from xivo_dao.alchemy.func_key_dest_custom import FuncKeyDestCustom
 from xivo_dao.alchemy.func_key_dest_forward import FuncKeyDestForward
+from xivo_dao.alchemy.func_key_dest_group_member import FuncKeyDestGroupMember
 from xivo_dao.alchemy.func_key_dest_service import FuncKeyDestService
 from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
@@ -238,5 +239,23 @@ def bsfilter_hints(session, context):
 
     return tuple(Hint(user_id=None,
                       extension=bsfilter_extension,
+                      argument=row.argument)
+                 for row in query)
+
+
+@daosession
+def groupmember_hints(session, context):
+    query = (session.query(sql.cast(FuncKeyDestGroupMember.group_id, Unicode).label('argument'),
+                           UserFeatures.id.label('user_id'),
+                           Extension.exten.label('extension'))
+             .join(Extension,
+                   Extension.id == FuncKeyDestGroupMember.extension_id)
+             .join(FuncKeyMapping,
+                   FuncKeyDestGroupMember.func_key_id == FuncKeyMapping.func_key_id)
+             .filter(Extension.commented == 0))
+    query = _common_filter(query, context)
+
+    return tuple(Hint(user_id=row.user_id,
+                      extension=clean_extension(row.extension),
                       argument=row.argument)
                  for row in query)

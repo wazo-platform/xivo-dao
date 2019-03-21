@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import six
@@ -24,6 +24,7 @@ from xivo_dao.alchemy.func_key_dest_features import (
 )
 from xivo_dao.alchemy.func_key_dest_forward import FuncKeyDestForward
 from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup
+from xivo_dao.alchemy.func_key_dest_group_member import FuncKeyDestGroupMember
 from xivo_dao.alchemy.func_key_dest_paging import FuncKeyDestPaging
 from xivo_dao.alchemy.func_key_dest_park_position import FuncKeyDestParkPosition
 from xivo_dao.alchemy.func_key_dest_queue import FuncKeyDestQueue
@@ -341,6 +342,26 @@ class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
 
         dest_group_count = (self.session.query(FuncKeyDestGroup)
                             .filter(FuncKeyDestGroup.group_id == group.id)
+                            .count())
+        assert_that(dest_group_count, equal_to(1))
+
+    def test_given_no_group_member_func_key_when_created_then_create_new_group_func_key(self):
+        group = self.add_group()
+        self.add_extension(type='extenfeatures', typeval='groupmemberjoin')
+
+        dest_groupmember_count = (self.session.query(FuncKeyDestGroupMember)
+                                  .filter(FuncKeyDestGroupMember.group_id == group.id)
+                                  .count())
+        assert_that(dest_groupmember_count, equal_to(0))
+
+        template = self.build_template_with_key(FuncKeyDestGroupMember(group_id=group.id, action='groupmemberjoin'))
+        dao.create(template)
+
+        template = self.build_template_with_key(FuncKeyDestGroupMember(group_id=group.id, action='groupmemberjoin'))
+        dao.create(template)
+
+        dest_group_count = (self.session.query(FuncKeyDestGroupMember)
+                            .filter(FuncKeyDestGroupMember.group_id == group.id)
                             .count())
         assert_that(dest_group_count, equal_to(1))
 
