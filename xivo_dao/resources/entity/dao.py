@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2016 Avencall
+# Copyright 2016-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.helpers.db_manager import daosession
@@ -9,33 +9,33 @@ from xivo_dao.resources.entity.search import entity_search
 
 
 @daosession
-def search(session, **parameters):
-    return EntityPersistor(session, entity_search).search(parameters)
+def search(session, tenant_uuids=None, **parameters):
+    return EntityPersistor(session, entity_search, tenant_uuids).search(parameters)
 
 
 @daosession
-def get(session, entity_id):
-    return EntityPersistor(session, entity_search).get_by({'id': entity_id})
+def get(session, entity_id, tenant_uuids=None):
+    return EntityPersistor(session, entity_search, tenant_uuids).get_by({'id': entity_id})
 
 
 @daosession
-def get_by(session, **criteria):
-    return EntityPersistor(session, entity_search).get_by(criteria)
+def get_by(session, tenant_uuids=None, **criteria):
+    return EntityPersistor(session, entity_search, tenant_uuids).get_by(criteria)
 
 
 @daosession
-def find(session, entity_id):
-    return EntityPersistor(session, entity_search).find_by({'id': entity_id})
+def find(session, entity_id, tenant_uuids=None):
+    return EntityPersistor(session, entity_search, tenant_uuids).find_by({'id': entity_id})
 
 
 @daosession
-def find_by(session, **criteria):
-    return EntityPersistor(session, entity_search).find_by(criteria)
+def find_by(session, tenant_uuids=None, **criteria):
+    return EntityPersistor(session, entity_search, tenant_uuids).find_by(criteria)
 
 
 @daosession
-def find_all_by(session, **criteria):
-    return EntityPersistor(session, entity_search).find_all_by(criteria)
+def find_all_by(session, tenant_uuids=None, **criteria):
+    return EntityPersistor(session, entity_search, tenant_uuids).find_all_by(criteria)
 
 
 @daosession
