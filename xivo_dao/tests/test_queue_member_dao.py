@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2012-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from mock import patch
@@ -52,7 +52,11 @@ class TestQueueMemberDAO(DAOTestCase):
         self._insert_queue_member('queue2', 'Agent/3')
         self._insert_queue_member('group1', 'SIP/abcdef', is_queue=False)
 
-        queue_feature = QueueFeatures(name='queue1', displayname='queue1')
+        queue_feature = QueueFeatures(
+            tenant_uuid=self.default_tenant.uuid,
+            name='queue1',
+            displayname='queue1'
+        )
 
         self.add_me(queue_feature)
 

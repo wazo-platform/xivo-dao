@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao import agent_status_dao
@@ -424,6 +424,7 @@ class TestAgentStatusDao(DAOTestCase):
 
     def _insert_queue(self, queue_id, queue_name, queue_number):
         queue = QueueFeatures()
+        queue.tenant_uuid = self.default_tenant.uuid
         queue.name = queue_name
         queue.displayname = queue_name
         queue.number = queue_number
