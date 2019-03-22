@@ -51,3 +51,19 @@ class TestTenantUUID(DAOTestCase):
         assert_that(extension, has_properties(
             tenant_uuid=None,
         ))
+
+
+class TestGetOldContext(DAOTestCase):
+
+    def test_get_old_context(self):
+        extension = self.add_extension(context='context')
+        extension.context = 'other-context'
+
+        assert_that(extension.context, equal_to('other-context'))
+        assert_that(extension.get_old_context(), equal_to('context'))
+
+    def test_get_old_context_without_change(self):
+        extension = self.add_extension(context='context')
+
+        assert_that(extension.context, equal_to('context'))
+        assert_that(extension.get_old_context(), equal_to('context'))
