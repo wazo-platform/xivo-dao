@@ -5,6 +5,7 @@
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.schema import Column, UniqueConstraint, Index, PrimaryKeyConstraint
 from sqlalchemy.orm import relationship
+from sqlalchemy.orm.attributes import get_history
 from sqlalchemy.types import Integer, String, Boolean
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql import case, cast, not_, select, func
@@ -36,6 +37,12 @@ class Extension(Base):
     context_rel = relationship('Context',
                                primaryjoin='''Extension.context == Context.name''',
                                foreign_keys='Extension.context')
+
+    def get_old_context(self):
+        context_history = get_history(self, 'context')
+        if context_history[2]:
+            return context_history[2][0]
+        return self.context
 
     @hybrid_property
     def tenant_uuid(self):
