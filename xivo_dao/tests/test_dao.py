@@ -524,6 +524,7 @@ class ItemInserter(object):
         kwargs.setdefault('id', self._generate_int())
         kwargs.setdefault('name', self._random_name())
         kwargs.setdefault('displayname', kwargs['name'].capitalize())
+        kwargs.setdefault('tenant_uuid', DEFAULT_TENANT)
         queuefeatures = QueueFeatures(**kwargs)
         self.add_me(queuefeatures)
         return queuefeatures
