@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import joinedload
@@ -8,7 +8,6 @@ from sqlalchemy.sql import func, case
 from xivo_dao.resources.utils.view import ViewSelector, View
 from xivo_dao.resources.user.model import UserDirectory, UserSummary
 
-from xivo_dao.alchemy.entity import Entity
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.userfeatures import UserFeatures as User
 from xivo_dao.alchemy.linefeatures import LineFeatures as Line
@@ -95,8 +94,7 @@ class SummaryView(View):
                                    else_=None).label('provisioning_code'),
                                Line.endpoint.label('protocol'),
                                Extension.exten.label('extension'),
-                               Extension.context.label('context'),
-                               Entity.name.label('entity')))
+                               Extension.context.label('context')))
         return query
 
     def convert(self, row):
@@ -109,8 +107,7 @@ class SummaryView(View):
                            provisioning_code=row.provisioning_code,
                            protocol=row.protocol,
                            extension=row.extension,
-                           context=row.context,
-                           entity=row.entity)
+                           context=row.context)
 
 
 user_view = ViewSelector(default=UserView(),

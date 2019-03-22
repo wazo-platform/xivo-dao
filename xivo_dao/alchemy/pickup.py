@@ -7,10 +7,9 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
 from sqlalchemy.sql import cast, not_
-from sqlalchemy.sql.schema import ForeignKey, ForeignKeyConstraint
+from sqlalchemy.sql.schema import ForeignKey
 from sqlalchemy.types import Boolean, Integer, String, Text
 
-from xivo_dao.alchemy.entity import Entity
 from xivo_dao.helpers.db_manager import Base
 
 from .pickupmember import PickupMember
@@ -21,22 +20,14 @@ class Pickup(Base):
     __tablename__ = 'pickup'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
-        ForeignKeyConstraint(
-            ('entity_id',),
-            ('entity.id',),
-            ondelete='RESTRICT',
-        ),
         UniqueConstraint('name')
     )
 
     id = Column(Integer, nullable=False, autoincrement=False)
     tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
-    entity_id = Column(Integer)
     name = Column(String(128), nullable=False)
     commented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text)
-
-    entity = relationship(Entity)
 
     pickupmember_user_targets = relationship(
         'PickupMember',

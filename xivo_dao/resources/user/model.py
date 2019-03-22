@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2013-2016 Avencall
+# Copyright 2013-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -28,7 +28,7 @@ class UserDirectory(object):
 class UserSummary(object):
 
     def __init__(self, id, uuid, firstname, lastname, email, enabled, provisioning_code, protocol,
-                 extension, context, entity):
+                 extension, context):
         self.id = id
         self.uuid = uuid
         self.firstname = firstname
@@ -39,7 +39,6 @@ class UserSummary(object):
         self.protocol = protocol
         self.extension = extension
         self.context = context
-        self.entity = entity
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__

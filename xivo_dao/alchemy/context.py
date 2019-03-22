@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2012-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -30,7 +30,6 @@ class Context(Base):
     tenant_uuid = Column(String(36), nullable=False)
     name = Column(String(39), nullable=False)
     displayname = Column(String(128))
-    entity = Column(String(64))
     contexttype = Column(String(40), nullable=False, server_default='internal')
     commented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text)

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2007-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -22,7 +22,6 @@ from hamcrest import (
 
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from xivo_dao.alchemy.dialaction import Dialaction
-from xivo_dao.alchemy.entity import Entity
 from xivo_dao.alchemy.func_key import FuncKey
 from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
@@ -367,14 +366,12 @@ class TestSimpleSearch(TestSearch):
 
     def test_given_user_without_line_when_using_summary_view_then_returns_summary_result(self):
         user = self.prepare_user(firstname='chârles')
-        entity_name = self.session.query(Entity.name).filter_by(id=user.entity_id).scalar()
 
         expected = SearchResult(1, [UserSummary(id=user.id,
                                                 uuid=user.uuid,
                                                 firstname='chârles',
                                                 lastname=None,
                                                 email=None,
-                                                entity=entity_name,
                                                 enabled=True,
                                                 extension=None,
                                                 context=None,
@@ -389,14 +386,12 @@ class TestSimpleSearch(TestSearch):
                                                   lastname='rôgers',
                                                   email='dany.rogers@example.com',
                                                   tenant_uuid=self.tenant.uuid)
-        entity_name = self.session.query(Entity.name).filter_by(id=user_line.user.entity_id).scalar()
 
         expected = SearchResult(1, [UserSummary(id=user_line.user_id,
                                                 uuid=user_line.user.uuid,
                                                 firstname='dânny',
                                                 lastname='rôgers',
                                                 email='dany.rogers@example.com',
-                                                entity=entity_name,
                                                 enabled=True,
                                                 extension=user_line.extension.exten,
                                                 context=user_line.extension.context,
@@ -414,14 +409,12 @@ class TestSimpleSearch(TestSearch):
         self.add_user_line(user_id=user_line.user.id,
                            line_id=line.id,
                            main_line=False)
-        entity_name = self.session.query(Entity.name).filter_by(id=user_line.user.entity_id).scalar()
 
         expected = SearchResult(1, [UserSummary(id=user_line.user_id,
                                                 uuid=user_line.user.uuid,
                                                 firstname='dânny',
                                                 lastname='rôgers',
                                                 email=None,
-                                                entity=entity_name,
                                                 enabled=True,
                                                 extension=user_line.extension.exten,
                                                 context=user_line.extension.context,
@@ -520,7 +513,6 @@ class TestCreate(TestUser):
     def setUp(self):
         super(TestCreate, self).setUp()
         self.tenant = self.add_tenant()
-        self.entity = self.add_entity(tenant_uuid=self.tenant.uuid)
 
     def test_create_minimal_fields(self):
         user = User(firstname='Jôhn', tenant_uuid=self.tenant.uuid)
@@ -569,7 +561,6 @@ class TestCreate(TestUser):
         assert_that(row, has_properties(
             id=is_not(none()),
             uuid=is_not(none()),
-            entityid=self.entity.id,
             callerid='"Jôhn"',
             outcallerid='',
             mobilephonenumber='',
@@ -641,7 +632,6 @@ class TestCreate(TestUser):
         assert_that(created_user, has_properties(
             id=row.id,
             uuid=row.uuid,
-            entity_id=self.entity.id,
             firstname="Jôhn",
             lastname='Smîth',
             timezone='America/Montreal',

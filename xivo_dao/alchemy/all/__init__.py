@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.accessfeatures import AccessFeatures
@@ -50,7 +50,6 @@ from xivo_dao.alchemy.dhcp import Dhcp
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.dialpattern import DialPattern
 from xivo_dao.alchemy.directories import Directories
-from xivo_dao.alchemy.entity import Entity
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.features import Features
 from xivo_dao.alchemy.func_key import FuncKey
@@ -143,7 +142,6 @@ from xivo_dao.alchemy.voicemail import Voicemail
 
 __all__ = [
     "AccessFeatures",
-    "AccessWebService",
     "AgentLoginStatus",
     "AgentMembershipStatus",
     "AgentFeatures",
@@ -191,7 +189,6 @@ __all__ = [
     "Dialaction",
     "DialPattern",
     "Directories",
-    "Entity",
     "Extension",
     "Features",
     "FuncKey",

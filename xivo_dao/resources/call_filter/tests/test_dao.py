@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -306,11 +306,6 @@ class TestSearchGivenMultipleCallFilters(TestSearch):
 
 class TestCreate(DAOTestCase):
 
-    def setUp(self):
-        super(TestCreate, self).setUp()
-        tenant = self.add_tenant()
-        self.entity = self.add_entity(tenant_uuid=tenant.uuid)
-
     def test_create_minimal_fields(self):
         call_filter_model = CallFilter(tenant_uuid=self.default_tenant.uuid, name='name')
 
@@ -359,7 +354,6 @@ class TestCreate(DAOTestCase):
         call_filter = call_filter_dao.create(call_filter_model)
 
         assert_that(call_filter, has_properties(
-            entity_id=self.entity.id,
             type='bosssecretary',
         ))
 

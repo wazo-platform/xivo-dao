@@ -357,7 +357,6 @@ class TestCreate(DAOTestCase):
         ))
 
     def test_create_fill_default_values(self):
-        self.entity = self.add_entity(tenant_uuid=self.default_tenant.uuid)
         call_pickup_model_1 = CallPickup(name='name1', tenant_uuid=self.default_tenant.uuid)
         call_pickup_model_2 = CallPickup(name='name2', tenant_uuid=self.default_tenant.uuid)
 
@@ -365,11 +364,9 @@ class TestCreate(DAOTestCase):
         call_pickup_2 = call_pickup_dao.create(call_pickup_model_2)
 
         assert_that(call_pickup_1, has_properties(
-            entity_id=self.entity.id,
             id=1,
         ))
         assert_that(call_pickup_2, has_properties(
-            entity_id=self.entity.id,
             id=2,
         ))
 

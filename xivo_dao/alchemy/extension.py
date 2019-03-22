@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.schema import Column, UniqueConstraint, Index, PrimaryKeyConstraint
 from sqlalchemy.orm import relationship
+from sqlalchemy.orm.attributes import get_history
 from sqlalchemy.types import Integer, String, Boolean
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql import case, cast, not_, select, func
@@ -12,7 +13,6 @@ from sqlalchemy.sql import case, cast, not_, select, func
 from xivo_dao.helpers.db_manager import Base, IntAsString
 from xivo_dao.alchemy import enum
 from xivo_dao.alchemy.context import Context
-from xivo_dao.alchemy.entity import Entity
 
 
 class Extension(Base):
@@ -38,18 +38,24 @@ class Extension(Base):
                                primaryjoin='''Extension.context == Context.name''',
                                foreign_keys='Extension.context')
 
+    def get_old_context(self):
+        context_history = get_history(self, 'context')
+        if context_history[2]:
+            return context_history[2][0]
+        return self.context
+
     @hybrid_property
-    def _tenant_uuid(self):
+    def tenant_uuid(self):
         if self.context_rel:
             return self.context_rel.tenant_uuid
 
         return None
 
-    @_tenant_uuid.expression
-    def _tenant_uuid(cls):
+    @tenant_uuid.expression
+    def tenant_uuid(cls):
         return func.coalesce(
-            select([Context.tenant_uuid]).where(Context.name == cls.context).label('tenant_uuid'),
-            select([Entity.tenant_uuid]).order_by(Entity.id).limit(1).label('tenant_uuid'),
+            select([Context.tenant_uuid]).where(Context.name == cls.context).label('type'),
+            None,
         )
 
     @hybrid_property

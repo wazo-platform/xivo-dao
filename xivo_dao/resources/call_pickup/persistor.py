@@ -4,7 +4,6 @@
 
 from sqlalchemy import text
 
-from xivo_dao.alchemy.entity import Entity
 from xivo_dao.alchemy.pickup import Pickup as CallPickup
 from xivo_dao.helpers import errors
 from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
@@ -70,7 +69,6 @@ class CallPickupPersistor(CriteriaBuilderMixin):
     def _fill_default_values(self, call_pickup):
         last_id = self.session.query(CallPickup.id).order_by(CallPickup.id.desc()).limit(1).scalar()
         call_pickup.id = 1 if last_id is None else last_id + 1
-        call_pickup.entity_id = Entity.query_default_id().as_scalar()
 
     def associate_interceptor_users(self, call_pickup, users):
         call_pickup.user_interceptors = users

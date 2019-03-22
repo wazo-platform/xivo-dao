@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -217,11 +217,6 @@ class TestSearchGivenMultipleSkills(TestSearch):
 
 
 class TestCreate(DAOTestCase):
-
-    def setUp(self):
-        super(TestCreate, self).setUp()
-        tenant = self.add_tenant()
-        self.entity = self.add_entity(tenant_uuid=tenant.uuid)
 
     def test_create_minimal_fields(self):
         skill = QueueSkill(name='name')

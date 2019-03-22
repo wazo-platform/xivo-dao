@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -274,7 +274,6 @@ class TestCreate(DAOTestCase):
                                                     tenant_uuid=tenant.uuid,
                                                     displayname=none(),
                                                     label=none(),
-                                                    entity=none(),
                                                     contexttype='internal',
                                                     type='internal',
                                                     description=none(),
@@ -291,7 +290,6 @@ class TestCreate(DAOTestCase):
         context = Context(name='myContext',
                           tenant_uuid=tenant.uuid,
                           label='My Context Label',
-                          entity='default',
                           type='outcall',
                           user_ranges=[ContextNumbers(start='1000', end='1999')],
                           group_ranges=[ContextNumbers(start='2000', end='2999')],
@@ -311,7 +309,6 @@ class TestCreate(DAOTestCase):
             tenant_uuid=tenant.uuid,
             name='myContext',
             label='My Context Label',
-            entity='default',
             type='outcall',
             user_ranges=contains(has_properties(start='1000', end='1999')),
             group_ranges=contains(has_properties(start='2000', end='2999')),
@@ -330,7 +327,6 @@ class TestEdit(DAOTestCase):
         context = context_dao.create(Context(name='MyContext',
                                              tenant_uuid=tenant.uuid,
                                              label='My Context Label',
-                                             entity='default',
                                              type='outcall',
                                              user_ranges=[ContextNumbers(start='1000', end='1999')],
                                              group_ranges=[ContextNumbers(start='2000', end='2999')],
@@ -343,7 +339,6 @@ class TestEdit(DAOTestCase):
         context = context_dao.get(context.id)
         context.name = 'OtherContext'
         context.label = 'Other Context Label'
-        context.entity = 'toto'
         context.type = 'incall'
         context.user_ranges = [ContextNumbers(start='4000', end='4999')]
         context.group_ranges = [ContextNumbers(start='3000', end='3999')]
@@ -362,7 +357,6 @@ class TestEdit(DAOTestCase):
             tenant_uuid=tenant.uuid,
             name='OtherContext',
             label='Other Context Label',
-            entity='toto',
             type='incall',
             user_ranges=contains(has_properties(start='4000', end='4999')),
             group_ranges=contains(has_properties(start='3000', end='3999')),
@@ -378,7 +372,6 @@ class TestEdit(DAOTestCase):
         context = context_dao.create(Context(name='MyContext',
                                              tenant_uuid=tenant.uuid,
                                              label='My Context Label',
-                                             entity='default',
                                              user_ranges=[ContextNumbers(start='1000', end='1999')],
                                              group_ranges=[ContextNumbers(start='2000', end='2999')],
                                              queue_ranges=[ContextNumbers(start='3000', end='3999')],
@@ -388,7 +381,6 @@ class TestEdit(DAOTestCase):
 
         context = context_dao.get(context.id)
         context.label = None
-        context.entity = None
         context.user_ranges = []
         context.group_ranges = []
         context.queue_ranges = []
@@ -401,7 +393,6 @@ class TestEdit(DAOTestCase):
         row = self.session.query(Context).first()
         assert_that(context, equal_to(row))
         assert_that(row, has_properties(label=none(),
-                                        entity=none(),
                                         user_ranges=empty(),
                                         group_ranges=empty(),
                                         queue_ranges=empty(),

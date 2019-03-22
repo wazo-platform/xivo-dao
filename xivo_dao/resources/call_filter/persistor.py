@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-# Copyright 2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import text
 
-from xivo_dao.alchemy.entity import Entity
 from xivo_dao.alchemy.callfilter import Callfilter as CallFilter
 from xivo_dao.helpers import errors
 from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
@@ -68,7 +67,6 @@ class CallFilterPersistor(CriteriaBuilderMixin):
         self.session.flush()
 
     def _fill_default_values(self, call_filter):
-        call_filter.entity_id = Entity.query_default_id().as_scalar()
         call_filter.type = 'bosssecretary'
 
     def associate_recipients(self, call_filter, recipients):

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -30,10 +30,6 @@ from ..model import (
 
 
 class TestExtension(DAOTestCase):
-
-    def setUp(self):
-        super(TestExtension, self).setUp()
-        self.default_entity = self.add_entity(tenant_uuid=self.default_tenant.uuid)
 
     def assert_search_returns_result(self, search_result, **parameters):
         result = extension_dao.search(**parameters)
@@ -235,7 +231,7 @@ class TestFind(TestExtension):
             result,
             has_properties(
                 exten=extension.exten,
-                context=extension.context,
+                context=context.name,
                 tenant_uuid=tenant.uuid,
             )
         )
@@ -271,7 +267,7 @@ class TestFindBy(TestExtension):
 
         self.add_extension(exten='1001')
         result = extension_dao.find_by(exten='1001')
-        assert_that(result, has_properties(tenant_uuid=self.default_tenant.uuid))
+        assert_that(result, has_properties(tenant_uuid=None))
 
     def test_given_entension_exists_with_tenant_filtering(self):
         tenant = self.add_tenant()
@@ -311,7 +307,7 @@ class TestGetBy(TestExtension):
 
         self.add_extension(exten='1001')
         result = extension_dao.get_by(exten='1001')
-        assert_that(result, has_properties(tenant_uuid=self.default_tenant.uuid))
+        assert_that(result, has_properties(tenant_uuid=None))
 
     def test_given_entension_exists_with_tenant_filtering(self):
         tenant = self.add_tenant()

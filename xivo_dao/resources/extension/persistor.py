@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import joinedload
@@ -150,4 +150,4 @@ class ExtensionPersistor(CriteriaBuilderMixin):
         if not self.tenant_uuids:
             return query.filter(text('false'))
 
-        return query.filter(Extension._tenant_uuid.in_(self.tenant_uuids))
+        return query.filter(Extension.tenant_uuid.in_(self.tenant_uuids))
