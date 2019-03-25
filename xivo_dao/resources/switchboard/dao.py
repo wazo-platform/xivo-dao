@@ -14,8 +14,8 @@ def _persistor(session, tenant_uuids=None):
 
 
 @daosession
-def search(session, **parameters):
-    return _persistor().search(parameters)
+def search(session, tenant_uuids=None, **parameters):
+    return _persistor(tenant_uuids).search(parameters)
 
 
 @daosession

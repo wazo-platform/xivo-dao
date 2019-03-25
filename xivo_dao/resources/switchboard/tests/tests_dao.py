@@ -47,6 +47,20 @@ class TestSimpleSearch(TestSearch):
 
         self.assert_search_returns_result(expected)
 
+    def test_search_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        switchboard1 = self.add_switchboard(name='a')
+        switchboard2 = self.add_switchboard(name='b', tenant_uuid=tenant.uuid)
+
+        expected = SearchResult(2, [switchboard1, switchboard2])
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
+        expected = SearchResult(1, [switchboard2])
+        tenants = [tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
 
 class TestSearchGivenMultipleSwitchboards(TestSearch):
 
