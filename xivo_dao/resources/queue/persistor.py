@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2018-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import joinedload
@@ -16,10 +16,9 @@ class QueuePersistor(CriteriaBuilderMixin):
 
     _search_table = Queue
 
-    def __init__(self, session, queue_search, tenant_uuids=None):
+    def __init__(self, session, queue_search):
         self.session = session
         self.queue_search = queue_search
-        self.tenant_uuids = tenant_uuids
 
     def find_by(self, criteria):
         query = self._find_query(criteria)
@@ -27,10 +26,7 @@ class QueuePersistor(CriteriaBuilderMixin):
 
     def _find_query(self, criteria):
         query = self._joinedload_query()
-        query = self.build_criteria(query, criteria)
-        if self.tenant_uuids is not None:
-            query = query.filter(Queue.tenant_uuid.in_(self.tenant_uuids))
-        return query
+        return self.build_criteria(query, criteria)
 
     def get_by(self, criteria):
         queue = self.find_by(criteria)
@@ -43,11 +39,7 @@ class QueuePersistor(CriteriaBuilderMixin):
         return query.all()
 
     def search(self, parameters):
-        query = self._joinedload_query()
-        if self.tenant_uuids is not None:
-            query = query.filter(Queue.tenant_uuid.in_(self.tenant_uuids))
-
-        rows, total = self.queue_search.search_from_query(query, parameters)
+        rows, total = self.queue_search.search_from_query(self._joinedload_query(), parameters)
         return SearchResult(total, rows)
 
     def _joinedload_query(self):

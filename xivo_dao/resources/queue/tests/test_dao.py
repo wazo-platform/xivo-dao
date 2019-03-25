@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -216,7 +216,7 @@ class TestSearchGivenMultipleQueue(TestSearch):
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_fields(self):
-        queue = QueueFeatures(tenant_uuid=self.default_tenant.uuid, name='myqueue', label=None)
+        queue = QueueFeatures(name='myqueue', label=None)
         created_queue = queue_dao.create(queue)
 
         row = self.session.query(QueueFeatures).first()
@@ -247,7 +247,6 @@ class TestCreate(DAOTestCase):
 
     def test_create_with_all_fields(self):
         queue = QueueFeatures(
-            tenant_uuid=self.default_tenant.uuid,
             name='MyQueue',
             label=None,
             caller_id_mode='prepend',
@@ -303,7 +302,6 @@ class TestEdit(DAOTestCase):
 
     def test_edit_all_fields(self):
         queue = queue_dao.create(QueueFeatures(
-            tenant_uuid=self.default_tenant.uuid,
             name='MyQueue',
             label=None,
             caller_id_mode='prepend',
@@ -378,7 +376,6 @@ class TestEdit(DAOTestCase):
 
     def test_edit_set_fields_to_null(self):
         queue = queue_dao.create(QueueFeatures(
-            tenant_uuid=self.default_tenant.uuid,
             name='MyQueue',
             label=None,
             caller_id_mode='prepend',
@@ -410,10 +407,7 @@ class TestEdit(DAOTestCase):
         ))
 
     def test_edit_queue_name(self):
-        queue_dao.create(QueueFeatures(
-            tenant_uuid=self.default_tenant.uuid,
-            name='MyQueue', label=None,
-        ))
+        queue_dao.create(QueueFeatures(name='MyQueue', label=None))
         self.session.expunge_all()
 
         meta_queue = self.session.query(Queue).first()

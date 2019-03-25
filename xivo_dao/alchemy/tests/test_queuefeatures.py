@@ -520,11 +520,7 @@ class TestWaitRatioThreshold(DAOTestCase):
 class TestCreate(DAOTestCase):
 
     def test_metaqueue_is_created_with_default_fields(self):
-        queue = QueueFeatures(
-            tenant_uuid=self.default_tenant.uuid,
-            name='queuename',
-            displayname='',
-        )
+        queue = QueueFeatures(name='queuename', displayname='')
         self.session.add(queue)
         self.session.flush()
 
@@ -559,13 +555,7 @@ class TestCreate(DAOTestCase):
         ))
 
     def test_metaqueue_is_created_with_all_fields(self):
-        queue = QueueFeatures(
-            tenant_uuid=self.default_tenant.uuid,
-            name='queuename',
-            enabled=False,
-            displayname='',
-            music_on_hold='music_on_hold',
-        )
+        queue = QueueFeatures(name='queuename', enabled=False, displayname='', music_on_hold='music_on_hold')
         self.session.add(queue)
         self.session.flush()
 
