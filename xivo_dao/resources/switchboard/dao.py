@@ -2,15 +2,15 @@
 # Copyright 2016-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from xivo_dao.helpers.db_manager import daosession
+
 from .persistor import SwitchboardPersistor
 from .search import switchboard_search
 
-from xivo_dao.helpers.db_manager import daosession
-
 
 @daosession
-def _persistor(session):
-    return SwitchboardPersistor(session, switchboard_search)
+def _persistor(session, tenant_uuids=None):
+    return SwitchboardPersistor(session, switchboard_search, tenant_uuids=tenant_uuids)
 
 
 @daosession
@@ -29,8 +29,8 @@ def get_by(session, **criteria):
 
 
 @daosession
-def find(session, switchboard_uuid):
-    return _persistor().find_by({'uuid': str(switchboard_uuid)})
+def find(session, switchboard_uuid, tenant_uuids=None):
+    return _persistor(tenant_uuids).find_by({'uuid': str(switchboard_uuid)})
 
 
 @daosession
