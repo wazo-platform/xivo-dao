@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2012-2014 Avencall
+# Copyright 2012-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
@@ -22,7 +22,7 @@ class QueueLog(Base):
     time = Column(String(26), nullable=False, server_default='')
     callid = Column(String(32), nullable=False, server_default='')
     queuename = Column(String(50), nullable=False, server_default='')
-    agent = Column(String(50), nullable=False, server_default='')
+    agent = Column(Text, nullable=False, server_default='')
     event = Column(String(20), nullable=False, server_default='')
     data1 = Column(Text, server_default='')
     data2 = Column(Text, server_default='')

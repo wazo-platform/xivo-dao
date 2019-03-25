@@ -2,8 +2,17 @@
 # Copyright 2014-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from sqlalchemy import sql, literal_column, Unicode, Integer
-from sqlalchemy.orm import aliased
+from sqlalchemy import (
+    and_,
+    Integer,
+    Unicode,
+    literal_column,
+    sql,
+)
+from sqlalchemy.orm import (
+    aliased,
+    joinedload,
+)
 from xivo.xivo_helpers import clean_extension
 
 from xivo_dao.alchemy.callfilter import Callfilter
@@ -31,29 +40,32 @@ from xivo_dao.resources.func_key.model import Hint
 
 
 def _find_extenfeatures(session, typeval):
-    return (session.query(Extension.exten)
-            .filter(Extension.context == 'xivo-features')
-            .filter(Extension.type == 'extenfeatures')
-            .filter(Extension.typeval == typeval)
-            .scalar())
+    return session.query(Extension.exten).filter(and_(
+        Extension.context == 'xivo-features',
+        Extension.type == 'extenfeatures',
+        Extension.typeval == typeval,
+    )).scalar()
 
 
 def _common_filter(query, context):
     user_extension = aliased(Extension)
-
-    return (query.join(UserFeatures,
-                       FuncKeyMapping.template_id == UserFeatures.func_key_private_template_id)
-            .join(UserLine,
-                  UserFeatures.id == UserLine.user_id)
-            .join(LineExtension,
-                  LineExtension.line_id == UserLine.line_id)
-            .join(user_extension,
-                  LineExtension.extension_id == user_extension.id)
-            .filter(user_extension.context == context)
-            .filter(UserLine.main_user == True)
-            .filter(UserLine.main_line == True)
-            .filter(LineExtension.main_extension == True)
-            .filter(FuncKeyMapping.blf == True))
+    return query.join(
+        UserFeatures, FuncKeyMapping.template_id == UserFeatures.func_key_private_template_id,
+    ).join(
+        UserLine, UserFeatures.id == UserLine.user_id,
+    ).join(
+        LineExtension, LineExtension.line_id == UserLine.line_id,
+    ).join(
+        user_extension, LineExtension.extension_id == user_extension.id,
+    ).filter(
+        and_(
+            user_extension.context == context,
+            UserLine.main_user.is_(True),
+            UserLine.main_line.is_(True),
+            LineExtension.main_extension.is_(True),
+            FuncKeyMapping.blf.is_(True),
+        )
+    )
 
 
 @daosession
@@ -83,63 +95,94 @@ def user_hints(session, context):
     return tuple(hints)
 
 
+@daosession
+def user_shared_hints(session):
+    query = session.query(UserFeatures).options(joinedload('user_lines').joinedload('line'))
+    hints = []
+    for user in query.all():
+        ifaces = []
+        for line in user.lines:
+            if line.protocol == 'custom':
+                ifaces.append(line.name)
+            elif line.protocol == 'sip':
+                # TODO PJSIP migration
+                ifaces.append('pjsip/{}'.format(line.name))
+            else:
+                ifaces.append('{}/{}'.format(line.protocol, line.name))
+
+        if not ifaces:
+            continue
+        argument = '&'.join(ifaces)
+        hint = Hint(user_id=user.id, extension=user.uuid, argument=argument)
+        hints.append(hint)
+    return hints
+
+
 def _list_user_extensions(session, context):
-    query = (session.query(UserFeatures.id.label('user_id'),
-                           Extension.exten.label('extension'))
-             .distinct()
-             .join(UserLine.userfeatures)
-             .join(LineExtension,
-                   UserLine.line_id == LineExtension.line_id)
-             .join(Extension,
-                   LineExtension.extension_id == Extension.id)
-             .join(FuncKeyDestUser,
-                   FuncKeyDestUser.user_id == UserFeatures.id)
-             .filter(UserLine.main_user == True)
-             .filter(LineExtension.main_extension == True)
-             .filter(Extension.context == context)
-             .filter(UserFeatures.enablehint == 1))
+    query = session.query(
+        UserFeatures.id.label('user_id'),
+        Extension.exten.label('extension'),
+    ).distinct(
+    ).join(
+        UserLine.userfeatures,
+    ).join(
+        LineExtension, UserLine.line_id == LineExtension.line_id,
+    ).join(
+        Extension, LineExtension.extension_id == Extension.id,
+    ).join(
+        FuncKeyDestUser, FuncKeyDestUser.user_id == UserFeatures.id,
+    ).filter(and_(
+        UserLine.main_user.is_(True),
+        LineExtension.main_extension.is_(True),
+        Extension.context == context,
+        UserFeatures.enablehint == 1,
+    ))
     return query.all()
 
 
 def _list_user_arguments(session, user_ids):
-    query = (session.query(UserFeatures.id.label('user_id'),
-                           sql.func.string_agg(sql.case([
-                               (LineFeatures.protocol == 'sip', literal_column("'SIP/'") + UserSIP.name),
-                               (LineFeatures.protocol == 'sccp', literal_column("'SCCP/'") + SCCPLine.name),
-                               (LineFeatures.protocol == 'custom', UserCustom.interface)
-                           ]), literal_column("'&'")).label('argument'))
-             .join(UserLine.userfeatures)
-             .join(UserLine.linefeatures)
-             .outerjoin(UserSIP,
-                        sql.and_(
-                            LineFeatures.protocol == 'sip',
-                            LineFeatures.protocolid == UserSIP.id))
-             .outerjoin(SCCPLine,
-                        sql.and_(
-                            LineFeatures.protocol == 'sccp',
-                            LineFeatures.protocolid == SCCPLine.id))
-             .outerjoin(UserCustom,
-                        sql.and_(
-                            LineFeatures.protocol == 'custom',
-                            LineFeatures.protocolid == UserCustom.id))
-             .filter(UserFeatures.id.in_(user_ids))
-             .filter(UserLine.main_user == True)
-             .filter(LineFeatures.commented == 0)
-             .group_by(UserFeatures.id))
+    query = session.query(
+        UserFeatures.id.label('user_id'),
+        sql.func.string_agg(sql.case([
+            (LineFeatures.protocol == 'sip', literal_column("'SIP/'") + UserSIP.name),
+            (LineFeatures.protocol == 'sccp', literal_column("'SCCP/'") + SCCPLine.name),
+            (LineFeatures.protocol == 'custom', UserCustom.interface)
+        ]), literal_column("'&'")).label('argument'),
+    ).join(
+        UserLine.userfeatures,
+    ).join(
+        UserLine.linefeatures,
+    ).outerjoin(UserSIP, sql.and_(
+        LineFeatures.protocol == 'sip',
+        LineFeatures.protocolid == UserSIP.id,
+    )).outerjoin(SCCPLine, sql.and_(
+        LineFeatures.protocol == 'sccp',
+        LineFeatures.protocolid == SCCPLine.id,
+    )).outerjoin(UserCustom, sql.and_(
+        LineFeatures.protocol == 'custom',
+        LineFeatures.protocolid == UserCustom.id,
+    )).filter(and_(
+        UserFeatures.id.in_(user_ids),
+        UserLine.main_user.is_(True),
+        LineFeatures.commented == 0,
+    )).group_by(UserFeatures.id)
+
     return {row.user_id: row.argument for row in query}
 
 
 @daosession
 def conference_hints(session, context):
-    query = (session.query(MeetmeFeatures.confno.label('extension'))
-             .join(FuncKeyDestConference,
-                   FuncKeyDestConference.conference_id == MeetmeFeatures.id)
-             .join(Extension,
-                   sql.and_(
-                       Extension.type == 'meetme',
-                       Extension.typeval == sql.cast(MeetmeFeatures.id, Unicode)))
-             .filter(MeetmeFeatures.commented == 0)
-             .filter(Extension.context == context))
+    query = session.query(
+        MeetmeFeatures.confno.label('extension'),
+    ).join(
+        FuncKeyDestConference, FuncKeyDestConference.conference_id == MeetmeFeatures.id,
+    ).join(Extension, sql.and_(
+        Extension.type == 'meetme',
+        Extension.typeval == sql.cast(MeetmeFeatures.id, Unicode),
+    )).filter(and_(
+        MeetmeFeatures.commented == 0,
+        Extension.context == context,
+    )).all()
 
     return tuple(Hint(user_id=None,
                       extension=row.extension,
@@ -149,13 +192,15 @@ def conference_hints(session, context):
 
 @daosession
 def service_hints(session, context):
-    query = (session.query(Extension.exten.label('extension'),
-                           UserFeatures.id.label('user_id'))
-             .join(FuncKeyDestService,
-                   FuncKeyDestService.extension_id == Extension.id)
-             .join(FuncKeyMapping,
-                   FuncKeyDestService.func_key_id == FuncKeyMapping.func_key_id)
-             .filter(Extension.commented == 0))
+    query = session.query(
+        Extension.exten.label('extension'),
+        UserFeatures.id.label('user_id'),
+    ).join(
+        FuncKeyDestService, FuncKeyDestService.extension_id == Extension.id,
+    ).join(
+        FuncKeyMapping, FuncKeyDestService.func_key_id == FuncKeyMapping.func_key_id,
+    ).filter(Extension.commented == 0)
+
     query = _common_filter(query, context)
 
     return tuple(Hint(user_id=row.user_id,
@@ -166,14 +211,16 @@ def service_hints(session, context):
 
 @daosession
 def forward_hints(session, context):
-    query = (session.query(Extension.exten.label('extension'),
-                           UserFeatures.id.label('user_id'),
-                           FuncKeyDestForward.number.label('argument'))
-             .join(FuncKeyDestForward,
-                   FuncKeyDestForward.extension_id == Extension.id)
-             .join(FuncKeyMapping,
-                   FuncKeyDestForward.func_key_id == FuncKeyMapping.func_key_id)
-             .filter(Extension.commented == 0))
+    query = session.query(
+        Extension.exten.label('extension'),
+        UserFeatures.id.label('user_id'),
+        FuncKeyDestForward.number.label('argument'),
+    ).join(
+        FuncKeyDestForward, FuncKeyDestForward.extension_id == Extension.id,
+    ).join(
+        FuncKeyMapping, FuncKeyDestForward.func_key_id == FuncKeyMapping.func_key_id,
+    ).filter(Extension.commented == 0)
+
     query = _common_filter(query, context)
 
     return tuple(Hint(user_id=row.user_id,
@@ -184,14 +231,16 @@ def forward_hints(session, context):
 
 @daosession
 def agent_hints(session, context):
-    query = (session.query(sql.cast(FuncKeyDestAgent.agent_id, Unicode).label('argument'),
-                           UserFeatures.id.label('user_id'),
-                           Extension.exten.label('extension'))
-             .join(Extension,
-                   Extension.id == FuncKeyDestAgent.extension_id)
-             .join(FuncKeyMapping,
-                   FuncKeyDestAgent.func_key_id == FuncKeyMapping.func_key_id)
-             .filter(Extension.commented == 0))
+    query = session.query(
+        sql.cast(FuncKeyDestAgent.agent_id, Unicode).label('argument'),
+        UserFeatures.id.label('user_id'),
+        Extension.exten.label('extension'),
+    ).join(
+        Extension, Extension.id == FuncKeyDestAgent.extension_id,
+    ).join(
+        FuncKeyMapping, FuncKeyDestAgent.func_key_id == FuncKeyMapping.func_key_id,
+    ).filter(Extension.commented == 0)
+
     query = _common_filter(query, context)
 
     return tuple(Hint(user_id=row.user_id,
@@ -202,9 +251,12 @@ def agent_hints(session, context):
 
 @daosession
 def custom_hints(session, context):
-    query = (session.query(FuncKeyDestCustom.exten.label('extension'))
-             .join(FuncKeyMapping,
-                   FuncKeyDestCustom.func_key_id == FuncKeyMapping.func_key_id))
+    query = session.query(
+        FuncKeyDestCustom.exten.label('extension'),
+    ).join(
+        FuncKeyMapping, FuncKeyDestCustom.func_key_id == FuncKeyMapping.func_key_id,
+    )
+
     query = _common_filter(query, context)
 
     return tuple(Hint(user_id=None,
@@ -217,25 +269,28 @@ def custom_hints(session, context):
 def bsfilter_hints(session, context):
     bsfilter_extension = clean_extension(_find_extenfeatures(session, 'bsfilter'))
 
-    query = (session.query(sql.cast(FuncKeyDestBSFilter.filtermember_id, Unicode).label('argument'))
-             .join(Callfiltermember,
-                   Callfiltermember.id == FuncKeyDestBSFilter.filtermember_id)
-             .join(Callfilter,
-                   Callfilter.id == Callfiltermember.callfilterid)
-             .join(UserFeatures,
-                   sql.cast(Callfiltermember.typeval, Integer) == UserFeatures.id)
-             .join(UserLine,
-                   UserLine.user_id == UserFeatures.id)
-             .join(LineExtension,
-                   UserLine.line_id == LineExtension.line_id)
-             .join(Extension,
-                   Extension.id == LineExtension.extension_id)
-             .filter(UserLine.main_user == True)
-             .filter(UserLine.main_line == True)
-             .filter(LineExtension.main_extension == True)
-             .filter(Extension.commented == 0)
-             .filter(Callfilter.commented == 0)
-             .filter(Extension.context == context))
+    query = session.query(
+        sql.cast(FuncKeyDestBSFilter.filtermember_id, Unicode).label('argument'),
+    ).join(
+        Callfiltermember, Callfiltermember.id == FuncKeyDestBSFilter.filtermember_id,
+    ).join(
+        Callfilter, Callfilter.id == Callfiltermember.callfilterid,
+    ).join(
+        UserFeatures, sql.cast(Callfiltermember.typeval, Integer) == UserFeatures.id,
+    ).join(
+        UserLine, UserLine.user_id == UserFeatures.id,
+    ).join(
+        LineExtension, UserLine.line_id == LineExtension.line_id,
+    ).join(
+        Extension, Extension.id == LineExtension.extension_id,
+    ).filter(and_(
+        UserLine.main_user.is_(True),
+        UserLine.main_line.is_(True),
+        LineExtension.main_extension.is_(True),
+        Extension.commented == 0,
+        Callfilter.commented == 0,
+        Extension.context == context,
+    ))
 
     return tuple(Hint(user_id=None,
                       extension=bsfilter_extension,
