@@ -115,6 +115,19 @@ class TestGet(DAOTestCase):
 
         assert_that(switchboard.uuid, equal_to(switchboard.uuid))
 
+    def test_get_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        switchboard_row = self.add_switchboard(tenant_uuid=tenant.uuid)
+        switchboard = switchboard_dao.get(switchboard_row.uuid, tenant_uuids=[tenant.uuid])
+        assert_that(switchboard, equal_to(switchboard_row))
+
+        switchboard_row = self.add_switchboard()
+        self.assertRaises(
+            NotFoundError,
+            switchboard_dao.get, switchboard_row.uuid, tenant_uuids=[tenant.uuid],
+        )
+
 
 class TestGetBy(DAOTestCase):
 

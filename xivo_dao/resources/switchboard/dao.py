@@ -19,8 +19,8 @@ def search(session, **parameters):
 
 
 @daosession
-def get(session, switchboard_uuid):
-    return _persistor().get_by({'uuid': str(switchboard_uuid)})
+def get(session, switchboard_uuid, tenant_uuids=None):
+    return _persistor(tenant_uuids).get_by({'uuid': str(switchboard_uuid)})
 
 
 @daosession
