@@ -145,6 +145,19 @@ class TestGetBy(DAOTestCase):
     def test_given_switchboard_does_not_exist_then_raises_error(self):
         self.assertRaises(NotFoundError, switchboard_dao.get_by, name='not-found')
 
+    def test_get_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        switchboard_row = self.add_switchboard()
+        self.assertRaises(
+            NotFoundError,
+            switchboard_dao.get_by, uuid=switchboard_row.uuid, tenant_uuids=[tenant.uuid],
+        )
+
+        switchboard_row = self.add_switchboard(tenant_uuid=tenant.uuid)
+        switchboard = switchboard_dao.get_by(uuid=switchboard_row.uuid, tenant_uuids=[tenant.uuid])
+        assert_that(switchboard, equal_to(switchboard_row))
+
 
 class TestFind(DAOTestCase):
 
