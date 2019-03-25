@@ -1,23 +1,28 @@
-# Copyright (C) 2017 The Wazo Authors  (see AUTHORS file)
+# -*- coding: utf-8 -*-
+# Copyright 2017-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
 
-from hamcrest import (assert_that,
-                      contains,
-                      equal_to,
-                      has_items,
-                      has_properties,
-                      has_property,
-                      is_not,
-                      none)
+from hamcrest import (
+    assert_that,
+    contains,
+    equal_to,
+    has_items,
+    has_properties,
+    has_property,
+    is_not,
+    none,
+)
 
+from sqlalchemy.inspection import inspect
 
 from xivo_dao.alchemy.switchboard import Switchboard
-from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.helpers.exception import NotFoundError, InputError
-from xivo_dao.resources.switchboard import dao as switchboard_dao
+from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.tests.test_dao import DAOTestCase
+
+from .. import dao as switchboard_dao
 
 
 class TestSearch(DAOTestCase):
@@ -56,19 +61,22 @@ class TestSearchGivenMultipleSwitchboards(TestSearch):
         self.assert_search_returns_result(expected, search='eau')
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
-        expected = SearchResult(4,
-                                [self.switchboard1,
-                                 self.switchboard2,
-                                 self.switchboard3,
-                                 self.switchboard4])
+        expected = SearchResult(4, [
+            self.switchboard1,
+            self.switchboard2,
+            self.switchboard3,
+            self.switchboard4,
+        ])
 
         self.assert_search_returns_result(expected, order='name')
 
     def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
-        expected = SearchResult(4, [self.switchboard4,
-                                    self.switchboard3,
-                                    self.switchboard2,
-                                    self.switchboard1])
+        expected = SearchResult(4, [
+            self.switchboard4,
+            self.switchboard3,
+            self.switchboard2,
+            self.switchboard1,
+        ])
 
         self.assert_search_returns_result(expected, order='name', direction='desc')
 
@@ -85,12 +93,14 @@ class TestSearchGivenMultipleSwitchboards(TestSearch):
     def test_when_doing_a_paginated_search_then_returns_a_paginated_result(self):
         expected = SearchResult(3, [self.switchboard2])
 
-        self.assert_search_returns_result(expected,
-                                          search='a',
-                                          order='name',
-                                          direction='desc',
-                                          skip=1,
-                                          limit=1)
+        self.assert_search_returns_result(
+            expected,
+            search='a',
+            order='name',
+            direction='desc',
+            skip=1,
+            limit=1,
+        )
 
 
 class TestGet(DAOTestCase):
@@ -170,36 +180,37 @@ class TestFindAllBy(DAOTestCase):
 
         switchboards = switchboard_dao.find_all_by(name='switchboard')
 
-        assert_that(switchboards, has_items(has_property('uuid', switchboard1.uuid),
-                                            has_property('uuid', switchboard2.uuid)))
+        assert_that(switchboards, has_items(
+            has_property('uuid', switchboard1.uuid),
+            has_property('uuid', switchboard2.uuid),
+        ))
 
 
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_fields(self):
         switchboard = Switchboard(name='switchboard')
-        created_switchboard = switchboard_dao.create(switchboard)
 
-        row = self.session.query(Switchboard).first()
+        switchboard = switchboard_dao.create(switchboard)
 
-        assert_that(created_switchboard, equal_to(row))
-        assert_that(row, has_properties(uuid=is_not(none()),
-                                        name='switchboard'))
+        self.session.expire_all()
+        assert_that(inspect(switchboard).persistent)
+        assert_that(switchboard, has_properties(
+            uuid=is_not(none()),
+            name='switchboard',
+        ))
 
 
 class TestEdit(DAOTestCase):
 
     def test_edit_all_fields(self):
-        switchboard = switchboard_dao.create(Switchboard(name='switchboard'))
+        switchboard = self.add_switchboard(name='switchboard')
 
-        switchboard = switchboard_dao.get(switchboard.uuid)
         switchboard.name = 'other_switchboard'
-
         switchboard_dao.edit(switchboard)
 
-        row = self.session.query(Switchboard).first()
-
-        assert_that(row, has_properties(name='other_switchboard'))
+        self.session.expire_all()
+        assert_that(switchboard, has_properties(name='other_switchboard'))
 
 
 class TestDelete(DAOTestCase):
@@ -209,5 +220,4 @@ class TestDelete(DAOTestCase):
 
         switchboard_dao.delete(switchboard)
 
-        row = self.session.query(Switchboard).first()
-        assert_that(row, none())
+        assert_that(inspect(switchboard).deleted)

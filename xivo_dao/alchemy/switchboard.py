@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -22,18 +22,26 @@ class Switchboard(Base):
     uuid = Column(String(38), nullable=False, default=new_uuid)
     name = Column(String(128), nullable=False)
 
-    incall_dialactions = relationship('Dialaction',
-                                      primaryjoin="""and_(Dialaction.category == 'incall',
-                                                          Dialaction.action == 'switchboard',
-                                                          Dialaction.actionarg1 == Switchboard.uuid)""",
-                                      foreign_keys='Dialaction.actionarg1',
-                                      viewonly=True)
+    incall_dialactions = relationship(
+        'Dialaction',
+        primaryjoin="""and_(
+            Dialaction.category == 'incall',
+            Dialaction.action == 'switchboard',
+            Dialaction.actionarg1 == Switchboard.uuid
+        )""",
+        foreign_keys='Dialaction.actionarg1',
+        viewonly=True
+    )
 
     incalls = association_proxy('incall_dialactions', 'incall')
 
-    switchboard_member_users = relationship('SwitchboardMemberUser',
-                                            primaryjoin="""SwitchboardMemberUser.switchboard_uuid == Switchboard.uuid""",
-                                            cascade='all, delete-orphan')
+    switchboard_member_users = relationship(
+        'SwitchboardMemberUser',
+        primaryjoin="""SwitchboardMemberUser.switchboard_uuid == Switchboard.uuid""",
+        cascade='all, delete-orphan',
+    )
 
-    user_members = association_proxy('switchboard_member_users', 'user',
-                                     creator=lambda _user: SwitchboardMemberUser(user=_user))
+    user_members = association_proxy(
+        'switchboard_member_users', 'user',
+        creator=lambda _user: SwitchboardMemberUser(user=_user),
+    )
