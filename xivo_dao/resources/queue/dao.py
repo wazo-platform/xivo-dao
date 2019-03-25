@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.helpers.db_manager import daosession
@@ -9,33 +9,33 @@ from .search import queue_search
 
 
 @daosession
-def search(session, **parameters):
-    return QueuePersistor(session, queue_search).search(parameters)
+def search(session, tenant_uuids=None, **parameters):
+    return QueuePersistor(session, queue_search, tenant_uuids).search(parameters)
 
 
 @daosession
-def get(session, queue_id):
-    return QueuePersistor(session, queue_search).get_by({'id': queue_id})
+def get(session, queue_id, tenant_uuids=None):
+    return QueuePersistor(session, queue_search, tenant_uuids).get_by({'id': queue_id})
 
 
 @daosession
-def get_by(session, **criteria):
-    return QueuePersistor(session, queue_search).get_by(criteria)
+def get_by(session, tenant_uuids=None, **criteria):
+    return QueuePersistor(session, queue_search, tenant_uuids).get_by(criteria)
 
 
 @daosession
-def find(session, queue_id):
-    return QueuePersistor(session, queue_search).find_by({'id': queue_id})
+def find(session, queue_id, tenant_uuids=None):
+    return QueuePersistor(session, queue_search, tenant_uuids).find_by({'id': queue_id})
 
 
 @daosession
-def find_by(session, **criteria):
-    return QueuePersistor(session, queue_search).find_by(criteria)
+def find_by(session, tenant_uuids=None, **criteria):
+    return QueuePersistor(session, queue_search, tenant_uuids).find_by(criteria)
 
 
 @daosession
-def find_all_by(session, **criteria):
-    return QueuePersistor(session, queue_search).find_all_by(criteria)
+def find_all_by(session, tenant_uuids=None, **criteria):
+    return QueuePersistor(session, queue_search, tenant_uuids).find_all_by(criteria)
 
 
 @daosession
