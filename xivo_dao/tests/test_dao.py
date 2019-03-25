@@ -1059,6 +1059,7 @@ class ItemInserter(object):
 
     def add_switchboard(self, **kwargs):
         kwargs.setdefault('uuid', str(uuid.uuid4()))
+        kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
         kwargs.setdefault('name', self._random_name())
         switchboard = Switchboard(**kwargs)
         self.add_me(switchboard)

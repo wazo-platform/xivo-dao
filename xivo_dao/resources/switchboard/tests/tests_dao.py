@@ -189,7 +189,7 @@ class TestFindAllBy(DAOTestCase):
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_fields(self):
-        switchboard = Switchboard(name='switchboard')
+        switchboard = Switchboard(name='switchboard', tenant_uuid=self.default_tenant.uuid)
 
         switchboard = switchboard_dao.create(switchboard)
 
@@ -197,6 +197,7 @@ class TestCreate(DAOTestCase):
         assert_that(inspect(switchboard).persistent)
         assert_that(switchboard, has_properties(
             uuid=is_not(none()),
+            tenant_uuid=self.default_tenant.uuid,
             name='switchboard',
         ))
 

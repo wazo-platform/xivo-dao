@@ -20,6 +20,7 @@ class Switchboard(Base):
     )
 
     uuid = Column(String(38), nullable=False, default=new_uuid)
+    tenant_uuid = Column(String(36), nullable=False)
     name = Column(String(128), nullable=False)
 
     incall_dialactions = relationship(
