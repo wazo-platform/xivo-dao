@@ -34,8 +34,8 @@ def find(session, switchboard_uuid, tenant_uuids=None):
 
 
 @daosession
-def find_by(session, **criteria):
-    return _persistor().find_by(criteria)
+def find_by(session, tenant_uuids=None, **criteria):
+    return _persistor(tenant_uuids).find_by(criteria)
 
 
 @daosession

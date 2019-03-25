@@ -189,6 +189,17 @@ class TestFindBy(DAOTestCase):
 
         assert_that(switchboard, none())
 
+    def test_find_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        switchboard_row = self.add_switchboard()
+        switchboard = switchboard_dao.find_by(uuid=switchboard_row.uuid, tenant_uuids=[tenant.uuid])
+        assert_that(switchboard, none())
+
+        switchboard_row = self.add_switchboard(tenant_uuid=tenant.uuid)
+        switchboard = switchboard_dao.find_by(uuid=switchboard_row.uuid, tenant_uuids=[tenant.uuid])
+        assert_that(switchboard, equal_to(switchboard_row))
+
 
 class TestFindAllBy(DAOTestCase):
 
