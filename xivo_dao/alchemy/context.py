@@ -6,7 +6,13 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, ForeignKeyConstraint, PrimaryKeyConstraint, UniqueConstraint
+from sqlalchemy.schema import (
+    Column,
+    ForeignKey,
+    ForeignKeyConstraint,
+    PrimaryKeyConstraint,
+    UniqueConstraint,
+)
 from sqlalchemy.sql import cast, not_
 from sqlalchemy.types import Boolean, Integer, String, Text
 
@@ -27,7 +33,7 @@ class Context(Base):
     )
 
     id = Column(Integer)
-    tenant_uuid = Column(String(36), nullable=False)
+    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
     name = Column(String(39), nullable=False)
     displayname = Column(String(128))
     contexttype = Column(String(40), nullable=False, server_default='internal')

@@ -1,53 +1,58 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
+
+from xivo_dao.helpers.db_manager import daosession
 
 from .persistor import SwitchboardPersistor
 from .search import switchboard_search
 
-from xivo_dao.helpers.db_manager import daosession
+
+@daosession
+def _persistor(session, tenant_uuids=None):
+    return SwitchboardPersistor(session, switchboard_search, tenant_uuids=tenant_uuids)
 
 
 @daosession
-def search(session, **parameters):
-    return SwitchboardPersistor(session, switchboard_search).search(parameters)
+def search(session, tenant_uuids=None, **parameters):
+    return _persistor(tenant_uuids).search(parameters)
 
 
 @daosession
-def get(session, switchboard_uuid):
-    return SwitchboardPersistor(session, switchboard_search).get_by({'uuid': str(switchboard_uuid)})
+def get(session, switchboard_uuid, tenant_uuids=None):
+    return _persistor(tenant_uuids).get_by({'uuid': str(switchboard_uuid)})
 
 
 @daosession
-def get_by(session, **criteria):
-    return SwitchboardPersistor(session, switchboard_search).get_by(criteria)
+def get_by(session, tenant_uuids=None, **criteria):
+    return _persistor(tenant_uuids).get_by(criteria)
 
 
 @daosession
-def find(session, switchboard_uuid):
-    return SwitchboardPersistor(session, switchboard_search).find_by({'uuid': str(switchboard_uuid)})
+def find(session, switchboard_uuid, tenant_uuids=None):
+    return _persistor(tenant_uuids).find_by({'uuid': str(switchboard_uuid)})
 
 
 @daosession
-def find_by(session, **criteria):
-    return SwitchboardPersistor(session, switchboard_search).find_by(criteria)
+def find_by(session, tenant_uuids=None, **criteria):
+    return _persistor(tenant_uuids).find_by(criteria)
 
 
 @daosession
-def find_all_by(session, **criteria):
-    return SwitchboardPersistor(session, switchboard_search).find_all_by(criteria)
+def find_all_by(session, tenant_uuids=None, **criteria):
+    return _persistor(tenant_uuids).find_all_by(criteria)
 
 
 @daosession
 def create(session, switchboard):
-    return SwitchboardPersistor(session, switchboard_search).create(switchboard)
+    return _persistor().create(switchboard)
 
 
 @daosession
 def edit(session, switchboard):
-    return SwitchboardPersistor(session, switchboard_search).edit(switchboard)
+    return _persistor().edit(switchboard)
 
 
 @daosession
 def delete(session, switchboard):
-    SwitchboardPersistor(session, switchboard_search).delete(switchboard)
+    _persistor().delete(switchboard)
