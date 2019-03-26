@@ -158,7 +158,7 @@ class ItemInserter(object):
         kwargs.setdefault('mobilephonenumber', '')
         kwargs.setdefault('description', '')
         kwargs.setdefault('userfield', '')
-        kwargs.setdefault('tenant_uuid', DEFAULT_TENANT)
+        kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
 
         user = self.add_user(firstname=kwargs['firstname'],
                              lastname=kwargs['lastname'],
@@ -438,7 +438,7 @@ class ItemInserter(object):
     def add_incall(self, **kwargs):
         default_destination = Dialaction(action='none')
         kwargs.setdefault('destination', default_destination)
-        kwargs.setdefault('tenant_uuid', DEFAULT_TENANT)
+        kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
         incall = Incall(**kwargs)
         self.add_me(incall)
         return incall
@@ -446,7 +446,7 @@ class ItemInserter(object):
     def add_outcall(self, **kwargs):
         kwargs.setdefault('name', ''.join(random.choice(string.ascii_lowercase) for _ in range(6)))
         kwargs.setdefault('context', 'to-extern')
-        kwargs.setdefault('tenant_uuid', DEFAULT_TENANT)
+        kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
 
         outcall = Outcall(**kwargs)
         self.add_me(outcall)
@@ -470,7 +470,7 @@ class ItemInserter(object):
             kwargs['func_key_private_template_id'] = func_key_template.id
 
         kwargs.setdefault('id', self._generate_int())
-        kwargs.setdefault('tenant_uuid', DEFAULT_TENANT)
+        kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
         kwargs.setdefault('firstname', 'John')
 
         fullname = kwargs['firstname']
@@ -508,7 +508,7 @@ class ItemInserter(object):
         kwargs.setdefault('id', self._generate_int())
         kwargs.setdefault('name', self._random_name())
         kwargs.setdefault('context', '')
-        kwargs.setdefault('tenant_uuid', DEFAULT_TENANT)
+        kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
 
         group = GroupFeatures(**kwargs)
         self.add_me(group)
