@@ -13,46 +13,37 @@ def _persistor(session, tenant_uuids=None):
     return SwitchboardPersistor(session, switchboard_search, tenant_uuids=tenant_uuids)
 
 
-@daosession
-def search(session, tenant_uuids=None, **parameters):
+def search(tenant_uuids=None, **parameters):
     return _persistor(tenant_uuids).search(parameters)
 
 
-@daosession
-def get(session, switchboard_uuid, tenant_uuids=None):
+def get(switchboard_uuid, tenant_uuids=None):
     return _persistor(tenant_uuids).get_by({'uuid': str(switchboard_uuid)})
 
 
-@daosession
-def get_by(session, tenant_uuids=None, **criteria):
+def get_by(tenant_uuids=None, **criteria):
     return _persistor(tenant_uuids).get_by(criteria)
 
 
-@daosession
-def find(session, switchboard_uuid, tenant_uuids=None):
+def find(switchboard_uuid, tenant_uuids=None):
     return _persistor(tenant_uuids).find_by({'uuid': str(switchboard_uuid)})
 
 
-@daosession
-def find_by(session, tenant_uuids=None, **criteria):
+def find_by(tenant_uuids=None, **criteria):
     return _persistor(tenant_uuids).find_by(criteria)
 
 
-@daosession
-def find_all_by(session, tenant_uuids=None, **criteria):
+def find_all_by(tenant_uuids=None, **criteria):
     return _persistor(tenant_uuids).find_all_by(criteria)
 
 
-@daosession
-def create(session, switchboard):
+def create(switchboard):
     return _persistor().create(switchboard)
 
 
-@daosession
-def edit(session, switchboard):
+def edit(switchboard):
     return _persistor().edit(switchboard)
 
 
-@daosession
-def delete(session, switchboard):
+def delete(switchboard):
     _persistor().delete(switchboard)
