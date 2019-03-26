@@ -6,6 +6,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint
 from sqlalchemy.types import String
+from sqlalchemy.sql.schema import ForeignKey
 
 from xivo_dao.helpers.db_manager import Base
 from xivo_dao.alchemy.switchboard_member_user import SwitchboardMemberUser
@@ -20,7 +21,7 @@ class Switchboard(Base):
     )
 
     uuid = Column(String(38), nullable=False, default=new_uuid)
-    tenant_uuid = Column(String(36), nullable=False)
+    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
     name = Column(String(128), nullable=False)
 
     incall_dialactions = relationship(
