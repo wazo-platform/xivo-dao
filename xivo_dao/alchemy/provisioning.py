@@ -16,8 +16,8 @@ class Provisioning(Base):
     )
 
     id = Column(Integer, nullable=False)
-    net4_ip = Column(String(39), nullable=False)
-    net4_ip_rest = Column(String(39), nullable=False)
+    net4_ip = Column(String(39))
+    net4_ip_rest = Column(String(39))
     dhcp_integration = Column(Integer, nullable=False, server_default='0')
     rest_port = Column(Integer, nullable=False)
     http_port = Column(Integer, nullable=False)
