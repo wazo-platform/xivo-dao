@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2014 Avencall
+# Copyright (C) 2014-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.schema import Column, PrimaryKeyConstraint
@@ -18,10 +18,6 @@ class Provisioning(Base):
     id = Column(Integer, nullable=False)
     net4_ip = Column(String(39), nullable=False)
     net4_ip_rest = Column(String(39), nullable=False)
-    username = Column(String(32), nullable=False)
-    password = Column(String(32), nullable=False)
     dhcp_integration = Column(Integer, nullable=False, server_default='0')
     rest_port = Column(Integer, nullable=False)
     http_port = Column(Integer, nullable=False)
-    private = Column(Integer, nullable=False, server_default='0')
-    secure = Column(Integer, nullable=False, server_default='0')
