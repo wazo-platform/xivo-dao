@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2014 Avencall
+# Copyright 2014-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.schema import Column, PrimaryKeyConstraint
@@ -19,4 +19,4 @@ class Dhcp(Base):
     active = Column(Integer, nullable=False, server_default='0')
     pool_start = Column(String(64), nullable=False, server_default='')
     pool_end = Column(String(64), nullable=False, server_default='')
-    extra_ifaces = Column(String(255), nullable=False, server_default='')
+    network_interfaces = Column(String(255), nullable=False, server_default='')
