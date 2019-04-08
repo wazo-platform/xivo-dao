@@ -489,6 +489,7 @@ class ItemInserter(object):
         kwargs.setdefault('passwd', '')
         kwargs.setdefault('language', random.choice(['fr_FR', 'en_US']))
         kwargs.setdefault('description', 'description')
+        kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
         agent = AgentFeatures(**kwargs)
         self.add_me(agent)
         return agent
@@ -524,7 +525,7 @@ class ItemInserter(object):
         kwargs.setdefault('id', self._generate_int())
         kwargs.setdefault('name', self._random_name())
         kwargs.setdefault('displayname', kwargs['name'].capitalize())
-        kwargs.setdefault('tenant_uuid', DEFAULT_TENANT)
+        kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
         queuefeatures = QueueFeatures(**kwargs)
         self.add_me(queuefeatures)
         return queuefeatures

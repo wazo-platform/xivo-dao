@@ -93,6 +93,7 @@ class TestAgentDAO(DAOTestCase):
 
     def _insert_agent(self, number=agent_number):
         agent = AgentFeatures()
+        agent.tenant_uuid = self.default_tenant.uuid
         agent.numgroup = 6
         agent.number = number
         agent.passwd = ''
