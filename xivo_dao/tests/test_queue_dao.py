@@ -10,6 +10,9 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 class TestQueueDAO(DAOTestCase):
 
+    def setUp(self):
+        super(TestQueueDAO, self).setUp()
+
     def test_id_from_name(self):
         queue = self._insert_queue('test_queue', 'Queue Test')
 
@@ -17,11 +20,33 @@ class TestQueueDAO(DAOTestCase):
 
         self.assertEqual(result, queue.id)
 
+    def test_id_from_name_multi_tenant(self):
+        tenant = self.add_tenant()
+        queue = self._insert_queue('test_queue', 'Queue Test', tenant_uuid=tenant.uuid)
+        self.assertRaises(LookupError, queue_dao.id_from_name, queue.name, tenant_uuids=[self.default_tenant.uuid])
+
+        result = queue_dao.id_from_name(queue.name, tenant_uuids=[self.default_tenant.uuid, tenant.uuid])
+        self.assertEqual(result, queue.id)
+
+        result = queue_dao.id_from_name(queue.name, tenant_uuids=[tenant.uuid])
+        self.assertEqual(result, queue.id)
+
     def test_queue_name(self):
         queue = self._insert_queue('my_queue', 'My Queue')
 
         result = queue_dao.queue_name(queue.id)
+        self.assertEqual(result, 'my_queue')
 
+    def test_queue_name_multi_tenant(self):
+        tenant = self.add_tenant()
+        queue = self._insert_queue('my_queue', 'My Queue', tenant_uuid=tenant.uuid)
+
+        self.assertRaises(LookupError, queue_dao.queue_name, queue.id, tenant_uuids=[self.default_tenant.uuid])
+
+        result = queue_dao.queue_name(queue.id, tenant_uuids=[self.default_tenant.uuid, tenant.uuid])
+        self.assertEqual(result, 'my_queue')
+
+        result = queue_dao.queue_name(queue.id, tenant_uuids=[tenant.uuid])
         self.assertEqual(result, 'my_queue')
 
     def test_get_name_number(self):
@@ -33,6 +58,16 @@ class TestQueueDAO(DAOTestCase):
 
         self.assertEqual(name, 'My Queue')
         self.assertEqual(number, '3000')
+
+    def test_get_name_number_multi_tenant(self):
+        tenant = self.add_tenant()
+        queue = self._insert_queue('my_queue', 'My Queue', '3000', tenant_uuid=tenant.uuid)
+
+        self.assertRaises(LookupError, queue_dao.get_display_name_number, queue.id, tenant_uuids=[self.default_tenant.uuid])
+
+        name, number = queue_dao.get_display_name_number(queue.id, tenant_uuids=[self.default_tenant.uuid, tenant.uuid])
+        self.assertEqual(queue.displayname, name)
+        self.assertEqual(queue.number, number)
 
     def test_is_user_member_of_queue_when_present(self):
         user_id = 1
@@ -68,12 +103,24 @@ class TestQueueDAO(DAOTestCase):
         expected.append(self._insert_queue('name2', 'display2', '3002'))
         self.assertTrue(queue_dao.all_queues() == expected)
 
+    def test_all_queues_multi_tenant(self):
+        tenant = self.add_tenant()
+        queue1 = self._insert_queue('name1', 'display1', '3001', tenant_uuid=self.default_tenant.uuid)
+        queue2 = self._insert_queue('name2', 'display2', '3002', tenant_uuid=tenant.uuid)
+        expected_all = [queue1, queue2]
+        expected_main = [queue1]
+        expected_sub = [queue2]
+
+        self.assertEqual(queue_dao.all_queues(tenant_uuids=[self.default_tenant.uuid]), expected_main)
+        self.assertEqual(queue_dao.all_queues(tenant_uuids=[tenant.uuid]), expected_sub)
+        self.assertEqual(queue_dao.all_queues(tenant_uuids=[self.default_tenant.uuid, tenant.uuid]), expected_all)
+
     def _insert_user(self, user_id, agent_id):
         return self.add_user(id=user_id, firstname='John', agentid=agent_id)
 
-    def _insert_queue(self, name, display_name, number='3000'):
+    def _insert_queue(self, name, display_name, number='3000', tenant_uuid=None):
         queue = QueueFeatures()
-        queue.tenant_uuid = self.default_tenant.uuid
+        queue.tenant_uuid = tenant_uuid or self.default_tenant.uuid
         queue.name = name
         queue.displayname = display_name
         queue.number = number

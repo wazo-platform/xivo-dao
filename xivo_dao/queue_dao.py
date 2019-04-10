@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2012-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.sql import text
@@ -8,8 +8,11 @@ from xivo_dao.helpers.db_manager import daosession
 
 
 @daosession
-def all_queues(session, order='number'):
+def all_queues(session, order='number', tenant_uuids=None):
     query = session.query(QueueFeatures)
+
+    if tenant_uuids is not None:
+        query = query.filter(QueueFeatures.tenant_uuid.in_(tenant_uuids))
 
     if order == 'number':
         query = query.order_by(QueueFeatures.number)
@@ -18,8 +21,13 @@ def all_queues(session, order='number'):
 
 
 @daosession
-def get(session, queue_id):
-    result = session.query(QueueFeatures).filter(QueueFeatures.id == queue_id).first()
+def get(session, queue_id, tenant_uuids=None):
+    query = session.query(QueueFeatures).filter(QueueFeatures.id == queue_id)
+
+    if tenant_uuids is not None:
+        query = query.filter(QueueFeatures.tenant_uuid.in_(tenant_uuids))
+
+    result = query.first()
     if result is None:
         raise LookupError('No such queue')
     else:
@@ -27,8 +35,13 @@ def get(session, queue_id):
 
 
 @daosession
-def id_from_name(session, queue_name):
-    result = session.query(QueueFeatures.id).filter(QueueFeatures.name == queue_name).first()
+def id_from_name(session, queue_name, tenant_uuids=None):
+    query = session.query(QueueFeatures.id).filter(QueueFeatures.name == queue_name)
+
+    if tenant_uuids is not None:
+        query = query.filter(QueueFeatures.tenant_uuid.in_(tenant_uuids))
+
+    result = query.first()
     if result is None:
         raise LookupError('No such queue')
     else:
@@ -36,8 +49,13 @@ def id_from_name(session, queue_name):
 
 
 @daosession
-def queue_name(session, queue_id):
-    result = session.query(QueueFeatures.name).filter(QueueFeatures.id == queue_id).first()
+def queue_name(session, queue_id, tenant_uuids=None):
+    query = session.query(QueueFeatures.name).filter(QueueFeatures.id == queue_id)
+
+    if tenant_uuids is not None:
+        query = query.filter(QueueFeatures.tenant_uuid.in_(tenant_uuids))
+
+    result = query.first()
     if result is None:
         raise LookupError('No such queue')
     else:
@@ -74,6 +92,6 @@ WHERE
     return row is not None
 
 
-def get_display_name_number(queue_id):
-    queue = get(queue_id)
+def get_display_name_number(queue_id, tenant_uuids=None):
+    queue = get(queue_id, tenant_uuids=tenant_uuids)
     return queue.displayname, queue.number
