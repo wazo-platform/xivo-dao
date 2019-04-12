@@ -127,6 +127,22 @@ class TestAgentStatusDao(DAOTestCase):
         self.assertEqual(result.queues[0].name, agent_membership.queue_name)
         self.assertEqual(result.queues[0].penalty, agent_membership.penalty)
 
+    def test_get_status_with_logged_agent_returns_an_agent_multi_tenant(self):
+        tenant = self.add_tenant()
+        agent = self.add_agent(tenant_uuid=tenant.uuid)
+        self._insert_agent_login_status(agent.id, agent.number)
+        agent_membership = self._insert_agent_membership(agent.id, 1, 'queue1', 64)
+
+        result = agent_status_dao.get_status(agent.id, tenant_uuids=[tenant.uuid])
+
+        self.assertEqual(result.agent_id, agent.id)
+        self.assertEqual(len(result.queues), 1)
+        self.assertEqual(result.queues[0].id, agent_membership.queue_id)
+
+        result = agent_status_dao.get_status(agent.id, tenant_uuids=[self.default_tenant.uuid])
+
+        self.assertEqual(result, None)
+
     def test_get_status_by_number_with_unlogged_agent_returns_none(self):
         agent_number = '1001'
         agent_status = agent_status_dao.get_status_by_number(agent_number)
@@ -148,6 +164,25 @@ class TestAgentStatusDao(DAOTestCase):
         self.assertEqual(len(result.queues), 1)
         self.assertEqual(result.queues[0].id, agent_membership.queue_id)
         self.assertEqual(result.queues[0].name, agent_membership.queue_name)
+
+    def test_get_status_by_number_with_logged_agent_multi_tenant(self):
+        tenant = self.add_tenant()
+        agent = self.add_agent(tenant_uuid=tenant.uuid)
+        self._insert_agent_login_status(agent.id, agent.number)
+        agent_membership = self._insert_agent_membership(agent.id, 1, 'queue1', 64)
+
+        result = agent_status_dao.get_status_by_number(agent.number, tenant_uuids=[tenant.uuid])
+
+        self.assertEqual(result.agent_id, agent.id)
+        self.assertEqual(len(result.queues), 1)
+        self.assertEqual(result.queues[0].id, agent_membership.queue_id)
+
+        result = agent_status_dao.get_status_by_number(
+            agent.number,
+            tenant_uuids=[self.default_tenant.uuid],
+        )
+
+        self.assertEqual(result, None)
 
     def test_get_statuses_of_unlogged_agent(self):
         agent = self.add_agent()
@@ -175,6 +210,20 @@ class TestAgentStatusDao(DAOTestCase):
         self.assertEqual(statuses[0].extension, agent_login_status.extension)
         self.assertEqual(statuses[0].context, agent_login_status.context)
         self.assertEqual(statuses[0].state_interface, agent_login_status.state_interface)
+
+    def test_get_statuses_of_logged_agent_multi_tenant(self):
+        tenant = self.add_tenant()
+        agent = self.add_agent(tenant_uuid=tenant.uuid)
+        self._insert_agent_login_status(agent.id, agent.number)
+
+        statuses = agent_status_dao.get_statuses(tenant_uuids=[tenant.uuid])
+
+        self.assertEqual(len(statuses), 1)
+        self.assertEqual(statuses[0].agent_id, agent.id)
+        self.assertEqual(statuses[0].tenant_uuid, tenant.uuid)
+
+        statuses = agent_status_dao.get_statuses(tenant_uuids=[self.default_tenant.uuid])
+        self.assertEqual(len(statuses), 0)
 
     def test_get_statuses_of_logged_for_queue(self):
         agent = self.add_agent()
@@ -238,6 +287,22 @@ class TestAgentStatusDao(DAOTestCase):
         agent_ids = agent_status_dao.get_logged_agent_ids()
 
         self.assertEqual(agent_ids, [agent_id])
+
+    def test_get_logged_agent_ids_multi_tenant(self):
+        tenant = self.add_tenant()
+        agent = self.add_agent(id=1, number='42', tenant_uuid=tenant.uuid)
+        self._insert_agent_login_status(agent.id, agent.number)
+
+        agent_ids = agent_status_dao.get_logged_agent_ids(tenant_uuids=[tenant.uuid])
+        self.assertEqual(agent_ids, [agent.id])
+
+        agent_ids = agent_status_dao.get_logged_agent_ids(
+            tenant_uuids=[self.default_tenant.uuid, tenant.uuid],
+        )
+        self.assertEqual(agent_ids, [agent.id])
+
+        agent_ids = agent_status_dao.get_logged_agent_ids(tenant_uuids=[self.default_tenant.uuid])
+        self.assertEqual(agent_ids, [])
 
     def test_is_extension_in_use_with_an_agent(self):
         agent_id = 1

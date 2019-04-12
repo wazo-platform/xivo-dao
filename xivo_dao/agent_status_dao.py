@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2007-2015 Avencall
+# Copyright 2007-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from collections import namedtuple
@@ -20,8 +20,8 @@ _Queue = namedtuple('_Queue', ['id', 'name', 'penalty'])
 
 
 @daosession
-def get_status(session, agent_id):
-    login_status = _get_login_status_by_id(session, agent_id)
+def get_status(session, agent_id, tenant_uuids=None):
+    login_status = _get_login_status_by_id(session, agent_id, tenant_uuids=tenant_uuids)
     if not login_status:
         return None
 
@@ -29,27 +29,32 @@ def get_status(session, agent_id):
 
 
 @daosession
-def get_status_by_number(session, agent_number):
-    login_status = _get_login_status_by_number(session, agent_number)
+def get_status_by_number(session, agent_number, tenant_uuids=None):
+    login_status = _get_login_status_by_number(session, agent_number, tenant_uuids=tenant_uuids)
     if not login_status:
         return None
 
     return _to_agent_status(login_status, _get_queues_for_agent(session, login_status.agent_id))
 
 
-def _get_login_status_by_id(session, agent_id):
+def _get_login_status_by_id(session, agent_id, tenant_uuids=None):
     login_status = (session
                     .query(AgentLoginStatus)
-                    .get(agent_id))
-    return login_status
+                    .outerjoin((AgentFeatures, AgentFeatures.id == AgentLoginStatus.agent_id))
+                    .filter(AgentLoginStatus.agent_id == agent_id))
+    if tenant_uuids is not None:
+        login_status = login_status.filter(AgentFeatures.tenant_uuid.in_(tenant_uuids))
+    return login_status.first()
 
 
-def _get_login_status_by_number(session, agent_number):
+def _get_login_status_by_number(session, agent_number, tenant_uuids=None):
     login_status = (session
                     .query(AgentLoginStatus)
-                    .filter(AgentLoginStatus.agent_number == agent_number)
-                    .first())
-    return login_status
+                    .outerjoin((AgentFeatures, AgentFeatures.id == AgentLoginStatus.agent_id))
+                    .filter(AgentLoginStatus.agent_number == agent_number))
+    if tenant_uuids is not None:
+        login_status = login_status.filter(AgentFeatures.tenant_uuid.in_(tenant_uuids))
+    return login_status.first()
 
 
 def _get_queues_for_agent(session, agent_id):
@@ -88,18 +93,25 @@ def get_agent_id_from_extension(session, extension, context):
 
 
 @daosession
-def get_statuses(session):
-    return (session
-            .query(AgentFeatures.id.label('agent_id'),
-                   AgentFeatures.number.label('agent_number'),
-                   AgentLoginStatus.extension.label('extension'),
-                   AgentLoginStatus.context.label('context'),
-                   AgentLoginStatus.state_interface.label('state_interface'),
-                   AgentLoginStatus.paused.label('paused'),
-                   AgentLoginStatus.paused_reason.label('paused_reason'),
-                   case([(AgentLoginStatus.agent_id == None, False)], else_=True).label('logged'))
-            .outerjoin((AgentLoginStatus, AgentFeatures.id == AgentLoginStatus.agent_id))
-            .all())
+def get_statuses(session, tenant_uuids=None):
+    query = (
+        session.query(
+            AgentFeatures.id.label('agent_id'),
+            AgentFeatures.tenant_uuid.label('tenant_uuid'),
+            AgentFeatures.number.label('agent_number'),
+            AgentLoginStatus.extension.label('extension'),
+            AgentLoginStatus.context.label('context'),
+            AgentLoginStatus.state_interface.label('state_interface'),
+            AgentLoginStatus.paused.label('paused'),
+            AgentLoginStatus.paused_reason.label('paused_reason'),
+            case([(AgentLoginStatus.agent_id == None, False)], else_=True).label('logged')  # noqa
+        ).outerjoin((AgentLoginStatus, AgentFeatures.id == AgentLoginStatus.agent_id))
+    )
+
+    if tenant_uuids is not None:
+        query = query.filter(AgentFeatures.tenant_uuid.in_(tenant_uuids))
+
+    return query.all()
 
 
 @daosession
@@ -155,9 +167,13 @@ def get_statuses_to_remove_from_queue(session, queue_id):
 
 
 @daosession
-def get_logged_agent_ids(session):
+def get_logged_agent_ids(session, tenant_uuids=None):
     query = (session
-             .query(AgentLoginStatus.agent_id))
+             .query(AgentLoginStatus.agent_id, AgentFeatures.tenant_uuid)
+             .outerjoin(AgentFeatures, AgentFeatures.id == AgentLoginStatus.agent_id))
+
+    if tenant_uuids is not None:
+        query = query.filter(AgentFeatures.tenant_uuid.in_(tenant_uuids))
 
     return [q.agent_id for q in query]
 
