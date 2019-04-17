@@ -13,24 +13,6 @@ from sqlalchemy import and_
 
 class TestAgentStatusDao(DAOTestCase):
 
-    def test_is_agent_logged_in_with_no_agents(self):
-        agent_id = 1
-
-        expected = False
-
-        logged_in = agent_status_dao.is_agent_logged_in(agent_id)
-
-        self.assertEqual(expected, logged_in)
-
-    def test_is_agent_logged_in_when_one_agent_logged_in(self):
-        agent_login_status = self._insert_agent_login_status(1, '42')
-
-        expected = True
-
-        logged_in = agent_status_dao.is_agent_logged_in(agent_login_status.agent_id)
-
-        self.assertEqual(expected, logged_in)
-
     def test_log_in_agent(self):
         agent_id = 1
         agent_number = '2'

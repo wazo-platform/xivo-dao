@@ -1,74 +1,15 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from xivo.asterisk.extension import Extension
-from xivo_dao import line_dao
-from xivo_dao.alchemy.linefeatures import LineFeatures
-from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.tests.test_dao import DAOTestCase
 
-USER_ID = 5
+from .. import line_dao
+
 LINE_NUMBER = '1666'
 
 
 class TestLineFeaturesDAO(DAOTestCase):
-
-    def _insert_sccpline(self, sccpline_id):
-        sccpline = SCCPLine()
-        sccpline.id = sccpline_id
-        sccpline.name = '1234'
-        sccpline.context = 'test'
-        sccpline.cid_name = 'Tester One'
-        sccpline.cid_num = '1234'
-
-        self.add_me(sccpline)
-
-        return sccpline
-
-    def test_get_peer_name_abcde(self):
-        protocol = 'sip'
-        name = 'abcde'
-        expected_name = '/'.join([protocol, name])
-
-        line = LineFeatures()
-        line.device = '1232'
-        line.protocolid = 0
-        line.context = 'myctx'
-        line.number = '1002'
-        line.name = name
-        line.provisioningid = 123
-        line.protocol = protocol
-
-        self.add_me(line)
-
-        peer_name = line_dao.get_peer_name(line.device)
-
-        self.assertEqual(peer_name, expected_name)
-
-    def test_get_peer_name_qwerty(self):
-        protocol = 'sip'
-        name = 'qwerty'
-        expected_name = '/'.join([protocol, name])
-
-        line = LineFeatures()
-        line.device = '213'
-        line.protocolid = 0
-        line.context = 'myctx'
-        line.iduserfeatures = 5
-        line.number = '1002'
-        line.name = name
-        line.provisioningid = 123
-        line.protocol = protocol
-
-        self.add_me(line)
-
-        peer_name = line_dao.get_peer_name(line.device)
-
-        self.assertEqual(peer_name, expected_name)
-
-    def test_get_peer_name_no_matching_line(self):
-        self.assertRaises(LookupError, line_dao.get_peer_name, '222')
 
     def test_get_interface_from_exten_and_context_sip(self):
         protocol = 'sip'
@@ -137,42 +78,3 @@ class TestLineFeaturesDAO(DAOTestCase):
 
     def test_get_interface_no_matching_exten(self):
         self.assertRaises(LookupError, line_dao.get_interface_from_exten_and_context, '555', 'fijsifjsif')
-
-    def test_get_extension_from_protocol_interface_no_extension(self):
-        self.assertRaises(LookupError, line_dao.get_extension_from_protocol_interface, 'SIP', 'abcdef')
-
-    def test_get_extension_from_protocol_interface_sip(self):
-        protocol = 'sip'
-        name = 'abcdef'
-        context = 'default'
-
-        expected_extension = Extension(number=LINE_NUMBER, context=context, is_internal=True)
-        self.add_user_line_without_user(exten=LINE_NUMBER, context=context, name=name, protocol=protocol)
-
-        extension = line_dao.get_extension_from_protocol_interface(protocol, name)
-
-        self.assertEqual(extension, expected_extension)
-
-    def test_get_extension_from_protocol_interface_local(self):
-        protocol = 'local'
-        name = 'id-5@agentcallback'
-
-        self.assertRaises(ValueError,
-                          line_dao.get_extension_from_protocol_interface, protocol, name)
-
-    def test_get_extension_from_protocol_interface_sccp(self):
-        protocol = 'SCCP'
-        name = LINE_NUMBER
-        context = 'default'
-
-        expected_extension = Extension(number=LINE_NUMBER, context=context, is_internal=True)
-        self.add_user_line_without_user(exten=LINE_NUMBER, context=context, name=name, protocol=protocol.lower())
-
-        extension = line_dao.get_extension_from_protocol_interface(protocol, name)
-
-        self.assertEqual(extension, expected_extension)
-
-    def test_get(self):
-        line = self.add_line()
-        result = line_dao.get(line.id)
-        self.assertEqual(line, result)
