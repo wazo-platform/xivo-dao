@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Column, UniqueConstraint
+from sqlalchemy.schema import Column, UniqueConstraint, ForeignKey
 from sqlalchemy.types import Integer, String, Text
 
 from xivo_dao.helpers.db_manager import Base
@@ -17,6 +17,7 @@ class AgentFeatures(Base):
     )
 
     id = Column(Integer, primary_key=True)
+    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
     numgroup = Column(Integer, nullable=False)
     firstname = Column(String(128))
     lastname = Column(String(128))

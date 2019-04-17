@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.agentfeatures import AgentFeatures as Agent
@@ -12,9 +12,10 @@ class AgentPersistor(CriteriaBuilderMixin):
 
     _search_table = Agent
 
-    def __init__(self, session, agent_search):
+    def __init__(self, session, agent_search, tenant_uuids=None):
         self.session = session
         self.agent_search = agent_search
+        self.tenant_uuids = tenant_uuids
 
     def find_by(self, criteria):
         query = self._find_query(criteria)
@@ -22,7 +23,10 @@ class AgentPersistor(CriteriaBuilderMixin):
 
     def _find_query(self, criteria):
         query = self.session.query(Agent)
-        return self.build_criteria(query, criteria)
+        query = self.build_criteria(query, criteria)
+        if self.tenant_uuids is not None:
+            query = query.filter(Agent.tenant_uuid.in_(self.tenant_uuids))
+        return query
 
     def get_by(self, criteria):
         agent = self.find_by(criteria)
@@ -36,6 +40,9 @@ class AgentPersistor(CriteriaBuilderMixin):
 
     def search(self, parameters):
         query = self.session.query(Agent)
+        if self.tenant_uuids is not None:
+            query = query.filter(Agent.tenant_uuid.in_(self.tenant_uuids))
+
         rows, total = self.agent_search.search_from_query(query, parameters)
         return SearchResult(total, rows)
 

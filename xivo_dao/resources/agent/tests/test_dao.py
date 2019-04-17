@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -12,6 +12,8 @@ from hamcrest import (
     has_property,
     instance_of,
     none,
+    all_of,
+    not_,
 )
 from sqlalchemy.inspection import inspect
 
@@ -38,6 +40,17 @@ class TestFind(DAOTestCase):
 
         assert_that(agent, equal_to(agent_row))
 
+    def test_find_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        agent = self.add_agent(tenant_uuid=tenant.uuid)
+
+        result = agent_dao.find(agent.id, tenant_uuids=[tenant.uuid])
+        assert_that(result, equal_to(agent))
+
+        result = agent_dao.find(agent.id, tenant_uuids=[self.default_tenant.uuid])
+        assert_that(result, none())
+
 
 class TestGet(DAOTestCase):
 
@@ -50,6 +63,16 @@ class TestGet(DAOTestCase):
         agent = agent_dao.get(agent_row.id)
 
         assert_that(agent, equal_to(agent_row))
+
+    def test_get_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        agent_row = self.add_agent(tenant_uuid=tenant.uuid)
+        agent = agent_dao.get(agent_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(agent, equal_to(agent_row))
+
+        agent_row = self.add_agent()
+        self.assertRaises(NotFoundError, agent_dao.get, agent_row.id, tenant_uuids=[tenant.uuid])
 
 
 class TestFindBy(DAOTestCase):
@@ -94,6 +117,17 @@ class TestFindBy(DAOTestCase):
 
         assert_that(agent, none())
 
+    def test_find_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        agent_row = self.add_agent()
+        agent = agent_dao.find_by(firstname=agent_row.firstname, tenant_uuids=[tenant.uuid])
+        assert_that(agent, none())
+
+        agent_row = self.add_agent(tenant_uuid=tenant.uuid)
+        agent = agent_dao.find_by(firstname=agent_row.firstname, tenant_uuids=[tenant.uuid])
+        assert_that(agent, equal_to(agent_row))
+
 
 class TestGetBy(DAOTestCase):
 
@@ -135,6 +169,19 @@ class TestGetBy(DAOTestCase):
     def test_given_agent_does_not_exist_then_raises_error(self):
         self.assertRaises(NotFoundError, agent_dao.get_by, id='42')
 
+    def test_get_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        agent_row = self.add_agent()
+        self.assertRaises(
+            NotFoundError,
+            agent_dao.get_by, id=agent_row.id, tenant_uuids=[tenant.uuid],
+        )
+
+        agent_row = self.add_agent(tenant_uuid=tenant.uuid)
+        agent = agent_dao.get_by(id=agent_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(agent, equal_to(agent_row))
+
 
 class TestFindAllBy(DAOTestCase):
 
@@ -154,6 +201,20 @@ class TestFindAllBy(DAOTestCase):
 
         assert_that(agents, has_items(has_property('id', agent1.id),
                                       has_property('id', agent2.id)))
+
+    def test_find_all_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        agent1 = self.add_agent(preprocess_subroutine='subroutine', tenant_uuid=tenant.uuid)
+        agent2 = self.add_agent(preprocess_subroutine='subroutine')
+
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        agents = agent_dao.find_all_by(preprocess_subroutine='subroutine', tenant_uuids=tenants)
+        assert_that(agents, has_items(agent1, agent2))
+
+        tenants = [tenant.uuid]
+        agents = agent_dao.find_all_by(preprocess_subroutine='subroutine', tenant_uuids=tenants)
+        assert_that(agents, all_of(has_items(agent1), not_(has_items(agent2))))
 
 
 class TestSearch(DAOTestCase):
@@ -175,6 +236,20 @@ class TestSimpleSearch(TestSearch):
         expected = SearchResult(1, [agent])
 
         self.assert_search_returns_result(expected)
+
+    def test_search_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        agent1 = self.add_agent()
+        agent2 = self.add_agent(tenant_uuid=tenant.uuid)
+
+        expected = SearchResult(2, [agent1, agent2])
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
+        expected = SearchResult(1, [agent2])
+        tenants = [tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
 
 
 class TestSearchGivenMultipleAgent(TestSearch):
@@ -242,7 +317,7 @@ class TestSearchGivenMultipleAgent(TestSearch):
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_fields(self):
-        agent = Agent(number='1234')
+        agent = Agent(number='1234', tenant_uuid=self.default_tenant.uuid)
         created_agent = agent_dao.create(agent)
 
         row = self.session.query(Agent).first()
@@ -250,6 +325,7 @@ class TestCreate(DAOTestCase):
         assert_that(created_agent, equal_to(row))
         assert_that(created_agent, has_properties(
             id=instance_of(int),
+            tenant_uuid=self.default_tenant.uuid,
             number='1234',
             firstname=None,
             lastname=None,
@@ -261,6 +337,7 @@ class TestCreate(DAOTestCase):
 
     def test_create_with_all_fields(self):
         agent = Agent(
+            tenant_uuid=self.default_tenant.uuid,
             number='1234',
             firstname='first',
             lastname='last',
@@ -277,6 +354,7 @@ class TestCreate(DAOTestCase):
         assert_that(created_agent, equal_to(row))
         assert_that(created_agent, has_properties(
             id=instance_of(int),
+            tenant_uuid=self.default_tenant.uuid,
             number='1234',
             firstname='first',
             lastname='last',
@@ -287,7 +365,7 @@ class TestCreate(DAOTestCase):
         ))
 
     def test_create_fill_default_values(self):
-        agent = Agent(number='1234')
+        agent = Agent(number='1234', tenant_uuid=self.default_tenant.uuid)
 
         created_agent = agent_dao.create(agent)
 
@@ -303,6 +381,7 @@ class TestEdit(DAOTestCase):
 
     def test_edit_all_fields(self):
         agent = agent_dao.create(Agent(
+            tenant_uuid=self.default_tenant.uuid,
             number='1234',
             firstname=None,
             lastname=None,

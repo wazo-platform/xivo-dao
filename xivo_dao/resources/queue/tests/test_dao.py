@@ -12,6 +12,8 @@ from hamcrest import (
     has_property,
     none,
     not_none,
+    all_of,
+    not_,
 )
 from sqlalchemy.inspection import inspect
 
@@ -44,6 +46,17 @@ class TestFind(DAOTestCase):
 
         assert_that(queue, equal_to(queue_row))
 
+    def test_find_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        queue = self.add_queuefeatures(tenant_uuid=tenant.uuid)
+
+        result = queue_dao.find(queue.id, tenant_uuids=[tenant.uuid])
+        assert_that(result, equal_to(queue))
+
+        result = queue_dao.find(queue.id, tenant_uuids=[self.default_tenant.uuid])
+        assert_that(result, none())
+
 
 class TestGet(DAOTestCase):
 
@@ -56,6 +69,16 @@ class TestGet(DAOTestCase):
         queue = queue_dao.get(queue_row.id)
 
         assert_that(queue, equal_to(queue_row))
+
+    def test_get_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        queue_row = self.add_queuefeatures(tenant_uuid=tenant.uuid)
+        queue = queue_dao.get(queue_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(queue, equal_to(queue_row))
+
+        queue_row = self.add_queuefeatures()
+        self.assertRaises(NotFoundError, queue_dao.get, queue_row.id, tenant_uuids=[tenant.uuid])
 
 
 class TestFindBy(DAOTestCase):
@@ -84,6 +107,17 @@ class TestFindBy(DAOTestCase):
 
         assert_that(queue, none())
 
+    def test_find_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        queue_row = self.add_queuefeatures()
+        queue = queue_dao.find_by(name=queue_row.name, tenant_uuids=[tenant.uuid])
+        assert_that(queue, none())
+
+        queue_row = self.add_queuefeatures(tenant_uuid=tenant.uuid)
+        queue = queue_dao.find_by(name=queue_row.name, tenant_uuids=[tenant.uuid])
+        assert_that(queue, equal_to(queue_row))
+
 
 class TestGetBy(DAOTestCase):
 
@@ -109,6 +143,19 @@ class TestGetBy(DAOTestCase):
     def test_given_queue_does_not_exist_then_raises_error(self):
         self.assertRaises(NotFoundError, queue_dao.get_by, id='42')
 
+    def test_get_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        queue_row = self.add_queuefeatures()
+        self.assertRaises(
+            NotFoundError,
+            queue_dao.get_by, id=queue_row.id, tenant_uuids=[tenant.uuid],
+        )
+
+        queue_row = self.add_queuefeatures(tenant_uuid=tenant.uuid)
+        queue = queue_dao.get_by(id=queue_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(queue, equal_to(queue_row))
+
 
 class TestFindAllBy(DAOTestCase):
 
@@ -128,6 +175,20 @@ class TestFindAllBy(DAOTestCase):
 
         assert_that(queues, has_items(has_property('id', queue1.id),
                                       has_property('id', queue2.id)))
+
+    def test_find_all_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        queue1 = self.add_queuefeatures(preprocess_subroutine='subroutine', tenant_uuid=tenant.uuid)
+        queue2 = self.add_queuefeatures(preprocess_subroutine='subroutine')
+
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        queues = queue_dao.find_all_by(preprocess_subroutine='subroutine', tenant_uuids=tenants)
+        assert_that(queues, has_items(queue1, queue2))
+
+        tenants = [tenant.uuid]
+        queues = queue_dao.find_all_by(preprocess_subroutine='subroutine', tenant_uuids=tenants)
+        assert_that(queues, all_of(has_items(queue1), not_(has_items(queue2))))
 
 
 class TestSearch(DAOTestCase):
@@ -149,6 +210,20 @@ class TestSimpleSearch(TestSearch):
         expected = SearchResult(1, [queue])
 
         self.assert_search_returns_result(expected)
+
+    def test_search_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        queue1 = self.add_queuefeatures()
+        queue2 = self.add_queuefeatures(tenant_uuid=tenant.uuid)
+
+        expected = SearchResult(2, [queue1, queue2])
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
+        expected = SearchResult(1, [queue2])
+        tenants = [tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
 
 
 class TestSearchGivenMultipleQueue(TestSearch):
