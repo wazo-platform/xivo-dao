@@ -10,9 +10,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 class TestQueueDAO(DAOTestCase):
 
-    def setUp(self):
-        super(TestQueueDAO, self).setUp()
-
     def test_id_from_name(self):
         queue = self._insert_queue('test_queue', 'Queue Test')
 
