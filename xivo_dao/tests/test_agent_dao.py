@@ -18,33 +18,6 @@ class TestAgentDAO(DAOTestCase):
     agent2_number = '1002'
     agent_context = 'test'
 
-    def test_agent_interface(self):
-        agent = self._insert_agent()
-
-        interface = agent_dao.find_agent_interface(agent.id)
-
-        self.assertEqual(interface, 'Agent/%s' % self.agent_number)
-
-    def test_agent_interface_bad_args(self):
-        self.assertRaises(ValueError, agent_dao.find_agent_interface, None)
-
-    def test_agent_interface_not_exist(self):
-        interface = agent_dao.find_agent_interface(1)
-        self.assertEqual(interface, None)
-
-    def test_agent_interface_multi_tenant(self):
-        tenant = self.add_tenant()
-        agent = self._insert_agent(tenant_uuid=tenant.uuid)
-
-        interface = agent_dao.find_agent_interface(agent.id, tenant_uuids=[self.default_tenant.uuid])
-        self.assertEqual(interface, None)
-
-        interface = agent_dao.find_agent_interface(agent.id, tenant_uuids=[self.default_tenant.uuid, tenant.uuid])
-        self.assertEqual(interface, 'Agent/%s' % self.agent_number)
-
-        interface = agent_dao.find_agent_interface(agent.id, tenant_uuids=[tenant.uuid])
-        self.assertEqual(interface, 'Agent/%s' % self.agent_number)
-
     def test_agent_with_id(self):
         agent = self._insert_agent()
         queue_member = self._insert_queue_member('foobar', 'Agent/2', agent.id)

@@ -17,28 +17,6 @@ _Queue = namedtuple('_Queue', ['id', 'tenant_uuid', 'name', 'penalty'])
 
 
 @daosession
-def find_agent_interface(session, agentid, tenant_uuids=None):
-    try:
-        return 'Agent/%s' % _get_one(session, agentid, tenant_uuids).number
-    except LookupError:
-        return None
-
-
-def _get_one(session, agentid, tenant_uuids=None):
-    # field id != field agentid used only for joining with staticagent table.
-    if agentid is None:
-        raise ValueError('Agent ID is None')
-    query = session.query(AgentFeatures).filter(AgentFeatures.id == int(agentid))
-    if tenant_uuids is not None:
-        query = query.filter(AgentFeatures.tenant_uuid.in_(tenant_uuids))
-
-    result = query.first()
-    if result is None:
-        raise LookupError('No such agent')
-    return result
-
-
-@daosession
 def agent_with_id(session, agent_id, tenant_uuids=None):
     agent = _get_agent(session, AgentFeatures.id == int(agent_id), tenant_uuids)
     _add_queues_to_agent(session, agent)

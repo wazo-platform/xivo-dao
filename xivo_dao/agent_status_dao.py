@@ -192,15 +192,6 @@ def _to_agent_status(agent_login_status, queues):
 
 
 @daosession
-def is_agent_logged_in(session, agent_id):
-    count = (session
-             .query(AgentLoginStatus)
-             .filter(AgentLoginStatus.agent_id == agent_id)
-             .count())
-    return count > 0
-
-
-@daosession
 def is_extension_in_use(session, extension, context):
     count = (session
              .query(AgentLoginStatus)
