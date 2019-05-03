@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
-# Copyright 2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
+
+from sqlalchemy import text
 
 from xivo_dao.alchemy.queueskill import QueueSkill
 from xivo_dao.alchemy.queueskillcat import QueueSkillCat
@@ -13,9 +15,10 @@ class SkillPersistor(CriteriaBuilderMixin):
 
     _search_table = QueueSkill
 
-    def __init__(self, session, skill_search):
+    def __init__(self, session, skill_search, tenant_uuids=None):
         self.session = session
         self.skill_search = skill_search
+        self.tenant_uuids = tenant_uuids
 
     def find_by(self, criteria):
         query = self._find_query(criteria)
@@ -23,6 +26,7 @@ class SkillPersistor(CriteriaBuilderMixin):
 
     def _find_query(self, criteria):
         query = self.session.query(QueueSkill)
+        query = self._filter_tenant_uuid(query)
         return self.build_criteria(query, criteria)
 
     def get_by(self, criteria):
@@ -36,7 +40,9 @@ class SkillPersistor(CriteriaBuilderMixin):
         return query.all()
 
     def search(self, parameters):
-        rows, total = self.skill_search.search(self.session, parameters)
+        query = self.session.query(self.skill_search.config.table)
+        query = self._filter_tenant_uuid(query)
+        rows, total = self.skill_search.search_from_query(query, parameters)
         return SearchResult(total, rows)
 
     def create(self, skill):
@@ -62,6 +68,15 @@ class SkillPersistor(CriteriaBuilderMixin):
         if not category:
             category = QueueSkillCat(name=skill._category)
         skill.queue_skill_cat = category
+
+    def _filter_tenant_uuid(self, query):
+        if self.tenant_uuids is None:
+            return query
+
+        if not self.tenant_uuids:
+            return query.filter(text('false'))
+
+        return query.filter(QueueSkill.tenant_uuid.in_(self.tenant_uuids))
 
     def delete(self, skill):
         self.session.delete(skill)
