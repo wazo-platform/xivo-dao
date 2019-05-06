@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-# Copyright 2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
 
 from hamcrest import (
+    all_of,
     assert_that,
     contains,
     equal_to,
@@ -13,6 +14,7 @@ from hamcrest import (
     has_properties,
     has_property,
     none,
+    not_,
     not_none,
 )
 
@@ -39,6 +41,17 @@ class TestFind(DAOTestCase):
 
         assert_that(skill_rule, equal_to(skill_rule_row))
 
+    def test_find_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        skill_rule = self.add_queue_skill_rule(tenant_uuid=tenant.uuid)
+
+        result = skill_rule_dao.find(skill_rule.id, tenant_uuids=[tenant.uuid])
+        assert_that(result, equal_to(skill_rule))
+
+        result = skill_rule_dao.find(skill_rule.id, tenant_uuids=[self.default_tenant.uuid])
+        assert_that(result, none())
+
 
 class TestGet(DAOTestCase):
 
@@ -52,6 +65,20 @@ class TestGet(DAOTestCase):
 
         assert_that(skill_rule.id, equal_to(skill_rule.id))
 
+    def test_get_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        skill_rule_row = self.add_queue_skill_rule(tenant_uuid=tenant.uuid)
+        skill_rule = skill_rule_dao.get(skill_rule_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(skill_rule, equal_to(skill_rule_row))
+
+        skill_rule_row = self.add_queue_skill_rule()
+        self.assertRaises(
+            NotFoundError,
+            skill_rule_dao.get,
+            skill_rule_row.id,
+            tenant_uuids=[tenant.uuid]
+        )
 
 class TestFindBy(DAOTestCase):
 
@@ -71,6 +98,17 @@ class TestFindBy(DAOTestCase):
 
         assert_that(skill_rule, none())
 
+    def test_find_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        skill_rule_row = self.add_queue_skill_rule()
+        skill_rule = skill_rule_dao.find_by(name=skill_rule_row.name, tenant_uuids=[tenant.uuid])
+        assert_that(skill_rule, none())
+
+        skill_rule_row = self.add_queue_skill_rule(tenant_uuid=tenant.uuid)
+        skill_rule = skill_rule_dao.find_by(name=skill_rule_row.name, tenant_uuids=[tenant.uuid])
+        assert_that(skill_rule, equal_to(skill_rule_row))
+
 
 class TestGetBy(DAOTestCase):
 
@@ -88,6 +126,19 @@ class TestGetBy(DAOTestCase):
     def test_given_skill_rule_does_not_exist_then_raises_error(self):
         self.assertRaises(NotFoundError, skill_rule_dao.get_by, name='42')
 
+    def test_get_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        skill_rule_row = self.add_queue_skill_rule()
+        self.assertRaises(
+            NotFoundError,
+            skill_rule_dao.get_by, id=skill_rule_row.id, tenant_uuids=[tenant.uuid],
+        )
+
+        skill_rule_row = self.add_queue_skill_rule(tenant_uuid=tenant.uuid)
+        skill_rule = skill_rule_dao.get_by(id=skill_rule_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(skill_rule, equal_to(skill_rule_row))
+
 
 class TestFindAllBy(DAOTestCase):
 
@@ -104,6 +155,20 @@ class TestFindAllBy(DAOTestCase):
         assert_that(skill_rules, has_items(
             has_property('id', skill_rule.id),
         ))
+
+    def test_find_all_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        skill_rule1 = self.add_queue_skill_rule(tenant_uuid=tenant.uuid)
+        skill_rule2 = self.add_queue_skill_rule()
+
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        skill_rules = skill_rule_dao.find_all_by(tenant_uuids=tenants)
+        assert_that(skill_rules, has_items(skill_rule1, skill_rule2))
+
+        tenants = [tenant.uuid]
+        skill_rules = skill_rule_dao.find_all_by(tenant_uuids=tenants)
+        assert_that(skill_rules, all_of(has_items(skill_rule1), not_(has_items(skill_rule2))))
 
 
 class TestSearch(DAOTestCase):
@@ -188,10 +253,31 @@ class TestSearchGivenMultipleSkillRules(TestSearch):
         )
 
 
+class TestSearchGivenMultipleTenants(TestSearch):
+
+    def test_multiple_tenants(self):
+        tenant_1 = self.add_tenant()
+        tenant_2 = self.add_tenant()
+        tenant_3 = self.add_tenant()
+
+        skill_rule_1 = self.add_queue_skill_rule(name='a', tenant_uuid=tenant_1.uuid)
+        skill_rule_2 = self.add_queue_skill_rule(name='b', tenant_uuid=tenant_2.uuid)
+        skill_rule_3 = self.add_queue_skill_rule(name='c', tenant_uuid=tenant_3.uuid)
+
+        expected = SearchResult(2, [skill_rule_1, skill_rule_2])
+        self.assert_search_returns_result(expected, tenant_uuids=[tenant_1.uuid, tenant_2.uuid])
+
+        expected = SearchResult(0, [])
+        self.assert_search_returns_result(expected, tenant_uuids=[])
+
+        expected = SearchResult(3, [skill_rule_1, skill_rule_2, skill_rule_3])
+        self.assert_search_returns_result(expected)
+
+
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_fields(self):
-        skill_rule = QueueSkillRule(name='SkillRule')
+        skill_rule = QueueSkillRule(tenant_uuid=self.default_tenant.uuid, name='SkillRule')
         skill_rule = skill_rule_dao.create(skill_rule)
 
         self.session.expire_all()
@@ -204,6 +290,7 @@ class TestCreate(DAOTestCase):
 
     def test_create_with_all_fields(self):
         skill_rule = QueueSkillRule(
+            tenant_uuid=self.default_tenant.uuid,
             name='MyName',
             rules=['rule1', 'rule2'],
         )
