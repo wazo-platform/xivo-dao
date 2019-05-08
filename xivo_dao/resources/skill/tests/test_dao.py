@@ -5,6 +5,7 @@
 from __future__ import unicode_literals
 
 from hamcrest import (
+    all_of,
     assert_that,
     contains,
     empty,
@@ -13,6 +14,7 @@ from hamcrest import (
     has_properties,
     has_property,
     none,
+    not_,
     not_none,
 )
 
@@ -40,6 +42,17 @@ class TestFind(DAOTestCase):
 
         assert_that(skill, equal_to(skill_row))
 
+    def test_find_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        skill = self.add_queue_skill(tenant_uuid=tenant.uuid)
+
+        result = skill_dao.find(skill.id, tenant_uuids=[tenant.uuid])
+        assert_that(result, equal_to(skill))
+
+        result = skill_dao.find(skill.id, tenant_uuids=[self.default_tenant.uuid])
+        assert_that(result, none())
+
 
 class TestGet(DAOTestCase):
 
@@ -52,6 +65,16 @@ class TestGet(DAOTestCase):
         skill = skill_dao.get(skill_row.id)
 
         assert_that(skill.id, equal_to(skill.id))
+
+    def test_get_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        skill_row = self.add_queue_skill(tenant_uuid=tenant.uuid)
+        skill = skill_dao.get(skill_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(skill, equal_to(skill_row))
+
+        skill_row = self.add_queue_skill()
+        self.assertRaises(NotFoundError, skill_dao.get, skill_row.id, tenant_uuids=[tenant.uuid])
 
 
 class TestFindBy(DAOTestCase):
@@ -72,6 +95,17 @@ class TestFindBy(DAOTestCase):
 
         assert_that(skill, none())
 
+    def test_find_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        skill_row = self.add_queue_skill()
+        skill = skill_dao.find_by(name=skill_row.name, tenant_uuids=[tenant.uuid])
+        assert_that(skill, none())
+
+        skill_row = self.add_queue_skill(tenant_uuid=tenant.uuid)
+        skill = skill_dao.find_by(name=skill_row.name, tenant_uuids=[tenant.uuid])
+        assert_that(skill, equal_to(skill_row))
+
 
 class TestGetBy(DAOTestCase):
 
@@ -88,6 +122,19 @@ class TestGetBy(DAOTestCase):
 
     def test_given_skill_does_not_exist_then_raises_error(self):
         self.assertRaises(NotFoundError, skill_dao.get_by, name='42')
+
+    def test_get_by_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        skill_row = self.add_queue_skill()
+        self.assertRaises(
+            NotFoundError,
+            skill_dao.get_by, id=skill_row.id, tenant_uuids=[tenant.uuid],
+        )
+
+        skill_row = self.add_queue_skill(tenant_uuid=tenant.uuid)
+        skill = skill_dao.get_by(id=skill_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(skill, equal_to(skill_row))
 
 
 class TestFindAllBy(DAOTestCase):
@@ -107,6 +154,20 @@ class TestFindAllBy(DAOTestCase):
             has_property('id', skill1.id),
             has_property('id', skill2.id),
         ))
+
+    def test_find_all_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        skill1 = self.add_queue_skill(tenant_uuid=tenant.uuid)
+        skill2 = self.add_queue_skill()
+
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        skills = skill_dao.find_all_by(tenant_uuids=tenants)
+        assert_that(skills, has_items(skill1, skill2))
+
+        tenants = [tenant.uuid]
+        skills = skill_dao.find_all_by(tenant_uuids=tenants)
+        assert_that(skills, all_of(has_items(skill1), not_(has_items(skill2))))
 
 
 class TestSearch(DAOTestCase):
@@ -216,10 +277,31 @@ class TestSearchGivenMultipleSkills(TestSearch):
         )
 
 
+class TestSearchGivenMultipleTenants(TestSearch):
+
+    def test_multiple_tenants(self):
+        tenant_1 = self.add_tenant()
+        tenant_2 = self.add_tenant()
+        tenant_3 = self.add_tenant()
+
+        skill_1 = self.add_queue_skill(name='a', tenant_uuid=tenant_1.uuid)
+        skill_2 = self.add_queue_skill(name='b', tenant_uuid=tenant_2.uuid)
+        skill_3 = self.add_queue_skill(name='c', tenant_uuid=tenant_3.uuid)
+
+        expected = SearchResult(2, [skill_1, skill_2])
+        self.assert_search_returns_result(expected, tenant_uuids=[tenant_1.uuid, tenant_2.uuid])
+
+        expected = SearchResult(0, [])
+        self.assert_search_returns_result(expected, tenant_uuids=[])
+
+        expected = SearchResult(3, [skill_1, skill_2, skill_3])
+        self.assert_search_returns_result(expected)
+
+
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_fields(self):
-        skill = QueueSkill(name='name')
+        skill = QueueSkill(tenant_uuid=self.default_tenant.uuid, name='name')
         skill = skill_dao.create(skill)
 
         assert_that(inspect(skill).persistent)
@@ -232,6 +314,7 @@ class TestCreate(DAOTestCase):
 
     def test_create_with_all_fields(self):
         skill = QueueSkill(
+            tenant_uuid=self.default_tenant.uuid,
             name='MyName',
             description='MyDescription',
             category='MyCategory',
@@ -247,6 +330,7 @@ class TestCreate(DAOTestCase):
 
     def test_create_with_create_category(self):
         skill = QueueSkill(
+            tenant_uuid=self.default_tenant.uuid,
             name='MyName',
             category='MyCategory',
         )
@@ -263,6 +347,7 @@ class TestCreate(DAOTestCase):
     def test_create_without_create_category(self):
         category = self.add_queue_skill_category(name='default')
         skill = QueueSkill(
+            tenant_uuid=self.default_tenant.uuid,
             name='MyName',
             category='default',
         )
@@ -278,6 +363,7 @@ class TestCreate(DAOTestCase):
 
     def test_create_category_to_none(self):
         skill = QueueSkill(
+            tenant_uuid=self.default_tenant.uuid,
             name='MyName',
             category=None,
         )
