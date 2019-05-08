@@ -594,6 +594,7 @@ class ItemInserter(object):
 
     def add_queue_skill_rule(self, **kwargs):
         kwargs.setdefault('name', self._random_name())
+        kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
         queue_skill_rule = QueueSkillRule(**kwargs)
         self.add_me(queue_skill_rule)
         return queue_skill_rule

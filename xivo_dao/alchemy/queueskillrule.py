@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-# Copyright 2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.schema import Column
+from sqlalchemy.schema import Column, UniqueConstraint, ForeignKey
 from sqlalchemy.sql import func, case
 from sqlalchemy.types import Integer, String, Text
 
@@ -15,6 +15,7 @@ class QueueSkillRule(Base):
     __tablename__ = 'queueskillrule'
 
     id = Column(Integer, primary_key=True)
+    tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
     name = Column(String(64), unique=True, nullable=False)
     rule = Column(Text)
 
