@@ -28,24 +28,12 @@ from xivo_dao.alchemy.contextnumbers import ContextNumbers
 from xivo_dao.alchemy.contexttype import ContextType
 from xivo_dao.alchemy.cti_contexts import CtiContexts
 from xivo_dao.alchemy.cti_displays import CtiDisplays
-from xivo_dao.alchemy.cti_preference import CtiPreference
-from xivo_dao.alchemy.cti_profile import CtiProfile
-from xivo_dao.alchemy.cti_profile_preference import CtiProfilePreference
-from xivo_dao.alchemy.cti_profile_service import CtiProfileService
-from xivo_dao.alchemy.cti_profile_xlet import CtiProfileXlet
-from xivo_dao.alchemy.cti_service import CtiService
-from xivo_dao.alchemy.cti_xlet import CtiXlet
-from xivo_dao.alchemy.cti_xlet_layout import CtiXletLayout
 from xivo_dao.alchemy.ctidirectories import CtiDirectories
 from xivo_dao.alchemy.ctidirectoryfields import CtiDirectoryFields
 from xivo_dao.alchemy.ctimain import CtiMain
-from xivo_dao.alchemy.ctiphonehints import CtiPhoneHints
-from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
-from xivo_dao.alchemy.ctipresences import CtiPresences
 from xivo_dao.alchemy.ctireversedirectories import CtiReverseDirectories
 from xivo_dao.alchemy.ctisheetactions import CtiSheetActions
 from xivo_dao.alchemy.ctisheetevents import CtiSheetEvents
-from xivo_dao.alchemy.ctistatus import CtiStatus
 from xivo_dao.alchemy.dhcp import Dhcp
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.dialpattern import DialPattern
@@ -167,24 +155,12 @@ __all__ = [
     "ContextType",
     "CtiContexts",
     "CtiDisplays",
-    "CtiPreference",
-    "CtiProfile",
-    "CtiProfilePreference",
-    "CtiProfileService",
-    "CtiProfileXlet",
-    "CtiService",
-    "CtiXlet",
-    "CtiXletLayout",
     "CtiDirectories",
     "CtiDirectoryFields",
     "CtiMain",
-    "CtiPhoneHints",
-    "CtiPhoneHintsGroup",
-    "CtiPresences",
     "CtiReverseDirectories",
     "CtiSheetActions",
     "CtiSheetEvents",
-    "CtiStatus",
     "Dhcp",
     "Dialaction",
     "DialPattern",

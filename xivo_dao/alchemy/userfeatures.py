@@ -36,7 +36,6 @@ from xivo_dao.helpers.db_manager import Base
 from xivo_dao.helpers.uuid import new_uuid
 
 from . import enum
-from .cti_profile import CtiProfile
 from .func_key_template import FuncKeyTemplate
 from .queuemember import QueueMember
 from .schedulepath import SchedulePath
@@ -74,7 +73,6 @@ class UserFeatures(Base):
     __tablename__ = 'userfeatures'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
-        ForeignKeyConstraint(('cti_profile_id',), ('cti_profile.id',), ondelete='RESTRICT'),
         ForeignKeyConstraint(('voicemailid',), ('voicemail.uniqueid',)),
         ForeignKeyConstraint(('tenant_uuid',), ('tenant.uuid',), ondelete='CASCADE'),
         UniqueConstraint('func_key_private_template_id'),
@@ -103,7 +101,6 @@ class UserFeatures(Base):
     enableclient = Column(Integer, nullable=False, server_default='0')
     loginclient = Column(String(254), nullable=False, server_default='')
     passwdclient = Column(String(64), nullable=False, server_default='')
-    cti_profile_id = Column(Integer)
     enablehint = Column(Integer, nullable=False, server_default='1')
     enablevoicemail = Column(Integer, nullable=False, server_default='0')
     enablexfer = Column(Integer, nullable=False, server_default='0')
@@ -142,7 +139,6 @@ class UserFeatures(Base):
 
     func_key_template = relationship(FuncKeyTemplate, foreign_keys=func_key_template_id)
     func_key_template_private = relationship(FuncKeyTemplate, foreign_keys=func_key_private_template_id)
-    cti_profile = relationship(CtiProfile, foreign_keys=cti_profile_id)
 
     main_line_rel = relationship(
         "UserLine",
@@ -159,7 +155,6 @@ class UserFeatures(Base):
     )
 
     voicemail = relationship("Voicemail", back_populates="users")
-    cti_profile = relationship("CtiProfile")
 
     user_lines = relationship(
         'UserLine',
