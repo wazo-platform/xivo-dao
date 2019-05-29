@@ -17,7 +17,6 @@ from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from xivo_dao.alchemy.conference import Conference
 from xivo_dao.alchemy.context import Context
 from xivo_dao.alchemy.contextinclude import ContextInclude
-from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.func_key_dest_agent import FuncKeyDestAgent
@@ -75,7 +74,6 @@ __all__ = [
     'Conference',
     'Context',
     'ContextInclude',
-    'CtiProfile',
     'Dialaction',
     'Extension',
     'FuncKeyDestAgent',

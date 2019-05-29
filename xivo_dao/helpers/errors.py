@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -90,7 +90,6 @@ resource_exists = FormattedError(ResourceError, "{} already exists")
 resource_associated = FormattedError(ResourceError, "{} is associated with a {}")
 resource_not_associated = FormattedError(ResourceError, "{} is not associated with {}")
 missing_association = FormattedError(ResourceError, "{} must be associated with a {}")
-missing_cti_parameters = FormattedError(ResourceError, "User must have a username and password to enable a CtiProfile")
 forward_destination_null = FormattedError(ResourceError, "Forward must be disabled to remove destination")
 unhandled_context_type = FormattedError(ResourceError, "ContextType '{}' cannot be associated")
 secondary_users = FormattedError(ResourceError, "There are secondary users associated to the line")
