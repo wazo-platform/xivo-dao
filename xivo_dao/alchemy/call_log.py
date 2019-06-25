@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -19,6 +19,7 @@ class CallLog(Base):
     date = Column(DateTime, nullable=False)
     date_answer = Column(DateTime)
     date_end = Column(DateTime)
+    tenant_uuid = Column(String(36))
     source_name = Column(String(255))
     source_exten = Column(String(255))
     source_internal_exten = Column(Text)
