@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.schema import (
@@ -7,7 +7,7 @@ from sqlalchemy.schema import (
     CheckConstraint,
     ForeignKey,
 )
-from sqlalchemy.types import String
+from sqlalchemy.types import Boolean, String
 
 from xivo_dao.helpers.db_manager import Base
 
@@ -28,3 +28,4 @@ class ApplicationDestNode(Base):
         nullable=False,
     )
     music_on_hold = Column(String(128))
+    answer = Column(Boolean, nullable=False, default=False)
