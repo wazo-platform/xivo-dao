@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -37,3 +37,17 @@ class TestDestNode(DAOTestCase):
         self.session.expire_all()
         assert_that(inspect(dest_node).deleted)
         assert_that(application.dest_node, equal_to(None))
+
+
+class TestDeleter(DAOTestCase):
+
+    def test_linefeatures(self):
+        application = self.add_application()
+        line = self.add_line(application_uuid=application.uuid)
+
+        self.session.delete(application)
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(inspect(application).deleted)
+        assert_that(line.application_uuid, equal_to(None))

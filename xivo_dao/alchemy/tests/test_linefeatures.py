@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -35,3 +35,12 @@ class TestTenantUUID(DAOTestCase):
         )).first()
 
         assert_that(result, equal_to(line))
+
+
+class TestApplication(DAOTestCase):
+
+    def test_getter(self):
+        application = self.add_application()
+        line = self.add_line(application_uuid=application.uuid)
+
+        assert_that(line.application, equal_to(application))
