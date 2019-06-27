@@ -5,6 +5,7 @@
 
 from hamcrest import (
     assert_that,
+    contains_inanyorder,
     equal_to,
 )
 from sqlalchemy.inspection import inspect
@@ -37,6 +38,16 @@ class TestDestNode(DAOTestCase):
         self.session.expire_all()
         assert_that(inspect(dest_node).deleted)
         assert_that(application.dest_node, equal_to(None))
+
+
+class TestLines(DAOTestCase):
+
+    def test_getter(self):
+        application = self.add_application()
+        line1 = self.add_line(application_uuid=application.uuid)
+        line2 = self.add_line(application_uuid=application.uuid)
+
+        assert_that(application.lines, contains_inanyorder(line1, line2))
 
 
 class TestDeleter(DAOTestCase):
