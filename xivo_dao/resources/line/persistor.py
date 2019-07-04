@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import random
@@ -123,3 +123,11 @@ class LinePersistor(CriteriaBuilderMixin):
             return query.filter(text('false'))
 
         return query.filter(Line.tenant_uuid.in_(self.tenant_uuids))
+
+    def associate_application(self, line, application):
+        line.application_uuid = application.uuid
+        self.session.flush()
+
+    def dissociate_application(self, line, application):
+        line.application_uuid = None
+        self.session.flush()

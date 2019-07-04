@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.helpers.db_utils import flush_session
@@ -47,3 +47,13 @@ def edit(session, line):
 def delete(session, line):
     with flush_session(session):
         return LinePersistor(session).delete(line)
+
+
+@daosession
+def associate_application(session, line, application):
+    LinePersistor(session).associate_application(line, application)
+
+
+@daosession
+def dissociate_application(session, line, application):
+    LinePersistor(session).dissociate_application(line, application)

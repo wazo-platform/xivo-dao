@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -18,6 +18,7 @@ from sqlalchemy.types import (
 from sqlalchemy.schema import (
     Column,
     Index,
+    ForeignKey,
     PrimaryKeyConstraint,
     UniqueConstraint,
 )
@@ -71,6 +72,7 @@ class LineFeatures(Base):
     provisioningid = Column(Integer, nullable=False)
     num = Column(Integer, server_default='1')
     ipfrom = Column(String(15))
+    application_uuid = Column(String(36), ForeignKey('application.uuid', ondelete='SET NULL'))
     commented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text)
 
@@ -80,6 +82,8 @@ class LineFeatures(Base):
         foreign_keys='LineFeatures.context',
         viewonly=True,
     )
+
+    application = relationship('Application', viewonly=True)
 
     endpoint_sip = relationship(
         'UserSIP',

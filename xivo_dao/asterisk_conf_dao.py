@@ -401,6 +401,7 @@ def find_sip_user_settings(session):
         UserSIP,
         LineFeatures.protocol,
         LineFeatures.context,
+        LineFeatures.application_uuid,
         Extension.exten.label('number'),
         UserFeatures.musiconhold.label('mohsuggest'),
         UserFeatures.id.label('user_id'),

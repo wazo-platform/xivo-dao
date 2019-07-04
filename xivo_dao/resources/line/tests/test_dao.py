@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -571,3 +571,48 @@ class TestRelationship(DAOTestCase):
         line = line_dao.get(line_row.id)
         assert_that(line, equal_to(line_row))
         assert_that(line.users, contains(user2_row, user1_row))
+
+
+class TestAssociateSchedule(DAOTestCase):
+
+    def test_associate_application(self):
+        line = self.add_line()
+        application = self.add_application()
+
+        line_dao.associate_application(line, application)
+
+        self.session.expire_all()
+        assert_that(line.application, equal_to(application))
+        assert_that(application.lines, contains(line))
+
+    def test_associate_already_associated(self):
+        line = self.add_line()
+        application = self.add_application()
+        line_dao.associate_application(line, application)
+
+        line_dao.associate_application(line, application)
+
+        self.session.expire_all()
+        assert_that(line.application, equal_to(application))
+
+
+class TestDissociateSchedule(DAOTestCase):
+
+    def test_dissociate_line_application(self):
+        line = self.add_line()
+        application = self.add_application()
+        line_dao.associate_application(line, application)
+
+        line_dao.dissociate_application(line, application)
+
+        self.session.expire_all()
+        assert_that(line.application, equal_to(None))
+
+    def test_dissociate_line_application_not_associated(self):
+        line = self.add_line()
+        application = self.add_application()
+
+        line_dao.dissociate_application(line, application)
+
+        self.session.expire_all()
+        assert_that(line.application, equal_to(None))

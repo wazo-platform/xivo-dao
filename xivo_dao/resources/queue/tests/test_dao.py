@@ -540,7 +540,7 @@ class TestDelete(DAOTestCase):
         assert_that(inspect(context_member).deleted)
 
 
-class TestAssociateCallPermission(DAOTestCase):
+class TestAssociateSchedule(DAOTestCase):
 
     def test_associate_schedule(self):
         queue = self.add_queuefeatures()
