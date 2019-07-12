@@ -137,8 +137,11 @@ engine = None
 
 class ItemInserter(object):
 
-    def __init__(self, session):
+    def __init__(self, session, tenant_uuid=None):
         self.session = session
+
+        if tenant_uuid:
+            self.default_tenant = Tenant(uuid=tenant_uuid)
 
     def add_user_line_with_exten(self, **kwargs):
         kwargs.setdefault('firstname', 'unittest')
