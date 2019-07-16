@@ -137,8 +137,11 @@ engine = None
 
 class ItemInserter(object):
 
-    def __init__(self, session):
+    def __init__(self, session, tenant_uuid=None):
         self.session = session
+
+        if tenant_uuid:
+            self.default_tenant = Tenant(uuid=tenant_uuid)
 
     def add_user_line_with_exten(self, **kwargs):
         kwargs.setdefault('firstname', 'unittest')
@@ -301,7 +304,6 @@ class ItemInserter(object):
         kwargs.setdefault('protocol', kwargs.get('endpoint', 'sip'))
         kwargs.setdefault('protocolid', kwargs.get('endpoint_id', self._generate_int()))
         kwargs.setdefault('provisioningid', int(''.join(random.choice('123456789') for _ in range(6))))
-        kwargs.setdefault('id', self._generate_int())
 
         line = LineFeatures(**kwargs)
         self.add_me(line)
@@ -404,7 +406,6 @@ class ItemInserter(object):
         kwargs.setdefault('exten', '%s' % self._generate_random_exten())
         kwargs.setdefault('type', 'user')
         kwargs.setdefault('context', 'default')
-        kwargs.setdefault('id', self._generate_int())
 
         extension = Extension(**kwargs)
         self.add_me(extension)
