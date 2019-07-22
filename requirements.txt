@@ -1,5 +1,5 @@
 git+https://github.com/wazo-pbx/xivo-lib-python.git
-psycopg2==2.6.2
-pyyaml==3.12
-sqlalchemy==1.0.15
-six==1.10.0
+psycopg2==2.7.7
+pyyaml==3.13
+sqlalchemy==1.2.18
+six==1.12.0
