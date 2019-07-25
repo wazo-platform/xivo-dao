@@ -19,7 +19,7 @@ class CallLog(Base):
     date = Column(DateTime, nullable=False)
     date_answer = Column(DateTime)
     date_end = Column(DateTime)
-    tenant_uuid = Column(String(36))
+    tenant_uuid = Column(String(36), nullable=False)
     source_name = Column(String(255))
     source_exten = Column(String(255))
     source_internal_exten = Column(Text)
