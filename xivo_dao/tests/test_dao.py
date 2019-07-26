@@ -1072,6 +1072,7 @@ class ItemInserter(object):
 
     def add_call_log(self, **kwargs):
         kwargs.setdefault('date', datetime.datetime.now())
+        kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
         call_log = CallLog(**kwargs)
         self.add_me(call_log)
         return call_log
