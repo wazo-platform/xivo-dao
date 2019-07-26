@@ -1,4 +1,4 @@
-from debian:stretch
+from debian:buster
 
 RUN apt-get -yqq update \
     && apt-get -yqq install python-pip \
