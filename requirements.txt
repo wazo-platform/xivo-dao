@@ -1,4 +1,4 @@
-git+https://github.com/wazo-pbx/xivo-lib-python.git
+https://github.com/wazo-pbx/xivo-lib-python/archive/buster.zip
 psycopg2==2.7.7
 pyyaml==3.13
 sqlalchemy==1.2.18
