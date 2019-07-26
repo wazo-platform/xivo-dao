@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from datetime import datetime as dt
@@ -173,9 +173,9 @@ class TestCallLogDAO(DAOTestCase):
     def test_create_from_list(self):
         cel_id_1, cel_id_2 = self.add_cel(), self.add_cel()
         cel_id_3, cel_id_4 = self.add_cel(), self.add_cel()
-        call_log_1 = CallLog(date=dt.now())
+        call_log_1 = CallLog(date=dt.now(), tenant_uuid=self.default_tenant.uuid)
         call_log_1.cel_ids = [cel_id_1, cel_id_2]
-        call_log_2 = CallLog(date=dt.now())
+        call_log_2 = CallLog(date=dt.now(), tenant_uuid=self.default_tenant.uuid)
         call_log_2.cel_ids = [cel_id_3, cel_id_4]
 
         call_log_dao.create_from_list([call_log_1, call_log_2])
