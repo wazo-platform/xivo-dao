@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
-
-from sqlalchemy import or_
 
 from xivo_dao.alchemy.call_log import CallLog
 from xivo_dao.alchemy.cel import CEL
@@ -13,44 +11,6 @@ from xivo_dao.helpers.db_manager import daosession
 @daosession
 def find_all(session):
     return session.query(CallLog).all()
-
-
-@daosession
-def find_all_in_period(session, start=None, end=None, order=None, direction=None, limit=None, offset=None):
-    query = session.query(CallLog)
-
-    if start:
-        query = query.filter(CallLog.date >= start)
-    if end:
-        query = query.filter(CallLog.date < end)
-
-    order_field = None
-    if order:
-        order_field = getattr(CallLog, order)
-    if direction == 'desc':
-        order_field = order_field.desc()
-    if order_field is not None:
-        query = query.order_by(order_field)
-
-    if limit:
-        query = query.limit(limit)
-    if offset:
-        query = query.offset(offset)
-
-    return query.all()
-
-
-@daosession
-def find_all_history_for_phones(session, identifiers, limit):
-    call_logs = (session
-                 .query(CallLog)
-                 .filter(or_(CallLog.destination_line_identity.in_(identifiers),
-                             CallLog.source_line_identity.in_(identifiers)))
-                 .order_by(CallLog.date.desc())
-                 .limit(limit)
-                 .all())
-
-    return call_logs
 
 
 @daosession
