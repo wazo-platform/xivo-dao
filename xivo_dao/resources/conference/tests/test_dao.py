@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -19,6 +19,7 @@ from hamcrest import (
 
 
 from xivo_dao.alchemy.conference import Conference
+from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.helpers.exception import (
@@ -472,3 +473,13 @@ class TestDelete(DAOTestCase):
 
         dialaction = self.session.query(Dialaction).filter(Dialaction.actionarg1 == str(conference.id)).first()
         assert_that(dialaction, has_properties(linked=0))
+
+    def test_when_deleting_then_extension_are_dissociated(self):
+        conference = self.add_conference()
+        extension = self.add_extension(type='conference', typeval=str(conference.id))
+
+        conference_dao.delete(conference)
+
+        row = self.session.query(Extension).first()
+        assert_that(row.id, equal_to(extension.id))
+        assert_that(row, has_properties(type='user', typeval='0'))

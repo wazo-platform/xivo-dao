@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import text
@@ -65,6 +65,10 @@ class ConferencePersistor(CriteriaBuilderMixin):
          .filter(Dialaction.action == 'conference')
          .filter(Dialaction.actionarg1 == str(conference.id))
          .update({'linked': 0}))
+
+        for extension in conference.extensions:
+            extension.type = 'user'
+            extension.typeval = '0'
 
     def _filter_tenant_uuid(self, query):
         if self.tenant_uuids is None:
