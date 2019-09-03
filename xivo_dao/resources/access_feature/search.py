@@ -13,7 +13,7 @@ config = SearchConfig(
         'id': AccessFeatures.id,
         'host': AccessFeatures.host,
         'feature': AccessFeatures.feature,
-        'commented': AccessFeatures.commented,
+        'enabled': AccessFeatures.enabled,
     },
     default_sort='host',
 )
