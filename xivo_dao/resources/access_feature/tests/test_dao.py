@@ -99,10 +99,10 @@ class TestFindAllBy(DAOTestCase):
         assert_that(result, contains())
 
     def test_find_all_by(self):
-        access_feature1 = self.add_accessfeatures(host='1.2.3.0/24', commented=1)
-        access_feature2 = self.add_accessfeatures(host='1.2.4.0/24', commented=1)
+        access_feature1 = self.add_accessfeatures(host='1.2.3.0/24', enabled=False)
+        access_feature2 = self.add_accessfeatures(host='1.2.4.0/24', enabled=False)
 
-        access_features = access_feature_dao.find_all_by(commented=1)
+        access_features = access_feature_dao.find_all_by(enabled=False)
 
         assert_that(access_features, has_items(
             has_property('id', access_feature1.id),
@@ -135,7 +135,7 @@ class TestSearchGivenMultipleAccessFeatures(TestSearch):
 
     def setUp(self):
         super(TestSearch, self).setUp()
-        self.access_feature1 = self.add_accessfeatures(host='1.2.3.0/24', commented=1)
+        self.access_feature1 = self.add_accessfeatures(host='1.2.3.0/24', enabled=False)
         self.access_feature2 = self.add_accessfeatures(host='1.2.4.0/24')
         self.access_feature3 = self.add_accessfeatures(host='1.2.5.0/24')
         self.access_feature4 = self.add_accessfeatures(host='1.2.6.0/25')
@@ -147,17 +147,17 @@ class TestSearchGivenMultipleAccessFeatures(TestSearch):
 
     def test_when_searching_with_an_extra_argument(self):
         expected_host = SearchResult(1, [self.access_feature1])
-        self.assert_search_returns_result(expected_host, search='1.2', commented=1)
+        self.assert_search_returns_result(expected_host, search='1.2', enabled=False)
 
         expected_host = SearchResult(1, [self.access_feature2])
-        self.assert_search_returns_result(expected_host, search='1.2.4', commented=0)
+        self.assert_search_returns_result(expected_host, search='1.2.4', enabled=True)
 
         expected_all_hosts = SearchResult(3, [
             self.access_feature2,
             self.access_feature3,
             self.access_feature4
         ])
-        self.assert_search_returns_result(expected_all_hosts, commented=0, order='host')
+        self.assert_search_returns_result(expected_all_hosts, enabled=True, order='host')
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
         expected = SearchResult(4, [
@@ -217,14 +217,14 @@ class TestCreate(DAOTestCase):
             id=not_none(),
             host='1.2.3.4/24',
             feature='phonebook',
-            commented=0,
+            enabled=True,
         ))
 
     def test_create_with_all_fields(self):
         access_feature = AccessFeatures(
             host='1.2.3.4/24',
             feature='phonebook',
-            commented=0,
+            enabled=True,
         )
         access_feature = access_feature_dao.create(access_feature)
 
@@ -232,7 +232,7 @@ class TestCreate(DAOTestCase):
         assert_that(access_feature, has_properties(
             host='1.2.3.4/24',
             feature='phonebook',
-            commented=0,
+            enabled=True,
         ))
 
 
@@ -241,19 +241,19 @@ class TestEdit(DAOTestCase):
     def test_edit_all_fields(self):
         access_feature = self.add_accessfeatures(
             host='1.2.3.0/24',
-            commented=0,
+            enabled=True,
         )
 
         self.session.expire_all()
         access_feature.host = '1.2.4.0/24'
-        access_feature.commented = 1
+        access_feature.enabled = False
 
         access_feature_dao.edit(access_feature)
 
         self.session.expire_all()
         assert_that(access_feature, has_properties(
             host='1.2.4.0/24',
-            commented=1,
+            enabled=False,
         ))
 
 
