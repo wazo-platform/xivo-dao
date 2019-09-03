@@ -1,4 +1,4 @@
-from debian:stretch
+from debian:buster
 
 RUN apt-get -yqq update \
     && apt-get -yqq install python-pip \
@@ -12,4 +12,4 @@ WORKDIR /usr/src/dao
 RUN pip install -r requirements.txt
 RUN pip install -r test-requirements.txt
 
-CMD nosetests xivo_dao
+CMD nosetests -v xivo_dao
