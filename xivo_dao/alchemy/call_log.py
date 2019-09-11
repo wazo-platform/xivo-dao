@@ -16,9 +16,9 @@ class CallLog(Base):
     __tablename__ = 'call_log'
 
     id = Column(Integer, nullable=False, primary_key=True)
-    date = Column(DateTime, nullable=False)
-    date_answer = Column(DateTime)
-    date_end = Column(DateTime)
+    date = Column(DateTime(timezone=True), nullable=False)
+    date_answer = Column(DateTime(timezone=True))
+    date_end = Column(DateTime(timezone=True))
     tenant_uuid = Column(String(36), nullable=False)
     source_name = Column(String(255))
     source_exten = Column(String(255))

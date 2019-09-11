@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import relationship
@@ -23,7 +23,7 @@ class CEL(Base):
 
     id = Column(Integer, primary_key=True, nullable=False)
     eventtype = Column(Text, nullable=False)
-    eventtime = Column(DateTime, nullable=False)
+    eventtime = Column(DateTime(timezone=True), nullable=False)
     userdeftype = Column(Text, nullable=False)
     cid_name = Column(UnicodeText, nullable=False)
     cid_num = Column(UnicodeText, nullable=False)
