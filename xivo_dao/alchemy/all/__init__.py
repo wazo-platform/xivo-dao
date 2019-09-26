@@ -29,7 +29,6 @@ from xivo_dao.alchemy.contexttype import ContextType
 from xivo_dao.alchemy.ctidirectories import CtiDirectories
 from xivo_dao.alchemy.ctidirectoryfields import CtiDirectoryFields
 from xivo_dao.alchemy.ctimain import CtiMain
-from xivo_dao.alchemy.ctireversedirectories import CtiReverseDirectories
 from xivo_dao.alchemy.ctisheetactions import CtiSheetActions
 from xivo_dao.alchemy.ctisheetevents import CtiSheetEvents
 from xivo_dao.alchemy.dhcp import Dhcp
@@ -154,7 +153,6 @@ __all__ = [
     "CtiDirectories",
     "CtiDirectoryFields",
     "CtiMain",
-    "CtiReverseDirectories",
     "CtiSheetActions",
     "CtiSheetEvents",
     "Dhcp",
