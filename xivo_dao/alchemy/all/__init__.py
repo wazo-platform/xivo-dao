@@ -58,8 +58,6 @@ from xivo_dao.alchemy.incall import Incall
 from xivo_dao.alchemy.infos import Infos
 from xivo_dao.alchemy.ivr import IVR
 from xivo_dao.alchemy.ivr_choice import IVRChoice
-from xivo_dao.alchemy.ldapfilter import LdapFilter
-from xivo_dao.alchemy.ldapserver import LdapServer
 from xivo_dao.alchemy.line_extension import LineExtension
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.mail import Mail
@@ -179,8 +177,6 @@ __all__ = [
     "Infos",
     "IVR",
     "IVRChoice",
-    "LdapFilter",
-    "LdapServer",
     "LineExtension",
     "LineFeatures",
     "Mail",

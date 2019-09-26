@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.types import Enum
@@ -97,20 +97,6 @@ generic_bsfilter = Enum(
     'boss',
     'secretary',
     name='generic_bsfilter',
-    metadata=Base.metadata
-)
-
-ldapserver_protocolversion = Enum(
-    '2',
-    '3',
-    name='ldapserver_protocolversion',
-    metadata=Base.metadata
-)
-
-ldapserver_securitylayer = Enum(
-    'tls',
-    'ssl',
-    name='ldapserver_securitylayer',
     metadata=Base.metadata
 )
 
