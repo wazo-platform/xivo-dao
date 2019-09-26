@@ -26,15 +26,12 @@ from xivo_dao.alchemy.contextinclude import ContextInclude
 from xivo_dao.alchemy.contextmember import ContextMember
 from xivo_dao.alchemy.contextnumbers import ContextNumbers
 from xivo_dao.alchemy.contexttype import ContextType
-from xivo_dao.alchemy.ctidirectories import CtiDirectories
-from xivo_dao.alchemy.ctidirectoryfields import CtiDirectoryFields
 from xivo_dao.alchemy.ctimain import CtiMain
 from xivo_dao.alchemy.ctisheetactions import CtiSheetActions
 from xivo_dao.alchemy.ctisheetevents import CtiSheetEvents
 from xivo_dao.alchemy.dhcp import Dhcp
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.dialpattern import DialPattern
-from xivo_dao.alchemy.directories import Directories
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.features import Features
 from xivo_dao.alchemy.func_key import FuncKey
@@ -150,15 +147,12 @@ __all__ = [
     "ContextMember",
     "ContextNumbers",
     "ContextType",
-    "CtiDirectories",
-    "CtiDirectoryFields",
     "CtiMain",
     "CtiSheetActions",
     "CtiSheetEvents",
     "Dhcp",
     "Dialaction",
     "DialPattern",
-    "Directories",
     "Extension",
     "Features",
     "FuncKey",

@@ -42,10 +42,8 @@ from xivo_dao.alchemy.context import Context
 from xivo_dao.alchemy.contextinclude import ContextInclude
 from xivo_dao.alchemy.contextmember import ContextMember
 from xivo_dao.alchemy.contextnumbers import ContextNumbers
-from xivo_dao.alchemy.ctidirectories import CtiDirectories
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.dialpattern import DialPattern
-from xivo_dao.alchemy.directories import Directories
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.features import Features
 from xivo_dao.alchemy.func_key import FuncKey
@@ -652,22 +650,6 @@ class ItemInserter(object):
         dialaction = Dialaction(**kwargs)
         self.add_me(dialaction)
         return dialaction
-
-    def add_directory(self, **kwargs):
-        directory_args = {'name': kwargs['name'],
-                          'dirtype': kwargs['dirtype']}
-        if 'uri' in kwargs:
-            directory_args['uri'] = kwargs['uri']
-        else:
-            directory_args['uri'] = self._random_name()
-
-        directory = Directories(**directory_args)
-        self.add_me(directory)
-
-        cti_directory = CtiDirectories(name=directory_args['name'],
-                                       match_direct='',
-                                       directory_id=directory.id)
-        self.add_me(cti_directory)
 
     def add_tenant(self, **kwargs):
         tenant = Tenant(**kwargs)
