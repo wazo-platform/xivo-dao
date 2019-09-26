@@ -26,7 +26,6 @@ from xivo_dao.alchemy.contextinclude import ContextInclude
 from xivo_dao.alchemy.contextmember import ContextMember
 from xivo_dao.alchemy.contextnumbers import ContextNumbers
 from xivo_dao.alchemy.contexttype import ContextType
-from xivo_dao.alchemy.cti_contexts import CtiContexts
 from xivo_dao.alchemy.ctidirectories import CtiDirectories
 from xivo_dao.alchemy.ctidirectoryfields import CtiDirectoryFields
 from xivo_dao.alchemy.ctimain import CtiMain
@@ -152,7 +151,6 @@ __all__ = [
     "ContextMember",
     "ContextNumbers",
     "ContextType",
-    "CtiContexts",
     "CtiDirectories",
     "CtiDirectoryFields",
     "CtiMain",

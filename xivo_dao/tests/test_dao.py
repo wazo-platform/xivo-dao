@@ -43,7 +43,6 @@ from xivo_dao.alchemy.contextinclude import ContextInclude
 from xivo_dao.alchemy.contextmember import ContextMember
 from xivo_dao.alchemy.contextnumbers import ContextNumbers
 from xivo_dao.alchemy.ctidirectories import CtiDirectories
-from xivo_dao.alchemy.cti_contexts import CtiContexts
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.dialpattern import DialPattern
 from xivo_dao.alchemy.directories import Directories
@@ -377,15 +376,6 @@ class ItemInserter(object):
         context_member = ContextMember(**kwargs)
         self.add_me(context_member)
         return context_member
-
-    def add_cti_context(self, **kwargs):
-        kwargs.setdefault('name', '')
-        kwargs.setdefault('directories', '')
-        kwargs.setdefault('display', '')
-
-        cti_context = CtiContexts(**kwargs)
-        self.add_me(cti_context)
-        return cti_context
 
     def add_user_line(self, **kwargs):
         kwargs.setdefault('main_user', True)
