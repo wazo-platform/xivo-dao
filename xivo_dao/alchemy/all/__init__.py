@@ -26,18 +26,12 @@ from xivo_dao.alchemy.contextinclude import ContextInclude
 from xivo_dao.alchemy.contextmember import ContextMember
 from xivo_dao.alchemy.contextnumbers import ContextNumbers
 from xivo_dao.alchemy.contexttype import ContextType
-from xivo_dao.alchemy.cti_contexts import CtiContexts
-from xivo_dao.alchemy.cti_displays import CtiDisplays
-from xivo_dao.alchemy.ctidirectories import CtiDirectories
-from xivo_dao.alchemy.ctidirectoryfields import CtiDirectoryFields
 from xivo_dao.alchemy.ctimain import CtiMain
-from xivo_dao.alchemy.ctireversedirectories import CtiReverseDirectories
 from xivo_dao.alchemy.ctisheetactions import CtiSheetActions
 from xivo_dao.alchemy.ctisheetevents import CtiSheetEvents
 from xivo_dao.alchemy.dhcp import Dhcp
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.dialpattern import DialPattern
-from xivo_dao.alchemy.directories import Directories
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.features import Features
 from xivo_dao.alchemy.func_key import FuncKey
@@ -64,8 +58,6 @@ from xivo_dao.alchemy.incall import Incall
 from xivo_dao.alchemy.infos import Infos
 from xivo_dao.alchemy.ivr import IVR
 from xivo_dao.alchemy.ivr_choice import IVRChoice
-from xivo_dao.alchemy.ldapfilter import LdapFilter
-from xivo_dao.alchemy.ldapserver import LdapServer
 from xivo_dao.alchemy.line_extension import LineExtension
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.mail import Mail
@@ -153,18 +145,12 @@ __all__ = [
     "ContextMember",
     "ContextNumbers",
     "ContextType",
-    "CtiContexts",
-    "CtiDisplays",
-    "CtiDirectories",
-    "CtiDirectoryFields",
     "CtiMain",
-    "CtiReverseDirectories",
     "CtiSheetActions",
     "CtiSheetEvents",
     "Dhcp",
     "Dialaction",
     "DialPattern",
-    "Directories",
     "Extension",
     "Features",
     "FuncKey",
@@ -191,8 +177,6 @@ __all__ = [
     "Infos",
     "IVR",
     "IVRChoice",
-    "LdapFilter",
-    "LdapServer",
     "LineExtension",
     "LineFeatures",
     "Mail",
