@@ -27,7 +27,7 @@ Running unit tests
 You need the test database ``asterisktest`` installed (see above).
 
 ```
-apt-get install libpq-dev python-dev libyaml-dev python3.5-dev
+apt-get install libpq-dev python-dev libyaml-dev python3.7-dev
 pip install tox
 tox --recreate -e py27,py37
 ```
