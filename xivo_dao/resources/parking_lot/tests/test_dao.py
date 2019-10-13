@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -18,6 +18,7 @@ from hamcrest import (
 )
 from sqlalchemy.inspection import inspect
 
+from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.parking_lot import ParkingLot
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.helpers.exception import NotFoundError, InputError
@@ -388,3 +389,13 @@ class TestDelete(DAOTestCase):
         parking_lot_dao.delete(parking_lot)
 
         assert_that(inspect(parking_lot).deleted)
+
+    def test_when_deleting_then_extension_are_dissociated(self):
+        parking_lot = self.add_parking_lot()
+        extension = self.add_extension(type='parking', typeval=str(parking_lot.id))
+
+        parking_lot_dao.delete(parking_lot)
+
+        row = self.session.query(Extension).first()
+        assert_that(row.id, equal_to(extension.id))
+        assert_that(row, has_properties(type='user', typeval='0'))

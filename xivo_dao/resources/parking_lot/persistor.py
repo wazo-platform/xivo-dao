@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import text
@@ -62,5 +62,11 @@ class ParkingLotPersistor(CriteriaBuilderMixin):
         self.session.flush()
 
     def delete(self, parking_lot):
+        self._delete_associations(parking_lot)
         self.session.delete(parking_lot)
         self.session.flush()
+
+    def _delete_associations(self, parking_lot):
+        for extension in parking_lot.extensions:
+            extension.type = 'user'
+            extension.typeval = '0'
