@@ -8,11 +8,11 @@ import datetime
 import re
 import six
 
-from sqlalchemy import text
+from sqlalchemy import text, select
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.orderinglist import ordering_list
-from sqlalchemy.orm import relationship, column_property
+from sqlalchemy.orm import aliased, join, relationship, column_property
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.orm.properties import ColumnProperty
 from sqlalchemy.schema import (
@@ -23,7 +23,7 @@ from sqlalchemy.schema import (
     PrimaryKeyConstraint,
     UniqueConstraint,
 )
-from sqlalchemy.sql import func, cast, not_
+from sqlalchemy.sql import func, cast, not_, and_
 from sqlalchemy.types import (
     Boolean,
     DateTime,
@@ -37,6 +37,7 @@ from xivo_dao.helpers.uuid import new_uuid
 
 from . import enum
 from .func_key_template import FuncKeyTemplate
+from .pickupmember import PickupMember
 from .queuemember import QueueMember
 from .schedulepath import SchedulePath
 from .user_line import UserLine
@@ -302,6 +303,21 @@ class UserFeatures(Base):
     )
 
     call_permissions = association_proxy('rightcall_members', 'rightcall')
+
+    call_pickup_interceptor_pickups = relationship(
+        'Pickup',
+        primaryjoin="""and_(
+            PickupMember.category == 'member',
+            PickupMember.membertype == 'user',
+            PickupMember.memberid == UserFeatures.id
+        )""",
+        secondary="join(PickupMember, Pickup, Pickup.id == PickupMember.pickupid)",
+        secondaryjoin="Pickup.id == PickupMember.pickupid",
+        foreign_keys='PickupMember.pickupid,PickupMember.memberid',
+    )
+
+    call_pickup_user_targets = association_proxy('call_pickup_interceptor_pickups', 'user_targets')
+    call_pickup_group_targets = association_proxy('call_pickup_interceptor_pickups', 'group_targets')
 
     def extrapolate_caller_id(self, extension=None):
         default_num = extension.exten if extension else None

@@ -166,6 +166,188 @@ class TestCallFilterSurrogates(DAOTestCase):
         assert_that(user.call_filter_surrogates, contains_inanyorder(surrogate1, surrogate2))
 
 
+class TestCallPickupTargets(DAOTestCase):
+
+    def test_one_pickup_one_user_target(self):
+        user_interceptor = self.add_user()
+        user_target1 = self.add_user()
+        call_pickup1 = self.add_pickup()
+
+        call_pickup1.user_interceptors = [user_interceptor]
+        call_pickup1.user_targets = [user_target1]
+
+        assert_that(
+            user_interceptor.call_pickup_interceptor_pickups,
+            contains(call_pickup1),
+        )
+
+        assert_that(
+            user_interceptor.call_pickup_user_targets,
+            contains(
+                contains(user_target1),
+            ),
+        )
+
+        assert_that(
+            user_interceptor.call_pickup_group_targets,
+            contains(
+                empty(),
+            ),
+        )
+
+    def test_one_pickup_two_user_targets(self):
+        user_interceptor = self.add_user()
+        user_target1 = self.add_user()
+        user_target2 = self.add_user()
+        call_pickup1 = self.add_pickup()
+
+        call_pickup1.user_interceptors = [user_interceptor]
+        call_pickup1.user_targets = [user_target1, user_target2]
+
+        assert_that(
+            user_interceptor.call_pickup_interceptor_pickups,
+            contains(call_pickup1),
+        )
+
+        assert_that(
+            user_interceptor.call_pickup_user_targets,
+            contains(
+                contains(user_target1, user_target2),
+            ),
+        )
+
+        assert_that(
+            user_interceptor.call_pickup_group_targets,
+            contains(
+                empty(),
+            ),
+        )
+
+    def test_two_pickups_two_user_targets(self):
+        user_interceptor = self.add_user()
+        user_target1 = self.add_user()
+        user_target2 = self.add_user()
+        call_pickup1 = self.add_pickup()
+        call_pickup2 = self.add_pickup()
+
+        call_pickup1.user_interceptors = [user_interceptor]
+        call_pickup1.user_targets = [user_target1]
+
+        call_pickup2.user_interceptors = [user_interceptor]
+        call_pickup2.user_targets = [user_target2]
+
+        assert_that(
+            user_interceptor.call_pickup_interceptor_pickups,
+            contains(call_pickup1, call_pickup2),
+        )
+
+        assert_that(
+            user_interceptor.call_pickup_user_targets,
+            contains(
+                contains(user_target1),
+                contains(user_target2),
+            ),
+        )
+
+        assert_that(
+            user_interceptor.call_pickup_group_targets,
+            contains(
+                empty(),
+                empty(),
+            ),
+        )
+
+    # Groups
+    def test_one_pickup_one_group_target(self):
+        user_interceptor = self.add_user()
+        group_target1 = self.add_group()
+        call_pickup1 = self.add_pickup()
+
+        call_pickup1.user_interceptors = [user_interceptor]
+        call_pickup1.group_targets = [group_target1]
+
+        assert_that(
+            user_interceptor.call_pickup_interceptor_pickups,
+            contains(call_pickup1),
+        )
+
+        assert_that(
+            user_interceptor.call_pickup_group_targets,
+            contains(
+                contains(group_target1),
+            ),
+        )
+
+        assert_that(
+            user_interceptor.call_pickup_user_targets,
+            contains(
+                empty(),
+            ),
+        )
+
+    def test_one_pickup_two_group_targets(self):
+        user_interceptor = self.add_user()
+        group_target1 = self.add_group()
+        group_target2 = self.add_group()
+        call_pickup1 = self.add_pickup()
+
+        call_pickup1.user_interceptors = [user_interceptor]
+        call_pickup1.group_targets = [group_target1, group_target2]
+
+        assert_that(
+            user_interceptor.call_pickup_interceptor_pickups,
+            contains(call_pickup1),
+        )
+
+        assert_that(
+            user_interceptor.call_pickup_group_targets,
+            contains(
+                contains(group_target1, group_target2),
+            ),
+        )
+
+        assert_that(
+            user_interceptor.call_pickup_user_targets,
+            contains(
+                empty(),
+            ),
+        )
+
+    def test_two_pickups_two_group_targets(self):
+        user_interceptor = self.add_user()
+        group_target1 = self.add_group()
+        group_target2 = self.add_group()
+        call_pickup1 = self.add_pickup()
+        call_pickup2 = self.add_pickup()
+
+        call_pickup1.user_interceptors = [user_interceptor]
+        call_pickup1.group_targets = [group_target1]
+
+        call_pickup2.user_interceptors = [user_interceptor]
+        call_pickup2.group_targets = [group_target2]
+
+        assert_that(
+            user_interceptor.call_pickup_interceptor_pickups,
+            contains(call_pickup1, call_pickup2),
+        )
+
+        assert_that(
+            user_interceptor.call_pickup_group_targets,
+            contains(
+                contains(group_target1),
+                contains(group_target2),
+            ),
+        )
+
+        assert_that(
+            user_interceptor.call_pickup_user_targets,
+            contains(
+                empty(),
+                empty(),
+            ),
+        )
+
+
 class TestFallbacks(DAOTestCase):
 
     def test_getter(self):
