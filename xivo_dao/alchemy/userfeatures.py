@@ -313,6 +313,7 @@ class UserFeatures(Base):
         secondary="join(PickupMember, Pickup, Pickup.id == PickupMember.pickupid)",
         secondaryjoin="Pickup.id == PickupMember.pickupid",
         foreign_keys='PickupMember.pickupid,PickupMember.memberid',
+        viewonly=True,
     )
 
     call_pickup_user_targets = association_proxy('call_pickup_interceptor_pickups', 'user_targets')
