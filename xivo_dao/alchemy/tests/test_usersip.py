@@ -4,7 +4,7 @@
 
 from hamcrest import (
     assert_that,
-    equal_to,
+    has_properties,
 )
 
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -12,9 +12,20 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 class TestUserSIP(DAOTestCase):
 
-    def test_setting_a_username_when_options_is_in_the_body(self):
-        params = {'username': 'foobar', 'name': 'foo', 'options': []}
+    def test_exclude_options_confd_ignore_options_key(self):
+        exclude_options_confd = {
+            'name': 'foo',
+            'username': 'foobar',
+            'secret': 's3cret',
+            'type': 'peer',
+            'host': 'my-host',
+            'context': 'my-context',
+            'category': 'user',
+            'protocol': 'sip',
+        }
 
-        sip = self.add_usersip(**params)
+        body = dict(exclude_options_confd)
+        body['options'] = []
+        sip = self.add_usersip(**body)
 
-        assert_that(sip.username, equal_to('foobar'))
+        assert_that(sip, has_properties(exclude_options_confd))
