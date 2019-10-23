@@ -360,31 +360,6 @@ class TestCreate(DAOTestCase):
             category='user',
         ))
 
-    def test_create_with_different_name_same_username(self):
-        username = 'my-foobar-account'
-
-        foo_model = SIPEndpoint(
-            tenant_uuid=self.default_tenant.uuid,
-            name='foo',
-            username=username,
-            secret='mysecret',
-            host="127.0.0.1",
-            type="peer",
-        )
-        foo = sip_dao.create(foo_model)
-
-        bar_model = SIPEndpoint(
-            tenant_uuid=self.default_tenant.uuid,
-            name='bar',
-            username=username,
-            secret='mysecret',
-            host="127.0.0.1",
-            type="peer",
-        )
-        bar = sip_dao.create(bar_model)
-
-        assert_that(foo.username, equal_to(bar.username))
-
     def test_create_with_native_options(self):
         sip_model = SIPEndpoint(tenant_uuid=self.default_tenant.uuid, options=ALL_OPTIONS)
 
