@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from functools import partial
@@ -92,6 +92,13 @@ class SipPersistor(CriteriaBuilderMixin):
     def fill_default_values(self, sip):
         if sip.name is None:
             sip.name = generators.find_unused_hash(partial(self._already_exists, SIP.name))
+
+        # This is a compatibility fix that was added in 19.15 to avoid breaking the API.
+        # In the old version, the name could not be specified in the API the username was
+        # always copied.
+        if sip.username is None:
+            sip.username = sip.name
+
         if sip.secret is None:
             sip.secret = generators.find_unused_hash(partial(self._already_exists, SIP.secret))
         if sip.type is None:
