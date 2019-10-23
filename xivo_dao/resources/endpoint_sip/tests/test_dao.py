@@ -329,7 +329,7 @@ class TestCreate(DAOTestCase):
         assert_that(sip, has_properties(
             id=not_none(),
             name=has_length(8),
-            username=none(),
+            username=sip.name,
             secret=has_length(8),
             type='friend',
             host='dynamic',
@@ -353,7 +353,7 @@ class TestCreate(DAOTestCase):
             id=not_none(),
             tenant_uuid=self.default_tenant.uuid,
             name='myusername',
-            username=none(),
+            username='myusername',
             secret='mysecret',
             type='peer',
             host='127.0.0.1',
