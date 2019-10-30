@@ -5,6 +5,7 @@
 import six
 
 from collections import namedtuple
+from unidecode import unidecode
 
 import sqlalchemy as sa
 
@@ -124,7 +125,8 @@ class SearchSystem(object):
 
         criteria = []
         for column in self.config.all_search_columns():
-            expression = unaccent(sql.cast(column, sa.String)).ilike('%%%s%%' % term)
+            clean_term = unidecode(term)
+            expression = unaccent(sql.cast(column, sa.String)).ilike('%%%s%%' % clean_term)
             criteria.append(expression)
 
         query = query.filter(sql.or_(*criteria))
