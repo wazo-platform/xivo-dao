@@ -7,7 +7,7 @@ db:
    - POSTGRES_PASSWORD=proformatique
    - POSTGRES_DB=asterisk
   volumes:
-    - "./contribs/docker/db/uuid.sql:/docker-entrypoint-initdb.d/uuid.sql"
+    - "./contribs/docker/db/extensions.sql:/docker-entrypoint-initdb.d/extensions.sql"
 dao:
   build: .
   links:
