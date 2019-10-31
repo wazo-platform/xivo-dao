@@ -1,18 +1,25 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import six
 
 from collections import namedtuple
+from unidecode import unidecode
 
 import sqlalchemy as sa
+
 from sqlalchemy import sql
+from sqlalchemy.sql.functions import ReturnTypeFromArgs
 from sqlalchemy.types import Integer
 
 from xivo_dao.helpers import errors
 
 SearchResult = namedtuple('SearchResult', ['total', 'items'])
+
+
+class unaccent(ReturnTypeFromArgs):
+    pass
 
 
 class CriteriaBuilderMixin(object):
@@ -118,7 +125,8 @@ class SearchSystem(object):
 
         criteria = []
         for column in self.config.all_search_columns():
-            expression = sql.cast(column, sa.String).ilike('%%%s%%' % term)
+            clean_term = unidecode(term)
+            expression = unaccent(sql.cast(column, sa.String)).ilike('%%%s%%' % clean_term)
             criteria.append(expression)
 
         query = query.filter(sql.or_(*criteria))

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -156,6 +156,23 @@ class TestSearchSystem(DAOTestCase):
 
         assert_that(total, equal_to(2))
         assert_that(rows, contains(last_user_row))
+
+    def test_given_search_without_accent_term_then_searches_in_column_with_accent(self):
+        user_row = self.add_user(firstname='accênt')
+
+        rows, total = self.search.search(self.session, {'search': 'accent'})
+
+        assert_that(total, equal_to(1))
+        assert_that(rows, contains(user_row))
+
+    def test_given_search_wit_accent_term_then_searches_in_column_without_accent(self):
+        user_row1 = self.add_user(firstname='accént')
+        user_row2 = self.add_user(firstname='unaccent')
+
+        rows, total = self.search.search(self.session, {'search': 'accént'})
+
+        assert_that(total, equal_to(2))
+        assert_that(rows, contains(user_row1, user_row2))
 
     def test_given_search_term_then_searches_in_columns_and_uses_default_sort(self):
         user_row1 = self.add_user(firstname='a123bcd', lastname='eeefghi')
