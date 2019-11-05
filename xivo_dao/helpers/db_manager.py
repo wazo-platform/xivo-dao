@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2012-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import logging
@@ -11,7 +11,7 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.types import String, TypeDecorator
 
-from xivo.config_helper import ConfigParser, ErrorHandler
+from xivo.config_helper import read_config_file_hierarchy
 
 DEFAULT_DB_URI = 'postgresql://asterisk:proformatique@localhost/asterisk'
 
@@ -97,5 +97,4 @@ def default_config():
         'config_file': '/etc/xivo-dao/config.yml',
         'extra_config_files': '/etc/xivo-dao/conf.d',
     }
-    config_parser = ConfigParser(ErrorHandler())
-    return config_parser.read_config_file_hierarchy(config)
+    return read_config_file_hierarchy(config)
