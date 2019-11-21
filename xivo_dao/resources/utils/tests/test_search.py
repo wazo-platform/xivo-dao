@@ -148,15 +148,6 @@ class TestSearchSystem(DAOTestCase):
         assert_that(total, equal_to(2))
         assert_that(rows, contains(first_user_row, last_user_row))
 
-    def test_given_skip_then_offset_a_number_of_rows(self):
-        self.add_user(lastname='Abigale')
-        last_user_row = self.add_user(lastname='Zintrabi')
-
-        rows, total = self.search.search(self.session, {'skip': 1})
-
-        assert_that(total, equal_to(2))
-        assert_that(rows, contains(last_user_row))
-
     def test_given_search_without_accent_term_then_searches_in_column_with_accent(self):
         user_row = self.add_user(firstname='accênt')
 
