@@ -309,22 +309,6 @@ class TestFindAllBy(TestUser):
                                      has_property('id', user2.id)))
 
 
-class TestLegacySearch(TestUser):
-
-    def test_given_users_when_using_legacy_search_then_searches_on_fullname(self):
-        user1 = self.add_user(firstname="Rîchard", lastname="Làtulippe", tenant_uuid=self.tenant.uuid)
-        user2 = self.add_user(firstname="Jôhn", lastname="Smïth", tenant_uuid=self.tenant.uuid)
-
-        total, users = user_dao.legacy_search("rîch", tenant_uuids=[self.tenant.uuid])
-        assert_that(total, equal_to(1))
-        assert_that(users, contains(has_property('id', user1.id)))
-        assert_that(users, is_not(contains(has_property('id', user2.id))))
-
-        total, users = user_dao.legacy_search("rîch", tenant_uuids=[UNKNOWN_TENANT])
-        assert_that(total, equal_to(0))
-        assert_that(users, empty())
-
-
 class TestSearch(TestUser):
 
     def assert_search_returns_result(self, search_result, **parameters):
