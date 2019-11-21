@@ -491,6 +491,16 @@ class TestSearchGivenMultipleUsers(TestSearch):
                                           offset=1,
                                           limit=1)
 
+    def test_when_multiple_uuid_then_returns_right_number_of_items(self):
+        expected = SearchResult(2, [self.user2, self.user3])
+
+        multiple_uuid = ','.join([self.user2.uuid, self.user3.uuid])
+        self.assert_search_returns_result(expected, uuid=multiple_uuid)
+
+    def test_when_uuid_is_none_then_returns_right_number_of_items(self):
+        expected = SearchResult(0, [])
+        self.assert_search_returns_result(expected, uuid=None)
+
 
 class TestCreate(TestUser):
 
