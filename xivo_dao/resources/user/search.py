@@ -2,6 +2,8 @@
 # Copyright 2014-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import six
+
 from sqlalchemy.sql import and_, or_
 
 from xivo_dao.alchemy.userfeatures import UserFeatures
@@ -53,7 +55,7 @@ config = SearchConfig(table=UserFeatures,
 class UserSearchSystem(SearchSystem):
 
     def search_from_query(self, query, parameters):
-        if 'uuid' in parameters and isinstance(parameters['uuid'], str):
+        if 'uuid' in parameters and isinstance(parameters['uuid'], (str, six.text_type)):
             uuids = parameters.pop('uuid').split(',')
             query = self._filter_exact_match_uuids(query, uuids)
 
