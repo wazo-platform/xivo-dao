@@ -299,10 +299,10 @@ class TestSearchMultiple(TestSearch):
 
         self.assert_search_returns_result(expected, limit=1)
 
-    def test_when_skipping_then_returns_right_number_of_items(self):
+    def test_when_offset_then_returns_right_number_of_items(self):
         expected = SearchResult(4, [self.sip2, self.sip3, self.sip4])
 
-        self.assert_search_returns_result(expected, skip=1)
+        self.assert_search_returns_result(expected, offset=1)
 
     def test_when_doing_a_paginated_search_then_returns_a_paginated_result(self):
         expected = SearchResult(3, [self.sip2])
@@ -312,7 +312,7 @@ class TestSearchMultiple(TestSearch):
             search='a',
             order='username',
             direction='desc',
-            skip=1,
+            offset=1,
             limit=1,
         )
 

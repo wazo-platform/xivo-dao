@@ -104,7 +104,7 @@ class SearchSystem(object):
     def _populate_parameters(self, parameters=None):
         new_params = dict(self.DEFAULTS)
         if parameters:
-            parameters['offset'] = parameters.pop('skip', parameters.get('offset', self.DEFAULTS['offset']))
+            parameters.setdefault('offset', self.DEFAULTS['offset'])
             new_params.update(parameters)
 
         return new_params

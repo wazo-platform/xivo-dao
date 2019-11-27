@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -290,10 +290,10 @@ class TestSearchGivenMultipleIncall(TestSearch):
 
         self.assert_search_returns_result(expected, limit=1)
 
-    def test_when_skipping_then_returns_right_number_of_items(self):
+    def test_when_offset_then_returns_right_number_of_items(self):
         expected = SearchResult(4, [self.incall2, self.incall3, self.incall4])
 
-        self.assert_search_returns_result(expected, skip=1)
+        self.assert_search_returns_result(expected, offset=1)
 
     def test_when_doing_a_paginated_search_then_returns_a_paginated_result(self):
         expected = SearchResult(3, [self.incall2])
@@ -302,7 +302,7 @@ class TestSearchGivenMultipleIncall(TestSearch):
                                           search='a',
                                           order='preprocess_subroutine',
                                           direction='desc',
-                                          skip=1,
+                                          offset=1,
                                           limit=1)
 
 

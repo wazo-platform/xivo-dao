@@ -309,22 +309,6 @@ class TestFindAllBy(TestUser):
                                      has_property('id', user2.id)))
 
 
-class TestLegacySearch(TestUser):
-
-    def test_given_users_when_using_legacy_search_then_searches_on_fullname(self):
-        user1 = self.add_user(firstname="Rîchard", lastname="Làtulippe", tenant_uuid=self.tenant.uuid)
-        user2 = self.add_user(firstname="Jôhn", lastname="Smïth", tenant_uuid=self.tenant.uuid)
-
-        total, users = user_dao.legacy_search("rîch", tenant_uuids=[self.tenant.uuid])
-        assert_that(total, equal_to(1))
-        assert_that(users, contains(has_property('id', user1.id)))
-        assert_that(users, is_not(contains(has_property('id', user2.id))))
-
-        total, users = user_dao.legacy_search("rîch", tenant_uuids=[UNKNOWN_TENANT])
-        assert_that(total, equal_to(0))
-        assert_that(users, empty())
-
-
 class TestSearch(TestUser):
 
     def assert_search_returns_result(self, search_result, **parameters):
@@ -492,10 +476,10 @@ class TestSearchGivenMultipleUsers(TestSearch):
 
         self.assert_search_returns_result(expected, limit=1)
 
-    def test_when_skipping_then_returns_right_number_of_items(self):
+    def test_when_offset_then_returns_right_number_of_items(self):
         expected = SearchResult(4, [self.user4, self.user3, self.user1])
 
-        self.assert_search_returns_result(expected, skip=1)
+        self.assert_search_returns_result(expected, offset=1)
 
     def test_when_doing_a_paginated_search_then_returns_a_paginated_result(self):
         expected = SearchResult(3, [self.user2])
@@ -504,8 +488,18 @@ class TestSearchGivenMultipleUsers(TestSearch):
                                           search='a',
                                           order='firstname',
                                           direction='desc',
-                                          skip=1,
+                                          offset=1,
                                           limit=1)
+
+    def test_when_multiple_uuid_then_returns_right_number_of_items(self):
+        expected = SearchResult(2, [self.user2, self.user3])
+
+        multiple_uuid = ','.join([self.user2.uuid, self.user3.uuid])
+        self.assert_search_returns_result(expected, uuid=multiple_uuid)
+
+    def test_when_uuid_is_none_then_returns_right_number_of_items(self):
+        expected = SearchResult(0, [])
+        self.assert_search_returns_result(expected, uuid=None)
 
 
 class TestCreate(TestUser):

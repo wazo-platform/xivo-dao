@@ -1,15 +1,10 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
 
-from sqlalchemy import and_
-
 from xivo_dao.helpers.db_manager import Session
-
-from xivo_dao.resources.utils.search import SearchResult
-from xivo_dao.alchemy.userfeatures import UserFeatures as User
 
 from xivo_dao.resources.user.persistor import UserPersistor
 from xivo_dao.resources.func_key.persistor import DestinationPersistor
@@ -21,16 +16,6 @@ from xivo_dao.resources.user.fixes import UserFixes
 
 def persistor(tenant_uuids=None):
     return UserPersistor(Session, user_view, user_search, tenant_uuids)
-
-
-def legacy_search(term, tenant_uuids):
-    users = (Session.query(User)
-             .filter(and_(User.fullname.ilike('%{}%'.format(term)),
-                          User.tenant_uuid.in_(tenant_uuids)))
-             .all()
-             )
-
-    return SearchResult(len(users), users)
 
 
 def search(**parameters):

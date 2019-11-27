@@ -2,7 +2,7 @@
 # Copyright 2014-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from sqlalchemy.sql import and_
+from sqlalchemy.sql import and_, or_
 
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.alchemy.linefeatures import LineFeatures
@@ -53,8 +53,16 @@ config = SearchConfig(table=UserFeatures,
 class UserSearchSystem(SearchSystem):
 
     def search_from_query(self, query, parameters):
+        if 'uuid' in parameters and isinstance(parameters['uuid'], str):
+            uuids = parameters.pop('uuid').split(',')
+            query = self._filter_exact_match_uuids(query, uuids)
+
         query = self._search_on_extension(query)
         return super(UserSearchSystem, self).search_from_query(query, parameters)
+
+    def _filter_exact_match_uuids(self, query, uuids):
+        column = self.config.column_for_searching('uuid')
+        return query.filter(or_(column == uuid for uuid in uuids))
 
     def _search_on_extension(self, query):
         return (query
