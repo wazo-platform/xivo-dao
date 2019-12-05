@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import unittest
@@ -104,6 +104,29 @@ class TestIncall(DAOTestCase):
         incall = self.add_incall(destination=dialaction)
 
         assert_that(dialaction.incall, equal_to(incall))
+
+    def test_getter_when_destination_deleted(self):
+        ivr = self.add_ivr()
+        user = self.add_user()
+        dialaction = self.add_dialaction(action='ivr', actionarg1=ivr.id)
+
+        incall = self.add_incall(destination=dialaction)
+        assert_that(incall.destination.linked, equal_to(1))
+        assert_that(incall.destination.ivr, equal_to(ivr))
+
+        incall.destination.linked = 0
+        self.session.delete(ivr)
+        self.session.add(incall)
+        self.session.flush()
+        assert_that(incall.destination.linked, equal_to(0))
+
+        dialaction = Dialaction(action='user', actionarg1=user.id)
+        incall.destination = dialaction
+        self.session.merge(incall)
+        self.session.flush()
+
+        assert_that(incall.destination.linked, equal_to(1))
+        assert_that(incall.destination.user, equal_to(user))
 
 
 class TestVoicemail(DAOTestCase):
