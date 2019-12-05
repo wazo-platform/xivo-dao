@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2012-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -111,11 +111,11 @@ class Incall(Base):
     @destination.setter
     def destination(self, destination):
         if not self.dialaction:
-            destination.event = 'answer'
-            destination.category = 'incall'
-            destination.linked = 1
             self.dialaction = destination
 
+        self.dialaction.event = 'answer'
+        self.dialaction.category = 'incall'
+        self.dialaction.linked = 1
         self.dialaction.action = destination.action
         self.dialaction.actionarg1 = destination.actionarg1
         self.dialaction.actionarg2 = destination.actionarg2
