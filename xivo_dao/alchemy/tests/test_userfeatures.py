@@ -166,7 +166,6 @@ class TestCallFilterSurrogates(DAOTestCase):
         assert_that(user.call_filter_surrogates, contains_inanyorder(surrogate1, surrogate2))
 
 
-
 class TestCallPickupUserTargets(DAOTestCase):
     def test_getter(self):
         user_interceptor = self.add_user()
@@ -241,7 +240,9 @@ class TestCallPickupInterceptorPickups(DAOTestCase):
 
         call_pickup1.user_interceptors = [user_interceptor]
         call_pickup1.user_targets = [user_target1, user_target2]
+        self.session.flush()
 
+        self.session.expire_all()
         assert_that(
             user_interceptor.call_pickup_interceptor_pickups,
             contains(call_pickup1),
@@ -273,7 +274,9 @@ class TestCallPickupInterceptorPickups(DAOTestCase):
 
         call_pickup2.user_interceptors = [user_interceptor]
         call_pickup2.user_targets = [user_target2]
+        self.session.flush()
 
+        self.session.expire_all()
         assert_that(
             user_interceptor.call_pickup_interceptor_pickups,
             contains(call_pickup1, call_pickup2),
@@ -303,7 +306,9 @@ class TestCallPickupInterceptorPickups(DAOTestCase):
 
         call_pickup1.user_interceptors = [user_interceptor]
         call_pickup1.group_targets = [group_target1]
+        self.session.flush()
 
+        self.session.expire_all()
         assert_that(
             user_interceptor.call_pickup_interceptor_pickups,
             contains(call_pickup1),
@@ -331,7 +336,9 @@ class TestCallPickupInterceptorPickups(DAOTestCase):
 
         call_pickup1.user_interceptors = [user_interceptor]
         call_pickup1.group_targets = [group_target1, group_target2]
+        self.session.flush()
 
+        self.session.expire_all()
         assert_that(
             user_interceptor.call_pickup_interceptor_pickups,
             contains(call_pickup1),
@@ -363,7 +370,9 @@ class TestCallPickupInterceptorPickups(DAOTestCase):
 
         call_pickup2.user_interceptors = [user_interceptor]
         call_pickup2.group_targets = [group_target2]
+        self.session.flush()
 
+        self.session.expire_all()
         assert_that(
             user_interceptor.call_pickup_interceptor_pickups,
             contains(call_pickup1, call_pickup2),
