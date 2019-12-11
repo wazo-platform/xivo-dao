@@ -316,9 +316,12 @@ class UserFeatures(Base):
         viewonly=True,
     )
 
-    call_pickup_user_targets = association_proxy('call_pickup_interceptor_pickups', 'user_targets')
-    call_pickup_group_targets = association_proxy('call_pickup_interceptor_pickups', 'group_targets')
-
+    users_from_call_pickup_user_targets = association_proxy(
+        'call_pickup_interceptor_pickups', 'user_targets'
+    )
+    users_from_call_pickup_group_targets = association_proxy(
+        'call_pickup_interceptor_pickups', 'users_from_group_targets'
+    )
     users_from_call_pickup_group_interceptors_user_targets = association_proxy(
         'group_members', 'users_from_call_pickup_group_interceptor_user_targets'
     )
