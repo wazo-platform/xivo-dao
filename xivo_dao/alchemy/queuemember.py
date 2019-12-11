@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import re
 
 from xivo_dao.helpers.db_manager import Base
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import (
@@ -59,6 +60,12 @@ class QueueMember(Base):
         primaryjoin="""and_(QueueMember.category == 'group',
                             QueueMember.queue_name == GroupFeatures.name)""",
         foreign_keys='QueueMember.queue_name',
+    )
+    users_from_call_pickup_group_interceptor_user_targets = association_proxy(
+        'group', 'users_from_call_pickup_user_targets'
+    )
+    users_from_call_pickup_group_interceptor_group_targets = association_proxy(
+        'group', 'users_from_call_pickup_group_targets'
     )
 
     queue = relationship(

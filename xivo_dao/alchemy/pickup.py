@@ -60,6 +60,7 @@ class Pickup(Base):
         'group',
         creator=lambda _group: PickupMember(group=_group, category='pickup', membertype='group'),
     )
+    users_from_group_targets = association_proxy('pickupmember_group_targets', 'users_from_group')
 
     pickupmember_user_interceptors = relationship(
         'PickupMember',
