@@ -4,7 +4,7 @@
 
 from hamcrest import (
     assert_that,
-    contains,
+    contains_inanyorder,
 )
 
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -34,4 +34,4 @@ class TestUsersFromGroup(DAOTestCase):
             membertype='group',
             memberid=group.id,
         )
-        assert_that(pickup_member.users_from_group, contains(user1, user2))
+        assert_that(pickup_member.users_from_group, contains_inanyorder(user1, user2))
