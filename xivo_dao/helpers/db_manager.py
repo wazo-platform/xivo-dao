@@ -3,6 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import logging
+import os
+import sys
+
 from functools import wraps
 from sqlalchemy import event, exc
 from sqlalchemy import create_engine
@@ -88,7 +91,8 @@ def init_db(db_uri):
 
 def init_db_from_config(config=None):
     config = config or default_config()
-    url = config.get('db_uri', DEFAULT_DB_URI)
+    app_name = os.path.basename(sys.argv[0])
+    url = config.get('db_uri', "%s?application_name=%s" % (DEFAULT_DB_URI, app_name))
     init_db(url)
 
 
