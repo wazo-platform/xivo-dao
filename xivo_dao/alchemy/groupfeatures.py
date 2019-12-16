@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2012-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import six
@@ -257,11 +257,7 @@ class GroupFeatures(Base):
         for extension in self.extensions:
             self.number = extension.exten
             self.context = extension.context
-            if self.queue:
-                self.queue.context = extension.context
             return
 
         self.number = None
         self.context = None
-        if self.queue:
-            self.queue.context = None

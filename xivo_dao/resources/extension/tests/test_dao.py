@@ -751,14 +751,9 @@ class TestAssociateGroup(DAOTestCase):
     def test_associate_fix_group(self):
         extension = self.add_extension(exten='1234', context='patate')
         group = self.add_group()
-        assert_that(group, has_properties(context=not_('patate'),
-                                          number=not_('1234'),
-                                          queue=has_properties(context=not_('patate'))))
-
+        assert_that(group, has_properties(context=not_('patate'), number=not_('1234')))
         extension_dao.associate_group(group, extension)
-        assert_that(group, has_properties(context='patate',
-                                          number='1234',
-                                          queue=has_properties(context='patate')))
+        assert_that(group, has_properties(context='patate', number='1234'))
 
     def test_associate_multiple_groups(self):
         extension1 = self.add_extension()
@@ -798,15 +793,9 @@ class TestAssociateGroup(DAOTestCase):
         extension = self.add_extension(exten='1234', context='patate')
         group = self.add_group()
         extension_dao.associate_group(group, extension)
-        assert_that(group, has_properties(context='patate',
-                                          number='1234',
-                                          queue=has_properties(context='patate')))
-
+        assert_that(group, has_properties(context='patate', number='1234'))
         extension_dao.dissociate_group(group, extension)
-
-        assert_that(group, has_properties(context=None,
-                                          number=None,
-                                          queue=has_properties(context=None)))
+        assert_that(group, has_properties(context=None, number=None))
 
     def test_dissociate_group_not_associated(self):
         extension = self.add_extension(typeval='123')
