@@ -35,7 +35,6 @@ class GroupFeatures(Base):
     ignore_forward = Column(Integer, nullable=False, server_default='1')
     timeout = Column(Integer)
     preprocess_subroutine = Column(String(39))
-    deleted = Column(Integer, nullable=False, server_default='0')
 
     caller_id = relationship(
         'Callerid',
