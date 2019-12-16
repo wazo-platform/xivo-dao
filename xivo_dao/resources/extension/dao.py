@@ -69,12 +69,10 @@ def dissociate_incall(incall, extension):
 
 def associate_group(group, extension):
     persistor().associate_group(group, extension)
-    group.fix_extension()
 
 
 def dissociate_group(group, extension):
     persistor().dissociate_group(group, extension)
-    group.fix_extension()
 
 
 def associate_queue(queue, extension):

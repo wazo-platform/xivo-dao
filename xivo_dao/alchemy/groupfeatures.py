@@ -22,16 +22,12 @@ class GroupFeatures(Base):
     __tablename__ = 'groupfeatures'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
-        Index('groupfeatures__idx__context', 'context'),
         Index('groupfeatures__idx__name', 'name'),
-        Index('groupfeatures__idx__number', 'number'),
     )
 
     id = Column(Integer)
     tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
     name = Column(String(128), nullable=False)
-    number = Column(String(40))
-    context = Column(String(39))
     transfer_user = Column(Integer, nullable=False, server_default='0')
     transfer_call = Column(Integer, nullable=False, server_default='0')
     write_caller = Column(Integer, nullable=False, server_default='0')
@@ -252,12 +248,3 @@ class GroupFeatures(Base):
             self.group_dialactions[event].action = dialaction.action
             self.group_dialactions[event].actionarg1 = dialaction.actionarg1
             self.group_dialactions[event].actionarg2 = dialaction.actionarg2
-
-    def fix_extension(self):
-        for extension in self.extensions:
-            self.number = extension.exten
-            self.context = extension.context
-            return
-
-        self.number = None
-        self.context = None

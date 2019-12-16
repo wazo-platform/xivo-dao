@@ -497,7 +497,6 @@ class ItemInserter(object):
     def add_group(self, **kwargs):
         kwargs.setdefault('id', self._generate_int())
         kwargs.setdefault('name', self._random_name())
-        kwargs.setdefault('context', '')
         kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
 
         group = GroupFeatures(**kwargs)
