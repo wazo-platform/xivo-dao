@@ -293,6 +293,49 @@ class TestGroupTargets(DAOTestCase):
         assert_that(pickup.group_targets, empty())
 
 
+class TestUsersFromGroupTargets(DAOTestCase):
+
+    def test_getter(self):
+        user1 = self.add_user()
+        group1 = self.add_group()
+        self.add_queue_member(
+            queue_name=group1.name,
+            category='group',
+            usertype='user',
+            userid=user1.id,
+        )
+        user2 = self.add_user()
+        group2 = self.add_group()
+        self.add_queue_member(
+            queue_name=group2.name,
+            category='group',
+            usertype='user',
+            userid=user2.id,
+        )
+        pickup = self.add_pickup()
+        pickup.group_targets = [group1, group2]
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(
+            pickup.users_from_group_targets,
+            contains(contains(user1), contains(user2)),
+        )
+
+    def test_getter_when_empty(self):
+        group1 = self.add_group()
+        group2 = self.add_group()
+        pickup = self.add_pickup()
+        pickup.group_targets = [group1, group2]
+        self.session.flush()
+
+        self.session.expire_all()
+        assert_that(
+            pickup.users_from_group_targets,
+            contains(empty(), empty()),
+        )
+
+
 class TestDelete(DAOTestCase):
 
     def test_pickupmember_group_targets_are_deleted(self):

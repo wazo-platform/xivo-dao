@@ -303,6 +303,32 @@ class UserFeatures(Base):
 
     call_permissions = association_proxy('rightcall_members', 'rightcall')
 
+    call_pickup_interceptor_pickups = relationship(
+        'Pickup',
+        primaryjoin="""and_(
+            PickupMember.category == 'member',
+            PickupMember.membertype == 'user',
+            PickupMember.memberid == UserFeatures.id
+        )""",
+        secondary="join(PickupMember, Pickup, Pickup.id == PickupMember.pickupid)",
+        secondaryjoin="Pickup.id == PickupMember.pickupid",
+        foreign_keys='PickupMember.pickupid,PickupMember.memberid',
+        viewonly=True,
+    )
+
+    users_from_call_pickup_user_targets = association_proxy(
+        'call_pickup_interceptor_pickups', 'user_targets'
+    )
+    users_from_call_pickup_group_targets = association_proxy(
+        'call_pickup_interceptor_pickups', 'users_from_group_targets'
+    )
+    users_from_call_pickup_group_interceptors_user_targets = association_proxy(
+        'group_members', 'users_from_call_pickup_group_interceptor_user_targets'
+    )
+    users_from_call_pickup_group_interceptors_group_targets = association_proxy(
+        'group_members', 'users_from_call_pickup_group_interceptor_group_targets'
+    )
+
     def extrapolate_caller_id(self, extension=None):
         default_num = extension.exten if extension else None
         user_match = caller_id_regex.match(self.callerid)

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2012-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import six
@@ -98,6 +98,7 @@ class GroupFeatures(Base):
         cascade='all, delete-orphan',
         passive_updates=False,
     )
+    users = association_proxy('user_queue_members', 'user')
 
     extension_queue_members = relationship(
         'QueueMember',
@@ -187,6 +188,27 @@ class GroupFeatures(Base):
                             PickupMember.memberid == GroupFeatures.id)""",
         foreign_keys='PickupMember.memberid',
         cascade='delete, delete-orphan',
+    )
+
+    call_pickup_interceptor_pickups = relationship(
+        'Pickup',
+        primaryjoin="""and_(
+            PickupMember.category == 'member',
+            PickupMember.membertype == 'group',
+            PickupMember.memberid == GroupFeatures.id
+        )""",
+        secondary="join(PickupMember, Pickup, Pickup.id == PickupMember.pickupid)",
+        secondaryjoin="Pickup.id == PickupMember.pickupid",
+        foreign_keys='PickupMember.pickupid,PickupMember.memberid',
+        viewonly=True,
+    )
+    users_from_call_pickup_user_targets = association_proxy(
+        'call_pickup_interceptor_pickups',
+        'user_targets',
+    )
+    users_from_call_pickup_group_targets = association_proxy(
+        'call_pickup_interceptor_pickups',
+        'users_from_group_targets',
     )
 
     def __init__(self, **kwargs):

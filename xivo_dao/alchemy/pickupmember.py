@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint
 from sqlalchemy.types import Integer, Enum
@@ -40,3 +41,5 @@ class PickupMember(Base):
             PickupMember.memberid == GroupFeatures.id)""",
         foreign_keys='PickupMember.memberid',
     )
+
+    users_from_group = association_proxy('group', 'users')
