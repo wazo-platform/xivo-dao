@@ -39,6 +39,16 @@ class UserView(View):
                          .joinedload('line')
                          .joinedload('line_extensions')
                          .joinedload('extension'))
+                .options(joinedload('call_pickup_interceptor_pickups')
+                         .joinedload('pickupmember_user_targets'))
+                .options(joinedload('call_pickup_interceptor_pickups')
+                         .joinedload('pickupmember_group_targets'))
+                .options(joinedload('group_members'))
+                .options(joinedload('queue_members'))
+                .options(joinedload('switchboard_member_users'))
+                .options(joinedload('ivr_dialactions'))
+                .options(joinedload('schedule_paths'))
+                .options(joinedload('rightcall_members'))
                 .options(joinedload('voicemail')))
 
     def convert(self, model):
