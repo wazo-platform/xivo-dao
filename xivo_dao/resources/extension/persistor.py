@@ -52,6 +52,7 @@ class ExtensionPersistor(CriteriaBuilderMixin):
                 .options(joinedload('dialpattern')
                          .joinedload('outcall'))
                 .options(joinedload('group'))
+                .options(joinedload('context_rel'))
                 .options(joinedload('queue'))
                 .options(joinedload('incall'))
                 .options(joinedload('line_extensions')
