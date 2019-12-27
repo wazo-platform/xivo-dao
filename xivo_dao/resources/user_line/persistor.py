@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.resources.extension.fixes import ExtensionFixes
 from xivo_dao.resources.line.fixes import LineFixes
 from xivo_dao.resources.line_extension import dao as line_extension_dao
-from xivo_dao.resources.user.fixes import UserFixes
 from xivo_dao.resources.utils.search import CriteriaBuilderMixin
 
 from xivo_dao.helpers import errors
@@ -89,9 +88,6 @@ class Persistor(CriteriaBuilderMixin):
             self.session.add(oldest_user_line)
 
     def fix_associations(self, user_line):
-        if user_line.main_user:
-            UserFixes(self.session).fix_user(user_line.user_id)
-
         line_extension = line_extension_dao.find_by(line_id=user_line.line_id)
         if line_extension:
             ExtensionFixes(self.session).fix_extension(line_extension.extension_id)

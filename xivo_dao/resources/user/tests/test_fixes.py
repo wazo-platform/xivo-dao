@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2015-2016 Avencall
+# Copyright 2015-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import assert_that, equal_to
 
-from xivo_dao.alchemy.voicemail import Voicemail
 from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -17,18 +16,9 @@ class TestUserFixes(DAOTestCase):
         super(TestUserFixes, self).setUp()
         self.fixes = UserFixes(self.session)
 
-    def test_given_user_has_no_extension_or_voicemail_then_fixes_pass(self):
+    def test_given_user_has_no_extension_then_fixes_pass(self):
         user = self.add_user()
         self.fixes.fix(user.id)
-
-    def test_given_user_has_voicemail_then_voicemail_name_updated(self):
-        voicemail = self.add_voicemail(fullname="Roger Rabbit")
-        user = self.add_user(firstname="John", lastname="Smith", voicemailid=voicemail.uniqueid)
-
-        self.fixes.fix(user.id)
-
-        voicemail = self.session.query(Voicemail).first()
-        assert_that(voicemail.fullname, equal_to("John Smith"))
 
     def test_given_user_has_multiple_lines_then_all_sip_lines_updated(self):
         user = self.add_user(callerid='"John Smith" <1000>')
