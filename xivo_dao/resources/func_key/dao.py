@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import six
+from sqlalchemy import or_
 
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.func_key_dest_forward import FuncKeyDestForward
+from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.helpers.db_manager import daosession
@@ -25,6 +27,18 @@ def find_all_forwards(session, user_id, fwd_type):
               UserFeatures.func_key_private_template_id == FuncKeyMapping.template_id)
         .filter(UserFeatures.id == user_id)
         .filter(Extension.typeval == type_converter.model_to_db(fwd_type))
+    )
+    return query.all()
+
+
+@daosession
+def find_users_having_user_destination(session, destination_user):
+    query = (session.query(UserFeatures)
+            .join(FuncKeyMapping,
+                or_(FuncKeyMapping.template_id == UserFeatures.func_key_private_template_id,
+                    FuncKeyMapping.template_id == UserFeatures.func_key_template_id))
+            .join(FuncKeyDestUser, FuncKeyMapping.func_key_id == FuncKeyDestUser.func_key_id)
+            .filter(FuncKeyDestUser.user_id == str(destination_user.id))
     )
     return query.all()
 
