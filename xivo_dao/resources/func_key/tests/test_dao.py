@@ -1,12 +1,16 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
     assert_that,
     contains,
+    empty,
     equal_to,
+    has_item,
+    has_items,
     has_properties,
+    is_,
     is_not,
     none,
 )
@@ -153,4 +157,56 @@ class TestFindAllForwards(TestFuncKeyDao):
             has_properties(
                 number=number,
             )
+        ))
+
+
+class TestFindUsersHavingUserDestination(TestFuncKeyDao):
+
+    def test_given_user_not_a_user_destination(self):
+        user_row = self.add_user()
+
+        result = dao.find_users_having_user_destination(user_row)
+        assert_that(result, is_(empty()))
+
+    def test_given_user_is_multiple_user_destination(self):
+        user1 = self.add_user()
+        user2 = self.add_user()
+        user3 = self.add_user()
+        user1_destination = self.add_user_destination(user1.id)
+        self.add_func_key_to_user(user1_destination, user2)
+        self.add_func_key_to_user(user1_destination, user3)
+
+        result = dao.find_users_having_user_destination(user1)
+
+        assert_that(result, has_items(
+            has_properties(id=user2.id),
+            has_properties(id=user3.id)
+        ))
+
+    def test_given_user_is_multiple_user_destination_with_public_template(self):
+        template1 = self.add_func_key_template()
+        user1 = self.add_user()
+        user2 = self.add_user()
+        user3 = self.add_user(func_key_template_id=template1.id)
+        user1_destination = self.add_user_destination(user1.id)
+
+        self.add_func_key_to_user(user1_destination, user2)
+        self.add_destination_to_template(user1_destination, template1)
+
+        result = dao.find_users_having_user_destination(user1)
+
+        assert_that(result, has_items(
+            has_properties(id=user2.id),
+            has_properties(id=user3.id)
+        ))
+
+    def test_given_user_is_self_destination(self):
+        user1 = self.add_user()
+        user1_destination = self.add_user_destination(user1.id)
+        self.add_func_key_to_user(user1_destination, user1)
+
+        result = dao.find_users_having_user_destination(user1)
+
+        assert_that(result, has_item(
+            has_properties(id=user1.id)
         ))
