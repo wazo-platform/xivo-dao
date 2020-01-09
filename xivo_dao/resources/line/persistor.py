@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import random
@@ -33,6 +33,7 @@ class LinePersistor(CriteriaBuilderMixin):
     def _search_query(self):
         return (self.session
                 .query(Line)
+                .options(joinedload('context_rel'))
                 .options(joinedload('endpoint_sccp'))
                 .options(joinedload('endpoint_sip'))
                 .options(joinedload('endpoint_custom'))
