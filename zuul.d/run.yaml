@@ -1,0 +1,12 @@
+---
+- hosts: all
+  tasks:
+    - name: Run the integration tests # noqa 301
+      become: yes
+      shell: |
+        set -x &&
+        docker-compose up -d db &&
+        export XIVO_TEST_DB_URL=postgresql://asterisk:proformatique@$(docker-compose port db 5432)/asterisk &&
+        tox -epy27,py37
+      args:
+        chdir: "{{ zuul.project.src_dir }}"

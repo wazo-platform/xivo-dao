@@ -1,3 +1,17 @@
+- job:
+    parent: base
+    name: xivo-dao
+    description: Test xivo-dao
+    run: zuul.d/run.yaml
+
 - project:
     templates:
       - debian-packaging-template
+    check:
+      jobs:
+        - xivo-dao:
+            nodeset: debian10-vm
+    gate:
+      jobs:
+        - xivo-dao:
+            nodeset: debian10-vm
