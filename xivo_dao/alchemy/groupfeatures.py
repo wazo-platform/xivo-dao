@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2012-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import six
@@ -116,11 +116,10 @@ class GroupFeatures(Base):
         passive_updates=False,
     )
 
-    ivr_dialactions = relationship(
+    _dialaction_actions = relationship(
         'Dialaction',
         primaryjoin="""and_(Dialaction.action == 'group',
-                            Dialaction.actionarg1 == cast(GroupFeatures.id, String),
-                            Dialaction.category.in_(['ivr', 'ivr_choice']))""",
+                            Dialaction.actionarg1 == cast(GroupFeatures.id, String))""",
         foreign_keys='Dialaction.actionarg1',
         cascade='all, delete-orphan',
     )

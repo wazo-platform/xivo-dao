@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import joinedload
-from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.groupfeatures import GroupFeatures as Group
 
 from xivo_dao.helpers import errors
@@ -79,11 +78,6 @@ class GroupPersistor(CriteriaBuilderMixin):
         self.session.flush()
 
     def _delete_associations(self, group):
-        (self.session.query(Dialaction)
-         .filter(Dialaction.action == 'group')
-         .filter(Dialaction.actionarg1 == str(group.id))
-         .update({'linked': 0}))
-
         for extension in group.extensions:
             extension.type = 'user'
             extension.typeval = '0'
