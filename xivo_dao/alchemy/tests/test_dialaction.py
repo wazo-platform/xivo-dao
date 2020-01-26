@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import unittest
@@ -17,20 +17,14 @@ class TestGoSubArgs(unittest.TestCase):
     def test_getter(self):
         dialaction = Dialaction(action='extension',
                                 actionarg1='21',
-                                actionarg2='foobar',
-                                linked=1)
+                                actionarg2='foobar')
 
         assert_that(dialaction.gosub_args, equal_to('extension,21,foobar'))
 
     def test_getter_with_none(self):
-        dialaction = Dialaction(action='none', linked=1)
+        dialaction = Dialaction(action='none')
 
         assert_that(dialaction.gosub_args, equal_to('none,,'))
-
-    def test_getter_with_unlinked_dialaction(self):
-        dialaction = Dialaction(action='user', actionarg1='1', linked=0)
-
-        assert_that(dialaction.gosub_args, equal_to('none'))
 
 
 class TestType(unittest.TestCase):

@@ -359,7 +359,6 @@ class UserFeatures(Base):
 
             if event not in self.user_dialactions:
                 dialaction.category = 'user'
-                dialaction.linked = 1
                 dialaction.event = event
                 self.user_dialactions[event] = dialaction
 

@@ -105,7 +105,6 @@ class TestFallbacks(DAOTestCase):
         assert_that(queue.fallbacks['busy'], has_properties(
             action='none',
             category='queue',
-            linked=1,
             event='busy'
         ))
 
@@ -172,7 +171,6 @@ class TestWaitTimeDestination(DAOTestCase):
         assert_that(queue.wait_time_destination, has_properties(
             action='none',
             category='queue',
-            linked=1,
             event='qwaittime'
         ))
 
@@ -212,7 +210,6 @@ class TestWaitRatioDestination(DAOTestCase):
         assert_that(queue.wait_ratio_destination, has_properties(
             action='none',
             category='queue',
-            linked=1,
             event='qwaitratio'
         ))
 

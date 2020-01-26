@@ -261,7 +261,6 @@ class GroupFeatures(Base):
 
             if event not in self.group_dialactions:
                 dialaction.category = 'group'
-                dialaction.linked = 1
                 dialaction.event = event
                 self.group_dialactions[event] = dialaction
 

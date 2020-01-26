@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-# Copyright 2012-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
-from sqlalchemy.types import Integer, String
+from sqlalchemy.types import String
 from sqlalchemy.sql import func
 
 from xivo_dao.helpers.db_manager import Base, IntAsString
@@ -39,7 +39,6 @@ class Dialaction(Base):
     action = Column(enum.dialaction_action, nullable=False)
     actionarg1 = Column(IntAsString(255))
     actionarg2 = Column(String(255))
-    linked = Column(Integer, nullable=False, server_default='0')
 
     conference = relationship(
         'Conference',
@@ -153,7 +152,6 @@ class Dialaction(Base):
                 action='none',
                 actionarg1=None,
                 actionarg2=None,
-                linked=1
             )
 
     @hybrid_property
@@ -191,6 +189,4 @@ class Dialaction(Base):
 
     @property
     def gosub_args(self):
-        if not self.linked:
-            return 'none'
         return ','.join(item or '' for item in (self.action, self.actionarg1, self.actionarg2))

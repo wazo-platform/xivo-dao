@@ -102,7 +102,6 @@ class IVR(Base):
         if event not in self.dialactions:
             dialaction.event = event
             dialaction.category = 'ivr'
-            dialaction.linked = 1
             self.dialactions[event] = dialaction
 
         self.dialactions[event].action = dialaction.action

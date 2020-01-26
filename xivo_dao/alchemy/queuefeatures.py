@@ -242,7 +242,6 @@ class QueueFeatures(Base):
         if event not in self.queue_dialactions:
             dialaction.event = event
             dialaction.category = 'queue'
-            dialaction.linked = 1
             self.queue_dialactions[event] = dialaction
 
         self.queue_dialactions[event].action = dialaction.action
