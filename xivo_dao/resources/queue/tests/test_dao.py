@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -18,7 +18,6 @@ from hamcrest import (
 from sqlalchemy.inspection import inspect
 
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
-from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.queue import Queue
@@ -521,15 +520,6 @@ class TestDelete(DAOTestCase):
         row = self.session.query(Extension).first()
         assert_that(row.id, equal_to(extension.id))
         assert_that(row, has_properties(type='user', typeval='0'))
-
-    def test_when_deleting_then_dialactions_are_unlinked(self):
-        queue = self.add_queuefeatures()
-        self.add_dialaction(action='queue', actionarg1=str(queue.id), linked=1)
-
-        queue_dao.delete(queue)
-
-        dialaction = self.session.query(Dialaction).filter(Dialaction.actionarg1 == str(queue.id)).first()
-        assert_that(dialaction, has_properties(linked=0))
 
     def test_when_deleting_then_contextmember_are_dissociated(self):
         queue = self.add_queuefeatures()
