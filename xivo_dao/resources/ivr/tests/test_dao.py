@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -473,34 +473,6 @@ class TestDelete(DAOTestCase):
         ivr_dao.delete(ivr)
 
         assert_that(inspect(ivr).deleted)
-
-    def test_when_deleting_then_dialactions_are_deleted(self):
-        ivr = self.add_ivr()
-        self.add_dialaction(event='timeout', category='ivr', categoryval=str(ivr.id))
-
-        ivr_dao.delete(ivr)
-
-        dialaction = self.session.query(Dialaction).first()
-        assert_that(dialaction, none())
-
-    def test_when_deleting_then_choices_are_deleted(self):
-        ivr = self.add_ivr()
-        ivr_choice = self.add_ivr_choice(ivr_id=ivr.id)
-        self.add_dialaction(category='ivr_choice', categoryval=str(ivr_choice.id))
-
-        ivr_dao.delete(ivr)
-
-        assert_that(self.session.query(IVRChoice).first(), none())
-        assert_that(self.session.query(Dialaction).first(), none())
-
-    def test_when_deleting_then_dialactions_are_unlinked(self):
-        ivr = self.add_ivr()
-        self.add_dialaction(action='ivr', actionarg1=str(ivr.id), linked=1)
-
-        ivr_dao.delete(ivr)
-
-        dialaction = self.session.query(Dialaction).filter(Dialaction.actionarg1 == str(ivr.id)).first()
-        assert_that(dialaction, has_properties(linked=0))
 
 
 class TestRelationship(DAOTestCase):
