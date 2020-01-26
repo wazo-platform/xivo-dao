@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2018-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -7,12 +7,14 @@ from hamcrest import (
     assert_that,
     contains_inanyorder,
     equal_to,
+    none,
 )
 from sqlalchemy.inspection import inspect
 
 from xivo_dao.tests.test_dao import DAOTestCase
 
 from ..application_dest_node import ApplicationDestNode
+from ..dialaction import Dialaction
 
 
 class TestDestNode(DAOTestCase):
@@ -62,3 +64,32 @@ class TestDeleter(DAOTestCase):
         self.session.expire_all()
         assert_that(inspect(application).deleted)
         assert_that(line.application_uuid, equal_to(None))
+
+    def test_dialaction_actions_are_deleted(self):
+        application = self.add_application()
+        self.add_dialaction(
+            category='ivr_choice',
+            action='application:custom',
+            actionarg1=application.uuid,
+        )
+        self.add_dialaction(
+            category='ivr',
+            action='application:custom',
+            actionarg1=application.uuid,
+        )
+        self.add_dialaction(
+            category='user',
+            action='application:custom',
+            actionarg1=application.uuid,
+        )
+        self.add_dialaction(
+            category='incall',
+            action='application:custom',
+            actionarg1=application.uuid,
+        )
+
+        self.session.delete(application)
+        self.session.flush()
+
+        row = self.session.query(Dialaction).first()
+        assert_that(row, none())
