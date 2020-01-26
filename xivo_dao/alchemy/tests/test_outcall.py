@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -93,10 +93,12 @@ class TestDelete(DAOTestCase):
         dialpattern = self.session.query(DialPattern).first()
         assert_that(dialpattern, none())
 
-    def test_ivr_dialactions_are_deleted(self):
+    def test_dialaction_actions_are_deleted(self):
         outcall = self.add_outcall()
         self.add_dialaction(category='ivr_choice', action='outcall', actionarg1=outcall.id)
         self.add_dialaction(category='ivr', action='outcall', actionarg1=outcall.id)
+        self.add_dialaction(category='user', action='outcall', actionarg1=outcall.id)
+        self.add_dialaction(category='incall', action='outcall', actionarg1=outcall.id)
 
         self.session.delete(outcall)
         self.session.flush()

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -74,11 +74,10 @@ class Outcall(Base):
         creator=lambda _trunk: OutcallTrunk(trunk=_trunk),
     )
 
-    ivr_dialactions = relationship(
+    _dialaction_actions = relationship(
         'Dialaction',
         primaryjoin="""and_(Dialaction.action == 'outcall',
-                            Dialaction.actionarg1 == cast(Outcall.id, String),
-                            Dialaction.category.in_(['ivr', 'ivr_choice']))""",
+                            Dialaction.actionarg1 == cast(Outcall.id, String))""",
         foreign_keys='Dialaction.actionarg1',
         cascade='all, delete-orphan',
     )
