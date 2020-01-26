@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -16,7 +16,6 @@ from hamcrest import (
     not_,
 )
 
-from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.voicemail import Voicemail
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.resources.voicemail import dao as voicemail_dao
@@ -509,12 +508,3 @@ class TestDelete(DAOTestCase):
 
         row = self.session.query(Voicemail).first()
         assert_that(row, none())
-
-    def test_when_deleting_then_dialactions_are_unlinked(self):
-        voicemail = self.add_ivr()
-        self.add_dialaction(action='voicemail', actionarg1=str(voicemail.id), linked=1)
-
-        voicemail_dao.delete(voicemail)
-
-        dialaction = self.session.query(Dialaction).first()
-        assert_that(dialaction, has_properties(linked=0))
