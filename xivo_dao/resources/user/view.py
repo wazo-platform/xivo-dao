@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import joinedload
@@ -46,7 +46,6 @@ class UserView(View):
                 .options(joinedload('group_members'))
                 .options(joinedload('queue_members'))
                 .options(joinedload('switchboard_member_users'))
-                .options(joinedload('ivr_dialactions'))
                 .options(joinedload('schedule_paths'))
                 .options(joinedload('rightcall_members'))
                 .options(joinedload('voicemail')))

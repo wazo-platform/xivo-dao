@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2007-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -21,12 +21,10 @@ from hamcrest import (
 )
 
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
-from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.func_key import FuncKey
 from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
 from xivo_dao.alchemy.groupfeatures import GroupFeatures
-from xivo_dao.alchemy.ivr_choice import IVRChoice
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.rightcallmember import RightCallMember
 from xivo_dao.alchemy.schedulepath import SchedulePath
@@ -889,21 +887,15 @@ class TestDelete(TestUser):
         self.add_schedule_path(schedule_id=schedule.id, path='user', pathid=user.id)
         call_filter = self.add_bsfilter()
         self.add_filter_member(call_filter.id, user.id)
-        ivr = self.add_ivr()
-        self.add_dialaction(category='ivr', categoryval=ivr.id, action='user', actionarg1=user.id)
-        ivr_choice = self.add_ivr_choice(ivr_id=ivr.id)
-        self.add_dialaction(category='ivr_choice', categoryval=ivr_choice.id, action='user', actionarg1=user.id)
 
         user_dao.delete(user)
 
         assert_that(self.session.query(RightCallMember).first(), none())
-        assert_that(self.session.query(Dialaction).first(), none())
         assert_that(self.session.query(SchedulePath).first(), none())
         assert_that(self.session.query(Callfiltermember).first(), none())
         assert_that(self.session.query(FuncKeyDestUser).first(), none())
         assert_that(self.session.query(FuncKey).first(), none())
         assert_that(self.session.query(FuncKeyTemplate).first(), none())
-        assert_that(self.session.query(IVRChoice).first(), none())
 
 
 class TestAssociateGroups(DAOTestCase):

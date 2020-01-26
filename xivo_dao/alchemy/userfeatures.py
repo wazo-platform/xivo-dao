@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -223,12 +223,11 @@ class UserFeatures(Base):
     switchboard_member_users = relationship('SwitchboardMemberUser', cascade='all, delete-orphan')
     switchboards = association_proxy('switchboard_member_users', 'switchboard')
 
-    ivr_dialactions = relationship(
+    _dialaction_actions = relationship(
         'Dialaction',
         primaryjoin="""and_(
             Dialaction.action == 'user',
             Dialaction.actionarg1 == cast(UserFeatures.id, String),
-            Dialaction.category.in_(['ivr', 'ivr_choice'])
         )""",
         foreign_keys='Dialaction.actionarg1',
         cascade='all, delete-orphan',
