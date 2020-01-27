@@ -1,4 +1,4 @@
 https://github.com/wazo-platform/xivo-test-helpers/archive/master.zip
 mock
 nose
-pyhamcrest!=1.10.0
+pyhamcrest<1.10.0  # to support python 2.7
