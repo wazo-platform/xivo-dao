@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.userfeatures import UserFeatures as User
-from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
 from xivo_dao.helpers.db_manager import Session
 
@@ -92,9 +91,6 @@ class UserPersistor(CriteriaBuilderMixin):
         self.session.flush()
 
     def delete(self, user):
-        (self.session.query(Dialaction).filter(Dialaction.category == 'user')
-         .filter(Dialaction.categoryval == str(user.id))
-         .delete())
         self.session.delete(user)
         self.session.flush()
 

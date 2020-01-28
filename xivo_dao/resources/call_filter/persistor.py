@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2018-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import text
@@ -101,7 +101,6 @@ class CallFilterPersistor(CriteriaBuilderMixin):
 
             if event not in call_filter.callfilter_dialactions:
                 dialaction.category = 'callfilter'
-                dialaction.linked = 1
                 dialaction.event = event
                 call_filter.callfilter_dialactions[event] = dialaction
 

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import relationship
@@ -38,7 +38,6 @@ class IVRChoice(Base):
         if not self.dialaction:
             destination.event = 'ivr_choice'
             destination.category = 'ivr_choice'
-            destination.linked = 1
             self.dialaction = destination
 
         self.dialaction.action = destination.action

@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import text
 
 from xivo_dao.alchemy.voicemail import Voicemail
-from xivo_dao.alchemy.dialaction import Dialaction
 
 from xivo_dao.helpers import errors
 from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
@@ -55,15 +54,8 @@ class VoicemailPersistor(CriteriaBuilderMixin):
         self.session.flush()
 
     def delete(self, voicemail):
-        self._delete_associations(voicemail)
         self.session.delete(voicemail)
         self.session.flush()
-
-    def _delete_associations(self, voicemail):
-        (self.session.query(Dialaction)
-         .filter(Dialaction.action == 'voicemail')
-         .filter(Dialaction.actionarg1 == str(voicemail.id))
-         .update({'linked': 0}))
 
     def _filter_tenant_uuid(self, query):
         if self.tenant_uuids is None:

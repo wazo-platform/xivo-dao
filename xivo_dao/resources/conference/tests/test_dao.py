@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -20,7 +20,6 @@ from hamcrest import (
 
 from xivo_dao.alchemy.conference import Conference
 from xivo_dao.alchemy.extension import Extension
-from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.helpers.exception import (
     NotFoundError,
@@ -464,15 +463,6 @@ class TestDelete(DAOTestCase):
 
         row = self.session.query(Conference).first()
         assert_that(row, none())
-
-    def test_when_deleting_then_dialactions_are_unlinked(self):
-        conference = self.add_conference()
-        self.add_dialaction(action='conference', actionarg1=str(conference.id), linked=1)
-
-        conference_dao.delete(conference)
-
-        dialaction = self.session.query(Dialaction).filter(Dialaction.actionarg1 == str(conference.id)).first()
-        assert_that(dialaction, has_properties(linked=0))
 
     def test_when_deleting_then_extension_are_dissociated(self):
         conference = self.add_conference()

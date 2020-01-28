@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import text
 
 from xivo_dao.alchemy.conference import Conference
-from xivo_dao.alchemy.dialaction import Dialaction
 
 from xivo_dao.helpers import errors
 from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
@@ -60,12 +59,6 @@ class ConferencePersistor(CriteriaBuilderMixin):
         self.session.flush()
 
     def _delete_associations(self, conference):
-        # "unlink" dialactions that points on this Conference
-        (self.session.query(Dialaction)
-         .filter(Dialaction.action == 'conference')
-         .filter(Dialaction.actionarg1 == str(conference.id))
-         .update({'linked': 0}))
-
         for extension in conference.extensions:
             extension.type = 'user'
             extension.typeval = '0'

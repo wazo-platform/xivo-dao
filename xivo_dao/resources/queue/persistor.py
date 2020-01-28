@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-# Copyright 2018-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import joinedload
 from xivo_dao.alchemy.contextmember import ContextMember
-from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.queuefeatures import QueueFeatures as Queue
 
 from xivo_dao.helpers import errors
@@ -80,11 +79,6 @@ class QueuePersistor(CriteriaBuilderMixin):
          .filter(ContextMember.type == 'queue')
          .filter(ContextMember.typeval == str(queue.id))
          .delete())
-
-        (self.session.query(Dialaction)
-         .filter(Dialaction.action == 'queue')
-         .filter(Dialaction.actionarg1 == str(queue.id))
-         .update({'linked': 0}))
 
         for extension in queue.extensions:
             extension.type = 'user'

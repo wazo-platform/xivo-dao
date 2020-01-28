@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (assert_that,
@@ -24,10 +24,12 @@ class TestIncalls(DAOTestCase):
 
 class TestDelete(DAOTestCase):
 
-    def test_ivr_dialactions_are_deleted(self):
+    def test_dialaction_actions_are_deleted(self):
         conference = self.add_conference()
         self.add_dialaction(category='ivr_choice', action='conference', actionarg1=conference.id)
         self.add_dialaction(category='ivr', action='conference', actionarg1=conference.id)
+        self.add_dialaction(category='user', action='conference', actionarg1=conference.id)
+        self.add_dialaction(category='incall', action='conference', actionarg1=conference.id)
 
         self.session.delete(conference)
         self.session.flush()

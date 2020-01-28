@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -18,7 +18,6 @@ from hamcrest import (
 )
 from mock import Mock
 
-from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.groupfeatures import GroupFeatures as Group
 from xivo_dao.alchemy.queue import Queue
@@ -500,15 +499,6 @@ class TestDelete(DAOTestCase):
 
         row = self.session.query(Schedule).first()
         assert_that(row.id, equal_to(schedule.id))
-
-    def test_when_deleting_then_dialactions_are_unlinked(self):
-        group = self.add_group()
-        self.add_dialaction(action='group', actionarg1=str(group.id), linked=1)
-
-        group_dao.delete(group)
-
-        dialaction = self.session.query(Dialaction).filter(Dialaction.actionarg1 == str(group.id)).first()
-        assert_that(dialaction, has_properties(linked=0))
 
 
 class TestAssociateMemberUsers(DAOTestCase):

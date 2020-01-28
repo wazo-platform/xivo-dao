@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import and_
@@ -77,10 +77,12 @@ class TestUsers(DAOTestCase):
 
 class TestDelete(DAOTestCase):
 
-    def test_ivr_dialactions_are_deleted(self):
+    def test_dialaction_actions_are_deleted(self):
         voicemail = self.add_voicemail()
         self.add_dialaction(category='ivr_choice', action='voicemail', actionarg1=voicemail.id)
         self.add_dialaction(category='ivr', action='voicemail', actionarg1=voicemail.id)
+        self.add_dialaction(category='user', action='voicemail', actionarg1=voicemail.id)
+        self.add_dialaction(category='incall', action='voicemail', actionarg1=voicemail.id)
 
         self.session.delete(voicemail)
         self.session.flush()

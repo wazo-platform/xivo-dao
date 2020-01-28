@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -36,6 +36,16 @@ class Switchboard(Base):
     )
 
     incalls = association_proxy('incall_dialactions', 'incall')
+
+    _dialaction_actions = relationship(
+        'Dialaction',
+        primaryjoin="""and_(
+            Dialaction.action == 'switchboard',
+            Dialaction.actionarg1 == Switchboard.uuid
+        )""",
+        foreign_keys='Dialaction.actionarg1',
+        cascade='all, delete-orphan',
+    )
 
     switchboard_member_users = relationship(
         'SwitchboardMemberUser',

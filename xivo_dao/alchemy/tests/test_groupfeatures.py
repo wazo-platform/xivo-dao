@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -460,10 +460,12 @@ class TestDelete(DAOTestCase, FuncKeyHelper):
         row = self.session.query(FuncKeyDestGroup).first()
         assert_that(row, none())
 
-    def test_ivr_dialactions_are_deleted(self):
+    def test_dialaction_actions_are_deleted(self):
         group = self.add_group()
         self.add_dialaction(category='ivr_choice', action='group', actionarg1=group.id)
         self.add_dialaction(category='ivr', action='group', actionarg1=group.id)
+        self.add_dialaction(category='user', action='group', actionarg1=group.id)
+        self.add_dialaction(category='incall', action='group', actionarg1=group.id)
 
         self.session.delete(group)
         self.session.flush()

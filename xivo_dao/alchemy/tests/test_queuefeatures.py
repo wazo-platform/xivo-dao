@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2018-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -105,7 +105,6 @@ class TestFallbacks(DAOTestCase):
         assert_that(queue.fallbacks['busy'], has_properties(
             action='none',
             category='queue',
-            linked=1,
             event='busy'
         ))
 
@@ -172,7 +171,6 @@ class TestWaitTimeDestination(DAOTestCase):
         assert_that(queue.wait_time_destination, has_properties(
             action='none',
             category='queue',
-            linked=1,
             event='qwaittime'
         ))
 
@@ -212,7 +210,6 @@ class TestWaitRatioDestination(DAOTestCase):
         assert_that(queue.wait_ratio_destination, has_properties(
             action='none',
             category='queue',
-            linked=1,
             event='qwaitratio'
         ))
 
@@ -621,10 +618,12 @@ class TestDelete(DAOTestCase, FuncKeyHelper):
         row = self.session.query(Dialaction).first()
         assert_that(row, none())
 
-    def test_ivr_dialactions_are_deleted(self):
+    def test_dialaction_actions_are_deleted(self):
         queue = self.add_queuefeatures()
         self.add_dialaction(category='ivr_choice', action='queue', actionarg1=queue.id)
         self.add_dialaction(category='ivr', action='queue', actionarg1=queue.id)
+        self.add_dialaction(category='user', action='queue', actionarg1=queue.id)
+        self.add_dialaction(category='incall', action='queue', actionarg1=queue.id)
 
         self.session.delete(queue)
         self.session.flush()

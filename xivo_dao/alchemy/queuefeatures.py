@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2007-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import six
@@ -142,11 +142,10 @@ class QueueFeatures(Base):
         collection_class=attribute_mapped_collection('event'),
     )
 
-    ivr_dialactions = relationship(
+    _dialaction_actions = relationship(
         'Dialaction',
         primaryjoin="""and_(Dialaction.action == 'queue',
-                            Dialaction.actionarg1 == cast(QueueFeatures.id, String),
-                            Dialaction.category.in_(['ivr', 'ivr_choice']))""",
+                            Dialaction.actionarg1 == cast(QueueFeatures.id, String))""",
         foreign_keys='Dialaction.actionarg1',
         cascade='all, delete-orphan',
     )
@@ -243,7 +242,6 @@ class QueueFeatures(Base):
         if event not in self.queue_dialactions:
             dialaction.event = event
             dialaction.category = 'queue'
-            dialaction.linked = 1
             self.queue_dialactions[event] = dialaction
 
         self.queue_dialactions[event].action = dialaction.action
