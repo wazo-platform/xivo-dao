@@ -95,10 +95,10 @@ class ExtensionFixes(object):
                 .scalar())
 
     def remove_destination_id(self, extension_id):
-            (self.session
-             .query(Extension)
-             .filter(Extension.id == extension_id)
-             .update({'type': 'user', 'typeval': '0'}))
+        (self.session
+         .query(Extension)
+         .filter(Extension.id == extension_id)
+         .update({'type': 'user', 'typeval': '0'}))
 
     def adjust_line(self, line_id):
         LineFixes(self.session).fix(line_id)
