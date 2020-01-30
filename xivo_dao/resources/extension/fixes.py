@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2015-2016 Avencall
+# Copyright 2015-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import Integer
@@ -7,7 +7,6 @@ from sqlalchemy.sql import and_, cast
 
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.incall import Incall
-from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.line_extension import LineExtension
 from xivo_dao.resources.line.fixes import LineFixes
@@ -70,9 +69,6 @@ class ExtensionFixes(object):
                 .join(Extension,
                       and_(Extension.type == 'incall',
                            cast(Extension.typeval, Integer) == Incall.id))
-                .join(Dialaction,
-                      and_(Dialaction.category == 'incall',
-                           cast(Dialaction.categoryval, Integer) == Incall.id))
                 .filter(Extension.id == extension_id)
                 .scalar())
 
