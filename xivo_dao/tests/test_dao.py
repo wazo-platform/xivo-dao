@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -425,8 +425,6 @@ class ItemInserter(object):
         return ivr_choice
 
     def add_incall(self, **kwargs):
-        default_destination = Dialaction(action='none')
-        kwargs.setdefault('destination', default_destination)
         kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
         incall = Incall(**kwargs)
         self.add_me(incall)

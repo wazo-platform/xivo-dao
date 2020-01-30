@@ -106,10 +106,16 @@ class Incall(Base):
 
     @property
     def destination(self):
+        if self.dialaction is None:
+            return Dialaction(action='none')
         return self.dialaction
 
     @destination.setter
     def destination(self, destination):
+        if destination is None:
+            self.dialaction = None
+            return
+
         if not self.dialaction:
             destination.event = 'answer'
             destination.category = 'incall'
