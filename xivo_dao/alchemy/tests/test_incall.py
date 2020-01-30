@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2017-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -8,6 +8,7 @@ from hamcrest import (
     contains_inanyorder,
     empty,
     equal_to,
+    has_properties,
     none,
     not_,
 )
@@ -59,6 +60,14 @@ class TestSchedules(DAOTestCase):
 
         row = self.session.query(SchedulePath).first()
         assert_that(row, none())
+
+
+class TestDestination(DAOTestCase):
+    def test_getter_when_no_dialaction(self):
+        incall = self.add_incall(destination=None)
+
+        assert_that(incall.dialaction, equal_to(None))
+        assert_that(incall.destination, has_properties(type='none'))
 
 
 class TestDelete(DAOTestCase):
