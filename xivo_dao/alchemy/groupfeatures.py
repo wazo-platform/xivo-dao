@@ -5,6 +5,7 @@
 import six
 
 from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.schema import Column, ForeignKey, PrimaryKeyConstraint, Index
@@ -35,6 +36,7 @@ class GroupFeatures(Base):
     ignore_forward = Column(Integer, nullable=False, server_default='1')
     timeout = Column(Integer)
     preprocess_subroutine = Column(String(39))
+    mark_answered_elsewhere = Column(Integer, nullable=False, server_default='1')
 
     caller_id = relationship(
         'Callerid',
@@ -267,3 +269,11 @@ class GroupFeatures(Base):
             self.group_dialactions[event].action = dialaction.action
             self.group_dialactions[event].actionarg1 = dialaction.actionarg1
             self.group_dialactions[event].actionarg2 = dialaction.actionarg2
+
+    @hybrid_property
+    def mark_answered_elsewhere_bool(self):
+        return self.mark_answered_elsewhere == 1
+
+    @mark_answered_elsewhere_bool.setter
+    def mark_answered_elsewhere_bool(self, value):
+        self.mark_answered_elsewhere = int(value is True)

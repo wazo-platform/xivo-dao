@@ -87,6 +87,7 @@ class QueueFeatures(Base):
     announce_holdtime = Column(Integer, nullable=False, server_default='0')
     waittime = Column(Integer)
     waitratio = Column(DOUBLE_PRECISION)
+    mark_answered_elsewhere = Column(Integer, nullable=False, server_default='1')
 
     _queue = relationship(
         'Queue',
@@ -376,3 +377,11 @@ class QueueFeatures(Base):
     @wait_ratio_threshold.setter
     def wait_ratio_threshold(self, value):
         self.waitratio = value
+
+    @hybrid_property
+    def mark_answered_elsewhere_bool(self):
+        return self.mark_answered_elsewhere == 1
+
+    @mark_answered_elsewhere_bool.setter
+    def mark_answered_elsewhere_bool(self, value):
+        self.mark_answered_elsewhere = int(value is True)
