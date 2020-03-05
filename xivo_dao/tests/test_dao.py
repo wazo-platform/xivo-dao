@@ -91,6 +91,7 @@ from xivo_dao.alchemy.staticsip import StaticSIP
 from xivo_dao.alchemy.staticvoicemail import StaticVoicemail
 from xivo_dao.alchemy.switchboard import Switchboard
 from xivo_dao.alchemy.tenant import Tenant
+from xivo_dao.alchemy.pjsip_transport import PJSIPTransport
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.usercustom import UserCustom as UserCustomSchema
@@ -652,6 +653,12 @@ class ItemInserter(object):
         tenant = Tenant(**kwargs)
         self.add_me(tenant)
         return tenant
+
+    def add_transport(self, **kwargs):
+        kwargs.setdefault('name', 'transport')
+        transport = PJSIPTransport(**kwargs)
+        self.add_me(transport)
+        return transport
 
     def add_trunk(self, **kwargs):
         kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
