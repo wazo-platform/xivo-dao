@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.accessfeatures import AccessFeatures
@@ -74,6 +74,8 @@ from xivo_dao.alchemy.parking_lot import ParkingLot
 from xivo_dao.alchemy.phonefunckey import PhoneFunckey
 from xivo_dao.alchemy.pickup import Pickup
 from xivo_dao.alchemy.pickupmember import PickupMember
+from xivo_dao.alchemy.pjsip_transport import PJSIPTransport
+from xivo_dao.alchemy.pjsip_transport_option import PJSIPTransportOption
 from xivo_dao.alchemy.provisioning import Provisioning
 from xivo_dao.alchemy.queue import Queue
 from xivo_dao.alchemy.queue_log import QueueLog
@@ -193,6 +195,8 @@ __all__ = [
     "PhoneFunckey",
     "Pickup",
     "PickupMember",
+    "PJSIPTransport",
+    "PJSIPTransportOption",
     "Provisioning",
     "Queue",
     "QueueLog",
