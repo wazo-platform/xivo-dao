@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # explicitly import modules that are referenced in relationship to prevent
@@ -39,6 +39,8 @@ from xivo_dao.alchemy.paginguser import PagingUser
 from xivo_dao.alchemy.parking_lot import ParkingLot
 from xivo_dao.alchemy.pickup import Pickup
 from xivo_dao.alchemy.pickupmember import PickupMember
+from xivo_dao.alchemy.pjsip_transport import PJSIPTransport
+from xivo_dao.alchemy.pjsip_transport_option import PJSIPTransportOption
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.queueskill import QueueSkill
 from xivo_dao.alchemy.queueskillcat import QueueSkillCat
@@ -97,6 +99,8 @@ __all__ = [
     'ParkingLot',
     'Pickup',
     'PickupMember',
+    'PJSIPTransport',
+    'PJSIPTransportOption',
     'QueueMember',
     'QueueSkill',
     'QueueSkillCat',
