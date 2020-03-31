@@ -44,6 +44,7 @@ from xivo_dao.alchemy.contextmember import ContextMember
 from xivo_dao.alchemy.contextnumbers import ContextNumbers
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.dialpattern import DialPattern
+from xivo_dao.alchemy.endpoint_sip import EndpointSIP
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.features import Features
 from xivo_dao.alchemy.func_key import FuncKey
@@ -286,6 +287,13 @@ class ItemInserter(object):
         line_extension.line = line
 
         return line_extension
+
+    def add_endpoint_sip(self, **kwargs):
+        kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
+        kwargs.setdefault('display_name', self._random_name())
+        endpoint_sip = EndpointSIP(**kwargs)
+        self.add_me(endpoint_sip)
+        return endpoint_sip
 
     def add_line(self, **kwargs):
         kwargs.setdefault('name', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
