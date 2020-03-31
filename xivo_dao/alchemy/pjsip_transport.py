@@ -2,13 +2,14 @@
 # Copyright 2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import uuid
+
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.types import Text
 
 from xivo_dao.helpers.db_manager import Base
-from xivo_dao.helpers.uuid import new_uuid
 
 from .pjsip_transport_option import PJSIPTransportOption
 
@@ -21,7 +22,7 @@ class PJSIPTransport(Base):
         UniqueConstraint('name'),
     )
 
-    uuid = Column(UUID(as_uuid=True), default=new_uuid)
+    uuid = Column(UUID(as_uuid=True), default=uuid.uuid4)
     name = Column(Text, nullable=False)
     _options = relationship(
         'PJSIPTransportOption',
@@ -35,16 +36,6 @@ class PJSIPTransport(Base):
         super(PJSIPTransport, self).__init__(**kwargs)
         for key, value in options:
             self._options.append(PJSIPTransportOption(key=key, value=value))
-
-    def __eq__(self, other):
-        return (
-            str(self.uuid) == str(other.uuid)
-            and self.name == other.name
-            and self.options == other.options,
-        )
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
 
     @property
     def options(self):

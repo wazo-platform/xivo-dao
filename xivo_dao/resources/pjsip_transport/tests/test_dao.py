@@ -2,7 +2,6 @@
 # Copyright 2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from uuid import UUID
 from hamcrest import (
     assert_that,
     contains,
@@ -104,7 +103,7 @@ class TestFindAllBy(DAOTestCase):
         transports = dao.find_all_by(name='the-transport')
 
         assert_that(transports, has_items(
-            has_properties(uuid=UUID(transport.uuid)),
+            has_properties(uuid=transport.uuid),
         ))
 
 

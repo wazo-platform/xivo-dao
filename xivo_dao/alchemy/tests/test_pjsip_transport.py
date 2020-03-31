@@ -98,12 +98,3 @@ class TestPJSIPTransport(DAOTestCase):
         ).scalar()
 
         assert_that(remaining_options, equal_to(0))
-
-    def test_equals(self):
-        transport = self.add_transport()
-
-        result = self.session.query(
-            PJSIPTransport
-        ).filter(PJSIPTransport.uuid == transport.uuid).first()
-
-        assert_that(result, equal_to(transport))
