@@ -13,7 +13,7 @@ class TestPJSIPTransport(DAOTestCase):
         public_ip = '10.37.0.42'
         network = '192.168.0.0/32'
 
-        transport = self.add_transport(
+        transport = PJSIPTransport(
             name='my-transport',
             options=[
                 ['local_net', network],
@@ -21,6 +21,7 @@ class TestPJSIPTransport(DAOTestCase):
                 ['external_signaling_address', public_ip],
             ],
         )
+        self.add_me(transport)
 
         row = self.session.query(PJSIPTransport).filter_by(uuid=transport.uuid).first()
         assert_that(row, has_properties(
