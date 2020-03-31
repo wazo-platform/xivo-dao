@@ -26,6 +26,7 @@ class PJSIPTransport(Base):
     _options = relationship(
         'PJSIPTransportOption',
         cascade='all, delete-orphan',
+        passive_deletes=True,
         passive_updates=False,
     )
 
