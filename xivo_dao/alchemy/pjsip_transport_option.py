@@ -18,6 +18,6 @@ class PJSIPTransportOption(Base):
     value = Column(Text, nullable=False)
     pjsip_transport_uuid = Column(
         UUID(as_uuid=True),
-        ForeignKey('pjsip_transport.uuid'),
+        ForeignKey('pjsip_transport.uuid', ondelete='CASCADE'),
         nullable=False,
     )
