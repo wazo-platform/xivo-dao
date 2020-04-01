@@ -2,8 +2,7 @@
 # Copyright 2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import uuid
-
+from sqlalchemy import text
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
@@ -22,7 +21,7 @@ class PJSIPTransport(Base):
         UniqueConstraint('name'),
     )
 
-    uuid = Column(UUID(as_uuid=True), default=uuid.uuid4)
+    uuid = Column(UUID(as_uuid=True), server_default=text('uuid_generate_v4()'))
     name = Column(Text, nullable=False)
     _options = relationship(
         'PJSIPTransportOption',
