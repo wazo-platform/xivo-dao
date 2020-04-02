@@ -110,7 +110,6 @@ class LineFeatures(Base):
             LineFeatures.protocolid == UserCustom.id
         )""",
         foreign_keys='LineFeatures.protocolid',
-        back_populates='line',
     )
 
     line_extensions = relationship(

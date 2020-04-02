@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2012-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -51,7 +51,7 @@ class UserCustom(Base):
         )""",
         foreign_keys='LineFeatures.protocolid',
         uselist=False,
-        back_populates='endpoint_custom',
+        viewonly=True,
     )
 
     trunk = relationship(
@@ -62,6 +62,7 @@ class UserCustom(Base):
         )""",
         uselist=False,
         foreign_keys='TrunkFeatures.protocolid',
+        viewonly=True,
     )
 
     @hybrid_property
