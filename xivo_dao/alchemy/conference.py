@@ -48,7 +48,6 @@ class Conference(Base):
                             Extension.typeval == cast(Conference.id, String))""",
         foreign_keys='Extension.typeval',
         viewonly=True,
-        back_populates='conference',
     )
 
     incall_dialactions = relationship(

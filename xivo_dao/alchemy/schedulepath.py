@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2007-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import relationship
@@ -26,36 +26,30 @@ class SchedulePath(Base):
                           primaryjoin="""and_(SchedulePath.path == 'incall',
                                               SchedulePath.pathid == Incall.id)""",
                           foreign_keys='SchedulePath.pathid',
-                          viewonly=True,
-                          back_populates='schedule_paths')
+                          viewonly=True)
 
     group = relationship('GroupFeatures',
                          primaryjoin="""and_(SchedulePath.path == 'group',
                                              SchedulePath.pathid == GroupFeatures.id)""",
                          foreign_keys='SchedulePath.pathid',
-                         viewonly=True,
-                         back_populates='schedule_paths')
+                         viewonly=True)
 
     outcall = relationship('Outcall',
                            primaryjoin="""and_(SchedulePath.path == 'outcall',
                                                SchedulePath.pathid == Outcall.id)""",
                            foreign_keys='SchedulePath.pathid',
-                           viewonly=True,
-                           back_populates='schedule_paths')
+                           viewonly=True)
 
     queue = relationship('QueueFeatures',
                          primaryjoin="""and_(SchedulePath.path == 'queue',
                                              SchedulePath.pathid == QueueFeatures.id)""",
                          foreign_keys='SchedulePath.pathid',
-                         viewonly=True,
-                         back_populates='schedule_paths')
+                         viewonly=True)
 
     user = relationship('UserFeatures',
                         primaryjoin="""and_(SchedulePath.path == 'user',
                                             SchedulePath.pathid == UserFeatures.id)""",
                         foreign_keys='SchedulePath.pathid',
-                        viewonly=True,
-                        back_populates='schedule_paths')
+                        viewonly=True)
 
-    schedule = relationship('Schedule',
-                            back_populates='schedule_paths')
+    schedule = relationship('Schedule')

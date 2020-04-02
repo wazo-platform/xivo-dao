@@ -62,7 +62,6 @@ class UserCustom(Base):
         )""",
         uselist=False,
         foreign_keys='TrunkFeatures.protocolid',
-        back_populates='endpoint_custom',
     )
 
     @hybrid_property

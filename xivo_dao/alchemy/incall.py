@@ -73,7 +73,6 @@ class Incall(Base):
         foreign_keys='Dialaction.categoryval',
         cascade='all, delete-orphan',
         uselist=False,
-        back_populates='incall',
     )
 
     extensions = relationship(
@@ -82,7 +81,6 @@ class Incall(Base):
                             Extension.typeval == cast(Incall.id, String))""",
         foreign_keys='Extension.typeval',
         viewonly=True,
-        back_populates='incall',
     )
 
     schedule_paths = relationship(
@@ -91,7 +89,6 @@ class Incall(Base):
                             SchedulePath.pathid == Incall.id)""",
         foreign_keys='SchedulePath.pathid',
         cascade='all, delete-orphan',
-        back_populates='incall',
     )
 
     schedules = association_proxy(

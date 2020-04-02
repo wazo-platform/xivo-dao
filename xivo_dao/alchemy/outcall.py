@@ -55,7 +55,6 @@ class Outcall(Base):
                             DialPattern.typeid == Outcall.id)""",
         foreign_keys='DialPattern.typeid',
         cascade='all, delete-orphan',
-        back_populates='outcall',
     )
 
     extensions = association_proxy('dialpatterns', 'extension')
@@ -88,7 +87,6 @@ class Outcall(Base):
                             SchedulePath.pathid == Outcall.id)""",
         foreign_keys='SchedulePath.pathid',
         cascade='all, delete-orphan',
-        back_populates='outcall',
     )
     schedules = association_proxy(
         'schedule_paths',
@@ -106,7 +104,6 @@ class Outcall(Base):
                             RightCallMember.typeval == cast(Outcall.id, String))""",
         foreign_keys='RightCallMember.typeval',
         cascade='all, delete-orphan',
-        back_populates='outcall',
     )
     call_permissions = association_proxy(
         'rightcall_members',

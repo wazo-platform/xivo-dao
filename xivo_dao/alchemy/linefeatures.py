@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -92,7 +92,6 @@ class LineFeatures(Base):
             LineFeatures.protocolid == UserSIP.id
         )""",
         foreign_keys='LineFeatures.protocolid',
-        back_populates='line',
     )
 
     endpoint_sccp = relationship(
@@ -102,7 +101,6 @@ class LineFeatures(Base):
             LineFeatures.protocolid == SCCPLine.id
         )""",
         foreign_keys='LineFeatures.protocolid',
-        back_populates='line',
     )
 
     endpoint_custom = relationship(

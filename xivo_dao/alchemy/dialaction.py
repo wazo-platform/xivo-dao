@@ -119,7 +119,6 @@ class Dialaction(Base):
         )""",
         foreign_keys='Dialaction.categoryval',
         viewonly=True,
-        back_populates='dialaction',
     )
 
     application = relationship(

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -35,8 +35,7 @@ class StaticIAX(Base):
                          )""",
                          foreign_keys='TrunkFeatures.registerid',
                          viewonly=True,
-                         uselist=False,
-                         back_populates='register_iax')
+                         uselist=False)
 
     @hybrid_property
     def metric(self):

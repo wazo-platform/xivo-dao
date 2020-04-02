@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import relationship
@@ -32,7 +32,7 @@ class ParkingLot(Base):
         )""",
         foreign_keys='Extension.typeval',
         viewonly=True,
-        back_populates='parking_lot')
+    )
 
     def in_slots_range(self, exten):
         exten = int(exten)
