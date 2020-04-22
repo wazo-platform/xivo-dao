@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2016 Avencall
-# Copyright (C) 2016 Proformatique Inc.
+# Copyright 2016-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.types import Integer, Boolean
@@ -33,5 +32,4 @@ class LineExtension(Base):
     line = relationship('LineFeatures',
                         back_populates='line_extensions')
 
-    extension = relationship('Extension',
-                             back_populates='line_extensions')
+    extension = relationship('Extension')

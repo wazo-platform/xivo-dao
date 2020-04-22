@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -39,17 +39,6 @@ class RightCall(Base):
         cascade='all, delete-orphan',
         back_populates='rightcall',
     )
-
-    rightcall_outcalls = relationship(
-        'RightCallMember',
-        primaryjoin="""and_(
-            RightCallMember.rightcallid == RightCall.id,
-            RightCallMember.type == 'outcall'
-        )""",
-        foreign_keys='RightCallMember.rightcallid',
-        viewonly=True,
-    )
-    outcalls = association_proxy('rightcall_outcalls', 'outcall')
 
     rightcall_outcalls = relationship(
         'RightCallMember',

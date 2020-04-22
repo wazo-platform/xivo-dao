@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2012-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2012-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -52,7 +52,6 @@ class TrunkFeatures(Base):
         )""",
         foreign_keys='TrunkFeatures.protocolid',
         viewonly=True,
-        back_populates='trunk',
     )
 
     endpoint_iax = relationship(
@@ -63,7 +62,6 @@ class TrunkFeatures(Base):
         )""",
         foreign_keys='TrunkFeatures.protocolid',
         viewonly=True,
-        back_populates='trunk_rel',
     )
 
     endpoint_custom = relationship(
@@ -74,7 +72,6 @@ class TrunkFeatures(Base):
         )""",
         foreign_keys='TrunkFeatures.protocolid',
         viewonly=True,
-        back_populates='trunk',
     )
 
     outcall_trunks = relationship(
@@ -96,7 +93,6 @@ class TrunkFeatures(Base):
         )""",
         foreign_keys='TrunkFeatures.registerid',
         viewonly=True,
-        back_populates='trunk',
     )
 
     register_sip = relationship(
@@ -107,7 +103,6 @@ class TrunkFeatures(Base):
         )""",
         foreign_keys='TrunkFeatures.registerid',
         viewonly=True,
-        back_populates='trunk',
     )
 
     @hybrid_property

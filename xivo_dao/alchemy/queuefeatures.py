@@ -126,7 +126,6 @@ class QueueFeatures(Base):
                             Extension.typeval == cast(QueueFeatures.id, String))""",
         foreign_keys='Extension.typeval',
         viewonly=True,
-        back_populates='queue',
     )
 
     func_keys = relationship(
@@ -177,7 +176,6 @@ class QueueFeatures(Base):
                             SchedulePath.pathid == QueueFeatures.id)""",
         foreign_keys='SchedulePath.pathid',
         cascade='all, delete-orphan',
-        back_populates='queue',
     )
     schedules = association_proxy(
         'schedule_paths', 'schedule',

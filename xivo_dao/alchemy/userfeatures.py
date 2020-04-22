@@ -241,7 +241,6 @@ class UserFeatures(Base):
         )""",
         foreign_keys='SchedulePath.pathid',
         cascade='all, delete-orphan',
-        back_populates='user',
     )
     schedules = association_proxy(
         'schedule_paths', 'schedule',

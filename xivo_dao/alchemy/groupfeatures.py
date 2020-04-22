@@ -62,7 +62,6 @@ class GroupFeatures(Base):
                             Extension.typeval == cast(GroupFeatures.id, String))""",
         foreign_keys='Extension.typeval',
         viewonly=True,
-        back_populates='group',
     )
 
     incall_dialactions = relationship(
@@ -144,7 +143,6 @@ class GroupFeatures(Base):
                             SchedulePath.pathid == GroupFeatures.id)""",
         foreign_keys='SchedulePath.pathid',
         cascade='all, delete-orphan',
-        back_populates='group',
     )
 
     schedules = association_proxy(
@@ -157,7 +155,6 @@ class GroupFeatures(Base):
         RightCallMember.typeval == cast(GroupFeatures.id, String))""",
         foreign_keys='RightCallMember.typeval',
         cascade='all, delete-orphan',
-        back_populates='group',
     )
     call_permissions = association_proxy(
         'rightcall_members', 'rightcall',

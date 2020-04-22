@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -74,15 +74,13 @@ class Extension(Base):
                                primaryjoin="""and_(Extension.type == 'outcall',
                                                    Extension.typeval == cast(DialPattern.id, String))""",
                                foreign_keys='Extension.typeval',
-                               viewonly=True,
-                               back_populates='extension')
+                               viewonly=True)
 
     outcall = association_proxy('dialpattern', 'outcall')
 
     line_extensions = relationship('LineExtension',
                                    cascade='all, delete-orphan',
-                                   viewonly=True,
-                                   back_populates='extension')
+                                   viewonly=True)
 
     lines = association_proxy('line_extensions', 'line')
 
@@ -90,36 +88,31 @@ class Extension(Base):
                          primaryjoin="""and_(Extension.type == 'group',
                                              Extension.typeval == cast(GroupFeatures.id, String))""",
                          foreign_keys='Extension.typeval',
-                         viewonly=True,
-                         back_populates='extensions')
+                         viewonly=True)
 
     queue = relationship('QueueFeatures',
                          primaryjoin="""and_(Extension.type == 'queue',
                                              Extension.typeval == cast(QueueFeatures.id, String))""",
                          foreign_keys='Extension.typeval',
-                         viewonly=True,
-                         back_populates='extensions')
+                         viewonly=True)
 
     incall = relationship('Incall',
                           primaryjoin="""and_(Extension.type == 'incall',
                                               Extension.typeval == cast(Incall.id, String))""",
                           foreign_keys='Extension.typeval',
-                          viewonly=True,
-                          back_populates='extensions')
+                          viewonly=True)
 
     conference = relationship('Conference',
                               primaryjoin="""and_(Extension.type == 'conference',
                                                   Extension.typeval == cast(Conference.id, String))""",
                               foreign_keys='Extension.typeval',
-                              viewonly=True,
-                              back_populates='extensions')
+                              viewonly=True)
 
     parking_lot = relationship('ParkingLot',
                                primaryjoin="""and_(Extension.type == 'parking',
                                                    Extension.typeval == cast(ParkingLot.id, String))""",
                                foreign_keys='Extension.typeval',
-                               viewonly=True,
-                               back_populates='extensions')
+                               viewonly=True)
 
     @property
     def name(self):
