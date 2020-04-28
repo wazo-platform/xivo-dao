@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import text
@@ -69,7 +69,9 @@ class IncallPersistor(CriteriaBuilderMixin):
         return query.filter(Incall.tenant_uuid.in_(self.tenant_uuids))
 
     def _delete_associations(self, incall):
-        (self.session.query(Extension)
-         .filter(Extension.type == 'incall')
-         .filter(Extension.typeval == str(incall.id))
-         .update({'type': 'user', 'typeval': '0'}))
+        (
+            self.session.query(Extension)
+            .filter(Extension.type == 'incall')
+            .filter(Extension.typeval == str(incall.id))
+            .update({'type': 'user', 'typeval': '0'})
+        )
