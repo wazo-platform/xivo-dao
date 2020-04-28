@@ -46,7 +46,7 @@ Start the database (needed only once):
 
 Run your tests:
 
-    nosetests -x xivo_dao
+    pytest
 
 OR
 
