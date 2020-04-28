@@ -90,6 +90,14 @@ class TestFindBy(DAOTestCase):
         assert_that(incall, equal_to(incall_row))
         assert_that(incall.preprocess_subroutine, equal_to('mysubroutine'))
 
+    def test_find_by_greeting_sound(self):
+        incall_row = self.add_incall(greeting_sound='custom-sound')
+
+        incall = incall_dao.find_by(greeting_sound='custom-sound')
+
+        assert_that(incall, equal_to(incall_row))
+        assert_that(incall.greeting_sound, equal_to('custom-sound'))
+
     def test_find_by_description(self):
         incall_row = self.add_incall(description='mydescription')
 
@@ -137,6 +145,14 @@ class TestGetBy(DAOTestCase):
 
         assert_that(incall, equal_to(incall_row))
         assert_that(incall.preprocess_subroutine, equal_to('MySubroutine'))
+
+    def test_get_by_greeting_sound(self):
+        incall_row = self.add_incall(greeting_sound='custom-sound')
+
+        incall = incall_dao.get_by(greeting_sound='custom-sound')
+
+        assert_that(incall, equal_to(incall_row))
+        assert_that(incall.greeting_sound, equal_to('custom-sound'))
 
     def test_get_by_description(self):
         incall_row = self.add_incall(description='mydescription')
@@ -330,6 +346,7 @@ class TestCreate(DAOTestCase):
             has_properties(
                 id=is_not(none()),
                 preprocess_subroutine=none(),
+                greeting_sound=none(),
                 description=none(),
                 caller_id_mode=none(),
                 caller_id_name=none(),
@@ -341,6 +358,7 @@ class TestCreate(DAOTestCase):
     def test_create_with_all_fields(self):
         incall = Incall(
             preprocess_subroutine='MySubroutine',
+            greeting_sound='GreetingSound',
             description='incall description',
             caller_id_mode='prepend',
             caller_id_name='incall_',
@@ -358,6 +376,7 @@ class TestCreate(DAOTestCase):
             has_properties(
                 id=is_not(none()),
                 preprocess_subroutine='MySubroutine',
+                greeting_sound='GreetingSound',
                 description='incall description',
                 caller_id_mode='prepend',
                 caller_id_name='incall_',
@@ -372,6 +391,7 @@ class TestEdit(DAOTestCase):
         incall = incall_dao.create(
             Incall(
                 preprocess_subroutine='MySubroutine',
+                greeting_sound='GreetingSound',
                 description='incall description',
                 caller_id_mode='prepend',
                 caller_id_name='incall_',
@@ -382,6 +402,7 @@ class TestEdit(DAOTestCase):
 
         incall = incall_dao.get(incall.id)
         incall.preprocess_subroutine = 'other_subroutine'
+        incall.greeting_sound = 'other_greeting_sound'
         incall.description = 'other description'
         incall.caller_id_mode = 'append'
         incall.caller_id_name = '_incall'
@@ -397,6 +418,7 @@ class TestEdit(DAOTestCase):
             has_properties(
                 id=is_not(none()),
                 preprocess_subroutine='other_subroutine',
+                greeting_sound='other_greeting_sound',
                 description='other description',
                 caller_id_mode='append',
                 caller_id_name='_incall',
@@ -408,6 +430,7 @@ class TestEdit(DAOTestCase):
         incall = incall_dao.create(
             Incall(
                 preprocess_subroutine='MySubroutine',
+                greeting_sound='GreetingSound',
                 description='incall description',
                 caller_id_mode='prepend',
                 caller_id_name='incall_',
@@ -417,6 +440,7 @@ class TestEdit(DAOTestCase):
         )
         incall = incall_dao.get(incall.id)
         incall.preprocess_subroutine = None
+        incall.greeting_sound = None
         incall.description = None
         incall.caller_id_mode = None
         incall.caller_id_name = None
@@ -430,6 +454,7 @@ class TestEdit(DAOTestCase):
             row,
             has_properties(
                 preprocess_subroutine=none(),
+                greeting_sound=none(),
                 description=none(),
                 caller_id_mode=none(),
                 caller_id_name=none(),

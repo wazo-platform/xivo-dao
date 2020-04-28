@@ -43,6 +43,7 @@ class Incall(Base):
     exten = Column(String(40))
     context = Column(String(39))
     preprocess_subroutine = Column(String(39))
+    greeting_sound = Column(Text)
     commented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text)
 

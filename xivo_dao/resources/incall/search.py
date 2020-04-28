@@ -11,6 +11,7 @@ config = SearchConfig(
     columns={
         'id': Incall.id,
         'preprocess_subroutine': Incall.preprocess_subroutine,
+        'greeting_sound': Incall.greeting_sound,
         'user_id': Incall.user_id,
         'description': Incall.description,
     },
