@@ -1,4 +1,5 @@
 https://github.com/wazo-platform/xivo-test-helpers/archive/master.zip
+docker-compose
 mock
-nose
 pyhamcrest<1.10.0  # to support python 2.7
+pytest

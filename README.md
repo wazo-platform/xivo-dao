@@ -46,8 +46,4 @@ Start the database (needed only once):
 
 Run your tests:
 
-    nosetests -x xivo_dao
-
-OR
-
-    docker-compose build dao && docker-compose up dao
+    pytest
