@@ -8,11 +8,3 @@ db:
    - POSTGRES_DB=asterisk
   volumes:
     - "./contribs/docker/db/extensions.sql:/docker-entrypoint-initdb.d/extensions.sql"
-dao:
-  build: .
-  links:
-    - db
-  environment:
-    - XIVO_TEST_DB_URL=postgresql://asterisk:proformatique@db/asterisk
-  volumes:
-    - "./xivo_dao:/usr/src/dao/xivo_dao"
