@@ -157,6 +157,9 @@ class ItemInserter(object):
         kwargs.setdefault('mobilephonenumber', '')
         kwargs.setdefault('description', '')
         kwargs.setdefault('userfield', '')
+        kwargs.setdefault('endpoint_sip_id', None)
+        kwargs.setdefault('endpoint_sccp_id', None)
+        kwargs.setdefault('endpoint_custom_id', None)
         kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
 
         user = self.add_user(firstname=kwargs['firstname'],
@@ -173,7 +176,10 @@ class ItemInserter(object):
         line = self.add_line(context=kwargs['context'],
                              name=kwargs['name_line'],
                              device=kwargs['device'],
-                             commented=kwargs['commented_line'])
+                             commented=kwargs['commented_line'],
+                             endpoint_sip_id=kwargs['endpoint_sip_id'],
+                             endpoint_sccp_id=kwargs['endpoint_sccp_id'],
+                             endpoint_custom_id=kwargs['endpoint_custom_id'])
         extension = self.add_extension(exten=kwargs['exten'],
                                        context=kwargs['context'],
                                        typeval=user.id)
@@ -231,7 +237,6 @@ class ItemInserter(object):
         kwargs.setdefault('lastname', 'unittest')
         kwargs.setdefault('callerid', '"%s %s"' % (kwargs['firstname'], kwargs['lastname']))
         kwargs.setdefault('context', 'foocontext')
-        kwargs.setdefault('protocol', 'sip')
         kwargs.setdefault('name_line', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
         kwargs.setdefault('commented_line', 0)
         kwargs.setdefault('device', 1)
@@ -260,7 +265,6 @@ class ItemInserter(object):
     def add_user_line_without_user(self, **kwargs):
         kwargs.setdefault('name', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
         kwargs.setdefault('context', 'foocontext')
-        kwargs.setdefault('protocol', 'sip')
         kwargs.setdefault('provisioningid', int(''.join(random.choice('123456789') for _ in range(6))))
         kwargs.setdefault('device', 1)
 

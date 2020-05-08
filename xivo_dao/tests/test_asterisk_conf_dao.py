@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -86,8 +86,7 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
         number = '1234'
         sccp_line = self.add_sccpline(cid_num=number)
         ule = self.add_user_line_with_exten(
-            protocol='sccp',
-            protocolid=sccp_line.id,
+            endpoint_sccp_id=sccp_line.id,
             exten=number,
         )
 
@@ -109,8 +108,7 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
     def test_find_sccp_line_settings_when_line_disabled(self):
         number = '1234'
         sccp_line = self.add_sccpline(cid_num=number)
-        self.add_user_line_with_exten(protocol='sccp',
-                                      protocolid=sccp_line.id,
+        self.add_user_line_with_exten(endpoint_sccp_id=sccp_line.id,
                                       exten=number,
                                       commented_line=1)
 
@@ -122,8 +120,7 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
         number = '1234'
         sccp_line = self.add_sccpline(cid_num=number, allow='g729')
         ule = self.add_user_line_with_exten(
-            protocol='sccp',
-            protocolid=sccp_line.id,
+            endpoint_sccp_id=sccp_line.id,
             exten=number,
         )
 
@@ -147,8 +144,7 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
         number = '1234'
         sccp_line = self.add_sccpline(cid_num=number, allow='g729', disallow='all')
         ule = self.add_user_line_with_exten(
-            protocol='sccp',
-            protocolid=sccp_line.id,
+            endpoint_sccp_id=sccp_line.id,
             exten=number,
         )
 
@@ -172,11 +168,11 @@ class TestSCCPLineSettingDAO(DAOTestCase, PickupHelperMixin):
     @patch('xivo_dao.asterisk_conf_dao.find_pickup_members')
     def test_find_sccp_line_pickup_group(self, mock_find_pickup_members):
         sccp_line = self.add_sccpline()
-        ule = self.add_user_line_with_exten(protocol='sccp', protocolid=sccp_line.id)
+        ule = self.add_user_line_with_exten(endpoint_sccp_id=sccp_line.id)
         callgroups = set([1, 2, 3, 4])
         pickupgroups = set([3, 4])
         pickup_members = {
-            ule.line.protocolid: {'callgroup': callgroups, 'pickupgroup': pickupgroups},
+            sccp_line.id: {'callgroup': callgroups, 'pickupgroup': pickupgroups},
         }
         mock_find_pickup_members.return_value = pickup_members
 
@@ -236,7 +232,7 @@ class TestSccpConfDAO(DAOTestCase):
         extension = self.add_extension(exten='1000', context='default')
         sccp_device = self.add_sccpdevice(line=extension.exten)
         sccp_line = self.add_sccpline(name=extension.exten, context=extension.context)
-        line = self.add_line(protocol='sccp', protocolid=sccp_line.id, context=extension.context)
+        line = self.add_line(endpoint_sccp_id=sccp_line.id, context=extension.context)
         voicemail = self.add_voicemail(mailbox='2000')
         user = self.add_user(voicemailid=voicemail.uniqueid)
         self.add_user_line(user_id=user.id, line_id=line.id)
@@ -306,8 +302,7 @@ class TestFindSccpSpeeddialSettings(DAOTestCase):
         extension_row = self.add_extension(exten=exten, context=context)
         line_row = self.add_line(
             context=context,
-            protocol='sccp',
-            protocolid=sccp_line_row.id,
+            endpoint_sccp_id=sccp_line_row.id,
         )
 
         self.add_user_line(user_id=user_row.id, line_id=line_row.id)
@@ -355,20 +350,21 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
     def test_find_pickup_members_with_sip_users(self):
         pickup = self.add_pickup()
 
-        ule = self.add_user_line_with_exten(protocol='sip')
+        sip = self.add_usersip()
+        ule = self.add_user_line_with_exten(endpoint_sip_id=sip.id)
         category = self.add_pickup_member_user(pickup, ule.user_id)
 
         pickup_members = asterisk_conf_dao.find_pickup_members('sip')
 
         assert_that(pickup_members, equal_to(
-            {ule.line.protocolid: {category: set([pickup.id])}},
+            {sip.id: {category: set([pickup.id])}},
         ))
 
     def test_find_pickup_members_with_sccp_users(self):
         pickup = self.add_pickup()
 
         sccp_line = self.add_sccpline()
-        ule = self.add_user_line_with_exten(protocol='sccp', protocolid=sccp_line.id)
+        ule = self.add_user_line_with_exten(endpoint_sccp_id=sccp_line.id)
         category = self.add_pickup_member_user(pickup, ule.user_id)
 
         pickup_members = asterisk_conf_dao.find_pickup_members('sccp')
@@ -380,25 +376,27 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
     def test_find_pickup_members_with_groups(self):
         pickup = self.add_pickup()
 
-        ule = self.add_user_line_with_exten()
+        sip = self.add_usersip()
+        ule = self.add_user_line_with_exten(endpoint_sip_id=sip.id)
         category = self.add_pickup_member_group(pickup, ule.user_id)
 
         pickup_members = asterisk_conf_dao.find_pickup_members('sip')
 
         assert_that(pickup_members, equal_to(
-            {ule.line.protocolid: {category: set([pickup.id])}}
+            {sip.id: {category: set([pickup.id])}}
         ))
 
     def test_find_pickup_members_with_queues(self):
         pickup = self.add_pickup()
 
-        ule = self.add_user_line_with_exten()
+        sip = self.add_usersip()
+        ule = self.add_user_line_with_exten(endpoint_sip_id=sip.id)
         category = self.add_pickup_member_queue(pickup, ule.user_id)
 
         pickup_members = asterisk_conf_dao.find_pickup_members('sip')
 
         assert_that(pickup_members, equal_to(
-            {ule.line.protocolid: {category: set([pickup.id])}}
+            {sip.id: {category: set([pickup.id])}}
         ))
 
     def test_find_features_settings(self):
@@ -1120,8 +1118,7 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
     def _create_user_with_usersip(self, **kwargs):
         usersip = self.add_usersip(category='user')
         ule = self.add_user_line_with_exten(
-            protocol='sip',
-            protocolid=usersip.id,
+            endpoint_sip_id=usersip.id,
             name_line=usersip.name,
             context=usersip.context,
             **kwargs
@@ -1147,7 +1144,7 @@ class TestFindSipUserSettings(DAOTestCase, PickupHelperMixin):
 
     def test_given_line_has_no_resources_associated_then_resource_fields_are_null(self):
         sip = self.add_usersip(category='user')
-        self.add_line(protocol='sip', protocolid=sip.id)
+        self.add_line(endpoint_sip_id=sip.id)
 
         results = asterisk_conf_dao.find_sip_user_settings()
 
@@ -1172,7 +1169,7 @@ class TestFindSipUserSettings(DAOTestCase, PickupHelperMixin):
             musiconhold='musiconhold',
         )
         sip = self.add_usersip(category='user')
-        line = self.add_line(protocol='sip', protocolid=sip.id, context="default")
+        line = self.add_line(endpoint_sip_id=sip.id, context="default")
         self.add_user_line(user_id=user.id, line_id=line.id)
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
 
@@ -1184,7 +1181,7 @@ class TestFindSipUserSettings(DAOTestCase, PickupHelperMixin):
             has_properties(
                 number=extension.exten,
                 context=line.context,
-                protocol=line.protocol,
+                endpoint_sip_id=line.endpoint_sip_id,
                 mailbox=mailbox,
                 mohsuggest=user.musiconhold,
                 user_id=user.id,
@@ -1195,7 +1192,7 @@ class TestFindSipUserSettings(DAOTestCase, PickupHelperMixin):
 
     def test_given_sip_account_when_querying_then_same_sip_account_row_is_returned(self):
         sip = self.add_usersip(category='user')
-        self.add_line(protocol='sip', protocolid=sip.id)
+        self.add_line(endpoint_sip_id=sip.id)
 
         results = asterisk_conf_dao.find_sip_user_settings()
 
