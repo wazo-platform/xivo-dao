@@ -350,14 +350,14 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
     def test_find_pickup_members_with_sip_users(self):
         pickup = self.add_pickup()
 
-        sip = self.add_usersip()
-        ule = self.add_user_line_with_exten(endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip()
+        ule = self.add_user_line_with_exten(endpoint_sip_uuid=sip.uuid)
         category = self.add_pickup_member_user(pickup, ule.user_id)
 
         pickup_members = asterisk_conf_dao.find_pickup_members('sip')
 
         assert_that(pickup_members, equal_to(
-            {sip.id: {category: set([pickup.id])}},
+            {sip.uuid: {category: set([pickup.id])}},
         ))
 
     def test_find_pickup_members_with_sccp_users(self):
@@ -376,27 +376,27 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
     def test_find_pickup_members_with_groups(self):
         pickup = self.add_pickup()
 
-        sip = self.add_usersip()
-        ule = self.add_user_line_with_exten(endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip()
+        ule = self.add_user_line_with_exten(endpoint_sip_uuid=sip.uuid)
         category = self.add_pickup_member_group(pickup, ule.user_id)
 
         pickup_members = asterisk_conf_dao.find_pickup_members('sip')
 
         assert_that(pickup_members, equal_to(
-            {sip.id: {category: set([pickup.id])}}
+            {sip.uuid: {category: set([pickup.id])}}
         ))
 
     def test_find_pickup_members_with_queues(self):
         pickup = self.add_pickup()
 
-        sip = self.add_usersip()
-        ule = self.add_user_line_with_exten(endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip()
+        ule = self.add_user_line_with_exten(endpoint_sip_uuid=sip.uuid)
         category = self.add_pickup_member_queue(pickup, ule.user_id)
 
         pickup_members = asterisk_conf_dao.find_pickup_members('sip')
 
         assert_that(pickup_members, equal_to(
-            {sip.id: {category: set([pickup.id])}}
+            {sip.uuid: {category: set([pickup.id])}}
         ))
 
     def test_find_features_settings(self):
@@ -1091,14 +1091,15 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         ))
 
     def _create_user_with_usersip(self, **kwargs):
-        usersip = self.add_usersip(category='user')
+        context = self.add_context()
+        endpoint_sip = self.add_endpoint_sip(context=context.name)
         ule = self.add_user_line_with_exten(
-            endpoint_sip_id=usersip.id,
-            name_line=usersip.name,
-            context=usersip.context,
+            endpoint_sip_uuid=endpoint_sip.uuid,
+            name_line=endpoint_sip.name,
+            context=context.name,
             **kwargs
         )
-        return usersip.name, ule.user_id
+        return endpoint_sip.name, ule.user_id
 
 
 class TestFindSipUserSettings(DAOTestCase, PickupHelperMixin):
@@ -1107,19 +1108,25 @@ class TestFindSipUserSettings(DAOTestCase, PickupHelperMixin):
         result = asterisk_conf_dao.find_sip_user_settings()
         assert_that(result, contains())
 
-    def test_given_sip_account_is_not_category_user_then_returns_empty_list(self):
-        self.add_usersip(category='trunk')
+    def test_given_sip_account_is_not_associated_then_returns_empty_list(self):
+        self.add_endpoint_sip()
+        result = asterisk_conf_dao.find_sip_user_settings()
+        assert_that(result, contains())
+
+    def test_given_sip_account_is_associated_to_trunk_then_returns_empty_list(self):
+        endpoint = self.add_endpoint_sip()
+        self.add_trunk(endpoint_sip_uuid=endpoint.uuid)
         result = asterisk_conf_dao.find_sip_user_settings()
         assert_that(result, contains())
 
     def test_given_sip_account_is_deactivated_then_returns_empty_list(self):
-        self.add_usersip(category='user', commented=1)
+        self.add_endpoint_sip()
         result = asterisk_conf_dao.find_sip_user_settings()
         assert_that(result, contains())
 
     def test_given_line_has_no_resources_associated_then_resource_fields_are_null(self):
-        sip = self.add_usersip(category='user')
-        self.add_line(endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip()
+        self.add_line(endpoint_sip_uuid=sip.uuid)
 
         results = asterisk_conf_dao.find_sip_user_settings()
 
@@ -1135,16 +1142,17 @@ class TestFindSipUserSettings(DAOTestCase, PickupHelperMixin):
         )))
 
     def test_given_sip_has_all_resources_associated_then_all_resources_found_in_result(self):
-        extension = self.add_extension(exten="1000", context="default")
-        voicemail = self.add_voicemail(mailbox='1000', context='default')
+        context = self.add_context(name='default')
+        extension = self.add_extension(exten="1000", context=context.name)
+        voicemail = self.add_voicemail(mailbox='1000', context=context.name)
         user = self.add_user(
             firstname="John",
             lastname="Smith",
             voicemailid=voicemail.id,
             musiconhold='musiconhold',
         )
-        sip = self.add_usersip(category='user')
-        line = self.add_line(endpoint_sip_id=sip.id, context="default")
+        sip = self.add_endpoint_sip()
+        line = self.add_line(endpoint_sip_uuid=sip.uuid, context=context.name)
         self.add_user_line(user_id=user.id, line_id=line.id)
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
 
@@ -1156,7 +1164,7 @@ class TestFindSipUserSettings(DAOTestCase, PickupHelperMixin):
             has_properties(
                 number=extension.exten,
                 context=line.context,
-                endpoint_sip_id=line.endpoint_sip_id,
+                endpoint_sip_uuid=line.endpoint_sip_uuid,
                 mailbox=mailbox,
                 mohsuggest=user.musiconhold,
                 user_id=user.id,
@@ -1166,12 +1174,12 @@ class TestFindSipUserSettings(DAOTestCase, PickupHelperMixin):
         )))
 
     def test_given_sip_account_when_querying_then_same_sip_account_row_is_returned(self):
-        sip = self.add_usersip(category='user')
-        self.add_line(endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip()
+        self.add_line(endpoint_sip_uuid=sip.uuid)
 
         results = asterisk_conf_dao.find_sip_user_settings()
 
-        assert_that(results, contains(contains(has_properties(UserSIP=sip), {})))
+        assert_that(results, contains(contains(has_properties(EndpointSIP=sip), {})))
 
 
 class TestFindSipTrunkSettings(DAOTestCase):
@@ -1181,18 +1189,18 @@ class TestFindSipTrunkSettings(DAOTestCase):
         assert_that(result, contains())
 
     def test_given_sip_account_is_not_category_user_then_returns_empty_list(self):
-        self.add_usersip(category='user')
+        self.add_endpoint_sip()
         result = asterisk_conf_dao.find_sip_trunk_settings()
         assert_that(result, contains())
 
     def test_given_sip_account_is_deactivated_then_returns_empty_list(self):
-        self.add_usersip(category='trunk', commented=1)
+        self.add_endpoint_sip()
         result = asterisk_conf_dao.find_sip_trunk_settings()
         assert_that(result, contains())
 
     def test_given_sip_has_all_resources_associated_then_all_resources_found_in_result(self):
-        sip = self.add_usersip(category='trunk')
-        self.add_trunk(endpoint_sip_id=sip.id, twilio_incoming=True)
+        sip = self.add_endpoint_sip()
+        self.add_trunk(endpoint_sip_uuid=sip.uuid, twilio_incoming=True)
 
         results = asterisk_conf_dao.find_sip_trunk_settings()
 
@@ -1201,9 +1209,9 @@ class TestFindSipTrunkSettings(DAOTestCase):
         ))
 
     def test_given_sip_account_when_querying_then_same_sip_account_row_is_returned(self):
-        sip = self.add_usersip(category='trunk')
-        self.add_trunk(endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip()
+        self.add_trunk(endpoint_sip_uuid=sip.uuid)
 
         results = asterisk_conf_dao.find_sip_trunk_settings()
 
-        assert_that(results, contains(has_properties(UserSIP=sip)))
+        assert_that(results, contains(has_properties(EndpointSIP=sip)))

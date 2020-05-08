@@ -4,10 +4,10 @@
 
 from sqlalchemy import text
 
+from xivo_dao.alchemy.endpoint_sip import EndpointSIP
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures as Trunk
 from xivo_dao.alchemy.staticiax import StaticIAX
 from xivo_dao.alchemy.staticsip import StaticSIP
-from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.usercustom import UserCustom
 
@@ -59,10 +59,10 @@ class TrunkPersistor(CriteriaBuilderMixin):
         self.session.flush()
 
     def delete(self, trunk):
-        if trunk.endpoint_sip_id:
+        if trunk.endpoint_sip_uuid:
             (self.session
-             .query(UserSIP)
-             .filter(UserSIP.id == trunk.endpoint_sip_id)
+             .query(EndpointSIP)
+             .filter(EndpointSIP.uuid == trunk.endpoint_sip_uuid)
              .delete())
         elif trunk.endpoint_iax_id:
             (self.session
@@ -75,12 +75,7 @@ class TrunkPersistor(CriteriaBuilderMixin):
              .filter(UserCustom.id == trunk.endpoint_custom_id)
              .delete())
 
-        if trunk.register_sip_id:
-            (self.session
-             .query(StaticSIP)
-             .filter(StaticSIP.id == trunk.register_sip_id)
-             .delete())
-        elif trunk.register_iax_id:
+        if trunk.register_iax_id:
             (self.session
              .query(StaticIAX)
              .filter(StaticIAX.id == trunk.register_iax_id)
@@ -110,16 +105,3 @@ class TrunkPersistor(CriteriaBuilderMixin):
             trunk.register_iax_id = None
             self.session.flush()
             self.session.expire(trunk, ['register_iax'])
-
-    def associate_register_sip(self, trunk, register):
-        if trunk.protocol not in ('sip', None):
-            raise errors.resource_associated('Trunk', 'Endpoint', trunk_id=trunk.id, protocol=trunk.protocol)
-        trunk.register_sip_id = register.id
-        self.session.flush()
-        self.session.expire(trunk, ['register_sip'])
-
-    def dissociate_register_sip(self, trunk, register):
-        if register is trunk.register_sip:
-            trunk.register_sip_id = None
-            self.session.flush()
-            self.session.expire(trunk, ['register_sip'])

@@ -4,6 +4,7 @@
 
 from sqlalchemy.orm import Load
 
+from xivo_dao.alchemy.endpoint_sip import EndpointSIP
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.line_extension import LineExtension
 from xivo_dao.alchemy.linefeatures import LineFeatures
@@ -13,7 +14,6 @@ from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.alchemy.userfeatures import UserFeatures
-from xivo_dao.alchemy.usersip import UserSIP
 
 
 class LineFixes(object):
@@ -38,7 +38,7 @@ class LineFixes(object):
 
     def get_row(self, line_id):
         query = (self.session.query(LineFeatures,
-                                    UserSIP,
+                                    EndpointSIP,
                                     SCCPLine,
                                     SCCPDevice,
                                     UserFeatures,
@@ -55,7 +55,7 @@ class LineFixes(object):
                  .outerjoin(LineExtension.main_extension_rel)
                  .options(
                      Load(LineFeatures).load_only("id", "name", "number", "context"),
-                     Load(UserSIP).load_only("id", "callerid", "context"),
+                     Load(EndpointSIP),  # TODO(pc-m): only add required fields
                      Load(SCCPLine).load_only("id", "name", "context", "cid_name", "cid_num"),
                      Load(SCCPDevice).load_only("id", "line"),
                      Load(UserFeatures).load_only("id", "firstname", "webi_lastname", "callerid"),
@@ -67,7 +67,7 @@ class LineFixes(object):
         return query.first()
 
     def fix_protocol(self, row):
-        if row.LineFeatures.endpoint_sip_id:
+        if row.LineFeatures.endpoint_sip_uuid:
             self.fix_sip(row)
         elif row.LineFeatures.endpoint_sccp_id:
             self.fix_sccp(row)
@@ -77,14 +77,12 @@ class LineFixes(object):
             self.remove_endpoint(row)
 
     def fix_sip(self, row):
-        if row.UserSIP:
-            self.update_usersip(row)
-        else:
-            self.remove_endpoint(row)
+        if row.EndpointSIP:
+            self.update_endpoint_sip(row)
 
-    def update_usersip(self, row):
-        row.UserSIP.context = row.LineFeatures.context
-        interface = 'SIP/{}'.format(row.UserSIP.name)
+    def update_endpoint_sip(self, row):
+        row.EndpointSIP.context = row.LineFeatures.context_rel
+        interface = 'SIP/{}'.format(row.EndpointSIP.name)
         self.fix_queue_member(row, interface)
 
     def remove_endpoint(self, row):
@@ -120,8 +118,8 @@ class LineFixes(object):
 
     def fix_caller_id(self, row):
         if row.UserFeatures:
-            if row.LineFeatures.endpoint_sip_id:
-                row.UserSIP.update_caller_id(row.UserFeatures, row.Extension)
+            if row.LineFeatures.endpoint_sip_uuid:
+                row.EndpointSIP.update_caller_id(row.UserFeatures, row.Extension)
             elif row.LineFeatures.endpoint_sccp_id:
                 row.SCCPLine.update_caller_id(row.UserFeatures, row.Extension)
 

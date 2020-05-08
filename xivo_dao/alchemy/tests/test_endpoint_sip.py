@@ -11,6 +11,7 @@ from ..endpoint_sip import EndpointSIP
 class TestEndpointSIP(DAOTestCase):
     def test_create_with_all_relations(self):
         transport = self.add_transport()
+        context = self.add_context()
         parent_1 = self.add_endpoint_sip()
         parent_2 = self.add_endpoint_sip()
 
@@ -23,7 +24,8 @@ class TestEndpointSIP(DAOTestCase):
             registration_outbound_auth_section_options=[['type', 'auth']],
             identify_section_options=[['type', 'identify']],
             outbound_auth_section_options=[['type', 'auth']],
-            transport=transport,
+            transport={'uuid': transport.uuid},
+            context={'id': context.id},
             parents=[parent_1, parent_2],
             tenant_uuid=self.default_tenant.uuid,
             template=True,
@@ -45,6 +47,7 @@ class TestEndpointSIP(DAOTestCase):
             outbound_auth_section_options=[['type', 'auth']],
             template=True,
             transport=has_properties(uuid=transport.uuid),
+            context=has_properties(id=context.id),
             parents=contains(
                 has_properties(uuid=parent_1.uuid),
                 has_properties(uuid=parent_2.uuid),
@@ -91,3 +94,20 @@ class TestEndpointSIP(DAOTestCase):
                 has_properties(uuid=parent.uuid),
             )
         ))
+
+    def test_auto_generated_name(self):
+        self.session.add(EndpointSIP(
+            name=None,
+            tenant_uuid=self.default_tenant.uuid,
+        ))
+        self.session.add(EndpointSIP(tenant_uuid=self.default_tenant.uuid))
+        self.session.flush()
+
+        rows = self.session.query(EndpointSIP).all()
+        assert_that(
+            rows,
+            contains(
+                has_properties(name=has_length(8)),
+                has_properties(name=has_length(8)),
+            )
+        )

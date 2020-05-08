@@ -86,18 +86,22 @@ class TestHints(DAOTestCase, FuncKeyHelper):
     def setUp(self):
         super(TestHints, self).setUp()
         self.setup_funckeys()
-        self.context = 'mycontext'
-        self.context2 = 'mycontext2'
+        self.context = self.add_context(name='mycontext')
+        self.context2 = self.add_context(name='mycontext2')
 
-    def add_user_and_func_key(self, endpoint_sip_id=None, exten='1000', commented=0, enablehint=1):
-        return self.add_user_sip_and_func_key(endpoint_sip_id, exten, commented, enablehint)
+    def add_user_and_func_key(
+        self, endpoint_sip_uuid=None, exten='1000', commented=0, enablehint=1,
+    ):
+        return self.add_user_sip_and_func_key(endpoint_sip_uuid, exten, commented, enablehint)
 
-    def add_user_sip_and_func_key(self, endpoint_sip_id=None, exten='1000', commented=0, enablehint=1):
-        if not endpoint_sip_id:
-            endpoint_sip_id = self.add_usersip().id
+    def add_user_sip_and_func_key(
+        self, endpoint_sip_uuid=None, exten='1000', commented=0, enablehint=1,
+    ):
+        if not endpoint_sip_uuid:
+            endpoint_sip_uuid = self.add_endpoint_sip().uuid
         line = self.add_line(
-            context=self.context,
-            endpoint_sip_id=endpoint_sip_id,
+            context=self.context.name,
+            endpoint_sip_uuid=endpoint_sip_uuid,
             commented=commented
         )
         user_row = self._add_user_line_extension(line.id, exten, commented, enablehint)
@@ -109,7 +113,7 @@ class TestHints(DAOTestCase, FuncKeyHelper):
         if not endpoint_sccp_id:
             endpoint_sccp_id = self.add_sccpline().id
         line = self.add_line(
-            context=self.context,
+            context=self.context.name,
             endpoint_sccp_id=endpoint_sccp_id,
             commented=commented
         )
@@ -122,7 +126,7 @@ class TestHints(DAOTestCase, FuncKeyHelper):
         if not endpoint_custom_id:
             endpoint_custom_id = self.add_usercustom().id
         line = self.add_line(
-            context=self.context,
+            context=self.context.name,
             endpoint_custom_id=endpoint_custom_id,
             commented=commented
         )
@@ -133,7 +137,7 @@ class TestHints(DAOTestCase, FuncKeyHelper):
 
     def _add_user_line_extension(self, line_id, exten, commented=0, enablehint=1):
         user_row = self.add_user(enablehint=enablehint)
-        extension_row = self.add_extension(exten=exten, context=self.context)
+        extension_row = self.add_extension(exten=exten, context=self.context.name)
 
         self.add_user_line(
             user_id=user_row.id,
@@ -149,8 +153,8 @@ class TestHints(DAOTestCase, FuncKeyHelper):
         return user_row
 
     def add_sip_line_to_extension_and_user(self, name, user_id, extension_id, main_line=True):
-        sip = self.add_usersip(name=name, context=self.context)
-        line = self.add_line(context=self.context, endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip(name=name, context={'id': self.context.id})
+        line = self.add_line(context=self.context.name, endpoint_sip_uuid=sip.uuid)
         self.add_user_line(user_id=user_id, line_id=line.id, main_user=True, main_line=main_line)
         self.add_line_extension(line_id=line.id, extension_id=extension_id, main_extension=True)
 
@@ -158,38 +162,38 @@ class TestHints(DAOTestCase, FuncKeyHelper):
 class TestUserHints(TestHints):
 
     def test_given_user_with_sip_line_then_returns_user_hint(self):
-        usersip_row = self.add_usersip(name='abcdef')
-        user_row = self.add_user_sip_and_func_key(usersip_row.id)
+        endpoint_sip_row = self.add_endpoint_sip(name='abcdef')
+        user_row = self.add_user_sip_and_func_key(endpoint_sip_row.uuid)
 
-        assert_that(hint_dao.user_hints(self.context), contains(
+        assert_that(hint_dao.user_hints(self.context.name), contains(
             a_hint(user_id=user_row.id, extension='1000', argument='SIP/abcdef'),
         ))
 
     def test_given_user_with_sccp_line_then_returns_user_hint(self):
-        sccpline_row = self.add_sccpline(name='1001', context=self.context)
+        sccpline_row = self.add_sccpline(name='1001', context=self.context.name)
         user_row = self.add_user_sccp_and_func_key(sccpline_row.id, '1001')
 
-        assert_that(hint_dao.user_hints(self.context), contains(
+        assert_that(hint_dao.user_hints(self.context.name), contains(
             a_hint(user_id=user_row.id, extension='1001', argument='SCCP/1001'),
         ))
 
     def test_given_user_with_custom_line_then_returns_user_hint(self):
-        custom_row = self.add_usercustom(interface='ghijkl', context=self.context)
+        custom_row = self.add_usercustom(interface='ghijkl', context=self.context.name)
         user_row = self.add_user_custom_and_func_key(custom_row.id, '1002')
 
-        assert_that(hint_dao.user_hints(self.context), contains(
+        assert_that(hint_dao.user_hints(self.context.name), contains(
             a_hint(user_id=user_row.id, extension='1002', argument='ghijkl'),
         ))
 
     def test_given_user_with_commented_line_then_returns_empty_list(self):
         self.add_user_and_func_key(exten='1002', commented=1)
 
-        assert_that(hint_dao.user_hints(self.context), empty())
+        assert_that(hint_dao.user_hints(self.context.name), empty())
 
     def test_given_user_with_hints_disabled_then_returns_empty_list(self):
         self.add_user_and_func_key(exten='1003', enablehint=0)
 
-        assert_that(hint_dao.user_hints(self.context), empty())
+        assert_that(hint_dao.user_hints(self.context.name), empty())
 
     def test_given_user_when_querying_different_context_then_returns_empty_list(self):
         self.add_user_and_func_key(exten='1004')
@@ -197,60 +201,66 @@ class TestUserHints(TestHints):
         assert_that(hint_dao.user_hints('othercontext'), empty())
 
     def test_given_two_users_with_sip_line_then_returns_only_two_hints(self):
-        user1 = self.add_user_sip_and_func_key(self.add_usersip(name='user1').id, '1001')
-        user2 = self.add_user_sip_and_func_key(self.add_usersip(name='user2').id, '1002')
+        user1 = self.add_user_and_func_key(
+            self.add_endpoint_sip(name='user1', context={'id': self.context.id}).uuid,
+            '1001',
+        )
+        user2 = self.add_user_and_func_key(
+            self.add_endpoint_sip(name='user2', context={'id': self.context.id}).uuid,
+            '1002',
+        )
 
-        assert_that(hint_dao.user_hints(self.context), contains_inanyorder(
+        assert_that(hint_dao.user_hints(self.context.name), contains_inanyorder(
             a_hint(user_id=user1.id, extension='1001', argument='SIP/user1'),
             a_hint(user_id=user2.id, extension='1002', argument='SIP/user2'),
         ))
 
     def test_given_one_user_two_lines_one_extension_then_returns_user_hint(self):
         user = self.add_user(enablehint=1)
-        extension = self.add_extension(exten='1001', context=self.context)
+        extension = self.add_extension(exten='1001', context=self.context.name)
         self.add_user_destination(user.id)
         self.add_sip_line_to_extension_and_user('line1', user.id, extension.id)
         self.add_sip_line_to_extension_and_user('line2', user.id, extension.id, main_line=False)
 
-        assert_that(hint_dao.user_hints(self.context), contains(
+        assert_that(hint_dao.user_hints(self.context.name), contains(
             a_hint(user_id=user.id, extension='1001', argument='SIP/line1&SIP/line2'),
         ))
 
     def test_given_one_user_two_lines_two_extensions_then_returns_user_hint(self):
         user = self.add_user(enablehint=1)
-        extension1 = self.add_extension(exten='1001', context=self.context)
-        extension2 = self.add_extension(exten='1002', context=self.context)
+        extension1 = self.add_extension(exten='1001', context=self.context.name)
+        extension2 = self.add_extension(exten='1002', context=self.context.name)
         self.add_user_destination(user.id)
         self.add_sip_line_to_extension_and_user('line1', user.id, extension1.id)
         self.add_sip_line_to_extension_and_user('line2', user.id, extension2.id, main_line=False)
 
-        assert_that(hint_dao.user_hints(self.context), contains_inanyorder(
+        assert_that(hint_dao.user_hints(self.context.name), contains_inanyorder(
             a_hint(user_id=user.id, extension='1001', argument='SIP/line1&SIP/line2'),
             a_hint(user_id=user.id, extension='1002', argument='SIP/line1&SIP/line2'),
         ))
 
     def test_given_one_user_two_lines_two_extensions_two_contexts_then_returns_user_hint(self):
         user = self.add_user(enablehint=1)
-        extension1 = self.add_extension(exten='1001', context=self.context)
-        extension2 = self.add_extension(exten='1002', context=self.context2)
+        extension1 = self.add_extension(exten='1001', context=self.context.name)
+        extension2 = self.add_extension(exten='1002', context=self.context2.name)
         self.add_user_destination(user.id)
         self.add_sip_line_to_extension_and_user('line1', user.id, extension1.id)
         self.add_sip_line_to_extension_and_user('line2', user.id, extension2.id, main_line=False)
 
-        assert_that(hint_dao.user_hints(self.context), contains(
+        assert_that(hint_dao.user_hints(self.context.name), contains(
             a_hint(user_id=user.id, extension='1001', argument='SIP/line1&SIP/line2'),
         ))
 
     def test_given_one_user_three_lines_two_extensions_then_returns_user_hint(self):
         user = self.add_user(enablehint=1)
-        extension1 = self.add_extension(exten='1001', context=self.context)
-        extension2 = self.add_extension(exten='1002', context=self.context)
+        extension1 = self.add_extension(exten='1001', context=self.context.name)
+        extension2 = self.add_extension(exten='1002', context=self.context.name)
         self.add_user_destination(user.id)
         self.add_sip_line_to_extension_and_user('line1', user.id, extension1.id)
         self.add_sip_line_to_extension_and_user('line2', user.id, extension2.id, main_line=False)
         self.add_sip_line_to_extension_and_user('line3', user.id, extension2.id, main_line=False)
 
-        assert_that(hint_dao.user_hints(self.context), contains_inanyorder(
+        assert_that(hint_dao.user_hints(self.context.name), contains_inanyorder(
             a_hint(user_id=user.id, extension='1001', argument='SIP/line1&SIP/line2&SIP/line3'),
             a_hint(user_id=user.id, extension='1002', argument='SIP/line1&SIP/line2&SIP/line3'),
         ))
@@ -261,7 +271,7 @@ class TestConferenceHints(TestHints):
     def prepare_conference(self, commented=0):
         conf_row = self.add_meetmefeatures(commented=commented)
         self.add_extension(
-            context=self.context,
+            context=self.context.name,
             exten=conf_row.confno,
             type='meetme',
             typeval=str(conf_row.id),
@@ -272,7 +282,7 @@ class TestConferenceHints(TestHints):
         conf_row = self.prepare_conference()
         self.add_conference_destination(conf_row.id)
 
-        assert_that(hint_dao.conference_hints(self.context), contains(
+        assert_that(hint_dao.conference_hints(self.context.name), contains(
             Hint(user_id=None, extension=conf_row.confno, argument=None),
         ))
 
@@ -280,7 +290,7 @@ class TestConferenceHints(TestHints):
         conf_row = self.prepare_conference(commented=1)
         self.add_conference_destination(conf_row.id)
 
-        assert_that(hint_dao.conference_hints(self.context), empty())
+        assert_that(hint_dao.conference_hints(self.context.name), empty())
 
     def test_given_conference_when_querying_different_context_then_returns_no_hints(self):
         conf_row = self.prepare_conference()
@@ -297,7 +307,7 @@ class TestServiceHints(TestHints):
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row)
 
-        assert_that(hint_dao.service_hints(self.context), contains(
+        assert_that(hint_dao.service_hints(self.context.name), contains(
             Hint(user_id=user_row.id, extension='*25', argument=None),
         ))
 
@@ -307,7 +317,7 @@ class TestServiceHints(TestHints):
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row)
 
-        assert_that(hint_dao.service_hints(self.context), empty())
+        assert_that(hint_dao.service_hints(self.context.name), empty())
 
     def test_given_no_blf_then_returns_no_hints(self):
         destination_row = self.create_service_func_key('*25', 'enablednd')
@@ -315,7 +325,7 @@ class TestServiceHints(TestHints):
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row, blf=False)
 
-        assert_that(hint_dao.service_hints(self.context), empty())
+        assert_that(hint_dao.service_hints(self.context.name), empty())
 
     def test_given_user_when_query_different_context_then_returns_no_hints(self):
         destination_row = self.create_service_func_key('*25', 'enablednd')
@@ -334,7 +344,7 @@ class TestForwardHints(TestHints):
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row)
 
-        assert_that(hint_dao.forward_hints(self.context), contains(
+        assert_that(hint_dao.forward_hints(self.context.name), contains(
             Hint(user_id=user_row.id, extension='*23', argument='1234'),
         ))
 
@@ -344,7 +354,7 @@ class TestForwardHints(TestHints):
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row)
 
-        assert_that(hint_dao.forward_hints(self.context), contains(
+        assert_that(hint_dao.forward_hints(self.context.name), contains(
             Hint(user_id=user_row.id, extension='*23', argument=None),
         ))
 
@@ -354,7 +364,7 @@ class TestForwardHints(TestHints):
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row)
 
-        assert_that(hint_dao.forward_hints(self.context), contains())
+        assert_that(hint_dao.forward_hints(self.context.name), contains())
 
     def test_given_no_blf_then_returns_no_hints(self):
         destination_row = self.create_forward_func_key('_*23.', 'fwdbusy', '1234')
@@ -362,7 +372,7 @@ class TestForwardHints(TestHints):
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row, blf=False)
 
-        assert_that(hint_dao.forward_hints(self.context), contains())
+        assert_that(hint_dao.forward_hints(self.context.name), contains())
 
     def test_given_user_when_query_other_context_then_returns_no_hints(self):
         destination_row = self.create_forward_func_key('_*23.', 'fwdbusy', '1234')
@@ -378,7 +388,7 @@ class TestForwardHints(TestHints):
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row)
 
-        assert_that(hint_dao.forward_hints(self.context), contains(
+        assert_that(hint_dao.forward_hints(self.context.name), contains(
             Hint(user_id=user_row.id, extension='*23', argument='1234'),
         ))
 
@@ -391,7 +401,7 @@ class TestAgentHints(TestHints):
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row)
 
-        assert_that(hint_dao.agent_hints(self.context), contains(
+        assert_that(hint_dao.agent_hints(self.context.name), contains(
             Hint(user_id=user_row.id, extension='*31', argument=str(destination_row.agent_id)),
         ))
 
@@ -401,7 +411,7 @@ class TestAgentHints(TestHints):
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row, blf=False)
 
-        assert_that(hint_dao.agent_hints(self.context), empty())
+        assert_that(hint_dao.agent_hints(self.context.name), empty())
 
     def test_given_no_blf_then_returns_no_hints(self):
         destination_row = self.create_agent_func_key('_*31.', 'agentstaticlogin')
@@ -409,7 +419,7 @@ class TestAgentHints(TestHints):
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row, blf=False)
 
-        assert_that(hint_dao.agent_hints(self.context), empty())
+        assert_that(hint_dao.agent_hints(self.context.name), empty())
 
     def test_given_user_when_querying_other_context_then_returns_no_hints(self):
         destination_row = self.create_agent_func_key('_*31.', 'agentstaticlogin')
@@ -425,7 +435,7 @@ class TestAgentHints(TestHints):
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row)
 
-        assert_that(hint_dao.agent_hints(self.context), contains(
+        assert_that(hint_dao.agent_hints(self.context.name), contains(
             Hint(user_id=user_row.id, extension='*31', argument=str(destination_row.agent_id)),
         ))
 
@@ -438,7 +448,7 @@ class TestCustomHints(TestHints):
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row)
 
-        assert_that(hint_dao.custom_hints(self.context), contains(
+        assert_that(hint_dao.custom_hints(self.context.name), contains(
             Hint(user_id=None, extension='1234', argument=None),
         ))
 
@@ -479,14 +489,14 @@ class TestBSFilterHints(TestHints):
     def test_given_bs_filter_func_key_then_returns_bs_filter_hint(self):
         _, filtermember_row = self.create_boss_and_secretary()
 
-        assert_that(hint_dao.bsfilter_hints(self.context), contains(
+        assert_that(hint_dao.bsfilter_hints(self.context.name), contains(
             Hint(user_id=None, extension='*37', argument=str(filtermember_row.id)),
         ))
 
     def test_given_commented_bs_filter_func_key_then_returns_empty_list(self):
         self.create_boss_and_secretary(commented=1)
 
-        assert_that(hint_dao.bsfilter_hints(self.context), empty())
+        assert_that(hint_dao.bsfilter_hints(self.context.name), empty())
 
     def test_given_secretary_when_querying_different_context_then_returns_no_hints(self):
         self.create_boss_and_secretary()
@@ -506,7 +516,7 @@ class TestGroupHints(TestHints):
                         extension='*51',
                         argument=str(destination_row.group_id))
 
-        assert_that(hint_dao.groupmember_hints(self.context), contains(expected))
+        assert_that(hint_dao.groupmember_hints(self.context.name), contains(expected))
 
     def test_given_commented_extension_then_returns_no_hints(self):
         destination_row = self.create_group_member_func_key('_*51.', 'groupmemberjoin')
@@ -514,7 +524,7 @@ class TestGroupHints(TestHints):
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row, blf=False)
 
-        assert_that(hint_dao.groupmember_hints(self.context), contains())
+        assert_that(hint_dao.groupmember_hints(self.context.name), contains())
 
     def test_given_no_blf_then_returns_no_hints(self):
         destination_row = self.create_group_member_func_key('_*51.', 'groupmemberjoin')
@@ -522,7 +532,7 @@ class TestGroupHints(TestHints):
         user_row = self.add_user_and_func_key()
         self.add_func_key_to_user(destination_row, user_row, blf=False)
 
-        assert_that(hint_dao.groupmember_hints(self.context), contains())
+        assert_that(hint_dao.groupmember_hints(self.context.name), contains())
 
     def test_given_user_when_querying_other_context_then_returns_no_hints(self):
         destination_row = self.create_group_member_func_key('_*51.', 'groupmemberjoin')
@@ -542,18 +552,18 @@ class TestGroupHints(TestHints):
                         extension='*51',
                         argument=str(destination_row.group_id))
 
-        assert_that(hint_dao.groupmember_hints(self.context), contains(expected))
+        assert_that(hint_dao.groupmember_hints(self.context.name), contains(expected))
 
 
 class TestUserSharedHints(TestHints):
 
     def test_multi_line_user(self):
         user = self.add_user()
-        sip_1 = self.add_usersip()
-        sip_2 = self.add_usersip()
+        sip_1 = self.add_endpoint_sip()
+        sip_2 = self.add_endpoint_sip()
         sccp_1 = self.add_sccpline(name='1001')
-        line_1 = self.add_line(endpoint_sip_id=sip_1.id)
-        line_2 = self.add_line(endpoint_sip_id=sip_2.id)
+        line_1 = self.add_line(endpoint_sip_uuid=sip_1.uuid)
+        line_2 = self.add_line(endpoint_sip_uuid=sip_2.uuid)
         line_3 = self.add_line(endpoint_sccp_id=sccp_1.id)
         extension_1 = self.add_extension(typeval=user.id)
         extension_2 = self.add_extension(typeval=user.id)
