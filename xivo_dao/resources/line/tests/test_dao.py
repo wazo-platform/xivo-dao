@@ -30,16 +30,7 @@ from xivo_dao.helpers.exception import NotFoundError
 from xivo_dao.helpers.exception import InputError
 
 
-class TestLineDao(DAOTestCase):
-
-    def add_line(self, **properties):
-        properties.setdefault('context', 'default')
-        properties.setdefault('provisioningid', 123456)
-        line = super(TestLineDao, self).add_line(**properties)
-        return line
-
-
-class TestFindBy(TestLineDao):
+class TestFindBy(DAOTestCase):
 
     def test_given_column_does_not_exist_then_raises_error(self):
         self.assertRaises(InputError, line_dao.find_by, column=1)
@@ -63,7 +54,7 @@ class TestFindBy(TestLineDao):
         assert_that(line, equal_to(line_row))
 
 
-class TestFindAllBy(TestLineDao):
+class TestFindAllBy(DAOTestCase):
 
     def test_given_column_does_not_exist_then_raises_error(self):
         self.assertRaises(InputError, line_dao.find_by, column=1)
@@ -97,7 +88,7 @@ class TestFindAllBy(TestLineDao):
         assert_that(lines, all_of(has_items(line1), not_(has_items(line2))))
 
 
-class TestGet(TestLineDao):
+class TestGet(DAOTestCase):
 
     def test_get_no_line(self):
         self.assertRaises(NotFoundError, line_dao.get, 666)
@@ -195,7 +186,7 @@ class TestGet(TestLineDao):
         )
 
 
-class TestEdit(TestLineDao):
+class TestEdit(DAOTestCase):
 
     def test_edit_all_parameters(self):
         line_row = self.add_line()
