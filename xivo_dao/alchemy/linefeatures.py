@@ -72,9 +72,9 @@ class LineFeatures(Base):
     commented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text)
 
-    endpoint_sip_id = Column(Integer, ForeignKey('usersip.id'))
-    endpoint_sccp_id = Column(Integer, ForeignKey('sccpline.id'))
-    endpoint_custom_id = Column(Integer, ForeignKey('usercustom.id'))
+    endpoint_sip_id = Column(Integer, ForeignKey('usersip.id', ondelete='SET NULL'))
+    endpoint_sccp_id = Column(Integer, ForeignKey('sccpline.id', ondelete='SET NULL'))
+    endpoint_custom_id = Column(Integer, ForeignKey('usercustom.id', ondelete='SET NULL'))
 
     context_rel = relationship(
         'Context',
