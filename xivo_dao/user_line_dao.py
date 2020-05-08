@@ -12,7 +12,7 @@ from xivo_dao.helpers.db_manager import daosession
 
 @daosession
 def get_line_identity_by_user_id(session, user_id):
-    row = (session.query(LineSchema.endpoint_sip_id,
+    row = (session.query(LineSchema.endpoint_sip_uuid,
                          LineSchema.endpoint_sccp_id,
                          LineSchema.endpoint_custom_id,
                          LineSchema.name)
@@ -23,7 +23,7 @@ def get_line_identity_by_user_id(session, user_id):
            .first())
     if not row:
         raise LookupError('Could not find a line for user %s', user_id)
-    elif row.endpoint_sip_id:
+    elif row.endpoint_sip_uuid:
         return 'sip/{}'.format(row.name)
     elif row.endpoint_sccp_id:
         return 'sccp/{}'.format(row.name)

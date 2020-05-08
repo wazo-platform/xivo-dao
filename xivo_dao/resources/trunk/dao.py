@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.helpers.db_manager import daosession
@@ -66,13 +66,3 @@ def associate_register_iax(session, trunk, register):
 @daosession
 def dissociate_register_iax(session, trunk, register):
     TrunkPersistor(session, trunk_search).dissociate_register_iax(trunk, register)
-
-
-@daosession
-def associate_register_sip(session, trunk, register):
-    TrunkPersistor(session, trunk_search).associate_register_sip(trunk, register)
-
-
-@daosession
-def dissociate_register_sip(session, trunk, register):
-    TrunkPersistor(session, trunk_search).dissociate_register_sip(trunk, register)

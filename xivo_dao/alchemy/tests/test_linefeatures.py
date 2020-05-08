@@ -19,10 +19,10 @@ from ..linefeatures import LineFeatures
 class TestConstraint(DAOTestCase):
 
     def test_many_endpoints(self):
-        sip = self.add_usersip()
+        sip = self.add_endpoint_sip()
         sccp = self.add_sccpline()
         assert_that(calling(self.add_line).with_args(
-            endpoint_sip_id=sip.id, endpoint_sccp_id=sccp.id,
+            endpoint_sip_uuid=sip.uuid, endpoint_sccp_id=sccp.id,
         ), raises(IntegrityError))
 
 

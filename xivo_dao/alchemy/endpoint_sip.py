@@ -2,8 +2,11 @@
 # Copyright 2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from sqlalchemy import Table, text
+import logging
+
+from sqlalchemy import Table, text, Integer
 from sqlalchemy.orm import relationship
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.schema import Column, UniqueConstraint, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.types import String, Text, Boolean
@@ -11,6 +14,8 @@ from sqlalchemy.types import String, Text, Boolean
 from xivo_dao.helpers.db_manager import Base
 
 from .endpoint_sip_section import EndpointSIPSection
+
+logger = logging.getLogger(__name__)
 
 
 parent_child = Table(
@@ -37,7 +42,7 @@ class EndpointSIP(Base):
     __table_args__ = (UniqueConstraint('name'),)
 
     uuid = Column(UUID(as_uuid=True), server_default=text('uuid_generate_v4()'), primary_key=True)
-    display_name = Column(Text, nullable=False)  # For the UI (select boxes etc)
+    display_name = Column(Text)  # For the UI (select boxes etc)
     name = Column(
         Text,
         server_default=text('substring(md5(random()::text), 0, 9)'),  # Generates a random name
@@ -53,9 +58,11 @@ class EndpointSIP(Base):
     registration_outbound_auth_section_uuid = Column(UUID(as_uuid=True), ForeignKey('endpoint_sip_section.uuid'))
     outbound_auth_section_uuid = Column(UUID(as_uuid=True), ForeignKey('endpoint_sip_section.uuid'))
     transport_uuid = Column(UUID(as_uuid=True), ForeignKey('pjsip_transport.uuid'), nullable=True)
+    context_id = Column(Integer, ForeignKey('context.id'), nullable=True)
     template = Column(Boolean, server_default=text('false'))
 
     transport = relationship('PJSIPTransport')
+    context = relationship('Context')
     parents = relationship(
         'EndpointSIP',
         primaryjoin='EndpointSIP.uuid==endpoint_sip_parent.c.child_uuid',
@@ -66,30 +73,44 @@ class EndpointSIP(Base):
     _aor_section = relationship(
         'EndpointSIPSection',
         primaryjoin='EndpointSIPSection.uuid == EndpointSIP.aor_section_uuid',
+        cascade='all, delete-orphan',
+        single_parent=True,
     )
     _auth_section = relationship(
         'EndpointSIPSection',
         primaryjoin='EndpointSIPSection.uuid == EndpointSIP.auth_section_uuid',
+        cascade='all, delete-orphan',
+        single_parent=True,
     )
     _endpoint_section = relationship(
         'EndpointSIPSection',
         primaryjoin='EndpointSIPSection.uuid == EndpointSIP.endpoint_section_uuid',
+        cascade='all, delete-orphan',
+        single_parent=True,
     )
     _registration_section = relationship(
         'EndpointSIPSection',
         primaryjoin='EndpointSIPSection.uuid == EndpointSIP.registration_section_uuid',
+        cascade='all, delete-orphan',
+        single_parent=True,
     )
     _registration_outbound_auth_section = relationship(
         'EndpointSIPSection',
         primaryjoin='EndpointSIPSection.uuid == EndpointSIP.registration_outbound_auth_section_uuid',
+        cascade='all, delete-orphan',
+        single_parent=True,
     )
     _identify_section = relationship(
         'EndpointSIPSection',
         primaryjoin='EndpointSIPSection.uuid == EndpointSIP.identify_section_uuid',
+        cascade='all, delete-orphan',
+        single_parent=True,
     )
     _outbound_auth_section = relationship(
         'EndpointSIPSection',
         primaryjoin='EndpointSIPSection.uuid == EndpointSIP.outbound_auth_section_uuid',
+        cascade='all, delete-orphan',
+        single_parent=True,
     )
 
     def __init__(
@@ -102,58 +123,166 @@ class EndpointSIP(Base):
         registration_outbound_auth_section_options=None,
         identify_section_options=None,
         outbound_auth_section_options=None,
+        transport=None,
+        context=None,
+        caller_id=None,
         **kwargs
     ):
+        if transport:
+            kwargs['transport_uuid'] = transport['uuid']
+        if context:
+            kwargs['context_id'] = context['id']
         if aor_section_options:
-            kwargs['_aor_section'] = EndpointSIPSection(options=aor_section_options)
+            section = EndpointSIPSection(options=aor_section_options)
+            kwargs['_aor_section'] = section
         if auth_section_options:
-            kwargs['_auth_section'] = EndpointSIPSection(options=auth_section_options)
+            section = EndpointSIPSection(options=auth_section_options)
+            kwargs['_auth_section'] = section
         if endpoint_section_options:
-            kwargs['_endpoint_section'] = EndpointSIPSection(options=endpoint_section_options)
+            section = EndpointSIPSection(options=endpoint_section_options)
+            kwargs['_endpoint_section'] = section
         if registration_section_options:
-            kwargs['_registration_section'] = EndpointSIPSection(options=registration_section_options)
+            section = EndpointSIPSection(options=registration_section_options)
+            kwargs['_registration_section'] = section
         if registration_outbound_auth_section_options:
-            kwargs['_registration_outbound_auth_section'] = EndpointSIPSection(options=registration_outbound_auth_section_options)
-        if endpoint_section_options:
-            kwargs['_identify_section'] = EndpointSIPSection(options=identify_section_options)
-        if endpoint_section_options:
-            kwargs['_outbound_auth_section'] = EndpointSIPSection(options=outbound_auth_section_options)
+            section = EndpointSIPSection(options=registration_outbound_auth_section_options)
+            kwargs['_registration_outbound_auth_section'] = section
+        if identify_section_options:
+            section = EndpointSIPSection(options=identify_section_options)
+            kwargs['_identify_section'] = section
+        if outbound_auth_section_options:
+            section = EndpointSIPSection(options=outbound_auth_section_options)
+            kwargs['_outbound_auth_section'] = section
         super(EndpointSIP, self).__init__(*args, **kwargs)
+        if caller_id:
+            self.caller_id = caller_id
 
-    def __str__(self):
-        klass = self.__class__.__name__
-        return f'{klass}(uuid={self.uuid}, name={self.name}, aor_section_uuid={self.aor_section_uuid}, auth_section_uuid={self.auth_section_uuid})'
+    def __repr__(self):
+        return 'EndpointSIP(display_name={}'.format(self.display_name)
 
-    @property
+    @hybrid_property
     def aor_section_options(self):
         return self._get_section_options(self._aor_section)
 
-    @property
+    @aor_section_options.setter
+    def aor_section_options(self, options):
+        if not self._aor_section:
+            self._aor_section = EndpointSIPSection(options=options)
+        elif options:
+            self._aor_section.options = options
+        else:
+            self._aor_section = None
+
+    @hybrid_property
     def auth_section_options(self):
         return self._get_section_options(self._auth_section)
 
-    @property
+    @auth_section_options.setter
+    def auth_section_options(self, options):
+        if not self._auth_section:
+            self._auth_section = EndpointSIPSection(options=options)
+        elif options:
+            self._auth_section.options = options
+        else:
+            self._auth_section = None
+
+    @hybrid_property
     def endpoint_section_options(self):
         return self._get_section_options(self._endpoint_section)
 
-    @property
+    @endpoint_section_options.setter
+    def endpoint_section_options(self, options):
+        if not self._endpoint_section:
+            self._endpoint_section = EndpointSIPSection(options=options)
+        elif options:
+            self._endpoint_section.options = options
+        else:
+            self._endpoint_section = None
+
+    @hybrid_property
     def registration_section_options(self):
         return self._get_section_options(self._registration_section)
 
-    @property
+    @registration_section_options.setter
+    def registration_section_options(self, options):
+        if not self._registration_section:
+            self._registration_section = EndpointSIPSection(options=options)
+        elif options:
+            self._registration_section.options = options
+        else:
+            self._registration_section = None
+
+    @hybrid_property
     def registration_outbound_auth_section_options(self):
         return self._get_section_options(self._registration_outbound_auth_section)
 
-    @property
+    @registration_outbound_auth_section_options.setter
+    def registration_outbound_auth_section_options(self, options):
+        if not self._registration_outbound_auth_section:
+            self._registration_outbound_auth_section = EndpointSIPSection(options=options)
+        elif options:
+            self._registration_outbound_auth_section.options = options
+        else:
+            self._registration_outbound_auth_section = None
+
+    @hybrid_property
     def identify_section_options(self):
         return self._get_section_options(self._identify_section)
 
-    @property
+    @identify_section_options.setter
+    def identify_section_options(self, options):
+        if not self._identify_section:
+            self._identify_section = EndpointSIPSection(options=options)
+        elif options:
+            self._identify_section.options = options
+        else:
+            self._identify_section = None
+
+    @hybrid_property
     def outbound_auth_section_options(self):
         return self._get_section_options(self._outbound_auth_section)
+
+    @outbound_auth_section_options.setter
+    def outbound_auth_section_options(self, options):
+        if not self._outbound_auth_section:
+            self._outbound_auth_section = EndpointSIPSection(options=options)
+        elif options:
+            self._outbound_auth_section.options = options
+        else:
+            self._outbound_auth_section = None
 
     def _get_section_options(self, section):
         if not section:
             return []
 
         return [[option.key, option.value] for option in section.options]
+
+    line = relationship('LineFeatures', uselist=False)
+    trunk = relationship('TrunkFeatures', uselist=False)
+
+    @hybrid_property
+    def caller_id(self):
+        if not self._endpoint_section:
+            return
+
+        matching_options = self._endpoint_section.find('callerid')
+        for key, value in matching_options:
+            return value
+
+    @caller_id.setter
+    def caller_id(self, caller_id):
+        if not self._endpoint_section:
+            self._endpoint_section = EndpointSIPSection()
+
+        self._endpoint_section.add_or_replace('callerid', caller_id)
+
+    def update_caller_id(self, user, extension=None):
+        # Copied from usersip
+        name, num = user.extrapolate_caller_id(extension)
+        caller_id = '"{}"'.format(name)
+        if num:
+            caller_id += " <{}>".format(num)
+        self.caller_id = caller_id
+
+    def endpoint_protocol(self):
+        return 'sip'

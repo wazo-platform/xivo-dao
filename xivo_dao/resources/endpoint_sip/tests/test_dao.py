@@ -4,23 +4,25 @@
 
 from __future__ import unicode_literals
 
+import uuid
+
 from hamcrest import (
     all_of,
     assert_that,
+    contains,
     empty,
     equal_to,
-    has_item,
     has_items,
     has_length,
     has_properties,
-    is_not,
     none,
     not_,
     not_none,
 )
 from sqlalchemy.inspection import inspect
-
-from xivo_dao.alchemy.usersip import UserSIP as SIPEndpoint
+from xivo_dao.alchemy.endpoint_sip import EndpointSIP
+from xivo_dao.alchemy.endpoint_sip_section_option import EndpointSIPSectionOption
+from xivo_dao.alchemy.endpoint_sip_section import EndpointSIPSection
 from xivo_dao.helpers.exception import InputError
 from xivo_dao.helpers.exception import NotFoundError
 from xivo_dao.resources.utils.search import SearchResult
@@ -28,78 +30,45 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 from .. import dao as sip_dao
 
-ALL_OPTIONS = [
-    ['buggymwi', 'yes'],
-    ['amaflags', 'default'],
-    ['sendrpid', 'yes'],
-    ['videosupport', 'yes'],
-    ['maxcallbitrate', '1024'],
-    ['session-minse', '10'],
-    ['maxforwards', '1'],
-    ['rtpholdtimeout', '15'],
-    ['session-expires', '60'],
-    ['ignoresdpversion', 'yes'],
-    ['textsupport', 'yes'],
-    ['unsolicited_mailbox', '1000@default'],
-    ['fromuser', 'field-user'],
-    ['useclientcode', 'yes'],
-    ['call-limit', '1'],
-    ['progressinband', 'yes'],
-    ['transport', 'udp'],
-    ['directmedia', 'update'],
-    ['promiscredir', 'yes'],
-    ['allowoverlap', 'yes'],
-    ['dtmfmode', 'info'],
-    ['language', 'fr_FR'],
-    ['usereqphone', 'yes'],
-    ['qualify', '500'],
-    ['trustrpid', 'yes'],
-    ['timert1', '1'],
-    ['session-refresher', 'uas'],
-    ['allowsubscribe', 'yes'],
-    ['session-timers', 'originate'],
-    ['busylevel', '1'],
-    ['callcounter', 'no'],
-    ['callerid', '"cûstomcallerid" <1234>'],
-    ['encryption', 'yes'],
-    ['use_q850_reason', 'yes'],
-    ['disallowed_methods', 'disallowsip'],
-    ['rfc2833compensate', 'yes'],
-    ['g726nonstandard', 'yes'],
-    ['contactdeny', '127.0.0.1'],
-    ['snom_aoc_enabled', 'yes'],
-    ['t38pt_udptl', 'yes'],
-    ['subscribemwi', 'no'],
-    ['autoframing', 'yes'],
-    ['t38pt_usertpsource', 'yes'],
-    ['fromdomain', 'field-domain'],
-    ['allowtransfer', 'yes'],
-    ['nat', 'force_rport,comedia'],
-    ['contactpermit', '127.0.0.1'],
-    ['rtpkeepalive', '15'],
-    ['insecure', 'port'],
-    ['permit', '127.0.0.1'],
-    ['deny', '127.0.0.1'],
-    ['timerb', '1'],
-    ['rtptimeout', '15'],
-    ['disallow', 'all'],
-    ['allow', 'gsm'],
-    ['accountcode', 'accountcode'],
-    ['md5secret', 'abcdefg'],
-    ['mohinterpret', 'mohinterpret'],
-    ['vmexten', '1000'],
-    ['callingpres', '1'],
-    ['parkinglot', '700'],
-    ['fullname', 'fullname'],
-    ['defaultip', '127.0.0.1'],
-    ['qualifyfreq', '5000'],
-    ['regexten', 'regexten'],
-    ['cid_number', '0123456789'],
-    ['callbackextension', '0123456789'],
-    ['port', '10000'],
-    ['outboundproxy', '127.0.0.1'],
-    ['remotesecret', 'remotesecret'],
-]
+UNKNOWN_UUID = uuid.uuid4()
+
+OPTION_SAMPLE = {
+    'aor': [
+        ['max_contacts', '10'],
+        ['remove_existing', 'yes'],
+        ['qualify_timeout', '60'],
+    ],
+    'auth': [
+        ['username', 'foobar'],
+        ['md5_cred', 'dd02c7c2232759874e1c205587017bed'],
+        ['nonce_lifetime', '64'],
+    ],
+    'endpoint': [
+        ['webrtc', 'yes'],
+        ['set_var', 'var1=foo'],
+        ['set_var', 'var2=bar'],
+    ],
+    'registration': [
+        ['server_uri', 'sip:sip.example.com'],
+        ['client_uri', 'sip:1234567890@sip.example.com'],
+        ['forbidden_retry_interval', '600'],
+    ],
+    'registration_outbound_auth': [
+        ['username', 'foobar'],
+        ['md5_cred', 'dd02c7c2232759874e1c205587017bed'],
+        ['nonce_lifetime', '64'],
+    ],
+    'outbound_auth': [
+        ['username', 'foobaz'],
+        ['md5_cred', 'dd02c7c2232759874e1c205587017bed'],
+        ['nonce_lifetime', '64'],
+    ],
+    'identify': [
+        ['match', '54.172.60.0'],
+        ['match', '54.172.60.1'],
+        ['match', '54.172.60.2'],
+    ],
+}
 
 
 class TestFindBy(DAOTestCase):
@@ -112,19 +81,19 @@ class TestFindBy(DAOTestCase):
         assert_that(result, none())
 
     def test_find_by(self):
-        sip = self.add_usersip(name='myname')
+        sip = self.add_endpoint_sip(name='myname')
         result = sip_dao.find_by(name='myname')
 
-        assert_that(result.id, equal_to(sip.id))
+        assert_that(result.uuid, equal_to(sip.uuid))
 
     def test_find_by_multi_tenant(self):
         tenant = self.add_tenant()
 
-        sip_row = self.add_usersip()
+        sip_row = self.add_endpoint_sip()
         sip = sip_dao.find_by(name=sip_row.name, tenant_uuids=[tenant.uuid])
         assert_that(sip, none())
 
-        sip_row = self.add_usersip(tenant_uuid=tenant.uuid)
+        sip_row = self.add_endpoint_sip(tenant_uuid=tenant.uuid)
         sip = sip_dao.find_by(name=sip_row.name, tenant_uuids=[tenant.uuid])
         assert_that(sip, equal_to(sip_row))
 
@@ -134,89 +103,87 @@ class TestFindAllBy(DAOTestCase):
     def test_find_all_multi_tenant(self):
         tenant = self.add_tenant()
 
-        sip1 = self.add_usersip(language='en_US', tenant_uuid=tenant.uuid)
-        sip2 = self.add_usersip(language='en_US')
+        sip1 = self.add_endpoint_sip(display_name='my-endpoint', tenant_uuid=tenant.uuid)
+        sip2 = self.add_endpoint_sip(display_name='my-endpoint')
 
         tenants = [tenant.uuid, self.default_tenant.uuid]
-        sips = sip_dao.find_all_by(language='en_US', tenant_uuids=tenants)
+        sips = sip_dao.find_all_by(display_name='my-endpoint', tenant_uuids=tenants)
         assert_that(sips, has_items(sip1, sip2))
 
         tenants = [tenant.uuid]
-        sips = sip_dao.find_all_by(language='en_US', tenant_uuids=tenants)
+        sips = sip_dao.find_all_by(display_name='my-endpoint', tenant_uuids=tenants)
         assert_that(sips, all_of(has_items(sip1), not_(has_items(sip2))))
 
 
 class TestGet(DAOTestCase):
 
     def test_given_no_rows_then_raises_error(self):
-        self.assertRaises(NotFoundError, sip_dao.get, 1)
+        self.assertRaises(NotFoundError, sip_dao.get, UNKNOWN_UUID)
+        self.assertRaises(NotFoundError, sip_dao.get, str(UNKNOWN_UUID))
 
     def test_given_row_with_minimal_parameters_then_returns_model(self):
-        row = self.add_usersip(
-            name='username',
-            secret='secret',
-            type='friend',
-            host='dynamic',
+        row = self.add_endpoint_sip()
+
+        sip = sip_dao.get(row.uuid)
+        assert_that(isinstance(row.uuid, uuid.UUID), equal_to(True))
+        assert_that(sip, has_properties(uuid=row.uuid))
+
+        sip = sip_dao.get(str(row.uuid))
+        assert_that(sip, has_properties(uuid=row.uuid))
+
+    def test_given_row_with_all_parameters_then_returns_model(self):
+        transport = self.add_transport()
+        context = self.add_context()
+        parent_1 = self.add_endpoint_sip()
+        parent_2 = self.add_endpoint_sip()
+
+        row = self.add_endpoint_sip(
+            display_name='general_config',
+            aor_section_options=[['type', 'aor']],
+            auth_section_options=[['type', 'auth']],
+            endpoint_section_options=[['type', 'endpoint']],
+            registration_section_options=[['type', 'registration']],
+            registration_outbound_auth_section_options=[['type', 'auth']],
+            identify_section_options=[['type', 'identify']],
+            outbound_auth_section_options=[['type', 'auth']],
+            transport={'uuid': transport.uuid},
+            context={'id': context.id},
+            parents=[parent_1, parent_2],
+            tenant_uuid=self.default_tenant.uuid,
+            template=True,
         )
 
-        sip = sip_dao.get(row.id)
+        sip = sip_dao.get(row.uuid)
         assert_that(sip, has_properties(
-            id=row.id,
-            name='username',
-            secret='secret',
-            type='friend',
-            host='dynamic',
+            display_name='general_config',
+            name=has_length(8),
+            aor_section_options=[['type', 'aor']],
+            auth_section_options=[['type', 'auth']],
+            endpoint_section_options=[['type', 'endpoint']],
+            registration_section_options=[['type', 'registration']],
+            registration_outbound_auth_section_options=[['type', 'auth']],
+            identify_section_options=[['type', 'identify']],
+            outbound_auth_section_options=[['type', 'auth']],
+            template=True,
+            transport=has_properties(uuid=transport.uuid),
+            context=has_properties(id=context.id),
+            parents=contains(
+                has_properties(uuid=parent_1.uuid),
+                has_properties(uuid=parent_2.uuid),
+            ),
         ))
-
-    def test_given_row_with_optional_parameters_then_returns_model(self):
-        row = self.add_usersip(language="fr_FR", amaflags="omit", buggymwi=1)
-
-        sip = sip_dao.get(row.id)
-        assert_that(sip.options, has_items(
-            ["language", "fr_FR"],
-            ["amaflags", "omit"],
-            ["buggymwi", "yes"]
-        ))
-
-    def test_given_row_with_option_set_to_null_then_option_not_returned(self):
-        row = self.add_usersip(language=None, allow=None, callerid='')
-
-        sip = sip_dao.get(row.id)
-        assert_that(sip.options, all_of(
-            is_not(has_item(has_item("language"))),
-            is_not(has_item(has_item("allow"))),
-            is_not(has_item(has_item("callerid"))),
-        ))
-
-    def test_given_row_with_additional_options_then_returns_model(self):
-        options = [
-            ["foo", "bar"],
-            ["foo", "baz"],
-            ["spam", "eggs"]
-        ]
-
-        row = self.add_usersip(options=options)
-
-        sip = sip_dao.get(row.id)
-        assert_that(sip.options, has_items(*options))
-
-    def test_given_row_has_native_and_additional_options_then_all_options_returned(self):
-        row = self.add_usersip(language="fr_FR", _options=[["foo", "bar"]])
-
-        sip = sip_dao.get(row.id)
-        assert_that(sip.options, has_items(["language", "fr_FR"], ["foo", "bar"]))
 
     def test_get_multi_tenant(self):
         tenant = self.add_tenant()
 
-        sip_row = self.add_usersip(tenant_uuid=tenant.uuid)
-        sip = sip_dao.get(sip_row.id, tenant_uuids=[tenant.uuid])
+        sip_row = self.add_endpoint_sip(tenant_uuid=tenant.uuid)
+        sip = sip_dao.get(sip_row.uuid, tenant_uuids=[tenant.uuid])
         assert_that(sip, equal_to(sip_row))
 
-        sip_row = self.add_usersip()
+        sip_row = self.add_endpoint_sip()
         self.assertRaises(
             NotFoundError,
-            sip_dao.get, sip_row.id, tenant_uuids=[tenant.uuid],
+            sip_dao.get, sip_row.uuid, tenant_uuids=[tenant.uuid],
         )
 
 
@@ -235,7 +202,7 @@ class TestSimpleSearch(TestSearch):
         self.assert_search_returns_result(expected)
 
     def test_given_on_sip_then_returns_one_result(self):
-        sip = self.add_usersip()
+        sip = self.add_endpoint_sip()
         expected = SearchResult(1, [sip])
 
         self.assert_search_returns_result(expected)
@@ -243,8 +210,8 @@ class TestSimpleSearch(TestSearch):
     def test_search_multi_tenant(self):
         tenant = self.add_tenant()
 
-        sip1 = self.add_usersip(name='sort1')
-        sip2 = self.add_usersip(name='sort2', tenant_uuid=tenant.uuid)
+        sip1 = self.add_endpoint_sip(display_name='sort1')
+        sip2 = self.add_endpoint_sip(display_name='sort2', tenant_uuid=tenant.uuid)
 
         expected = SearchResult(2, [sip1, sip2])
         tenants = [tenant.uuid, self.default_tenant.uuid]
@@ -259,10 +226,10 @@ class TestSearchMultiple(TestSearch):
 
     def setUp(self):
         super(TestSearch, self).setUp()
-        self.sip1 = self.add_usersip(name='Ashton', host='resto')
-        self.sip2 = self.add_usersip(name='Beaugarton', host='bar')
-        self.sip3 = self.add_usersip(name='Casa', host='resto')
-        self.sip4 = self.add_usersip(name='Dunkin', host='resto')
+        self.sip1 = self.add_endpoint_sip(display_name='Ashton', asterisk_id='y')
+        self.sip2 = self.add_endpoint_sip(display_name='Beaugarton', asterisk_id='x')
+        self.sip3 = self.add_endpoint_sip(display_name='Casa', asterisk_id='y')
+        self.sip4 = self.add_endpoint_sip(display_name='Dunkin', asterisk_id='y')
 
     def test_when_searching_then_returns_one_result(self):
         expected = SearchResult(1, [self.sip2])
@@ -270,28 +237,28 @@ class TestSearchMultiple(TestSearch):
         self.assert_search_returns_result(expected, search='eau')
 
     def test_when_searching_with_an_extra_argument(self):
-        expected_resto = SearchResult(1, [self.sip1])
-        self.assert_search_returns_result(expected_resto, search='ton', host='resto')
+        expected_y = SearchResult(1, [self.sip1])
+        self.assert_search_returns_result(expected_y, search='ton', asterisk_id='y')
 
-        expected_bar = SearchResult(1, [self.sip2])
-        self.assert_search_returns_result(expected_bar, search='ton', host='bar')
+        expected_x = SearchResult(1, [self.sip2])
+        self.assert_search_returns_result(expected_x, search='ton', asterisk_id='x')
 
-        expected_all_resto = SearchResult(3, [self.sip1, self.sip3, self.sip4])
-        self.assert_search_returns_result(expected_all_resto, host='resto', order='username')
+        expected_all_y = SearchResult(3, [self.sip1, self.sip3, self.sip4])
+        self.assert_search_returns_result(expected_all_y, asterisk_id='y', order='display_name')
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
         expected = SearchResult(
             4, [self.sip1, self.sip2, self.sip3, self.sip4]
         )
 
-        self.assert_search_returns_result(expected, order='username')
+        self.assert_search_returns_result(expected, order='display_name')
 
     def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
         expected = SearchResult(
             4, [self.sip4, self.sip3, self.sip2, self.sip1]
         )
 
-        self.assert_search_returns_result(expected, order='username', direction='desc')
+        self.assert_search_returns_result(expected, order='display_name', direction='desc')
 
     def test_when_limiting_then_returns_right_number_of_items(self):
         expected = SearchResult(4, [self.sip1])
@@ -304,12 +271,12 @@ class TestSearchMultiple(TestSearch):
         self.assert_search_returns_result(expected, offset=1)
 
     def test_when_doing_a_paginated_search_then_returns_a_paginated_result(self):
-        expected = SearchResult(3, [self.sip2])
+        expected = SearchResult(2, [self.sip1])
 
         self.assert_search_returns_result(
             expected,
-            search='a',
-            order='username',
+            search='on',
+            order='display_name',
             direction='desc',
             offset=1,
             limit=1,
@@ -319,365 +286,167 @@ class TestSearchMultiple(TestSearch):
 class TestCreate(DAOTestCase):
 
     def test_create_minimal_parameters(self):
-        sip_model = SIPEndpoint(tenant_uuid=self.default_tenant.uuid)
+        model = EndpointSIP(tenant_uuid=self.default_tenant.uuid)
 
-        sip = sip_dao.create(sip_model)
+        result = sip_dao.create(model)
 
-        self.session.expire_all()
-        assert_that(inspect(sip).persistent)
-        assert_that(sip, has_properties(
-            id=not_none(),
+        assert_that(inspect(result).persistent)
+        assert_that(result, has_properties(
+            uuid=not_none(),
             name=has_length(8),
-            username=sip.name,
-            secret=has_length(8),
-            type='friend',
-            host='dynamic',
-            category='user',
+            display_name=none(),
+            asterisk_id=none(),
+            tenant_uuid=self.default_tenant.uuid,
+            aor_section_uuid=none(),
+            aor_section_options=empty(),
+            auth_section_uuid=none(),
+            auth_section_options=empty(),
+            endpoint_section_uuid=none(),
+            endpoint_section_options=empty(),
+            identify_section_uuid=none(),
+            identify_section_options=empty(),
+            registration_section_uuid=none(),
+            registration_section_options=empty(),
+            registration_outbound_auth_section_uuid=none(),
+            registration_outbound_auth_section_options=empty(),
+            outbound_auth_section_uuid=none(),
+            outbound_auth_section_options=empty(),
+            transport_uuid=none(),
+            context_id=none(),
+            template=False,
         ))
 
-    def test_create_predefined_parameters(self):
-        sip_model = SIPEndpoint(
+    def test_create_all_parameters(self):
+        transport = self.add_transport()
+        context = self.add_context()
+        parents = [
+            self.add_endpoint_sip(),
+            self.add_endpoint_sip(),
+        ]
+        almost_all_options = {
+            '{}_section_options'.format(name): options
+            for (name, options) in OPTION_SAMPLE.items()
+        }
+
+        model = EndpointSIP(
             tenant_uuid=self.default_tenant.uuid,
-            name='myusername',
-            secret='mysecret',
-            host="127.0.0.1",
-            type="peer",
+            display_name='display_name',
+            name='name',
+            asterisk_id='asterisk-id',
+            transport={'uuid': transport.uuid},
+            context={'id': context.id},
+            template=True,
+            parents=parents,
+            **almost_all_options
         )
 
-        sip = sip_dao.create(sip_model)
+        result = sip_dao.create(model)
 
-        self.session.expire_all()
-        assert_that(inspect(sip).persistent)
-        assert_that(sip, has_properties(
-            id=not_none(),
+        assert_that(inspect(result).persistent)
+        assert_that(result, has_properties(
+            uuid=not_none(),
+            name='name',
+            display_name='display_name',
+            asterisk_id='asterisk-id',
             tenant_uuid=self.default_tenant.uuid,
-            name='myusername',
-            username='myusername',
-            secret='mysecret',
-            type='peer',
-            host='127.0.0.1',
-            category='user',
-        ))
-
-    def test_create_with_native_options(self):
-        sip_model = SIPEndpoint(tenant_uuid=self.default_tenant.uuid, options=ALL_OPTIONS)
-
-        sip = sip_dao.create(sip_model)
-
-        self.session.expire_all()
-        assert_that(inspect(sip).persistent)
-        assert_that(sip, has_properties({
-            'id': not_none(),
-            'options': has_items(*ALL_OPTIONS),
-
-            'buggymwi': 1,
-            'amaflags': 'default',
-            'sendrpid': 'yes',
-            'videosupport': 'yes',
-            'maxcallbitrate': 1024,
-            'session_minse': 10,
-            'maxforwards': 1,
-            'rtpholdtimeout': 15,
-            'session_expires': 60,
-            'ignoresdpversion': 1,
-            'textsupport': 1,
-            'unsolicited_mailbox': '1000@default',
-            'fromuser': 'field-user',
-            'useclientcode': 1,
-            'call_limit': 1,
-            'progressinband': 'yes',
-            'transport': 'udp',
-            'directmedia': 'update',
-            'promiscredir': 1,
-            'allowoverlap': 1,
-            'dtmfmode': 'info',
-            'language': 'fr_FR',
-            'usereqphone': 1,
-            'qualify': '500',
-            'trustrpid': 1,
-            'timert1': 1,
-            'session_refresher': 'uas',
-            'allowsubscribe': 1,
-            'session_timers': 'originate',
-            'busylevel': 1,
-            'callcounter': 0,
-            'callerid': '"cûstomcallerid" <1234>',
-            'encryption': 1,
-            'use_q850_reason': 1,
-            'disallowed_methods': 'disallowsip',
-            'rfc2833compensate': 1,
-            'g726nonstandard': 1,
-            'contactdeny': '127.0.0.1',
-            'snom_aoc_enabled': 1,
-            't38pt_udptl': 1,
-            'subscribemwi': 0,
-            'autoframing': 1,
-            't38pt_usertpsource': 1,
-            'fromdomain': 'field-domain',
-            'allowtransfer': 1,
-            'nat': 'force_rport,comedia',
-            'contactpermit': '127.0.0.1',
-            'rtpkeepalive': 15,
-            'insecure': 'port',
-            'permit': '127.0.0.1',
-            'deny': '127.0.0.1',
-            'timerb': 1,
-            'rtptimeout': 15,
-            'disallow': 'all',
-            'allow': 'gsm',
-            'accountcode': 'accountcode',
-            'md5secret': 'abcdefg',
-            'mohinterpret': 'mohinterpret',
-            'vmexten': '1000',
-            'callingpres': 1,
-            'parkinglot': 700,
-            'fullname': 'fullname',
-            'defaultip': '127.0.0.1',
-            'qualifyfreq': 5000,
-            'regexten': 'regexten',
-            'cid_number': '0123456789',
-            'callbackextension': '0123456789',
-            'port': 10000,
-            'outboundproxy': '127.0.0.1',
-            'remotesecret': 'remotesecret',
-        }))
-
-    def test_create_with_additional_options(self):
-        options = [
-            ["language", "fr_FR"],
-            ["foo", "bar"],
-            ["foo", "baz"],
-            ["spam", "eggs"]
-        ]
-
-        sip_model = SIPEndpoint(tenant_uuid=self.default_tenant.uuid, options=options)
-        sip = sip_dao.create(sip_model)
-
-        self.session.expire_all()
-        assert_that(inspect(sip).persistent)
-        assert_that(sip, has_properties(
-            options=has_items(*options)
+            transport_uuid=transport.uuid,
+            context_id=context.id,
+            template=True,
+            parents=parents,
+            **almost_all_options
         ))
 
 
 class TestEdit(DAOTestCase):
 
-    def test_edit_basic_parameters(self):
-        sip = self.add_usersip()
+    def setUp(self):
+        super(TestEdit, self).setUp()
+        self.section_options = OPTION_SAMPLE
 
-        self.session.expire_all()
-        sip.name = 'username'
-        sip.secret = 'secret'
-        sip.type = 'peer'
-        sip.host = '127.0.0.1'
+    def test_edit_add_the_first_option(self):
+        def _test(name, options):
+            sip = self.add_endpoint_sip()
+            self.session.expire_all()
 
-        sip_dao.edit(sip)
+            field = '{}_section_options'.format(name)
 
-        self.session.expire_all()
-        assert_that(sip, has_properties(
-            name='username',
-            secret='secret',
-            type='peer',
-            host='127.0.0.1',
-        ))
+            setattr(sip, field, [options[0]])
 
-    def test_edit_remove_options(self):
-        sip = self.add_usersip(options=ALL_OPTIONS)
+            sip_dao.edit(sip)
 
-        self.session.expire_all()
-        sip.options = []
+            assert_that(sip, has_properties({
+                field: contains(contains(*options[0])),
+            }), name)
 
-        sip_dao.edit(sip)
+        for name, options in self.section_options.items():
+            _test(name, options)
 
-        self.session.expire_all()
-        assert_that(sip, has_properties({
-            'buggymwi': none(),
-            'md5secret': '',
-            'amaflags': 'default',
-            'sendrpid': none(),
-            'videosupport': none(),
-            'maxcallbitrate': none(),
-            'session_minse': none(),
-            'maxforwards': none(),
-            'rtpholdtimeout': none(),
-            'session_expires': none(),
-            'ignoresdpversion': none(),
-            'textsupport': none(),
-            'unsolicited_mailbox': none(),
-            'fromuser': none(),
-            'useclientcode': none(),
-            'call_limit': 10,
-            'progressinband': none(),
-            'transport': none(),
-            'directmedia': none(),
-            'promiscredir': none(),
-            'allowoverlap': none(),
-            'dtmfmode': none(),
-            'language': none(),
-            'usereqphone': none(),
-            'qualify': none(),
-            'trustrpid': none(),
-            'timert1': none(),
-            'session_refresher': none(),
-            'allowsubscribe': none(),
-            'session_timers': none(),
-            'busylevel': none(),
-            'callcounter': none(),
-            'callerid': none(),
-            'encryption': none(),
-            'use_q850_reason': none(),
-            'disallowed_methods': none(),
-            'rfc2833compensate': none(),
-            'g726nonstandard': none(),
-            'contactdeny': none(),
-            'snom_aoc_enabled': none(),
-            't38pt_udptl': none(),
-            'subscribemwi': 0,
-            'autoframing': none(),
-            't38pt_usertpsource': none(),
-            'fromdomain': none(),
-            'allowtransfer': none(),
-            'nat': none(),
-            'contactpermit': none(),
-            'rtpkeepalive': none(),
-            'insecure': none(),
-            'permit': none(),
-            'deny': none(),
-            'timerb': none(),
-            'rtptimeout': none(),
-            'disallow': none(),
-            'allow': none(),
-            'accountcode': none(),
-            'md5secret': '',
-            'mohinterpret': none(),
-            'vmexten': none(),
-            'callingpres': none(),
-            'parkinglot': none(),
-            'fullname': none(),
-            'defaultip': none(),
-            'qualifyfreq': none(),
-            'regexten': none(),
-            'cid_number': none(),
-            'callbackextension': none(),
-            'port': none(),
-            'outboundproxy': none(),
-            'remotesecret': none(),
-            '_options': empty(),
-        }))
+    def test_edit_remove_all_options(self):
+        def _test(name, options):
+            field = '{}_section_options'.format(name)
+            sip = self.add_endpoint_sip(**{field: [options[0]]})
 
-    def test_edit_options(self):
-        sip = self.add_usersip(
-            language="fr_FR",
-            amaflags="default",
-            subscribemwi=1,
-            allow="g729,gsm"
+            setattr(sip, field, [])
+
+            sip_dao.edit(sip)
+
+            assert_that(sip, has_properties({field: empty()}), name)
+
+            option_count = self.session.query(EndpointSIPSectionOption).count()
+            assert_that(option_count, equal_to(0), 'An unassociated option has been leaked')
+
+            section_count = self.session.query(EndpointSIPSection).count()
+            assert_that(section_count, equal_to(0), 'An empty section has been leaked')
+
+        for name, options in self.section_options.items():
+            _test(name, options)
+
+    def test_edit_remove_one_options(self):
+        def _test(name, options):
+            field = '{}_section_options'.format(name)
+            sip = self.add_endpoint_sip(**{field: options})
+
+            self.session.expire_all()
+            new_value = [options[0], options[2]]
+            setattr(sip, field, new_value)
+
+            sip_dao.edit(sip)
+
+            assert_that(sip, has_properties({field: contains(*new_value)}), name)
+
+        for name, options in self.section_options.items():
+            _test(name, options)
+
+        option_count = self.session.query(EndpointSIPSectionOption).count()
+        assert_that(
+            option_count,
+            equal_to(len(self.section_options) * 2),  # option 0 and 2 for each section
+            'An unassociated option has been leaked',
         )
-
-        self.session.expire_all()
-        sip.options = [
-            ["language", "en_US"],
-            ["amaflags", "omit"],
-            ["subscribemwi", "no"],
-            ["allow", "ulaw,alaw"],
-        ]
-
-        sip_dao.edit(sip)
-
-        self.session.expire_all()
-        assert_that(sip, has_properties(
-            language='en_US',
-            amaflags='omit',
-            subscribemwi=0,
-            allow='ulaw,alaw',
-        ))
-
-    def test_edit_additional_options(self):
-        sip = self.add_usersip(_options=[
-            ["foo", "bar"],
-            ["foo", "baz"],
-            ["spam", "eggs"],
-        ])
-
-        self.session.expire_all()
-        sip.options = [
-            ["foo", "newbar"],
-            ["foo", "newbaz"],
-            ["spam", "neweggs"],
-        ]
-
-        sip_dao.edit(sip)
-
-        self.session.expire_all()
-        assert_that(sip._options, has_items(
-            ["foo", "newbar"],
-            ["foo", "newbaz"],
-            ["spam", "neweggs"],
-        ))
-
-    def test_edit_both_native_and_additional_options(self):
-        sip = self.add_usersip(
-            language="fr_FR",
-            amaflags="default",
-            subscribemwi=1,
-            allow="g729,gsm",
-            _options=[
-                ["foo", "bar"],
-                ["foo", "baz"],
-                ["spam", "eggs"],
-            ]
-        )
-
-        new_options = [
-            ["language", "en_US"],
-            ["amaflags", "omit"],
-            ["subscribemwi", "no"],
-            ["allow", "ulaw,alaw"],
-            ["foo", "newbar"],
-            ["foo", "newbaz"],
-            ["spam", "neweggs"],
-        ]
-
-        self.session.expire_all()
-        sip.options = new_options
-        sip_dao.edit(sip)
-
-        self.session.expire_all()
-        assert_that(sip, has_properties(
-            options=has_items(*new_options),
-            language='en_US',
-            amaflags='omit',
-            subscribemwi=0,
-            allow='ulaw,alaw',
-            _options=has_items(
-                ["foo", "newbar"],
-                ["foo", "newbaz"],
-                ["spam", "neweggs"],
-            )
-        ))
 
 
 class TestDelete(DAOTestCase):
 
     def test_delete(self):
-        sip = self.add_usersip()
+        sip = self.add_endpoint_sip()
 
         sip_dao.delete(sip)
 
         assert_that(inspect(sip).deleted)
 
     def test_given_endpoint_is_associated_to_line_then_line_is_dissociated(self):
-        sip = self.add_usersip()
-        line = self.add_line(endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip()
+        line = self.add_line(endpoint_sip_uuid=sip.uuid)
 
         sip_dao.delete(sip)
 
-        assert_that(line.endpoint_sip_id, none())
+        assert_that(line.endpoint_sip_uuid, none())
 
 
 class TestRelations(DAOTestCase):
 
     def test_trunk_relationship(self):
-        sip = self.add_usersip()
+        sip = self.add_endpoint_sip()
         trunk = self.add_trunk()
 
         trunk.associate_endpoint(sip)
@@ -687,7 +456,7 @@ class TestRelations(DAOTestCase):
         assert_that(sip.trunk, equal_to(trunk))
 
     def test_line_relationship(self):
-        sip = self.add_usersip()
+        sip = self.add_endpoint_sip()
         line = self.add_line()
 
         line.associate_endpoint(sip)

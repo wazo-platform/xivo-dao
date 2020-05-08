@@ -19,7 +19,7 @@ from sqlalchemy.sql.expression import (
 from sqlalchemy.types import Integer
 
 from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.alchemy.usersip import UserSIP
+from xivo_dao.alchemy.endpoint_sip import EndpointSIP
 from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
@@ -385,51 +385,48 @@ def find_sip_general_settings(session):
 
 @daosession
 def find_sip_user_settings(session):
+    # TODO(pc-m): I changed userSIP to EndpointSIP but did not change any logic
     pickup_members = find_pickup_members('sip')
 
     query = session.query(
-        UserSIP,
+        EndpointSIP,
         LineFeatures.context,
         LineFeatures.application_uuid,
-        LineFeatures.endpoint_sip_id,
+        LineFeatures.endpoint_sip_uuid,
         Extension.exten.label('number'),
         UserFeatures.musiconhold.label('mohsuggest'),
         UserFeatures.id.label('user_id'),
         UserFeatures.uuid.label('uuid'),
         (Voicemail.mailbox + '@' + Voicemail.context).label('mailbox'),
-    ).join(LineFeatures, and_(
-        LineFeatures.endpoint_sip_id == UserSIP.id,
-    )).outerjoin(UserLine, and_(
+    ).join(
+        LineFeatures,
+    ).outerjoin(UserLine, and_(
         UserLine.line_id == LineFeatures.id,
         UserLine.main_user.is_(True),
     )).outerjoin(
-        UserFeatures, UserFeatures.id == UserLine.user_id
+        UserFeatures,
     ).outerjoin(
-        Voicemail, UserFeatures.voicemailid == Voicemail.uniqueid
+        Voicemail
     ).outerjoin(
-        LineExtension, UserLine.line_id == LineExtension.line_id
+        LineExtension
     ).outerjoin(
-        Extension, Extension.id == LineExtension.extension_id
-    ).filter(and_(
-        UserSIP.category == 'user',
-        UserSIP.commented == 0,
-    ))
+        Extension
+    )
 
     for row in query.all():
-        pickup_groups = pickup_members.get(row.UserSIP.id, {})
+        pickup_groups = pickup_members.get(row.EndpointSIP.uuid, {})
         yield row, pickup_groups
 
 
 @daosession
 def find_sip_trunk_settings(session):
+    # TODO(pc-m): I changed userSIP to EndpointSIP but did not change any logic
     query = session.query(
-        UserSIP, TrunkFeatures.twilio_incoming,
-    ).join(TrunkFeatures, and_(
-        TrunkFeatures.endpoint_sip_id == UserSIP.id,
-    )).filter(and_(
-        UserSIP.category == 'trunk',
-        UserSIP.commented == 0,
-    )).order_by(UserSIP.name)
+        EndpointSIP, TrunkFeatures.twilio_incoming,
+    ).join(
+        TrunkFeatures,
+        TrunkFeatures.endpoint_sip_uuid == EndpointSIP.uuid,
+    ).order_by(EndpointSIP.name)
 
     return query.all()
 
@@ -452,7 +449,7 @@ def find_pickup_members(session, protocol):
 
     def _add_member(m):
         if protocol == 'sip':
-            res_base = res[m.endpoint_sip_id]
+            res_base = res[m.endpoint_sip_uuid]
         elif protocol == 'sccp':
             res_base = res[m.endpoint_sccp_id]
         elif protocol == 'custom':
@@ -464,7 +461,7 @@ def find_pickup_members(session, protocol):
     base_query = session.query(
         PickupMember.category,
         Pickup.id,
-        LineFeatures.endpoint_sip_id,
+        LineFeatures.endpoint_sip_uuid,
         LineFeatures.endpoint_sccp_id,
         LineFeatures.endpoint_custom_id,
     ).join(
@@ -472,7 +469,7 @@ def find_pickup_members(session, protocol):
     ).filter(Pickup.commented == 0)
 
     if protocol == 'sip':
-        base_query = base_query.filter(LineFeatures.endpoint_sip_id != None)
+        base_query = base_query.filter(LineFeatures.endpoint_sip_uuid != None)
     elif protocol == 'sccp':
         base_query = base_query.filter(LineFeatures.endpoint_sccp_id != None)
     elif protocol == 'custom':

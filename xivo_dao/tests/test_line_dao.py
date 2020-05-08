@@ -19,8 +19,8 @@ class TestLineFeaturesDAO(DAOTestCase):
     def test_get_interface_from_exten_and_context_sip(self):
         name = 'abcdef'
         extension = self.add_extension(exten=EXTEN, context=CONTEXT)
-        sip = self.add_usersip()
-        line = self.add_line(name=name, endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip()
+        line = self.add_line(name=name, endpoint_sip_uuid=sip.uuid)
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
 
         interface = line_dao.get_interface_from_exten_and_context(EXTEN, CONTEXT)
@@ -57,14 +57,14 @@ class TestLineFeaturesDAO(DAOTestCase):
         user = self.add_user()
 
         extension = self.add_extension(exten=main_exten, context=CONTEXT)
-        sip = self.add_usersip()
-        line = self.add_line(name=main_name, endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip()
+        line = self.add_line(name=main_name, endpoint_sip_uuid=sip.uuid)
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
         self.add_user_line(user_id=user.id, main_line=True, line_id=line.id)
 
         extension = self.add_extension(exten=second_exten, context=CONTEXT)
-        sip = self.add_usersip()
-        line = self.add_line(name=second_name, endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip()
+        line = self.add_line(name=second_name, endpoint_sip_uuid=sip.uuid)
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
         self.add_user_line(user_id=user.id, main_line=False, line_id=line.id)
 
@@ -76,14 +76,14 @@ class TestLineFeaturesDAO(DAOTestCase):
         user = self.add_user()
         extension = self.add_extension(exten=EXTEN, context=CONTEXT)
 
-        sip = self.add_usersip()
-        line = self.add_line(endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip()
+        line = self.add_line(endpoint_sip_uuid=sip.uuid)
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
         self.add_user_line(user_id=user.id, main_line=True, line_id=line.id)
         main_line_name = line.name
 
-        sip = self.add_usersip()
-        line = self.add_line(endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip()
+        line = self.add_line(endpoint_sip_uuid=sip.uuid)
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
         self.add_user_line(user_id=user.id, main_line=False, line_id=line.id)
 
