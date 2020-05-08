@@ -225,7 +225,7 @@ class TestLineFixes(DAOTestCase):
         assert_that(line.name, equal_to('1234'))
 
     def test_given_line_has_no_associated_name_then_name_removed(self):
-        line = self.add_line(name="linename", no_endpoint=True)
+        line = self.add_line(name="linename")
 
         self.fixes.fix(line.id)
 

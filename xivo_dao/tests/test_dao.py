@@ -297,28 +297,6 @@ class ItemInserter(object):
         return line_extension
 
     def add_line(self, **kwargs):
-        # FIXME: remove autocreation of endpoint.
-        endpoint_sip_id = kwargs.get('endpoint_sip_id')
-        endpoint_sccp_id = kwargs.get('endpoint_sccp_id')
-        endpoint_custom_id = kwargs.get('endpoint_custom_id')
-        if kwargs.pop('no_endpoint', False):
-            pass
-        elif endpoint_sip_id:
-            if not self.session.query(UserSIP).get(endpoint_sip_id):
-                self.add_usersip(id=endpoint_sip_id)
-            kwargs.setdefault('endpoint_sip_id', endpoint_sip_id)
-        elif endpoint_sccp_id:
-            if not self.session.query(SCCPLine).get(endpoint_sccp_id):
-                self.add_sccpline(id=endpoint_sccp_id)
-            kwargs.setdefault('endpoint_sccp_id', endpoint_sccp_id)
-        elif endpoint_custom_id:
-            if not self.session.query(UserCustom).get(endpoint_custom_id):
-                self.add_usercustom(id=endpoint_custom_id)
-            kwargs.setdefault('endpoint_custom_id', endpoint_custom_id)
-        else:
-            sip = self.add_usersip()
-            kwargs.setdefault('endpoint_sip_id', sip.id)
-
         kwargs.setdefault('name', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
         kwargs.setdefault('context', 'foocontext')
         kwargs.setdefault('provisioningid', int(''.join(random.choice('123456789') for _ in range(6))))

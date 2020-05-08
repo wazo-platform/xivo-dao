@@ -95,7 +95,7 @@ class TestGet(DAOTestCase):
 
     def test_get_minimal_parameters(self):
         context = self.add_context()
-        line_row = self.add_line(context=context.name, registrar='default', provisioningid=123456, no_endpoint=True)
+        line_row = self.add_line(context=context.name, registrar='default', provisioningid=123456)
 
         line = line_dao.get(line_row.id)
 
@@ -117,10 +117,11 @@ class TestGet(DAOTestCase):
 
     def test_get_all_parameters(self):
         context = self.add_context()
+        sip = self.add_usersip()
         line_row = self.add_line(
             context=context.name,
             registrar='default',
-            endpoint_sip_id=1234,
+            endpoint_sip_id=sip.id,
             provisioningid=123456,
             num=2,
         )
@@ -135,7 +136,8 @@ class TestGet(DAOTestCase):
                 position=2,
                 provisioning_code='123456',
                 endpoint='sip',
-                endpoint_id=1234,
+                endpoint_id=sip.id,
+                endpoint_sip_id=sip.id,
                 registrar='default',
                 tenant_uuid=self.default_tenant.uuid,
             )
@@ -213,7 +215,8 @@ class TestEdit(DAOTestCase):
         )
 
     def test_edit_null_parameters(self):
-        line_row = self.add_line(endpoint_sccp_id=1234)
+        sccp = self.add_sccpline()
+        line_row = self.add_line(endpoint_sccp_id=sccp.id)
 
         line = line_dao.get(line_row.id)
         line.endpoint = None
@@ -235,7 +238,7 @@ class TestEdit(DAOTestCase):
         )
 
     def test_given_line_has_no_endpoint_when_setting_caller_id_then_raises_error(self):
-        line_row = self.add_line(no_endpoint=True)
+        line_row = self.add_line()
 
         line = line_dao.get(line_row.id)
         self.assertRaises(InputError, setattr, line, 'caller_id_name', "Jôhn Smith")
