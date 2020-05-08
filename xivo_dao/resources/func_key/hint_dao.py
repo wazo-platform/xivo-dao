@@ -17,6 +17,7 @@ from xivo.xivo_helpers import clean_extension
 
 from xivo_dao.alchemy.callfilter import Callfilter
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
+from xivo_dao.alchemy.endpoint_sip import EndpointSIP
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.func_key_dest_agent import FuncKeyDestAgent
 from xivo_dao.alchemy.func_key_dest_bsfilter import FuncKeyDestBSFilter
@@ -34,7 +35,6 @@ from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.alchemy.userfeatures import UserFeatures
-from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.resources.func_key.model import Hint
 
@@ -104,7 +104,7 @@ def user_shared_hints(session):
         for line in user.lines:
             if line.endpoint_custom_id:
                 ifaces.append(line.name)
-            elif line.endpoint_sip_id:
+            elif line.endpoint_sip_uuid:
                 # TODO PJSIP migration
                 ifaces.append('pjsip/{}'.format(line.name))
             elif line.endpoint_sccp_id:
@@ -146,7 +146,7 @@ def _list_user_arguments(session, user_ids):
     query = session.query(
         UserFeatures.id.label('user_id'),
         sql.func.string_agg(sql.case([
-            (LineFeatures.endpoint_sip_id != None, literal_column("'SIP/'") + UserSIP.name),
+            (LineFeatures.endpoint_sip_uuid != None, literal_column("'SIP/'") + EndpointSIP.name),
             (LineFeatures.endpoint_sccp_id != None, literal_column("'SCCP/'") + SCCPLine.name),
             (LineFeatures.endpoint_custom_id != None, UserCustom.interface)
         ]), literal_column("'&'")).label('argument'),
@@ -154,13 +154,13 @@ def _list_user_arguments(session, user_ids):
         UserLine.userfeatures,
     ).join(
         UserLine.linefeatures,
-    ).outerjoin(UserSIP, sql.and_(
-        LineFeatures.endpoint_sip_id == UserSIP.id,
-    )).outerjoin(SCCPLine, sql.and_(
-        LineFeatures.endpoint_sccp_id == SCCPLine.id,
-    )).outerjoin(UserCustom, sql.and_(
-        LineFeatures.endpoint_custom_id == UserCustom.id,
-    )).filter(and_(
+    ).outerjoin(
+        EndpointSIP,
+    ).outerjoin(
+        SCCPLine,
+    ).outerjoin(
+        UserCustom,
+    ).filter(and_(
         UserFeatures.id.in_(user_ids),
         UserLine.main_user.is_(True),
         LineFeatures.commented == 0,

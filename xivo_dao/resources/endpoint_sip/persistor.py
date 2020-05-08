@@ -2,12 +2,12 @@
 # Copyright 2015-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from functools import partial
-
 from sqlalchemy import text
 
-from xivo_dao.alchemy.usersip import UserSIP as SIP
-from xivo_dao.helpers import errors, generators
+from xivo_dao.alchemy.endpoint_sip import EndpointSIP
+from xivo_dao.alchemy.linefeatures import LineFeatures as Line
+from xivo_dao.alchemy.trunkfeatures import TrunkFeatures as Trunk
+from xivo_dao.helpers import errors
 from xivo_dao.resources.line.fixes import LineFixes
 from xivo_dao.resources.trunk.fixes import TrunkFixes
 from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
@@ -15,7 +15,7 @@ from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
 
 class SipPersistor(CriteriaBuilderMixin):
 
-    _search_table = SIP
+    _search_table = EndpointSIP
 
     def __init__(self, session, sip_search, tenant_uuids=None):
         self.session = session
@@ -29,7 +29,7 @@ class SipPersistor(CriteriaBuilderMixin):
         return self._find_query(criteria).all()
 
     def _find_query(self, criteria):
-        query = self.session.query(SIP)
+        query = self.session.query(EndpointSIP)
         query = self._filter_tenant_uuid(query)
         return self.build_criteria(query, criteria)
 
@@ -46,8 +46,8 @@ class SipPersistor(CriteriaBuilderMixin):
         return SearchResult(total, rows)
 
     def create(self, sip):
-        self.fill_default_values(sip)
-        self.persist(sip)
+        self.session.add(sip)
+        self.session.flush()
         return sip
 
     def persist(self, sip):
@@ -60,9 +60,8 @@ class SipPersistor(CriteriaBuilderMixin):
         self._fix_associated(sip)
 
     def delete(self, sip):
-        self.session.query(SIP).filter(SIP.id == sip.id).delete()
-        self.session.expire_all()
-        self._fix_associated(sip)
+        self.session.delete(sip)
+        # self._fix_associated(sip)
 
     def _filter_tenant_uuid(self, query):
         if self.tenant_uuids is None:
@@ -71,33 +70,16 @@ class SipPersistor(CriteriaBuilderMixin):
         if not self.tenant_uuids:
             return query.filter(text('false'))
 
-        return query.filter(SIP.tenant_uuid.in_(self.tenant_uuids))
+        return query.filter(EndpointSIP.tenant_uuid.in_(self.tenant_uuids))
 
+    # TODO(pc-m): remove this?
     def _fix_associated(self, sip):
+        return
         if sip.line:
             LineFixes(self.session).fix(sip.line.id)
 
         if sip.trunk:
             TrunkFixes(self.session).fix(sip.trunk.id)
 
-    def fill_default_values(self, sip):
-        if sip.name is None:
-            sip.name = generators.find_unused_hash(partial(self._already_exists, SIP.name))
-
-        # This is a compatibility fix that was added in 19.15 to avoid breaking the API.
-        # In the old version, the name could not be specified in the API the username was
-        # always copied.
-        if sip.username is None:
-            sip.username = sip.name
-
-        if sip.secret is None:
-            sip.secret = generators.find_unused_hash(partial(self._already_exists, SIP.secret))
-        if sip.type is None:
-            sip.type = 'friend'
-        if sip.host is None:
-            sip.host = 'dynamic'
-        if sip.category is None:
-            sip.category = 'user'
-
     def _already_exists(self, column, data):
-        return self.session.query(SIP).filter(column == data).count() > 0
+        return self.session.query(EndpointSIP).filter(column == data).count() > 0

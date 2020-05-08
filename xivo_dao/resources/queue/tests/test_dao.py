@@ -579,8 +579,8 @@ class TestAssociateMemberUser(DAOTestCase):
 
     def test_associate(self):
         user = self.add_user()
-        sip = self.add_usersip()
-        line = self.add_line(endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip()
+        line = self.add_line(endpoint_sip_uuid=sip.uuid)
         self.add_user_line(user_id=user.id, line_id=line.id)
         queue = self.add_queuefeatures()
 
@@ -598,8 +598,8 @@ class TestAssociateMemberUser(DAOTestCase):
 
     def test_associate_fix(self):
         user = self.add_user()
-        sip = self.add_usersip(name='sipname')
-        line = self.add_line(endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip(name='sipname')
+        line = self.add_line(endpoint_sip_uuid=sip.uuid)
         self.add_user_line(user_id=user.id, line_id=line.id)
         queue = self.add_queuefeatures()
 
@@ -615,8 +615,8 @@ class TestAssociateMemberUser(DAOTestCase):
 
     def test_association_already_associated(self):
         user = self.add_user()
-        sip = self.add_usersip()
-        line = self.add_line(endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip()
+        line = self.add_line(endpoint_sip_uuid=sip.uuid)
         self.add_user_line(user_id=user.id, line_id=line.id)
         queue = self.add_queuefeatures()
         queue_member = QueueMember(user=user)
@@ -634,8 +634,8 @@ class TestDissociateMemberUser(DAOTestCase):
 
     def test_dissociation(self):
         user = self.add_user()
-        sip = self.add_usersip(name='sipname')
-        line = self.add_line(endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip(name='sipname')
+        line = self.add_line(endpoint_sip_uuid=sip.uuid)
         self.add_user_line(user_id=user.id, line_id=line.id)
         queue = self.add_queuefeatures()
         queue_member = QueueMember(user=user)
