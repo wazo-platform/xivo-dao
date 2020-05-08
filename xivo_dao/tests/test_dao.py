@@ -148,8 +148,6 @@ class ItemInserter(object):
         kwargs.setdefault('callerid', '"%s %s"' % (kwargs['firstname'], kwargs['lastname']))
         kwargs.setdefault('exten', '%s' % random.randint(1000, 1999))
         kwargs.setdefault('context', 'foocontext')
-        kwargs.setdefault('protocol', 'sip')
-        kwargs.setdefault('protocolid', self._generate_int())
         kwargs.setdefault('name_line', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
         kwargs.setdefault('commented_line', 0)
         kwargs.setdefault('device', 1)
@@ -173,8 +171,6 @@ class ItemInserter(object):
                              description=kwargs['description'],
                              tenant_uuid=kwargs['tenant_uuid'])
         line = self.add_line(context=kwargs['context'],
-                             protocol=kwargs['protocol'],
-                             protocolid=kwargs['protocolid'],
                              name=kwargs['name_line'],
                              device=kwargs['device'],
                              commented=kwargs['commented_line'])
@@ -197,8 +193,6 @@ class ItemInserter(object):
         kwargs.setdefault('lastname', 'unittest')
         kwargs.setdefault('callerid', '"%s %s"' % (kwargs['firstname'], kwargs['lastname']))
         kwargs.setdefault('context', 'foocontext')
-        kwargs.setdefault('protocol', 'sip')
-        kwargs.setdefault('protocolid', self._generate_int())
         kwargs.setdefault('name_line', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
         kwargs.setdefault('commented_line', 0)
         kwargs.setdefault('device', 1)
@@ -219,8 +213,6 @@ class ItemInserter(object):
                              userfield=kwargs['userfield'],
                              description=kwargs['description'])
         line = self.add_line(context=kwargs['context'],
-                             protocol=kwargs['protocol'],
-                             protocolid=kwargs['protocolid'],
                              name=kwargs['name_line'],
                              device=kwargs['device'],
                              commented=kwargs['commented_line'])
@@ -240,7 +232,6 @@ class ItemInserter(object):
         kwargs.setdefault('callerid', '"%s %s"' % (kwargs['firstname'], kwargs['lastname']))
         kwargs.setdefault('context', 'foocontext')
         kwargs.setdefault('protocol', 'sip')
-        kwargs.setdefault('protocolid', self._generate_int())
         kwargs.setdefault('name_line', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
         kwargs.setdefault('commented_line', 0)
         kwargs.setdefault('device', 1)
@@ -255,8 +246,6 @@ class ItemInserter(object):
                              mobilephonenumber=kwargs['mobilephonenumber'],
                              agentid=kwargs['agentid'])
         line = self.add_line(context=kwargs['context'],
-                             protocol=kwargs['protocol'],
-                             protocolid=kwargs['protocolid'],
                              name=kwargs['name_line'],
                              device=kwargs['device'],
                              commented=kwargs['commented_line'])
@@ -272,7 +261,6 @@ class ItemInserter(object):
         kwargs.setdefault('name', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
         kwargs.setdefault('context', 'foocontext')
         kwargs.setdefault('protocol', 'sip')
-        kwargs.setdefault('protocolid', self._generate_int())
         kwargs.setdefault('provisioningid', int(''.join(random.choice('123456789') for _ in range(6))))
         kwargs.setdefault('device', 1)
 
@@ -281,8 +269,6 @@ class ItemInserter(object):
 
         line = self.add_line(name=kwargs['name'],
                              context=kwargs['context'],
-                             protocol=kwargs['protocol'],
-                             protocolid=kwargs['protocolid'],
                              provisioningid=kwargs['provisioningid'],
                              device=kwargs['device'])
         extension = self.add_extension(exten=kwargs['exten'],

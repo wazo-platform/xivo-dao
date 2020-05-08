@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from functools import partial
@@ -76,8 +76,7 @@ class SipPersistor(CriteriaBuilderMixin):
 
     def _fix_associated(self, sip):
         line_id = (self.session.query(Line.id)
-                   .filter(Line.protocol == 'sip')
-                   .filter(Line.protocolid == sip.id)
+                   .filter(Line.endpoint_sip_id == sip.id)
                    .scalar())
         if line_id:
             LineFixes(self.session).fix(line_id)

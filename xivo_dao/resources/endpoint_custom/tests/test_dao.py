@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -218,17 +218,13 @@ class TestDelete(DAOTestCase):
             context='default',
             name='1000',
             number='1000',
-            protocol='custom',
-            protocolid=custom.id,
+            endpoint_custom_id=custom.id,
         )
 
         custom_dao.delete(custom)
 
         self.session.expire_all()
-        assert_that(line, has_properties(
-            endpoint=none(),
-            endpoint_id=none(),
-        ))
+        assert_that(line, has_properties(endpoint_custom_id=none()))
 
 
 class TestRelations(DAOTestCase):

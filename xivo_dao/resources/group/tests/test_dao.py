@@ -506,7 +506,7 @@ class TestAssociateMemberUsers(DAOTestCase):
     def test_associate_user_sip(self):
         user = self.add_user()
         sip = self.add_usersip(name='sipname')
-        line = self.add_line(protocol='sip', protocolid=sip.id)
+        line = self.add_line(endpoint_sip_id=sip.id)
         self.add_user_line(user_id=user.id, line_id=line.id)
         group = self.add_group()
 
@@ -531,17 +531,17 @@ class TestAssociateMemberUsers(DAOTestCase):
 
         user1 = self.add_user()
         sip1 = self.add_usersip()
-        line1 = self.add_line(protocol='sip', protocolid=sip1.id)
+        line1 = self.add_line(endpoint_sip_id=sip1.id)
         self.add_user_line(user_id=user1.id, line_id=line1.id)
 
         user2 = self.add_user()
-        sip2 = self.add_sccpline()
-        line2 = self.add_line(protocol='sccp', protocolid=sip2.id)
+        sccp2 = self.add_sccpline()
+        line2 = self.add_line(endpoint_sccp_id=sccp2.id)
         self.add_user_line(user_id=user2.id, line_id=line2.id)
 
         user3 = self.add_user()
-        sip3 = self.add_usercustom()
-        line3 = self.add_line(protocol='custom', protocolid=sip3.id)
+        custom3 = self.add_usercustom()
+        line3 = self.add_line(endpoint_custom_id=custom3.id)
         self.add_user_line(user_id=user3.id, line_id=line3.id)
         members = [
             QueueMember(user=user1, priority=3),
@@ -561,7 +561,7 @@ class TestAssociateMemberUsers(DAOTestCase):
     def test_associate_fix(self):
         user = self.add_user()
         sip = self.add_usersip(name='sipname')
-        line = self.add_line(protocol='sip', protocolid=sip.id)
+        line = self.add_line(endpoint_sip_id=sip.id)
         self.add_user_line(user_id=user.id, line_id=line.id)
         group = self.add_group()
 
@@ -579,7 +579,7 @@ class TestAssociateMemberUsers(DAOTestCase):
     def test_users_dissociation(self):
         user = self.add_user()
         sip = self.add_usersip(name='sipname')
-        line = self.add_line(protocol='sip', protocolid=sip.id)
+        line = self.add_line(endpoint_sip_id=sip.id)
         self.add_user_line(user_id=user.id, line_id=line.id)
         group = self.add_group()
         group_dao.associate_all_member_users(group, [QueueMember(user=user)])

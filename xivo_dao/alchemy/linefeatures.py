@@ -85,9 +85,9 @@ class LineFeatures(Base):
 
     application = relationship('Application', viewonly=True)
 
-    endpoint_sip = relationship('UserSIP')
-    endpoint_sccp = relationship('SCCPLine')
-    endpoint_custom = relationship('UserCustom')
+    endpoint_sip = relationship('UserSIP', viewonly=True)
+    endpoint_sccp = relationship('SCCPLine', viewonly=True)
+    endpoint_custom = relationship('UserCustom', viewonly=True)
 
     line_extensions = relationship(
         'LineExtension',

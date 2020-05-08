@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import assert_that, equal_to
@@ -25,8 +25,8 @@ class TestUserFixes(DAOTestCase):
         sip1 = self.add_usersip(callerid='"Roger Rabbit" <2000>')
         sip2 = self.add_usersip(callerid='"Jon Snow" <3000>')
 
-        line1 = self.add_line(protocol='sip', protocolid=sip1.id)
-        line2 = self.add_line(protocol='sip', protocolid=sip2.id)
+        line1 = self.add_line(endpoint_sip_id=sip1.id)
+        line2 = self.add_line(endpoint_sip_id=sip2.id)
 
         self.add_user_line(user_id=user.id, line_id=line1.id,
                            main_user=True, main_line=False)
@@ -46,8 +46,8 @@ class TestUserFixes(DAOTestCase):
         sccp1 = self.add_sccpline(cid_name="Roger Rabbit", cid_num="2000")
         sccp2 = self.add_sccpline(cid_name="Jon Snow", cid_num="3000")
 
-        line1 = self.add_line(protocol='sccp', protocolid=sccp1.id)
-        line2 = self.add_line(protocol='sccp', protocolid=sccp2.id)
+        line1 = self.add_line(endpoint_sccp_id=sccp1.id)
+        line2 = self.add_line(endpoint_sccp_id=sccp2.id)
 
         self.add_user_line(user_id=user.id, line_id=line1.id,
                            main_user=True, main_line=False)
@@ -66,7 +66,7 @@ class TestUserFixes(DAOTestCase):
         main_user = self.add_user(callerid='"John Smith" <1000>')
         other_user = self.add_user(callerid='"George Green" <1001>')
         sip = self.add_usersip(callerid='"Roger Rabbit" <2000>')
-        line = self.add_line(protocol='sip', protocolid=sip.id)
+        line = self.add_line(endpoint_sip_id=sip.id)
         self.add_user_line(user_id=main_user.id, line_id=line.id,
                            main_user=True, main_line=True)
         self.add_user_line(user_id=other_user.id, line_id=line.id,
@@ -82,7 +82,7 @@ class TestUserFixes(DAOTestCase):
         main_user = self.add_user(callerid='"John Smith" <1000>')
         other_user = self.add_user(callerid='"George Green" <1000>')
         sccp = self.add_sccpline(cid_name="Roger Rabbit", cid_num="2000")
-        line = self.add_line(protocol='sccp', protocolid=sccp.id)
+        line = self.add_line(endpoint_sccp_id=sccp.id)
         self.add_user_line(user_id=main_user.id, line_id=line.id,
                            main_user=True, main_line=True)
         self.add_user_line(user_id=other_user.id, line_id=line.id,

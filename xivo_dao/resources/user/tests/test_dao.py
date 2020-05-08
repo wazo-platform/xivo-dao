@@ -903,7 +903,7 @@ class TestAssociateGroups(DAOTestCase):
     def test_associate_user_sip(self):
         user_row = self.add_user()
         sip = self.add_usersip(name='sipname')
-        line = self.add_line(protocol='sip', protocolid=sip.id)
+        line = self.add_line(endpoint_sip_id=sip.id)
         self.add_user_line(user_id=user_row.id, line_id=line.id)
         group = self.add_group()
 
@@ -922,7 +922,7 @@ class TestAssociateGroups(DAOTestCase):
     def test_associate_multiple_users(self):
         user_row = self.add_user()
         sip = self.add_usersip()
-        line = self.add_line(protocol='sip', protocolid=sip.id)
+        line = self.add_line(endpoint_sip_id=sip.id)
         self.add_user_line(user_id=user_row.id, line_id=line.id)
 
         group1 = self.add_group()
@@ -938,7 +938,7 @@ class TestAssociateGroups(DAOTestCase):
     def test_associate_sip_fix(self):
         user_row = self.add_user()
         sip = self.add_usersip(name='sipname')
-        line = self.add_line(protocol='sip', protocolid=sip.id)
+        line = self.add_line(endpoint_sip_id=sip.id)
         self.add_user_line(user_id=user_row.id, line_id=line.id)
         group = self.add_group()
 
@@ -954,7 +954,7 @@ class TestAssociateGroups(DAOTestCase):
     def test_associate_sccp_fix(self):
         user_row = self.add_user()
         sccp = self.add_sccpline(name='sccpname')
-        line = self.add_line(protocol='sccp', protocolid=sccp.id)
+        line = self.add_line(endpoint_sccp_id=sccp.id)
         self.add_user_line(user_id=user_row.id, line_id=line.id)
         group = self.add_group()
 
@@ -970,7 +970,7 @@ class TestAssociateGroups(DAOTestCase):
     def test_associate_custom_fix(self):
         user_row = self.add_user()
         custom = self.add_usercustom(interface='custom/interface')
-        line = self.add_line(protocol='custom', protocolid=custom.id)
+        line = self.add_line(endpoint_custom_id=custom.id)
         self.add_user_line(user_id=user_row.id, line_id=line.id)
         group = self.add_group()
 
@@ -986,7 +986,7 @@ class TestAssociateGroups(DAOTestCase):
     def test_users_dissociation(self):
         user_row = self.add_user()
         sip = self.add_usersip(name='sipname')
-        line = self.add_line(protocol='sip', protocolid=sip.id)
+        line = self.add_line(endpoint_sip_id=sip.id)
         self.add_user_line(user_id=user_row.id, line_id=line.id)
         group = self.add_group()
         user_dao.associate_all_groups(user_row, [group])
