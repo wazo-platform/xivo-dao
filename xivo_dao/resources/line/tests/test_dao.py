@@ -106,8 +106,9 @@ class TestGet(DAOTestCase):
                 context=context.name,
                 provisioning_code='123456',
                 position=1,
-                endpoint=none(),
-                endpoint_id=none(),
+                endpoint_sip_id=none(),
+                endpoint_sccp_id=none(),
+                endpoint_custom_id=none(),
                 caller_id_name=none(),
                 caller_id_num=none(),
                 registrar='default',
@@ -135,9 +136,9 @@ class TestGet(DAOTestCase):
                 context=context.name,
                 position=2,
                 provisioning_code='123456',
-                endpoint='sip',
-                endpoint_id=sip.id,
                 endpoint_sip_id=sip.id,
+                endpoint_sccp_id=none(),
+                endpoint_custom_id=none(),
                 registrar='default',
                 tenant_uuid=self.default_tenant.uuid,
             )
@@ -219,8 +220,7 @@ class TestEdit(DAOTestCase):
         line_row = self.add_line(endpoint_sccp_id=sccp.id)
 
         line = line_dao.get(line_row.id)
-        line.endpoint = None
-        line.endpoint_id = None
+        line.endpoint_sccp_id = None
 
         line_dao.edit(line)
 
@@ -229,8 +229,6 @@ class TestEdit(DAOTestCase):
             edited_line,
             has_properties(
                 id=line.id,
-                endpoint=none(),
-                endpoint_id=none(),
                 endpoint_sip_id=none(),
                 endpoint_sccp_id=none(),
                 endpoint_custom_id=none(),
@@ -353,8 +351,9 @@ class TestCreate(DAOTestCase):
                 id=is_not(none()),
                 context=context.name,
                 position=1,
-                endpoint=none(),
-                endpoint_id=none(),
+                endpoint_sip_id=none(),
+                endpoint_sccp_id=none(),
+                endpoint_custom_id=none(),
                 provisioning_code=has_length(6),
                 caller_id_name=none(),
                 caller_id_num=none(),
@@ -384,8 +383,6 @@ class TestCreate(DAOTestCase):
                 id=is_not(none()),
                 context=context.name,
                 position=2,
-                endpoint='sip',
-                endpoint_id=sip.id,
                 endpoint_sip_id=sip.id,
                 endpoint_sccp_id=none(),
                 endpoint_custom_id=none(),

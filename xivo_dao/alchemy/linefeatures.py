@@ -193,41 +193,6 @@ class LineFeatures(Base):
         self.endpoint_sip.callerid = callerid
 
     @hybrid_property
-    def endpoint(self):
-        if self.endpoint_sip_id:
-            return 'sip'
-        if self.endpoint_sccp_id:
-            return 'sccp'
-        if self.endpoint_custom_id:
-            return 'custom'
-
-    _endpoint = None  # FIXME: remove endpoint/endpoint_id properties
-
-    @endpoint.setter
-    def endpoint(self, value):
-        self._endpoint = value
-
-    @hybrid_property
-    def endpoint_id(self):
-        if self.endpoint_sip_id:
-            return self.endpoint_sip_id
-        if self.endpoint_sccp_id:
-            return self.endpoint_sccp_id
-        if self.endpoint_custom_id:
-            return self.endpoint_custom_id
-
-    @endpoint_id.setter
-    def endpoint_id(self, value):
-        if self._endpoint == 'sip':
-            self.endpoint_sip_id = value
-        if self._endpoint == 'sccp':
-            self.endpoint_sccp_id = value
-        if self._endpoint == 'custom':
-            self.endpoint_custom_id = value
-        else:
-            self.remove_endpoint()
-
-    @hybrid_property
     def provisioning_extension(self):
         return self.provisioning_code
 
