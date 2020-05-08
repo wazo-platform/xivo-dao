@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2015 Avencall
+# Copyright 2015-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.linefeatures import LineFeatures
@@ -13,7 +13,6 @@ config = SearchConfig(table=LineFeatures,
                                'provisioning_extension': LineFeatures.provisioningid,
                                'position': LineFeatures.num,
                                'device_slot': LineFeatures.num,
-                               'protocol': LineFeatures.protocol,
                                'device_id': LineFeatures.device,
                                'name': LineFeatures.name},
                       default_sort='name')

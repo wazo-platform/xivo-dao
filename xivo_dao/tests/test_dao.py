@@ -79,7 +79,7 @@ from xivo_dao.alchemy.rightcall import RightCall as CallPermission
 from xivo_dao.alchemy.rightcallmember import RightCallMember as CallPermissionAssociation
 from xivo_dao.alchemy.sccpdevice import SCCPDevice as SCCPDeviceSchema
 from xivo_dao.alchemy.sccpgeneralsettings import SCCPGeneralSettings
-from xivo_dao.alchemy.sccpline import SCCPLine as SCCPLineSchema
+from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.schedule import Schedule
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.schedule_time import ScheduleTime
@@ -94,7 +94,7 @@ from xivo_dao.alchemy.tenant import Tenant
 from xivo_dao.alchemy.pjsip_transport import PJSIPTransport
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
 from xivo_dao.alchemy.user_line import UserLine
-from xivo_dao.alchemy.usercustom import UserCustom as UserCustomSchema
+from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.usersip import UserSIP
@@ -297,10 +297,30 @@ class ItemInserter(object):
         return line_extension
 
     def add_line(self, **kwargs):
+        # FIXME: remove autocreation of endpoint.
+        endpoint_sip_id = kwargs.get('endpoint_sip_id')
+        endpoint_sccp_id = kwargs.get('endpoint_sccp_id')
+        endpoint_custom_id = kwargs.get('endpoint_custom_id')
+        if kwargs.pop('no_endpoint', False):
+            pass
+        elif endpoint_sip_id:
+            if not self.session.query(UserSIP).get(endpoint_sip_id):
+                self.add_usersip(id=endpoint_sip_id)
+            kwargs.setdefault('endpoint_sip_id', endpoint_sip_id)
+        elif endpoint_sccp_id:
+            if not self.session.query(SCCPLine).get(endpoint_sccp_id):
+                self.add_sccpline(id=endpoint_sccp_id)
+            kwargs.setdefault('endpoint_sccp_id', endpoint_sccp_id)
+        elif endpoint_custom_id:
+            if not self.session.query(UserCustom).get(endpoint_custom_id):
+                self.add_usercustom(id=endpoint_custom_id)
+            kwargs.setdefault('endpoint_custom_id', endpoint_custom_id)
+        else:
+            sip = self.add_usersip()
+            kwargs.setdefault('endpoint_sip_id', sip.id)
+
         kwargs.setdefault('name', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
         kwargs.setdefault('context', 'foocontext')
-        kwargs.setdefault('protocol', kwargs.get('endpoint', 'sip'))
-        kwargs.setdefault('protocolid', kwargs.get('endpoint_id', self._generate_int()))
         kwargs.setdefault('provisioningid', int(''.join(random.choice('123456789') for _ in range(6))))
 
         line = LineFeatures(**kwargs)
@@ -691,7 +711,7 @@ class ItemInserter(object):
         kwargs.setdefault('category', 'user')
         kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
 
-        usercustom = UserCustomSchema(**kwargs)
+        usercustom = UserCustom(**kwargs)
         self.add_me(usercustom)
         return usercustom
 
@@ -712,7 +732,7 @@ class ItemInserter(object):
         kwargs.setdefault('cid_num', '1234')
         kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
 
-        sccpline = SCCPLineSchema(**kwargs)
+        sccpline = SCCPLine(**kwargs)
         self.add_me(sccpline)
         return sccpline
 

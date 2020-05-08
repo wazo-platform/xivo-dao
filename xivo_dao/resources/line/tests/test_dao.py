@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -35,8 +35,7 @@ class TestLineDao(DAOTestCase):
     def add_line(self, **properties):
         properties.setdefault('context', 'default')
         properties.setdefault('provisioningid', 123456)
-        line = Line(**properties)
-        self.add_me(line)
+        line = super(TestLineDao, self).add_line(**properties)
         return line
 
 
@@ -105,7 +104,7 @@ class TestGet(TestLineDao):
 
     def test_get_minimal_parameters(self):
         context = self.add_context()
-        line_row = self.add_line(context=context.name, registrar='default', provisioningid=123456)
+        line_row = self.add_line(context=context.name, registrar='default', provisioningid=123456, no_endpoint=True)
 
         line = line_dao.get(line_row.id)
 
@@ -130,8 +129,7 @@ class TestGet(TestLineDao):
         line_row = self.add_line(
             context=context.name,
             registrar='default',
-            protocol='sip',
-            protocolid=1234,
+            endpoint_sip_id=1234,
             provisioningid=123456,
             num=2,
         )
@@ -154,7 +152,7 @@ class TestGet(TestLineDao):
 
     def test_given_line_has_sip_endpoint_when_getting_then_line_has_caller_id(self):
         usersip_row = self.add_usersip(callerid='"Jôhn Smith" <1000>')
-        line_row = self.add_line(protocol='sip', protocolid=usersip_row.id)
+        line_row = self.add_line(endpoint_sip_id=usersip_row.id)
 
         line = line_dao.get(line_row.id)
 
@@ -165,7 +163,7 @@ class TestGet(TestLineDao):
 
     def test_given_line_has_sccp_endpoint_when_getting_then_line_has_caller_id(self):
         sccpline_row = self.add_sccpline(cid_name="Jôhn Smith", cid_num="1000")
-        line_row = self.add_line(protocol='sccp', protocolid=sccpline_row.id)
+        line_row = self.add_line(endpoint_sccp_id=sccpline_row.id)
 
         line = line_dao.get(line_row.id)
 
@@ -176,7 +174,7 @@ class TestGet(TestLineDao):
 
     def test_given_line_has_custom_endpoint_when_getting_then_line_has_no_caller_id(self):
         custom_row = self.add_usercustom()
-        line_row = self.add_line(protocol='custom', protocolid=custom_row.id)
+        line_row = self.add_line(endpoint_custom_id=custom_row.id)
 
         line = line_dao.get(line_row.id)
 
@@ -224,7 +222,7 @@ class TestEdit(TestLineDao):
         )
 
     def test_edit_null_parameters(self):
-        line_row = self.add_line(endpoint='sccp', endpoint_id=1234)
+        line_row = self.add_line(endpoint_sccp_id=1234)
 
         line = line_dao.get(line_row.id)
         line.endpoint = None
@@ -238,14 +236,15 @@ class TestEdit(TestLineDao):
             has_properties(
                 id=line.id,
                 endpoint=none(),
-                protocol=none(),
                 endpoint_id=none(),
-                protocolid=none(),
+                endpoint_sip_id=none(),
+                endpoint_sccp_id=none(),
+                endpoint_custom_id=none(),
             )
         )
 
     def test_given_line_has_no_endpoint_when_setting_caller_id_then_raises_error(self):
-        line_row = self.add_line()
+        line_row = self.add_line(no_endpoint=True)
 
         line = line_dao.get(line_row.id)
         self.assertRaises(InputError, setattr, line, 'caller_id_name', "Jôhn Smith")
@@ -253,7 +252,7 @@ class TestEdit(TestLineDao):
 
     def test_given_line_has_custom_endpoint_when_setting_caller_id_then_raises_error(self):
         custom_row = self.add_usercustom()
-        line_row = self.add_line(protocol='custom', protocolid=custom_row.id)
+        line_row = self.add_line(endpoint_custom_id=custom_row.id)
 
         line = line_dao.get(line_row.id)
         self.assertRaises(InputError, setattr, line, 'caller_id_name', "Jôhn Smith")
@@ -261,7 +260,7 @@ class TestEdit(TestLineDao):
 
     def test_given_line_has_sip_endpoint_when_editing_then_usersip_updated(self):
         usersip_row = self.add_usersip(callerid='"Jôhn Smith" <1000>')
-        line_row = self.add_line(protocol='sip', protocolid=usersip_row.id)
+        line_row = self.add_line(endpoint_sip_id=usersip_row.id)
         line_id = line_row.id
         self.session.expire(line_row)
 
@@ -276,7 +275,7 @@ class TestEdit(TestLineDao):
 
     def test_given_line_has_sip_endpoint_when_setting_caller_id_to_null_then_raises_error(self):
         usersip_row = self.add_usersip(callerid='"Jôhn Smith" <1000>')
-        line_row = self.add_line(protocol='sip', protocolid=usersip_row.id)
+        line_row = self.add_line(endpoint_sip_id=usersip_row.id)
 
         line = line_dao.get(line_row.id)
         self.assertRaises(InputError, setattr, line, 'caller_id_name', None)
@@ -284,7 +283,7 @@ class TestEdit(TestLineDao):
 
     def test_given_line_has_sccp_endpoint_when_editing_then_sccpline_updated(self):
         sccpline_row = self.add_sccpline(cid_name="Jôhn Smith", cid_num="1000")
-        line_row = self.add_line(protocol='sccp', protocolid=sccpline_row.id)
+        line_row = self.add_line(endpoint_sccp_id=sccpline_row.id)
 
         line = line_dao.get(line_row.id)
         line.caller_id_name = "Rôger Rabbit"
@@ -296,7 +295,7 @@ class TestEdit(TestLineDao):
 
     def test_given_line_has_sccp_endpoint_when_setting_caller_id_to_null_then_raises_error(self):
         sccpline_row = self.add_sccpline(cid_name="Jôhn Smith", cid_num="1000")
-        line_row = self.add_line(protocol='sccp', protocolid=sccpline_row.id)
+        line_row = self.add_line(endpoint_sccp_id=sccpline_row.id)
 
         line = line_dao.get(line_row.id)
         self.assertRaises(InputError, setattr, line, 'caller_id_name', None)
@@ -304,7 +303,7 @@ class TestEdit(TestLineDao):
 
     def test_given_line_has_sccp_endpoint_when_setting_caller_id_num_then_raises_error(self):
         sccpline_row = self.add_sccpline(cid_name="Jôhn Smith", cid_num="1000")
-        line_row = self.add_line(protocol='sccp', protocolid=sccpline_row.id)
+        line_row = self.add_line(endpoint_sccp_id=sccpline_row.id)
 
         line = line_dao.get(line_row.id)
         self.assertRaises(InputError, setattr, line, 'caller_id_num', '2000')
@@ -374,10 +373,10 @@ class TestCreate(DAOTestCase):
 
     def test_create_all_parameters(self):
         context = self.add_context()
+        sip = self.add_usersip()
         line = Line(
             context=context.name,
-            endpoint='sip',
-            endpoint_id=1234,
+            endpoint_sip_id=sip.id,
             provisioning_code='123456',
             position=2,
             registrar='otherregistrar',
@@ -392,9 +391,10 @@ class TestCreate(DAOTestCase):
                 context=context.name,
                 position=2,
                 endpoint='sip',
-                protocol='sip',
-                endpoint_id=1234,
-                protocolid=1234,
+                endpoint_id=sip.id,
+                endpoint_sip_id=sip.id,
+                endpoint_sccp_id=none(),
+                endpoint_custom_id=none(),
                 provisioning_code='123456',
                 provisioningid=123456,
                 caller_id_name=none(),
@@ -426,7 +426,7 @@ class TestDelete(DAOTestCase):
 
     def test_given_line_has_sip_endpoint_when_deleting_then_sip_endpoint_deleted(self):
         usersip_row = self.add_usersip()
-        line_row = self.add_line(protocol='sip', protocolid=usersip_row.id)
+        line_row = self.add_line(endpoint_sip_id=usersip_row.id)
 
         line_dao.delete(line_row)
 
@@ -435,7 +435,7 @@ class TestDelete(DAOTestCase):
 
     def test_given_line_has_sccp_endpoint_when_deleting_then_sccp_endpoint_deleted(self):
         sccpline_row = self.add_sccpline()
-        line_row = self.add_line(protocol='sccp', protocolid=sccpline_row.id)
+        line_row = self.add_line(endpoint_sccp_id=sccpline_row.id)
 
         line_dao.delete(line_row)
 
@@ -444,7 +444,7 @@ class TestDelete(DAOTestCase):
 
     def test_given_line_has_custom_endpoint_when_deleting_then_custom_endpoint_deleted(self):
         custom_row = self.add_usercustom()
-        line_row = self.add_line(protocol='custom', protocolid=custom_row.id)
+        line_row = self.add_line(endpoint_custom_id=custom_row.id)
 
         line_dao.delete(line_row)
 
@@ -470,14 +470,13 @@ class TestSearch(DAOTestCase):
 
     def test_search_returns_sip_line_associated(self):
         usersip = self.add_usersip()
-        line = self.add_line(context='default', protocol='sip', protocolid=usersip.id)
+        line = self.add_line(context='default', endpoint_sip_id=usersip.id)
 
         search_result = line_dao.search()
         assert_that(search_result.total, equal_to(1))
 
         line = search_result.items[0]
-        assert_that(line.protocol, equal_to('sip'))
-        assert_that(line.protocolid, usersip.id)
+        assert_that(line.endpoint_sip_id, usersip.id)
         assert_that(line.endpoint_sip.id, equal_to(usersip.id))
 
     def test_search_multi_tenant(self):

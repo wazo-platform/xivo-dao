@@ -184,14 +184,7 @@ class UserSIP(Base, AsteriskOptionsMixin):
                 ['no', 'yes', 'nonat', 'update', 'update,nonat', 'outgoing'])),
     )
 
-    line = relationship('LineFeatures',
-                        primaryjoin="""and_(
-                            LineFeatures.protocol == 'sip',
-                            LineFeatures.protocolid == UserSIP.id
-                        )""",
-                        foreign_keys='LineFeatures.protocolid',
-                        uselist=False,
-                        viewonly=True)
+    line = relationship('LineFeatures', uselist=False, viewonly=True)
 
     trunk = relationship('TrunkFeatures',
                          primaryjoin="""and_(
