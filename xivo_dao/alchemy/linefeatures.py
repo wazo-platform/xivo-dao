@@ -16,6 +16,7 @@ from sqlalchemy.types import (
     Text,
 )
 from sqlalchemy.schema import (
+    CheckConstraint,
     Column,
     Index,
     ForeignKey,
@@ -53,6 +54,15 @@ class LineFeatures(Base):
     __table_args__ = (
         PrimaryKeyConstraint('id'),
         UniqueConstraint('name'),
+        CheckConstraint(
+            '''
+            ( CASE WHEN endpoint_sip_id IS NULL THEN 0 ELSE 1 END
+            + CASE WHEN endpoint_sccp_id IS NULL THEN 0 ELSE 1 END
+            + CASE WHEN endpoint_custom_id IS NULL THEN 0 ELSE 1 END
+            ) <= 1
+            ''',
+            name='linefeatures_endpoints_check',
+        ),
         Index('linefeatures__idx__context', 'context'),
         Index('linefeatures__idx__device', 'device'),
         Index('linefeatures__idx__number', 'number'),
