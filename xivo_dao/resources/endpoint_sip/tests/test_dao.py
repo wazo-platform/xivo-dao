@@ -671,7 +671,6 @@ class TestDelete(DAOTestCase):
 
         sip_dao.delete(sip)
 
-        self.session.expire_all()
         assert_that(line.endpoint_sip_id, none())
 
 

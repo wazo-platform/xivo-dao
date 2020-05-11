@@ -223,7 +223,6 @@ class TestDelete(DAOTestCase):
 
         custom_dao.delete(custom)
 
-        self.session.expire_all()
         assert_that(line, has_properties(endpoint_custom_id=none()))
 
 

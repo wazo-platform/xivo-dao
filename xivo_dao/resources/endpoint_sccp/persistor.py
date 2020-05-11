@@ -58,6 +58,7 @@ class SccpPersistor(object):
 
     def delete(self, sccp):
         self.session.delete(sccp)
+        self.session.expire_all()
         self.session.flush()
         self._fix_line(sccp)
 

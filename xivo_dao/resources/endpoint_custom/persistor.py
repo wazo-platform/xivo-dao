@@ -64,6 +64,7 @@ class CustomPersistor(CriteriaBuilderMixin):
 
     def delete(self, custom):
         self.session.query(Custom).filter_by(id=custom.id).delete()
+        self.session.expire_all()
         self.session.flush()
         self._fix_associated(custom)
 

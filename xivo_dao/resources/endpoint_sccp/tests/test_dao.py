@@ -262,7 +262,6 @@ class TestDelete(DAOTestCase):
 
         sccp_dao.delete(sccp)
 
-        self.session.expire_all()
         assert_that(line, has_properties(endpoint_sccp_id=none()))
 
 
