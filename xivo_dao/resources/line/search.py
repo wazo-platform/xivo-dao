@@ -13,6 +13,7 @@ config = SearchConfig(table=LineFeatures,
                                'provisioning_extension': LineFeatures.provisioningid,
                                'position': LineFeatures.num,
                                'device_slot': LineFeatures.num,
+                               'protocol': LineFeatures.protocol,
                                'device_id': LineFeatures.device,
                                'name': LineFeatures.name},
                       default_sort='name')

@@ -364,8 +364,10 @@ class TestSimpleSearch(TestSearch):
         self.assert_search_returns_result(expected, view='summary')
 
     def test_given_user_with_line_when_using_summary_view_then_returns_summary_result(self):
+        sip = self.add_usersip()
         user_line = self.add_user_line_with_exten(firstname='dânny',
                                                   lastname='rôgers',
+                                                  endpoint_sip_id=sip.id,
                                                   email='dany.rogers@example.com',
                                                   tenant_uuid=self.tenant.uuid)
 
@@ -378,14 +380,16 @@ class TestSimpleSearch(TestSearch):
                                                 extension=user_line.extension.exten,
                                                 context=user_line.extension.context,
                                                 provisioning_code=user_line.linefeatures.provisioning_code,
-                                                protocol=user_line.linefeatures.endpoint,
+                                                protocol='sip',
                                                 )])
 
         self.assert_search_returns_result(expected, view='summary')
 
     def test_given_user_with_multi_lines_when_using_summary_view_then_returns_summary_one_result(self):
+        custom = self.add_usercustom()
         user_line = self.add_user_line_with_exten(firstname='dânny',
                                                   lastname='rôgers',
+                                                  endpoint_custom_id=custom.id,
                                                   tenant_uuid=self.tenant.uuid)
         line = self.add_line()
         self.add_user_line(user_id=user_line.user.id,
@@ -400,8 +404,8 @@ class TestSimpleSearch(TestSearch):
                                                 enabled=True,
                                                 extension=user_line.extension.exten,
                                                 context=user_line.extension.context,
-                                                provisioning_code=user_line.linefeatures.provisioning_code,
-                                                protocol=user_line.linefeatures.endpoint,
+                                                provisioning_code=None,
+                                                protocol='custom',
                                                 )])
 
         self.assert_search_returns_result(expected, view='summary')

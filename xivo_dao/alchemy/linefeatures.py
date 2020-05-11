@@ -117,6 +117,23 @@ class LineFeatures(Base):
 
     users = association_proxy('user_lines', 'user')
 
+    @hybrid_property
+    def protocol(self):
+        if self.endpoint_sip_id:
+            return 'sip'
+        elif self.endpoint_sccp_id:
+            return 'sccp'
+        elif self.endpoint_custom_id:
+            return 'custom'
+
+    @protocol.expression
+    def protocol(cls):
+        return sql.case([
+            (cls.endpoint_sip_id != None, 'sip'),
+            (cls.endpoint_sccp_id != None, 'sccp'),
+            (cls.endpoint_custom_id != None, 'custom'),
+        ], else_=None)
+
     @property
     def caller_id_name(self):
         if self.endpoint_sip:
