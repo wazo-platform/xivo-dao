@@ -285,13 +285,15 @@ class LineFeatures(Base):
     def registrar(self, value):
         self.configregistrar = value
 
-    def is_associated(self, protocol=None):
-        if protocol:
-            return self.protocol == protocol and self.protocolid is not None
-        return self.protocol is not None and self.protocolid is not None
+    def is_associated(self):
+        return self.endpoint_sip_id or self.endpoint_sccp_id or self.endpoint_custom_id
 
     def is_associated_with(self, endpoint):
-        return endpoint.same_protocol(self.protocol, self.protocolid)
+        return (
+            self.endpoint_sip is endpoint or
+            self.endpoint_sccp is endpoint or
+            self.endpoint_custom is endpoint
+        )
 
     def associate_endpoint(self, endpoint):
         protocol = endpoint.endpoint_protocol()
