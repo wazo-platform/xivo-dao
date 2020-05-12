@@ -5,8 +5,6 @@
 from sqlalchemy import text
 
 from xivo_dao.alchemy.usercustom import UserCustom as Custom
-from xivo_dao.alchemy.linefeatures import LineFeatures as Line
-from xivo_dao.alchemy.trunkfeatures import TrunkFeatures as Trunk
 from xivo_dao.helpers import errors
 from xivo_dao.resources.line.fixes import LineFixes
 from xivo_dao.resources.trunk.fixes import TrunkFixes
@@ -78,16 +76,8 @@ class CustomPersistor(CriteriaBuilderMixin):
         return query.filter(Custom.tenant_uuid.in_(self.tenant_uuids))
 
     def _fix_associated(self, custom):
-        line_id = (self.session.query(Line.id)
-                   .filter(Line.endpoint_custom_id == custom.id)
-                   .scalar())
+        if custom.line:
+            LineFixes(self.session).fix(custom.line.id)
 
-        if line_id:
-            LineFixes(self.session).fix(line_id)
-
-        trunk_id = (self.session.query(Trunk.id)
-                    .filter(Trunk.protocol == 'custom')
-                    .filter(Trunk.protocolid == custom.id)
-                    .scalar())
-        if trunk_id:
-            TrunkFixes(self.session).fix(trunk_id)
+        if custom.trunk:
+            TrunkFixes(self.session).fix(custom.trunk.id)

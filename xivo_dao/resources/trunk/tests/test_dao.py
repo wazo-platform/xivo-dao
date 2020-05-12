@@ -349,6 +349,8 @@ class TestEdit(DAOTestCase):
         trunk.registercommented = 0
         trunk.description = 'other description'
 
+        trunk_dao.dissociate_register_sip(trunk, register_sip)
+
         iax = self.add_useriax()
         register_iax = self.add_register_iax()
         trunk.associate_endpoint(iax)
@@ -362,10 +364,10 @@ class TestEdit(DAOTestCase):
         assert_that(row, has_properties(
             context='other_default',
             endpoint_sip_id=none(),
-            endpoint_iax_id=iax.id(),
+            endpoint_iax_id=iax.id,
             endpoint_custom_id=none(),
             register_sip_id=none(),
-            register_iax_id=register_iax.id(),
+            register_iax_id=register_iax.id,
             registercommented=0,
             description='other description',
         ))

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2017-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.staticiax import StaticIAX as RegisterIAX
@@ -47,9 +47,8 @@ class RegisterIAXPersistor(CriteriaBuilderMixin):
     def delete(self, register_iax):
         (self.session
          .query(TrunkFeatures)
-         .filter(TrunkFeatures.protocol == 'iax')
-         .filter(TrunkFeatures.registerid == register_iax.id)
-         .update({'registerid': 0, 'registercommented': 0}))
+         .filter(TrunkFeatures.register_iax_id == register_iax.id)
+         .update({'registercommented': 0}))
 
         self.session.delete(register_iax)
         self.session.flush()
