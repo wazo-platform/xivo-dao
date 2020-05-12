@@ -3,14 +3,13 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
-from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import (
+    CheckConstraint,
     Column,
     Index,
     ForeignKey,
     PrimaryKeyConstraint,
-    UniqueConstraint,
 )
 from sqlalchemy.types import (
     Boolean,
@@ -20,7 +19,6 @@ from sqlalchemy.types import (
 )
 
 from xivo_dao.helpers.db_manager import Base
-from xivo_dao.alchemy import enum
 from xivo_dao.alchemy.outcalltrunk import OutcallTrunk
 
 
@@ -29,50 +27,58 @@ class TrunkFeatures(Base):
     __tablename__ = 'trunkfeatures'
     __table_args__ = (
         PrimaryKeyConstraint('id'),
-        UniqueConstraint('protocol', 'protocolid'),
+        CheckConstraint(
+            '''
+            ( CASE WHEN endpoint_sip_id IS NULL THEN 0 ELSE 1 END
+            + CASE WHEN endpoint_iax_id IS NULL THEN 0 ELSE 1 END
+            + CASE WHEN endpoint_custom_id IS NULL THEN 0 ELSE 1 END
+            ) <= 1
+            ''',
+            name='trunkfeatures_endpoints_check',
+        ),
+        CheckConstraint(
+            '''
+            ( CASE WHEN register_sip_id IS NULL THEN 0 ELSE 1 END
+            + CASE WHEN register_iax_id IS NULL THEN 0 ELSE 1 END
+            ) <= 1
+            ''',
+            name='trunkfeatures_registers_check',
+        ),
+        CheckConstraint(
+            '''
+            (
+                register_sip_id IS NULL AND
+                register_iax_id IS NULL
+            ) OR (
+                register_sip_id IS NOT NULL AND
+                endpoint_iax_id IS NULL AND
+                endpoint_custom_id IS NULL
+            ) OR (
+                register_iax_id IS NOT NULL AND
+                endpoint_sip_id IS NULL AND
+                endpoint_custom_id IS NULL
+            )
+            ''',
+            name='trunkfeatures_endpoint_register_check',
+        ),
         Index('trunkfeatures__idx__registercommented', 'registercommented'),
-        Index('trunkfeatures__idx__registerid', 'registerid')
     )
 
     id = Column(Integer, nullable=False)
     tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
-    protocol = Column(enum.trunk_protocol)
-    protocolid = Column(Integer)
-    registerid = Column(Integer, nullable=False, server_default='0')
+    endpoint_sip_id = Column(Integer, ForeignKey('usersip.id', ondelete='SET NULL'))
+    endpoint_iax_id = Column(Integer, ForeignKey('useriax.id', ondelete='SET NULL'))
+    endpoint_custom_id = Column(Integer, ForeignKey('usercustom.id', ondelete='SET NULL'))
+    register_sip_id = Column(Integer, ForeignKey('staticsip.id', ondelete='SET NULL'))
+    register_iax_id = Column(Integer, ForeignKey('staticiax.id', ondelete='SET NULL'))
     registercommented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text)
     context = Column(String(39))
     twilio_incoming = Column(Boolean, nullable=False, server_default='False')
 
-    endpoint_sip = relationship(
-        'UserSIP',
-        primaryjoin="""and_(
-            TrunkFeatures.protocol == 'sip',
-            TrunkFeatures.protocolid == UserSIP.id
-        )""",
-        foreign_keys='TrunkFeatures.protocolid',
-        viewonly=True,
-    )
-
-    endpoint_iax = relationship(
-        'UserIAX',
-        primaryjoin="""and_(
-            TrunkFeatures.protocol == 'iax',
-            TrunkFeatures.protocolid == UserIAX.id
-        )""",
-        foreign_keys='TrunkFeatures.protocolid',
-        viewonly=True,
-    )
-
-    endpoint_custom = relationship(
-        'UserCustom',
-        primaryjoin="""and_(
-            TrunkFeatures.protocol == 'custom',
-            TrunkFeatures.protocolid == UserCustom.id
-        )""",
-        foreign_keys='TrunkFeatures.protocolid',
-        viewonly=True,
-    )
+    endpoint_sip = relationship('UserSIP', viewonly=True)
+    endpoint_iax = relationship('UserIAX', viewonly=True)
+    endpoint_custom = relationship('UserCustom', viewonly=True)
 
     outcall_trunks = relationship(
         'OutcallTrunk',
@@ -85,55 +91,49 @@ class TrunkFeatures(Base):
         creator=lambda _outcall: OutcallTrunk(outcall=_outcall),
     )
 
-    register_iax = relationship(
-        'StaticIAX',
-        primaryjoin="""and_(
-               TrunkFeatures.protocol == 'iax',
-               TrunkFeatures.registerid == StaticIAX.id
-        )""",
-        foreign_keys='TrunkFeatures.registerid',
-        viewonly=True,
-    )
-
-    register_sip = relationship(
-        'StaticSIP',
-        primaryjoin="""and_(
-               TrunkFeatures.protocol == 'sip',
-               TrunkFeatures.registerid == StaticSIP.id
-        )""",
-        foreign_keys='TrunkFeatures.registerid',
-        viewonly=True,
-    )
-
-    @hybrid_property
-    def endpoint(self):
-        return self.protocol
-
-    @endpoint.setter
-    def endpoint(self, value):
-        self.protocol = value
-
-    @hybrid_property
-    def endpoint_id(self):
-        return self.protocolid
-
-    @endpoint_id.setter
-    def endpoint_id(self, value):
-        self.protocolid = value
+    register_iax = relationship('StaticIAX', viewonly=True)
+    register_sip = relationship('StaticSIP', viewonly=True)
 
     def is_associated(self, protocol=None):
-        if protocol:
-            return self.protocol == protocol and self.protocolid is not None
-        return self.protocol is not None and self.protocolid is not None
+        return self.endpoint_sip_id or self.endpoint_iax_id or self.endpoint_custom_id
 
     def is_associated_with(self, endpoint):
-        return endpoint.same_protocol(self.protocol, self.protocolid)
+        return (
+            self.endpoint_sip is endpoint or
+            self.endpoint_iax is endpoint or
+            self.endpoint_custom is endpoint
+        )
 
     def associate_endpoint(self, endpoint):
-        self.protocol = endpoint.endpoint_protocol()
-        self.protocolid = endpoint.id
+        protocol = endpoint.endpoint_protocol()
+        if protocol == 'sip':
+            self.endpoint_sip_id = endpoint.id
+            self.endpoint_iax_id = None
+            self.endpoint_custom_id = None
+        elif protocol == 'iax':
+            self.endpoint_sip_id = None
+            self.endpoint_iax_id = endpoint.id
+            self.endpoint_custom_id = None
+        elif protocol == 'custom':
+            self.endpoint_sip_id = None
+            self.endpoint_iax_id = None
+            self.endpoint_custom_id = endpoint.id
 
     def remove_endpoint(self):
-        if self.registerid == 0:
-            self.protocol = None
-        self.protocolid = None
+        self.endpoint_sip_id = None
+        self.endpoint_iax_id = None
+        self.endpoint_custom_id = None
+
+    @property
+    def protocol(self):
+        if self.endpoint_sip_id:
+            return 'sip'
+        elif self.endpoint_iax_id:
+            return 'iax'
+        elif self.endpoint_custom_id:
+            return 'custom'
+
+        if self.register_sip_id:
+            return 'sip'
+        elif self.register_iax_id:
+            return 'iax'

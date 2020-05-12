@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2016 Avencall
+# Copyright 2016-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import Load
@@ -39,36 +39,12 @@ class TrunkFixes(object):
         return query.first()
 
     def fix_protocol(self, row):
-        protocol = row.TrunkFeatures.protocol
-        if protocol == 'sip':
-            self.fix_sip(row)
-        elif protocol == 'iax':
-            self.fix_iax(row)
-        elif protocol == 'custom':
-            self.fix_custom(row)
-        else:
-            self.remove_endpoint(row)
-
-    def fix_sip(self, row):
         if row.UserSIP:
             row.UserSIP.context = row.TrunkFeatures.context
             row.UserSIP.category = 'trunk'
-        else:
-            self.remove_endpoint(row)
-
-    def fix_iax(self, row):
-        if row.UserIAX:
+        elif row.UserIAX:
             row.UserIAX.context = row.TrunkFeatures.context
             row.UserIAX.category = 'trunk'
-        else:
-            self.remove_endpoint(row)
-
-    def fix_custom(self, row):
-        if row.UserCustom:
+        elif row.UserCustom:
             row.UserCustom.context = row.TrunkFeatures.context
             row.UserCustom.category = 'trunk'
-        else:
-            self.remove_endpoint(row)
-
-    def remove_endpoint(self, row):
-        row.TrunkFeatures.remove_endpoint()

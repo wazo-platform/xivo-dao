@@ -28,14 +28,7 @@ class StaticSIP(Base):
     var_name = Column(String(128), nullable=False)
     var_val = Column(String(255))
 
-    trunk = relationship('TrunkFeatures',
-                         primaryjoin="""and_(
-                                       TrunkFeatures.protocol == 'sip',
-                                       TrunkFeatures.registerid == StaticSIP.id
-                         )""",
-                         foreign_keys='TrunkFeatures.registerid',
-                         viewonly=True,
-                         uselist=False)
+    trunk = relationship('TrunkFeatures', viewonly=True, uselist=False)
 
     @hybrid_property
     def metric(self):
