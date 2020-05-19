@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.orm import Load
@@ -67,12 +67,11 @@ class LineFixes(object):
         return query.first()
 
     def fix_protocol(self, row):
-        protocol = row.LineFeatures.protocol
-        if protocol == 'sip':
+        if row.LineFeatures.endpoint_sip_id:
             self.fix_sip(row)
-        elif protocol == 'sccp':
+        elif row.LineFeatures.endpoint_sccp_id:
             self.fix_sccp(row)
-        elif protocol == 'custom':
+        elif row.LineFeatures.endpoint_custom_id:
             self.fix_custom(row)
         else:
             self.remove_endpoint(row)
@@ -121,9 +120,9 @@ class LineFixes(object):
 
     def fix_caller_id(self, row):
         if row.UserFeatures:
-            if row.LineFeatures.protocol == "sip":
+            if row.LineFeatures.endpoint_sip_id:
                 row.UserSIP.update_caller_id(row.UserFeatures, row.Extension)
-            elif row.LineFeatures.protocol == "sccp":
+            elif row.LineFeatures.endpoint_sccp_id:
                 row.SCCPLine.update_caller_id(row.UserFeatures, row.Extension)
 
     def fix_queue_member(self, row, interface):

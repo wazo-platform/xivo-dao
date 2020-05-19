@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import text
@@ -64,6 +64,7 @@ class CustomPersistor(CriteriaBuilderMixin):
 
     def delete(self, custom):
         self.session.query(Custom).filter_by(id=custom.id).delete()
+        self.session.expire_all()
         self.session.flush()
         self._fix_associated(custom)
 
@@ -78,8 +79,7 @@ class CustomPersistor(CriteriaBuilderMixin):
 
     def _fix_associated(self, custom):
         line_id = (self.session.query(Line.id)
-                   .filter(Line.protocol == 'custom')
-                   .filter(Line.protocolid == custom.id)
+                   .filter(Line.endpoint_custom_id == custom.id)
                    .scalar())
 
         if line_id:

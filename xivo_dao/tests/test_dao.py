@@ -79,7 +79,7 @@ from xivo_dao.alchemy.rightcall import RightCall as CallPermission
 from xivo_dao.alchemy.rightcallmember import RightCallMember as CallPermissionAssociation
 from xivo_dao.alchemy.sccpdevice import SCCPDevice as SCCPDeviceSchema
 from xivo_dao.alchemy.sccpgeneralsettings import SCCPGeneralSettings
-from xivo_dao.alchemy.sccpline import SCCPLine as SCCPLineSchema
+from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.schedule import Schedule
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.schedule_time import ScheduleTime
@@ -94,7 +94,7 @@ from xivo_dao.alchemy.tenant import Tenant
 from xivo_dao.alchemy.pjsip_transport import PJSIPTransport
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
 from xivo_dao.alchemy.user_line import UserLine
-from xivo_dao.alchemy.usercustom import UserCustom as UserCustomSchema
+from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.usersip import UserSIP
@@ -148,8 +148,6 @@ class ItemInserter(object):
         kwargs.setdefault('callerid', '"%s %s"' % (kwargs['firstname'], kwargs['lastname']))
         kwargs.setdefault('exten', '%s' % random.randint(1000, 1999))
         kwargs.setdefault('context', 'foocontext')
-        kwargs.setdefault('protocol', 'sip')
-        kwargs.setdefault('protocolid', self._generate_int())
         kwargs.setdefault('name_line', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
         kwargs.setdefault('commented_line', 0)
         kwargs.setdefault('device', 1)
@@ -159,6 +157,9 @@ class ItemInserter(object):
         kwargs.setdefault('mobilephonenumber', '')
         kwargs.setdefault('description', '')
         kwargs.setdefault('userfield', '')
+        kwargs.setdefault('endpoint_sip_id', None)
+        kwargs.setdefault('endpoint_sccp_id', None)
+        kwargs.setdefault('endpoint_custom_id', None)
         kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
 
         user = self.add_user(firstname=kwargs['firstname'],
@@ -173,11 +174,12 @@ class ItemInserter(object):
                              description=kwargs['description'],
                              tenant_uuid=kwargs['tenant_uuid'])
         line = self.add_line(context=kwargs['context'],
-                             protocol=kwargs['protocol'],
-                             protocolid=kwargs['protocolid'],
                              name=kwargs['name_line'],
                              device=kwargs['device'],
-                             commented=kwargs['commented_line'])
+                             commented=kwargs['commented_line'],
+                             endpoint_sip_id=kwargs['endpoint_sip_id'],
+                             endpoint_sccp_id=kwargs['endpoint_sccp_id'],
+                             endpoint_custom_id=kwargs['endpoint_custom_id'])
         extension = self.add_extension(exten=kwargs['exten'],
                                        context=kwargs['context'],
                                        typeval=user.id)
@@ -197,8 +199,6 @@ class ItemInserter(object):
         kwargs.setdefault('lastname', 'unittest')
         kwargs.setdefault('callerid', '"%s %s"' % (kwargs['firstname'], kwargs['lastname']))
         kwargs.setdefault('context', 'foocontext')
-        kwargs.setdefault('protocol', 'sip')
-        kwargs.setdefault('protocolid', self._generate_int())
         kwargs.setdefault('name_line', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
         kwargs.setdefault('commented_line', 0)
         kwargs.setdefault('device', 1)
@@ -219,8 +219,6 @@ class ItemInserter(object):
                              userfield=kwargs['userfield'],
                              description=kwargs['description'])
         line = self.add_line(context=kwargs['context'],
-                             protocol=kwargs['protocol'],
-                             protocolid=kwargs['protocolid'],
                              name=kwargs['name_line'],
                              device=kwargs['device'],
                              commented=kwargs['commented_line'])
@@ -239,8 +237,6 @@ class ItemInserter(object):
         kwargs.setdefault('lastname', 'unittest')
         kwargs.setdefault('callerid', '"%s %s"' % (kwargs['firstname'], kwargs['lastname']))
         kwargs.setdefault('context', 'foocontext')
-        kwargs.setdefault('protocol', 'sip')
-        kwargs.setdefault('protocolid', self._generate_int())
         kwargs.setdefault('name_line', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
         kwargs.setdefault('commented_line', 0)
         kwargs.setdefault('device', 1)
@@ -255,8 +251,6 @@ class ItemInserter(object):
                              mobilephonenumber=kwargs['mobilephonenumber'],
                              agentid=kwargs['agentid'])
         line = self.add_line(context=kwargs['context'],
-                             protocol=kwargs['protocol'],
-                             protocolid=kwargs['protocolid'],
                              name=kwargs['name_line'],
                              device=kwargs['device'],
                              commented=kwargs['commented_line'])
@@ -271,8 +265,6 @@ class ItemInserter(object):
     def add_user_line_without_user(self, **kwargs):
         kwargs.setdefault('name', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
         kwargs.setdefault('context', 'foocontext')
-        kwargs.setdefault('protocol', 'sip')
-        kwargs.setdefault('protocolid', self._generate_int())
         kwargs.setdefault('provisioningid', int(''.join(random.choice('123456789') for _ in range(6))))
         kwargs.setdefault('device', 1)
 
@@ -281,8 +273,6 @@ class ItemInserter(object):
 
         line = self.add_line(name=kwargs['name'],
                              context=kwargs['context'],
-                             protocol=kwargs['protocol'],
-                             protocolid=kwargs['protocolid'],
                              provisioningid=kwargs['provisioningid'],
                              device=kwargs['device'])
         extension = self.add_extension(exten=kwargs['exten'],
@@ -299,8 +289,6 @@ class ItemInserter(object):
     def add_line(self, **kwargs):
         kwargs.setdefault('name', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
         kwargs.setdefault('context', 'foocontext')
-        kwargs.setdefault('protocol', kwargs.get('endpoint', 'sip'))
-        kwargs.setdefault('protocolid', kwargs.get('endpoint_id', self._generate_int()))
         kwargs.setdefault('provisioningid', int(''.join(random.choice('123456789') for _ in range(6))))
 
         line = LineFeatures(**kwargs)
@@ -691,7 +679,7 @@ class ItemInserter(object):
         kwargs.setdefault('category', 'user')
         kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
 
-        usercustom = UserCustomSchema(**kwargs)
+        usercustom = UserCustom(**kwargs)
         self.add_me(usercustom)
         return usercustom
 
@@ -712,7 +700,7 @@ class ItemInserter(object):
         kwargs.setdefault('cid_num', '1234')
         kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
 
-        sccpline = SCCPLineSchema(**kwargs)
+        sccpline = SCCPLine(**kwargs)
         self.add_me(sccpline)
         return sccpline
 

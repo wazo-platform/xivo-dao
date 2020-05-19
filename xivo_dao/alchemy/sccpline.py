@@ -32,16 +32,7 @@ class SCCPLine(Base):
     protocol = Column(enum.trunk_protocol, nullable=False, server_default='sccp')
     commented = Column(Integer, nullable=False, server_default='0')
 
-    line = relationship(
-        'LineFeatures',
-        primaryjoin="""and_(
-            LineFeatures.protocol == 'sccp',
-            LineFeatures.protocolid == SCCPLine.id
-        )""",
-        foreign_keys='LineFeatures.protocolid',
-        uselist=False,
-        viewonly=True,
-    )
+    line = relationship('LineFeatures', uselist=False, viewonly=True)
 
     @property
     def options(self):

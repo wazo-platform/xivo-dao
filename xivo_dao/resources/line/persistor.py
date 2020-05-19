@@ -85,20 +85,20 @@ class LinePersistor(CriteriaBuilderMixin):
         self.session.flush()
 
     def delete(self, line):
-        if line.protocol == 'sip':
+        if line.endpoint_sip_id:
             (self.session
              .query(UserSIP)
-             .filter(UserSIP.id == line.protocolid)
+             .filter(UserSIP.id == line.endpoint_sip_id)
              .delete())
-        elif line.protocol == 'sccp':
+        elif line.endpoint_sccp_id:
             (self.session
              .query(SCCPLine)
-             .filter(SCCPLine.id == line.protocolid)
+             .filter(SCCPLine.id == line.endpoint_sccp_id)
              .delete())
-        elif line.protocol == 'custom':
+        elif line.endpoint_custom_id:
             (self.session
              .query(UserCustom)
-             .filter(UserCustom.id == line.protocolid)
+             .filter(UserCustom.id == line.endpoint_custom_id)
              .delete())
         self.session.delete(line)
         self.session.flush()

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from functools import partial
@@ -58,6 +58,7 @@ class SccpPersistor(object):
 
     def delete(self, sccp):
         self.session.delete(sccp)
+        self.session.expire_all()
         self.session.flush()
         self._fix_line(sccp)
 
@@ -75,8 +76,7 @@ class SccpPersistor(object):
 
     def _fix_line(self, sccp):
         line_id = (self.session.query(Line.id)
-                   .filter(Line.protocol == 'sccp')
-                   .filter(Line.protocolid == sccp.id)
+                   .filter(Line.endpoint_sccp_id == sccp.id)
                    .scalar())
 
         if line_id:

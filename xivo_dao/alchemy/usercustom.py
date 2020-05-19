@@ -43,16 +43,7 @@ class UserCustom(Base):
         nullable=False
     )
 
-    line = relationship(
-        'LineFeatures',
-        primaryjoin="""and_(
-            LineFeatures.protocol == 'custom',
-            LineFeatures.protocolid == UserCustom.id
-        )""",
-        foreign_keys='LineFeatures.protocolid',
-        uselist=False,
-        viewonly=True,
-    )
+    line = relationship('LineFeatures', uselist=False, viewonly=True)
 
     trunk = relationship(
         'TrunkFeatures',

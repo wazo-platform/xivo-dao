@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import (
@@ -102,13 +102,13 @@ def user_shared_hints(session):
     for user in query.all():
         ifaces = []
         for line in user.lines:
-            if line.protocol == 'custom':
+            if line.endpoint_custom_id:
                 ifaces.append(line.name)
-            elif line.protocol == 'sip':
+            elif line.endpoint_sip_id:
                 # TODO PJSIP migration
                 ifaces.append('pjsip/{}'.format(line.name))
             else:
-                ifaces.append('{}/{}'.format(line.protocol, line.name))
+                ifaces.append('custom/{}'.format(line.name))
 
         if not ifaces:
             continue
@@ -144,23 +144,20 @@ def _list_user_arguments(session, user_ids):
     query = session.query(
         UserFeatures.id.label('user_id'),
         sql.func.string_agg(sql.case([
-            (LineFeatures.protocol == 'sip', literal_column("'SIP/'") + UserSIP.name),
-            (LineFeatures.protocol == 'sccp', literal_column("'SCCP/'") + SCCPLine.name),
-            (LineFeatures.protocol == 'custom', UserCustom.interface)
+            (LineFeatures.endpoint_sip_id != None, literal_column("'SIP/'") + UserSIP.name),
+            (LineFeatures.endpoint_sccp_id != None, literal_column("'SCCP/'") + SCCPLine.name),
+            (LineFeatures.endpoint_custom_id != None, UserCustom.interface)
         ]), literal_column("'&'")).label('argument'),
     ).join(
         UserLine.userfeatures,
     ).join(
         UserLine.linefeatures,
     ).outerjoin(UserSIP, sql.and_(
-        LineFeatures.protocol == 'sip',
-        LineFeatures.protocolid == UserSIP.id,
+        LineFeatures.endpoint_sip_id == UserSIP.id,
     )).outerjoin(SCCPLine, sql.and_(
-        LineFeatures.protocol == 'sccp',
-        LineFeatures.protocolid == SCCPLine.id,
+        LineFeatures.endpoint_sccp_id == SCCPLine.id,
     )).outerjoin(UserCustom, sql.and_(
-        LineFeatures.protocol == 'custom',
-        LineFeatures.protocolid == UserCustom.id,
+        LineFeatures.endpoint_custom_id == UserCustom.id,
     )).filter(and_(
         UserFeatures.id.in_(user_ids),
         UserLine.main_user.is_(True),

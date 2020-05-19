@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -121,7 +121,7 @@ class TestFix(DAOTestCase):
     def test_user_sip(self):
         user = self.add_user()
         sip = self.add_usersip(name='sipname')
-        line = self.add_line(protocol='sip', protocolid=sip.id)
+        line = self.add_line(endpoint_sip_id=sip.id)
         self.add_user_line(user_id=user.id, line_id=line.id)
         member = self.add_queue_member(usertype='user', userid=user.id, interface='wrong', channel='wrong')
 
@@ -137,7 +137,7 @@ class TestFix(DAOTestCase):
     def test_user_sccp(self):
         user = self.add_user()
         sccp = self.add_sccpline(name='sccpname')
-        line = self.add_line(protocol='sccp', protocolid=sccp.id)
+        line = self.add_line(endpoint_sccp_id=sccp.id)
         self.add_user_line(user_id=user.id, line_id=line.id)
         member = self.add_queue_member(usertype='user', userid=user.id, interface='wrong', channel='wrong')
 
@@ -153,7 +153,7 @@ class TestFix(DAOTestCase):
     def test_user_custom(self):
         user = self.add_user()
         custom = self.add_usercustom(interface='custom/interface')
-        line = self.add_line(protocol='custom', protocolid=custom.id)
+        line = self.add_line(endpoint_custom_id=custom.id)
         self.add_user_line(user_id=user.id, line_id=line.id)
         member = self.add_queue_member(usertype='user', userid=user.id, interface='wrong', channel='wrong')
 

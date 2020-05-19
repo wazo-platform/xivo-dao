@@ -1,16 +1,29 @@
 # -*- coding: utf-8 -*-
-# Copyright 2018-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
     assert_that,
+    calling,
     equal_to,
+    raises,
 )
 from sqlalchemy import and_
+from sqlalchemy.exc import IntegrityError
 
 from xivo_dao.tests.test_dao import DAOTestCase
 
 from ..linefeatures import LineFeatures
+
+
+class TestConstraint(DAOTestCase):
+
+    def test_many_endpoints(self):
+        sip = self.add_usersip()
+        sccp = self.add_sccpline()
+        assert_that(calling(self.add_line).with_args(
+            endpoint_sip_id=sip.id, endpoint_sccp_id=sccp.id,
+        ), raises(IntegrityError))
 
 
 class TestTenantUUID(DAOTestCase):

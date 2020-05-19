@@ -16,6 +16,7 @@ from sqlalchemy.types import (
     Text,
 )
 from sqlalchemy.schema import (
+    CheckConstraint,
     Column,
     Index,
     ForeignKey,
@@ -26,7 +27,6 @@ from sqlalchemy.ext.hybrid import hybrid_property
 
 from xivo_dao.helpers.exception import InputError
 from xivo_dao.helpers.db_manager import Base
-from xivo_dao.alchemy import enum
 from .context import Context
 
 
@@ -54,7 +54,15 @@ class LineFeatures(Base):
     __table_args__ = (
         PrimaryKeyConstraint('id'),
         UniqueConstraint('name'),
-        UniqueConstraint('protocol', 'protocolid'),
+        CheckConstraint(
+            '''
+            ( CASE WHEN endpoint_sip_id IS NULL THEN 0 ELSE 1 END
+            + CASE WHEN endpoint_sccp_id IS NULL THEN 0 ELSE 1 END
+            + CASE WHEN endpoint_custom_id IS NULL THEN 0 ELSE 1 END
+            ) <= 1
+            ''',
+            name='linefeatures_endpoints_check',
+        ),
         Index('linefeatures__idx__context', 'context'),
         Index('linefeatures__idx__device', 'device'),
         Index('linefeatures__idx__number', 'number'),
@@ -62,8 +70,6 @@ class LineFeatures(Base):
     )
 
     id = Column(Integer)
-    protocol = Column(enum.trunk_protocol)
-    protocolid = Column(Integer)
     device = Column(String(32))
     configregistrar = Column(String(128))
     name = Column(String(128))
@@ -76,6 +82,10 @@ class LineFeatures(Base):
     commented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text)
 
+    endpoint_sip_id = Column(Integer, ForeignKey('usersip.id', ondelete='SET NULL'))
+    endpoint_sccp_id = Column(Integer, ForeignKey('sccpline.id', ondelete='SET NULL'))
+    endpoint_custom_id = Column(Integer, ForeignKey('usercustom.id', ondelete='SET NULL'))
+
     context_rel = relationship(
         'Context',
         primaryjoin='LineFeatures.context == Context.name',
@@ -85,32 +95,9 @@ class LineFeatures(Base):
 
     application = relationship('Application', viewonly=True)
 
-    endpoint_sip = relationship(
-        'UserSIP',
-        primaryjoin="""and_(
-            LineFeatures.protocol == 'sip',
-            LineFeatures.protocolid == UserSIP.id
-        )""",
-        foreign_keys='LineFeatures.protocolid',
-    )
-
-    endpoint_sccp = relationship(
-        'SCCPLine',
-        primaryjoin="""and_(
-            LineFeatures.protocol == 'sccp',
-            LineFeatures.protocolid == SCCPLine.id
-        )""",
-        foreign_keys='LineFeatures.protocolid',
-    )
-
-    endpoint_custom = relationship(
-        'UserCustom',
-        primaryjoin="""and_(
-            LineFeatures.protocol == 'custom',
-            LineFeatures.protocolid == UserCustom.id
-        )""",
-        foreign_keys='LineFeatures.protocolid',
-    )
+    endpoint_sip = relationship('UserSIP', viewonly=True)
+    endpoint_sccp = relationship('SCCPLine', viewonly=True)
+    endpoint_custom = relationship('UserCustom', viewonly=True)
 
     line_extensions = relationship(
         'LineExtension',
@@ -130,17 +117,31 @@ class LineFeatures(Base):
 
     users = association_proxy('user_lines', 'user')
 
+    @hybrid_property
+    def protocol(self):
+        if self.endpoint_sip_id:
+            return 'sip'
+        elif self.endpoint_sccp_id:
+            return 'sccp'
+        elif self.endpoint_custom_id:
+            return 'custom'
+
+    @protocol.expression
+    def protocol(cls):
+        return sql.case([
+            (cls.endpoint_sip_id != None, 'sip'),
+            (cls.endpoint_sccp_id != None, 'sccp'),
+            (cls.endpoint_custom_id != None, 'custom'),
+        ], else_=None)
+
     @property
     def caller_id_name(self):
-        if self.protocol == 'sip':
+        if self.endpoint_sip:
             return self._sip_caller_id_name()
-        elif self.protocol == 'sccp':
+        elif self.endpoint_sccp:
             return self._sccp_caller_id_name()
 
     def _sip_caller_id_name(self):
-        if self.endpoint_sip is None:
-            return None
-
         if self.endpoint_sip.callerid is None:
             return None
 
@@ -151,25 +152,23 @@ class LineFeatures(Base):
         return match.group('name')
 
     def _sccp_caller_id_name(self):
-        if self.endpoint_sccp is None:
-            return None
-
         return self.endpoint_sccp.cid_name
 
     @caller_id_name.setter
     def caller_id_name(self, value):
         if value is None:
-            if self.protocol is not None:
+            if self.endpoint_sip_id or self.endpoint_sccp_id or self.endpoint_custom_id:
                 raise InputError("Cannot set caller id to None")
+            return
+
+        if self.endpoint_sip_id:
+            self._set_sip_caller_id_name(value)
+        elif self.endpoint_sccp_id:
+            self._set_sccp_caller_id_name(value)
+        elif self.endpoint_custom_id:
+            raise InputError("Cannot set caller id on endpoint of type 'custom'")
         else:
-            if self.protocol == 'sip':
-                self._set_sip_caller_id_name(value)
-            elif self.protocol == 'sccp':
-                self._set_sccp_caller_id_name(value)
-            elif self.protocol == 'custom':
-                raise InputError("Cannot set caller id on endpoint of type 'custom'")
-            else:
-                raise InputError("Unsupported caller id protocol")
+            raise InputError("Cannot set caller id if no endpoint associated")
 
     def _set_sip_caller_id_name(self, value):
         num = self._sip_caller_id_num()
@@ -181,15 +180,12 @@ class LineFeatures(Base):
 
     @property
     def caller_id_num(self):
-        if self.protocol == 'sip':
+        if self.endpoint_sip:
             return self._sip_caller_id_num()
-        elif self.protocol == 'sccp':
+        elif self.endpoint_sccp:
             return self._sccp_caller_id_num()
 
     def _sip_caller_id_num(self):
-        if self.endpoint_sip is None:
-            return None
-
         if self.endpoint_sip.callerid is None:
             return None
 
@@ -200,46 +196,28 @@ class LineFeatures(Base):
         return match.group('num')
 
     def _sccp_caller_id_num(self):
-        if self.endpoint_sccp is None:
-            return None
-
         return self.endpoint_sccp.cid_num
 
     @caller_id_num.setter
     def caller_id_num(self, value):
         if value is None:
-            if self.protocol is not None:
+            if self.endpoint_sip_id or self.endpoint_sccp_id or self.endpoint_custom_id:
                 raise InputError("Cannot set caller id num to None")
+            return
+
+        if self.endpoint_sip_id:
+            self._set_sip_caller_id_num(value)
+        elif self.endpoint_sccp_id:
+            raise InputError("Cannot set caller id num on endpoint of type 'sccp'")
+        elif self.endpoint_custom_id:
+            raise InputError("Cannot set caller id on endpoint of type 'custom'")
         else:
-            if self.protocol == 'sip':
-                self._set_sip_caller_id_num(value)
-            elif self.protocol == 'sccp':
-                raise InputError("Cannot set caller id num on endpoint of type 'sccp'")
-            elif self.protocol == 'custom':
-                raise InputError("Cannot set caller id on endpoint of type 'custom'")
-            else:
-                raise InputError("Unsupported caller id protocol")
+            raise InputError("Cannot set caller id if no endpoint associated")
 
     def _set_sip_caller_id_num(self, value):
         name = self._sip_caller_id_name()
         callerid = self.CALLER_ID.format(name=name, num=value)
         self.endpoint_sip.callerid = callerid
-
-    @hybrid_property
-    def endpoint(self):
-        return self.protocol
-
-    @endpoint.setter
-    def endpoint(self, value):
-        self.protocol = value
-
-    @hybrid_property
-    def endpoint_id(self):
-        return self.protocolid
-
-    @endpoint_id.setter
-    def endpoint_id(self, value):
-        self.protocolid = value
 
     @hybrid_property
     def provisioning_extension(self):
@@ -307,21 +285,35 @@ class LineFeatures(Base):
     def registrar(self, value):
         self.configregistrar = value
 
-    def is_associated(self, protocol=None):
-        if protocol:
-            return self.protocol == protocol and self.protocolid is not None
-        return self.protocol is not None and self.protocolid is not None
+    def is_associated(self):
+        return self.endpoint_sip_id or self.endpoint_sccp_id or self.endpoint_custom_id
 
     def is_associated_with(self, endpoint):
-        return endpoint.same_protocol(self.protocol, self.protocolid)
+        return (
+            self.endpoint_sip is endpoint or
+            self.endpoint_sccp is endpoint or
+            self.endpoint_custom is endpoint
+        )
 
     def associate_endpoint(self, endpoint):
-        self.protocol = endpoint.endpoint_protocol()
-        self.protocolid = endpoint.id
+        protocol = endpoint.endpoint_protocol()
+        if protocol == 'sip':
+            self.endpoint_sip_id = endpoint.id
+            self.endpoint_sccp_id = None
+            self.endpoint_custom_id = None
+        elif protocol == 'sccp':
+            self.endpoint_sip_id = None
+            self.endpoint_sccp_id = endpoint.id
+            self.endpoint_custom_id = None
+        elif protocol == 'custom':
+            self.endpoint_sip_id = None
+            self.endpoint_sccp_id = None
+            self.endpoint_custom_id = endpoint.id
 
     def remove_endpoint(self):
-        self.protocol = None
-        self.protocolid = None
+        self.endpoint_sip_id = None
+        self.endpoint_sccp_id = None
+        self.endpoint_custom_id = None
 
     def update_extension(self, extension):
         self.number = extension.exten

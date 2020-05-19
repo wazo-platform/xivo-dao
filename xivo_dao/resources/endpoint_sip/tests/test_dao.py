@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -21,7 +21,6 @@ from hamcrest import (
 from sqlalchemy.inspection import inspect
 
 from xivo_dao.alchemy.usersip import UserSIP as SIPEndpoint
-from xivo_dao.alchemy.linefeatures import LineFeatures as Line
 from xivo_dao.helpers.exception import InputError
 from xivo_dao.helpers.exception import NotFoundError
 from xivo_dao.resources.utils.search import SearchResult
@@ -668,13 +667,11 @@ class TestDelete(DAOTestCase):
 
     def test_given_endpoint_is_associated_to_line_then_line_is_dissociated(self):
         sip = self.add_usersip()
-        line = self.add_line(endpoint='sip', endpoint_id=sip.id)
+        line = self.add_line(endpoint_sip_id=sip.id)
 
         sip_dao.delete(sip)
 
-        line = self.session.query(Line).get(line.id)
-        assert_that(line.endpoint, none())
-        assert_that(line.endpoint_id, none())
+        assert_that(line.endpoint_sip_id, none())
 
 
 class TestRelations(DAOTestCase):

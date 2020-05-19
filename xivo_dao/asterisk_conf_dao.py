@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -90,7 +90,7 @@ def find_sccp_line_settings(session):
 
     def line_config(*args):
         (
-            protocolid,
+            endpoint_sccp_id,
             tenant_uuid,
             name,
             cid_name,
@@ -121,7 +121,7 @@ def find_sccp_line_settings(session):
         if disallow:
             line['disallow'] = disallow
 
-        line.update(sccp_pickup_members.get(protocolid, {}))
+        line.update(sccp_pickup_members.get(endpoint_sccp_id, {}))
 
         return line
 
@@ -139,7 +139,7 @@ def find_sccp_line_settings(session):
         Extension.exten,
         UserFeatures.uuid,
     ).join(LineFeatures, and_(
-        LineFeatures.protocolid == SCCPLine.id, LineFeatures.protocol == 'sccp',
+        LineFeatures.endpoint_sccp_id == SCCPLine.id,
     )).join(
         UserLine, UserLine.line_id == LineFeatures.id,
     ).join(UserFeatures, and_(
@@ -163,8 +163,7 @@ def find_sccp_device_settings(session):
     ).outerjoin(
         SCCPLine, SCCPLine.name == SCCPDevice.line,
     ).outerjoin(LineFeatures, and_(
-        LineFeatures.protocol == 'sccp',
-        LineFeatures.protocolid == SCCPLine.id,
+        LineFeatures.endpoint_sccp_id == SCCPLine.id,
     )).outerjoin(UserLine, and_(
         UserLine.line_id == LineFeatures.id,
         UserLine.main_user.is_(True),
@@ -205,8 +204,7 @@ def find_sccp_speeddial_settings(session):
     )).join(
         LineFeatures, UserLine.line_id == LineFeatures.id,
     ).join(SCCPLine, and_(
-        LineFeatures.protocol == 'sccp',
-        LineFeatures.protocolid == SCCPLine.id,
+        LineFeatures.endpoint_sccp_id == SCCPLine.id,
     )).join(
         SCCPDevice, SCCPLine.name == SCCPDevice.line,
     ).filter(LineFeatures.commented == 0)
@@ -399,17 +397,16 @@ def find_sip_user_settings(session):
 
     query = session.query(
         UserSIP,
-        LineFeatures.protocol,
         LineFeatures.context,
         LineFeatures.application_uuid,
+        LineFeatures.endpoint_sip_id,
         Extension.exten.label('number'),
         UserFeatures.musiconhold.label('mohsuggest'),
         UserFeatures.id.label('user_id'),
         UserFeatures.uuid.label('uuid'),
         (Voicemail.mailbox + '@' + Voicemail.context).label('mailbox'),
     ).join(LineFeatures, and_(
-        LineFeatures.protocolid == UserSIP.id,
-        LineFeatures.protocol == 'sip',
+        LineFeatures.endpoint_sip_id == UserSIP.id,
     )).outerjoin(UserLine, and_(
         UserLine.line_id == LineFeatures.id,
         UserLine.main_user.is_(True),
@@ -449,8 +446,8 @@ def find_sip_trunk_settings(session):
 def find_pickup_members(session, protocol):
     '''
     Returns a map:
-    {protocolid: {pickupgroup: set([pickupgroup_id, ...]),
-                  callgroup: set([pickupgroup_id, ...])},
+    {endpoint_id: {pickupgroup: set([pickupgroup_id, ...]),
+                   callgroup: set([pickupgroup_id, ...])},
      ...,
     }
     '''
@@ -462,23 +459,32 @@ def find_pickup_members(session, protocol):
     res = defaultdict(lambda: defaultdict(set))
 
     def _add_member(m):
-        return res[m.protocolid][group_map[m.category]].add(m.id)
+        if protocol == 'sip':
+            res_base = res[m.endpoint_sip_id]
+        elif protocol == 'sccp':
+            res_base = res[m.endpoint_sccp_id]
+        elif protocol == 'custom':
+            res_base = res[m.endpoint_custom_id]
+        return res_base[group_map[m.category]].add(m.id)
 
     add_member = _add_member
 
     base_query = session.query(
         PickupMember.category,
         Pickup.id,
-        LineFeatures.protocol,
-        LineFeatures.protocolid,
+        LineFeatures.endpoint_sip_id,
+        LineFeatures.endpoint_sccp_id,
+        LineFeatures.endpoint_custom_id,
     ).join(
         Pickup, Pickup.id == PickupMember.pickupid,
-    ).filter(
-        and_(
-            Pickup.commented == 0,
-            LineFeatures.protocol == protocol,
-        )
-    )
+    ).filter(Pickup.commented == 0)
+
+    if protocol == 'sip':
+        base_query = base_query.filter(LineFeatures.endpoint_sip_id != None)
+    elif protocol == 'sccp':
+        base_query = base_query.filter(LineFeatures.endpoint_sccp_id != None)
+    elif protocol == 'custom':
+        base_query = base_query.filter(LineFeatures.endpoint_custom_id != None)
 
     users = base_query.join(
         UserLine, UserLine.user_id == PickupMember.memberid,
