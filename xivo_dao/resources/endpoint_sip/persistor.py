@@ -7,8 +7,6 @@ from functools import partial
 from sqlalchemy import text
 
 from xivo_dao.alchemy.usersip import UserSIP as SIP
-from xivo_dao.alchemy.linefeatures import LineFeatures as Line
-from xivo_dao.alchemy.trunkfeatures import TrunkFeatures as Trunk
 from xivo_dao.helpers import errors, generators
 from xivo_dao.resources.line.fixes import LineFixes
 from xivo_dao.resources.trunk.fixes import TrunkFixes
@@ -76,18 +74,11 @@ class SipPersistor(CriteriaBuilderMixin):
         return query.filter(SIP.tenant_uuid.in_(self.tenant_uuids))
 
     def _fix_associated(self, sip):
-        line_id = (self.session.query(Line.id)
-                   .filter(Line.endpoint_sip_id == sip.id)
-                   .scalar())
-        if line_id:
-            LineFixes(self.session).fix(line_id)
+        if sip.line:
+            LineFixes(self.session).fix(sip.line.id)
 
-        trunk_id = (self.session.query(Trunk.id)
-                    .filter(Trunk.protocol == 'sip')
-                    .filter(Trunk.protocolid == sip.id)
-                    .scalar())
-        if trunk_id:
-            TrunkFixes(self.session).fix(trunk_id)
+        if sip.trunk:
+            TrunkFixes(self.session).fix(sip.trunk.id)
 
     def fill_default_values(self, sip):
         if sip.name is None:

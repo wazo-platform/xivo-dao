@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import text
@@ -59,31 +59,33 @@ class TrunkPersistor(CriteriaBuilderMixin):
         self.session.flush()
 
     def delete(self, trunk):
-        if trunk.protocol == 'sip':
+        if trunk.endpoint_sip_id:
             (self.session
              .query(UserSIP)
-             .filter(UserSIP.id == trunk.protocolid)
+             .filter(UserSIP.id == trunk.endpoint_sip_id)
              .delete())
-            if trunk.registerid:
-                (self.session
-                 .query(StaticSIP)
-                 .filter(StaticSIP.id == trunk.registerid)
-                 .delete())
-        elif trunk.protocol == 'iax':
+        elif trunk.endpoint_iax_id:
             (self.session
              .query(UserIAX)
-             .filter(UserIAX.id == trunk.protocolid)
+             .filter(UserIAX.id == trunk.endpoint_iax_id)
              .delete())
-            if trunk.registerid:
-                (self.session
-                 .query(StaticIAX)
-                 .filter(StaticIAX.id == trunk.registerid)
-                 .delete())
-        elif trunk.protocol == 'custom':
+        elif trunk.endpoint_custom_id:
             (self.session
              .query(UserCustom)
-             .filter(UserCustom.id == trunk.protocolid)
+             .filter(UserCustom.id == trunk.endpoint_custom_id)
              .delete())
+
+        if trunk.register_sip_id:
+            (self.session
+             .query(StaticSIP)
+             .filter(StaticSIP.id == trunk.register_sip_id)
+             .delete())
+        elif trunk.register_iax_id:
+            (self.session
+             .query(StaticIAX)
+             .filter(StaticIAX.id == trunk.register_iax_id)
+             .delete())
+
         self.session.delete(trunk)
         self.session.flush()
 
@@ -99,33 +101,25 @@ class TrunkPersistor(CriteriaBuilderMixin):
     def associate_register_iax(self, trunk, register):
         if trunk.protocol not in ('iax', None):
             raise errors.resource_associated('Trunk', 'Endpoint', trunk_id=trunk.id, protocol=trunk.protocol)
-
-        trunk.protocol = 'iax'
-        trunk.registerid = register.id
+        trunk.register_iax_id = register.id
         self.session.flush()
         self.session.expire(trunk, ['register_iax'])
 
     def dissociate_register_iax(self, trunk, register):
         if register is trunk.register_iax:
-            trunk.registerid = 0
-            if not trunk.protocolid:
-                trunk.protocol = None
+            trunk.register_iax_id = None
             self.session.flush()
             self.session.expire(trunk, ['register_iax'])
 
     def associate_register_sip(self, trunk, register):
         if trunk.protocol not in ('sip', None):
             raise errors.resource_associated('Trunk', 'Endpoint', trunk_id=trunk.id, protocol=trunk.protocol)
-
-        trunk.protocol = 'sip'
-        trunk.registerid = register.id
+        trunk.register_sip_id = register.id
         self.session.flush()
         self.session.expire(trunk, ['register_sip'])
 
     def dissociate_register_sip(self, trunk, register):
         if register is trunk.register_sip:
-            trunk.registerid = 0
-            if not trunk.protocolid:
-                trunk.protocol = None
+            trunk.register_sip_id = None
             self.session.flush()
             self.session.expire(trunk, ['register_sip'])

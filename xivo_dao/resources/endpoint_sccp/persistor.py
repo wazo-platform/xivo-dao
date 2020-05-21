@@ -6,7 +6,6 @@ from functools import partial
 from sqlalchemy import text
 
 from xivo_dao.alchemy.sccpline import SCCPLine as SCCP
-from xivo_dao.alchemy.linefeatures import LineFeatures as Line
 from xivo_dao.helpers import errors, generators
 from xivo_dao.resources.line.fixes import LineFixes
 from xivo_dao.resources.utils.search import SearchResult
@@ -75,9 +74,5 @@ class SccpPersistor(object):
         return self.session.query(SCCP).filter(column == data).count() > 0
 
     def _fix_line(self, sccp):
-        line_id = (self.session.query(Line.id)
-                   .filter(Line.endpoint_sccp_id == sccp.id)
-                   .scalar())
-
-        if line_id:
-            LineFixes(self.session).fix(line_id)
+        if sccp.line:
+            LineFixes(self.session).fix(sccp.line.id)

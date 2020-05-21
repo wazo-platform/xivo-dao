@@ -125,16 +125,7 @@ class UserIAX(Base, AsteriskOptionsMixin):
     requirecalltoken = Column(String(4), nullable=False, server_default='no')
     _options = Column("options", ARRAY(String, dimensions=2), nullable=False, default=list, server_default='{}')
 
-    trunk_rel = relationship(
-        'TrunkFeatures',
-        primaryjoin="""and_(
-            TrunkFeatures.protocol == 'iax',
-            TrunkFeatures.protocolid == UserIAX.id
-        )""",
-        foreign_keys='TrunkFeatures.protocolid',
-        uselist=False,
-        viewonly=True,
-    )
+    trunk_rel = relationship('TrunkFeatures', uselist=False, viewonly=True)
 
     def endpoint_protocol(self):
         return 'iax'

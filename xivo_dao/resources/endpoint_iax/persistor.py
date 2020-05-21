@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from functools import partial
@@ -7,7 +7,6 @@ from functools import partial
 from sqlalchemy import text
 
 from xivo_dao.alchemy.useriax import UserIAX as IAX
-from xivo_dao.alchemy.trunkfeatures import TrunkFeatures as Trunk
 from xivo_dao.helpers import errors, generators
 from xivo_dao.resources.trunk.fixes import TrunkFixes
 from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
@@ -73,12 +72,8 @@ class IAXPersistor(CriteriaBuilderMixin):
         return query.filter(IAX.tenant_uuid.in_(self.tenant_uuids))
 
     def _fix_associated(self, iax):
-        trunk_id = (self.session.query(Trunk.id)
-                    .filter(Trunk.protocol == 'iax')
-                    .filter(Trunk.protocolid == iax.id)
-                    .scalar())
-        if trunk_id:
-            TrunkFixes(self.session).fix(trunk_id)
+        if iax.trunk_rel:
+            TrunkFixes(self.session).fix(iax.trunk_rel.id)
 
     def fill_default_values(self, iax):
         if iax.name is None:

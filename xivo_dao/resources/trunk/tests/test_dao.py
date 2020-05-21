@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2016-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -90,14 +90,6 @@ class TestFindBy(DAOTestCase):
 
     def test_given_column_does_not_exist_then_error_raised(self):
         self.assertRaises(InputError, trunk_dao.find_by, invalid=42)
-
-    def test_find_by_custom_column(self):
-        trunk1 = self.add_trunk(endpoint_id=1)
-        self.add_trunk(endpoint_id=2)
-
-        trunk = trunk_dao.find_by(endpoint_id=1)
-
-        assert_that(trunk, equal_to(trunk1))
 
     def test_find_by_context(self):
         trunk_row = self.add_trunk(context='MyCôntext')
@@ -295,20 +287,26 @@ class TestCreate(DAOTestCase):
         assert_that(created_trunk, has_properties(
             id=not_none(),
             context=none(),
-            protocol=none(),
-            protocolid=none(),
-            registerid=0,
+            endpoint_sip_id=none(),
+            endpoint_iax_id=none(),
+            endpoint_custom_id=none(),
+            register_sip_id=none(),
+            register_iax_id=none(),
             registercommented=0,
             description=none(),
         ))
 
     def test_create_with_all_fields(self):
+        sip = self.add_usersip()
+        register_sip = self.add_register_sip()
         trunk = Trunk(
             tenant_uuid=self.default_tenant.uuid,
             context='default',
-            protocol='sip',
-            protocolid=1,
-            registerid=1,
+            endpoint_sip_id=sip.id,
+            endpoint_iax_id=None,
+            endpoint_custom_id=None,
+            register_sip_id=register_sip.id,
+            register_iax_id=None,
             registercommented=1,
             description='description',
         )
@@ -322,9 +320,11 @@ class TestCreate(DAOTestCase):
             id=not_none(),
             tenant_uuid=self.default_tenant.uuid,
             context='default',
-            protocol='sip',
-            protocolid=1,
-            registerid=1,
+            endpoint_sip_id=sip.id,
+            endpoint_iax_id=none(),
+            endpoint_custom_id=none(),
+            register_sip_id=register_sip.id,
+            register_iax_id=none(),
             registercommented=1,
             description='description',
         ))
@@ -334,23 +334,27 @@ class TestEdit(DAOTestCase):
 
     def test_edit_all_fields(self):
         sip = self.add_usersip()
+        register_sip = self.add_register_sip()
         trunk = trunk_dao.create(Trunk(
             tenant_uuid=self.default_tenant.uuid,
             context='default',
-            registerid=1,
             registercommented=1,
             description='description',
         ))
         trunk.associate_endpoint(sip)
+        trunk_dao.associate_register_sip(trunk, register_sip)
 
         trunk = trunk_dao.get(trunk.id)
         trunk.context = 'other_default'
-        trunk.registerid = 0
         trunk.registercommented = 0
         trunk.description = 'other description'
 
-        custom = self.add_usercustom()
-        trunk.associate_endpoint(custom)
+        trunk_dao.dissociate_register_sip(trunk, register_sip)
+
+        iax = self.add_useriax()
+        register_iax = self.add_register_iax()
+        trunk.associate_endpoint(iax)
+        trunk_dao.associate_register_iax(trunk, register_iax)
 
         trunk_dao.edit(trunk)
 
@@ -359,9 +363,11 @@ class TestEdit(DAOTestCase):
         assert_that(trunk, equal_to(row))
         assert_that(row, has_properties(
             context='other_default',
-            protocol='custom',
-            protocolid=custom.id,
-            registerid=0,
+            endpoint_sip_id=none(),
+            endpoint_iax_id=iax.id,
+            endpoint_custom_id=none(),
+            register_sip_id=none(),
+            register_iax_id=register_iax.id,
             registercommented=0,
             description='other description',
         ))
@@ -370,9 +376,6 @@ class TestEdit(DAOTestCase):
         trunk = trunk_dao.create(Trunk(
             tenant_uuid=self.default_tenant.uuid,
             context='default',
-            protocol='sip',
-            protocolid=1,
-            registerid=1,
             registercommented=1,
             description='description',
         ))
@@ -430,24 +433,24 @@ class TestDelete(DAOTestCase):
 
     def test_given_trunk_has_sip_register_when_deleting_then_sip_register_deleted(self):
         sip = self.add_usersip()
-        register = self.add_sip_general_settings(var_name='register')
-        trunk = self.add_trunk(registerid=register.id)
+        register_id = self.add_sip_general_settings(var_name='register').id
+        trunk = self.add_trunk(register_sip_id=register_id)
         trunk.associate_endpoint(sip)
 
         trunk_dao.delete(trunk)
 
-        deleted_register = self.session.query(StaticSIP).filter(StaticSIP.id == trunk.registerid).first()
+        deleted_register = self.session.query(StaticSIP).filter(StaticSIP.id == register_id).first()
         assert_that(deleted_register, none())
 
     def test_given_trunk_has_iax_register_when_deleting_then_iax_register_deleted(self):
         iax = self.add_useriax()
-        register = self.add_iax_general_settings(var_name='register')
-        trunk = self.add_trunk(registerid=register.id)
+        register_id = self.add_iax_general_settings(var_name='register').id
+        trunk = self.add_trunk(register_iax_id=register_id)
         trunk.associate_endpoint(iax)
 
         trunk_dao.delete(trunk)
 
-        deleted_register = self.session.query(StaticIAX).filter(StaticIAX.id == trunk.registerid).first()
+        deleted_register = self.session.query(StaticIAX).filter(StaticIAX.id == register_id).first()
         assert_that(deleted_register, none())
 
 
@@ -461,8 +464,7 @@ class TestAssociateRegisterIAX(DAOTestCase):
 
         result = self.session.query(Trunk).first()
         assert_that(result, equal_to(trunk))
-        assert_that(result.protocol, equal_to('iax'))
-        assert_that(result.registerid, equal_to(register.id))
+        assert_that(result.register_iax_id, equal_to(register.id))
         assert_that(result.register_iax, equal_to(register))
 
     def test_associate_already_associated(self):
@@ -477,7 +479,8 @@ class TestAssociateRegisterIAX(DAOTestCase):
         assert_that(result.register_iax, equal_to(register))
 
     def test_associate_trunk_sip_register_iax(self):
-        trunk = self.add_trunk(protocol='sip')
+        sip = self.add_usersip()
+        trunk = self.add_trunk(endpoint_sip_id=sip.id)
         register = self.add_register_iax()
 
         self.assertRaises(ResourceError, trunk_dao.associate_register_iax, trunk, register)
@@ -494,8 +497,7 @@ class TestDissociateRegisterIAX(DAOTestCase):
 
         result = self.session.query(Trunk).first()
         assert_that(result, equal_to(trunk))
-        assert_that(result.protocol, none())
-        assert_that(result.registerid, equal_to(0))
+        assert_that(result.register_iax_id, none())
         assert_that(result.register_iax, none())
 
     def test_dissociate_trunk_register_iax_not_associated(self):
@@ -506,19 +508,6 @@ class TestDissociateRegisterIAX(DAOTestCase):
 
         result = self.session.query(Trunk).first()
         assert_that(result, equal_to(trunk))
-        assert_that(result.register_iax, none())
-
-    def test_dissociate_trunk_register_iax_with_endpoint(self):
-        iax = self.add_useriax()
-        trunk = self.add_trunk(protocol='iax', protocolid=iax.id)
-        register = self.add_register_iax()
-        trunk_dao.associate_register_iax(trunk, register)
-
-        trunk_dao.dissociate_register_iax(trunk, register)
-
-        result = self.session.query(Trunk).first()
-        assert_that(result.protocol, equal_to('iax'))
-        assert_that(result.registerid, equal_to(0))
         assert_that(result.register_iax, none())
 
 
@@ -532,8 +521,7 @@ class TestAssociateRegisterSIP(DAOTestCase):
 
         result = self.session.query(Trunk).first()
         assert_that(result, equal_to(trunk))
-        assert_that(result.protocol, equal_to('sip'))
-        assert_that(result.registerid, equal_to(register.id))
+        assert_that(result.register_sip_id, equal_to(register.id))
         assert_that(result.register_sip, equal_to(register))
 
     def test_associate_already_associated(self):
@@ -547,7 +535,8 @@ class TestAssociateRegisterSIP(DAOTestCase):
         assert_that(result.register_sip, equal_to(register))
 
     def test_associate_trunk_iax_register_sip(self):
-        trunk = self.add_trunk(protocol='iax')
+        iax = self.add_useriax()
+        trunk = self.add_trunk(endpoint_iax_id=iax.id)
         register = self.add_register_sip()
 
         self.assertRaises(ResourceError, trunk_dao.associate_register_sip, trunk, register)
@@ -564,8 +553,7 @@ class TestDissociateRegisterSIP(DAOTestCase):
 
         result = self.session.query(Trunk).first()
         assert_that(result, equal_to(trunk))
-        assert_that(result.protocol, none())
-        assert_that(result.registerid, equal_to(0))
+        assert_that(result.register_sip_id, none())
         assert_that(result.register_sip, none())
 
     def test_dissociate_trunk_register_sip_not_associated(self):
@@ -576,19 +564,6 @@ class TestDissociateRegisterSIP(DAOTestCase):
 
         result = self.session.query(Trunk).first()
         assert_that(result, equal_to(trunk))
-        assert_that(result.register_sip, none())
-
-    def test_dissociate_trunk_register_sip_with_endpoint(self):
-        sip = self.add_usersip()
-        trunk = self.add_trunk(protocol='sip', protocolid=sip.id)
-        register = self.add_register_sip()
-        trunk_dao.associate_register_sip(trunk, register)
-
-        trunk_dao.dissociate_register_sip(trunk, register)
-
-        result = self.session.query(Trunk).first()
-        assert_that(result.protocol, equal_to('sip'))
-        assert_that(result.registerid, equal_to(0))
         assert_that(result.register_sip, none())
 
 
@@ -674,7 +649,7 @@ class TestRelations(DAOTestCase):
 
     def test_register_sip_relationship(self):
         register_row = self.add_register_sip()
-        trunk_row = self.add_trunk(registerid=register_row.id, protocol='sip')
+        trunk_row = self.add_trunk(register_sip_id=register_row.id)
 
         trunk = trunk_dao.get(trunk_row.id)
         assert_that(trunk, equal_to(trunk_row))
@@ -683,7 +658,7 @@ class TestRelations(DAOTestCase):
 
     def test_register_iax_relationship(self):
         register_row = self.add_register_iax()
-        trunk_row = self.add_trunk(registerid=register_row.id, protocol='iax')
+        trunk_row = self.add_trunk(register_iax_id=register_row.id)
 
         trunk = trunk_dao.get(trunk_row.id)
         assert_that(trunk, equal_to(trunk_row))

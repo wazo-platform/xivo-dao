@@ -433,7 +433,7 @@ def find_sip_trunk_settings(session):
     query = session.query(
         UserSIP, TrunkFeatures.twilio_incoming,
     ).join(TrunkFeatures, and_(
-        TrunkFeatures.protocol == 'sip', TrunkFeatures.protocolid == UserSIP.id,
+        TrunkFeatures.endpoint_sip_id == UserSIP.id,
     )).filter(and_(
         UserSIP.category == 'trunk',
         UserSIP.commented == 0,

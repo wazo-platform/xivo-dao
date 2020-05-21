@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2017-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -179,7 +179,7 @@ class TestDelete(DAOTestCase):
 
     def test_delete_when_associate_with_trunk(self):
         register_iax = self.add_register_iax()
-        self.add_trunk(registerid=register_iax.id, registercommented=1, protocol='iax')
+        self.add_trunk(register_iax_id=register_iax.id, registercommented=1)
 
         register_iax_dao.delete(register_iax)
 
@@ -187,17 +187,4 @@ class TestDelete(DAOTestCase):
         assert_that(row, none())
 
         row = self.session.query(TrunkFeatures).first()
-        assert_that(row, has_properties(registerid=0, registercommented=0))
-
-    def test_delete_when_has_trunk_with_same_register_id_and_not_same_protocol(self):
-        register_iax = self.add_register_iax()
-        register_iax_id = register_iax.id
-        self.add_trunk(registerid=register_iax_id, registercommented=1, protocol='sip')
-
-        register_iax_dao.delete(register_iax)
-
-        row = self.session.query(RegisterIAX).first()
-        assert_that(row, none())
-
-        row = self.session.query(TrunkFeatures).first()
-        assert_that(row, has_properties(registerid=register_iax_id, registercommented=1))
+        assert_that(row, has_properties(register_iax_id=none(), registercommented=0))

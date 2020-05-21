@@ -185,15 +185,7 @@ class UserSIP(Base, AsteriskOptionsMixin):
     )
 
     line = relationship('LineFeatures', uselist=False, viewonly=True)
-
-    trunk = relationship('TrunkFeatures',
-                         primaryjoin="""and_(
-                            TrunkFeatures.protocol == 'sip',
-                            TrunkFeatures.protocolid == UserSIP.id
-                         )""",
-                         foreign_keys='TrunkFeatures.protocolid',
-                         uselist=False,
-                         viewonly=True)
+    trunk = relationship('TrunkFeatures', uselist=False, viewonly=True)
 
     def same_protocol(self, protocol, id):
         return protocol == 'sip' and self.id == id

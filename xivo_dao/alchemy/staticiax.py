@@ -28,14 +28,7 @@ class StaticIAX(Base):
     var_name = Column(String(128), nullable=False)
     var_val = Column(String(255))
 
-    trunk = relationship('TrunkFeatures',
-                         primaryjoin="""and_(
-                                       TrunkFeatures.protocol == 'iax',
-                                       TrunkFeatures.registerid == StaticIAX.id
-                         )""",
-                         foreign_keys='TrunkFeatures.registerid',
-                         viewonly=True,
-                         uselist=False)
+    trunk = relationship('TrunkFeatures', viewonly=True, uselist=False)
 
     @hybrid_property
     def metric(self):

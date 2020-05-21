@@ -44,17 +44,7 @@ class UserCustom(Base):
     )
 
     line = relationship('LineFeatures', uselist=False, viewonly=True)
-
-    trunk = relationship(
-        'TrunkFeatures',
-        primaryjoin="""and_(
-            TrunkFeatures.protocol == 'custom',
-            TrunkFeatures.protocolid == UserCustom.id
-        )""",
-        uselist=False,
-        foreign_keys='TrunkFeatures.protocolid',
-        viewonly=True,
-    )
+    trunk = relationship('TrunkFeatures', uselist=False, viewonly=True)
 
     @hybrid_property
     def enabled(self):

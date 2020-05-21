@@ -1217,7 +1217,7 @@ class TestFindSipTrunkSettings(DAOTestCase):
 
     def test_given_sip_has_all_resources_associated_then_all_resources_found_in_result(self):
         sip = self.add_usersip(category='trunk')
-        self.add_trunk(protocol='sip', protocolid=sip.id, twilio_incoming=True)
+        self.add_trunk(endpoint_sip_id=sip.id, twilio_incoming=True)
 
         results = asterisk_conf_dao.find_sip_trunk_settings()
 
@@ -1227,7 +1227,7 @@ class TestFindSipTrunkSettings(DAOTestCase):
 
     def test_given_sip_account_when_querying_then_same_sip_account_row_is_returned(self):
         sip = self.add_usersip(category='trunk')
-        self.add_trunk(protocol='sip', protocolid=sip.id)
+        self.add_trunk(endpoint_sip_id=sip.id)
 
         results = asterisk_conf_dao.find_sip_trunk_settings()
 

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2017-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.staticsip import StaticSIP as RegisterSIP
@@ -47,9 +47,8 @@ class RegisterSIPPersistor(CriteriaBuilderMixin):
     def delete(self, register_sip):
         (self.session
          .query(TrunkFeatures)
-         .filter(TrunkFeatures.protocol == 'sip')
-         .filter(TrunkFeatures.registerid == register_sip.id)
-         .update({'registerid': 0, 'registercommented': 0}))
+         .filter(TrunkFeatures.register_sip_id == register_sip.id)
+         .update({'registercommented': 0}))
 
         self.session.delete(register_sip)
         self.session.flush()

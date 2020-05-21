@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -494,12 +494,9 @@ class TestDelete(DAOTestCase):
 
     def test_given_endpoint_is_associated_to_trunk_then_trunk_is_dissociated(self):
         iax = self.add_useriax()
-        trunk = self.add_trunk(endpoint='iax', endpoint_id=iax.id)
+        trunk = self.add_trunk(endpoint_iax_id=iax.id)
 
         iax_dao.delete(iax)
 
         self.session.expire_all()
-        assert_that(trunk, has_properties(
-            endpoint=none(),
-            endpoint_id=none(),
-        ))
+        assert_that(trunk, has_properties(endpoint_iax_id=none()))
