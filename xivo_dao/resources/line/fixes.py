@@ -67,34 +67,20 @@ class LineFixes(object):
         return query.first()
 
     def fix_protocol(self, row):
-        if row.LineFeatures.endpoint_sip_uuid:
-            self.fix_sip(row)
-        elif row.LineFeatures.endpoint_sccp_id:
-            self.fix_sccp(row)
-        elif row.LineFeatures.endpoint_custom_id:
-            self.fix_custom(row)
-        else:
-            self.remove_endpoint(row)
-
-    def fix_sip(self, row):
         if row.EndpointSIP:
             self.update_endpoint_sip(row)
+        elif row.SCCPLine:
+            self.fix_sccp_line(row)
+            interface = 'SCCP/{}'.format(row.SCCPLine.name)
+            self.fix_queue_member(row, interface)
+        elif row.UserCustom:
+            row.UserCustom.context = row.LineFeatures.context
+            self.fix_queue_member(row, row.UserCustom.interface)
 
     def update_endpoint_sip(self, row):
         row.EndpointSIP.context = row.LineFeatures.context_rel
         interface = 'SIP/{}'.format(row.EndpointSIP.name)
         self.fix_queue_member(row, interface)
-
-    def remove_endpoint(self, row):
-        row.LineFeatures.remove_endpoint()
-
-    def fix_sccp(self, row):
-        if row.SCCPLine:
-            self.fix_sccp_line(row)
-            interface = 'SCCP/{}'.format(row.SCCPLine.name)
-            self.fix_queue_member(row, interface)
-        else:
-            self.remove_endpoint(row)
 
     def fix_sccp_line(self, row):
         if row.Extension:
@@ -108,13 +94,6 @@ class LineFixes(object):
 
     def fix_name(self, row):
         row.LineFeatures.update_name()
-
-    def fix_custom(self, row):
-        if row.UserCustom:
-            row.UserCustom.context = row.LineFeatures.context
-            self.fix_queue_member(row, row.UserCustom.interface)
-        else:
-            self.remove_endpoint(row)
 
     def fix_caller_id(self, row):
         if row.UserFeatures:

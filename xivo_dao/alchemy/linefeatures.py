@@ -300,33 +300,6 @@ class LineFeatures(Base):
     def is_associated(self):
         return self.endpoint_sip_uuid or self.endpoint_sccp_id or self.endpoint_custom_id
 
-    def is_associated_with(self, endpoint):
-        return (
-            self.endpoint_sip is endpoint or
-            self.endpoint_sccp is endpoint or
-            self.endpoint_custom is endpoint
-        )
-
-    def associate_endpoint(self, endpoint):
-        protocol = endpoint.endpoint_protocol()
-        if protocol == 'sip':
-            self.endpoint_sip_uuid = endpoint.uuid
-            self.endpoint_sccp_id = None
-            self.endpoint_custom_id = None
-        elif protocol == 'sccp':
-            self.endpoint_sip_uuid = None
-            self.endpoint_sccp_id = endpoint.id
-            self.endpoint_custom_id = None
-        elif protocol == 'custom':
-            self.endpoint_sip_uuid = None
-            self.endpoint_sccp_id = None
-            self.endpoint_custom_id = endpoint.id
-
-    def remove_endpoint(self):
-        self.endpoint_sip_uuid = None
-        self.endpoint_sccp_id = None
-        self.endpoint_custom_id = None
-
     def update_extension(self, extension):
         self.number = extension.exten
         self.context = extension.context
