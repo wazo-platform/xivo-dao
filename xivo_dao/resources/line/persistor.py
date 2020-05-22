@@ -130,6 +130,51 @@ class LinePersistor(CriteriaBuilderMixin):
 
         return query.filter(Line.tenant_uuid.in_(self.tenant_uuids))
 
+    def associate_endpoint_sip(self, line, endpoint):
+        if line.protocol not in ('sip', None):
+            raise errors.resource_associated(
+                'Trunk', 'Endpoint', line_id=line.id, protocol=line.protocol
+            )
+        line.endpoint_sip_id = endpoint.id
+        self.session.flush()
+        self.session.expire(line, ['endpoint_sip'])
+
+    def dissociate_endpoint_sip(self, line, endpoint):
+        if endpoint is line.endpoint_sip:
+            line.endpoint_sip_id = None
+            self.session.flush()
+            self.session.expire(line, ['endpoint_sip'])
+
+    def associate_endpoint_sccp(self, line, endpoint):
+        if line.protocol not in ('sccp', None):
+            raise errors.resource_associated(
+                'Trunk', 'Endpoint', line_id=line.id, protocol=line.protocol
+            )
+        line.endpoint_sccp_id = endpoint.id
+        self.session.flush()
+        self.session.expire(line, ['endpoint_sccp'])
+
+    def dissociate_endpoint_sccp(self, line, endpoint):
+        if endpoint is line.endpoint_sccp:
+            line.endpoint_sccp_id = None
+            self.session.flush()
+            self.session.expire(line, ['endpoint_sccp'])
+
+    def associate_endpoint_custom(self, line, endpoint):
+        if line.protocol not in ('custom', None):
+            raise errors.resource_associated(
+                'Trunk', 'Endpoint', line_id=line.id, protocol=line.protocol
+            )
+        line.endpoint_custom_id = endpoint.id
+        self.session.flush()
+        self.session.expire(line, ['endpoint_custom'])
+
+    def dissociate_endpoint_custom(self, line, endpoint):
+        if endpoint is line.endpoint_custom:
+            line.endpoint_custom_id = None
+            self.session.flush()
+            self.session.expire(line, ['endpoint_custom'])
+
     def associate_application(self, line, application):
         line.application_uuid = application.uuid
         self.session.flush()

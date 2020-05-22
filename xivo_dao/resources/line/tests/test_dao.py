@@ -26,8 +26,7 @@ from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.resources.line import dao as line_dao
 from xivo_dao.tests.test_dao import DAOTestCase
-from xivo_dao.helpers.exception import NotFoundError
-from xivo_dao.helpers.exception import InputError
+from xivo_dao.helpers.exception import NotFoundError, InputError, ResourceError
 
 
 class TestFindBy(DAOTestCase):
@@ -612,3 +611,174 @@ class TestDissociateSchedule(DAOTestCase):
 
         self.session.expire_all()
         assert_that(line.application, equal_to(None))
+
+
+class TestAssociateEndpointSIP(DAOTestCase):
+
+    def test_associate_line_endpoint_sip(self):
+        line = self.add_line()
+        sip = self.add_usersip()
+
+        line_dao.associate_endpoint_sip(line, sip)
+
+        result = self.session.query(Line).first()
+        assert_that(result, equal_to(line))
+        assert_that(result.endpoint_sip_id, equal_to(sip.id))
+        assert_that(result.endpoint_sip, equal_to(sip))
+
+    def test_associate_already_associated(self):
+        line = self.add_line()
+        sip = self.add_usersip()
+        line_dao.associate_endpoint_sip(line, sip)
+
+        line_dao.associate_endpoint_sip(line, sip)
+
+        result = self.session.query(Line).first()
+        assert_that(result, equal_to(line))
+        assert_that(result.endpoint_sip, equal_to(sip))
+
+    def test_associate_line_sccp_endpoint_sip(self):
+        sccp = self.add_sccpline()
+        line = self.add_line(endpoint_sccp_id=sccp.id)
+        sip = self.add_usersip()
+
+        self.assertRaises(ResourceError, line_dao.associate_endpoint_sip, line, sip)
+
+
+class TestDissociateEndpointSIP(DAOTestCase):
+
+    def test_dissociate_line_endpoint_sip(self):
+        line = self.add_line()
+        sip = self.add_usersip()
+        line_dao.associate_endpoint_sip(line, sip)
+
+        line_dao.dissociate_endpoint_sip(line, sip)
+
+        result = self.session.query(Line).first()
+        assert_that(result, equal_to(line))
+        assert_that(result.endpoint_sip_id, none())
+        assert_that(result.endpoint_sip, none())
+
+    def test_dissociate_line_endpoint_sip_not_associated(self):
+        line = self.add_line()
+        sip = self.add_usersip()
+
+        line_dao.dissociate_endpoint_sip(line, sip)
+
+        result = self.session.query(Line).first()
+        assert_that(result, equal_to(line))
+        assert_that(result.endpoint_sip, none())
+
+
+class TestAssociateEndpointSCCP(DAOTestCase):
+
+    def test_associate_line_endpoint_sccp(self):
+        line = self.add_line()
+        sccp = self.add_sccpline()
+
+        line_dao.associate_endpoint_sccp(line, sccp)
+
+        result = self.session.query(Line).first()
+        assert_that(result, equal_to(line))
+        assert_that(result.endpoint_sccp_id, equal_to(sccp.id))
+        assert_that(result.endpoint_sccp, equal_to(sccp))
+
+    def test_associate_already_associated(self):
+        line = self.add_line()
+        sccp = self.add_sccpline()
+        line_dao.associate_endpoint_sccp(line, sccp)
+
+        line_dao.associate_endpoint_sccp(line, sccp)
+
+        result = self.session.query(Line).first()
+        assert_that(result, equal_to(line))
+        assert_that(result.endpoint_sccp, equal_to(sccp))
+
+    def test_associate_line_sip_endpoint_sccp(self):
+        sip = self.add_usersip()
+        line = self.add_line(endpoint_sip_id=sip.id)
+        sccp = self.add_sccpline()
+
+        self.assertRaises(ResourceError, line_dao.associate_endpoint_sccp, line, sccp)
+
+
+class TestDissociateEndpointSCCP(DAOTestCase):
+
+    def test_dissociate_line_endpoint_sccp(self):
+        line = self.add_line()
+        sccp = self.add_sccpline()
+        line_dao.associate_endpoint_sccp(line, sccp)
+
+        line_dao.dissociate_endpoint_sccp(line, sccp)
+
+        result = self.session.query(Line).first()
+        assert_that(result, equal_to(line))
+        assert_that(result.endpoint_sccp_id, none())
+        assert_that(result.endpoint_sccp, none())
+
+    def test_dissociate_line_endpoint_sccp_not_associated(self):
+        line = self.add_line()
+        sccp = self.add_sccpline()
+
+        line_dao.dissociate_endpoint_sccp(line, sccp)
+
+        result = self.session.query(Line).first()
+        assert_that(result, equal_to(line))
+        assert_that(result.endpoint_sccp, none())
+
+
+class TestAssociateEndpointCustom(DAOTestCase):
+
+    def test_associate_line_endpoint_custom(self):
+        line = self.add_line()
+        custom = self.add_usercustom()
+
+        line_dao.associate_endpoint_custom(line, custom)
+
+        result = self.session.query(Line).first()
+        assert_that(result, equal_to(line))
+        assert_that(result.endpoint_custom_id, equal_to(custom.id))
+        assert_that(result.endpoint_custom, equal_to(custom))
+
+    def test_associate_already_associated(self):
+        line = self.add_line()
+        custom = self.add_usercustom()
+        line_dao.associate_endpoint_custom(line, custom)
+
+        line_dao.associate_endpoint_custom(line, custom)
+
+        result = self.session.query(Line).first()
+        assert_that(result, equal_to(line))
+        assert_that(result.endpoint_custom, equal_to(custom))
+
+    def test_associate_line_sip_endpoint_custom(self):
+        sip = self.add_usersip()
+        line = self.add_line(endpoint_sip_id=sip.id)
+        custom = self.add_usercustom()
+
+        self.assertRaises(ResourceError, line_dao.associate_endpoint_custom, line, custom)
+
+
+class TestDissociateEndpointCustom(DAOTestCase):
+
+    def test_dissociate_line_endpoint_custom(self):
+        line = self.add_line()
+        custom = self.add_usercustom()
+        line_dao.associate_endpoint_custom(line, custom)
+
+        line_dao.dissociate_endpoint_custom(line, custom)
+
+        result = self.session.query(Line).first()
+        assert_that(result, equal_to(line))
+        assert_that(result.endpoint_custom_id, none())
+        assert_that(result.endpoint_custom, none())
+
+    def test_dissociate_line_endpoint_custom_not_associated(self):
+        line = self.add_line()
+        custom = self.add_usercustom()
+
+        line_dao.dissociate_endpoint_custom(line, custom)
+
+        result = self.session.query(Line).first()
+        assert_that(result, equal_to(line))
+        assert_that(result.endpoint_custom, none())
