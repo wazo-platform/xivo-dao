@@ -433,6 +433,177 @@ class TestDelete(DAOTestCase):
         assert_that(deleted_register, none())
 
 
+class TestAssociateEndpointSIP(DAOTestCase):
+
+    def test_associate_trunk_endpoint_sip(self):
+        trunk = self.add_trunk()
+        sip = self.add_usersip()
+
+        trunk_dao.associate_endpoint_sip(trunk, sip)
+
+        result = self.session.query(Trunk).first()
+        assert_that(result, equal_to(trunk))
+        assert_that(result.endpoint_sip_uuid, equal_to(sip.uuid))
+        assert_that(result.endpoint_sip, equal_to(sip))
+
+    def test_associate_already_associated(self):
+        trunk = self.add_trunk()
+        sip = self.add_usersip()
+        trunk_dao.associate_endpoint_sip(trunk, sip)
+
+        trunk_dao.associate_endpoint_sip(trunk, sip)
+
+        result = self.session.query(Trunk).first()
+        assert_that(result, equal_to(trunk))
+        assert_that(result.endpoint_sip, equal_to(sip))
+
+    def test_associate_trunk_iax_endpoint_sip(self):
+        iax = self.add_useriax()
+        trunk = self.add_trunk(endpoint_iax_id=iax.id)
+        sip = self.add_usersip()
+
+        self.assertRaises(ResourceError, trunk_dao.associate_endpoint_sip, trunk, sip)
+
+
+class TestDissociateEndpointSIP(DAOTestCase):
+
+    def test_dissociate_trunk_endpoint_sip(self):
+        trunk = self.add_trunk()
+        sip = self.add_usersip()
+        trunk_dao.associate_endpoint_sip(trunk, sip)
+
+        trunk_dao.dissociate_endpoint_sip(trunk, sip)
+
+        result = self.session.query(Trunk).first()
+        assert_that(result, equal_to(trunk))
+        assert_that(result.endpoint_sip_uuid, none())
+        assert_that(result.endpoint_sip, none())
+
+    def test_dissociate_trunk_endpoint_sip_not_associated(self):
+        trunk = self.add_trunk()
+        sip = self.add_usersip()
+
+        trunk_dao.dissociate_endpoint_sip(trunk, sip)
+
+        result = self.session.query(Trunk).first()
+        assert_that(result, equal_to(trunk))
+        assert_that(result.endpoint_sip, none())
+
+
+class TestAssociateEndpointIAX(DAOTestCase):
+
+    def test_associate_trunk_endpoint_iax(self):
+        trunk = self.add_trunk()
+        iax = self.add_useriax()
+
+        trunk_dao.associate_endpoint_iax(trunk, iax)
+
+        result = self.session.query(Trunk).first()
+        assert_that(result, equal_to(trunk))
+        assert_that(result.endpoint_iax_id, equal_to(iax.id))
+        assert_that(result.endpoint_iax, equal_to(iax))
+
+    def test_associate_already_associated(self):
+        trunk = self.add_trunk()
+        iax = self.add_useriax()
+        trunk_dao.associate_endpoint_iax(trunk, iax)
+
+        trunk_dao.associate_endpoint_iax(trunk, iax)
+
+        result = self.session.query(Trunk).first()
+        assert_that(result, equal_to(trunk))
+        assert_that(result.endpoint_iax, equal_to(iax))
+
+    def test_associate_trunk_sip_endpoint_iax(self):
+        sip = self.add_usersip()
+        trunk = self.add_trunk(endpoint_sip_uuid=sip.uuid)
+        iax = self.add_useriax()
+
+        self.assertRaises(ResourceError, trunk_dao.associate_endpoint_iax, trunk, iax)
+
+
+class TestDissociateEndpointIAX(DAOTestCase):
+
+    def test_dissociate_trunk_endpoint_iax(self):
+        trunk = self.add_trunk()
+        iax = self.add_useriax()
+        trunk_dao.associate_endpoint_iax(trunk, iax)
+
+        trunk_dao.dissociate_endpoint_iax(trunk, iax)
+
+        result = self.session.query(Trunk).first()
+        assert_that(result, equal_to(trunk))
+        assert_that(result.endpoint_iax_id, none())
+        assert_that(result.endpoint_iax, none())
+
+    def test_dissociate_trunk_endpoint_iax_not_associated(self):
+        trunk = self.add_trunk()
+        iax = self.add_useriax()
+
+        trunk_dao.dissociate_endpoint_iax(trunk, iax)
+
+        result = self.session.query(Trunk).first()
+        assert_that(result, equal_to(trunk))
+        assert_that(result.endpoint_iax, none())
+
+
+class TestAssociateEndpointCustom(DAOTestCase):
+
+    def test_associate_trunk_endpoint_custom(self):
+        trunk = self.add_trunk()
+        custom = self.add_usercustom()
+
+        trunk_dao.associate_endpoint_custom(trunk, custom)
+
+        result = self.session.query(Trunk).first()
+        assert_that(result, equal_to(trunk))
+        assert_that(result.endpoint_custom_id, equal_to(custom.id))
+        assert_that(result.endpoint_custom, equal_to(custom))
+
+    def test_associate_already_associated(self):
+        trunk = self.add_trunk()
+        custom = self.add_usercustom()
+        trunk_dao.associate_endpoint_custom(trunk, custom)
+
+        trunk_dao.associate_endpoint_custom(trunk, custom)
+
+        result = self.session.query(Trunk).first()
+        assert_that(result, equal_to(trunk))
+        assert_that(result.endpoint_custom, equal_to(custom))
+
+    def test_associate_trunk_sip_endpoint_custom(self):
+        sip = self.add_usersip()
+        trunk = self.add_trunk(endpoint_sip_uuid=sip.uuid)
+        custom = self.add_usercustom()
+
+        self.assertRaises(ResourceError, trunk_dao.associate_endpoint_custom, trunk, custom)
+
+
+class TestDissociateEndpointCustom(DAOTestCase):
+
+    def test_dissociate_trunk_endpoint_custom(self):
+        trunk = self.add_trunk()
+        custom = self.add_usercustom()
+        trunk_dao.associate_endpoint_custom(trunk, custom)
+
+        trunk_dao.dissociate_endpoint_custom(trunk, custom)
+
+        result = self.session.query(Trunk).first()
+        assert_that(result, equal_to(trunk))
+        assert_that(result.endpoint_custom_id, none())
+        assert_that(result.endpoint_custom, none())
+
+    def test_dissociate_trunk_endpoint_custom_not_associated(self):
+        trunk = self.add_trunk()
+        custom = self.add_usercustom()
+
+        trunk_dao.dissociate_endpoint_custom(trunk, custom)
+
+        result = self.session.query(Trunk).first()
+        assert_that(result, equal_to(trunk))
+        assert_that(result.endpoint_custom, none())
+
+
 class TestAssociateRegisterIAX(DAOTestCase):
 
     def test_associate_trunk_register_iax(self):
