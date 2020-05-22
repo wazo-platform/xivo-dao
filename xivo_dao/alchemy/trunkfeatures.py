@@ -90,36 +90,6 @@ class TrunkFeatures(Base):
 
     register_iax = relationship('StaticIAX', viewonly=True)
 
-    def is_associated(self, protocol=None):
-        return self.endpoint_sip_uuid or self.endpoint_iax_id or self.endpoint_custom_id
-
-    def is_associated_with(self, endpoint):
-        return (
-            self.endpoint_sip is endpoint or
-            self.endpoint_iax is endpoint or
-            self.endpoint_custom is endpoint
-        )
-
-    def associate_endpoint(self, endpoint):
-        protocol = endpoint.endpoint_protocol()
-        if protocol == 'sip':
-            self.endpoint_sip_uuid = endpoint.uuid
-            self.endpoint_iax_id = None
-            self.endpoint_custom_id = None
-        elif protocol == 'iax':
-            self.endpoint_sip_uuid = None
-            self.endpoint_iax_id = endpoint.id
-            self.endpoint_custom_id = None
-        elif protocol == 'custom':
-            self.endpoint_sip_uuid = None
-            self.endpoint_iax_id = None
-            self.endpoint_custom_id = endpoint.id
-
-    def remove_endpoint(self):
-        self.endpoint_sip_uuid = None
-        self.endpoint_iax_id = None
-        self.endpoint_custom_id = None
-
     @property
     def protocol(self):
         if self.endpoint_sip_uuid:
