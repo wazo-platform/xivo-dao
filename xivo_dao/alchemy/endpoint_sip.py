@@ -286,3 +286,12 @@ class EndpointSIP(Base):
 
     def endpoint_protocol(self):
         return 'sip'
+
+    @property
+    def username(self):
+        if not self._auth_section:
+            return
+
+        matching_options = self._auth_section.find('username')
+        for _, value in matching_options:
+            return value
