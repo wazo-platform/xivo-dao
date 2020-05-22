@@ -59,6 +59,36 @@ def delete(session, trunk):
 
 
 @daosession
+def associate_endpoint_sip(session, trunk, endpoint):
+    TrunkPersistor(session, trunk_search).associate_endpoint_sip(trunk, endpoint)
+
+
+@daosession
+def dissociate_endpoint_sip(session, trunk, endpoint):
+    TrunkPersistor(session, trunk_search).dissociate_endpoint_sip(trunk, endpoint)
+
+
+@daosession
+def associate_endpoint_iax(session, trunk, endpoint):
+    TrunkPersistor(session, trunk_search).associate_endpoint_iax(trunk, endpoint)
+
+
+@daosession
+def dissociate_endpoint_iax(session, trunk, endpoint):
+    TrunkPersistor(session, trunk_search).dissociate_endpoint_iax(trunk, endpoint)
+
+
+@daosession
+def associate_endpoint_custom(session, trunk, endpoint):
+    TrunkPersistor(session, trunk_search).associate_endpoint_custom(trunk, endpoint)
+
+
+@daosession
+def dissociate_endpoint_custom(session, trunk, endpoint):
+    TrunkPersistor(session, trunk_search).dissociate_endpoint_custom(trunk, endpoint)
+
+
+@daosession
 def associate_register_iax(session, trunk, register):
     TrunkPersistor(session, trunk_search).associate_register_iax(trunk, register)
 
