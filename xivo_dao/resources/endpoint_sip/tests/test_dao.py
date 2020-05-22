@@ -487,9 +487,8 @@ class TestRelations(DAOTestCase):
 
     def test_trunk_relationship(self):
         sip = self.add_endpoint_sip()
-        trunk = self.add_trunk()
+        trunk = self.add_trunk(endpoint_sip_uuid=sip.uuid)
 
-        trunk.associate_endpoint(sip)
         self.session.flush()
 
         self.session.expire_all()

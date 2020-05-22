@@ -231,9 +231,8 @@ class TestRelations(DAOTestCase):
     # TODO should be in test_trunkfeatures
     def test_trunk_relationship(self):
         custom = self.add_usercustom()
-        trunk = self.add_trunk()
+        trunk = self.add_trunk(endpoint_custom_id=custom.id)
 
-        trunk.associate_endpoint(custom)
         self.session.flush()
 
         self.session.expire_all()

@@ -335,16 +335,18 @@ class TestEdit(DAOTestCase):
             registercommented=1,
             description='description',
         ))
-        trunk.associate_endpoint(sip)
+        trunk_dao.associate_endpoint_sip(trunk, sip)
 
         trunk = trunk_dao.get(trunk.id)
         trunk.context = 'other_default'
         trunk.registercommented = 0
         trunk.description = 'other description'
 
+        trunk_dao.dissociate_endpoint_sip(trunk, sip)
+
         iax = self.add_useriax()
         register_iax = self.add_register_iax()
-        trunk.associate_endpoint(iax)
+        trunk_dao.associate_endpoint_iax(trunk, iax)
         trunk_dao.associate_register_iax(trunk, register_iax)
 
         trunk_dao.edit(trunk)
@@ -393,8 +395,7 @@ class TestDelete(DAOTestCase):
 
     def test_given_trunk_has_sip_endpoint_when_deleting_then_sip_endpoint_deleted(self):
         sip = self.add_endpoint_sip()
-        trunk = self.add_trunk()
-        trunk.associate_endpoint(sip)
+        trunk = self.add_trunk(endpoint_sip_uuid=sip.uuid)
 
         trunk_dao.delete(trunk)
 
@@ -403,8 +404,7 @@ class TestDelete(DAOTestCase):
 
     def test_given_trunk_has_iax_endpoint_when_deleting_then_iax_endpoint_deleted(self):
         iax = self.add_useriax()
-        trunk = self.add_trunk()
-        trunk.associate_endpoint(iax)
+        trunk = self.add_trunk(endpoint_iax_id=iax.id)
 
         trunk_dao.delete(trunk)
 
@@ -413,8 +413,7 @@ class TestDelete(DAOTestCase):
 
     def test_given_trunk_has_custom_endpoint_when_deleting_then_custom_endpoint_deleted(self):
         custom = self.add_usercustom()
-        trunk = self.add_trunk()
-        trunk.associate_endpoint(custom)
+        trunk = self.add_trunk(endpoint_custom_id=custom.id)
 
         trunk_dao.delete(trunk)
 
@@ -424,8 +423,7 @@ class TestDelete(DAOTestCase):
     def test_given_trunk_has_iax_register_when_deleting_then_iax_register_deleted(self):
         iax = self.add_useriax()
         register_id = self.add_iax_general_settings(var_name='register').id
-        trunk = self.add_trunk(register_iax_id=register_id)
-        trunk.associate_endpoint(iax)
+        trunk = self.add_trunk(register_iax_id=register_id, endpoint_iax_id=iax.id)
 
         trunk_dao.delete(trunk)
 
