@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.helpers.db_utils import flush_session
@@ -47,6 +47,36 @@ def edit(session, line):
 def delete(session, line):
     with flush_session(session):
         return LinePersistor(session).delete(line)
+
+
+@daosession
+def associate_endpoint_sip(session, line, endpoint):
+    LinePersistor(session).associate_endpoint_sip(line, endpoint)
+
+
+@daosession
+def dissociate_endpoint_sip(session, line, endpoint):
+    LinePersistor(session).dissociate_endpoint_sip(line, endpoint)
+
+
+@daosession
+def associate_endpoint_sccp(session, line, endpoint):
+    LinePersistor(session).associate_endpoint_sccp(line, endpoint)
+
+
+@daosession
+def dissociate_endpoint_sccp(session, line, endpoint):
+    LinePersistor(session).dissociate_endpoint_sccp(line, endpoint)
+
+
+@daosession
+def associate_endpoint_custom(session, line, endpoint):
+    LinePersistor(session).associate_endpoint_custom(line, endpoint)
+
+
+@daosession
+def dissociate_endpoint_custom(session, line, endpoint):
+    LinePersistor(session).dissociate_endpoint_custom(line, endpoint)
 
 
 @daosession
