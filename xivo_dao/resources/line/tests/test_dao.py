@@ -310,8 +310,7 @@ class TestEdit(DAOTestCase):
         line_row = self.add_line()
 
         line = line_dao.get(line_row.id)
-        _force_relationship_loading = line.endpoint_sip
-        line.associate_endpoint(usersip_row)
+        line_dao.associate_endpoint_sip(line, usersip_row)
         line_dao.edit(line)
 
         edited_linefeatures = self.session.query(Line).get(line_row.id)
@@ -322,8 +321,7 @@ class TestEdit(DAOTestCase):
         line_row = self.add_line()
 
         line = line_dao.get(line_row.id)
-        _force_relationship_loading = line.endpoint_sccp
-        line.associate_endpoint(sccpline_row)
+        line_dao.associate_endpoint_sccp(line, sccpline_row)
         line_dao.edit(line)
 
         edited_linefeatures = self.session.query(Line).get(line_row.id)
@@ -334,8 +332,7 @@ class TestEdit(DAOTestCase):
         line_row = self.add_line()
 
         line = line_dao.get(line_row.id)
-        _force_relationship_loading = line.endpoint_custom
-        line.associate_endpoint(usercustom_row)
+        line_dao.associate_endpoint_custom(line, usercustom_row)
         line_dao.edit(line)
 
         edited_linefeatures = self.session.query(Line).get(line_row.id)
