@@ -2,7 +2,7 @@
 # Copyright 2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from hamcrest import assert_that, contains, has_length, has_properties
+from hamcrest import assert_that, contains, equal_to, has_length, has_properties, none
 from xivo_dao.tests.test_dao import DAOTestCase
 
 from ..endpoint_sip import EndpointSIP
@@ -111,3 +111,21 @@ class TestEndpointSIP(DAOTestCase):
                 has_properties(name=has_length(8)),
             )
         )
+
+    def test_username(self):
+        endpoint = EndpointSIP(
+            auth_section_options=[['username', 'my-username']],
+            tenant_uuid=self.default_tenant.uuid,
+        )
+        self.session.add(endpoint)
+        self.session.flush()
+
+        assert_that(endpoint.username, equal_to('my-username'))
+
+        endpoint = EndpointSIP(
+            tenant_uuid=self.default_tenant.uuid,
+        )
+        self.session.add(endpoint)
+        self.session.flush()
+
+        assert_that(endpoint.username, none())
