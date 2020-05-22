@@ -106,6 +106,7 @@ logger = logging.getLogger(__name__)
 _create_tables = True
 
 TEST_DB_URL = os.getenv('XIVO_TEST_DB_URL', 'postgresql://asterisk:asterisk@localhost/asterisktest')
+DB_ECHO = os.getenv('DB_ECHO', '').lower() in ('true', '1')
 DEFAULT_TENANT = '4dc2a55e-e83a-42ca-b3ca-87d3ff04ddaf'
 UNKNOWN_ID = 999999999
 UNKNOWN_UUID = '99999999-9999-4999-8999-999999999999'
@@ -1063,8 +1064,7 @@ class DAOTestCase(unittest.TestCase, ItemInserter):
     def setUpClass(cls):
         global engine
         if not engine:
-            # engine = create_engine(TEST_DB_URL, poolclass=StaticPool, echo=True)
-            engine = create_engine(TEST_DB_URL, poolclass=StaticPool)
+            engine = create_engine(TEST_DB_URL, poolclass=StaticPool, echo=DB_ECHO)
 
         cls.engine = Base.metadata.bind = engine
         expensive_setup()
