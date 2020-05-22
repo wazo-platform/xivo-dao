@@ -241,9 +241,8 @@ class TestRelations(DAOTestCase):
     # TODO should be in test_linefeatures
     def test_line_relationship(self):
         custom = self.add_usercustom()
-        line = self.add_line()
+        line = self.add_line(endpoint_custom_id=custom.id)
 
-        line.associate_endpoint(custom)
         self.session.flush()
 
         self.session.expire_all()

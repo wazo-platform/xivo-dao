@@ -496,9 +496,8 @@ class TestRelations(DAOTestCase):
 
     def test_line_relationship(self):
         sip = self.add_endpoint_sip()
-        line = self.add_line()
+        line = self.add_line(endpoint_sip_uuid=sip.uuid)
 
-        line.associate_endpoint(sip)
         self.session.flush()
 
         self.session.expire_all()
