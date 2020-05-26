@@ -129,3 +129,70 @@ class TestEndpointSIP(DAOTestCase):
         self.session.flush()
 
         assert_that(endpoint.username, none())
+
+    def test_username_expression(self):
+        endpoint_1 = EndpointSIP(
+            auth_section_options=[['username', 'my-username']],
+            tenant_uuid=self.default_tenant.uuid,
+        )
+        self.session.add(endpoint_1)
+
+        endpoint_2 = EndpointSIP(
+            tenant_uuid=self.default_tenant.uuid,
+        )
+        self.session.add(endpoint_2)
+
+        endpoint_3 = EndpointSIP(
+            auth_section_options=[['username', 'other-username']],
+            tenant_uuid=self.default_tenant.uuid,
+        )
+        self.session.add(endpoint_3)
+        self.session.flush()
+
+        result = self.session.query(
+            EndpointSIP.uuid
+        ).filter(EndpointSIP.username == 'other-username').scalar()
+        assert_that(result, equal_to(endpoint_3.uuid))
+
+    def test_password(self):
+        endpoint = EndpointSIP(
+            auth_section_options=[['password', 'my-password']],
+            tenant_uuid=self.default_tenant.uuid,
+        )
+        self.session.add(endpoint)
+        self.session.flush()
+
+        assert_that(endpoint.password, equal_to('my-password'))
+
+        endpoint = EndpointSIP(
+            tenant_uuid=self.default_tenant.uuid,
+        )
+        self.session.add(endpoint)
+        self.session.flush()
+
+        assert_that(endpoint.password, none())
+
+    def test_password_expression(self):
+        endpoint_1 = EndpointSIP(
+            auth_section_options=[['password', 'my-password']],
+            tenant_uuid=self.default_tenant.uuid,
+        )
+        self.session.add(endpoint_1)
+
+        endpoint_2 = EndpointSIP(
+            auth_section_options=[['username', 'my-password']],
+            tenant_uuid=self.default_tenant.uuid,
+        )
+        self.session.add(endpoint_2)
+
+        endpoint_3 = EndpointSIP(
+            auth_section_options=[['password', 'other-password']],
+            tenant_uuid=self.default_tenant.uuid,
+        )
+        self.session.add(endpoint_3)
+        self.session.flush()
+
+        result = self.session.query(
+            EndpointSIP.uuid
+        ).filter(EndpointSIP.password == 'other-password').scalar()
+        assert_that(result, equal_to(endpoint_3.uuid))

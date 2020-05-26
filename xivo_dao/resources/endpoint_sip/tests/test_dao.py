@@ -97,6 +97,12 @@ class TestFindBy(DAOTestCase):
         sip = sip_dao.find_by(name=sip_row.name, tenant_uuids=[tenant.uuid])
         assert_that(sip, equal_to(sip_row))
 
+    def test_find_by_username(self):
+        sip_row = self.add_endpoint_sip(auth_section_options=[['username', 'foobar']])
+        sip = sip_dao.find_by(username='foobar')
+
+        assert_that(sip.uuid, equal_to(sip_row.uuid))
+
 
 class TestFindAllBy(DAOTestCase):
 
