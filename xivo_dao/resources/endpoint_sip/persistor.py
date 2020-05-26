@@ -5,8 +5,6 @@
 from sqlalchemy import text
 
 from xivo_dao.alchemy.endpoint_sip import EndpointSIP
-from xivo_dao.alchemy.linefeatures import LineFeatures as Line
-from xivo_dao.alchemy.trunkfeatures import TrunkFeatures as Trunk
 from xivo_dao.helpers import errors
 from xivo_dao.resources.line.fixes import LineFixes
 from xivo_dao.resources.trunk.fixes import TrunkFixes

@@ -4,7 +4,7 @@
 
 import logging
 
-from sqlalchemy import Table, text, Integer
+from sqlalchemy import and_, Table, text, Integer, select
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.schema import Column, UniqueConstraint, ForeignKey
@@ -14,6 +14,7 @@ from sqlalchemy.types import String, Text, Boolean
 from xivo_dao.helpers.db_manager import Base
 
 from .endpoint_sip_section import EndpointSIPSection
+from .endpoint_sip_section_option import EndpointSIPSectionOption
 
 logger = logging.getLogger(__name__)
 
@@ -287,11 +288,41 @@ class EndpointSIP(Base):
     def endpoint_protocol(self):
         return 'sip'
 
-    @property
+    @hybrid_property
     def username(self):
-        if not self._auth_section:
-            return
+        return self._find_first_value(self._auth_section, 'username')
 
-        matching_options = self._auth_section.find('username')
+    @username.expression
+    def username(cls):
+        return select(
+            [EndpointSIPSectionOption.value]
+        ).where(
+            and_(
+                cls.auth_section_uuid == EndpointSIPSection.uuid,
+                EndpointSIPSectionOption.endpoint_sip_section_uuid == EndpointSIPSection.uuid,
+                EndpointSIPSectionOption.key == 'username',
+            )
+        ).as_scalar()
+
+    @hybrid_property
+    def password(self):
+        return self._find_first_value(self._auth_section, 'password')
+
+    @password.expression
+    def password(cls):
+        return select(
+            [EndpointSIPSectionOption.value]
+        ).where(
+            and_(
+                cls.auth_section_uuid == EndpointSIPSection.uuid,
+                EndpointSIPSectionOption.endpoint_sip_section_uuid == EndpointSIPSection.uuid,
+                EndpointSIPSectionOption.key == 'password',
+            )
+        ).as_scalar()
+
+    def _find_first_value(self, section, key):
+        if not section:
+            return
+        matching_options = section.find(key)
         for _, value in matching_options:
             return value
