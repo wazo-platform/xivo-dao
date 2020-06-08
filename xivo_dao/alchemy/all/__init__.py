@@ -98,7 +98,6 @@ from xivo_dao.alchemy.schedule import Schedule
 from xivo_dao.alchemy.schedule_time import ScheduleTime
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.session import Session
-from xivo_dao.alchemy.sipauthentication import SIPAuthentication
 from xivo_dao.alchemy.stat_agent import StatAgent
 from xivo_dao.alchemy.stat_agent_periodic import StatAgentPeriodic
 from xivo_dao.alchemy.stat_call_on_queue import StatCallOnQueue
@@ -219,7 +218,6 @@ __all__ = [
     "ScheduleTime",
     "SchedulePath",
     "Session",
-    "SIPAuthentication",
     "StatAgent",
     "StatAgentPeriodic",
     "StatCallOnQueue",
