@@ -688,31 +688,6 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
             {'var_name': sip2.var_name, 'var_val': sip2.var_val},
         ))
 
-    def test_find_sip_authentication_settings(self):
-        sip1 = self.add_sip_authentication()
-        sip2 = self.add_sip_authentication()
-
-        sip_authentication = asterisk_conf_dao.find_sip_authentication_settings()
-
-        assert_that(sip_authentication, contains_inanyorder(
-            has_entries(
-                realm=sip1.realm,
-                secret=sip1.secret,
-                user=sip1.user,
-                usersip_id=sip1.usersip_id,
-                id=sip1.id,
-                secretmode=sip1.secretmode,
-            ),
-            has_entries(
-                realm=sip2.realm,
-                secret=sip2.secret,
-                user=sip2.user,
-                usersip_id=sip2.usersip_id,
-                id=sip2.id,
-                secretmode=sip2.secretmode,
-            ),
-        ))
-
     def test_find_iax_general_settings(self):
         iax1 = self.add_iax_general_settings()
         iax2 = self.add_iax_general_settings()

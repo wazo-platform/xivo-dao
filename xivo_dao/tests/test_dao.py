@@ -83,7 +83,6 @@ from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.schedule import Schedule
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.alchemy.schedule_time import ScheduleTime
-from xivo_dao.alchemy.sipauthentication import SIPAuthentication
 from xivo_dao.alchemy.staticiax import StaticIAX
 from xivo_dao.alchemy.staticmeetme import StaticMeetme
 from xivo_dao.alchemy.staticqueue import StaticQueue
@@ -877,18 +876,6 @@ class ItemInserter(object):
         asterisk_file_variable = AsteriskFileVariable(**kwargs)
         self.add_me(asterisk_file_variable)
         return asterisk_file_variable
-
-    def add_sip_authentication(self, **kwargs):
-        kwargs.setdefault('id', self._generate_int())
-        kwargs.setdefault('usersip_id', self._generate_int())
-        kwargs.setdefault('user', self._random_name())
-        kwargs.setdefault('secretmode', 'md5')
-        kwargs.setdefault('secret', self._random_name())
-        kwargs.setdefault('realm', self._random_name())
-
-        sip_authentication = SIPAuthentication(**kwargs)
-        self.add_me(sip_authentication)
-        return sip_authentication
 
     def add_func_key(self, **kwargs):
         func_key_row = FuncKey(**kwargs)

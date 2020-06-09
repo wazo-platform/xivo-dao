@@ -31,7 +31,6 @@ from xivo_dao.alchemy.pickup import Pickup
 from xivo_dao.alchemy.pickupmember import PickupMember
 from xivo_dao.alchemy.groupfeatures import GroupFeatures
 from xivo_dao.alchemy.staticsip import StaticSIP
-from xivo_dao.alchemy.sipauthentication import SIPAuthentication
 from xivo_dao.alchemy.staticvoicemail import StaticVoicemail
 from xivo_dao.alchemy.voicemail import Voicemail
 from xivo_dao.alchemy.context import Context
@@ -382,13 +381,6 @@ def find_sip_general_settings(session):
         })
 
     return res
-
-
-@daosession
-def find_sip_authentication_settings(session):
-    rows = session.query(SIPAuthentication).all()
-
-    return [row.todict() for row in rows]
 
 
 @daosession
