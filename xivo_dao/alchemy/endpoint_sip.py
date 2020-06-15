@@ -43,7 +43,7 @@ class EndpointSIP(Base):
     __table_args__ = (UniqueConstraint('name'),)
 
     uuid = Column(UUID(as_uuid=True), server_default=text('uuid_generate_v4()'), primary_key=True)
-    display_name = Column(Text)  # For the UI (select boxes etc)
+    label = Column(Text)  # For the UI (select boxes etc)
     name = Column(
         Text,
         server_default=text('substring(md5(random()::text), 0, 9)'),  # Generates a random name
@@ -159,7 +159,7 @@ class EndpointSIP(Base):
             self.caller_id = caller_id
 
     def __repr__(self):
-        return 'EndpointSIP(display_name={}'.format(self.display_name)
+        return 'EndpointSIP(={}'.formatlabel(self.label)
 
     @hybrid_property
     def aor_section_options(self):

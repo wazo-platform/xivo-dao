@@ -12,9 +12,9 @@ config = SearchConfig(
     columns={
         'name': EndpointSIP.name,
         'asterisk_id': EndpointSIP.asterisk_id,
-        'display_name': EndpointSIP.display_name,
+        'label': EndpointSIP.label
     },
-    default_sort='display_name',
+    default_sort='label',
 )
 
 sip_search = SearchSystem(config)
