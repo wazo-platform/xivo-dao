@@ -109,15 +109,15 @@ class TestFindAllBy(DAOTestCase):
     def test_find_all_multi_tenant(self):
         tenant = self.add_tenant()
 
-        sip1 = self.add_endpoint_sip(display_name='my-endpoint', tenant_uuid=tenant.uuid)
-        sip2 = self.add_endpoint_sip(display_name='my-endpoint')
+        sip1 = self.add_endpoint_sip(label='my-endpoint', tenant_uuid=tenant.uuid)
+        sip2 = self.add_endpoint_sip(label='my-endpoint')
 
         tenants = [tenant.uuid, self.default_tenant.uuid]
-        sips = sip_dao.find_all_by(display_name='my-endpoint', tenant_uuids=tenants)
+        sips = sip_dao.find_all_by(label='my-endpoint', tenant_uuids=tenants)
         assert_that(sips, has_items(sip1, sip2))
 
         tenants = [tenant.uuid]
-        sips = sip_dao.find_all_by(display_name='my-endpoint', tenant_uuids=tenants)
+        sips = sip_dao.find_all_by(label='my-endpoint', tenant_uuids=tenants)
         assert_that(sips, all_of(has_items(sip1), not_(has_items(sip2))))
 
 
@@ -144,7 +144,7 @@ class TestGet(DAOTestCase):
         parent_2 = self.add_endpoint_sip()
 
         row = self.add_endpoint_sip(
-            display_name='general_config',
+            label='general_config',
             aor_section_options=[['type', 'aor']],
             auth_section_options=[['type', 'auth']],
             endpoint_section_options=[['type', 'endpoint']],
@@ -161,7 +161,7 @@ class TestGet(DAOTestCase):
 
         sip = sip_dao.get(row.uuid)
         assert_that(sip, has_properties(
-            display_name='general_config',
+            label='general_config',
             name=has_length(8),
             aor_section_options=[['type', 'aor']],
             auth_section_options=[['type', 'auth']],
@@ -216,8 +216,8 @@ class TestSimpleSearch(TestSearch):
     def test_search_multi_tenant(self):
         tenant = self.add_tenant()
 
-        sip1 = self.add_endpoint_sip(display_name='sort1')
-        sip2 = self.add_endpoint_sip(display_name='sort2', tenant_uuid=tenant.uuid)
+        sip1 = self.add_endpoint_sip(label='sort1')
+        sip2 = self.add_endpoint_sip(label='sort2', tenant_uuid=tenant.uuid)
 
         expected = SearchResult(2, [sip1, sip2])
         tenants = [tenant.uuid, self.default_tenant.uuid]
@@ -232,10 +232,10 @@ class TestSearchMultiple(TestSearch):
 
     def setUp(self):
         super(TestSearch, self).setUp()
-        self.sip1 = self.add_endpoint_sip(display_name='Ashton', asterisk_id='y')
-        self.sip2 = self.add_endpoint_sip(display_name='Beaugarton', asterisk_id='x')
-        self.sip3 = self.add_endpoint_sip(display_name='Casa', asterisk_id='y')
-        self.sip4 = self.add_endpoint_sip(display_name='Dunkin', asterisk_id='y')
+        self.sip1 = self.add_endpoint_sip(label='Ashton', asterisk_id='y')
+        self.sip2 = self.add_endpoint_sip(label='Beaugarton', asterisk_id='x')
+        self.sip3 = self.add_endpoint_sip(label='Casa', asterisk_id='y')
+        self.sip4 = self.add_endpoint_sip(label='Dunkin', asterisk_id='y')
 
     def test_when_searching_then_returns_one_result(self):
         expected = SearchResult(1, [self.sip2])
@@ -250,21 +250,21 @@ class TestSearchMultiple(TestSearch):
         self.assert_search_returns_result(expected_x, search='ton', asterisk_id='x')
 
         expected_all_y = SearchResult(3, [self.sip1, self.sip3, self.sip4])
-        self.assert_search_returns_result(expected_all_y, asterisk_id='y', order='display_name')
+        self.assert_search_returns_result(expected_all_y, asterisk_id='y', order='label')
 
     def test_when_sorting_then_returns_result_in_ascending_order(self):
         expected = SearchResult(
             4, [self.sip1, self.sip2, self.sip3, self.sip4]
         )
 
-        self.assert_search_returns_result(expected, order='display_name')
+        self.assert_search_returns_result(expected, order='label')
 
     def test_when_sorting_in_descending_order_then_returns_results_in_descending_order(self):
         expected = SearchResult(
             4, [self.sip4, self.sip3, self.sip2, self.sip1]
         )
 
-        self.assert_search_returns_result(expected, order='display_name', direction='desc')
+        self.assert_search_returns_result(expected, order='label', direction='desc')
 
     def test_when_limiting_then_returns_right_number_of_items(self):
         expected = SearchResult(4, [self.sip1])
@@ -282,7 +282,7 @@ class TestSearchMultiple(TestSearch):
         self.assert_search_returns_result(
             expected,
             search='on',
-            order='display_name',
+            order='label',
             direction='desc',
             offset=1,
             limit=1,
@@ -300,7 +300,7 @@ class TestCreate(DAOTestCase):
         assert_that(result, has_properties(
             uuid=not_none(),
             name=has_length(8),
-            display_name=none(),
+            label=none(),
             asterisk_id=none(),
             tenant_uuid=self.default_tenant.uuid,
             aor_section_uuid=none(),
@@ -336,7 +336,7 @@ class TestCreate(DAOTestCase):
 
         model = EndpointSIP(
             tenant_uuid=self.default_tenant.uuid,
-            display_name='display_name',
+            label='label',
             name='name',
             asterisk_id='asterisk-id',
             transport={'uuid': transport.uuid},
@@ -352,7 +352,7 @@ class TestCreate(DAOTestCase):
         assert_that(result, has_properties(
             uuid=not_none(),
             name='name',
-            display_name='display_name',
+            label='label',
             asterisk_id='asterisk-id',
             tenant_uuid=self.default_tenant.uuid,
             transport_uuid=transport.uuid,
