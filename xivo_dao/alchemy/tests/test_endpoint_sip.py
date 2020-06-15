@@ -16,7 +16,7 @@ class TestEndpointSIP(DAOTestCase):
         parent_2 = self.add_endpoint_sip()
 
         endpoint = EndpointSIP(
-            display_name='general_config',
+            label='general_config',
             aor_section_options=[['type', 'aor']],
             auth_section_options=[['type', 'auth']],
             endpoint_section_options=[['type', 'endpoint']],
@@ -36,7 +36,7 @@ class TestEndpointSIP(DAOTestCase):
 
         row = self.session.query(EndpointSIP).filter_by(uuid=endpoint.uuid).first()
         assert_that(row, has_properties(
-            display_name='general_config',
+            label='general_config',
             name=has_length(8),
             aor_section_options=[['type', 'aor']],
             auth_section_options=[['type', 'auth']],
@@ -57,14 +57,14 @@ class TestEndpointSIP(DAOTestCase):
     def test_create_concrete_endpoint(self):
         transport = self.add_transport()
         parent = self.add_endpoint_sip(
-            display_name="my tenant's global config",
+            label="my tenant's global config",
             template=True,
             transport_uuid=transport.uuid,
         )
         self.session.flush()
 
         endpoint = EndpointSIP(
-            display_name='my-line',
+            label='my-line',
             parents=[parent],
             auth_section_options=[
                 ['username', 'random-username'],
@@ -77,7 +77,7 @@ class TestEndpointSIP(DAOTestCase):
 
         row = self.session.query(EndpointSIP).filter_by(uuid=endpoint.uuid).first()
         assert_that(row, has_properties(
-            display_name='my-line',
+            label='my-line',
             name=has_length(8),
             aor_section_options=[],
             auth_section_options=[
