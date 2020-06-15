@@ -25,6 +25,7 @@ class EndpointSIPSection(Base):
     _options = relationship(
         'EndpointSIPSectionOption',
         cascade='all, delete-orphan',
+        passive_deletes=True,
     )
 
     def __init__(self, *args, options=None, **kwargs):
