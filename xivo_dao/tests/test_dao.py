@@ -287,7 +287,6 @@ class ItemInserter(object):
 
     def add_endpoint_sip(self, **kwargs):
         kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
-        kwargs.setdefault('display_name', self._random_name())
         endpoint_sip = EndpointSIP(**kwargs)
         self.add_me(endpoint_sip)
         return endpoint_sip
