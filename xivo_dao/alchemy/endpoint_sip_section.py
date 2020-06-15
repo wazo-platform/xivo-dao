@@ -36,7 +36,7 @@ class EndpointSIPSection(Base):
 
     @hybrid_property
     def options(self):
-        return self._options
+        return [[option.key, option.value] for option in self._options]
 
     @options.setter
     def options(self, value):
