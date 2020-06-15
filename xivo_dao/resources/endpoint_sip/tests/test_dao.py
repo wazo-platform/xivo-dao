@@ -10,6 +10,7 @@ from hamcrest import (
     all_of,
     assert_that,
     contains,
+    contains_inanyorder,
     empty,
     equal_to,
     has_items,
@@ -418,7 +419,7 @@ class TestEdit(DAOTestCase):
 
             sip_dao.edit(sip)
 
-            assert_that(sip, has_properties({field: contains(*new_value)}), name)
+            assert_that(sip, has_properties({field: contains_inanyorder(*new_value)}), name)
 
         for name, options in self.section_options.items():
             _test(name, options)
