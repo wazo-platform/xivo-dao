@@ -20,7 +20,7 @@ class FuncKeyTemplate(Base):
         ForeignKey('tenant.uuid', ondelete='CASCADE'),
         nullable=False,
     )
-    name = Column(String(128), nullable=True)
+    name = Column(String(128))
     private = Column(Boolean, nullable=False, server_default='False')
 
     def __init__(self, **kwargs):
