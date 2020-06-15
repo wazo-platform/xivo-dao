@@ -58,8 +58,8 @@ class EndpointSIP(Base):
     registration_section_uuid = Column(UUID(as_uuid=True), ForeignKey('endpoint_sip_section.uuid'))
     registration_outbound_auth_section_uuid = Column(UUID(as_uuid=True), ForeignKey('endpoint_sip_section.uuid'))
     outbound_auth_section_uuid = Column(UUID(as_uuid=True), ForeignKey('endpoint_sip_section.uuid'))
-    transport_uuid = Column(UUID(as_uuid=True), ForeignKey('pjsip_transport.uuid'), nullable=True)
-    context_id = Column(Integer, ForeignKey('context.id'), nullable=True)
+    transport_uuid = Column(UUID(as_uuid=True), ForeignKey('pjsip_transport.uuid'))
+    context_id = Column(Integer, ForeignKey('context.id'))
     template = Column(Boolean, server_default=text('false'))
 
     transport = relationship('PJSIPTransport')
