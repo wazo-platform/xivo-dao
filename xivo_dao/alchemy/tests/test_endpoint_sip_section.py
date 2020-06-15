@@ -5,7 +5,6 @@
 from hamcrest import (
     assert_that,
     contains_inanyorder,
-    has_properties,
     none,
 )
 from sqlalchemy.inspection import inspect
@@ -38,9 +37,7 @@ class TestOptions(DAOTestCase):
         section.options = [['type', 'aor']]
         self.session.flush()
         self.session.expire_all()
-        assert_that(section.options, contains_inanyorder(
-            has_properties(key='type', value='aor'),
-        ))
+        assert_that(section.options, contains_inanyorder(['type', 'aor']))
 
     def test_update_an_option(self):
         section = EndpointSIPSection(options=[['type', 'aor'], ['old', 'value']])
@@ -51,10 +48,7 @@ class TestOptions(DAOTestCase):
         self.session.flush()
         self.session.expire_all()
 
-        assert_that(section.options, contains_inanyorder(
-            has_properties(key='type', value='aor'),
-            has_properties(key='new', value='value'),
-        ))
+        assert_that(section.options, contains_inanyorder(['type', 'aor'], ['new', 'value']))
 
     def test_delete_an_option(self):
         section = EndpointSIPSection(options=[['type', 'aor'], ['delete', 'value']])
@@ -65,9 +59,7 @@ class TestOptions(DAOTestCase):
         self.session.flush()
         self.session.expire_all()
 
-        assert_that(section.options, contains_inanyorder(
-            has_properties(key='type', value='aor'),
-        ))
+        assert_that(section.options, contains_inanyorder(['type', 'aor']))
 
     def test_update_and_create_options(self):
         section = EndpointSIPSection(options=[['update', 'old']])
@@ -78,10 +70,7 @@ class TestOptions(DAOTestCase):
         self.session.flush()
         self.session.expire_all()
 
-        assert_that(section.options, contains_inanyorder(
-            has_properties(key='create', value='value'),
-            has_properties(key='update', value='new'),
-        ))
+        assert_that(section.options, contains_inanyorder(['create', 'value'], ['update', 'new']))
 
     def test_update_and_delete_options(self):
         section = EndpointSIPSection(options=[['update', 'old'], ['delete', 'value']])
@@ -92,6 +81,4 @@ class TestOptions(DAOTestCase):
         self.session.flush()
         self.session.expire_all()
 
-        assert_that(section.options, contains_inanyorder(
-            has_properties(key='update', value='new'),
-        ))
+        assert_that(section.options, contains_inanyorder(['update', 'new']))

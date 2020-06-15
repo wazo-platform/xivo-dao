@@ -163,7 +163,9 @@ class EndpointSIP(Base):
 
     @hybrid_property
     def aor_section_options(self):
-        return self._get_section_options(self._aor_section)
+        if not self._aor_section:
+            return []
+        return self._aor_section.options
 
     @aor_section_options.setter
     def aor_section_options(self, options):
@@ -176,7 +178,9 @@ class EndpointSIP(Base):
 
     @hybrid_property
     def auth_section_options(self):
-        return self._get_section_options(self._auth_section)
+        if not self._auth_section:
+            return []
+        return self._auth_section.options
 
     @auth_section_options.setter
     def auth_section_options(self, options):
@@ -189,7 +193,9 @@ class EndpointSIP(Base):
 
     @hybrid_property
     def endpoint_section_options(self):
-        return self._get_section_options(self._endpoint_section)
+        if not self._endpoint_section:
+            return []
+        return self._endpoint_section.options
 
     @endpoint_section_options.setter
     def endpoint_section_options(self, options):
@@ -202,7 +208,9 @@ class EndpointSIP(Base):
 
     @hybrid_property
     def registration_section_options(self):
-        return self._get_section_options(self._registration_section)
+        if not self._registration_section:
+            return []
+        return self._registration_section.options
 
     @registration_section_options.setter
     def registration_section_options(self, options):
@@ -215,7 +223,9 @@ class EndpointSIP(Base):
 
     @hybrid_property
     def registration_outbound_auth_section_options(self):
-        return self._get_section_options(self._registration_outbound_auth_section)
+        if not self._registration_outbound_auth_section:
+            return []
+        return self._registration_outbound_auth_section.options
 
     @registration_outbound_auth_section_options.setter
     def registration_outbound_auth_section_options(self, options):
@@ -228,7 +238,9 @@ class EndpointSIP(Base):
 
     @hybrid_property
     def identify_section_options(self):
-        return self._get_section_options(self._identify_section)
+        if not self._identify_section:
+            return []
+        return self._identify_section.options
 
     @identify_section_options.setter
     def identify_section_options(self, options):
@@ -241,7 +253,9 @@ class EndpointSIP(Base):
 
     @hybrid_property
     def outbound_auth_section_options(self):
-        return self._get_section_options(self._outbound_auth_section)
+        if not self._outbound_auth_section:
+            return []
+        return self._outbound_auth_section.options
 
     @outbound_auth_section_options.setter
     def outbound_auth_section_options(self, options):
@@ -251,12 +265,6 @@ class EndpointSIP(Base):
             self._outbound_auth_section.options = options
         else:
             self._outbound_auth_section = None
-
-    def _get_section_options(self, section):
-        if not section:
-            return []
-
-        return [[option.key, option.value] for option in section.options]
 
     line = relationship('LineFeatures', uselist=False)
     trunk = relationship('TrunkFeatures', uselist=False)
