@@ -1054,9 +1054,6 @@ class ItemInserter(object):
     def _generate_int(self):
         return six.next(self._generate_int_init)
 
-    def _generate_uuid(self):
-        return uuid.uuid4()
-
     def _random_name(self, length=6):
         return ''.join(random.choice(string.ascii_lowercase) for _ in range(length))
 
