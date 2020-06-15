@@ -151,7 +151,6 @@ class TestGet(DAOTestCase):
         line_row = self.add_line(endpoint_sip_uuid=usersip_row.uuid)
 
         line = line_dao.get(line_row.id)
-        print(line.caller_id_name)
 
         assert_that(
             line,
