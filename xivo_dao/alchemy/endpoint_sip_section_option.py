@@ -18,6 +18,6 @@ class EndpointSIPSectionOption(Base):
     value = Column(Text, nullable=False)
     endpoint_sip_section_uuid = Column(
         UUID(as_uuid=True),
-        ForeignKey('endpoint_sip_section.uuid'),
+        ForeignKey('endpoint_sip_section.uuid', ondelete='CASCADE'),
         nullable=False,
     )
