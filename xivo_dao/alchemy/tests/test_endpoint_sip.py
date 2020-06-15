@@ -2,10 +2,19 @@
 # Copyright 2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from hamcrest import assert_that, contains, equal_to, has_length, has_properties, none
+from hamcrest import (
+    assert_that,
+    contains,
+    empty,
+    equal_to,
+    has_length,
+    has_properties,
+    none,
+)
 from xivo_dao.tests.test_dao import DAOTestCase
 
 from ..endpoint_sip import EndpointSIP
+from ..endpoint_sip_section import EndpointSIPSection
 
 
 class TestEndpointSIP(DAOTestCase):
@@ -61,7 +70,6 @@ class TestEndpointSIP(DAOTestCase):
             template=True,
             transport_uuid=transport.uuid,
         )
-        self.session.flush()
 
         endpoint = EndpointSIP(
             label='my-line',
@@ -196,3 +204,40 @@ class TestEndpointSIP(DAOTestCase):
             EndpointSIP.uuid
         ).filter(EndpointSIP.password == 'other-password').scalar()
         assert_that(result, equal_to(endpoint_3.uuid))
+
+
+class TestAORSectionOptions(DAOTestCase):
+    def test_delete_all(self):
+        endpoint = self.add_endpoint_sip(aor_section_options=[['type', 'aor']])
+
+        endpoint.aor_section_options = []
+        self.session.flush()
+
+        section = self.session.query(EndpointSIPSection).first()
+        assert_that(section, none())
+
+    def test_update(self):
+        endpoint = self.add_endpoint_sip(aor_section_options=[['type', 'aor']])
+
+        endpoint.aor_section_options = [['type', 'new']]
+        self.session.flush()
+        self.session.expire_all()
+
+        assert_that(endpoint.aor_section_options, equal_to([['type', 'new']]))
+
+    def test_create(self):
+        endpoint = self.add_endpoint_sip()
+
+        endpoint.aor_section_options = [['type', 'aor']]
+        self.session.flush()
+        self.session.expire_all()
+
+        assert_that(endpoint.aor_section_options, equal_to([['type', 'aor']]))
+
+    def test_get(self):
+        endpoint = self.add_endpoint_sip(aor_section_options=[['type', 'aor']])
+        assert_that(endpoint.aor_section_options, equal_to([['type', 'aor']]))
+
+    def test_get_empty(self):
+        endpoint = self.add_endpoint_sip(aor_section_options=None)
+        assert_that(endpoint.aor_section_options, empty())
