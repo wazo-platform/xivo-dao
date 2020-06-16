@@ -21,3 +21,11 @@ class EndpointSIPSectionOption(Base):
         ForeignKey('endpoint_sip_section.uuid', ondelete='CASCADE'),
         nullable=False,
     )
+
+    @property
+    def option(self):
+        return [self.key, self.value]
+
+    @option.setter
+    def option(self, option):
+        self.key, self.value = option

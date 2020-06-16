@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import text
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column
-from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.dialects.postgresql import UUID
 
 from xivo_dao.helpers.db_manager import Base
@@ -28,34 +28,10 @@ class EndpointSIPSection(Base):
         passive_deletes=True,
     )
 
-    def __init__(self, *args, options=None, **kwargs):
-        super(EndpointSIPSection, self).__init__(*args, **kwargs)
-        if options:
-            for key, value in options:
-                self._options.append(EndpointSIPSectionOption(key=key, value=value))
-
-    @hybrid_property
-    def options(self):
-        return [[option.key, option.value] for option in self._options]
-
-    @options.setter
-    def options(self, value):
-        original_length = len(self._options)
-        new_length = len(value)
-
-        for i, (key, value) in enumerate(value):
-            if i < original_length:
-                matching_option = self._options[i]
-                if matching_option.key == key and matching_option.value == value:
-                    continue
-                else:
-                    matching_option.key = key
-                    matching_option.value = value
-            else:
-                self._options.append(EndpointSIPSectionOption(key=key, value=value))
-
-        if original_length > new_length:
-            self._options = self._options[:new_length]
+    options = association_proxy(
+        '_options', 'option',
+        creator=lambda _option: EndpointSIPSectionOption(key=_option[0], value=_option[1]),
+    )
 
     def find(self, term):
         return [
