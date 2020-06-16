@@ -19,8 +19,17 @@ from ..endpoint_sip_section_option import EndpointSIPSectionOption
 
 
 class TestOptions(DAOTestCase):
+
+    def setUp(self):
+        super(TestOptions, self).setUp()
+        self.endpoint_sip = self.add_endpoint_sip()
+
     def test_ondelete_cascade_when_options_are_not_in_session(self):
-        section = EndpointSIPSection(options=[['type', 'aor']])
+        section = EndpointSIPSection(
+            type='aor',
+            endpoint_sip_uuid=self.endpoint_sip.uuid,
+            options=[['type', 'aor']],
+        )
         self.session.add(section)
         self.session.flush()
         self.session.expire_all()
@@ -33,7 +42,11 @@ class TestOptions(DAOTestCase):
         assert_that(option, none())
 
     def test_create_an_option(self):
-        section = EndpointSIPSection(options=[])
+        section = EndpointSIPSection(
+            type='aor',
+            endpoint_sip_uuid=self.endpoint_sip.uuid,
+            options=[],
+        )
         self.session.add(section)
         self.session.flush()
 
@@ -43,7 +56,11 @@ class TestOptions(DAOTestCase):
         assert_that(section.options, contains_inanyorder(['type', 'aor']))
 
     def test_update_an_option(self):
-        section = EndpointSIPSection(options=[['type', 'aor'], ['old', 'value']])
+        section = EndpointSIPSection(
+            endpoint_sip_uuid=self.endpoint_sip.uuid,
+            type='aor',
+            options=[['type', 'aor'], ['old', 'value']],
+        )
         self.session.add(section)
         self.session.flush()
 
@@ -54,7 +71,11 @@ class TestOptions(DAOTestCase):
         assert_that(section.options, contains_inanyorder(['type', 'aor'], ['new', 'value']))
 
     def test_delete_an_option(self):
-        section = EndpointSIPSection(options=[['type', 'aor'], ['delete', 'value']])
+        section = EndpointSIPSection(
+            endpoint_sip_uuid=self.endpoint_sip.uuid,
+            type='aor',
+            options=[['type', 'aor'], ['delete', 'value']],
+        )
         self.session.add(section)
         self.session.flush()
 
@@ -65,7 +86,11 @@ class TestOptions(DAOTestCase):
         assert_that(section.options, contains_inanyorder(['type', 'aor']))
 
     def test_update_and_create_options(self):
-        section = EndpointSIPSection(options=[['update', 'old']])
+        section = EndpointSIPSection(
+            endpoint_sip_uuid=self.endpoint_sip.uuid,
+            type='aor',
+            options=[['update', 'old']],
+        )
         self.session.add(section)
         self.session.flush()
 
@@ -76,7 +101,11 @@ class TestOptions(DAOTestCase):
         assert_that(section.options, contains_inanyorder(['create', 'value'], ['update', 'new']))
 
     def test_update_and_delete_options(self):
-        section = EndpointSIPSection(options=[['update', 'old'], ['delete', 'value']])
+        section = EndpointSIPSection(
+            endpoint_sip_uuid=self.endpoint_sip.uuid,
+            type='aor',
+            options=[['update', 'old'], ['delete', 'value']],
+        )
         self.session.add(section)
         self.session.flush()
 
@@ -87,7 +116,11 @@ class TestOptions(DAOTestCase):
         assert_that(section.options, contains_inanyorder(['update', 'new']))
 
     def test_update_an_option_do_not_reuse_or_orphan_option(self):
-        section = EndpointSIPSection(options=[['old', 'value']])
+        section = EndpointSIPSection(
+            endpoint_sip_uuid=self.endpoint_sip.uuid,
+            type='aor',
+            options=[['old', 'value']],
+        )
         self.session.add(section)
         self.session.flush()
         old_uuid = section._options[0].uuid
