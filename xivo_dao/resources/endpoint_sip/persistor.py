@@ -70,9 +70,7 @@ class SipPersistor(CriteriaBuilderMixin):
 
         return query.filter(EndpointSIP.tenant_uuid.in_(self.tenant_uuids))
 
-    # TODO(pc-m): remove this?
     def _fix_associated(self, sip):
-        return
         if sip.line:
             LineFixes(self.session).fix(sip.line.id)
 
