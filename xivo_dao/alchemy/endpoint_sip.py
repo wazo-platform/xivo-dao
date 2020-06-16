@@ -4,7 +4,7 @@
 
 import logging
 
-from sqlalchemy import and_, Table, text, Integer, select
+from sqlalchemy import and_, text, Integer, select
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.schema import Column, UniqueConstraint, ForeignKey
@@ -19,22 +19,20 @@ from .endpoint_sip_section_option import EndpointSIPSectionOption
 logger = logging.getLogger(__name__)
 
 
-parent_child = Table(
-    'endpoint_sip_parent',
-    Base.metadata,
-    Column(
-        'child_uuid',
-        UUID(as_uuid=True),
-        ForeignKey('endpoint_sip.uuid', ondelete='CASCADE'),
-        primary_key=True,
-    ),
-    Column(
-        'parent_uuid',
+class EndpointSIPParent(Base):
+
+    __tablename__ = 'endpoint_sip_parent'
+
+    child_uuid = Column(
         UUID(as_uuid=True),
         ForeignKey('endpoint_sip.uuid', ondelete='CASCADE'),
         primary_key=True,
     )
-)
+    parent_uuid = Column(
+        UUID(as_uuid=True),
+        ForeignKey('endpoint_sip.uuid', ondelete='CASCADE'),
+        primary_key=True,
+    )
 
 
 class EndpointSIP(Base):
@@ -66,9 +64,9 @@ class EndpointSIP(Base):
     context = relationship('Context')
     parents = relationship(
         'EndpointSIP',
-        primaryjoin='EndpointSIP.uuid==endpoint_sip_parent.c.child_uuid',
-        secondaryjoin='EndpointSIP.uuid==endpoint_sip_parent.c.parent_uuid',
-        secondary=parent_child,
+        primaryjoin='EndpointSIP.uuid == EndpointSIPParent.child_uuid',
+        secondaryjoin='EndpointSIP.uuid == EndpointSIPParent.parent_uuid',
+        secondary='endpoint_sip_parent',
     )
 
     _aor_section = relationship(
