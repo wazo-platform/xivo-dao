@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import text
+from sqlalchemy.orm import joinedload
 
 from xivo_dao.alchemy.endpoint_sip import EndpointSIP
 from xivo_dao.helpers import errors
@@ -38,10 +39,28 @@ class SipPersistor(CriteriaBuilderMixin):
         return trunk
 
     def search(self, parameters):
-        query = self.session.query(self.sip_search.config.table)
+        query = self._search_query()
         query = self._filter_tenant_uuid(query)
         rows, total = self.sip_search.search_from_query(query, parameters)
         return SearchResult(total, rows)
+
+    def _search_query(self):
+        return (
+            self.session
+            .query(self.sip_search.config.table)
+            .options(joinedload('context'))
+            .options(joinedload('transport'))
+            .options(joinedload('parents'))
+            .options(joinedload('_aor_section'))
+            .options(joinedload('_auth_section'))
+            .options(joinedload('_endpoint_section'))
+            .options(joinedload('_registration_section'))
+            .options(joinedload('_registration_outbound_auth_section'))
+            .options(joinedload('_identify_section'))
+            .options(joinedload('_outbound_auth_section'))
+            .options(joinedload('line'))
+            .options(joinedload('trunk'))
+        )
 
     def create(self, sip):
         self.session.add(sip)
