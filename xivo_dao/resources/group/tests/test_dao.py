@@ -505,8 +505,8 @@ class TestAssociateMemberUsers(DAOTestCase):
 
     def test_associate_user_sip(self):
         user = self.add_user()
-        sip = self.add_usersip(name='sipname')
-        line = self.add_line(endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip(name='sipname')
+        line = self.add_line(endpoint_sip_uuid=sip.uuid)
         self.add_user_line(user_id=user.id, line_id=line.id)
         group = self.add_group()
 
@@ -530,8 +530,8 @@ class TestAssociateMemberUsers(DAOTestCase):
         group = self.add_group()
 
         user1 = self.add_user()
-        sip1 = self.add_usersip()
-        line1 = self.add_line(endpoint_sip_id=sip1.id)
+        sip1 = self.add_endpoint_sip()
+        line1 = self.add_line(endpoint_sip_uuid=sip1.uuid)
         self.add_user_line(user_id=user1.id, line_id=line1.id)
 
         user2 = self.add_user()
@@ -560,8 +560,8 @@ class TestAssociateMemberUsers(DAOTestCase):
 
     def test_associate_fix(self):
         user = self.add_user()
-        sip = self.add_usersip(name='sipname')
-        line = self.add_line(endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip(name='sipname')
+        line = self.add_line(endpoint_sip_uuid=sip.uuid)
         self.add_user_line(user_id=user.id, line_id=line.id)
         group = self.add_group()
 
@@ -578,8 +578,8 @@ class TestAssociateMemberUsers(DAOTestCase):
 
     def test_users_dissociation(self):
         user = self.add_user()
-        sip = self.add_usersip(name='sipname')
-        line = self.add_line(endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip(name='sipname')
+        line = self.add_line(endpoint_sip_uuid=sip.uuid)
         self.add_user_line(user_id=user.id, line_id=line.id)
         group = self.add_group()
         group_dao.associate_all_member_users(group, [QueueMember(user=user)])

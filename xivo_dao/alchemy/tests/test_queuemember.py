@@ -120,8 +120,8 @@ class TestFix(DAOTestCase):
 
     def test_user_sip(self):
         user = self.add_user()
-        sip = self.add_usersip(name='sipname')
-        line = self.add_line(endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip(name='sipname')
+        line = self.add_line(endpoint_sip_uuid=sip.uuid)
         self.add_user_line(user_id=user.id, line_id=line.id)
         member = self.add_queue_member(usertype='user', userid=user.id, interface='wrong', channel='wrong')
 

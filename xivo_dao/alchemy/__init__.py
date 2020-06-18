@@ -60,7 +60,6 @@ from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.alchemy.useriax import UserIAX
-from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.voicemail import Voicemail
 
 __all__ = [
@@ -120,6 +119,5 @@ __all__ = [
     'UserFeatures',
     'UserIAX',
     'UserLine',
-    'UserSIP',
     'Voicemail',
 ]

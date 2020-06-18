@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
 from sqlalchemy.sql import func, cast, not_
 from sqlalchemy.types import Integer, String, Boolean
@@ -27,8 +26,6 @@ class StaticSIP(Base):
     category = Column(String(128), nullable=False)
     var_name = Column(String(128), nullable=False)
     var_val = Column(String(255))
-
-    trunk = relationship('TrunkFeatures', viewonly=True, uselist=False)
 
     @hybrid_property
     def metric(self):

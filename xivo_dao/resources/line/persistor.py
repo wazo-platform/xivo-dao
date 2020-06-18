@@ -8,7 +8,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import joinedload
 
 from xivo_dao.alchemy.linefeatures import LineFeatures as Line
-from xivo_dao.alchemy.usersip import UserSIP
+from xivo_dao.alchemy.endpoint_sip import EndpointSIP
 from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.helpers import errors
@@ -35,7 +35,12 @@ class LinePersistor(CriteriaBuilderMixin):
                 .query(Line)
                 .options(joinedload('context_rel'))
                 .options(joinedload('endpoint_sccp'))
-                .options(joinedload('endpoint_sip'))
+                .options(joinedload('endpoint_sip')
+                         .joinedload('context'))
+                .options(joinedload('endpoint_sip')
+                         .joinedload('_auth_section'))
+                .options(joinedload('endpoint_sip')
+                         .joinedload('_endpoint_section'))
                 .options(joinedload('endpoint_custom'))
                 .options(joinedload('line_extensions')
                          .joinedload('extension'))
@@ -85,10 +90,10 @@ class LinePersistor(CriteriaBuilderMixin):
         self.session.flush()
 
     def delete(self, line):
-        if line.endpoint_sip_id:
+        if line.endpoint_sip_uuid:
             (self.session
-             .query(UserSIP)
-             .filter(UserSIP.id == line.endpoint_sip_id)
+             .query(EndpointSIP)
+             .filter(EndpointSIP.uuid == line.endpoint_sip_uuid)
              .delete())
         elif line.endpoint_sccp_id:
             (self.session

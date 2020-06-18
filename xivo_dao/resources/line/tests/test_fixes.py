@@ -7,10 +7,10 @@ from __future__ import unicode_literals
 from hamcrest import assert_that, equal_to, none
 
 from xivo_dao.alchemy.linefeatures import LineFeatures as Line
+from xivo_dao.alchemy.endpoint_sip import EndpointSIP
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.usercustom import UserCustom
-from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.resources.line.fixes import LineFixes
 from xivo_dao.tests.test_dao import DAOTestCase
 
@@ -22,83 +22,91 @@ class TestLineFixes(DAOTestCase):
         self.fixes = LineFixes(self.session)
 
     def test_when_update_context_extension_then_sip_context_is_updated(self):
-        sip = self.add_usersip()
-        line = self.add_line(endpoint_sip_id=sip.id, context='default')
-        extension = self.add_extension(exten="1000", context="default")
+        context = self.add_context()
+        other_context = self.add_context()
+        sip = self.add_endpoint_sip(context={'id': context.id})
+        line = self.add_line(endpoint_sip_uuid=sip.uuid, context=context.name)
+        extension = self.add_extension(exten="1000", context=context.name)
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
 
-        extension.context = 'other_default'
+        extension.context = other_context.name
         self.fixes.fix(line.id)
 
-        sip = self.session.query(UserSIP).first()
+        sip = self.session.query(EndpointSIP).first()
         line = self.session.query(Line).first()
 
-        assert_that(sip.context, equal_to('other_default'))
-        assert_that(line.context, equal_to('other_default'))
+        assert_that(sip.context, equal_to(other_context))
+        assert_that(line.context, equal_to(other_context.name))
 
     def test_given_user_only_has_caller_name_then_sip_caller_id_updated(self):
         user = self.add_user(callerid='"Jôhn Smith"')
-        sip = self.add_usersip(callerid='"Rôger Rabbit" <2000>')
-        line = self.add_line(endpoint_sip_id=sip.id)
-        self.add_user_line(user_id=user.id, line_id=line.id,
-                           main_user=True, main_line=True)
+        sip = self.add_endpoint_sip(caller_id='"Rôger Rabbit" <2000>')
+        line = self.add_line(endpoint_sip_uuid=sip.uuid)
+        self.add_user_line(
+            user_id=user.id, line_id=line.id, main_user=True, main_line=True,
+        )
 
         self.fixes.fix(line.id)
 
-        sip = self.session.query(UserSIP).first()
-        assert_that(sip.callerid, equal_to(user.callerid))
+        sip = self.session.query(EndpointSIP).first()
+        assert_that(sip.caller_id, equal_to(user.callerid))
 
     def test_given_user_has_caller_name_and_number_then_sip_caller_id_updated(self):
         user = self.add_user(callerid='"Jôhn Smith" <1000>')
-        sip = self.add_usersip(callerid='"Rôger Rabbit" <2000>')
-        line = self.add_line(endpoint_sip_id=sip.id)
-        self.add_user_line(user_id=user.id, line_id=line.id,
-                           main_user=True, main_line=True)
+        sip = self.add_endpoint_sip(caller_id='"Rôger Rabbit" <2000>')
+        line = self.add_line(endpoint_sip_uuid=sip.uuid)
+        self.add_user_line(
+            user_id=user.id, line_id=line.id, main_user=True, main_line=True,
+        )
 
         self.fixes.fix(line.id)
 
-        sip = self.session.query(UserSIP).first()
-        assert_that(sip.callerid, equal_to(user.callerid))
+        sip = self.session.query(EndpointSIP).first()
+        assert_that(sip.caller_id, equal_to(user.callerid))
 
     def test_given_user_has_caller_name_and_extension_then_sip_caller_id_updated(self):
         user = self.add_user(callerid='"Jôhn Smith"')
-        sip = self.add_usersip(callerid='"Rôger Rabbit" <2000>')
-        line = self.add_line(endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip(caller_id='"Rôger Rabbit" <2000>')
+        line = self.add_line(endpoint_sip_uuid=sip.uuid)
         extension = self.add_extension(exten="3000", context="default")
-        self.add_user_line(user_id=user.id, line_id=line.id,
-                           main_user=True, main_line=True)
+        self.add_user_line(
+            user_id=user.id, line_id=line.id, main_user=True, main_line=True,
+        )
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
 
         self.fixes.fix(line.id)
 
-        sip = self.session.query(UserSIP).first()
-        assert_that(sip.callerid, equal_to('"Jôhn Smith" <3000>'))
+        sip = self.session.query(EndpointSIP).first()
+        assert_that(sip.caller_id, equal_to('"Jôhn Smith" <3000>'))
 
     def test_given_user_has_caller_number_and_extension_then_caller_number_updated(self):
         user = self.add_user(callerid='"Jôhn Smith" <1000>')
-        sip = self.add_usersip(callerid='"Rôger Rabbit" <2000>')
-        line = self.add_line(endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip(caller_id='"Rôger Rabbit" <2000>')
+        line = self.add_line(endpoint_sip_uuid=sip.uuid)
         extension = self.add_extension(exten="3000", context="default")
-        self.add_user_line(user_id=user.id, line_id=line.id,
-                           main_user=True, main_line=True)
+        self.add_user_line(
+            user_id=user.id, line_id=line.id, main_user=True, main_line=True,
+        )
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
 
         self.fixes.fix(line.id)
 
-        sip = self.session.query(UserSIP).first()
-        assert_that(sip.callerid, equal_to('"Jôhn Smith" <1000>'))
+        sip = self.session.query(EndpointSIP).first()
+        assert_that(sip.caller_id, equal_to('"Jôhn Smith" <1000>'))
 
     def test_given_user_has_sip_line_then_context_updated(self):
+        context = self.add_context()
         user = self.add_user(callerid='"Jôhn Smith" <1000>')
-        sip = self.add_usersip(callerid='"Rôger Rabbit" <2000>')
-        line = self.add_line(endpoint_sip_id=sip.id, context='mycontext')
-        self.add_user_line(user_id=user.id, line_id=line.id,
-                           main_user=True, main_line=True)
+        sip = self.add_endpoint_sip(caller_id='"Rôger Rabbit" <2000>')
+        line = self.add_line(endpoint_sip_uuid=sip.uuid, context=context.name)
+        self.add_user_line(
+            user_id=user.id, line_id=line.id, main_user=True, main_line=True,
+        )
 
         self.fixes.fix(line.id)
 
-        sip = self.session.query(UserSIP).first()
-        assert_that(sip.context, equal_to('mycontext'))
+        sip = self.session.query(EndpointSIP).first()
+        assert_that(sip.context, equal_to(context))
 
     def test_given_user_only_has_caller_name_then_sccp_caller_id_updated(self):
         user = self.add_user(callerid='"Jôhn Smith"')
@@ -207,8 +215,8 @@ class TestLineFixes(DAOTestCase):
         assert_that(line.context, equal_to('mycontext'))
 
     def test_given_line_has_sip_name_then_line_name_updated(self):
-        sip = self.add_usersip(callerid='"Rôger Rabbit" <2000>', name="sipname")
-        line = self.add_line(name="linename", endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip(caller_id='"Rôger Rabbit" <2000>', name="sipname")
+        line = self.add_line(name="linename", endpoint_sip_uuid=sip.uuid)
 
         self.fixes.fix(line.id)
 
@@ -245,8 +253,8 @@ class TestLineFixes(DAOTestCase):
         assert_that(line.name, equal_to('custom/abcdef'))
 
     def test_given_line_has_sip_name_then_queue_member_interface_updated(self):
-        sip = self.add_usersip(name='abcdef')
-        line = self.add_line(endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip(name='abcdef')
+        line = self.add_line(endpoint_sip_uuid=sip.uuid)
         user = self.add_user()
         self.add_user_line(user_id=user.id, line_id=line.id)
         self.add_queue_member(usertype='user', userid=user.id, interface='SIP/default')
@@ -284,10 +292,10 @@ class TestLineFixes(DAOTestCase):
         assert_that(queue_member.interface, equal_to('custom/abcdef'))
 
     def test_given_second_line_then_queue_member_interface_updated(self):
-        sip1 = self.add_usersip()
-        line1 = self.add_line(endpoint_sip_id=sip1.id)
-        sip2 = self.add_usersip(name='abcdef')
-        line2 = self.add_line(endpoint_sip_id=sip2.id)
+        sip1 = self.add_endpoint_sip()
+        line1 = self.add_line(endpoint_sip_uuid=sip1.uuid)
+        sip2 = self.add_endpoint_sip(name='abcdef')
+        line2 = self.add_line(endpoint_sip_uuid=sip2.uuid)
         user = self.add_user()
         self.add_user_line(user_id=user.id, line_id=line1.id, main_line=True)
         self.add_user_line(user_id=user.id, line_id=line2.id, main_line=False)
@@ -299,12 +307,14 @@ class TestLineFixes(DAOTestCase):
 
         assert_that(queue_member.interface, equal_to('SIP/default'))
 
-    def test_given_queuemember_local_without_extension_then_queue_member_interface_not_updated(self):
-        sip = self.add_usersip(name='abcdef')
-        line = self.add_line(endpoint_sip_id=sip.id)
+    def test_given_queuemember_local_without_extension_then_queue_member_iface_not_updated(self):
+        sip = self.add_endpoint_sip(name='abcdef')
+        line = self.add_line(endpoint_sip_uuid=sip.uuid)
         user = self.add_user()
         self.add_user_line(user_id=user.id, line_id=line.id)
-        self.add_queue_member(usertype='user', userid=user.id, interface='SIP/default', channel='Local')
+        self.add_queue_member(
+            usertype='user', userid=user.id, interface='SIP/default', channel='Local',
+        )
 
         self.fixes.fix(line.id)
 
@@ -313,13 +323,15 @@ class TestLineFixes(DAOTestCase):
         assert_that(queue_member.interface, equal_to('SIP/default'))
 
     def test_given_queuemember_local_with_extension_then_queue_member_interface_updated(self):
-        sip = self.add_usersip(name='abcdef')
-        line = self.add_line(endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip(name='abcdef')
+        line = self.add_line(endpoint_sip_uuid=sip.uuid)
         user = self.add_user()
         extension = self.add_extension(exten='12345', context='wonderland')
         self.add_user_line(user_id=user.id, line_id=line.id)
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
-        self.add_queue_member(usertype='user', userid=user.id, interface='SIP/default', channel='Local')
+        self.add_queue_member(
+            usertype='user', userid=user.id, interface='SIP/default', channel='Local',
+        )
 
         self.fixes.fix(line.id)
 
