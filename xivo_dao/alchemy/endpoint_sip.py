@@ -152,7 +152,7 @@ class EndpointSIP(Base):
             self.caller_id = caller_id
 
     def __repr__(self):
-        return 'EndpointSIP(={}'.format(self.label)
+        return 'EndpointSIP(label={})'.format(self.label)
 
     @hybrid_property
     def aor_section_options(self):
