@@ -50,6 +50,7 @@ class EndpointSIPSection(Base):
         'EndpointSIPSectionOption',
         cascade='all, delete-orphan',
         passive_deletes=True,
+        lazy='joined',
     )
 
     options = association_proxy(
