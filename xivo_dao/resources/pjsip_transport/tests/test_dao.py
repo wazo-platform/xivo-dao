@@ -293,3 +293,18 @@ class TestDelete(DAOTestCase):
         dao.delete(transport)
 
         assert_that(inspect(transport).deleted)
+
+    def test_delete_with_fallback(self):
+        fallback = self.add_transport()
+        transport_1 = self.add_transport()
+        transport_2 = self.add_transport()
+        sip_1 = self.add_endpoint_sip(transport_uuid=transport_1.uuid)
+        sip_2 = self.add_endpoint_sip(transport_uuid=transport_2.uuid)
+        sip_3 = self.add_endpoint_sip(transport_uuid=fallback.uuid)
+
+        dao.delete(transport_1, fallback)
+
+        assert_that(inspect(transport_1).deleted)
+        assert_that(sip_1.transport_uuid, equal_to(fallback.uuid))
+        assert_that(sip_2.transport_uuid, equal_to(transport_2.uuid))
+        assert_that(sip_3.transport_uuid, equal_to(fallback.uuid))
