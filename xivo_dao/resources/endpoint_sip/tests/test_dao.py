@@ -256,6 +256,18 @@ class TestSimpleSearch(TestSearch):
         tenants = [tenant.uuid]
         self.assert_search_returns_result(expected, tenant_uuids=tenants)
 
+    def test_search_template(self):
+        tenant_uuids = [self.default_tenant.uuid]
+
+        endpoint = self.add_endpoint_sip(label='endpoint', template=False)
+        template = self.add_endpoint_sip(label='template', template=True)
+
+        expected = SearchResult(1, [template])
+        self.assert_search_returns_result(expected, tenant_uuids=tenant_uuids, template=True)
+
+        expected = SearchResult(1, [endpoint])
+        self.assert_search_returns_result(expected, tenant_uuids=tenant_uuids, template=False)
+
 
 class TestSearchMultiple(TestSearch):
 
