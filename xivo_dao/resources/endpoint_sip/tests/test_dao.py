@@ -104,6 +104,13 @@ class TestFindBy(DAOTestCase):
 
         assert_that(sip.uuid, equal_to(sip_row.uuid))
 
+    def test_find_by_template(self):
+        self.add_endpoint_sip(template=False)
+        template_row = self.add_endpoint_sip(template=True)
+        sip = sip_dao.find_by(template=True)
+
+        assert_that(sip.uuid, equal_to(template_row.uuid))
+
 
 class TestFindAllBy(DAOTestCase):
 
@@ -125,17 +132,17 @@ class TestFindAllBy(DAOTestCase):
 class TestGet(DAOTestCase):
 
     def test_given_no_rows_then_raises_error(self):
-        self.assertRaises(NotFoundError, sip_dao.get, UNKNOWN_UUID)
-        self.assertRaises(NotFoundError, sip_dao.get, str(UNKNOWN_UUID))
+        self.assertRaises(NotFoundError, sip_dao.get, UNKNOWN_UUID, template=False)
+        self.assertRaises(NotFoundError, sip_dao.get, str(UNKNOWN_UUID), template=False)
 
     def test_given_row_with_minimal_parameters_then_returns_model(self):
         row = self.add_endpoint_sip()
 
-        sip = sip_dao.get(row.uuid)
+        sip = sip_dao.get(row.uuid, template=False)
         assert_that(isinstance(row.uuid, uuid.UUID), equal_to(True))
         assert_that(sip, has_properties(uuid=row.uuid))
 
-        sip = sip_dao.get(str(row.uuid))
+        sip = sip_dao.get(str(row.uuid), template=False)
         assert_that(sip, has_properties(uuid=row.uuid))
 
     def test_given_row_with_all_parameters_then_returns_model(self):
@@ -160,7 +167,7 @@ class TestGet(DAOTestCase):
             template=True,
         )
 
-        sip = sip_dao.get(row.uuid)
+        sip = sip_dao.get(row.uuid, template=True)
         assert_that(sip, has_properties(
             label='general_config',
             name=has_length(8),
@@ -184,13 +191,34 @@ class TestGet(DAOTestCase):
         tenant = self.add_tenant()
 
         sip_row = self.add_endpoint_sip(tenant_uuid=tenant.uuid)
-        sip = sip_dao.get(sip_row.uuid, tenant_uuids=[tenant.uuid])
+        sip = sip_dao.get(sip_row.uuid, template=False, tenant_uuids=[tenant.uuid])
         assert_that(sip, equal_to(sip_row))
 
         sip_row = self.add_endpoint_sip()
         self.assertRaises(
             NotFoundError,
-            sip_dao.get, sip_row.uuid, tenant_uuids=[tenant.uuid],
+            sip_dao.get, sip_row.uuid, template=False, tenant_uuids=[tenant.uuid],
+        )
+
+    def test_get_template(self):
+        tenant = self.add_tenant()
+
+        endpoint_row = self.add_endpoint_sip(tenant_uuid=tenant.uuid, template=False)
+        template_row = self.add_endpoint_sip(tenant_uuid=tenant.uuid, template=True)
+
+        template = sip_dao.get(template_row.uuid, template=True, tenant_uuids=[tenant.uuid])
+        assert_that(template, equal_to(template_row))
+
+        endpoint = sip_dao.get(endpoint_row.uuid, template=False, tenant_uuids=[tenant.uuid])
+        assert_that(endpoint, equal_to(endpoint_row))
+
+        self.assertRaises(
+            NotFoundError,
+            sip_dao.get, endpoint_row.uuid, template=True, tenant_uuids=[tenant.uuid],
+        )
+        self.assertRaises(
+            NotFoundError,
+            sip_dao.get, template_row.uuid, template=False, tenant_uuids=[tenant.uuid],
         )
 
 
