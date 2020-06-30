@@ -648,7 +648,7 @@ class ItemInserter(object):
         return tenant
 
     def add_transport(self, **kwargs):
-        kwargs.setdefault('name', 'transport')
+        kwargs.setdefault('name', self._random_name())
         transport = PJSIPTransport(**kwargs)
         self.add_me(transport)
         return transport
