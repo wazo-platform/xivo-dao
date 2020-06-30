@@ -12,7 +12,8 @@ config = SearchConfig(
     columns={
         'name': EndpointSIP.name,
         'asterisk_id': EndpointSIP.asterisk_id,
-        'label': EndpointSIP.label
+        'label': EndpointSIP.label,
+        'template': EndpointSIP.template,
     },
     default_sort='label',
 )
