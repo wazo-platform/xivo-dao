@@ -32,7 +32,7 @@ from xivo_dao.alchemy.ctisheetevents import CtiSheetEvents
 from xivo_dao.alchemy.dhcp import Dhcp
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.dialpattern import DialPattern
-from xivo_dao.alchemy.endpoint_sip import EndpointSIP, EndpointSIPParent
+from xivo_dao.alchemy.endpoint_sip import EndpointSIP, EndpointSIPTemplate
 from xivo_dao.alchemy.endpoint_sip_section import EndpointSIPSection
 from xivo_dao.alchemy.endpoint_sip_section_option import EndpointSIPSectionOption
 from xivo_dao.alchemy.extension import Extension
@@ -155,9 +155,9 @@ __all__ = [
     "Dialaction",
     "DialPattern",
     "EndpointSIP",
-    "EndpointSIPParent",
     "EndpointSIPSection",
     "EndpointSIPSectionOption",
+    "EndpointSIPTemplate",
     "Extension",
     "Features",
     "FuncKey",

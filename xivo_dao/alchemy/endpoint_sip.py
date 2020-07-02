@@ -28,9 +28,9 @@ from .endpoint_sip_section_option import EndpointSIPSectionOption
 logger = logging.getLogger(__name__)
 
 
-class EndpointSIPParent(Base):
+class EndpointSIPTemplate(Base):
 
-    __tablename__ = 'endpoint_sip_parent'
+    __tablename__ = 'endpoint_sip_template'
 
     child_uuid = Column(
         UUID(as_uuid=True),
@@ -64,11 +64,11 @@ class EndpointSIP(Base):
 
     transport = relationship('PJSIPTransport')
     context = relationship('Context')
-    parents = relationship(
+    templates = relationship(
         'EndpointSIP',
-        primaryjoin='EndpointSIP.uuid == EndpointSIPParent.child_uuid',
-        secondaryjoin='EndpointSIP.uuid == EndpointSIPParent.parent_uuid',
-        secondary='endpoint_sip_parent',
+        primaryjoin='EndpointSIP.uuid == EndpointSIPTemplate.child_uuid',
+        secondaryjoin='EndpointSIP.uuid == EndpointSIPTemplate.parent_uuid',
+        secondary='endpoint_sip_template',
     )
 
     _aor_section = relationship(

@@ -21,8 +21,8 @@ class TestEndpointSIP(DAOTestCase):
     def test_create_with_all_relations(self):
         transport = self.add_transport()
         context = self.add_context()
-        parent_1 = self.add_endpoint_sip()
-        parent_2 = self.add_endpoint_sip()
+        template_1 = self.add_endpoint_sip(template=True)
+        template_2 = self.add_endpoint_sip(template=True)
 
         endpoint = EndpointSIP(
             label='general_config',
@@ -35,7 +35,7 @@ class TestEndpointSIP(DAOTestCase):
             outbound_auth_section_options=[['type', 'auth']],
             transport=transport,
             context={'id': context.id},
-            parents=[parent_1, parent_2],
+            templates=[template_1, template_2],
             tenant_uuid=self.default_tenant.uuid,
             template=True,
         )
@@ -57,15 +57,15 @@ class TestEndpointSIP(DAOTestCase):
             template=True,
             transport=has_properties(uuid=transport.uuid),
             context=has_properties(id=context.id),
-            parents=contains(
-                has_properties(uuid=parent_1.uuid),
-                has_properties(uuid=parent_2.uuid),
+            templates=contains(
+                has_properties(uuid=template_1.uuid),
+                has_properties(uuid=template_2.uuid),
             ),
         ))
 
     def test_create_concrete_endpoint(self):
         transport = self.add_transport()
-        parent = self.add_endpoint_sip(
+        template = self.add_endpoint_sip(
             label="my tenant's global config",
             template=True,
             transport_uuid=transport.uuid,
@@ -73,7 +73,7 @@ class TestEndpointSIP(DAOTestCase):
 
         endpoint = EndpointSIP(
             label='my-line',
-            parents=[parent],
+            templates=[template],
             auth_section_options=[
                 ['username', 'random-username'],
                 ['password', 'random-password'],
@@ -98,8 +98,8 @@ class TestEndpointSIP(DAOTestCase):
             outbound_auth_section_options=[],
             template=False,
             transport_uuid=None,
-            parents=contains(
-                has_properties(uuid=parent.uuid),
+            templates=contains(
+                has_properties(uuid=template.uuid),
             )
         ))
 
