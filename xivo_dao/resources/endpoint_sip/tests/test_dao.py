@@ -148,8 +148,8 @@ class TestGet(DAOTestCase):
     def test_given_row_with_all_parameters_then_returns_model(self):
         transport = self.add_transport()
         context = self.add_context()
-        parent_1 = self.add_endpoint_sip()
-        parent_2 = self.add_endpoint_sip()
+        template_1 = self.add_endpoint_sip(template=True)
+        template_2 = self.add_endpoint_sip(template=True)
 
         row = self.add_endpoint_sip(
             label='general_config',
@@ -162,7 +162,7 @@ class TestGet(DAOTestCase):
             outbound_auth_section_options=[['type', 'auth']],
             transport=transport,
             context={'id': context.id},
-            parents=[parent_1, parent_2],
+            templates=[template_1, template_2],
             tenant_uuid=self.default_tenant.uuid,
             template=True,
         )
@@ -181,9 +181,9 @@ class TestGet(DAOTestCase):
             template=True,
             transport=has_properties(uuid=transport.uuid),
             context=has_properties(id=context.id),
-            parents=contains(
-                has_properties(uuid=parent_1.uuid),
-                has_properties(uuid=parent_2.uuid),
+            templates=contains(
+                has_properties(uuid=template_1.uuid),
+                has_properties(uuid=template_2.uuid),
             ),
         ))
 
@@ -359,9 +359,9 @@ class TestCreate(DAOTestCase):
     def test_create_all_parameters(self):
         transport = self.add_transport()
         context = self.add_context()
-        parents = [
-            self.add_endpoint_sip(),
-            self.add_endpoint_sip(),
+        templates = [
+            self.add_endpoint_sip(template=True),
+            self.add_endpoint_sip(template=True),
         ]
         almost_all_options = {
             '{}_section_options'.format(name): options
@@ -376,7 +376,7 @@ class TestCreate(DAOTestCase):
             transport=transport,
             context={'id': context.id},
             template=True,
-            parents=parents,
+            templates=templates,
             **almost_all_options
         )
 
@@ -392,7 +392,7 @@ class TestCreate(DAOTestCase):
             transport_uuid=transport.uuid,
             context_id=context.id,
             template=True,
-            parents=parents,
+            templates=templates,
             **almost_all_options
         ))
 
