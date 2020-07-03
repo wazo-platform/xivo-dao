@@ -110,13 +110,10 @@ class EndpointSIP(Base):
         registration_outbound_auth_section_options=None,
         identify_section_options=None,
         outbound_auth_section_options=None,
-        transport=None,
         context=None,
         caller_id=None,
         **kwargs
     ):
-        if transport:
-            kwargs['transport_uuid'] = transport['uuid']
         if context:
             kwargs['context_id'] = context['id']
         if aor_section_options:

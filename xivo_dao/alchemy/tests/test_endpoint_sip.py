@@ -33,7 +33,7 @@ class TestEndpointSIP(DAOTestCase):
             registration_outbound_auth_section_options=[['type', 'auth']],
             identify_section_options=[['type', 'identify']],
             outbound_auth_section_options=[['type', 'auth']],
-            transport={'uuid': transport.uuid},
+            transport=transport,
             context={'id': context.id},
             parents=[parent_1, parent_2],
             tenant_uuid=self.default_tenant.uuid,
