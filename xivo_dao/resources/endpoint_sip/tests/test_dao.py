@@ -147,7 +147,6 @@ class TestGet(DAOTestCase):
 
     def test_given_row_with_all_parameters_then_returns_model(self):
         transport = self.add_transport()
-        context = self.add_context()
         template_1 = self.add_endpoint_sip(template=True)
         template_2 = self.add_endpoint_sip(template=True)
 
@@ -161,7 +160,6 @@ class TestGet(DAOTestCase):
             identify_section_options=[['type', 'identify']],
             outbound_auth_section_options=[['type', 'auth']],
             transport=transport,
-            context={'id': context.id},
             templates=[template_1, template_2],
             tenant_uuid=self.default_tenant.uuid,
             template=True,
@@ -180,7 +178,6 @@ class TestGet(DAOTestCase):
             outbound_auth_section_options=[['type', 'auth']],
             template=True,
             transport=has_properties(uuid=transport.uuid),
-            context=has_properties(id=context.id),
             templates=contains(
                 has_properties(uuid=template_1.uuid),
                 has_properties(uuid=template_2.uuid),
@@ -352,13 +349,11 @@ class TestCreate(DAOTestCase):
             registration_outbound_auth_section_options=empty(),
             outbound_auth_section_options=empty(),
             transport_uuid=none(),
-            context_id=none(),
             template=False,
         ))
 
     def test_create_all_parameters(self):
         transport = self.add_transport()
-        context = self.add_context()
         templates = [
             self.add_endpoint_sip(template=True),
             self.add_endpoint_sip(template=True),
@@ -374,7 +369,6 @@ class TestCreate(DAOTestCase):
             name='name',
             asterisk_id='asterisk-id',
             transport=transport,
-            context={'id': context.id},
             template=True,
             templates=templates,
             **almost_all_options
@@ -390,7 +384,6 @@ class TestCreate(DAOTestCase):
             asterisk_id='asterisk-id',
             tenant_uuid=self.default_tenant.uuid,
             transport_uuid=transport.uuid,
-            context_id=context.id,
             template=True,
             templates=templates,
             **almost_all_options

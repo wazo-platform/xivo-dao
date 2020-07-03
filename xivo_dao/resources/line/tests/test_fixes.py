@@ -21,22 +21,23 @@ class TestLineFixes(DAOTestCase):
         super(TestLineFixes, self).setUp()
         self.fixes = LineFixes(self.session)
 
-    def test_when_update_context_extension_then_sip_context_is_updated(self):
-        context = self.add_context()
-        other_context = self.add_context()
-        sip = self.add_endpoint_sip(context={'id': context.id})
-        line = self.add_line(endpoint_sip_uuid=sip.uuid, context=context.name)
-        extension = self.add_extension(exten="1000", context=context.name)
-        self.add_line_extension(line_id=line.id, extension_id=extension.id)
+    # TODO(pc-m): remove this fix
+    # def test_when_update_context_extension_then_sip_context_is_updated(self):
+    #     context = self.add_context()
+    #     other_context = self.add_context()
+    #     sip = self.add_endpoint_sip(context={'id': context.id})
+    #     line = self.add_line(endpoint_sip_uuid=sip.uuid, context=context.name)
+    #     extension = self.add_extension(exten="1000", context=context.name)
+    #     self.add_line_extension(line_id=line.id, extension_id=extension.id)
 
-        extension.context = other_context.name
-        self.fixes.fix(line.id)
+    #     extension.context = other_context.name
+    #     self.fixes.fix(line.id)
 
-        sip = self.session.query(EndpointSIP).first()
-        line = self.session.query(Line).first()
+    #     sip = self.session.query(EndpointSIP).first()
+    #     line = self.session.query(Line).first()
 
-        assert_that(sip.context, equal_to(other_context))
-        assert_that(line.context, equal_to(other_context.name))
+    #     assert_that(sip.context, equal_to(other_context))
+    #     assert_that(line.context, equal_to(other_context.name))
 
     def test_given_user_only_has_caller_name_then_sip_caller_id_updated(self):
         user = self.add_user(callerid='"Jôhn Smith"')
