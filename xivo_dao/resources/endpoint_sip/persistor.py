@@ -50,7 +50,7 @@ class SipPersistor(CriteriaBuilderMixin):
             .query(self.sip_search.config.table)
             .options(joinedload('context'))
             .options(joinedload('transport'))
-            .options(joinedload('parents'))
+            .options(joinedload('templates'))
             .options(joinedload('_aor_section'))
             .options(joinedload('_auth_section'))
             .options(joinedload('_endpoint_section'))

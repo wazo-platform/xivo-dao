@@ -25,8 +25,10 @@ def search(session, tenant_uuids=None, **parameters):
 
 
 @daosession
-def get(session, sip_uuid, tenant_uuids=None):
-    return SipPersistor(session, sip_search, tenant_uuids).get_by({'uuid': sip_uuid})
+def get(session, sip_uuid, template, tenant_uuids=None):
+    return SipPersistor(session, sip_search, tenant_uuids).get_by(
+        {'uuid': sip_uuid, 'template': template},
+    )
 
 
 @daosession

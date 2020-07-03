@@ -104,6 +104,13 @@ class TestFindBy(DAOTestCase):
 
         assert_that(sip.uuid, equal_to(sip_row.uuid))
 
+    def test_find_by_template(self):
+        self.add_endpoint_sip(template=False)
+        template_row = self.add_endpoint_sip(template=True)
+        sip = sip_dao.find_by(template=True)
+
+        assert_that(sip.uuid, equal_to(template_row.uuid))
+
 
 class TestFindAllBy(DAOTestCase):
 
@@ -125,24 +132,24 @@ class TestFindAllBy(DAOTestCase):
 class TestGet(DAOTestCase):
 
     def test_given_no_rows_then_raises_error(self):
-        self.assertRaises(NotFoundError, sip_dao.get, UNKNOWN_UUID)
-        self.assertRaises(NotFoundError, sip_dao.get, str(UNKNOWN_UUID))
+        self.assertRaises(NotFoundError, sip_dao.get, UNKNOWN_UUID, template=False)
+        self.assertRaises(NotFoundError, sip_dao.get, str(UNKNOWN_UUID), template=False)
 
     def test_given_row_with_minimal_parameters_then_returns_model(self):
         row = self.add_endpoint_sip()
 
-        sip = sip_dao.get(row.uuid)
+        sip = sip_dao.get(row.uuid, template=False)
         assert_that(isinstance(row.uuid, uuid.UUID), equal_to(True))
         assert_that(sip, has_properties(uuid=row.uuid))
 
-        sip = sip_dao.get(str(row.uuid))
+        sip = sip_dao.get(str(row.uuid), template=False)
         assert_that(sip, has_properties(uuid=row.uuid))
 
     def test_given_row_with_all_parameters_then_returns_model(self):
         transport = self.add_transport()
         context = self.add_context()
-        parent_1 = self.add_endpoint_sip()
-        parent_2 = self.add_endpoint_sip()
+        template_1 = self.add_endpoint_sip(template=True)
+        template_2 = self.add_endpoint_sip(template=True)
 
         row = self.add_endpoint_sip(
             label='general_config',
@@ -155,12 +162,12 @@ class TestGet(DAOTestCase):
             outbound_auth_section_options=[['type', 'auth']],
             transport=transport,
             context={'id': context.id},
-            parents=[parent_1, parent_2],
+            templates=[template_1, template_2],
             tenant_uuid=self.default_tenant.uuid,
             template=True,
         )
 
-        sip = sip_dao.get(row.uuid)
+        sip = sip_dao.get(row.uuid, template=True)
         assert_that(sip, has_properties(
             label='general_config',
             name=has_length(8),
@@ -174,9 +181,9 @@ class TestGet(DAOTestCase):
             template=True,
             transport=has_properties(uuid=transport.uuid),
             context=has_properties(id=context.id),
-            parents=contains(
-                has_properties(uuid=parent_1.uuid),
-                has_properties(uuid=parent_2.uuid),
+            templates=contains(
+                has_properties(uuid=template_1.uuid),
+                has_properties(uuid=template_2.uuid),
             ),
         ))
 
@@ -184,13 +191,34 @@ class TestGet(DAOTestCase):
         tenant = self.add_tenant()
 
         sip_row = self.add_endpoint_sip(tenant_uuid=tenant.uuid)
-        sip = sip_dao.get(sip_row.uuid, tenant_uuids=[tenant.uuid])
+        sip = sip_dao.get(sip_row.uuid, template=False, tenant_uuids=[tenant.uuid])
         assert_that(sip, equal_to(sip_row))
 
         sip_row = self.add_endpoint_sip()
         self.assertRaises(
             NotFoundError,
-            sip_dao.get, sip_row.uuid, tenant_uuids=[tenant.uuid],
+            sip_dao.get, sip_row.uuid, template=False, tenant_uuids=[tenant.uuid],
+        )
+
+    def test_get_template(self):
+        tenant = self.add_tenant()
+
+        endpoint_row = self.add_endpoint_sip(tenant_uuid=tenant.uuid, template=False)
+        template_row = self.add_endpoint_sip(tenant_uuid=tenant.uuid, template=True)
+
+        template = sip_dao.get(template_row.uuid, template=True, tenant_uuids=[tenant.uuid])
+        assert_that(template, equal_to(template_row))
+
+        endpoint = sip_dao.get(endpoint_row.uuid, template=False, tenant_uuids=[tenant.uuid])
+        assert_that(endpoint, equal_to(endpoint_row))
+
+        self.assertRaises(
+            NotFoundError,
+            sip_dao.get, endpoint_row.uuid, template=True, tenant_uuids=[tenant.uuid],
+        )
+        self.assertRaises(
+            NotFoundError,
+            sip_dao.get, template_row.uuid, template=False, tenant_uuids=[tenant.uuid],
         )
 
 
@@ -227,6 +255,18 @@ class TestSimpleSearch(TestSearch):
         expected = SearchResult(1, [sip2])
         tenants = [tenant.uuid]
         self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
+    def test_search_template(self):
+        tenant_uuids = [self.default_tenant.uuid]
+
+        endpoint = self.add_endpoint_sip(label='endpoint', template=False)
+        template = self.add_endpoint_sip(label='template', template=True)
+
+        expected = SearchResult(1, [template])
+        self.assert_search_returns_result(expected, tenant_uuids=tenant_uuids, template=True)
+
+        expected = SearchResult(1, [endpoint])
+        self.assert_search_returns_result(expected, tenant_uuids=tenant_uuids, template=False)
 
 
 class TestSearchMultiple(TestSearch):
@@ -319,9 +359,9 @@ class TestCreate(DAOTestCase):
     def test_create_all_parameters(self):
         transport = self.add_transport()
         context = self.add_context()
-        parents = [
-            self.add_endpoint_sip(),
-            self.add_endpoint_sip(),
+        templates = [
+            self.add_endpoint_sip(template=True),
+            self.add_endpoint_sip(template=True),
         ]
         almost_all_options = {
             '{}_section_options'.format(name): options
@@ -336,7 +376,7 @@ class TestCreate(DAOTestCase):
             transport=transport,
             context={'id': context.id},
             template=True,
-            parents=parents,
+            templates=templates,
             **almost_all_options
         )
 
@@ -352,7 +392,7 @@ class TestCreate(DAOTestCase):
             transport_uuid=transport.uuid,
             context_id=context.id,
             template=True,
-            parents=parents,
+            templates=templates,
             **almost_all_options
         ))
 
