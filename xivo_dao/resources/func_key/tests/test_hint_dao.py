@@ -153,7 +153,7 @@ class TestHints(DAOTestCase, FuncKeyHelper):
         return user_row
 
     def add_sip_line_to_extension_and_user(self, name, user_id, extension_id, main_line=True):
-        sip = self.add_endpoint_sip(name=name, context={'id': self.context.id})
+        sip = self.add_endpoint_sip(name=name)
         line = self.add_line(context=self.context.name, endpoint_sip_uuid=sip.uuid)
         self.add_user_line(user_id=user_id, line_id=line.id, main_user=True, main_line=main_line)
         self.add_line_extension(line_id=line.id, extension_id=extension_id, main_extension=True)
@@ -201,14 +201,8 @@ class TestUserHints(TestHints):
         assert_that(hint_dao.user_hints('othercontext'), empty())
 
     def test_given_two_users_with_sip_line_then_returns_only_two_hints(self):
-        user1 = self.add_user_and_func_key(
-            self.add_endpoint_sip(name='user1', context={'id': self.context.id}).uuid,
-            '1001',
-        )
-        user2 = self.add_user_and_func_key(
-            self.add_endpoint_sip(name='user2', context={'id': self.context.id}).uuid,
-            '1002',
-        )
+        user1 = self.add_user_and_func_key(self.add_endpoint_sip(name='user1').uuid, '1001')
+        user2 = self.add_user_and_func_key(self.add_endpoint_sip(name='user2').uuid, '1002')
 
         assert_that(hint_dao.user_hints(self.context.name), contains_inanyorder(
             a_hint(user_id=user1.id, extension='1001', argument='SIP/user1'),
