@@ -135,13 +135,13 @@ class LinePersistor(CriteriaBuilderMixin):
             raise errors.resource_associated(
                 'Trunk', 'Endpoint', line_id=line.id, protocol=line.protocol
             )
-        line.endpoint_sip_id = endpoint.id
+        line.endpoint_sip_uuid = endpoint.uuid
         self.session.flush()
         self.session.expire(line, ['endpoint_sip'])
 
     def dissociate_endpoint_sip(self, line, endpoint):
         if endpoint is line.endpoint_sip:
-            line.endpoint_sip_id = None
+            line.endpoint_sip_uuid = None
             self.session.flush()
             self.session.expire(line, ['endpoint_sip'])
 
