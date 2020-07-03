@@ -35,7 +35,11 @@ class SipPersistor(CriteriaBuilderMixin):
     def get_by(self, criteria):
         sip = self.find_by(criteria)
         if not sip:
-            raise errors.not_found('SIPEndpoint', **criteria)
+            template = criteria.pop('template', None)
+            if template:
+                raise errors.not_found('SIPEndpointTemplate', **criteria)
+            else:
+                raise errors.not_found('SIPEndpoint', **criteria)
         return sip
 
     def search(self, parameters):
