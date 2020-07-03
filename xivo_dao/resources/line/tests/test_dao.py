@@ -503,8 +503,7 @@ class TestRelationship(DAOTestCase):
 
     def test_endpoint_sip_relationship(self):
         sip_row = self.add_endpoint_sip()
-        line_row = self.add_line()
-        line_row.associate_endpoint(sip_row)
+        line_row = self.add_line(endpoint_sip_uuid=sip_row.uuid)
 
         line = line_dao.get(line_row.id)
         assert_that(line, equal_to(line_row))
@@ -514,8 +513,7 @@ class TestRelationship(DAOTestCase):
 
     def test_endpoint_sccp_relationship(self):
         sccp_row = self.add_sccpline()
-        line_row = self.add_line()
-        line_row.associate_endpoint(sccp_row)
+        line_row = self.add_line(endpoint_sccp_id=sccp_row.id)
 
         line = line_dao.get(line_row.id)
         assert_that(line, equal_to(line_row))
@@ -525,8 +523,7 @@ class TestRelationship(DAOTestCase):
 
     def test_endpoint_custom_relationship(self):
         custom_row = self.add_usercustom()
-        line_row = self.add_line()
-        line_row.associate_endpoint(custom_row)
+        line_row = self.add_line(endpoint_custom_id=custom_row.id)
 
         line = line_dao.get(line_row.id)
         assert_that(line, equal_to(line_row))
@@ -614,18 +611,18 @@ class TestAssociateEndpointSIP(DAOTestCase):
 
     def test_associate_line_endpoint_sip(self):
         line = self.add_line()
-        sip = self.add_usersip()
+        sip = self.add_endpoint_sip()
 
         line_dao.associate_endpoint_sip(line, sip)
 
         result = self.session.query(Line).first()
         assert_that(result, equal_to(line))
-        assert_that(result.endpoint_sip_id, equal_to(sip.id))
+        assert_that(result.endpoint_sip_uuid, equal_to(sip.uuid))
         assert_that(result.endpoint_sip, equal_to(sip))
 
     def test_associate_already_associated(self):
         line = self.add_line()
-        sip = self.add_usersip()
+        sip = self.add_endpoint_sip()
         line_dao.associate_endpoint_sip(line, sip)
 
         line_dao.associate_endpoint_sip(line, sip)
@@ -637,7 +634,7 @@ class TestAssociateEndpointSIP(DAOTestCase):
     def test_associate_line_sccp_endpoint_sip(self):
         sccp = self.add_sccpline()
         line = self.add_line(endpoint_sccp_id=sccp.id)
-        sip = self.add_usersip()
+        sip = self.add_endpoint_sip()
 
         self.assertRaises(ResourceError, line_dao.associate_endpoint_sip, line, sip)
 
@@ -646,19 +643,19 @@ class TestDissociateEndpointSIP(DAOTestCase):
 
     def test_dissociate_line_endpoint_sip(self):
         line = self.add_line()
-        sip = self.add_usersip()
+        sip = self.add_endpoint_sip()
         line_dao.associate_endpoint_sip(line, sip)
 
         line_dao.dissociate_endpoint_sip(line, sip)
 
         result = self.session.query(Line).first()
         assert_that(result, equal_to(line))
-        assert_that(result.endpoint_sip_id, none())
+        assert_that(result.endpoint_sip_uuid, none())
         assert_that(result.endpoint_sip, none())
 
     def test_dissociate_line_endpoint_sip_not_associated(self):
         line = self.add_line()
-        sip = self.add_usersip()
+        sip = self.add_endpoint_sip()
 
         line_dao.dissociate_endpoint_sip(line, sip)
 
@@ -692,8 +689,8 @@ class TestAssociateEndpointSCCP(DAOTestCase):
         assert_that(result.endpoint_sccp, equal_to(sccp))
 
     def test_associate_line_sip_endpoint_sccp(self):
-        sip = self.add_usersip()
-        line = self.add_line(endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip()
+        line = self.add_line(endpoint_sip_uuid=sip.uuid)
         sccp = self.add_sccpline()
 
         self.assertRaises(ResourceError, line_dao.associate_endpoint_sccp, line, sccp)
@@ -749,8 +746,8 @@ class TestAssociateEndpointCustom(DAOTestCase):
         assert_that(result.endpoint_custom, equal_to(custom))
 
     def test_associate_line_sip_endpoint_custom(self):
-        sip = self.add_usersip()
-        line = self.add_line(endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip()
+        line = self.add_line(endpoint_sip_uuid=sip.uuid)
         custom = self.add_usercustom()
 
         self.assertRaises(ResourceError, line_dao.associate_endpoint_custom, line, custom)

@@ -435,7 +435,7 @@ class TestAssociateEndpointSIP(DAOTestCase):
 
     def test_associate_trunk_endpoint_sip(self):
         trunk = self.add_trunk()
-        sip = self.add_usersip()
+        sip = self.add_endpoint_sip()
 
         trunk_dao.associate_endpoint_sip(trunk, sip)
 
@@ -446,7 +446,7 @@ class TestAssociateEndpointSIP(DAOTestCase):
 
     def test_associate_already_associated(self):
         trunk = self.add_trunk()
-        sip = self.add_usersip()
+        sip = self.add_endpoint_sip()
         trunk_dao.associate_endpoint_sip(trunk, sip)
 
         trunk_dao.associate_endpoint_sip(trunk, sip)
@@ -458,7 +458,7 @@ class TestAssociateEndpointSIP(DAOTestCase):
     def test_associate_trunk_iax_endpoint_sip(self):
         iax = self.add_useriax()
         trunk = self.add_trunk(endpoint_iax_id=iax.id)
-        sip = self.add_usersip()
+        sip = self.add_endpoint_sip()
 
         self.assertRaises(ResourceError, trunk_dao.associate_endpoint_sip, trunk, sip)
 
@@ -467,7 +467,7 @@ class TestDissociateEndpointSIP(DAOTestCase):
 
     def test_dissociate_trunk_endpoint_sip(self):
         trunk = self.add_trunk()
-        sip = self.add_usersip()
+        sip = self.add_endpoint_sip()
         trunk_dao.associate_endpoint_sip(trunk, sip)
 
         trunk_dao.dissociate_endpoint_sip(trunk, sip)
@@ -479,7 +479,7 @@ class TestDissociateEndpointSIP(DAOTestCase):
 
     def test_dissociate_trunk_endpoint_sip_not_associated(self):
         trunk = self.add_trunk()
-        sip = self.add_usersip()
+        sip = self.add_endpoint_sip()
 
         trunk_dao.dissociate_endpoint_sip(trunk, sip)
 
@@ -513,7 +513,7 @@ class TestAssociateEndpointIAX(DAOTestCase):
         assert_that(result.endpoint_iax, equal_to(iax))
 
     def test_associate_trunk_sip_endpoint_iax(self):
-        sip = self.add_usersip()
+        sip = self.add_endpoint_sip()
         trunk = self.add_trunk(endpoint_sip_uuid=sip.uuid)
         iax = self.add_useriax()
 
@@ -570,7 +570,7 @@ class TestAssociateEndpointCustom(DAOTestCase):
         assert_that(result.endpoint_custom, equal_to(custom))
 
     def test_associate_trunk_sip_endpoint_custom(self):
-        sip = self.add_usersip()
+        sip = self.add_endpoint_sip()
         trunk = self.add_trunk(endpoint_sip_uuid=sip.uuid)
         custom = self.add_usercustom()
 
@@ -708,8 +708,7 @@ class TestRelations(DAOTestCase):
 
     def test_endpoint_sip_relationship(self):
         sip_row = self.add_endpoint_sip()
-        trunk_row = self.add_trunk()
-        trunk_row.associate_endpoint(sip_row)
+        trunk_row = self.add_trunk(endpoint_sip_uuid=sip_row.uuid)
 
         trunk = trunk_dao.get(trunk_row.id)
         assert_that(trunk, equal_to(trunk_row))
@@ -719,8 +718,7 @@ class TestRelations(DAOTestCase):
 
     def test_endpoint_iax_relationship(self):
         iax_row = self.add_useriax()
-        trunk_row = self.add_trunk()
-        trunk_row.associate_endpoint(iax_row)
+        trunk_row = self.add_trunk(endpoint_iax_id=iax_row.id)
 
         trunk = trunk_dao.get(trunk_row.id)
         assert_that(trunk, equal_to(trunk_row))
@@ -730,8 +728,7 @@ class TestRelations(DAOTestCase):
 
     def test_endpoint_custom_relationship(self):
         custom_row = self.add_usercustom()
-        trunk_row = self.add_trunk()
-        trunk_row.associate_endpoint(custom_row)
+        trunk_row = self.add_trunk(endpoint_custom_id=custom_row.id)
 
         trunk = trunk_dao.get(trunk_row.id)
         assert_that(trunk, equal_to(trunk_row))
