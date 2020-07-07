@@ -550,10 +550,10 @@ class TestUserSharedHints(TestHints):
     def test_multi_line_user(self):
         user = self.add_user()
         sip_1 = self.add_usersip()
-        sip_2 = self.add_usersip()
+        custom_1 = self.add_usercustom(interface='custom')
         sccp_1 = self.add_sccpline(name='1001')
         line_1 = self.add_line(endpoint_sip_id=sip_1.id)
-        line_2 = self.add_line(endpoint_sip_id=sip_2.id)
+        line_2 = self.add_line(endpoint_custom_id=custom_1.id)
         line_3 = self.add_line(endpoint_sccp_id=sccp_1.id)
         extension_1 = self.add_extension(typeval=user.id)
         extension_2 = self.add_extension(typeval=user.id)
@@ -566,13 +566,10 @@ class TestUserSharedHints(TestHints):
 
         results = hint_dao.user_shared_hints()
 
-        assert_that(results, contains_inanyorder(
-            Hint(ANY, user.uuid, '&'.join([
-                'pjsip/{}'.format(line_1.name),
-                'pjsip/{}'.format(line_2.name),
-                'sccp/{}'.format(line_3.name),
-            ])),
-        ))
+        assert_that(
+            results[0].argument,
+            equal_to('pjsip/{}&{}&sccp/{}'.format(line_1.name, line_2.name, line_3.name)),
+        )
 
     def test_no_line(self):
         self.add_user()
