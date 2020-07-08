@@ -26,7 +26,6 @@ from xivo_dao.alchemy.contextmember import ContextMember
 from xivo_dao.alchemy.contextnumbers import ContextNumbers
 from xivo_dao.alchemy.contexttype import ContextType
 from xivo_dao.alchemy.ctimain import CtiMain
-from xivo_dao.alchemy.ctisheetactions import CtiSheetActions
 from xivo_dao.alchemy.ctisheetevents import CtiSheetEvents
 from xivo_dao.alchemy.dhcp import Dhcp
 from xivo_dao.alchemy.dialaction import Dialaction
@@ -145,7 +144,6 @@ __all__ = [
     "ContextNumbers",
     "ContextType",
     "CtiMain",
-    "CtiSheetActions",
     "CtiSheetEvents",
     "Dhcp",
     "Dialaction",
