@@ -14,7 +14,6 @@ from xivo_dao.alchemy.application_dest_node import ApplicationDestNode
 from xivo_dao.alchemy.asterisk_file import AsteriskFile
 from xivo_dao.alchemy.asterisk_file_section import AsteriskFileSection
 from xivo_dao.alchemy.asterisk_file_variable import AsteriskFileVariable
-from xivo_dao.alchemy.attachment import Attachment
 from xivo_dao.alchemy.call_log import CallLog
 from xivo_dao.alchemy.callerid import Callerid
 from xivo_dao.alchemy.callfilter import Callfilter
@@ -134,7 +133,6 @@ __all__ = [
     "AsteriskFile",
     "AsteriskFileSection",
     "AsteriskFileVariable",
-    "Attachment",
     "CallLog",
     "Callerid",
     "Callfilter",
