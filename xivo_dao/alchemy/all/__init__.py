@@ -7,7 +7,6 @@ from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
 from xivo_dao.alchemy.agent_membership_status import AgentMembershipStatus
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.agentglobalparams import AgentGlobalParams
-from xivo_dao.alchemy.agentgroup import AgentGroup
 from xivo_dao.alchemy.agentqueueskill import AgentQueueSkill
 from xivo_dao.alchemy.application import Application
 from xivo_dao.alchemy.application_dest_node import ApplicationDestNode

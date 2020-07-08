@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import assert_that, equal_to
@@ -68,7 +68,6 @@ class TestAgentDAO(DAOTestCase):
         result = agent_dao.get(agent.id)
 
         assert_that(result.id, equal_to(agent.id))
-        assert_that(result.numgroup, equal_to(agent.numgroup))
         assert_that(result.number, equal_to(agent.number))
         assert_that(result.passwd, equal_to(agent.passwd))
         assert_that(result.context, equal_to(agent.context))
@@ -127,7 +126,6 @@ class TestAgentDAO(DAOTestCase):
     def _insert_agent(self, number=agent_number, tenant_uuid=None):
         agent = AgentFeatures()
         agent.tenant_uuid = tenant_uuid or self.default_tenant.uuid
-        agent.numgroup = 6
         agent.number = number
         agent.passwd = ''
         agent.context = self.agent_context

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2018-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.agentfeatures import AgentFeatures as Agent
@@ -47,7 +47,6 @@ class AgentPersistor(CriteriaBuilderMixin):
         return SearchResult(total, rows)
 
     def create(self, agent):
-        self._fill_default_values(agent)
         self.session.add(agent)
         self.session.flush()
         return agent
@@ -59,10 +58,6 @@ class AgentPersistor(CriteriaBuilderMixin):
     def delete(self, agent):
         self.session.delete(agent)
         self.session.flush()
-
-    def _fill_default_values(self, agent):
-        # matches to default AgentGroup in populate.sql
-        agent.numgroup = 1
 
     def associate_agent_skill(self, agent, agent_skill):
         if agent_skill not in agent.agent_queue_skills:
