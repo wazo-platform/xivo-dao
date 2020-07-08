@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from hamcrest import (
@@ -362,18 +362,6 @@ class TestCreate(DAOTestCase):
             language='en',
             description='description',
             preprocess_subroutine='Subroutine',
-        ))
-
-    def test_create_fill_default_values(self):
-        agent = Agent(number='1234', tenant_uuid=self.default_tenant.uuid)
-
-        created_agent = agent_dao.create(agent)
-
-        row = self.session.query(Agent).first()
-
-        assert_that(created_agent, equal_to(row))
-        assert_that(created_agent, has_properties(
-            numgroup=1,
         ))
 
 

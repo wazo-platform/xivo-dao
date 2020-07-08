@@ -7,14 +7,12 @@ from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
 from xivo_dao.alchemy.agent_membership_status import AgentMembershipStatus
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.agentglobalparams import AgentGlobalParams
-from xivo_dao.alchemy.agentgroup import AgentGroup
 from xivo_dao.alchemy.agentqueueskill import AgentQueueSkill
 from xivo_dao.alchemy.application import Application
 from xivo_dao.alchemy.application_dest_node import ApplicationDestNode
 from xivo_dao.alchemy.asterisk_file import AsteriskFile
 from xivo_dao.alchemy.asterisk_file_section import AsteriskFileSection
 from xivo_dao.alchemy.asterisk_file_variable import AsteriskFileVariable
-from xivo_dao.alchemy.attachment import Attachment
 from xivo_dao.alchemy.call_log import CallLog
 from xivo_dao.alchemy.callerid import Callerid
 from xivo_dao.alchemy.callfilter import Callfilter
@@ -27,8 +25,6 @@ from xivo_dao.alchemy.contextmember import ContextMember
 from xivo_dao.alchemy.contextnumbers import ContextNumbers
 from xivo_dao.alchemy.contexttype import ContextType
 from xivo_dao.alchemy.ctimain import CtiMain
-from xivo_dao.alchemy.ctisheetactions import CtiSheetActions
-from xivo_dao.alchemy.ctisheetevents import CtiSheetEvents
 from xivo_dao.alchemy.dhcp import Dhcp
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.dialpattern import DialPattern
@@ -134,7 +130,6 @@ __all__ = [
     "AsteriskFile",
     "AsteriskFileSection",
     "AsteriskFileVariable",
-    "Attachment",
     "CallLog",
     "Callerid",
     "Callfilter",
@@ -147,8 +142,6 @@ __all__ = [
     "ContextNumbers",
     "ContextType",
     "CtiMain",
-    "CtiSheetActions",
-    "CtiSheetEvents",
     "Dhcp",
     "Dialaction",
     "DialPattern",
