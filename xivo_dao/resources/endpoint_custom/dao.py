@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.helpers.db_manager import Session
@@ -13,7 +13,7 @@ def persistor(tenant_uuids=None):
     return CustomPersistor(Session, custom_search, tenant_uuids)
 
 
-def get(custom_id, tenant_uuids=None):
+def get(custom_id, tenant_uuids=None, **ignored):
     return persistor(tenant_uuids).get(custom_id)
 
 

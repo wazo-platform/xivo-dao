@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.helpers.db_manager import daosession
@@ -10,7 +10,7 @@ from .search import sccp_search
 
 
 @daosession
-def get(session, sccp_id, tenant_uuids=None):
+def get(session, sccp_id, tenant_uuids=None, **ignored):
     return SccpPersistor(session, sccp_search, tenant_uuids).get(sccp_id)
 
 

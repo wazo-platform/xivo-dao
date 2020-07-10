@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.helpers.db_utils import flush_session
@@ -25,7 +25,7 @@ def search(session, tenant_uuids=None, **parameters):
 
 
 @daosession
-def get(session, iax_id, tenant_uuids=None):
+def get(session, iax_id, tenant_uuids=None, **ignored):
     return IAXPersistor(session, iax_search, tenant_uuids).get(iax_id)
 
 
