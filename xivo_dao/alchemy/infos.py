@@ -19,3 +19,5 @@ class Infos(Base):
     uuid = Column(String(38), nullable=False, default=new_uuid)
     wazo_version = Column(String(64), nullable=False)
     live_reload_enabled = Column(Boolean, nullable=False, server_default='True')
+    timezone = Column(String(128))
+    configured = Column(Boolean, nullable=False, server_default='False')

@@ -46,7 +46,6 @@ from xivo_dao.alchemy.func_key_destination_type import FuncKeyDestinationType
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
 from xivo_dao.alchemy.func_key_type import FuncKeyType
-from xivo_dao.alchemy.general import General
 from xivo_dao.alchemy.groupfeatures import GroupFeatures
 from xivo_dao.alchemy.iaxcallnumberlimits import IAXCallNumberLimits
 from xivo_dao.alchemy.incall import Incall
@@ -162,7 +161,6 @@ __all__ = [
     "FuncKeyMapping",
     "FuncKeyTemplate",
     "FuncKeyType",
-    "General",
     "GroupFeatures",
     "IAXCallNumberLimits",
     "Incall",
