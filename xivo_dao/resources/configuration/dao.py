@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2013-2015 Avencall
+# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.alchemy.ctimain import CtiMain
+from xivo_dao.alchemy.infos import Infos
 
 
 @daosession
 def is_live_reload_enabled(session):
-    ctimain = session.query(CtiMain).first()
-    return ctimain.live_reload_conf == 1
+    infos = session.query(Infos).first()
+    return infos.live_reload_enabled
 
 
 @daosession
 def set_live_reload_status(session, data):
-    value = 1 if data['enabled'] else 0
+    value = data['enabled']
     with flush_session(session):
-        session.query(CtiMain).update({'live_reload_conf': value})
+        session.query(Infos).update({'live_reload_enabled': value})

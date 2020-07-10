@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2013-2015 Avencall
+# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
-
-from hamcrest.core import assert_that
-from hamcrest.core.core.isequal import equal_to
-from xivo_dao.alchemy.ctimain import CtiMain
 
 from xivo_dao.resources.configuration import dao
 from xivo_dao.tests.test_dao import DAOTestCase
@@ -12,25 +8,30 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 class TestConfigurationDao(DAOTestCase):
 
-    def test_is_live_reload_enabled(self):
-        ctimain = CtiMain(live_reload_conf=0)
-        self.add_me(ctimain)
-
-        result = dao.is_live_reload_enabled()
-
-        self.assertFalse(result)
-
-        ctimain.live_reload_conf = 1
-        self.add_me(ctimain)
+    def test_is_live_reload_enabled_when_default(self):
+        self.add_infos()
 
         result = dao.is_live_reload_enabled()
 
         self.assertTrue(result)
 
+    def test_is_live_reload_enabled_when_enabled(self):
+        self.add_infos(live_reload_enabled=True)
+
+        result = dao.is_live_reload_enabled()
+
+        self.assertTrue(result)
+
+    def test_is_live_reload_enabled_when_disabled(self):
+        self.add_infos(live_reload_enabled=False)
+
+        result = dao.is_live_reload_enabled()
+
+        self.assertFalse(result)
+
     def test_set_live_reload_status(self):
-        ctimain = CtiMain(live_reload_conf=0)
-        self.add_me(ctimain)
+        infos = self.add_infos(live_reload_enabled=False)
 
         dao.set_live_reload_status({'enabled': True})
 
-        assert_that(ctimain.live_reload_conf, equal_to(1))
+        self.assertTrue(infos.live_reload_enabled)

@@ -24,7 +24,6 @@ from xivo_dao.alchemy.contextinclude import ContextInclude
 from xivo_dao.alchemy.contextmember import ContextMember
 from xivo_dao.alchemy.contextnumbers import ContextNumbers
 from xivo_dao.alchemy.contexttype import ContextType
-from xivo_dao.alchemy.ctimain import CtiMain
 from xivo_dao.alchemy.dhcp import Dhcp
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.dialpattern import DialPattern
@@ -47,7 +46,6 @@ from xivo_dao.alchemy.func_key_destination_type import FuncKeyDestinationType
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
 from xivo_dao.alchemy.func_key_type import FuncKeyType
-from xivo_dao.alchemy.general import General
 from xivo_dao.alchemy.groupfeatures import GroupFeatures
 from xivo_dao.alchemy.iaxcallnumberlimits import IAXCallNumberLimits
 from xivo_dao.alchemy.incall import Incall
@@ -141,7 +139,6 @@ __all__ = [
     "ContextMember",
     "ContextNumbers",
     "ContextType",
-    "CtiMain",
     "Dhcp",
     "Dialaction",
     "DialPattern",
@@ -164,7 +161,6 @@ __all__ = [
     "FuncKeyMapping",
     "FuncKeyTemplate",
     "FuncKeyType",
-    "General",
     "GroupFeatures",
     "IAXCallNumberLimits",
     "Incall",
