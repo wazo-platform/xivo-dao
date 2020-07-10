@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2012-2016 Avencall
+# Copyright 2012-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.schema import Column
@@ -17,4 +17,3 @@ class CtiMain(Base):
     tlscertfile = Column(String(128))
     tlsprivkeyfile = Column(String(128))
     context_separation = Column(Integer)
-    live_reload_conf = Column(Integer)
