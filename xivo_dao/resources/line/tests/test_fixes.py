@@ -21,10 +21,10 @@ class TestLineFixes(DAOTestCase):
         super(TestLineFixes, self).setUp()
         self.fixes = LineFixes(self.session)
 
-    def test_when_update_context_extension_then_sip_context_is_updated(self):
+    def test_when_update_context_extension_then_line_context_is_updated(self):
         context = self.add_context()
         other_context = self.add_context()
-        sip = self.add_endpoint_sip(context={'id': context.id})
+        sip = self.add_endpoint_sip()
         line = self.add_line(endpoint_sip_uuid=sip.uuid, context=context.name)
         extension = self.add_extension(exten="1000", context=context.name)
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
@@ -32,10 +32,8 @@ class TestLineFixes(DAOTestCase):
         extension.context = other_context.name
         self.fixes.fix(line.id)
 
-        sip = self.session.query(EndpointSIP).first()
         line = self.session.query(Line).first()
 
-        assert_that(sip.context, equal_to(other_context))
         assert_that(line.context, equal_to(other_context.name))
 
     def test_given_user_only_has_caller_name_then_sip_caller_id_updated(self):
@@ -93,20 +91,6 @@ class TestLineFixes(DAOTestCase):
 
         sip = self.session.query(EndpointSIP).first()
         assert_that(sip.caller_id, equal_to('"Jôhn Smith" <1000>'))
-
-    def test_given_user_has_sip_line_then_context_updated(self):
-        context = self.add_context()
-        user = self.add_user(callerid='"Jôhn Smith" <1000>')
-        sip = self.add_endpoint_sip(caller_id='"Rôger Rabbit" <2000>')
-        line = self.add_line(endpoint_sip_uuid=sip.uuid, context=context.name)
-        self.add_user_line(
-            user_id=user.id, line_id=line.id, main_user=True, main_line=True,
-        )
-
-        self.fixes.fix(line.id)
-
-        sip = self.session.query(EndpointSIP).first()
-        assert_that(sip.context, equal_to(context))
 
     def test_given_user_only_has_caller_name_then_sccp_caller_id_updated(self):
         user = self.add_user(callerid='"Jôhn Smith"')

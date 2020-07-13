@@ -55,7 +55,7 @@ class LineFixes(object):
                  .outerjoin(LineExtension.main_extension_rel)
                  .options(
                      Load(LineFeatures).load_only("id", "name", "number", "context"),
-                     Load(EndpointSIP),  # TODO(pc-m): only add required fields
+                     Load(EndpointSIP).load_only("uuid", "name"),
                      Load(SCCPLine).load_only("id", "name", "context", "cid_name", "cid_num"),
                      Load(SCCPDevice).load_only("id", "line"),
                      Load(UserFeatures).load_only("id", "firstname", "webi_lastname", "callerid"),
@@ -68,7 +68,8 @@ class LineFixes(object):
 
     def fix_protocol(self, row):
         if row.EndpointSIP:
-            self.update_endpoint_sip(row)
+            interface = 'SIP/{}'.format(row.EndpointSIP.name)
+            self.fix_queue_member(row, interface)
         elif row.SCCPLine:
             self.fix_sccp_line(row)
             interface = 'SCCP/{}'.format(row.SCCPLine.name)
@@ -76,11 +77,6 @@ class LineFixes(object):
         elif row.UserCustom:
             row.UserCustom.context = row.LineFeatures.context
             self.fix_queue_member(row, row.UserCustom.interface)
-
-    def update_endpoint_sip(self, row):
-        row.EndpointSIP.context = row.LineFeatures.context_rel
-        interface = 'SIP/{}'.format(row.EndpointSIP.name)
-        self.fix_queue_member(row, interface)
 
     def fix_sccp_line(self, row):
         if row.Extension:

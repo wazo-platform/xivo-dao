@@ -59,11 +59,9 @@ class EndpointSIP(Base):
     asterisk_id = Column(Text)
     tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
     transport_uuid = Column(UUID(as_uuid=True), ForeignKey('pjsip_transport.uuid'))
-    context_id = Column(Integer, ForeignKey('context.id'))
     template = Column(Boolean, server_default=text('false'))
 
     transport = relationship('PJSIPTransport')
-    context = relationship('Context')
     templates = relationship(
         'EndpointSIP',
         primaryjoin='EndpointSIP.uuid == EndpointSIPTemplate.child_uuid',
@@ -110,12 +108,9 @@ class EndpointSIP(Base):
         registration_outbound_auth_section_options=None,
         identify_section_options=None,
         outbound_auth_section_options=None,
-        context=None,
         caller_id=None,
         **kwargs
     ):
-        if context:
-            kwargs['context_id'] = context['id']
         if aor_section_options:
             kwargs['_aor_section'] = AORSection(
                 options=aor_section_options,
