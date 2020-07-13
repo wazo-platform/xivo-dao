@@ -52,7 +52,6 @@ class SipPersistor(CriteriaBuilderMixin):
         return (
             self.session
             .query(self.sip_search.config.table)
-            .options(joinedload('context'))
             .options(joinedload('transport'))
             .options(joinedload('templates'))
             .options(joinedload('_aor_section'))

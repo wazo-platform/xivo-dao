@@ -20,7 +20,6 @@ from ..endpoint_sip_section import EndpointSIPSection
 class TestEndpointSIP(DAOTestCase):
     def test_create_with_all_relations(self):
         transport = self.add_transport()
-        context = self.add_context()
         template_1 = self.add_endpoint_sip(template=True)
         template_2 = self.add_endpoint_sip(template=True)
 
@@ -34,7 +33,6 @@ class TestEndpointSIP(DAOTestCase):
             identify_section_options=[['type', 'identify']],
             outbound_auth_section_options=[['type', 'auth']],
             transport=transport,
-            context={'id': context.id},
             templates=[template_1, template_2],
             tenant_uuid=self.default_tenant.uuid,
             template=True,
@@ -56,7 +54,6 @@ class TestEndpointSIP(DAOTestCase):
             outbound_auth_section_options=[['type', 'auth']],
             template=True,
             transport=has_properties(uuid=transport.uuid),
-            context=has_properties(id=context.id),
             templates=contains(
                 has_properties(uuid=template_1.uuid),
                 has_properties(uuid=template_2.uuid),

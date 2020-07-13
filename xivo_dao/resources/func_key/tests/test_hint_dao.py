@@ -6,7 +6,6 @@ import six
 
 from itertools import permutations
 
-from mock import ANY
 from hamcrest import (
     any_of,
     assert_that,
@@ -153,7 +152,7 @@ class TestHints(DAOTestCase, FuncKeyHelper):
         return user_row
 
     def add_sip_line_to_extension_and_user(self, name, user_id, extension_id, main_line=True):
-        sip = self.add_endpoint_sip(name=name, context={'id': self.context.id})
+        sip = self.add_endpoint_sip(name=name)
         line = self.add_line(context=self.context.name, endpoint_sip_uuid=sip.uuid)
         self.add_user_line(user_id=user_id, line_id=line.id, main_user=True, main_line=main_line)
         self.add_line_extension(line_id=line.id, extension_id=extension_id, main_extension=True)
@@ -201,14 +200,8 @@ class TestUserHints(TestHints):
         assert_that(hint_dao.user_hints('othercontext'), empty())
 
     def test_given_two_users_with_sip_line_then_returns_only_two_hints(self):
-        user1 = self.add_user_and_func_key(
-            self.add_endpoint_sip(name='user1', context={'id': self.context.id}).uuid,
-            '1001',
-        )
-        user2 = self.add_user_and_func_key(
-            self.add_endpoint_sip(name='user2', context={'id': self.context.id}).uuid,
-            '1002',
-        )
+        user1 = self.add_user_and_func_key(self.add_endpoint_sip(name='user1').uuid, '1001')
+        user2 = self.add_user_and_func_key(self.add_endpoint_sip(name='user2').uuid, '1002')
 
         assert_that(hint_dao.user_hints(self.context.name), contains_inanyorder(
             a_hint(user_id=user1.id, extension='1001', argument='SIP/user1'),
@@ -559,10 +552,10 @@ class TestUserSharedHints(TestHints):
 
     def test_multi_line_user(self):
         user = self.add_user()
-        sip_1 = self.add_usersip()
+        sip_1 = self.add_endpoint_sip()
         custom_1 = self.add_usercustom(interface='custom')
         sccp_1 = self.add_sccpline(name='1001')
-        line_1 = self.add_line(endpoint_sip_id=sip_1.id)
+        line_1 = self.add_line(endpoint_sip_uuid=sip_1.uuid)
         line_2 = self.add_line(endpoint_custom_id=custom_1.id)
         line_3 = self.add_line(endpoint_sccp_id=sccp_1.id)
         extension_1 = self.add_extension(typeval=user.id)

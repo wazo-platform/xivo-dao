@@ -4,7 +4,6 @@
 
 from sqlalchemy.orm import Load
 
-from xivo_dao.alchemy.endpoint_sip import EndpointSIP
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures
 from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.usercustom import UserCustom
@@ -22,7 +21,6 @@ class TrunkFixes(object):
 
     def get_row(self, trunk_id):
         query = (self.session.query(TrunkFeatures,
-                                    EndpointSIP,
                                     UserIAX,
                                     UserCustom)
                  .outerjoin(TrunkFeatures.endpoint_sip)
@@ -30,7 +28,6 @@ class TrunkFixes(object):
                  .outerjoin(TrunkFeatures.endpoint_custom)
                  .options(
                      Load(TrunkFeatures).load_only("id", "context"),
-                     Load(EndpointSIP),  # TODO(pc-m): filter only required fields
                      Load(UserIAX).load_only("id", "category", "context"),
                      Load(UserCustom).load_only("id", "category", "context"))
                  .filter(TrunkFeatures.id == trunk_id)
@@ -39,9 +36,7 @@ class TrunkFixes(object):
         return query.first()
 
     def fix_protocol(self, row):
-        if row.EndpointSIP:
-            row.EndpointSIP.context = row.TrunkFeatures.context_rel
-        elif row.UserIAX:
+        if row.UserIAX:
             row.UserIAX.context = row.TrunkFeatures.context
             row.UserIAX.category = 'trunk'
         elif row.UserCustom:
