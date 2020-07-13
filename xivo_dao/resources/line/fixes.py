@@ -68,7 +68,8 @@ class LineFixes(object):
 
     def fix_protocol(self, row):
         if row.EndpointSIP:
-            self.update_endpoint_sip(row)
+            interface = 'SIP/{}'.format(row.EndpointSIP.name)
+            self.fix_queue_member(row, interface)
         elif row.SCCPLine:
             self.fix_sccp_line(row)
             interface = 'SCCP/{}'.format(row.SCCPLine.name)
@@ -76,11 +77,6 @@ class LineFixes(object):
         elif row.UserCustom:
             row.UserCustom.context = row.LineFeatures.context
             self.fix_queue_member(row, row.UserCustom.interface)
-
-    def update_endpoint_sip(self, row):
-        row.EndpointSIP.context = row.LineFeatures.context_rel
-        interface = 'SIP/{}'.format(row.EndpointSIP.name)
-        self.fix_queue_member(row, interface)
 
     def fix_sccp_line(self, row):
         if row.Extension:
