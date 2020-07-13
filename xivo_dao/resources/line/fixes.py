@@ -55,7 +55,7 @@ class LineFixes(object):
                  .outerjoin(LineExtension.main_extension_rel)
                  .options(
                      Load(LineFeatures).load_only("id", "name", "number", "context"),
-                     Load(EndpointSIP),  # TODO(pc-m): only add required fields
+                     Load(EndpointSIP).load_only("uuid", "name"),
                      Load(SCCPLine).load_only("id", "name", "context", "cid_name", "cid_num"),
                      Load(SCCPDevice).load_only("id", "line"),
                      Load(UserFeatures).load_only("id", "firstname", "webi_lastname", "callerid"),
