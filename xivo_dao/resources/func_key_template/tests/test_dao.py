@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import six
@@ -42,9 +42,11 @@ from .. import dao
 class TestFuncKeyTemplateDao(DAOTestCase, FuncKeyHelper):
 
     def setUp(self):
-        DAOTestCase.setUp(self)
+        super(TestFuncKeyTemplateDao, self).setUp()
         self.setup_types()
         self.setup_destination_types()
+        self.destination_type_ids = {value: key
+                                     for key, value in six.iteritems(self.destination_types)}
 
     def assert_template_empty(self, template_id):
         count = (self.session.query(FuncKeyMapping)
@@ -63,18 +65,11 @@ class TestFuncKeyTemplateDao(DAOTestCase, FuncKeyHelper):
 
         return template
 
-
-class TestFuncKeyTemplateCreate(DAOTestCase, FuncKeyHelper):
-
-    def setUp(self):
-        super(TestFuncKeyTemplateCreate, self).setUp()
-        self.setup_types()
-        self.setup_destination_types()
-        self.destination_type_ids = {value: key
-                                     for key, value in six.iteritems(self.destination_types)}
-
     def build_template_with_key(self, destination, position=1):
         return FuncKeyTemplate(keys={position: FuncKeyMapping(destination=destination)})
+
+
+class TestFuncKeyTemplateCreate(TestFuncKeyTemplateDao):
 
     def assert_mapping_has_destination(self, destination_type, destination_row, position=1):
         mapping_row = (self.session.query(FuncKeyMapping)
@@ -668,9 +663,7 @@ class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
 
     def test_given_template_is_associated_to_group_when_deleting_template(self):
         group = self.add_group()
-        template = FuncKeyTemplate(
-            keys={'1': FuncKeyMapping(destination=FuncKeyDestGroup(group_id=group.id))}
-        )
+        template = self.build_template_with_key(FuncKeyDestGroup(group_id=group.id))
         dao.create(template)
 
         dao.delete(template)
@@ -682,20 +675,13 @@ class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
 
     def test_given_multi_template_is_associated_to_group_when_deleting_template(self):
         group = self.add_group()
-        template = FuncKeyTemplate(
-            keys={'1': FuncKeyMapping(destination=FuncKeyDestGroup(group_id=group.id))}
-        )
-
+        template = self.build_template_with_key(FuncKeyDestGroup(group_id=group.id))
         dao.create(template)
-        template = FuncKeyTemplate(
-            keys={'1': FuncKeyMapping(destination=FuncKeyDestGroup(group_id=group.id))}
-        )
 
+        template = self.build_template_with_key(FuncKeyDestGroup(group_id=group.id))
         dao.create(template)
-        template = FuncKeyTemplate(
-            keys={'1': FuncKeyMapping(destination=FuncKeyDestGroup(group_id=group.id))}
-        )
 
+        template = self.build_template_with_key(FuncKeyDestGroup(group_id=group.id))
         dao.create(template)
 
         dao.delete(template)
@@ -707,9 +693,7 @@ class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
 
     def test_given_template_is_associated_to_queue_when_deleting_template(self):
         queue = self.add_queuefeatures()
-        template = FuncKeyTemplate(
-            keys={'1': FuncKeyMapping(destination=FuncKeyDestQueue(queue_id=queue.id))}
-        )
+        template = self.build_template_with_key(FuncKeyDestQueue(queue_id=queue.id))
         dao.create(template)
 
         dao.delete(template)
@@ -721,20 +705,13 @@ class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
 
     def test_given_multi_template_is_associated_to_queue_when_deleting_template(self):
         queue = self.add_queuefeatures()
-        template = FuncKeyTemplate(
-            keys={'1': FuncKeyMapping(destination=FuncKeyDestQueue(queue_id=queue.id))}
-        )
-
+        template = self.build_template_with_key(FuncKeyDestQueue(queue_id=queue.id))
         dao.create(template)
-        template = FuncKeyTemplate(
-            keys={'1': FuncKeyMapping(destination=FuncKeyDestQueue(queue_id=queue.id))}
-        )
 
+        template = self.build_template_with_key(FuncKeyDestQueue(queue_id=queue.id))
         dao.create(template)
-        template = FuncKeyTemplate(
-            keys={'1': FuncKeyMapping(destination=FuncKeyDestQueue(queue_id=queue.id))}
-        )
 
+        template = self.build_template_with_key(FuncKeyDestQueue(queue_id=queue.id))
         dao.create(template)
 
         dao.delete(template)
@@ -746,10 +723,7 @@ class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
 
     def test_given_template_is_associated_to_paging_when_deleting_template(self):
         paging = self.add_paging()
-        template = FuncKeyTemplate(
-            keys={'1': FuncKeyMapping(destination=FuncKeyDestPaging(paging_id=paging.id))}
-        )
-
+        template = self.build_template_with_key(FuncKeyDestPaging(paging_id=paging.id))
         dao.create(template)
 
         dao.delete(template)
@@ -761,15 +735,10 @@ class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
 
     def test_given_multi_template_is_associated_to_paging_when_deleting_template(self):
         paging = self.add_paging()
-        template = FuncKeyTemplate(
-            keys={'1': FuncKeyMapping(destination=FuncKeyDestPaging(paging_id=paging.id))}
-        )
-
+        template = self.build_template_with_key(FuncKeyDestPaging(paging_id=paging.id))
         dao.create(template)
-        template = FuncKeyTemplate(
-            keys={'1': FuncKeyMapping(destination=FuncKeyDestPaging(paging_id=paging.id))}
-        )
 
+        template = self.build_template_with_key(FuncKeyDestPaging(paging_id=paging.id))
         dao.create(template)
 
         dao.delete(template)
@@ -782,10 +751,9 @@ class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
     def test_given_template_is_associated_to_bsfilter_when_deleting_template(self):
         call_filter = self.add_call_filter()
         filter_member = self.add_call_filter_member(callfilterid=call_filter.id)
-        template = FuncKeyTemplate(
-            keys={'1': FuncKeyMapping(destination=FuncKeyDestBSFilter(filter_member_id=filter_member.id))}
+        template = self.build_template_with_key(
+            FuncKeyDestBSFilter(filter_member_id=filter_member.id)
         )
-
         dao.create(template)
 
         dao.delete(template)
@@ -798,15 +766,14 @@ class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
     def test_given_multi_template_is_associated_to_bsfilter_when_deleting_template(self):
         call_filter = self.add_call_filter()
         filter_member = self.add_call_filter_member(callfilterid=call_filter.id)
-        template = FuncKeyTemplate(
-            keys={'1': FuncKeyMapping(destination=FuncKeyDestBSFilter(filter_member_id=filter_member.id))}
+        template = self.build_template_with_key(
+            FuncKeyDestBSFilter(filter_member_id=filter_member.id)
         )
-
         dao.create(template)
-        template = FuncKeyTemplate(
-            keys={'1': FuncKeyMapping(destination=FuncKeyDestBSFilter(filter_member_id=filter_member.id))}
-        )
 
+        template = self.build_template_with_key(
+            FuncKeyDestBSFilter(filter_member_id=filter_member.id)
+        )
         dao.create(template)
 
         dao.delete(template)
@@ -819,8 +786,8 @@ class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
     def test_given_template_is_associated_to_agent_when_deleting_template(self):
         agent = self.add_agent()
         self.add_extension(type='extenfeatures', typeval='agentstaticlogin')
-        template = FuncKeyTemplate(
-            keys={'1': FuncKeyMapping(destination=FuncKeyDestAgent(agent_id=agent.id, action='agentstaticlogin'))}
+        template = self.build_template_with_key(
+            FuncKeyDestAgent(agent_id=agent.id, action='agentstaticlogin')
         )
         dao.create(template)
 
@@ -834,20 +801,20 @@ class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
     def test_given_multi_template_is_associated_to_agent_when_deleting_template(self):
         agent = self.add_agent()
         self.add_extension(type='extenfeatures', typeval='agentstaticlogin')
-        template = FuncKeyTemplate(
-            keys={'1': FuncKeyMapping(destination=FuncKeyDestAgent(agent_id=agent.id, action='agentstaticlogin'))}
+        template = self.build_template_with_key(
+            FuncKeyDestAgent(agent_id=agent.id, action='agentstaticlogin')
         )
 
         dao.create(template)
-        template = FuncKeyTemplate(
-            keys={'1': FuncKeyMapping(destination=FuncKeyDestAgent(agent_id=agent.id, action='agentstaticlogin'))}
-        )
 
+        template = self.build_template_with_key(
+            FuncKeyDestAgent(agent_id=agent.id, action='agentstaticlogin')
+        )
         dao.create(template)
-        template = FuncKeyTemplate(
-            keys={'1': FuncKeyMapping(destination=FuncKeyDestAgent(agent_id=agent.id, action='agentstaticlogin'))}
-        )
 
+        template = self.build_template_with_key(
+            FuncKeyDestAgent(agent_id=agent.id, action='agentstaticlogin')
+        )
         dao.create(template)
 
         dao.delete(template)
