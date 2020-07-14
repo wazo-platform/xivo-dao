@@ -456,6 +456,19 @@ class TestFuncKeyTemplateGet(TestFuncKeyTemplateDao):
 
         assert_that(result, equal_to(template_row))
 
+    def test_get_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        funckey_template_row = self.add_func_key_template(tenant_uuid=tenant.uuid)
+        funckey_template = dao.get(funckey_template_row.id, tenant_uuids=[tenant.uuid])
+        assert_that(funckey_template, equal_to(funckey_template_row))
+
+        funckey_template_row = self.add_func_key_template()
+        self.assertRaises(
+            NotFoundError,
+            dao.get, funckey_template_row.id, tenant_uuids=[tenant.uuid],
+        )
+
     def test_given_template_is_private_then_func_keys_are_not_inherited(self):
         destination_row = self.create_user_func_key()
         expected = self.prepare_template(destination_row,

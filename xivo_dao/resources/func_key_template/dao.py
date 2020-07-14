@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2014-2015 Avencall
+# Copyright 2014-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.helpers.db_manager import daosession
@@ -31,8 +31,8 @@ def create(session, template):
 
 
 @daosession
-def get(session, template_id):
-    persistor = build_persistor(session)
+def get(session, template_id, tenant_uuids=None):
+    persistor = build_persistor(session, tenant_uuids=tenant_uuids)
     return persistor.get(template_id)
 
 
