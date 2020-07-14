@@ -66,7 +66,10 @@ class TestFuncKeyTemplateDao(DAOTestCase, FuncKeyHelper):
         return template
 
     def build_template_with_key(self, destination, position=1):
-        return FuncKeyTemplate(keys={position: FuncKeyMapping(destination=destination)})
+        return FuncKeyTemplate(
+            tenant_uuid=self.default_tenant.uuid,
+            keys={position: FuncKeyMapping(destination=destination)},
+        )
 
 
 class TestFuncKeyTemplateCreate(TestFuncKeyTemplateDao):
@@ -83,7 +86,7 @@ class TestFuncKeyTemplateCreate(TestFuncKeyTemplateDao):
         assert_that(mapping_row.destination_type_id, equal_to(destination_type_id))
 
     def test_when_creating_an_empty_template_then_template_row(self):
-        template = FuncKeyTemplate()
+        template = FuncKeyTemplate(tenant_uuid=self.default_tenant.uuid)
 
         result = dao.create(template)
 
@@ -92,10 +95,11 @@ class TestFuncKeyTemplateCreate(TestFuncKeyTemplateDao):
         assert_that(template_row.name, none())
         assert_that(result.name, none())
         assert_that(result.id, equal_to(template_row.id))
+        assert_that(result.tenant_uuid, self.default_tenant.uuid)
         assert_that(result.keys, equal_to({}))
 
     def test_when_creating_a_template_with_name_then_row_has_name(self):
-        template = FuncKeyTemplate(name='foobar')
+        template = FuncKeyTemplate(name='foobar', tenant_uuid=self.default_tenant.uuid)
 
         result = dao.create(template)
 
