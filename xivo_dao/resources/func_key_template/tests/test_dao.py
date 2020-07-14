@@ -39,10 +39,10 @@ from xivo_dao.resources.utils.search import SearchResult
 from .. import dao
 
 
-class TestFuncKeyTemplateDao(DAOTestCase, FuncKeyHelper):
+class TestDao(DAOTestCase, FuncKeyHelper):
 
     def setUp(self):
-        super(TestFuncKeyTemplateDao, self).setUp()
+        super(TestDao, self).setUp()
         self.setup_types()
         self.setup_destination_types()
         self.destination_type_ids = {value: key
@@ -72,7 +72,7 @@ class TestFuncKeyTemplateDao(DAOTestCase, FuncKeyHelper):
         )
 
 
-class TestFuncKeyTemplateCreate(TestFuncKeyTemplateDao):
+class TestCreate(TestDao):
 
     def assert_mapping_has_destination(self, destination_type, destination_row, position=1):
         mapping_row = (self.session.query(FuncKeyMapping)
@@ -443,7 +443,7 @@ class TestFuncKeyTemplateCreate(TestFuncKeyTemplateDao):
         assert_that(dest_agent_count, equal_to(1))
 
 
-class TestFuncKeyTemplateGet(TestFuncKeyTemplateDao):
+class TestGet(TestDao):
 
     def test_given_no_template_then_raises_error(self):
         assert_that(calling(dao.get).with_args(1),
@@ -615,7 +615,7 @@ class TestFuncKeyTemplateGet(TestFuncKeyTemplateDao):
         assert_that(expected, equal_to(result))
 
 
-class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
+class TestDelete(TestDao):
 
     def test_given_template_has_no_funckeys_when_deleting_then_deletes_template(self):
         template = self.prepare_template()
@@ -842,7 +842,7 @@ class TestFuncKeyTemplateDelete(TestFuncKeyTemplateDao):
         assert_that(dest_agent_count, equal_to(1))
 
 
-class TestFuncKeyTemplateEdit(TestFuncKeyTemplateDao):
+class TestEdit(TestDao):
 
     def test_given_template_name_is_modified_when_editing_then_updates_name(self):
         template = self.prepare_template(name='foobar')
@@ -936,7 +936,7 @@ class TestFuncKeyTemplateEdit(TestFuncKeyTemplateDao):
         assert_that(second_mapping_row.func_key_id, equal_to(conference_destination_row.func_key_id))
 
 
-class TestFuncKeyTemplateSearch(TestFuncKeyTemplateDao):
+class TestSearch(TestDao):
 
     def assert_search_returns_result(self, search_result, **parameters):
         result = dao.search(**parameters)
