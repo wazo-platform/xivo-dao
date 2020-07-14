@@ -38,6 +38,9 @@ from xivo_dao.resources.extension.database import (
     AgentActionExtensionConverter,
     GroupMemberActionExtensionConverter,
 )
+from xivo_dao.resources.utils.search import SearchResult
+
+from .search import template_search
 
 
 def build_persistor(session, tenant_uuids=None):
@@ -59,15 +62,30 @@ def build_persistor(session, tenant_uuids=None):
         'transfer': FeaturesPersistor,
         'user': UserPersistor,
     }
-    return FuncKeyPersistor(session, destination_persistors, tenant_uuids=tenant_uuids)
+
+    return FuncKeyPersistor(
+        session,
+        destination_persistors,
+        template_search,
+        tenant_uuids=tenant_uuids,
+    )
 
 
 class FuncKeyPersistor(object):
 
-    def __init__(self, session, persistors, tenant_uuids=None):
+    def __init__(self, session, persistors, template_search, tenant_uuids=None):
         self.persistors = persistors
         self.session = session
+        self.template_search = template_search
         self.tenant_uuids = tenant_uuids
+
+    def search(self, parameters):
+        query = self.session.query(FuncKeyTemplate.id)
+        query = self._filter_tenant_uuid(query)
+        rows, total = self.template_search.search_from_query(query, parameters)
+
+        items = [self.get(row.id) for row in rows]
+        return SearchResult(total=total, items=items)
 
     def create(self, template):
         template = self.add_template(template)

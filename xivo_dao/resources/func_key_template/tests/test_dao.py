@@ -962,3 +962,17 @@ class TestFuncKeyTemplateSearch(TestFuncKeyTemplateDao):
         expected = SearchResult(0, [])
 
         self.assert_search_returns_result(expected)
+
+    def test_search_multi_tenant(self):
+        tenant = self.add_tenant()
+
+        template1 = self.add_func_key_template(name='a')
+        template2 = self.add_func_key_template(name='b', tenant_uuid=tenant.uuid)
+
+        expected = SearchResult(2, [template1, template2])
+        tenants = [tenant.uuid, self.default_tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
+
+        expected = SearchResult(1, [template2])
+        tenants = [tenant.uuid]
+        self.assert_search_returns_result(expected, tenant_uuids=tenants)
