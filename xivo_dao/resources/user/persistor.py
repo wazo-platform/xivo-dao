@@ -83,7 +83,7 @@ class UserPersistor(CriteriaBuilderMixin):
 
     def prepare_template(self, user):
         if not user.has_private_template():
-            template = FuncKeyTemplate(private=True)
+            template = FuncKeyTemplate(tenant_uuid=user.tenant_uuid, private=True)
             user.func_key_template_private = template
 
     def edit(self, user):
