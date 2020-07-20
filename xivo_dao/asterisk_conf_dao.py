@@ -390,7 +390,15 @@ def find_sip_user_settings(session):
     query = session.query(
         LineFeatures,
     ).options(
-        joinedload('endpoint_sip'),
+        joinedload('endpoint_sip').joinedload('templates'),
+    ).options(
+        joinedload('endpoint_sip').joinedload('_aor_section'),
+    ).options(
+        joinedload('endpoint_sip').joinedload('_endpoint_section'),
+    ).options(
+        joinedload('endpoint_sip').joinedload('_auth_section'),
+    ).options(
+        joinedload('endpoint_sip').joinedload('transport'),
     ).options(
         joinedload('user_lines').joinedload('user').joinedload('voicemail'),
     ).options(
