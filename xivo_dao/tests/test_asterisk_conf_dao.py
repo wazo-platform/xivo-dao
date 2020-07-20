@@ -1107,12 +1107,11 @@ class TestAsteriskConfDAO(DAOTestCase, PickupHelperMixin):
         return endpoint_sip.name, ule.user_id
 
 
-class TestFindSipUserSettings(DAOTestCase, PickupHelperMixin):
+class BaseFindSIPSettings(DAOTestCase):
 
     def setUp(self):
-        super(TestFindSipUserSettings, self).setUp()
+        super(BaseFindSIPSettings, self).setUp()
         transport_udp = self.add_transport(name='transport-udp')
-        transport_wss = self.add_transport(name='transport-wss')
         sip_general_body = {
             'label': 'General config',
             'aor_section_options': [
@@ -1141,6 +1140,17 @@ class TestFindSipUserSettings(DAOTestCase, PickupHelperMixin):
             ],
             'template': True,
         }
+        self.general_config_template = self.add_endpoint_sip(
+            transport=transport_udp,
+            **sip_general_body
+        )
+
+
+class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
+
+    def setUp(self):
+        super(TestFindSipUserSettings, self).setUp()
+        transport_wss = self.add_transport(name='transport-wss')
         webrtc_body = {
             'label': 'WebRTC line',
             'aor_section_options': [
@@ -1152,10 +1162,6 @@ class TestFindSipUserSettings(DAOTestCase, PickupHelperMixin):
             ],
             'template': True,
         }
-        self.general_config_template = self.add_endpoint_sip(
-            transport=transport_udp,
-            **sip_general_body
-        )
         self.webrtc_config_template = self.add_endpoint_sip(
             transport=transport_wss,
             **webrtc_body
@@ -1482,6 +1488,9 @@ class TestFindSipUserSettings(DAOTestCase, PickupHelperMixin):
 
 
 class TestFindSipTrunkSettings(DAOTestCase):
+
+    def setUp(self):
+        super(TestFindSipTrunkSettings, self).setUp()
 
     def test_given_no_sip_accounts_then_returns_empty_list(self):
         result = asterisk_conf_dao.find_sip_trunk_settings()
