@@ -289,13 +289,14 @@ class ItemInserter(object):
         return line_extension
 
     def add_endpoint_sip(self, **kwargs):
+        kwargs.setdefault('name', self._random_name())
         kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
         endpoint_sip = EndpointSIP(**kwargs)
         self.add_me(endpoint_sip)
         return endpoint_sip
 
     def add_line(self, **kwargs):
-        kwargs.setdefault('name', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
+        kwargs.setdefault('name', self._random_name())
         kwargs.setdefault('context', 'foocontext')
         kwargs.setdefault('provisioningid', int(''.join(random.choice('123456789') for _ in range(6))))
 
