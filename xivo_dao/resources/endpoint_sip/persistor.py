@@ -6,7 +6,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import joinedload
 
 from xivo_dao.alchemy.endpoint_sip import EndpointSIP
-from xivo_dao.helpers import errors
+from xivo_dao.helpers import errors, generators
 from xivo_dao.resources.line.fixes import LineFixes
 from xivo_dao.resources.trunk.fixes import TrunkFixes
 from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
@@ -66,6 +66,7 @@ class SipPersistor(CriteriaBuilderMixin):
         )
 
     def create(self, sip):
+        self._fill_default_values(sip)
         self.session.add(sip)
         self.session.flush()
         return sip
@@ -99,5 +100,9 @@ class SipPersistor(CriteriaBuilderMixin):
         if sip.trunk:
             TrunkFixes(self.session).fix(sip.trunk.id)
 
-    def _already_exists(self, column, data):
-        return self.session.query(EndpointSIP).filter(column == data).count() > 0
+    def _fill_default_values(self, sip):
+        if sip.name is None:
+            sip.name = generators.find_unused_hash(self._name_already_exists)
+
+    def _name_already_exists(self, data):
+        return self.session.query(EndpointSIP).filter(EndpointSIP.name == data).count() > 0

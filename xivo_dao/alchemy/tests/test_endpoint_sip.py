@@ -7,7 +7,6 @@ from hamcrest import (
     contains,
     empty,
     equal_to,
-    has_length,
     has_properties,
     none,
 )
@@ -25,6 +24,7 @@ class TestEndpointSIP(DAOTestCase):
 
         endpoint = EndpointSIP(
             label='general_config',
+            name='general_config',
             aor_section_options=[['type', 'aor']],
             auth_section_options=[['type', 'auth']],
             endpoint_section_options=[['type', 'endpoint']],
@@ -44,7 +44,7 @@ class TestEndpointSIP(DAOTestCase):
         row = self.session.query(EndpointSIP).filter_by(uuid=endpoint.uuid).first()
         assert_that(row, has_properties(
             label='general_config',
-            name=has_length(8),
+            name='general_config',
             aor_section_options=[['type', 'aor']],
             auth_section_options=[['type', 'auth']],
             endpoint_section_options=[['type', 'endpoint']],
@@ -70,6 +70,7 @@ class TestEndpointSIP(DAOTestCase):
 
         endpoint = EndpointSIP(
             label='my-line',
+            name='general_config',
             templates=[template],
             auth_section_options=[
                 ['username', 'random-username'],
@@ -83,7 +84,7 @@ class TestEndpointSIP(DAOTestCase):
         row = self.session.query(EndpointSIP).filter_by(uuid=endpoint.uuid).first()
         assert_that(row, has_properties(
             label='my-line',
-            name=has_length(8),
+            name='general_config',
             aor_section_options=[],
             auth_section_options=[
                 ['username', 'random-username'],
@@ -100,22 +101,6 @@ class TestEndpointSIP(DAOTestCase):
             )
         ))
 
-    def test_auto_generated_name(self):
-        self.session.add(EndpointSIP(
-            name=None,
-            tenant_uuid=self.default_tenant.uuid,
-        ))
-        self.session.add(EndpointSIP(tenant_uuid=self.default_tenant.uuid))
-        self.session.flush()
-
-        rows = self.session.query(EndpointSIP).all()
-        assert_that(
-            rows,
-            contains(
-                has_properties(name=has_length(8)),
-                has_properties(name=has_length(8)),
-            )
-        )
     def test_username(self):
         endpoint = self.add_endpoint_sip(
             auth_section_options=[['username', 'my-username']],
