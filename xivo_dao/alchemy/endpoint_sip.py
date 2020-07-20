@@ -96,7 +96,6 @@ class EndpointSIP(Base):
 
     def __init__(
         self,
-        *args,
         aor_section_options=None,
         auth_section_options=None,
         endpoint_section_options=None,
@@ -105,6 +104,7 @@ class EndpointSIP(Base):
         identify_section_options=None,
         outbound_auth_section_options=None,
         caller_id=None,
+        *args,
         **kwargs
     ):
         if aor_section_options:
