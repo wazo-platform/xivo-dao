@@ -81,7 +81,7 @@ class SipPersistor(CriteriaBuilderMixin):
 
     def delete(self, sip):
         self.session.delete(sip)
-        # self._fix_associated(sip)
+        self._fix_associated(sip)
 
     def _filter_tenant_uuid(self, query):
         if self.tenant_uuids is None:
