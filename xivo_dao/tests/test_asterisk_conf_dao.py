@@ -1166,12 +1166,12 @@ class TestFindSipUserSettings(DAOTestCase, PickupHelperMixin):
         assert_that(result, contains())
 
     def test_given_sip_account_is_not_associated_then_returns_empty_list(self):
-        self.add_endpoint_sip()
+        self.add_endpoint_sip(template=False)
         result = asterisk_conf_dao.find_sip_user_settings()
         assert_that(result, contains())
 
     def test_given_sip_account_is_associated_to_trunk_then_returns_empty_list(self):
-        endpoint = self.add_endpoint_sip()
+        endpoint = self.add_endpoint_sip(template=False)
         self.add_trunk(endpoint_sip_uuid=endpoint.uuid)
         result = asterisk_conf_dao.find_sip_user_settings()
         assert_that(result, contains())
