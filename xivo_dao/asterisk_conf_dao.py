@@ -423,18 +423,6 @@ def find_sip_user_settings(session):
             if user.voicemail:
                 voicemail_mapping[line.endpoint_sip_uuid].append(user.voicemail)
 
-    def endpoint_to_dict(endpoint):
-        return {
-            'uuid': endpoint.uuid,
-            'name': endpoint.name,
-            'label': endpoint.label,
-            'aor_section_options': endpoint.aor_section_options,
-            'auth_section_options': endpoint.auth_section_options,
-            'endpoint_section_options': endpoint.endpoint_section_options,
-            'template': endpoint.template,
-            'asterisk_id': endpoint.asterisk_id,
-        }
-
     def get_flat_config(endpoint):
         if endpoint.uuid in flat_configs:
             return flat_configs[endpoint.uuid]
@@ -533,15 +521,102 @@ def find_sip_user_settings(session):
 
 @daosession
 def find_sip_trunk_settings(session):
-    # TODO(pc-m): I changed userSIP to EndpointSIP but did not change any logic
     query = session.query(
-        EndpointSIP, TrunkFeatures.twilio_incoming,
-    ).join(
         TrunkFeatures,
-        TrunkFeatures.endpoint_sip_uuid == EndpointSIP.uuid,
-    ).order_by(EndpointSIP.name)
+    ).options(
+        joinedload('endpoint_sip').joinedload('templates'),
+    ).options(
+        joinedload('endpoint_sip').joinedload('_aor_section'),
+    ).options(
+        joinedload('endpoint_sip').joinedload('_endpoint_section'),
+    ).options(
+        joinedload('endpoint_sip').joinedload('_auth_section'),
+    ).options(
+        joinedload('endpoint_sip').joinedload('_identify_section'),
+    ).options(
+        joinedload('endpoint_sip').joinedload('transport'),
+    ).filter(
+        TrunkFeatures.endpoint_sip_uuid.isnot(None),
+    )
 
-    return query.all()
+    trunks = query.all()
+    context_mapping = {}
+    raw_configs = {}
+    for trunk in trunks:
+        raw_configs[trunk.endpoint_sip_uuid] = trunk.endpoint_sip
+        context_mapping[trunk.endpoint_sip_uuid] = trunk.context
+
+    def get_flat_config(endpoint):
+        if endpoint.uuid in flat_configs:
+            return flat_configs[endpoint.uuid]
+        else:
+            parents = [get_flat_config(parent) for parent in endpoint.templates]
+            base_config = endpoint_to_dict(endpoint)
+            context_name = context_mapping.get(endpoint.uuid)
+            if context_name:
+                base_config['endpoint_section_options'].append(['context', context_name])
+            if endpoint.transport_uuid:
+                base_config['endpoint_section_options'].append(
+                    ['transport', endpoint.transport.name],
+                )
+            builder = {}
+            for parent in parents + [base_config]:
+                for section in [
+                    'aor_section_options',
+                    'auth_section_options',
+                    'endpoint_section_options',
+                    'identify_section_options',
+                ]:
+                    builder.setdefault(section, [])
+                    parent_options = parent.get(section, [])
+                    for option in parent_options:
+                        builder[section].append(option)
+            builder['endpoint_section_options'].extend([
+                ['set_var', 'WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)],
+            ])
+            if builder['endpoint_section_options']:
+                builder['endpoint_section_options'].append(['type', 'endpoint'])
+            if builder['aor_section_options']:
+                builder['aor_section_options'].append(['type', 'aor'])
+                builder['endpoint_section_options'].append(['aors', endpoint.name])
+            if builder['auth_section_options']:
+                builder['auth_section_options'].append(['type', 'auth'])
+                builder['endpoint_section_options'].append(['auth', endpoint.name])
+            if builder['identify_section_options']:
+                builder['identify_section_options'].append(['type', 'identify'])
+            builder.update({
+                'uuid': base_config['uuid'],
+                'name': base_config['name'],
+                'label': base_config['label'],
+                'template': base_config['template'],
+                'asterisk_id': base_config['asterisk_id'],
+            })
+            if builder['template']:
+                flat_configs[builder['uuid']] = builder
+            return builder
+
+    # A flat_config is an endpoint config with all inherited fields merged into a single object
+    flat_configs = {}
+    for uuid, raw_config in raw_configs.items():
+        flat_config = get_flat_config(raw_config)
+        # TODO(pc-m): Remove duplicates
+        flat_configs[uuid] = flat_config
+
+    return [config for config in flat_configs.values() if config['template'] is False]
+
+
+def endpoint_to_dict(endpoint):
+    return {
+        'uuid': endpoint.uuid,
+        'name': endpoint.name,
+        'label': endpoint.label,
+        'aor_section_options': endpoint.aor_section_options,
+        'auth_section_options': endpoint.auth_section_options,
+        'endpoint_section_options': endpoint.endpoint_section_options,
+        'identify_section_options': endpoint.identify_section_options,
+        'template': endpoint.template,
+        'asterisk_id': endpoint.asterisk_id,
+    }
 
 
 @daosession

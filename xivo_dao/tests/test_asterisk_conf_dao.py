@@ -1487,39 +1487,222 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
             self.fail('no "named_call_group" in {}'.format(result[0]))
 
 
-class TestFindSipTrunkSettings(DAOTestCase):
+class TestFindSipTrunkSettings(BaseFindSIPSettings):
 
     def setUp(self):
         super(TestFindSipTrunkSettings, self).setUp()
+        global_trunk_body = {
+            'name': 'global_trunk',
+            'label': 'Global trunk configuration',
+            'templates': [self.general_config_template],
+            'registration_section_options': [
+                ['retry_interval', '20'],
+                ['max_retries', '0'],
+                ['auth_rejection_permanent', 'off'],
+                ['forbidden_retry_interval', '30'],
+                ['fatal_retry_interval', '30'],
+                ['max_retries', '10000'],
+            ],
+            'template': True,
+        }
+        twilio_trunk_body = {
+            'name': 'twilio',
+            'label': 'Twilio specific trunk configuration',
+            'template': True,
+            'identify_section_options': [
+                ['match', '54.172.60.0'],
+                ['match', '54.172.60.1'],
+                ['match', '54.172.60.2'],
+                ['match', '54.172.60.3'],
+                ['match', '54.244.51.0'],
+                ['match', '54.244.51.1'],
+                ['match', '54.244.51.2'],
+                ['match', '54.244.51.3'],
+                ['match', '54.171.127.192'],
+                ['match', '54.171.127.193'],
+                ['match', '54.171.127.194'],
+                ['match', '54.171.127.195'],
+                ['match', '35.156.191.128'],
+                ['match', '35.156.191.129'],
+                ['match', '35.156.191.130'],
+                ['match', '35.156.191.131'],
+                ['match', '54.65.63.192'],
+                ['match', '54.65.63.193'],
+                ['match', '54.65.63.194'],
+                ['match', '54.65.63.195'],
+                ['match', '54.169.127.128'],
+                ['match', '54.169.127.129'],
+                ['match', '54.169.127.130'],
+                ['match', '54.169.127.131'],
+                ['match', '54.252.254.64'],
+                ['match', '54.252.254.65'],
+                ['match', '54.252.254.66'],
+                ['match', '54.252.254.67'],
+                ['match', '177.71.206.192'],
+                ['match', '177.71.206.193'],
+                ['match', '177.71.206.194'],
+                ['match', '177.71.206.195'],
+            ],
+        }
+        self.global_trunk_template = self.add_endpoint_sip(
+            **global_trunk_body
+        )
+        self.twilio_template = self.add_endpoint_sip(
+            **twilio_trunk_body
+        )
 
     def test_given_no_sip_accounts_then_returns_empty_list(self):
         result = asterisk_conf_dao.find_sip_trunk_settings()
         assert_that(result, contains())
 
     def test_given_sip_account_is_not_category_user_then_returns_empty_list(self):
-        self.add_endpoint_sip()
+        self.add_endpoint_sip(template=False)
         result = asterisk_conf_dao.find_sip_trunk_settings()
         assert_that(result, contains())
 
     def test_given_sip_account_is_deactivated_then_returns_empty_list(self):
-        self.add_endpoint_sip()
+        self.add_endpoint_sip(template=False)
         result = asterisk_conf_dao.find_sip_trunk_settings()
         assert_that(result, contains())
 
-    def test_given_sip_has_all_resources_associated_then_all_resources_found_in_result(self):
-        sip = self.add_endpoint_sip()
-        self.add_trunk(endpoint_sip_uuid=sip.uuid, twilio_incoming=True)
+    def test_given_sip_account_is_associated_to_a_line_then_returns_empty_list(self):
+        endpoint = self.add_endpoint_sip(template=False)
+        self.add_line(endpoint_sip_uuid=endpoint.uuid)
+        result = asterisk_conf_dao.find_sip_trunk_settings()
+        assert_that(result, contains())
 
-        results = asterisk_conf_dao.find_sip_trunk_settings()
+    def test_that_templates_are_included(self):
+        endpoint = self.add_endpoint_sip(
+            label='my trunk',
+            template=False,
+            templates=[self.global_trunk_template, self.twilio_template],
+            endpoint_section_options=[
+                ['callerid', '"Foo Bar" <101>'],
+            ],
+            auth_section_options=[
+                ['username', 'iddqd'],
+                ['password', 'idbehold'],
+            ],
+        )
+        self.add_trunk(endpoint_sip_uuid=endpoint.uuid)
 
-        assert_that(results, contains(
-            has_properties(twilio_incoming=True),
+        result = asterisk_conf_dao.find_sip_trunk_settings()
+        assert_that(result, contains_inanyorder(
+            has_entries(
+                name=endpoint.name,
+                label=endpoint.label,
+                aor_section_options=has_items(
+                    ['qualify_frequency', '60'],
+                    ['maximum_expiration', '3600'],
+                    ['minimum_expiration', '60'],
+                    ['default_expiration', '120'],
+                    ['max_contacts', '1'],
+                    ['remove_existing', 'true']
+                ),
+                auth_section_options=has_items(
+                    ['username', 'iddqd'],
+                    ['password', 'idbehold'],
+                ),
+                endpoint_section_options=has_items(
+                    ['allow', '!all,ulaw'],
+                    ['allow_subscribe', 'yes'],
+                    ['allow_transfer', 'yes'],
+                    ['use_ptime', 'yes'],
+                    ['rtp_timeout', '7200'],
+                    ['rtp_timeout_hold', '0'],
+                    ['timers_sess_expires', '600'],
+                    ['timers_min_se', '90'],
+                    ['trust_id_inbound', 'yes'],
+                    ['dtmf_mode', 'rfc4733'],
+                    ['send_rpid', 'yes'],
+                    ['inband_progress', 'no'],
+                    ['direct_media', 'no'],
+                    ['callerid', '"Foo Bar" <101>'],
+                ),
+                identify_section_options=has_items(
+                    ['match', '54.172.60.0'],
+                    ['match', '54.172.60.1'],
+                    ['match', '54.172.60.2'],
+                    ['match', '54.172.60.3'],
+                    ['match', '54.244.51.0'],
+                    ['match', '54.244.51.1'],
+                    ['match', '54.244.51.2'],
+                    ['match', '54.244.51.3'],
+                    ['match', '54.171.127.192'],
+                    ['match', '54.171.127.193'],
+                    ['match', '54.171.127.194'],
+                    ['match', '54.171.127.195'],
+                    ['match', '35.156.191.128'],
+                    ['match', '35.156.191.129'],
+                    ['match', '35.156.191.130'],
+                    ['match', '35.156.191.131'],
+                    ['match', '54.65.63.192'],
+                    ['match', '54.65.63.193'],
+                    ['match', '54.65.63.194'],
+                    ['match', '54.65.63.195'],
+                    ['match', '54.169.127.128'],
+                    ['match', '54.169.127.129'],
+                    ['match', '54.169.127.130'],
+                    ['match', '54.169.127.131'],
+                    ['match', '54.252.254.64'],
+                    ['match', '54.252.254.65'],
+                    ['match', '54.252.254.66'],
+                    ['match', '54.252.254.67'],
+                    ['match', '177.71.206.192'],
+                    ['match', '177.71.206.193'],
+                    ['match', '177.71.206.194'],
+                    ['match', '177.71.206.195'],
+                ),
+            ),
         ))
 
-    def test_given_sip_account_when_querying_then_same_sip_account_row_is_returned(self):
-        sip = self.add_endpoint_sip()
-        self.add_trunk(endpoint_sip_uuid=sip.uuid)
+    def test_that_the_trunk_context_is_used(self):
+        context = self.add_context()
+        endpoint = self.add_endpoint_sip(template=False)
+        self.add_trunk(endpoint_sip_uuid=endpoint.uuid, context=context.name)
 
-        results = asterisk_conf_dao.find_sip_trunk_settings()
+        result = asterisk_conf_dao.find_sip_trunk_settings()
+        assert_that(
+            result,
+            contains(has_entries(
+                endpoint_section_options=has_items(['context', context.name]),
+            )),
+        )
 
-        assert_that(results, contains(has_properties(EndpointSIP=sip)))
+    def test_that_the_transport_is_used_from_endpoint(self):
+        transport = self.add_transport()
+        endpoint = self.add_endpoint_sip(
+            templates=[self.global_trunk_template],
+            transport_uuid=transport.uuid,
+            template=False,
+        )
+        self.add_trunk(endpoint_sip_uuid=endpoint.uuid)
+
+        result = asterisk_conf_dao.find_sip_trunk_settings()
+        assert_that(
+            result,
+            contains(has_entries(
+                endpoint_section_options=has_items(
+                    ['transport', transport.name],
+                ),
+            )),
+        )
+
+    def test_that_the_transport_is_used_from_a_template(self):
+        transport = self.add_transport()
+        template = self.add_endpoint_sip(template=True, transport=transport)
+        endpoint = self.add_endpoint_sip(
+            templates=[self.general_config_template, self.global_trunk_template, template],
+            template=False,
+        )
+        self.add_trunk(endpoint_sip_uuid=endpoint.uuid)
+
+        result = asterisk_conf_dao.find_sip_trunk_settings()
+        assert_that(
+            result,
+            contains(has_entries(
+                endpoint_section_options=has_items(
+                    ['transport', transport.name],
+                ),
+            )),
+        )
