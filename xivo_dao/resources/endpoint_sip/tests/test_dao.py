@@ -168,7 +168,6 @@ class TestGet(DAOTestCase):
         sip = sip_dao.get(row.uuid, template=True)
         assert_that(sip, has_properties(
             label='general_config',
-            name=has_length(8),
             aor_section_options=[['type', 'aor']],
             auth_section_options=[['type', 'auth']],
             endpoint_section_options=[['type', 'endpoint']],
