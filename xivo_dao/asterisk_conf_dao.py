@@ -566,6 +566,9 @@ def find_sip_trunk_settings(session):
                     'auth_section_options',
                     'endpoint_section_options',
                     'identify_section_options',
+                    'registration_section_options',
+                    'registration_outbound_auth_section_options',
+                    'outbound_auth_section_options',
                 ]:
                     builder.setdefault(section, [])
                     parent_options = parent.get(section, [])
@@ -584,6 +587,19 @@ def find_sip_trunk_settings(session):
                 builder['endpoint_section_options'].append(['auth', endpoint.name])
             if builder['identify_section_options']:
                 builder['identify_section_options'].append(['type', 'identify'])
+            if builder['registration_section_options']:
+                builder['registration_section_options'].append(['type', 'registration'])
+                for key, value in builder['registration_section_options']:
+                    if key == 'client_uri':
+                        if 'sip:' in value:
+                            reg_name = value.split(':', 1)[1]
+                            builder['registration_section_options'].append(
+                                ['outbound_auth', 'auth_reg_{}'.format(reg_name)],
+                            )
+            if builder['outbound_auth_section_options']:
+                builder['outbound_auth_section_options'].append(['type', 'auth'])
+            if builder['registration_outbound_auth_section_options']:
+                builder['registration_outbound_auth_section_options'].append(['type', 'auth'])
             builder.update({
                 'uuid': base_config['uuid'],
                 'name': base_config['name'],
@@ -613,7 +629,10 @@ def endpoint_to_dict(endpoint):
         'aor_section_options': endpoint.aor_section_options,
         'auth_section_options': endpoint.auth_section_options,
         'endpoint_section_options': endpoint.endpoint_section_options,
+        'registration_section_options': endpoint.registration_section_options,
+        'registration_outbound_auth_section_options': endpoint.registration_outbound_auth_section_options,
         'identify_section_options': endpoint.identify_section_options,
+        'outbound_auth_section_options': endpoint.outbound_auth_section_options,
         'template': endpoint.template,
         'asterisk_id': endpoint.asterisk_id,
     }
