@@ -4,7 +4,7 @@
 
 import logging
 
-from sqlalchemy import and_, text, Integer, select
+from sqlalchemy import and_, text, select
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.schema import Column, UniqueConstraint, ForeignKey
@@ -50,12 +50,8 @@ class EndpointSIP(Base):
     __table_args__ = (UniqueConstraint('name'),)
 
     uuid = Column(UUID(as_uuid=True), server_default=text('uuid_generate_v4()'), primary_key=True)
-    label = Column(Text)  # For the UI (select boxes etc)
-    name = Column(
-        Text,
-        server_default=text('substring(md5(random()::text), 0, 9)'),  # Generates a random name
-        nullable=False,
-    )
+    label = Column(Text)
+    name = Column(Text, nullable=False)
     asterisk_id = Column(Text)
     tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
     transport_uuid = Column(UUID(as_uuid=True), ForeignKey('pjsip_transport.uuid'))
