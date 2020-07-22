@@ -1587,6 +1587,8 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
         self.add_trunk(endpoint_sip_uuid=endpoint.uuid)
 
         result = asterisk_conf_dao.find_sip_trunk_settings()
+        from pprint import pprint
+        pprint(result)
         assert_that(result, contains_inanyorder(
             has_entries(
                 name=endpoint.name,
@@ -1598,10 +1600,6 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
                     ['default_expiration', '120'],
                     ['max_contacts', '1'],
                     ['remove_existing', 'true']
-                ),
-                auth_section_options=has_items(
-                    ['username', 'iddqd'],
-                    ['password', 'idbehold'],
                 ),
                 endpoint_section_options=has_items(
                     ['allow', '!all,ulaw'],
@@ -1653,6 +1651,15 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
                     ['match', '177.71.206.194'],
                     ['match', '177.71.206.195'],
                 ),
+                registration_section_options=has_items(
+                    ['expiration', '120'],
+                    ['client_uri', 'sip:dev_370@wazo-dev-gateway.lan.wazo.io'],
+                    ['server_uri', 'sip:wazo-dev-gateway.lan.wazo.io'],
+                    ['outbound_auth', 'auth_reg_dev_370@wazo-dev-gateway.lan.wazo.io'],
+                    ['type', 'registration'],
+                ),
+                registration_outbound_auth_section_options=has_items(),
+                outbound_auth_section_options=has_items(),
             ),
         ))
 
@@ -1705,4 +1712,59 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
                     ['transport', transport.name],
                 ),
             )),
+        )
+
+    def test_that_all_sections_are_generated_and_cross_references(self):
+        sip_uri = 'foo@bar'
+        endpoint = self.add_endpoint_sip(
+            template=False,
+            aor_section_options=[['contact', 'sip:name@proxy:port']],
+            auth_section_options=[['username', 'username']],
+            endpoint_section_options=[['identify_by', 'auth_username,username']],
+            registration_section_options=[
+                ['expiration', '120'],
+                ['client_uri', 'sip:{}'.format(sip_uri)],
+            ],
+            registration_outbound_auth_section_options=[['password', 'secret']],
+            identify_section_options=[['match', '192.168.1.1']],
+            outbound_auth_section_options=[['username', 'outbound']],
+        )
+        self.add_trunk(endpoint_sip_uuid=endpoint.uuid)
+
+        result = asterisk_conf_dao.find_sip_trunk_settings()
+        assert_that(
+            result,
+            contains(has_entries(
+                aor_section_options=has_items(
+                    ['type', 'aor'],
+                    ['contact', 'sip:name@proxy:port'],
+                ),
+                auth_section_options=has_items(
+                    ['type', 'auth'],
+                    ['username', 'username'],
+                ),
+                endpoint_section_options=has_items(
+                    ['type', 'endpoint'],
+                    ['aors', endpoint.name],
+                    ['auth', endpoint.name],
+                    ['identify_by', 'auth_username,username'],
+                ),
+                registration_section_options=has_items(
+                    ['type', 'registration'],
+                    ['expiration', '120'],
+                    ['outbound_auth', 'auth_reg_{}'.format(sip_uri)]
+                ),
+                registration_outbound_auth_section_options=has_items(
+                    ['type', 'auth'],
+                    ['password', 'secret'],
+                ),
+                identify_section_options=has_items(
+                    ['type', 'identify'],
+                    ['match', '192.168.1.1'],
+                ),
+                outbound_auth_section_options=has_items(
+                    ['type', 'auth'],
+                    ['username', 'outbound'],
+                )
+            ))
         )
