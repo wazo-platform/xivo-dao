@@ -1486,6 +1486,39 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
         else:
             self.fail('no "named_call_group" in {}'.format(result[0]))
 
+    def test_that_doubles_are_removed(self):
+        template = self.add_endpoint_sip(
+            template=True,
+            endpoint_section_options=[['webrtc', 'true']]
+        )
+        endpoint = self.add_endpoint_sip(
+            templates=[template],
+            template=False,
+            endpoint_section_options=[
+                ['codecs', '!all,ulaw'],
+                ['webrtc', 'true'],
+            ]
+        )
+        self.add_line(endpoint_sip_uuid=endpoint.uuid)
+
+        result = asterisk_conf_dao.find_sip_user_settings()
+        assert_that(
+            result,
+            contains(
+                has_entries(
+                    endpoint_section_options=contains_inanyorder(
+                        ['type', 'endpoint'],  # only showed once
+                        ['codecs', '!all,ulaw'],
+                        ['webrtc', 'true'],  # only showed once
+                        ['set_var', 'WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)],
+                        ['set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'],
+                        ['context', 'foocontext'],
+                        ['set_var', 'TRANSFER_CONTEXT=foocontext']
+                    )
+                )
+            )
+        )
+
 
 class TestFindSipTrunkSettings(BaseFindSIPSettings):
 
@@ -1767,4 +1800,34 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
                     ['username', 'outbound'],
                 )
             ))
+        )
+
+    def test_that_doubles_are_removed(self):
+        template = self.add_endpoint_sip(
+            template=True,
+            endpoint_section_options=[['webrtc', 'true']]
+        )
+        endpoint = self.add_endpoint_sip(
+            templates=[template],
+            template=False,
+            endpoint_section_options=[
+                ['codecs', '!all,ulaw'],
+                ['webrtc', 'true'],
+            ]
+        )
+        self.add_trunk(endpoint_sip_uuid=endpoint.uuid)
+
+        result = asterisk_conf_dao.find_sip_trunk_settings()
+        assert_that(
+            result,
+            contains(
+                has_entries(
+                    endpoint_section_options=contains_inanyorder(
+                        ['type', 'endpoint'],  # only showed once
+                        ['codecs', '!all,ulaw'],
+                        ['webrtc', 'true'],  # only showed once
+                        ['set_var', 'WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)],
+                    )
+                )
+            )
         )
