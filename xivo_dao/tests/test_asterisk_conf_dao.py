@@ -1620,8 +1620,6 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
         self.add_trunk(endpoint_sip_uuid=endpoint.uuid)
 
         result = asterisk_conf_dao.find_sip_trunk_settings()
-        from pprint import pprint
-        pprint(result)
         assert_that(result, contains_inanyorder(
             has_entries(
                 name=endpoint.name,
