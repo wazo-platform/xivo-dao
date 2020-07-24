@@ -619,7 +619,6 @@ def find_sip_trunk_settings(session):
     flat_configs = {}
     for uuid, raw_config in raw_configs.items():
         flat_config = get_flat_config(raw_config)
-        # TODO(pc-m): Remove duplicates
         flat_configs[uuid] = flat_config
 
     return [
