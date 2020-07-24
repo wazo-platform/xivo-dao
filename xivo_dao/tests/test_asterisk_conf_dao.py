@@ -1587,6 +1587,9 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
                 ['username', 'iddqd'],
                 ['password', 'idbehold'],
             ],
+            registration_outbound_auth_section_options=[
+                ['username', 'outbound_reg_username']
+            ],
         )
         self.add_trunk(endpoint_sip_uuid=endpoint.uuid)
 
@@ -1602,6 +1605,10 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
                     ['default_expiration', '120'],
                     ['max_contacts', '1'],
                     ['remove_existing', 'true']
+                ),
+                auth_section_options=has_items(
+                    ['username', 'iddqd'],
+                    ['password', 'idbehold'],
                 ),
                 endpoint_section_options=has_items(
                     ['allow', '!all,ulaw'],
@@ -1625,13 +1632,17 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
                     ['match', '54.172.60.2'],
                 ),
                 registration_section_options=has_items(
-                    ['expiration', '120'],
-                    ['client_uri', 'sip:dev_370@wazo-dev-gateway.lan.wazo.io'],
-                    ['server_uri', 'sip:wazo-dev-gateway.lan.wazo.io'],
-                    ['outbound_auth', 'auth_reg_dev_370@wazo-dev-gateway.lan.wazo.io'],
-                    ['type', 'registration'],
+                    ['outbound_auth', 'auth_reg_{}'.format(endpoint.name)],
+                    ['retry_interval', '20'],
+                    ['max_retries', '0'],
+                    ['auth_rejection_permanent', 'off'],
+                    ['forbidden_retry_interval', '30'],
+                    ['fatal_retry_interval', '30'],
+                    ['max_retries', '10000'],
                 ),
-                registration_outbound_auth_section_options=has_items(),
+                registration_outbound_auth_section_options=has_items(
+                    ['username', 'outbound_reg_username'],
+                ),
                 outbound_auth_section_options=has_items(),
             ),
         ))
@@ -1688,7 +1699,6 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
         )
 
     def test_that_all_sections_are_generated_and_cross_references(self):
-        sip_uri = 'foo@bar'
         endpoint = self.add_endpoint_sip(
             template=False,
             aor_section_options=[['contact', 'sip:name@proxy:port']],
@@ -1696,7 +1706,7 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
             endpoint_section_options=[['identify_by', 'auth_username,username']],
             registration_section_options=[
                 ['expiration', '120'],
-                ['client_uri', 'sip:{}'.format(sip_uri)],
+                ['client_uri', 'sip:foo@bar'],
             ],
             registration_outbound_auth_section_options=[['password', 'secret']],
             identify_section_options=[['match', '192.168.1.1']],
@@ -1725,7 +1735,7 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
                 registration_section_options=has_items(
                     ['type', 'registration'],
                     ['expiration', '120'],
-                    ['outbound_auth', 'auth_reg_{}'.format(sip_uri)]
+                    ['outbound_auth', 'auth_reg_{}'.format(endpoint.name)]
                 ),
                 registration_outbound_auth_section_options=has_items(
                     ['type', 'auth'],
