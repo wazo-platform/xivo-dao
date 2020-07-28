@@ -20,7 +20,6 @@ from sqlalchemy.sql.expression import (
 from sqlalchemy.types import Integer
 
 from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.alchemy.endpoint_sip import EndpointSIP
 from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
@@ -426,89 +425,89 @@ def find_sip_user_settings(session):
     def get_flat_config(endpoint):
         if endpoint.uuid in flat_configs:
             return flat_configs[endpoint.uuid]
-        else:
-            parents = [get_flat_config(parent) for parent in endpoint.templates]
-            base_config = endpoint_to_dict(endpoint)
-            context_name = context_mapping.get(endpoint.uuid)
-            if context_name:
-                base_config['endpoint_section_options'].append(['context', context_name])
-                base_config['endpoint_section_options'].append(
-                    ['set_var', 'TRANSFER_CONTEXT={}'.format(context_name)],
-                )
-            if endpoint.transport_uuid:
-                base_config['endpoint_section_options'].append(
-                    ['transport', endpoint.transport.name],
-                )
-            extension = extension_mapping.get(endpoint.uuid)
-            if extension:
-                base_config['endpoint_section_options'].append(
-                    ['set_var', 'PICKUPMARK={}%{}'.format(extension.exten, extension.context)]
-                )
-            voicemails = voicemail_mapping.get(endpoint.uuid, [])
-            mailboxes = []
-            for voicemail in voicemails:
-                mailboxes.append('{}@{}'.format(voicemail.number, voicemail.context))
-            if mailboxes:
-                base_config['aor_section_options'].append(
-                    ['mailboxes', ','.join(mailboxes)]
-                )
-            for user in user_mapping.get(endpoint.uuid, []):
-                base_config['endpoint_section_options'].extend([
-                    ['set_var', 'XIVO_USERID={}'.format(user.id)],
-                    ['set_var', 'XIVO_USERUUID={}'.format(user.uuid)],
-                    # TODO(pc-m): document WAZO_USER_UUID and deprecate the XIVO one
-                    # ['set_var', 'WAZO_USER_UUID={}'.format(user.uuid)],
-                ])
-            pickup_groups = pickup_members.get(endpoint.uuid, {})
-            named_pickup_groups = ','.join(str(id) for id in pickup_groups.get('pickupgroup', []))
-            if named_pickup_groups:
-                base_config['endpoint_section_options'].append(
-                    ['named_pickup_group', named_pickup_groups],
-                )
-            named_call_groups = ','.join(str(id) for id in pickup_groups.get('callgroup', []))
-            if named_call_groups:
-                base_config['endpoint_section_options'].append(
-                    ['named_call_group', named_call_groups],
-                )
-            builder = {}
-            for parent in parents + [base_config]:
-                for section in [
-                    'aor_section_options',
-                    'auth_section_options',
-                    'endpoint_section_options',
-                ]:
-                    builder.setdefault(section, [])
-                    parent_options = parent.get(section, [])
-                    for option in parent_options:
-                        builder[section].append(option)
-            for key, value in builder.get('endpoint_section_options', []):
-                if key == 'callerid':
-                    builder['endpoint_section_options'].append(
-                        ['set_var', 'XIVO_ORIGINAL_CALLER_ID={}'.format(value)]
-                    )
-                    break
-            builder['endpoint_section_options'].extend([
-                ['set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'],
-                ['set_var', 'WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)],
+
+        parents = [get_flat_config(parent) for parent in endpoint.templates]
+        base_config = endpoint_to_dict(endpoint)
+        context_name = context_mapping.get(endpoint.uuid)
+        if context_name:
+            base_config['endpoint_section_options'].append(['context', context_name])
+            base_config['endpoint_section_options'].append(
+                ['set_var', 'TRANSFER_CONTEXT={}'.format(context_name)],
+            )
+        if endpoint.transport_uuid:
+            base_config['endpoint_section_options'].append(
+                ['transport', endpoint.transport.name],
+            )
+        extension = extension_mapping.get(endpoint.uuid)
+        if extension:
+            base_config['endpoint_section_options'].append(
+                ['set_var', 'PICKUPMARK={}%{}'.format(extension.exten, extension.context)]
+            )
+        voicemails = voicemail_mapping.get(endpoint.uuid, [])
+        mailboxes = []
+        for voicemail in voicemails:
+            mailboxes.append('{}@{}'.format(voicemail.number, voicemail.context))
+        if mailboxes:
+            base_config['aor_section_options'].append(
+                ['mailboxes', ','.join(mailboxes)]
+            )
+        for user in user_mapping.get(endpoint.uuid, []):
+            base_config['endpoint_section_options'].extend([
+                ['set_var', 'XIVO_USERID={}'.format(user.id)],
+                ['set_var', 'XIVO_USERUUID={}'.format(user.uuid)],
+                # TODO(pc-m): document WAZO_USER_UUID and deprecate the XIVO one
+                # ['set_var', 'WAZO_USER_UUID={}'.format(user.uuid)],
             ])
-            if builder['endpoint_section_options']:
-                builder['endpoint_section_options'].append(['type', 'endpoint'])
-            if builder['aor_section_options']:
-                builder['aor_section_options'].append(['type', 'aor'])
-                builder['endpoint_section_options'].append(['aors', endpoint.name])
-            if builder['auth_section_options']:
-                builder['auth_section_options'].append(['type', 'auth'])
-                builder['endpoint_section_options'].append(['auth', endpoint.name])
-            builder.update({
-                'uuid': base_config['uuid'],
-                'name': base_config['name'],
-                'label': base_config['label'],
-                'template': base_config['template'],
-                'asterisk_id': base_config['asterisk_id'],
-            })
-            if builder['template']:
-                flat_configs[builder['uuid']] = builder
-            return builder
+        pickup_groups = pickup_members.get(endpoint.uuid, {})
+        named_pickup_groups = ','.join(str(id) for id in pickup_groups.get('pickupgroup', []))
+        if named_pickup_groups:
+            base_config['endpoint_section_options'].append(
+                ['named_pickup_group', named_pickup_groups],
+            )
+        named_call_groups = ','.join(str(id) for id in pickup_groups.get('callgroup', []))
+        if named_call_groups:
+            base_config['endpoint_section_options'].append(
+                ['named_call_group', named_call_groups],
+            )
+        builder = {}
+        for parent in parents + [base_config]:
+            for section in [
+                'aor_section_options',
+                'auth_section_options',
+                'endpoint_section_options',
+            ]:
+                builder.setdefault(section, [])
+                parent_options = parent.get(section, [])
+                for option in parent_options:
+                    builder[section].append(option)
+        for key, value in builder.get('endpoint_section_options', []):
+            if key == 'callerid':
+                builder['endpoint_section_options'].append(
+                    ['set_var', 'XIVO_ORIGINAL_CALLER_ID={}'.format(value)]
+                )
+                break
+        builder['endpoint_section_options'].extend([
+            ['set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'],
+            ['set_var', 'WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)],
+        ])
+        if builder['endpoint_section_options']:
+            builder['endpoint_section_options'].append(['type', 'endpoint'])
+        if builder['aor_section_options']:
+            builder['aor_section_options'].append(['type', 'aor'])
+            builder['endpoint_section_options'].append(['aors', endpoint.name])
+        if builder['auth_section_options']:
+            builder['auth_section_options'].append(['type', 'auth'])
+            builder['endpoint_section_options'].append(['auth', endpoint.name])
+        builder.update({
+            'uuid': base_config['uuid'],
+            'name': base_config['name'],
+            'label': base_config['label'],
+            'template': base_config['template'],
+            'asterisk_id': base_config['asterisk_id'],
+        })
+        if builder['template']:
+            flat_configs[builder['uuid']] = builder
+        return builder
 
     # A flat_config is an endpoint config with all inherited fields merged into a single object
     flat_configs = {}
@@ -553,63 +552,63 @@ def find_sip_trunk_settings(session):
     def get_flat_config(endpoint):
         if endpoint.uuid in flat_configs:
             return flat_configs[endpoint.uuid]
-        else:
-            parents = [get_flat_config(parent) for parent in endpoint.templates]
-            base_config = endpoint_to_dict(endpoint)
-            context_name = context_mapping.get(endpoint.uuid)
-            if context_name:
-                base_config['endpoint_section_options'].append(['context', context_name])
-            if endpoint.transport_uuid:
-                base_config['endpoint_section_options'].append(
-                    ['transport', endpoint.transport.name],
-                )
-            builder = {}
-            for parent in parents + [base_config]:
-                for section in [
-                    'aor_section_options',
-                    'auth_section_options',
-                    'endpoint_section_options',
-                    'identify_section_options',
-                    'registration_section_options',
-                    'registration_outbound_auth_section_options',
-                    'outbound_auth_section_options',
-                ]:
-                    builder.setdefault(section, [])
-                    parent_options = parent.get(section, [])
-                    for option in parent_options:
-                        builder[section].append(option)
-            builder['endpoint_section_options'].extend([
-                ['set_var', 'WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)],
-            ])
-            if builder['endpoint_section_options']:
-                builder['endpoint_section_options'].append(['type', 'endpoint'])
-            if builder['aor_section_options']:
-                builder['aor_section_options'].append(['type', 'aor'])
-                builder['endpoint_section_options'].append(['aors', endpoint.name])
-            if builder['auth_section_options']:
-                builder['auth_section_options'].append(['type', 'auth'])
-                builder['endpoint_section_options'].append(['auth', endpoint.name])
-            if builder['identify_section_options']:
-                builder['identify_section_options'].append(['type', 'identify'])
-            if builder['registration_section_options']:
-                builder['registration_section_options'].append(['type', 'registration'])
-            if builder['outbound_auth_section_options']:
-                builder['outbound_auth_section_options'].append(['type', 'auth'])
-            if builder['registration_outbound_auth_section_options']:
-                builder['registration_outbound_auth_section_options'].append(['type', 'auth'])
-                builder['registration_section_options'].append(
-                    ['outbound_auth', 'auth_reg_{}'.format(endpoint.name)]
-                )
-            builder.update({
-                'uuid': base_config['uuid'],
-                'name': base_config['name'],
-                'label': base_config['label'],
-                'template': base_config['template'],
-                'asterisk_id': base_config['asterisk_id'],
-            })
-            if builder['template']:
-                flat_configs[builder['uuid']] = builder
-            return builder
+
+        parents = [get_flat_config(parent) for parent in endpoint.templates]
+        base_config = endpoint_to_dict(endpoint)
+        context_name = context_mapping.get(endpoint.uuid)
+        if context_name:
+            base_config['endpoint_section_options'].append(['context', context_name])
+        if endpoint.transport_uuid:
+            base_config['endpoint_section_options'].append(
+                ['transport', endpoint.transport.name],
+            )
+        builder = {}
+        for parent in parents + [base_config]:
+            for section in [
+                'aor_section_options',
+                'auth_section_options',
+                'endpoint_section_options',
+                'identify_section_options',
+                'registration_section_options',
+                'registration_outbound_auth_section_options',
+                'outbound_auth_section_options',
+            ]:
+                builder.setdefault(section, [])
+                parent_options = parent.get(section, [])
+                for option in parent_options:
+                    builder[section].append(option)
+        builder['endpoint_section_options'].extend([
+            ['set_var', 'WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)],
+        ])
+        if builder['endpoint_section_options']:
+            builder['endpoint_section_options'].append(['type', 'endpoint'])
+        if builder['aor_section_options']:
+            builder['aor_section_options'].append(['type', 'aor'])
+            builder['endpoint_section_options'].append(['aors', endpoint.name])
+        if builder['auth_section_options']:
+            builder['auth_section_options'].append(['type', 'auth'])
+            builder['endpoint_section_options'].append(['auth', endpoint.name])
+        if builder['identify_section_options']:
+            builder['identify_section_options'].append(['type', 'identify'])
+        if builder['registration_section_options']:
+            builder['registration_section_options'].append(['type', 'registration'])
+        if builder['outbound_auth_section_options']:
+            builder['outbound_auth_section_options'].append(['type', 'auth'])
+        if builder['registration_outbound_auth_section_options']:
+            builder['registration_outbound_auth_section_options'].append(['type', 'auth'])
+            builder['registration_section_options'].append(
+                ['outbound_auth', 'auth_reg_{}'.format(endpoint.name)]
+            )
+        builder.update({
+            'uuid': base_config['uuid'],
+            'name': base_config['name'],
+            'label': base_config['label'],
+            'template': base_config['template'],
+            'asterisk_id': base_config['asterisk_id'],
+        })
+        if builder['template']:
+            flat_configs[builder['uuid']] = builder
+        return builder
 
     # A flat_config is an endpoint config with all inherited fields merged into a single object
     flat_configs = {}
