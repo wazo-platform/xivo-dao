@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2015-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import abc
 import six
+
+from sqlalchemy import text
 
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.features import Features
@@ -36,9 +38,12 @@ from xivo_dao.resources.extension.database import (
     AgentActionExtensionConverter,
     GroupMemberActionExtensionConverter,
 )
+from xivo_dao.resources.utils.search import SearchResult
+
+from .search import template_search
 
 
-def build_persistor(session):
+def build_persistor(session, tenant_uuids=None):
     destination_persistors = {
         'agent': AgentPersistor,
         'bsfilter': BSFilterPersistor,
@@ -57,14 +62,30 @@ def build_persistor(session):
         'transfer': FeaturesPersistor,
         'user': UserPersistor,
     }
-    return FuncKeyPersistor(session, destination_persistors)
+
+    return FuncKeyPersistor(
+        session,
+        destination_persistors,
+        template_search,
+        tenant_uuids=tenant_uuids,
+    )
 
 
 class FuncKeyPersistor(object):
 
-    def __init__(self, session, persistors):
+    def __init__(self, session, persistors, template_search, tenant_uuids=None):
         self.persistors = persistors
         self.session = session
+        self.template_search = template_search
+        self.tenant_uuids = tenant_uuids
+
+    def search(self, parameters):
+        query = self.session.query(FuncKeyTemplate.id)
+        query = self._filter_tenant_uuid(query)
+        rows, total = self.template_search.search_from_query(query, parameters)
+
+        items = [self.get(row.id) for row in rows]
+        return SearchResult(total=total, items=items)
 
     def create(self, template):
         template = self.add_template(template)
@@ -117,10 +138,13 @@ class FuncKeyPersistor(object):
         return template
 
     def get_template_row(self, template_id):
-        template_row = self.session.query(FuncKeyTemplate).get(template_id)
-        if not template_row:
+        query = self.session.query(FuncKeyTemplate)
+        query = query.filter(FuncKeyTemplate.id == template_id)
+        query = self._filter_tenant_uuid(query)
+        template = query.first()
+        if not template:
             raise errors.not_found('FuncKeyTemplate', id=template_id)
-        return template_row
+        return template
 
     def get_keys_for_template(self, template_id):
         keys = {}
@@ -128,6 +152,15 @@ class FuncKeyPersistor(object):
             row.destination = self.build_destination(row.func_key_id, row.destination_type_name)
             keys[row.position] = row
         return keys
+
+    def _filter_tenant_uuid(self, query):
+        if self.tenant_uuids is None:
+            return query
+
+        if not self.tenant_uuids:
+            return query.filter(text('false'))
+
+        return query.filter(FuncKeyTemplate.tenant_uuid.in_(self.tenant_uuids))
 
     def query_mappings(self, template_id):
         query = (self.session.query(FuncKeyMapping)

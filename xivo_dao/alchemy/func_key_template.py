@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.schema import Column
+from sqlalchemy.sql.schema import ForeignKey
 from sqlalchemy.types import Integer, Boolean, String
 
 from xivo_dao.helpers import errors
@@ -14,6 +15,11 @@ class FuncKeyTemplate(Base):
     __tablename__ = 'func_key_template'
 
     id = Column(Integer, primary_key=True)
+    tenant_uuid = Column(
+        String(36),
+        ForeignKey('tenant.uuid', ondelete='CASCADE'),
+        nullable=False,
+    )
     name = Column(String(128), nullable=True)
     private = Column(Boolean, nullable=False, server_default='False')
 

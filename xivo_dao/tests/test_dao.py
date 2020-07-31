@@ -882,6 +882,7 @@ class ItemInserter(object):
         return func_key_row
 
     def add_func_key_template(self, **kwargs):
+        kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
         func_key_template = FuncKeyTemplate(**kwargs)
         self.add_me(func_key_template)
         return func_key_template

@@ -1,26 +1,17 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2014-2015 Avencall
+# Copyright 2014-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.helpers.db_utils import flush_session
 
-from xivo_dao.alchemy.func_key_template import FuncKeyTemplate as FuncKeyTemplateSchema
-
-from xivo_dao.resources.utils.search import SearchResult
 from xivo_dao.resources.func_key_template.persistor import build_persistor
-from xivo_dao.resources.func_key_template.search import template_search
 
 
 @daosession
-def search(session, **parameters):
-    persistor = build_persistor(session)
-
-    query = session.query(FuncKeyTemplateSchema.id)
-    rows, total = template_search.search_from_query(query, parameters)
-
-    items = [persistor.get(row.id) for row in rows]
-    return SearchResult(total=total, items=items)
+def search(session, tenant_uuids=None, **parameters):
+    persistor = build_persistor(session, tenant_uuids=tenant_uuids)
+    return persistor.search(parameters)
 
 
 @daosession
@@ -31,8 +22,8 @@ def create(session, template):
 
 
 @daosession
-def get(session, template_id):
-    persistor = build_persistor(session)
+def get(session, template_id, tenant_uuids=None):
+    persistor = build_persistor(session, tenant_uuids=tenant_uuids)
     return persistor.get(template_id)
 
 
