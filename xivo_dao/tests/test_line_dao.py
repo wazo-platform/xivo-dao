@@ -2,14 +2,16 @@
 # Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao.tests.test_dao import (
+    DAOTestCase,
+    UNKNOWN_UUID,
+    UNKNOWN_ID,
+)
 
 from .. import line_dao
 
 EXTEN = '1666'
 CONTEXT = 'foobar'
-UNKNOWN_ID = 999999999
-UNKNOWN_UUID = '99243764-8818-430e-91f0-4b0ac8fd25a0'
 
 
 class TestLineFeaturesDAO(DAOTestCase):

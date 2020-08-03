@@ -8,9 +8,7 @@ from xivo_dao import agent_dao
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
-from xivo_dao.tests.test_dao import DAOTestCase
-
-UNKNOWN_UUID = '57e8c8a2-bc75-4472-a529-8929da26dfb4'
+from xivo_dao.tests.test_dao import DAOTestCase, UNKNOWN_UUID
 
 
 class TestAgentDAO(DAOTestCase):
@@ -63,7 +61,7 @@ class TestAgentDAO(DAOTestCase):
 
         result = agent_dao.agent_with_number(agent.number, tenant_uuids=[self.default_tenant.uuid, tenant.uuid])
         self.assertEqual(result.id, agent.id)
-        self.assertEqual(result.number, equal_to(agent.number))
+        self.assertEqual(result.number, agent.number)
 
     def test_agent_with_user_uuid(self):
         agent = self._insert_agent()

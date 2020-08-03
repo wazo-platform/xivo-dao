@@ -3,14 +3,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao import agent_status_dao
-from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao.tests.test_dao import DAOTestCase, UNKNOWN_UUID
 from xivo_dao.alchemy.agent_login_status import AgentLoginStatus
 from xivo_dao.alchemy.agent_membership_status import AgentMembershipStatus
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
 from sqlalchemy import and_
-
-UNKNOWN_UUID = '607f1300-f6f0-4974-ae9b-2445ee263ea8'
 
 
 class TestAgentStatusDao(DAOTestCase):

@@ -36,8 +36,6 @@ from xivo_dao.resources.user.model import UserDirectory, UserSummary
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 
-UNKNOWN_TENANT = '00000000-0000-0000-0000-000000000000'
-
 
 class TestUser(DAOTestCase, FuncKeyHelper):
 

@@ -16,11 +16,9 @@ from hamcrest import (
 from sqlalchemy.inspection import inspect
 from xivo_dao.alchemy.pjsip_transport import PJSIPTransport
 from xivo_dao.resources.utils.search import SearchResult
-from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao.tests.test_dao import DAOTestCase, UNKNOWN_UUID
 from xivo_dao.helpers.exception import NotFoundError, InputError
 from .. import dao
-
-UNKNOWN_UUID = '0965ea59-567a-4477-a004-77b5c2d9aa2c'
 
 
 class TestFind(DAOTestCase):
