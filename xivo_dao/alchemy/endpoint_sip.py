@@ -6,10 +6,17 @@ import logging
 
 from sqlalchemy import and_, text, select
 from sqlalchemy.orm import relationship
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.schema import Column, UniqueConstraint, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.types import String, Text, Boolean
+from sqlalchemy.types import (
+    Boolean,
+    Integer,
+    String,
+    Text,
+)
 
 from xivo_dao.helpers.db_manager import Base
 
@@ -42,6 +49,9 @@ class EndpointSIPTemplate(Base):
         ForeignKey('endpoint_sip.uuid', ondelete='CASCADE'),
         primary_key=True,
     )
+    priority = Column(Integer)
+
+    parent = relationship('EndpointSIP', foreign_keys='EndpointSIPTemplate.parent_uuid')
 
 
 class EndpointSIP(Base):
@@ -58,11 +68,17 @@ class EndpointSIP(Base):
     template = Column(Boolean, server_default=text('false'))
 
     transport = relationship('PJSIPTransport')
-    templates = relationship(
-        'EndpointSIP',
+    template_relations = relationship(
+        'EndpointSIPTemplate',
         primaryjoin='EndpointSIP.uuid == EndpointSIPTemplate.child_uuid',
-        secondaryjoin='EndpointSIP.uuid == EndpointSIPTemplate.parent_uuid',
-        secondary='endpoint_sip_template',
+        cascade='all, delete-orphan',
+        order_by='EndpointSIPTemplate.priority',
+        collection_class=ordering_list('priority'),
+    )
+    templates = association_proxy(
+        'template_relations',
+        'parent',
+        creator=lambda _sip: EndpointSIPTemplate(parent=_sip),
     )
 
     _aor_section = relationship(
