@@ -2,7 +2,11 @@
 # Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao.tests.test_dao import (
+    DAOTestCase,
+    UNKNOWN_UUID,
+    UNKNOWN_ID,
+)
 
 from .. import line_dao
 
@@ -90,3 +94,130 @@ class TestLineFeaturesDAO(DAOTestCase):
 
     def test_get_interface_no_matching_exten(self):
         self.assertRaises(LookupError, line_dao.get_interface_from_exten_and_context, '555', 'fijsifjsif')
+
+    def test_get_interface_from_line_id(self):
+        line_name = 'sdofiuwoe'
+        sip = self.add_usersip()
+        line = self.add_line(name=line_name, endpoint_sip_id=sip.id)
+
+        interface = line_dao.get_interface_from_line_id(line.id)
+
+        expected = 'SIP/{}'.format(line_name)
+        self.assertEqual(expected, interface)
+
+    def test_get_interface_from_line_id_sccp(self):
+        line_name = '1056'
+        sccp = self.add_sccpline()
+        line = self.add_line(name=line_name, endpoint_sccp_id=sccp.id)
+
+        interface = line_dao.get_interface_from_line_id(line.id)
+
+        expected = 'SCCP/{}'.format(line_name)
+        self.assertEqual(expected, interface)
+
+    def test_get_interface_from_line_id_not_found(self):
+        self.assertRaises(LookupError, line_dao.get_interface_from_line_id, UNKNOWN_ID)
+
+    def test_get_main_extension_context_from_line_id(self):
+        main_exten = '1234'
+        extension = self.add_extension(exten=main_exten, context=CONTEXT)
+        sip = self.add_usersip()
+        line = self.add_line(endpoint_sip_id=sip.id)
+        self.add_line_extension(line_id=line.id, extension_id=extension.id)
+
+        exten, context = line_dao.get_main_extension_context_from_line_id(line.id)
+
+        self.assertEqual(exten, main_exten)
+        self.assertEqual(context, CONTEXT)
+
+    def test_get_main_extension_context_from_line_id_unknown(self):
+        result = line_dao.get_main_extension_context_from_line_id(UNKNOWN_ID)
+
+        self.assertEqual(result, None)
+
+    def test_get_main_extension_context_from_line_id_without_extension(self):
+        sip = self.add_usersip()
+        line = self.add_line(endpoint_sip_id=sip.id)
+
+        result = line_dao.get_main_extension_context_from_line_id(line.id)
+
+        self.assertEqual(result, None)
+
+    def test_get_main_extension_context_from_line_id_with_multiple_extensions(self):
+        main_exten = '1234'
+        second_exten = '5555'
+
+        extension = self.add_extension(exten=main_exten, context=CONTEXT)
+        sip = self.add_usersip()
+        line = self.add_line(endpoint_sip_id=sip.id)
+        self.add_line_extension(line_id=line.id, extension_id=extension.id, main_extension=True)
+
+        extension = self.add_extension(exten=second_exten, context=CONTEXT)
+        self.add_line_extension(line_id=line.id, extension_id=extension.id)
+
+        exten, context = line_dao.get_main_extension_context_from_line_id(line.id)
+
+        self.assertEqual(exten, main_exten)
+        self.assertEqual(context, CONTEXT)
+
+    def test_is_line_owned_by_user(self):
+        user = self.add_user()
+
+        sip = self.add_usersip()
+        line = self.add_line(endpoint_sip_id=sip.id)
+        self.add_user_line(user_id=user.id, main_line=True, line_id=line.id)
+
+        result = line_dao.is_line_owned_by_user(user.uuid, line.id)
+
+        self.assertEqual(result, True)
+
+    def test_is_line_owned_by_user_unknown_user(self):
+        sip = self.add_usersip()
+        line = self.add_line(endpoint_sip_id=sip.id)
+
+        result = line_dao.is_line_owned_by_user(UNKNOWN_UUID, line.id)
+
+        self.assertEqual(result, False)
+
+    def test_is_line_owned_by_user_unknown_line(self):
+        user = self.add_user()
+
+        sip = self.add_usersip()
+        line = self.add_line(endpoint_sip_id=sip.id)
+        self.add_user_line(user_id=user.id, main_line=True, line_id=line.id)
+
+        result = line_dao.is_line_owned_by_user(user.uuid, UNKNOWN_ID)
+
+        self.assertEqual(result, False)
+
+    def test_is_line_owned_by_user_with_multiple_lines(self):
+        user = self.add_user()
+
+        sip = self.add_usersip()
+        main_line = self.add_line(endpoint_sip_id=sip.id)
+        self.add_user_line(user_id=user.id, main_line=True, line_id=main_line.id)
+
+        sip = self.add_usersip()
+        secondary_line = self.add_line(endpoint_sip_id=sip.id)
+        self.add_user_line(user_id=user.id, main_line=False, line_id=secondary_line.id)
+
+        main_result = line_dao.is_line_owned_by_user(user.uuid, main_line.id)
+        secondary_result = line_dao.is_line_owned_by_user(user.uuid, secondary_line.id)
+
+        self.assertEqual(main_result, True)
+        self.assertEqual(secondary_result, True)
+
+    def test_is_line_owned_by_user_with_multiple_users(self):
+        main_user = self.add_user()
+        secondary_user = self.add_user()
+
+        sip = self.add_usersip()
+        line = self.add_line(endpoint_sip_id=sip.id)
+        self.add_user_line(user_id=main_user.id, main_line=True, line_id=line.id)
+        self.add_user_line(user_id=secondary_user.id, main_line=False, line_id=line.id)
+
+        main_result = line_dao.is_line_owned_by_user(main_user.uuid, line.id)
+        secondary_result = line_dao.is_line_owned_by_user(secondary_user.uuid, line.id)
+
+        self.assertEqual(main_result, True)
+        self.assertEqual(secondary_result, True)

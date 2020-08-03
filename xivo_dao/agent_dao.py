@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2007-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -9,6 +9,7 @@ from sqlalchemy.sql import select, and_
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
+from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.helpers.db_manager import daosession
 
 
@@ -26,6 +27,24 @@ def agent_with_id(session, agent_id, tenant_uuids=None):
 @daosession
 def agent_with_number(session, agent_number, tenant_uuids=None):
     agent = _get_agent(session, AgentFeatures.number == agent_number, tenant_uuids)
+    _add_queues_to_agent(session, agent)
+    return agent
+
+
+@daosession
+def agent_with_user_uuid(session, user_uuid, tenant_uuids=None):
+    query = (
+        session.query(AgentFeatures)
+        .join(UserFeatures, AgentFeatures.id == UserFeatures.agentid)
+        .filter(UserFeatures.uuid == user_uuid)
+    )
+    if tenant_uuids is not None:
+        query = query.filter(AgentFeatures.tenant_uuid.in_(tenant_uuids))
+
+    agent_row = query.first()
+    if agent_row is None:
+        raise LookupError('no agent found for user %s' % user_uuid)
+    agent = _Agent(agent_row.id, agent_row.tenant_uuid, agent_row.number, [])
     _add_queues_to_agent(session, agent)
     return agent
 

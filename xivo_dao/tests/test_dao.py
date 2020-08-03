@@ -107,6 +107,8 @@ _create_tables = True
 
 TEST_DB_URL = os.getenv('XIVO_TEST_DB_URL', 'postgresql://asterisk:asterisk@localhost/asterisktest')
 DEFAULT_TENANT = '4dc2a55e-e83a-42ca-b3ca-87d3ff04ddaf'
+UNKNOWN_ID = 999999999
+UNKNOWN_UUID = '99999999-9999-4999-8999-999999999999'
 
 
 def expensive_setup():

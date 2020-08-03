@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2007-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2007-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from collections import namedtuple
@@ -9,6 +9,7 @@ from xivo_dao.alchemy.agent_membership_status import AgentMembershipStatus
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
+from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.helpers.db_utils import flush_session
 from xivo_dao.helpers.db_manager import daosession
 
@@ -37,6 +38,15 @@ def get_status_by_number(session, agent_number, tenant_uuids=None):
     return _to_agent_status(login_status, _get_queues_for_agent(session, login_status.agent_id))
 
 
+@daosession
+def get_status_by_user(session, user_uuid, tenant_uuids=None):
+    login_status = _get_login_status_by_user(session, user_uuid, tenant_uuids=tenant_uuids)
+    if not login_status:
+        return None
+
+    return _to_agent_status(login_status, _get_queues_for_agent(session, login_status.agent_id))
+
+
 def _get_login_status_by_id(session, agent_id, tenant_uuids=None):
     login_status = (session
                     .query(AgentLoginStatus)
@@ -52,6 +62,17 @@ def _get_login_status_by_number(session, agent_number, tenant_uuids=None):
                     .query(AgentLoginStatus)
                     .outerjoin((AgentFeatures, AgentFeatures.id == AgentLoginStatus.agent_id))
                     .filter(AgentLoginStatus.agent_number == agent_number))
+    if tenant_uuids is not None:
+        login_status = login_status.filter(AgentFeatures.tenant_uuid.in_(tenant_uuids))
+    return login_status.first()
+
+
+def _get_login_status_by_user(session, user_uuid, tenant_uuids=None):
+    login_status = (session
+                    .query(AgentLoginStatus)
+                    .outerjoin((AgentFeatures, AgentFeatures.id == AgentLoginStatus.agent_id))
+                    .join((UserFeatures, AgentFeatures.id == UserFeatures.agentid))
+                    .filter(UserFeatures.uuid == user_uuid))
     if tenant_uuids is not None:
         login_status = login_status.filter(AgentFeatures.tenant_uuid.in_(tenant_uuids))
     return login_status.first()

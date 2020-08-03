@@ -8,7 +8,7 @@ from xivo_dao import agent_dao
 from xivo_dao.alchemy.agentfeatures import AgentFeatures
 from xivo_dao.alchemy.queuefeatures import QueueFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
-from xivo_dao.tests.test_dao import DAOTestCase
+from xivo_dao.tests.test_dao import DAOTestCase, UNKNOWN_UUID
 
 
 class TestAgentDAO(DAOTestCase):
@@ -43,9 +43,6 @@ class TestAgentDAO(DAOTestCase):
         result = agent_dao.agent_with_id(agent.id, tenant_uuids=[self.default_tenant.uuid, tenant.uuid])
         self.assertEqual(result.id, agent.id)
 
-        result = agent_dao.agent_with_id(agent.id, tenant_uuids=[self.default_tenant.uuid, tenant.uuid])
-        self.assertEqual(result.id, agent.id)
-
     def test_agent_with_number(self):
         agent = self._insert_agent()
 
@@ -61,6 +58,33 @@ class TestAgentDAO(DAOTestCase):
         tenant = self.add_tenant()
         agent = self._insert_agent(tenant_uuid=tenant.uuid)
         self.assertRaises(LookupError, agent_dao.agent_with_number, agent.number, tenant_uuids=[self.default_tenant.uuid])
+
+        result = agent_dao.agent_with_number(agent.number, tenant_uuids=[self.default_tenant.uuid, tenant.uuid])
+        self.assertEqual(result.id, agent.id)
+        self.assertEqual(result.number, agent.number)
+
+    def test_agent_with_user_uuid(self):
+        agent = self._insert_agent()
+        user = self.add_user(agentid=agent.id)
+
+        result = agent_dao.agent_with_user_uuid(user.uuid)
+
+        assert_that(result.id, equal_to(agent.id))
+
+    def test_agent_with_user_uuid_unknown_user(self):
+        agent = self._insert_agent()
+
+        self.assertRaises(LookupError, agent_dao.agent_with_user_uuid, UNKNOWN_UUID)
+
+    def test_agent_with_user_uuid_multi_tenant(self):
+        tenant = self.add_tenant()
+        agent = self._insert_agent(tenant_uuid=tenant.uuid)
+        user = self.add_user(agentid=agent.id, tenant_uuid=tenant.uuid)
+
+        self.assertRaises(LookupError, agent_dao.agent_with_user_uuid, user.uuid, tenant_uuids=[self.default_tenant.uuid])
+        result = agent_dao.agent_with_user_uuid(user.uuid, tenant_uuids=[self.default_tenant.uuid, tenant.uuid])
+
+        assert_that(result.id, equal_to(agent.id))
 
     def test_get(self):
         agent = self._insert_agent()
