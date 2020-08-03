@@ -43,9 +43,6 @@ class TestAgentDAO(DAOTestCase):
         result = agent_dao.agent_with_id(agent.id, tenant_uuids=[self.default_tenant.uuid, tenant.uuid])
         self.assertEqual(result.id, agent.id)
 
-        result = agent_dao.agent_with_id(agent.id, tenant_uuids=[self.default_tenant.uuid, tenant.uuid])
-        self.assertEqual(result.id, agent.id)
-
     def test_agent_with_number(self):
         agent = self._insert_agent()
 
