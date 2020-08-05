@@ -39,7 +39,7 @@ def get_interface_from_exten_and_context(session, extension, context):
 @daosession
 def get_interface_from_line_id(session, line_id):
     query = (session
-             .query(LineFeatures.endpoint_sip_id,
+             .query(LineFeatures.endpoint_sip_uuid,
                     LineFeatures.endpoint_sccp_id,
                     LineFeatures.endpoint_custom_id,
                     LineFeatures.name)
