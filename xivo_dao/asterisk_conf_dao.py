@@ -389,7 +389,7 @@ def find_sip_user_settings(session):
     query = session.query(
         LineFeatures,
     ).options(
-        joinedload('endpoint_sip').joinedload('templates'),
+        joinedload('endpoint_sip').joinedload('template_relations').joinedload('parent'),
     ).options(
         joinedload('endpoint_sip').joinedload('_aor_section'),
     ).options(
@@ -527,7 +527,7 @@ def find_sip_trunk_settings(session):
     query = session.query(
         TrunkFeatures,
     ).options(
-        joinedload('endpoint_sip').joinedload('templates'),
+        joinedload('endpoint_sip').joinedload('template_relations').joinedload('parent'),
     ).options(
         joinedload('endpoint_sip').joinedload('_aor_section'),
     ).options(
