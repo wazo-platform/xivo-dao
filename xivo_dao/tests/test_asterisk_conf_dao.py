@@ -1744,6 +1744,7 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
                 identify_section_options=has_items(
                     ['type', 'identify'],
                     ['match', '192.168.1.1'],
+                    ['endpoint', endpoint.name],
                 ),
                 outbound_auth_section_options=has_items(
                     ['type', 'auth'],
