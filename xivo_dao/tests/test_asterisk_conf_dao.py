@@ -17,6 +17,7 @@ from hamcrest import (
     has_items,
     has_length,
     has_properties,
+    not_,
 )
 
 from mock import patch
@@ -1751,6 +1752,51 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
                     ['username', 'outbound'],
                 )
             ))
+        )
+
+    def test_that_template_references_are_not_inherited(self):
+        template = self.add_endpoint_sip(
+            template=True,
+            endpoint_section_options=[['callerid', 'foo']],
+            auth_section_options=[['auth_type', 'userpass']],
+            aor_section_options=[['max_contacts', '42']],
+            registration_section_options=[['expiration', '10']],
+            registration_outbound_auth_section_options=[['auth_type', 'userpass']],
+            identify_section_options=[['match', '192.168.1.2']],
+            outbound_auth_section_options=[['auth_type', 'userpass']],
+
+        )
+        endpoint = self.add_endpoint_sip(
+            template=False,
+            templates=[template],
+            aor_section_options=[['contact', 'sip:name@proxy:port']],
+            auth_section_options=[['username', 'username']],
+            endpoint_section_options=[['identify_by', 'auth_username,username']],
+            registration_section_options=[
+                ['expiration', '120'],
+                ['client_uri', 'sip:foo@bar'],
+            ],
+            registration_outbound_auth_section_options=[['password', 'secret']],
+            identify_section_options=[['match', '192.168.1.1']],
+            outbound_auth_section_options=[['username', 'outbound']],
+        )
+        self.add_trunk(endpoint_sip_uuid=endpoint.uuid)
+
+        result = asterisk_conf_dao.find_sip_trunk_settings()
+        assert_that(
+            result,
+            not_(contains(has_entries(
+                endpoint_section_options=has_items(
+                    ['aors', template.name],
+                    ['auth', template.name],
+                ),
+                registration_section_options=has_items(
+                    ['outbound_auth', 'auth_reg_{}'.format(template.name)]
+                ),
+                identify_section_options=has_items(
+                    ['endpoint', template.name],
+                ),
+            )))
         )
 
     def test_that_doubles_are_removed(self):
