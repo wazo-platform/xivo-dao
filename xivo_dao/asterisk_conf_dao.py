@@ -580,26 +580,27 @@ def find_sip_trunk_settings(session):
         builder['endpoint_section_options'].extend([
             ['set_var', 'WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)],
         ])
-        if builder['endpoint_section_options']:
-            builder['endpoint_section_options'].append(['type', 'endpoint'])
-        if builder['aor_section_options']:
-            builder['aor_section_options'].append(['type', 'aor'])
-            builder['endpoint_section_options'].append(['aors', endpoint.name])
-        if builder['auth_section_options']:
-            builder['auth_section_options'].append(['type', 'auth'])
-            builder['endpoint_section_options'].append(['auth', endpoint.name])
-        if builder['identify_section_options']:
-            builder['identify_section_options'].append(['type', 'identify'])
-            builder['identify_section_options'].append(['endpoint', endpoint.name])
-        if builder['registration_section_options']:
-            builder['registration_section_options'].append(['type', 'registration'])
-        if builder['outbound_auth_section_options']:
-            builder['outbound_auth_section_options'].append(['type', 'auth'])
-        if builder['registration_outbound_auth_section_options']:
-            builder['registration_outbound_auth_section_options'].append(['type', 'auth'])
-            builder['registration_section_options'].append(
-                ['outbound_auth', 'auth_reg_{}'.format(endpoint.name)]
-            )
+        if not endpoint.template:
+            if builder['endpoint_section_options']:
+                builder['endpoint_section_options'].append(['type', 'endpoint'])
+            if builder['aor_section_options']:
+                builder['aor_section_options'].append(['type', 'aor'])
+                builder['endpoint_section_options'].append(['aors', endpoint.name])
+            if builder['auth_section_options']:
+                builder['auth_section_options'].append(['type', 'auth'])
+                builder['endpoint_section_options'].append(['auth', endpoint.name])
+            if builder['identify_section_options']:
+                builder['identify_section_options'].append(['type', 'identify'])
+                builder['identify_section_options'].append(['endpoint', endpoint.name])
+            if builder['registration_section_options']:
+                builder['registration_section_options'].append(['type', 'registration'])
+            if builder['outbound_auth_section_options']:
+                builder['outbound_auth_section_options'].append(['type', 'auth'])
+            if builder['registration_outbound_auth_section_options']:
+                builder['registration_outbound_auth_section_options'].append(['type', 'auth'])
+                builder['registration_section_options'].append(
+                    ['outbound_auth', 'auth_reg_{}'.format(endpoint.name)]
+                )
         builder.update({
             'uuid': base_config['uuid'],
             'name': base_config['name'],
