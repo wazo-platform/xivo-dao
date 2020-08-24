@@ -595,7 +595,11 @@ def find_sip_trunk_settings(session):
             if builder['registration_section_options']:
                 builder['registration_section_options'].append(['type', 'registration'])
             if builder['outbound_auth_section_options']:
+                outbound_auth_section_name = 'outbound_auth_{}'.format(endpoint.name)
                 builder['outbound_auth_section_options'].append(['type', 'auth'])
+                builder['endpoint_section_options'].append(
+                    ['outbound_auth', outbound_auth_section_name]
+                )
             if builder['registration_outbound_auth_section_options']:
                 builder['registration_outbound_auth_section_options'].append(['type', 'auth'])
                 builder['registration_section_options'].append(
