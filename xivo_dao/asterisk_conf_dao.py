@@ -556,12 +556,12 @@ def find_sip_trunk_settings(session):
         parents = [get_flat_config(parent) for parent in endpoint.templates]
         base_config = endpoint_to_dict(endpoint)
         context_name = context_mapping.get(endpoint.uuid)
+        transport_name = None
         if context_name:
             base_config['endpoint_section_options'].append(['context', context_name])
         if endpoint.transport_uuid:
-            base_config['endpoint_section_options'].append(
-                ['transport', endpoint.transport.name],
-            )
+            transport_name = endpoint.transport.name
+            base_config['endpoint_section_options'].append(['transport', transport_name])
         builder = {}
         for parent in parents + [base_config]:
             for section in [
@@ -594,6 +594,8 @@ def find_sip_trunk_settings(session):
                 builder['identify_section_options'].append(['endpoint', endpoint.name])
             if builder['registration_section_options']:
                 builder['registration_section_options'].append(['type', 'registration'])
+                if transport_name:
+                    builder['registration_section_options'].append(['transport', transport_name])
             if builder['outbound_auth_section_options']:
                 outbound_auth_section_name = 'outbound_auth_{}'.format(endpoint.name)
                 builder['outbound_auth_section_options'].append(['type', 'auth'])
