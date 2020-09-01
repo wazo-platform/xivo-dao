@@ -287,9 +287,9 @@ class EndpointSIP(Base):
     def update_caller_id(self, user, extension=None):
         # Copied from usersip
         name, num = user.extrapolate_caller_id(extension)
-        caller_id = '"{}"'.format(name)
+        caller_id = u'"{}"'.format(name)
         if num:
-            caller_id += " <{}>".format(num)
+            caller_id += u" <{}>".format(num)
         self.caller_id = caller_id
 
     def endpoint_protocol(self):

@@ -21,14 +21,38 @@ class Tenant(Base):
     uuid = Column(String(36), server_default=text('uuid_generate_v4()'))
     sip_templates_generated = Column(Boolean, nullable=False, server_default='false')
     global_sip_template_uuid = Column(
-        UUID(as_uuid=True), ForeignKey('endpoint_sip.uuid', ondelete='SET NULL')
+        UUID(as_uuid=True),
+        ForeignKey(
+            'endpoint_sip.uuid',
+            ondelete='SET NULL',
+            # NOTE(fblackburn): FK must be named to avoid circular deps on DROP
+            name='tenant_global_sip_template_uuid_fkey',
+        ),
     )
     webrtc_sip_template_uuid = Column(
-        UUID(as_uuid=True), ForeignKey('endpoint_sip.uuid', ondelete='SET NULL')
+        UUID(as_uuid=True),
+        ForeignKey(
+            'endpoint_sip.uuid',
+            ondelete='SET NULL',
+            # NOTE(fblackburn): FK must be named to avoid circular deps on DROP
+            name='tenant_webrtc_sip_template_uuid_fkey',
+        ),
     )
     global_trunk_sip_template_uuid = Column(
-        UUID(as_uuid=True), ForeignKey('endpoint_sip.uuid', ondelete='SET NULL')
+        UUID(as_uuid=True),
+        ForeignKey(
+            'endpoint_sip.uuid',
+            ondelete='SET NULL',
+            # NOTE(fblackburn): FK must be named to avoid circular deps on DROP
+            name='tenant_global_trunk_sip_template_uuid_fkey',
+        ),
     )
     twilio_trunk_sip_template_uuid = Column(
-        UUID(as_uuid=True), ForeignKey('endpoint_sip.uuid', ondelete='SET NULL')
+        UUID(as_uuid=True),
+        ForeignKey(
+            'endpoint_sip.uuid',
+            ondelete='SET NULL',
+            # NOTE(fblackburn): FK must be named to avoid circular deps on DROP
+            name='tenant_twilio_trunk_sip_template_uuid_fkey',
+        ),
     )
