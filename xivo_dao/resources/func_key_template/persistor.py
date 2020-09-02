@@ -467,6 +467,7 @@ class ServicePersistor(DestinationPersistor):
                  .join(Extension, FuncKeyDestService.extension_id == Extension.id)
                  .filter(Extension.type == 'extenfeatures')
                  .filter(Extension.typeval == destination.service))
+        # NOTE(fblackburn): Already created by populate.sql
 
         return query.first()
 
@@ -647,6 +648,7 @@ class FeaturesPersistor(DestinationPersistor):
         query = (self.session.query(FuncKeyDestFeatures)
                  .join(Features, FuncKeyDestFeatures.features_id == Features.id)
                  .filter(Features.var_name == varname))
+        # NOTE(fblackburn): Already created by populate.sql
 
         return query.first()
 
