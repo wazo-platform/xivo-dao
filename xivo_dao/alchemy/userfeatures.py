@@ -334,9 +334,6 @@ class UserFeatures(Base):
         num = user_match.group('num')
         return name, (num or default_num)
 
-    def has_private_template(self):
-        return self.func_key_private_template_id is not None or self.func_key_template_private is not None
-
     def fill_caller_id(self):
         if self.caller_id is None:
             self.caller_id = '"{}"'.format(self.fullname)
