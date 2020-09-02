@@ -132,8 +132,13 @@ class GroupFeatures(Base):
     ring_strategy = association_proxy('queue', 'strategy')
     user_timeout = association_proxy('queue', 'timeout')
 
-    func_keys = relationship(
+    func_keys_group = relationship(
         'FuncKeyDestGroup',
+        cascade='all, delete-orphan',
+    )
+
+    func_keys_group_member = relationship(
+        'FuncKeyDestGroupMember',
         cascade='all, delete-orphan',
     )
 
