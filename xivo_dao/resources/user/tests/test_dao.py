@@ -850,7 +850,6 @@ class TestDelete(TestUser):
 
     def test_delete(self):
         user = self.add_user()
-        self.add_user_destination(user.id)
 
         user_dao.delete(user)
 
@@ -859,8 +858,8 @@ class TestDelete(TestUser):
 
     def test_delete_references_to_other_tables(self):
         user = self.add_user()
-        self.add_user_destination(user.id)
 
+        self.add_user_destination(user.id)
         self.add_user_call_permission(user_id=user.id)
         schedule = self.add_schedule()
         self.add_schedule_path(schedule_id=schedule.id, path='user', pathid=user.id)

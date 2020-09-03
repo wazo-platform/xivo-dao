@@ -7,7 +7,6 @@ from __future__ import unicode_literals
 from xivo_dao.helpers.db_manager import Session
 
 from xivo_dao.resources.user.persistor import UserPersistor
-from xivo_dao.resources.func_key.persistor import DestinationPersistor
 from xivo_dao.resources.func_key_template.persistor import build_persistor as build_template_persistor
 from xivo_dao.resources.user.search import user_search
 from xivo_dao.resources.user.view import user_view
@@ -56,9 +55,7 @@ def find_all_by(**criteria):
 
 
 def create(user):
-    created_user = persistor().create(user)
-    DestinationPersistor(Session).create_user_destination(created_user)
-    return created_user
+    return persistor().create(user)
 
 
 def edit(user):

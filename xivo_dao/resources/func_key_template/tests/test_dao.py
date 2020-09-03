@@ -325,6 +325,25 @@ class TestCreate(TestDao):
         assert_that(calling(dao.create).with_args(template),
                     raises(InputError))
 
+    def test_given_no_user_func_key_when_created_then_create_new_user_func_key(self):
+        user = self.add_user()
+
+        dest_user_count = (self.session.query(FuncKeyDestUser)
+                           .filter(FuncKeyDestUser.user_id == user.id)
+                           .count())
+        assert_that(dest_user_count, equal_to(0))
+
+        template = self.build_template_with_key(FuncKeyDestUser(user_id=user.id))
+        dao.create(template)
+
+        template = self.build_template_with_key(FuncKeyDestUser(user_id=user.id))
+        dao.create(template)
+
+        dest_user_count = (self.session.query(FuncKeyDestUser)
+                           .filter(FuncKeyDestUser.user_id == user.id)
+                           .count())
+        assert_that(dest_user_count, equal_to(1))
+
     def test_given_no_group_func_key_when_created_then_create_new_group_func_key(self):
         group = self.add_group()
 
