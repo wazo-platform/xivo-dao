@@ -697,6 +697,36 @@ class TestDelete(TestDao):
                                 .filter(UserSchema.id == user_row.id).scalar())
         assert_that(func_key_template_id, none())
 
+    def test_given_template_is_associated_to_user_when_deleting_template(self):
+        user = self.add_user()
+        template = self.build_template_with_key(FuncKeyDestUser(user_id=user.id))
+        dao.create(template)
+
+        dao.delete(template)
+
+        dest_user_count = (self.session.query(FuncKeyDestUser)
+                           .filter(FuncKeyDestUser.user_id == user.id)
+                           .count())
+        assert_that(dest_user_count, equal_to(0))
+
+    def test_given_multi_template_is_associated_to_user_when_deleting_template(self):
+        user = self.add_user()
+        template = self.build_template_with_key(FuncKeyDestUser(user_id=user.id))
+        dao.create(template)
+
+        template = self.build_template_with_key(FuncKeyDestUser(user_id=user.id))
+        dao.create(template)
+
+        template = self.build_template_with_key(FuncKeyDestUser(user_id=user.id))
+        dao.create(template)
+
+        dao.delete(template)
+
+        dest_user_count = (self.session.query(FuncKeyDestUser)
+                           .filter(FuncKeyDestUser.user_id == user.id)
+                           .count())
+        assert_that(dest_user_count, equal_to(1))
+
     def test_given_template_is_associated_to_group_when_deleting_template(self):
         group = self.add_group()
         template = self.build_template_with_key(FuncKeyDestGroup(group_id=group.id))

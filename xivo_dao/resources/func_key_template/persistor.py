@@ -268,7 +268,10 @@ class UserPersistor(DestinationPersistor):
         return destination_row
 
     def delete(self, func_key_id):
-        pass
+        if not self._func_key_is_still_mapped(func_key_id):
+            (self.session.query(FuncKeyDestUser)
+             .filter(FuncKeyDestUser.func_key_id == func_key_id)
+             .delete())
 
 
 class QueuePersistor(DestinationPersistor):
