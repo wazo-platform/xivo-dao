@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import unicode_literals
@@ -67,7 +67,6 @@ def edit(user):
 
 
 def delete(user):
-    DestinationPersistor(Session).delete_user_destination(user)
     persistor().delete(user)
     template_persistor = build_template_persistor(Session)
     template_persistor.delete(user.func_key_template_private)

@@ -17,11 +17,3 @@ class DestinationPersistor(object):
         self.session.add(func_key)
         self.session.add(destination)
         self.session.flush()
-
-    def delete_user_destination(self, user):
-        self.delete_user_func_key(user)
-        self.session.flush()
-
-    def delete_user_func_key(self, user):
-        destination = self.session.query(FuncKeyDestUser).filter_by(user_id=user.id).first()
-        self.session.delete(destination)

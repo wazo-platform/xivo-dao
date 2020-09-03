@@ -327,6 +327,8 @@ class UserFeatures(Base):
         'group_members', 'users_from_call_pickup_group_interceptor_group_targets'
     )
 
+    func_keys = relationship('FuncKeyDestUser', cascade='all, delete-orphan')
+
     def extrapolate_caller_id(self, extension=None):
         default_num = extension.exten if extension else None
         user_match = caller_id_regex.match(self.callerid)
