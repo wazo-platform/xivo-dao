@@ -23,6 +23,7 @@ from hamcrest import (
 from xivo_dao.alchemy.callfiltermember import Callfiltermember
 from xivo_dao.alchemy.func_key import FuncKey
 from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
+from xivo_dao.alchemy.func_key_dest_bsfilter import FuncKeyDestBSFilter
 from xivo_dao.alchemy.func_key_template import FuncKeyTemplate
 from xivo_dao.alchemy.groupfeatures import GroupFeatures
 from xivo_dao.alchemy.queuemember import QueueMember
@@ -859,11 +860,17 @@ class TestDelete(TestUser):
     def test_delete_references_to_other_tables(self):
         user = self.add_user()
         self.add_user_destination(user.id)
+
         self.add_user_call_permission(user_id=user.id)
         schedule = self.add_schedule()
         self.add_schedule_path(schedule_id=schedule.id, path='user', pathid=user.id)
-        call_filter = self.add_bsfilter()
-        self.add_filter_member(call_filter.id, user.id)
+        call_filter = self.add_call_filter()
+        member = self.add_call_filter_member(
+            callfilterid=call_filter.id,
+            typeval=str(user.id),
+            bstype='secretary',
+        )
+        self.add_bsfilter_destination(member.id)
 
         user_dao.delete(user)
 
@@ -871,6 +878,7 @@ class TestDelete(TestUser):
         assert_that(self.session.query(SchedulePath).first(), none())
         assert_that(self.session.query(Callfiltermember).first(), none())
         assert_that(self.session.query(FuncKeyDestUser).first(), none())
+        assert_that(self.session.query(FuncKeyDestBSFilter).first(), none())
         assert_that(self.session.query(FuncKey).first(), none())
         assert_that(self.session.query(FuncKeyTemplate).first(), none())
 
