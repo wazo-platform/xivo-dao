@@ -951,39 +951,6 @@ class TestEdit(TestDao):
 
         self.assert_template_empty(template.id)
 
-    def test_given_2_funckeys_when_only_1_modified_then_other_func_key_remains_unmodified(self):
-        template_row = self.add_func_key_template()
-        user_destination_row = self.create_user_func_key()
-        queue_destination_row = self.create_queue_func_key()
-        conference_destination_row = self.create_conference_func_key()
-
-        # queue func key will be replaced by conference func key during edit
-        self.add_destination_to_template(user_destination_row, template_row, position=1)
-        self.add_destination_to_template(queue_destination_row, template_row, position=2)
-
-        template = dao.get(template_row.id)
-
-        template.keys[2] = FuncKeyMapping(
-            destination=FuncKeyDestConference(
-                conference_id=conference_destination_row.conference_id
-            )
-        )
-
-        dao.edit(template)
-
-        first_mapping_row = (self.session.query(FuncKeyMapping)
-                             .filter(FuncKeyMapping.template_id == template_row.id)
-                             .filter(FuncKeyMapping.position == 1)
-                             .first())
-
-        second_mapping_row = (self.session.query(FuncKeyMapping)
-                              .filter(FuncKeyMapping.template_id == template_row.id)
-                              .filter(FuncKeyMapping.position == 2)
-                              .first())
-
-        assert_that(first_mapping_row.func_key_id, equal_to(user_destination_row.func_key_id))
-        assert_that(second_mapping_row.func_key_id, equal_to(conference_destination_row.func_key_id))
-
 
 class TestSearch(TestDao):
 
