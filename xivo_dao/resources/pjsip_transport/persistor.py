@@ -2,6 +2,7 @@
 # Copyright 2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from xivo_dao.alchemy.endpoint_sip import EndpointSIP
 from xivo_dao.alchemy.pjsip_transport import PJSIPTransport
 from xivo_dao.helpers import errors
 from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
@@ -20,9 +21,18 @@ class TransportPersistor(CriteriaBuilderMixin):
         self.session.flush()
         return transport
 
-    def delete(self, transport):
+    def delete(self, transport, fallback=None):
+        if fallback:
+            self._update_transport(transport, fallback)
         self.session.delete(transport)
         self.session.flush()
+
+    def _update_transport(self, current, new):
+        (
+            self.session.query(EndpointSIP)
+            .filter(EndpointSIP.transport_uuid == current.uuid)
+            .update({'transport_uuid': new.uuid})
+        )
 
     def edit(self, transport):
         self.session.add(transport)

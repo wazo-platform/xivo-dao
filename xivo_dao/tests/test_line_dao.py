@@ -19,8 +19,8 @@ class TestLineFeaturesDAO(DAOTestCase):
     def test_get_interface_from_exten_and_context_sip(self):
         name = 'abcdef'
         extension = self.add_extension(exten=EXTEN, context=CONTEXT)
-        sip = self.add_usersip()
-        line = self.add_line(name=name, endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip()
+        line = self.add_line(name=name, endpoint_sip_uuid=sip.uuid)
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
 
         interface = line_dao.get_interface_from_exten_and_context(EXTEN, CONTEXT)
@@ -57,14 +57,14 @@ class TestLineFeaturesDAO(DAOTestCase):
         user = self.add_user()
 
         extension = self.add_extension(exten=main_exten, context=CONTEXT)
-        sip = self.add_usersip()
-        line = self.add_line(name=main_name, endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip()
+        line = self.add_line(name=main_name, endpoint_sip_uuid=sip.uuid)
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
         self.add_user_line(user_id=user.id, main_line=True, line_id=line.id)
 
         extension = self.add_extension(exten=second_exten, context=CONTEXT)
-        sip = self.add_usersip()
-        line = self.add_line(name=second_name, endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip()
+        line = self.add_line(name=second_name, endpoint_sip_uuid=sip.uuid)
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
         self.add_user_line(user_id=user.id, main_line=False, line_id=line.id)
 
@@ -76,14 +76,14 @@ class TestLineFeaturesDAO(DAOTestCase):
         user = self.add_user()
         extension = self.add_extension(exten=EXTEN, context=CONTEXT)
 
-        sip = self.add_usersip()
-        line = self.add_line(endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip()
+        line = self.add_line(endpoint_sip_uuid=sip.uuid)
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
         self.add_user_line(user_id=user.id, main_line=True, line_id=line.id)
         main_line_name = line.name
 
-        sip = self.add_usersip()
-        line = self.add_line(endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip()
+        line = self.add_line(endpoint_sip_uuid=sip.uuid)
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
         self.add_user_line(user_id=user.id, main_line=False, line_id=line.id)
 
@@ -97,8 +97,8 @@ class TestLineFeaturesDAO(DAOTestCase):
 
     def test_get_interface_from_line_id(self):
         line_name = 'sdofiuwoe'
-        sip = self.add_usersip()
-        line = self.add_line(name=line_name, endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip()
+        line = self.add_line(name=line_name, endpoint_sip_uuid=sip.uuid)
 
         interface = line_dao.get_interface_from_line_id(line.id)
 
@@ -121,8 +121,8 @@ class TestLineFeaturesDAO(DAOTestCase):
     def test_get_main_extension_context_from_line_id(self):
         main_exten = '1234'
         extension = self.add_extension(exten=main_exten, context=CONTEXT)
-        sip = self.add_usersip()
-        line = self.add_line(endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip()
+        line = self.add_line(endpoint_sip_uuid=sip.uuid)
         self.add_line_extension(line_id=line.id, extension_id=extension.id)
 
         exten, context = line_dao.get_main_extension_context_from_line_id(line.id)
@@ -136,8 +136,8 @@ class TestLineFeaturesDAO(DAOTestCase):
         self.assertEqual(result, None)
 
     def test_get_main_extension_context_from_line_id_without_extension(self):
-        sip = self.add_usersip()
-        line = self.add_line(endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip()
+        line = self.add_line(endpoint_sip_uuid=sip.uuid)
 
         result = line_dao.get_main_extension_context_from_line_id(line.id)
 
@@ -148,8 +148,8 @@ class TestLineFeaturesDAO(DAOTestCase):
         second_exten = '5555'
 
         extension = self.add_extension(exten=main_exten, context=CONTEXT)
-        sip = self.add_usersip()
-        line = self.add_line(endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip()
+        line = self.add_line(endpoint_sip_uuid=sip.uuid)
         self.add_line_extension(line_id=line.id, extension_id=extension.id, main_extension=True)
 
         extension = self.add_extension(exten=second_exten, context=CONTEXT)
@@ -163,8 +163,8 @@ class TestLineFeaturesDAO(DAOTestCase):
     def test_is_line_owned_by_user(self):
         user = self.add_user()
 
-        sip = self.add_usersip()
-        line = self.add_line(endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip()
+        line = self.add_line(endpoint_sip_uuid=sip.uuid)
         self.add_user_line(user_id=user.id, main_line=True, line_id=line.id)
 
         result = line_dao.is_line_owned_by_user(user.uuid, line.id)
@@ -172,8 +172,8 @@ class TestLineFeaturesDAO(DAOTestCase):
         self.assertEqual(result, True)
 
     def test_is_line_owned_by_user_unknown_user(self):
-        sip = self.add_usersip()
-        line = self.add_line(endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip()
+        line = self.add_line(endpoint_sip_uuid=sip.uuid)
 
         result = line_dao.is_line_owned_by_user(UNKNOWN_UUID, line.id)
 
@@ -182,8 +182,8 @@ class TestLineFeaturesDAO(DAOTestCase):
     def test_is_line_owned_by_user_unknown_line(self):
         user = self.add_user()
 
-        sip = self.add_usersip()
-        line = self.add_line(endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip()
+        line = self.add_line(endpoint_sip_uuid=sip.uuid)
         self.add_user_line(user_id=user.id, main_line=True, line_id=line.id)
 
         result = line_dao.is_line_owned_by_user(user.uuid, UNKNOWN_ID)
@@ -193,12 +193,12 @@ class TestLineFeaturesDAO(DAOTestCase):
     def test_is_line_owned_by_user_with_multiple_lines(self):
         user = self.add_user()
 
-        sip = self.add_usersip()
-        main_line = self.add_line(endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip()
+        main_line = self.add_line(endpoint_sip_uuid=sip.uuid)
         self.add_user_line(user_id=user.id, main_line=True, line_id=main_line.id)
 
-        sip = self.add_usersip()
-        secondary_line = self.add_line(endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip()
+        secondary_line = self.add_line(endpoint_sip_uuid=sip.uuid)
         self.add_user_line(user_id=user.id, main_line=False, line_id=secondary_line.id)
 
         main_result = line_dao.is_line_owned_by_user(user.uuid, main_line.id)
@@ -211,8 +211,8 @@ class TestLineFeaturesDAO(DAOTestCase):
         main_user = self.add_user()
         secondary_user = self.add_user()
 
-        sip = self.add_usersip()
-        line = self.add_line(endpoint_sip_id=sip.id)
+        sip = self.add_endpoint_sip()
+        line = self.add_line(endpoint_sip_uuid=sip.uuid)
         self.add_user_line(user_id=main_user.id, main_line=True, line_id=line.id)
         self.add_user_line(user_id=secondary_user.id, main_line=False, line_id=line.id)
 

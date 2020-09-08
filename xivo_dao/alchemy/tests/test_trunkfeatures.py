@@ -15,24 +15,17 @@ from xivo_dao.tests.test_dao import DAOTestCase
 class TestConstraint(DAOTestCase):
 
     def test_many_endpoints(self):
-        sip = self.add_usersip()
+        sip = self.add_endpoint_sip()
         iax = self.add_useriax()
         assert_that(calling(self.add_trunk).with_args(
-            endpoint_sip_id=sip.id, endpoint_iax_id=iax.id,
-        ), raises(IntegrityError))
-
-    def test_many_registers(self):
-        register_sip = self.add_register_sip()
-        register_iax = self.add_register_iax()
-        assert_that(calling(self.add_trunk).with_args(
-            register_sip_id=register_sip.id, register_iax_id=register_iax.id,
+            endpoint_sip_uuid=sip.uuid, endpoint_iax_id=iax.id,
         ), raises(IntegrityError))
 
     def test_register_iax_endpoint_sip_raise_integrity(self):
-        sip = self.add_usersip()
+        sip = self.add_endpoint_sip()
         register_iax = self.add_register_iax()
         assert_that(calling(self.add_trunk).with_args(
-            endpoint_sip_id=sip.id, register_iax_id=register_iax.id,
+            endpoint_sip_uuid=sip.uuid, register_iax_id=register_iax.id,
         ), raises(IntegrityError))
 
     def test_register_iax_endpoint_custom_raise_integrity(self):
@@ -40,18 +33,4 @@ class TestConstraint(DAOTestCase):
         register_iax = self.add_register_iax()
         assert_that(calling(self.add_trunk).with_args(
             endpoint_custom_id=custom.id, register_iax_id=register_iax.id,
-        ), raises(IntegrityError))
-
-    def test_register_sip_endpoint_iax_raise_integrity(self):
-        iax = self.add_useriax()
-        register_sip = self.add_register_sip()
-        assert_that(calling(self.add_trunk).with_args(
-            endpoint_iax_id=iax.id, register_sip_id=register_sip.id,
-        ), raises(IntegrityError))
-
-    def test_register_sip_endpoint_custom_raise_integrity(self):
-        custom = self.add_usercustom()
-        register_sip = self.add_register_sip()
-        assert_that(calling(self.add_trunk).with_args(
-            endpoint_custom_id=custom.id, register_sip_id=register_sip.id,
         ), raises(IntegrityError))

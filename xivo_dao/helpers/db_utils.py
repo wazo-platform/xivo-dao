@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2015-2016 Avencall
+# Copyright 2015-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from contextlib import contextmanager
@@ -23,11 +23,12 @@ def get_dao_session(session):
 
 
 @contextmanager
-def session_scope():
+def session_scope(read_only=False):
     session = db_manager.Session()
     try:
         yield session
-        session.commit()
+        if not read_only:
+            session.commit()
     except:
         session.rollback()
         raise

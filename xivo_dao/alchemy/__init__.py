@@ -18,6 +18,10 @@ from xivo_dao.alchemy.conference import Conference
 from xivo_dao.alchemy.context import Context
 from xivo_dao.alchemy.contextinclude import ContextInclude
 from xivo_dao.alchemy.dialaction import Dialaction
+from xivo_dao.alchemy.endpoint_sip import EndpointSIP
+from xivo_dao.alchemy.endpoint_sip import EndpointSIPTemplate
+from xivo_dao.alchemy.endpoint_sip_section import EndpointSIPSection
+from xivo_dao.alchemy.endpoint_sip_section_option import EndpointSIPSectionOption
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.func_key_dest_agent import FuncKeyDestAgent
 from xivo_dao.alchemy.func_key_dest_bsfilter import FuncKeyDestBSFilter
@@ -60,7 +64,6 @@ from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.alchemy.useriax import UserIAX
-from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.voicemail import Voicemail
 
 __all__ = [
@@ -78,6 +81,10 @@ __all__ = [
     'Context',
     'ContextInclude',
     'Dialaction',
+    'EndpointSIP',
+    'EndpointSIPTemplate',
+    'EndpointSIPSection',
+    'EndpointSIPSectionOption',
     'Extension',
     'FuncKeyDestAgent',
     'FuncKeyDestBSFilter',
@@ -120,6 +127,5 @@ __all__ = [
     'UserFeatures',
     'UserIAX',
     'UserLine',
-    'UserSIP',
     'Voicemail',
 ]

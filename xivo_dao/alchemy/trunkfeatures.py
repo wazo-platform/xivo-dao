@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import (
     CheckConstraint,
@@ -29,7 +30,7 @@ class TrunkFeatures(Base):
         PrimaryKeyConstraint('id'),
         CheckConstraint(
             '''
-            ( CASE WHEN endpoint_sip_id IS NULL THEN 0 ELSE 1 END
+            ( CASE WHEN endpoint_sip_uuid IS NULL THEN 0 ELSE 1 END
             + CASE WHEN endpoint_iax_id IS NULL THEN 0 ELSE 1 END
             + CASE WHEN endpoint_custom_id IS NULL THEN 0 ELSE 1 END
             ) <= 1
@@ -38,24 +39,11 @@ class TrunkFeatures(Base):
         ),
         CheckConstraint(
             '''
-            ( CASE WHEN register_sip_id IS NULL THEN 0 ELSE 1 END
-            + CASE WHEN register_iax_id IS NULL THEN 0 ELSE 1 END
-            ) <= 1
-            ''',
-            name='trunkfeatures_registers_check',
-        ),
-        CheckConstraint(
-            '''
             (
-                register_sip_id IS NULL AND
                 register_iax_id IS NULL
             ) OR (
-                register_sip_id IS NOT NULL AND
-                endpoint_iax_id IS NULL AND
-                endpoint_custom_id IS NULL
-            ) OR (
                 register_iax_id IS NOT NULL AND
-                endpoint_sip_id IS NULL AND
+                endpoint_sip_uuid IS NULL AND
                 endpoint_custom_id IS NULL
             )
             ''',
@@ -66,19 +54,28 @@ class TrunkFeatures(Base):
 
     id = Column(Integer, nullable=False)
     tenant_uuid = Column(String(36), ForeignKey('tenant.uuid', ondelete='CASCADE'), nullable=False)
-    endpoint_sip_id = Column(Integer, ForeignKey('usersip.id', ondelete='SET NULL'))
+    endpoint_sip_uuid = Column(
+        UUID(as_uuid=True),
+        ForeignKey('endpoint_sip.uuid', ondelete='SET NULL'),
+    )
     endpoint_iax_id = Column(Integer, ForeignKey('useriax.id', ondelete='SET NULL'))
     endpoint_custom_id = Column(Integer, ForeignKey('usercustom.id', ondelete='SET NULL'))
-    register_sip_id = Column(Integer, ForeignKey('staticsip.id', ondelete='SET NULL'))
     register_iax_id = Column(Integer, ForeignKey('staticiax.id', ondelete='SET NULL'))
     registercommented = Column(Integer, nullable=False, server_default='0')
     description = Column(Text)
     context = Column(String(39))
     twilio_incoming = Column(Boolean, nullable=False, server_default='False')
 
-    endpoint_sip = relationship('UserSIP', viewonly=True)
+    endpoint_sip = relationship('EndpointSIP', viewonly=True)
     endpoint_iax = relationship('UserIAX', viewonly=True)
     endpoint_custom = relationship('UserCustom', viewonly=True)
+
+    context_rel = relationship(
+        'Context',
+        primaryjoin='TrunkFeatures.context == Context.name',
+        foreign_keys='TrunkFeatures.context',
+        viewonly=True,
+    )
 
     outcall_trunks = relationship(
         'OutcallTrunk',
@@ -92,48 +89,15 @@ class TrunkFeatures(Base):
     )
 
     register_iax = relationship('StaticIAX', viewonly=True)
-    register_sip = relationship('StaticSIP', viewonly=True)
-
-    def is_associated(self, protocol=None):
-        return self.endpoint_sip_id or self.endpoint_iax_id or self.endpoint_custom_id
-
-    def is_associated_with(self, endpoint):
-        return (
-            self.endpoint_sip is endpoint or
-            self.endpoint_iax is endpoint or
-            self.endpoint_custom is endpoint
-        )
-
-    def associate_endpoint(self, endpoint):
-        protocol = endpoint.endpoint_protocol()
-        if protocol == 'sip':
-            self.endpoint_sip_id = endpoint.id
-            self.endpoint_iax_id = None
-            self.endpoint_custom_id = None
-        elif protocol == 'iax':
-            self.endpoint_sip_id = None
-            self.endpoint_iax_id = endpoint.id
-            self.endpoint_custom_id = None
-        elif protocol == 'custom':
-            self.endpoint_sip_id = None
-            self.endpoint_iax_id = None
-            self.endpoint_custom_id = endpoint.id
-
-    def remove_endpoint(self):
-        self.endpoint_sip_id = None
-        self.endpoint_iax_id = None
-        self.endpoint_custom_id = None
 
     @property
     def protocol(self):
-        if self.endpoint_sip_id:
+        if self.endpoint_sip_uuid:
             return 'sip'
         elif self.endpoint_iax_id:
             return 'iax'
         elif self.endpoint_custom_id:
             return 'custom'
 
-        if self.register_sip_id:
-            return 'sip'
-        elif self.register_iax_id:
+        if self.register_iax_id:
             return 'iax'

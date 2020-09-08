@@ -14,8 +14,8 @@ def create(session, transport):
 
 
 @daosession
-def delete(session, transport):
-    Persistor(session, transport_search).delete(transport)
+def delete(session, transport, fallback=None):
+    Persistor(session, transport_search).delete(transport, fallback)
 
 
 @daosession

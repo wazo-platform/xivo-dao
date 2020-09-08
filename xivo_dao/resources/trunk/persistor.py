@@ -4,10 +4,9 @@
 
 from sqlalchemy import text
 
+from xivo_dao.alchemy.endpoint_sip import EndpointSIP
 from xivo_dao.alchemy.trunkfeatures import TrunkFeatures as Trunk
 from xivo_dao.alchemy.staticiax import StaticIAX
-from xivo_dao.alchemy.staticsip import StaticSIP
-from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.usercustom import UserCustom
 
@@ -59,10 +58,10 @@ class TrunkPersistor(CriteriaBuilderMixin):
         self.session.flush()
 
     def delete(self, trunk):
-        if trunk.endpoint_sip_id:
+        if trunk.endpoint_sip_uuid:
             (self.session
-             .query(UserSIP)
-             .filter(UserSIP.id == trunk.endpoint_sip_id)
+             .query(EndpointSIP)
+             .filter(EndpointSIP.uuid == trunk.endpoint_sip_uuid)
              .delete())
         elif trunk.endpoint_iax_id:
             (self.session
@@ -75,12 +74,7 @@ class TrunkPersistor(CriteriaBuilderMixin):
              .filter(UserCustom.id == trunk.endpoint_custom_id)
              .delete())
 
-        if trunk.register_sip_id:
-            (self.session
-             .query(StaticSIP)
-             .filter(StaticSIP.id == trunk.register_sip_id)
-             .delete())
-        elif trunk.register_iax_id:
+        if trunk.register_iax_id:
             (self.session
              .query(StaticIAX)
              .filter(StaticIAX.id == trunk.register_iax_id)
@@ -98,9 +92,56 @@ class TrunkPersistor(CriteriaBuilderMixin):
 
         return query.filter(Trunk.tenant_uuid.in_(self.tenant_uuids))
 
+    def associate_endpoint_sip(self, trunk, endpoint):
+        if trunk.protocol not in ('sip', None):
+            raise errors.resource_associated(
+                'Trunk', 'Endpoint', trunk_id=trunk.id, protocol=trunk.protocol
+            )
+        trunk.endpoint_sip_uuid = endpoint.uuid
+        self.session.flush()
+        self.session.expire(trunk, ['endpoint_sip'])
+
+    def dissociate_endpoint_sip(self, trunk, endpoint):
+        if endpoint is trunk.endpoint_sip:
+            trunk.endpoint_sip_uuid = None
+            self.session.flush()
+            self.session.expire(trunk, ['endpoint_sip'])
+
+    def associate_endpoint_iax(self, trunk, endpoint):
+        if trunk.protocol not in ('iax', None):
+            raise errors.resource_associated(
+                'Trunk', 'Endpoint', trunk_id=trunk.id, protocol=trunk.protocol
+            )
+        trunk.endpoint_iax_id = endpoint.id
+        self.session.flush()
+        self.session.expire(trunk, ['endpoint_iax'])
+
+    def dissociate_endpoint_iax(self, trunk, endpoint):
+        if endpoint is trunk.endpoint_iax:
+            trunk.endpoint_iax_id = None
+            self.session.flush()
+            self.session.expire(trunk, ['endpoint_iax'])
+
+    def associate_endpoint_custom(self, trunk, endpoint):
+        if trunk.protocol not in ('custom', None):
+            raise errors.resource_associated(
+                'Trunk', 'Endpoint', trunk_id=trunk.id, protocol=trunk.protocol
+            )
+        trunk.endpoint_custom_id = endpoint.id
+        self.session.flush()
+        self.session.expire(trunk, ['endpoint_custom'])
+
+    def dissociate_endpoint_custom(self, trunk, endpoint):
+        if endpoint is trunk.endpoint_custom:
+            trunk.endpoint_custom_id = None
+            self.session.flush()
+            self.session.expire(trunk, ['endpoint_custom'])
+
     def associate_register_iax(self, trunk, register):
         if trunk.protocol not in ('iax', None):
-            raise errors.resource_associated('Trunk', 'Endpoint', trunk_id=trunk.id, protocol=trunk.protocol)
+            raise errors.resource_associated(
+                'Trunk', 'Endpoint', trunk_id=trunk.id, protocol=trunk.protocol
+            )
         trunk.register_iax_id = register.id
         self.session.flush()
         self.session.expire(trunk, ['register_iax'])
@@ -110,16 +151,3 @@ class TrunkPersistor(CriteriaBuilderMixin):
             trunk.register_iax_id = None
             self.session.flush()
             self.session.expire(trunk, ['register_iax'])
-
-    def associate_register_sip(self, trunk, register):
-        if trunk.protocol not in ('sip', None):
-            raise errors.resource_associated('Trunk', 'Endpoint', trunk_id=trunk.id, protocol=trunk.protocol)
-        trunk.register_sip_id = register.id
-        self.session.flush()
-        self.session.expire(trunk, ['register_sip'])
-
-    def dissociate_register_sip(self, trunk, register):
-        if register is trunk.register_sip:
-            trunk.register_sip_id = None
-            self.session.flush()
-            self.session.expire(trunk, ['register_sip'])

@@ -270,9 +270,8 @@ class TestRelations(DAOTestCase):
     # TODO this test should be in linefeatures
     def test_line_relationship(self):
         sccp = self.add_sccpline()
-        line = self.add_line()
+        line = self.add_line(endpoint_sccp_id=sccp.id)
 
-        line.associate_endpoint(sccp)
         self.session.flush()
 
         self.session.expire_all()

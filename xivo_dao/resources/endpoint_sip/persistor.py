@@ -2,11 +2,10 @@
 # Copyright 2015-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from functools import partial
-
 from sqlalchemy import text
+from sqlalchemy.orm import joinedload
 
-from xivo_dao.alchemy.usersip import UserSIP as SIP
+from xivo_dao.alchemy.endpoint_sip import EndpointSIP
 from xivo_dao.helpers import errors, generators
 from xivo_dao.resources.line.fixes import LineFixes
 from xivo_dao.resources.trunk.fixes import TrunkFixes
@@ -15,7 +14,7 @@ from xivo_dao.resources.utils.search import SearchResult, CriteriaBuilderMixin
 
 class SipPersistor(CriteriaBuilderMixin):
 
-    _search_table = SIP
+    _search_table = EndpointSIP
 
     def __init__(self, session, sip_search, tenant_uuids=None):
         self.session = session
@@ -29,25 +28,47 @@ class SipPersistor(CriteriaBuilderMixin):
         return self._find_query(criteria).all()
 
     def _find_query(self, criteria):
-        query = self.session.query(SIP)
+        query = self.session.query(EndpointSIP)
         query = self._filter_tenant_uuid(query)
         return self.build_criteria(query, criteria)
 
     def get_by(self, criteria):
-        trunk = self.find_by(criteria)
-        if not trunk:
-            raise errors.not_found('SIPEndpoint', **criteria)
-        return trunk
+        sip = self.find_by(criteria)
+        if not sip:
+            template = criteria.pop('template', None)
+            if template:
+                raise errors.not_found('SIPEndpointTemplate', **criteria)
+            else:
+                raise errors.not_found('SIPEndpoint', **criteria)
+        return sip
 
     def search(self, parameters):
-        query = self.session.query(self.sip_search.config.table)
+        query = self._search_query()
         query = self._filter_tenant_uuid(query)
         rows, total = self.sip_search.search_from_query(query, parameters)
         return SearchResult(total, rows)
 
+    def _search_query(self):
+        return (
+            self.session
+            .query(self.sip_search.config.table)
+            .options(joinedload('transport'))
+            .options(joinedload('template_relations').joinedload('parent'))
+            .options(joinedload('_aor_section'))
+            .options(joinedload('_auth_section'))
+            .options(joinedload('_endpoint_section'))
+            .options(joinedload('_registration_section'))
+            .options(joinedload('_registration_outbound_auth_section'))
+            .options(joinedload('_identify_section'))
+            .options(joinedload('_outbound_auth_section'))
+            .options(joinedload('line'))
+            .options(joinedload('trunk'))
+        )
+
     def create(self, sip):
-        self.fill_default_values(sip)
-        self.persist(sip)
+        self._fill_default_values(sip)
+        self.session.add(sip)
+        self.session.flush()
         return sip
 
     def persist(self, sip):
@@ -60,8 +81,7 @@ class SipPersistor(CriteriaBuilderMixin):
         self._fix_associated(sip)
 
     def delete(self, sip):
-        self.session.query(SIP).filter(SIP.id == sip.id).delete()
-        self.session.expire_all()
+        self.session.delete(sip)
         self._fix_associated(sip)
 
     def _filter_tenant_uuid(self, query):
@@ -71,7 +91,7 @@ class SipPersistor(CriteriaBuilderMixin):
         if not self.tenant_uuids:
             return query.filter(text('false'))
 
-        return query.filter(SIP.tenant_uuid.in_(self.tenant_uuids))
+        return query.filter(EndpointSIP.tenant_uuid.in_(self.tenant_uuids))
 
     def _fix_associated(self, sip):
         if sip.line:
@@ -80,24 +100,9 @@ class SipPersistor(CriteriaBuilderMixin):
         if sip.trunk:
             TrunkFixes(self.session).fix(sip.trunk.id)
 
-    def fill_default_values(self, sip):
+    def _fill_default_values(self, sip):
         if sip.name is None:
-            sip.name = generators.find_unused_hash(partial(self._already_exists, SIP.name))
+            sip.name = generators.find_unused_hash(self._name_already_exists)
 
-        # This is a compatibility fix that was added in 19.15 to avoid breaking the API.
-        # In the old version, the name could not be specified in the API the username was
-        # always copied.
-        if sip.username is None:
-            sip.username = sip.name
-
-        if sip.secret is None:
-            sip.secret = generators.find_unused_hash(partial(self._already_exists, SIP.secret))
-        if sip.type is None:
-            sip.type = 'friend'
-        if sip.host is None:
-            sip.host = 'dynamic'
-        if sip.category is None:
-            sip.category = 'user'
-
-    def _already_exists(self, column, data):
-        return self.session.query(SIP).filter(column == data).count() > 0
+    def _name_already_exists(self, data):
+        return self.session.query(EndpointSIP).filter(EndpointSIP.name == data).count() > 0

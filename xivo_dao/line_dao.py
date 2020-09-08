@@ -13,7 +13,7 @@ from xivo_dao.helpers.db_manager import daosession
 @daosession
 def get_interface_from_exten_and_context(session, extension, context):
     res = (session
-           .query(LineFeatures.endpoint_sip_id,
+           .query(LineFeatures.endpoint_sip_uuid,
                   LineFeatures.endpoint_sccp_id,
                   LineFeatures.endpoint_custom_id,
                   LineFeatures.name,
@@ -39,7 +39,7 @@ def get_interface_from_exten_and_context(session, extension, context):
 @daosession
 def get_interface_from_line_id(session, line_id):
     query = (session
-             .query(LineFeatures.endpoint_sip_id,
+             .query(LineFeatures.endpoint_sip_uuid,
                     LineFeatures.endpoint_sccp_id,
                     LineFeatures.endpoint_custom_id,
                     LineFeatures.name)
@@ -79,7 +79,7 @@ def is_line_owned_by_user(session, user_uuid, line_id):
 
 
 def _format_interface(row):
-    if row.endpoint_sip_id:
+    if row.endpoint_sip_uuid:
         return 'SIP/{}'.format(row.name)
     elif row.endpoint_sccp_id:
         return 'SCCP/{}'.format(row.name)

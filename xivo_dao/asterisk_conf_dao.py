@@ -9,6 +9,7 @@ from collections import (
     namedtuple,
 )
 
+from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.expression import (
     and_,
     cast,
@@ -19,7 +20,6 @@ from sqlalchemy.sql.expression import (
 from sqlalchemy.types import Integer
 
 from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.linefeatures import LineFeatures
 from xivo_dao.alchemy.meetmefeatures import MeetmeFeatures
@@ -386,52 +386,288 @@ def find_sip_general_settings(session):
 @daosession
 def find_sip_user_settings(session):
     pickup_members = find_pickup_members('sip')
-
     query = session.query(
-        UserSIP,
-        LineFeatures.context,
-        LineFeatures.application_uuid,
-        LineFeatures.endpoint_sip_id,
-        Extension.exten.label('number'),
-        UserFeatures.musiconhold.label('mohsuggest'),
-        UserFeatures.id.label('user_id'),
-        UserFeatures.uuid.label('uuid'),
-        (Voicemail.mailbox + '@' + Voicemail.context).label('mailbox'),
-    ).join(LineFeatures, and_(
-        LineFeatures.endpoint_sip_id == UserSIP.id,
-    )).outerjoin(UserLine, and_(
-        UserLine.line_id == LineFeatures.id,
-        UserLine.main_user.is_(True),
-    )).outerjoin(
-        UserFeatures, UserFeatures.id == UserLine.user_id
-    ).outerjoin(
-        Voicemail, UserFeatures.voicemailid == Voicemail.uniqueid
-    ).outerjoin(
-        LineExtension, UserLine.line_id == LineExtension.line_id
-    ).outerjoin(
-        Extension, Extension.id == LineExtension.extension_id
-    ).filter(and_(
-        UserSIP.category == 'user',
-        UserSIP.commented == 0,
-    ))
+        LineFeatures,
+    ).options(
+        joinedload('endpoint_sip').joinedload('template_relations').joinedload('parent'),
+    ).options(
+        joinedload('endpoint_sip').joinedload('_aor_section'),
+    ).options(
+        joinedload('endpoint_sip').joinedload('_endpoint_section'),
+    ).options(
+        joinedload('endpoint_sip').joinedload('_auth_section'),
+    ).options(
+        joinedload('endpoint_sip').joinedload('transport'),
+    ).options(
+        joinedload('user_lines').joinedload('user').joinedload('voicemail'),
+    ).options(
+        joinedload('line_extensions').joinedload('extension'),
+    ).filter(
+        LineFeatures.endpoint_sip_uuid.isnot(None),
+    )
 
-    for row in query.all():
-        pickup_groups = pickup_members.get(row.UserSIP.id, {})
-        yield row, pickup_groups
+    lines = query.all()
+    context_mapping = {}
+    extension_mapping = {}
+    voicemail_mapping = defaultdict(list)
+    user_mapping = defaultdict(list)
+    raw_configs = {}
+    for line in lines:
+        raw_configs[line.endpoint_sip_uuid] = line.endpoint_sip
+        context_mapping[line.endpoint_sip_uuid] = line.context
+        if line.extensions:
+            extension_mapping[line.endpoint_sip_uuid] = line.extensions[0]
+        for user in line.users:
+            user_mapping[line.endpoint_sip_uuid].append(user)
+            if user.voicemail:
+                voicemail_mapping[line.endpoint_sip_uuid].append(user.voicemail)
+
+    def get_flat_config(endpoint):
+        if endpoint.uuid in flat_configs:
+            return flat_configs[endpoint.uuid]
+
+        parents = [get_flat_config(parent) for parent in endpoint.templates]
+        base_config = endpoint_to_dict(endpoint)
+        context_name = context_mapping.get(endpoint.uuid)
+        if context_name:
+            base_config['endpoint_section_options'].append(['context', context_name])
+            base_config['endpoint_section_options'].append(
+                ['set_var', 'TRANSFER_CONTEXT={}'.format(context_name)],
+            )
+        if endpoint.transport_uuid:
+            base_config['endpoint_section_options'].append(
+                ['transport', endpoint.transport.name],
+            )
+        extension = extension_mapping.get(endpoint.uuid)
+        if extension:
+            base_config['endpoint_section_options'].append(
+                ['set_var', 'PICKUPMARK={}%{}'.format(extension.exten, extension.context)]
+            )
+        voicemails = voicemail_mapping.get(endpoint.uuid, [])
+        mailboxes = []
+        for voicemail in voicemails:
+            mailboxes.append('{}@{}'.format(voicemail.number, voicemail.context))
+        if mailboxes:
+            base_config['aor_section_options'].append(
+                ['mailboxes', ','.join(mailboxes)]
+            )
+        for user in user_mapping.get(endpoint.uuid, []):
+            base_config['endpoint_section_options'].extend([
+                ['set_var', 'XIVO_USERID={}'.format(user.id)],
+                ['set_var', 'XIVO_USERUUID={}'.format(user.uuid)],
+                # TODO(pc-m): document WAZO_USER_UUID and deprecate the XIVO one
+                # ['set_var', 'WAZO_USER_UUID={}'.format(user.uuid)],
+            ])
+        pickup_groups = pickup_members.get(endpoint.uuid, {})
+        named_pickup_groups = ','.join(str(id) for id in pickup_groups.get('pickupgroup', []))
+        if named_pickup_groups:
+            base_config['endpoint_section_options'].append(
+                ['named_pickup_group', named_pickup_groups],
+            )
+        named_call_groups = ','.join(str(id) for id in pickup_groups.get('callgroup', []))
+        if named_call_groups:
+            base_config['endpoint_section_options'].append(
+                ['named_call_group', named_call_groups],
+            )
+        builder = {}
+        for parent in parents + [base_config]:
+            for section in [
+                'aor_section_options',
+                'auth_section_options',
+                'endpoint_section_options',
+            ]:
+                builder.setdefault(section, [])
+                parent_options = parent.get(section, [])
+                for option in parent_options:
+                    builder[section].append(option)
+        for key, value in builder.get('endpoint_section_options', []):
+            if key == 'callerid':
+                builder['endpoint_section_options'].append(
+                    ['set_var', 'XIVO_ORIGINAL_CALLER_ID={}'.format(value)]
+                )
+                break
+        builder['endpoint_section_options'].extend([
+            ['set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'],
+            ['set_var', 'WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)],
+        ])
+        if builder['endpoint_section_options']:
+            builder['endpoint_section_options'].append(['type', 'endpoint'])
+        if builder['aor_section_options']:
+            builder['aor_section_options'].append(['type', 'aor'])
+            builder['endpoint_section_options'].append(['aors', endpoint.name])
+        if builder['auth_section_options']:
+            builder['auth_section_options'].append(['type', 'auth'])
+            builder['endpoint_section_options'].append(['auth', endpoint.name])
+        builder.update({
+            'uuid': base_config['uuid'],
+            'name': base_config['name'],
+            'label': base_config['label'],
+            'template': base_config['template'],
+            'asterisk_id': base_config['asterisk_id'],
+        })
+        if builder['template']:
+            flat_configs[builder['uuid']] = builder
+        return builder
+
+    # A flat_config is an endpoint config with all inherited fields merged into a single object
+    flat_configs = {}
+    for uuid, raw_config in raw_configs.items():
+        flat_config = get_flat_config(raw_config)
+        flat_configs[uuid] = flat_config
+
+    return [
+        remove_duplicated_configurations(config)
+        for config in flat_configs.values()
+        if config['template'] is False
+    ]
 
 
 @daosession
 def find_sip_trunk_settings(session):
     query = session.query(
-        UserSIP, TrunkFeatures.twilio_incoming,
-    ).join(TrunkFeatures, and_(
-        TrunkFeatures.endpoint_sip_id == UserSIP.id,
-    )).filter(and_(
-        UserSIP.category == 'trunk',
-        UserSIP.commented == 0,
-    )).order_by(UserSIP.name)
+        TrunkFeatures,
+    ).options(
+        joinedload('endpoint_sip').joinedload('template_relations').joinedload('parent'),
+    ).options(
+        joinedload('endpoint_sip').joinedload('_aor_section'),
+    ).options(
+        joinedload('endpoint_sip').joinedload('_endpoint_section'),
+    ).options(
+        joinedload('endpoint_sip').joinedload('_auth_section'),
+    ).options(
+        joinedload('endpoint_sip').joinedload('_identify_section'),
+    ).options(
+        joinedload('endpoint_sip').joinedload('transport'),
+    ).filter(
+        TrunkFeatures.endpoint_sip_uuid.isnot(None),
+    )
 
-    return query.all()
+    trunks = query.all()
+    context_mapping = {}
+    raw_configs = {}
+    for trunk in trunks:
+        raw_configs[trunk.endpoint_sip_uuid] = trunk.endpoint_sip
+        context_mapping[trunk.endpoint_sip_uuid] = trunk.context
+
+    def get_flat_config(endpoint):
+        if endpoint.uuid in flat_configs:
+            return flat_configs[endpoint.uuid]
+
+        parents = [get_flat_config(parent) for parent in endpoint.templates]
+        base_config = endpoint_to_dict(endpoint)
+        context_name = context_mapping.get(endpoint.uuid)
+        transport_name = None
+        if context_name:
+            base_config['endpoint_section_options'].append(['context', context_name])
+        if endpoint.transport_uuid:
+            transport_name = endpoint.transport.name
+            base_config['endpoint_section_options'].append(['transport', transport_name])
+        builder = {}
+        for parent in parents + [base_config]:
+            for section in [
+                'aor_section_options',
+                'auth_section_options',
+                'endpoint_section_options',
+                'identify_section_options',
+                'registration_section_options',
+                'registration_outbound_auth_section_options',
+                'outbound_auth_section_options',
+            ]:
+                builder.setdefault(section, [])
+                parent_options = parent.get(section, [])
+                for option in parent_options:
+                    builder[section].append(option)
+        builder['endpoint_section_options'].extend([
+            ['set_var', 'WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)],
+        ])
+        if not endpoint.template:
+            if builder['endpoint_section_options']:
+                builder['endpoint_section_options'].append(['type', 'endpoint'])
+            if builder['aor_section_options']:
+                builder['aor_section_options'].append(['type', 'aor'])
+                builder['endpoint_section_options'].append(['aors', endpoint.name])
+            if builder['auth_section_options']:
+                builder['auth_section_options'].append(['type', 'auth'])
+                builder['endpoint_section_options'].append(['auth', endpoint.name])
+            if builder['identify_section_options']:
+                builder['identify_section_options'].append(['type', 'identify'])
+                builder['identify_section_options'].append(['endpoint', endpoint.name])
+            if builder['registration_section_options']:
+                builder['registration_section_options'].append(['type', 'registration'])
+                if transport_name:
+                    builder['registration_section_options'].append(['transport', transport_name])
+            if builder['outbound_auth_section_options']:
+                outbound_auth_section_name = 'outbound_auth_{}'.format(endpoint.name)
+                builder['outbound_auth_section_options'].append(['type', 'auth'])
+                builder['endpoint_section_options'].append(
+                    ['outbound_auth', outbound_auth_section_name]
+                )
+            if builder['registration_outbound_auth_section_options']:
+                builder['registration_outbound_auth_section_options'].append(['type', 'auth'])
+                builder['registration_section_options'].append(
+                    ['outbound_auth', 'auth_reg_{}'.format(endpoint.name)]
+                )
+        builder.update({
+            'uuid': base_config['uuid'],
+            'name': base_config['name'],
+            'label': base_config['label'],
+            'template': base_config['template'],
+            'asterisk_id': base_config['asterisk_id'],
+        })
+        if builder['template']:
+            flat_configs[builder['uuid']] = builder
+        return builder
+
+    # A flat_config is an endpoint config with all inherited fields merged into a single object
+    flat_configs = {}
+    for uuid, raw_config in raw_configs.items():
+        flat_config = get_flat_config(raw_config)
+        flat_configs[uuid] = flat_config
+
+    return [
+        remove_duplicated_configurations(config)
+        for config in flat_configs.values()
+        if config['template'] is False
+    ]
+
+
+def remove_duplicated_configurations(config):
+    sections = [
+        'aor_section_options',
+        'auth_section_options',
+        'endpoint_section_options',
+        'registration_section_options',
+        'identify_section_options',
+        'registration_outbound_auth_section_options',
+        'outbound_auth_section_options',
+    ]
+    for section in sections:
+        reverse_pruned_options = []
+        visited_options = set()
+        for option in reversed(config.get(section, [])):
+            if tuple(option) in visited_options:
+                continue
+            visited_options.add(tuple(option))
+            reverse_pruned_options.append(option)
+        config[section] = list(reversed(reverse_pruned_options))
+    return config
+
+
+def endpoint_to_dict(endpoint):
+    return {
+        'uuid': endpoint.uuid,
+        'name': endpoint.name,
+        'label': endpoint.label,
+        'aor_section_options': endpoint.aor_section_options,
+        'auth_section_options': endpoint.auth_section_options,
+        'endpoint_section_options': endpoint.endpoint_section_options,
+        'registration_section_options': endpoint.registration_section_options,
+        'registration_outbound_auth_section_options': endpoint.registration_outbound_auth_section_options,
+        'identify_section_options': endpoint.identify_section_options,
+        'outbound_auth_section_options': endpoint.outbound_auth_section_options,
+        'template': endpoint.template,
+        'asterisk_id': endpoint.asterisk_id,
+    }
 
 
 @daosession
@@ -452,7 +688,7 @@ def find_pickup_members(session, protocol):
 
     def _add_member(m):
         if protocol == 'sip':
-            res_base = res[m.endpoint_sip_id]
+            res_base = res[m.endpoint_sip_uuid]
         elif protocol == 'sccp':
             res_base = res[m.endpoint_sccp_id]
         elif protocol == 'custom':
@@ -464,7 +700,7 @@ def find_pickup_members(session, protocol):
     base_query = session.query(
         PickupMember.category,
         Pickup.id,
-        LineFeatures.endpoint_sip_id,
+        LineFeatures.endpoint_sip_uuid,
         LineFeatures.endpoint_sccp_id,
         LineFeatures.endpoint_custom_id,
     ).join(
@@ -472,11 +708,11 @@ def find_pickup_members(session, protocol):
     ).filter(Pickup.commented == 0)
 
     if protocol == 'sip':
-        base_query = base_query.filter(LineFeatures.endpoint_sip_id != None)
+        base_query = base_query.filter(LineFeatures.endpoint_sip_uuid.isnot(None))
     elif protocol == 'sccp':
-        base_query = base_query.filter(LineFeatures.endpoint_sccp_id != None)
+        base_query = base_query.filter(LineFeatures.endpoint_sccp_id.isnot(None))
     elif protocol == 'custom':
-        base_query = base_query.filter(LineFeatures.endpoint_custom_id != None)
+        base_query = base_query.filter(LineFeatures.endpoint_custom_id.isnot(None))
 
     users = base_query.join(
         UserLine, UserLine.user_id == PickupMember.memberid,

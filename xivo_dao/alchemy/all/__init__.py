@@ -27,6 +27,9 @@ from xivo_dao.alchemy.contexttype import ContextType
 from xivo_dao.alchemy.dhcp import Dhcp
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.dialpattern import DialPattern
+from xivo_dao.alchemy.endpoint_sip import EndpointSIP, EndpointSIPTemplate
+from xivo_dao.alchemy.endpoint_sip_section import EndpointSIPSection
+from xivo_dao.alchemy.endpoint_sip_section_option import EndpointSIPSectionOption
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.features import Features
 from xivo_dao.alchemy.func_key import FuncKey
@@ -112,7 +115,6 @@ from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.alchemy.useriax import UserIAX
-from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.voicemail import Voicemail
 
 __all__ = [
@@ -142,6 +144,10 @@ __all__ = [
     "Dhcp",
     "Dialaction",
     "DialPattern",
+    "EndpointSIP",
+    "EndpointSIPSection",
+    "EndpointSIPSectionOption",
+    "EndpointSIPTemplate",
     "Extension",
     "Features",
     "FuncKey",
@@ -227,6 +233,5 @@ __all__ = [
     "UserCustom",
     "UserFeatures",
     "UserIAX",
-    "UserSIP",
     "Voicemail",
 ]

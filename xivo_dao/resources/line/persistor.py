@@ -8,7 +8,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import joinedload
 
 from xivo_dao.alchemy.linefeatures import LineFeatures as Line
-from xivo_dao.alchemy.usersip import UserSIP
+from xivo_dao.alchemy.endpoint_sip import EndpointSIP
 from xivo_dao.alchemy.sccpline import SCCPLine
 from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.helpers import errors
@@ -36,6 +36,10 @@ class LinePersistor(CriteriaBuilderMixin):
                 .options(joinedload('context_rel'))
                 .options(joinedload('endpoint_sccp'))
                 .options(joinedload('endpoint_sip'))
+                .options(joinedload('endpoint_sip')
+                         .joinedload('_auth_section'))
+                .options(joinedload('endpoint_sip')
+                         .joinedload('_endpoint_section'))
                 .options(joinedload('endpoint_custom'))
                 .options(joinedload('line_extensions')
                          .joinedload('extension'))
@@ -85,10 +89,10 @@ class LinePersistor(CriteriaBuilderMixin):
         self.session.flush()
 
     def delete(self, line):
-        if line.endpoint_sip_id:
+        if line.endpoint_sip_uuid:
             (self.session
-             .query(UserSIP)
-             .filter(UserSIP.id == line.endpoint_sip_id)
+             .query(EndpointSIP)
+             .filter(EndpointSIP.uuid == line.endpoint_sip_uuid)
              .delete())
         elif line.endpoint_sccp_id:
             (self.session
@@ -124,6 +128,51 @@ class LinePersistor(CriteriaBuilderMixin):
             return query.filter(text('false'))
 
         return query.filter(Line.tenant_uuid.in_(self.tenant_uuids))
+
+    def associate_endpoint_sip(self, line, endpoint):
+        if line.protocol not in ('sip', None):
+            raise errors.resource_associated(
+                'Trunk', 'Endpoint', line_id=line.id, protocol=line.protocol
+            )
+        line.endpoint_sip_uuid = endpoint.uuid
+        self.session.flush()
+        self.session.expire(line, ['endpoint_sip'])
+
+    def dissociate_endpoint_sip(self, line, endpoint):
+        if endpoint is line.endpoint_sip:
+            line.endpoint_sip_uuid = None
+            self.session.flush()
+            self.session.expire(line, ['endpoint_sip'])
+
+    def associate_endpoint_sccp(self, line, endpoint):
+        if line.protocol not in ('sccp', None):
+            raise errors.resource_associated(
+                'Trunk', 'Endpoint', line_id=line.id, protocol=line.protocol
+            )
+        line.endpoint_sccp_id = endpoint.id
+        self.session.flush()
+        self.session.expire(line, ['endpoint_sccp'])
+
+    def dissociate_endpoint_sccp(self, line, endpoint):
+        if endpoint is line.endpoint_sccp:
+            line.endpoint_sccp_id = None
+            self.session.flush()
+            self.session.expire(line, ['endpoint_sccp'])
+
+    def associate_endpoint_custom(self, line, endpoint):
+        if line.protocol not in ('custom', None):
+            raise errors.resource_associated(
+                'Trunk', 'Endpoint', line_id=line.id, protocol=line.protocol
+            )
+        line.endpoint_custom_id = endpoint.id
+        self.session.flush()
+        self.session.expire(line, ['endpoint_custom'])
+
+    def dissociate_endpoint_custom(self, line, endpoint):
+        if endpoint is line.endpoint_custom:
+            line.endpoint_custom_id = None
+            self.session.flush()
+            self.session.expire(line, ['endpoint_custom'])
 
     def associate_application(self, line, application):
         line.application_uuid = application.uuid

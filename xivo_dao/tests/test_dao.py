@@ -44,6 +44,7 @@ from xivo_dao.alchemy.contextmember import ContextMember
 from xivo_dao.alchemy.contextnumbers import ContextNumbers
 from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.dialpattern import DialPattern
+from xivo_dao.alchemy.endpoint_sip import EndpointSIP
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.features import Features
 from xivo_dao.alchemy.func_key import FuncKey
@@ -96,7 +97,6 @@ from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.alchemy.userfeatures import UserFeatures
 from xivo_dao.alchemy.useriax import UserIAX
-from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.voicemail import Voicemail as VoicemailSchema
 from xivo_dao.helpers import db_manager
 from xivo_dao.helpers.db_manager import Base
@@ -106,6 +106,7 @@ logger = logging.getLogger(__name__)
 _create_tables = True
 
 TEST_DB_URL = os.getenv('XIVO_TEST_DB_URL', 'postgresql://asterisk:asterisk@localhost/asterisktest')
+DB_ECHO = os.getenv('DB_ECHO', '').lower() in ('true', '1')
 DEFAULT_TENANT = '4dc2a55e-e83a-42ca-b3ca-87d3ff04ddaf'
 UNKNOWN_ID = 999999999
 UNKNOWN_UUID = '99999999-9999-4999-8999-999999999999'
@@ -158,7 +159,7 @@ class ItemInserter(object):
         kwargs.setdefault('mobilephonenumber', '')
         kwargs.setdefault('description', '')
         kwargs.setdefault('userfield', '')
-        kwargs.setdefault('endpoint_sip_id', None)
+        kwargs.setdefault('endpoint_sip_uuid', None)
         kwargs.setdefault('endpoint_sccp_id', None)
         kwargs.setdefault('endpoint_custom_id', None)
         kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
@@ -178,7 +179,7 @@ class ItemInserter(object):
                              name=kwargs['name_line'],
                              device=kwargs['device'],
                              commented=kwargs['commented_line'],
-                             endpoint_sip_id=kwargs['endpoint_sip_id'],
+                             endpoint_sip_uuid=kwargs['endpoint_sip_uuid'],
                              endpoint_sccp_id=kwargs['endpoint_sccp_id'],
                              endpoint_custom_id=kwargs['endpoint_custom_id'])
         extension = self.add_extension(exten=kwargs['exten'],
@@ -287,8 +288,15 @@ class ItemInserter(object):
 
         return line_extension
 
+    def add_endpoint_sip(self, **kwargs):
+        kwargs.setdefault('name', self._random_name())
+        kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
+        endpoint_sip = EndpointSIP(**kwargs)
+        self.add_me(endpoint_sip)
+        return endpoint_sip
+
     def add_line(self, **kwargs):
-        kwargs.setdefault('name', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
+        kwargs.setdefault('name', self._random_name())
         kwargs.setdefault('context', 'foocontext')
         kwargs.setdefault('provisioningid', int(''.join(random.choice('123456789') for _ in range(6))))
 
@@ -643,7 +651,7 @@ class ItemInserter(object):
         return tenant
 
     def add_transport(self, **kwargs):
-        kwargs.setdefault('name', 'transport')
+        kwargs.setdefault('name', self._random_name())
         transport = PJSIPTransport(**kwargs)
         self.add_me(transport)
         return transport
@@ -653,16 +661,6 @@ class ItemInserter(object):
         trunk = TrunkFeatures(**kwargs)
         self.add_me(trunk)
         return trunk
-
-    def add_usersip(self, **kwargs):
-        kwargs.setdefault('name', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
-        kwargs.setdefault('type', 'friend')
-        kwargs.setdefault('category', 'user')
-        kwargs.setdefault('tenant_uuid', self.default_tenant.uuid)
-
-        usersip = UserSIP(**kwargs)
-        self.add_me(usersip)
-        return usersip
 
     def add_useriax(self, **kwargs):
         kwargs.setdefault('name', ''.join(random.choice('0123456789ABCDEF') for _ in range(6)))
@@ -852,10 +850,6 @@ class ItemInserter(object):
         static_sip = StaticSIP(**kwargs)
         self.add_me(static_sip)
         return static_sip
-
-    def add_register_sip(self, **kwargs):
-        kwargs.setdefault('var_name', 'register')
-        return self.add_sip_general_settings(**kwargs)
 
     def add_asterisk_file(self, **kwargs):
         kwargs.setdefault('name', self._random_name())
@@ -1071,8 +1065,7 @@ class DAOTestCase(unittest.TestCase, ItemInserter):
     def setUpClass(cls):
         global engine
         if not engine:
-            # engine = create_engine(TEST_DB_URL, poolclass=StaticPool, echo=True)
-            engine = create_engine(TEST_DB_URL, poolclass=StaticPool)
+            engine = create_engine(TEST_DB_URL, poolclass=StaticPool, echo=DB_ECHO)
 
         cls.engine = Base.metadata.bind = engine
         expensive_setup()

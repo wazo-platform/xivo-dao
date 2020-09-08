@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 from hamcrest import assert_that, equal_to
 
-from xivo_dao.alchemy.usersip import UserSIP
 from xivo_dao.alchemy.useriax import UserIAX
 from xivo_dao.alchemy.usercustom import UserCustom
 from xivo_dao.resources.trunk.fixes import TrunkFixes
@@ -18,16 +17,6 @@ class TestTrunkFixes(DAOTestCase):
     def setUp(self):
         super(TestTrunkFixes, self).setUp()
         self.fixes = TrunkFixes(self.session)
-
-    def test_given_trunk_has_sip_endpoint_then_category_and_context_updated(self):
-        sip = self.add_usersip(context=None, category='user')
-        trunk = self.add_trunk(endpoint_sip_id=sip.id, context='mycontext')
-
-        self.fixes.fix(trunk.id)
-
-        sip = self.session.query(UserSIP).first()
-        assert_that(sip.category, equal_to('trunk'))
-        assert_that(sip.context, equal_to('mycontext'))
 
     def test_given_trunk_has_iax_endpoint_then_category_and_context_updated(self):
         iax = self.add_useriax(context=None, category='user')
