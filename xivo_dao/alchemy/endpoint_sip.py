@@ -335,3 +335,18 @@ class EndpointSIP(Base):
         matching_options = section.find(key)
         for _, value in matching_options:
             return value
+
+    @hybrid_property
+    def webrtc(self):
+        # NOTE(fblackburn): It doesn't support many webrtc on the same endpoint
+        for key, value in self.endpoint_section_options:
+            if key == 'webrtc' and value == 'yes':
+                return True
+            if key == 'webrtc' and value == 'no':
+                return False
+
+        for template in self.templates:
+            if template.webrtc:
+                return True
+
+        return False

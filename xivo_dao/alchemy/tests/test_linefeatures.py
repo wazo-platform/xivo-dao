@@ -57,3 +57,17 @@ class TestApplication(DAOTestCase):
         line = self.add_line(application_uuid=application.uuid)
 
         assert_that(line.application, equal_to(application))
+
+
+class TestWebRTC(DAOTestCase):
+
+    def test_getter_no_endpoint_sip(self):
+        line = self.add_line()
+
+        assert_that(line.webrtc, equal_to(False))
+
+    def test_getter_true(self):
+        sip = self.add_endpoint_sip(endpoint_section_options=[['webrtc', 'yes']])
+        line = self.add_line(endpoint_sip=sip)
+
+        assert_that(line.webrtc, equal_to(True))

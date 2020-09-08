@@ -322,3 +322,9 @@ class LineFeatures(Base):
 
     def remove_device(self):
         self.device = ''
+
+    @hybrid_property
+    def webrtc(self):
+        if not self.endpoint_sip:
+            return False
+        return self.endpoint_sip.webrtc

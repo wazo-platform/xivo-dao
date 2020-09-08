@@ -235,3 +235,66 @@ class TestTemplates(DAOTestCase):
         self.session.expire_all()
         templates = self.session.query(EndpointSIPTemplate).all()
         assert_that(templates, empty())
+
+
+class TestWebRTC(DAOTestCase):
+
+    def test_getter_no_endpoint_section_options(self):
+        sip = self.add_endpoint_sip()
+
+        assert_that(sip.webrtc, equal_to(False))
+
+    def test_getter_no_options(self):
+        sip = self.add_endpoint_sip(endpoint_section_options=[])
+
+        assert_that(sip.webrtc, equal_to(False))
+
+    def test_getter_false(self):
+        sip = self.add_endpoint_sip(endpoint_section_options=[['webrtc', 'no']])
+
+        assert_that(sip.webrtc, equal_to(False))
+
+    def test_getter_true(self):
+        sip = self.add_endpoint_sip(endpoint_section_options=[['webrtc', 'yes']])
+
+        assert_that(sip.webrtc, equal_to(True))
+
+    def test_getter_with_templates_false(self):
+        template1_1 = self.add_endpoint_sip(
+            template=True,
+            endpoint_section_options=[['webrtc', 'no']],
+        )
+        template1_2 = self.add_endpoint_sip(template=True)
+        template2_1 = self.add_endpoint_sip(template=True, templates=[template1_1, template1_2])
+        sip3 = self.add_endpoint_sip(templates=[template2_1])
+
+        assert_that(sip3.webrtc, equal_to(False))
+
+    def test_getter_with_templates_true(self):
+        template1_1 = self.add_endpoint_sip(
+            template=True,
+            endpoint_section_options=[['webrtc', 'yes']],
+        )
+        template1_2 = self.add_endpoint_sip(template=True)
+        template2_1 = self.add_endpoint_sip(
+            template=True,
+            templates=[template1_1, template1_2],
+        )
+        sip3 = self.add_endpoint_sip(templates=[template2_1])
+
+        assert_that(sip3.webrtc, equal_to(True))
+
+    def test_getter_templates_priority(self):
+        template1_1 = self.add_endpoint_sip(
+            template=True,
+            endpoint_section_options=[['webrtc', 'yes']],
+        )
+        template1_2 = self.add_endpoint_sip(template=True)
+        template2_1 = self.add_endpoint_sip(
+            template=True,
+            templates=[template1_1, template1_2],
+            endpoint_section_options=[['webrtc', 'no']],
+        )
+        sip3 = self.add_endpoint_sip(templates=[template2_1])
+
+        assert_that(sip3.webrtc, equal_to(False))
