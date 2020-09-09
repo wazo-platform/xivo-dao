@@ -284,7 +284,7 @@ class TestWebRTC(DAOTestCase):
 
         assert_that(sip3.webrtc, equal_to(True))
 
-    def test_getter_templates_priority(self):
+    def test_getter_templates_inheritance(self):
         template1_1 = self.add_endpoint_sip(
             template=True,
             endpoint_section_options=[['webrtc', 'yes']],
@@ -298,3 +298,16 @@ class TestWebRTC(DAOTestCase):
         sip3 = self.add_endpoint_sip(templates=[template2_1])
 
         assert_that(sip3.webrtc, equal_to(False))
+
+    def test_getter_templates_priority(self):
+        template1_1 = self.add_endpoint_sip(
+            template=True,
+            endpoint_section_options=[['webrtc', 'no']],
+        )
+        template1_2 = self.add_endpoint_sip(
+            template=True,
+            endpoint_section_options=[['webrtc', 'yes']],
+        )
+        sip2 = self.add_endpoint_sip(templates=[template1_1, template1_2])
+
+        assert_that(sip2.webrtc, equal_to(False))

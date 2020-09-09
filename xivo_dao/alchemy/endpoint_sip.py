@@ -338,15 +338,22 @@ class EndpointSIP(Base):
 
     @hybrid_property
     def webrtc(self):
+        result = self._has_webrtc()
+        if result is None:
+            return False
+        return result
+
+    def _has_webrtc(self):
         # NOTE(fblackburn): It doesn't support many webrtc on the same endpoint
         for key, value in self.endpoint_section_options:
-            if key == 'webrtc' and value == 'yes':
-                return True
-            if key == 'webrtc' and value == 'no':
-                return False
+            if key == 'webrtc':
+                if value == 'yes':
+                    return True
+                if value == 'no':
+                    return False
 
         for template in self.templates:
-            if template.webrtc:
-                return True
-
-        return False
+            result = template._has_webrtc()
+            if result is not None:
+                return result
+        return None
