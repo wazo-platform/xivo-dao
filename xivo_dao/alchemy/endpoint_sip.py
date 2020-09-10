@@ -204,6 +204,21 @@ class EndpointSIP(Base):
             self._endpoint_section = None
 
     @hybrid_property
+    def combined_endpoint_section_options(self):
+        return self.inherited_endpoint_section_options + self.endpoint_section_options
+
+    @hybrid_property
+    def inherited_endpoint_section_options(self):
+        if not self.templates:
+            return []
+
+        options = []
+        for template in self.templates:
+            for k, v in template.combined_endpoint_section_options:
+                options.append([k, v])
+        return options
+
+    @hybrid_property
     def registration_section_options(self):
         if not self._registration_section:
             return []

@@ -235,3 +235,67 @@ class TestTemplates(DAOTestCase):
         self.session.expire_all()
         templates = self.session.query(EndpointSIPTemplate).all()
         assert_that(templates, empty())
+
+
+class TestInheritedOptions(DAOTestCase):
+
+    def test_inherited_endpoint_options(self):
+        template_1 = self.add_endpoint_sip(
+            template=True,
+            endpoint_section_options=[['webrtc', 'yes'], ['allow', '!all,ulaw']],
+        )
+        template_2 = self.add_endpoint_sip(
+            template=True,
+            templates=[template_1],
+            endpoint_section_options=[['max_audio_streams', '25'], ['allow', '!all,alaw,g729']],
+        )
+
+        sip = self.add_endpoint_sip(templates=[template_2])
+
+        assert_that(
+            sip.inherited_endpoint_section_options,
+            contains(
+                # template_1 options
+                ['webrtc', 'yes'],
+                ['allow', '!all,ulaw'],
+
+                # template_2 options
+                ['max_audio_streams', '25'],
+                ['allow', '!all,alaw,g729'],
+            )
+        )
+
+
+class TestCombinedOptions(DAOTestCase):
+
+    def test_combined_endpoint_options(self):
+        template_1 = self.add_endpoint_sip(
+            template=True,
+            endpoint_section_options=[['webrtc', 'yes'], ['allow', '!all,ulaw']],
+        )
+        template_2 = self.add_endpoint_sip(
+            template=True,
+            templates=[template_1],
+            endpoint_section_options=[['max_audio_streams', '25'], ['allow', '!all,alaw,g729']],
+        )
+
+        sip = self.add_endpoint_sip(
+            templates=[template_2],
+            endpoint_section_options=[['allow', '!all,opus']],
+        )
+
+        assert_that(
+            sip.combined_endpoint_section_options,
+            contains(
+                # template_1 options
+                ['webrtc', 'yes'],
+                ['allow', '!all,ulaw'],
+
+                # template_2 options
+                ['max_audio_streams', '25'],
+                ['allow', '!all,alaw,g729'],
+
+                # endpoint options
+                ['allow', '!all,opus'],
+            )
+        )
