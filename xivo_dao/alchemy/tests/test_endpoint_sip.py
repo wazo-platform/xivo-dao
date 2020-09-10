@@ -239,6 +239,32 @@ class TestTemplates(DAOTestCase):
 
 class TestInheritedOptions(DAOTestCase):
 
+    def test_inherited_aor_options(self):
+        template_1 = self.add_endpoint_sip(
+            template=True,
+            aor_section_options=[['max_contacts', '1'], ['remove_existing', 'yes']],
+        )
+        template_2 = self.add_endpoint_sip(
+            template=True,
+            templates=[template_1],
+            aor_section_options=[['max_contacts', '10'], ['remove_existing', 'no']],
+        )
+
+        sip = self.add_endpoint_sip(templates=[template_2])
+
+        assert_that(
+            sip.inherited_aor_section_options,
+            contains(
+                # template_1 options
+                ['max_contacts', '1'],
+                ['remove_existing', 'yes'],
+
+                # template_2 options
+                ['max_contacts', '10'],
+                ['remove_existing', 'no'],
+            )
+        )
+
     def test_inherited_endpoint_options(self):
         template_1 = self.add_endpoint_sip(
             template=True,
@@ -267,6 +293,38 @@ class TestInheritedOptions(DAOTestCase):
 
 
 class TestCombinedOptions(DAOTestCase):
+
+    def test_combined_aor_options(self):
+        template_1 = self.add_endpoint_sip(
+            template=True,
+            aor_section_options=[['max_contacts', '1'], ['remove_existing', 'yes']],
+        )
+        template_2 = self.add_endpoint_sip(
+            template=True,
+            templates=[template_1],
+            aor_section_options=[['max_contacts', '10'], ['remove_existing', 'no']],
+        )
+
+        sip = self.add_endpoint_sip(
+            templates=[template_2],
+            aor_section_options=[['contact', 'sip:foo@bar']]
+        )
+
+        assert_that(
+            sip.combined_aor_section_options,
+            contains(
+                # template_1 options
+                ['max_contacts', '1'],
+                ['remove_existing', 'yes'],
+
+                # template_2 options
+                ['max_contacts', '10'],
+                ['remove_existing', 'no'],
+
+                # endpoint options
+                ['contact', 'sip:foo@bar'],
+            )
+        )
 
     def test_combined_endpoint_options(self):
         template_1 = self.add_endpoint_sip(
