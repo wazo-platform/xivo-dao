@@ -29,6 +29,7 @@ from xivo_dao.alchemy.func_key_dest_group import FuncKeyDestGroup
 from xivo_dao.alchemy.func_key_dest_group_member import FuncKeyDestGroupMember
 from xivo_dao.alchemy.func_key_dest_paging import FuncKeyDestPaging
 from xivo_dao.alchemy.func_key_dest_queue import FuncKeyDestQueue
+from xivo_dao.alchemy.func_key_dest_user import FuncKeyDestUser
 from xivo_dao.alchemy.func_key_mapping import FuncKeyMapping
 from xivo_dao.alchemy.groupfeatures import GroupFeatures
 from xivo_dao.alchemy.incall import Incall
@@ -92,6 +93,7 @@ __all__ = [
     'FuncKeyDestGroupMember',
     'FuncKeyDestPaging',
     'FuncKeyDestQueue',
+    'FuncKeyDestUser',
     'FuncKeyMapping',
     'GroupFeatures',
     'IVR',
