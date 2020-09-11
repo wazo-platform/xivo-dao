@@ -21,6 +21,7 @@ from xivo_dao.resources.func_key.tests.test_helpers import FuncKeyHelper
 from ..callerid import Callerid
 from ..dialaction import Dialaction
 from ..func_key_dest_group import FuncKeyDestGroup
+from ..func_key_dest_group_member import FuncKeyDestGroupMember
 from ..groupfeatures import GroupFeatures as Group
 from ..pickupmember import PickupMember as CallPickupMember
 from ..queue import Queue
@@ -450,7 +451,7 @@ class TestDelete(DAOTestCase, FuncKeyHelper):
         row = self.session.query(QueueMember).first()
         assert_that(row, none())
 
-    def test_funckeys_are_deleted(self):
+    def test_funckeys_group_are_deleted(self):
         group = self.add_group()
         self.add_group_destination(group.id)
 
@@ -458,6 +459,17 @@ class TestDelete(DAOTestCase, FuncKeyHelper):
         self.session.flush()
 
         row = self.session.query(FuncKeyDestGroup).first()
+        assert_that(row, none())
+
+    def test_funckeys_group_member_are_deleted(self):
+        extension = self.add_extension()
+        group = self.add_group()
+        self.add_groupmember_destination(group.id, extension.id)
+
+        self.session.delete(group)
+        self.session.flush()
+
+        row = self.session.query(FuncKeyDestGroupMember).first()
         assert_that(row, none())
 
     def test_dialaction_actions_are_deleted(self):

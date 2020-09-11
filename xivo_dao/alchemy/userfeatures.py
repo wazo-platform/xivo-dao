@@ -327,15 +327,14 @@ class UserFeatures(Base):
         'group_members', 'users_from_call_pickup_group_interceptor_group_targets'
     )
 
+    func_keys = relationship('FuncKeyDestUser', cascade='all, delete-orphan')
+
     def extrapolate_caller_id(self, extension=None):
         default_num = extension.exten if extension else None
         user_match = caller_id_regex.match(self.callerid)
         name = user_match.group('name')
         num = user_match.group('num')
         return name, (num or default_num)
-
-    def has_private_template(self):
-        return self.func_key_private_template_id is not None or self.func_key_template_private is not None
 
     def fill_caller_id(self):
         if self.caller_id is None:

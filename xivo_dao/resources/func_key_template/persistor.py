@@ -245,6 +245,9 @@ class DestinationPersistor(object):
 
 class UserPersistor(DestinationPersistor):
 
+    TYPE_ID = 1
+    DESTINATION_TYPE_ID = 1
+
     def get(self, func_key_id):
         query = (self.session.query(FuncKeyDestUser)
                  .filter(FuncKeyDestUser.func_key_id == func_key_id))
@@ -252,13 +255,23 @@ class UserPersistor(DestinationPersistor):
         return query.first()
 
     def find_or_create(self, destination):
-        query = (self.session.query(FuncKeyDestUser)
-                 .filter(FuncKeyDestUser.user_id == destination.user_id))
+        destination_row = (self.session.query(FuncKeyDestUser)
+                           .filter(FuncKeyDestUser.user_id == destination.user_id)
+                           .first())
 
-        return query.first()
+        if not destination_row:
+            func_key_row = self.create_func_key(self.TYPE_ID, self.DESTINATION_TYPE_ID)
+            destination_row = FuncKeyDestUser(func_key_id=func_key_row.id, user_id=destination.user_id)
+            self.session.add(destination_row)
+            self.session.flush()
+
+        return destination_row
 
     def delete(self, func_key_id):
-        pass
+        if not self._func_key_is_still_mapped(func_key_id):
+            (self.session.query(FuncKeyDestUser)
+             .filter(FuncKeyDestUser.func_key_id == func_key_id)
+             .delete())
 
 
 class QueuePersistor(DestinationPersistor):
@@ -467,6 +480,7 @@ class ServicePersistor(DestinationPersistor):
                  .join(Extension, FuncKeyDestService.extension_id == Extension.id)
                  .filter(Extension.type == 'extenfeatures')
                  .filter(Extension.typeval == destination.service))
+        # NOTE(fblackburn): Already created by populate.sql
 
         return query.first()
 
@@ -647,6 +661,7 @@ class FeaturesPersistor(DestinationPersistor):
         query = (self.session.query(FuncKeyDestFeatures)
                  .join(Features, FuncKeyDestFeatures.features_id == Features.id)
                  .filter(Features.var_name == varname))
+        # NOTE(fblackburn): Already created by populate.sql
 
         return query.first()
 

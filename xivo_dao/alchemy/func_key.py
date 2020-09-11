@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2014-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2014-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -28,9 +28,3 @@ class FuncKey(Base):
     destination_type_name = association_proxy('destination_type', 'name')
 
     func_key_mapping = relationship('FuncKeyMapping', cascade='all,delete-orphan')
-
-    @classmethod
-    def new_for_user(cls):
-        type_id = FuncKeyType.query_id('speeddial').as_scalar()
-        destination_type_id = FuncKeyDestinationType.query_id('user').as_scalar()
-        return cls(type_id=type_id, destination_type_id=destination_type_id)

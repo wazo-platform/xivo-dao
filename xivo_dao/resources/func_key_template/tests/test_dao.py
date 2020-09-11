@@ -325,6 +325,25 @@ class TestCreate(TestDao):
         assert_that(calling(dao.create).with_args(template),
                     raises(InputError))
 
+    def test_given_no_user_func_key_when_created_then_create_new_user_func_key(self):
+        user = self.add_user()
+
+        dest_user_count = (self.session.query(FuncKeyDestUser)
+                           .filter(FuncKeyDestUser.user_id == user.id)
+                           .count())
+        assert_that(dest_user_count, equal_to(0))
+
+        template = self.build_template_with_key(FuncKeyDestUser(user_id=user.id))
+        dao.create(template)
+
+        template = self.build_template_with_key(FuncKeyDestUser(user_id=user.id))
+        dao.create(template)
+
+        dest_user_count = (self.session.query(FuncKeyDestUser)
+                           .filter(FuncKeyDestUser.user_id == user.id)
+                           .count())
+        assert_that(dest_user_count, equal_to(1))
+
     def test_given_no_group_func_key_when_created_then_create_new_group_func_key(self):
         group = self.add_group()
 
@@ -678,6 +697,36 @@ class TestDelete(TestDao):
                                 .filter(UserSchema.id == user_row.id).scalar())
         assert_that(func_key_template_id, none())
 
+    def test_given_template_is_associated_to_user_when_deleting_template(self):
+        user = self.add_user()
+        template = self.build_template_with_key(FuncKeyDestUser(user_id=user.id))
+        dao.create(template)
+
+        dao.delete(template)
+
+        dest_user_count = (self.session.query(FuncKeyDestUser)
+                           .filter(FuncKeyDestUser.user_id == user.id)
+                           .count())
+        assert_that(dest_user_count, equal_to(0))
+
+    def test_given_multi_template_is_associated_to_user_when_deleting_template(self):
+        user = self.add_user()
+        template = self.build_template_with_key(FuncKeyDestUser(user_id=user.id))
+        dao.create(template)
+
+        template = self.build_template_with_key(FuncKeyDestUser(user_id=user.id))
+        dao.create(template)
+
+        template = self.build_template_with_key(FuncKeyDestUser(user_id=user.id))
+        dao.create(template)
+
+        dao.delete(template)
+
+        dest_user_count = (self.session.query(FuncKeyDestUser)
+                           .filter(FuncKeyDestUser.user_id == user.id)
+                           .count())
+        assert_that(dest_user_count, equal_to(1))
+
     def test_given_template_is_associated_to_group_when_deleting_template(self):
         group = self.add_group()
         template = self.build_template_with_key(FuncKeyDestGroup(group_id=group.id))
@@ -901,39 +950,6 @@ class TestEdit(TestDao):
         dao.edit(template)
 
         self.assert_template_empty(template.id)
-
-    def test_given_2_funckeys_when_only_1_modified_then_other_func_key_remains_unmodified(self):
-        template_row = self.add_func_key_template()
-        user_destination_row = self.create_user_func_key()
-        queue_destination_row = self.create_queue_func_key()
-        conference_destination_row = self.create_conference_func_key()
-
-        # queue func key will be replaced by conference func key during edit
-        self.add_destination_to_template(user_destination_row, template_row, position=1)
-        self.add_destination_to_template(queue_destination_row, template_row, position=2)
-
-        template = dao.get(template_row.id)
-
-        template.keys[2] = FuncKeyMapping(
-            destination=FuncKeyDestConference(
-                conference_id=conference_destination_row.conference_id
-            )
-        )
-
-        dao.edit(template)
-
-        first_mapping_row = (self.session.query(FuncKeyMapping)
-                             .filter(FuncKeyMapping.template_id == template_row.id)
-                             .filter(FuncKeyMapping.position == 1)
-                             .first())
-
-        second_mapping_row = (self.session.query(FuncKeyMapping)
-                              .filter(FuncKeyMapping.template_id == template_row.id)
-                              .filter(FuncKeyMapping.position == 2)
-                              .first())
-
-        assert_that(first_mapping_row.func_key_id, equal_to(user_destination_row.func_key_id))
-        assert_that(second_mapping_row.func_key_id, equal_to(conference_destination_row.func_key_id))
 
 
 class TestSearch(TestDao):
