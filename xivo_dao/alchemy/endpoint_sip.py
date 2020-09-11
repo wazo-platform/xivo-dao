@@ -203,41 +203,40 @@ class EndpointSIP(Base):
         else:
             self._endpoint_section = None
 
-    def get_combined_section_options(self, section_name):
+    def _get_combined_section_options(self, section_name):
         inherited_options = getattr(self, 'inherited_{}_section_options'.format(section_name))
         endpoint_options = getattr(self, '{}_section_options'.format(section_name))
         return inherited_options + endpoint_options
 
-
     @hybrid_property
     def combined_aor_section_options(self):
-        return self.get_combined_section_options('aor')
+        return self._get_combined_section_options('aor')
 
     @hybrid_property
     def combined_auth_section_options(self):
-        return self.get_combined_section_options('auth')
+        return self._get_combined_section_options('auth')
 
     @hybrid_property
     def combined_endpoint_section_options(self):
-        return self.get_combined_section_options('endpoint')
+        return self._get_combined_section_options('endpoint')
 
     @hybrid_property
     def combined_registration_section_options(self):
-        return self.get_combined_section_options('registration')
+        return self._get_combined_section_options('registration')
 
     @hybrid_property
     def combined_registration_outbound_auth_section_options(self):
-        return self.get_combined_section_options('registration_outbound_auth')
+        return self._get_combined_section_options('registration_outbound_auth')
 
     @hybrid_property
     def combined_identify_section_options(self):
-        return self.get_combined_section_options('identify')
+        return self._get_combined_section_options('identify')
 
     @hybrid_property
     def combined_outbound_auth_section_options(self):
-        return self.get_combined_section_options('outbound_auth')
+        return self._get_combined_section_options('outbound_auth')
 
-    def get_inherited_section_options(self, section_name):
+    def _get_inherited_section_options(self, section_name):
         if not self.templates:
             return []
 
@@ -251,34 +250,33 @@ class EndpointSIP(Base):
                 options.append([k, v])
         return options
 
-
     @hybrid_property
     def inherited_aor_section_options(self):
-        return self.get_inherited_section_options('aor')
+        return self._get_inherited_section_options('aor')
 
     @hybrid_property
     def inherited_auth_section_options(self):
-        return self.get_inherited_section_options('auth')
+        return self._get_inherited_section_options('auth')
 
     @hybrid_property
     def inherited_endpoint_section_options(self):
-        return self.get_inherited_section_options('endpoint')
+        return self._get_inherited_section_options('endpoint')
 
     @hybrid_property
     def inherited_registration_section_options(self):
-        return self.get_inherited_section_options('registration')
+        return self._get_inherited_section_options('registration')
 
     @hybrid_property
     def inherited_registration_outbound_auth_section_options(self):
-        return self.get_inherited_section_options('registration_outbound_auth')
+        return self._get_inherited_section_options('registration_outbound_auth')
 
     @hybrid_property
     def inherited_identify_section_options(self):
-        return self.get_inherited_section_options('identify')
+        return self._get_inherited_section_options('identify')
 
     @hybrid_property
     def inherited_outbound_auth_section_options(self):
-        return self.get_inherited_section_options('outbound_auth')
+        return self._get_inherited_section_options('outbound_auth')
 
     @hybrid_property
     def registration_section_options(self):
