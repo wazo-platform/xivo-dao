@@ -410,11 +410,13 @@ def find_sip_user_settings(session):
     context_mapping = {}
     extension_mapping = {}
     voicemail_mapping = defaultdict(list)
+    line_mapping = {}
     user_mapping = defaultdict(list)
     raw_configs = {}
     for line in lines:
         raw_configs[line.endpoint_sip_uuid] = line.endpoint_sip
         context_mapping[line.endpoint_sip_uuid] = line.context
+        line_mapping[line.endpoint_sip_uuid] = line.id
         if line.extensions:
             extension_mapping[line.endpoint_sip_uuid] = line.extensions[0]
         for user in line.users:
@@ -458,6 +460,11 @@ def find_sip_user_settings(session):
                 # TODO(pc-m): document WAZO_USER_UUID and deprecate the XIVO one
                 # ['set_var', 'WAZO_USER_UUID={}'.format(user.uuid)],
             ])
+        line_id = line_mapping.get(endpoint.uuid)
+        if line_id:
+            base_config['endpoint_section_options'].append(
+                ['set_var', 'WAZO_LINE_ID={}'.format(line_id)]
+            )
         pickup_groups = pickup_members.get(endpoint.uuid, {})
         named_pickup_groups = ','.join(str(id) for id in pickup_groups.get('pickupgroup', []))
         if named_pickup_groups:
