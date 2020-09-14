@@ -131,8 +131,6 @@ def _list_user_extensions(session, context):
         LineExtension, UserLine.line_id == LineExtension.line_id,
     ).join(
         Extension, LineExtension.extension_id == Extension.id,
-    ).join(
-        FuncKeyDestUser, FuncKeyDestUser.user_id == UserFeatures.id,
     ).filter(and_(
         UserLine.main_user.is_(True),
         LineExtension.main_extension.is_(True),
