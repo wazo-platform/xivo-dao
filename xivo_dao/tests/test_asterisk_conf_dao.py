@@ -1413,6 +1413,22 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
             )),
         )
 
+    def test_that_the_line_id_var_is_set(self):
+        user = self.add_user()
+        endpoint = self.add_endpoint_sip(template=False)
+        line = self.add_line(endpoint_sip_uuid=endpoint.uuid)
+        self.add_user_line(user_id=user.id, line_id=line.id)
+
+        result = asterisk_conf_dao.find_sip_user_settings()
+        assert_that(
+            result,
+            contains(has_entries(
+                endpoint_section_options=has_items(
+                    ['set_var', 'WAZO_LINE_ID={}'.format(line.id)],
+                ),
+            )),
+        )
+
     def test_that_all_section_reference_are_added(self):
         endpoint = self.add_endpoint_sip(
             templates=[self.general_config_template, self.webrtc_config_template],
@@ -1500,7 +1516,7 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
                 ['webrtc', 'true'],
             ]
         )
-        self.add_line(endpoint_sip_uuid=endpoint.uuid)
+        line = self.add_line(endpoint_sip_uuid=endpoint.uuid)
 
         result = asterisk_conf_dao.find_sip_user_settings()
         assert_that(
@@ -1513,6 +1529,7 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
                         ['webrtc', 'true'],  # only showed once
                         ['set_var', 'WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)],
                         ['set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'],
+                        ['set_var', 'WAZO_LINE_ID={}'.format(line.id)],
                         ['context', 'foocontext'],
                         ['set_var', 'TRANSFER_CONTEXT=foocontext']
                     )
