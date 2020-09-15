@@ -523,7 +523,7 @@ def find_sip_user_settings(session):
         flat_configs[uuid] = flat_config
 
     return [
-        remove_duplicated_configurations(config)
+        remove_redefined_options(remove_duplicated_configurations(config))
         for config in flat_configs.values()
         if config['template'] is False
     ]
@@ -632,7 +632,7 @@ def find_sip_trunk_settings(session):
         flat_configs[uuid] = flat_config
 
     return [
-        remove_duplicated_configurations(config)
+        remove_redefined_options(remove_duplicated_configurations(config))
         for config in flat_configs.values()
         if config['template'] is False
     ]
@@ -657,6 +657,34 @@ def remove_duplicated_configurations(config):
             visited_options.add(tuple(option))
             reverse_pruned_options.append(option)
         config[section] = list(reversed(reverse_pruned_options))
+    return config
+
+
+def remove_redefined_options(config):
+    sections = [
+        'aor_section_options',
+        'auth_section_options',
+        'endpoint_section_options',
+        'registration_section_options',
+        'identify_section_options',
+        'registration_outbound_auth_section_options',
+        'outbound_auth_section_options',
+    ]
+    repeatable_options = [
+        'set_var',
+        'match',
+    ]
+
+    for section in sections:
+        accumulator = {}
+        repeated_options = []
+        for key, value in config.get(section, []):
+            if key in repeatable_options:
+                repeated_options.append([key, value])
+            else:
+                accumulator[key] = value
+        config[section] = list(accumulator.items()) + repeated_options
+
     return config
 
 
