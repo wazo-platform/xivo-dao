@@ -8,6 +8,7 @@ import warnings
 
 from contextlib import contextmanager
 from hamcrest import (
+    all_of,
     assert_that,
     contains,
     contains_inanyorder,
@@ -1204,33 +1205,33 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
                 name=endpoint.name,
                 label=endpoint.label,
                 aor_section_options=has_items(
-                    ['qualify_frequency', '60'],
-                    ['maximum_expiration', '3600'],
-                    ['minimum_expiration', '60'],
-                    ['default_expiration', '120'],
-                    ['max_contacts', '10'],
-                    ['remove_existing', 'false']
+                    contains('qualify_frequency', '60'),
+                    contains('maximum_expiration', '3600'),
+                    contains('minimum_expiration', '60'),
+                    contains('default_expiration', '120'),
+                    contains('max_contacts', '10'),
+                    contains('remove_existing', 'false')
                 ),
                 auth_section_options=has_items(
-                    ['username', 'iddqd'],
-                    ['password', 'idbehold'],
+                    contains('username', 'iddqd'),
+                    contains('password', 'idbehold'),
                 ),
                 endpoint_section_options=has_items(
-                    ['allow', '!all,ulaw'],
-                    ['allow_subscribe', 'yes'],
-                    ['allow_transfer', 'yes'],
-                    ['use_ptime', 'yes'],
-                    ['rtp_timeout', '7200'],
-                    ['rtp_timeout_hold', '0'],
-                    ['timers_sess_expires', '600'],
-                    ['timers_min_se', '90'],
-                    ['trust_id_inbound', 'yes'],
-                    ['dtmf_mode', 'rfc4733'],
-                    ['send_rpid', 'yes'],
-                    ['inband_progress', 'no'],
-                    ['direct_media', 'no'],
-                    ['callerid', '"Foo Bar" <101>'],
-                    ['webrtc', 'yes'],
+                    contains('allow', '!all,ulaw'),
+                    contains('allow_subscribe', 'yes'),
+                    contains('allow_transfer', 'yes'),
+                    contains('use_ptime', 'yes'),
+                    contains('rtp_timeout', '7200'),
+                    contains('rtp_timeout_hold', '0'),
+                    contains('timers_sess_expires', '600'),
+                    contains('timers_min_se', '90'),
+                    contains('trust_id_inbound', 'yes'),
+                    contains('dtmf_mode', 'rfc4733'),
+                    contains('send_rpid', 'yes'),
+                    contains('inband_progress', 'no'),
+                    contains('direct_media', 'no'),
+                    contains('callerid', '"Foo Bar" <101>'),
+                    contains('webrtc', 'yes'),
                 )
             ),
         ))
@@ -1244,7 +1245,7 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
         assert_that(
             result,
             contains(has_entries(
-                endpoint_section_options=has_items(['context', context.name]),
+                endpoint_section_options=has_items(contains('context', context.name)),
             )),
         )
 
@@ -1258,7 +1259,7 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
             result,
             contains(has_entries(
                 endpoint_section_options=has_items(
-                    ['set_var', 'TRANSFER_CONTEXT={}'.format(context.name)],
+                    contains('set_var', 'TRANSFER_CONTEXT={}'.format(context.name)),
                 ),
             )),
         )
@@ -1277,7 +1278,7 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
             result,
             contains(has_entries(
                 endpoint_section_options=has_items(
-                    ['transport', transport.name],
+                    contains('transport', transport.name),
                 ),
             )),
         )
@@ -1295,7 +1296,7 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
             contains(has_entries(
                 endpoint_section_options=has_items(
                     # inherited from the webrtc template
-                    ['transport', 'transport-wss'],
+                    contains('transport', 'transport-wss'),
                 ),
             )),
         )
@@ -1311,7 +1312,10 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
             result,
             contains(has_entries(
                 endpoint_section_options=has_items(
-                    ['set_var', 'PICKUPMARK={}%{}'.format(extension.exten, extension.context)],
+                    contains(
+                        'set_var',
+                        'PICKUPMARK={}%{}'.format(extension.exten, extension.context)
+                    ),
                 ),
             )),
         )
@@ -1329,7 +1333,10 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
             result,
             contains(has_entries(
                 aor_section_options=has_items(
-                    ['mailboxes', '{}@{}'.format(voicemail.number, voicemail.context)],
+                    contains(
+                        'mailboxes',
+                        '{}@{}'.format(voicemail.number, voicemail.context)
+                    ),
                 ),
             )),
         )
@@ -1347,7 +1354,10 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
             result,
             contains(has_entries(
                 endpoint_section_options=has_items(
-                    ['set_var', 'XIVO_ORIGINAL_CALLER_ID={}'.format(caller_id)],
+                    contains(
+                        'set_var',
+                        'XIVO_ORIGINAL_CALLER_ID={}'.format(caller_id),
+                    ),
                 ),
             )),
         )
@@ -1442,15 +1452,15 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
             result,
             contains(has_entries(
                 aor_section_options=has_items(
-                    ['type', 'aor'],
+                    contains('type', 'aor'),
                 ),
                 auth_section_options=has_items(
-                    ['type', 'auth'],
+                    contains('type', 'auth'),
                 ),
                 endpoint_section_options=has_items(
-                    ['type', 'endpoint'],
-                    ['auth', endpoint.name],
-                    ['aors', endpoint.name],
+                    contains('type', 'endpoint'),
+                    contains('auth', endpoint.name),
+                    contains('aors', endpoint.name),
                 ),
             )),
         )
@@ -1524,15 +1534,53 @@ class TestFindSipUserSettings(BaseFindSIPSettings, PickupHelperMixin):
             contains(
                 has_entries(
                     endpoint_section_options=contains_inanyorder(
-                        ['type', 'endpoint'],  # only showed once
-                        ['codecs', '!all,ulaw'],
-                        ['webrtc', 'true'],  # only showed once
-                        ['set_var', 'WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)],
-                        ['set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'],
-                        ['set_var', 'WAZO_LINE_ID={}'.format(line.id)],
-                        ['context', 'foocontext'],
-                        ['set_var', 'TRANSFER_CONTEXT=foocontext']
+                        contains('type', 'endpoint'),  # only showed once
+                        contains('codecs', '!all,ulaw'),
+                        contains('webrtc', 'true'),  # only showed once
+                        contains('set_var', 'WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)),
+                        contains('set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'),
+                        contains('set_var', 'WAZO_LINE_ID={}'.format(line.id)),
+                        contains('context', 'foocontext'),
+                        contains('set_var', 'TRANSFER_CONTEXT=foocontext')
                     )
+                )
+            )
+        )
+
+    def test_that_redefined_options_are_removed(self):
+        template = self.add_endpoint_sip(
+            template=True,
+            endpoint_section_options=[['webrtc', 'yes']]
+        )
+        endpoint = self.add_endpoint_sip(
+            templates=[template],
+            template=False,
+            endpoint_section_options=[
+                ['webrtc', 'no'],
+            ]
+        )
+        self.add_line(endpoint_sip_uuid=endpoint.uuid)
+
+        result = asterisk_conf_dao.find_sip_user_settings()
+        assert_that(
+            result,
+            all_of(
+                contains(
+                    has_entries(
+                        endpoint_section_options=has_items(
+                            contains('type', 'endpoint'),
+                            contains('webrtc', 'no'),  # From the endpoint
+                        )
+                    )
+                ),
+                not_(
+                    contains(
+                        has_entries(
+                            endpoint_section_options=has_items(
+                                contains('webrtc', 'yes'),  # From the template
+                            )
+                        )
+                    ),
                 )
             )
         )
@@ -1617,49 +1665,48 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
                 name=endpoint.name,
                 label=endpoint.label,
                 aor_section_options=has_items(
-                    ['qualify_frequency', '60'],
-                    ['maximum_expiration', '3600'],
-                    ['minimum_expiration', '60'],
-                    ['default_expiration', '120'],
-                    ['max_contacts', '1'],
-                    ['remove_existing', 'true']
+                    contains('qualify_frequency', '60'),
+                    contains('maximum_expiration', '3600'),
+                    contains('minimum_expiration', '60'),
+                    contains('default_expiration', '120'),
+                    contains('max_contacts', '1'),
+                    contains('remove_existing', 'true')
                 ),
                 auth_section_options=has_items(
-                    ['username', 'iddqd'],
-                    ['password', 'idbehold'],
+                    contains('username', 'iddqd'),
+                    contains('password', 'idbehold'),
                 ),
                 endpoint_section_options=has_items(
-                    ['allow', '!all,ulaw'],
-                    ['allow_subscribe', 'yes'],
-                    ['allow_transfer', 'yes'],
-                    ['use_ptime', 'yes'],
-                    ['rtp_timeout', '7200'],
-                    ['rtp_timeout_hold', '0'],
-                    ['timers_sess_expires', '600'],
-                    ['timers_min_se', '90'],
-                    ['trust_id_inbound', 'yes'],
-                    ['dtmf_mode', 'rfc4733'],
-                    ['send_rpid', 'yes'],
-                    ['inband_progress', 'no'],
-                    ['direct_media', 'no'],
-                    ['callerid', '"Foo Bar" <101>'],
+                    contains('allow', '!all,ulaw'),
+                    contains('allow_subscribe', 'yes'),
+                    contains('allow_transfer', 'yes'),
+                    contains('use_ptime', 'yes'),
+                    contains('rtp_timeout', '7200'),
+                    contains('rtp_timeout_hold', '0'),
+                    contains('timers_sess_expires', '600'),
+                    contains('timers_min_se', '90'),
+                    contains('trust_id_inbound', 'yes'),
+                    contains('dtmf_mode', 'rfc4733'),
+                    contains('send_rpid', 'yes'),
+                    contains('inband_progress', 'no'),
+                    contains('direct_media', 'no'),
+                    contains('callerid', '"Foo Bar" <101>'),
                 ),
                 identify_section_options=has_items(
-                    ['match', '54.172.60.0'],
-                    ['match', '54.172.60.1'],
-                    ['match', '54.172.60.2'],
+                    contains('match', '54.172.60.0'),
+                    contains('match', '54.172.60.1'),
+                    contains('match', '54.172.60.2'),
                 ),
                 registration_section_options=has_items(
-                    ['outbound_auth', 'auth_reg_{}'.format(endpoint.name)],
-                    ['retry_interval', '20'],
-                    ['max_retries', '0'],
-                    ['auth_rejection_permanent', 'off'],
-                    ['forbidden_retry_interval', '30'],
-                    ['fatal_retry_interval', '30'],
-                    ['max_retries', '10000'],
+                    contains('outbound_auth', 'auth_reg_{}'.format(endpoint.name)),
+                    contains('retry_interval', '20'),
+                    contains('auth_rejection_permanent', 'off'),
+                    contains('forbidden_retry_interval', '30'),
+                    contains('fatal_retry_interval', '30'),
+                    contains('max_retries', '10000'),
                 ),
                 registration_outbound_auth_section_options=has_items(
-                    ['username', 'outbound_reg_username'],
+                    contains('username', 'outbound_reg_username'),
                 ),
                 outbound_auth_section_options=has_items(),
             ),
@@ -1674,7 +1721,7 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
         assert_that(
             result,
             contains(has_entries(
-                endpoint_section_options=has_items(['context', context.name]),
+                endpoint_section_options=has_items(contains('context', context.name)),
             )),
         )
 
@@ -1692,7 +1739,7 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
             result,
             contains(has_entries(
                 endpoint_section_options=has_items(
-                    ['transport', transport.name],
+                    contains('transport', transport.name),
                 ),
             )),
         )
@@ -1711,7 +1758,7 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
             result,
             contains(has_entries(
                 endpoint_section_options=has_items(
-                    ['transport', transport.name],
+                    contains('transport', transport.name),
                 ),
             )),
         )
@@ -1737,36 +1784,36 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
             result,
             contains(has_entries(
                 aor_section_options=has_items(
-                    ['type', 'aor'],
-                    ['contact', 'sip:name@proxy:port'],
+                    contains('type', 'aor'),
+                    contains('contact', 'sip:name@proxy:port'),
                 ),
                 auth_section_options=has_items(
-                    ['type', 'auth'],
-                    ['username', 'username'],
+                    contains('type', 'auth'),
+                    contains('username', 'username'),
                 ),
                 endpoint_section_options=has_items(
-                    ['type', 'endpoint'],
-                    ['aors', endpoint.name],
-                    ['auth', endpoint.name],
-                    ['identify_by', 'auth_username,username'],
+                    contains('type', 'endpoint'),
+                    contains('aors', endpoint.name),
+                    contains('auth', endpoint.name),
+                    contains('identify_by', 'auth_username,username'),
                 ),
                 registration_section_options=has_items(
-                    ['type', 'registration'],
-                    ['expiration', '120'],
-                    ['outbound_auth', 'auth_reg_{}'.format(endpoint.name)]
+                    contains('type', 'registration'),
+                    contains('expiration', '120'),
+                    contains('outbound_auth', 'auth_reg_{}'.format(endpoint.name)),
                 ),
                 registration_outbound_auth_section_options=has_items(
-                    ['type', 'auth'],
-                    ['password', 'secret'],
+                    contains('type', 'auth'),
+                    contains('password', 'secret'),
                 ),
                 identify_section_options=has_items(
-                    ['type', 'identify'],
-                    ['match', '192.168.1.1'],
-                    ['endpoint', endpoint.name],
+                    contains('type', 'identify'),
+                    contains('match', '192.168.1.1'),
+                    contains('endpoint', endpoint.name),
                 ),
                 outbound_auth_section_options=has_items(
-                    ['type', 'auth'],
-                    ['username', 'outbound'],
+                    contains('type', 'auth'),
+                    contains('username', 'outbound'),
                 )
             ))
         )
@@ -1837,11 +1884,49 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
             contains(
                 has_entries(
                     endpoint_section_options=contains_inanyorder(
-                        ['type', 'endpoint'],  # only showed once
-                        ['codecs', '!all,ulaw'],
-                        ['webrtc', 'true'],  # only showed once
-                        ['set_var', 'WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)],
+                        contains('type', 'endpoint'),  # only showed once
+                        contains('codecs', '!all,ulaw'),
+                        contains('webrtc', 'true'),  # only showed once
+                        contains('set_var', 'WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)),
                     )
+                )
+            )
+        )
+
+    def test_that_redefined_options_are_removed(self):
+        template = self.add_endpoint_sip(
+            template=True,
+            endpoint_section_options=[['webrtc', 'yes']]
+        )
+        endpoint = self.add_endpoint_sip(
+            templates=[template],
+            template=False,
+            endpoint_section_options=[
+                ['webrtc', 'no'],
+            ]
+        )
+        self.add_trunk(endpoint_sip_uuid=endpoint.uuid)
+
+        result = asterisk_conf_dao.find_sip_trunk_settings()
+        assert_that(
+            result,
+            all_of(
+                contains(
+                    has_entries(
+                        endpoint_section_options=has_items(
+                            contains('type', 'endpoint'),
+                            contains('webrtc', 'no'),  # From the endpoint
+                        )
+                    )
+                ),
+                not_(
+                    contains(
+                        has_entries(
+                            endpoint_section_options=has_items(
+                                contains('webrtc', 'yes'),  # From the template
+                            )
+                        )
+                    ),
                 )
             )
         )
