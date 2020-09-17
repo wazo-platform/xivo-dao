@@ -104,6 +104,7 @@ def find_sccp_line_settings(session):
         ) = args
 
         line = {
+            'id': endpoint_sccp_id,
             'name': name,
             'cid_name': cid_name,
             'cid_num': cid_num,
