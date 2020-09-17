@@ -488,12 +488,17 @@ def find_sip_user_settings(session):
                 parent_options = parent.get(section, [])
                 for option in parent_options:
                     builder[section].append(option)
+
+        original_caller_id = None
         for key, value in builder.get('endpoint_section_options', []):
             if key == 'callerid':
-                builder['endpoint_section_options'].append(
-                    ['set_var', 'XIVO_ORIGINAL_CALLER_ID={}'.format(value)]
-                )
-                break
+                original_caller_id = value
+
+        if original_caller_id:
+            builder['endpoint_section_options'].append(
+                ['set_var', 'XIVO_ORIGINAL_CALLER_ID={}'.format(original_caller_id)]
+            )
+
         builder['endpoint_section_options'].extend([
             ['set_var', 'WAZO_CHANNEL_DIRECTION=from-wazo'],
             ['set_var', 'WAZO_TENANT_UUID={}'.format(endpoint.tenant_uuid)],
