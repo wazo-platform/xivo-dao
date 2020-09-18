@@ -47,13 +47,13 @@ class Tenant(Base):
             name='tenant_webrtc_video_sip_template_uuid_fkey',
         ),
     )
-    global_trunk_sip_template_uuid = Column(
+    registration_trunk_sip_template_uuid = Column(
         UUID(as_uuid=True),
         ForeignKey(
             'endpoint_sip.uuid',
             ondelete='SET NULL',
             # NOTE(fblackburn): FK must be named to avoid circular deps on DROP
-            name='tenant_global_trunk_sip_template_uuid_fkey',
+            name='tenant_registration_trunk_sip_template_uuid_fkey',
         ),
     )
     twilio_trunk_sip_template_uuid = Column(

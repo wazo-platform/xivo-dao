@@ -318,7 +318,7 @@ class TestSearchMultiple(TestSearch):
 
         self.assert_search_returns_result(
             expected,
-            search='on',
+            search='ton',
             order='label',
             direction='desc',
             offset=1,

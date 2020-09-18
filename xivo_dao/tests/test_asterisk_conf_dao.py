@@ -1590,9 +1590,9 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
 
     def setUp(self):
         super(TestFindSipTrunkSettings, self).setUp()
-        global_trunk_body = {
-            'name': 'global_trunk',
-            'label': 'Global trunk configuration',
+        registration_trunk_body = {
+            'name': 'registration_trunk',
+            'label': 'Global trunk with registration configuration',
             'templates': [self.general_config_template],
             'registration_section_options': [
                 ['retry_interval', '20'],
@@ -1614,8 +1614,8 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
                 ['match', '54.172.60.2'],
             ],
         }
-        self.global_trunk_template = self.add_endpoint_sip(
-            **global_trunk_body
+        self.registration_trunk_template = self.add_endpoint_sip(
+            **registration_trunk_body
         )
         self.twilio_template = self.add_endpoint_sip(
             **twilio_trunk_body
@@ -1645,7 +1645,7 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
         endpoint = self.add_endpoint_sip(
             label='my trunk',
             template=False,
-            templates=[self.global_trunk_template, self.twilio_template],
+            templates=[self.registration_trunk_template, self.twilio_template],
             endpoint_section_options=[
                 ['callerid', '"Foo Bar" <101>'],
             ],
@@ -1728,7 +1728,7 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
     def test_that_the_transport_is_used_from_endpoint(self):
         transport = self.add_transport()
         endpoint = self.add_endpoint_sip(
-            templates=[self.global_trunk_template],
+            templates=[self.registration_trunk_template],
             transport_uuid=transport.uuid,
             template=False,
         )
@@ -1748,7 +1748,11 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
         transport = self.add_transport()
         template = self.add_endpoint_sip(template=True, transport=transport)
         endpoint = self.add_endpoint_sip(
-            templates=[self.general_config_template, self.global_trunk_template, template],
+            templates=[
+                self.general_config_template,
+                self.registration_trunk_template,
+                template,
+            ],
             template=False,
         )
         self.add_trunk(endpoint_sip_uuid=endpoint.uuid)
