@@ -1615,7 +1615,7 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
             ],
         }
         self.registration_trunk_template = self.add_endpoint_sip(
-            **registration_trunk
+            **registration_trunk_body
         )
         self.twilio_template = self.add_endpoint_sip(
             **twilio_trunk_body
