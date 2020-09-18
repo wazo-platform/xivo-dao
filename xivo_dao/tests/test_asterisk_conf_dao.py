@@ -1590,8 +1590,8 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
 
     def setUp(self):
         super(TestFindSipTrunkSettings, self).setUp()
-        trunk_with_registration_body = {
-            'name': 'trunk_with_registration',
+        registration_trunk_body = {
+            'name': 'registration_trunk',
             'label': 'Global trunk with registration configuration',
             'templates': [self.general_config_template],
             'registration_section_options': [
@@ -1614,8 +1614,8 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
                 ['match', '54.172.60.2'],
             ],
         }
-        self.trunk_with_registration_template = self.add_endpoint_sip(
-            **trunk_with_registration
+        self.registration_trunk_template = self.add_endpoint_sip(
+            **registration_trunk
         )
         self.twilio_template = self.add_endpoint_sip(
             **twilio_trunk_body
@@ -1645,7 +1645,7 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
         endpoint = self.add_endpoint_sip(
             label='my trunk',
             template=False,
-            templates=[self.trunk_with_registration_template, self.twilio_template],
+            templates=[self.registration_trunk_template, self.twilio_template],
             endpoint_section_options=[
                 ['callerid', '"Foo Bar" <101>'],
             ],
@@ -1728,7 +1728,7 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
     def test_that_the_transport_is_used_from_endpoint(self):
         transport = self.add_transport()
         endpoint = self.add_endpoint_sip(
-            templates=[self.trunk_with_registration_template],
+            templates=[self.registration_trunk_template],
             transport_uuid=transport.uuid,
             template=False,
         )
@@ -1750,7 +1750,7 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
         endpoint = self.add_endpoint_sip(
             templates=[
                 self.general_config_template,
-                self.trunk_with_registration_template,
+                self.registration_trunk_template,
                 template,
             ],
             template=False,
