@@ -394,9 +394,17 @@ def find_sip_user_settings(session):
     ).options(
         joinedload('endpoint_sip').joinedload('_aor_section'),
     ).options(
+        joinedload('endpoint_sip').joinedload('_auth_section'),
+    ).options(
         joinedload('endpoint_sip').joinedload('_endpoint_section'),
     ).options(
-        joinedload('endpoint_sip').joinedload('_auth_section'),
+        joinedload('endpoint_sip').joinedload('_registration_section'),
+    ).options(
+        joinedload('endpoint_sip').joinedload('_registration_outbound_auth_section'),
+    ).options(
+        joinedload('endpoint_sip').joinedload('_identify_section'),
+    ).options(
+        joinedload('endpoint_sip').joinedload('_outbound_auth_section'),
     ).options(
         joinedload('endpoint_sip').joinedload('transport'),
     ).options(
@@ -544,11 +552,17 @@ def find_sip_trunk_settings(session):
     ).options(
         joinedload('endpoint_sip').joinedload('_aor_section'),
     ).options(
-        joinedload('endpoint_sip').joinedload('_endpoint_section'),
-    ).options(
         joinedload('endpoint_sip').joinedload('_auth_section'),
     ).options(
+        joinedload('endpoint_sip').joinedload('_endpoint_section'),
+    ).options(
+        joinedload('endpoint_sip').joinedload('_registration_section'),
+    ).options(
+        joinedload('endpoint_sip').joinedload('_registration_outbound_auth_section'),
+    ).options(
         joinedload('endpoint_sip').joinedload('_identify_section'),
+    ).options(
+        joinedload('endpoint_sip').joinedload('_outbound_auth_section'),
     ).options(
         joinedload('endpoint_sip').joinedload('transport'),
     ).filter(
@@ -678,13 +692,13 @@ def endpoint_to_dict(endpoint):
         'uuid': endpoint.uuid,
         'name': endpoint.name,
         'label': endpoint.label,
-        'aor_section_options': endpoint.aor_section_options,
-        'auth_section_options': endpoint.auth_section_options,
-        'endpoint_section_options': endpoint.endpoint_section_options,
-        'registration_section_options': endpoint.registration_section_options,
-        'registration_outbound_auth_section_options': endpoint.registration_outbound_auth_section_options,
-        'identify_section_options': endpoint.identify_section_options,
-        'outbound_auth_section_options': endpoint.outbound_auth_section_options,
+        'aor_section_options': list(endpoint.aor_section_options),
+        'auth_section_options': list(endpoint.auth_section_options),
+        'endpoint_section_options': list(endpoint.endpoint_section_options),
+        'registration_section_options': list(endpoint.registration_section_options),
+        'registration_outbound_auth_section_options': list(endpoint.registration_outbound_auth_section_options),
+        'identify_section_options': list(endpoint.identify_section_options),
+        'outbound_auth_section_options': list(endpoint.outbound_auth_section_options),
         'template': endpoint.template,
         'asterisk_id': endpoint.asterisk_id,
     }
