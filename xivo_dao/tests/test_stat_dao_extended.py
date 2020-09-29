@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import six
@@ -250,8 +250,9 @@ class TestStatDAO(DAOTestCase):
 
         return a.name, a.id
 
-    def _insert_queue(self, qname):
-        q = StatQueue(name=qname)
+    def _insert_queue(self, qname, tenant_uuid=None):
+        tenant_uuid = tenant_uuid or self.default_tenant.uuid
+        q = StatQueue(name=qname, tenant_uuid=tenant_uuid)
 
         self.add_me(q)
 
