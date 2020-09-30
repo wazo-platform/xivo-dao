@@ -1744,6 +1744,23 @@ class TestFindSipTrunkSettings(BaseFindSIPSettings):
             )),
         )
 
+    def test_that_endpoint_is_included_in_registration_using_line(self):
+        endpoint = self.add_endpoint_sip(
+            template=False,
+            registration_section_options=[['line', 'yes']]
+        )
+        self.add_trunk(endpoint_sip_uuid=endpoint.uuid)
+
+        result = asterisk_conf_dao.find_sip_trunk_settings()
+        assert_that(
+            result,
+            contains(has_entries(
+                registration_section_options=has_items(
+                    contains('endpoint', endpoint.name),
+                )
+            ))
+        )
+
     def test_that_the_transport_is_used_from_a_template(self):
         transport = self.add_transport()
         template = self.add_endpoint_sip(template=True, transport=transport)
