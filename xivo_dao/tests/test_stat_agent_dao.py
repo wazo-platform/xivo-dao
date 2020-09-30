@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2012-2014 Avencall
+# Copyright 2012-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao import stat_agent_dao
@@ -23,9 +23,10 @@ class TestStatAgentDAO(DAOTestCase):
 
         self.assertTrue(self.session.query(StatAgent).first() is None)
 
-    def _insert_agent(self, name):
+    def _insert_agent(self, name, tenant_uuid=None):
         agent = StatAgent()
         agent.name = name
+        agent.tenant_uuid = tenant_uuid or self.default_tenant.uuid
 
         self.add_me(agent)
 

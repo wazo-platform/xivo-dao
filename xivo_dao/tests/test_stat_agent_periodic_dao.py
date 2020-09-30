@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import six
@@ -23,6 +23,7 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
     def _insert_agent_to_stat_agent(self):
         agent = StatAgent()
         agent.name = 'test_agent'
+        agent.tenant_uuid = self.default_tenant.uuid
 
         self.add_me(agent)
 
