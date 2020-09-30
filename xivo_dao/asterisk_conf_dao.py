@@ -8,6 +8,7 @@ from collections import (
     defaultdict,
     namedtuple,
 )
+from distutils import util
 
 from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.expression import (
@@ -623,6 +624,10 @@ def find_sip_trunk_settings(session):
                 builder['registration_section_options'].append(['type', 'registration'])
                 if transport_name:
                     builder['registration_section_options'].append(['transport', transport_name])
+                for key, value in builder['registration_section_options']:
+                    if key == 'line' and util.strtobool(value):
+                        builder['registration_section_options'].append(['endpoint', endpoint.name])
+                        break
             if builder['outbound_auth_section_options']:
                 outbound_auth_section_name = 'outbound_auth_{}'.format(endpoint.name)
                 builder['outbound_auth_section_options'].append(['type', 'auth'])
