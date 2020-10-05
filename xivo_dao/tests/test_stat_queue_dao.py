@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2013-2014 Avencall
+# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao import stat_queue_dao
@@ -40,9 +40,10 @@ class TestStatQueueDAO(DAOTestCase):
 
         self.assertTrue(self.session.query(StatQueue).first() is None)
 
-    def _insert_queue(self, name):
+    def _insert_queue(self, name, tenant_uuid=None):
         queue = StatQueue()
         queue.name = name
+        queue.tenant_uuid = tenant_uuid or self.default_tenant.uuid
 
         self.add_me(queue)
 

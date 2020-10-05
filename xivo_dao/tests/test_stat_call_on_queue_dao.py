@@ -21,10 +21,11 @@ class TestStatCallOnQueueDAO(DAOTestCase):
     def _build_date(year, month, day, hour=0, minute=0, second=0, micro=0):
         return datetime.datetime(year, month, day, hour, minute, second, micro).strftime("%Y-%m-%d %H:%M:%S.%f")
 
-    def _insert_queue_to_stat_queue(self, queue_name=None):
+    def _insert_queue_to_stat_queue(self, queue_name=None, tenant_uuid=None):
         queue_name = queue_name if queue_name else 'test_queue'
         queue = StatQueue()
         queue.name = queue_name
+        queue.tenant_uuid = tenant_uuid or self.default_tenant.uuid
 
         self.add_me(queue)
 

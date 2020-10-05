@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import datetime
@@ -14,9 +14,10 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 class TestStatQueuePeriodicDAO(DAOTestCase):
 
-    def _insert_queue_to_stat_queue(self):
+    def _insert_queue_to_stat_queue(self, tenant_uuid=None):
         queue = StatQueue()
         queue.name = 'test_queue'
+        queue.tenant_uuid = tenant_uuid or self.default_tenant.uuid
 
         self.add_me(queue)
 
