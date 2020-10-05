@@ -2,15 +2,23 @@
 # Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from sqlalchemy import distinct
+
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.stat_agent import StatAgent
 
 
 def insert_missing_agents(session, confd_agents):
-    session.execute('''\
-INSERT INTO stat_agent (name)
-  SELECT 'Agent/' || number FROM agentfeatures EXCEPT SELECT name FROM stat_agent
-''')
+    old_agents = set(r[0] for r in session.query(distinct(StatAgent.name)))
+    agent_tenants = {'Agent/{number}'.format(number=agent['number']): agent['tenant_uuid'] for agent in confd_agents}
+    configured_agents = set(agent_tenants)
+
+    missing_agents = configured_agents - old_agents
+    for agent_name in missing_agents:
+        new_agent = StatAgent()
+        new_agent.name = agent_name
+        new_agent.tenant_uuid = agent_tenants[agent_name]
+        session.add(new_agent)
 
 
 @daosession
