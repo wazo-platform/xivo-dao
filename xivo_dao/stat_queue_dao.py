@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2013-2014 Avencall
+# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy import distinct
@@ -20,15 +20,17 @@ def id_from_name(session, queue_name):
     return res[0].id
 
 
-def insert_if_missing(session, all_queues):
-    all_queues = set(all_queues)
+def insert_if_missing(session, queuelog_queues, confd_queues):
+    new_queues = set(queuelog_queues)
     old_queues = set(r[0] for r in session.query(distinct(StatQueue.name)))
 
-    missing_queues = list(all_queues - old_queues)
+    missing_queues = list(new_queues - old_queues)
+    queue_tenants = {queue['name']: queue['tenant_uuid'] for queue in confd_queues}
 
     for queue_name in missing_queues:
         new_queue = StatQueue()
         new_queue.name = queue_name
+        new_queue.tenant_uuid = queue_tenants.get(queue_name, None)
         session.add(new_queue)
 
 
