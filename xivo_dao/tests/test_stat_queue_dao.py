@@ -2,6 +2,8 @@
 # Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import uuid
+
 from xivo_dao import stat_queue_dao
 from xivo_dao.alchemy.stat_queue import StatQueue
 from xivo_dao.helpers.db_utils import flush_session
@@ -39,10 +41,11 @@ class TestStatQueueDAO(DAOTestCase):
         self._insert_queue('queue1', 'tenant1')
         self._insert_queue('queue2', 'tenant2')
 
-        new_queues = ['queue1', 'queue3', 'queue4']
+        new_queues = ['queue1', 'queue3', 'queue4', 'queue5']
+        master_tenant = str(uuid.uuid4())
 
         with flush_session(self.session):
-            stat_queue_dao.insert_if_missing(self.session, new_queues, confd_queues)
+            stat_queue_dao.insert_if_missing(self.session, new_queues, confd_queues, master_tenant)
 
         result = [(name, tenant_uuid) for name, tenant_uuid in self.session.query(StatQueue.name, StatQueue.tenant_uuid).all()]
 
@@ -50,7 +53,8 @@ class TestStatQueueDAO(DAOTestCase):
         self.assertTrue(('queue2', 'tenant2') in result)
         self.assertTrue(('queue3', 'tenant3') in result)
         self.assertTrue(('queue4', 'tenant4') in result)
-        self.assertEquals(len(result), 4)
+        self.assertTrue(('queue5', master_tenant) in result)
+        self.assertEquals(len(result), 5)
 
     def test_clean_table(self):
         self._insert_queue('queue1')
