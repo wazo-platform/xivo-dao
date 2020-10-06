@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import six
@@ -22,7 +22,7 @@ def insert_stats(session, stats, period_start):
         entry.divert_ca_ratio = queue_stats.get('divert_ca_ratio', 0)
         entry.divert_waittime = queue_stats.get('divert_waittime', 0)
         entry.total = queue_stats['total']
-        entry.queue_id = queue_id
+        entry.stat_queue_id = queue_id
 
         session.add(entry)
 

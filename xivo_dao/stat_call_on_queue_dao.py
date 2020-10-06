@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from xivo_dao.alchemy.stat_call_on_queue import StatCallOnQueue
@@ -16,7 +16,7 @@ def _add_call(session, callid, time, queue_name, event, waittime=None):
     call_on_queue = StatCallOnQueue()
     call_on_queue.time = time
     call_on_queue.callid = callid
-    call_on_queue.queue_id = queue_id
+    call_on_queue.stat_queue_id = queue_id
     call_on_queue.status = event
     if waittime:
         call_on_queue.waittime = waittime
@@ -65,11 +65,11 @@ def _get_periodic_stat_by_step(session, start, end, step):
 
     rows = (session
             .query(step.label('the_time'),
-                   StatCallOnQueue.queue_id,
+                   StatCallOnQueue.stat_queue_id,
                    StatCallOnQueue.status,
                    func.count(StatCallOnQueue.status))
             .group_by('the_time',
-                      StatCallOnQueue.queue_id,
+                      StatCallOnQueue.stat_queue_id,
                       StatCallOnQueue.status)
             .filter(between(StatCallOnQueue.time, start, end)))
 

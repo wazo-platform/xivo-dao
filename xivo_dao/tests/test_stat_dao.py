@@ -638,11 +638,11 @@ DROP FUNCTION IF EXISTS "fill_simple_calls" (text, text);
 CREATE FUNCTION "fill_simple_calls"(period_start text, period_end text)
   RETURNS void AS
 $$
-  INSERT INTO "stat_call_on_queue" (callid, "time", queue_id, status)
+  INSERT INTO "stat_call_on_queue" (callid, "time", stat_queue_id, status)
     SELECT
       callid,
       CAST ("time" AS TIMESTAMP) as "time",
-      (SELECT id FROM stat_queue WHERE name=queuename) as queue_id,
+      (SELECT id FROM stat_queue WHERE name=queuename) as stat_queue_id,
       CASE WHEN event = 'FULL' THEN 'full'::call_exit_type
            WHEN event = 'DIVERT_CA_RATIO' THEN 'divert_ca_ratio'
            WHEN event = 'DIVERT_HOLDTIME' THEN 'divert_waittime'
@@ -661,18 +661,18 @@ DROP FUNCTION IF EXISTS "fill_leaveempty_calls" (text, text);
 CREATE OR REPLACE FUNCTION "fill_leaveempty_calls" (period_start text, period_end text)
   RETURNS void AS
 $$
-INSERT INTO stat_call_on_queue (callid, time, waittime, queue_id, status)
+INSERT INTO stat_call_on_queue (callid, time, waittime, stat_queue_id, status)
 SELECT
   callid,
   enter_time as time,
   EXTRACT(EPOCH FROM (leave_time - enter_time))::INTEGER as waittime,
-  queue_id,
+  stat_queue_id,
   'leaveempty' AS status
 FROM (SELECT
         CAST (time AS TIMESTAMP) AS enter_time,
         (select CAST (time AS TIMESTAMP) from queue_log where callid=main.callid AND event='LEAVEEMPTY') AS leave_time,
         callid,
-        (SELECT id FROM stat_queue WHERE name=queuename) AS queue_id
+        (SELECT id FROM stat_queue WHERE name=queuename) AS stat_queue_id
       FROM queue_log AS main
       WHERE callid IN (SELECT callid FROM queue_log WHERE event = 'LEAVEEMPTY')
             AND event = 'ENTERQUEUE'

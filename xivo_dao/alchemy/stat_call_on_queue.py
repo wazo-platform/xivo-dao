@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2012-2014 Avencall
+# Copyright 2012-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.schema import Column, ForeignKey, Index
@@ -36,8 +36,8 @@ class StatCallOnQueue(Base):
                          name='call_exit_type',
                          metadata=Base.metadata),
                     nullable=False)
-    queue_id = Column(Integer, ForeignKey("stat_queue.id"))
-    agent_id = Column(Integer, ForeignKey("stat_agent.id"))
+    stat_queue_id = Column(Integer, ForeignKey("stat_queue.id"))
+    stat_agent_id = Column(Integer, ForeignKey("stat_agent.id"))
 
-    stat_queue = relationship(StatQueue, foreign_keys=queue_id)
-    stat_agent = relationship(StatAgent, foreign_keys=agent_id)
+    stat_queue = relationship(StatQueue, foreign_keys=stat_queue_id)
+    stat_agent = relationship(StatAgent, foreign_keys=stat_agent_id)
