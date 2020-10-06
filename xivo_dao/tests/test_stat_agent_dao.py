@@ -10,13 +10,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 class TestStatAgentDAO(DAOTestCase):
 
-    def test_id_from_name(self):
-        agent = self._insert_agent('Agent/1234')
-
-        result = stat_agent_dao.id_from_name(agent.name)
-
-        self.assertEqual(result, agent.id)
-
     def test_clean_table(self):
         self._insert_agent('Agent/123')
 
@@ -27,40 +20,51 @@ class TestStatAgentDAO(DAOTestCase):
     def test_insert_missing_agents(self):
         confd_agents = [
             {
+                'id': 1,
                 'number': 'number1',
                 'tenant_uuid': 'tenant1',
             },
             {
+                'id': 2,
                 'number': 'number2',
                 'tenant_uuid': 'tenant2',
             },
             {
+                'id': 3,
                 'number': 'number3',
                 'tenant_uuid': 'tenant3',
             },
             {
+                'id': 4,
                 'number': 'number4',
                 'tenant_uuid': 'tenant4',
             },
         ]
-        self._insert_agent('Agent/number1', 'tenant1')
-        self._insert_agent('Agent/number2', 'tenant2')
+        self._insert_agent('Agent/number1', 'tenant1', 1)
+        self._insert_agent('Agent/number2', 'tenant2', 2)
 
         with flush_session(self.session):
             stat_agent_dao.insert_missing_agents(self.session, confd_agents)
 
-        result = [(name, tenant_uuid) for name, tenant_uuid in self.session.query(StatAgent.name, StatAgent.tenant_uuid).all()]
+        result = [
+            (name, tenant_uuid, agent_id)
+            for name, tenant_uuid, agent_id
+            in self.session.query(
+                StatAgent.name, StatAgent.tenant_uuid, StatAgent.agent_id
+            ).all()
+        ]
 
-        self.assertTrue(('Agent/number1', 'tenant1') in result)
-        self.assertTrue(('Agent/number2', 'tenant2') in result)
-        self.assertTrue(('Agent/number3', 'tenant3') in result)
-        self.assertTrue(('Agent/number4', 'tenant4') in result)
+        self.assertTrue(('Agent/number1', 'tenant1', 1) in result)
+        self.assertTrue(('Agent/number2', 'tenant2', 2) in result)
+        self.assertTrue(('Agent/number3', 'tenant3', 3) in result)
+        self.assertTrue(('Agent/number4', 'tenant4', 4) in result)
         self.assertEquals(len(result), 4)
 
-    def _insert_agent(self, name, tenant_uuid=None):
+    def _insert_agent(self, name, tenant_uuid=None, agent_id=None):
         agent = StatAgent()
         agent.name = name
         agent.tenant_uuid = tenant_uuid or self.default_tenant.uuid
+        agent.agent_id = agent_id
 
         self.add_me(agent)
 

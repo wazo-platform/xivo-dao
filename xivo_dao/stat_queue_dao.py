@@ -25,12 +25,13 @@ def insert_if_missing(session, queuelog_queues, confd_queues, master_tenant):
     old_queues = set(r[0] for r in session.query(distinct(StatQueue.name)))
 
     missing_queues = list(new_queues - old_queues)
-    queue_tenants = {queue['name']: queue['tenant_uuid'] for queue in confd_queues}
+    queues_by_name = {queue['name']: queue for queue in confd_queues}
 
     for queue_name in missing_queues:
         new_queue = StatQueue()
         new_queue.name = queue_name
-        new_queue.tenant_uuid = queue_tenants.get(queue_name, master_tenant)
+        new_queue.tenant_uuid = queues_by_name.get(queue_name, {}).get('tenant_uuid') or master_tenant
+        new_queue.queue_id = queues_by_name.get(queue_name, {}).get('id')
         session.add(new_queue)
 
 

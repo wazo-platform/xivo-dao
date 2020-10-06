@@ -17,6 +17,7 @@ class StatQueue(Base):
         Index('stat_queue__idx_tenant_uuid', 'tenant_uuid'),
     )
 
-    id = Column(Integer, nullable=False)
+    id = Column(Integer)
     name = Column(String(128), nullable=False)
     tenant_uuid = Column(String(36), nullable=False)
+    queue_id = Column(Integer)

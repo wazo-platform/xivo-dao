@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2013-2014 Avencall
+# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.schema import Column, ForeignKey
@@ -26,6 +26,6 @@ class StatQueuePeriodic(Base):
     divert_ca_ratio = Column(Integer, nullable=False, server_default='0')
     divert_waittime = Column(Integer, nullable=False, server_default='0')
     timeout = Column(Integer, nullable=False, server_default='0')
-    queue_id = Column(Integer, ForeignKey("stat_queue.id"))
+    stat_queue_id = Column(Integer, ForeignKey("stat_queue.id"))
 
-    stat_queue = relationship(StatQueue, foreign_keys=queue_id)
+    stat_queue = relationship(StatQueue, foreign_keys=stat_queue_id)

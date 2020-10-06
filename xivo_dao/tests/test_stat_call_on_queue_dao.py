@@ -188,7 +188,7 @@ class TestStatCallOnQueueDAO(DAOTestCase):
         other_call = StatCallOnQueue()
         other_call.time = start
         other_call.callid = 'other type'
-        other_call.queue_id = queue_id
+        other_call.stat_queue_id = queue_id
         other_call.status = 'abandoned'
 
         self.add_me(other_call)
@@ -270,8 +270,8 @@ class TestStatCallOnQueueDAO(DAOTestCase):
             talktime=1,
             waittime=1,
             status='answered',
-            queue_id=queue_id,
-            agent_id=agent_id,
+            stat_queue_id=queue_id,
+            stat_agent_id=agent_id,
         )
 
         self.add_me(call)

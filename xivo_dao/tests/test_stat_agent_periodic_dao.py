@@ -75,7 +75,7 @@ class TestStatAgentPeriodicDAO(DAOTestCase):
         try:
             result = (self.session.query(StatAgentPeriodic)
                       .filter(StatAgentPeriodic.time == period_start)
-                      .filter(StatAgentPeriodic.agent_id == agent_id_1)[0])
+                      .filter(StatAgentPeriodic.stat_agent_id == agent_id_1)[0])
 
             self.assertEqual(result.login_time, timedelta(minutes=50))
         except LookupError:

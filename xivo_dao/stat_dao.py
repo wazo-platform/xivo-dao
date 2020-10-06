@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import six
@@ -9,7 +9,7 @@ from sqlalchemy.sql import text
 _STR_TIME_FMT = "%Y-%m-%d %H:%M:%S.%f"
 
 FILL_ANSWERED_CALL_ON_QUEUE_QUERY = text('''\n
-INSERT INTO stat_call_on_queue (callid, "time", talktime, waittime, queue_id, agent_id, status)
+INSERT INTO stat_call_on_queue (callid, "time", talktime, waittime, stat_queue_id, stat_agent_id, status)
 (
     WITH
     call_entries AS (
@@ -100,8 +100,8 @@ INSERT INTO stat_call_on_queue (callid, "time", talktime, waittime, queue_id, ag
         all_calls.time,
         all_calls.talktime,
         all_calls.waittime,
-        stat_queue.id as queue_id,
-        stat_agent.id as agent_id,
+        stat_queue.id as stat_queue_id,
+        stat_agent.id as stat_agent_id,
         'answered' AS status
     FROM
         all_calls
