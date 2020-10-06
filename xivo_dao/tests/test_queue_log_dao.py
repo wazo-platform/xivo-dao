@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import random
@@ -25,8 +25,9 @@ class TestQueueLogDAO(DAOTestCase):
         super(TestQueueLogDAO, self).setUp()
         self.queue_name = 'q1'
 
-    def _insert_agent(self, aname):
-        a = StatAgent(name=aname)
+    def _insert_agent(self, aname, tenant_uuid=None):
+        tenant_uuid = tenant_uuid or self.default_tenant.uuid
+        a = StatAgent(name=aname, tenant_uuid=tenant_uuid)
 
         self.add_me(a)
 

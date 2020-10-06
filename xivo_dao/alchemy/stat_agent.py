@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2012-2014 Avencall
+# Copyright 2012-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from sqlalchemy.schema import Column, PrimaryKeyConstraint, Index
@@ -14,7 +14,9 @@ class StatAgent(Base):
     __table_args__ = (
         PrimaryKeyConstraint('id'),
         Index('stat_agent__idx_name', 'name'),
+        Index('stat_agent__idx_tenant_uuid', 'tenant_uuid'),
     )
 
     id = Column(Integer)
     name = Column(String(128), nullable=False)
+    tenant_uuid = Column(String(36), nullable=False)

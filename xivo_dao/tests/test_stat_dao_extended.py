@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import six
@@ -243,15 +243,17 @@ class TestStatDAO(DAOTestCase):
     def _strip_content_list(self, lines):
         return [line.strip() for line in lines]
 
-    def _insert_agent(self, aname):
-        a = StatAgent(name=aname)
+    def _insert_agent(self, aname, tenant_uuid=None):
+        tenant_uuid = tenant_uuid or self.default_tenant.uuid
+        a = StatAgent(name=aname, tenant_uuid=tenant_uuid)
 
         self.add_me(a)
 
         return a.name, a.id
 
-    def _insert_queue(self, qname):
-        q = StatQueue(name=qname)
+    def _insert_queue(self, qname, tenant_uuid=None):
+        tenant_uuid = tenant_uuid or self.default_tenant.uuid
+        q = StatQueue(name=qname, tenant_uuid=tenant_uuid)
 
         self.add_me(q)
 

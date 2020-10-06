@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import datetime
@@ -21,19 +21,21 @@ class TestStatCallOnQueueDAO(DAOTestCase):
     def _build_date(year, month, day, hour=0, minute=0, second=0, micro=0):
         return datetime.datetime(year, month, day, hour, minute, second, micro).strftime("%Y-%m-%d %H:%M:%S.%f")
 
-    def _insert_queue_to_stat_queue(self, queue_name=None):
+    def _insert_queue_to_stat_queue(self, queue_name=None, tenant_uuid=None):
         queue_name = queue_name if queue_name else 'test_queue'
         queue = StatQueue()
         queue.name = queue_name
+        queue.tenant_uuid = tenant_uuid or self.default_tenant.uuid
 
         self.add_me(queue)
 
         return queue.name, queue.id
 
-    def _insert_agent_to_stat_agent(self, agent_name=None):
+    def _insert_agent_to_stat_agent(self, agent_name=None, tenant_uuid=None):
         agent_name = agent_name if agent_name else 'Agent/1234'
         agent = StatAgent()
         agent.name = agent_name
+        agent.tenant_uuid = tenant_uuid or self.default_tenant.uuid
 
         self.add_me(agent)
 

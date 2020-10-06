@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2013-2014 Avencall
+# Copyright 2013-2020 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
+
+import uuid
 
 from xivo_dao import stat_queue_dao
 from xivo_dao.alchemy.stat_queue import StatQueue
@@ -18,20 +20,41 @@ class TestStatQueueDAO(DAOTestCase):
         self.assertEqual(result, queue.id)
 
     def test_insert_if_missing(self):
-        old_queues = ['queue_%s' % number for number in range(5)]
-        for queue_name in old_queues:
-            self._insert_queue(queue_name)
+        confd_queues = [
+            {
+                'name': 'queue1',
+                'tenant_uuid': 'tenant1',
+            },
+            {
+                'name': 'queue2',
+                'tenant_uuid': 'tenant2',
+            },
+            {
+                'name': 'queue3',
+                'tenant_uuid': 'tenant3',
+            },
+            {
+                'name': 'queue4',
+                'tenant_uuid': 'tenant4',
+            },
+        ]
+        self._insert_queue('queue1', 'tenant1')
+        self._insert_queue('queue2', 'tenant2')
 
-        new_queues = ['queue_%s' % number for number in range(5, 10)]
-
-        all_queues = sorted(old_queues + new_queues)
+        new_queues = ['queue1', 'queue3', 'queue4', 'queue5']
+        master_tenant = str(uuid.uuid4())
 
         with flush_session(self.session):
-            stat_queue_dao.insert_if_missing(self.session, all_queues)
+            stat_queue_dao.insert_if_missing(self.session, new_queues, confd_queues, master_tenant)
 
-        result = sorted(r.name for r in self.session.query(StatQueue.name))
+        result = [(name, tenant_uuid) for name, tenant_uuid in self.session.query(StatQueue.name, StatQueue.tenant_uuid).all()]
 
-        self.assertEqual(result, all_queues)
+        self.assertTrue(('queue1', 'tenant1') in result)
+        self.assertTrue(('queue2', 'tenant2') in result)
+        self.assertTrue(('queue3', 'tenant3') in result)
+        self.assertTrue(('queue4', 'tenant4') in result)
+        self.assertTrue(('queue5', master_tenant) in result)
+        self.assertEquals(len(result), 5)
 
     def test_clean_table(self):
         self._insert_queue('queue1')
@@ -40,9 +63,10 @@ class TestStatQueueDAO(DAOTestCase):
 
         self.assertTrue(self.session.query(StatQueue).first() is None)
 
-    def _insert_queue(self, name):
+    def _insert_queue(self, name, tenant_uuid=None):
         queue = StatQueue()
         queue.name = name
+        queue.tenant_uuid = tenant_uuid or self.default_tenant.uuid
 
         self.add_me(queue)
 
