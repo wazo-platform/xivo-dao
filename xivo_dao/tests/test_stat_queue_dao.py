@@ -22,24 +22,28 @@ class TestStatQueueDAO(DAOTestCase):
     def test_insert_if_missing(self):
         confd_queues = [
             {
+                'id': 1,
                 'name': 'queue1',
                 'tenant_uuid': 'tenant1',
             },
             {
+                'id': 2,
                 'name': 'queue2',
                 'tenant_uuid': 'tenant2',
             },
             {
+                'id': 3,
                 'name': 'queue3',
                 'tenant_uuid': 'tenant3',
             },
             {
+                'id': 4,
                 'name': 'queue4',
                 'tenant_uuid': 'tenant4',
             },
         ]
-        self._insert_queue('queue1', 'tenant1')
-        self._insert_queue('queue2', 'tenant2')
+        self._insert_queue('queue1', 'tenant1', 1)
+        self._insert_queue('queue2', 'tenant2', 2)
 
         new_queues = ['queue1', 'queue3', 'queue4', 'queue5']
         master_tenant = str(uuid.uuid4())
@@ -47,13 +51,19 @@ class TestStatQueueDAO(DAOTestCase):
         with flush_session(self.session):
             stat_queue_dao.insert_if_missing(self.session, new_queues, confd_queues, master_tenant)
 
-        result = [(name, tenant_uuid) for name, tenant_uuid in self.session.query(StatQueue.name, StatQueue.tenant_uuid).all()]
+        result = [
+            (name, tenant_uuid, queue_id)
+            for name, tenant_uuid, queue_id
+            in self.session.query(
+                StatQueue.name, StatQueue.tenant_uuid, StatQueue.queue_id
+            ).all()
+        ]
 
-        self.assertTrue(('queue1', 'tenant1') in result)
-        self.assertTrue(('queue2', 'tenant2') in result)
-        self.assertTrue(('queue3', 'tenant3') in result)
-        self.assertTrue(('queue4', 'tenant4') in result)
-        self.assertTrue(('queue5', master_tenant) in result)
+        self.assertTrue(('queue1', 'tenant1', 1) in result)
+        self.assertTrue(('queue2', 'tenant2', 2) in result)
+        self.assertTrue(('queue3', 'tenant3', 3) in result)
+        self.assertTrue(('queue4', 'tenant4', 4) in result)
+        self.assertTrue(('queue5', master_tenant, None) in result)
         self.assertEquals(len(result), 5)
 
     def test_clean_table(self):
@@ -63,10 +73,11 @@ class TestStatQueueDAO(DAOTestCase):
 
         self.assertTrue(self.session.query(StatQueue).first() is None)
 
-    def _insert_queue(self, name, tenant_uuid=None):
+    def _insert_queue(self, name, tenant_uuid=None, queue_id=None):
         queue = StatQueue()
         queue.name = name
         queue.tenant_uuid = tenant_uuid or self.default_tenant.uuid
+        queue.queue_id = queue_id
 
         self.add_me(queue)
 

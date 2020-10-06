@@ -20,3 +20,4 @@ class StatAgent(Base):
     id = Column(Integer)
     name = Column(String(128), nullable=False)
     tenant_uuid = Column(String(36), nullable=False)
+    agent_id = Column(Integer)
