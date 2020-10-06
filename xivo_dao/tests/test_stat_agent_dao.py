@@ -10,13 +10,6 @@ from xivo_dao.tests.test_dao import DAOTestCase
 
 class TestStatAgentDAO(DAOTestCase):
 
-    def test_id_from_name(self):
-        agent = self._insert_agent('Agent/1234')
-
-        result = stat_agent_dao.id_from_name(agent.name)
-
-        self.assertEqual(result, agent.id)
-
     def test_clean_table(self):
         self._insert_agent('Agent/123')
 

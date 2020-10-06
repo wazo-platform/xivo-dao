@@ -4,7 +4,6 @@
 
 from sqlalchemy import distinct
 
-from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.alchemy.stat_agent import StatAgent
 
 
@@ -19,11 +18,6 @@ def insert_missing_agents(session, confd_agents):
         new_agent.name = agent_name
         new_agent.tenant_uuid = agent_tenants[agent_name]
         session.add(new_agent)
-
-
-@daosession
-def id_from_name(session, agent_name):
-    return session.query(StatAgent.id).filter(StatAgent.name == agent_name).first().id
 
 
 def clean_table(session):
